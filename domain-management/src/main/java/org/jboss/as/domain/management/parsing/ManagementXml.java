@@ -135,8 +135,8 @@ public class ManagementXml {
         this.delegate = delegate;
     }
 
-    public void parseManagement(final XMLExtendedStreamReader reader, final ModelNode address, final Namespace expectedNs, final List<ModelNode> list,
-                                   boolean allowInterfaces, boolean requireNativeInterface) throws XMLStreamException {
+    public void parseManagement_1_0(final XMLExtendedStreamReader reader, final ModelNode address, final Namespace expectedNs,
+            final List<ModelNode> list, boolean allowInterfaces, boolean requireNativeInterface) throws XMLStreamException {
         int securityRealmsCount = 0;
         int connectionsCount = 0;
         int managementInterfacesCount = 0;
@@ -170,22 +170,64 @@ public class ManagementXml {
                         delegate.parseManagementInterfaces(reader, managementAddress, expectedNs, list);
 
                     } else {
-                        ROOT_LOGGER.warn(ParseUtils.getWarningMessage(MESSAGES.elementNotSupported(element.getLocalName(), "domain.xml"), reader.getLocation()));
+                        ROOT_LOGGER.warn(ParseUtils.getWarningMessage(
+                                MESSAGES.elementNotSupported(element.getLocalName(), "domain.xml"), reader.getLocation()));
+                    }
+                    break;
+                }
+                default: {
+                    throw unexpectedElement(reader);
+                }
+            }
+        }
+
+        if (requireNativeInterface && managementInterfacesCount < 1) {
+            throw missingRequiredElement(reader, EnumSet.of(Element.MANAGEMENT_INTERFACES));
+        }
+    }
+
+    public void parseManagement_2_0(final XMLExtendedStreamReader reader, final ModelNode address, final Namespace expectedNs,
+            final List<ModelNode> list, boolean allowInterfaces, boolean requireNativeInterface) throws XMLStreamException {
+        int securityRealmsCount = 0;
+        int connectionsCount = 0;
+        int managementInterfacesCount = 0;
+
+        final ModelNode managementAddress = address.clone().add(CORE_SERVICE, MANAGEMENT);
+        while (reader.hasNext() && reader.nextTag() != END_ELEMENT) {
+            requireNamespace(reader, expectedNs);
+            final Element element = Element.forName(reader.getLocalName());
+            switch (element) {
+                case SECURITY_REALMS: {
+                    if (++securityRealmsCount > 1) {
+                        throw unexpectedElement(reader);
+                    }
+                    parseSecurityRealms(reader, managementAddress, expectedNs, list);
+
+                    break;
+                }
+                case OUTBOUND_CONNECTIONS: {
+                    if (++connectionsCount > 1) {
+                        throw unexpectedElement(reader);
+                    }
+                    parseConnections(reader, managementAddress, expectedNs, list);
+                    break;
+                }
+                case MANAGEMENT_INTERFACES: {
+                    if (allowInterfaces) {
+                        if (++managementInterfacesCount > 1) {
+                            throw unexpectedElement(reader);
+                        }
+
+                        delegate.parseManagementInterfaces(reader, managementAddress, expectedNs, list);
+
+                    } else {
+                        ROOT_LOGGER.warn(ParseUtils.getWarningMessage(
+                                MESSAGES.elementNotSupported(element.getLocalName(), "domain.xml"), reader.getLocation()));
                     }
                     break;
                 }
                 case ACCESS_CONSTRAINTS: {
-                    switch (expectedNs) {
-                    case DOMAIN_1_0:
-                    case DOMAIN_1_1:
-                    case DOMAIN_1_2:
-                    case DOMAIN_1_3:
-                    case DOMAIN_1_4:
-                        throw ParseUtils.unexpectedElement(reader);
-                    case DOMAIN_2_0:
-                        parseAccessConstraints(reader, address, expectedNs, list);
-                        break;
-                    }
+                    parseAccessConstraints(reader, address, expectedNs, list);
                     break;
                 }
                 default: {
