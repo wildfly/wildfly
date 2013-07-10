@@ -178,7 +178,8 @@ public class Ejb3SubsystemUnitTestCase extends AbstractSubsystemBaseTest {
                                 EJB3SubsystemRootResourceDefinition.DEFAULT_SECURITY_DOMAIN)
                                 .addConfig(new FailedOperationTransformationConfig.RejectExpressionsConfig(EJB3SubsystemRootResourceDefinition.ENABLE_STATISTICS))
                                 .addConfig(new FailedOperationTransformationConfig.NewAttributesConfig(EJB3SubsystemRootResourceDefinition.DEFAULT_SECURITY_DOMAIN))
-                                .addConfig(new FailedOperationTransformationConfig.NewAttributesConfig(EJB3SubsystemRootResourceDefinition.DEFAULT_SFSB_PASSIVATION_DISABLED_CACHE)).build())
+                                .addConfig(new FailedOperationTransformationConfig.NewAttributesConfig(EJB3SubsystemRootResourceDefinition.DEFAULT_SFSB_PASSIVATION_DISABLED_CACHE))
+                                .addConfig(new FailedOperationTransformationConfig.NewAttributesConfig(EJB3SubsystemRootResourceDefinition.DISABLE_DEFAULT_EJB_PERMISSIONS)).build())
                 .addFailedAttribute(subsystemAddress.append(PathElement.pathElement(EJB3SubsystemModel.THREAD_POOL)),
                         keepaliveOnly)
                 .addFailedAttribute(subsystemAddress.append(StrictMaxPoolResourceDefinition.INSTANCE.getPathElement()),
@@ -217,6 +218,7 @@ public class Ejb3SubsystemUnitTestCase extends AbstractSubsystemBaseTest {
             if (useQualfified.getType() == ModelType.STRING) {
                 useQualfified.set(useQualfified.asBoolean());
             }
+            //
             // Bogus 'name' attributes that weren't in the legacy resource definition.
             // We don't include them in transformed resources either; if the server wants
             // them at runtime, the bogus server code will add them anyway

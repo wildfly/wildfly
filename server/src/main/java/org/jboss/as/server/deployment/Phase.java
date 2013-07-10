@@ -316,6 +316,7 @@ public enum Phase {
 
     // DEPENDENCIES
     public static final int DEPENDENCIES_EE_PERMISSIONS                 = 0x0100;
+    public static final int DEPENDENCIES_EJB_PERMISSIONS                = 0x0110;
     public static final int DEPENDENCIES_EJB                            = 0x0200;
     public static final int DEPENDENCIES_MODULE                         = 0x0300;
     public static final int DEPENDENCIES_RAR_CONFIG                     = 0x0400;
