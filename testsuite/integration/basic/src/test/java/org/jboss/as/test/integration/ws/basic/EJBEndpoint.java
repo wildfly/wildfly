@@ -23,6 +23,13 @@ package org.jboss.as.test.integration.ws.basic;
 
 import javax.ejb.Stateless;
 import javax.jws.WebService;
+import javax.xml.namespace.QName;
+import javax.xml.soap.SOAPConstants;
+import javax.xml.soap.SOAPException;
+import javax.xml.soap.SOAPFactory;
+import javax.xml.soap.SOAPFault;
+import javax.xml.ws.BindingType;
+import javax.xml.ws.soap.SOAPFaultException;
 import org.jboss.ws.api.annotation.WebContext;
 
 /**
@@ -39,6 +46,7 @@ import org.jboss.ws.api.annotation.WebContext;
         urlPattern = "/EJB3Service",
         contextRoot = "/jaxws-basic-ejb3"
 )
+@BindingType(javax.xml.ws.soap.SOAPBinding.SOAP12HTTP_BINDING)
 @Stateless
 public class EJBEndpoint implements EndpointIface {
 
@@ -57,5 +65,19 @@ public class EJBEndpoint implements EndpointIface {
         }
         return reply;
     }
-    
+
+     public String helloError(String input) {
+        try {
+            SOAPFault fault = SOAPFactory.newInstance(SOAPConstants.SOAP_1_2_PROTOCOL).createFault(input,
+                    SOAPConstants.SOAP_VERSIONMISMATCH_FAULT);
+            fault.setFaultActor("mr.actor");
+            fault.addDetail().addChildElement("test");
+            fault.appendFaultSubcode(new QName("http://ws.gss.redhat.com/", "NullPointerException"));
+            fault.appendFaultSubcode(new QName("http://ws.gss.redhat.com/", "OperatorNotFound"));
+            throw new SOAPFaultException(fault);
+        } catch (SOAPException ex) {
+            ex.printStackTrace();
+        }
+        return "Failure!";
+    }
 }

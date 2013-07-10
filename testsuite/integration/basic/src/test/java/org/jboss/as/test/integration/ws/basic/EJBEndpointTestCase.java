@@ -32,7 +32,6 @@ import org.jboss.shrinkwrap.api.Archive;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.spec.JavaArchive;
 import org.junit.Before;
-import org.junit.Ignore;
 import org.junit.runner.RunWith;
 
 /**
@@ -41,13 +40,12 @@ import org.junit.runner.RunWith;
  */
 @RunWith(Arquillian.class)
 @RunAsClient
-@Ignore("AS7-6319")
 public class EJBEndpointTestCase extends BasicTests {
 
     @ArquillianResource
     URL baseUrl;
-    
-    @Deployment( testable=false )
+
+    @Deployment(testable = false)
     public static Archive<?> deployment() {
         JavaArchive jar = ShrinkWrap.create(JavaArchive.class, "jaxws-basic-ejb.jar")
                 .addClasses(EndpointIface.class, EJBEndpoint.class, HelloObject.class);
@@ -62,5 +60,5 @@ public class EJBEndpointTestCase extends BasicTests {
         Service service = Service.create(wsdlURL, serviceName);
         proxy = service.getPort(EndpointIface.class);
     }
-    
+
 }
