@@ -55,5 +55,6 @@
     <default-distinct-name value="myname"/>
     <default-security-domain value="domain"/>
     <default-missing-method-permissions-deny-access value="false" />
+    <disable-default-ejb-permissions value="true"/>
     <statistics enabled="${ejb.enable-statistics:true}" />
 </subsystem>
