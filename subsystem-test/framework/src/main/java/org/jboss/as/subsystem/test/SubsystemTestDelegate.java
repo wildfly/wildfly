@@ -96,6 +96,7 @@ import org.jboss.as.subsystem.bridge.impl.LegacyControllerKernelServicesProxy;
 import org.jboss.as.subsystem.bridge.local.ScopedKernelServicesBootstrap;
 import org.jboss.as.subsystem.test.ModelDescriptionValidator.ValidationConfiguration;
 import org.jboss.dmr.ModelNode;
+import org.jboss.modules.filter.ClassFilter;
 import org.jboss.staxmapper.XMLMapper;
 import org.junit.Assert;
 import org.xnio.IoUtils;
@@ -704,6 +705,12 @@ final class SubsystemTestDelegate {
             return this;
         }
 
+        @Override
+        public LegacyKernelServicesInitializer excludeFromParent(ClassFilter exclusionFilter) {
+            classLoaderBuilder.excludeFromParent(exclusionFilter);
+            return this;
+        }
+
         private LegacyControllerKernelServicesProxy install(KernelServices mainServices, List<ModelNode> bootOperations) throws Exception {
             if (!skipReverseCheck) {
                 bootCurrentVersionWithLegacyBootOperations(bootOperations, mainServices);
@@ -803,6 +810,7 @@ final class SubsystemTestDelegate {
                 return ModelTestOperationValidatorFilter.createValidateNone();
             }
         }
+
     }
 
     @SuppressWarnings("deprecation")

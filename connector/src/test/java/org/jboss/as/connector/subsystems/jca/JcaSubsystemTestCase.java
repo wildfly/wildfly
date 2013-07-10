@@ -26,6 +26,8 @@ import static org.jboss.as.connector.subsystems.jca.Constants.WORKMANAGER_SHORT_
 
 import java.io.IOException;
 import java.util.List;
+import java.util.Locale;
+import org.jboss.as.connector.logging.ConnectorLogger;
 
 import org.jboss.as.controller.ModelVersion;
 import org.jboss.as.controller.PathAddress;
@@ -37,9 +39,12 @@ import org.jboss.as.subsystem.test.AbstractSubsystemBaseTest;
 import org.jboss.as.subsystem.test.AdditionalInitialization;
 import org.jboss.as.subsystem.test.KernelServices;
 import org.jboss.as.subsystem.test.KernelServicesBuilder;
+import org.jboss.as.subsystem.test.SingleClassFilter;
 import org.jboss.as.threads.PoolAttributeDefinitions;
 import org.jboss.dmr.ModelNode;
+import org.junit.AfterClass;
 import org.junit.Assert;
+import org.junit.BeforeClass;
 import org.junit.Test;
 
 /**
@@ -47,6 +52,19 @@ import org.junit.Test;
  * @author <a href="stefano.maestri@redhat.com>Stefano Maestri</a>
  */
 public class JcaSubsystemTestCase extends AbstractSubsystemBaseTest {
+
+    private static Locale defaultLocale;
+
+    @BeforeClass
+    public static void setDefaultLocale() {
+        defaultLocale = Locale.getDefault();
+        Locale.setDefault(new Locale("jbossloves", "FR"));
+    }
+
+    @AfterClass
+    public static void restoreDefaultLocale() {
+        Locale.setDefault(defaultLocale);
+    }
 
     public JcaSubsystemTestCase() {
         super(JcaExtension.SUBSYSTEM_NAME, new JcaExtension());
@@ -94,6 +112,7 @@ public class JcaSubsystemTestCase extends AbstractSubsystemBaseTest {
         builder.createLegacyKernelServicesBuilder(null, controllerVersion, modelVersion)
                 .addMavenResourceURL("org.jboss.as:jboss-as-connector:" + controllerVersion.getMavenGavVersion())
                 .addMavenResourceURL("org.jboss.as:jboss-as-threads:" + controllerVersion.getMavenGavVersion())
+                .excludeFromParent(SingleClassFilter.createFilter(ConnectorLogger.class))
                 .setExtensionClassName("org.jboss.as.connector.subsystems.jca.JcaExtension");
 
         KernelServices mainServices = builder.build();
@@ -121,6 +140,7 @@ public class JcaSubsystemTestCase extends AbstractSubsystemBaseTest {
         builder.createLegacyKernelServicesBuilder(null, controllerVersion, version_1_1_0)
                 .addMavenResourceURL("org.jboss.as:jboss-as-connector:" + controllerVersion.getMavenGavVersion())
                 .addMavenResourceURL("org.jboss.as:jboss-as-threads:" + controllerVersion.getMavenGavVersion())
+                .excludeFromParent(SingleClassFilter.createFilter(ConnectorLogger.class))
                 .setExtensionClassName("org.jboss.as.connector.subsystems.jca.JcaExtension");
 
         KernelServices mainServices = builder.build();

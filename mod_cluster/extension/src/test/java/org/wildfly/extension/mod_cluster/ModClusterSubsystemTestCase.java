@@ -30,6 +30,7 @@ import static org.wildfly.extension.mod_cluster.CommonAttributes.CONFIGURATION;
 import static org.wildfly.extension.mod_cluster.CommonAttributes.MOD_CLUSTER_CONFIG;
 
 import java.io.IOException;
+import java.util.Locale;
 import java.util.Set;
 
 import org.jboss.as.controller.ModelVersion;
@@ -45,12 +46,15 @@ import org.jboss.as.subsystem.test.AbstractSubsystemBaseTest;
 import org.jboss.as.subsystem.test.AdditionalInitialization;
 import org.jboss.as.subsystem.test.KernelServices;
 import org.jboss.as.subsystem.test.KernelServicesBuilder;
+import org.jboss.as.subsystem.test.SingleClassFilter;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.ModelType;
 import org.jboss.dmr.Property;
 import org.jboss.modcluster.config.MCMPHandlerConfiguration;
 import org.jboss.msc.service.ServiceController;
+import org.junit.AfterClass;
 import org.junit.Assert;
+import org.junit.BeforeClass;
 import org.junit.Test;
 
 /**
@@ -58,6 +62,20 @@ import org.junit.Test;
  * @author Jean-Frederic Clere.
  */
 public class ModClusterSubsystemTestCase extends AbstractSubsystemBaseTest {
+
+    private static Locale defaultLocale;
+
+    @BeforeClass
+    public static void setDefaultLocale() {
+        defaultLocale = Locale.getDefault();
+        Locale.setDefault(new Locale("jbossloves", "FR"));
+    }
+
+    @AfterClass
+    public static void restoreDefaultLocale() {
+        Locale.setDefault(defaultLocale);
+    }
+
 
     public ModClusterSubsystemTestCase() {
         super(ModClusterExtension.SUBSYSTEM_NAME, new ModClusterExtension());
@@ -88,7 +106,8 @@ public class ModClusterSubsystemTestCase extends AbstractSubsystemBaseTest {
                 .addMavenResourceURL("org.jboss.as:jboss-as-modcluster:" + controllerVersion.getMavenGavVersion())
                 .configureReverseControllerCheck(null, new Undo71TransformModelFixer())
                 .setExtensionClassName("org.jboss.as.modcluster.ModClusterExtension")
-        ;
+                .excludeFromParent(SingleClassFilter.createFilter(ModClusterLogger.class));
+
         KernelServices mainServices = builder.build();
         KernelServices legacyServices = mainServices.getLegacyServices(modelVersion);
         Assert.assertNotNull(legacyServices);
@@ -142,7 +161,7 @@ public class ModClusterSubsystemTestCase extends AbstractSubsystemBaseTest {
         builder.createLegacyKernelServicesBuilder(null, controllerVersion, modelVersion)
                 .addMavenResourceURL("org.jboss.as:jboss-as-modcluster:" + controllerVersion.getMavenGavVersion())
                 .setExtensionClassName("org.jboss.as.modcluster.ModClusterExtension")
-        ;
+                .excludeFromParent(SingleClassFilter.createFilter(ModClusterLogger.class));
 
         KernelServices mainServices = builder.build();
         KernelServices legacyServices = mainServices.getLegacyServices(modelVersion);

@@ -25,6 +25,7 @@ import java.net.URL;
 import java.net.URLClassLoader;
 import java.util.List;
 import java.util.regex.Pattern;
+import org.jboss.modules.filter.ClassFilter;
 
 /**
  * Internal use only.
@@ -36,9 +37,9 @@ public class ChildFirstClassLoader extends URLClassLoader {
     private final ClassLoader parent;
     private final List<Pattern> parentFirst;
     private final List<Pattern> childFirst;
+    private final ClassFilter parentExclusionFilter;
 
-
-    ChildFirstClassLoader(ClassLoader parent, List<Pattern> parentFirst, List<Pattern> childFirst, URL...urls) {
+    ChildFirstClassLoader(ClassLoader parent, List<Pattern> parentFirst, List<Pattern> childFirst, ClassFilter parentExclusionFilter, URL... urls) {
         super(urls, parent);
         assert parent != null : "Null parent";
         assert parentFirst != null : "Null parent first";
@@ -46,6 +47,7 @@ public class ChildFirstClassLoader extends URLClassLoader {
         this.parent = parent;
         this.childFirst = childFirst;
         this.parentFirst = parentFirst;
+        this.parentExclusionFilter = parentExclusionFilter;
     }
 
     protected synchronized Class<?> loadClass(String name, boolean resolve) throws ClassNotFoundException {
@@ -60,7 +62,9 @@ public class ChildFirstClassLoader extends URLClassLoader {
             try {
                 c = findClass(name);
             } catch (ClassNotFoundException e) {
-
+                if (parentExclusionFilter != null && parentExclusionFilter.accept(name)) {
+                    throw e;
+                }
             }
             if (c == null) {
                 c = parent.loadClass(name);

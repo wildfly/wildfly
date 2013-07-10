@@ -26,6 +26,8 @@ import static org.junit.Assert.assertTrue;
 
 import java.io.IOException;
 import java.util.List;
+import java.util.Locale;
+import org.jboss.as.connector.logging.ConnectorLogger;
 
 import org.jboss.as.controller.ModelVersion;
 import org.jboss.as.controller.PathAddress;
@@ -36,8 +38,11 @@ import org.jboss.as.subsystem.test.AbstractSubsystemBaseTest;
 import org.jboss.as.subsystem.test.AdditionalInitialization;
 import org.jboss.as.subsystem.test.KernelServices;
 import org.jboss.as.subsystem.test.KernelServicesBuilder;
+import org.jboss.as.subsystem.test.SingleClassFilter;
 import org.jboss.dmr.ModelNode;
+import org.junit.AfterClass;
 import org.junit.Assert;
+import org.junit.BeforeClass;
 import org.junit.Test;
 
 
@@ -46,6 +51,19 @@ import org.junit.Test;
  * @author <a href="stefano.maestri@redhat.com>Stefano Maestri</a>
  */
 public class DatasourcesSubsystemTestCase extends AbstractSubsystemBaseTest {
+
+    private static Locale defaultLocale;
+
+    @BeforeClass
+    public static void setDefaultLocale() {
+        defaultLocale = Locale.getDefault();
+        Locale.setDefault(new Locale("jbossloves", "FR"));
+    }
+
+    @AfterClass
+    public static void restoreDefaultLocale() {
+        Locale.setDefault(defaultLocale);
+    }
 
     public DatasourcesSubsystemTestCase() {
         super(DataSourcesExtension.SUBSYSTEM_NAME, new DataSourcesExtension());
@@ -111,9 +129,10 @@ public class DatasourcesSubsystemTestCase extends AbstractSubsystemBaseTest {
 
         // Add legacy subsystems
         builder.createLegacyKernelServicesBuilder(null,controllerVersion,  modelVersion)
-                  .addMavenResourceURL("org.jboss.as:jboss-as-connector:" + controllerVersion.getMavenGavVersion())
-                  .setExtensionClassName("org.jboss.as.connector.subsystems.datasources.DataSourcesExtension")
-                  .configureReverseControllerCheck(AdditionalInitialization.MANAGEMENT, null);
+                .addMavenResourceURL("org.jboss.as:jboss-as-connector:" + controllerVersion.getMavenGavVersion())
+                .excludeFromParent(SingleClassFilter.createFilter(ConnectorLogger.class))
+                .setExtensionClassName("org.jboss.as.connector.subsystems.datasources.DataSourcesExtension")
+                .configureReverseControllerCheck(AdditionalInitialization.MANAGEMENT, null);
 
         KernelServices mainServices = builder.build();
         Assert.assertTrue(mainServices.isSuccessfulBoot());
@@ -133,6 +152,7 @@ public class DatasourcesSubsystemTestCase extends AbstractSubsystemBaseTest {
         // Add legacy subsystems
         builder.createLegacyKernelServicesBuilder(null, controllerVersion, modelVersion)
                 .addMavenResourceURL("org.jboss.as:jboss-as-connector:" + controllerVersion.getMavenGavVersion())
+                .excludeFromParent(SingleClassFilter.createFilter(ConnectorLogger.class))
                 .setExtensionClassName("org.jboss.as.connector.subsystems.datasources.DataSourcesExtension");
 
         KernelServices mainServices = builder.build();
