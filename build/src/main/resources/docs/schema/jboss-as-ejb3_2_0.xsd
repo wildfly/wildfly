@@ -58,6 +58,7 @@
             <xs:element name="default-distinct-name" type="default-distinct-nameType" minOccurs="0" maxOccurs="1"/>
             <xs:element name="default-security-domain" type="default-security-domainType" minOccurs="0" maxOccurs="1"/>
             <xs:element name="default-missing-method-permissions-deny-access" type="default-missing-method-permissions-deny-accessType" minOccurs="0" maxOccurs="1" />
+            <xs:element name="disable-default-ejb-permissions" type="disable-default-ejb-permissionsType" minOccurs="0" maxOccurs="1" />
             <xs:element name="statistics" type="statisticsType" minOccurs="0" maxOccurs="1"/>
         </xs:all>
     </xs:complexType>
@@ -377,6 +378,19 @@
                    ]]>
                    </xs:documentation>
                </xs:annotation>
+        <xs:attribute name="value" type="xs:boolean"/>
+    </xs:complexType>
+
+
+    <xs:complexType name="disable-default-ejb-permissionsType">
+        <xs:annotation>
+            <xs:documentation>
+                <![CDATA[
+                       If this is enabled then the default security manager permissions required by spec will not
+                       be added to EJB deployments.
+                   ]]>
+            </xs:documentation>
+        </xs:annotation>
         <xs:attribute name="value" type="xs:boolean"/>
     </xs:complexType>
 </xs:schema>
