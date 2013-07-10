@@ -27,28 +27,90 @@ import org.jboss.as.test.integration.management.util.CLIWrapper;
  * @author Jan Martiska
  */
 public class CliUtilsForPatching {
+    public static final String OVERRIDE_ALL = "--override-all";
+    public static final String OVERRIDE_MODULES = "--override-modules";
+    public static final String OVERRIDE = "--override=%s";
+    public static final String PRESERVE = "--preserve=%s";
+    public static final String KEEP_CONFIGURATION = "--keep-configuration";
+    public static final String ROLLBACK_TO = "--rollback-to";
 
     /**
      * Use the CLI to apply a patch
+     *
      * @param patchFilePath absolute path to the ZIP file containing the patch
      * @throws Exception
      */
     public static void applyPatch(String patchFilePath) throws Exception {
+        applyPatch(patchFilePath, null);
+    }
+
+
+    /**
+     * Use the CLI to apply a patch
+     *
+     * @param patchFilePath absolute path to the ZIP file containing the patch
+     * @param args          conflict resolution arguments or null
+     * @throws Exception
+     */
+    public static void applyPatch(String patchFilePath, String... args) throws Exception {
         CLIWrapper cli = new CLIWrapper(true);
-        String command = "patch apply " + patchFilePath;
+        StringBuilder builder = new StringBuilder("patch apply");
+        if (args != null) {
+            for (String arg : args) {
+                builder.append(" ").append(arg);
+            }
+        }
+        builder.append(" ").append(patchFilePath);
+        String command = builder.toString();
         cli.sendLine(command);
         cli.quit();
     }
 
     /**
      * Use the CLI to rollback a patch
+     *
      * @param oneOffPatchID the ID of the patch that should be rolled back
      * @throws Exception
      */
     public static void rollbackPatch(String oneOffPatchID) throws Exception {
+        rollbackPatch(oneOffPatchID, null);
+    }
+
+    /**
+     * Use the CLI to rollback a patch
+     *
+     * @param oneoffPatchID the ID of the patch that should be rolled back
+     * @param args          conflict resolution arguments, rollback arguments
+     * @throws Exception
+     */
+    public static void rollbackPatch(String oneoffPatchID, String... args ) throws Exception {
         CLIWrapper cli = new CLIWrapper(true);
-        String command = "patch rollback --patch-id=" + oneOffPatchID;
+        StringBuilder builder = new StringBuilder("patch rollback");
+        if (args != null) {
+            for (String arg : args) {
+                builder.append(" ").append(arg);
+            }
+        }
+        builder.append(" --patch-id=").append(oneoffPatchID);
+        String command = builder.toString();
         cli.sendLine(command);
         cli.quit();
     }
+
+    /**
+     * Use the CLI to read information about the installed patches
+     *
+     * @return output of "patch info" command or null if output is empty
+     * @throws Exception
+     */
+    public static String info() throws Exception {
+        CLIWrapper cli = new CLIWrapper(true);
+        String command = "patch info";
+        cli.sendLine(command);
+        String output = cli.readOutput();
+        cli.quit();
+        return output;
+    }
+
+
 }
