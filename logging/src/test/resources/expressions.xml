@@ -41,6 +41,9 @@
     <file-handler name="anotherFile" enabled="${test.file.enabled:false}" autoflush="${test.autoflush:true}">
         <level name="${test.file.level:INFO}"/>
         <encoding value="${test.encoding:UTF-8}"/>
+        <formatter>
+            <named-formatter name="PATTERN"/>
+        </formatter>
         <file relative-to="jboss.server.log.dir" path="${test.another.filter:another.log}"/>
         <append value="${test.file.append:true}"/>
     </file-handler>
@@ -97,6 +100,10 @@
         </handlers>
     </root-logger>
 
+    <formatter name="PATTERN">
+        <pattern-formatter pattern="${test.console.pattern:%K{level}%d{HH:mm:ss,SSS} %-5p [%c] (%t) %s%E%n}" color-map="${test.console.color:info:cyan,warn:yellow,error:red}"/>
+    </formatter>
+
     <logging-profiles>
         <logging-profile name="test-profile">
 
@@ -108,6 +115,16 @@
                     <pattern-formatter pattern="${test.console.pattern:%K{level}%d{HH:mm:ss,SSS} %-5p [%c] (%t) %s%E%n}"/>
                 </formatter>
             </console-handler>
+
+            <file-handler name="anotherFile" enabled="${test.file.enabled:false}" autoflush="${test.autoflush:true}">
+                <level name="${test.file.level:INFO}"/>
+                <encoding value="${test.encoding:UTF-8}"/>
+                <formatter>
+                    <named-formatter name="PATTERN"/>
+                </formatter>
+                <file relative-to="jboss.server.log.dir" path="${test.another.filter:anotherProfile.log}"/>
+                <append value="${test.file.append:true}"/>
+            </file-handler>
 
             <syslog-handler name="syslog" enabled="${test.syslog.enabled:false}">
                 <level name="${test.default.level:INFO}"/>
@@ -132,6 +149,10 @@
                     <handler name="CONSOLE"/>
                 </handlers>
             </root-logger>
+
+            <formatter name="PATTERN">
+                <pattern-formatter pattern="${test.console.pattern:%K{level}%d{HH:mm:ss,SSS} %-5p [%c] (%t) %s%E%n}" color-map="${test.console.color:info:cyan,warn:yellow,error:red}"/>
+            </formatter>
         </logging-profile>
     </logging-profiles>
 </subsystem>

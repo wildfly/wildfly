@@ -25,8 +25,8 @@ package org.jboss.as.logging;
 import java.io.IOException;
 
 import org.jboss.as.controller.PathAddress;
-import org.jboss.as.controller.services.path.PathResourceDefinition;
 import org.jboss.as.controller.client.helpers.Operations.CompositeOperationBuilder;
+import org.jboss.as.controller.services.path.PathResourceDefinition;
 import org.jboss.as.logging.logmanager.ConfigurationPersistence;
 import org.jboss.as.subsystem.test.KernelServices;
 import org.jboss.as.subsystem.test.SubsystemOperations;
@@ -121,7 +121,7 @@ public class LoggingSubsystemRollbackTestCase extends AbstractLoggingSubsystemTe
         // Operation should fail based on byteman script
         ModelNode op = SubsystemOperations.createAddOperation(address.toModelNode());
         op.get(CommonAttributes.LEVEL.getName()).set("INFO");
-        op.get(CommonAttributes.FORMATTER.getName()).set("%d{HH:mm:ss,SSS} %-5p [%c] (%t) CONSOLE2: %s%E%n");
+        op.get(AbstractHandlerDefinition.FORMATTER.getName()).set("%d{HH:mm:ss,SSS} %-5p [%c] (%t) CONSOLE2: %s%E%n");
         ModelNode result = kernelServices.executeOperation(op);
         Assert.assertFalse("The add operation should have failed, but was successful: " + result, SubsystemOperations.isSuccessfulOutcome(result));
 
@@ -153,7 +153,7 @@ public class LoggingSubsystemRollbackTestCase extends AbstractLoggingSubsystemTe
         // Create a new handler
         ModelNode op = SubsystemOperations.createAddOperation(consoleHandler.toModelNode());
         op.get(CommonAttributes.LEVEL.getName()).set("INFO");
-        op.get(CommonAttributes.FORMATTER.getName()).set("%d{HH:mm:ss,SSS} %-5p [%c] (%t) CONSOLE2: %s%E%n");
+        op.get(AbstractHandlerDefinition.FORMATTER.getName()).set("%d{HH:mm:ss,SSS} %-5p [%c] (%t) CONSOLE2: %s%E%n");
         ModelNode result = kernelServices.executeOperation(op);
         Assert.assertTrue(SubsystemOperations.getFailureDescriptionAsString(result), SubsystemOperations.isSuccessfulOutcome(result));
 
@@ -219,7 +219,7 @@ public class LoggingSubsystemRollbackTestCase extends AbstractLoggingSubsystemTe
         // Create a new handler
         ModelNode op = SubsystemOperations.createAddOperation(consoleHandler.toModelNode());
         op.get(CommonAttributes.LEVEL.getName()).set("INFO");
-        op.get(CommonAttributes.FORMATTER.getName()).set("%d{HH:mm:ss,SSS} %-5p [%c] (%t) CONSOLE2: %s%E%n");
+        op.get(AbstractHandlerDefinition.FORMATTER.getName()).set("%d{HH:mm:ss,SSS} %-5p [%c] (%t) CONSOLE2: %s%E%n");
         ModelNode result = kernelServices.executeOperation(op);
         Assert.assertTrue(SubsystemOperations.getFailureDescriptionAsString(result), SubsystemOperations.isSuccessfulOutcome(result));
 
@@ -391,7 +391,7 @@ public class LoggingSubsystemRollbackTestCase extends AbstractLoggingSubsystemTe
         // Create a new handler
         ModelNode op = SubsystemOperations.createAddOperation(consoleHandler.toModelNode());
         op.get(CommonAttributes.LEVEL.getName()).set("INFO");
-        op.get(CommonAttributes.FORMATTER.getName()).set("%d{HH:mm:ss,SSS} %-5p [%c] (%t) CONSOLE2: %s%E%n");
+        op.get(AbstractHandlerDefinition.FORMATTER.getName()).set("%d{HH:mm:ss,SSS} %-5p [%c] (%t) CONSOLE2: %s%E%n");
         ModelNode result = kernelServices.executeOperation(op);
         Assert.assertFalse("The add operation should have failed, but was successful: " + result, SubsystemOperations.isSuccessfulOutcome(result));
 
@@ -492,7 +492,6 @@ public class LoggingSubsystemRollbackTestCase extends AbstractLoggingSubsystemTe
     }
 
     public void rollbackRemove(final String profileName) throws Exception {
-
         final KernelServices kernelServices = boot();
 
         // Save the current model

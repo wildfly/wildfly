@@ -72,7 +72,7 @@ class CustomHandlerResourceDefinition extends AbstractHandlerDefinition {
             .build();
 
     static final AttributeDefinition[] READ_ONLY_ATTRIBUTES = {CLASS, MODULE};
-    static final AttributeDefinition[] WRITABLE_ATTRIBUTES = Logging.join(DEFAULT_ATTRIBUTES, PROPERTIES);
+    static final AttributeDefinition[] WRITABLE_ATTRIBUTES = Logging.join(DEFAULT_ATTRIBUTES, NAMED_FORMATTER, PROPERTIES);
     // Add attributes are a combination of writable and read-only attributes
     static final AttributeDefinition[] ADD_ATTRIBUTES = Logging.join(WRITABLE_ATTRIBUTES, READ_ONLY_ATTRIBUTES);
 

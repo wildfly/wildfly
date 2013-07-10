@@ -22,6 +22,7 @@
 
 package org.jboss.as.logging;
 
+import static org.jboss.as.logging.AbstractHandlerDefinition.NAMED_FORMATTER;
 import static org.jboss.as.logging.AsyncHandlerResourceDefinition.ASYNC_HANDLER;
 import static org.jboss.as.logging.AsyncHandlerResourceDefinition.OVERFLOW_ACTION;
 import static org.jboss.as.logging.AsyncHandlerResourceDefinition.QUEUE_LENGTH;
@@ -32,12 +33,13 @@ import static org.jboss.as.logging.CommonAttributes.ENABLED;
 import static org.jboss.as.logging.CommonAttributes.ENCODING;
 import static org.jboss.as.logging.CommonAttributes.FILE;
 import static org.jboss.as.logging.CommonAttributes.FILTER_SPEC;
-import static org.jboss.as.logging.CommonAttributes.FORMATTER;
+import static org.jboss.as.logging.AbstractHandlerDefinition.FORMATTER;
 import static org.jboss.as.logging.CommonAttributes.HANDLERS;
 import static org.jboss.as.logging.CommonAttributes.HANDLER_NAME;
 import static org.jboss.as.logging.CommonAttributes.LEVEL;
 import static org.jboss.as.logging.CommonAttributes.LOGGING_PROFILE;
 import static org.jboss.as.logging.CommonAttributes.LOGGING_PROFILES;
+import static org.jboss.as.logging.CommonAttributes.NAME;
 import static org.jboss.as.logging.ConsoleHandlerResourceDefinition.CONSOLE_HANDLER;
 import static org.jboss.as.logging.ConsoleHandlerResourceDefinition.TARGET;
 import static org.jboss.as.logging.CustomHandlerResourceDefinition.CLASS;
@@ -48,6 +50,7 @@ import static org.jboss.as.logging.FileHandlerResourceDefinition.FILE_HANDLER;
 import static org.jboss.as.logging.LoggerResourceDefinition.CATEGORY;
 import static org.jboss.as.logging.LoggerResourceDefinition.LOGGER;
 import static org.jboss.as.logging.LoggerResourceDefinition.USE_PARENT_HANDLERS;
+import static org.jboss.as.logging.PatternFormatterResourceDefinition.PATTERN_FORMATTER;
 import static org.jboss.as.logging.PeriodicHandlerResourceDefinition.PERIODIC_ROTATING_FILE_HANDLER;
 import static org.jboss.as.logging.PeriodicHandlerResourceDefinition.SUFFIX;
 import static org.jboss.as.logging.RootLoggerResourceDefinition.ROOT_LOGGER_ATTRIBUTE_NAME;
@@ -192,6 +195,12 @@ public class LoggingSubsystemWriter implements XMLStreamConstants, XMLElementWri
         if (model.hasDefined(ROOT_LOGGER_PATH_NAME)) {
             writeRootLogger(writer, model.get(ROOT_LOGGER_PATH_NAME, ROOT_LOGGER_ATTRIBUTE_NAME));
         }
+
+        if (model.hasDefined(PATTERN_FORMATTER.getName())) {
+            for (String name : model.get(PATTERN_FORMATTER.getName()).keys()) {
+                writePatternFormatter(writer, model.get(PATTERN_FORMATTER.getName(), name), name);
+            }
+        }
     }
 
     private void writeCommonLogger(final XMLExtendedStreamWriter writer, final ModelNode model) throws XMLStreamException {
@@ -205,6 +214,7 @@ public class LoggingSubsystemWriter implements XMLStreamConstants, XMLElementWri
         ENCODING.marshallAsElement(model, writer);
         FILTER_SPEC.marshallAsElement(model, writer);
         FORMATTER.marshallAsElement(model, writer);
+        NAMED_FORMATTER.marshallAsElement(model, writer);
     }
 
     private void writeConsoleHandler(final XMLExtendedStreamWriter writer, final ModelNode model, final String name)
@@ -310,6 +320,13 @@ public class LoggingSubsystemWriter implements XMLStreamConstants, XMLElementWri
     private void writeRootLogger(final XMLExtendedStreamWriter writer, final ModelNode model) throws XMLStreamException {
         writer.writeStartElement(Element.ROOT_LOGGER.getLocalName());
         writeCommonLogger(writer, model);
+        writer.writeEndElement();
+    }
+
+    private void writePatternFormatter(final XMLExtendedStreamWriter writer, final ModelNode model, final String name) throws XMLStreamException {
+        writer.writeStartElement(Element.FORMATTER.getLocalName());
+        writer.writeAttribute(NAME.getXmlName(), name);
+        PATTERN_FORMATTER.marshallAsElement(model, writer);
         writer.writeEndElement();
     }
 }

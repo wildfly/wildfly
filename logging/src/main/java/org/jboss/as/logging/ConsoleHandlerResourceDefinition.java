@@ -23,7 +23,6 @@
 package org.jboss.as.logging;
 
 import static org.jboss.as.logging.CommonAttributes.AUTOFLUSH;
-
 import org.jboss.as.controller.AttributeDefinition;
 import org.jboss.as.controller.PathElement;
 import org.jboss.as.controller.operations.validation.EnumValidator;
@@ -51,7 +50,7 @@ class ConsoleHandlerResourceDefinition extends AbstractHandlerDefinition {
             .setValidator(EnumValidator.create(Target.class, true, false))
             .build();
 
-    static final AttributeDefinition[] ATTRIBUTES = Logging.join(DEFAULT_ATTRIBUTES, AUTOFLUSH, TARGET);
+    static final AttributeDefinition[] ATTRIBUTES = Logging.join(DEFAULT_ATTRIBUTES, AUTOFLUSH, TARGET, NAMED_FORMATTER);
 
     public ConsoleHandlerResourceDefinition(final boolean includeLegacyAttributes) {
         super(CONSOLE_HANDLER_PATH, ConsoleHandler.class,
@@ -72,7 +71,8 @@ class ConsoleHandlerResourceDefinition extends AbstractHandlerDefinition {
         final ResourceTransformationDescriptionBuilder child = subsystemBuilder.addChildResource(CONSOLE_HANDLER_PATH)
                 .getAttributeBuilder()
                 .addRejectCheck(RejectAttributeChecker.SIMPLE_EXPRESSIONS, AUTOFLUSH, TARGET)
-                .end();
+                .end()
+                .discardOperations();
 
         // Reject logging profile resources
         loggingProfileBuilder.rejectChildResource(CONSOLE_HANDLER_PATH);
