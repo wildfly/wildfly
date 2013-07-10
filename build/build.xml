@@ -742,13 +742,13 @@
         <module-def name="org.hibernate" slot="4.1">
             <maven-resource group="org.jipijapa" artifact="jipijapa-hibernate4-1"/>
         </module-def>
-        
+
         <!-- create empty slot for OpenJPA jars -->
         <module-def name="org.apache.openjpa">
             <maven-resource group="org.jipijapa" artifact="jipijapa-openjpa"/>
         </module-def>
 
-        <!-- create empty slot for EclipseLink jars -->        
+        <!-- create empty slot for EclipseLink jars -->
         <module-def name="org.eclipse.persistence">
             <maven-resource group="org.jipijapa" artifact="jipijapa-eclipselink"/>
         </module-def>
@@ -942,14 +942,14 @@
         <module-def name="org.jboss.as.jpa">
             <maven-resource group="org.wildfly" artifact="wildfly-jpa"/>
         </module-def>
-        
+
         <!-- legacy Hibernate 3.x JPA integration module for applications that include Hibernate 3 jars may depend on -->
         <module-def name="org.jboss.as.jpa.hibernate" slot="3">
             <maven-resource group="org.jipijapa" artifact="jipijapa-hibernate3"/>
         </module-def>
 
-        <!-- legacy Hibernate 4.x JPA module that applications may have dependencies on still 
-             (they will likely use Hibernate 4.3.x which already contains the integration classes) 
+        <!-- legacy Hibernate 4.x JPA module that applications may have dependencies on still
+             (they will likely use Hibernate 4.3.x which already contains the integration classes)
         -->
         <module-def name="org.jboss.as.jpa.hibernate" slot="4">
         </module-def>
@@ -1240,6 +1240,10 @@
         <module-def name="org.jboss.resteasy.resteasy-jaxrs">
             <maven-resource group="org.jboss.resteasy" artifact="async-http-servlet-3.0"/>
             <maven-resource group="org.jboss.resteasy" artifact="resteasy-jaxrs"/>
+        </module-def>
+
+        <module-def name="org.jboss.resteasy.resteasy-client">
+            <maven-resource group="org.jboss.resteasy" artifact="resteasy-client"/>
         </module-def>
 
         <module-def name="org.jboss.resteasy.resteasy-jsapi">

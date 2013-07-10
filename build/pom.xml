@@ -1478,7 +1478,7 @@
                     <groupId>org.jboss.osgi.provision</groupId>
                     <artifactId>jbosgi-provision-core</artifactId>
                 </dependency>
-                
+
                 <dependency>
                     <groupId>org.jboss.osgi.repository</groupId>
                     <artifactId>jbosgi-repository-api</artifactId>
@@ -1527,6 +1527,11 @@
                 <dependency>
                     <groupId>org.jboss.resteasy</groupId>
                     <artifactId>jaxrs-api</artifactId>
+                </dependency>
+
+                <dependency>
+                    <groupId>org.jboss.resteasy</groupId>
+                    <artifactId>resteasy-client</artifactId>
                 </dependency>
 
                 <dependency>
