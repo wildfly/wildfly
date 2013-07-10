@@ -102,6 +102,8 @@ public class ClusterMetricsHandler extends AbstractRuntimeOnlyHandler {
 
             } catch (InterruptedException ie) {
                 context.getFailureDescription().set(ClusterSubsystemMessages.MESSAGES.interrupted(channelName));
+                // don't swallow the interrupt
+                Thread.currentThread().interrupt();
             }
         }
         context.completeStep(OperationContext.ResultHandler.NOOP_RESULT_HANDLER);

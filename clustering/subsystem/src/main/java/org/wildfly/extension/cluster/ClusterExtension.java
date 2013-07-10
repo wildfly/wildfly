@@ -39,8 +39,9 @@ public class ClusterExtension implements Extension {
 
     @Override
     public void initialize(ExtensionContext context) {
+
         final SubsystemRegistration subsystem = context.registerSubsystem(SUBSYSTEM_NAME, 1, 0);
-        final ManagementResourceRegistration registration = subsystem.registerSubsystemModel(ClusterSubsystemRootResourceDefinition.INSTANCE);
+        final ManagementResourceRegistration registration = subsystem.registerSubsystemModel(new ClusterSubsystemRootResourceDefinition(context.isRuntimeOnlyRegistrationValid()));
         registration.registerOperationHandler(DESCRIBE, GenericSubsystemDescribeHandler.INSTANCE, GenericSubsystemDescribeHandler.INSTANCE, false, OperationEntry.EntryType.PRIVATE);
 
         subsystem.registerXMLElementWriter(new ClusterSubsystemXMLWriter());

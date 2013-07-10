@@ -11,13 +11,19 @@ import org.jboss.as.controller.registry.ManagementResourceRegistration;
  * @author  Richard Achmatowicz (c) 2013 Red Hat Inc.
  */
 public class ClusterSubsystemRootResourceDefinition extends SimpleResourceDefinition {
-    public static final ClusterSubsystemRootResourceDefinition INSTANCE = new ClusterSubsystemRootResourceDefinition();
 
-    private ClusterSubsystemRootResourceDefinition() {
+    private final boolean runtimeRegistration ;
+
+    public ClusterSubsystemRootResourceDefinition(final boolean runtimeRegistration) {
         super(ClusterExtension.SUBSYSTEM_PATH,
                 ClusterExtension.getResourceDescriptionResolver(null),
                 ClusterSubsystemAdd.INSTANCE,
                 ClusterSubsystemRemove.INSTANCE);
+        this.runtimeRegistration = runtimeRegistration;
+    }
+
+    public boolean isRuntimeRegistration() {
+        return runtimeRegistration;
     }
 
     @Override
@@ -31,6 +37,6 @@ public class ClusterSubsystemRootResourceDefinition extends SimpleResourceDefini
 
     @Override
     public void registerChildren(ManagementResourceRegistration resourceRegistration) {
-        resourceRegistration.registerSubModel(new ClusterInstanceResourceDefinition(true));
+        resourceRegistration.registerSubModel(new ClusterInstanceResourceDefinition(isRuntimeRegistration()));
     }
 }
