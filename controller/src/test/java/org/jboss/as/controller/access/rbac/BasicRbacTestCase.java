@@ -224,7 +224,7 @@ public class BasicRbacTestCase extends AbstractRbacTestBase {
         permitted(READWRITE_OPERATION, pathAddress(SENSITIVE_CONSTRAINED_RESOURCE, FOO), StandardRole.ADMINISTRATOR);
     }
 
-    // auditor, superuser -- TODO AuditContraint
+    // auditor, superuser -- TODO AuditConstraint
 
     // model definition
 
