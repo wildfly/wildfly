@@ -20,6 +20,7 @@ import static org.jboss.as.web.WebMessages.MESSAGES;
 import java.io.IOException;
 import java.security.Principal;
 import java.util.Map;
+import java.util.Properties;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.CopyOnWriteArraySet;
@@ -83,11 +84,17 @@ public class ClusteredSingleSignOn extends org.apache.catalina.authenticator.Sin
     /** Currently started Managers that have associated as session with an SSO */
     private Set<Manager> activeManagers = new CopyOnWriteArraySet<Manager>();
 
-    /** Max number of ms an SSO with no active sessions will be usable by a request */
+    /**
+     *   Max number of ms an SSO with no active sessions will be usable by a request
+     *
+     *   This can be set using the system property: "org.jboss.as.web.sso.ClusteredSingleSignOn.maxEmptyLife"
+     */
     private volatile int maxEmptyLife = DEFAULT_MAX_EMPTY_LIFE * 1000;
 
     /**
      * Minimum number of ms since the last processExpires() run before a new run is allowed.
+     *
+     * This can be set using the system property: "org.jboss.as.web.sso.ClusteredSingleSignOn.processExpiresInterval"
      */
     private volatile int processExpiresInterval = DEFAULT_PROCESS_EXPIRES_INTERVAL * 1000;
 
@@ -113,7 +120,7 @@ public class ClusteredSingleSignOn extends org.apache.catalina.authenticator.Sin
      * @return a non-negative number
      *
      * @see #DEFAULT_MAX_EMPTY_LIFE *
-     * @see #setMaxEmptyLife()
+     * @see #setMaxEmptyLife(int)
      */
     public int getMaxEmptyLife() {
         return (maxEmptyLife / 1000);
@@ -147,7 +154,7 @@ public class ClusteredSingleSignOn extends org.apache.catalina.authenticator.Sin
      * @return a positive number
      *
      * @see #DEFAULT_PROCESS_EXPIRES_INTERVAL
-     * @see #setMaxEmptyLife()
+     * @see #setMaxEmptyLife(int)
      * @see #setProcessExpiresInterval(int)
      */
     public int getProcessExpiresInterval() {
@@ -196,7 +203,8 @@ public class ClusteredSingleSignOn extends org.apache.catalina.authenticator.Sin
         if (started) {
             throw new LifecycleException(MESSAGES.valveAlreadyStarted());
         }
-
+        // Check the maxEmptyLife and processExpiresInterval values from system properties.
+        checkSystemProperties();
         lifecycle.fireLifecycleEvent(START_EVENT, null);
         started = true;
     }
@@ -858,5 +866,30 @@ public class ClusteredSingleSignOn extends org.apache.catalina.authenticator.Sin
         String hostName = host.getName();
 
         return new FullyQualifiedSessionId(id, contextName, hostName);
+    }
+
+    /**
+     * Method as part of one off fix related to BZ:958572.
+     *
+     * A user would set the maxEmptyLife and the processExpiresInterval values through System properties. In this
+     * check we will look for these properties and verify if they have been pre-set or not.
+     */
+    private void checkSystemProperties() {
+        Properties properties = System.getProperties();
+        String maxEmptyLifeProperty = properties.getProperty("org.jboss.as.web.sso.ClusteredSingleSignOn" +
+                ".maxEmptyLife");
+        String processExpiredIntervalProperty = properties.getProperty("org.jboss.as.web.sso.ClusteredSingleSignOn" +
+                ".processExpiresInterval");
+
+        if (maxEmptyLifeProperty != null) {
+            setMaxEmptyLife(Integer.parseInt(maxEmptyLifeProperty));
+            WebLogger.WEB_SSO_LOGGER.tracef("maxEmptyLife preset as a System property. Changed value to %s",
+                    maxEmptyLife);
+        }
+        if (processExpiredIntervalProperty != null){
+            setProcessExpiresInterval(Integer.parseInt(processExpiredIntervalProperty));
+            WebLogger.WEB_SSO_LOGGER.tracef("processExpiredInterval preset as a System property. Changed value to " +
+                    "%s", processExpiredIntervalProperty);
+        }
     }
 }
