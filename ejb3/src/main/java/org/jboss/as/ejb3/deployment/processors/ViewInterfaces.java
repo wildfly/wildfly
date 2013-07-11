@@ -77,7 +77,8 @@ class ViewInterfaces {
             // & FR 5.4.2
             if (name.equals(Serializable.class.getName()) ||
                     name.equals(Externalizable.class.getName()) ||
-                    name.startsWith("javax.ejb.")) {
+                    name.startsWith("javax.ejb.")||
+                    name.equals("groovy.lang.GroovyObject")) {
                 continue;
             }
             names.add(dotName);
