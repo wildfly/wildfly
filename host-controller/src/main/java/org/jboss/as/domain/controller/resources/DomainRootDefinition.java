@@ -190,7 +190,7 @@ public class DomainRootDefinition extends SimpleResourceDefinition {
             final ExtensionRegistry extensionRegistry, final IgnoredDomainResourceRegistry ignoredDomainResourceRegistry,
             final PathManagerService pathManager,
             final DomainControllerRuntimeIgnoreTransformationRegistry runtimeIgnoreTransformationRegistry) {
-        super(PathElement.pathElement("this-will-be-ignored-since-we-are-root"), DomainResolver.getResolver(DOMAIN, false));
+        super(null, DomainResolver.getResolver(DOMAIN, false));
         this.domainController = domainController;
         this.isMaster = isMaster;
         this.environment = environment;
