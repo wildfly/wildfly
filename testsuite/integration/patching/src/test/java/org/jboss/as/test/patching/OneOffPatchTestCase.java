@@ -57,12 +57,13 @@ public class OneOffPatchTestCase {
      */
     @Test
     public void testOneOffPatchAddingAMiscFile() throws Exception {
+        final String fileContent = "Hello World!";
         // prepare the patch
         File tempDir = mkdir(new File(System.getProperty("java.io.tmpdir")), randomString());
         String patchID = randomString();
         File oneOffPatchDir = mkdir(tempDir, patchID);
         ContentModification miscFileAdded = ContentModificationUtils.addMisc(oneOffPatchDir, patchID,
-                "content", "awesomeDirectory", "awesomeFile");
+          fileContent, "awesomeDirectory", "awesomeFile");
         ProductConfig productConfig = new ProductConfig(PRODUCT, AS_VERSION, "consoleSlot");
         Patch oneOffPatch = PatchBuilder.create()
                 .setPatchId(patchID)
@@ -74,9 +75,6 @@ public class OneOffPatchTestCase {
         PatchingTestUtil.createPatchXMLFile(oneOffPatchDir, oneOffPatch);
         File zippedPatch = PatchingTestUtil.createZippedPatchFile(oneOffPatchDir, patchID);
 
-        System.out.println("ZIPFILE: " + zippedPatch.getAbsolutePath());
-
-
         // apply the patch
         controller.start(CONTAINER);
         CliUtilsForPatching.applyPatch(zippedPatch.getAbsolutePath());
@@ -86,7 +84,7 @@ public class OneOffPatchTestCase {
         Assert.assertTrue("File " + path + " should exist", new File(path).exists());
         Assert.assertTrue("The patch " + patchID + " should be listed as installed" ,
                 CliUtilsForPatching.getInstalledPatches().contains(patchID));
-        // TODO check the content of the file, not just its existence
+        Assert.assertEquals("Unexpected contents of misc file", fileContent, PatchingTestUtil.readFile(path));
         controller.stop(CONTAINER);
         controller.start(CONTAINER);
 
@@ -125,10 +123,7 @@ public class OneOffPatchTestCase {
                 .getParent()
            .build();
         PatchingTestUtil.createPatchXMLFile(oneOffPatchDir, oneOffPatch);
-
         File zippedPatch = PatchingTestUtil.createZippedPatchFile(oneOffPatchDir, patchID);
-
-        System.out.println("ZIPFILE: " + zippedPatch.getAbsolutePath());
 
         // apply the patch
         controller.start(CONTAINER);
