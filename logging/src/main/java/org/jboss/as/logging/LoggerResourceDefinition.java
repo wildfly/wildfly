@@ -31,6 +31,8 @@ import static org.jboss.as.logging.CommonAttributes.LEVEL;
 import static org.jboss.as.logging.CommonAttributes.REMOVE_HANDLER_OPERATION_NAME;
 import static org.jboss.as.logging.Logging.join;
 
+import java.util.List;
+
 import org.jboss.as.controller.AttributeDefinition;
 import org.jboss.as.controller.ModelVersion;
 import org.jboss.as.controller.OperationDefinition;
@@ -41,6 +43,9 @@ import org.jboss.as.controller.SimpleAttributeDefinition;
 import org.jboss.as.controller.SimpleAttributeDefinitionBuilder;
 import org.jboss.as.controller.SimpleOperationDefinitionBuilder;
 import org.jboss.as.controller.SimpleResourceDefinition;
+import org.jboss.as.controller.access.constraint.ApplicationTypeConfig;
+import org.jboss.as.controller.access.constraint.management.AccessConstraintDefinition;
+import org.jboss.as.controller.access.constraint.management.ApplicationTypeAccessConstraintDefinition;
 import org.jboss.as.controller.descriptions.ResourceDescriptionResolver;
 import org.jboss.as.controller.registry.ManagementResourceRegistration;
 import org.jboss.as.controller.transform.description.DiscardAttributeChecker;
@@ -120,6 +125,8 @@ public class LoggerResourceDefinition extends SimpleResourceDefinition {
     private final AttributeDefinition[] writableAttributes;
     private final OperationStepHandler writeHandler;
 
+    private final List<AccessConstraintDefinition> accessConstraints;
+
     public LoggerResourceDefinition(final boolean includeLegacy) {
         super(LOGGER_PATH,
                 LoggingExtension.getResourceDescriptionResolver(LOGGER),
@@ -128,6 +135,8 @@ public class LoggerResourceDefinition extends SimpleResourceDefinition {
                 LoggerOperations.REMOVE_LOGGER);
         writableAttributes = (includeLegacy ? join(WRITABLE_ATTRIBUTES, LEGACY_ATTRIBUTES) : WRITABLE_ATTRIBUTES);
         this.writeHandler = new LoggerOperations.LoggerWriteAttributeHandler(writableAttributes);
+        ApplicationTypeConfig atc = new ApplicationTypeConfig(LoggingExtension.SUBSYSTEM_NAME, LOGGER);
+        accessConstraints = new ApplicationTypeAccessConstraintDefinition(atc).wrapAsList();
     }
 
     @Override
@@ -152,6 +161,11 @@ public class LoggerResourceDefinition extends SimpleResourceDefinition {
         registration.registerOperationHandler(REMOVE_HANDLER_OPERATION, LoggerOperations.REMOVE_HANDLER);
         registration.registerOperationHandler(LEGACY_ADD_HANDLER_OPERATION, LoggerOperations.ADD_HANDLER);
         registration.registerOperationHandler(LEGACY_REMOVE_HANDLER_OPERATION, LoggerOperations.REMOVE_HANDLER);
+    }
+
+    @Override
+    public List<AccessConstraintDefinition> getAccessConstraints() {
+        return accessConstraints;
     }
 
     /**

@@ -25,6 +25,8 @@ package org.jboss.as.controller.access.constraint.management;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.CORE;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.TYPE;
 
+import java.util.Collections;
+import java.util.List;
 import java.util.Locale;
 
 import org.jboss.as.controller.access.constraint.ApplicationTypeConfig;
@@ -38,6 +40,10 @@ import org.jboss.dmr.ModelNode;
  * @author Brian Stansberry (c) 2013 Red Hat Inc.
  */
 public class ApplicationTypeAccessConstraintDefinition implements AccessConstraintDefinition {
+
+    public static final ApplicationTypeAccessConstraintDefinition DEPLOYMENT = new ApplicationTypeAccessConstraintDefinition(ApplicationTypeConfig.DEPLOYMENT);
+
+    public static final List<AccessConstraintDefinition> DEPLOYMENT_AS_LIST = DEPLOYMENT.wrapAsList();
 
     private final ApplicationTypeConfig applicationTypeConfig;
 
@@ -70,5 +76,9 @@ public class ApplicationTypeAccessConstraintDefinition implements AccessConstrai
     @Override
     public Type getType() {
         return Type.APPLICATION;
+    }
+
+    public List<AccessConstraintDefinition> wrapAsList() {
+        return Collections.singletonList((AccessConstraintDefinition) this);
     }
 }

@@ -26,9 +26,14 @@ package org.jboss.as.connector.subsystems.datasources;
 
 import static org.jboss.as.connector.subsystems.datasources.Constants.JDBC_DRIVER_NAME;
 
+import java.util.List;
+
 import org.jboss.as.controller.AttributeDefinition;
 import org.jboss.as.controller.PathElement;
 import org.jboss.as.controller.SimpleResourceDefinition;
+import org.jboss.as.controller.access.constraint.ApplicationTypeConfig;
+import org.jboss.as.controller.access.constraint.management.AccessConstraintDefinition;
+import org.jboss.as.controller.access.constraint.management.ApplicationTypeAccessConstraintDefinition;
 import org.jboss.as.controller.registry.ManagementResourceRegistration;
 import org.jboss.as.controller.transform.description.DiscardAttributeChecker;
 import org.jboss.as.controller.transform.description.RejectAttributeChecker;
@@ -41,12 +46,16 @@ public class JdbcDriverDefinition extends SimpleResourceDefinition {
     protected static final PathElement PATH_DRIVER = PathElement.pathElement(JDBC_DRIVER_NAME);
     static final JdbcDriverDefinition INSTANCE = new JdbcDriverDefinition();
 
+
+    private final List<AccessConstraintDefinition> accessConstraints;
+
     private JdbcDriverDefinition() {
         super(PATH_DRIVER,
                 DataSourcesExtension.getResourceDescriptionResolver(JDBC_DRIVER_NAME),
                 JdbcDriverAdd.INSTANCE,
                 JdbcDriverRemove.INSTANCE);
-
+        ApplicationTypeConfig atc = new ApplicationTypeConfig(DataSourcesExtension.SUBSYSTEM_NAME, JDBC_DRIVER_NAME);
+        accessConstraints = new ApplicationTypeAccessConstraintDefinition(atc).wrapAsList();
     }
 
     @Override
@@ -54,6 +63,11 @@ public class JdbcDriverDefinition extends SimpleResourceDefinition {
         for (AttributeDefinition attribute : Constants.JDBC_DRIVER_ATTRIBUTES) {
             resourceRegistration.registerReadOnlyAttribute(attribute, null);
         }
+    }
+
+    @Override
+    public List<AccessConstraintDefinition> getAccessConstraints() {
+        return accessConstraints;
     }
 
     static void registerTransformers110(ResourceTransformationDescriptionBuilder parenBuilder) {

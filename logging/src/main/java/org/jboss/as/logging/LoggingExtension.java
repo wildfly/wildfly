@@ -24,6 +24,7 @@ package org.jboss.as.logging;
 
 import java.util.Comparator;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 import java.util.ResourceBundle;
@@ -32,8 +33,12 @@ import org.jboss.as.controller.Extension;
 import org.jboss.as.controller.ExtensionContext;
 import org.jboss.as.controller.ModelVersion;
 import org.jboss.as.controller.PathElement;
+import org.jboss.as.controller.ResourceDefinition;
 import org.jboss.as.controller.SimpleResourceDefinition;
 import org.jboss.as.controller.SubsystemRegistration;
+import org.jboss.as.controller.access.constraint.ApplicationTypeConfig;
+import org.jboss.as.controller.access.constraint.management.AccessConstraintDefinition;
+import org.jboss.as.controller.access.constraint.management.ApplicationTypeAccessConstraintDefinition;
 import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
 import org.jboss.as.controller.descriptions.StandardResourceDescriptionResolver;
 import org.jboss.as.controller.operations.common.GenericSubsystemDescribeHandler;
@@ -136,10 +141,20 @@ public class LoggingExtension implements Extension {
         // Register root sub-models
         registerSubModels(registration, resolvePathHandler, true);
         // Register logging profile sub-models
-        registerSubModels(registration.registerSubModel(new SimpleResourceDefinition(LOGGING_PROFILE_PATH,
+        ApplicationTypeConfig atc = new ApplicationTypeConfig(SUBSYSTEM_NAME, CommonAttributes.LOGGING_PROFILE);
+        final List<AccessConstraintDefinition> accessConstraints = new ApplicationTypeAccessConstraintDefinition(atc).wrapAsList();
+        ResourceDefinition profile = new SimpleResourceDefinition(LOGGING_PROFILE_PATH,
                 getResourceDescriptionResolver(),
                 LoggingProfileOperations.ADD_PROFILE,
-                LoggingProfileOperations.REMOVE_PROFILE)), resolvePathHandler, false);
+                LoggingProfileOperations.REMOVE_PROFILE) {
+
+            @Override
+            public List<AccessConstraintDefinition> getAccessConstraints() {
+                return accessConstraints;
+            }
+        };
+
+        registerSubModels(registration.registerSubModel(profile), resolvePathHandler, false);
 
         if (context.isRegisterTransformers()) {
             registerTransformers(subsystem);

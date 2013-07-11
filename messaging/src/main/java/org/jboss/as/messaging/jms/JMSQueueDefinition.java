@@ -27,6 +27,8 @@ import static org.jboss.as.messaging.CommonAttributes.PAUSED;
 import static org.jboss.as.messaging.CommonAttributes.TEMPORARY;
 import static org.jboss.dmr.ModelType.STRING;
 
+import java.util.List;
+
 import org.jboss.as.controller.AttributeDefinition;
 import org.jboss.as.controller.OperationStepHandler;
 import org.jboss.as.controller.PathElement;
@@ -34,6 +36,9 @@ import org.jboss.as.controller.PrimitiveListAttributeDefinition;
 import org.jboss.as.controller.SimpleAttributeDefinitionBuilder;
 import org.jboss.as.controller.SimpleOperationDefinition;
 import org.jboss.as.controller.SimpleResourceDefinition;
+import org.jboss.as.controller.access.constraint.ApplicationTypeConfig;
+import org.jboss.as.controller.access.constraint.management.AccessConstraintDefinition;
+import org.jboss.as.controller.access.constraint.management.ApplicationTypeAccessConstraintDefinition;
 import org.jboss.as.controller.registry.AttributeAccess;
 import org.jboss.as.controller.registry.ManagementResourceRegistration;
 import org.jboss.as.messaging.CommonAttributes;
@@ -88,6 +93,8 @@ public class JMSQueueDefinition extends SimpleResourceDefinition {
 
     private final boolean deployed;
 
+    private final List<AccessConstraintDefinition> accessConstraints;
+
     public static JMSQueueDefinition newDeployedJMSQueueDefinition() {
         return new JMSQueueDefinition(true, true, null, null);
     }
@@ -103,6 +110,8 @@ public class JMSQueueDefinition extends SimpleResourceDefinition {
                 removeHandler);
         this.registerRuntimeOnly = registerRuntimeOnly;
         this.deployed = deployed;
+        ApplicationTypeConfig atc = new ApplicationTypeConfig(MessagingExtension.SUBSYSTEM_NAME, CommonAttributes.JMS_QUEUE);
+        accessConstraints = new ApplicationTypeAccessConstraintDefinition(atc).wrapAsList();
     }
 
     @Override
@@ -146,5 +155,10 @@ public class JMSQueueDefinition extends SimpleResourceDefinition {
                 registry.registerOperationHandler(op, JMSQueueAddJndiHandler.INSTANCE);
             }
         }
+    }
+
+    @Override
+    public List<AccessConstraintDefinition> getAccessConstraints() {
+        return accessConstraints;
     }
 }
