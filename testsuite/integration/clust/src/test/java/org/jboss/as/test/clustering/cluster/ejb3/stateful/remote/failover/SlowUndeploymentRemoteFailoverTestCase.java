@@ -95,7 +95,8 @@ public class SlowUndeploymentRemoteFailoverTestCase {
         // start containers
         NodeUtil.start(controller, ClusteringTestConstants.CONTAINERS);
         // Also deploy
-        NodeUtil.deploy(deployer, ClusteringTestConstants.DEPLOYMENTS);
+        NodeUtil.deploy(ClusteringTestConstants.CONTAINER_1, deployer, ClusteringTestConstants.DEPLOYMENT_1);
+        NodeUtil.deploy(ClusteringTestConstants.CONTAINER_2, deployer, ClusteringTestConstants.DEPLOYMENT_2);
         undeployedDeployments.clear();
 
         // setup selector
@@ -111,14 +112,14 @@ public class SlowUndeploymentRemoteFailoverTestCase {
         }
         if (!undeployedDeployments.contains(ClusteringTestConstants.DEPLOYMENT_1)) {
             try {
-                NodeUtil.undeploy(deployer, ClusteringTestConstants.DEPLOYMENT_1);
+                NodeUtil.undeploy(ClusteringTestConstants.CONTAINER_1, deployer, ClusteringTestConstants.DEPLOYMENT_1);
             } catch (Throwable t) {
                 logger.info("Failed to undeploy " + ClusteringTestConstants.DEPLOYMENT_1);
             }
         }
         if (!undeployedDeployments.contains(ClusteringTestConstants.DEPLOYMENT_2)) {
             try {
-                NodeUtil.undeploy(deployer, ClusteringTestConstants.DEPLOYMENT_2);
+                NodeUtil.undeploy(ClusteringTestConstants.CONTAINER_2, deployer, ClusteringTestConstants.DEPLOYMENT_2);
             } catch (Throwable t) {
                 logger.info("Failed to undeploy " + ClusteringTestConstants.DEPLOYMENT_2);
             }
@@ -178,7 +179,7 @@ public class SlowUndeploymentRemoteFailoverTestCase {
             logger.info("Sleeping for " + waitTimeBeforeUndeployment + " milli. sec to let the EJB sessions be created a few times, before undeploying it");
             Thread.sleep(waitTimeBeforeUndeployment);
             // now undeploy from one of the nodes
-            undeploy(ClusteringTestConstants.DEPLOYMENT_1);
+            undeploy(ClusteringTestConstants.CONTAINER_1, ClusteringTestConstants.DEPLOYMENT_1);
             // now wait for a few more moments to let the session creation continue
             final long waitTimeAfterUndeployment = TimeoutUtil.adjust(500);
             logger.info("Sleeping for " + waitTimeAfterUndeployment + " milli. sec to let the EJB sessions be created, after the deployment has been undeployed from one of the nodes");
@@ -218,7 +219,7 @@ public class SlowUndeploymentRemoteFailoverTestCase {
             logger.info("Sleeping for " + waitTimeBeforeUndeployment + " milli. sec to let the EJB be invoked a few times, before undeploying it");
             Thread.sleep(waitTimeBeforeUndeployment);
             // now undeploy from one of the nodes
-            undeploy(ClusteringTestConstants.DEPLOYMENT_1);
+            undeploy(ClusteringTestConstants.CONTAINER_1, ClusteringTestConstants.DEPLOYMENT_1);
             // now wait for a few more moments to let the retry happen and EJB invocations continue for a while
             final long waitTimeAfterUndeployment = TimeoutUtil.adjust(1000);
             logger.info("Sleeping for " + waitTimeAfterUndeployment + " milli. sec to let the EJB be invoked a few times, after the deployment has been undeployed from one of the nodes");
@@ -239,8 +240,8 @@ public class SlowUndeploymentRemoteFailoverTestCase {
 
     }
 
-    private void undeploy(final String deploymentName) {
-        NodeUtil.undeploy(deployer, deploymentName);
+    private void undeploy(final String container, final String deploymentName) {
+        NodeUtil.undeploy(container, deployer, deploymentName);
         logger.info("Undeployed " + deploymentName);
         undeployedDeployments.add(deploymentName);
     }

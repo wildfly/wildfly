@@ -39,7 +39,6 @@ import org.jboss.arquillian.container.test.api.OperateOnDeployment;
 import org.jboss.arquillian.container.test.api.RunAsClient;
 import org.jboss.arquillian.container.test.api.TargetsContainer;
 import org.jboss.arquillian.junit.Arquillian;
-import org.jboss.arquillian.junit.InSequence;
 import org.jboss.arquillian.test.api.ArquillianResource;
 import org.jboss.as.test.clustering.AbstractEJBDirectory;
 import org.jboss.as.test.clustering.ClusterHttpClientUtil;
@@ -56,8 +55,7 @@ import org.jboss.shrinkwrap.api.Archive;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.asset.StringAsset;
 import org.jboss.shrinkwrap.api.spec.WebArchive;
-import org.junit.BeforeClass;
-import org.junit.Ignore;
+import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
@@ -66,7 +64,6 @@ import org.junit.runner.RunWith;
  */
 @RunWith(Arquillian.class)
 @RunAsClient
-@Ignore("AS7-5208 Intermittent failures")
 public class StatefulFailoverTestCase extends ClusterAbstractTestCase {
 
     @Deployment(name = DEPLOYMENT_1, managed = false, testable = false)
@@ -98,19 +95,21 @@ public class StatefulFailoverTestCase extends ClusterAbstractTestCase {
 
     @Override
     protected void setUp() {
-        super.setUp();
-        deploy(DEPLOYMENTS);
+    }
+
+    @Before
+    public void deployBeforeTestForInjection() {
+        // needed for injection
+        start(CONTAINERS);
+        deploy(CONTAINER_1, DEPLOYMENT_1);
+        deploy(CONTAINER_2, DEPLOYMENT_2);
     }
 
     @Test
-    @InSequence(1)
     public void testRestart(
             @ArquillianResource() @OperateOnDeployment(DEPLOYMENT_1) URL baseURL1,
             @ArquillianResource() @OperateOnDeployment(DEPLOYMENT_2) URL baseURL2)
             throws IOException, InterruptedException, URISyntaxException {
-
-        // Only needed for injection
-        stop(CONTAINER_2);
 
         DefaultHttpClient client = org.jboss.as.test.http.util.HttpClientUtils.relaxedCookieHttpClient();
 
@@ -120,6 +119,9 @@ public class StatefulFailoverTestCase extends ClusterAbstractTestCase {
         log.info("URLs are: " + url1 + ", " + url2);
 
         try {
+            // Only needed for injection
+            stop(CONTAINER_2);
+
             this.establishView(client, baseURL1, NODE_1);
 
             assertEquals(20010101, this.queryCount(client, url1));
@@ -159,7 +161,6 @@ public class StatefulFailoverTestCase extends ClusterAbstractTestCase {
             assertEquals(20131313, this.queryCount(client, url2));
             assertEquals(20141414, this.queryCount(client, url2));
 
-
             start(CONTAINER_1);
 
             this.establishView(client, baseURL2, NODE_1, NODE_2);
@@ -170,18 +171,16 @@ public class StatefulFailoverTestCase extends ClusterAbstractTestCase {
             assertEquals(20171717, this.queryCount(client, url1));
             assertEquals(20181818, this.queryCount(client, url1));
         } finally {
+            cleanDeployments();
             client.getConnectionManager().shutdown();
         }
     }
 
     @Test
-    @InSequence(2)
     public void testRedeploy(
             @ArquillianResource() @OperateOnDeployment(DEPLOYMENT_1) URL baseURL1,
             @ArquillianResource() @OperateOnDeployment(DEPLOYMENT_2) URL baseURL2)
             throws IOException, InterruptedException, URISyntaxException {
-
-        stop(CONTAINER_2);
 
         DefaultHttpClient client = org.jboss.as.test.http.util.HttpClientUtils.relaxedCookieHttpClient();
 
@@ -189,13 +188,16 @@ public class StatefulFailoverTestCase extends ClusterAbstractTestCase {
         String url2 = baseURL2.toString() + "count";
 
         try {
+            // Only needed for injection
+            stop(CONTAINER_2);
+
             this.establishView(client, baseURL1, NODE_1);
 
             assertEquals(20010101, this.queryCount(client, url1));
             assertEquals(20020202, this.queryCount(client, url1));
 
             start(CONTAINER_2);
-            //deploy(DEPLOYMENT_2);
+            deploy(CONTAINER_2, DEPLOYMENT_2);
 
             this.establishView(client, baseURL1, NODE_1, NODE_2);
 
@@ -205,14 +207,14 @@ public class StatefulFailoverTestCase extends ClusterAbstractTestCase {
             assertEquals(20050505, this.queryCount(client, url2));
             assertEquals(20060606, this.queryCount(client, url2));
 
-            undeploy(DEPLOYMENT_2);
+            undeploy(CONTAINER_2, DEPLOYMENT_2);
 
             this.establishView(client, baseURL1, NODE_1);
 
             assertEquals(20070707, this.queryCount(client, url1));
             assertEquals(20080808, this.queryCount(client, url1));
 
-            deploy(DEPLOYMENT_2);
+            deploy(CONTAINER_2, DEPLOYMENT_2);
 
             this.establishView(client, baseURL1, NODE_1, NODE_2);
 
@@ -222,14 +224,14 @@ public class StatefulFailoverTestCase extends ClusterAbstractTestCase {
             assertEquals(20111111, this.queryCount(client, url2));
             assertEquals(20121212, this.queryCount(client, url2));
 
-            undeploy(DEPLOYMENT_1);
+            undeploy(CONTAINER_1, DEPLOYMENT_1);
 
             this.establishView(client, baseURL2, NODE_2);
 
             assertEquals(20131313, this.queryCount(client, url2));
             assertEquals(20141414, this.queryCount(client, url2));
 
-            deploy(DEPLOYMENT_1);
+            deploy(CONTAINER_1, DEPLOYMENT_1);
 
             this.establishView(client, baseURL2, NODE_1, NODE_2);
 
@@ -239,14 +241,9 @@ public class StatefulFailoverTestCase extends ClusterAbstractTestCase {
             assertEquals(20171717, this.queryCount(client, url2));
             assertEquals(20181818, this.queryCount(client, url2));
         } finally {
+            cleanDeployments();
             client.getConnectionManager().shutdown();
         }
-    }
-
-    @Test
-    @InSequence(3)
-    public void testCleanup() {
-        undeploy(DEPLOYMENTS);
     }
 
     private int queryCount(HttpClient client, String url) throws IOException {

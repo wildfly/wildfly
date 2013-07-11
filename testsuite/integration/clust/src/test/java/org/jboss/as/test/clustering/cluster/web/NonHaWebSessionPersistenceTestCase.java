@@ -63,13 +63,13 @@ public class NonHaWebSessionPersistenceTestCase extends ClusterAbstractTestCase 
     }
 
     @Override
-    public void testSetup() {
+    protected void setUp() {
         // TODO rethink how this can be done faster with one less stopping (eg. make this test last)
         stop(CONTAINER_1);
         stop(CONTAINER_2);
 
         start(CONTAINER_SINGLE);
-        deploy(DEPLOYMENT_1);
+        deploy(CONTAINER_SINGLE, DEPLOYMENT_1);
     }
 
     @Test
@@ -106,7 +106,7 @@ public class NonHaWebSessionPersistenceTestCase extends ClusterAbstractTestCase 
             client.getConnectionManager().shutdown();
         }
 
-        undeploy(DEPLOYMENT_1);
+        undeploy(CONTAINER_SINGLE, DEPLOYMENT_1);
         stop(CONTAINER_SINGLE);
     }
 }

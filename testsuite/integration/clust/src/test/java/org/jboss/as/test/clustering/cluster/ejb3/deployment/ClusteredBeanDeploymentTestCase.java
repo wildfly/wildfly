@@ -69,7 +69,7 @@ public class ClusteredBeanDeploymentTestCase extends ClusterAbstractTestCase {
     @Override
     protected void setUp() {
         super.setUp();
-        deploy(DEPLOYMENT_1);
+        deploy(CONTAINER_1, DEPLOYMENT_1);
     }
 
     /**

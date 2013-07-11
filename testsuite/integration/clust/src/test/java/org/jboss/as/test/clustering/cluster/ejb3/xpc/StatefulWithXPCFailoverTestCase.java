@@ -113,7 +113,8 @@ public class StatefulWithXPCFailoverTestCase extends ClusterAbstractTestCase {
     @Override
     protected void setUp() {
         super.setUp();
-        deploy(DEPLOYMENTS);
+        deploy(CONTAINER_1, DEPLOYMENT_1);
+        deploy(CONTAINER_2, DEPLOYMENT_2);
     }
 
     /**
@@ -280,7 +281,7 @@ public class StatefulWithXPCFailoverTestCase extends ClusterAbstractTestCase {
     public void testCleanup() {
         // node-1 was last shutdown, lets bring it up and remove deployments
         start(CONTAINER_1);
-        undeploy(DEPLOYMENTS);
+        cleanDeployments();
     }
 
     private String executeUrlWithAnswer(HttpClient client, String url, String message) throws IOException, InterruptedException {

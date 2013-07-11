@@ -40,7 +40,9 @@ import org.jboss.arquillian.test.api.ArquillianResource;
 import org.jboss.as.test.clustering.ClusterHttpClientUtil;
 import org.jboss.as.test.clustering.cluster.ClusterAbstractTestCase;
 import org.jboss.as.test.clustering.single.web.SimpleServlet;
+import org.junit.After;
 import org.junit.Assert;
+import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
@@ -56,8 +58,18 @@ public abstract class ClusteredWebFailoverAbstractCase extends ClusterAbstractTe
 
     @Override
     protected void setUp() {
-        super.setUp();
-        deploy(DEPLOYMENTS);
+    }
+
+    @Before
+    public void deployBeforeTestForInjection() {
+        start(CONTAINERS);
+        deploy(CONTAINER_1, DEPLOYMENT_1);
+        deploy(CONTAINER_2, DEPLOYMENT_2);
+    }
+
+    @After
+    public void testCleanup() {
+        cleanDeployments();
     }
 
     /**
@@ -75,7 +87,6 @@ public abstract class ClusteredWebFailoverAbstractCase extends ClusterAbstractTe
      * @throws URISyntaxException
      */
     @Test
-    @InSequence(1)
     public void testGracefulSimpleFailover(
             @ArquillianResource(SimpleServlet.class) @OperateOnDeployment(DEPLOYMENT_1) URL baseURL1,
             @ArquillianResource(SimpleServlet.class) @OperateOnDeployment(DEPLOYMENT_2) URL baseURL2)
@@ -183,7 +194,6 @@ public abstract class ClusteredWebFailoverAbstractCase extends ClusterAbstractTe
      * @throws URISyntaxException
      */
     @Test
-    @InSequence(2)
     public void testGracefulUndeployFailover(
             @ArquillianResource(SimpleServlet.class) @OperateOnDeployment(DEPLOYMENT_1) URL baseURL1,
             @ArquillianResource(SimpleServlet.class) @OperateOnDeployment(DEPLOYMENT_2) URL baseURL2)
@@ -217,7 +227,7 @@ public abstract class ClusteredWebFailoverAbstractCase extends ClusterAbstractTe
             }
 
             // Gracefully undeploy from the 1st container.
-            undeploy(DEPLOYMENT_1);
+            undeploy(CONTAINER_1, DEPLOYMENT_1);
 
             this.establishView(client, baseURL2, NODE_2);
 
@@ -245,7 +255,7 @@ public abstract class ClusteredWebFailoverAbstractCase extends ClusterAbstractTe
             }
 
             // Redeploy
-            deploy(DEPLOYMENT_1);
+            deploy(CONTAINER_1, DEPLOYMENT_1);
 
             this.establishView(client, baseURL2, NODE_1, NODE_2);
 
@@ -272,12 +282,6 @@ public abstract class ClusteredWebFailoverAbstractCase extends ClusterAbstractTe
         }
 
         // Assert.fail("Show me the logs please!");
-    }
-
-    @Test
-    @InSequence(3)
-    public void testCleanup() {
-        undeploy(DEPLOYMENTS);
     }
 
     private void establishView(HttpClient client, URL baseURL, String... members) throws URISyntaxException, IOException {

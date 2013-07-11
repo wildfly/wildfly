@@ -132,15 +132,15 @@ public class LocalEJBClientFailoverTestCase extends ClusterAbstractTestCase {
     @After
     public void afterTest() throws Exception {
         if (clientAppDeployed) {
-            undeploy(CLIENT_ARQ_DEPLOYMENT);
+            undeploy(CONTAINER_2, CLIENT_ARQ_DEPLOYMENT);
         }
 
         if (nodeNameAppDeployedOnContainerOne) {
-            undeploy(NODE_NAME_ARQ_DEPLOYMENT_CONTAINER_1);
+            undeploy(CONTAINER_1, NODE_NAME_ARQ_DEPLOYMENT_CONTAINER_1);
         }
 
         if (nodeNameAppDeployedOnContainerTwo) {
-            undeploy(NODE_NAME_ARQ_DEPLOYMENT_CONTAINER_2);
+            undeploy(CONTAINER_2, NODE_NAME_ARQ_DEPLOYMENT_CONTAINER_2);
         }
 
         if (containerOneStarted) {
@@ -171,11 +171,11 @@ public class LocalEJBClientFailoverTestCase extends ClusterAbstractTestCase {
         containerOneStarted = true;
         containerTwoStarted = true;
 
-        deploy(CLIENT_ARQ_DEPLOYMENT);
+        deploy(CONTAINER_2, CLIENT_ARQ_DEPLOYMENT);
         clientAppDeployed = true;
-        deploy(NODE_NAME_ARQ_DEPLOYMENT_CONTAINER_1);
+        deploy(CONTAINER_1, NODE_NAME_ARQ_DEPLOYMENT_CONTAINER_1);
         nodeNameAppDeployedOnContainerOne = true;
-        deploy(NODE_NAME_ARQ_DEPLOYMENT_CONTAINER_2);
+        deploy(CONTAINER_2, NODE_NAME_ARQ_DEPLOYMENT_CONTAINER_2);
         nodeNameAppDeployedOnContainerTwo = true;
 
         final ContextSelector<EJBClientContext> previousSelector = EJBClientContextSelector.setup("cluster/ejb3/stateful/failover/local-ejb-sfsb-failover-jboss-ejb-client.properties");
@@ -192,7 +192,7 @@ public class LocalEJBClientFailoverTestCase extends ClusterAbstractTestCase {
             Assert.assertEquals("Clustered SFSB created on unexpected node", ClusteringTestConstants.NODE_2, sfsbNodeName);
 
             // now undeploy the clustered sfsb app on the node which has the client application
-            this.deployer.undeploy(NODE_NAME_ARQ_DEPLOYMENT_CONTAINER_2);
+            undeploy(CONTAINER_2, NODE_NAME_ARQ_DEPLOYMENT_CONTAINER_2);
             nodeNameAppDeployedOnContainerTwo = false;
 
             this.establishView(listener, NODE_1);

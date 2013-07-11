@@ -92,7 +92,8 @@ public class FailoverWithSecurityTestCase extends ClusterAbstractTestCase {
     @Override
     protected void setUp() {
         super.setUp();
-        deploy(DEPLOYMENTS);
+        deploy(CONTAINER_1, DEPLOYMENT_1);
+        deploy(CONTAINER_2, DEPLOYMENT_2);
     }
 
     @Test
@@ -134,20 +135,20 @@ public class FailoverWithSecurityTestCase extends ClusterAbstractTestCase {
             Assert.assertEquals("SFSB has to return the only running node " + runningNode, runningNode, statefulNodeName);
 
             if (CONTAINER_1.equals(stoppedContainer)) {
-                controller.start(CONTAINER_1);
+                start(CONTAINER_1);
 
                 this.establishView(listener, NODE_1, NODE_2);
 
-                deployer.undeploy(DEPLOYMENT_2);
-                controller.stop(CONTAINER_2);
+                undeploy(CONTAINER_2, DEPLOYMENT_2);
+                stop(CONTAINER_2);
                 runningNode = NODE_1;
             } else {
-                controller.start(CONTAINER_2);
+                start(CONTAINER_2);
 
                 this.establishView(listener, NODE_1, NODE_2);
 
-                deployer.undeploy(DEPLOYMENT_1);
-                controller.stop(CONTAINER_1);
+                undeploy(CONTAINER_1, DEPLOYMENT_1);
+                stop(CONTAINER_1);
                 runningNode = NODE_2;
             }
 
