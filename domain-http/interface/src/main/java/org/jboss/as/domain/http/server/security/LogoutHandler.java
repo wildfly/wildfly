@@ -147,7 +147,7 @@ public class LogoutHandler implements HttpHandler {
          *      - This steps prevents some browsers (Chrome/Chromium) from eventually resurrecting past credentials
          * 4. Finally, the Logout.html page sends the step3 request. This is accepted with 200 OK, triggering the browser
          *    to replace its cache credentials on all future requests.
-         * 5. Logout.html redirects back to / 
+         * 5. Logout.html redirects back to /
          */
         if (action.equalsIgnoreCase("step1")) {
             if (authorization == null) {
