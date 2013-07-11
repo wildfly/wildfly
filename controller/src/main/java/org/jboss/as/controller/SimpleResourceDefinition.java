@@ -56,16 +56,13 @@ public class SimpleResourceDefinition implements ResourceDefinition {
     /**
      * {@link ResourceDefinition} that uses the given {code descriptionProvider} to describe the resource.
      *
-     * @param pathElement         the path. Cannot be {@code null}.
+     * @param pathElement         the path. Can be {@code null}.
      * @param descriptionProvider the description provider. Cannot be {@code null}
-     * @throws IllegalArgumentException if any parameter is {@code null}.
+     * @throws IllegalArgumentException if {@code descriptionProvider} is {@code null}.
      * @deprecated
      */
     @Deprecated
     public SimpleResourceDefinition(final PathElement pathElement, final DescriptionProvider descriptionProvider) {
-        if (pathElement == null) {
-            throw MESSAGES.nullVar("pathElement");
-        }
         if (descriptionProvider == null) {
             throw MESSAGES.nullVar("descriptionProvider");
         }
@@ -112,20 +109,17 @@ public class SimpleResourceDefinition implements ResourceDefinition {
      * {@link ResourceDefinition} that uses the given {code descriptionResolver} to configure a
      * {@link DefaultResourceDescriptionProvider} to describe the resource.
      *
-     * @param pathElement         the path. Cannot be {@code null}.
+     * @param pathElement         the path. Can be {@code null}.
      * @param descriptionResolver the description resolver to use in the description provider. Cannot be {@code null}      *
      * @param addHandler          a handler to {@link #registerOperations(ManagementResourceRegistration) register} for the resource "add" operation.
      *                            Can be {null}
      * @param removeHandler       a handler to {@link #registerOperations(ManagementResourceRegistration) register} for the resource "remove" operation.
      *                            Can be {null}
-     * @throws IllegalArgumentException if any parameter is {@code null}.
+     * @throws IllegalArgumentException if {@code descriptionResolver} is {@code null}.
      */
     public SimpleResourceDefinition(final PathElement pathElement, final ResourceDescriptionResolver descriptionResolver,
                                     final OperationStepHandler addHandler, final OperationStepHandler removeHandler,
                                     final OperationEntry.Flag addRestartLevel, final OperationEntry.Flag removeRestartLevel) {
-        if (pathElement == null) {
-            throw MESSAGES.nullVar("pathElement");
-        }
         if (descriptionResolver == null) {
             throw MESSAGES.nullVar("descriptionProvider");
         }
