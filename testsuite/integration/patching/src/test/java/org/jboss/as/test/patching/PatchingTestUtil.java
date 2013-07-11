@@ -22,10 +22,12 @@
 package org.jboss.as.test.patching;
 
 import java.io.File;
+import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.nio.charset.Charset;
+import java.util.Scanner;
 import java.util.UUID;
 
 import org.jboss.as.patching.IoUtils;
@@ -50,6 +52,23 @@ public class PatchingTestUtil {
 
     public static String randomString() {
         return UUID.randomUUID().toString();
+    }
+
+    /**
+     * Converts the contents of a file into a String.
+     * @param filePath
+     * @return
+     * @throws FileNotFoundException
+     */
+    public static String readFile(String filePath) throws FileNotFoundException {
+        Scanner scanner = null;
+        try {
+            scanner = new Scanner(new File(filePath)).useDelimiter("\\A");
+            return scanner.next();
+        } finally {
+            if(scanner != null)
+                scanner.close();
+        }
     }
 
     public static void tree(File dir) {
@@ -95,9 +114,11 @@ public class PatchingTestUtil {
         }
     }
 
-    public static File createModuleXmlFile(File mainDir, String moduleName, String... resources) throws IOException {
+    public static File createModuleXmlFile(File mainDir, String moduleName, String... resources)
+            throws IOException {
         StringBuilder content = new StringBuilder("<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n");
-        content.append(format("<module xmlns=\"urn:jboss:module:1.2\" name=\"%s\" slot=\"main\" />\n", moduleName));
+        content.append(
+                format("<module xmlns=\"urn:jboss:module:1.2\" name=\"%s\" slot=\"main\" />\n", moduleName));
         content.append("  <resources>\n");
         content.append("    resource-root path=\".\"/>\n");
         for (String resource : resources) {
@@ -111,7 +132,8 @@ public class PatchingTestUtil {
         return moduleXMLFile;
     }
 
-    public static File createModule(File baseDir, String moduleName, String... resourcesContents) throws IOException {
+    public static File createModule(File baseDir, String moduleName, String... resourcesContents)
+            throws IOException {
         File moduleDir = IoUtils.mkdir(baseDir, "modules", moduleName);
         File mainDir = IoUtils.mkdir(moduleDir, "main");
         String resourceFilePrefix = randomString();
@@ -127,7 +149,8 @@ public class PatchingTestUtil {
         return moduleDir;
     }
 
-    public static File createModule0(File baseDir, String moduleName, String... resourcesContents) throws IOException {
+    public static File createModule0(File baseDir, String moduleName, String... resourcesContents)
+            throws IOException {
         File mainDir = createModuleRoot(baseDir, moduleName);
         String resourceFilePrefix = randomString();
         String[] resourceFileNames = new String[resourcesContents.length];
@@ -167,7 +190,7 @@ public class PatchingTestUtil {
 
     public static File createBundle0(File baseDir, String bundleName, String content) throws IOException {
         File mainDir = createModuleRoot(baseDir, bundleName);
-        if(content != null) {
+        if (content != null) {
             File f = touch(mainDir, "content");
             dump(f, content);
         }
