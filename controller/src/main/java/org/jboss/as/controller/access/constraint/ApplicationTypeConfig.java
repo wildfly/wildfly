@@ -22,6 +22,8 @@
 
 package org.jboss.as.controller.access.constraint;
 
+import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
+
 /**
  * Classification to apply to resources, attributes or operation to allow configuration
  * of whether they are related to "applications".
@@ -31,11 +33,9 @@ package org.jboss.as.controller.access.constraint;
 public class ApplicationTypeConfig {
 
 
-    /** Core configurations */
-    //TODO Come up with an authoritative list and use the correct settings - this one is just here so I have something to test
-    //This addApplicationTypeConfig() call is a temporary workaround to get these things registered until they are used by the model.
-    public static final ApplicationTypeConfig DEPLOYMENT = addApplicationTypeConfig("DEPLOYMENT", true);
+    // Core configurations
 
+    public static final ApplicationTypeConfig DEPLOYMENT = new ApplicationTypeConfig(ModelDescriptionConstants.DEPLOYMENT, true);
 
     private final boolean core;
 
@@ -43,6 +43,10 @@ public class ApplicationTypeConfig {
     private final String name;
     private final boolean application;
     private volatile Boolean configuredApplication;
+
+    public ApplicationTypeConfig(String subsystem, String name) {
+        this(subsystem, name, false);
+    }
 
     public ApplicationTypeConfig(String subsystem, String name, boolean application) {
         assert subsystem != null : "subsystem is null";
@@ -58,12 +62,6 @@ public class ApplicationTypeConfig {
         this.subsystem = null;
         this.name = name;
         this.application = application;
-    }
-
-    private static ApplicationTypeConfig addApplicationTypeConfig(String name, boolean application) {
-        ApplicationTypeConfig applicationTypeConfig = new ApplicationTypeConfig(name, application);
-        ApplicationTypeConstraint.FACTORY.addApplicationTypeConfig(applicationTypeConfig);
-        return applicationTypeConfig;
     }
 
 

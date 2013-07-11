@@ -35,6 +35,8 @@ import static org.jboss.as.connector.subsystems.datasources.Constants.XA_DATASOU
 import static org.jboss.as.connector.subsystems.datasources.Constants.XA_DATASOURCE_ATTRIBUTE;
 import static org.jboss.as.connector.subsystems.datasources.Constants.XA_DATASOURCE_PROPERTIES_ATTRIBUTES;
 
+import java.util.List;
+
 import org.jboss.as.connector.subsystems.common.pool.PoolConfigurationRWHandler;
 import org.jboss.as.connector.subsystems.common.pool.PoolOperations;
 import org.jboss.as.controller.PathElement;
@@ -42,6 +44,9 @@ import org.jboss.as.controller.PropertiesAttributeDefinition;
 import org.jboss.as.controller.SimpleAttributeDefinition;
 import org.jboss.as.controller.SimpleAttributeDefinitionBuilder;
 import org.jboss.as.controller.SimpleResourceDefinition;
+import org.jboss.as.controller.access.constraint.ApplicationTypeConfig;
+import org.jboss.as.controller.access.constraint.management.AccessConstraintDefinition;
+import org.jboss.as.controller.access.constraint.management.ApplicationTypeAccessConstraintDefinition;
 import org.jboss.as.controller.registry.AttributeAccess;
 import org.jboss.as.controller.registry.ManagementResourceRegistration;
 import org.jboss.as.controller.transform.description.RejectAttributeChecker;
@@ -55,6 +60,7 @@ public class XaDataSourceDefinition extends SimpleResourceDefinition {
     private final boolean registerRuntimeOnly;
     private final boolean deployed;
 
+    private final List<AccessConstraintDefinition> accessConstraints;
 
     private XaDataSourceDefinition(final boolean registerRuntimeOnly, final boolean deployed) {
         super(PATH_XA_DATASOURCE,
@@ -63,6 +69,8 @@ public class XaDataSourceDefinition extends SimpleResourceDefinition {
                 deployed ? null : XaDataSourceRemove.INSTANCE);
         this.registerRuntimeOnly = registerRuntimeOnly;
         this.deployed = deployed;
+        ApplicationTypeConfig atc = new ApplicationTypeConfig(DataSourcesExtension.SUBSYSTEM_NAME, XA_DATASOURCE);
+        accessConstraints = new ApplicationTypeAccessConstraintDefinition(atc).wrapAsList();
     }
 
     public static XaDataSourceDefinition createInstance(final boolean registerRuntimeOnly, final boolean deployed) {
@@ -125,6 +133,11 @@ public class XaDataSourceDefinition extends SimpleResourceDefinition {
         } else {
             resourceRegistration.registerSubModel(XaDataSourcePropertyDefinition.INSTANCE);
         }
+    }
+
+    @Override
+    public List<AccessConstraintDefinition> getAccessConstraints() {
+        return accessConstraints;
     }
 
     static void registerTransformers110(ResourceTransformationDescriptionBuilder parentBuilder) {

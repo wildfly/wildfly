@@ -24,6 +24,7 @@ package org.jboss.as.security;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
 
 import java.security.Principal;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Set;
 
@@ -36,7 +37,9 @@ import org.jboss.as.controller.SimpleAttributeDefinitionBuilder;
 import org.jboss.as.controller.SimpleOperationDefinition;
 import org.jboss.as.controller.SimpleOperationDefinitionBuilder;
 import org.jboss.as.controller.SimpleResourceDefinition;
+import org.jboss.as.controller.access.constraint.ApplicationTypeConfig;
 import org.jboss.as.controller.access.constraint.management.AccessConstraintDefinition;
+import org.jboss.as.controller.access.constraint.management.ApplicationTypeAccessConstraintDefinition;
 import org.jboss.as.controller.access.constraint.management.SensitiveTargetAccessConstraintDefinition;
 import org.jboss.as.controller.operations.common.Util;
 import org.jboss.as.controller.registry.ManagementResourceRegistration;
@@ -66,7 +69,9 @@ class SecurityDomainResourceDefinition extends SimpleResourceDefinition {
         super(SecurityExtension.SECURITY_DOMAIN_PATH,
                 SecurityExtension.getResourceDescriptionResolver(Constants.SECURITY_DOMAIN), SecurityDomainAdd.INSTANCE, SecurityDomainRemove.INSTANCE);
         this.registerRuntimeOnly = registerRuntimeOnly;
-        this.accessConstraints = SensitiveTargetAccessConstraintDefinition.SECURITY_DOMAIN.wrapAsList();
+        ApplicationTypeConfig atc = new ApplicationTypeConfig(SecurityExtension.SUBSYSTEM_NAME, Constants.SECURITY_DOMAIN);
+        AccessConstraintDefinition acd = new ApplicationTypeAccessConstraintDefinition(atc);
+        this.accessConstraints = Arrays.asList((AccessConstraintDefinition) SensitiveTargetAccessConstraintDefinition.SECURITY_DOMAIN, acd);
     }
 
     @Override

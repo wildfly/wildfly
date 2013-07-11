@@ -71,7 +71,7 @@ public class DomainDeploymentResourceDefinition extends DeploymentResourceDefini
         }
     }
 
-    @Override
+     @Override
     protected void registerAddOperation(ManagementResourceRegistration registration, OperationStepHandler handler, Flag... flags) {
         registration.registerOperationHandler(addDefinition, handler);
     }

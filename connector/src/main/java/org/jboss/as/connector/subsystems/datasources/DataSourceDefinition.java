@@ -34,6 +34,8 @@ import static org.jboss.as.connector.subsystems.datasources.Constants.FLUSH_IDLE
 import static org.jboss.as.connector.subsystems.datasources.Constants.READONLY_DATASOURCE_ATTRIBUTE;
 import static org.jboss.as.connector.subsystems.datasources.Constants.TEST_CONNECTION;
 
+import java.util.List;
+
 import org.jboss.as.connector.subsystems.common.pool.PoolConfigurationRWHandler;
 import org.jboss.as.connector.subsystems.common.pool.PoolOperations;
 import org.jboss.as.controller.PathElement;
@@ -41,6 +43,9 @@ import org.jboss.as.controller.PropertiesAttributeDefinition;
 import org.jboss.as.controller.SimpleAttributeDefinition;
 import org.jboss.as.controller.SimpleAttributeDefinitionBuilder;
 import org.jboss.as.controller.SimpleResourceDefinition;
+import org.jboss.as.controller.access.constraint.ApplicationTypeConfig;
+import org.jboss.as.controller.access.constraint.management.AccessConstraintDefinition;
+import org.jboss.as.controller.access.constraint.management.ApplicationTypeAccessConstraintDefinition;
 import org.jboss.as.controller.registry.AttributeAccess;
 import org.jboss.as.controller.registry.ManagementResourceRegistration;
 import org.jboss.as.controller.transform.description.RejectAttributeChecker;
@@ -54,6 +59,7 @@ public class DataSourceDefinition extends SimpleResourceDefinition {
     private final boolean registerRuntimeOnly;
     private final boolean deployed;
 
+    private final List<AccessConstraintDefinition> accessConstraints;
 
     private DataSourceDefinition(final boolean registerRuntimeOnly, final boolean deployed) {
         super(PATH_DATASOURCE,
@@ -62,6 +68,8 @@ public class DataSourceDefinition extends SimpleResourceDefinition {
                 deployed ? null : DataSourceRemove.INSTANCE);
         this.registerRuntimeOnly = registerRuntimeOnly;
         this.deployed = deployed;
+        ApplicationTypeConfig atc = new ApplicationTypeConfig(DataSourcesExtension.SUBSYSTEM_NAME, DATA_SOURCE);
+        accessConstraints = new ApplicationTypeAccessConstraintDefinition(atc).wrapAsList();
     }
 
     public static DataSourceDefinition createInstance(final boolean registerRuntimeOnly, final boolean deployed) {
@@ -126,6 +134,11 @@ public class DataSourceDefinition extends SimpleResourceDefinition {
         } else {
             resourceRegistration.registerSubModel(ConnectionPropertyDefinition.INSTANCE);
         }
+    }
+
+    @Override
+    public List<AccessConstraintDefinition> getAccessConstraints() {
+        return accessConstraints;
     }
 
     static void registerTransformers110(ResourceTransformationDescriptionBuilder parentBuilder) {

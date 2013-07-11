@@ -23,6 +23,8 @@ package org.jboss.as.connector.subsystems.resourceadapters;
 
 import static org.jboss.as.connector.subsystems.resourceadapters.Constants.RESOURCEADAPTER_NAME;
 
+import java.util.List;
+
 import org.jboss.as.controller.AttributeDefinition;
 import org.jboss.as.controller.OperationDefinition;
 import org.jboss.as.controller.PathElement;
@@ -30,6 +32,9 @@ import org.jboss.as.controller.ReloadRequiredRemoveStepHandler;
 import org.jboss.as.controller.ReloadRequiredWriteAttributeHandler;
 import org.jboss.as.controller.SimpleOperationDefinitionBuilder;
 import org.jboss.as.controller.SimpleResourceDefinition;
+import org.jboss.as.controller.access.constraint.ApplicationTypeConfig;
+import org.jboss.as.controller.access.constraint.management.AccessConstraintDefinition;
+import org.jboss.as.controller.access.constraint.management.ApplicationTypeAccessConstraintDefinition;
 import org.jboss.as.controller.descriptions.ResourceDescriptionResolver;
 import org.jboss.as.controller.registry.ManagementResourceRegistration;
 import org.jboss.as.controller.transform.description.DiscardAttributeChecker;
@@ -46,11 +51,14 @@ public class ResourceAdapterResourceDefinition extends SimpleResourceDefinition 
 
     private final boolean readOnly;
     private final boolean runtimeOnlyRegistrationValid;
+    private final List<AccessConstraintDefinition> accessConstraints;
 
     public ResourceAdapterResourceDefinition(boolean readOnly, boolean runtimeOnlyRegistrationValid) {
         super(PathElement.pathElement(RESOURCEADAPTER_NAME), RESOLVER, readOnly ? null : RaAdd.INSTANCE, readOnly ? null : RaRemove.INSTANCE);
         this.readOnly = readOnly;
         this.runtimeOnlyRegistrationValid = runtimeOnlyRegistrationValid;
+        ApplicationTypeConfig atc = new ApplicationTypeConfig(ResourceAdaptersExtension.SUBSYSTEM_NAME, RESOURCEADAPTER_NAME);
+        accessConstraints = new ApplicationTypeAccessConstraintDefinition(atc).wrapAsList();
     }
 
     @Override
@@ -76,6 +84,11 @@ public class ResourceAdapterResourceDefinition extends SimpleResourceDefinition 
         resourceRegistration.registerSubModel(new ConfigPropertyResourceDefinition(readOnly ? null : ConfigPropertyAdd.INSTANCE, readOnly ? null : ReloadRequiredRemoveStepHandler.INSTANCE));
         resourceRegistration.registerSubModel(new ConnectionDefinitionResourceDefinition(readOnly, runtimeOnlyRegistrationValid));
         resourceRegistration.registerSubModel(new AdminObjectResourceDefinition(readOnly));
+    }
+
+    @Override
+    public List<AccessConstraintDefinition> getAccessConstraints() {
+        return accessConstraints;
     }
 
 

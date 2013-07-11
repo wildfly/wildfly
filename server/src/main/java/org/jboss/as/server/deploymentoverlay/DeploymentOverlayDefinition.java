@@ -22,8 +22,12 @@
 
 package org.jboss.as.server.deploymentoverlay;
 
+import java.util.List;
+
 import org.jboss.as.controller.AttributeDefinition;
 import org.jboss.as.controller.SimpleResourceDefinition;
+import org.jboss.as.controller.access.constraint.management.AccessConstraintDefinition;
+import org.jboss.as.controller.access.constraint.management.ApplicationTypeAccessConstraintDefinition;
 import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
 import org.jboss.as.controller.descriptions.common.ControllerResolver;
 import org.jboss.as.controller.registry.ManagementResourceRegistration;
@@ -72,5 +76,10 @@ public class DeploymentOverlayDefinition extends SimpleResourceDefinition {
         if (priority != null) {
             resourceRegistration.registerSubModel(new DeploymentOverlayDeploymentDefinition(priority));
         }
+    }
+
+    @Override
+    public List<AccessConstraintDefinition> getAccessConstraints() {
+        return ApplicationTypeAccessConstraintDefinition.DEPLOYMENT_AS_LIST;
     }
 }

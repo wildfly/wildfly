@@ -80,8 +80,8 @@ public class SecurityExtension implements Extension {
     private static final String RESOURCE_NAME = SecurityExtension.class.getPackage().getName() + ".LocalDescriptions";
 
     private static final int MANAGEMENT_API_MAJOR_VERSION = 1;
-    private static final int MANAGEMENT_API_MINOR_VERSION = 2;
-    private static final int MANAGEMENT_API_MICRO_VERSION = 1;
+    private static final int MANAGEMENT_API_MINOR_VERSION = 3;
+    private static final int MANAGEMENT_API_MICRO_VERSION = 0;
 
     private static final SecuritySubsystemParser PARSER = SecuritySubsystemParser.getInstance();
     static final PathElement ACL_PATH = PathElement.pathElement(Constants.ACL, Constants.CLASSIC);
@@ -154,6 +154,7 @@ public class SecurityExtension implements Extension {
     private void registerTransformers(SubsystemRegistration subsystemRegistration) {
         registerTransformers_1_1_0(subsystemRegistration);
         registerTransformers_1_2_0(subsystemRegistration);
+        // 1.2.1 BES 2013/08/23 no changes; 1.3.0 just adds RBAC metadata
     }
 
     private void registerTransformers_1_1_0(SubsystemRegistration subsystemRegistration) {

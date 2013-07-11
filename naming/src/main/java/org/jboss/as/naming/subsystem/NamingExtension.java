@@ -58,7 +58,7 @@ public class NamingExtension implements Extension {
     static final String NAMESPACE_1_3 = "urn:jboss:domain:naming:1.3";
 
     static final int MANAGEMENT_API_MAJOR_VERSION = 1;
-    static final int MANAGEMENT_API_MINOR_VERSION = 2;
+    static final int MANAGEMENT_API_MINOR_VERSION = 3;
     static final int MANAGEMENT_API_MICRO_VERSION = 0;
 
     static final String RESOURCE_NAME = NamingExtension.class.getPackage().getName() + ".LocalDescriptions";
