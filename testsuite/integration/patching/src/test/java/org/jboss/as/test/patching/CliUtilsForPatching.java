@@ -58,17 +58,24 @@ public class CliUtilsForPatching {
      * @throws Exception
      */
     public static void applyPatch(String patchFilePath, String... args) throws Exception {
-        CLIWrapper cli = new CLIWrapper(true);
-        StringBuilder builder = new StringBuilder("patch apply");
-        if (args != null) {
-            for (String arg : args) {
-                builder.append(" ").append(arg);
+        CLIWrapper cli = null;
+        try {
+            cli = new CLIWrapper(true);
+
+            StringBuilder builder = new StringBuilder("patch apply");
+            if (args != null) {
+                for (String arg : args) {
+                    builder.append(" ").append(arg);
+                }
+            }
+            builder.append(" ").append(patchFilePath);
+            String command = builder.toString();
+            cli.sendLine(command);
+        } finally {
+            if (cli != null) {
+                cli.quit();
             }
         }
-        builder.append(" ").append(patchFilePath);
-        String command = builder.toString();
-        cli.sendLine(command);
-        cli.quit();
     }
 
     /**
@@ -88,18 +95,25 @@ public class CliUtilsForPatching {
      * @param args          conflict resolution arguments, rollback arguments
      * @throws Exception
      */
-    public static void rollbackPatch(String oneoffPatchID, String... args ) throws Exception {
-        CLIWrapper cli = new CLIWrapper(true);
-        StringBuilder builder = new StringBuilder("patch rollback");
-        if (args != null) {
-            for (String arg : args) {
-                builder.append(" ").append(arg);
+    public static void rollbackPatch(String oneoffPatchID, String... args) throws Exception {
+        CLIWrapper cli = null;
+        try {
+            cli = new CLIWrapper(true);
+            StringBuilder builder = new StringBuilder("patch rollback");
+            if (args != null) {
+                for (String arg : args) {
+                    builder.append(" ").append(arg);
+                }
+            }
+            builder.append(" --patch-id=").append(oneoffPatchID);
+            String command = builder.toString();
+            cli.sendLine(command);
+        } finally {
+            if (cli != null) {
+                cli.quit();
             }
         }
-        builder.append(" --patch-id=").append(oneoffPatchID);
-        String command = builder.toString();
-        cli.sendLine(command);
-        cli.quit();
+
     }
 
     /**
@@ -109,32 +123,47 @@ public class CliUtilsForPatching {
      * @throws Exception
      */
     public static ModelNode info() throws Exception {
-        CLIWrapper cli = new CLIWrapper(true);
-        String command = "patch info";
-        cli.sendLine(command);
-        String output = cli.readOutput();
-        cli.quit();
-        return ModelNode.fromJSONString(output);
+        CLIWrapper cli = null;
+        try {
+            cli = new CLIWrapper(true);
+            String command = "patch info";
+            cli.sendLine(command);
+            String output = cli.readOutput();
+            return ModelNode.fromJSONString(output);
+        } finally {
+            if (cli != null) {
+                cli.quit();
+            }
+        }
+
     }
 
 
     /**
      * Use CLI to get the list of currently installed patches
+     *
      * @return the currently installed patches as a collection of patch IDs (strings)
      * @throws Exception
      */
     public static Collection<String> getInstalledPatches() throws Exception {
-        CLIWrapper cli = new CLIWrapper(true);
-        cli.sendLine("patch info");
-        String response = cli.readOutput();
-        ModelNode responseNode = ModelNode.fromJSONString(response);
-        List<ModelNode> patchesList = responseNode.get("result").get("patches").asList();
-        List<String> patchesListString = new ArrayList<String>();
-        for(ModelNode n : patchesList) {
-            patchesListString.add(n.asString());
+        CLIWrapper cli = null;
+        try {
+            cli = new CLIWrapper(true);
+            cli.sendLine("patch info");
+            String response = cli.readOutput();
+            ModelNode responseNode = ModelNode.fromJSONString(response);
+            List<ModelNode> patchesList = responseNode.get("result").get("patches").asList();
+            List<String> patchesListString = new ArrayList<String>();
+            for (ModelNode n : patchesList) {
+                patchesListString.add(n.asString());
+            }
+            return patchesListString;
+        } finally {
+            if (cli != null) {
+                cli.quit();
+            }
         }
-        cli.quit();
-        return patchesListString;
+
     }
 
 }
