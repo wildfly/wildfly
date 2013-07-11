@@ -68,9 +68,8 @@ public class JaxrsDependencyProcessor implements DeploymentUnitProcessor {
         final ModuleLoader moduleLoader = Module.getBootModuleLoader();
         addDependency(moduleSpecification, moduleLoader, JAXB_API);
 
-        if (!JaxrsDeploymentMarker.isJaxrsDeployment(deploymentUnit)) {
-            return;
-        }
+        //we need to add these from all deployments, as they could be using the JAX-RS client
+
         addDependency(moduleSpecification, moduleLoader, RESTEASY_ATOM);
         addDependency(moduleSpecification, moduleLoader, RESTEASY_VALIDATOR_11);
         addDependency(moduleSpecification, moduleLoader, RESTEASY_JAXRS);

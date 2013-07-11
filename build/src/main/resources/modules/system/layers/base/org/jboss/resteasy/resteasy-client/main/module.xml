@@ -34,7 +34,7 @@
         <module name="javax.activation.api"/>
         <module name="javax.validation.api"/>
         <module name="javax.ws.rs.api"/>
-        <module name="org.jboss.resteasy.resteasy-jaxrs"/>
+        <module name="org.jboss.resteasy.resteasy-jaxrs" services="import"/>
         <module name="org.apache.commons.codec" />
         <module name="org.apache.httpcomponents" export="true"/>
         <module name="org.apache.log4j"/>
