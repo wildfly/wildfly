@@ -37,6 +37,7 @@ import org.jboss.as.patching.metadata.ContentModification;
 import org.jboss.as.patching.metadata.Patch;
 import org.jboss.as.patching.metadata.PatchBuilder;
 import org.jboss.as.version.ProductConfig;
+import org.junit.After;
 import org.junit.Assert;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -51,6 +52,12 @@ public class OneOffPatchTestCase {
     @ArquillianResource
     private ContainerController controller;
 
+    @After
+    public void cleanup() {
+        if(controller.isStarted(CONTAINER))
+            controller.stop(CONTAINER);
+    }
+
     /**
      * Prepare a one-off patch which adds a misc file. Apply it, check that the file was created.
      * Roll it back, check that the file was deleted.
@@ -64,7 +71,7 @@ public class OneOffPatchTestCase {
         File oneOffPatchDir = mkdir(tempDir, patchID);
         ContentModification miscFileAdded = ContentModificationUtils.addMisc(oneOffPatchDir, patchID,
           fileContent, "awesomeDirectory", "awesomeFile");
-        ProductConfig productConfig = new ProductConfig(PRODUCT, AS_VERSION, "consoleSlot");
+        ProductConfig productConfig = new ProductConfig(PRODUCT, AS_VERSION, "main");
         Patch oneOffPatch = PatchBuilder.create()
                 .setPatchId(patchID)
                 .setDescription("A one-off patch adding a misc file.")
@@ -158,7 +165,7 @@ public class OneOffPatchTestCase {
         String layerPatchID  = randomString();
         File oneOffPatchDir = mkdir(tempDir, patchID);
         ContentModification moduleAdded = ContentModificationUtils.addModule(oneOffPatchDir, layerPatchID, "org.wildfly.awesomemodule", "content1", "content2");
-        ProductConfig productConfig = new ProductConfig(PRODUCT, AS_VERSION, "consoleSlot");
+        ProductConfig productConfig = new ProductConfig(PRODUCT, AS_VERSION, "main");
         Patch oneOffPatch = PatchBuilder.create()
             .setPatchId(patchID)
             .setDescription("A one-off patch adding a new module.")
@@ -175,6 +182,8 @@ public class OneOffPatchTestCase {
         // apply the patch
         controller.start(CONTAINER);
         CliUtilsForPatching.applyPatch(zippedPatch.getAbsolutePath());
+        Assert.assertTrue("server should be in restart-required mode",
+                CliUtilsForPatching.doesServerRequireRestart());
         controller.stop(CONTAINER);
         controller.start(CONTAINER);
 
@@ -195,6 +204,51 @@ public class OneOffPatchTestCase {
         Assert.assertFalse("The patch " + patchID + " NOT should be listed as installed" ,
                 CliUtilsForPatching.getInstalledPatches().contains(patchID));
 
+        controller.stop(CONTAINER);
+    }
+
+    /**
+     * adds a new module "org.wildfly.awesomemodule" to the base layer
+     * rollback it and apply the same patch again to make sure re-applying works as expected
+     * @throws Exception
+     */
+    @Test
+    public void testOneOffPatchAddingAModuleRepeatedly() throws Exception {
+        // prepare the patch
+        File tempDir = mkdir(new File(System.getProperty("java.io.tmpdir")), randomString());
+        String patchID = randomString();
+        String layerPatchID  = randomString();
+        File oneOffPatchDir = mkdir(tempDir, patchID);
+        ContentModification moduleAdded = ContentModificationUtils.addModule(oneOffPatchDir, layerPatchID, "org.wildfly.awesomemodule", "content1", "content2");
+        ProductConfig productConfig = new ProductConfig(PRODUCT, AS_VERSION, "main");
+        Patch oneOffPatch = PatchBuilder.create()
+                .setPatchId(patchID)
+                .setDescription("A one-off patch adding a new module.")
+                .oneOffPatchIdentity(productConfig.getProductName(), productConfig.getProductVersion(), NOT_PATCHED)
+                .getParent()
+                .oneOffPatchElement(layerPatchID, "base", NOT_PATCHED, false)
+                .setDescription("New module for the base layer")
+                .addContentModification(moduleAdded)
+                .getParent()
+                .build();
+        PatchingTestUtil.createPatchXMLFile(oneOffPatchDir, oneOffPatch);
+        File zippedPatch = PatchingTestUtil.createZippedPatchFile(oneOffPatchDir, patchID);
+
+        // apply the patch, roll it back, then apply again
+        controller.start(CONTAINER);
+        CliUtilsForPatching.applyPatch(zippedPatch.getAbsolutePath());
+        controller.stop(CONTAINER);
+        controller.start(CONTAINER);
+        CliUtilsForPatching.rollbackPatch(patchID);
+        controller.stop(CONTAINER);
+        controller.start(CONTAINER);
+        CliUtilsForPatching.applyPatch(zippedPatch.getAbsolutePath());
+        controller.stop(CONTAINER);
+        controller.start(CONTAINER);
+        Assert.assertTrue("The patch " + patchID + " should be listed as installed" ,
+                CliUtilsForPatching.getInstalledPatches().contains(patchID));
+        // and finally roll it back to clean up
+        CliUtilsForPatching.rollbackPatch(patchID);
         controller.stop(CONTAINER);
     }
 

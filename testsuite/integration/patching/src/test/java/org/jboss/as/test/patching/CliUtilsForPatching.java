@@ -25,6 +25,7 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 
+import org.jboss.as.controller.client.helpers.ClientConstants;
 import org.jboss.as.test.integration.management.util.CLIWrapper;
 import org.jboss.dmr.ModelNode;
 
@@ -163,7 +164,39 @@ public class CliUtilsForPatching {
                 cli.quit();
             }
         }
+    }
 
+    /**
+     * Check if the server is in restart-required state, that means
+     * management operation return "response-headers" : {"process-state" : "restart-required"}
+     *
+     * @return true if the server is in "restart-required" state
+     * @throws Exception
+     */
+    public static boolean doesServerRequireRestart() throws Exception {
+        CLIWrapper cli = null;
+        try {
+            cli = new CLIWrapper(true);
+            cli.sendLine("patch info");
+            String response = cli.readOutput();
+            ModelNode responseNode = ModelNode.fromJSONString(response);
+            ModelNode respHeaders = responseNode.get("response-headers");
+            if (respHeaders != null && respHeaders.isDefined()) {
+                ModelNode processState = respHeaders.get("process-state");
+                if (processState != null && processState.isDefined()) {
+                    return processState.asString()
+                            .equals(ClientConstants.CONTROLLER_PROCESS_STATE_RESTART_REQUIRED);
+                } else {
+                    return false;
+                }
+            } else {
+                return false;
+            }
+        } finally {
+            if (cli != null) {
+                cli.quit();
+            }
+        }
     }
 
 }
