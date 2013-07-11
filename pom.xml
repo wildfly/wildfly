@@ -6399,7 +6399,6 @@
                 <module>client/jms</module>
                 <module>client/shade</module>
                 <module>clustering</module>
-                <module>cmp</module>
                 <module>configadmin</module>
                 <module>config-assembly</module>
                 <module>connector</module>
@@ -6410,12 +6409,13 @@
                 <module>ejb3</module>
                 <module>host-controller</module>
                 <module>jacorb</module>
-                <module>jaxr</module>
                 <module>jaxrs</module>
                 <module>jdr</module>
                 <module>jpa</module>
                 <module>jsf</module>
                 <module>jsr77</module>
+                <module>legacy/cmp</module>
+                <module>legacy/jaxr</module>
                 <module>logging</module>
                 <module>mail</module>
                 <module>messaging</module>
