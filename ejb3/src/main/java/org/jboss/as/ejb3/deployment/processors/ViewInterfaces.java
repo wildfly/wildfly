@@ -50,7 +50,8 @@ class ViewInterfaces {
             // EJB 3.1 FR 4.9.7 bullet 5.3
             if (klass.equals(Serializable.class) ||
                     klass.equals(Externalizable.class) ||
-                    klass.getName().startsWith("javax.ejb.")) {
+                    klass.getName().startsWith("javax.ejb.") ||
+                    klass.getName().equals("groovy.lang.GroovyObject")) {
                 continue;
             }
             potentialBusinessInterfaces.add(klass);
