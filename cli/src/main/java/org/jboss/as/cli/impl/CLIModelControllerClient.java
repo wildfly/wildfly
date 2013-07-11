@@ -53,6 +53,7 @@ import org.jboss.remoting3.RemotingOptions;
 import org.jboss.remoting3.remote.RemoteConnectionProviderFactory;
 import org.jboss.threads.JBossThreadFactory;
 import org.xnio.OptionMap;
+import org.xnio.Options;
 
 /**
  * @author Alexey Loubyansky
@@ -74,7 +75,7 @@ public class CLIModelControllerClient extends AbstractModelControllerClient {
         executorService.allowCoreThreadTimeOut(true);
 
         try {
-            endpoint = Remoting.createEndpoint("cli-client", OptionMap.EMPTY);
+            endpoint = Remoting.createEndpoint("cli-client", OptionMap.create(Options.THREAD_DAEMON, true));
             endpoint.addConnectionProvider("remote", new RemoteConnectionProviderFactory(), OptionMap.EMPTY);
         } catch (IOException e) {
             throw new IllegalStateException("Failed to create remoting endpoint", e);
