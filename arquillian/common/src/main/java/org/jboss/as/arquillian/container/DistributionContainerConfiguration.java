@@ -92,18 +92,12 @@ public class DistributionContainerConfiguration extends CommonContainerConfigura
         this.bundlePath = bundlePath;
     }
 
-    /**
-     * {@inheritDoc}
-     *
-     * @see org.jboss.as.arquillian.container.CommonContainerConfiguration#validate()
-     */
     @Override
     public void validate() throws ConfigurationException {
         super.validate();
-        Validate.configurationDirectoryExists(jbossHome, "jbossHome '" + jbossHome + "' must exist");
-        if (javaHome != null) {
-            Validate.configurationDirectoryExists(javaHome, "javaHome must exist");
-        }
+        if (jbossHome != null)
+            Validate.configurationDirectoryExists(jbossHome, "jbossHome '" + jbossHome + "' must exist");
+        if (javaHome != null)
+            Validate.configurationDirectoryExists(javaHome, "javaHome '" + javaHome + "' must exist");
     }
-
 }
