@@ -174,6 +174,18 @@ public class PatchToolImpl implements PatchTool {
         }
     }
 
+    @Override
+    public PatchingResult rollbackLast(final ContentVerificationPolicy contentPolicy, final boolean resetConfiguration) throws PatchingException {
+        // Rollback the patch
+        final InstallationManager.InstallationModification modification = manager.modifyInstallation(runner);
+        try {
+            return runner.rollbackLast(contentPolicy, resetConfiguration, modification);
+        } catch (Exception e) {
+            modification.cancel();
+            throw rethrowException(e);
+        }
+    }
+
     protected PatchingResult execute(final File workDir, final ContentVerificationPolicy contentPolicy) throws PatchingException, IOException, XMLStreamException {
 
         // Parse the xml

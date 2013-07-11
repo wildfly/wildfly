@@ -41,9 +41,7 @@ class IdentityRollbackCallback implements IdentityPatchContext.FinalizeCallback 
 
     @Override
     public void finishPatch(final Patch processedPatch, final RollbackPatch patch, final IdentityPatchContext context) throws Exception {
-        if (resetConfiguration) {
-            context.restoreConfiguration(patch.getPatchId());
-        }
+        context.restoreConfiguration(patch.getPatchId(), resetConfiguration);
     }
 
     @Override

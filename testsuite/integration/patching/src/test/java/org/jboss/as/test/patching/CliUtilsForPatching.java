@@ -100,7 +100,7 @@ public class CliUtilsForPatching {
         CLIWrapper cli = null;
         try {
             cli = new CLIWrapper(true);
-            StringBuilder builder = new StringBuilder("patch rollback");
+            StringBuilder builder = new StringBuilder("patch rollback --reset-configuration=false");
             if (args != null) {
                 for (String arg : args) {
                     builder.append(" ").append(arg);
@@ -204,7 +204,7 @@ public class CliUtilsForPatching {
         CLIWrapper cli = null;
         boolean success = true;
         final String infoCommand = "patch info --distribution=%s";
-        final String rollbackCommand = "patch rollback --patch-id=%s --distribution=%s";
+        final String rollbackCommand = "patch rollback --patch-id=%s --distribution=%s --reset-configuration=true";
         try {
             cli = new CLIWrapper(false);
             cli.sendLine(String.format(infoCommand, PatchingTestUtil.AS_DISTRIBUTION));

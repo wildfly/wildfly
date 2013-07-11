@@ -102,6 +102,7 @@ public abstract class PatchOperationTarget {
     protected abstract ModelNode info() throws IOException;
     protected abstract ModelNode applyPatch(final File file, final ContentPolicyBuilderImpl builder) throws IOException;
     protected abstract ModelNode rollback(final String patchId, final ContentPolicyBuilderImpl builder, boolean rollbackTo, final boolean restoreConfiguration) throws IOException;
+    protected abstract ModelNode rollbackLast(final ContentPolicyBuilderImpl builder, final boolean restoreConfiguration) throws IOException;
 
     protected static class LocalPatchOperationTarget extends PatchOperationTarget {
 
@@ -153,6 +154,20 @@ public abstract class PatchOperationTarget {
             return result;
         }
 
+        @Override
+        protected ModelNode rollbackLast(final ContentPolicyBuilderImpl builder, boolean restoreConfiguration) {
+            final ContentVerificationPolicy policy = builder.createPolicy();
+            ModelNode result = new ModelNode();
+            try {
+                PatchingResult rollback = tool.rollbackLast(policy, restoreConfiguration);
+                rollback.commit();
+                result.get(OUTCOME).set(SUCCESS);
+                result.get(RESULT).setEmptyObject();
+            } catch (PatchingException e) {
+                return formatFailedResponse(e);
+            }
+            return result;
+        }
     }
 
     protected static class RemotePatchOperationTarget extends PatchOperationTarget {
@@ -188,6 +203,13 @@ public abstract class PatchOperationTarget {
         protected ModelNode rollback(String patchId, ContentPolicyBuilderImpl builder, boolean rollbackTo, boolean restoreConfiguration) throws IOException {
             final ModelNode operation = createOperation(Constants.ROLLBACK, address.toModelNode(), builder);
             operation.get(Constants.PATCH_ID).set(patchId);
+            return client.execute(operation);
+        }
+
+        @Override
+        protected ModelNode rollbackLast(ContentPolicyBuilderImpl builder, boolean restoreConfiguration) throws IOException {
+            final ModelNode operation = createOperation(Constants.ROLLBACK_LAST, address.toModelNode(), builder);
+            operation.get(Constants.RESTORE_CONFIGURATION).set(restoreConfiguration);
             return client.execute(operation);
         }
     }

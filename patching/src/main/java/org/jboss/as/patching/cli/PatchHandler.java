@@ -66,7 +66,7 @@ public class PatchHandler extends CommandHandlerWithHelp {
 
     private final ArgumentWithValue patchId;
     private final ArgumentWithoutValue rollbackTo;
-    private final ArgumentWithoutValue keepConfiguration;
+    private final ArgumentWithValue resetConfiguration;
 
     private final ArgumentWithoutValue overrideModules;
     private final ArgumentWithoutValue overrideAll;
@@ -171,7 +171,7 @@ public class PatchHandler extends CommandHandlerWithHelp {
             }
         };
         rollbackTo.addRequiredPreceding(action);
-        keepConfiguration = new ArgumentWithoutValue(this, "--keep-configuration") {
+        resetConfiguration = new ArgumentWithValue(this, SimpleTabCompleter.BOOLEAN, "--reset-configuration") {
             @Override
             public boolean canAppearNext(CommandContext ctx) throws CommandFormatException {
                 if (canOnlyAppearAfterActions(ctx, ROLLBACK)) {
@@ -180,7 +180,7 @@ public class PatchHandler extends CommandHandlerWithHelp {
                 return false;
             }
         };
-        keepConfiguration.addRequiredPreceding(action);
+        resetConfiguration.addRequiredPreceding(action);
 
         distribution = new FileSystemPathArgument(this, pathCompleter, "--distribution") {
             @Override
@@ -270,10 +270,22 @@ public class PatchHandler extends CommandHandlerWithHelp {
             }
             builder = PatchOperationBuilder.Factory.patch(f);
         } else if (ROLLBACK.equals(action)) {
-            final String id = patchId.getValue(args, true);
-            final boolean rollbackTo = this.rollbackTo.isPresent(args);
-            final boolean keepConfiguration = this.keepConfiguration.isPresent(args);
-            builder = PatchOperationBuilder.Factory.rollback(id, rollbackTo, !keepConfiguration);
+            String resetConfigValue = resetConfiguration.getValue(args, true);
+            boolean resetConfig;
+            if(Util.TRUE.equalsIgnoreCase(resetConfigValue)) {
+                resetConfig = true;
+            } else if(Util.FALSE.equalsIgnoreCase(resetConfigValue)) {
+                resetConfig = false;
+            } else {
+                throw new CommandFormatException("Unexpected value for --reset-configuration (only true and false are allowed): " + resetConfigValue);
+            }
+            if(patchId.isPresent(args)) {
+                final String id = patchId.getValue(args, true);
+                final boolean rollbackTo = this.rollbackTo.isPresent(args);
+                builder = PatchOperationBuilder.Factory.rollback(id, rollbackTo, resetConfig);
+            } else {
+                builder = PatchOperationBuilder.Factory.rollbackLast(resetConfig);
+            }
         } else {
             builder = PatchOperationBuilder.Factory.info();
             return builder;

@@ -81,6 +81,21 @@ public interface PatchOperationBuilder extends PatchTool.ContentPolicyBuilder {
         }
 
         /**
+         * Create a builder to rollback the last applied patch.
+         *
+         * @param restoreConfiguration whether to restore the configuration
+         * @return the operation builder
+         */
+        public static PatchOperationBuilder rollbackLast(final boolean restoreConfiguration) {
+            return new AbstractOperationBuilder() {
+                @Override
+                public ModelNode execute(PatchOperationTarget target) throws IOException {
+                    return target.rollbackLast(this, restoreConfiguration);
+                }
+            };
+        }
+
+        /**
          * Create a patch builder.
          *
          * @param file the patch file
