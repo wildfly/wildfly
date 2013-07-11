@@ -22,8 +22,6 @@
 
 package org.jboss.as.clustering.jgroups.subsystem;
 
-import java.util.List;
-
 import org.jboss.as.clustering.jgroups.JGroupsMessages;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
@@ -60,8 +58,10 @@ public class ProtocolLayerRemove implements OperationStepHandler {
         }
 
         // remove the resource and its children
+        resource.removeChild(protocolRelativePath);
         context.removeResource(PathAddress.pathAddress(protocolRelativePath));
 
+        /*
         // get the current list of protocol names and remove the protocol
         // copy all elements of the list except the one to remove
         // this list is used to maintain order
@@ -76,6 +76,7 @@ public class ProtocolLayerRemove implements OperationStepHandler {
             }
         }
         subModel.get(ModelKeys.PROTOCOLS).set(newList);
+        */
 
         // This needs a reload
         reloadRequiredStep(context);

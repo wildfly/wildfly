@@ -29,7 +29,6 @@ import org.jboss.as.controller.OperationStepHandler;
 import org.jboss.as.controller.PathElement;
 import org.jboss.as.controller.SimpleOperationDefinitionBuilder;
 import org.jboss.as.controller.SimpleResourceDefinition;
-import org.jboss.as.controller.StringListAttributeDefinition;
 import org.jboss.as.controller.registry.ManagementResourceRegistration;
 import org.jboss.dmr.ModelType;
 
@@ -45,10 +44,6 @@ public class StackResourceDefinition extends SimpleResourceDefinition {
     static final OperationStepHandler EXPORT_NATIVE_CONFIGURATION_HANDLER = new ExportNativeConfiguration();
 
     private final boolean runtimeRegistration;
-
-    static final StringListAttributeDefinition PROTOCOLS = new StringListAttributeDefinition.Builder(ModelKeys.PROTOCOLS)
-            .setAllowNull(true)
-            .build();
 
     // attributes
     // operations
@@ -89,7 +84,7 @@ public class StackResourceDefinition extends SimpleResourceDefinition {
     @Override
     public void registerAttributes(ManagementResourceRegistration resourceRegistration) {
         super.registerAttributes(resourceRegistration);
-        resourceRegistration.registerReadOnlyAttribute(PROTOCOLS, null);
+        // resourceRegistration.registerReadOnlyAttribute(PROTOCOLS, null);
     }
 
     @Override

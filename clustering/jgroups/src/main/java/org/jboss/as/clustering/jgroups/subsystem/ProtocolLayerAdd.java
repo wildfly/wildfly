@@ -50,20 +50,21 @@ public class ProtocolLayerAdd implements OperationStepHandler {
     public void execute(final OperationContext context, final ModelNode operation) throws OperationFailedException {
 
         // read /subsystem=jgroups/stack=* for update
-        final Resource resource = context.readResourceForUpdate(PathAddress.EMPTY_ADDRESS);
-        final ModelNode subModel = resource.getModel();
+        final Resource stackResource = context.readResourceForUpdate(PathAddress.EMPTY_ADDRESS);
+        final ModelNode subModel = stackResource.getModel();
 
         // validate the protocol type to be added
         ModelNode type = ProtocolResourceDefinition.TYPE.validateOperation(operation);
         PathElement protocolRelativePath = PathElement.pathElement(ModelKeys.PROTOCOL, type.asString());
 
         // if child resource already exists, throw OFE
-        if (resource.hasChild(protocolRelativePath)) {
+        if (stackResource.hasChild(protocolRelativePath)) {
             throw JGroupsMessages.MESSAGES.protocolAlreadyDefined(protocolRelativePath.toString());
         }
+        // create the new protocol resource and register
+        Resource childResource = context.createResource(PathAddress.pathAddress(protocolRelativePath));
 
         // now get the created model
-        Resource childResource = context.createResource(PathAddress.pathAddress(protocolRelativePath));
         final ModelNode protocol = childResource.getModel();
 
         // Process attributes
@@ -74,14 +75,6 @@ public class ProtocolLayerAdd implements OperationStepHandler {
 
             attribute.validateAndSet(operation, protocol);
         }
-
-        // get the current list of protocol names and add the new protocol
-        // this list is used to maintain order
-        ModelNode protocols = subModel.get(ModelKeys.PROTOCOLS);
-        if (!protocols.isDefined()) {
-            protocols.setEmptyList();
-        }
-        protocols.add(type);
 
         // Process type specific properties if required
 

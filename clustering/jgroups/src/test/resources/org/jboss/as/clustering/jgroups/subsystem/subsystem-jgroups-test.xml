@@ -1,6 +1,8 @@
 <subsystem xmlns="urn:jboss:domain:jgroups:2.0" default-stack="${test.expr:maximal}">
     <stack name="minimal">
         <transport type="UDP"/>
+        <!-- the sanity check requires at least one protocol layer -->
+        <protocol type="MPING"/>
     </stack>
     <stack name="maximal">
         <transport type="TCP" socket-binding="some-binding" diagnostics-socket-binding="jgroups-diagnostics" default-executor="jgroups"
