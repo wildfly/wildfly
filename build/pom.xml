@@ -832,6 +832,11 @@
                 </dependency>
 
                 <dependency>
+                    <groupId>org.jberet</groupId>
+                    <artifactId>jberet-core</artifactId>
+                </dependency>
+
+                <dependency>
                     <groupId>org.jboss.common</groupId>
                     <artifactId>jboss-common-beans</artifactId>
                 </dependency>
@@ -963,6 +968,11 @@
                     <groupId>org.jboss.as</groupId>
                     <artifactId>jboss-as-console</artifactId>
                     <classifier>resources</classifier>
+                </dependency>
+
+                <dependency>
+                    <groupId>org.wildfly</groupId>
+                    <artifactId>wildfly-batch</artifactId>
                 </dependency>
 
                 <dependency>
@@ -1650,6 +1660,11 @@
                 </dependency>
 
                 <dependency>
+                    <groupId>org.jboss.spec.javax.batch</groupId>
+                    <artifactId>jboss-batch-api_1.0_spec</artifactId>
+                </dependency>
+
+                <dependency>
                     <groupId>org.jboss.spec.javax.ejb</groupId>
                     <artifactId>jboss-ejb-api_3.2_spec</artifactId>
                 </dependency>
@@ -2146,6 +2161,7 @@
                                         <include>org.hornetq:hornetq-journal</include>
                                         <include>org.hornetq:hornetq-server</include>
                                         <include>org.infinispan:infinispan-core</include>
+                                        <include>org.jberet:jberet-core</include>
                                         <!--     <include># org.wildfly:wildfly-controller-client</include> -->
                                         <include>org.jboss.ejb3:jboss-ejb3-ext-api</include>
                                         <!--     <include># org.jboss:jboss-dmr</include> -->
@@ -2173,6 +2189,7 @@
                                         <include>org.jboss.resteasy:resteasy-validator-provider-11</include>
                                         <include>org.jboss.sasl:jboss-sasl</include>
                                         <include>org.jboss.spec.javax.annotation:jboss-annotations-api_1.2_spec</include>
+                                        <include>org.jboss.spec.javax.batch:jboss-batch-api_1.0_spec</include>
                                         <include>org.jboss.spec.javax.ejb:jboss-ejb-api_3.2_spec</include>
                                         <include>org.jboss.spec.javax.el:jboss-el-api_2.2_spec</include>
                                         <include>org.jboss.spec.javax.faces:jboss-jsf-api_2.2_spec</include>
@@ -2671,6 +2688,10 @@
                                             <packages>javax.annotation:javax.annotation.security:javax.annotation.sql</packages>
                                         </group>
                                         <group>
+                                            <title>Module javax.batch.api</title>
+                                            <packages>javax.batch.api:javax.batch.api.chunk:javax.batch.api.chunk.listener:javax.batch.api.listener:javax.batch.api.partition:javax.batch.operations:javax.batch.runtime:javax.batch.runtime.context</packages>
+                                        </group>
+                                        <group>
                                             <title>Module javax.ejb.api</title>
                                             <packages>javax.ejb:javax.ejb.embeddable:javax.ejb.spi</packages>
                                         </group>
@@ -2953,6 +2974,10 @@
                                         <group>
                                             <title>Module org.jaxen</title>
                                             <packages>org.jaxen:org.jaxen.dom:org.jaxen.dom4j:org.jaxen.expr:org.jaxen.expr.iter:org.jaxen.function:org.jaxen.function.ext:org.jaxen.function.xslt:org.jaxen.javabean:org.jaxen.jdom:org.jaxen.pattern:org.jaxen.saxpath:org.jaxen.saxpath.base:org.jaxen.saxpath.helpers:org.jaxen.util:org.jaxen.xom:org.w3c.dom</packages>
+                                        </group>
+                                        <group>
+                                            <title>Module org.jberet.jberet-core</title>
+                                            <packages>org.jberet: org.jberet.config: org.jberet.creation: org.jberet.job: org.jberet.metadata: org.jberet.operations: org.jberet.repository: org.jberet.runtime: org.jberet.runtime.context: org.jberet.runtime.metric: org.jberet.runtime.runner: org.jberet.util</packages>
                                         </group>
                                         <group>
                                             <title>Module org.jdom</title>
