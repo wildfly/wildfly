@@ -183,12 +183,8 @@ public class CliUtilsForPatching {
             ModelNode respHeaders = responseNode.get("response-headers");
             if (respHeaders != null && respHeaders.isDefined()) {
                 ModelNode processState = respHeaders.get("process-state");
-                if (processState != null && processState.isDefined()) {
-                    return processState.asString()
-                            .equals(ClientConstants.CONTROLLER_PROCESS_STATE_RESTART_REQUIRED);
-                } else {
-                    return false;
-                }
+                return processState != null && processState.isDefined() && processState.asString()
+                        .equals(ClientConstants.CONTROLLER_PROCESS_STATE_RESTART_REQUIRED);
             } else {
                 return false;
             }
