@@ -108,14 +108,18 @@ public class BackupSiteResource extends SimpleResourceDefinition {
         // operations
     static final OperationDefinition BACKUP_BRING_SITE_ONLINE =
             new SimpleOperationDefinitionBuilder(ModelKeys.BRING_SITE_ONLINE, InfinispanExtension.getResourceDescriptionResolver("backup.ops"))
+                .setRuntimeOnly()
                 .build();
 
     static final OperationDefinition BACKUP_TAKE_SITE_OFFLINE =
             new SimpleOperationDefinitionBuilder(ModelKeys.TAKE_SITE_OFFLINE, InfinispanExtension.getResourceDescriptionResolver("backup.ops"))
+                .setRuntimeOnly()
                 .build();
 
     static final OperationDefinition BACKUP_SITE_STATUS =
             new SimpleOperationDefinitionBuilder(ModelKeys.SITE_STATUS, InfinispanExtension.getResourceDescriptionResolver("backup.ops"))
+                .setRuntimeOnly()
+                .setReadOnly()
                 .build();
 
 
@@ -167,7 +171,7 @@ public class BackupSiteResource extends SimpleResourceDefinition {
             final String site = address.getLastElement().getValue();
 
             final ServiceName cacheServiceName = CacheService.getServiceName(cacheContainerName, cacheName);
-            final ServiceController<?> controller = context.getServiceRegistry(false).getService(cacheServiceName);
+            final ServiceController<?> controller = context.getServiceRegistry(true).getService(cacheServiceName);
             Cache<?, ?> cache = (Cache<?, ?>) controller.getValue();
 
             ModelNode result = null;
@@ -203,7 +207,7 @@ public class BackupSiteResource extends SimpleResourceDefinition {
             final String site = address.getLastElement().getValue();
 
             final ServiceName cacheServiceName = CacheService.getServiceName(cacheContainerName, cacheName);
-            final ServiceController<?> controller = context.getServiceRegistry(false).getService(cacheServiceName);
+            final ServiceController<?> controller = context.getServiceRegistry(true).getService(cacheServiceName);
             Cache<?, ?> cache = (Cache<?, ?>) controller.getValue();
 
             ModelNode result = null;
@@ -239,7 +243,7 @@ public class BackupSiteResource extends SimpleResourceDefinition {
             final String site = address.getLastElement().getValue();
 
             final ServiceName cacheServiceName = CacheService.getServiceName(cacheContainerName, cacheName);
-            final ServiceController<?> controller = context.getServiceRegistry(false).getService(cacheServiceName);
+            final ServiceController<?> controller = context.getServiceRegistry(true).getService(cacheServiceName);
             Cache<?, ?> cache = (Cache<?, ?>) controller.getValue();
 
             ModelNode result = null;
