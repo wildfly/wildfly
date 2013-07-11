@@ -35,11 +35,11 @@ ACTION: rollback
 
     Rollback a patch that has been applied
 
-    NOTE: by default this operation will restore all *.xml files in the configuration directories
-          to the state when the patch was applied.
+    NOTE: by default this operation will restore all *.xml files in the
+          configuration directories to the state when the patch was applied.
 
     patch rollback --patch-id=<id>
-      [--keep-configuration]
+      [--reset-configuration=(true|false)]
       [--rollback-to]
       [--override-all]
       [--override-modules]
@@ -49,12 +49,11 @@ ACTION: rollback
 
     --patch-id=<id>      - the ID of the patch to rollback
 
-    --keep-configuration - The argument does not expect any value and is
-                           optional. The default is 'true'.
-                           It signifies that the rollback operation will not
-                           touch the installation configurations and will not
-                           restore the snapshots that were taken when the patch
-                           was applied.
+    --reset-configuration  - The argument is required for the rollback action
+                             and expects a boolean value.
+                           It signifies whether the rollback operation should
+                           reset the installation configurations to their state
+                           before the patch was applied.
 
     --rollback-to        - The argument does not expect any value and is
                            optional. The default is 'false'.
@@ -79,11 +78,12 @@ DESCRIPTION
     If it is not connected, it will patch the command-line interface's own
     installation.
 
-    Applying and rolling back a patch will run consistency checks for all modified items.
-    In case file conflicts are detected the operation will fail and the conflicting items
-    will be part of the 'failure-description' grouped by type (bundles, modules, misc).
-    In order to resolve the conflicts the operation has to be invoked again with additional
-    arguments describing how the patch tool should deal with those conflicts.
+    Applying and rolling back a patch will run consistency checks for all
+    modified items. In case file conflicts are detected the operation will fail
+    and the conflicting items will be part of the 'failure-description' grouped
+    by type (bundles, modules, misc). In order to resolve the conflicts the
+    operation has to be invoked again with additional arguments describing how
+    the patch tool should deal with those conflicts.
 
 ARGUMENTS:
 

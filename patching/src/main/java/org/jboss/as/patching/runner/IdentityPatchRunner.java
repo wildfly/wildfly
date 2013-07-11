@@ -240,6 +240,60 @@ class IdentityPatchRunner implements InstallationManager.ModificationCompletion 
         }
     }
 
+    /**
+     * Rollback the last applied patch.
+     *
+     * @param contentPolicy      the content policy
+     * @param resetConfiguration whether to reset the configuration
+     * @param modification       the installation modification
+     * @return the patching result
+     * @throws PatchingException
+     */
+    public PatchingResult rollbackLast(final ContentVerificationPolicy contentPolicy, final boolean resetConfiguration, InstallationManager.InstallationModification modification) throws PatchingException {
+
+        // Determine the patch id to rollback
+        String patchId = null;
+        final List<String> oneOffs = modification.getPatchIDs();
+        if(oneOffs.isEmpty()) {
+            patchId = modification.getCumulativePatchID();
+            if(patchId == null) {
+                // TODO should it check the release patch id?
+                throw new PatchingException("There are not patches applied."); // TODO add to messages
+            }
+        } else {
+            patchId = oneOffs.get(oneOffs.size() - 1);
+        }
+
+        final File historyDir = installedImage.getPatchHistoryDir(patchId);
+        if (!historyDir.exists()) {
+            throw PatchMessages.MESSAGES.cannotRollbackPatch(patchId);
+        }
+        final File patchXml = new File(historyDir, Constants.ROLLBACK_XML);
+        if (!patchXml.exists()) {
+            throw PatchMessages.MESSAGES.cannotRollbackPatch(patchId);
+        }
+        final File workDir = createTempDir();
+        final PatchContentProvider provider = null;
+        final IdentityPatchContext context = new IdentityPatchContext(workDir, provider, contentPolicy, modification, installedImage);
+        try {
+            // Rollback patches
+            if (!Constants.BASE.equals(patchId)) {
+                rollback(patchId, context, true);
+            }
+            // Execute the tasks
+            final IdentityPatchContext.PatchEntry identity = context.getIdentityEntry();
+            final IdentityRollbackCallback callback = new IdentityRollbackCallback(patchId, Collections.singletonList(patchId), resetConfiguration, identity.getDirectoryStructure());
+            try {
+                return executeTasks(context, callback);
+            } catch (Exception e) {
+                throw rethrowException(e);
+            }
+
+        } finally {
+            context.cleanup();
+        }
+    }
+
     @Override
     public void completed() {
         // nothing here

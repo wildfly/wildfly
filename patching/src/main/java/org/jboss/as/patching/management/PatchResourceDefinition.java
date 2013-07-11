@@ -97,12 +97,12 @@ public class PatchResourceDefinition extends SimpleResourceDefinition {
     static final AttributeDefinition PATCH_ID = SimpleAttributeDefinitionBuilder.create(Constants.PATCH_ID, ModelType.STRING)
             .build();
 
-    static final AttributeDefinition RESTORE_CONFIGURATION = SimpleAttributeDefinitionBuilder.create("restore-configuration", ModelType.BOOLEAN)
+    static final AttributeDefinition RESTORE_CONFIGURATION = SimpleAttributeDefinitionBuilder.create(Constants.RESTORE_CONFIGURATION, ModelType.BOOLEAN)
             .setDefaultValue(new ModelNode(true))
             .setAllowNull(true)
             .build();
 
-    static final AttributeDefinition ROLLBACK_TO = SimpleAttributeDefinitionBuilder.create("rollback-to", ModelType.BOOLEAN)
+    static final AttributeDefinition ROLLBACK_TO = SimpleAttributeDefinitionBuilder.create(Constants.ROLLBACK_TO, ModelType.BOOLEAN)
             .setDefaultValue(new ModelNode(false))
             .setAllowNull(true)
             .build();
@@ -110,6 +110,14 @@ public class PatchResourceDefinition extends SimpleResourceDefinition {
     static final OperationDefinition ROLLBACK = new SimpleOperationDefinitionBuilder(Constants.ROLLBACK, getResourceDescriptionResolver(PatchResourceDefinition.NAME))
             .addParameter(PATCH_ID)
             .addParameter(ROLLBACK_TO)
+            .addParameter(RESTORE_CONFIGURATION)
+            .addParameter(OVERRIDE_ALL)
+            .addParameter(OVERRIDE_MODULES)
+            .addParameter(OVERRIDE)
+            .addParameter(PRESERVE)
+            .build();
+
+    static final OperationDefinition ROLLBACK_LAST = new SimpleOperationDefinitionBuilder(Constants.ROLLBACK_LAST, getResourceDescriptionResolver(PatchResourceDefinition.NAME))
             .addParameter(RESTORE_CONFIGURATION)
             .addParameter(OVERRIDE_ALL)
             .addParameter(OVERRIDE_MODULES)
@@ -218,6 +226,7 @@ public class PatchResourceDefinition extends SimpleResourceDefinition {
         super.registerOperations(registry);
 
         registry.registerOperationHandler(ROLLBACK, LocalPatchRollbackHandler.INSTANCE);
+        registry.registerOperationHandler(ROLLBACK_LAST, LocalPatchRollbackLastHandler.INSTANCE);
         registry.registerOperationHandler(PATCH, LocalPatchOperationStepHandler.INSTANCE);
         registry.registerOperationHandler(SHOW_HISTORY, LocalShowHistoryHandler.INSTANCE);
     }

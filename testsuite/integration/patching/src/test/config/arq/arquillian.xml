@@ -13,6 +13,7 @@
 
             <!-- get modules from the patching/target directory, not from ../../../build/target -->
             <property name="modulePath">${basedir}/target/jbossas/modules</property>
+            <property name="bundlePath">${basedir}/target/jbossas/bundles</property>
 
             <!-- AS7-4070 -->
             <property name="waitForPorts">${as.debug.port:8787} ${as.managementPort:9990}</property>
