@@ -22,21 +22,34 @@
 package org.jboss.as.test.patching;
 
 import com.google.common.base.Joiner;
+
+import org.jboss.as.patching.DirectoryStructure;
 import org.jboss.as.patching.IoUtils;
 import org.jboss.as.patching.ZipUtils;
 import org.jboss.as.patching.metadata.Patch;
 import org.jboss.as.patching.metadata.PatchXml;
+import org.jboss.as.process.protocol.StreamUtils;
 import org.junit.Assert;
 
 import java.io.*;
 import java.nio.charset.Charset;
+import java.util.Properties;
 import java.util.Scanner;
 import java.util.UUID;
+import java.util.jar.Attributes.Name;
+import java.util.jar.JarOutputStream;
+import java.util.jar.Manifest;
 
 import static java.lang.String.format;
+import static org.jboss.as.patching.Constants.BASE;
+import static org.jboss.as.patching.Constants.LAYERS;
+import static org.jboss.as.patching.Constants.SYSTEM;
+import static org.jboss.as.patching.IoUtils.mkdir;
+import static org.jboss.as.patching.IoUtils.newFile;
 import static org.jboss.as.patching.IoUtils.safeClose;
 import static org.jboss.as.patching.Constants.*;
 import static org.jboss.as.patching.PatchLogger.ROOT_LOGGER;
+import static org.junit.Assert.assertTrue;
 
 /**
  * @author Jan Martiska, Jeff Mesnil
@@ -191,6 +204,12 @@ public class PatchingTestUtil {
         return mainDir.getParentFile();
     }
 
+    public static File createModule1(File baseDir, String moduleName, String... resourceFileNames) throws IOException {
+        File mainDir = createModuleRoot(baseDir, moduleName);
+        createModuleXmlFile(mainDir, moduleName, resourceFileNames);
+        return mainDir.getParentFile();
+    }
+
     public static File createModuleRoot(File baseDir, String moduleSpec) throws IOException {
         final int c1 = moduleSpec.lastIndexOf(':');
         final String name;
@@ -239,6 +258,54 @@ public class PatchingTestUtil {
         return zipFile;
     }
 
+    /**
+     * Creates (a part of) the distribution on the filesystem necessary to the run the tests.
+     *
+     * @param env  the directory structure to be created
+     * @param identity  the identity name
+     * @param productName  release name
+     * @param productVersion  release version
+     * @return  the bin directory
+     * @throws Exception  if anything goes wrong
+     */
+    public static File createInstalledImage(DirectoryStructure env, String identity, String productName, String productVersion) throws Exception {
+        // start from a base installation
+        // with a file in it
+        File binDir = mkdir(env.getInstalledImage().getJbossHome(), "bin");
 
+        // create product.conf
+        File productConf = new File(binDir, "product.conf");
+        assertTrue("Failed to create product.conf", productConf.createNewFile());
+        Properties props = new Properties();
+        props.setProperty("slot", identity);
+        FileWriter writer = null;
+        try {
+            writer = new FileWriter(productConf);
+            props.store(writer, null);
+        } finally {
+            StreamUtils.safeClose(writer);
+        }
 
+        // create the product module
+        final File modulesDir = newFile(env.getInstalledImage().getModulesDir(), SYSTEM, LAYERS, BASE);
+        if(!modulesDir.exists()) {
+            modulesDir.mkdirs();
+        }
+        final File moduleDir = createModule1(modulesDir, "org.jboss.as.product:" + identity, "product.jar");
+
+        final Manifest manifest = new Manifest();
+        manifest.getMainAttributes().putValue(Name.MANIFEST_VERSION.toString(), "xxx");
+        manifest.getMainAttributes().putValue("JBoss-Product-Release-Name", productName);
+        manifest.getMainAttributes().putValue("JBoss-Product-Release-Version", productVersion);
+
+        final File moduleJar = new File(new File(moduleDir, identity), "product.jar");
+        JarOutputStream jar = null;
+        try {
+            jar = new JarOutputStream(new FileOutputStream(moduleJar), manifest);
+            jar.flush();
+        } finally {
+            StreamUtils.safeClose(jar);
+        }
+        return binDir;
+    }
 }

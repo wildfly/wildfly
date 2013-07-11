@@ -100,6 +100,16 @@ public interface PatchTool {
      */
     PatchingResult rollback(String patchId, ContentVerificationPolicy contentPolicy, boolean rollbackTo, boolean resetConfiguration) throws PatchingException;
 
+    /**
+     * Rollback the last applied patch.
+     *
+     * @param contentPolicy the content verification policy
+     * @param resetConfiguration whether to reset the configuration from the backup
+     * @return the patching result
+     * @throws PatchingException
+     */
+    PatchingResult rollbackLast(ContentVerificationPolicy contentPolicy, boolean resetConfiguration) throws PatchingException;
+
     public class Factory {
 
         private Factory() {

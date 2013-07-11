@@ -87,11 +87,11 @@ public class PatchingAssert {
         assertFalse(f + " exists", f.exists());
     }
 
-    static void assertFileContent(byte[] expected, File f) throws Exception {
+    public static void assertFileContent(byte[] expected, File f) throws Exception {
         assertFileContent(null, expected, f);
     }
 
-    static void assertFileContent(String message, byte[] expected, File f) throws Exception {
+    public static void assertFileContent(String message, byte[] expected, File f) throws Exception {
         assertEquals(message, bytesToHexString(expected), bytesToHexString(hashFile(f)));
     }
 

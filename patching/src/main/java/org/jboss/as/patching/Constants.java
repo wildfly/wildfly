@@ -40,7 +40,10 @@ public class Constants {
 
     public static final String PATCH = "patch";
     public static final String PATCH_ID = "patch-id";
+    public static final String RESTORE_CONFIGURATION = "restore-configuration";
     public static final String ROLLBACK = "rollback";
+    public static final String ROLLBACK_LAST = "rollback-last";
+    public static final String ROLLBACK_TO = "rollback-to";
     /** The default if no patches are active. */
     public static final String BASE = "base";
     public static final String NOT_PATCHED = BASE;
@@ -59,6 +62,7 @@ public class Constants {
     public static final String DOMAIN = "domain";
     public static final String INSTALLATION = ".installation";
     public static final String METADATA = ".metadata";
+    public static final String RESTORED_CONFIGURATION = "restored-configuration";
     public static final String PATCHES = "patches";
     public static final String OVERLAYS = ".overlays";
     public static final String STANDALONE = "standalone";

@@ -262,7 +262,7 @@ public class ContentConflictsUnitTestCase extends AbstractTaskTestCase {
         createBundle0(baseBundleDir, bundleConflictName, "oops");
 
         try {
-            ctx.handle("patch rollback --patch-id=" + patchID + " --distribution=" + env.getInstalledImage().getJbossHome());
+            ctx.handle("patch rollback --patch-id=" + patchID + " --distribution=" + env.getInstalledImage().getJbossHome() + " --reset-configuration=false");
             fail("Conflicts expected");
         } catch(CommandLineException e) {
             final int relativeIndex = env.getInstalledImage().getJbossHome().getAbsolutePath().length() + 1;

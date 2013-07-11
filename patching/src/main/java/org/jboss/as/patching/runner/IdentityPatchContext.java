@@ -325,7 +325,7 @@ class IdentityPatchContext implements PatchContentProvider {
 
     protected void recordContentLoader(final String patchID, final PatchContentLoader contentLoader) {
         if (contentLoaders.containsKey(patchID)) {
-            throw new IllegalStateException();
+            throw new IllegalStateException("Content loader already registered for patch " + patchID);
         }
         contentLoaders.put(patchID, contentLoader);
     }
@@ -727,13 +727,19 @@ class IdentityPatchContext implements PatchContentProvider {
 
     // TODO log a warning if the restored configuration files are different from the current one?
     // or should we check that before rolling back the patch to give the user a chance to save the changes
-    void restoreConfiguration(final String rollingBackPatchID) throws IOException {
-        final String configuration = Constants.CONFIGURATION;
+    void restoreConfiguration(final String rollingBackPatchID, final boolean resetConfiguration) throws IOException {
 
-        File backupConfigurationDir = new File(installedImage.getPatchHistoryDir(rollingBackPatchID), configuration);
+        File backupConfigurationDir = new File(installedImage.getPatchHistoryDir(rollingBackPatchID), Constants.CONFIGURATION);
         final File ba = new File(backupConfigurationDir, Constants.APP_CLIENT);
         final File bd = new File(backupConfigurationDir, Constants.DOMAIN);
         final File bs = new File(backupConfigurationDir, Constants.STANDALONE);
+
+        final String configuration;
+        if(resetConfiguration) {
+            configuration = Constants.CONFIGURATION;
+        } else {
+            configuration = Constants.CONFIGURATION + File.separator + Constants.RESTORED_CONFIGURATION;
+        }
 
         if (ba.exists()) {
             final File a = new File(installedImage.getAppClientDir(), configuration);
@@ -747,7 +753,6 @@ class IdentityPatchContext implements PatchContentProvider {
             final File s = new File(installedImage.getStandaloneDir(), configuration);
             backupDirectory(bs, s);
         }
-
     }
 
     static void writePatch(final Patch rollbackPatch, final File file) throws IOException {

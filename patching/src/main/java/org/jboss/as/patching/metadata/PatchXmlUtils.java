@@ -327,7 +327,6 @@ class PatchXmlUtils implements XMLStreamConstants {
     protected void doReadElement(final XMLExtendedStreamReader reader, final PatchBuilderFactory factory) throws XMLStreamException {
 
         final PatchBuilder patch = factory.getBuilder();
-        final PatchXml.Namespace namespace = PatchXml.Namespace.forUri(reader.getNamespaceURI());
         final int count = reader.getAttributeCount();
         for (int i = 0; i < count; i++) {
             final String value = reader.getAttributeValue(i);
@@ -768,11 +767,6 @@ class PatchXmlUtils implements XMLStreamConstants {
             writer.writeAttribute(Attribute.DIRECTORY.name, "true");
         }
 
-        byte[] hash = item.getContentHash();
-        if(hash.length > 0) {
-            writer.writeAttribute(Attribute.HASH.name, bytesToHexString(hash));
-        }
-
         if(type == ModificationType.REMOVE) {
             final byte[] existingHash = modification.getTargetHash();
             if (existingHash.length > 0) {
@@ -781,10 +775,17 @@ class PatchXmlUtils implements XMLStreamConstants {
             if(item.isAffectsRuntime()) {
                 writer.writeAttribute(Attribute.IN_RUNTIME_USE.name, "true");
             }
-        } else if(type == ModificationType.MODIFY) {
-            writer.writeAttribute(Attribute.NEW_HASH.name, bytesToHexString(modification.getTargetHash()));
-            if (item.isAffectsRuntime()) {
-                writer.writeAttribute(Attribute.IN_RUNTIME_USE.name, "true");
+        } else {
+            byte[] hash = item.getContentHash();
+            if(hash.length > 0) {
+                writer.writeAttribute(Attribute.HASH.name, bytesToHexString(hash));
+            }
+
+            if(type == ModificationType.MODIFY) {
+                writer.writeAttribute(Attribute.NEW_HASH.name, bytesToHexString(modification.getTargetHash()));
+                if (item.isAffectsRuntime()) {
+                    writer.writeAttribute(Attribute.IN_RUNTIME_USE.name, "true");
+                }
             }
         }
     }
