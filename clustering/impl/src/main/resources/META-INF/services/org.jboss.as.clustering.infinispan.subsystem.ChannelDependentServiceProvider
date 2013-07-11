@@ -1,2 +1,3 @@
 org.jboss.as.clustering.impl.CoreGroupCommunicationServiceProvider
 org.jboss.as.clustering.lock.impl.SharedLocalYieldingClusterLockManagerServiceProvider
+org.jboss.as.clustering.management.support.impl.ManagementAPIClusterSupportServiceProvider
