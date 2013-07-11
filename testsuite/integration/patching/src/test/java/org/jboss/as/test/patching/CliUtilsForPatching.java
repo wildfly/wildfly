@@ -21,7 +21,12 @@
 
 package org.jboss.as.test.patching;
 
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.List;
+
 import org.jboss.as.test.integration.management.util.CLIWrapper;
+import org.jboss.dmr.ModelNode;
 
 /**
  * @author Jan Martiska
@@ -103,14 +108,33 @@ public class CliUtilsForPatching {
      * @return output of "patch info" command or null if output is empty
      * @throws Exception
      */
-    public static String info() throws Exception {
+    public static ModelNode info() throws Exception {
         CLIWrapper cli = new CLIWrapper(true);
         String command = "patch info";
         cli.sendLine(command);
         String output = cli.readOutput();
         cli.quit();
-        return output;
+        return ModelNode.fromJSONString(output);
     }
 
+
+    /**
+     * Use CLI to get the list of currently installed patches
+     * @return the currently installed patches as a collection of patch IDs (strings)
+     * @throws Exception
+     */
+    public static Collection<String> getInstalledPatches() throws Exception {
+        CLIWrapper cli = new CLIWrapper(true);
+        cli.sendLine("patch info");
+        String response = cli.readOutput();
+        ModelNode responseNode = ModelNode.fromJSONString(response);
+        List<ModelNode> patchesList = responseNode.get("result").get("patches").asList();
+        List<String> patchesListString = new ArrayList<String>();
+        for(ModelNode n : patchesList) {
+            patchesListString.add(n.asString());
+        }
+        cli.quit();
+        return patchesListString;
+    }
 
 }
