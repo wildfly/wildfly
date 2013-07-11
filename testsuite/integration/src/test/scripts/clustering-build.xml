@@ -171,12 +171,26 @@
         <ts.config-as.add-xsite-remote-site name="wildfly-clustering-xsite-SFO-0" stack="udp"
                                       remote-site.site="NYC" remote-site.stack="tcp" remote-site.cluster="bridge"/>
 
-        <!-- create a named backup cache based on repl for LON:web:dist and mark as backup-for
-        <ts.config-as.copy-cache name="wildfly-clustering-xsite-SFO-0" container.name="web"
+        <!-- site SFO, node 3, mcast 2 + backupFor -->
+        <echo message="Building config clustering-xsite-SFO-0-backupFor"/>
+        <copy todir="target/wildfly-clustering-xsite-SFO-0-backupFor" overwrite="true">
+            <fileset dir="${basedir}/target/jbossas"/>
+        </copy>
+        <ts.config-as.ip-with-multicast-longform name="wildfly-clustering-xsite-SFO-0-backupFor"
+                                                 managementIPAddress="${node3}" publicIPAddress="${node3}"
+                                                 udpMcastAddress="${mcast-sfo}" diagnosticsMcastAddress="${mcast-sfo}" mpingMcastAddress="${mcast-mping}" modclusterMcastAddress="${mcast-sfo}"/>
+        <ts.config-as.add-port-offset name="wildfly-clustering-xsite-SFO-0-backupFor" offset="300" nativePort="9999" httpPort="9990"/>
+        <!-- define relay at JGroups level -->
+        <ts.config-as.add-xsite-relay name="wildfly-clustering-xsite-SFO-0-backupFor" stack="udp" relay.site="SFO"
+                                      remote-site.site="LON" remote-site.stack="tcp" remote-site.cluster="bridge"/>
+        <ts.config-as.add-xsite-remote-site name="wildfly-clustering-xsite-SFO-0-backupFor" stack="udp"
+                                      remote-site.site="NYC" remote-site.stack="tcp" remote-site.cluster="bridge"/>
+
+        <!-- create a named backup cache based on repl for LON:web:dist and mark as backup-for -->
+        <ts.config-as.copy-cache name="wildfly-clustering-xsite-SFO-0-backupFor" container.name="web"
                                        cache-type="replicated-cache" cache.base="repl" cache.name="LONrepl"/>
-        <ts.config-as.add-xsite-backup-for name="wildfly-clustering-xsite-SFO-0" container="web"
+        <ts.config-as.add-xsite-backup-for name="wildfly-clustering-xsite-SFO-0-backupFor" container="web"
                                        cache-type="replicated-cache" cache="LONrepl" remote-site="LON" remote-cache="repl"/>
-        -->
 
     </target>
 

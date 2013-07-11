@@ -61,15 +61,16 @@ import org.junit.runner.RunWith;
  *   SFO -> LON
  *
  * backups: (<site>:<container>:<cache>)
- *   LON:web:repl backed up by NYC:web:repl, SFO:web:repl
+ *   LON:web:repl backed up by NYC:web:repl, SFO:web:LONrepl
  *   NYC not backed up
  *   SFO not backed up
+ *
  *
  * @author Richard Achmatowicz
  */
 @RunWith(Arquillian.class)
 @RunAsClient
-public class XSiteSimpleTestCase extends ExtendedClusterAbstractTestCase {
+public class XSiteBackupForTestCase extends ExtendedClusterAbstractTestCase {
 
     @Deployment(name = DEPLOYMENT_1, managed = false)
     @TargetsContainer(CONTAINER_1)
@@ -92,17 +93,29 @@ public class XSiteSimpleTestCase extends ExtendedClusterAbstractTestCase {
     @Deployment(name = DEPLOYMENT_4, managed = false)
     @TargetsContainer(CONTAINER_4)
     public static Archive<?> deployment3() {
-        return getDeployment();
+        return getBackupForDeployment();
     }
 
+    // a deployment which reads from the cache jboss:/infinispan/web/repl
     private static Archive<?> getDeployment() {
         WebArchive war = ShrinkWrap.create(WebArchive.class, "xsite.war");
         war.addClass(CacheAccessServlet.class);
-        war.setWebXML(XSiteSimpleTestCase.class.getPackage(), "web.xml");
+        war.setWebXML(XSiteBackupForTestCase.class.getPackage(), "web.xml");
         war.setManifest(new StringAsset("Manifest-Version: 1.0\nDependencies: org.infinispan\n"));
         log.info(war.toString(true));
         return war;
     }
+
+    // a deployment which reads from cache jboss:/infinispan/web/LONrepl
+    private static Archive<?> getBackupForDeployment() {
+        WebArchive war = ShrinkWrap.create(WebArchive.class, "xsite.war");
+        war.addClass(CacheAccessServlet.class);
+        war.setWebXML(XSiteBackupForTestCase.class.getPackage(), "web-backupfor.xml");
+        war.setManifest(new StringAsset("Manifest-Version: 1.0\nDependencies: org.infinispan\n"));
+        log.info(war.toString(true));
+        return war;
+    }
+
 
     @Override
     protected void setUp() {
@@ -111,7 +124,8 @@ public class XSiteSimpleTestCase extends ExtendedClusterAbstractTestCase {
     }
 
     /*
-     * Tests that puts get relayed to their backup sites
+     * Tests that puts get relayed to their backup sites, even when using backup-for to rename
+     * the backup cache name.
      *
      * Put the key-value (a,100) on LON-0 on site LON and check that the key-value pair:
      *   arrives at LON-1 on site LON
@@ -173,48 +187,4 @@ public class XSiteSimpleTestCase extends ExtendedClusterAbstractTestCase {
         }
     }
 
-
-    /*
-     * Tests that puts at the backup caches do not get relayed back to the origin cache.
-     *
-     * Put the key-value (b,200) on NYC-0 on site NYC and check that the key-value pair:
-     *   does not arrive at LON-0 on site LON
-     */
-    @Test
-    public void testPutToBackupNotRelayed(
-            @ArquillianResource(CacheAccessServlet.class) @OperateOnDeployment(DEPLOYMENT_1) URL baseURL1,
-            @ArquillianResource(CacheAccessServlet.class) @OperateOnDeployment(DEPLOYMENT_2) URL baseURL2,
-            @ArquillianResource(CacheAccessServlet.class) @OperateOnDeployment(DEPLOYMENT_3) URL baseURL3,
-            @ArquillianResource(CacheAccessServlet.class) @OperateOnDeployment(DEPLOYMENT_4) URL baseURL4)
-
-            throws IllegalStateException, IOException, InterruptedException {
-
-        DefaultHttpClient client = HttpClientUtils.relaxedCookieHttpClient();
-
-        String url1 = baseURL1.toString() + "cache?operation=get&key=b";
-        String url3 = baseURL3.toString() + "cache?operation=put&key=b&value=200";
-
-        try {
-            // put a value to NYC-0
-            System.out.println("Executing HTTP request: " + url3);
-            HttpResponse response = client.execute(new HttpGet(url3));
-            Assert.assertEquals(HttpServletResponse.SC_OK, response.getStatusLine().getStatusCode());
-            response.getEntity().getContent().close();
-            System.out.println("Executed HTTP request");
-
-            // Lets wait for the session to replicate
-            waitForReplication(GRACE_TIME_TO_REPLICATE);
-
-            // do a get on LON-1 - this should fail
-            System.out.println("Executing HTTP request: " + url1);
-            response = client.execute(new HttpGet(url1));
-            Assert.assertEquals(HttpServletResponse.SC_INTERNAL_SERVER_ERROR, response.getStatusLine().getStatusCode());
-            // Assert.assertEquals(500, Integer.parseInt(response.getFirstHeader("value").getValue()));
-            response.getEntity().getContent().close();
-            System.out.println("Executed HTTP request");
-
-        } finally {
-            client.getConnectionManager().shutdown();
-        }
-    }
 }
