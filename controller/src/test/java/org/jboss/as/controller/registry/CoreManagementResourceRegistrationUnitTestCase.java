@@ -23,8 +23,11 @@
 package org.jboss.as.controller.registry;
 
 import static org.junit.Assert.*;
+import static org.junit.Assert.assertEquals;
 
+import java.util.Arrays;
 import java.util.EnumSet;
+import java.util.List;
 import java.util.Locale;
 import java.util.Set;
 
@@ -33,7 +36,14 @@ import org.jboss.as.controller.OperationStepHandler;
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.PathElement;
+import org.jboss.as.controller.ResourceDefinition;
+import org.jboss.as.controller.SimpleResourceDefinition;
+import org.jboss.as.controller.access.TargetResource;
+import org.jboss.as.controller.access.constraint.management.AccessConstraintDefinition;
+import org.jboss.as.controller.access.constraint.management.ApplicationTypeAccessConstraintDefinition;
+import org.jboss.as.controller.access.constraint.management.SensitiveTargetAccessConstraintDefinition;
 import org.jboss.as.controller.descriptions.DescriptionProvider;
+import org.jboss.as.controller.descriptions.NonResolvingResourceDescriptionResolver;
 import org.jboss.dmr.ModelNode;
 import org.junit.Before;
 import org.junit.Test;
@@ -331,6 +341,42 @@ public class CoreManagementResourceRegistrationUnitTestCase {
         assertNotNull(threeFlags);
         assertEquals(1, threeFlags.size());
         assertTrue(threeFlags.contains(OperationEntry.Flag.READ_ONLY));
+    }
+
+    @Test
+    public void testInheritedAccessConstraints() {
+
+        ResourceDefinition rootRd = new SimpleResourceDefinition(null, new NonResolvingResourceDescriptionResolver()) {
+            @Override
+            public List<AccessConstraintDefinition> getAccessConstraints() {
+                return Arrays.asList(
+                        (AccessConstraintDefinition) SensitiveTargetAccessConstraintDefinition.EXTENSIONS,
+                        (AccessConstraintDefinition) ApplicationTypeAccessConstraintDefinition.DEPLOYMENT
+                );
+            }
+        };
+        ManagementResourceRegistration root = ManagementResourceRegistration.Factory.create(rootRd);
+
+        List<AccessConstraintDefinition> acds = root.getAccessConstraints();
+        assertEquals(2, acds.size());
+        assertTrue(acds.contains(SensitiveTargetAccessConstraintDefinition.EXTENSIONS));
+        assertTrue(acds.contains(ApplicationTypeAccessConstraintDefinition.DEPLOYMENT));
+
+        ResourceDefinition childRd = new SimpleResourceDefinition(PathElement.pathElement("child"), new NonResolvingResourceDescriptionResolver()) {
+            @Override
+            public List<AccessConstraintDefinition> getAccessConstraints() {
+                return Arrays.asList(
+                        (AccessConstraintDefinition) SensitiveTargetAccessConstraintDefinition.SECURITY_DOMAIN,
+                        (AccessConstraintDefinition) ApplicationTypeAccessConstraintDefinition.DEPLOYMENT
+                );
+            }
+        };
+        ManagementResourceRegistration child = root.registerSubModel(childRd);
+        acds = child.getAccessConstraints();
+        assertEquals(4, acds.size());
+        assertTrue(acds.contains(SensitiveTargetAccessConstraintDefinition.EXTENSIONS));
+        assertTrue(acds.contains(SensitiveTargetAccessConstraintDefinition.SECURITY_DOMAIN));
+        assertTrue(acds.contains(ApplicationTypeAccessConstraintDefinition.DEPLOYMENT));
     }
 
     private static class TestHandler implements OperationStepHandler {
