@@ -179,7 +179,11 @@ public class UndertowDeploymentService implements Service<UndertowDeploymentServ
         if(file == null) {
             return;
         }
-        for(File f : file.listFiles()) {
+        File[] files = file.listFiles();
+        if (files == null){
+            return;
+        }
+        for(File f : files) {
             recursiveDelete(f);
         }
         if(!file.delete()) {
