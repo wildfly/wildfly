@@ -69,14 +69,20 @@ public class WeldModuleDeploymentTestCase {
 
     public static void doSetup() throws Exception {
         File testModuleRoot = new File(getModulePath(), "org/jboss/test/weldModule");
-        deleteRecursively(testModuleRoot);
+        File file = testModuleRoot;
+        while (!getModulePath().equals(file.getParentFile()))
+            file = file.getParentFile();
+        deleteRecursively(file);
         createTestModule(testModuleRoot);
     }
 
     @AfterClass
     public static void tearDown() throws Exception {
         File testModuleRoot = new File(getModulePath(), "org/jboss/test/weldModule");
-        deleteRecursively(testModuleRoot);
+        File file = testModuleRoot;
+        while (!getModulePath().equals(file.getParentFile()))
+            file = file.getParentFile();
+        deleteRecursively(file);
     }
 
     private static void deleteRecursively(File file) {

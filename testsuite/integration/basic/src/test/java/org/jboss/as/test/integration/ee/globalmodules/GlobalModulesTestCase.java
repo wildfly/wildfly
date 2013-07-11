@@ -78,7 +78,6 @@ public class GlobalModulesTestCase {
             module.get("annotations").set(true);
             value.add(module);
 
-
             final ModelNode op = new ModelNode();
             op.get(OP_ADDR).set(SUBSYSTEM, "ee");
             op.get(OP).set(WRITE_ATTRIBUTE_OPERATION);
@@ -86,9 +85,11 @@ public class GlobalModulesTestCase {
             op.get(VALUE).set(value);
             managementClient.getControllerClient().execute(op);
 
-
             File testModuleRoot = new File(getModulePath(), "org/jboss/test/globalModule");
-            deleteRecursively(testModuleRoot);
+            File file = testModuleRoot;
+            while (!getModulePath().equals(file.getParentFile()))
+                file = file.getParentFile();
+            deleteRecursively(file);
             createTestModule(testModuleRoot);
         }
 
@@ -100,9 +101,11 @@ public class GlobalModulesTestCase {
             op.get(NAME).set("global-modules");
             managementClient.getControllerClient().execute(op);
 
-
             File testModuleRoot = new File(getModulePath(), "org/jboss/test/globalModule");
-            deleteRecursively(testModuleRoot);
+            File file = testModuleRoot;
+            while (!getModulePath().equals(file.getParentFile()))
+                file = file.getParentFile();
+            deleteRecursively(file);
         }
 
         private static void deleteRecursively(File file) {
