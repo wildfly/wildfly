@@ -40,8 +40,8 @@ final class StartStopService extends AbstractService {
     private final Method startMethod;
     private final Method stopMethod;
 
-    StartStopService(final Object mBeanInstance, final Method startMethod, final Method stopMethod, final ServiceName duServiceName) {
-        super(mBeanInstance, duServiceName);
+    StartStopService(final Object mBeanInstance, final Method startMethod, final Method stopMethod, final ServiceName duServiceName, final ClassLoader mbeanContextClassLoader) {
+        super(mBeanInstance, duServiceName, mbeanContextClassLoader);
         this.startMethod = startMethod;
         this.stopMethod = stopMethod;
     }

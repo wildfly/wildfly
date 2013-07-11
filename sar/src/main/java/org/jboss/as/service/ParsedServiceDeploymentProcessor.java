@@ -22,8 +22,6 @@
 
 package org.jboss.as.service;
 
-import static org.jboss.msc.value.Values.cached;
-
 import java.beans.PropertyEditor;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.Method;
@@ -59,6 +57,8 @@ import org.jboss.msc.value.ImmediateValue;
 import org.jboss.msc.value.MethodValue;
 import org.jboss.msc.value.Value;
 import org.jboss.msc.value.Values;
+
+import static org.jboss.msc.value.Values.cached;
 
 /**
  * DeploymentUnit processor responsible for taking JBossServiceXmlDescriptor configuration and creating the
@@ -112,7 +112,7 @@ public class ParsedServiceDeploymentProcessor implements DeploymentUnitProcessor
         final List<ClassReflectionIndex<?>> mBeanClassHierarchy = ReflectionUtils.getClassHierarchy(mBeanClassName, index, classLoader);
         final Object mBeanInstance = newInstance(mBeanConfig, mBeanClassHierarchy, classLoader);
         final String mBeanName = mBeanConfig.getName();
-        final MBeanServices mBeanServices = new MBeanServices(mBeanName, mBeanInstance, mBeanClassHierarchy, target, componentInstantiator, phaseContext.getDeploymentUnit().getServiceName());
+        final MBeanServices mBeanServices = new MBeanServices(mBeanName, mBeanInstance, mBeanClassHierarchy, target, componentInstantiator, phaseContext.getDeploymentUnit().getServiceName(), classLoader);
 
         final JBossServiceDependencyConfig[] dependencyConfigs = mBeanConfig.getDependencyConfigs();
         if (dependencyConfigs != null) {
@@ -189,25 +189,32 @@ public class ParsedServiceDeploymentProcessor implements DeploymentUnitProcessor
         return new ImmediateValue<Object>(newValue(setterType, attributeConfig.getValue()));
     }
 
-    private static Object newInstance(final JBossServiceConfig serviceConfig, final List<ClassReflectionIndex<?>> mBeanClassHierarchy, final ClassLoader classLoader) throws DeploymentUnitProcessingException {
-        final JBossServiceConstructorConfig constructorConfig = serviceConfig.getConstructorConfig();
-        final int paramCount = constructorConfig != null ? constructorConfig.getArguments().length : 0;
-        final Class<?>[] types = new Class<?>[paramCount];
-        final Object[] params = new Object[paramCount];
+    private static Object newInstance(final JBossServiceConfig serviceConfig, final List<ClassReflectionIndex<?>> mBeanClassHierarchy, final ClassLoader deploymentClassLoader) throws DeploymentUnitProcessingException {
+        // set TCCL so that the MBean instantiation happens in the deployment's classloader
+        final ClassLoader oldTCCL = SecurityActions.setThreadContextClassLoader(deploymentClassLoader);
+        try {
+            final JBossServiceConstructorConfig constructorConfig = serviceConfig.getConstructorConfig();
+            final int paramCount = constructorConfig != null ? constructorConfig.getArguments().length : 0;
+            final Class<?>[] types = new Class<?>[paramCount];
+            final Object[] params = new Object[paramCount];
 
-        if (constructorConfig != null) {
-            final Argument[] arguments = constructorConfig.getArguments();
-            for (int i = 0; i < paramCount; i++) {
-                final Argument argument = arguments[i];
-                types[i] = ReflectionUtils.getClass(argument.getType(), classLoader);
-                params[i] = newValue(ReflectionUtils.getClass(argument.getType(), classLoader), argument.getValue());
+            if (constructorConfig != null) {
+                final Argument[] arguments = constructorConfig.getArguments();
+                for (int i = 0; i < paramCount; i++) {
+                    final Argument argument = arguments[i];
+                    types[i] = ReflectionUtils.getClass(argument.getType(), deploymentClassLoader);
+                    params[i] = newValue(ReflectionUtils.getClass(argument.getType(), deploymentClassLoader), argument.getValue());
+                }
             }
+
+            final Constructor<?> constructor = mBeanClassHierarchy.get(0).getConstructor(types);
+            final Object mBeanInstance = ReflectionUtils.newInstance(constructor, params);
+
+            return mBeanInstance;
+        } finally {
+            // switch back the TCCL
+            SecurityActions.setThreadContextClassLoader(oldTCCL);
         }
-
-        final Constructor<?> constructor = mBeanClassHierarchy.get(0).getConstructor(types);
-        final Object mBeanInstance = ReflectionUtils.newInstance(constructor, params);
-
-        return mBeanInstance;
     }
 
     private static Injector<Object> getPropertyInjector(final String propertyName, final List<ClassReflectionIndex<?>> mBeanClassHierarchy, final Service<?> service, final Value<?> value) {

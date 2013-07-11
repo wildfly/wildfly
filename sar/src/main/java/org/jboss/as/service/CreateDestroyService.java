@@ -46,8 +46,9 @@ final class CreateDestroyService extends AbstractService {
     private final ServiceComponentInstantiator componentInstantiator;
     private ManagedReference managedReference;
 
-    CreateDestroyService(final Object mBeanInstance, final Method createMethod, final Method destroyMethod, ServiceComponentInstantiator componentInstantiator, final ServiceName duServiceName) {
-        super(mBeanInstance, duServiceName);
+    CreateDestroyService(final Object mBeanInstance, final Method createMethod, final Method destroyMethod, ServiceComponentInstantiator componentInstantiator,
+                         final ServiceName duServiceName, final ClassLoader mbeanContextClassLoader) {
+        super(mBeanInstance, duServiceName, mbeanContextClassLoader);
         this.createMethod = createMethod;
         this.destroyMethod = destroyMethod;
         this.componentInstantiator = componentInstantiator;

@@ -39,15 +39,17 @@ abstract class AbstractService implements Service<Object> {
 
     private final Object mBeanInstance;
     private final ServiceName duServiceName;
+    private final ClassLoader mbeanContextClassLoader;
 
     /**
      *
      * @param mBeanInstance
      * @param duServiceName the deployment unit's service name
      */
-    protected AbstractService(final Object mBeanInstance, final ServiceName duServiceName) {
+    protected AbstractService(final Object mBeanInstance, final ServiceName duServiceName, final ClassLoader mbeanContextClassLoader) {
         this.mBeanInstance = mBeanInstance;
         this.duServiceName = duServiceName;
+        this.mbeanContextClassLoader = mbeanContextClassLoader;
     }
 
     /** {@inheritDoc} */
@@ -59,7 +61,7 @@ abstract class AbstractService implements Service<Object> {
         if (method != null) {
             WritableServiceBasedNamingStore.pushOwner(duServiceName);
             try {
-                final ClassLoader old = SecurityActions.setThreadContextClassLoader(mBeanInstance.getClass().getClassLoader());
+                final ClassLoader old = SecurityActions.setThreadContextClassLoader(this.mbeanContextClassLoader);
                 try {
                     method.invoke(mBeanInstance);
                 } finally {
