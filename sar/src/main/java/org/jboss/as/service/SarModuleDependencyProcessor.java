@@ -40,8 +40,9 @@ import org.jboss.modules.ModuleIdentifier;
  */
 public class SarModuleDependencyProcessor implements DeploymentUnitProcessor {
 
-    private static ModuleIdentifier JBOSS_MODULES_ID = ModuleIdentifier.create("org.jboss.modules");
-    private static ModuleIdentifier JBOSS_AS_SYSTEM_JMX_ID = ModuleIdentifier.create("org.jboss.as.system-jmx");
+    private static final ModuleIdentifier JBOSS_MODULES_ID = ModuleIdentifier.create("org.jboss.modules");
+    private static final ModuleIdentifier JBOSS_AS_SYSTEM_JMX_ID = ModuleIdentifier.create("org.jboss.as.system-jmx");
+    private static final ModuleIdentifier PROPERTIES_EDITOR_MODULE_ID = ModuleIdentifier.create("org.jboss.common-beans");
 
     /**
      * Add dependencies for modules required for manged bean deployments, if managed bean configurations are attached
@@ -60,6 +61,8 @@ public class SarModuleDependencyProcessor implements DeploymentUnitProcessor {
 
         moduleSpecification.addSystemDependency(new ModuleDependency(Module.getBootModuleLoader(), JBOSS_MODULES_ID, false, false, false, false));
         moduleSpecification.addSystemDependency(new ModuleDependency(Module.getBootModuleLoader(), JBOSS_AS_SYSTEM_JMX_ID, true, false, false, false));
+        // depend on Properties editor module which uses ServiceLoader approach to load the appropriate org.jboss.common.beans.property.finder.PropertyEditorFinder
+        moduleSpecification.addSystemDependency(new ModuleDependency(Module.getBootModuleLoader(), PROPERTIES_EDITOR_MODULE_ID, false, false, true, false));
     }
 
     public void undeploy(final DeploymentUnit context) {
