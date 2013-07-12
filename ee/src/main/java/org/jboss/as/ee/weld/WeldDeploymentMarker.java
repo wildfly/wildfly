@@ -35,12 +35,14 @@ public class WeldDeploymentMarker {
     private static final AttachmentKey<Boolean> MARKER = AttachmentKey.create(Boolean.class);
 
     /**
-     * Mark the top level deployment as being a weld deployment. If the deployment is not a top level deployment the parent is
-     * marked instead
+     * Mark this deployment and the top level deployment as being a weld deployment.
      *
      */
     public static void mark(DeploymentUnit unit) {
         unit.putAttachment(MARKER, Boolean.TRUE);
+        if (unit.getParent() != null) {
+            mark(unit.getParent());
+        }
     }
 
     /**

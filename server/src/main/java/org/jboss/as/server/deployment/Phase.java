@@ -283,7 +283,9 @@ public enum Phase {
     public static final int PARSE_EE_ANNOTATIONS                        = 0x2901;
     public static final int PARSE_JAXRS_ANNOTATIONS                     = 0x2A00;
     public static final int PARSE_CDI_ANNOTATIONS                       = 0x2A10;
+    public static final int PARSE_CDI_BEAN_DEFINING_ANNOTATIONS         = 0x2A80;
     public static final int PARSE_WELD_DEPLOYMENT                       = 0x2B00;
+    public static final int PARSE_WELD_IMPLICIT_DEPLOYMENT_DETECTION    = 0x2C00;
     public static final int PARSE_DATA_SOURCE_DEFINITION_ANNOTATION     = 0x2D00;
     public static final int PARSE_EJB_CONTEXT_BINDING                   = 0x2E00;
     public static final int PARSE_EJB_TIMERSERVICE_BINDING              = 0x2E01;

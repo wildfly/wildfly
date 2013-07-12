@@ -28,11 +28,12 @@ import java.net.URL;
 
 import org.jboss.as.server.deployment.DeploymentUnit;
 import org.jboss.logging.BasicLogger;
+import org.jboss.logging.Logger;
 import org.jboss.logging.annotations.Cause;
 import org.jboss.logging.annotations.LogMessage;
-import org.jboss.logging.Logger;
 import org.jboss.logging.annotations.Message;
 import org.jboss.logging.annotations.MessageLogger;
+import org.jboss.weld.bootstrap.spi.BeanDeploymentArchive;
 
 /**
  * Date: 05.11.2011
@@ -127,4 +128,8 @@ public interface WeldLogger extends BasicLogger {
     @LogMessage(level = Logger.Level.WARN)
     @Message(value = "Found both WEB-INF/beans.xml and WEB-INF/classes/META-INF/beans.xml. It is not portable to use both locations at the same time. Weld is going to use the former location for this deployment.", id = 16017)
     void duplicateBeansXml();
+
+    @LogMessage(level = Logger.Level.DEBUG)
+    @Message(value = "Discovered %s", id = 16018)
+    void beanArchiveDiscovered(BeanDeploymentArchive bda);
 }

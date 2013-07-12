@@ -21,6 +21,8 @@
  */
 package org.jboss.as.weld.deployment.processors;
 
+import static org.jboss.as.weld.util.Utils.getRootDeploymentUnit;
+
 import java.util.HashSet;
 import java.util.Set;
 
@@ -81,7 +83,7 @@ public class WeldComponentIntegrationProcessor implements DeploymentUnitProcesso
         }
 
 
-        final DeploymentUnit topLevelDeployment = deploymentUnit.getParent() == null ? deploymentUnit : deploymentUnit.getParent();
+        final DeploymentUnit topLevelDeployment = getRootDeploymentUnit(deploymentUnit);
         final EEModuleDescription eeModuleDescription = deploymentUnit.getAttachment(org.jboss.as.ee.component.Attachments.EE_MODULE_DESCRIPTION);
         final ServiceName weldBootstrapService = topLevelDeployment.getServiceName().append(WeldBootstrapService.SERVICE_NAME);
         final ServiceName weldStartService = topLevelDeployment.getServiceName().append(WeldStartService.SERVICE_NAME);

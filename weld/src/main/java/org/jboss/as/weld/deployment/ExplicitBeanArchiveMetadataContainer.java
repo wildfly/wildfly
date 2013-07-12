@@ -21,32 +21,34 @@
  */
 package org.jboss.as.weld.deployment;
 
-import java.util.Collections;
-import java.util.HashSet;
-import java.util.Set;
+import java.util.Map;
 
 import org.jboss.as.server.deployment.AttachmentKey;
+import org.jboss.as.server.deployment.module.ResourceRoot;
+
+import com.google.common.collect.ImmutableMap;
 
 /**
- * Information about a Weld deployment that is attached to the deployment
+ * Information about explicit CDI bean archives
  * <p>
  * Thread Safety: This class is immutable and does not require a happens before event between construction and usage
  *
  * @author Stuart Douglas
+ * @author Jozef Hartinger
  *
  */
-public class WeldDeploymentMetadata {
+public class ExplicitBeanArchiveMetadataContainer {
 
-    public static final AttachmentKey<WeldDeploymentMetadata> ATTACHMENT_KEY = AttachmentKey.create(WeldDeploymentMetadata.class);
+    public static final AttachmentKey<ExplicitBeanArchiveMetadataContainer> ATTACHMENT_KEY = AttachmentKey.create(ExplicitBeanArchiveMetadataContainer.class);
 
-    private final Set<BeanArchiveMetadata> beanArchiveMetadata;
+    private final Map<ResourceRoot, ExplicitBeanArchiveMetadata> beanArchiveMetadata;
 
-    public WeldDeploymentMetadata(Set<BeanArchiveMetadata> beanArchiveMetadata) {
-        this.beanArchiveMetadata = new HashSet<BeanArchiveMetadata>(beanArchiveMetadata);
+    public ExplicitBeanArchiveMetadataContainer(Map<ResourceRoot, ExplicitBeanArchiveMetadata> beanArchiveMetadata) {
+        this.beanArchiveMetadata = ImmutableMap.copyOf(beanArchiveMetadata);
     }
 
-    public Set<BeanArchiveMetadata> getBeanArchiveMetadata() {
-        return Collections.unmodifiableSet(beanArchiveMetadata);
+    public Map<ResourceRoot, ExplicitBeanArchiveMetadata> getBeanArchiveMetadata() {
+        return beanArchiveMetadata;
     }
 
 }
