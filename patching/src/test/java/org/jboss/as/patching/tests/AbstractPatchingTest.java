@@ -60,7 +60,6 @@ public class AbstractPatchingTest {
 
     private static final String SYSTEM_TEMP_DIR = System.getProperty("java.io.tmpdir");
 
-
     private File tempDir;
     private ProductConfig productConfig;
     private InstallationManager installationManager;
@@ -73,8 +72,6 @@ public class AbstractPatchingTest {
         mkdir(jbossHome, BUNDLES, "system", LAYERS, BASE);
 
         productConfig = new ProductConfig(PRODUCT_NAME, PRODUCT_VERSION, "main");
-        final InstalledIdentity identity = loadInstalledIdentity(tempDir, productConfig);
-        installationManager = new InstallationManagerImpl(identity);
     }
 
     @After
@@ -82,6 +79,11 @@ public class AbstractPatchingTest {
         if (!IoUtils.recursiveDelete(tempDir)) {
             tempDir.deleteOnExit();
         }
+    }
+
+    protected InstallationManager loadInstallationManager() throws IOException {
+        final InstalledIdentity identity = loadInstalledIdentity(tempDir, productConfig);
+        return new InstallationManagerImpl(identity);
     }
 
     static InstalledIdentity loadInstalledIdentity(File tempDir, ProductConfig productConfig) throws IOException {
@@ -99,10 +101,27 @@ public class AbstractPatchingTest {
      */
     protected PatchingTestBuilder createDefaultBuilder() throws IOException {
         final File jbossHome = new File(tempDir, JBOSS_INSTALLATION);
-        installLayer(jbossHome, null, false, Constants.BASE);
+        final File modules = new File(jbossHome, "modules");
+        installLayer(modules, null, false, Constants.BASE);
+        installationManager = loadInstallationManager();
         return createBuilder();
     }
 
+    /**
+     * Create the default builder, installing a few layers.
+     *
+     * @param layers the layers
+     * @return the patching test builder
+     * @throws IOException
+     */
+    protected PatchingTestBuilder createDefaultBuilder(String... layers) throws IOException {
+        final File jbossHome = new File(tempDir, JBOSS_INSTALLATION);
+        final File modules = new File(jbossHome, "modules");
+        final File layersConf = new File(modules, "layers.conf");
+        installLayer(modules, layersConf, false, layers);
+        installationManager = loadInstallationManager();
+        return createBuilder();
+    }
 
     protected PatchingTestBuilder createBuilder() {
         return new PatchingTestBuilder(tempDir);
@@ -143,6 +162,10 @@ public class AbstractPatchingTest {
             throw new PatchingException(e);
         }
         return result;
+    }
+
+    protected PatchingResult rollback(PatchingTestStepBuilder step) throws PatchingException {
+        return rollback(step, ContentVerificationPolicy.STRICT);
     }
 
     protected PatchingResult rollback(PatchingTestStepBuilder step, ContentVerificationPolicy verificationPolicy) throws PatchingException {
