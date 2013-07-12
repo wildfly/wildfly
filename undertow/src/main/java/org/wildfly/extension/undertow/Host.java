@@ -221,7 +221,7 @@ public class Host implements Service<Host>, WebHost {
         public void destroy() throws Exception {
             manager.undeploy();
             ServletContainer container = getServerInjection().getValue().getServletContainer().getValue().getServletContainer();
-            container.removeDeployment(deploymentInfo.getDeploymentName());
+            container.removeDeployment(deploymentInfo);
         }
     }
 

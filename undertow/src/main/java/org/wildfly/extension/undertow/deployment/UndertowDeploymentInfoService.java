@@ -319,6 +319,7 @@ public class UndertowDeploymentInfoService implements Service<DeploymentInfo> {
 
     @Override
     public synchronized void stop(final StopContext stopContext) {
+        this.deploymentInfo.setConfidentialPortManager(null);
         this.deploymentInfo = null;
     }
 
