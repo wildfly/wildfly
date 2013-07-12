@@ -250,7 +250,7 @@ public class JBossPDPInteroperabilityTestCase {
      */
     private int getDecisionForStr(PolicyDecisionPoint pdp, String requestStr) throws Exception {
         final RequestContext request = RequestResponseContextFactory.createRequestCtx();
-        request.readRequest(IOUtils.toInputStream(requestStr, null));
+        request.readRequest(IOUtils.toInputStream(requestStr));
         return getDecision(pdp, request);
     }
 

@@ -17,13 +17,15 @@
     <version>8.0.0.Alpha4-SNAPSHOT</version>
 
     <name>WildFly Test Suite: Shared</name>
-    
-    
+     
+     
     <properties>
         <!-- Arquillian dependency versions -->
-        <version.arquillian_core>${version.org.jboss.arquillian.core}</version.arquillian_core>
         <version.arquillian_as7>${project.parent.version}</version.arquillian_as7>
+        <version.apacheds>2.0.0-M7</version.apacheds>
+        <version.apacheds.shared>1.0.0-M12</version.apacheds.shared>
     </properties>
+
     <build>
         <plugins>
             <plugin>
@@ -45,7 +47,6 @@
         <dependency>
             <groupId>org.wildfly</groupId>
             <artifactId>wildfly-arquillian-container-managed</artifactId>
-            <version>${version.arquillian_as7}</version>
         </dependency>
         <dependency>
             <groupId>junit</groupId>
@@ -53,6 +54,11 @@
             <scope>compile</scope>
         </dependency>
 
+        <dependency>
+            <groupId>org.apache.directory.server</groupId>
+            <artifactId>apacheds-all</artifactId>
+            <version>${version.apacheds}</version>
+        </dependency>
     </dependencies>
     
 </project>

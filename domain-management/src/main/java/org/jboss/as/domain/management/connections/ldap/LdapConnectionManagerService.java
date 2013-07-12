@@ -41,6 +41,7 @@ import org.jboss.msc.service.StartContext;
 import org.jboss.msc.service.StartException;
 import org.jboss.msc.service.StopContext;
 import org.jboss.msc.value.InjectedValue;
+import org.wildfly.security.manager.WildFlySecurityManager;
 
 /**
  * The LDAP connection manager to maintain the LDAP connections.
@@ -104,9 +105,11 @@ public class LdapConnectionManagerService implements Service<LdapConnectionManag
     }
 
     private Object getConnection(final Properties properties, final SSLContext sslContext) throws Exception {
+        ClassLoader old = WildFlySecurityManager.getCurrentContextClassLoaderPrivileged();
         try {
             if (sslContext != null) {
                 ThreadLocalSSLSocketFactory.setSSLSocketFactory(sslContext.getSocketFactory());
+                WildFlySecurityManager.setCurrentContextClassLoaderPrivileged(ThreadLocalSSLSocketFactory.class);
                 properties.put("java.naming.ldap.factory.socket", ThreadLocalSSLSocketFactory.class.getName());
             }
             return new InitialDirContext(properties);
@@ -114,6 +117,7 @@ public class LdapConnectionManagerService implements Service<LdapConnectionManag
             if (sslContext != null) {
                 ThreadLocalSSLSocketFactory.removeSSLSocketFactory();
             }
+            WildFlySecurityManager.setCurrentContextClassLoaderPrivileged(old);
         }
     }
 

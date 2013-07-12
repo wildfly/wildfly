@@ -3,13 +3,14 @@ package org.jboss.as.test.shared;
 import java.net.InetAddress;
 import java.net.UnknownHostException;
 import java.util.List;
+import org.apache.commons.lang.StringUtils;
 
 import org.jboss.as.arquillian.container.Authentication;
 import org.jboss.as.controller.client.ModelControllerClient;
 
 /**
- * Class that allows for non arquillian tests to access the current
- * server address and port, and other testsuite environment properties.
+ * Class that allows for non arquillian tests to access the current server address and port, and other testsuite environment
+ * properties.
  * <p/>
  * This should only be used for tests that do not have access to the {@link org.jboss.as.arquillian.container.ManagementClient}
  *
@@ -23,7 +24,7 @@ public class TestSuiteEnvironment {
                     InetAddress.getByName(getServerAddress()),
                     TestSuiteEnvironment.getServerPort(),
                     Authentication.getCallbackHandler()
-            );
+                    );
         } catch (UnknownHostException e) {
             throw new RuntimeException(e);
         }
@@ -77,5 +78,16 @@ public class TestSuiteEnvironment {
             return address;
         }
         return "[" + address + "]";
+    }
+
+    public static String getSecondaryTestAddress(final boolean useCannonicalHost) {
+        String address = System.getProperty("secondary.test.address");
+        if (StringUtils.isBlank(address)) {
+            address = getServerAddress();
+        }
+        if (useCannonicalHost) {
+            address = StringUtils.strip(address, "[]");
+        }
+        return address;
     }
 }
