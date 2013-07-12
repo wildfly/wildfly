@@ -26,6 +26,9 @@ import java.net.InetSocketAddress;
 import org.jboss.as.network.ManagedBinding;
 import org.jboss.as.network.SocketBinding;
 import org.jboss.as.network.SocketBindingManager;
+import org.jboss.msc.service.StartContext;
+import org.jboss.msc.service.StartException;
+import org.jboss.msc.service.StopContext;
 import org.jboss.msc.value.InjectedValue;
 import org.xnio.OptionMap;
 
@@ -44,6 +47,17 @@ public class InjectedSocketBindingStreamServerService extends AbstractStreamServ
 
     public InjectedValue<SocketBinding> getSocketBindingInjector(){
         return socketBindingValue;
+    }
+
+    @Override
+    public void start(final StartContext context) throws StartException {
+        super.start(context);
+        RemotingConnectorBindingInfoService.install(context.getChildTarget(), context.getController().getName().getSimpleName(), getSocketBinding(), Protocols.REMOTE);
+    }
+
+    @Override
+    public void stop(final StopContext context) {
+        super.stop(context);
     }
 
     @Override
@@ -70,5 +84,4 @@ public class InjectedSocketBindingStreamServerService extends AbstractStreamServ
     public SocketBinding getSocketBinding() {
         return this.socketBindingValue.getValue();
     }
-
 }

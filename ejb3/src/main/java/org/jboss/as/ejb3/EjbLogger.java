@@ -26,7 +26,6 @@ package org.jboss.as.ejb3;
 
 import java.io.File;
 import java.lang.reflect.Method;
-import java.net.InetAddress;
 import java.sql.SQLException;
 import java.util.Date;
 
@@ -478,8 +477,8 @@ public interface EjbLogger extends BasicLogger {
     void asyncMethodSupportedOnlyForSessionBeans(Class beanClass, Method invokedMethod);
 
     @LogMessage(level = INFO)
-    @Message(id = 14224, value = "Cannot add cluster node %s to cluster %s since none of the client mappings matched for address %s")
-    void cannotAddClusterNodeDueToUnresolvableClientMapping(final String nodeName, final String clusterName, final InetAddress bindAddress);
+    @Message(id = 14224, value = "Cannot add cluster node %s to cluster %s since none of the client mappings matched for addresses %s")
+    void cannotAddClusterNodeDueToUnresolvableClientMapping(final String nodeName, final String clusterName, final Object bindings);
 
     // Note that 14225-14240 is used in EjbMessages
 

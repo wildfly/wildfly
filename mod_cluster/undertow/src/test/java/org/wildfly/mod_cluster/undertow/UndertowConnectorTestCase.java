@@ -48,8 +48,8 @@ public class UndertowConnectorTestCase {
     @Test
     public void getType() {
         assertSame(Connector.Type.AJP, new UndertowConnector(new AjpListenerService("", "")).getType());
-        assertSame(Connector.Type.HTTP, new UndertowConnector(new HttpListenerService("")).getType());
-        assertSame(Connector.Type.HTTPS, new UndertowConnector(new HttpsListenerService("")).getType());
+        assertSame(Connector.Type.HTTP, new UndertowConnector(new HttpListenerService("", "")).getType());
+        assertSame(Connector.Type.HTTPS, new UndertowConnector(new HttpsListenerService("", "")).getType());
     }
 
     @Test
@@ -59,10 +59,10 @@ public class UndertowConnectorTestCase {
         SocketBindingManager bindingManager = mock(SocketBindingManager.class);
         SocketBinding binding = new SocketBinding("socket", 1, true, null, 0, interfaceBinding, bindingManager, Collections.<ClientMapping>emptyList());
         InjectedValue<SocketBinding> bindingValue = new InjectedValue<SocketBinding>();
-        
+
         bindingValue.inject(binding);
         when(this.listener.getBinding()).thenReturn(bindingValue);
-        
+
         InetAddress result = this.connector.getAddress();
 
         assertSame(expected, result);
@@ -75,10 +75,10 @@ public class UndertowConnectorTestCase {
         SocketBindingManager bindingManager = mock(SocketBindingManager.class);
         SocketBinding binding = new SocketBinding("socket", expected, true, null, 0, interfaceBinding, bindingManager, Collections.<ClientMapping>emptyList());
         InjectedValue<SocketBinding> bindingValue = new InjectedValue<SocketBinding>();
-        
+
         bindingValue.inject(binding);
         when(this.listener.getBinding()).thenReturn(bindingValue);
-        
+
         int result = this.connector.getPort();
 
         assertSame(expected, result);

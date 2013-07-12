@@ -201,6 +201,7 @@ public class RemotingServices {
                         .addDependency(endpointName, Endpoint.class, streamServerService.getEndpointInjector())
                         .addDependency(bindingName, SocketBinding.class, streamServerService.getSocketBindingInjector())
                         .addDependency(SocketBindingManager.SOCKET_BINDING_MANAGER, SocketBindingManager.class, streamServerService.getSocketBindingManagerInjector()));
+
         }
     }
 

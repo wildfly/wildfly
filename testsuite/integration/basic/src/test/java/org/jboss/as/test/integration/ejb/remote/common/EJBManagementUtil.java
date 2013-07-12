@@ -23,6 +23,29 @@
 package org.jboss.as.test.integration.ejb.remote.common;
 
 
+import java.io.IOException;
+import java.net.InetAddress;
+import java.net.UnknownHostException;
+import java.util.Locale;
+import java.util.Map;
+import java.util.Properties;
+import java.util.concurrent.TimeUnit;
+
+import javax.security.auth.callback.CallbackHandler;
+
+import org.jboss.as.arquillian.container.ManagementClient;
+import org.jboss.as.controller.PathAddress;
+import org.jboss.as.controller.PathElement;
+import org.jboss.as.controller.client.ModelControllerClient;
+import org.jboss.as.controller.client.helpers.ClientConstants;
+import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
+import org.jboss.as.controller.operations.common.Util;
+import org.jboss.as.ejb3.subsystem.EJB3Extension;
+import org.jboss.as.ejb3.subsystem.EJB3SubsystemModel;
+import org.jboss.as.remoting.RemotingExtension;
+import org.jboss.dmr.ModelNode;
+import org.jboss.logging.Logger;
+
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ADD;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.COMPOSITE;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.CORE_SERVICE;
@@ -46,29 +69,7 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SUB
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.UNDEFINE_ATTRIBUTE_OPERATION;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.VALUE;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.WRITE_ATTRIBUTE_OPERATION;
-
-import java.io.IOException;
-import java.net.InetAddress;
-import java.net.UnknownHostException;
-import java.util.Locale;
-import java.util.Map;
-import java.util.Properties;
-import java.util.concurrent.TimeUnit;
-
-import javax.security.auth.callback.CallbackHandler;
-
-import org.jboss.as.arquillian.container.ManagementClient;
-import org.jboss.as.controller.PathAddress;
-import org.jboss.as.controller.PathElement;
-import org.jboss.as.controller.client.ModelControllerClient;
-import org.jboss.as.controller.client.helpers.ClientConstants;
-import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
-import org.jboss.as.controller.operations.common.Util;
-import org.jboss.as.ejb3.subsystem.EJB3Extension;
-import org.jboss.as.ejb3.subsystem.EJB3SubsystemModel;
-import org.jboss.as.remoting.RemotingExtension;
-import org.jboss.dmr.ModelNode;
-import org.jboss.logging.Logger;
+import static org.jboss.as.test.integration.management.util.ModelUtil.createOpNode;
 
 
 /**
@@ -172,6 +173,26 @@ public class EJBManagementUtil {
         }
     }
 
+    public static final void createSocketBinding(final ModelControllerClient modelControllerClient, final String name, int port) {
+        ModelNode op = createOpNode("socket-binding-group=standard-sockets/socket-binding=" + name, ADD);
+        op.get(NAME).set("port");
+        op.get(VALUE).set(port);
+        try {
+            execute(modelControllerClient, op);
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+    public static final void removeSocketBinding(final ModelControllerClient modelControllerClient, final String name) {
+        ModelNode op = createOpNode("socket-binding-group=standard-sockets/socket-binding=" + name, REMOVE);
+        try {
+            execute(modelControllerClient, op);
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
+    }
+
     public static void createLocalOutboundSocket(final ModelControllerClient modelControllerClient,
                                                  final String socketGroupName, final String outboundSocketName,
                                                  final String socketBindingRef,
@@ -242,6 +263,7 @@ public class EJBManagementUtil {
             addRemoteOutboundConnection.get("outbound-socket-binding-ref").set(outboundSocketRef);
             addRemoteOutboundConnection.get(SECURITY_REALM).set("PasswordRealm");
             addRemoteOutboundConnection.get("username").set("user1");
+            addRemoteOutboundConnection.get("protocol").set("http-remoting");
 
             final ModelNode op = Util.getEmptyOperation(COMPOSITE, new ModelNode());
             final ModelNode steps = op.get(STEPS);
@@ -300,10 +322,10 @@ public class EJBManagementUtil {
     /**
      * Creates a strict max pool in the EJB3 subsystem, with the passed <code>poolName</code> and pool attributes
      *
-     * @param poolName       Pool name
-     * @param maxPoolSize    Max pool size
-     * @param timeout        Instance acquisition timeout for the pool
-     * @param unit           Instance acquisition timeout unit for the pool
+     * @param poolName    Pool name
+     * @param maxPoolSize Max pool size
+     * @param timeout     Instance acquisition timeout for the pool
+     * @param unit        Instance acquisition timeout unit for the pool
      */
     public static void createStrictMaxPool(final ModelControllerClient modelControllerClient,
                                            final String poolName, final int maxPoolSize,
@@ -333,7 +355,7 @@ public class EJBManagementUtil {
     /**
      * Removes an already created strict max pool from the EJB3 subsystem
      *
-     * @param poolName       The name of the pool to be removed
+     * @param poolName The name of the pool to be removed
      */
     public static void removeStrictMaxPool(final ModelControllerClient controllerClient, final String poolName) {
         try {
@@ -387,7 +409,7 @@ public class EJBManagementUtil {
         final ModelControllerClient modelControllerClient = managementClient.getControllerClient();
         try {
             final ModelNode op = new ModelNode();
-            if(distinctName != null) {
+            if (distinctName != null) {
                 op.get(OP).set(WRITE_ATTRIBUTE_OPERATION);
                 op.get(VALUE).set(distinctName);
             } else {

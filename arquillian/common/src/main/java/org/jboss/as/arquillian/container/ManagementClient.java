@@ -373,15 +373,12 @@ public class ManagementClient implements AutoCloseable, Closeable {
 
     public URI getRemoteEjbURL() {
         if (ejbUri == null) {
-            if (rootNode == null) {
-                try {
-                    readRootNode();
-                } catch (Exception e) {
-                    throw new RuntimeException(e);
-                }
+            URI webUri = getWebUri();
+            try {
+                ejbUri = new URI("http-remoting", webUri.getUserInfo(), webUri.getHost(), webUri.getPort(),null,null,null);
+            } catch (URISyntaxException e) {
+                throw new RuntimeException(e);
             }
-            String socketBinding = rootNode.get("subsystem").get("remoting").get("connector").get("remoting-connector").get("socket-binding").asString();
-            ejbUri = getBinding("remote", socketBinding);
         }
         return ejbUri;
     }

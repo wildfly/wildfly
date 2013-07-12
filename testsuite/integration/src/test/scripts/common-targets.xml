@@ -140,7 +140,7 @@
                 </fileset>
                 <param name="managementIPAddress" expression="@{node}"/>
                 <param name="publicIPAddress"     expression="@{node}"/>
-                
+
                 <param name="udpMcastAddress"         expression="@{mcast}"/>
                 <param name="diagnosticsMcastAddress" expression="@{mcast}"/>
                 <param name="mpingMcastAddress"       expression="@{mcast}"/>
@@ -260,6 +260,7 @@
         <attribute name="remotePort" default="4447"/>
         <attribute name="securityRealm" default="NOT_DEFINED"/>
         <attribute name="userName" default="NOT_DEFINED"/>
+        <attribute name="protocol" default="http-remoting"/>
 
         <sequential>
             <echo message="Adding a new remote outbound connection @{connectionName} for config @{name}"/>
@@ -279,6 +280,7 @@
                 <param name="remotePort" expression="@{remotePort}"/>
                 <param name="securityRealm" expression="@{securityRealm}"/>
                 <param name="userName" expression="@{userName}"/>
+                <param name="protocol" expression="@{protocol}"/>
             </xslt>
 
             <!-- Move processed files back. -->

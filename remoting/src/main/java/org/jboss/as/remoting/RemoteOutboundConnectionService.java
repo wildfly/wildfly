@@ -57,18 +57,19 @@ public class RemoteOutboundConnectionService extends AbstractOutboundConnectionS
 
     public static final ServiceName REMOTE_OUTBOUND_CONNECTION_BASE_SERVICE_NAME = RemotingServices.SUBSYSTEM_ENDPOINT.append("remote-outbound-connection");
 
-    private static final String REMOTE_URI_SCHEME = "remote://";
     private static final String JBOSS_LOCAL_USER = "JBOSS-LOCAL-USER";
 
     private final InjectedValue<OutboundSocketBinding> destinationOutboundSocketBindingInjectedValue = new InjectedValue<OutboundSocketBinding>();
     private final InjectedValue<SecurityRealm> securityRealmInjectedValue = new InjectedValue<SecurityRealm>();
 
     private final String username;
+    private final String protocol;
     private URI connectionURI;
 
-    public RemoteOutboundConnectionService(final String connectionName, final OptionMap connectionCreationOptions, final String username) {
+    public RemoteOutboundConnectionService(final String connectionName, final OptionMap connectionCreationOptions, final String username, final String protocol) {
         super(connectionName, connectionCreationOptions);
         this.username = username;
+        this.protocol = protocol;
     }
 
     @Override
@@ -109,6 +110,11 @@ public class RemoteOutboundConnectionService extends AbstractOutboundConnectionS
         return endpoint.connect(uri, builder.getMap(), callbackHandler, sslContext);
     }
 
+    @Override
+    public String getProtocol() {
+        return protocol;
+    }
+
     Injector<OutboundSocketBinding> getDestinationOutboundSocketBindingInjector() {
         return this.destinationOutboundSocketBindingInjectedValue;
     }
@@ -134,7 +140,7 @@ public class RemoteOutboundConnectionService extends AbstractOutboundConnectionS
         final InetAddress destinationAddress = destinationOutboundSocket.getDestinationAddress();
         final int port = destinationOutboundSocket.getDestinationPort();
 
-        this.connectionURI = new URI(REMOTE_URI_SCHEME + NetworkUtils.formatPossibleIpv6Address( destinationAddress.getHostAddress()) + ":" + port);
+        this.connectionURI = new URI(protocol +"://" + NetworkUtils.formatPossibleIpv6Address( destinationAddress.getHostAddress()) + ":" + port);
         return this.connectionURI;
     }
 
