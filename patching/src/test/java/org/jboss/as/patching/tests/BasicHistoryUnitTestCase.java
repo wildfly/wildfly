@@ -33,6 +33,9 @@ import java.io.IOException;
 import java.util.Arrays;
 
 import org.jboss.as.patching.PatchingException;
+import org.jboss.as.patching.installation.InstallationManager;
+import org.jboss.as.patching.installation.PatchableTarget;
+import org.jboss.as.patching.tool.ContentVerificationPolicy;
 import org.junit.Assert;
 import org.junit.Test;
 
@@ -108,6 +111,63 @@ public class BasicHistoryUnitTestCase extends AbstractPatchingTest {
         Assert.assertTrue(builder.hasFile(FILE_ONE));
         Assert.assertTrue(builder.hasFile(FILE_EXISTING));
         Assert.assertTrue(Arrays.equals(existingHash, hashFile(existing)));
+
+    }
+
+    @Test
+    public void testLayersBasics() throws Exception {
+
+        final PatchingTestBuilder builder = createDefaultBuilder("layer2", "layer1", "base");
+
+        final byte[] standaloneHash = new byte[20];
+        final byte[] moduleHash = new byte[20];
+
+        final PatchingTestStepBuilder cp1 = builder.createBuilder();
+        cp1.setPatchId("CP1")
+                .upgradeIdentity(PRODUCT_VERSION, PRODUCT_VERSION)
+                .upgradeElement("base:CP1", "base", false)
+                .addModuleWithRandomContent("org.jboss.test", moduleHash)
+                .getParent()
+                .addFileWithRandomContent(standaloneHash, FILE_ONE)
+        ;
+        // Apply CP1
+        apply(cp1);
+
+        Assert.assertTrue(builder.hasFile(FILE_ONE));
+
+        final PatchingTestStepBuilder cp2 = builder.createBuilder();
+        cp2.setPatchId("CP2")
+                .upgradeIdentity(PRODUCT_VERSION, PRODUCT_VERSION)
+                .upgradeElement("layer2:CP2", "layer2", false)
+                    .addModuleWithRandomContent("org.jboss.test", null)
+                    .getParent()
+                .upgradeElement("layer1:CP2", "layer1", false)
+                    .addModuleWithRandomContent("org.jboss.test", null)
+                    .getParent()
+                .updateFileWithRandomContent(Arrays.copyOf(standaloneHash, standaloneHash.length), standaloneHash, FILE_ONE)
+        ;
+        // Apply CP2
+        apply(cp2);
+
+        Assert.assertTrue(builder.hasFile(FILE_ONE));
+
+        final PatchingTestStepBuilder cp3 = builder.createBuilder();
+        cp3.setPatchId("CP3")
+                .upgradeIdentity(PRODUCT_VERSION, PRODUCT_VERSION)
+                .removeFile(Arrays.copyOf(standaloneHash, standaloneHash.length), FILE_ONE)
+        ;
+        // Apply CP3
+        apply(cp3);
+
+        Assert.assertFalse(builder.hasFile(FILE_ONE));
+
+        // Rollback
+        rollback(cp3);
+        Assert.assertTrue(builder.hasFile(FILE_ONE));
+        rollback(cp2);
+        Assert.assertTrue(builder.hasFile(FILE_ONE));
+        rollback(cp1);
+        Assert.assertFalse(builder.hasFile(FILE_ONE));
 
     }
 
