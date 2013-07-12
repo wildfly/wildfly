@@ -21,13 +21,13 @@
 
 package org.jboss.as.test.patching;
 
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.List;
-
 import org.jboss.as.controller.client.helpers.ClientConstants;
 import org.jboss.as.test.integration.management.util.CLIWrapper;
 import org.jboss.dmr.ModelNode;
+
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.List;
 
 /**
  * @author Jan Martiska
@@ -46,8 +46,8 @@ public class CliUtilsForPatching {
      * @param patchFilePath absolute path to the ZIP file containing the patch
      * @throws Exception
      */
-    public static void applyPatch(String patchFilePath) throws Exception {
-        applyPatch(patchFilePath, null);
+    public static boolean applyPatch(String patchFilePath) throws Exception {
+        return applyPatch(patchFilePath, null);
     }
 
 
@@ -58,7 +58,7 @@ public class CliUtilsForPatching {
      * @param args          conflict resolution arguments or null
      * @throws Exception
      */
-    public static void applyPatch(String patchFilePath, String... args) throws Exception {
+    public static boolean applyPatch(String patchFilePath, String... args) throws Exception {
         CLIWrapper cli = null;
         try {
             cli = new CLIWrapper(true);
@@ -71,7 +71,7 @@ public class CliUtilsForPatching {
             }
             builder.append(" ").append(patchFilePath);
             String command = builder.toString();
-            cli.sendLine(command);
+            return cli.sendLine(command, true);
         } finally {
             if (cli != null) {
                 cli.quit();
@@ -85,8 +85,8 @@ public class CliUtilsForPatching {
      * @param oneOffPatchID the ID of the patch that should be rolled back
      * @throws Exception
      */
-    public static void rollbackPatch(String oneOffPatchID) throws Exception {
-        rollbackPatch(oneOffPatchID, null);
+    public static boolean rollbackPatch(String oneOffPatchID) throws Exception {
+        return rollbackPatch(oneOffPatchID, null);
     }
 
     /**
@@ -96,7 +96,7 @@ public class CliUtilsForPatching {
      * @param args          conflict resolution arguments, rollback arguments
      * @throws Exception
      */
-    public static void rollbackPatch(String oneoffPatchID, String... args) throws Exception {
+    public static boolean rollbackPatch(String oneoffPatchID, String... args) throws Exception {
         CLIWrapper cli = null;
         try {
             cli = new CLIWrapper(true);
@@ -108,7 +108,7 @@ public class CliUtilsForPatching {
             }
             builder.append(" --patch-id=").append(oneoffPatchID);
             String command = builder.toString();
-            cli.sendLine(command);
+            return cli.sendLine(command, true);
         } finally {
             if (cli != null) {
                 cli.quit();
@@ -177,7 +177,7 @@ public class CliUtilsForPatching {
         CLIWrapper cli = null;
         try {
             cli = new CLIWrapper(true);
-            cli.sendLine("patch info");
+            cli.sendLine("patch info", true);
             String response = cli.readOutput();
             ModelNode responseNode = ModelNode.fromJSONString(response);
             ModelNode respHeaders = responseNode.get("response-headers");
@@ -194,5 +194,35 @@ public class CliUtilsForPatching {
             }
         }
     }
+
+    /**
+     * Rollback all installed patched
+     * @return true if operation was successful or false if at least one rollback failed
+     * @throws Exception
+     */
+    public static boolean rollbackAll() throws Exception {
+        CLIWrapper cli = null;
+        boolean success = true;
+        final String infoCommand = "patch info --distribution=%s";
+        final String rollbackCommand = "patch rollback --patch-id=%s --distribution=%s";
+        try {
+            cli = new CLIWrapper(false);
+            cli.sendLine(String.format(infoCommand, PatchingTestUtil.AS_DISTRIBUTION));
+            String response = cli.readOutput();
+            ModelNode responseNode = ModelNode.fromJSONString(response);
+            List<ModelNode> patchesList = responseNode.get("result").get("patches").asList();
+            List<String> patchesListString = new ArrayList<String>();
+            for (ModelNode n : patchesList) {
+                success = success && cli.sendLine(String.format(rollbackCommand, n.asString(), PatchingTestUtil.AS_DISTRIBUTION), true);
+            }
+            return success;
+        } finally {
+            if (cli != null) {
+                cli.quit();
+            }
+        }
+    }
+
+
 
 }
