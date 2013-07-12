@@ -21,23 +21,21 @@
 
 package org.jboss.as.test.patching;
 
-import java.io.File;
-import java.io.FileNotFoundException;
-import java.io.FileOutputStream;
-import java.io.IOException;
-import java.io.OutputStream;
+import com.google.common.base.Joiner;
+import org.jboss.as.patching.IoUtils;
+import org.jboss.as.patching.ZipUtils;
+import org.jboss.as.patching.metadata.Patch;
+import org.jboss.as.patching.metadata.PatchXml;
+import org.junit.Assert;
+
+import java.io.*;
 import java.nio.charset.Charset;
 import java.util.Scanner;
 import java.util.UUID;
 
-import org.jboss.as.patching.IoUtils;
-import org.jboss.as.patching.ZipUtils;
-import org.jboss.as.patching.metadata.ModuleItem;
-import org.jboss.as.patching.metadata.Patch;
-import org.jboss.as.patching.metadata.PatchXml;
-
 import static java.lang.String.format;
 import static org.jboss.as.patching.IoUtils.safeClose;
+import static org.jboss.as.patching.Constants.*;
 import static org.jboss.as.patching.PatchLogger.ROOT_LOGGER;
 
 /**
@@ -49,6 +47,11 @@ public class PatchingTestUtil {
     public static final String AS_DISTRIBUTION = System.getProperty("jbossas.dist");
     public static final String AS_VERSION = System.getProperty("jbossas.version");
     public static final String PRODUCT = "WildFly";
+    public static final String FILE_SEPARATOR = File.separator;
+    private static final String RELATIVE_PATCHES_PATH = Joiner.on(FILE_SEPARATOR).join(new String[] {MODULES, SYSTEM, LAYERS, BASE, OVERLAYS});
+    public static final String PATCHES_PATH = AS_DISTRIBUTION + FILE_SEPARATOR + RELATIVE_PATCHES_PATH;
+    private static final String RELATIVE_MODULES_PATH = Joiner.on(FILE_SEPARATOR).join(new String[] {MODULES, SYSTEM, LAYERS, BASE});
+    public static final String MODULES_PATH = AS_DISTRIBUTION + FILE_SEPARATOR + RELATIVE_MODULES_PATH;
 
     public static String randomString() {
         return UUID.randomUUID().toString();
@@ -68,6 +71,21 @@ public class PatchingTestUtil {
         } finally {
             if(scanner != null)
                 scanner.close();
+        }
+    }
+
+    public static void setFileContent(String filePath, String content) throws IOException {
+        OutputStream os = null;
+        try {
+            File file = new File(filePath);
+            file.delete();
+            Assert.assertTrue("Cannot create new file", file.createNewFile());
+            os = new FileOutputStream(file);
+            os.write(content.getBytes());
+            os.flush();
+        } finally {
+            if(os != null)
+                os.close();
         }
     }
 
@@ -114,13 +132,23 @@ public class PatchingTestUtil {
         }
     }
 
+    public static void dump(File f, byte[] content) throws IOException {
+        final OutputStream os = new FileOutputStream(f);
+        try {
+            os.write(content);
+            os.close();
+        } finally {
+            IoUtils.safeClose(os);
+        }
+    }
+
     public static File createModuleXmlFile(File mainDir, String moduleName, String... resources)
             throws IOException {
         StringBuilder content = new StringBuilder("<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n");
         content.append(
                 format("<module xmlns=\"urn:jboss:module:1.2\" name=\"%s\" slot=\"main\" />\n", moduleName));
         content.append("  <resources>\n");
-        content.append("    resource-root path=\".\"/>\n");
+        content.append("    <resource-root path=\".\"/>\n");
         for (String resource : resources) {
             content.append(format("    <resource-root path=\"%s\"/>\n", resource));
         }
@@ -149,17 +177,15 @@ public class PatchingTestUtil {
         return moduleDir;
     }
 
-    public static File createModule0(File baseDir, String moduleName, String... resourcesContents)
+    public static File createModule0(File baseDir, String moduleName, ResourceItem... resourcesItems)
             throws IOException {
         File mainDir = createModuleRoot(baseDir, moduleName);
-        String resourceFilePrefix = randomString();
-        String[] resourceFileNames = new String[resourcesContents.length];
-        for (int i = 0; i < resourcesContents.length; i++) {
-            String content = resourcesContents[i];
-            String fileName = resourceFilePrefix + "-" + i;
-            resourceFileNames[i] = fileName;
-            File f = touch(mainDir, fileName);
-            dump(f, content);
+        String[] resourceFileNames = new String[resourcesItems.length];
+        for (int i = 0; i < resourcesItems.length; i++) {
+            ResourceItem item = resourcesItems[i];
+            resourceFileNames[i] = item.getItemName();
+            File f = touch(mainDir, item.getItemName());
+            dump(f, item.getContent());
         }
         createModuleXmlFile(mainDir, moduleName, resourceFileNames);
         return mainDir.getParentFile();
@@ -176,9 +202,7 @@ public class PatchingTestUtil {
             name = moduleSpec;
             slot = "main";
         }
-        assert slot.equals(ModuleItem.MAIN_SLOT); // update to support other slots too
         final String[] segments = name.split("\\.");
-        assert segments.length > 0;
         File dir = baseDir;
         for (String segment : segments) {
             dir = new File(dir, segment);
@@ -214,5 +238,7 @@ public class PatchingTestUtil {
         ZipUtils.zip(sourceDir, zipFile);
         return zipFile;
     }
+
+
 
 }

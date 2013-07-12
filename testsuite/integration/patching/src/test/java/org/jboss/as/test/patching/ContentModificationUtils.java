@@ -48,9 +48,10 @@ import static org.jboss.as.test.patching.PatchingTestUtil.touch;
  * @author <a href="http://jmesnil.net/">Jeff Mesnil</a> (c) 2013 Red Hat inc.
  */
 public class ContentModificationUtils {
-    public static ContentModification addModule(File patchDir, String patchElementID, String moduleName, String... resourceContents) throws IOException {
+
+    public static ContentModification addModule(File patchDir, String patchElementID, String moduleName, ResourceItem... resourceItems) throws IOException {
         File modulesDir = newFile(patchDir, patchElementID, MODULES);
-        File moduleDir = createModule0(modulesDir, moduleName, resourceContents);
+        File moduleDir = createModule0(modulesDir, moduleName, resourceItems);
         byte[] newHash = hashFile(moduleDir);
         ContentModification moduleAdded = new ContentModification(new ModuleItem(moduleName, ModuleItem.MAIN_SLOT, newHash), NO_CONTENT, ADD);
         return moduleAdded;
@@ -69,14 +70,14 @@ public class ContentModificationUtils {
         return new ContentModification(new ModuleItem(existingModule.getName(), ModuleItem.MAIN_SLOT, NO_CONTENT), existingHash, REMOVE);
     }
 
-    public static ContentModification modifyModule(File patchDir, String patchElementID, File existingModule, String newContent) throws IOException {
+    public static ContentModification modifyModule(File patchDir, String patchElementID, File existingModule, ResourceItem resourceItem) throws IOException {
         byte[] existingHash = hashFile(existingModule);
-        return modifyModule(patchDir, patchElementID, existingModule.getName(), existingHash, newContent);
+        return modifyModule(patchDir, patchElementID, existingModule.getName(), existingHash, resourceItem);
     }
 
-    public static ContentModification modifyModule(File patchDir, String patchElementID, String moduleName, byte[] existingHash, String newContent) throws IOException {
+    public static ContentModification modifyModule(File patchDir, String patchElementID, String moduleName, byte[] existingHash, ResourceItem resourceItem) throws IOException {
         File modulesDir = newFile(patchDir, patchElementID, MODULES);
-        File modifiedModule = createModule0(modulesDir, moduleName, newContent);
+        File modifiedModule = createModule0(modulesDir, moduleName, resourceItem);
         byte[] updatedHash = hashFile(modifiedModule);
         ContentModification moduleUpdated = new ContentModification(new ModuleItem(moduleName, ModuleItem.MAIN_SLOT, updatedHash), existingHash, MODIFY);
         return moduleUpdated;
