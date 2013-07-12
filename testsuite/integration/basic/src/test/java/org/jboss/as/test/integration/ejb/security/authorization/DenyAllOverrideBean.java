@@ -45,6 +45,11 @@ public class DenyAllOverrideBean {
         return message;
     }
 
+    @PermitAll
+    public String[] permitAllEchoWithArrayParams(final String[] messages) {
+        return messages;
+    }
+
     @RolesAllowed("Role1")
     public String role1Echo(final String message) {
         return message;
