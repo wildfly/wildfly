@@ -24,7 +24,11 @@ package org.wildfly.extension.undertow;
 
 import java.io.IOException;
 import java.net.InetSocketAddress;
+import java.util.ArrayList;
+import java.util.List;
 
+import io.undertow.server.HandlerWrapper;
+import io.undertow.server.HttpHandler;
 import io.undertow.server.OpenListener;
 import org.jboss.as.network.ManagedBinding;
 import org.jboss.as.network.SocketBinding;
@@ -55,6 +59,8 @@ public abstract class AbstractListenerService<T> implements Service<T> {
     protected final InjectedValue<SocketBinding> binding = new InjectedValue<>();
     protected final InjectedValue<Pool> bufferPool = new InjectedValue<>();
     protected final InjectedValue<Server> serverService = new InjectedValue<>();
+    protected final List<HandlerWrapper> listenerHandlerWrappers = new ArrayList<>();
+
     private final String name;
     protected volatile OpenListener openListener;
 
@@ -98,14 +104,21 @@ public abstract class AbstractListenerService<T> implements Service<T> {
         binding.getSocketBindings().getNamedRegistry().unregisterBinding(binding.getName());
     }
 
+    protected abstract void preStart(StartContext context);
+
     @Override
     public void start(StartContext context) throws StartException {
+        preStart(context);
         serverService.getValue().registerListener(this);
         try {
             final InetSocketAddress socketAddress = binding.getValue().getSocketAddress();
             openListener = createOpenListener();
             final ChannelListener<AcceptingChannel<StreamConnection>> acceptListener = ChannelListeners.openListenerAdapter(openListener);
-            openListener.setRootHandler(serverService.getValue().getRoot());
+            HttpHandler handler = serverService.getValue().getRoot();
+            for(HandlerWrapper wrapper : listenerHandlerWrappers) {
+                handler = wrapper.wrap(handler);
+            }
+            openListener.setRootHandler(handler);
             startListening(worker.getValue(), socketAddress, acceptListener);
             registerBinding();
         } catch (IOException e) {

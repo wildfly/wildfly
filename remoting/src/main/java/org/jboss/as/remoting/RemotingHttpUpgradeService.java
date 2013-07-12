@@ -7,13 +7,15 @@ import java.security.AccessController;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.security.PrivilegedExceptionAction;
-
+import java.util.List;
 
 import io.undertow.server.HttpServerExchange;
+import io.undertow.server.ListenerRegistry;
 import io.undertow.server.handlers.ChannelUpgradeHandler;
 import io.undertow.server.handlers.HttpUpgradeHandshake;
 import io.undertow.util.HttpString;
 import org.jboss.as.controller.ServiceVerificationHandler;
+import org.jboss.as.network.SocketBinding;
 import org.jboss.msc.service.Service;
 import org.jboss.msc.service.ServiceBuilder;
 import org.jboss.msc.service.ServiceController;
@@ -41,29 +43,43 @@ import org.xnio.channels.SslConnection;
  */
 public class RemotingHttpUpgradeService implements Service<RemotingHttpUpgradeService> {
 
+
     public static final String JBOSS_REMOTING = "jboss-remoting";
 
-    public static final ServiceName HTTP_UPGRADE_REGISTRY = ServiceName.JBOSS.append("management", "http-upgrade");
-    public static final ServiceName SERVICE_NAME = ServiceName.JBOSS.append("management", "remoting-http-upgrade-service");
+    /**
+     * Base service name for this HTTP Upgrade refist
+     */
+    public static final ServiceName HTTP_UPGRADE_REGISTRY = ServiceName.JBOSS.append("http-upgrade-registry");
+    public static final ServiceName UPGRADE_SERVICE_NAME = ServiceName.JBOSS.append("remoting ", "remoting-http-upgrade-service");
+
+    private final String httpConnectorName;
+    private final String endpointName;
 
 
     private final InjectedValue<ChannelUpgradeHandler> injectedRegistry = new InjectedValue<>();
+    private final InjectedValue<ListenerRegistry> listenerRegistry = new InjectedValue<>();
     private final InjectedValue<Endpoint> injectedEndpoint = new InjectedValue<>();
     private final InjectedValue<RemotingSecurityProvider> securityProviderValue = new InjectedValue<>();
     private final OptionMap connectorPropertiesOptionMap;
 
-    public RemotingHttpUpgradeService(final OptionMap connectorPropertiesOptionMap) {
+    private ListenerRegistry.HttpUpgradeMetadata httpUpgradeMetadata;
+
+    public RemotingHttpUpgradeService(final String httpConnectorName, final String endpointName, final OptionMap connectorPropertiesOptionMap) {
+        this.httpConnectorName = httpConnectorName;
+        this.endpointName = endpointName;
         this.connectorPropertiesOptionMap = connectorPropertiesOptionMap;
     }
 
-    public static void installServices(final ServiceTarget serviceTarget, final String connectorName, final ServiceName endpointName, final OptionMap connectorPropertiesOptionMap, final ServiceVerificationHandler verificationHandler) {
-        final RemotingHttpUpgradeService service = new RemotingHttpUpgradeService(connectorPropertiesOptionMap);
 
-        final ServiceName securityProviderName = RealmSecurityProviderService.createName(connectorName);
+    public static void installServices(final ServiceTarget serviceTarget, final String remotingConnectorName, final String httpConnectorName, final ServiceName endpointName, final OptionMap connectorPropertiesOptionMap, final ServiceVerificationHandler verificationHandler, final List<ServiceController<?>> newControllers) {
+        final RemotingHttpUpgradeService service = new RemotingHttpUpgradeService(httpConnectorName, endpointName.getSimpleName(), connectorPropertiesOptionMap);
 
-        ServiceBuilder<RemotingHttpUpgradeService> builder = serviceTarget.addService(SERVICE_NAME, service)
+        final ServiceName securityProviderName = RealmSecurityProviderService.createName(remotingConnectorName);
+
+        ServiceBuilder<RemotingHttpUpgradeService> builder = serviceTarget.addService(UPGRADE_SERVICE_NAME.append(remotingConnectorName), service)
                 .setInitialMode(ServiceController.Mode.PASSIVE)
-                .addDependency(HTTP_UPGRADE_REGISTRY, ChannelUpgradeHandler.class, service.injectedRegistry)
+                .addDependency(HTTP_UPGRADE_REGISTRY.append(httpConnectorName), ChannelUpgradeHandler.class, service.injectedRegistry)
+                .addDependency(HttpListenerRegistryService.SERVICE_NAME, ListenerRegistry.class, service.listenerRegistry)
                 .addDependency(endpointName, Endpoint.class, service.injectedEndpoint)
                 .addDependency(securityProviderName, RemotingSecurityProvider.class, service.securityProviderValue);
 
@@ -71,32 +87,39 @@ public class RemotingHttpUpgradeService implements Service<RemotingHttpUpgradeSe
             builder.addListener(verificationHandler);
         }
 
-        builder.install();
+        ServiceController<RemotingHttpUpgradeService> controller = builder.install();
+        if(newControllers != null) {
+            newControllers.add(controller);
+        }
     }
 
 
-
     @Override
-    public void start(final StartContext context) throws StartException {
+    public synchronized void start(final StartContext context) throws StartException {
         final Endpoint endpoint = injectedEndpoint.getValue();
         RemotingSecurityProvider rsp = securityProviderValue.getValue();
         ServerAuthenticationProvider sap = rsp.getServerAuthenticationProvider();
         OptionMap.Builder builder = OptionMap.builder();
         builder.addAll(rsp.getOptionMap());
 
+        ListenerRegistry.Listener listenerInfo = listenerRegistry.getValue().getListener(httpConnectorName);
+        assert listenerInfo != null;
+        listenerInfo.addHttpUpgradeMetadata(httpUpgradeMetadata = new ListenerRegistry.HttpUpgradeMetadata("jboss-remoting", endpointName));
+        RemotingConnectorBindingInfoService.install(context.getChildTarget(), context.getController().getName().getSimpleName(), (SocketBinding)listenerInfo.getContextInformation("socket-binding"), listenerInfo.getProtocol().equals("https") ? "https-remoting" : "http-remoting");
+
         if (connectorPropertiesOptionMap != null) {
             builder.addAll(connectorPropertiesOptionMap);
         }
         OptionMap resultingMap = builder.getMap();
         try {
-            final ExternalConnectionProvider provider = endpoint.getConnectionProviderInterface("http-remoting", ExternalConnectionProvider.class);
+            final ExternalConnectionProvider provider = endpoint.getConnectionProviderInterface(Protocols.HTTP_REMOTING, ExternalConnectionProvider.class);
             final ExternalConnectionProvider.ConnectionAdaptor adaptor = provider.createConnectionAdaptor(resultingMap, sap);
 
             injectedRegistry.getValue().addProtocol(JBOSS_REMOTING, new ChannelListener<StreamConnection>() {
                 @Override
                 public void handleEvent(final StreamConnection channel) {
-                    if(channel instanceof SslConnection) {
-                        adaptor.adapt(new AssembledConnectedSslStreamChannel((SslConnection)channel, channel.getSourceChannel(), channel.getSinkChannel()));
+                    if (channel instanceof SslConnection) {
+                        adaptor.adapt(new AssembledConnectedSslStreamChannel((SslConnection) channel, channel.getSourceChannel(), channel.getSinkChannel()));
                     } else {
                         adaptor.adapt(new AssembledConnectedStreamChannel(channel, channel.getSourceChannel(), channel.getSinkChannel()));
                     }
@@ -111,12 +134,14 @@ public class RemotingHttpUpgradeService implements Service<RemotingHttpUpgradeSe
     }
 
     @Override
-    public void stop(final StopContext context) {
+    public synchronized void stop(final StopContext context) {
+        listenerRegistry.getValue().getListener(httpConnectorName).removeHttpUpgradeMetadata(httpUpgradeMetadata);
+        httpUpgradeMetadata = null;
         injectedRegistry.getValue().removeProtocol(JBOSS_REMOTING);
     }
 
     @Override
-    public RemotingHttpUpgradeService getValue() throws IllegalStateException, IllegalArgumentException {
+    public synchronized RemotingHttpUpgradeService getValue() throws IllegalStateException, IllegalArgumentException {
         return this;
     }
 
@@ -158,7 +183,6 @@ public class RemotingHttpUpgradeService implements Service<RemotingHttpUpgradeSe
             }
 
         }
-
 
 
         private static class FlexBase64 {

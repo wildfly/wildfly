@@ -31,6 +31,7 @@ import org.jboss.as.controller.SimpleAttributeDefinitionBuilder;
 import org.jboss.as.controller.operations.validation.StringLengthValidator;
 import org.jboss.as.controller.registry.AttributeAccess;
 import org.jboss.as.controller.registry.ManagementResourceRegistration;
+import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.ModelType;
 
 /**
@@ -53,8 +54,15 @@ class RemoteOutboundConnectionResourceDefinition extends AbstractOutboundConnect
             CommonAttributes.SECURITY_REALM, ModelType.STRING, true).setValidator(
             new StringLengthValidator(1, Integer.MAX_VALUE, true, false)).build();
 
+    public static final SimpleAttributeDefinition PROTOCOL = new SimpleAttributeDefinitionBuilder(
+            CommonAttributes.PROTOCOL, ModelType.STRING, true).setValidator(
+            new StringLengthValidator(1, Integer.MAX_VALUE, true, false))
+            .setDefaultValue(new ModelNode(Protocols.REMOTE))
+            .setAllowExpression(true)
+            .build();
+
     public static final AttributeDefinition[] ATTRIBUTE_DEFINITIONS = {
-        OUTBOUND_SOCKET_BINDING_REF, USERNAME, SECURITY_REALM
+        OUTBOUND_SOCKET_BINDING_REF, USERNAME, SECURITY_REALM, PROTOCOL
     };
 
     static final RemoteOutboundConnectionResourceDefinition INSTANCE = new RemoteOutboundConnectionResourceDefinition();
@@ -76,6 +84,7 @@ class RemoteOutboundConnectionResourceDefinition extends AbstractOutboundConnect
         resourceRegistration.registerReadWriteAttribute(OUTBOUND_SOCKET_BINDING_REF, null, RemoteOutboundConnectionWriteHandler.INSTANCE);
         resourceRegistration.registerReadWriteAttribute(USERNAME, null, RemoteOutboundConnectionWriteHandler.INSTANCE);
         resourceRegistration.registerReadWriteAttribute(SECURITY_REALM, null, RemoteOutboundConnectionWriteHandler.INSTANCE);
+        resourceRegistration.registerReadWriteAttribute(PROTOCOL, null, RemoteOutboundConnectionWriteHandler.INSTANCE);
     }
 
     @Override

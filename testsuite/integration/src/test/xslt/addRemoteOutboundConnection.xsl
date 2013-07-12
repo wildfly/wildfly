@@ -1,7 +1,7 @@
 <xsl:stylesheet version="1.0"
                 xmlns:xsl="http://www.w3.org/1999/XSL/Transform"
                 xmlns:d="urn:jboss:domain:2.0"
-                xmlns:r="urn:jboss:domain:remoting:1.1">
+                xmlns:r="urn:jboss:domain:remoting:2.0">
     <xsl:output method="xml" indent="yes"/>
 
     <!--
@@ -15,11 +15,13 @@
     <xsl:param name="remotePort" select="'4447'"/>
     <xsl:param name="securityRealm" select="NOT_DEFINED"/>
     <xsl:param name="userName" select="NOT_DEFINED"/>
+    <xsl:param name="protocol" select="http-remoting"/>
 
     <xsl:variable name="newRemoteOutboundConnection">
         <r:remote-outbound-connection>
             <xsl:attribute name="name"><xsl:value-of select="$connectionName"/></xsl:attribute>
             <xsl:attribute name="outbound-socket-binding-ref">binding-<xsl:value-of select="$connectionName"/></xsl:attribute>
+            <xsl:attribute name="protocol"><xsl:value-of select="$protocol"/></xsl:attribute>
             <xsl:if test="$securityRealm != 'NOT_DEFINED'">
                 <xsl:attribute name="security-realm"><xsl:value-of select="$securityRealm"/></xsl:attribute>
             </xsl:if>

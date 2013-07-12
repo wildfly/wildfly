@@ -22,6 +22,7 @@
 
 package org.jboss.as.test.integration.naming.remote.simple;
 
+import java.net.URI;
 import java.util.Properties;
 
 import javax.naming.Context;
@@ -61,7 +62,9 @@ public class RemoteNamingTestCase {
     public  Context getRemoteContext() throws Exception {
         final Properties env = new Properties();
         env.put(Context.INITIAL_CONTEXT_FACTORY, org.jboss.naming.remote.client.InitialContextFactory.class.getName());
-        env.put(Context.PROVIDER_URL, managementClient.getRemoteEjbURL().toString());
+        URI webUri = managementClient.getWebUri();
+        URI namingUri = new URI("http-remoting", webUri.getUserInfo(), webUri.getHost(), webUri.getPort(), "", "" ,"");
+        env.put(Context.PROVIDER_URL, namingUri.toString());
         env.put("jboss.naming.client.connect.options.org.xnio.Options.SASL_POLICY_NOPLAINTEXT", "false");
         env.put("jboss.naming.client.security.callback.handler.class", CallbackHandler.class.getName());
         return new InitialContext(env);

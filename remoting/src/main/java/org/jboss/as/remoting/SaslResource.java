@@ -79,6 +79,8 @@ public class SaslResource extends SimpleResourceDefinition {
             .setAttributeMarshaller(new WrappedAttributeMarshaller(Attribute.VALUE))
             .build();
 
+    static final AttributeDefinition[] ATTRIBUTES = {INCLUDE_MECHANISMS_ATTRIBUTE, QOP_ATTRIBUTE, STRENGTH_ATTRIBUTE, SERVER_AUTH_ATTRIBUTE, REUSE_SESSION_ATTRIBUTE};
+
     private SaslResource() {
         super(SASL_CONFIG_PATH,
                 RemotingExtension.getResourceDescriptionResolver(SASL),
