@@ -20,8 +20,9 @@
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
 package org.jboss.as.domain.management.access;
+
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.CONSTRAINT;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.NAME;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SENSITIVITY_CLASSIFICATION;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.TYPE;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.VALUE;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.VAULT_EXPRESSION;
@@ -58,7 +59,7 @@ public class SensitivityResourceDefinition extends SimpleResourceDefinition {
 
     public static PathElement PATH_ELEMENT = PathElement.pathElement(TYPE);
 
-    public static PathElement VAULT_ELEMENT = PathElement.pathElement(VAULT_EXPRESSION, SENSITIVITY_CLASSIFICATION);
+    public static PathElement VAULT_ELEMENT = PathElement.pathElement(CONSTRAINT, VAULT_EXPRESSION);
 
     public static SimpleAttributeDefinition DEFAULT_REQUIRES_ACCESS = SimpleAttributeDefinitionBuilder.create(ModelDescriptionConstants.DEFAULT_REQUIRES_ACCESS, ModelType.BOOLEAN, false)
             .setStorageRuntime()
@@ -94,11 +95,11 @@ public class SensitivityResourceDefinition extends SimpleResourceDefinition {
     }
 
     static SensitivityResourceDefinition createSensitivityClassification() {
-        return new SensitivityResourceDefinition(PATH_ELEMENT, DomainManagementResolver.getResolver("core.access-constraint.sensitivity-classification-config"));
+        return new SensitivityResourceDefinition(PATH_ELEMENT, DomainManagementResolver.getResolver("core.access-control.constraint.sensitivity-classification-config"));
     }
 
     static SensitivityResourceDefinition createVaultExpressionConfiguration() {
-        return new SensitivityResourceDefinition(VAULT_ELEMENT, DomainManagementResolver.getResolver("core.access-constraint.vault-expression-sensitivity"));
+        return new SensitivityResourceDefinition(VAULT_ELEMENT, DomainManagementResolver.getResolver("core.access-control.constraint.vault-expression-sensitivity"));
     }
 
     static ResourceEntry createResource(AbstractSensitivity classification, String type, String name) {

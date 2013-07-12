@@ -44,7 +44,7 @@ public class SensitivityClassificationResourceDefinition extends SimpleResourceD
     public static PathElement PATH_ELEMENT = PathElement.pathElement(SENSITIVITY_CLASSIFICATION);
 
     SensitivityClassificationResourceDefinition() {
-        super(PATH_ELEMENT, DomainManagementResolver.getResolver("core.access-constraint.sensitivity-classification"));
+        super(PATH_ELEMENT, DomainManagementResolver.getResolver("core.access-control.constraint.sensitivity-classification"));
     }
 
     static ResourceEntry createResource(Map<String, SensitivityClassification> classificationsByType, String type, String name) {
