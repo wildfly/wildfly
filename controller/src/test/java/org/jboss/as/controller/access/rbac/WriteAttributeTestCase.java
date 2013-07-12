@@ -113,19 +113,21 @@ public class WriteAttributeTestCase extends AbstractRbacTestBase {
 
         StandardRole role = StandardRole.DEPLOYER;
 
-        ResultExpectation readExpectation = ResultExpectation.NO_ACCESS;
-        ResultExpectation writeExpectation = ResultExpectation.NO_ACCESS;
+        ResultExpectation readExpectation = ResultExpectation.PERMITTED;
+        ResultExpectation writeExpectation = ResultExpectation.DENIED;
 
         testOperation(readExpectation, writeExpectation, UNCONSTRAINED_RESOURCE, UNCONSTRAINED_READWRITE_ATTRIBUTE,
                 OLD_VALUE_OF_UNCONSTRAINED_READWRITE_ATTRIBUTE,
                 NEW_VALUE_OF_UNCONSTRAINED_READWRITE_ATTRIBUTE, role);
+
+        readExpectation = ResultExpectation.DENIED;
+        writeExpectation = ResultExpectation.DENIED;
         testOperation(readExpectation, writeExpectation, UNCONSTRAINED_RESOURCE, SENSITIVE_CONSTRAINED_READWRITE_ATTRIBUTE,
                 OLD_VALUE_OF_SENSITIVE_CONSTRAINED_READWRITE_ATTRIBUTE,
                 NEW_VALUE_OF_SENSITIVE_CONSTRAINED_READWRITE_ATTRIBUTE, role);
-        testOperation(readExpectation, writeExpectation, UNCONSTRAINED_RESOURCE, APPLICATION_CONSTRAINED_READWRITE_ATTRIBUTE,
-                OLD_VALUE_OF_APPLICATION_CONSTRAINED_READWRITE_ATTRIBUTE,
-                NEW_VALUE_OF_APPLICATION_CONSTRAINED_READWRITE_ATTRIBUTE, role);
 
+        readExpectation = ResultExpectation.NO_ACCESS;
+        writeExpectation = ResultExpectation.NO_ACCESS;
         testOperation(readExpectation, writeExpectation, SENSITIVE_CONSTRAINED_RESOURCE, UNCONSTRAINED_READWRITE_ATTRIBUTE,
                 OLD_VALUE_OF_UNCONSTRAINED_READWRITE_ATTRIBUTE,
                 NEW_VALUE_OF_UNCONSTRAINED_READWRITE_ATTRIBUTE, role);
@@ -138,6 +140,9 @@ public class WriteAttributeTestCase extends AbstractRbacTestBase {
 
         readExpectation = ResultExpectation.PERMITTED;
         writeExpectation = ResultExpectation.PERMITTED;
+        testOperation(readExpectation, writeExpectation, UNCONSTRAINED_RESOURCE, APPLICATION_CONSTRAINED_READWRITE_ATTRIBUTE,
+                OLD_VALUE_OF_APPLICATION_CONSTRAINED_READWRITE_ATTRIBUTE,
+                NEW_VALUE_OF_APPLICATION_CONSTRAINED_READWRITE_ATTRIBUTE, role);
         testOperation(readExpectation, writeExpectation, APPLICATION_CONSTRAINED_RESOURCE, UNCONSTRAINED_READWRITE_ATTRIBUTE,
                 OLD_VALUE_OF_UNCONSTRAINED_READWRITE_ATTRIBUTE,
                 NEW_VALUE_OF_UNCONSTRAINED_READWRITE_ATTRIBUTE, role);

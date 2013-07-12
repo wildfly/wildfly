@@ -57,12 +57,18 @@ import org.junit.Before;
 import org.junit.Test;
 
 /**
+ * Test the basic RBAC permission scheme.
+ *
+ * TODO audit constraints
+ *
  * @author Ladislav Thon <lthon@redhat.com>
  */
 public class BasicRbacTestCase extends AbstractRbacTestBase {
     public static final String UNCONSTRAINED_RESOURCE = "unconstrained-resource";
     public static final String APPLICATION_CONSTRAINED_RESOURCE = "application-constrained-resource";
-    public static final String SENSITIVE_CONSTRAINED_RESOURCE = "sensitive-constrained-resource";
+    public static final String SENSITIVE_NON_ADDRESSABLE_RESOURCE = "sensitive-non-addressable-resource";
+    public static final String SENSITIVE_ADDRESSABLE_RESOURCE = "sensitive-addressable-resource";
+    public static final String SENSITIVE_READ_ONLY_RESOURCE = "sensitive-read-only-resource";
 
     public static final String READONLY_OPERATION = "readonly-operation";
     public static final String READWRITE_OPERATION = "readwrite-operation";
@@ -90,101 +96,171 @@ public class BasicRbacTestCase extends AbstractRbacTestBase {
         operation = Util.createOperation(ADD, pathAddress(APPLICATION_CONSTRAINED_RESOURCE, FOO));
         executeWithRole(operation, StandardRole.SUPERUSER);
 
-        operation = Util.createOperation(ADD, pathAddress(SENSITIVE_CONSTRAINED_RESOURCE, FOO));
+        operation = Util.createOperation(ADD, pathAddress(SENSITIVE_NON_ADDRESSABLE_RESOURCE, FOO));
+        executeWithRole(operation, StandardRole.SUPERUSER);
+
+        operation = Util.createOperation(ADD, pathAddress(SENSITIVE_ADDRESSABLE_RESOURCE, FOO));
+        executeWithRole(operation, StandardRole.SUPERUSER);
+
+        operation = Util.createOperation(ADD, pathAddress(SENSITIVE_READ_ONLY_RESOURCE, FOO));
         executeWithRole(operation, StandardRole.SUPERUSER);
     }
 
     // monitor
 
     @Test
-    public void testMonitorNoAccess() throws Exception {
-        noAccess(READ_RESOURCE_OPERATION, pathAddress(SENSITIVE_CONSTRAINED_RESOURCE, FOO), StandardRole.MONITOR);
+    public void testMonitorNonAddressable() throws Exception {
+        noAccess(READ_RESOURCE_OPERATION, pathAddress(SENSITIVE_NON_ADDRESSABLE_RESOURCE, FOO), StandardRole.MONITOR);
+    }
+
+    @Test
+    public void testMonitorReadConfigDenied() throws Exception {
+        denied(READ_RESOURCE_OPERATION, pathAddress(SENSITIVE_ADDRESSABLE_RESOURCE, FOO), StandardRole.MONITOR);
     }
 
     @Test
     public void testMonitorReadConfigPermitted() throws Exception {
         permitted(READ_RESOURCE_OPERATION, pathAddress(UNCONSTRAINED_RESOURCE, FOO), StandardRole.MONITOR);
+        permitted(READ_RESOURCE_OPERATION, pathAddress(SENSITIVE_READ_ONLY_RESOURCE, FOO), StandardRole.MONITOR);
+        permitted(READ_RESOURCE_OPERATION, pathAddress(APPLICATION_CONSTRAINED_RESOURCE, FOO), StandardRole.MONITOR);
     }
 
     @Test
     public void testMonitorWriteConfigDenied() throws Exception {
         denied(ADD, pathAddress(UNCONSTRAINED_RESOURCE, BAR), StandardRole.MONITOR);
+        denied(ADD, pathAddress(SENSITIVE_READ_ONLY_RESOURCE, BAR), StandardRole.MONITOR);
+        denied(ADD, pathAddress(APPLICATION_CONSTRAINED_RESOURCE, BAR), StandardRole.MONITOR);
+    }
+
+    @Test
+    public void testMonitorReadRuntimeDenied() throws Exception {
+        denied(READONLY_OPERATION, pathAddress(SENSITIVE_ADDRESSABLE_RESOURCE, FOO), StandardRole.MONITOR);
     }
 
     @Test
     public void testMonitorReadRuntimePermitted() throws Exception {
         permitted(READONLY_OPERATION, pathAddress(UNCONSTRAINED_RESOURCE, FOO), StandardRole.MONITOR);
+        permitted(READONLY_OPERATION, pathAddress(SENSITIVE_READ_ONLY_RESOURCE, FOO), StandardRole.MONITOR);
+        permitted(READONLY_OPERATION, pathAddress(APPLICATION_CONSTRAINED_RESOURCE, FOO), StandardRole.MONITOR);
     }
 
     @Test
     public void testMonitorWriteRuntimeDenied() throws Exception {
         denied(READWRITE_OPERATION, pathAddress(UNCONSTRAINED_RESOURCE, FOO), StandardRole.MONITOR);
+        denied(READWRITE_OPERATION, pathAddress(SENSITIVE_READ_ONLY_RESOURCE, FOO), StandardRole.MONITOR);
+        denied(READWRITE_OPERATION, pathAddress(APPLICATION_CONSTRAINED_RESOURCE, FOO), StandardRole.MONITOR);
     }
 
     // operator
 
     @Test
-    public void testOperatorNoAccess() throws Exception {
-        noAccess(READ_RESOURCE_OPERATION, pathAddress(SENSITIVE_CONSTRAINED_RESOURCE, FOO), StandardRole.OPERATOR);
+    public void testOperatorNonAddressable() throws Exception {
+        noAccess(READ_RESOURCE_OPERATION, pathAddress(SENSITIVE_NON_ADDRESSABLE_RESOURCE, FOO), StandardRole.OPERATOR);
+    }
+
+    @Test
+    public void testOperatorReadConfigDenied() throws Exception {
+        denied(READ_RESOURCE_OPERATION, pathAddress(SENSITIVE_ADDRESSABLE_RESOURCE, FOO), StandardRole.OPERATOR);
     }
 
     @Test
     public void testOperatorReadConfigPermitted() throws Exception {
         permitted(READ_RESOURCE_OPERATION, pathAddress(UNCONSTRAINED_RESOURCE, FOO), StandardRole.OPERATOR);
+        permitted(READ_RESOURCE_OPERATION, pathAddress(SENSITIVE_READ_ONLY_RESOURCE, FOO), StandardRole.OPERATOR);
+        permitted(READ_RESOURCE_OPERATION, pathAddress(APPLICATION_CONSTRAINED_RESOURCE, FOO), StandardRole.OPERATOR);
     }
 
     @Test
     public void testOperatorWriteConfigDenied() throws Exception {
         denied(ADD, pathAddress(UNCONSTRAINED_RESOURCE, BAR), StandardRole.OPERATOR);
+        denied(ADD, pathAddress(SENSITIVE_READ_ONLY_RESOURCE, BAR), StandardRole.OPERATOR);
+        denied(ADD, pathAddress(APPLICATION_CONSTRAINED_RESOURCE, BAR), StandardRole.OPERATOR);
+    }
+
+    @Test
+    public void testOperatorReadRuntimeDenied() throws Exception {
+        denied(READONLY_OPERATION, pathAddress(SENSITIVE_ADDRESSABLE_RESOURCE, FOO), StandardRole.OPERATOR);
     }
 
     @Test
     public void testOperatorReadRuntimePermitted() throws Exception {
         permitted(READONLY_OPERATION, pathAddress(UNCONSTRAINED_RESOURCE, FOO), StandardRole.OPERATOR);
+        permitted(READONLY_OPERATION, pathAddress(SENSITIVE_READ_ONLY_RESOURCE, FOO), StandardRole.OPERATOR);
+        permitted(READONLY_OPERATION, pathAddress(APPLICATION_CONSTRAINED_RESOURCE, FOO), StandardRole.OPERATOR);
+    }
+
+    @Test
+    public void testOperatorWriteRuntimeDenied() throws Exception {
+        denied(READWRITE_OPERATION, pathAddress(SENSITIVE_READ_ONLY_RESOURCE, BAR), StandardRole.OPERATOR);
     }
 
     @Test
     public void testOperatorWriteRuntimePermitted() throws Exception {
         permitted(READWRITE_OPERATION, pathAddress(UNCONSTRAINED_RESOURCE, FOO), StandardRole.OPERATOR);
+        permitted(READWRITE_OPERATION, pathAddress(APPLICATION_CONSTRAINED_RESOURCE, FOO), StandardRole.OPERATOR);
     }
 
     // maintainer
 
     @Test
-    public void testMaintainerNoAccess() throws Exception {
-        noAccess(READ_RESOURCE_OPERATION, pathAddress(SENSITIVE_CONSTRAINED_RESOURCE, FOO), StandardRole.MAINTAINER);
+    public void testMaintainerNonAddressable() throws Exception {
+        noAccess(READ_RESOURCE_OPERATION, pathAddress(SENSITIVE_NON_ADDRESSABLE_RESOURCE, FOO), StandardRole.MAINTAINER);
+    }
+
+    @Test
+    public void testMaintainerReadConfigDenied() throws Exception {
+        denied(READ_RESOURCE_OPERATION, pathAddress(SENSITIVE_ADDRESSABLE_RESOURCE, FOO), StandardRole.MAINTAINER);
     }
 
     @Test
     public void testMaintainerReadConfigPermitted() throws Exception {
         permitted(READ_RESOURCE_OPERATION, pathAddress(UNCONSTRAINED_RESOURCE, FOO), StandardRole.MAINTAINER);
+        permitted(READ_RESOURCE_OPERATION, pathAddress(SENSITIVE_READ_ONLY_RESOURCE, FOO), StandardRole.MAINTAINER);
+        permitted(READ_RESOURCE_OPERATION, pathAddress(APPLICATION_CONSTRAINED_RESOURCE, FOO), StandardRole.MAINTAINER);
     }
 
     @Test
     public void testMaintainerWriteConfigPermitted() throws Exception {
         permitted(ADD, pathAddress(UNCONSTRAINED_RESOURCE, BAR), StandardRole.MAINTAINER);
+        permitted(ADD, pathAddress(APPLICATION_CONSTRAINED_RESOURCE, BAR), StandardRole.MAINTAINER);
     }
 
     @Test
     public void testMaintainerReadRuntimePermitted() throws Exception {
         permitted(READONLY_OPERATION, pathAddress(UNCONSTRAINED_RESOURCE, FOO), StandardRole.MAINTAINER);
+        permitted(READONLY_OPERATION, pathAddress(SENSITIVE_READ_ONLY_RESOURCE, FOO), StandardRole.MAINTAINER);
+        permitted(READONLY_OPERATION, pathAddress(APPLICATION_CONSTRAINED_RESOURCE, FOO), StandardRole.MAINTAINER);
     }
 
     @Test
     public void testMaintainerWriteRuntimePermitted() throws Exception {
         permitted(READWRITE_OPERATION, pathAddress(UNCONSTRAINED_RESOURCE, FOO), StandardRole.MAINTAINER);
+        permitted(READWRITE_OPERATION, pathAddress(APPLICATION_CONSTRAINED_RESOURCE, FOO), StandardRole.MAINTAINER);
     }
 
     // deployer
 
     @Test
     public void testDeployerNoAccess() throws Exception {
-        noAccess(READ_RESOURCE_OPERATION, pathAddress(UNCONSTRAINED_RESOURCE, FOO), StandardRole.DEPLOYER);
+        noAccess(READ_RESOURCE_OPERATION, pathAddress(SENSITIVE_NON_ADDRESSABLE_RESOURCE, FOO), StandardRole.DEPLOYER);
+    }
+
+    @Test
+    public void testDeployerReadConfigDenied() throws Exception {
+        denied(READ_RESOURCE_OPERATION, pathAddress(SENSITIVE_ADDRESSABLE_RESOURCE, FOO), StandardRole.DEPLOYER);
     }
 
     @Test
     public void testDeployerReadConfigPermitted() throws Exception {
+        permitted(READ_RESOURCE_OPERATION, pathAddress(UNCONSTRAINED_RESOURCE, FOO), StandardRole.DEPLOYER);
+        permitted(READ_RESOURCE_OPERATION, pathAddress(SENSITIVE_READ_ONLY_RESOURCE, FOO), StandardRole.DEPLOYER);
         permitted(READ_RESOURCE_OPERATION, pathAddress(APPLICATION_CONSTRAINED_RESOURCE, FOO), StandardRole.DEPLOYER);
+    }
+
+    @Test
+    public void testDeployerWriteConfigDenied() throws Exception {
+        denied(ADD, pathAddress(UNCONSTRAINED_RESOURCE, BAR), StandardRole.DEPLOYER);
+        denied(ADD, pathAddress(SENSITIVE_READ_ONLY_RESOURCE, BAR), StandardRole.DEPLOYER);
     }
 
     @Test
@@ -194,7 +270,15 @@ public class BasicRbacTestCase extends AbstractRbacTestBase {
 
     @Test
     public void testDeployerReadRuntimePermitted() throws Exception {
+        permitted(READONLY_OPERATION, pathAddress(UNCONSTRAINED_RESOURCE, FOO), StandardRole.DEPLOYER);
+        permitted(READONLY_OPERATION, pathAddress(SENSITIVE_READ_ONLY_RESOURCE, FOO), StandardRole.DEPLOYER);
         permitted(READONLY_OPERATION, pathAddress(APPLICATION_CONSTRAINED_RESOURCE, FOO), StandardRole.DEPLOYER);
+    }
+
+    @Test
+    public void testDeployerWriteRuntimeDenied() throws Exception {
+        denied(READWRITE_OPERATION, pathAddress(UNCONSTRAINED_RESOURCE, BAR), StandardRole.DEPLOYER);
+        denied(READWRITE_OPERATION, pathAddress(SENSITIVE_READ_ONLY_RESOURCE, BAR), StandardRole.DEPLOYER);
     }
 
     @Test
@@ -206,32 +290,128 @@ public class BasicRbacTestCase extends AbstractRbacTestBase {
 
     @Test
     public void testAdministratorReadConfigPermitted() throws Exception {
-        permitted(READ_RESOURCE_OPERATION, pathAddress(SENSITIVE_CONSTRAINED_RESOURCE, FOO), StandardRole.ADMINISTRATOR);
+        permitted(READ_RESOURCE_OPERATION, pathAddress(UNCONSTRAINED_RESOURCE, FOO), StandardRole.ADMINISTRATOR);
+        permitted(READ_RESOURCE_OPERATION, pathAddress(SENSITIVE_NON_ADDRESSABLE_RESOURCE, FOO), StandardRole.ADMINISTRATOR);
+        permitted(READ_RESOURCE_OPERATION, pathAddress(SENSITIVE_ADDRESSABLE_RESOURCE, FOO), StandardRole.ADMINISTRATOR);
+        permitted(READ_RESOURCE_OPERATION, pathAddress(SENSITIVE_READ_ONLY_RESOURCE, FOO), StandardRole.ADMINISTRATOR);
+        permitted(READ_RESOURCE_OPERATION, pathAddress(APPLICATION_CONSTRAINED_RESOURCE, FOO), StandardRole.ADMINISTRATOR);
     }
 
     @Test
     public void testAdministratorWriteConfigPermitted() throws Exception {
-        permitted(ADD, pathAddress(SENSITIVE_CONSTRAINED_RESOURCE, BAR), StandardRole.ADMINISTRATOR);
+        permitted(ADD, pathAddress(UNCONSTRAINED_RESOURCE, BAR), StandardRole.ADMINISTRATOR);
+        permitted(ADD, pathAddress(SENSITIVE_NON_ADDRESSABLE_RESOURCE, BAR), StandardRole.ADMINISTRATOR);
+        permitted(ADD, pathAddress(SENSITIVE_ADDRESSABLE_RESOURCE, BAR), StandardRole.ADMINISTRATOR);
+        permitted(ADD, pathAddress(SENSITIVE_READ_ONLY_RESOURCE, BAR), StandardRole.ADMINISTRATOR);
+        permitted(ADD, pathAddress(APPLICATION_CONSTRAINED_RESOURCE, BAR), StandardRole.ADMINISTRATOR);
     }
 
     @Test
     public void testAdministratorReadRuntimePermitted() throws Exception {
-        permitted(READONLY_OPERATION, pathAddress(SENSITIVE_CONSTRAINED_RESOURCE, FOO), StandardRole.ADMINISTRATOR);
+        permitted(READONLY_OPERATION, pathAddress(UNCONSTRAINED_RESOURCE, FOO), StandardRole.ADMINISTRATOR);
+        permitted(READONLY_OPERATION, pathAddress(SENSITIVE_NON_ADDRESSABLE_RESOURCE, FOO), StandardRole.ADMINISTRATOR);
+        permitted(READONLY_OPERATION, pathAddress(SENSITIVE_ADDRESSABLE_RESOURCE, FOO), StandardRole.ADMINISTRATOR);
+        permitted(READONLY_OPERATION, pathAddress(SENSITIVE_READ_ONLY_RESOURCE, FOO), StandardRole.ADMINISTRATOR);
+        permitted(READONLY_OPERATION, pathAddress(APPLICATION_CONSTRAINED_RESOURCE, FOO), StandardRole.ADMINISTRATOR);
     }
 
     @Test
     public void testAdministratorWriteRuntimePermitted() throws Exception {
-        permitted(READWRITE_OPERATION, pathAddress(SENSITIVE_CONSTRAINED_RESOURCE, FOO), StandardRole.ADMINISTRATOR);
+        permitted(READWRITE_OPERATION, pathAddress(UNCONSTRAINED_RESOURCE, BAR), StandardRole.ADMINISTRATOR);
+        permitted(READWRITE_OPERATION, pathAddress(SENSITIVE_NON_ADDRESSABLE_RESOURCE, BAR), StandardRole.ADMINISTRATOR);
+        permitted(READWRITE_OPERATION, pathAddress(SENSITIVE_ADDRESSABLE_RESOURCE, BAR), StandardRole.ADMINISTRATOR);
+        permitted(READWRITE_OPERATION, pathAddress(SENSITIVE_READ_ONLY_RESOURCE, BAR), StandardRole.ADMINISTRATOR);
+        permitted(READWRITE_OPERATION, pathAddress(APPLICATION_CONSTRAINED_RESOURCE, BAR), StandardRole.ADMINISTRATOR);
     }
 
-    // auditor, superuser -- TODO AuditConstraint
+    // auditor
+
+    @Test
+    public void testAuditorReadConfigPermitted() throws Exception {
+        permitted(READ_RESOURCE_OPERATION, pathAddress(UNCONSTRAINED_RESOURCE, FOO), StandardRole.AUDITOR);
+        permitted(READ_RESOURCE_OPERATION, pathAddress(SENSITIVE_NON_ADDRESSABLE_RESOURCE, FOO), StandardRole.AUDITOR);
+        permitted(READ_RESOURCE_OPERATION, pathAddress(SENSITIVE_ADDRESSABLE_RESOURCE, FOO), StandardRole.AUDITOR);
+        permitted(READ_RESOURCE_OPERATION, pathAddress(SENSITIVE_READ_ONLY_RESOURCE, FOO), StandardRole.AUDITOR);
+        permitted(READ_RESOURCE_OPERATION, pathAddress(APPLICATION_CONSTRAINED_RESOURCE, FOO), StandardRole.AUDITOR);
+    }
+
+    @Test
+    public void testAuditorWriteConfigDenied() throws Exception {
+        denied(ADD, pathAddress(UNCONSTRAINED_RESOURCE, BAR), StandardRole.AUDITOR);
+        denied(ADD, pathAddress(SENSITIVE_READ_ONLY_RESOURCE, BAR), StandardRole.AUDITOR);
+        denied(ADD, pathAddress(APPLICATION_CONSTRAINED_RESOURCE, BAR), StandardRole.AUDITOR);
+    }
+
+    @Test
+    public void testAuditorReadRuntimePermitted() throws Exception {
+        permitted(READONLY_OPERATION, pathAddress(UNCONSTRAINED_RESOURCE, FOO), StandardRole.AUDITOR);
+        permitted(READONLY_OPERATION, pathAddress(SENSITIVE_NON_ADDRESSABLE_RESOURCE, FOO), StandardRole.AUDITOR);
+        permitted(READONLY_OPERATION, pathAddress(SENSITIVE_ADDRESSABLE_RESOURCE, FOO), StandardRole.AUDITOR);
+        permitted(READONLY_OPERATION, pathAddress(SENSITIVE_READ_ONLY_RESOURCE, FOO), StandardRole.AUDITOR);
+        permitted(READONLY_OPERATION, pathAddress(APPLICATION_CONSTRAINED_RESOURCE, FOO), StandardRole.AUDITOR);
+    }
+
+    @Test
+    public void testAuditorWriteRuntimeDenied() throws Exception {
+        denied(READWRITE_OPERATION, pathAddress(UNCONSTRAINED_RESOURCE, FOO), StandardRole.AUDITOR);
+        denied(READWRITE_OPERATION, pathAddress(SENSITIVE_READ_ONLY_RESOURCE, FOO), StandardRole.AUDITOR);
+        denied(READWRITE_OPERATION, pathAddress(APPLICATION_CONSTRAINED_RESOURCE, FOO), StandardRole.AUDITOR);
+    }
+
+    // superuser
+
+    @Test
+    public void testSuperUserReadConfigPermitted() throws Exception {
+        permitted(READ_RESOURCE_OPERATION, pathAddress(UNCONSTRAINED_RESOURCE, FOO), StandardRole.SUPERUSER);
+        permitted(READ_RESOURCE_OPERATION, pathAddress(SENSITIVE_NON_ADDRESSABLE_RESOURCE, FOO), StandardRole.SUPERUSER);
+        permitted(READ_RESOURCE_OPERATION, pathAddress(SENSITIVE_ADDRESSABLE_RESOURCE, FOO), StandardRole.SUPERUSER);
+        permitted(READ_RESOURCE_OPERATION, pathAddress(SENSITIVE_READ_ONLY_RESOURCE, FOO), StandardRole.SUPERUSER);
+        permitted(READ_RESOURCE_OPERATION, pathAddress(APPLICATION_CONSTRAINED_RESOURCE, FOO), StandardRole.SUPERUSER);
+    }
+
+    @Test
+    public void testSuperUserWriteConfigPermitted() throws Exception {
+        permitted(ADD, pathAddress(UNCONSTRAINED_RESOURCE, BAR), StandardRole.SUPERUSER);
+        permitted(ADD, pathAddress(SENSITIVE_NON_ADDRESSABLE_RESOURCE, BAR), StandardRole.SUPERUSER);
+        permitted(ADD, pathAddress(SENSITIVE_ADDRESSABLE_RESOURCE, BAR), StandardRole.SUPERUSER);
+        permitted(ADD, pathAddress(SENSITIVE_READ_ONLY_RESOURCE, BAR), StandardRole.SUPERUSER);
+        permitted(ADD, pathAddress(APPLICATION_CONSTRAINED_RESOURCE, BAR), StandardRole.SUPERUSER);
+    }
+
+    @Test
+    public void testSuperUserReadRuntimePermitted() throws Exception {
+        permitted(READONLY_OPERATION, pathAddress(UNCONSTRAINED_RESOURCE, FOO), StandardRole.SUPERUSER);
+        permitted(READONLY_OPERATION, pathAddress(SENSITIVE_NON_ADDRESSABLE_RESOURCE, FOO), StandardRole.SUPERUSER);
+        permitted(READONLY_OPERATION, pathAddress(SENSITIVE_ADDRESSABLE_RESOURCE, FOO), StandardRole.SUPERUSER);
+        permitted(READONLY_OPERATION, pathAddress(SENSITIVE_READ_ONLY_RESOURCE, FOO), StandardRole.SUPERUSER);
+        permitted(READONLY_OPERATION, pathAddress(APPLICATION_CONSTRAINED_RESOURCE, FOO), StandardRole.SUPERUSER);
+    }
+
+    @Test
+    public void testSuperUserWriteRuntimePermitted() throws Exception {
+        permitted(READWRITE_OPERATION, pathAddress(UNCONSTRAINED_RESOURCE, BAR), StandardRole.SUPERUSER);
+        permitted(READWRITE_OPERATION, pathAddress(SENSITIVE_NON_ADDRESSABLE_RESOURCE, BAR), StandardRole.SUPERUSER);
+        permitted(READWRITE_OPERATION, pathAddress(SENSITIVE_ADDRESSABLE_RESOURCE, BAR), StandardRole.SUPERUSER);
+        permitted(READWRITE_OPERATION, pathAddress(SENSITIVE_READ_ONLY_RESOURCE, BAR), StandardRole.SUPERUSER);
+        permitted(READWRITE_OPERATION, pathAddress(APPLICATION_CONSTRAINED_RESOURCE, BAR), StandardRole.SUPERUSER);
+    }
 
     // model definition
 
-    private static final SensitivityClassification MY_SENSITIVITY
-            = new SensitivityClassification("test", "my-sensitivity", true, true, true);
-    private static final AccessConstraintDefinition MY_SENSITIVE_CONSTRAINT
-            = new SensitiveTargetAccessConstraintDefinition(MY_SENSITIVITY);
+    private static final SensitivityClassification ADDRESSABLE_SENSITIVITY
+            = new SensitivityClassification("test", "addressable-sensitivity", true, true, true);
+    private static final AccessConstraintDefinition ADDRESSABLE_SENSITIVITY_CONSTRAINT
+            = new SensitiveTargetAccessConstraintDefinition(ADDRESSABLE_SENSITIVITY);
+
+    private static final SensitivityClassification READ_SENSITIVITY
+            = new SensitivityClassification("test", "read-sensitivity", false, true, true);
+    private static final AccessConstraintDefinition READ_SENSITIVITY_CONSTRAINT
+            = new SensitiveTargetAccessConstraintDefinition(READ_SENSITIVITY);
+
+    private static final SensitivityClassification WRITE_SENSITIVITY
+            = new SensitivityClassification("test", "write-sensitivity", false, false, true);
+    private static final AccessConstraintDefinition WRITE_SENSITIVITY_CONSTRAINT
+            = new SensitiveTargetAccessConstraintDefinition(WRITE_SENSITIVITY);
 
     private static final ApplicationTypeConfig MY_APPLICATION_TYPE
             = new ApplicationTypeConfig("test", "my-application-type", true);
@@ -243,8 +423,12 @@ public class BasicRbacTestCase extends AbstractRbacTestBase {
         GlobalOperationHandlers.registerGlobalOperations(registration, ProcessType.EMBEDDED_SERVER);
 
         registration.registerSubModel(new TestResourceDefinition(UNCONSTRAINED_RESOURCE));
-        registration.registerSubModel(new TestResourceDefinition(SENSITIVE_CONSTRAINED_RESOURCE,
-                MY_SENSITIVE_CONSTRAINT));
+        registration.registerSubModel(new TestResourceDefinition(SENSITIVE_NON_ADDRESSABLE_RESOURCE,
+                ADDRESSABLE_SENSITIVITY_CONSTRAINT));
+        registration.registerSubModel(new TestResourceDefinition(SENSITIVE_ADDRESSABLE_RESOURCE,
+                READ_SENSITIVITY_CONSTRAINT));
+        registration.registerSubModel(new TestResourceDefinition(SENSITIVE_READ_ONLY_RESOURCE,
+                WRITE_SENSITIVITY_CONSTRAINT));
         registration.registerSubModel(new TestResourceDefinition(APPLICATION_CONSTRAINED_RESOURCE,
                 MY_APPLICATION_CONSTRAINT));
     }

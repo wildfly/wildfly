@@ -124,21 +124,24 @@ public class ReadAttributeTestCase extends AbstractRbacTestBase {
 
         StandardRole role = StandardRole.DEPLOYER;
 
-        ResultExpectation readExpectation = ResultExpectation.NO_ACCESS;
+        ResultExpectation readExpectation = ResultExpectation.PERMITTED;
 
         testOperation(readExpectation, UNCONSTRAINED_RESOURCE_1,
                 UNCONSTRAINED_READONLY_ATTRIBUTE, VALUE_OF_UNCONSTRAINED_READONLY_ATTRIBUTE, role);
         testOperation(readExpectation, UNCONSTRAINED_RESOURCE_2,
                 UNCONSTRAINED_READONLY_ATTRIBUTE, VALUE_OF_UNCONSTRAINED_READONLY_ATTRIBUTE, role);
         testOperation(readExpectation, UNCONSTRAINED_RESOURCE_1,
-                SENSITIVE_CONSTRAINED_READONLY_ATTRIBUTE, VALUE_OF_SENSITIVE_CONSTRAINED_READONLY_ATTRIBUTE, role);
-        testOperation(readExpectation, UNCONSTRAINED_RESOURCE_2,
-                SENSITIVE_CONSTRAINED_READONLY_ATTRIBUTE, VALUE_OF_SENSITIVE_CONSTRAINED_READONLY_ATTRIBUTE, role);
-        testOperation(readExpectation, UNCONSTRAINED_RESOURCE_1,
                 APPLICATION_CONSTRAINED_READONLY_ATTRIBUTE, VALUE_OF_APPLICATION_CONSTRAINED_READONLY_ATTRIBUTE, role);
         testOperation(readExpectation, UNCONSTRAINED_RESOURCE_2,
                 APPLICATION_CONSTRAINED_READONLY_ATTRIBUTE, VALUE_OF_APPLICATION_CONSTRAINED_READONLY_ATTRIBUTE, role);
 
+        readExpectation = ResultExpectation.DENIED;
+        testOperation(readExpectation, UNCONSTRAINED_RESOURCE_1,
+                SENSITIVE_CONSTRAINED_READONLY_ATTRIBUTE, VALUE_OF_SENSITIVE_CONSTRAINED_READONLY_ATTRIBUTE, role);
+        testOperation(readExpectation, UNCONSTRAINED_RESOURCE_2,
+                SENSITIVE_CONSTRAINED_READONLY_ATTRIBUTE, VALUE_OF_SENSITIVE_CONSTRAINED_READONLY_ATTRIBUTE, role);
+
+        readExpectation = ResultExpectation.NO_ACCESS;
         testOperation(readExpectation, SENSITIVE_CONSTRAINED_RESOURCE_1,
                 UNCONSTRAINED_READONLY_ATTRIBUTE, VALUE_OF_UNCONSTRAINED_READONLY_ATTRIBUTE, role);
         testOperation(readExpectation, SENSITIVE_CONSTRAINED_RESOURCE_2,
