@@ -64,14 +64,12 @@ import org.jboss.as.controller.access.constraint.VaultExpressionSensitivityConfi
 import org.jboss.as.controller.access.constraint.management.AccessConstraintDefinition;
 import org.jboss.as.controller.access.constraint.management.ConstrainedResourceDefinition;
 import org.jboss.as.controller.access.constraint.management.SensitiveTargetAccessConstraintDefinition;
-import org.jboss.as.controller.access.rbac.StandardRole;
 import org.jboss.as.controller.descriptions.NonResolvingResourceDescriptionResolver;
 import org.jboss.as.controller.operations.common.Util;
 import org.jboss.as.controller.operations.global.GlobalOperationHandlers;
 import org.jboss.as.controller.registry.ManagementResourceRegistration;
 import org.jboss.as.controller.registry.Resource;
 import org.jboss.as.controller.test.AbstractControllerTestBase;
-import org.jboss.as.controller.test.AbstractControllerTestBase.ModelControllerService;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.ModelType;
 import org.jboss.dmr.Property;
@@ -1692,8 +1690,8 @@ public class ReadResourceDescriptionAccessControlTestCase extends AbstractContro
     private void assertNonAccessibleDefaultAccessControl(ModelNode description) {
         ResourceAccessControl accessControl = getResourceAccessControl(description);
         Assert.assertEquals(1, accessControl.defaultControl.keys().size());
-        Assert.assertTrue(accessControl.defaultControl.hasDefined(ActionEffect.ACCESS.toString()));
-        Assert.assertFalse(accessControl.defaultControl.get(ActionEffect.ACCESS.toString()).asBoolean());
+        Assert.assertTrue(accessControl.defaultControl.hasDefined(ActionEffect.ADDRESS.toString()));
+        Assert.assertFalse(accessControl.defaultControl.get(ActionEffect.ADDRESS.toString()).asBoolean());
     }
 
     private ResourceAccessControl getResourceAccessControl(ModelNode description, PathAddress...exceptions){

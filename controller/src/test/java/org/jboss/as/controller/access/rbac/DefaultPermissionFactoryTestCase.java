@@ -147,7 +147,7 @@ public class DefaultPermissionFactoryTestCase {
         DefaultPermissionFactory permissionFactory = new DefaultPermissionFactory(combinationPolicy, roleMapper,
                 Collections.singleton(constraintFactory));
 
-        Action action = new Action(null, null, EnumSet.of(Action.ActionEffect.ACCESS));
+        Action action = new Action(null, null, EnumSet.of(Action.ActionEffect.ADDRESS));
         TargetResource targetResource = TargetResource.forStandalone(null, null);
 
         PermissionCollection userPermissions = permissionFactory.getUserPermissions(caller, environment, action, targetResource);
@@ -168,7 +168,7 @@ public class DefaultPermissionFactoryTestCase {
         DefaultPermissionFactory permissionFactory = new DefaultPermissionFactory(combinationPolicy, roleMapper,
                 Collections.singleton(constraintFactory));
 
-        Action action = new Action(null, null, EnumSet.of(Action.ActionEffect.ACCESS));
+        Action action = new Action(null, null, EnumSet.of(Action.ActionEffect.ADDRESS));
         TargetResource targetResource = TargetResource.forStandalone(null, null);
         TargetAttribute targetAttribute = new TargetAttribute(null, new ModelNode(), targetResource);
 
@@ -182,7 +182,7 @@ public class DefaultPermissionFactoryTestCase {
 
     @Test
     public void testRoleCombinationRejecting() {
-        Action action = new Action(null, null, EnumSet.of(Action.ActionEffect.ACCESS,
+        Action action = new Action(null, null, EnumSet.of(Action.ActionEffect.ADDRESS,
                 Action.ActionEffect.READ_CONFIG));
         TargetResource targetResource = TargetResource.forStandalone(null, null);
 

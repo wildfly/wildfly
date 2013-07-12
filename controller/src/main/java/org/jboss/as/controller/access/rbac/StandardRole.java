@@ -51,7 +51,7 @@ public enum StandardRole {
     }
 
     private StandardRole(Action.ActionEffect... allowedExcludingAccess) {
-        this(EnumSet.of(Action.ActionEffect.ACCESS, allowedExcludingAccess));
+        this(EnumSet.of(Action.ActionEffect.ADDRESS, allowedExcludingAccess));
     }
 
     private StandardRole(Set<Action.ActionEffect> allowedActions) {

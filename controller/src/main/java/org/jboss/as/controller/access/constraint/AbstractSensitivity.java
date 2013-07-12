@@ -105,7 +105,7 @@ public class AbstractSensitivity {
     }
 
     public boolean isSensitive(Action.ActionEffect actionEffect) {
-        if (actionEffect == Action.ActionEffect.ACCESS) {
+        if (actionEffect == Action.ActionEffect.ADDRESS) {
             return getRequiresAccessPermission();
         } else if (actionEffect == Action.ActionEffect.READ_CONFIG || actionEffect == Action.ActionEffect.READ_RUNTIME) {
             return getRequiresReadPermission();

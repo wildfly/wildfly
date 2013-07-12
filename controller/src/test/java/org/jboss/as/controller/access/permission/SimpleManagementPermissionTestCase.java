@@ -33,8 +33,8 @@ import org.junit.Test;
  * @author Ladislav Thon <lthon@redhat.com>
  */
 public class SimpleManagementPermissionTestCase {
-    private static final SimpleManagementPermission ACCESS_ALLOWED = new SimpleManagementPermission(Action.ActionEffect.ACCESS, new TestConstraint(true));
-    private static final SimpleManagementPermission ACCESS_DISALLOWED = new SimpleManagementPermission(Action.ActionEffect.ACCESS, new TestConstraint(false));
+    private static final SimpleManagementPermission ACCESS_ALLOWED = new SimpleManagementPermission(Action.ActionEffect.ADDRESS, new TestConstraint(true));
+    private static final SimpleManagementPermission ACCESS_DISALLOWED = new SimpleManagementPermission(Action.ActionEffect.ADDRESS, new TestConstraint(false));
     private static final SimpleManagementPermission READ_CONFIG_ALLOWED = new SimpleManagementPermission(Action.ActionEffect.READ_CONFIG, new TestConstraint(true));
     private static final SimpleManagementPermission READ_RUNTIME_ALLOWED = new SimpleManagementPermission(Action.ActionEffect.READ_RUNTIME, new TestConstraint(true));
     private static final SimpleManagementPermission READ_RUNTIME_DISALLOWED = new SimpleManagementPermission(Action.ActionEffect.READ_RUNTIME, new TestConstraint(false));

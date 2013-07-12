@@ -37,14 +37,14 @@ import org.junit.Test;
  * @author Ladislav Thon <lthon@redhat.com>
  */
 public class CombinationManagementPermissionTestCase {
-    private static final ManagementPermission ACCESS_1 = new TestManagementPermission(Action.ActionEffect.ACCESS, 1);
-    private static final ManagementPermission ACCESS_2 = new TestManagementPermission(Action.ActionEffect.ACCESS, 2);
-    private static final ManagementPermission ACCESS_3 = new TestManagementPermission(Action.ActionEffect.ACCESS, 3);
+    private static final ManagementPermission ACCESS_1 = new TestManagementPermission(Action.ActionEffect.ADDRESS, 1);
+    private static final ManagementPermission ACCESS_2 = new TestManagementPermission(Action.ActionEffect.ADDRESS, 2);
+    private static final ManagementPermission ACCESS_3 = new TestManagementPermission(Action.ActionEffect.ADDRESS, 3);
     private static final ManagementPermission READ_CONFIG_1 = new TestManagementPermission(Action.ActionEffect.READ_CONFIG, 1);
 
     @Test
     public void testPermissive() {
-        CombinationManagementPermission cmp = new CombinationManagementPermission(CombinationPolicy.PERMISSIVE, Action.ActionEffect.ACCESS);
+        CombinationManagementPermission cmp = new CombinationManagementPermission(CombinationPolicy.PERMISSIVE, Action.ActionEffect.ADDRESS);
         cmp.addUnderlyingPermission(ACCESS_1);
         cmp.addUnderlyingPermission(ACCESS_2);
 
@@ -56,7 +56,7 @@ public class CombinationManagementPermissionTestCase {
 
     @Test
     public void testRejecting() {
-        CombinationManagementPermission cmp = new CombinationManagementPermission(CombinationPolicy.REJECTING, Action.ActionEffect.ACCESS);
+        CombinationManagementPermission cmp = new CombinationManagementPermission(CombinationPolicy.REJECTING, Action.ActionEffect.ADDRESS);
         cmp.addUnderlyingPermission(ACCESS_1);
         assertTrue(cmp.implies(ACCESS_1));
         assertFalse(cmp.implies(ACCESS_2));
