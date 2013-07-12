@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
 <!-- 
-  Set these VM properties in your IDE debugger 
+  Set these VM properties in your IDE debugger  
 
   -Djava.util.logging.manager=org.jboss.logmanager.LogManager
   -Djboss.home=${workspace_loc:jboss-as-build}/target/jboss-as-8.0.0.Alpha4-SNAPSHOT 
@@ -42,7 +42,7 @@
             <artifactId>jbossxacml</artifactId>
             <scope>provided</scope>
         </dependency>
-
+<!--
        <dependency>
             <groupId>org.apache.directory.server</groupId>
             <artifactId>apacheds-core</artifactId>
@@ -90,7 +90,8 @@
             <artifactId>apacheds-core-jndi</artifactId>
             <version>${version.apacheds}</version>
             <scope>test</scope>
-        </dependency>
+        </dependency> 
+-->
         <dependency>
             <groupId>org.syslog4j</groupId>
             <artifactId>syslog4j</artifactId>
@@ -326,7 +327,7 @@
                                 <goals><goal>test</goal></goals>
                                 <configuration>
                                     <includes>
-                                        <include>org/jboss/as/test/integration/security/loginmodules/Ldap*TestCase.java</include>                                        
+                                        <include>org/jboss/as/test/integration/security/loginmodules/Ldap*TestCase.java</include>
                                     </includes>
                                     
                                     <systemPropertyVariables>
