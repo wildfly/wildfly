@@ -32,16 +32,12 @@ import org.jboss.dmr.ModelNode;
 public class MultipleRolesBasicRbacTestCase extends BasicRbacTestCase {
     @Override
     protected ModelNode executeWithRole(ModelNode operation, StandardRole role) {
-        // usually, just add "monitor", as that won't widen the permissions
-        // for the "monitor" role, adding "deployer" won't widen the perms either
-        StandardRole additionalRole = role != StandardRole.MONITOR ? StandardRole.MONITOR : StandardRole.DEPLOYER;
-        // but for the "deployer" role, there's no role that won't widen the perms
-        // so in this case, don't add any other role
-        if (role == StandardRole.DEPLOYER) {
-            additionalRole = StandardRole.DEPLOYER;
+        if (role == StandardRole.MONITOR) {
+            return super.executeWithRole(operation, role);
         }
+        // Just add "monitor", as that won't widen the permissions
 
-        operation.get(OPERATION_HEADERS, "roles").add(role.name()).add(additionalRole.name());
+        operation.get(OPERATION_HEADERS, "roles").add(StandardRole.MONITOR.name()).add(role.name());
         return getController().execute(operation, null, null, null);
     }
 }
