@@ -371,11 +371,11 @@ public class ReadResourceDescriptionHandler implements OperationStepHandler {
             ModelNode result = new ModelNode();
             boolean customDefaultCheck = operation.get(OP).asString().equals(GlobalOperationHandlers.CHECK_DEFAULT_RESOURCE_ACCESS);
             AuthorizationResponse authResp = context.authorizeResource(true, customDefaultCheck);
-            if (authResp.getResourceResult(ActionEffect.ACCESS).getDecision() == Decision.DENY) {
+            if (authResp.getResourceResult(ActionEffect.ADDRESS).getDecision() == Decision.DENY) {
                 if (!defaultSetting) {
                     //We are not allowed to see the resource, so we don't set the accessControlResult, meaning that the ReadResourceAssemblyHandler will ignore it for this address
                 } else {
-                    result.get(ActionEffect.ACCESS.toString()).set(false);
+                    result.get(ActionEffect.ADDRESS.toString()).set(false);
                 }
             } else {
                 addResourceAuthorizationResults(result, authResp);
@@ -385,7 +385,7 @@ public class ReadResourceDescriptionHandler implements OperationStepHandler {
 
                 if (result.get(ActionEffect.READ_CONFIG.toString()).asBoolean()) {
                     for (Property attrProp : nodeDescription.require(ATTRIBUTES).asPropertyList()) {
-                        if (authResp.getAttributeResult(attrProp.getName(), ActionEffect.ACCESS).getDecision() == Decision.PERMIT) {
+                        if (authResp.getAttributeResult(attrProp.getName(), ActionEffect.ADDRESS).getDecision() == Decision.PERMIT) {
                             ModelNode attributeResult = new ModelNode();
                             Storage storage = Storage.valueOf(attrProp.getValue().get(STORAGE).asString().toUpperCase());
                             addAttributeAuthorizationResults(attributeResult, attrProp.getName(), authResp, storage == Storage.RUNTIME);
@@ -587,7 +587,7 @@ public class ReadResourceDescriptionHandler implements OperationStepHandler {
                 } catch (UnauthorizedException e) {
                     //We could not read the resource, now check if that is due not to having access or read-config permissions
                     AuthorizationResponse response = context.authorizeResource(false, false);
-                    if (response.getResourceResult(ActionEffect.ACCESS).getDecision() != Decision.PERMIT) {
+                    if (response.getResourceResult(ActionEffect.ADDRESS).getDecision() != Decision.PERMIT) {
                         //We do not have access permissions
                         return;
                     }

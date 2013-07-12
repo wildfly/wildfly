@@ -60,7 +60,7 @@ public class ManagementPermissionAuthorizerTestCase {
 
     @Test
     public void testAuthorizerResourcePermit() {
-        Action action = new Action(null, null, EnumSet.of(Action.ActionEffect.ACCESS,
+        Action action = new Action(null, null, EnumSet.of(Action.ActionEffect.ADDRESS,
                 Action.ActionEffect.READ_CONFIG));
         TargetResource targetResource = TargetResource.forStandalone(null, null);
         AuthorizationResult result = authorizer.authorize(caller, environment, action, targetResource);
@@ -70,7 +70,7 @@ public class ManagementPermissionAuthorizerTestCase {
 
     @Test
     public void testAuthorizerResourceDeny() {
-        Action action = new Action(null, null, EnumSet.of(Action.ActionEffect.ACCESS,
+        Action action = new Action(null, null, EnumSet.of(Action.ActionEffect.ADDRESS,
                 Action.ActionEffect.READ_CONFIG, Action.ActionEffect.WRITE_CONFIG));
         TargetResource targetResource = TargetResource.forStandalone(null, null);
         AuthorizationResult result = authorizer.authorize(caller, environment, action, targetResource);
@@ -80,7 +80,7 @@ public class ManagementPermissionAuthorizerTestCase {
 
     @Test
     public void testAuthorizerAttributePermit() {
-        Action action = new Action(null, null, EnumSet.of(Action.ActionEffect.ACCESS,
+        Action action = new Action(null, null, EnumSet.of(Action.ActionEffect.ADDRESS,
                 Action.ActionEffect.READ_CONFIG));
         TargetResource targetResource = TargetResource.forStandalone(null, null);
         TargetAttribute targetAttribute = new TargetAttribute(null, new ModelNode(), targetResource);
@@ -91,7 +91,7 @@ public class ManagementPermissionAuthorizerTestCase {
 
     @Test
     public void testAuthorizerAttributeDeny() {
-        Action action = new Action(null, null, EnumSet.of(Action.ActionEffect.ACCESS,
+        Action action = new Action(null, null, EnumSet.of(Action.ActionEffect.ADDRESS,
                 Action.ActionEffect.READ_CONFIG, Action.ActionEffect.WRITE_CONFIG));
         TargetResource targetResource = TargetResource.forStandalone(null, null);
         TargetAttribute targetAttribute = new TargetAttribute(null, new ModelNode(), targetResource);
@@ -105,7 +105,7 @@ public class ManagementPermissionAuthorizerTestCase {
     private static final class TestPermissionFactory implements PermissionFactory {
         private PermissionCollection getUserPermissions() {
             ManagementPermissionCollection mpc = new ManagementPermissionCollection(TestManagementPermission.class);
-            mpc.add(new TestManagementPermission(Action.ActionEffect.ACCESS));
+            mpc.add(new TestManagementPermission(Action.ActionEffect.ADDRESS));
             mpc.add(new TestManagementPermission(Action.ActionEffect.READ_CONFIG));
             mpc.add(new TestManagementPermission(Action.ActionEffect.READ_RUNTIME));
             return mpc;

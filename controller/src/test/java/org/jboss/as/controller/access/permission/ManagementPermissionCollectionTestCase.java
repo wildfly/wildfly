@@ -48,13 +48,13 @@ public class ManagementPermissionCollectionTestCase {
     @Test
     public void testAdd() {
         try {
-            permissionCollection.add(new TestManagementPermission(Action.ActionEffect.ACCESS));
+            permissionCollection.add(new TestManagementPermission(Action.ActionEffect.ADDRESS));
         } catch (Exception e) {
             fail();
         }
 
         try {
-            permissionCollection.add(new AnotherTestManagementPermission(Action.ActionEffect.ACCESS));
+            permissionCollection.add(new AnotherTestManagementPermission(Action.ActionEffect.ADDRESS));
             fail();
         } catch (IllegalArgumentException ignored) { /* expected */ }
 
@@ -66,7 +66,7 @@ public class ManagementPermissionCollectionTestCase {
 
     @Test
     public void testElements() {
-        permissionCollection.add(new TestManagementPermission(Action.ActionEffect.ACCESS));
+        permissionCollection.add(new TestManagementPermission(Action.ActionEffect.ADDRESS));
         permissionCollection.add(new TestManagementPermission(Action.ActionEffect.READ_CONFIG));
         permissionCollection.add(new TestManagementPermission(Action.ActionEffect.READ_RUNTIME));
 
@@ -74,7 +74,7 @@ public class ManagementPermissionCollectionTestCase {
         while (elements.hasMoreElements()) {
             ManagementPermission permission = (ManagementPermission) elements.nextElement();
             Action.ActionEffect actionEffect = permission.getActionEffect();
-            assertTrue(actionEffect == Action.ActionEffect.ACCESS
+            assertTrue(actionEffect == Action.ActionEffect.ADDRESS
                     || actionEffect == Action.ActionEffect.READ_CONFIG
                     || actionEffect == Action.ActionEffect.READ_RUNTIME);
         }
@@ -82,12 +82,12 @@ public class ManagementPermissionCollectionTestCase {
 
     @Test
     public void testImplies() {
-        permissionCollection.add(new TestManagementPermission(Action.ActionEffect.ACCESS));
-        assertTrue(permissionCollection.implies(new TestManagementPermission(Action.ActionEffect.ACCESS)));
+        permissionCollection.add(new TestManagementPermission(Action.ActionEffect.ADDRESS));
+        assertTrue(permissionCollection.implies(new TestManagementPermission(Action.ActionEffect.ADDRESS)));
         assertFalse(permissionCollection.implies(new TestManagementPermission(Action.ActionEffect.READ_CONFIG)));
 
         permissionCollection.add(new TestManagementPermission(Action.ActionEffect.READ_CONFIG));
-        assertTrue(permissionCollection.implies(new TestManagementPermission(Action.ActionEffect.ACCESS)));
+        assertTrue(permissionCollection.implies(new TestManagementPermission(Action.ActionEffect.ADDRESS)));
         assertTrue(permissionCollection.implies(new TestManagementPermission(Action.ActionEffect.READ_CONFIG)));
         assertFalse(permissionCollection.implies(new TestManagementPermission(Action.ActionEffect.READ_RUNTIME)));
     }
@@ -97,7 +97,7 @@ public class ManagementPermissionCollectionTestCase {
         assertFalse(permissionCollection.isReadOnly());
 
         try {
-            permissionCollection.add(new TestManagementPermission(Action.ActionEffect.ACCESS));
+            permissionCollection.add(new TestManagementPermission(Action.ActionEffect.ADDRESS));
         } catch (Exception e) {
             fail();
         }

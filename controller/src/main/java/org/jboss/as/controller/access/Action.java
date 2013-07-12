@@ -39,10 +39,15 @@ import org.jboss.dmr.ModelNode;
 public final class Action {
 
     public static enum ActionEffect {
-        ACCESS("access"),
+        /** "Address" a resource, thus confirming the address is valid. All operations have this effect. */
+        ADDRESS("address"),
+        /** Read the persistent configuration */
         READ_CONFIG("read-config"),
+        /** Read runtime state */
         READ_RUNTIME("read-runtime"),
+        /** Modify the persistent configuration */
         WRITE_CONFIG("write-config"),
+        /** Modify runtime state */
         WRITE_RUNTIME("write-runtime");
 
         private final String name;
@@ -81,12 +86,12 @@ public final class Action {
         }
         final EnumSet<ActionEffect> result;
         if (operationEntry.getFlags().contains(OperationEntry.Flag.RUNTIME_ONLY)) {
-            result = EnumSet.of(ActionEffect.ACCESS, ActionEffect.READ_RUNTIME);
+            result = EnumSet.of(ActionEffect.ADDRESS, ActionEffect.READ_RUNTIME);
             if (!operationEntry.getFlags().contains(OperationEntry.Flag.READ_ONLY)) {
                 result.add(ActionEffect.WRITE_RUNTIME);
             }
         } else if (operationEntry.getFlags().contains(OperationEntry.Flag.READ_ONLY)) {
-            result = EnumSet.of(ActionEffect.ACCESS, ActionEffect.READ_CONFIG, ActionEffect.READ_RUNTIME);
+            result = EnumSet.of(ActionEffect.ADDRESS, ActionEffect.READ_CONFIG, ActionEffect.READ_RUNTIME);
         } else {
             result = EnumSet.allOf(ActionEffect.class);
         }

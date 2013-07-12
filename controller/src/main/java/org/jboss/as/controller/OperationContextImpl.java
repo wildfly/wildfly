@@ -96,7 +96,7 @@ final class OperationContextImpl extends AbstractOperationContext {
 
     private static final Object NULL = new Object();
 
-    private static final Set<Action.ActionEffect> ACCESS = EnumSet.of(Action.ActionEffect.ACCESS);
+    private static final Set<Action.ActionEffect> ACCESS = EnumSet.of(Action.ActionEffect.ADDRESS);
     private static final Set<Action.ActionEffect> READ_CONFIG = EnumSet.of(Action.ActionEffect.READ_CONFIG);
     private static final Set<Action.ActionEffect> READ_RUNTIME = EnumSet.of(Action.ActionEffect.READ_RUNTIME);
     private static final Set<Action.ActionEffect> READ_WRITE_CONFIG = EnumSet.of(Action.ActionEffect.READ_CONFIG, Action.ActionEffect.WRITE_CONFIG);
@@ -849,12 +849,12 @@ final class OperationContextImpl extends AbstractOperationContext {
             // later for reasons unrelated to authz
             return authResp;
         }
-        if (authResp.getResourceResult(ActionEffect.ACCESS) == null) {
-            Action action = authResp.standardAction.limitAction(ActionEffect.ACCESS);
-            authResp.addResourceResult(ActionEffect.ACCESS, modelController.getAuthorizer().authorize(getCaller(), callEnvironment, action, authResp.targetResource));
+        if (authResp.getResourceResult(ActionEffect.ADDRESS) == null) {
+            Action action = authResp.standardAction.limitAction(ActionEffect.ADDRESS);
+            authResp.addResourceResult(ActionEffect.ADDRESS, modelController.getAuthorizer().authorize(getCaller(), callEnvironment, action, authResp.targetResource));
         }
 
-        if (authResp.getResourceResult(ActionEffect.ACCESS).getDecision() == Decision.PERMIT) {
+        if (authResp.getResourceResult(ActionEffect.ADDRESS).getDecision() == Decision.PERMIT) {
             for (Action.ActionEffect requiredEffect : ALL) {
                 AuthorizationResult effectResult = authResp.getResourceResult(requiredEffect);
                 if (effectResult == null) {
@@ -869,12 +869,12 @@ final class OperationContextImpl extends AbstractOperationContext {
             if (!authResp.attributesComplete) {
                 for (String attr : mrr.getAttributeNames(PathAddress.EMPTY_ADDRESS)) {
                     TargetAttribute targetAttribute = null;
-                    if (authResp.getAttributeResult(attr, ActionEffect.ACCESS) == null) {
+                    if (authResp.getAttributeResult(attr, ActionEffect.ADDRESS) == null) {
                         if (targetAttribute == null) {
                             targetAttribute = createTargetAttribute(authResp, attr, isDefaultResponse);
                         }
-                        Action action = authResp.standardAction.limitAction(ActionEffect.ACCESS);
-                        authResp.addAttributeResult(attr, ActionEffect.ACCESS, modelController.getAuthorizer().authorize(getCaller(), callEnvironment, action, targetAttribute));
+                        Action action = authResp.standardAction.limitAction(ActionEffect.ADDRESS);
+                        authResp.addAttributeResult(attr, ActionEffect.ADDRESS, modelController.getAuthorizer().authorize(getCaller(), callEnvironment, action, targetAttribute));
                     }
                     for (Action.ActionEffect actionEffect : ALL) {
                         AuthorizationResult authResult = authResp.getAttributeResult(attr, actionEffect);
@@ -912,7 +912,7 @@ final class OperationContextImpl extends AbstractOperationContext {
     @Override
     public AuthorizationResult authorizeOperation(ModelNode operation, boolean access) {
         OperationId opId = new OperationId(operation);
-        AuthorizationResult resourceResult = authorize(opId, operation, false, EnumSet.of(ActionEffect.ACCESS));
+        AuthorizationResult resourceResult = authorize(opId, operation, false, EnumSet.of(ActionEffect.ADDRESS));
         if (resourceResult.getDecision() == AuthorizationResult.Decision.DENY) {
             return resourceResult;
         }
@@ -932,7 +932,7 @@ final class OperationContextImpl extends AbstractOperationContext {
                 Action targetAction = new Action(operation, operationEntry);
 
                 if (access) {
-                    Action action = targetAction.limitAction(ActionEffect.ACCESS);
+                    Action action = targetAction.limitAction(ActionEffect.ADDRESS);
                     authResult = modelController.getAuthorizer().authorize(getCaller(), callEnvironment, action, authResp.targetResource);
                     authResp.addOperationResult(operationName, access, authResult);
                 } else {
