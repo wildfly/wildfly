@@ -27,7 +27,6 @@ import java.net.InetSocketAddress;
 
 import io.undertow.ajp.AjpOpenListener;
 import io.undertow.server.OpenListener;
-import org.jboss.msc.service.StartContext;
 import org.xnio.ChannelListener;
 import org.xnio.IoUtils;
 import org.xnio.StreamConnection;
@@ -77,10 +76,5 @@ public class AjpListenerService extends AbstractListenerService<AjpListenerServi
     @Override
     public boolean isSecure() {
         return false;
-    }
-
-    @Override
-    protected void preStart(final StartContext context) {
-
     }
 }

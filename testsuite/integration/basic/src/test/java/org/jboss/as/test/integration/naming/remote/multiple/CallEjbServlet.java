@@ -28,7 +28,7 @@ public class CallEjbServlet extends HttpServlet {
 			String address = System.getProperty("node0", "localhost");
 			// format possible IPv6 address
 			address = NetworkUtils.formatPossibleIpv6Address(address);
-			env.put(Context.PROVIDER_URL, "http-remoting://" + address + ":8080");
+			env.put(Context.PROVIDER_URL, "remote://" + address + ":4447");
 			env.put(Context.INITIAL_CONTEXT_FACTORY, "org.jboss.naming.remote.client.InitialContextFactory");
 			ctx = new InitialContext(env);
 

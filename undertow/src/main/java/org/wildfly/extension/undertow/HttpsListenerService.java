@@ -55,8 +55,8 @@ public class HttpsListenerService extends HttpListenerService {
     private final InjectedValue<SecurityRealm> securityRealm = new InjectedValue<>();
     private volatile AcceptingChannel<SslConnection> sslServer;
 
-    HttpsListenerService(final String name, String serverName) {
-        super(name, serverName);
+    public HttpsListenerService(final String name) {
+        super(name);
     }
 
     @Override
@@ -89,16 +89,10 @@ public class HttpsListenerService extends HttpListenerService {
         IoUtils.safeClose(sslServer);
         sslServer = null;
         UndertowLogger.ROOT_LOGGER.listenerStopped("HTTPS", getName(), getBinding().getValue().getSocketAddress());
-        httpListenerRegistry.getValue().removeListener(getName());
     }
 
     public InjectedValue<SecurityRealm> getSecurityRealm() {
         return securityRealm;
-    }
-
-    @Override
-    protected String getProtocol() {
-        return "https";
     }
 
 }

@@ -111,7 +111,4 @@ public interface RemotingMessages {
 
     @Message(id = 17131, value = "HTTP Upgrade request missing Sec-JbossRemoting-Key header")
     IOException upgradeRequestMissingKey();
-
-    @Message(id = 17132, value = "The protocol attribute must be set to remote")
-    String protocolMustBeRemote();
 }

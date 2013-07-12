@@ -78,11 +78,11 @@ import org.junit.runner.RunWith;
 
 /**
  * Testcase based on ejb-security-interceptors quickstart application. It tests security context propagation for EJBs.
- *
+ * 
  * @author Josef Cacek
  */
 @RunWith(Arquillian.class)
-@ServerSetup({ SwitchIdentityTestCase.SecurityDomainsSetup.class, //
+@ServerSetup({ SwitchIdentityTestCase.SecurityDomainsSetup.class, // 
         SwitchIdentityTestCase.SecurityRealmsSetup.class, //
         SwitchIdentityTestCase.RemotingSetup.class })
 @RunAsClient
@@ -127,7 +127,7 @@ public class SwitchIdentityTestCase {
 
     /**
      * Creates a deployment application for this test.
-     *
+     * 
      * @return
      * @throws IOException
      */
@@ -152,7 +152,7 @@ public class SwitchIdentityTestCase {
 
     /**
      * Test identity propagation using SecurityContextAssociation API from the client.
-     *
+     * 
      * @throws Exception
      */
     @Test
@@ -164,7 +164,7 @@ public class SwitchIdentityTestCase {
 
     /**
      * Test identity propagation using LoginContext API from the client.
-     *
+     * 
      * @throws Exception
      */
     @Test
@@ -246,7 +246,7 @@ public class SwitchIdentityTestCase {
 
     /**
      * Tests access to a single method of a {@link Manage} EJB implementation.
-     *
+     * 
      * @param bean EJB instance
      * @param method method type
      * @param hasAccess expected value
@@ -283,14 +283,14 @@ public class SwitchIdentityTestCase {
 
     /**
      * A {@link ServerSetupTask} instance which creates security domains for this test case.
-     *
+     * 
      * @author Josef Cacek
      */
     static class SecurityDomainsSetup extends AbstractSecurityDomainsServerSetupTask {
 
         /**
          * Returns SecurityDomains configuration for this testcase.
-         *
+         * 
          * <pre>
          * &lt;security-domain name=&quot;switch-identity-test&quot; cache-type=&quot;default&quot;&gt;
          *     &lt;authentication&gt;
@@ -306,7 +306,7 @@ public class SwitchIdentityTestCase {
          *     &lt;/authentication&gt;
          * &lt;/security-domain&gt;
          * </pre>
-         *
+         * 
          * @see org.jboss.as.test.integration.security.common.AbstractSecurityDomainsServerSetupTask#getSecurityDomains()
          */
         @Override
@@ -325,14 +325,14 @@ public class SwitchIdentityTestCase {
 
     /**
      * A {@link ServerSetupTask} instance which creates security realms for this test case.
-     *
+     * 
      * @author Josef Cacek
      */
     static class SecurityRealmsSetup extends AbstractSecurityRealmsServerSetupTask {
 
         /**
          * Returns SecurityRealms configuration for this testcase.
-         *
+         * 
          * <pre>
          * &lt;security-realm name=&quot;ejb-outbound-realm&quot;&gt;
          *   &lt;server-identities&gt;
@@ -340,7 +340,7 @@ public class SwitchIdentityTestCase {
          *   &lt;/server-identities&gt;
          * &lt;/security-realm&gt;
          * </pre>
-         *
+         * 
          */
         @Override
         protected SecurityRealm[] getSecurityRealms() {
@@ -353,7 +353,7 @@ public class SwitchIdentityTestCase {
 
     /**
      * A {@link ServerSetupTask} instance which creates remoting mappings for this test case.
-     *
+     * 
      * @author Josef Cacek
      */
     static class RemotingSetup implements ServerSetupTask {
@@ -361,10 +361,10 @@ public class SwitchIdentityTestCase {
         public void setup(ManagementClient managementClient, String containerId) throws Exception {
             final List<ModelNode> updates = new LinkedList<ModelNode>();
             LOGGER.info("Adding socket binding");
-            // /socket-binding-group=standard-sockets/remote-destination-outbound-socket-binding=ejb-outbound:add(host=localhost,port=8080) {allow-resource-service-restart=true}
+            // /socket-binding-group=standard-sockets/remote-destination-outbound-socket-binding=ejb-outbound:add(host=localhost,port=4447) {allow-resource-service-restart=true}
             ModelNode socketBindingModelNode = Util.createAddOperation(ADDR_SOCKET_BINDING);
             socketBindingModelNode.get(HOST).set(Utils.getHost(managementClient));
-            socketBindingModelNode.get(PORT).set(8080);
+            socketBindingModelNode.get(PORT).set(4447);
             socketBindingModelNode.get(OPERATION_HEADERS, ALLOW_RESOURCE_SERVICE_RESTART).set(true);
             updates.add(socketBindingModelNode);
 
@@ -373,12 +373,11 @@ public class SwitchIdentityTestCase {
             compositeOp.get(OP_ADDR).setEmptyList();
             ModelNode steps = compositeOp.get(STEPS);
 
-            // /subsystem=remoting/remote-outbound-connection=ejb-outbound-connection:add(outbound-socket-binding-ref=ejb-outbound,username=ConnectionUser,security-realm=ejb-outbound-realm) {allow-resource-service-restart=true}
+            // /subsystem=remoting/remote-outbound-connection=ejb-outbound-connection:add(outbound-socket-binding-ref=ejb-outbound,username=ConnectionUser,security-realm=ejb-outbound-realm) {allow-resource-service-restart=true} 
             final ModelNode remotingConnectorModelNode = Util.createAddOperation(ADDR_REMOTING_CONNECTOR);
             remotingConnectorModelNode.get("outbound-socket-binding-ref").set(EJB_OUTBOUND_SOCKET_BINDING);
             remotingConnectorModelNode.get("username").set(EJBUtil.CONNECTION_PASSWORD);
             remotingConnectorModelNode.get("security-realm").set(EJB_OUTBOUND_REALM);
-            remotingConnectorModelNode.get("protocol").set("http-remoting");
             remotingConnectorModelNode.get(OPERATION_HEADERS, ALLOW_RESOURCE_SERVICE_RESTART).set(true);
             steps.add(remotingConnectorModelNode);
 
@@ -415,7 +414,7 @@ public class SwitchIdentityTestCase {
 
     /**
      * An Enum, which holds expected method types in {@link Manage} interface.
-     *
+     * 
      * @author Josef Cacek
      */
     private enum ManageMethodEnum {

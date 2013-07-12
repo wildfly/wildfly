@@ -2,7 +2,8 @@
 <!--  See src/resources/configuration/ReadMe.txt for how the configuration assembly works -->
 <config>
    <extension-module>org.jboss.as.remoting</extension-module>
-   <subsystem xmlns="urn:jboss:domain:remoting:2.0">
-       <http-connector name="http-remoting-connector" connector-ref="default" security-realm="ApplicationRealm"/>
+   <subsystem xmlns="urn:jboss:domain:remoting:1.1">
+       <connector name="remoting-connector" socket-binding="remoting" security-realm="ApplicationRealm"/>
    </subsystem>
+   <socket-binding name="remoting" port="${jboss.remoting.port:4447}"/>
 </config>

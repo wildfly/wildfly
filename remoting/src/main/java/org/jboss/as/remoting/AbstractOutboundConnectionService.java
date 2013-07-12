@@ -88,8 +88,6 @@ public abstract class AbstractOutboundConnectionService<T extends AbstractOutbou
 
     public abstract IoFuture<Connection> connect() throws IOException;
 
-    public abstract String getProtocol();
-
     protected CallbackHandler getCallbackHandler() {
         return new AnonymousCallbackHandler();
     }

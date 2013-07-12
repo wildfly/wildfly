@@ -11,7 +11,7 @@
                     If at all we need to be able to control this more, then we can later
                     have this value as a system property expression. For now, relying on
                     this value is fine IMO -->
-                <env-entry-value>8180</env-entry-value>
+                <env-entry-value>4547</env-entry-value>
             </env-entry>
 
             <env-entry>

@@ -26,17 +26,8 @@ import java.io.IOException;
 import java.net.InetSocketAddress;
 
 import io.undertow.UndertowOptions;
-import io.undertow.server.HandlerWrapper;
-import io.undertow.server.HttpHandler;
 import io.undertow.server.HttpOpenListener;
-import io.undertow.server.ListenerRegistry;
 import io.undertow.server.OpenListener;
-import io.undertow.server.handlers.ChannelUpgradeHandler;
-import org.jboss.msc.service.ServiceName;
-import org.jboss.msc.service.StartContext;
-import org.jboss.msc.service.ValueService;
-import org.jboss.msc.value.ImmediateValue;
-import org.jboss.msc.value.InjectedValue;
 import org.xnio.ChannelListener;
 import org.xnio.IoUtils;
 import org.xnio.OptionMap;
@@ -51,23 +42,8 @@ import org.xnio.channels.AcceptingChannel;
 public class HttpListenerService extends AbstractListenerService<HttpListenerService> {
     private volatile AcceptingChannel<StreamConnection> server;
 
-    private final ChannelUpgradeHandler httpUpgradeHandler = new ChannelUpgradeHandler();
-    protected final InjectedValue<ListenerRegistry> httpListenerRegistry = new InjectedValue<>();
-
-    static final ServiceName HTTP_UPGRADE_REGISTRY = ServiceName.JBOSS.append("http-upgrade-registry");
-
-    private final String serverName;
-
-    public HttpListenerService(String name, final String serverName) {
+    public HttpListenerService(String name) {
         super(name);
-        this.serverName = serverName;
-        listenerHandlerWrappers.add(new HandlerWrapper() {
-            @Override
-            public HttpHandler wrap(final HttpHandler handler) {
-                httpUpgradeHandler.setNonUpgradeHandler(handler);
-                return httpUpgradeHandler;
-            }
-        });
     }
 
     @Override
@@ -78,17 +54,6 @@ public class HttpListenerService extends AbstractListenerService<HttpListenerSer
     @Override
     public boolean isSecure() {
         return false;
-    }
-
-    @Override
-    protected void preStart(final StartContext context) {
-        //adds the HTTP upgrade service
-        //TODO: have a bit more of a think about how we handle this
-        context.getChildTarget().addService(HTTP_UPGRADE_REGISTRY.append(getName()), new ValueService<Object>(new ImmediateValue<Object>(httpUpgradeHandler)))
-                .install();
-        ListenerRegistry.Listener listener = new ListenerRegistry.Listener(getProtocol(), getName(), serverName, getBinding().getValue().getSocketAddress());
-        listener.setContextInformation("socket-binding", getBinding().getValue());
-        httpListenerRegistry.getValue().addListener(listener);
     }
 
     protected void startListening(XnioWorker worker, InetSocketAddress socketAddress, ChannelListener<AcceptingChannel<StreamConnection>> acceptListener)
@@ -105,7 +70,6 @@ public class HttpListenerService extends AbstractListenerService<HttpListenerSer
         IoUtils.safeClose(server);
         server = null;
         UndertowLogger.ROOT_LOGGER.listenerStopped("HTTP", getName(), getBinding().getValue().getSocketAddress());
-        httpListenerRegistry.getValue().removeListener(getName());
     }
 
     @Override
@@ -113,11 +77,4 @@ public class HttpListenerService extends AbstractListenerService<HttpListenerSer
         return this;
     }
 
-    public InjectedValue<ListenerRegistry> getHttpListenerRegistry() {
-        return httpListenerRegistry;
-    }
-
-    protected String getProtocol() {
-        return "http";
-    }
 }

@@ -40,7 +40,6 @@ import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.container.test.api.RunAsClient;
 import org.jboss.arquillian.junit.Arquillian;
 import org.jboss.arquillian.test.api.ArquillianResource;
-import org.jboss.as.arquillian.container.ManagementClient;
 import org.jboss.as.test.shared.integration.ejb.security.CallbackHandler;
 import org.jboss.shrinkwrap.api.Archive;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
@@ -56,12 +55,10 @@ import org.junit.runner.RunWith;
 @RunAsClient
 public class RemoteNamingEjbTestCase {
     private static final String ARCHIVE_NAME = "test";
+    private static final Integer PORT = 4447;
 
     @ArquillianResource
     private URL baseUrl;
-
-    @ArquillianResource
-    private ManagementClient managementClient;
 
     @Deployment
     public static Archive<?> deploy() {
@@ -73,7 +70,7 @@ public class RemoteNamingEjbTestCase {
     public InitialContext getRemoteContext() throws Exception {
         final Properties env = new Properties();
         env.put(Context.INITIAL_CONTEXT_FACTORY, org.jboss.naming.remote.client.InitialContextFactory.class.getName());
-        env.put(Context.PROVIDER_URL, managementClient.getRemoteEjbURL().toString());
+        env.put(Context.PROVIDER_URL, "remote://" + baseUrl.getHost() + ":" + PORT);
         env.put("jboss.naming.client.ejb.context", true);
         env.put("jboss.naming.client.connect.options.org.xnio.Options.SASL_POLICY_NOPLAINTEXT", "false");
         env.put("jboss.naming.client.security.callback.handler.class", CallbackHandler.class.getName());

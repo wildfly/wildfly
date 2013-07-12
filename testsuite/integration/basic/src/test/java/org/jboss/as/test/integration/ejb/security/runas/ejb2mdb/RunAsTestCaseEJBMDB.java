@@ -67,6 +67,8 @@ import org.junit.runner.RunWith;
 public class RunAsTestCaseEJBMDB {
     private static final Logger log = Logger.getLogger(RunAsTestCaseEJBMDB.class.getName());
 
+    private static final Integer REMOTE_PORT = 4447;
+
     private static final String QUEUE_NAME = "queue/TestQueue";
 
     @ArquillianResource

@@ -56,6 +56,7 @@ import org.jboss.as.ejb3.deployment.EjbDeploymentInformation;
 import org.jboss.as.ejb3.deployment.ModuleDeployment;
 import org.jboss.as.ejb3.util.ServiceLookupValue;
 import org.jboss.as.network.ClientMapping;
+import org.jboss.as.network.SocketBinding;
 import org.jboss.ejb.client.AttachmentKeys;
 import org.jboss.ejb.client.ClusterContext;
 import org.jboss.ejb.client.ClusterNodeManager;
@@ -446,7 +447,8 @@ public class LocalEjbReceiver extends EJBReceiver implements Service<LocalEjbRec
         if(ejbRemoteConnectorService == null || endpoint == null) {
             return;
         }
-        final List<EJBRemoteConnectorService.EjbListenerAddress> listeningAddresses = ejbRemoteConnectorService.getListeningAddresses();
+        final SocketBinding ejbRemoteConnectorSocketBinding = ejbRemoteConnectorService.getEJBRemoteConnectorSocketBinding();
+        final InetAddress bindAddress = ejbRemoteConnectorSocketBinding.getAddress();
         final ClusterContext clusterContext = ejbClientContext.getOrCreateClusterContext(clusterName);
         // add the nodes to the cluster context
         for (Map.Entry<String, List<ClientMapping>> entry : addedNodes.entrySet()) {
@@ -460,7 +462,7 @@ public class LocalEjbReceiver extends EJBReceiver implements Service<LocalEjbRec
             // which can only handle local receiver and no remote receivers (due to lack of configurations
             // to connect to them), then skip that context
             if (this.isLocalOnlyEJBClientContext(ejbClientContext)) {
-                logger.debugf("Skipping cluster node additions to EJB client context %s since it can only handle local node", ejbClientContext);
+                logger.debug("Skipping cluster node additions to EJB client context " + ejbClientContext + " since it can only handle local node");
                 continue;
             }
             // find a matching client mapping for our bind address
@@ -469,23 +471,18 @@ public class LocalEjbReceiver extends EJBReceiver implements Service<LocalEjbRec
             for (final ClientMapping clientMapping : clientMappings) {
                 final InetAddress sourceNetworkAddress = clientMapping.getSourceNetworkAddress();
                 final int netMask = clientMapping.getSourceNetworkMaskBits();
-                for(EJBRemoteConnectorService.EjbListenerAddress binding : listeningAddresses) {
-                    final boolean match = NetworkUtil.belongsToNetwork(binding.getAddress().getAddress(), sourceNetworkAddress, (byte) (netMask & 0xff));
-                    if (match) {
-                        resolvedClientMapping = clientMapping;
-                        logger.debugf("Client mapping %s matches client address %s", clientMapping, binding.getAddress().getAddress());
-                        break;
-                    }
-                }
-                if(resolvedClientMapping != null) {
+                final boolean match = NetworkUtil.belongsToNetwork(bindAddress, sourceNetworkAddress, (byte) (netMask & 0xff));
+                if (match) {
+                    resolvedClientMapping = clientMapping;
+                    logger.debug("Client mapping " + clientMapping + " matches client address " + bindAddress);
                     break;
                 }
             }
             if (resolvedClientMapping == null) {
-                EjbLogger.ROOT_LOGGER.cannotAddClusterNodeDueToUnresolvableClientMapping(addedNodeName, clusterName, listeningAddresses);
+                EjbLogger.ROOT_LOGGER.cannotAddClusterNodeDueToUnresolvableClientMapping(addedNodeName, clusterName, bindAddress);
                 continue;
             }
-            final ClusterNodeManager remotingClusterNodeManager = new RemotingConnectionClusterNodeManager(clusterContext, endpoint, addedNodeName, resolvedClientMapping.getDestinationAddress(), resolvedClientMapping.getDestinationPort(), ejbRemoteConnectorService.getProtocol());
+            final ClusterNodeManager remotingClusterNodeManager = new RemotingConnectionClusterNodeManager(clusterContext, endpoint, addedNodeName, resolvedClientMapping.getDestinationAddress(), resolvedClientMapping.getDestinationPort());
             clusterContext.addClusterNodes(remotingClusterNodeManager);
         }
 

@@ -71,6 +71,7 @@ public class ApplicationClientStartService implements Service<ApplicationClientS
     private final String[] parameters;
     private final ClassLoader classLoader;
     private final ContextSelector<EJBClientContext> contextSelector;
+    final String hostUrl;
 
     private Thread thread;
     private ComponentInstance instance;
@@ -80,6 +81,7 @@ public class ApplicationClientStartService implements Service<ApplicationClientS
         this.parameters = parameters;
         this.namespaceContextSelectorInjectedValue = namespaceContextSelectorInjectedValue;
         this.classLoader = classLoader;
+        this.hostUrl = hostUrl;
         this.setupActions = setupActions;
         this.contextSelector = new LazyConnectionContextSelector(hostUrl, callbackHandler);
     }
@@ -89,6 +91,7 @@ public class ApplicationClientStartService implements Service<ApplicationClientS
         this.parameters = parameters;
         this.namespaceContextSelectorInjectedValue = namespaceContextSelectorInjectedValue;
         this.classLoader = classLoader;
+        this.hostUrl = null;
         this.setupActions = setupActions;
         this.contextSelector = new ConfigBasedEJBClientContextSelector(configuration);
     }

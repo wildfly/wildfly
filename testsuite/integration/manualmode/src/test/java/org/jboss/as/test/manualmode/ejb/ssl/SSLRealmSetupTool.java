@@ -24,7 +24,6 @@ package org.jboss.as.test.manualmode.ejb.ssl;
 
 import org.jboss.arquillian.container.test.api.ContainerController;
 import org.jboss.as.arquillian.container.ManagementClient;
-import org.jboss.as.controller.operations.common.Util;
 import org.jboss.dmr.ModelNode;
 import org.jboss.logging.Logger;
 import org.junit.Assert;
@@ -47,6 +46,7 @@ public class SSLRealmSetupTool {
     private static final Logger log = Logger.getLogger(SSLRealmSetupTool.class);
 
     // server config stuff
+    public static String PREVIOUS_SECURITY_REALM_NAME;
     public static final String SECURITY_REALM_NAME = "SSLRealm";
     public static final String AUTHENTICATION_PROPERTIES_PATH = "application-users.properties";
     public static final String AUTHENTICATION_PROPERTIES_RELATIVE_TO = "jboss.server.config.dir";
@@ -93,24 +93,42 @@ public class SSLRealmSetupTool {
     public static ModelNode getRemotingConnectorAddress() {
         ModelNode address = new ModelNode();
         address.add(SUBSYSTEM, "remoting");
-        address.add("http-connector", "https-remoting-connector");
+        address.add("connector", "remoting-connector");
         address.protect();
         return address;
     }
 
-    /* ----------------- SetupTask methods ----------------- */
 
     /**
-     * <security-realm name="SSLRealm">
-     * <server-identities>
-     * <ssl>
-     * <keystore path="$resources/ejb3/ssl/jbossServer.keystore" keystore-password="JBossPassword"/>
-     * </ssl>
-     * </server-identities>
-     * <authentication>
-     * <truststore path="$resources/ejb3/ssl/jbossServer.keystore" keystore-password="JBossPassword"/>
-     * </authentication>
-     * </security-realm>
+     * Associating the realm with remoting connector
+     * /subsystem=remoting/connector=remoting-connector:write-attribute(name=security-realm, value=SSLRealm)
+     */
+    public static void setRemotingConnectorRealm(final ManagementClient managementClient, final String realmName) throws Exception {
+        ModelNode operation = new ModelNode();
+        operation.get(OP_ADDR).set(SSLRealmSetupTool.getRemotingConnectorAddress());
+        operation.get(OP).set(WRITE_ATTRIBUTE_OPERATION);
+        operation.get(NAME).set("security-realm");
+        operation.get(VALUE).set(realmName);
+        operation.get(OPERATION_HEADERS).get(ALLOW_RESOURCE_SERVICE_RESTART).set(true);
+        ModelNode result = managementClient.getControllerClient().execute(operation);
+        log.infof("Setting security realm %s to remoting connector subsystem with result %s", realmName, result);
+        Assert.assertEquals(SUCCESS, result.get(OUTCOME).asString());
+    }
+
+
+
+    /* ----------------- SetupTask methods ----------------- */
+    /**
+     <security-realm name="SSLRealm">
+        <server-identities>
+            <ssl>
+                <keystore path="$resources/ejb3/ssl/jbossServer.keystore" keystore-password="JBossPassword"/>
+            </ssl>
+         </server-identities>
+         <authentication>
+             <truststore path="$resources/ejb3/ssl/jbossServer.keystore" keystore-password="JBossPassword"/>
+         </authentication>
+     </security-realm>
      */
     public static void setup(final ManagementClient managementClient) throws Exception {
         // Adding SECURITY REALM
@@ -148,36 +166,21 @@ public class SSLRealmSetupTool {
         operation.get(OP).set(ADD);
         operation.get("keystore-path").set(resourcePath + "ejb3/ssl/jbossServer.keystore");
         operation.get("keystore-password").set(SERVER_KEYSTORE_PASSWORD);
-        operation.get(OPERATION_HEADERS).get(ALLOW_RESOURCE_SERVICE_RESTART).set(true);
         result = managementClient.getControllerClient().execute(operation);
         Assert.assertEquals(SUCCESS, result.get(OUTCOME).asString());
 
-        //add https connector
-
-        // Add the HTTPS connector.
+        // Reading current security realm name
         operation = new ModelNode();
-        operation.get(OP).set(ADD);
-        operation.get(OP_ADDR).add(SUBSYSTEM, "undertow");
-        operation.get(OP_ADDR).add("server", "default-server");
-        operation.get(OP_ADDR).add("https-listener", "testConnector");
-        operation.get("socket-binding").set("https");
-        operation.get("enabled").set(true);
-        operation.get("security-realm").set(SECURITY_REALM_NAME);
+        operation.get(OP_ADDR).set(getRemotingConnectorAddress());
+        operation.get(OP).set(READ_ATTRIBUTE_OPERATION);
+        operation.get(NAME).set("security-realm");
         result = managementClient.getControllerClient().execute(operation);
-        log.info("creating connector result " + result);
+        log.info("Reading attribute security-realm with result " + result);
         Assert.assertEquals(SUCCESS, result.get(OUTCOME).asString());
+        PREVIOUS_SECURITY_REALM_NAME = result.get("result").asString();
 
-        //add remoting connector
-        operation = new ModelNode();
-        operation.get(OP_ADDR).set(SSLRealmSetupTool.getRemotingConnectorAddress());
-        operation.get(OP).set(ADD);
-        operation.get(SECURITY_REALM).set(SECURITY_REALM_NAME);
-        operation.get(PROTOCOL).set("https-remoting");
-        operation.get("connector-ref").set("testConnector");
-        operation.get(OPERATION_HEADERS).get(ALLOW_RESOURCE_SERVICE_RESTART).set(true);
-        result = managementClient.getControllerClient().execute(operation);
-        log.infof("Adding HTTPS connector", result);
-        Assert.assertEquals(result.toString(), SUCCESS, result.get(OUTCOME).asString());
+        // Set SSLRealm to remote connector (subsystem remote connector)
+        setRemotingConnectorRealm(managementClient, SECURITY_REALM_NAME);
     }
 
     public static void readSSLRealmConfig(final ManagementClient managementClient) throws IOException {
@@ -190,42 +193,21 @@ public class SSLRealmSetupTool {
     }
 
     public static void tearDown(final ManagementClient managementClient, ContainerController controller) throws Exception {
-
-        ModelNode operation = new ModelNode();
-        operation.get(OP_ADDR).set(SSLRealmSetupTool.getRemotingConnectorAddress());
-        operation.get(OP).set(REMOVE);
-        operation.get(OPERATION_HEADERS).get(ALLOW_RESOURCE_SERVICE_RESTART).set(true);
-        ModelNode result = managementClient.getControllerClient().execute(operation);
-        log.infof("remove HTTPS connector", result);
-        Assert.assertEquals(SUCCESS, result.get(OUTCOME).asString());
-
+        setRemotingConnectorRealm(managementClient, PREVIOUS_SECURITY_REALM_NAME);
         controller.stop(SSLEJBRemoteClientTestCase.DEFAULT_JBOSSAS);
         controller.start(SSLEJBRemoteClientTestCase.DEFAULT_JBOSSAS);
-
-
-        operation = new ModelNode();
-        operation.get(OP).set(REMOVE);
-        operation.get(OP_ADDR).add(SUBSYSTEM, "undertow");
-        operation.get(OP_ADDR).add("server", "default-server");
-        operation.get(OP_ADDR).add("https-listener", "testConnector");
-        operation.get(OPERATION_HEADERS).get(ALLOW_RESOURCE_SERVICE_RESTART).set(true);
-        result = managementClient.getControllerClient().execute(operation);
-        log.info("removing connector result " + result);
-        Assert.assertEquals(SUCCESS, result.get(OUTCOME).asString());
 
         // Removing security realm
         ModelNode secRealmAddress = getSecurityRealmsAddress();
         secRealmAddress.protect();
-        operation = new ModelNode();
+        ModelNode operation = new ModelNode();
         operation.get(OP_ADDR).set(secRealmAddress);
         operation.get(OP).set(REMOVE);
         operation.get(OPERATION_HEADERS).get(ALLOW_RESOURCE_SERVICE_RESTART).set(true);
-        result = managementClient.getControllerClient().execute(operation);
+        ModelNode result = managementClient.getControllerClient().execute(operation);
         log.infof("Removing security realm %s with result %s", SECURITY_REALM_NAME, result);
-        Assert.assertEquals(result.toString(), SUCCESS, result.get(OUTCOME).asString());
+        Assert.assertEquals(SUCCESS, result.get(OUTCOME).asString());
         controller.stop(SSLEJBRemoteClientTestCase.DEFAULT_JBOSSAS);
-
-
     }
 
 }

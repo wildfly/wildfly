@@ -66,6 +66,6 @@
         <module name="org.jboss.as.security" optional="true" services="import"/>
         <module name="org.jboss.as.version"/>
         <module name="org.picketbox" optional="true"/>
-        <module name="io.undertow.core" />
+        <module name="io.undertow.core" optional="true" />
     </dependencies>
 </module>

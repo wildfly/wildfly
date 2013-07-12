@@ -29,9 +29,7 @@ interface CommonAttributes {
 
     String AUTHENTICATION_PROVIDER = "authentication-provider";
     String CONNECTOR = "connector";
-    String CONNECTOR_REF = "connector-ref";
     String FORWARD_SECRECY = "forward-secrecy";
-    String HTTP_CONNECTOR = "http-connector";
     String INCLUDE_MECHANISMS = "include-mechanisms";
     String LOCAL_OUTBOUND_CONNECTION = "local-outbound-connection";
     String NAME = "name";
@@ -45,7 +43,6 @@ interface CommonAttributes {
     String POLICY = "policy";
     String PROPERTIES = "properties";
     String PROPERTY = "property";
-    String PROTOCOL = "protocol";
     String QOP = "qop";
     String REMOTE_OUTBOUND_CONNECTION = "remote-outbound-connection";
     String REUSE_SESSION= "reuse-session";

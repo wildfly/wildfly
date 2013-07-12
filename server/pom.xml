@@ -134,10 +134,6 @@
             <groupId>org.jboss</groupId>
             <artifactId>jboss-vfs</artifactId>
         </dependency>
-        <dependency>
-            <groupId>io.undertow</groupId>
-            <artifactId>undertow-core</artifactId>
-        </dependency>
         <!--
         <dependency>
             <groupId>org.picketbox</groupId>

@@ -1,4 +1,4 @@
-<subsystem xmlns="urn:jboss:domain:remoting:2.0">
+<subsystem xmlns="urn:jboss:domain:remoting:1.1">
    <worker-thread-pool
 	    read-threads="${worker.read.threads:5}"
 	    task-core-threads="${worker.task.core.threads:6}"

@@ -99,7 +99,6 @@ import org.jboss.as.server.deploymentoverlay.service.DeploymentOverlayIndexServi
 import org.jboss.as.server.moduleservice.ExtensionIndexService;
 import org.jboss.as.server.moduleservice.ExternalModuleService;
 import org.jboss.as.server.moduleservice.ServiceModuleLoader;
-import org.jboss.as.remoting.HttpListenerRegistryService;
 import org.jboss.as.server.services.security.AbstractVaultReader;
 import org.wildfly.security.manager.GetAccessControlContextAction;
 import org.jboss.dmr.ModelNode;
@@ -264,7 +263,6 @@ public final class ServerService extends AbstractControllerService {
                     context.removeAttachment(Attachments.SERVICE_MODULE_LOADER);
                 }
             });
-            HttpListenerRegistryService.install(serviceTarget);
 
 
             // Activate core processors for jar deployment

@@ -23,10 +23,7 @@ package org.jboss.as.server.mgmt;
 
 import java.net.BindException;
 import java.net.InetSocketAddress;
-import java.util.ArrayList;
-import java.util.List;
 
-import io.undertow.server.ListenerRegistry;
 import io.undertow.server.handlers.ChannelUpgradeHandler;
 import org.jboss.as.controller.ControlledProcessStateService;
 import org.jboss.as.controller.ModelController;
@@ -57,16 +54,9 @@ import org.jboss.msc.value.InjectedValue;
 public class UndertowHttpManagementService implements Service<HttpManagement> {
     public static final ServiceName SERVICE_NAME = ServiceName.JBOSS.append("serverManagement", "controller", "management", "http");
 
-    public static final String SERVER_NAME = "wildfly-managment";
-    public static final String HTTP_MANAGEMENT = "http-management";
-    public static final String HTTPS_MANAGEMENT = "https-management";
 
-    public static final ServiceName HTTP_UPGRADE_SERVICE_NAME = ServiceName.JBOSS.append("http-upgrade-registry", HTTP_MANAGEMENT);
-    public static final ServiceName HTTPS_UPGRADE_SERVICE_NAME = ServiceName.JBOSS.append("http-upgrade-registry", HTTPS_MANAGEMENT);
-    public static final String JBOSS_REMOTING = "jboss-remoting";
-    public static final String MANAGEMENT_ENDPOINT = "management-endpoint";
+    public static final ServiceName HTTP_UPGRADE_SERVICE_NAME = ServiceName.JBOSS.append("management", "http-upgrade");
 
-    private final InjectedValue<ListenerRegistry> listenerRegistry = new InjectedValue<>();
     private final InjectedValue<ModelController> modelControllerValue = new InjectedValue<ModelController>();
     private final InjectedValue<SocketBinding> injectedSocketBindingValue = new InjectedValue<SocketBinding>();
     private final InjectedValue<SocketBinding> injectedSecureSocketBindingValue = new InjectedValue<SocketBinding>();
@@ -78,6 +68,7 @@ public class UndertowHttpManagementService implements Service<HttpManagement> {
     private final InjectedValue<ControlledProcessStateService> controlledProcessStateServiceValue = new InjectedValue<ControlledProcessStateService>();
     private final ConsoleMode consoleMode;
     private final String consoleSlot;
+    private final boolean httpUpgrade;
     private ManagementHttpServer serverManagement;
     private SocketBindingManager socketBindingManager;
     private boolean useUnmanagedBindings = false;
@@ -146,9 +137,10 @@ public class UndertowHttpManagementService implements Service<HttpManagement> {
         }
     };
 
-    public UndertowHttpManagementService(ConsoleMode consoleMode, String consoleSlot) {
+    public UndertowHttpManagementService(ConsoleMode consoleMode, String consoleSlot, final boolean httpUpgrade) {
         this.consoleMode = consoleMode;
         this.consoleSlot = consoleSlot;
+        this.httpUpgrade = httpUpgrade;
     }
 
     /**
@@ -188,31 +180,15 @@ public class UndertowHttpManagementService implements Service<HttpManagement> {
                 secureBindAddress = secureBinding.getSocketAddress();
             }
         }
-        List<ListenerRegistry.Listener> listeners = new ArrayList<>();
-        //TODO: rethink this whole ListenerRegistry business
-        if(bindAddress != null) {
-            ListenerRegistry.Listener http = new ListenerRegistry.Listener("http", HTTP_MANAGEMENT, SERVER_NAME, bindAddress);
-            http.setContextInformation("socket-binding", basicBinding);
-            listeners.add(http);
-        }
-        if(secureBindAddress != null) {
-            ListenerRegistry.Listener https = new ListenerRegistry.Listener("https", HTTPS_MANAGEMENT, SERVER_NAME, bindAddress);
-            https.setContextInformation("socket-binding", secureBinding);
-            listeners.add(https);
-        }
 
-        final ChannelUpgradeHandler upgradeHandler = new ChannelUpgradeHandler();
-        context.getChildTarget().addService(HTTP_UPGRADE_SERVICE_NAME, new ValueService<Object>(new ImmediateValue<Object>(upgradeHandler)))
-                .addAliases(HTTPS_UPGRADE_SERVICE_NAME) //just to keep things consistent, should not be used for now
-                .install();
-        for (ListenerRegistry.Listener listener : listeners) {
-            listener.addHttpUpgradeMetadata(new ListenerRegistry.HttpUpgradeMetadata(JBOSS_REMOTING, MANAGEMENT_ENDPOINT));
-        }
+        final ChannelUpgradeHandler upgradeHandler;
+        if(httpUpgrade) {
+            upgradeHandler = new ChannelUpgradeHandler();
 
-        if(listenerRegistry.getOptionalValue() != null) {
-            for(ListenerRegistry.Listener listener : listeners) {
-                listenerRegistry.getOptionalValue().addListener(listener);
-            }
+            context.getChildTarget().addService(HTTP_UPGRADE_SERVICE_NAME, new ValueService<Object>(new ImmediateValue<Object>(upgradeHandler)))
+                    .install();
+        } else {
+            upgradeHandler = null;
         }
 
         try {
@@ -264,11 +240,6 @@ public class UndertowHttpManagementService implements Service<HttpManagement> {
      * @param context The stop context
      */
     public synchronized void stop(StopContext context) {
-        ListenerRegistry lr = listenerRegistry.getOptionalValue();
-        if(lr != null) {
-            lr.removeListener(HTTP_MANAGEMENT);
-            lr.removeListener(HTTPS_MANAGEMENT);
-        }
         if (serverManagement != null) {
             try {
                 serverManagement.stop();
@@ -366,7 +337,4 @@ public class UndertowHttpManagementService implements Service<HttpManagement> {
         return controlledProcessStateServiceValue;
     }
 
-    public InjectedValue<ListenerRegistry> getListenerRegistry() {
-        return listenerRegistry;
-    }
 }

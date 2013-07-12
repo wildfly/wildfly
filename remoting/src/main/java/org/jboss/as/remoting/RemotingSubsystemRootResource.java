@@ -40,6 +40,7 @@ import org.jboss.dmr.ModelType;
 import org.jboss.msc.service.ServiceName;
 
 /**
+ *
  * @author <a href="kabir.khan@jboss.com">Kabir Khan</a>
  */
 public class RemotingSubsystemRootResource extends SimpleResourceDefinition {
@@ -54,7 +55,7 @@ public class RemotingSubsystemRootResource extends SimpleResourceDefinition {
 
     static final PathElement PATH = PathElement.pathElement(ModelDescriptionConstants.SUBSYSTEM, RemotingExtension.SUBSYSTEM_NAME);
 
-    static AttributeDefinition[] ATTRIBUTES = new AttributeDefinition[]{
+    static AttributeDefinition[] ATTRIBUTES = new AttributeDefinition[] {
             WORKER_READ_THREADS,
             WORKER_TASK_CORE_THREADS,
             WORKER_TASK_KEEPALIVE,
@@ -75,7 +76,7 @@ public class RemotingSubsystemRootResource extends SimpleResourceDefinition {
 
     @Override
     public void registerAttributes(ManagementResourceRegistration resourceRegistration) {
-        for (final AttributeDefinition attribute : ATTRIBUTES) {
+        for(final AttributeDefinition attribute : ATTRIBUTES) {
             registerReadWriteIntAttribute(resourceRegistration, attribute);
         }
     }
@@ -95,7 +96,6 @@ public class RemotingSubsystemRootResource extends SimpleResourceDefinition {
 
     private static class ThreadWriteAttributeHandler extends RestartParentWriteAttributeHandler {
         private final ProcessType processType;
-
         ThreadWriteAttributeHandler(AttributeDefinition definition, ProcessType processType) {
             super(CommonAttributes.SUBSYSTEM, definition);
             this.processType = processType;
@@ -103,7 +103,7 @@ public class RemotingSubsystemRootResource extends SimpleResourceDefinition {
 
         @Override
         protected void recreateParentService(OperationContext context, PathAddress parentAddress, ModelNode parentModel,
-                                             ServiceVerificationHandler verificationHandler) throws OperationFailedException {
+                ServiceVerificationHandler verificationHandler) throws OperationFailedException {
             RemotingSubsystemAdd addHandler = processType.isServer() ? RemotingSubsystemAdd.SERVER : RemotingSubsystemAdd.DOMAIN;
             addHandler.launchServices(context, parentModel, verificationHandler, null);
         }
@@ -113,9 +113,5 @@ public class RemotingSubsystemRootResource extends SimpleResourceDefinition {
             return RemotingServices.SUBSYSTEM_ENDPOINT;
         }
 
-        @Override
-        protected void removeServices(final OperationContext context, final ServiceName parentService, final ModelNode parentModel) throws OperationFailedException {
-            super.removeServices(context, parentService, parentModel);
-        }
     }
 }

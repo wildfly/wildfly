@@ -31,7 +31,7 @@ import javax.naming.NamingException;
 
 /**
  * Utility class for looking up EJBs. It contains also some common constants for this test.
- *
+ * 
  * @author Josef Cacek
  */
 class EJBUtil {
@@ -45,7 +45,7 @@ class EJBUtil {
 
     /**
      * Lookup for remote EJBs.
-     *
+     * 
      * @param beanImplClass
      * @param remoteInterface
      * @return
@@ -64,20 +64,20 @@ class EJBUtil {
 
     /**
      * Creates {@link Properties} for the EJB client configuration.
-     *
+     * 
      * <pre>
      * remote.connectionprovider.create.options.org.xnio.Options.SSL_ENABLED=false
-     *
+     * 
      * remote.connections=default
-     *
+     * 
      * remote.connection.default.host=localhost
-     * remote.connection.default.port = 8080
+     * remote.connection.default.port = 4447
      * remote.connection.default.username=guest
      * remote.connection.default.password=guest
-     *
+     * 
      * remote.connectionprovider.create.options.org.xnio.Options.SSL_ENABLED=false
      * </pre>
-     *
+     * 
      * @param hostName
      * @return
      * @throws UnknownHostException
@@ -87,7 +87,7 @@ class EJBUtil {
         pr.put("remote.connectionprovider.create.options.org.xnio.Options.SSL_ENABLED", "false");
         pr.put("remote.connections", "default");
         pr.put("remote.connection.default.host", hostName);
-        pr.put("remote.connection.default.port", "8080");
+        pr.put("remote.connection.default.port", "4447");
         pr.put("remote.connection.default.username", CONNECTION_USERNAME);
         pr.put("remote.connection.default.password", CONNECTION_PASSWORD);
         return pr;
