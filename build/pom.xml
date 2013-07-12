@@ -945,8 +945,8 @@
                 </dependency>
 
                 <dependency>
-                    <groupId>org.jboss.as</groupId>
-                    <artifactId>jboss-as-console</artifactId>
+                    <groupId>org.jboss.hal</groupId>
+                    <artifactId>release-stream</artifactId>
                     <classifier>resources</classifier>
                 </dependency>
 
