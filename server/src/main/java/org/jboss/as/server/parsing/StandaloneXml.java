@@ -26,7 +26,7 @@ import static javax.xml.stream.XMLStreamConstants.END_ELEMENT;
 import static org.jboss.as.controller.ControllerLogger.ROOT_LOGGER;
 import static org.jboss.as.controller.ControllerMessages.MESSAGES;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ADD;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ACCESS_CONSTRAINT;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ACCESS_CONTROL;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.CONTENT;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.CORE_SERVICE;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.DEPLOYMENT;
@@ -1214,7 +1214,7 @@ public class StandaloneXml extends CommonXml implements ManagementXml.Delegate {
 
         if (modelNode.hasDefined(CORE_SERVICE)) {
             ManagementXml managementXml = new ManagementXml(this);
-            managementXml.writeManagement(writer, modelNode.get(CORE_SERVICE, MANAGEMENT), modelNode.get(CORE_SERVICE, ACCESS_CONSTRAINT), true);
+            managementXml.writeManagement(writer, modelNode.get(CORE_SERVICE, MANAGEMENT), modelNode.get(CORE_SERVICE, ACCESS_CONTROL), true);
             writeNewLine(writer);
         }
 

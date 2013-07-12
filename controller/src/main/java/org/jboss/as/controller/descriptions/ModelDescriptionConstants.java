@@ -32,7 +32,6 @@ public class ModelDescriptionConstants {
 
     // KEEP THESE IN ALPHABETICAL ORDER!
 
-    public static final String ACCESS_CONSTRAINT = "access-constraint";
     public static final String ACCESS_CONSTRAINTS = "access-constraints";
     public static final String ACCESS_CONTROL = "access-control";
     /** The key for {@link org.jboss.as.controller.registry.AttributeAccess.AccessType} fields. */
@@ -69,6 +68,7 @@ public class ModelDescriptionConstants {
     public static final String CLIENT_MAPPINGS = "client-mappings";
     public static final String CODE = "code";
     public static final String COMPOSITE = "composite";
+    public static final String CONSTRAINT = "constraint";
     public static final String CONCURRENT_GROUPS = "concurrent-groups";
     public static final String CONFIGURED_APPLICATION = "configured-application";
     public static final String CONFIGURED_REQUIRES_ACCESS = "configured-requires-access";

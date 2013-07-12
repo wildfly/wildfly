@@ -35,7 +35,7 @@ public enum Element {
     UNKNOWN(null),
 
     // Domain elements in alpha order
-    ACCESS_CONSTRAINTS("access-constraints"),
+    ACCESS_CONTROL("access-control"),
     ADVANCED_FILTER("advanced-filter"),
     AGENT_LIB("agent-lib"),
     AGENT_PATH("agent-path"),
@@ -49,6 +49,7 @@ public enum Element {
     AUTHORIZATION("authorization"),
 
     CLIENT_MAPPING("client-mapping"),
+    CONSTRAINTS("constraints"),
     CONTENT("content"),
 
     DISCOVERY_OPTION("discovery-option"),

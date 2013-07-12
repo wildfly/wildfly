@@ -190,7 +190,7 @@
             <xs:extension base="domain-managementType">
                 <xs:sequence>
                     <xs:element name="management-interfaces" type="server-management-interfacesType" minOccurs="0"/>
-                    <xs:element name="access-constraints" type="access-constraintsType" minOccurs="0"/>
+                    <xs:element name="access-control" type="access-controlType" minOccurs="0"/>
                 </xs:sequence>
             </xs:extension>
         </xs:complexContent>
@@ -2482,8 +2482,20 @@
         <xs:attribute name="name" type="xs:string" use="required"/>
     </xs:complexType>
 
+    <xs:complexType name="access-controlType">
+        <xs:annotation>
+            <xs:documentation>
+                <![CDATA[
+                   Contains the access control configuration.
+                ]]>
+            </xs:documentation>
+        </xs:annotation>
+        <xs:sequence>
+            <xs:element name="constraints" type="constraintsType" minOccurs="0"/>
+        </xs:sequence>
+    </xs:complexType>
 
-    <xs:complexType name="access-constraintsType">
+    <xs:complexType name="constraintsType">
         <xs:annotation>
             <xs:documentation>
                 <![CDATA[
