@@ -95,7 +95,7 @@ class FilteredData {
             for (Map.Entry<PathAddress, ResourceData> entry : map.entrySet()) {
                 ModelNode item = new ModelNode();
                 PathAddress pa = entry.getKey();
-                item.get("full-address").set(pa.toModelNode());
+                item.get("absolute-address").set(pa.toModelNode());
                 ResourceData rd = entry.getValue();
                 item.get("relative-address").set(pa.subAddress(baseAddressLength).toModelNode());
                 ModelNode attrs = new ModelNode().setEmptyList();
@@ -105,7 +105,7 @@ class FilteredData {
                     }
                 }
                 if (attrs.asInt() > 0) {
-                    item.get("attributes").set(attrs);
+                    item.get("filtered-attributes").set(attrs);
                 }
                 ModelNode children = new ModelNode().setEmptyList();
                 if (rd.children != null) {
@@ -114,7 +114,7 @@ class FilteredData {
                     }
                 }
                 if (children.asInt() > 0) {
-                    item.get("read-restricted-children").set(children);
+                    item.get("unreadable-children").set(children);
                 }
                 ModelNode childTypes = new ModelNode().setEmptyList();
                 if (rd.childTypes != null) {
@@ -126,7 +126,7 @@ class FilteredData {
                     }
                 }
                 if (childTypes.asInt() > 0) {
-                    item.get("hidden-children-types").set(childTypes);
+                    item.get("filtered-children-types").set(childTypes);
                 }
                 result.add(item);
             }
