@@ -44,6 +44,7 @@ import org.junit.Test;
 import org.junit.experimental.categories.Category;
 import org.junit.runner.RunWith;
 
+import static org.junit.Assert.assertArrayEquals;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.fail;
 
@@ -261,4 +262,21 @@ public class AnnotationAuthorizationTestCase {
         }
     }
 
+    /**
+     * Tests that a method which accepts an array as a parameter and is marked with @PermitAll is allowed to be invoked by clients.
+     *
+     * @throws Exception
+     */
+    @Test
+    public void testPermitAllMethodWithArrayParams() throws Exception {
+        LoginContext lc = Util.getCLMLoginContext("user1", "password1");
+        lc.login();
+        try {
+            final String[] messages = new String[] {"foo", "bar"};
+            final String[] echoes = denyAllOverrideBean.permitAllEchoWithArrayParams(messages);
+            assertArrayEquals("Unexpected echoes returned by bean method", messages, echoes);
+        } finally {
+            lc.logout();
+        }
+    }
 }
