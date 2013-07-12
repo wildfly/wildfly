@@ -73,6 +73,11 @@ public class LocalOutboundConnectionService extends AbstractOutboundConnectionSe
         return endpoint.connect(uri, this.connectionCreationOptions, getCallbackHandler());
     }
 
+    @Override
+    public String getProtocol() {
+        return "local";
+    }
+
     Injector<OutboundSocketBinding> getDestinationOutboundSocketBindingInjector() {
         return this.destinationOutboundSocketBindingInjectedValue;
     }

@@ -36,6 +36,7 @@ public enum Element {
     AUTHENTICATION_PROVIDER("authentication-provider"),
     CONNECTOR("connector"),
     FORWARD_SECRECY("forward-secrecy"),
+    HTTP_CONNECTOR("http-connector"),
     INCLUDE_MECHANISMS("include-mechanisms"),
     LOCAL_OUTBOUND_CONNECTION("local-outbound-connection"),
     NO_ACTIVE("no-active"),

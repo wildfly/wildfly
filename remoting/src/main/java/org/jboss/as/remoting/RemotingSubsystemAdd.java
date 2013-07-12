@@ -72,6 +72,9 @@ class RemotingSubsystemAdd extends AbstractAddStepHandler {
     }
 
     void launchServices(OperationContext context, ModelNode model, ServiceVerificationHandler verificationHandler, List<ServiceController<?>> newControllers) throws OperationFailedException {
+
+        final ServiceTarget serviceTarget = context.getServiceTarget();
+
         // create endpoint
         final String nodeName = WildFlySecurityManager.getPropertyPrivileged(RemotingExtension.NODE_NAME_PROPERTY, null);
         final EndpointService endpointService = new EndpointService(nodeName, EndpointService.EndpointType.SUBSYSTEM);
@@ -80,7 +83,6 @@ class RemotingSubsystemAdd extends AbstractAddStepHandler {
         endpointService.setOptionMap(map);
 
         // In case of a managed server the subsystem endpoint might already be installed {@see DomainServerCommunicationServices}
-        final ServiceTarget serviceTarget = context.getServiceTarget();
         if(context.getProcessType() == ProcessType.DOMAIN_SERVER) {
             final ServiceController<?> controller = context.getServiceRegistry(false).getService(RemotingServices.SUBSYSTEM_ENDPOINT);
             if(controller != null) {
@@ -97,5 +99,7 @@ class RemotingSubsystemAdd extends AbstractAddStepHandler {
         if (newControllers != null) {
             newControllers.add(controller);
         }
+
+
     }
 }

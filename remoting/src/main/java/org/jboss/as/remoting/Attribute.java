@@ -31,12 +31,14 @@ import java.util.Map;
 public enum Attribute {
     UNKNOWN(null),
     /* Remoting 1.0 attributes, in alpha order */
-    NAME("name"),
-    OUTBOUND_SOCKET_BINDING_REF("outbound-socket-binding-ref"),
+    CONNECTOR_REF(CommonAttributes.CONNECTOR_REF),
+    NAME(CommonAttributes.NAME),
+    OUTBOUND_SOCKET_BINDING_REF(CommonAttributes.OUTBOUND_SOCKET_BINDING_REF),
+    PROTOCOL(CommonAttributes.PROTOCOL),
     SECURITY_REALM(CommonAttributes.SECURITY_REALM),
     SOCKET_BINDING(CommonAttributes.SOCKET_BINDING),
-    URI("uri"),
-    USERNAME("username"),
+    URI(CommonAttributes.URI),
+    USERNAME(CommonAttributes.USERNAME),
     VALUE(CommonAttributes.VALUE),
     WORKER_READ_THREADS("read-threads"),
     WORKER_TASK_CORE_THREADS("task-core-threads"),

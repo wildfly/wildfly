@@ -71,13 +71,12 @@ public class ConnectorAdd extends AbstractAddStepHandler {
     }
 
     void launchServices(OperationContext context, String connectorName, ModelNode fullModel, ServiceVerificationHandler verificationHandler, List<ServiceController<?>> newControllers) throws OperationFailedException {
-        OptionMap optionMap = ConnectorResource.getFullOptions(context, fullModel);
+        OptionMap optionMap = ConnectorUtils.getFullOptions(context, fullModel);
 
         final ServiceTarget target = context.getServiceTarget();
 
         final ServiceName socketBindingName = SocketBinding.JBOSS_BINDING_NAME.append(ConnectorResource.SOCKET_BINDING.resolveModelAttribute(context, fullModel).asString());
         RemotingServices.installConnectorServicesForSocketBinding(target, RemotingServices.SUBSYSTEM_ENDPOINT, connectorName, socketBindingName, optionMap, verificationHandler, newControllers);
-
 
     }
 }

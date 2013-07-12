@@ -54,7 +54,7 @@ public class HttpManagementRemoveHandler extends AbstractRemoveStepHandler {
         removeHttpManagementService(context);
 
         RemotingServices.removeConnectorServices(context, ManagementRemotingServices.HTTP_CONNECTOR);
-        context.removeService(RemotingHttpUpgradeService.SERVICE_NAME);
+        context.removeService(RemotingHttpUpgradeService.UPGRADE_SERVICE_NAME.append("management"));
     }
 
     @Override

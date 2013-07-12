@@ -64,6 +64,11 @@ public class GenericOutboundConnectionService extends AbstractOutboundConnection
     }
 
     @Override
+    public String getProtocol() {
+        return destination.getScheme();
+    }
+
+    @Override
     public GenericOutboundConnectionService getValue() throws IllegalStateException, IllegalArgumentException {
         return this;
     }

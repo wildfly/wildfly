@@ -62,7 +62,7 @@ public class MapBasedInitialContextEjbClientTestCase {
      */
     @Test
     public void testScopedEJBClientContexts() throws Exception {
-        InitialContext ctx = new InitialContext(getEjbClientProperties(System.getProperty("node0", "127.0.0.1"), 4447));
+        InitialContext ctx = new InitialContext(getEjbClientProperties(System.getProperty("node0", "127.0.0.1"), 8080));
         try {
             String lookupName = "ejb:/" + ARCHIVE_NAME + "/" + StatelessBean.class.getSimpleName() + "!" + StatelessIface.class.getCanonicalName();
             StatelessIface beanStateless = (StatelessIface) ctx.lookup(lookupName);

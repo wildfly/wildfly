@@ -22,6 +22,7 @@
 
 package org.wildfly.extension.undertow;
 
+import io.undertow.server.ListenerRegistry;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.dmr.ModelNode;
@@ -33,6 +34,8 @@ import org.jboss.msc.service.ServiceName;
  */
 public class HttpListenerAdd extends AbstractListenerAdd {
 
+    static final ServiceName REGISTRY_SERVICE_NAME = ServiceName.JBOSS.append("http", "listener", "registry");
+
     HttpListenerAdd(AbstractListenerResourceDefinition definition) {
         super(definition);
     }
@@ -42,12 +45,12 @@ public class HttpListenerAdd extends AbstractListenerAdd {
     }
 
     @Override
-    AbstractListenerService<? extends AbstractListenerService> createService(String name, OperationContext context, ModelNode model) throws OperationFailedException {
-        return new HttpListenerService(name);
+    AbstractListenerService<? extends AbstractListenerService> createService(String name, final String serverName, final OperationContext context, ModelNode model) throws OperationFailedException {
+        return new HttpListenerService(name, serverName);
     }
 
     @Override
     void configureAdditionalDependencies(OperationContext context, ServiceBuilder<? extends AbstractListenerService> serviceBuilder, ModelNode model, AbstractListenerService service) throws OperationFailedException {
-
+        serviceBuilder.addDependency(REGISTRY_SERVICE_NAME, ListenerRegistry.class, ((HttpListenerService)service).getHttpListenerRegistry());
     }
 }
