@@ -47,6 +47,7 @@ import java.util.jar.Attributes.Name;
 import org.jboss.as.patching.DirectoryStructure;
 import org.jboss.as.patching.IoUtils;
 import org.jboss.as.patching.ZipUtils;
+import org.jboss.as.patching.installation.PatchableTarget;
 import org.jboss.as.patching.metadata.ModuleItem;
 import org.jboss.as.patching.metadata.Patch;
 import org.jboss.as.patching.metadata.PatchXml;
@@ -284,4 +285,13 @@ public class TestUtils {
         }
         return binDir;
     }
+
+    public static File[] getModuleRoot(final PatchableTarget target) {
+        try {
+            return PatchUtils.getModulePath(target.getDirectoryStructure(), target.loadTargetInfo());
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
+    }
+
 }
