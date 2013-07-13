@@ -181,6 +181,7 @@ public class BeanArchiveProcessor implements DeploymentUnitProcessor {
     @Override
     public void undeploy(DeploymentUnit context) {
         context.removeAttachment(WeldAttachments.BEAN_DEPLOYMENT_MODULE);
+        context.removeAttachment(WeldAttachments.DEPLOYMENT_ROOT_BEAN_DEPLOYMENT_ARCHIVE);
     }
 
 }

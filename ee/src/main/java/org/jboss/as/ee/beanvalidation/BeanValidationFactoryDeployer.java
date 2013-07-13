@@ -110,7 +110,7 @@ public class BeanValidationFactoryDeployer implements DeploymentUnitProcessor {
     }
     @Override
     public void undeploy(DeploymentUnit context) {
-
+        context.removeAttachment(BeanValidationAttachments.VALIDATOR_FACTORY);
     }
 
 }
