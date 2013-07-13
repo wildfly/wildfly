@@ -116,7 +116,7 @@ public class BeanArchiveProcessor implements DeploymentUnitProcessor {
         }
         processEEComponents(deploymentUnit, bdaMap, rootBda, indexes, reflectionIndex);
 
-        final JpaInjectionServices jpaInjectionServices = new WeldJpaInjectionServices(deploymentUnit, deploymentUnit.getServiceRegistry());
+        final JpaInjectionServices jpaInjectionServices = new WeldJpaInjectionServices(deploymentUnit);
         final JaxwsInjectionServices jaxwsInjectionServices = new WeldJaxwsInjectionServices(deploymentUnit);
 
         final BeanDeploymentModule bdm = new BeanDeploymentModule(beanDeploymentArchives);
@@ -180,7 +180,7 @@ public class BeanArchiveProcessor implements DeploymentUnitProcessor {
 
     @Override
     public void undeploy(DeploymentUnit context) {
-
+        context.removeAttachment(WeldAttachments.BEAN_DEPLOYMENT_MODULE);
     }
 
 }

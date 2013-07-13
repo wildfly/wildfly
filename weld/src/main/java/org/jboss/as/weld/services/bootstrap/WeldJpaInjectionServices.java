@@ -39,7 +39,6 @@ import org.jboss.as.weld.WeldMessages;
 import org.jboss.as.weld.util.ImmediateResourceReferenceFactory;
 import org.jboss.msc.service.ServiceController;
 import org.jboss.msc.service.ServiceName;
-import org.jboss.msc.service.ServiceRegistry;
 import org.jboss.weld.injection.spi.JpaInjectionServices;
 import org.jboss.weld.injection.spi.ResourceReference;
 import org.jboss.weld.injection.spi.ResourceReferenceFactory;
@@ -48,12 +47,10 @@ import org.jipijapa.plugin.spi.PersistenceUnitMetadata;
 
 public class WeldJpaInjectionServices implements JpaInjectionServices {
 
-    private final DeploymentUnit deploymentUnit;
-    private final ServiceRegistry serviceRegistry;
+    private DeploymentUnit deploymentUnit;
 
-    public WeldJpaInjectionServices(DeploymentUnit deploymentUnit, ServiceRegistry serviceRegistry) {
+    public WeldJpaInjectionServices(DeploymentUnit deploymentUnit) {
         this.deploymentUnit = deploymentUnit;
-        this.serviceRegistry = serviceRegistry;
     }
 
     @Override
@@ -76,17 +73,11 @@ public class WeldJpaInjectionServices implements JpaInjectionServices {
         final String scopedPuName = getScopedPUName(deploymentUnit, context.unitName());
         final ServiceName persistenceUnitServiceName = PersistenceUnitServiceImpl.getPUServiceName(scopedPuName);
 
-        final ServiceController<?> serviceController = serviceRegistry.getRequiredService(persistenceUnitServiceName);
+        final ServiceController<?> serviceController = deploymentUnit.getServiceRegistry().getRequiredService(persistenceUnitServiceName);
         //now we have the service controller, as this method is only called at runtime the service should
         //always be up
         final PersistenceUnitServiceImpl persistenceUnitService = (PersistenceUnitServiceImpl) serviceController.getValue();
-        return new ResourceReferenceFactory<EntityManager>() {
-            @Override
-            public ResourceReference<EntityManager> createResource() {
-                final TransactionScopedEntityManager result = new TransactionScopedEntityManager(scopedPuName, new HashMap<Object, Object>(), persistenceUnitService.getEntityManagerFactory(), context.synchronization());
-                return new SimpleResourceReference<EntityManager>(result);
-            }
-        };
+        return new EntityManagerResourceReferenceFactory(scopedPuName, persistenceUnitService.getEntityManagerFactory(), context);
     }
 
     @Override
@@ -99,7 +90,7 @@ public class WeldJpaInjectionServices implements JpaInjectionServices {
         final String scopedPuName = getScopedPUName(deploymentUnit, context.unitName());
         final ServiceName persistenceUnitServiceName = PersistenceUnitServiceImpl.getPUServiceName(scopedPuName);
 
-        final ServiceController<?> serviceController = serviceRegistry.getRequiredService(persistenceUnitServiceName);
+        final ServiceController<?> serviceController = deploymentUnit.getServiceRegistry().getRequiredService(persistenceUnitServiceName);
         //now we have the service controller, as this method is only called at runtime the service should
         //always be up
         final PersistenceUnitServiceImpl persistenceUnitService = (PersistenceUnitServiceImpl) serviceController.getValue();
@@ -109,6 +100,7 @@ public class WeldJpaInjectionServices implements JpaInjectionServices {
 
     @Override
     public void cleanup() {
+        deploymentUnit = null;
     }
 
     private String getScopedPUName(final DeploymentUnit deploymentUnit, final String persistenceUnitName) {
@@ -118,5 +110,23 @@ public class WeldJpaInjectionServices implements JpaInjectionServices {
             throw WeldMessages.MESSAGES.couldNotFindPersistenceUnit(persistenceUnitName, deploymentUnit.getName());
         }
         return scopedPu.getScopedPersistenceUnitName();
+    }
+
+    private static class EntityManagerResourceReferenceFactory implements ResourceReferenceFactory<EntityManager> {
+        private final String scopedPuName;
+        private final EntityManagerFactory entityManagerFactory;
+        private final PersistenceContext context;
+
+        public EntityManagerResourceReferenceFactory(String scopedPuName, EntityManagerFactory entityManagerFactory, PersistenceContext context) {
+            this.scopedPuName = scopedPuName;
+            this.entityManagerFactory = entityManagerFactory;
+            this.context = context;
+        }
+
+        @Override
+        public ResourceReference<EntityManager> createResource() {
+            final TransactionScopedEntityManager result = new TransactionScopedEntityManager(scopedPuName, new HashMap<>(), entityManagerFactory, context.synchronization());
+            return new SimpleResourceReference<EntityManager>(result);
+        }
     }
 }

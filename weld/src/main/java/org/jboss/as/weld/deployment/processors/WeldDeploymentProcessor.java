@@ -230,7 +230,7 @@ public class WeldDeploymentProcessor implements DeploymentUnitProcessor {
         weldBootstrapService.addWeldService(EjbServices.class, new WeldEjbServices(deploymentUnit.getServiceRegistry()));
 
 
-        final JpaInjectionServices rootJpaInjectionServices = new WeldJpaInjectionServices(deploymentUnit, deploymentUnit.getServiceRegistry());
+        final JpaInjectionServices rootJpaInjectionServices = new WeldJpaInjectionServices(deploymentUnit);
         final JaxwsInjectionServices rootJaxWsInjectionServices = new WeldJaxwsInjectionServices(deploymentUnit);
         weldBootstrapService.addWeldService(JpaInjectionServices.class, rootJpaInjectionServices);
         weldBootstrapService.addWeldService(JaxwsInjectionServices.class, rootJaxWsInjectionServices);
