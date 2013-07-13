@@ -230,11 +230,6 @@
                 </dependency>
 
                 <dependency>
-                    <groupId>com.h2database</groupId>
-                    <artifactId>h2</artifactId>
-                </dependency>
-
-                <dependency>
                     <groupId>com.github.relaxng</groupId>
                     <artifactId>relaxngDatatype</artifactId>
                 </dependency>
@@ -242,6 +237,11 @@
                 <dependency>
                     <groupId>com.google.guava</groupId>
                     <artifactId>guava</artifactId>
+                </dependency>
+
+                <dependency>
+                    <groupId>com.h2database</groupId>
+                    <artifactId>h2</artifactId>
                 </dependency>
 
                 <dependency>
@@ -310,6 +310,11 @@
                 </dependency>
 
                 <dependency>
+                    <groupId>commons-configuration</groupId>
+                    <artifactId>commons-configuration</artifactId>
+                </dependency>
+
+                <dependency>
                     <groupId>commons-io</groupId>
                     <artifactId>commons-io</artifactId>
                 </dependency>
@@ -317,11 +322,6 @@
                 <dependency>
                     <groupId>commons-lang</groupId>
                     <artifactId>commons-lang</artifactId>
-                </dependency>
-
-                <dependency>
-                    <groupId>commons-configuration</groupId>
-                    <artifactId>commons-configuration</artifactId>
                 </dependency>
 
                 <dependency>
@@ -337,6 +337,11 @@
                 <dependency>
                     <groupId>gnu-getopt</groupId>
                     <artifactId>getopt</artifactId>
+                </dependency>
+
+                <dependency>
+                    <groupId>io.netty</groupId>
+                    <artifactId>netty</artifactId>
                 </dependency>
 
                 <dependency>
@@ -392,16 +397,6 @@
                 <dependency>
                     <groupId>jboss.jaxbintros</groupId>
                     <artifactId>jboss-jaxb-intros</artifactId>
-                </dependency>
-
-                <dependency>
-                    <groupId>org.jboss.aesh</groupId>
-                    <artifactId>aesh</artifactId>
-                </dependency>
-
-                <dependency>
-                    <groupId>org.fusesource.jansi</groupId>
-                    <artifactId>jansi</artifactId>
                 </dependency>
 
                 <dependency>
@@ -476,12 +471,12 @@
 
                 <dependency>
                     <groupId>org.apache.cxf</groupId>
-                    <artifactId>cxf-rt-transports-local</artifactId>
+                    <artifactId>cxf-rt-transports-jms</artifactId>
                 </dependency>
 
                 <dependency>
                     <groupId>org.apache.cxf</groupId>
-                    <artifactId>cxf-rt-transports-jms</artifactId>
+                    <artifactId>cxf-rt-transports-local</artifactId>
                 </dependency>
 
                 <dependency>
@@ -565,21 +560,6 @@
                 </dependency>
 
                 <dependency>
-                    <groupId>org.opensaml</groupId>
-                    <artifactId>opensaml</artifactId>
-                </dependency>
-
-                <dependency>
-                    <groupId>org.opensaml</groupId>
-                    <artifactId>openws</artifactId>
-                </dependency>
-
-                <dependency>
-                    <groupId>org.opensaml</groupId>
-                    <artifactId>xmltooling</artifactId>
-                </dependency>
-
-                <dependency>
                     <groupId>org.apache.felix</groupId>
                     <artifactId>org.apache.felix.configadmin</artifactId>
                 </dependency>
@@ -610,16 +590,6 @@
                 </dependency>
 
                 <dependency>
-                    <groupId>org.apache.neethi</groupId>
-                    <artifactId>neethi</artifactId>
-                </dependency>
-
-                <dependency>
-                    <groupId>org.apache.santuario</groupId>
-                    <artifactId>xmlsec</artifactId>
-                </dependency>
-
-                <dependency>
                     <groupId>org.apache.juddi</groupId>
                     <artifactId>juddi-client</artifactId>
                 </dependency>
@@ -632,6 +602,16 @@
                 <dependency>
                     <groupId>org.apache.juddi</groupId>
                     <artifactId>uddi-ws</artifactId>
+                </dependency>
+
+                <dependency>
+                    <groupId>org.apache.neethi</groupId>
+                    <artifactId>neethi</artifactId>
+                </dependency>
+
+                <dependency>
+                    <groupId>org.apache.santuario</groupId>
+                    <artifactId>xmlsec</artifactId>
                 </dependency>
 
                 <dependency>
@@ -685,6 +665,16 @@
                 </dependency>
 
                 <dependency>
+                    <groupId>org.eclipse.jdt.core.compiler</groupId>
+                    <artifactId>ecj</artifactId>
+                </dependency>
+
+                <dependency>
+                    <groupId>org.fusesource.jansi</groupId>
+                    <artifactId>jansi</artifactId>
+                </dependency>
+
+                <dependency>
                     <groupId>org.hibernate</groupId>
                     <artifactId>hibernate-core</artifactId>
                 </dependency>
@@ -701,17 +691,17 @@
 
                 <dependency>
                     <groupId>org.hibernate</groupId>
+                    <artifactId>hibernate-envers</artifactId>
+                </dependency>
+
+                <dependency>
+                    <groupId>org.hibernate</groupId>
                     <artifactId>hibernate-infinispan</artifactId>
                 </dependency>
 
                 <dependency>
                     <groupId>org.hibernate</groupId>
                     <artifactId>hibernate-validator</artifactId>
-                </dependency>
-
-                <dependency>
-                    <groupId>org.hibernate</groupId>
-                    <artifactId>hibernate-envers</artifactId>
                 </dependency>
 
                 <dependency>
@@ -780,8 +770,13 @@
                 </dependency>
 
                 <dependency>
-                    <groupId>org.jboss.common</groupId>
-                    <artifactId>jboss-common-beans</artifactId>
+                    <groupId>org.jboss</groupId>
+                    <artifactId>jbossxb</artifactId>
+                </dependency>
+
+                <dependency>
+                    <groupId>org.jboss</groupId>
+                    <artifactId>jboss-ejb-client</artifactId>
                 </dependency>
 
                 <dependency>
@@ -796,7 +791,22 @@
 
                 <dependency>
                     <groupId>org.jboss</groupId>
+                    <artifactId>jboss-remote-naming</artifactId>
+                </dependency>
+
+                <dependency>
+                    <groupId>org.jboss</groupId>
+                    <artifactId>jboss-transaction-spi</artifactId>
+                </dependency>
+
+                <dependency>
+                    <groupId>org.jboss</groupId>
                     <artifactId>jboss-vfs</artifactId>
+                </dependency>
+
+                <dependency>
+                    <groupId>org.jboss.aesh</groupId>
+                    <artifactId>aesh</artifactId>
                 </dependency>
 
                 <dependency>
@@ -1169,11 +1179,6 @@
                 </dependency>
 
                 <dependency>
-                    <groupId>org.jboss</groupId>
-                    <artifactId>jboss-ejb-client</artifactId>
-                </dependency>
-
-                <dependency>
                     <groupId>org.jboss.ejb3</groupId>
                     <artifactId>jboss-ejb3-ext-api</artifactId>
                 </dependency>
@@ -1210,8 +1215,8 @@
                 </dependency>
 
                 <dependency>
-                    <groupId>org.jboss</groupId>
-                    <artifactId>jboss-transaction-spi</artifactId>
+                    <groupId>org.jboss.common</groupId>
+                    <artifactId>jboss-common-beans</artifactId>
                 </dependency>
 
                 <dependency>
@@ -1328,11 +1333,6 @@
                 </dependency>
 
                 <dependency>
-                    <groupId>io.netty</groupId>
-                    <artifactId>netty</artifactId>
-                </dependency>
-
-                <dependency>
                     <groupId>org.jboss.osgi.deployment</groupId>
                     <artifactId>jbosgi-deployment</artifactId>
                 </dependency>
@@ -1398,16 +1398,6 @@
                 </dependency>
 
                 <dependency>
-                    <groupId>org.jboss</groupId>
-                    <artifactId>jboss-remote-naming</artifactId>
-                </dependency>
-
-                <dependency>
-                    <groupId>org.jboss.resteasy</groupId>
-                    <artifactId>resteasy-jaxrs</artifactId>
-                </dependency>
-
-                <dependency>
                     <groupId>org.jboss.resteasy</groupId>
                     <artifactId>async-http-servlet-3.0</artifactId>
                 </dependency>
@@ -1435,6 +1425,11 @@
                 <dependency>
                     <groupId>org.jboss.resteasy</groupId>
                     <artifactId>resteasy-jaxb-provider</artifactId>
+                </dependency>
+
+                <dependency>
+                    <groupId>org.jboss.resteasy</groupId>
+                    <artifactId>resteasy-jaxrs</artifactId>
                 </dependency>
 
                 <dependency>
@@ -1643,11 +1638,6 @@
                 </dependency>
 
                 <dependency>
-                    <groupId>org.eclipse.jdt.core.compiler</groupId>
-                    <artifactId>ecj</artifactId>
-                </dependency>
-
-                <dependency>
                     <groupId>org.jboss.web</groupId>
                     <artifactId>jbossweb</artifactId>
                 </dependency>
@@ -1685,11 +1675,6 @@
                 <dependency>
                     <groupId>org.jboss.ws</groupId>
                     <artifactId>jbossws-spi</artifactId>
-                </dependency>
-
-                <dependency>
-                    <groupId>org.jboss.ws.projects</groupId>
-                    <artifactId>jaxws-jboss-httpserver-httpspi</artifactId>
                 </dependency>
 
                 <dependency>
@@ -1734,6 +1719,11 @@
                 </dependency>
 
                 <dependency>
+                    <groupId>org.jboss.ws.projects</groupId>
+                    <artifactId>jaxws-jboss-httpserver-httpspi</artifactId>
+                </dependency>
+
+                <dependency>
                     <groupId>org.jboss.xnio</groupId>
                     <artifactId>xnio-api</artifactId>
                 </dependency>
@@ -1741,11 +1731,6 @@
                 <dependency>
                     <groupId>org.jboss.xnio</groupId>
                     <artifactId>xnio-nio</artifactId>
-                </dependency>
-
-                <dependency>
-                    <groupId>org.jboss</groupId>
-                    <artifactId>jbossxb</artifactId>
                 </dependency>
 
                 <dependency>
@@ -1761,6 +1746,21 @@
                 <dependency>
                     <groupId>org.kohsuke.rngom</groupId>
                     <artifactId>rngom</artifactId>
+                </dependency>
+
+                <dependency>
+                    <groupId>org.opensaml</groupId>
+                    <artifactId>opensaml</artifactId>
+                </dependency>
+
+                <dependency>
+                    <groupId>org.opensaml</groupId>
+                    <artifactId>openws</artifactId>
+                </dependency>
+
+                <dependency>
+                    <groupId>org.opensaml</groupId>
+                    <artifactId>xmltooling</artifactId>
                 </dependency>
 
                 <dependency>
