@@ -159,6 +159,10 @@ class DefaultComponentConfigurator extends AbstractComponentConfigurator impleme
             configuration.addPostActivateInterceptor(privilegedInterceptor, InterceptorOrder.ComponentPassivation.PRIVILEGED_INTERCEPTOR);
         }
 
+        // also needed for javax.enterprise.concurrent related executions
+        configuration.addDefaultConcurrentContextInterceptor(tcclInterceptor, InterceptorOrder.ConcurrentContext.TCCL_INTERCEPTOR);
+        configuration.addDefaultConcurrentContextInterceptor(privilegedInterceptor, InterceptorOrder.ConcurrentContext.PRIVILEGED_INTERCEPTOR);
+
         // @AroundInvoke interceptors
         if (description.isIntercepted()) {
 

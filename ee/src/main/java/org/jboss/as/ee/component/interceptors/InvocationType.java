@@ -44,6 +44,7 @@ public enum InvocationType {
     ENTITY_EJB_ACTIVATE("entity bean ejbActivate method"),
     ENTITY_EJB_PASSIVATE("entity bean ejbPassivate method"),
     ENTITY_EJB_EJB_LOAD("entity bean ejbLoad method"),
+    CONCURRENT_CONTEXT("ee concurrent invocation"),
 
     ;
 

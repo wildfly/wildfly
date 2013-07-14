@@ -148,9 +148,9 @@ public class MessageDrivenComponentDescription extends EJBComponentDescription {
             getConfigurators().add(new ComponentConfigurator() {
                 @Override
                 public void configure(final DeploymentPhaseContext context, final ComponentDescription description, final ComponentConfiguration configuration) throws DeploymentUnitProcessingException {
-
                     // add the bmt interceptor factory
                     configuration.addComponentInterceptor(EjbBMTInterceptor.FACTORY, InterceptorOrder.Component.BMT_TRANSACTION_INTERCEPTOR, false);
+                    configuration.addDefaultConcurrentContextInterceptor(EjbBMTInterceptor.FACTORY, InterceptorOrder.ConcurrentContext.BMT_TRANSACTION_INTERCEPTOR);
                 }
             });
         } else {

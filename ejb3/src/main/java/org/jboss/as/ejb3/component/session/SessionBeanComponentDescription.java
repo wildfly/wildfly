@@ -391,6 +391,7 @@ public abstract class SessionBeanComponentDescription extends EJBComponentDescri
                     configuration.addPrePassivateInterceptor(CurrentInvocationContextInterceptor.FACTORY, InterceptorOrder.ComponentPassivation.EJB_SESSION_CONTEXT_INTERCEPTOR);
                     configuration.addPostActivateInterceptor(CurrentInvocationContextInterceptor.FACTORY, InterceptorOrder.ComponentPassivation.EJB_SESSION_CONTEXT_INTERCEPTOR);
                 }
+                configuration.addDefaultConcurrentContextInterceptor(CurrentInvocationContextInterceptor.FACTORY, InterceptorOrder.ConcurrentContext.EJB_SESSION_CONTEXT_INTERCEPTOR);
             }
         });
     }

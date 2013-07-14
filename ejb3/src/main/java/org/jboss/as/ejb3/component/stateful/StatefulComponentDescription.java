@@ -184,6 +184,7 @@ public class StatefulComponentDescription extends SessionBeanComponentDescriptio
                         }
                     };
                     configuration.addComponentInterceptor(bmtComponentInterceptorFactory, InterceptorOrder.Component.BMT_TRANSACTION_INTERCEPTOR, false);
+                    configuration.addDefaultConcurrentContextInterceptor(bmtComponentInterceptorFactory, InterceptorOrder.ConcurrentContext.BMT_TRANSACTION_INTERCEPTOR);
                 }
             });
         } else {
