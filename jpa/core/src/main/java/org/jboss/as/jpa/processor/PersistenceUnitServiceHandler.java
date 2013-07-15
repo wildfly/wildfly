@@ -28,6 +28,7 @@ import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Locale;
@@ -325,7 +326,7 @@ public class PersistenceUnitServiceHandler {
         pu.setClassLoader(classLoader);
         try {
             SerializableValidatorFactory validatorFactory = null;
-            final HashMap<String, ValidatorFactory> properties = new HashMap<String, ValidatorFactory>();
+            final HashMap<String, ValidatorFactory> properties = new HashMap();
             if (!ValidationMode.NONE.equals(pu.getValidationMode())) {
                 validatorFactory = SerializableValidatorFactory.validatorFactory();
                 properties.put("javax.persistence.validation.factory", validatorFactory);
@@ -448,7 +449,7 @@ public class PersistenceUnitServiceHandler {
         pu.setClassLoader(classLoader);
         try {
             SerializableValidatorFactory validatorFactory = null;
-            final HashMap<String, ValidatorFactory> properties = new HashMap<String, ValidatorFactory>();
+            final HashMap<String, ValidatorFactory> properties = new HashMap();
             if (!ValidationMode.NONE.equals(pu.getValidationMode())) {
                 validatorFactory = SerializableValidatorFactory.validatorFactory();
                 properties.put("javax.persistence.validation.factory", validatorFactory);
@@ -561,7 +562,7 @@ public class PersistenceUnitServiceHandler {
         pu.setClassLoader(classLoader);
         try {
             SerializableValidatorFactory validatorFactory = null;
-            final HashMap<String, ValidatorFactory> properties = new HashMap<String, ValidatorFactory>();
+            final HashMap<String, ValidatorFactory> properties = new HashMap();
             if (!ValidationMode.NONE.equals(pu.getValidationMode())) {
                 validatorFactory = SerializableValidatorFactory.validatorFactory();
                 properties.put("javax.persistence.validation.factory", validatorFactory);
@@ -685,7 +686,7 @@ public class PersistenceUnitServiceHandler {
                                 new ImmediateValue<Object>(
                                         new TransactionScopedEntityManager(
                                                 pu.getScopedPersistenceUnitName(),
-                                                new HashMap(),
+                                                Collections.emptyMap(),
                                                 value.getEntityManagerFactory(),
                                                 SynchronizationType.SYNCHRONIZED))));
                     }
@@ -741,7 +742,7 @@ public class PersistenceUnitServiceHandler {
             final PersistenceUnitMetadataHolder puHolder,
             DeploymentUnit deploymentUnit ) {
 
-        final Map<URL, Index> annotationIndexes = new HashMap<URL, Index>();
+        final Map<URL, Index> annotationIndexes = new HashMap();
 
         do {
             for (ResourceRoot root : DeploymentUtils.allResourceRoots(deploymentUnit)) {
@@ -866,7 +867,7 @@ public class PersistenceUnitServiceHandler {
         synchronized (deploymentUnit) {
             Map<String,PersistenceProviderAdaptor> map = deploymentUnit.getAttachment(providerAdaptorMapKey);
             if( map == null) {
-                map = new HashMap<String,PersistenceProviderAdaptor>();
+                map = new HashMap();
                 deploymentUnit.putAttachment(providerAdaptorMapKey, map);
             }
             String key;
