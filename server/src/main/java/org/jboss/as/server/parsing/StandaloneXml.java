@@ -228,7 +228,7 @@ public class StandaloneXml extends CommonXml implements ManagementXml.Delegate {
 
         if (element == Element.MANAGEMENT) {
             ManagementXml managementXml = new ManagementXml(this);
-            managementXml.parseManagement_1_0(reader, address, DOMAIN_1_0, list, true, false);
+            managementXml.parseManagement(reader, address, DOMAIN_1_0, list, false);
             element = nextElement(reader, DOMAIN_1_0);
         }
 
@@ -339,7 +339,7 @@ public class StandaloneXml extends CommonXml implements ManagementXml.Delegate {
 
         if (element == Element.MANAGEMENT) {
             ManagementXml managementXml = new ManagementXml(this);
-            managementXml.parseManagement_1_0(reader, address, namespace, list, true, false);
+            managementXml.parseManagement(reader, address, namespace, list, false);
             element = nextElement(reader, namespace);
         }
         // Single profile
@@ -447,15 +447,7 @@ public class StandaloneXml extends CommonXml implements ManagementXml.Delegate {
         }
         if (element == Element.MANAGEMENT) {
             ManagementXml managementXml = new ManagementXml(this);
-            switch (namespace) {
-                case DOMAIN_1_4: // The earliest namespace that could be in use to reach this method is 1.4.
-                    managementXml.parseManagement_1_0(reader, address, namespace, list, true, false);
-                    break;
-                default:
-                    managementXml.parseManagement_2_0(reader, address, namespace, list, true, false);
-                    break;
-
-            }
+            managementXml.parseManagement(reader, address, namespace, list, false);
             element = nextElement(reader, namespace);
         }
         // Single profile
