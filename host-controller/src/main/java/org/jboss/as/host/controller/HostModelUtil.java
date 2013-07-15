@@ -24,6 +24,7 @@ import org.jboss.as.controller.CompositeOperationHandler;
 import org.jboss.as.controller.ControlledProcessState;
 import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.ProcessType;
+import org.jboss.as.controller.access.DelegatingConfigurableAuthorizer;
 import org.jboss.as.controller.descriptions.StandardResourceDescriptionResolver;
 import org.jboss.as.controller.extension.ExtensionRegistry;
 import org.jboss.as.controller.operations.common.ValidateOperationHandler;
@@ -100,7 +101,8 @@ public class HostModelUtil {
                                           final AbstractVaultReader vaultReader,
                                           final IgnoredDomainResourceRegistry ignoredRegistry,
                                           final ControlledProcessState processState,
-                                          final PathManagerService pathManager) {
+                                          final PathManagerService pathManager,
+                                          DelegatingConfigurableAuthorizer authorizer) {
         // Add of the host itself
         //ManagementResourceRegistration hostRegistration = root.registerSubModel(PathElement.pathElement(HOST, hostName), HostDescriptionProviders.HOST_ROOT_PROVIDER);
         ManagementResourceRegistration hostRegistration = root.registerSubModel(
@@ -108,7 +110,7 @@ public class HostModelUtil {
                         environment, runningModeControl, localFileRepository,
                         hostControllerInfo, serverInventory, remoteFileRepository,
                         contentRepository, domainController, extensionRegistry,
-                        vaultReader, ignoredRegistry, processState, pathManager));
+                        vaultReader, ignoredRegistry, processState, pathManager, authorizer));
 
         //TODO See if some of all these parameters can come from domain controller
         LocalDomainControllerAddHandler localDcAddHandler = LocalDomainControllerAddHandler.getInstance(root, hostControllerInfo,

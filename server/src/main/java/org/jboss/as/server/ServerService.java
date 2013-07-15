@@ -223,7 +223,8 @@ public final class ServerService extends AbstractControllerService {
                         extensibleConfigurationPersister, configuration.getServerEnvironment(), processState,
                         runningModeControl, vaultReader, configuration.getExtensionRegistry(),
                         getExecutorServiceInjector().getOptionalValue() != null,
-                        (PathManagerService)injectedPathManagerService.getValue()));
+                        (PathManagerService)injectedPathManagerService.getValue(),
+                        authorizer));
         super.start(context);
     }
 

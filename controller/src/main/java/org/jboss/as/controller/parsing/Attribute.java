@@ -46,6 +46,7 @@ public enum Attribute {
     ATTRIBUTE("attribute"),
     AUTO_START("auto-start"),
     BASE_DN("base-dn"),
+    BASE_ROLE("base-role"),
     BOOT_TIME("boot-time"),
     CODE("code"),
     CONNECTION("connection"),

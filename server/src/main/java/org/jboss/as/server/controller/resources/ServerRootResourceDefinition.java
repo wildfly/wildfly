@@ -31,12 +31,14 @@ import org.jboss.as.controller.ModelOnlyWriteAttributeHandler;
 import org.jboss.as.controller.PathElement;
 import org.jboss.as.controller.ProcessType;
 import org.jboss.as.controller.PropertiesAttributeDefinition;
+import org.jboss.as.controller.ResourceDefinition;
 import org.jboss.as.controller.RunningMode;
 import org.jboss.as.controller.RunningModeControl;
 import org.jboss.as.controller.SimpleAttributeDefinition;
 import org.jboss.as.controller.SimpleAttributeDefinitionBuilder;
 import org.jboss.as.controller.SimpleMapAttributeDefinition;
 import org.jboss.as.controller.SimpleResourceDefinition;
+import org.jboss.as.controller.access.DelegatingConfigurableAuthorizer;
 import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
 import org.jboss.as.controller.descriptions.common.CoreManagementDefinition;
 import org.jboss.as.controller.extension.ExtensionRegistry;
@@ -182,6 +184,7 @@ public class ServerRootResourceDefinition extends SimpleResourceDefinition {
     private final ExtensionRegistry extensionRegistry;
     private final boolean parallelBoot;
     private final PathManagerService pathManager;
+    private final DelegatingConfigurableAuthorizer authorizer;
 
     public ServerRootResourceDefinition(
             final ContentRepository contentRepository,
@@ -192,7 +195,8 @@ public class ServerRootResourceDefinition extends SimpleResourceDefinition {
             final AbstractVaultReader vaultReader,
             final ExtensionRegistry extensionRegistry,
             final boolean parallelBoot,
-            final PathManagerService pathManager) {
+            final PathManagerService pathManager,
+            final DelegatingConfigurableAuthorizer authorizer) {
         super(null, ServerDescriptions.getResourceDescriptionResolver(SERVER, false));
         this.contentRepository = contentRepository;
         this.extensibleConfigurationPersister = extensibleConfigurationPersister;
@@ -204,7 +208,8 @@ public class ServerRootResourceDefinition extends SimpleResourceDefinition {
         this.parallelBoot = parallelBoot;
         this.pathManager = pathManager;
 
-        isDomain = serverEnvironment == null || serverEnvironment.getLaunchType() == LaunchType.DOMAIN;
+        this.isDomain = serverEnvironment == null || serverEnvironment.getLaunchType() == LaunchType.DOMAIN;
+        this.authorizer = authorizer;
     }
 
     @Override
@@ -331,7 +336,9 @@ public class ServerRootResourceDefinition extends SimpleResourceDefinition {
         PlatformMBeanResourceRegistrar.registerPlatformMBeanResources(resourceRegistration);
 
         //Access Control
-        resourceRegistration.registerSubModel(AccessControlResourceDefinition.INSTANCE);
+        ResourceDefinition accControl = isDomain ? AccessControlResourceDefinition.forDomainServer(authorizer)
+                : AccessControlResourceDefinition.forStandaloneServer(authorizer);
+        resourceRegistration.registerSubModel(accControl);
 
         // Paths
         resourceRegistration.registerSubModel(PathResourceDefinition.createSpecified(pathManager));
@@ -373,6 +380,5 @@ public class ServerRootResourceDefinition extends SimpleResourceDefinition {
         // Util
         resourceRegistration.registerOperationHandler(DeployerChainAddHandler.DEFINITION, DeployerChainAddHandler.INSTANCE, false);
     }
-
 
 }

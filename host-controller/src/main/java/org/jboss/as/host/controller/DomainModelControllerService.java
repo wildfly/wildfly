@@ -378,6 +378,8 @@ public class DomainModelControllerService extends AbstractControllerService impl
     protected void initModel(Resource rootResource, ManagementResourceRegistration rootRegistration) {
         HostModelUtil.createRootRegistry(rootRegistration, environment, ignoredRegistry, this, processType);
         VersionModelInitializer.registerRootResource(rootResource, environment != null ? environment.getProductConfig() : null);
+        // TODO wire in once we get master-slave propagation sorted
+//        rootResource.registerChild(PathElement.pathElement(ModelDescriptionConstants.CORE_SERVICE, ModelDescriptionConstants.ACCESS_CONTROL), AccessControlResourceDefinition.RESOURCE);
         this.modelNodeRegistration = rootRegistration;
     }
 
@@ -598,7 +600,7 @@ public class DomainModelControllerService extends AbstractControllerService impl
     public void registerHostModel(String hostName, ManagementResourceRegistration root) {
         HostModelUtil.createHostRegistry(hostName, root, hostControllerConfigurationPersister, environment, runningModeControl,
                 localFileRepository, hostControllerInfo, new DelegatingServerInventory(), remoteFileRepository, contentRepository,
-                this, extensionRegistry,vaultReader, ignoredRegistry, processState, pathManager);
+                this, extensionRegistry,vaultReader, ignoredRegistry, processState, pathManager, authorizer);
     }
 
 
@@ -625,7 +627,8 @@ public class DomainModelControllerService extends AbstractControllerService impl
             final ExtensionRegistry extensionRegistry, final IgnoredDomainResourceRegistry ignoredDomainResourceRegistry,
             final PathManagerService pathManager) {
 
-        DomainRootDefinition domainRootDefinition = new DomainRootDefinition(environment, configurationPersister, contentRepo, fileRepository, isMaster, hostControllerInfo, extensionRegistry, ignoredDomainResourceRegistry, pathManager);
+        DomainRootDefinition domainRootDefinition = new DomainRootDefinition(environment, configurationPersister, contentRepo, fileRepository, isMaster, hostControllerInfo,
+                extensionRegistry, ignoredDomainResourceRegistry, pathManager, authorizer);
         rootResourceDefinition.setDelegate(domainRootDefinition, root);
     }
 

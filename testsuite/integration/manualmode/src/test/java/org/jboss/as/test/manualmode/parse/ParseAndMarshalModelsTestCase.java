@@ -31,8 +31,6 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.PRO
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ROLLBACK_ON_RUNTIME_FAILURE;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SUBSYSTEM;
 
-import javax.management.ObjectName;
-import javax.xml.namespace.QName;
 import java.io.ByteArrayInputStream;
 import java.io.File;
 import java.io.FileNotFoundException;
@@ -44,6 +42,9 @@ import java.util.List;
 import java.util.Set;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
+
+import javax.management.ObjectName;
+import javax.xml.namespace.QName;
 
 import org.jboss.arquillian.container.test.api.ContainerController;
 import org.jboss.arquillian.container.test.api.Deployer;
@@ -68,6 +69,7 @@ import org.jboss.as.controller.ResourceBuilder;
 import org.jboss.as.controller.RunningMode;
 import org.jboss.as.controller.RunningModeControl;
 import org.jboss.as.controller.SimpleOperationDefinitionBuilder;
+import org.jboss.as.controller.access.DelegatingConfigurableAuthorizer;
 import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
 import org.jboss.as.controller.descriptions.NonResolvingResourceDescriptionResolver;
 import org.jboss.as.controller.descriptions.common.CoreManagementDefinition;
@@ -760,8 +762,10 @@ public class ParseAndMarshalModelsTestCase {
 
         final ModelNode model = new ModelNode();
         final ModelController controller = createController(ProcessType.STANDALONE_SERVER, model, new Setup() {
-            public void setup(Resource resource, ManagementResourceRegistration rootRegistration) {
-                ServerRootResourceDefinition def = new ServerRootResourceDefinition(new MockContentRepository(), persister, null, null, null, null, extensionRegistry, false, MOCK_PATH_MANAGER);
+
+            @Override
+            public void setup(Resource resource, ManagementResourceRegistration rootRegistration, DelegatingConfigurableAuthorizer authorizer) {
+                ServerRootResourceDefinition def = new ServerRootResourceDefinition(new MockContentRepository(), persister, null, null, null, null, extensionRegistry, false, MOCK_PATH_MANAGER, authorizer);
                 def.registerAttributes(rootRegistration);
                 def.registerOperations(rootRegistration);
                 def.registerChildren(rootRegistration);
@@ -796,7 +800,7 @@ public class ParseAndMarshalModelsTestCase {
         final ModelNode model = new ModelNode();
 
         final ModelController controller = createController(ProcessType.HOST_CONTROLLER, model, new Setup() {
-            public void setup(Resource resource, ManagementResourceRegistration root) {
+            public void setup(Resource resource, ManagementResourceRegistration root, DelegatingConfigurableAuthorizer authorizer) {
 
                 final Resource host = Resource.Factory.create();
                 resource.registerChild(PathElement.pathElement(HOST, "master"), host);
@@ -889,9 +893,9 @@ public class ParseAndMarshalModelsTestCase {
 
         final ModelNode model = new ModelNode();
         final ModelController controller = createController(ProcessType.HOST_CONTROLLER, model, new Setup() {
-            public void setup(Resource resource, ManagementResourceRegistration rootRegistration) {
-                DomainRootDefinition def = new DomainRootDefinition(null, persister, new MockContentRepository(), new MockFileRepository(), true, null, extensionRegistry, null, MOCK_PATH_MANAGER);
-                def.initialize(rootRegistration);
+            public void setup(Resource resource, ManagementResourceRegistration rootRegistration, DelegatingConfigurableAuthorizer authorizer) {
+                DomainRootDefinition def = new DomainRootDefinition(null, persister, new MockContentRepository(), new MockFileRepository(), true, null, extensionRegistry, null, MOCK_PATH_MANAGER, authorizer);
+             def.initialize(rootRegistration);
             }
         });
 
@@ -1017,7 +1021,7 @@ public class ParseAndMarshalModelsTestCase {
     }
 
     interface Setup {
-        void setup(Resource resource, ManagementResourceRegistration rootRegistration);
+        void setup(Resource resource, ManagementResourceRegistration rootRegistration, DelegatingConfigurableAuthorizer authorizer);
     }
 
     class ModelControllerService extends AbstractControllerService {
@@ -1046,7 +1050,7 @@ public class ParseAndMarshalModelsTestCase {
         }
 
         protected void initModel(Resource rootResource, ManagementResourceRegistration rootRegistration) {
-            registration.setup(rootResource, rootRegistration);
+            registration.setup(rootResource, rootRegistration, authorizer);
 
             rootRegistration.registerOperationHandler(new SimpleOperationDefinitionBuilder("capture-model", new NonResolvingResourceDescriptionResolver()).build()
                     , new OperationStepHandler() {

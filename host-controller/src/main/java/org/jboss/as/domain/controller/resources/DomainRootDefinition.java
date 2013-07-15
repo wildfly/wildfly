@@ -48,6 +48,7 @@ import org.jboss.as.controller.SimpleAttributeDefinition;
 import org.jboss.as.controller.SimpleAttributeDefinitionBuilder;
 import org.jboss.as.controller.SimpleMapAttributeDefinition;
 import org.jboss.as.controller.SimpleResourceDefinition;
+import org.jboss.as.controller.access.DelegatingConfigurableAuthorizer;
 import org.jboss.as.controller.access.constraint.management.SensitiveTargetAccessConstraintDefinition;
 import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
 import org.jboss.as.controller.extension.ExtensionRegistry;
@@ -89,6 +90,7 @@ import org.jboss.as.domain.controller.operations.deployment.DeploymentUploadByte
 import org.jboss.as.domain.controller.operations.deployment.DeploymentUploadStreamAttachmentHandler;
 import org.jboss.as.domain.controller.operations.deployment.DeploymentUploadURLHandler;
 import org.jboss.as.domain.controller.transformers.DomainTransformers;
+import org.jboss.as.domain.management.access.AccessControlResourceDefinition;
 import org.jboss.as.host.controller.HostControllerEnvironment;
 import org.jboss.as.host.controller.ignored.IgnoredDomainResourceRegistry;
 import org.jboss.as.management.client.content.ManagedDMRContentTypeResourceDefinition;
@@ -178,6 +180,7 @@ public class DomainRootDefinition extends SimpleResourceDefinition {
     private final ExtensionRegistry extensionRegistry;
     private final IgnoredDomainResourceRegistry ignoredDomainResourceRegistry;
     private final PathManagerService pathManager;
+    private final DelegatingConfigurableAuthorizer authorizer;
 
 
     public DomainRootDefinition(final HostControllerEnvironment environment,
@@ -185,7 +188,8 @@ public class DomainRootDefinition extends SimpleResourceDefinition {
             final HostFileRepository fileRepository, final boolean isMaster,
             final LocalHostControllerInfo hostControllerInfo,
             final ExtensionRegistry extensionRegistry, final IgnoredDomainResourceRegistry ignoredDomainResourceRegistry,
-            final PathManagerService pathManager) {
+            final PathManagerService pathManager,
+            final DelegatingConfigurableAuthorizer authorizer) {
         super(null, DomainResolver.getResolver(DOMAIN, false));
         this.isMaster = isMaster;
         this.environment = environment;
@@ -196,6 +200,7 @@ public class DomainRootDefinition extends SimpleResourceDefinition {
         this.extensionRegistry = extensionRegistry;
         this.ignoredDomainResourceRegistry = ignoredDomainResourceRegistry;
         this.pathManager = pathManager;
+        this.authorizer = authorizer;
     }
 
     @Override
@@ -280,6 +285,8 @@ public class DomainRootDefinition extends SimpleResourceDefinition {
                 InterfaceRemoveHandler.INSTANCE,
                 false
         ));
+
+        resourceRegistration.registerSubModel(AccessControlResourceDefinition.forDomain(authorizer));
         resourceRegistration.registerSubModel(new ProfileResourceDefinition(extensionRegistry));
         resourceRegistration.registerSubModel(PathResourceDefinition.createNamed(pathManager));
         resourceRegistration.registerSubModel(DomainDeploymentResourceDefinition.createForDomainRoot(isMaster, contentRepo, fileRepository));

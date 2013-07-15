@@ -22,8 +22,8 @@
 
 package org.jboss.as.controller.access.constraint;
 
-import java.util.Collection;
-import java.util.HashSet;
+import java.util.LinkedHashSet;
+import java.util.List;
 import java.util.Set;
 
 import org.jboss.as.controller.access.Action;
@@ -44,17 +44,25 @@ public class ServerGroupEffectConstraint extends AbstractConstraint implements S
     public static final ServerGroupEffectConstraint GLOBAL = new ServerGroupEffectConstraint();
 
     private final boolean global;
-    private final Set<String> specific = new HashSet<String>();
+    private volatile Set<String> specific = new LinkedHashSet<String>();
 
     private ServerGroupEffectConstraint() {
-        super();
         this.global = true;
     }
 
-    private ServerGroupEffectConstraint(Collection<String> allowed) {
-        super();
+    private ServerGroupEffectConstraint(Set<String> allowed) {
         this.global = false;
         specific.addAll(allowed);
+    }
+
+    public ServerGroupEffectConstraint(List<String> allowed) {
+        this.global = false;
+        specific.addAll(allowed);
+    }
+
+    public void setAllowedGroups(List<String> allowed) {
+        assert !global : "constraint is global";
+        this.specific = new LinkedHashSet<String>(allowed);
     }
 
     @Override

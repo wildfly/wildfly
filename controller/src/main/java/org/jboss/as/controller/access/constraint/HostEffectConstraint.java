@@ -22,9 +22,8 @@
 
 package org.jboss.as.controller.access.constraint;
 
-import java.util.Arrays;
-import java.util.Collection;
-import java.util.HashSet;
+import java.util.LinkedHashSet;
+import java.util.List;
 import java.util.Set;
 
 import org.jboss.as.controller.access.Action;
@@ -45,21 +44,28 @@ public class HostEffectConstraint extends AbstractConstraint implements ScopingC
     public static final HostEffectConstraint GLOBAL = new HostEffectConstraint();
 
     private final boolean global;
-    private final Set<String> specific = new HashSet<String>();
+    private volatile Set<String> specific = new LinkedHashSet<String>();
 
     private HostEffectConstraint() {
         super();
         this.global = true;
     }
 
-    private HostEffectConstraint(Collection<String> allowed) {
+    private HostEffectConstraint(Set<String> allowed) {
         super();
         this.global = false;
         specific.addAll(allowed);
     }
 
-    public HostEffectConstraint(String... allowed) {
-        this(Arrays.asList(allowed));
+    public HostEffectConstraint(List<String> allowed) {
+        super();
+        this.global = false;
+        specific.addAll(allowed);
+    }
+
+    public void setAllowedHosts(List<String> allowed) {
+        assert !global : "constraint is global";
+        this.specific = new LinkedHashSet<String>(allowed);
     }
 
     @Override

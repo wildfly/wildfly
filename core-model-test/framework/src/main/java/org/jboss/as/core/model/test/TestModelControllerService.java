@@ -403,7 +403,8 @@ class TestModelControllerService extends ModelTestModelControllerService {
                     vaultReader,
                     extensionRegistry,
                     parallelBoot,
-                    pathManagerService));
+                    pathManagerService,
+                    authorizer));
         }
 
         @Override
@@ -444,7 +445,8 @@ class TestModelControllerService extends ModelTestModelControllerService {
                             null /*vaultReader*/,
                             ignoredRegistry,
                             processState,
-                            pathManagerService));
+                            pathManagerService,
+                            authorizer));
         }
 
         @Override
@@ -475,7 +477,8 @@ class TestModelControllerService extends ModelTestModelControllerService {
                     null /*vaultReader*/,
                     ignoredRegistry,
                     processState,
-                    pathManagerService);
+                    pathManagerService,
+                    authorizer);
         }
     }
 
@@ -495,7 +498,7 @@ class TestModelControllerService extends ModelTestModelControllerService {
             final HostFileRepository hostFIleRepository = createHostFileRepository();
 
             DomainRootDefinition domainDefinition = new DomainRootDefinition(env, persister, injectedContentRepository.getValue(),
-                    hostFIleRepository, true, info, extensionRegistry, null, pathManagerService);
+                    hostFIleRepository, true, info, extensionRegistry, null, pathManagerService, authorizer);
             domainDefinition.initialize(rootRegistration);
             rootResourceDefinition.setDelegate(domainDefinition);
 

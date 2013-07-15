@@ -41,7 +41,7 @@ import org.jboss.as.domain.management._private.DomainManagementResolver;
  */
 public class SensitivityClassificationResourceDefinition extends SimpleResourceDefinition {
 
-    public static PathElement PATH_ELEMENT = PathElement.pathElement(SENSITIVITY_CLASSIFICATION);
+    public static final PathElement PATH_ELEMENT = PathElement.pathElement(SENSITIVITY_CLASSIFICATION);
 
     SensitivityClassificationResourceDefinition() {
         super(PATH_ELEMENT, DomainManagementResolver.getResolver("core.access-control.constraint.sensitivity-classification"));
