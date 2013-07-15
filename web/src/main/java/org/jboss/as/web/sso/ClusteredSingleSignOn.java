@@ -18,7 +18,9 @@ package org.jboss.as.web.sso;
 import static org.jboss.as.web.WebMessages.MESSAGES;
 
 import java.io.IOException;
+import java.security.AccessController;
 import java.security.Principal;
+import java.security.PrivilegedAction;
 import java.util.Map;
 import java.util.Properties;
 import java.util.Set;
@@ -875,21 +877,37 @@ public class ClusteredSingleSignOn extends org.apache.catalina.authenticator.Sin
      * check we will look for these properties and verify if they have been pre-set or not.
      */
     private void checkSystemProperties() {
-        Properties properties = System.getProperties();
-        String maxEmptyLifeProperty = properties.getProperty("org.jboss.as.web.sso.ClusteredSingleSignOn" +
-                ".maxEmptyLife");
-        String processExpiredIntervalProperty = properties.getProperty("org.jboss.as.web.sso.ClusteredSingleSignOn" +
-                ".processExpiresInterval");
+        final WebLogger logger = WebLogger.WEB_SSO_LOGGER;
 
-        if (maxEmptyLifeProperty != null) {
-            setMaxEmptyLife(Integer.parseInt(maxEmptyLifeProperty));
-            WebLogger.WEB_SSO_LOGGER.tracef("maxEmptyLife preset as a System property. Changed value to %s",
-                    maxEmptyLife);
+        Properties properties = System.getProperties();
+        final String maxEmptyLifeProperty = properties.getProperty("org.jboss.as.web.sso.ClusteredSingleSignOn" +
+             ".maxEmptyLife");
+        final String processExpiredIntervalProperty = properties.getProperty("org.jboss.as.web.sso" +
+              ".ClusteredSingleSignOn.processExpiresInterval");
+
+        // We will only execute the privileged action if the property has been set.
+        if (maxEmptyLifeProperty != null || processExpiredIntervalProperty != null) {
+           AccessController.doPrivileged(new PrivilegedAction<Object>() {
+              @Override
+              public Object run() {
+                 if (logger.isInfoEnabled()) logger.infof("Checking system properties for maxEmptyLife and " +
+                       "processExpiresInterval override values. This is a one-off fix for Red Hat bug BZ-958572");
+
+                 if (maxEmptyLifeProperty != null) {
+                    setMaxEmptyLife(Integer.parseInt(maxEmptyLifeProperty));
+                    if (logger.isDebugEnabled()) logger.debugf("maxEmptyLife preset as a System property. Changed value " +
+                          "to %s", maxEmptyLife);
+                 }
+                 if (processExpiredIntervalProperty != null){
+                    setProcessExpiresInterval(Integer.parseInt(processExpiredIntervalProperty));
+                    if (logger.isDebugEnabled()) logger.debugf("processExpiredInterval preset as a System property. " +
+                          "Changed value to %s", processExpiresInterval);
+                 }
+                 // We don't really have to return anything.
+                 return null;
+              }
+           });
         }
-        if (processExpiredIntervalProperty != null){
-            setProcessExpiresInterval(Integer.parseInt(processExpiredIntervalProperty));
-            WebLogger.WEB_SSO_LOGGER.tracef("processExpiredInterval preset as a System property. Changed value to " +
-                    "%s", processExpiredIntervalProperty);
-        }
+        if (logger.isTraceEnabled()) logger.tracef("Cleared adding the System properties within a privileged action.");
     }
 }
