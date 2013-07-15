@@ -56,7 +56,7 @@ public class PatchElementBuilder extends ModificationBuilderTarget<PatchElementB
     }
 
     @Override
-    public PatchElementBuilder addContentModification(ContentModification modification) {
+    protected PatchElementBuilder internalAddModification(ContentModification modification) {
         element.addContentModification(modification);
         return returnThis();
     }

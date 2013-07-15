@@ -57,7 +57,7 @@ class PatchElementTestStepBuilder extends AbstractPatchTestBuilder<PatchElementT
     }
 
     @Override
-    public PatchElementTestStepBuilder addContentModification(ContentModification modification) {
+    protected PatchElementTestStepBuilder internalAddModification(ContentModification modification) {
         builder.addContentModification(modification);
         return returnThis();
     }

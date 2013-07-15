@@ -26,22 +26,40 @@ import static org.jboss.as.patching.IoUtils.NO_CONTENT;
 
 import java.util.List;
 
+import org.jboss.as.patching.runner.ContentItemFilter;
+
 /**
  * @author Emanuel Muckenhuber
  */
 public abstract class ModificationBuilderTarget<T> {
+
+    private ContentItemFilter itemFilter;
+    protected ModificationBuilderTarget() {
+        this(ContentItemFilter.ALL);
+    }
+
+    protected ModificationBuilderTarget(ContentItemFilter itemFilter) {
+        this.itemFilter = itemFilter;
+    }
+
+    protected abstract T internalAddModification(final ContentModification modification);
+
+    /**
+     * @return this
+     */
+    protected abstract T returnThis();
 
     /**
      * Add a content modification.
      *
      * @param modification the content modification
      */
-    public abstract T addContentModification(final ContentModification modification);
-
-    /**
-     * @return this
-     */
-    protected abstract T returnThis();
+    public T addContentModification(final ContentModification modification) {
+        if (itemFilter.accepts(modification.getItem())) {
+            internalAddModification(modification);
+        }
+        return returnThis();
+    }
 
     /**
      * Add a bundle.
@@ -174,6 +192,10 @@ public abstract class ModificationBuilderTarget<T> {
         final ContentItem item = createModuleItem(moduleName, slot, NO_CONTENT);
         addContentModification(createContentModification(item, ModificationType.REMOVE, existingHash));
         return returnThis();
+    }
+
+    public void setContentItemFilter(final ContentItemFilter filter) {
+        this.itemFilter = filter;
     }
 
     protected ContentModification createContentModification(final ContentItem item, final ModificationType type, final byte[] existingHash) {

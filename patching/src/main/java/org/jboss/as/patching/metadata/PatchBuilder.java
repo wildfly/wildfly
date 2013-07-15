@@ -77,7 +77,8 @@ public class PatchBuilder extends ModificationBuilderTarget<PatchBuilder> implem
         return builder;
     }
 
-    public PatchBuilder addContentModification(ContentModification modification) {
+    @Override
+    protected PatchBuilder internalAddModification(ContentModification modification) {
         this.modifications.add(modification);
         return this;
     }

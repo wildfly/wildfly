@@ -41,7 +41,7 @@
                     <xs:element name="cumulative" type="cumulative-patchType" maxOccurs="1"/>
                     <xs:element name="one-off" type="patchType" maxOccurs="1"/>
                 </xs:choice>
-                <xs:element name="distribution-structure" type="distribution-structureType" minOccurs="0" maxOccurs="1"/>
+                <xs:element name="element" type="elementType" minOccurs="0" maxOccurs="unbounded"/>
                 <xs:choice>
                     <xs:element name="generate-by-diff" type="generate-by-diffType" minOccurs="0" maxOccurs="1"/>
                     <xs:element name="specified-content" type="specified-contentType" minOccurs="0" maxOccurs="1"/>
@@ -136,15 +136,20 @@
                 Describes the type of the patch
             </xs:documentation>
         </xs:annotation>
-        <xs:sequence>
-            <xs:element name="applies-to-version" type="xs:string" minOccurs="1" maxOccurs="unbounded">
-                <xs:annotation>
-                    <xs:documentation>
-                        Identifier of the project or product version to which this patch can be applied.
-                    </xs:documentation>
-                </xs:annotation>
-            </xs:element>
-        </xs:sequence>
+        <xs:attribute name="name" type="xs:string" use="required">
+            <xs:annotation>
+                <xs:documentation>
+                    Identifier of the project or product name to which this patch applies.
+                </xs:documentation>
+            </xs:annotation>
+        </xs:attribute>
+        <xs:attribute name="applies-to-version" type="xs:string" use="required">
+            <xs:annotation>
+                <xs:documentation>
+                    Identifier of the project or product version to which this patch applies.
+                </xs:documentation>
+            </xs:annotation>
+        </xs:attribute>
     </xs:complexType>
 
     <xs:complexType name="cumulative-patchType">
@@ -153,6 +158,13 @@
                 Cumulative patch release, invalidating all previous one-off patches
             </xs:documentation>
         </xs:annotation>
+        <xs:attribute name="name" type="xs:string" use="required">
+            <xs:annotation>
+                <xs:documentation>
+                    Identifier of the project or product name to which this patch applies.
+                </xs:documentation>
+            </xs:annotation>
+        </xs:attribute>
         <xs:attribute name="applies-to-version" type="xs:string" use="required">
             <xs:annotation>
                 <xs:documentation>
@@ -195,25 +207,25 @@
 
     <xs:complexType name="modulesType">
         <xs:sequence>
-            <xs:element name="added-module" type="slotted-contentType" minOccurs="0" maxOccurs="unbounded"/>
-            <xs:element name="updated-module" type="slotted-contentType" minOccurs="0" maxOccurs="unbounded"/>
-            <xs:element name="removed-module" type="slotted-contentType" minOccurs="0" maxOccurs="unbounded"/>
+            <xs:element name="added" type="slotted-contentType" minOccurs="0" maxOccurs="unbounded"/>
+            <xs:element name="updated" type="slotted-contentType" minOccurs="0" maxOccurs="unbounded"/>
+            <xs:element name="removed" type="slotted-contentType" minOccurs="0" maxOccurs="unbounded"/>
         </xs:sequence>
     </xs:complexType>
 
     <xs:complexType name="bundlesType">
         <xs:sequence>
-            <xs:element name="added-bundle" type="slotted-contentType" minOccurs="0" maxOccurs="unbounded"/>
-            <xs:element name="updated-bundle" type="slotted-contentType" minOccurs="0" maxOccurs="unbounded"/>
-            <xs:element name="removed-bundle" type="slotted-contentType" minOccurs="0" maxOccurs="unbounded"/>
+            <xs:element name="added" type="slotted-contentType" minOccurs="0" maxOccurs="unbounded"/>
+            <xs:element name="updated" type="slotted-contentType" minOccurs="0" maxOccurs="unbounded"/>
+            <xs:element name="removed" type="slotted-contentType" minOccurs="0" maxOccurs="unbounded"/>
         </xs:sequence>
     </xs:complexType>
 
     <xs:complexType name="misc-filesType">
         <xs:sequence>
-            <xs:element name="added-misc-content" type="added-misc-contentType" minOccurs="0" maxOccurs="unbounded"/>
-            <xs:element name="updated-misc-content" type="updated-misc-contentType" minOccurs="0" maxOccurs="unbounded"/>
-            <xs:element name="removed-misc-content" type="removed-misc-contentType" minOccurs="0" maxOccurs="unbounded"/>
+            <xs:element name="added" type="added-misc-contentType" minOccurs="0" maxOccurs="unbounded"/>
+            <xs:element name="updated" type="updated-misc-contentType" minOccurs="0" maxOccurs="unbounded"/>
+            <xs:element name="removed" type="removed-misc-contentType" minOccurs="0" maxOccurs="unbounded"/>
         </xs:sequence>
     </xs:complexType>
 
@@ -319,6 +331,34 @@
             <xs:annotation>
                 <xs:documentation>
                     Whether the content is expected to be in use by a non-admin-only standalone server or Host Controller.
+                </xs:documentation>
+            </xs:annotation>
+        </xs:attribute>
+    </xs:complexType>
+
+    <xs:complexType name="elementPatchType">
+        <xs:attribute name="name" type="xs:string">
+            <xs:annotation>
+                <xs:documentation>
+                    The layer name.
+                </xs:documentation>
+            </xs:annotation>
+        </xs:attribute>
+    </xs:complexType>
+
+    <xs:complexType name="elementType">
+        <xs:sequence>
+            <xs:choice>
+                <xs:element name="cumulative" type="elementPatchType" maxOccurs="1"/>
+                <xs:element name="one-off" type="elementPatchType" maxOccurs="1"/>
+            </xs:choice>
+            <xs:element name="description" type="xs:string" minOccurs="0" maxOccurs="1"/>
+            <xs:element name="specified-content" type="specified-contentType" minOccurs="0" maxOccurs="1"/>
+        </xs:sequence>
+        <xs:attribute name="patch-id" type="xs:string">
+            <xs:annotation>
+                <xs:documentation>
+                    The element patch-id.
                 </xs:documentation>
             </xs:annotation>
         </xs:attribute>
