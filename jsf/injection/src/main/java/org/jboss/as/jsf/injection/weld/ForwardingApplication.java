@@ -47,6 +47,7 @@ import java.util.Iterator;
 import java.util.Locale;
 import java.util.Map;
 import java.util.ResourceBundle;
+import javax.faces.flow.FlowHandler;
 
 /**
  * @author pmuir
@@ -226,6 +227,11 @@ public abstract class ForwardingApplication extends Application {
     }
 
     @Override
+    public FlowHandler getFlowHandler() {
+        return delegate().getFlowHandler();
+    }
+
+    @Override
     public String getMessageBundle() {
         return delegate().getMessageBundle();
     }
@@ -311,6 +317,11 @@ public abstract class ForwardingApplication extends Application {
     @Override
     public void setDefaultRenderKitId(String renderKitId) {
         delegate().setDefaultRenderKitId(renderKitId);
+    }
+
+    @Override
+    public void setFlowHandler(FlowHandler newHandler) {
+        delegate().setFlowHandler(newHandler);
     }
 
     @Override
