@@ -130,7 +130,7 @@ class DistributionStructureImpl implements DistributionStructure {
         final int length = s.length;
         for (int i = 0; i < length; i++) {
             boolean dir = i < length - 1;
-            result = new DistributionItemImpl(parent, s[i], IoUtils.NO_CONTENT, IoUtils.NO_CONTENT, !dir);
+            result = new DistributionItemImpl(result, s[i], IoUtils.NO_CONTENT, IoUtils.NO_CONTENT, !dir);
         }
         return result;
     }

@@ -23,20 +23,26 @@
 package org.jboss.as.patching.generator;
 
 import java.util.ArrayList;
-import java.util.Collections;
+import java.util.Collection;
 import java.util.HashSet;
-import java.util.List;
+import java.util.LinkedHashMap;
+import java.util.Map;
 import java.util.Set;
+import java.util.UUID;
 
+import org.jboss.as.patching.metadata.ContentItem;
+import org.jboss.as.patching.metadata.ContentType;
+import org.jboss.as.patching.metadata.MiscContentItem;
 import org.jboss.as.patching.metadata.Patch;
-import org.jboss.as.patching.metadata.PatchBuilder;
+import org.jboss.as.patching.metadata.PatchElementBuilder;
+import org.jboss.as.patching.runner.ContentItemFilter;
 
 /**
  * {@link PatchConfig} implementation.
  *
  * @author Brian Stansberry (c) 2012 Red Hat Inc.
  */
-class PatchConfigBuilder {
+class PatchConfigBuilder implements ContentItemFilter {
 
     public static enum AffectsType {
         UPDATED,
@@ -45,60 +51,43 @@ class PatchConfigBuilder {
         NONE
     }
 
-    private String patchId;
-    private String description;
+    private String patchId = UUID.randomUUID().toString();
+    private String description = "no patch description available";
+    private String appliesToName;
+    private String appliesToVersion;
     private String resultingVersion;
     private Patch.PatchType patchType;
-    private boolean generateByDiff;
-    private List<String> appliesTo = new ArrayList<String>();
+    private boolean generateByDiff = true;
     private Set<String> runtimeUseItems = new HashSet<String>();
-//    private final Map<DistributionContentItem.Type, Map<ModificationType, SortedSet<DistributionContentItem>>> modifications =
-//            new HashMap<DistributionContentItem.Type, Map<ModificationType, SortedSet<DistributionContentItem>>>();
-
-    private DistributionStructure updatedStructure;
-    private DistributionStructure appliesToStructure;
+    private Set<ContentItem> specifiedContent = new HashSet<ContentItem>();
+    private Map<String, PatchElementConfigBuilder> elements = new LinkedHashMap<String, PatchElementConfigBuilder>();
 
     PatchConfigBuilder setPatchId(String patchId) {
         this.patchId = patchId;
-
         return this;
     }
 
     PatchConfigBuilder setDescription(String description) {
         this.description = description;
-
         return this;
+    }
+
+    void setPatchType(Patch.PatchType patchType) {
+        this.patchType = patchType;
     }
 
     PatchConfigBuilder setCumulativeType(String appliesToVersion, String resultingVersion) {
         this.patchType = Patch.PatchType.CUMULATIVE;
-        this.appliesTo = Collections.singletonList(appliesToVersion);
+        this.appliesToVersion = appliesToVersion;
         this.resultingVersion = resultingVersion;
-        this.updatedStructure = DistributionStructure.Factory.create(resultingVersion);
-        this.appliesToStructure = DistributionStructure.Factory.create(appliesToVersion);
         return this;
     }
 
-    PatchConfigBuilder setOneOffType(List<String> appliesTo) {
-        assert appliesTo != null : "appliesTo is null";
-        assert appliesTo.size() > 0 : "appliesTo is empty";
+    PatchConfigBuilder setOneOffType(String appliesToVersion) {
+        assert appliesToVersion != null : "appliesToVersion is null";
 
         this.patchType = Patch.PatchType.ONE_OFF;
-        this.appliesTo = Collections.unmodifiableList(appliesTo);
-        String structureVersion = null;
-        for (String version : appliesTo) {
-            if (appliesToStructure == null) {
-                appliesToStructure = DistributionStructure.Factory.create(version);
-                updatedStructure = DistributionStructure.Factory.create(version);
-                structureVersion = version;
-            } else {
-                DistributionStructure structure = DistributionStructure.Factory.create(version);
-                if (!appliesToStructure.isCompatibleWith(structure)) {
-                    throw new IllegalStateException(DistributionStructure.class.getSimpleName() + " for version " + version
-                            + " is incompatible with version " + structureVersion + ". The same patch cannot apply to both versions.");
-                }
-            }
-        }
+        this.appliesToVersion = appliesToVersion;
 
         return this;
     }
@@ -108,164 +97,50 @@ class PatchConfigBuilder {
         return this;
     }
 
+    public boolean isGeneratedByDiff() {
+        return generateByDiff;
+    }
+
     PatchConfigBuilder addRuntimeUseItem(String item) {
         this.runtimeUseItems.add(item);
         return this;
     }
 
-//    PatchConfigBuilder addBundleModification(String name, String slot, String searchPath, ModificationType modificationType) {
-//
-//        DistributionContentItem item = appliesToStructure.getBundleRootContentItem(name, slot, searchPath);
-//        return addModification(item, modificationType);
-//    }
-//
-//    PatchConfigBuilder addModuleModification(String name, String slot, String searchPath, ModificationType modificationType) {
-//        DistributionContentItem item = appliesToStructure.getModuleRootContentItem(name, slot, searchPath);
-//        return addModification(item, modificationType);
-//    }
-//
-//    PatchConfigBuilder addMiscModification(String path, boolean directory, boolean inRuntimeUse, ModificationType modificationType) {
-//        DistributionContentItem item = appliesToStructure.getMiscContentItem(path, directory);
-//        addModification(item, modificationType);
-//        if (inRuntimeUse) {
-//            addRuntimeUseItem(item);
-//        }
-//        return this;
-//    }
-
-    PatchConfigBuilder addModuleSearchPath(final String name, final String standardPath, AffectsType affectsType) {
-        switch (affectsType) {
-            case ORIGINAL:
-                appliesToStructure.registerStandardModuleSearchPath(name, standardPath);
-                break;
-            case UPDATED:
-                updatedStructure.registerStandardModuleSearchPath(name, standardPath);
-                break;
-            case BOTH:
-                appliesToStructure.registerStandardModuleSearchPath(name, standardPath);
-                updatedStructure.registerStandardModuleSearchPath(name, standardPath);
-                break;
-            case NONE:
-                break;
-            default:
-                throw new IllegalStateException();
-        }
-        return this;
+    void setAppliesToName(String appliesToName) {
+        this.appliesToName = appliesToName;
     }
 
-    PatchConfigBuilder setDefaultModuleSearchPathExclusion(AffectsType affectsType) {
-        switch (affectsType) {
-            case ORIGINAL:
-                appliesToStructure.excludeDefaultModuleRoot();
-                break;
-            case UPDATED:
-                updatedStructure.excludeDefaultModuleRoot();
-                break;
-            case BOTH:
-                appliesToStructure.excludeDefaultModuleRoot();
-                updatedStructure.excludeDefaultModuleRoot();
-                break;
-            case NONE:
-                break;
-            default:
-                throw new IllegalStateException();
-        }
-        return this;
+    void setAppliesToVersion(String appliesToVersion) {
+        this.appliesToVersion = appliesToVersion;
     }
 
-    PatchConfigBuilder setDefaultBundleSearchPathExclusion(AffectsType affectsType) {
-        switch (affectsType) {
-            case ORIGINAL:
-                appliesToStructure.excludeDefaultBundleRoot();
-                break;
-            case UPDATED:
-                updatedStructure.excludeDefaultBundleRoot();
-                break;
-            case BOTH:
-                appliesToStructure.excludeDefaultBundleRoot();
-                updatedStructure.excludeDefaultBundleRoot();
-                break;
-            case NONE:
-                break;
-            default:
-                throw new IllegalStateException();
-        }
-        return this;
+    void setResultingVersion(String resultingVersion) {
+        this.resultingVersion = resultingVersion;
     }
 
-    PatchConfigBuilder addBundleSearchPath(final String name, final String standardPath, AffectsType affectsType) {
-        switch (affectsType) {
-            case ORIGINAL:
-                appliesToStructure.registerStandardBundleSearchPath(name, standardPath);
-                break;
-            case UPDATED:
-                updatedStructure.registerStandardBundleSearchPath(name, standardPath);
-                break;
-            case BOTH:
-                appliesToStructure.registerStandardBundleSearchPath(name, standardPath);
-                updatedStructure.registerStandardBundleSearchPath(name, standardPath);
-                break;
-            case NONE:
-                break;
-            default:
-                throw new IllegalStateException();
-        }
-        return this;
+    Set<ContentItem> getSpecifiedContent() {
+        return specifiedContent;
     }
 
-    PatchConfigBuilder addIgnoredPath(final String path, AffectsType affectsType) {
-        switch (affectsType) {
-            case ORIGINAL:
-                appliesToStructure.registerIgnoredPath(path);
-                break;
-            case UPDATED:
-                updatedStructure.registerIgnoredPath(path);
-                break;
-            case BOTH:
-                appliesToStructure.registerIgnoredPath(path);
-                updatedStructure.registerIgnoredPath(path);
-                break;
-            case NONE:
-                break;
-            default:
-                throw new IllegalStateException();
+    PatchElementConfigBuilder addElement(final String name) {
+        final PatchElementConfigBuilder builder = new PatchElementConfigBuilder(name, this);
+        if (elements.put(name, builder) != null) {
+            throw new IllegalStateException("duplicate layer " + name);
         }
-        return this;
+        return builder;
     }
 
     PatchConfig build() {
-        return new PatchConfigImpl();
+        return new PatchConfigImpl(new ArrayList<PatchElementConfig>(elements.values()));
     }
 
-//    private PatchConfigBuilder addModification(DistributionContentItem item, ModificationType modificationType) {
-//        Map<ModificationType, SortedSet<DistributionContentItem>> typeMap;
-//        DistributionContentItem.Type itemType = item.getType();
-//        switch (itemType) {
-//            case MODULE_ROOT:
-//            case BUNDLE_ROOT:
-//            case MISC:
-//                typeMap = modifications.get(itemType);
-//                if (typeMap == null) {
-//                    typeMap = new HashMap<ModificationType, SortedSet<DistributionContentItem>>();
-//                    modifications.put(itemType, typeMap);
-//                }
-//                break;
-//            default:
-//                throw new IllegalArgumentException(itemType + " is not a valid content item type for a modification");
-//        }
-//
-//        SortedSet<DistributionContentItem> items = typeMap.get(modificationType);
-//        if (items == null) {
-//            items = new TreeSet<DistributionContentItem>();
-//            typeMap.put(modificationType, items);
-//        }
-//
-//        items.add(item);
-//
-//        return this;
-//    }
+    class PatchConfigImpl implements PatchConfig {
 
-    private class PatchConfigImpl implements PatchConfig {
+        private Collection<PatchElementConfig> elements;
+
+        PatchConfigImpl(Collection<PatchElementConfig> elements) {
+            this.elements = elements;
+        }
 
         @Override
         public String getPatchId() {
@@ -283,18 +158,23 @@ class PatchConfigBuilder {
         }
 
         @Override
+        public Set<String> getInRuntimeUseItems() {
+            return runtimeUseItems;
+        }
+
+        @Override
+        public String getAppliesToProduct() {
+            return appliesToName;
+        }
+
+        @Override
+        public String getAppliesToVersion() {
+            return appliesToVersion;
+        }
+
+        @Override
         public String getResultingVersion() {
             return resultingVersion;
-        }
-
-        @Override
-        public List<String> getAppliesTo() {
-            return appliesTo;
-        }
-
-        @Override
-        public Set<String> getInRuntimeUseItems() {
-            return Collections.unmodifiableSet(runtimeUseItems);
         }
 
         @Override
@@ -302,34 +182,68 @@ class PatchConfigBuilder {
             return generateByDiff;
         }
 
-//        @Override
-//        public Map<DistributionContentItem.Type, Map<ModificationType, SortedSet<DistributionContentItem>>> getSpecifiedContent() {
-//            return Collections.unmodifiableMap(modifications);
-//        }
-
         @Override
-        public DistributionStructure getOriginalDistributionStructure() {
-            return appliesToStructure;
+        public Set<ContentItem> getSpecifiedContent() {
+            return specifiedContent;
         }
 
         @Override
-        public DistributionStructure getUpdatedDistributionStructure() {
-            return updatedStructure;
+        public Collection<PatchElementConfig> getElements() {
+            return elements;
         }
 
         @Override
-        public PatchBuilder toPatchBuilder() {
-            PatchBuilder pb = PatchBuilder.create()
-                    .setPatchId(getPatchId())
-                    .setDescription(getDescription());
-            if (patchType == Patch.PatchType.ONE_OFF) {
-              //  pb.setOneOffType(appliesTo);
-            } else {
-              //  pb.setCumulativeType(appliesTo.iterator().next(), resultingVersion);
-            }
+        public PatchBuilderWrapper toPatchBuilder() {
+            final PatchBuilderWrapper wrapper = new PatchBuilderWrapper() {
+                @Override
+                PatchElementBuilder modifyLayer(String name, boolean addOn) {
+                    if (addOn) {
+                        throw new IllegalStateException("does not support add-ons: " + name); // TODO
+                    }
+                    final PatchElementConfigBuilder config = PatchConfigBuilder.this.elements.get(name);
+                    final PatchElementBuilder builder;
+                    if (config.getPatchType() == null) {
+                        config.setPatchType(patchType);
+                    }
+                    if (patchType == Patch.PatchType.CUMULATIVE) {
+                        builder = upgradeElement(config.getPatchId(), name, false);
+                    } else {
+                        builder = oneOffPatchElement(config.getPatchId(), name, false);
+                    }
+                    if (config.getDescription() != null) {
+                        builder.setDescription(config.getDescription());
+                    }
+                    builder.setContentItemFilter(config);
+                    return builder;
+                }
+            };
 
-            return pb;
+            wrapper.setDescription(description);
+            wrapper.setPatchId(patchId);
+            wrapper.setContentItemFilter(PatchConfigBuilder.this);
+
+            return wrapper;
         }
-
     }
+
+    @Override
+    public boolean accepts(ContentItem item) {
+        if (generateByDiff) {
+            return true;
+        }
+        if (item.getContentType() == ContentType.MISC) {
+            for (final ContentItem s : specifiedContent) {
+                if (accepts((MiscContentItem) item, (MiscContentItem) s)) {
+                    return true;
+                }
+            }
+        }
+        return false;
+    }
+
+    protected boolean accepts(MiscContentItem one, MiscContentItem two) {
+        return one.getName().equals(two.getName()) &&
+                one.getRelativePath().equals(two.getRelativePath());
+    }
+
 }

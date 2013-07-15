@@ -48,6 +48,9 @@ class Distribution {
     private final Map<String, ProcessedLayer> layers = new LinkedHashMap<String, ProcessedLayer>();
     private final Map<String, ProcessedLayer> addOns = new LinkedHashMap<String, ProcessedLayer>();
 
+    private String name;
+    private String version;
+
     /**
      * Create and process the distribution right away.
      *
@@ -72,6 +75,22 @@ class Distribution {
      */
     DistributionContentItem getRoot() {
         return ROOT;
+    }
+
+    String getName() {
+        return name;
+    }
+
+    void setName(String name) {
+        this.name = name;
+    }
+
+    String getVersion() {
+        return version;
+    }
+
+    void setVersion(String version) {
+        this.version = version;
     }
 
     /**

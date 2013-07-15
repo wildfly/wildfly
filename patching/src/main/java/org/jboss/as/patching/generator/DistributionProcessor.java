@@ -25,10 +25,16 @@ package org.jboss.as.patching.generator;
 import java.io.File;
 import java.io.FileFilter;
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.Collections;
+import java.util.LinkedHashSet;
 import java.util.List;
+import java.util.Set;
 
 import org.jboss.as.patching.installation.LayersConfig;
+import org.jboss.as.version.ProductConfig;
+import org.jboss.modules.LocalModuleLoader;
+import org.jboss.modules.ModuleLoader;
 
 /**
  * Utility class for processing a distribution.
@@ -36,6 +42,8 @@ import org.jboss.as.patching.installation.LayersConfig;
  * @author Emanuel Muckenhuber
  */
 class DistributionProcessor {
+
+    private Set<DistributionContentItem> moduleRoots = new LinkedHashSet<DistributionContentItem>();
 
     /**
      * Process a distribution root.
@@ -46,12 +54,26 @@ class DistributionProcessor {
      * @throws IOException
      */
     static void process(final DistributionContentItem parent, final File distributionRoot, Distribution distribution) throws IOException {
+        final DistributionProcessor processor = new DistributionProcessor();
         final File[] children = distributionRoot.listFiles();
         if (children != null && children.length != 0) {
             for (final File child : children) {
-                processMisc(parent, child, distribution);
+                processor.processMisc(parent, child, distribution);
             }
         }
+
+        final List<File> mp = new ArrayList<File>();
+        final Set<DistributionContentItem> moduleRoots = processor.moduleRoots;
+        for (final DistributionContentItem item : moduleRoots) {
+            final File file = item.getFile(distributionRoot);
+            mp.add(file);
+        }
+
+        // Update name and version
+        final ModuleLoader loader = new LocalModuleLoader(mp.toArray(new File[mp.size()]));
+        final ProductConfig config = new ProductConfig(loader, distributionRoot.getAbsolutePath(), Collections.emptyMap());
+        distribution.setName(config.resolveName());
+        distribution.setVersion(config.resolveVersion());
     }
 
     /**
@@ -62,10 +84,10 @@ class DistributionProcessor {
      * @param distribution the distribution
      * @throws IOException
      */
-    static void processMisc(final DistributionContentItem parent, final File root, final Distribution distribution) throws IOException {
+    void processMisc(final DistributionContentItem parent, final File root, final Distribution distribution) throws IOException {
         final DistributionContentItem item = new DistributionItemFileImpl(root, parent);
         if (distribution.isIgnored(item)) {
-            // Skip ignored ...
+            // Skip ignored ... Maybe only files?
             return;
         } else if (distribution.isModuleLookupPath(item)) {
             // Process modules
@@ -98,10 +120,11 @@ class DistributionProcessor {
      * @param context the layered context (bundle/module)
      * @throws IOException
      */
-    static void processLayeredRoot(final DistributionContentItem parent, final File root, final LayeredContext context) throws IOException {
+    void processLayeredRoot(final DistributionContentItem parent, final File root, final LayeredContext context) throws IOException {
         final LayersConfig layersConfig = LayersConfig.getLayersConfig(root);
         // Process layers
         final File layersDir = new File(root, layersConfig.getLayersPath());
+        final DistributionContentItem newParent = DistributionStructureImpl.createMiscItem(parent, layersConfig.getLayersPath());
         if (!layersDir.exists()) {
             if (layersConfig.isConfigured()) {
                 // Bad config from user
@@ -137,14 +160,14 @@ class DistributionProcessor {
                 // else this isn't a standard layers and add-ons structure
                 return;
             }
-            context.addLayer(parent, layer, layerDir);
+            context.addLayer(newParent, layer, layerDir);
         }
         // Finally process the add-ons
         final File addOnsDir = new File(root, layersConfig.getAddOnsPath());
         final File[] addOnsList = addOnsDir.listFiles();
         if (addOnsList != null) {
             for (final File addOn : addOnsList) {
-                context.addAddOn(parent, addOn.getName(), addOn);
+                context.addAddOn(newParent, addOn.getName(), addOn);
             }
         }
     }
@@ -156,7 +179,7 @@ class DistributionProcessor {
      * @param root    the current root
      * @param context the module context
      */
-    static void processModules(final DistributionContentItem parent, final File root, final ModuleContext context) {
+    void processModules(final DistributionContentItem parent, final File root, final ModuleContext context) {
 
         final DistributionContentItem item = new DistributionItemFileImpl(root, parent);
         final File moduleXml = new File(root, "module.xml");
@@ -182,7 +205,7 @@ class DistributionProcessor {
      * @param root    the current root
      * @param context the bundle context
      */
-    static void processBundles(final DistributionContentItem parent, final File root, final ModuleContext context) {
+    void processBundles(final DistributionContentItem parent, final File root, final ModuleContext context) {
 
         final DistributionContentItem item = new DistributionItemFileImpl(root, parent);
         final File[] children = root.listFiles();
@@ -229,12 +252,20 @@ class DistributionProcessor {
 
         void addLayer(DistributionContentItem parent, String layer, File layerDir) {
             final Distribution.ProcessedLayer processedLayer = distribution.addLayer(layer);
+            final DistributionContentItem item = new DistributionItemFileImpl(layerDir, parent);
+            addModuleRoot(item);
             doProcess(layerDir, processedLayer);
         }
 
         void addAddOn(DistributionContentItem parent, String name, File addOn) {
             final Distribution.ProcessedLayer processedLayer = distribution.addAddOn(name);
+            final DistributionContentItem item = new DistributionItemFileImpl(addOn, parent);
+            addModuleRoot(item);
             doProcess(addOn, processedLayer);
+        }
+
+        void addModuleRoot(final DistributionContentItem item) {
+            //
         }
 
         void doProcess(final File layerDir, final Distribution.ProcessedLayer processedLayer) {
@@ -258,10 +289,15 @@ class DistributionProcessor {
 
     }
 
-    static class LayeredModuleContext extends LayeredContext {
+    class LayeredModuleContext extends LayeredContext {
 
         LayeredModuleContext(Distribution distribution) {
             super(distribution);
+        }
+
+        @Override
+        void addModuleRoot(DistributionContentItem item) {
+            moduleRoots.add(item);
         }
 
         void process(DistributionContentItem parent, File layerDir, final Distribution.ProcessedLayer processedLayer) {
@@ -279,7 +315,7 @@ class DistributionProcessor {
         }
     }
 
-    static class LayeredBundleContext extends LayeredContext {
+    class LayeredBundleContext extends LayeredContext {
 
         LayeredBundleContext(Distribution distribution) {
             super(distribution);

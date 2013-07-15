@@ -80,7 +80,7 @@ class PatchingTestStepBuilder extends AbstractPatchTestBuilder<PatchingTestStepB
     }
 
     @Override
-    public PatchingTestStepBuilder addContentModification(ContentModification modification) {
+    protected PatchingTestStepBuilder internalAddModification(ContentModification modification) {
         builder.addContentModification(modification);
         return returnThis();
     }

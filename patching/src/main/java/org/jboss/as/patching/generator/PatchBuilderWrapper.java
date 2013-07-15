@@ -219,11 +219,12 @@ abstract class PatchBuilderWrapper extends PatchBuilder {
             builder.removeFile(o.getName(), o.getParent().getPathAsList(), o.getMetadataHash(), !o.isLeaf());
         } else if (o == null && n != null) {
             boolean directory = !n.isLeaf();
-            builder.addFile(n.getName(), n.getParent().getPathAsList(), n.getMetadataHash(), directory);
             if (directory) {
                 for (final DistributionContentItem child : n.getChildren()) {
                     compareMiscFiles(builder, null, child);
                 }
+            } else {
+                builder.addFile(n.getName(), n.getParent().getPathAsList(), n.getMetadataHash(), directory);
             }
         } else {
             if (!n.equals(o)) {

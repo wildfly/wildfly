@@ -22,8 +22,6 @@
 
 package org.jboss.as.patching.generator;
 
-import static java.util.UUID.randomUUID;
-
 import javax.xml.stream.XMLStreamException;
 import java.io.BufferedInputStream;
 import java.io.File;
@@ -38,10 +36,8 @@ import org.jboss.as.patching.IoUtils;
 import org.jboss.as.patching.PatchMessages;
 import org.jboss.as.patching.ZipUtils;
 import org.jboss.as.patching.metadata.Patch;
-import org.jboss.as.patching.metadata.PatchElementBuilder;
 import org.jboss.as.version.ProductConfig;
 import org.jboss.as.version.Usage;
-import org.jboss.as.version.Version;
 import org.jboss.modules.Module;
 
 /**
@@ -69,8 +65,6 @@ public class PatchGenerator {
     private final File patchConfigFile;
     private File oldRoot;
     private File newRoot;
-    private DistributionStructure oldStructure;
-    private DistributionStructure newStructure;
     private File patchFile;
     private File tmp;
 
@@ -86,21 +80,12 @@ public class PatchGenerator {
         try {
             PatchConfig patchConfig = parsePatchConfig();
 
-            this.oldStructure = patchConfig.getOriginalDistributionStructure();
-            this.newStructure = patchConfig.getUpdatedDistributionStructure();
-
             Set<String> required = new TreeSet<String>();
             if (newRoot == null) {
-                newRoot = findDefaultNewRoot();
-                if (newRoot == null) {
-                    required.add("--updated-dist");
-                }
+                required.add("--updated-dist");
             }
             if (oldRoot == null) {
-                oldRoot = findDefaultOldRoot(patchConfig);
-                if (oldRoot == null) {
-                    required.add("--applies-to-dist");
-                }
+                required.add("--applies-to-dist");
             }
             if (patchFile == null) {
                 if (newRoot != null) {
@@ -115,28 +100,35 @@ public class PatchGenerator {
                 return;
             }
 
-            createTempStructure("test");
+            createTempStructure(patchConfig.getPatchId());
 
             // Create the distributions
             final Distribution base = Distribution.create(oldRoot);
             final Distribution updated = Distribution.create(newRoot);
+            if (!base.getName().equals(updated.getName())) {
+                throw new RuntimeException("distribution names don't match");
+            }
+            //
+            if (patchConfig.getAppliesToProduct() != null && ! patchConfig.getAppliesToProduct().equals(base.getName())) {
+                throw new RuntimeException("patch target does not match: " + patchConfig.getAppliesToProduct());
+            }
+            //
+            if (patchConfig.getAppliesToVersion() != null && ! patchConfig.getAppliesToVersion().equals(base.getVersion())) {
+                throw new RuntimeException("patch target version does not match: " + patchConfig.getAppliesToProduct());
+            }
 
             // Build the patch metadata
-            final PatchBuilderWrapper wrapper = new PatchBuilderWrapper() {
-                @Override
-                PatchElementBuilder modifyLayer(String name, boolean addOn) {
-                    //return addElement(randomUUID().toString(), name, addOn);
-                    return oneOffPatchElement(randomUUID().toString(), name, addOn);
-                }
-            };
-
-            // Add some random information until we have a patch-config replacement
-            wrapper.setPatchId(randomUUID().toString());
-            wrapper.setDescription("Test patch");
-            wrapper.oneOffPatchIdentity(Version.AS_RELEASE_CODENAME, Version.AS_VERSION);
+            final PatchBuilderWrapper builder = patchConfig.toPatchBuilder();
+            builder.setPatchId(patchConfig.getPatchId());
+            builder.setDescription(patchConfig.getDescription());
+            if (patchConfig.getPatchType() == Patch.PatchType.CUMULATIVE) {
+                builder.upgradeIdentity(base.getName(), base.getVersion(), updated.getVersion());
+            } else {
+                builder.oneOffPatchIdentity(base.getName(), base.getVersion());
+            }
 
             // Create the resulting patch
-            final Patch patch = wrapper.compare(base, updated);
+            final Patch patch = builder.compare(base, updated);
 
             // Copy the contents to the temp dir structure
             PatchContentWriter.process(tmp, newRoot, patch);
@@ -151,10 +143,6 @@ public class PatchGenerator {
     }
 
     private PatchConfig parsePatchConfig() throws FileNotFoundException, XMLStreamException {
-        if (true) {
-            final PatchConfigBuilder builder = new PatchConfigBuilder();
-            return builder.build();
-        }
         FileInputStream fis = null;
         try {
             fis = new FileInputStream(patchConfigFile);
@@ -163,64 +151,6 @@ public class PatchGenerator {
         } finally {
             IoUtils.safeClose(fis);
         }
-    }
-
-    private File findDefaultNewRoot() {
-        File root = new File(System.getProperty("user.dir"));
-        if (root.getName().equals("bin")) {
-            root = root.getParentFile();
-        }
-        // See if this root has a MODULE_ROOT child and an IGNORED child; if so it looks like an AS
-        boolean[] modIgnored = new boolean[2];
-        File[] children = root.listFiles();
-        if (children != null) {
-            for (File child : children) {
-                if (processModIgnored(child, newStructure, modIgnored)) {
-                    break;
-                }
-            }
-        }
-
-        return (modIgnored[0] && modIgnored[1]) ? root : null;
-    }
-
-    private static boolean processModIgnored(File file, DistributionStructure structure, boolean[] modIgnored) {
-        // TODO does that actually make any sense?
-        return modIgnored[0] && modIgnored[1];
-    }
-
-    private File findDefaultOldRoot(PatchConfig patchConfig) {
-        if (newRoot == null) {
-            return null;
-        }
-        File rootParent = newRoot.getParentFile();
-        if (rootParent == null) {
-            return null;
-        }
-
-        for (String appliesTo : patchConfig.getAppliesTo()) {
-            File root = new File(rootParent, appliesTo);
-            if (!root.exists()) {
-                continue;
-            }
-
-            // See if this root has a MODULE_ROOT child and an IGNORED child; if so it looks like an AS
-            boolean[] modIgnored = new boolean[2];
-//            DistributionContentItem newDistRoot = DistributionContentItem.createDistributionRoot();
-//            File[] children = root.listFiles();
-//            if (children != null) {
-//                for (File child : children) {
-//                    if (processModIgnored(child, newDistRoot, oldStructure, modIgnored)) {
-//                        break;
-//                    }
-//                }
-//            }
-
-            if (modIgnored[0] && modIgnored[1]) {
-                return root;
-            }
-        }
-        return null;
     }
 
     private void createTempStructure(String patchId) {
@@ -243,7 +173,7 @@ public class PatchGenerator {
         misc.deleteOnExit();
     }
 
-    private static PatchGenerator parse(String[] args) {
+    private static PatchGenerator parse(String[] args) throws IOException {
 
         File patchConfig = null;
         File oldFile = null;
@@ -306,6 +236,9 @@ public class PatchGenerator {
                         usage();
                         return null;
                     }
+                } else if (arg.equals("--create-template")) {
+                    TemplateGenerator.generate(args);
+                    return null;
                 }
             } catch (IndexOutOfBoundsException e) {
                 System.err.printf(PatchMessages.MESSAGES.argumentExpected(arg));
@@ -314,11 +247,11 @@ public class PatchGenerator {
             }
         }
 
-//        if (patchConfig == null) {
-//            System.err.printf(PatchMessages.MESSAGES.missingRequiredArgs(Collections.singleton("--patch-config")));
-//            usage();
-//            return null;
-//        }
+        if (patchConfig == null) {
+            System.err.printf(PatchMessages.MESSAGES.missingRequiredArgs(Collections.singleton("--patch-config")));
+            usage();
+            return null;
+        }
 
         return new PatchGenerator(patchConfig, oldFile, newFile, patchFile);
     }
@@ -336,8 +269,8 @@ public class PatchGenerator {
         usage.addArguments("--output-file=<file>");
         usage.addInstruction(PatchMessages.MESSAGES.argOutputFile());
 
-//        usage.addArguments("--patch-config=<file>");
-//        usage.addInstruction(PatchMessages.MESSAGES.argPatchConfig());
+        usage.addArguments("--patch-config=<file>");
+        usage.addInstruction(PatchMessages.MESSAGES.argPatchConfig());
 
         usage.addArguments("--updated-dist=<file>");
         usage.addInstruction(PatchMessages.MESSAGES.argUpdatedDist());
