@@ -49,4 +49,8 @@
 	      </logger>
       </replacement>
    </supplement>
+   <supplement name="minimal">
+      <replacement placeholder="@@append@@" attributeValue="false"/>
+      <replacement placeholder="LOGGERS"/>
+   </supplement>
 </config>

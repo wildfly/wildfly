@@ -54,17 +54,17 @@
         
     <profiles>
         <profile>
-            <id>modular-osgi</id>
+            <id>modular-minimal</id>
             <activation>
                 <property>
                 	<name>modular</name>
-                	<value>osgi</value>
+                	<value>minimal</value>
                 </property>
             </activation>
             <properties>
-            	<modular.config.name>osgi</modular.config.name>
-            	<standalone.subsystems>logging:osgi,osgi:minimal,configadmin,deployment-scanner</standalone.subsystems>
-            	<standalone.template>configuration/standalone/template-osgi.xml</standalone.template>
+            	<modular.config.name>minimal</modular.config.name>
+            	<standalone.subsystems>logging:minimal,deployment-scanner</standalone.subsystems>
+            	<standalone.template>configuration/standalone/template.xml</standalone.template>
             	<console.enabled>true</console.enabled>
             	<domain.enabled>false</domain.enabled>
             </properties>
