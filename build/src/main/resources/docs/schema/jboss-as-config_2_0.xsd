@@ -44,6 +44,7 @@
                 <xs:element name="extensions" type="extensionsType" minOccurs="0" maxOccurs="1"/>
                 <xs:element name="system-properties" type="properties-with-boottime" minOccurs="0" maxOccurs="1"/>
                 <xs:element name="paths" type="named-pathsType" minOccurs="0" maxOccurs="1" />
+                <xs:element name="management" type="domain-managementType" minOccurs="0" maxOccurs="1"/>
                 <xs:element name="profiles" type="profilesType" minOccurs="0" maxOccurs="1"/>
                 <xs:element name="interfaces" type="named-interfacesType" minOccurs="0" maxOccurs="1"/>
                 <xs:element name="socket-binding-groups" type="socket-binding-groupsType" minOccurs="0" maxOccurs="1"/>
@@ -140,7 +141,7 @@
         </xs:complexType>
     </xs:element>
 
-    <xs:complexType name="domain-managementType">
+    <xs:complexType name="base-managementType">
         <xs:annotation>
             <xs:documentation>
                 Domain-wide default configuration settings for the management of standalone servers and a Host Controller.
@@ -172,9 +173,10 @@
             </xs:documentation>
         </xs:annotation>
         <xs:complexContent>
-            <xs:extension base="domain-managementType">
+            <xs:extension base="base-managementType">
                 <xs:sequence>
                     <xs:element name="management-interfaces" type="host-management-interfacesType" minOccurs="1"/>
+                    <xs:element name="access-control" type="host-access-controlType" minOccurs="0"/>
                 </xs:sequence>
             </xs:extension>
         </xs:complexContent>
@@ -187,13 +189,24 @@
             </xs:documentation>
         </xs:annotation>
         <xs:complexContent>
-            <xs:extension base="domain-managementType">
+            <xs:extension base="base-managementType">
                 <xs:sequence>
                     <xs:element name="management-interfaces" type="server-management-interfacesType" minOccurs="0"/>
-                    <xs:element name="access-control" type="access-controlType" minOccurs="0"/>
+                    <xs:element name="access-control" type="server-access-controlType" minOccurs="0"/>
                 </xs:sequence>
             </xs:extension>
         </xs:complexContent>
+    </xs:complexType>
+
+    <xs:complexType name="domain-managementType">
+        <xs:annotation>
+            <xs:documentation>
+                The centralized configuration for domain-wide management.
+            </xs:documentation>
+        </xs:annotation>
+        <xs:sequence>
+            <xs:element name="access-control" type="domain-access-controlType" minOccurs="0"/>
+        </xs:sequence>
     </xs:complexType>
 
     <xs:complexType name="ldapType">
@@ -347,11 +360,11 @@
             <xs:annotation>
                 <xs:documentation>
                     The membership information loaded is the authenticated identities group membership, commonly there
-                    is a 1:1 mapping between group membership and the applicable roles, this attribute allows for the 
-                    mapping to be performed automatically. 
+                    is a 1:1 mapping between group membership and the applicable roles, this attribute allows for the
+                    mapping to be performed automatically.
                 </xs:documentation>
             </xs:annotation>
-        </xs:attribute>        
+        </xs:attribute>
     </xs:complexType>
 
     <xs:complexType name="server-identitiesType">
@@ -2482,17 +2495,155 @@
         <xs:attribute name="name" type="xs:string" use="required"/>
     </xs:complexType>
 
-    <xs:complexType name="access-controlType">
+    <xs:complexType name="domain-access-controlType">
         <xs:annotation>
             <xs:documentation>
                 <![CDATA[
-                   Contains the access control configuration.
+                   Contains the central access control configuration for a domain.
+                ]]>
+            </xs:documentation>
+        </xs:annotation>
+        <xs:sequence>
+            <xs:element name="server-group-scoped-roles" type="server-group-scoped-rolesType" minOccurs="0"/>
+            <xs:element name="host-scoped-roles" type="host-scoped-rolesType" minOccurs="0"/>
+            <xs:element name="constraints" type="constraintsType" minOccurs="0"/>
+        </xs:sequence>
+    </xs:complexType>
+
+    <xs:complexType name="host-access-controlType">
+        <xs:annotation>
+            <xs:documentation>
+                <![CDATA[
+                   Contains the access control configuration for an individual host.
+                ]]>
+            </xs:documentation>
+        </xs:annotation>
+        <xs:sequence>
+            <xs:element name="host-scoped-roles" type="host-roles-addType" minOccurs="0"/>
+        </xs:sequence>
+    </xs:complexType>
+
+    <xs:complexType name="server-access-controlType">
+        <xs:annotation>
+            <xs:documentation>
+                <![CDATA[
+                   Contains the access control configuration for a standalone server.
                 ]]>
             </xs:documentation>
         </xs:annotation>
         <xs:sequence>
             <xs:element name="constraints" type="constraintsType" minOccurs="0"/>
         </xs:sequence>
+    </xs:complexType>
+
+    <xs:complexType name="server-group-scoped-rolesType">
+        <xs:annotation>
+            <xs:documentation>
+                <![CDATA[
+                   Roles scoped to a given set of server groups
+                ]]>
+            </xs:documentation>
+        </xs:annotation>
+        <xs:choice>
+            <xs:element name="role" type="server-group-scoped-roleType" minOccurs="1" maxOccurs="unbounded"/>
+        </xs:choice>
+    </xs:complexType>
+
+    <xs:complexType name="host-scoped-rolesType">
+        <xs:annotation>
+            <xs:documentation>
+                <![CDATA[
+                   Roles scoped to a given set of hosts
+                ]]>
+            </xs:documentation>
+        </xs:annotation>
+        <xs:choice>
+            <xs:element name="role" type="host-scoped-roleType" minOccurs="1" maxOccurs="unbounded"/>
+        </xs:choice>
+    </xs:complexType>
+
+    <xs:complexType name="host-roles-addType">
+        <xs:annotation>
+            <xs:documentation>
+                <![CDATA[
+                   Domain-wide host scoped roles to which this host should be added
+                   as a valid host
+                ]]>
+            </xs:documentation>
+        </xs:annotation>
+        <xs:choice>
+            <xs:element name="role" type="namedType" minOccurs="1" maxOccurs="unbounded"/>
+        </xs:choice>
+    </xs:complexType>
+
+    <xs:complexType name="base-scoped-roleType">
+        <xs:annotation>
+            <xs:documentation>
+                <![CDATA[
+                   Basic attributes of a scoped-role.
+                ]]>
+            </xs:documentation>
+        </xs:annotation>
+        <xs:attribute name="name" type="xs:string" use="required"/>
+        <xs:attribute name="base-role" type="xs:string" use="required">
+            <xs:annotation>
+                <xs:documentation>
+                    <![CDATA[
+                   The name of the standard role upon which the scoped role is based.
+                ]]>
+                </xs:documentation>
+            </xs:annotation>
+        </xs:attribute>
+    </xs:complexType>
+
+    <xs:complexType name="server-group-scoped-roleType">
+        <xs:annotation>
+            <xs:documentation>
+                <![CDATA[
+                   A role scoped to a given set of server groups
+                ]]>
+            </xs:documentation>
+        </xs:annotation>
+        <xs:complexContent>
+            <xs:extension base="base-scoped-roleType">
+                <xs:choice>
+                    <xs:element name="server-group" type="namedType" minOccurs="1" maxOccurs="unbounded">
+                        <xs:annotation>
+                            <xs:documentation>
+                                <![CDATA[
+                                   One of the server groups to which the role is constrained.
+                                ]]>
+                            </xs:documentation>
+                        </xs:annotation>
+                    </xs:element>
+                </xs:choice>
+            </xs:extension>
+        </xs:complexContent>
+    </xs:complexType>
+
+    <xs:complexType name="host-scoped-roleType">
+        <xs:annotation>
+            <xs:documentation>
+                <![CDATA[
+                   A role scoped to a given set of hosts
+                ]]>
+            </xs:documentation>
+        </xs:annotation>
+        <xs:complexContent>
+            <xs:extension base="base-scoped-roleType">
+                <xs:choice>
+                    <xs:element name="host" type="namedType" minOccurs="1" maxOccurs="unbounded">
+                        <xs:annotation>
+                            <xs:documentation>
+                                <![CDATA[
+                                   One of the hosts to which the role is constrained.
+                                ]]>
+                            </xs:documentation>
+                        </xs:annotation>
+                    </xs:element>
+                </xs:choice>
+            </xs:extension>
+        </xs:complexContent>
     </xs:complexType>
 
     <xs:complexType name="constraintsType">
@@ -2587,5 +2738,16 @@
         </xs:annotation>
         <xs:attribute name="name" type="xs:string" use="required"/>
         <xs:attribute name="application" type="xs:boolean" use="required"/>
+    </xs:complexType>
+
+    <xs:complexType name="namedType">
+        <xs:annotation>
+            <xs:documentation>
+                <![CDATA[
+                   A type with a 'name' attribute
+                ]]>
+            </xs:documentation>
+        </xs:annotation>
+        <xs:attribute name="name" type="xs:string" use="required"/>
     </xs:complexType>
 </xs:schema>

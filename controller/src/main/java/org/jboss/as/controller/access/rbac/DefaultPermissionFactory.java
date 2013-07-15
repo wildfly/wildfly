@@ -29,6 +29,7 @@ import java.util.Enumeration;
 import java.util.HashMap;
 import java.util.LinkedHashSet;
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
 import java.util.Set;
 import java.util.TreeSet;
@@ -193,9 +194,24 @@ public class DefaultPermissionFactory implements PermissionFactory {
     }
 
     /** Hook for the access control management layer to add a new role */
-    void addScopedRole(String roleName, StandardRole base, ScopingConstraint constraint) {
+    public void addScopedRole(String roleName, String baseName, ScopingConstraint constraint) {
+        StandardRole base = StandardRole.valueOf(baseName.toUpperCase(Locale.ENGLISH));
         configureRolePermissions();
         addScopedRoleInternal(roleName, base,constraint);
+    }
+
+    public void removeScopedRole(String roleName) {
+        try {
+            StandardRole standard = StandardRole.valueOf(roleName.toUpperCase(Locale.ENGLISH));
+            if (standard != null) {
+                throw new IllegalStateException("cannot remove standard role " + roleName);
+            }
+        } catch (RuntimeException ignored) {
+            // wasn't a standard role
+        }
+        synchronized (this) {
+            permissionsByRole.remove(roleName);
+        }
     }
 
     private synchronized void configureRolePermissions() {

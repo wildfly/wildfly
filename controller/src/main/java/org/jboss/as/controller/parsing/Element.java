@@ -70,6 +70,8 @@ public enum Element {
 
     HEAP("heap"),
     HOST("host"),
+    HOSTS("hosts"),
+    HOST_SCOPED_ROLES("host-scoped-roles"),
     HTTP_INTERFACE("http-interface"),
 
     IGNORED_RESOURCE("ignored-resources"),
@@ -126,6 +128,7 @@ public enum Element {
 
     REMOTE("remote"),
     REMOTE_DESTINATION("remote-destination"),
+    ROLE("role"),
     ROLLOUT_PLANS("rollout-plans"),
 
     SECRET("secret"),
@@ -134,6 +137,7 @@ public enum Element {
     SENSITIVE_CLASSIFICATION("sensitive-classification"),
     SENSITIVE_CLASSIFICATIONS("sensitive-classifications"),
     SERVER("server"),
+    SERVER_GROUP_SCOPED_ROLES("server-group-scoped-roles"),
     SERVER_IDENTITIES("server-identities"),
     SERVERS("servers"),
     SERVER_GROUP("server-group"),
@@ -163,8 +167,7 @@ public enum Element {
     VIRTUAL("virtual"),
     VAULT("vault"),
     VAULT_EXPRESSION_SENSITIVITY("vault-expression-sensitivity"),
-    VAULT_OPTION("vault-option")
-    ;
+    VAULT_OPTION("vault-option");
 
     private final String name;
 

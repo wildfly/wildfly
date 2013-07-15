@@ -24,8 +24,10 @@ package org.jboss.as.host.controller.parsing;
 
 import static javax.xml.stream.XMLStreamConstants.END_ELEMENT;
 import static org.jboss.as.controller.ControllerMessages.MESSAGES;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ACCESS_CONTROL;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ADD;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.CONTENT;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.CORE_SERVICE;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.DEPLOYMENT;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.DEPLOYMENT_OVERLAY;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.EXTENSION;
@@ -88,6 +90,7 @@ import org.jboss.as.controller.persistence.SubsystemMarshallingContext;
 import org.jboss.as.controller.resource.SocketBindingGroupResourceDefinition;
 import org.jboss.as.domain.controller.resources.DomainRootDefinition;
 import org.jboss.as.domain.controller.resources.ServerGroupResourceDefinition;
+import org.jboss.as.domain.management.parsing.ManagementXml;
 import org.jboss.as.server.controller.resources.DeploymentAttributes;
 import org.jboss.as.server.parsing.CommonXml;
 import org.jboss.dmr.ModelNode;
@@ -132,11 +135,14 @@ public class DomainXml extends CommonXml {
             case DOMAIN_1_3:
                 readDomainElement1_3(reader, new ModelNode(), readerNS, nodes);
                 break;
+            case DOMAIN_1_4:
+                readDomainElement1_4(reader, new ModelNode(), readerNS, nodes);
+                break;
             default:
                 // Instead of having to list the remaining versions we just check it is actually a valid version.
                 for (Namespace current : Namespace.domainValues()) {
                     if (readerNS.equals(current)) {
-                        readDomainElement1_4(reader, new ModelNode(), readerNS, nodes);
+                        readDomainElement2_0(reader, new ModelNode(), readerNS, nodes);
                         return;
                     }
                 }
@@ -171,6 +177,15 @@ public class DomainXml extends CommonXml {
             writePaths(writer, modelNode.get(PATH), true);
             writeNewLine(writer);
         }
+
+        if (modelNode.hasDefined(CORE_SERVICE) && modelNode.get(CORE_SERVICE).hasDefined(ACCESS_CONTROL)) {
+
+            ManagementXml managementXml = new ManagementXml(new ManagementXmlDelegate());
+            //TODO pass in proper access-constraint node
+            managementXml.writeManagement(writer, new ModelNode(), modelNode.get(CORE_SERVICE, ACCESS_CONTROL), true);
+            writeNewLine(writer);
+        }
+
         if (modelNode.hasDefined(PROFILE)) {
             writer.writeStartElement(Element.PROFILES.getLocalName());
             for (final Property profile : modelNode.get(PROFILE).asPropertyList()) {
@@ -402,6 +417,71 @@ public class DomainXml extends CommonXml {
         }
         if (element == Element.PATHS) {
             parsePaths(reader, address, expectedNs, list, false);
+            element = nextElement(reader, expectedNs);
+        }
+        if (element == Element.PROFILES) {
+            parseProfiles(reader, address, expectedNs, list);
+            element = nextElement(reader, expectedNs);
+        }
+        final Set<String> interfaceNames = new HashSet<String>();
+        if (element == Element.INTERFACES) {
+            parseInterfaces(reader, interfaceNames, address, expectedNs, list, false);
+            element = nextElement(reader, expectedNs);
+        }
+        if (element == Element.SOCKET_BINDING_GROUPS) {
+            parseDomainSocketBindingGroups(reader, address, expectedNs, list, interfaceNames);
+            element = nextElement(reader, expectedNs);
+        }
+        if (element == Element.DEPLOYMENTS) {
+            parseDeployments(reader, address, expectedNs, list, EnumSet.of(Attribute.NAME, Attribute.RUNTIME_NAME),
+                    EnumSet.of(Element.CONTENT, Element.FS_ARCHIVE, Element.FS_EXPLODED));
+            element = nextElement(reader, expectedNs);
+        }
+        if (element == Element.DEPLOYMENT_OVERLAYS) {
+            parseDeploymentOverlays(reader, expectedNs, new ModelNode(), list, true, false);
+            element = nextElement(reader, expectedNs);
+        }
+        if (element == Element.SERVER_GROUPS) {
+            parseServerGroups(reader, address, expectedNs, list);
+            element = nextElement(reader, expectedNs);
+        }
+        if (element == Element.MANAGEMENT_CLIENT_CONTENT) {
+            parseManagementClientContent(reader, address, expectedNs, list);
+            element = nextElement(reader, expectedNs);
+        } else if (element == null) {
+            // Always add op(s) to set up management-client-content resources
+            initializeRolloutPlans(address, list);
+        } else {
+            throw unexpectedElement(reader);
+        }
+    }
+
+    void readDomainElement2_0(final XMLExtendedStreamReader reader, final ModelNode address, final Namespace expectedNs, final List<ModelNode> list) throws XMLStreamException {
+
+        parseNamespaces(reader, address, list);
+
+        // attributes
+        readDomainElementAttributes_1_3(reader, expectedNs, address, list);
+
+        // Content
+        // Handle elements: sequence
+
+        Element element = nextElement(reader, expectedNs);
+        if (element == Element.EXTENSIONS) {
+            extensionXml.parseExtensions(reader, address, expectedNs, list);
+            element = nextElement(reader, expectedNs);
+        }
+        if (element == Element.SYSTEM_PROPERTIES) {
+            parseSystemProperties(reader, address, expectedNs, list, false);
+            element = nextElement(reader, expectedNs);
+        }
+        if (element == Element.PATHS) {
+            parsePaths(reader, address, expectedNs, list, false);
+            element = nextElement(reader, expectedNs);
+        }
+        if (element == Element.MANAGEMENT) {
+            ManagementXml managementXml = new ManagementXml(new ManagementXmlDelegate());
+            managementXml.parseManagement(reader, address, expectedNs, list, false);
             element = nextElement(reader, expectedNs);
         }
         if (element == Element.PROFILES) {
@@ -1034,5 +1114,47 @@ public class DomainXml extends CommonXml {
             }
             writer.writeEndElement();
         }
+    }
+
+    private class ManagementXmlDelegate extends ManagementXml.Delegate {
+
+        @Override
+        public void parseSecurityRealms(XMLExtendedStreamReader reader, ModelNode address, Namespace expectedNs, List<ModelNode> list) throws XMLStreamException {
+            // Not supported yet
+            throw new UnsupportedOperationException();
+        }
+
+        @Override
+        public void parseOutboundConnections(XMLExtendedStreamReader reader, ModelNode address, Namespace expectedNs, List<ModelNode> list) throws XMLStreamException {
+            // Not supported yet
+            throw new UnsupportedOperationException();
+        }
+
+        @Override
+        public void parseAccessControl(final XMLExtendedStreamReader reader, final ModelNode address, final Namespace expectedNs,
+                                       final List<ModelNode> list) throws XMLStreamException {
+            ParseUtils.requireNoAttributes(reader);
+            ModelNode accContAddr = address.clone().add(CORE_SERVICE, ACCESS_CONTROL);
+            while (reader.hasNext() && reader.nextTag() != END_ELEMENT) {
+                requireNamespace(reader, expectedNs);
+                final Element element = Element.forName(reader.getLocalName());
+                switch (element) {
+                    case SERVER_GROUP_SCOPED_ROLES:
+                        ManagementXml.parseServerGroupScopedRoles(reader, accContAddr, expectedNs, list);
+                        break;
+                    case HOST_SCOPED_ROLES:
+                        ManagementXml.parseHostScopedRoles(reader, accContAddr, expectedNs, list);
+                        break;
+                    case CONSTRAINTS: {
+                        ManagementXml.parseAccessControlConstraints(reader, address, expectedNs, list);
+                        break;
+                    }
+                    default: {
+                        throw unexpectedElement(reader);
+                    }
+                }
+            }
+        }
+
     }
 }

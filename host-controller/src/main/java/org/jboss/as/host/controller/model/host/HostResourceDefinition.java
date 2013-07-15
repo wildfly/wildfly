@@ -31,6 +31,7 @@ import org.jboss.as.controller.ReloadRequiredWriteAttributeHandler;
 import org.jboss.as.controller.SimpleAttributeDefinition;
 import org.jboss.as.controller.SimpleAttributeDefinitionBuilder;
 import org.jboss.as.controller.SimpleResourceDefinition;
+import org.jboss.as.controller.access.DelegatingConfigurableAuthorizer;
 import org.jboss.as.controller.access.constraint.management.SensitiveTargetAccessConstraintDefinition;
 import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
 import org.jboss.as.controller.extension.ExtensionRegistry;
@@ -56,6 +57,7 @@ import org.jboss.as.domain.controller.DomainController;
 import org.jboss.as.domain.controller.operations.DomainServerLifecycleHandlers;
 import org.jboss.as.domain.controller.operations.DomainSocketBindingGroupRemoveHandler;
 import org.jboss.as.domain.controller.operations.deployment.HostProcessReloadHandler;
+import org.jboss.as.domain.management.access.AccessControlResourceDefinition;
 import org.jboss.as.domain.management.connections.ldap.LdapConnectionResourceDefinition;
 import org.jboss.as.domain.management.security.SecurityRealmResourceDefinition;
 import org.jboss.as.host.controller.DirectoryGrouping;
@@ -191,6 +193,7 @@ public class HostResourceDefinition extends SimpleResourceDefinition {
     private final IgnoredDomainResourceRegistry ignoredRegistry;
     private final ControlledProcessState processState;
     private final PathManagerService pathManager;
+    private final DelegatingConfigurableAuthorizer authorizer;
 
     public HostResourceDefinition(final String hostName,
                                   final HostControllerConfigurationPersister configurationPersister,
@@ -206,7 +209,8 @@ public class HostResourceDefinition extends SimpleResourceDefinition {
                                   final AbstractVaultReader vaultReader,
                                   final IgnoredDomainResourceRegistry ignoredRegistry,
                                   final ControlledProcessState processState,
-                                  final PathManagerService pathManager) {
+                                  final PathManagerService pathManager,
+                                  final DelegatingConfigurableAuthorizer authorizer) {
         super(PathElement.pathElement(HOST, hostName), HostModelUtil.getResourceDescriptionResolver());
         this.configurationPersister = configurationPersister;
         this.environment = environment;
@@ -222,6 +226,7 @@ public class HostResourceDefinition extends SimpleResourceDefinition {
         this.ignoredRegistry = ignoredRegistry;
         this.processState = processState;
         this.pathManager = pathManager;
+        this.authorizer = authorizer;
     }
 
     @Override
@@ -326,6 +331,8 @@ public class HostResourceDefinition extends SimpleResourceDefinition {
         //host-environment
         hostRegistration.registerSubModel(HostEnvironmentResourceDefinition.of(environment));
         hostRegistration.registerSubModel(new ModuleLoadingResourceDefinition());
+
+        hostRegistration.registerSubModel(AccessControlResourceDefinition.forHost(authorizer));
 
         // discovery options
         ManagementResourceRegistration discoveryOptions = hostRegistration.registerSubModel(DiscoveryOptionsResourceDefinition.INSTANCE);

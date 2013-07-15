@@ -58,6 +58,7 @@ public class ModelDescriptionConstants {
     public static final String AUTHORIZATION = "authorization";
     public static final String AUTO_START = "auto-start";
     public static final String BASE_DN = "base-dn";
+    public static final String BASE_ROLE = "base-role";
     public static final String BLOCKING = "blocking";
     public static final String BOOT_TIME = "boot-time";
     public static final String BYTES = "bytes";
@@ -124,10 +125,13 @@ public class ModelDescriptionConstants {
     public static final String HASH = "hash";
     public static final String HEAD_COMMENT_ALLOWED = "head-comment-allowed";
     public static final String HOST = "host";
+    public static final String HOSTS = "hosts";
     public static final String HOST_CONTROLLER = "host-controller";
     public static final String HOST_ENVIRONMENT = "host-environment";
     public static final String HOST_FAILURE_DESCRIPTION = "host-failure-description";
     public static final String HOST_FAILURE_DESCRIPTIONS = "host-failure-descriptions";
+    public static final String HOST_SCOPED_ROLE = "host-scoped-role";
+    public static final String HOST_SCOPED_ROLES = "host-scoped-roles";
     public static final String HOST_STATE = "host-state";
     public static final String HTTP_UPGRADE_ENABLED = "http-upgrade-enabled";
     public static final String HTTP_INTERFACE = "http-interface";
@@ -251,6 +255,8 @@ public class ModelDescriptionConstants {
     public static final String RESTART_REQUIRED = "restart-required";
     public static final String RESULT = "result";
     public static final String REASON = "reason";
+    public static final String ROLE = "role";
+    public static final String ROLES = "roles";
     public static final String ROLLBACK_ACROSS_GROUPS = "rollback-across-groups";
     public static final String ROLLBACK_FAILURE_DESCRIPTION = "rollback-failure-description";
     public static final String ROLLBACK_ON_RUNTIME_FAILURE = "rollback-on-runtime-failure";
@@ -278,6 +284,7 @@ public class ModelDescriptionConstants {
     public static final String SERVER_CONFIG = "server-config";
     public static final String SERVER_GROUP = "server-group";
     public static final String SERVER_GROUPS = "server-groups";
+    public static final String SERVER_GROUP_SCOPED_ROLE = "server-group-scoped-role";
     public static final String SERVER_IDENTITIES = "server-identities";
     public static final String SERVER_IDENTITY = "server-identity";
     public static final String SERVER_OPERATIONS = "server-operations";

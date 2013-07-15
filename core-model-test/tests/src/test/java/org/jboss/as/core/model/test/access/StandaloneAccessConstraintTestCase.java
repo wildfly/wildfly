@@ -31,28 +31,24 @@ import org.junit.Assert;
 import org.junit.Test;
 
 /**
+ * Test of access control constraint handling in a standalone server.
  *
  * @author <a href="kabir.khan@jboss.com">Kabir Khan</a>
  */
 public class StandaloneAccessConstraintTestCase extends AbstractCoreModelTest {
 
-    static {
-        //Temporary workarounf: Kickstart the access constraints - this will happen for us once we start using them in the model
-        SensitivityClassification classification = SensitivityClassification.SOCKET_CONFIG;
-        ApplicationTypeConfig applicationType = ApplicationTypeConfig.DEPLOYMENT;
-    }
     @Test
     public void testConfiguration() throws Exception {
 
         KernelServices kernelServices = createKernelServicesBuilder(TestModelType.STANDALONE)
-                .setXmlResource("standalone.xml")
+                .setXmlResource("constraints.xml")
                 .validateDescription()
                 .build();
         Assert.assertTrue(kernelServices.isSuccessfulBoot());
 
-        System.out.println(kernelServices.readWholeModel());
+//        System.out.println(kernelServices.readWholeModel());
 
         String marshalled = kernelServices.getPersistedSubsystemXml();
-        ModelTestUtils.compareXml(ModelTestUtils.readResource(this.getClass(), "standalone.xml"), marshalled);
+        ModelTestUtils.compareXml(ModelTestUtils.readResource(this.getClass(), "constraints.xml"), marshalled);
     }
 }

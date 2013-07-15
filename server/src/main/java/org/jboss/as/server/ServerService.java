@@ -234,7 +234,7 @@ public final class ServerService extends AbstractControllerService {
                             public void updateOperationID(final int operationID) {
                                 DomainServerCommunicationServices.updateOperationID(operationID);
                             }
-                        }));
+                        }, authorizer));
         super.start(context);
     }
 

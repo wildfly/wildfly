@@ -47,6 +47,7 @@ import org.jboss.as.controller.SimpleAttributeDefinition;
 import org.jboss.as.controller.SimpleAttributeDefinitionBuilder;
 import org.jboss.as.controller.SimpleMapAttributeDefinition;
 import org.jboss.as.controller.SimpleResourceDefinition;
+import org.jboss.as.controller.access.DelegatingConfigurableAuthorizer;
 import org.jboss.as.controller.access.constraint.management.SensitiveTargetAccessConstraintDefinition;
 import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
 import org.jboss.as.controller.extension.ExtensionRegistry;
@@ -90,6 +91,7 @@ import org.jboss.as.domain.controller.operations.deployment.DeploymentUploadByte
 import org.jboss.as.domain.controller.operations.deployment.DeploymentUploadStreamAttachmentHandler;
 import org.jboss.as.domain.controller.operations.deployment.DeploymentUploadURLHandler;
 import org.jboss.as.domain.controller.transformers.DomainTransformers;
+import org.jboss.as.domain.management.access.AccessControlResourceDefinition;
 import org.jboss.as.host.controller.HostControllerEnvironment;
 import org.jboss.as.host.controller.ignored.IgnoredDomainResourceRegistry;
 import org.jboss.as.host.controller.mgmt.DomainControllerRuntimeIgnoreTransformationRegistry;
@@ -182,6 +184,7 @@ public class DomainRootDefinition extends SimpleResourceDefinition {
     private final IgnoredDomainResourceRegistry ignoredDomainResourceRegistry;
     private final PathManagerService pathManager;
     private final DomainControllerRuntimeIgnoreTransformationRegistry runtimeIgnoreTransformationRegistry;
+    private final DelegatingConfigurableAuthorizer authorizer;
 
     public DomainRootDefinition(
             final DomainController domainController,
@@ -191,7 +194,8 @@ public class DomainRootDefinition extends SimpleResourceDefinition {
             final LocalHostControllerInfo hostControllerInfo,
             final ExtensionRegistry extensionRegistry, final IgnoredDomainResourceRegistry ignoredDomainResourceRegistry,
             final PathManagerService pathManager,
-            final DomainControllerRuntimeIgnoreTransformationRegistry runtimeIgnoreTransformationRegistry) {
+            final DomainControllerRuntimeIgnoreTransformationRegistry runtimeIgnoreTransformationRegistry,
+            final DelegatingConfigurableAuthorizer authorizer) {
         super(null, DomainResolver.getResolver(DOMAIN, false));
         this.domainController = domainController;
         this.isMaster = isMaster;
@@ -204,6 +208,7 @@ public class DomainRootDefinition extends SimpleResourceDefinition {
         this.ignoredDomainResourceRegistry = ignoredDomainResourceRegistry;
         this.pathManager = pathManager;
         this.runtimeIgnoreTransformationRegistry = runtimeIgnoreTransformationRegistry;
+        this.authorizer = authorizer;
     }
 
     @Override
@@ -290,6 +295,8 @@ public class DomainRootDefinition extends SimpleResourceDefinition {
                 InterfaceRemoveHandler.INSTANCE,
                 false
         ));
+
+        resourceRegistration.registerSubModel(AccessControlResourceDefinition.forDomain(authorizer));
         resourceRegistration.registerSubModel(new ProfileResourceDefinition(extensionRegistry));
         resourceRegistration.registerSubModel(PathResourceDefinition.createNamed(pathManager));
         resourceRegistration.registerSubModel(DomainDeploymentResourceDefinition.createForDomainRoot(isMaster, contentRepo, fileRepository));

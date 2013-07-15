@@ -21,7 +21,6 @@
 */
 package org.jboss.as.server.controller.resources;
 
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.RUNNING_SERVER;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SERVER;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SUBDEPLOYMENT;
 
@@ -29,19 +28,17 @@ import org.jboss.as.controller.AttributeDefinition;
 import org.jboss.as.controller.CompositeOperationHandler;
 import org.jboss.as.controller.ControlledProcessState;
 import org.jboss.as.controller.ModelOnlyWriteAttributeHandler;
-import org.jboss.as.controller.NoopOperationStepHandler;
-import org.jboss.as.controller.OperationDefinition;
-import org.jboss.as.controller.OperationStepHandler;
 import org.jboss.as.controller.PathElement;
 import org.jboss.as.controller.ProcessType;
 import org.jboss.as.controller.PropertiesAttributeDefinition;
+import org.jboss.as.controller.ResourceDefinition;
 import org.jboss.as.controller.RunningMode;
 import org.jboss.as.controller.RunningModeControl;
 import org.jboss.as.controller.SimpleAttributeDefinition;
 import org.jboss.as.controller.SimpleAttributeDefinitionBuilder;
 import org.jboss.as.controller.SimpleMapAttributeDefinition;
-import org.jboss.as.controller.SimpleOperationDefinitionBuilder;
 import org.jboss.as.controller.SimpleResourceDefinition;
+import org.jboss.as.controller.access.DelegatingConfigurableAuthorizer;
 import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
 import org.jboss.as.controller.descriptions.common.CoreManagementDefinition;
 import org.jboss.as.controller.extension.ExtensionRegistry;
@@ -66,7 +63,6 @@ import org.jboss.as.controller.operations.validation.ParameterValidator;
 import org.jboss.as.controller.operations.validation.StringLengthValidator;
 import org.jboss.as.controller.persistence.ExtensibleConfigurationPersister;
 import org.jboss.as.controller.registry.ManagementResourceRegistration;
-import org.jboss.as.controller.registry.OperationEntry;
 import org.jboss.as.controller.resource.InterfaceDefinition;
 import org.jboss.as.controller.resource.SocketBindingGroupResourceDefinition;
 import org.jboss.as.controller.services.path.PathManagerService;
@@ -191,6 +187,7 @@ public class ServerRootResourceDefinition extends SimpleResourceDefinition {
     private final boolean parallelBoot;
     private final PathManagerService pathManager;
     private final DomainServerCommunicationServices.OperationIDUpdater operationIDUpdater;
+    private final DelegatingConfigurableAuthorizer authorizer;
 
     public ServerRootResourceDefinition(
             final ContentRepository contentRepository,
@@ -202,7 +199,8 @@ public class ServerRootResourceDefinition extends SimpleResourceDefinition {
             final ExtensionRegistry extensionRegistry,
             final boolean parallelBoot,
             final PathManagerService pathManager,
-            final DomainServerCommunicationServices.OperationIDUpdater operationIDUpdater) {
+            final DomainServerCommunicationServices.OperationIDUpdater operationIDUpdater,
+            final DelegatingConfigurableAuthorizer authorizer) {
         super(null, ServerDescriptions.getResourceDescriptionResolver(SERVER, false));
         this.contentRepository = contentRepository;
         this.extensibleConfigurationPersister = extensibleConfigurationPersister;
@@ -215,7 +213,8 @@ public class ServerRootResourceDefinition extends SimpleResourceDefinition {
         this.pathManager = pathManager;
         this.operationIDUpdater = operationIDUpdater;
 
-        isDomain = serverEnvironment == null || serverEnvironment.getLaunchType() == LaunchType.DOMAIN;
+        this.isDomain = serverEnvironment == null || serverEnvironment.getLaunchType() == LaunchType.DOMAIN;
+        this.authorizer = authorizer;
     }
 
     @Override
@@ -354,7 +353,9 @@ public class ServerRootResourceDefinition extends SimpleResourceDefinition {
         PlatformMBeanResourceRegistrar.registerPlatformMBeanResources(resourceRegistration);
 
         //Access Control
-        resourceRegistration.registerSubModel(AccessControlResourceDefinition.INSTANCE);
+        ResourceDefinition accControl = isDomain ? AccessControlResourceDefinition.forDomainServer(authorizer)
+                : AccessControlResourceDefinition.forStandaloneServer(authorizer);
+        resourceRegistration.registerSubModel(accControl);
 
         // Paths
         resourceRegistration.registerSubModel(PathResourceDefinition.createSpecified(pathManager));
@@ -395,19 +396,6 @@ public class ServerRootResourceDefinition extends SimpleResourceDefinition {
 
         // Util
         resourceRegistration.registerOperationHandler(DeployerChainAddHandler.DEFINITION, DeployerChainAddHandler.INSTANCE, false);
-    }
-
-    private static final OperationStepHandler NOOP = NoopOperationStepHandler.WITH_RESULT;
-
-    private static final AttributeDefinition BLOCKING = new SimpleAttributeDefinitionBuilder(ModelDescriptionConstants.BLOCKING, ModelType.BOOLEAN, true)
-        .build();
-
-    static final OperationDefinition getOperationDefinition(String name) {
-        return new SimpleOperationDefinitionBuilder(name, ServerDescriptions.getResourceDescriptionResolver(RUNNING_SERVER))
-            .setParameters(BLOCKING)
-            .setReplyType(ModelType.STRING)
-            .withFlags(OperationEntry.Flag.HOST_CONTROLLER_ONLY, OperationEntry.Flag.RUNTIME_ONLY)
-            .build();
     }
 
 }

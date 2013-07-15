@@ -54,6 +54,7 @@ import org.jboss.as.controller.PathElement;
 import org.jboss.as.controller.SimpleOperationDefinitionBuilder;
 import org.jboss.as.controller.registry.ManagementResourceRegistration;
 import org.jboss.as.controller.registry.Resource;
+import org.jboss.as.domain.management.access.AccessControlResourceDefinition;
 import org.jboss.as.host.controller.HostControllerEnvironment;
 import org.jboss.as.host.controller.HostModelUtil;
 import org.jboss.as.host.controller.ignored.IgnoredDomainResourceRegistry;
@@ -115,6 +116,8 @@ public class HostModelRegistrationHandler implements OperationStepHandler {
 
         //Create the empty host-environment resource
         context.createResource(hostAddress.append(PathElement.pathElement(CORE_SERVICE, HOST_ENVIRONMENT)));
+
+        context.addResource(PathAddress.pathAddress(hostAddress, AccessControlResourceDefinition.PATH_ELEMENT), AccessControlResourceDefinition.RESOURCE);
 
         // Wire in the platform mbean resources. We're bypassing the context.createResource API here because
         // we want to use our own resource type. But it's ok as the createResource calls above have taken the lock

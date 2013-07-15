@@ -184,6 +184,7 @@ public class SimpleListAttributeDefinition extends ListAttributeDefinition {
 
     public static class Builder extends AbstractAttributeDefinitionBuilder<Builder,SimpleListAttributeDefinition>{
         private final AttributeDefinition valueType;
+        private boolean wrapXmlList = true;
 
         public Builder(final String name, final AttributeDefinition valueType) {
             super(name, ModelType.LIST);
@@ -199,19 +200,29 @@ public class SimpleListAttributeDefinition extends ListAttributeDefinition {
             return new Builder(name, valueType);
         }
 
+        public Builder setWrapXmlList(boolean wrap) {
+            this.wrapXmlList = wrap;
+            return this;
+        }
+
         public SimpleListAttributeDefinition build() {
             if (xmlName == null) xmlName = name;
             if (maxSize < 1) maxSize = Integer.MAX_VALUE;
             if (attributeMarshaller == null) {
+                final boolean wrap = wrapXmlList;
                 attributeMarshaller = new AttributeMarshaller() {
                     @Override
                     public void marshallAsElement(AttributeDefinition attribute, ModelNode resourceModel, boolean marshallDefault, XMLStreamWriter writer) throws XMLStreamException {
                         if (resourceModel.hasDefined(attribute.getName())) {
-                            writer.writeStartElement(attribute.getXmlName());
+                            if (wrap) {
+                                writer.writeStartElement(attribute.getXmlName());
+                            }
                             for (ModelNode handler : resourceModel.get(attribute.getName()).asList()) {
                                 valueType.marshallAsElement(handler, writer);
                             }
-                            writer.writeEndElement();
+                            if (wrap) {
+                                writer.writeEndElement();
+                            }
                         }
                     }
                 };

@@ -405,7 +405,8 @@ class TestModelControllerService extends ModelTestModelControllerService {
                     extensionRegistry,
                     parallelBoot,
                     pathManagerService,
-                    null));
+                    null,
+                    authorizer));
         }
 
         @Override
@@ -446,7 +447,8 @@ class TestModelControllerService extends ModelTestModelControllerService {
                             null /*vaultReader*/,
                             ignoredRegistry,
                             processState,
-                            pathManagerService));
+                            pathManagerService,
+                            authorizer));
         }
 
         @Override
@@ -477,7 +479,8 @@ class TestModelControllerService extends ModelTestModelControllerService {
                     null /*vaultReader*/,
                     ignoredRegistry,
                     processState,
-                    pathManagerService);
+                    pathManagerService,
+                    authorizer);
         }
     }
 
@@ -498,7 +501,7 @@ class TestModelControllerService extends ModelTestModelControllerService {
             final DomainController domainController = new MockDomainController();
 
             DomainRootDefinition domainDefinition = new DomainRootDefinition(domainController, env, persister, injectedContentRepository.getValue(),
-                    hostFIleRepository, true, info, extensionRegistry, null, pathManagerService, null);
+                    hostFIleRepository, true, info, extensionRegistry, null, pathManagerService, null, authorizer);
             domainDefinition.initialize(rootRegistration);
             rootResourceDefinition.setDelegate(domainDefinition);
 
