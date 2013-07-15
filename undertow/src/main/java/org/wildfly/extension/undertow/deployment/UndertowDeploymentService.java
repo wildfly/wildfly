@@ -43,6 +43,7 @@ import org.jboss.msc.service.StopContext;
 import org.jboss.msc.value.InjectedValue;
 import org.wildfly.extension.undertow.Host;
 import org.wildfly.extension.undertow.ServletContainerService;
+import org.wildfly.extension.undertow.UndertowLogger;
 import org.wildfly.extension.undertow.UndertowMessages;
 
 /**
@@ -191,7 +192,7 @@ public class UndertowDeploymentService implements Service<UndertowDeploymentServ
             recursiveDelete(f);
         }
         if(!file.delete()) {
-            throw UndertowMessages.MESSAGES.couldNotDeleteTempFile(file);
+            UndertowLogger.ROOT_LOGGER.couldNotDeleteTempFile(file);
         }
     }
 }

@@ -22,6 +22,7 @@
 
 package org.wildfly.extension.undertow;
 
+import java.io.File;
 import java.net.InetSocketAddress;
 
 import io.undertow.server.HttpHandler;
@@ -218,4 +219,8 @@ public interface UndertowLogger extends BasicLogger {
     @LogMessage(level = WARN)
     @Message(id = 17529, value = "Could not resolve name in absolute ordering: %s")
     void invalidAbsoluteOrdering(String name);
+
+    @LogMessage(level = WARN)
+    @Message(id = 17530, value = "Could not delete servlet temp file %s")
+    void couldNotDeleteTempFile(File file);
 }
