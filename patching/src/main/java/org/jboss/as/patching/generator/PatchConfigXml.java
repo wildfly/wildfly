@@ -40,7 +40,7 @@ import org.jboss.staxmapper.XMLMapper;
 public class PatchConfigXml {
 
     private static final XMLMapper MAPPER = XMLMapper.Factory.create();
-    private static final PatchConfigXml_1_0 INSTANCE = null;
+    private static final PatchConfigXml_1_0 INSTANCE = new PatchConfigXml_1_0();
     private static final XMLInputFactory INPUT_FACTORY = XMLInputFactory.newInstance();
     private static final QName ROOT_ELEMENT = new QName(Namespace.PATCH_1_0.getNamespace(), PatchConfigXml_1_0.Element.PATCH_CONFIG.name);
 
