@@ -25,8 +25,8 @@ package org.jboss.as.server.parsing;
 import static javax.xml.stream.XMLStreamConstants.END_ELEMENT;
 import static org.jboss.as.controller.ControllerLogger.ROOT_LOGGER;
 import static org.jboss.as.controller.ControllerMessages.MESSAGES;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ADD;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ACCESS_CONTROL;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ADD;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.CONTENT;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.CORE_SERVICE;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.DEPLOYMENT;
@@ -228,7 +228,7 @@ public class StandaloneXml extends CommonXml implements ManagementXml.Delegate {
 
         if (element == Element.MANAGEMENT) {
             ManagementXml managementXml = new ManagementXml(this);
-            managementXml.parseManagement_1_0(reader, address, DOMAIN_1_0, list, true, false);
+            managementXml.parseManagement(reader, address, DOMAIN_1_0, list, false);
             element = nextElement(reader, DOMAIN_1_0);
         }
 
@@ -339,7 +339,7 @@ public class StandaloneXml extends CommonXml implements ManagementXml.Delegate {
 
         if (element == Element.MANAGEMENT) {
             ManagementXml managementXml = new ManagementXml(this);
-            managementXml.parseManagement_1_0(reader, address, namespace, list, true, false);
+            managementXml.parseManagement(reader, address, namespace, list, false);
             element = nextElement(reader, namespace);
         }
         // Single profile
@@ -447,15 +447,7 @@ public class StandaloneXml extends CommonXml implements ManagementXml.Delegate {
         }
         if (element == Element.MANAGEMENT) {
             ManagementXml managementXml = new ManagementXml(this);
-            switch (namespace) {
-                case DOMAIN_1_4: // The earliest namespace that could be in use to reach this method is 1.4.
-                    managementXml.parseManagement_1_0(reader, address, namespace, list, true, false);
-                    break;
-                default:
-                    managementXml.parseManagement_1_5(reader, address, namespace, list, true, false);
-                    break;
-
-            }
+            managementXml.parseManagement(reader, address, namespace, list, false);
             element = nextElement(reader, namespace);
         }
         // Single profile

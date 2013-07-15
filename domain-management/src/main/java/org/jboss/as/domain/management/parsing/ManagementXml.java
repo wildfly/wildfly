@@ -23,7 +23,6 @@
 package org.jboss.as.domain.management.parsing;
 
 import static javax.xml.stream.XMLStreamConstants.END_ELEMENT;
-import static org.jboss.as.controller.ControllerMessages.MESSAGES;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ACCESS_CONTROL;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ADD;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.APPLICATION_TYPE;
@@ -136,8 +135,23 @@ public class ManagementXml {
         this.delegate = delegate;
     }
 
-    public void parseManagement_1_0(final XMLExtendedStreamReader reader, final ModelNode address, final Namespace expectedNs,
-            final List<ModelNode> list, boolean allowInterfaces, boolean requireNativeInterface) throws XMLStreamException {
+    public void parseManagement(final XMLExtendedStreamReader reader, final ModelNode address, final Namespace expectedNs,
+            final List<ModelNode> list, boolean requireNativeInterface) throws XMLStreamException {
+        switch (expectedNs) {
+            case DOMAIN_1_0:
+            case DOMAIN_1_1:
+            case DOMAIN_1_2:
+            case DOMAIN_1_3:
+            case DOMAIN_1_4:
+                parseManagement_1_0(reader, address, expectedNs, list, requireNativeInterface);
+                break;
+            default:
+                parseManagement_1_5(reader, address, expectedNs, list, requireNativeInterface);
+        }
+    }
+
+    private void parseManagement_1_0(final XMLExtendedStreamReader reader, final ModelNode address, final Namespace expectedNs,
+            final List<ModelNode> list, boolean requireNativeInterface) throws XMLStreamException {
         int securityRealmsCount = 0;
         int connectionsCount = 0;
         int managementInterfacesCount = 0;
@@ -163,17 +177,11 @@ public class ManagementXml {
                     break;
                 }
                 case MANAGEMENT_INTERFACES: {
-                    if (allowInterfaces) {
-                        if (++managementInterfacesCount > 1) {
-                            throw unexpectedElement(reader);
-                        }
-
-                        delegate.parseManagementInterfaces(reader, managementAddress, expectedNs, list);
-
-                    } else {
-                        ROOT_LOGGER.warn(ParseUtils.getWarningMessage(
-                                MESSAGES.elementNotSupported(element.getLocalName(), "domain.xml"), reader.getLocation()));
+                    if (++managementInterfacesCount > 1) {
+                        throw unexpectedElement(reader);
                     }
+
+                    delegate.parseManagementInterfaces(reader, managementAddress, expectedNs, list);
                     break;
                 }
                 default: {
@@ -187,8 +195,9 @@ public class ManagementXml {
         }
     }
 
+
     public void parseManagement_1_5(final XMLExtendedStreamReader reader, final ModelNode address, final Namespace expectedNs,
-                                    final List<ModelNode> list, boolean allowInterfaces, boolean requireNativeInterface) throws XMLStreamException {
+            final List<ModelNode> list, boolean requireNativeInterface) throws XMLStreamException {
         int securityRealmsCount = 0;
         int connectionsCount = 0;
         int managementInterfacesCount = 0;
@@ -214,17 +223,11 @@ public class ManagementXml {
                     break;
                 }
                 case MANAGEMENT_INTERFACES: {
-                    if (allowInterfaces) {
-                        if (++managementInterfacesCount > 1) {
-                            throw unexpectedElement(reader);
-                        }
-
-                        delegate.parseManagementInterfaces(reader, managementAddress, expectedNs, list);
-
-                    } else {
-                        ROOT_LOGGER.warn(ParseUtils.getWarningMessage(
-                                MESSAGES.elementNotSupported(element.getLocalName(), "domain.xml"), reader.getLocation()));
+                    if (++managementInterfacesCount > 1) {
+                        throw unexpectedElement(reader);
                     }
+
+                    delegate.parseManagementInterfaces(reader, managementAddress, expectedNs, list);
                     break;
                 }
                 case ACCESS_CONTROL: {
