@@ -1,7 +1,7 @@
 JBoss Modular Application Server Build
 --------------------------------------
 
-This module contains a number of profiles each dedicated to a custom AS7 build.
+This module contains a number of profiles each dedicated to a custom WildFly build.
 
 Defining the Subsystems
 -----------------------
@@ -9,7 +9,7 @@ Defining the Subsystems
 Subsystems are defined by a simple comma seperated list of identifiers
 Each identifier can be qualified with a supplement identifier.
 
-	<standalone.subsystems>logging:osgi,osgi:eager,configadmin,deployment-scanner</standalone.subsystems>
+	<standalone.subsystems>logging:minimal,deployment-scanner</standalone.subsystems>
 	
 Subsystem Definition Output
 ---------------------------
@@ -20,14 +20,12 @@ Given the above input the Ant task will generate a subsystem definition file
 	
 	<config xmlns="urn:subsystems-config:1.0">
 	    <subsystems>
-	        <subsystem supplement="osgi">configuration/subsystems/logging.xml</subsystem>
-	        <subsystem supplement="minimal">configuration/subsystems/osgi.xml</subsystem>
-	        <subsystem>configuration/subsystems/configadmin.xml</subsystem>
+	        <subsystem supplement="minimal">configuration/subsystems/logging.xml</subsystem>
 	        <subsystem>configuration/subsystems/deployment-scanner.xml</subsystem>
 	    </subsystems>
 	</config>
 
-which is then passed to the Ant macros that are used for the ordinary AS7 build.
+which is then passed to the Ant macros that are used for the ordinary WildFly build.
 
 Reducing the set of System Modules
 ----------------------------------
@@ -71,7 +69,7 @@ Resulting Server Build
 
 The resulting server build only contains the generated configurations and system modules that are needed to run the configured subsystems. 
 Adding additional subsystems later will likely not work because of missing module dependencies.  
-For the above case this reduces the download size from 128MB to 80MB. 
+For the above case this reduces the download size from 128MB to 97MB. 
 
 Domain Support
 --------------
