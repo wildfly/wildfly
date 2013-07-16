@@ -106,7 +106,6 @@
         <version.javax.activation>1.1.1</version.javax.activation>
         <version.javax.enterprise>1.1</version.javax.enterprise>
         <version.javax.inject.javax.inject>1</version.javax.inject.javax.inject>
-        <version.javax.json-api>1.0</version.javax.json-api>
         <version.javax.jws.jsr181-api>1.0-MR1</version.javax.jws.jsr181-api>
         <version.javax.mail>1.5.0-b01</version.javax.mail>
         <version.javax.validation>1.1.0.Final</version.javax.validation>
@@ -144,6 +143,7 @@
         <version.org.eclipse.jdt.core.compiler>4.2.2</version.org.eclipse.jdt.core.compiler>
         <version.org.fusesource.jansi>1.9</version.org.fusesource.jansi>
         <version.org.glassfish.javax.el>3.0-b07</version.org.glassfish.javax.el>
+        <version.org.glassfish.javax.json>1.0</version.org.glassfish.javax.json>
         <version.org.hibernate>4.3.0.Beta3</version.org.hibernate>
         <version.org.hibernate.commons.annotations>4.0.2.Final</version.org.hibernate.commons.annotations>
         <version.org.hibernate.javax.persistence.hibernate-jpa-2.0-api>1.0.1.Final</version.org.hibernate.javax.persistence.hibernate-jpa-2.0-api>
@@ -1682,12 +1682,6 @@
                 <groupId>javax.inject</groupId>
                 <artifactId>javax.inject</artifactId>
                 <version>${version.javax.inject.javax.inject}</version>
-            </dependency>
-
-            <dependency>
-                <groupId>javax.json</groupId>
-                <artifactId>javax.json-api</artifactId>
-                <version>${version.javax.json-api}</version>
             </dependency>
 
             <dependency>
@@ -3365,7 +3359,7 @@
             <dependency>
                 <groupId>org.glassfish</groupId>
                 <artifactId>javax.json</artifactId>
-                <version>${version.javax.json-api}</version>
+                <version>${version.org.glassfish.javax.json}</version>
             </dependency>
 
             <!-- EL3 RI implementation -->

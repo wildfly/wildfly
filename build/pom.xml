@@ -397,11 +397,6 @@
                 </dependency>
 
                 <dependency>
-                    <groupId>javax.json</groupId>
-                    <artifactId>javax.json-api</artifactId>
-                </dependency>
-
-                <dependency>
                     <groupId>javax.jws</groupId>
                     <artifactId>jsr181-api</artifactId>
                 </dependency>
@@ -2578,10 +2573,6 @@
                                             <packages>javax.interceptor</packages>
                                         </group>
                                         <group>
-                                            <title>Module javax.json.api</title>
-                                            <packages>javax.json:javax.json.spi:javax.json.stream</packages>
-                                        </group>
-                                        <group>
                                             <title>Module javax.jms.api</title>
                                             <packages>javax.jms</packages>
                                         </group>
@@ -2779,7 +2770,7 @@
                                         </group>
                                         <group>
                                             <title>Module org.glassfish.javax.json</title>
-                                            <packages>org.glassfish.json</packages>
+                                            <packages>javax.json:javax.json.spi:javax.json.stream:org.glassfish.json</packages>
                                         </group>
                                         <group>
                                             <title>Module org.hibernate</title>
