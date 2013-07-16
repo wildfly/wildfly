@@ -86,6 +86,10 @@ public class TwoRaFlatTestCase extends AbstractModuleDeploymentTestCase {
 			super.tearDown(managementClient, containerId);
 		}
 
+        @Override
+        protected String getSlot() {
+            return TwoRaFlatTestCase.class.getSimpleName().toLowerCase();
+        }
 	}
 
 	/**

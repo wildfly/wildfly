@@ -77,6 +77,10 @@ public class MultiActivationFlatTestCase extends
 
         }
 
+        @Override
+        protected String getSlot() {
+            return MultiActivationFlatTestCase.class.getSimpleName().toLowerCase();
+        }
 	}
 
 	/**

@@ -87,6 +87,11 @@ public class InflowFlatTestCase extends AbstractModuleDeploymentTestCase {
 			setConfiguration("inflow.xml");
 
 		}
+
+        @Override
+        protected String getSlot() {
+            return InflowFlatTestCase.class.getSimpleName().toLowerCase();
+        }
 	}
 
 	/**

@@ -58,5 +58,10 @@ public class MultiActivationJarTestCase extends MultiActivationFlatTestCase {
 			setConfiguration("double.xml");
 
 		}
+
+        @Override
+        protected String getSlot() {
+            return MultiActivationJarTestCase.class.getSimpleName().toLowerCase();
+        }
 	}
 }

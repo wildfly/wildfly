@@ -80,6 +80,10 @@ public class TwoModulesJarTestCase extends TwoModulesFlatTestCase {
             removeModule("org/jboss/ironjacamar/ra16out1");
         }
 
+        @Override
+        protected String getSlot() {
+            return TwoModulesJarTestCase.class.getSimpleName().toLowerCase();
+        }
     }
 
     /**
