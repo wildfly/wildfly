@@ -88,6 +88,15 @@ class FilteredData {
         return result;
     }
 
+    boolean isAddressFiltered(PathAddress parent, PathElement child) {
+        boolean result = false;
+        ResourceData rd = map == null ? null : map.get(parent);
+        if (rd != null) {
+            result = (rd.childTypes != null && rd.childTypes.contains(child));
+        }
+        return result;
+    }
+
     ModelNode toModelNode() {
         ModelNode result = null;
         if (map != null) {

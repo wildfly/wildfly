@@ -23,9 +23,13 @@
 package org.jboss.as.controller.operations.global;
 
 import static org.jboss.as.controller.ControllerMessages.MESSAGES;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ACCESS_CONTROL;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OPERATION_HEADERS;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.READ_CHILDREN_NAMES_OPERATION;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.READ_RESOURCE_OPERATION;
 
+import java.util.EnumSet;
 import java.util.Map;
 import java.util.Set;
 import java.util.TreeSet;
@@ -35,9 +39,12 @@ import org.jboss.as.controller.OperationDefinition;
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.OperationStepHandler;
 import org.jboss.as.controller.PathAddress;
+import org.jboss.as.controller.PathElement;
 import org.jboss.as.controller.SimpleOperationDefinitionBuilder;
+import org.jboss.as.controller.access.Action;
+import org.jboss.as.controller.access.AuthorizationResult;
 import org.jboss.as.controller.descriptions.common.ControllerResolver;
-import org.jboss.as.controller.operations.validation.ParametersValidator;
+import org.jboss.as.controller.operations.common.Util;
 import org.jboss.as.controller.registry.ImmutableManagementResourceRegistration;
 import org.jboss.as.controller.registry.Resource;
 import org.jboss.dmr.ModelNode;
@@ -60,18 +67,11 @@ public class ReadChildrenNamesHandler implements OperationStepHandler {
 
     static final OperationStepHandler INSTANCE = new ReadChildrenNamesHandler();
 
-    private final ParametersValidator validator = new ParametersValidator();
-
-    public ReadChildrenNamesHandler() {
-        validator.registerValidator(GlobalOperationHandlers.CHILD_TYPE.getName(), GlobalOperationHandlers.CHILD_TYPE.getValidator());
-    }
-
     @Override
     public void execute(OperationContext context, ModelNode operation) throws OperationFailedException {
 
-        validator.validate(operation);
         final PathAddress address = PathAddress.pathAddress(operation.get(OP_ADDR));
-        final String childType = operation.require(GlobalOperationHandlers.CHILD_TYPE.getName()).asString();
+        final String childType = GlobalOperationHandlers.CHILD_TYPE.resolveModelAttribute(context, operation).asString();
         final Resource resource = context.readResource(PathAddress.EMPTY_ADDRESS, false);
         ImmutableManagementResourceRegistration registry = context.getResourceRegistration();
         Map<String, Set<String>> childAddresses = GlobalOperationHandlers.getChildAddresses(context, address, registry, resource, childType);
@@ -83,8 +83,27 @@ public class ReadChildrenNamesHandler implements OperationStepHandler {
         childNames = new TreeSet<String>(childNames);
         ModelNode result = context.getResult();
         result.setEmptyList();
+        PathAddress childAddress = address.append(PathElement.pathElement(childType));
+        ModelNode op = Util.createEmptyOperation(READ_RESOURCE_OPERATION, childAddress);
+        op.get(OPERATION_HEADERS).set(operation.get(OPERATION_HEADERS));
+        ModelNode opAddr = op.get(OP_ADDR);
+        ModelNode childProperty = opAddr.require(address.size());
+        Set<Action.ActionEffect> actionEffects = EnumSet.of(Action.ActionEffect.ADDRESS);
+        FilteredData fd = null;
         for (String childName : childNames) {
-            result.add(childName);
+            childProperty.set(childType, new ModelNode(childName));
+            if (context.authorize(op, actionEffects).getDecision() == AuthorizationResult.Decision.PERMIT) {
+                result.add(childName);
+            } else {
+                if (fd == null) {
+                    fd = new FilteredData(address);
+                }
+                fd.addAccessRestrictedResource(PathAddress.pathAddress(opAddr));
+            }
+        }
+
+        if (fd != null) {
+            context.getResponseHeaders().get(ACCESS_CONTROL).set(fd.toModelNode());
         }
 
         context.stepCompleted();
