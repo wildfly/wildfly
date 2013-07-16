@@ -71,6 +71,11 @@ public class PureFlatTestCase extends AbstractModuleDeploymentTestCase {
             setConfiguration("pure.xml");
 
         }
+
+        @Override
+        protected String getSlot() {
+            return PureFlatTestCase.class.getSimpleName().toLowerCase();
+        }
     }
 
 	/**

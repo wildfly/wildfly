@@ -58,5 +58,10 @@ public class BasicJarTestCase extends BasicFlatTestCase {
 			setConfiguration("basic.xml");
 
 		}
+
+        @Override
+        protected String getSlot() {
+            return BasicJarTestCase.class.getSimpleName().toLowerCase();
+        }
 	}
 }

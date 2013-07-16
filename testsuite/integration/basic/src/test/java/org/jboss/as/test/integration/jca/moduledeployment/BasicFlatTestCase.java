@@ -71,7 +71,12 @@ public class BasicFlatTestCase extends AbstractModuleDeploymentTestCase {
 			setConfiguration("basic.xml");
 
 		}
-	}
+
+        @Override
+        protected String getSlot() {
+            return BasicFlatTestCase.class.getSimpleName().toLowerCase();
+        }
+    }
 
 	/**
 	 * Define the deployment

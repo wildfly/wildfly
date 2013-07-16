@@ -72,6 +72,11 @@ public class PartialObjectActivationFlatTestCase extends
 			setConfiguration("basic.xml");
 
 		}
+
+        @Override
+        protected String getSlot() {
+            return PartialObjectActivationFlatTestCase.class.getSimpleName().toLowerCase();
+        }
 	}
 
 	/**

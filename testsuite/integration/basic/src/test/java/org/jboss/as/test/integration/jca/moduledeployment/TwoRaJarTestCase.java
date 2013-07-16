@@ -77,6 +77,10 @@ public class TwoRaJarTestCase extends TwoRaFlatTestCase {
             super.tearDown(managementClient, containerId);
         }
 
+        @Override
+        protected String getSlot() {
+            return TwoRaJarTestCase.class.getSimpleName().toLowerCase();
+        }
     }
 
     /**
