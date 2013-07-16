@@ -63,7 +63,7 @@ class SessionBasedClusteredSession extends ClusteredSession<OutgoingSessionGranu
     @Override
     protected OutgoingSessionGranularitySessionData getOutgoingSessionData() {
         Map<String, Object> attrs = isSessionAttributeMapDirty() ? getSessionAttributeMap() : null;
-        DistributableSessionMetadata metadata = isSessionMetadataDirty() ? getSessionMetadata() : null;
+        DistributableSessionMetadata metadata = getSessionMetadata();
         Long timestamp = attrs != null || metadata != null || getMustReplicateTimestamp() ? Long.valueOf(getSessionTimestamp())
                 : null;
         return new OutgoingData(getRealId(), getVersion(), timestamp, metadata, attrs);

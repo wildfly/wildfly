@@ -96,7 +96,7 @@ class AttributeBasedClusteredSession extends ClusteredSession<OutgoingAttributeG
 
             clearAttrChangedMaps();
         }
-        DistributableSessionMetadata metadata = isSessionMetadataDirty() ? getSessionMetadata() : null;
+        DistributableSessionMetadata metadata = getSessionMetadata();
         Long timestamp = modAttrs != null || removeAttrs != null || metadata != null || getMustReplicateTimestamp() ? Long
                 .valueOf(getSessionTimestamp()) : null;
         return new OutgoingData(getRealId(), getVersion(), timestamp, metadata, modAttrs, removeAttrs);
