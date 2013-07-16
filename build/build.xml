@@ -473,9 +473,7 @@
             <maven-resource group="org.jboss.spec.javax.interceptor" artifact="jboss-interceptors-api_1.2_spec"/>
         </module-def>
 
-        <module-def name="javax.json.api">
-            <maven-resource group="javax.json" artifact="javax.json-api"/>
-        </module-def>
+        <module-def name="javax.json.api"/>
 
         <module-def name="javax.jms.api">
             <maven-resource group="org.jboss.spec.javax.jms" artifact="jboss-jms-api_2.0_spec"/>
