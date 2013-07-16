@@ -23,6 +23,7 @@
 package org.jboss.as.controller.operations.global;
 
 import static org.jboss.as.controller.ControllerMessages.MESSAGES;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ACCESS_CONTROL;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ATTRIBUTES;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.DEFAULT;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.FAILURE_DESCRIPTION;
@@ -492,7 +493,7 @@ public class ReadResourceHandler extends GlobalOperationHandlers.AbstractMultiTa
                 }
 
                 if (filteredData.hasFilteredData()) {
-                    context.getResponseHeaders().get("access-control").set(filteredData.toModelNode());
+                    context.getResponseHeaders().get(ACCESS_CONTROL).set(filteredData.toModelNode());
                 }
             }
 

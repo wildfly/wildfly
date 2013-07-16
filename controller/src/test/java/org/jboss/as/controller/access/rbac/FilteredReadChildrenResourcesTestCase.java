@@ -27,7 +27,9 @@ import static org.jboss.as.controller.PathAddress.pathAddress;
 import static org.jboss.as.controller.PathElement.pathElement;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ACCESS_CONTROL;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ADD;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.CHILD_TYPE;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OUTCOME;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.READ_CHILDREN_RESOURCES_OPERATION;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.READ_RESOURCE_OPERATION;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.RECURSIVE;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.RESPONSE_HEADERS;
@@ -59,9 +61,9 @@ import org.junit.Test;
 /**
  * Tests filtering of output from {@code read-resource} requests.
  *
- * @author Ladislav Thon <lthon@redhat.com>
+ * @author Brian Stansberry (c) 2013 Red Hat Inc.
  */
-public class FilteredReadResourceTestCase extends AbstractRbacTestBase {
+public class FilteredReadChildrenResourcesTestCase extends AbstractRbacTestBase {
     public static final String UNCONSTRAINED_RESOURCE = "unconstrained-resource";
     public static final String SENSITIVE_CONSTRAINED_RESOURCE = "sensitive-constrained-resource";
 
@@ -127,15 +129,18 @@ public class FilteredReadResourceTestCase extends AbstractRbacTestBase {
     }
 
     private void test(boolean sensitiveResourceVisible, StandardRole... roles) {
-        ModelNode operation = Util.createOperation(READ_RESOURCE_OPERATION, EMPTY_ADDRESS);
-        operation.get(RECURSIVE).set(true);
+        ModelNode operation = Util.createOperation(READ_CHILDREN_RESOURCES_OPERATION, EMPTY_ADDRESS);
+        operation.get(CHILD_TYPE).set(UNCONSTRAINED_RESOURCE);
         ModelNode result = executeWithRoles(operation, roles);
 
         assertEquals(SUCCESS, result.get(OUTCOME).asString());
-        assertTrue(result.get(RESULT, UNCONSTRAINED_RESOURCE).has(FOO));
-        assertTrue(result.get(RESULT, UNCONSTRAINED_RESOURCE).has(BAR));
-        assertEquals(sensitiveResourceVisible, result.get(RESULT, SENSITIVE_CONSTRAINED_RESOURCE).has(FOO));
-        assertEquals(sensitiveResourceVisible, result.get(RESULT, SENSITIVE_CONSTRAINED_RESOURCE).has(BAR));
+        assertTrue(result.get(RESULT).hasDefined(FOO));
+        assertTrue(result.get(RESULT).hasDefined(BAR));
+
+        operation.get(CHILD_TYPE).set(SENSITIVE_CONSTRAINED_RESOURCE);
+        result = executeWithRoles(operation, roles);
+        assertEquals(sensitiveResourceVisible, result.get(RESULT).has(FOO));
+        assertEquals(sensitiveResourceVisible, result.get(RESULT).has(BAR));
 
         // lthon asks: is this format stable? testing it isn't that important anyway...
         // BES 2013/07/08 Yes, it's stable and needs testing as automated clients will be relying on it

@@ -23,6 +23,7 @@
 package org.jboss.as.controller.operations.global;
 
 import static org.jboss.as.controller.ControllerMessages.MESSAGES;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ACCESS_CONTROL;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.FAILURE_DESCRIPTION;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
@@ -49,8 +50,6 @@ import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.PathElement;
 import org.jboss.as.controller.SimpleOperationDefinitionBuilder;
 import org.jboss.as.controller.descriptions.common.ControllerResolver;
-import org.jboss.as.controller.operations.validation.ModelTypeValidator;
-import org.jboss.as.controller.operations.validation.ParametersValidator;
 import org.jboss.as.controller.registry.ImmutableManagementResourceRegistration;
 import org.jboss.as.controller.registry.Resource;
 import org.jboss.dmr.ModelNode;
@@ -74,23 +73,20 @@ public class ReadChildrenResourcesHandler implements OperationStepHandler {
 
     static final OperationStepHandler INSTANCE = new ReadChildrenResourcesHandler();
 
-    private final ParametersValidator validator = new ParametersValidator();
-
-    public ReadChildrenResourcesHandler() {
-        validator.registerValidator(GlobalOperationHandlers.CHILD_TYPE.getName(), GlobalOperationHandlers.CHILD_TYPE.getValidator());
-        validator.registerValidator(GlobalOperationHandlers.RECURSIVE.getName(), new ModelTypeValidator(ModelType.BOOLEAN, true));
-        validator.registerValidator(GlobalOperationHandlers.RECURSIVE_DEPTH.getName(), new ModelTypeValidator(ModelType.INT, true));
-        validator.registerValidator(GlobalOperationHandlers.INCLUDE_RUNTIME.getName(), new ModelTypeValidator(ModelType.BOOLEAN, true));
-        validator.registerValidator(GlobalOperationHandlers.PROXIES.getName(), new ModelTypeValidator(ModelType.BOOLEAN, true));
-        validator.registerValidator(GlobalOperationHandlers.INCLUDE_DEFAULTS.getName(), new ModelTypeValidator(ModelType.BOOLEAN, true));
-    }
-
     @Override
     public void execute(OperationContext context, ModelNode operation) throws OperationFailedException {
 
-        validator.validate(operation);
         final PathAddress address = PathAddress.pathAddress(operation.get(OP_ADDR));
-        final String childType = operation.require(GlobalOperationHandlers.CHILD_TYPE.getName()).asString();
+        final String childType = GlobalOperationHandlers.CHILD_TYPE.resolveModelAttribute(context, operation).asString();
+
+        // Build up the op we're going to repeatedly execute
+        final ModelNode readOp = new ModelNode();
+        readOp.get(OP).set(READ_RESOURCE_OPERATION);
+        GlobalOperationHandlers.INCLUDE_RUNTIME.validateAndSet(operation, readOp);
+        GlobalOperationHandlers.RECURSIVE.validateAndSet(operation, readOp);
+        GlobalOperationHandlers.RECURSIVE_DEPTH.validateAndSet(operation, readOp);
+        GlobalOperationHandlers.PROXIES.validateAndSet(operation, readOp);
+        GlobalOperationHandlers.INCLUDE_DEFAULTS.validateAndSet(operation, readOp);
 
         final Map<PathElement, ModelNode> resources = new HashMap<PathElement, ModelNode>();
 
@@ -101,33 +97,36 @@ public class ReadChildrenResourcesHandler implements OperationStepHandler {
         if (childNames == null) {
             throw new OperationFailedException(new ModelNode().set(MESSAGES.unknownChildType(childType)));
         }
+
+        // Track any excluded items
+        FilteredData filteredData = new FilteredData(address);
+
         // We're going to add a bunch of steps that should immediately follow this one. We are going to add them
-        // in reverse order of how they should execute, as that is the way adding a Stage.IMMEDIATE step works
+        // in reverse order of how they should execute, building up a stack.
 
         // Last to execute is the handler that assembles the overall response from the pieces created by all the other steps
-        final ReadChildrenResourcesAssemblyHandler assemblyHandler = new ReadChildrenResourcesAssemblyHandler(resources);
+        final ReadChildrenResourcesAssemblyHandler assemblyHandler = new ReadChildrenResourcesAssemblyHandler(resources, filteredData, address, childType);
         context.addStep(assemblyHandler, OperationContext.Stage.MODEL, true);
 
         for (final String key : childNames) {
             final PathElement childPath = PathElement.pathElement(childType, key);
             final PathAddress childAddress = PathAddress.EMPTY_ADDRESS.append(PathElement.pathElement(childType, key));
 
-            final ModelNode readOp = new ModelNode();
-            readOp.get(OP).set(READ_RESOURCE_OPERATION);
-            readOp.get(OP_ADDR).set(PathAddress.pathAddress(address, childPath).toModelNode());
-            GlobalOperationHandlers.INCLUDE_RUNTIME.validateAndSet(operation, readOp);
-            GlobalOperationHandlers.RECURSIVE.validateAndSet(operation, readOp);
-            GlobalOperationHandlers.RECURSIVE_DEPTH.validateAndSet(operation, readOp);
-            GlobalOperationHandlers.PROXIES.validateAndSet(operation, readOp);
-            GlobalOperationHandlers.INCLUDE_DEFAULTS.validateAndSet(operation, readOp);
+            final ModelNode readResOp = readOp.clone();
+            readResOp.get(OP_ADDR).set(PathAddress.pathAddress(address, childPath).toModelNode());
 
-            final OperationStepHandler handler = context.getResourceRegistration().getOperationHandler(childAddress, READ_RESOURCE_OPERATION);
-            if (handler == null) {
+            // See if there was an override registered for the standard :read-resource handling (unlikely!!!)
+            OperationStepHandler overrideHandler = context.getResourceRegistration().getOperationHandler(childAddress, READ_RESOURCE_OPERATION);
+            if (overrideHandler == null) {
                 throw new OperationFailedException(new ModelNode().set(MESSAGES.noOperationHandler()));
+            } else if (overrideHandler.getClass() == ReadResourceHandler.class) {
+                // not an override
+                overrideHandler = null;
             }
+            OperationStepHandler rrHandler = new ReadResourceHandler(filteredData, overrideHandler);
             final ModelNode rrRsp = new ModelNode();
             resources.put(childPath, rrRsp);
-            context.addStep(rrRsp, readOp, handler, OperationContext.Stage.MODEL, true);
+            context.addStep(rrRsp, readResOp, rrHandler, OperationContext.Stage.MODEL, true);
         }
 
         context.stepCompleted();
@@ -139,6 +138,9 @@ public class ReadChildrenResourcesHandler implements OperationStepHandler {
     private static class ReadChildrenResourcesAssemblyHandler implements OperationStepHandler {
 
         private final Map<PathElement, ModelNode> resources;
+        private final FilteredData filteredData;
+        private final PathAddress address;
+        private final String childType;
 
         /**
          * Creates a ReadResourceAssemblyHandler that will assemble the response using the contents
@@ -147,9 +149,16 @@ public class ReadChildrenResourcesHandler implements OperationStepHandler {
          * @param resources read-resource response from child resources, where the key is the path of the resource
          *                  relative to the address of the operation this handler is handling and the
          *                  value is the full read-resource response. Will not be {@code null}
+         * @param filteredData record of any excluded data
+         * @param address    the address of the targeted resource
+         * @param childType  the type of child being read
          */
-        public ReadChildrenResourcesAssemblyHandler(final Map<PathElement, ModelNode> resources) {
+        private ReadChildrenResourcesAssemblyHandler(final Map<PathElement, ModelNode> resources, FilteredData filteredData,
+                                                     PathAddress address, String childType) {
             this.resources = resources;
+            this.filteredData = filteredData;
+            this.address = address;
+            this.childType = childType;
         }
 
         @Override
@@ -170,12 +179,20 @@ public class ReadChildrenResourcesHandler implements OperationStepHandler {
                             failed = true;
                         }
                     }
+
                     if (!failed) {
+                        boolean hasFilteredData = filteredData.hasFilteredData();
                         final ModelNode result = context.getResult();
                         result.setEmptyObject();
 
                         for (Map.Entry<String, ModelNode> entry : sortedChildren.entrySet()) {
-                            result.get(entry.getKey()).set(entry.getValue());
+                            if (!hasFilteredData || !filteredData.isAddressFiltered(address, PathElement.pathElement(childType, entry.getKey()))) {
+                                result.get(entry.getKey()).set(entry.getValue());
+                            }
+                        }
+
+                        if (hasFilteredData) {
+                            context.getResponseHeaders().get(ACCESS_CONTROL).set(filteredData.toModelNode());
                         }
                     }
 
