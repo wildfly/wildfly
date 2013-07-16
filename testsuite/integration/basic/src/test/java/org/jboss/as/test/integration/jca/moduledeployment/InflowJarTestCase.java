@@ -83,6 +83,11 @@ public class InflowJarTestCase extends AbstractModuleDeploymentTestCase {
 			setConfiguration("inflow.xml");
 
 		}
+
+        @Override
+        protected String getSlot() {
+            return InflowJarTestCase.class.getSimpleName().toLowerCase();
+        }
 	}
 
 	/**

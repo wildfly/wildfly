@@ -73,6 +73,11 @@ public class MultiObjectActivationFlatTestCase extends
 			setConfiguration("multi.xml");
 
 		}
+
+        @Override
+        protected String getSlot() {
+            return MultiObjectActivationFlatTestCase.class.getSimpleName().toLowerCase();
+        }
 	}
 
 	/**

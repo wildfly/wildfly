@@ -58,5 +58,10 @@ public class PureJarTestCase extends PureFlatTestCase {
 			setConfiguration("pure.xml");
 
 		}
+
+        @Override
+        protected String getSlot() {
+            return PureJarTestCase.class.getSimpleName().toLowerCase();
+        }
 	}
 }

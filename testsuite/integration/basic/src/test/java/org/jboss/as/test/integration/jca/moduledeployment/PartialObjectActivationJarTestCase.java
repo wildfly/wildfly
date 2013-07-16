@@ -58,5 +58,10 @@ public class PartialObjectActivationJarTestCase extends PartialObjectActivationF
 			setConfiguration("basic.xml");
 
 		}
+
+        @Override
+        protected String getSlot() {
+            return PartialObjectActivationJarTestCase.class.getSimpleName().toLowerCase();
+        }
 	}
 }
