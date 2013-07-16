@@ -214,8 +214,8 @@ public class Host implements Service<Host>, WebHost {
 
         @Override
         public void stop() throws Exception {
-            manager.stop();
             unregisterDeployment(manager.getDeployment());
+            manager.stop();
         }
 
         @Override

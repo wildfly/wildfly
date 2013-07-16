@@ -101,12 +101,12 @@ public class UndertowDeploymentService implements Service<UndertowDeploymentServ
         if (deploymentManager != null) {
             Deployment deployment = deploymentManager.getDeployment();
             try {
+                host.getValue().unregisterDeployment(deployment);
                 deploymentManager.stop();
             } catch (ServletException e) {
                 throw new RuntimeException(e);
             }
             deploymentManager.undeploy();
-            host.getValue().unregisterDeployment(deployment);
             container.getValue().getServletContainer().removeDeployment(deploymentInfoInjectedValue.getValue());
         }
         recursiveDelete(deploymentInfoInjectedValue.getValue().getTempDir());
