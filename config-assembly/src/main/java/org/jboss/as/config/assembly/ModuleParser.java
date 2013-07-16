@@ -33,6 +33,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.List;
+
 import javax.xml.stream.XMLInputFactory;
 import javax.xml.stream.XMLStreamException;
 import javax.xml.stream.XMLStreamReader;
@@ -44,20 +45,25 @@ import org.jboss.modules.ModuleIdentifier;
  * @author Thomas.Diesler@jboss.com
  * @since 06-Sep-2012
  */
-class ModuleParser {
+public final class ModuleParser {
 
     private final File inputFile;
-    List<ModuleDependency> dependencies = new ArrayList<ModuleDependency>();
+    private ModuleIdentifier identifier;
+    private List<ModuleDependency> dependencies = new ArrayList<ModuleDependency>();
 
-    ModuleParser(final File inputFile) {
+    public ModuleParser(final File inputFile) {
         this.inputFile = inputFile;
     }
 
-    List<ModuleDependency> getDependencies() {
+    public ModuleIdentifier getIdentifier() {
+        return identifier;
+    }
+
+    public List<ModuleDependency> getDependencies() {
         return dependencies;
     }
 
-    void parse() throws IOException, XMLStreamException {
+    public ModuleParser parse() throws IOException, XMLStreamException {
         InputStream in = new BufferedInputStream(new FileInputStream(inputFile));
         try {
             XMLStreamReader reader = XMLInputFactory.newInstance().createXMLStreamReader(in);
@@ -77,19 +83,31 @@ class ModuleParser {
                         }
                         break;
                     case END_DOCUMENT:
-                        return;
+                        break;
                 }
             }
-
         } finally {
             try {
                 in.close();
             } catch (Exception ignore) {
             }
         }
+        return this;
     }
 
     private void parseModule(XMLStreamReader reader) throws XMLStreamException {
+        String name = null;
+        String slot = "main";
+        for (int i = 0 ; i < reader.getAttributeCount() ; i++) {
+            String localName = reader.getAttributeLocalName(i);
+            if (localName.equals("name")) {
+                name = reader.getAttributeValue(i);
+            }
+            else if (localName.equals("slot")) {
+                slot = reader.getAttributeValue(i);
+            }
+        }
+        identifier = ModuleIdentifier.create(name, slot);
         while (reader.hasNext()) {
             int type = reader.next();
             switch (type) {
@@ -102,6 +120,7 @@ class ModuleParser {
                     if (reader.getLocalName().equals("module")) {
                         return;
                     }
+                    break;
             }
         }
     }
@@ -153,7 +172,7 @@ class ModuleParser {
         }
     }
 
-    static class ModuleDependency {
+    public static class ModuleDependency {
         private final ModuleIdentifier moduleId;
         private final boolean optional;
 
@@ -162,11 +181,11 @@ class ModuleParser {
             this.optional = optional;
         }
 
-        ModuleIdentifier getModuleId() {
+        public ModuleIdentifier getModuleIdentifier() {
             return moduleId;
         }
 
-        boolean isOptional() {
+        public boolean isOptional() {
             return optional;
         }
 

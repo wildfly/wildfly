@@ -181,7 +181,7 @@ public class GenerateModulesDefinition {
     }
 
     private void processModuleDependency(List<ModuleIdentifier> dependencies, ElementNode parentNode, ModuleDependency dep) throws IOException, XMLStreamException {
-        ModuleIdentifier moduleId = dep.getModuleId();
+        ModuleIdentifier moduleId = dep.getModuleIdentifier();
         if (dependencies.contains(moduleId)) {
             log.debugf("Already defined: %s", moduleId);
             return;

@@ -1,0 +1,58 @@
+<!--
+  ~ JBoss, Home of Professional Open Source.
+  ~ Copyright 2012, Red Hat, Inc., and individual contributors
+  ~ as indicated by the @author tags. See the copyright.txt file in the
+  ~ distribution for a full listing of individual contributors.
+  ~
+  ~ This is free software; you can redistribute it and/or modify it
+  ~ under the terms of the GNU Lesser General Public License as
+  ~ published by the Free Software Foundation; either version 2.1 of
+  ~ the License, or (at your option) any later version.
+  ~
+  ~ This software is distributed in the hope that it will be useful,
+  ~ but WITHOUT ANY WARRANTY; without even the implied warranty of
+  ~ MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
+  ~ Lesser General Public License for more details.
+  ~
+  ~ You should have received a copy of the GNU Lesser General Public
+  ~ License along with this software; if not, write to the Free
+  ~ Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
+  ~ 02110-1301 USA, or see the FSF site: http://www.fsf.org.
+  -->
+
+<project default="check-wiring-integrity">
+
+	<target name="init" >
+	</target>
+	
+	<target name="check-wiring-integrity" depends="init" description="Check modules wiring integrity">
+
+		<check-wiring-integrity 
+			paramModulesPath="${modules.path}"
+			paramGlobalPackageIgnore="${global.packages.ignore}"
+			paramModulePackageIgnore="${modules.packages.ignore}" 
+			paramFailOnError="false" 
+		/>
+
+	</target>
+
+	<macrodef name="check-wiring-integrity">
+		<attribute name="paramModulesPath" />
+		<attribute name="paramGlobalPackageIgnore" />
+		<attribute name="paramModulePackageIgnore" />
+		<attribute name="paramFailOnError" />
+		<sequential>
+			<echo>Checking modules integrity of @{paramModulesPath}</echo>
+			<java classname="org.jboss.as.build.modular.ModulesIntegrityChecker" fork="true" failonerror="true">
+				<jvmarg value="-Djava.util.logging.manager=org.jboss.logmanager.LogManager"/>
+				<classpath>
+					<path refid="maven.compile.classpath" />
+				</classpath>
+				<arg value="@{paramModulesPath}" />
+				<arg value="@{paramGlobalPackageIgnore}" />
+				<arg value="@{paramModulePackageIgnore}" />
+				<arg value="@{paramFailOnError}" />
+			</java>
+		</sequential>
+	</macrodef>
+</project>

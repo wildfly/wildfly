@@ -32,7 +32,6 @@
         <version>8.0.0.Alpha3-SNAPSHOT</version>
     </parent>
 
-    <groupId>org.wildfly</groupId>
     <artifactId>wildfly-config-assembly</artifactId>
 
     <name>WildFly: Config Assembly</name>

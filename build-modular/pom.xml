@@ -22,6 +22,12 @@
   ~ 02110-1301 USA, or see the FSF site: http://www.fsf.org.
   -->
 
+<!-- 
+    Set these VM properties in your IDE debugger 
+
+	-Dmodules.path=${workspace_loc:wildfly-build}/target/wildfly-8.0.0.Alpha3-SNAPSHOT/modules/system/layers/base
+    -Djava.util.logging.manager=org.jboss.logmanager.LogManager 
+-->
 <project xmlns="http://maven.apache.org/POM/4.0.0"
          xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
@@ -43,15 +49,67 @@
         <generated.configs>${basedir}/target/generated-configs</generated.configs>
         <generated.configs.standalone>${generated.configs}/standalone/configuration</generated.configs.standalone>
         <generated.configs.src.dir>${basedir}/../build/src/main/resources</generated.configs.src.dir>
+        <jboss.home>${project.basedir}/../${wildfly.build.output.dir}</jboss.home>
     </properties>
     
     <dependencies>
     	<dependency>
     		<groupId>org.wildfly</groupId>
+    		<artifactId>wildfly-build</artifactId>
+    		<type>pom</type>
+    	</dependency>
+    	<dependency>
+    		<groupId>org.wildfly</groupId>
     		<artifactId>wildfly-config-assembly</artifactId>
     	</dependency>
+        <dependency>
+            <groupId>org.javassist</groupId>
+            <artifactId>javassist</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>junit</groupId>
+            <artifactId>junit</artifactId>
+            <scope>test</scope>
+        </dependency>
     </dependencies>
-        
+
+	<build>
+		<plugins>
+            <plugin>
+                <artifactId>maven-surefire-plugin</artifactId>
+                <configuration>
+                    <systemPropertyVariables>
+                        <java.util.logging.manager>org.jboss.logmanager.LogManager</java.util.logging.manager>
+                        <modules.path>${jboss.home}/modules/system/layers/base</modules.path>
+                    </systemPropertyVariables>
+                    <redirectTestOutputToFile>false</redirectTestOutputToFile>
+                </configuration>
+            </plugin>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-antrun-plugin</artifactId>
+                <inherited>false</inherited>
+                <executions>
+                    <execution>
+                        <id>check-integrity</id>
+                        <goals>
+                            <goal>run</goal>
+                        </goals>
+                        <phase>package</phase>
+                        <configuration>
+                            <target>
+                            	<property name="modules.path" value="${jboss.home}/modules/system/layers/base"/>
+                            	<property name="global.packages.ignore" value="org.jboss.logging.annotations"/>
+                            	<property name="modules.packages.ignore" value="${basedir}/src/main/resources/module-package-ignore.txt"/>
+                                <ant antfile="src/main/resources/check-wiring-integrity.xml" inheritRefs="true"/>
+                            </target>
+                        </configuration>
+                    </execution>
+                </executions>
+            </plugin>
+		</plugins>
+	</build>
+	        
     <profiles>
         <profile>
             <id>modular-minimal</id>
@@ -83,7 +141,7 @@
 		                        <phase>generate-resources</phase>
 		                        <configuration>
 		                            <target>
-		                                <ant antfile="src/main/resources/build-modular-config.xml" target="all" inheritRefs="true"/>
+		                                <ant antfile="src/main/resources/build-modular-config.xml" inheritRefs="true"/>
 		                            </target>
 		                        </configuration>
 		                    </execution>

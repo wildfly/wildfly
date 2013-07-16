@@ -1,0 +1,5 @@
+# Defines module specific packages to ignore
+
+org.jboss.common-core:main
+   org.apache.commons.httpclient
+   org.apache.webdav.lib
