@@ -53,7 +53,6 @@ import org.junit.runner.RunWith;
  * @author Richard Achmatowicz (c) 2011 Red Hat Inc.
  */
 
-@Ignore
 @RunWith(BMUnitRunner.class)
 public class JGroupsSubsystemTransformerTestCase extends OperationTestCaseBase {
 

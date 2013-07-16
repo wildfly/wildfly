@@ -324,6 +324,10 @@ public class ProtocolStackAdd extends AbstractAddStepHandler {
             throw JGroupsMessages.MESSAGES.transportNotDefined(stackName);
         }
 
+        ModelNode protocolsModelNode = model.get(ModelKeys.PROTOCOL);
+        if (!protocolsModelNode.isDefined())
+            throw JGroupsMessages.MESSAGES.protocolListNotDefined(stackName);
+
         List<Property> protocols = model.get(ModelKeys.PROTOCOL).asPropertyList();
         if (protocols == null || !(protocols.size() > 0)) {
             throw JGroupsMessages.MESSAGES.protocolListNotDefined(stackName);
