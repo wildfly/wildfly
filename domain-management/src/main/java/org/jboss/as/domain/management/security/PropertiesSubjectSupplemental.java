@@ -50,8 +50,11 @@ public class PropertiesSubjectSupplemental extends PropertiesFileLoader implemen
     public static final String SERVICE_SUFFIX = "properties_authorization";
     private static final String COMMA = ",";
 
-    public PropertiesSubjectSupplemental(final String path) {
+    private final String realmName;
+
+    public PropertiesSubjectSupplemental(final String realmName, final String path) {
         super(path);
+        this.realmName = realmName;
     }
 
     /*
@@ -105,7 +108,7 @@ public class PropertiesSubjectSupplemental extends PropertiesFileLoader implemen
             for (String current : groups) {
                 String cleaned = current.trim();
                 if (cleaned.length() > 0) {
-                    response.add(new RealmGroup(cleaned));
+                    response.add(new RealmGroup(realmName, cleaned));
                 }
             }
         } else {

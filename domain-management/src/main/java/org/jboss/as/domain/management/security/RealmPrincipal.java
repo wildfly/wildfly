@@ -1,6 +1,6 @@
 /*
  * JBoss, Home of Professional Open Source.
- * Copyright 2012, Red Hat, Inc., and individual contributors
+ * Copyright 2013, Red Hat, Inc., and individual contributors
  * as indicated by the @author tags. See the copyright.txt file in the
  * distribution for a full listing of individual contributors.
  *
@@ -22,19 +22,15 @@
 
 package org.jboss.as.domain.management.security;
 
+import java.security.Principal;
+
 /**
- * The Principal used to represent the name of an authenticated user.
+ * An extension of a {@link Principal} for principals that also have a realm name to uniquely identify them.
  *
  * @author <a href="mailto:darran.lofthouse@jboss.com">Darran Lofthouse</a>
  */
-public class RealmUser extends AbstractRealmPrincipal {
+public interface RealmPrincipal extends Principal {
 
-    public RealmUser(String realm, String name) {
-        super(realm, name);
-    }
-
-    public RealmUser(String name) {
-        super(name);
-    }
+    String getRealm();
 
 }
