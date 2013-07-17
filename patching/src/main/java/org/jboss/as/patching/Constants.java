@@ -60,6 +60,7 @@ public class Constants {
     public static final String INSTALLATION = ".installation";
     public static final String METADATA = ".metadata";
     public static final String PATCHES = "patches";
+    public static final String OVERLAYS = ".overlays";
     public static final String STANDALONE = "standalone";
 
     public static final String LAYERS = "layers";

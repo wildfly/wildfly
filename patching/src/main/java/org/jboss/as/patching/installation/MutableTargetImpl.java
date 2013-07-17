@@ -114,8 +114,8 @@ class MutableTargetImpl implements InstallationManager.MutablePatchingTarget {
         }
 
         if (structure.getModuleRoot() != null) {
-            final File overlays = new File(structure.getModuleRoot(), Constants.PATCHES);
-            final File refs = new File(overlays, Constants.PATCHES);
+            final File overlays = new File(structure.getModuleRoot(), Constants.OVERLAYS);
+            final File refs = new File(overlays, Constants.OVERLAYS);
             PatchUtils.writeRefs(refs, consolidate);
         }
 
