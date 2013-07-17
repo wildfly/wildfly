@@ -22,28 +22,12 @@
 
 package org.wildfly.extension.undertow.deployment;
 
-import java.lang.reflect.Modifier;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
-
-import javax.websocket.ClientEndpoint;
-import javax.websocket.DeploymentException;
-import javax.websocket.Endpoint;
-import javax.websocket.server.ServerApplicationConfig;
-import javax.websocket.server.ServerContainer;
-import javax.websocket.server.ServerEndpoint;
-import javax.websocket.server.ServerEndpointConfig;
-
-import io.undertow.servlet.util.DefaultClassIntrospector;
 import io.undertow.websockets.jsr.JsrWebSocketFilter;
 import io.undertow.websockets.jsr.JsrWebSocketLogger;
 import io.undertow.websockets.jsr.ServerWebSocketContainer;
+import io.undertow.websockets.jsr.WebSocketDeploymentInfo;
 import org.jboss.as.ee.component.EEModuleDescription;
-import org.wildfly.extension.io.IOServices;
-import org.jboss.as.naming.ManagedReferenceInjector;
+import org.jboss.as.naming.ImmediateManagedReferenceFactory;
 import org.jboss.as.naming.ServiceBasedNamingStore;
 import org.jboss.as.naming.deployment.ContextNames;
 import org.jboss.as.naming.service.BinderService;
@@ -54,7 +38,6 @@ import org.jboss.as.server.deployment.DeploymentUnitProcessingException;
 import org.jboss.as.server.deployment.DeploymentUnitProcessor;
 import org.jboss.as.server.deployment.annotation.CompositeIndex;
 import org.jboss.as.server.deployment.reflect.DeploymentClassIndex;
-import org.wildfly.extension.undertow.UndertowLogger;
 import org.jboss.as.web.common.ServletContextAttribute;
 import org.jboss.as.web.common.WarMetaData;
 import org.jboss.jandex.AnnotationInstance;
@@ -66,8 +49,23 @@ import org.jboss.metadata.web.spec.FiltersMetaData;
 import org.jboss.modules.Module;
 import org.jboss.msc.service.ServiceName;
 import org.jboss.msc.service.ServiceTarget;
+import org.wildfly.extension.io.IOServices;
+import org.wildfly.extension.undertow.UndertowLogger;
 import org.xnio.Pool;
 import org.xnio.XnioWorker;
+
+import javax.websocket.ClientEndpoint;
+import javax.websocket.Endpoint;
+import javax.websocket.server.ServerApplicationConfig;
+import javax.websocket.server.ServerContainer;
+import javax.websocket.server.ServerEndpoint;
+import javax.websocket.server.ServerEndpointConfig;
+import java.lang.reflect.Modifier;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
 
 /**
  * Deployment processor for native JSR-356 websockets
@@ -90,7 +88,7 @@ public class UndertowJSRWebSocketDeploymentProcessor implements DeploymentUnitPr
 
         final DeploymentClassIndex classIndex = deploymentUnit.getAttachment(Attachments.CLASS_INDEX);
         final Module module = deploymentUnit.getAttachment(Attachments.MODULE);
-        if(module == null) {
+        if (module == null) {
             return;
         }
 
@@ -174,11 +172,11 @@ public class UndertowJSRWebSocketDeploymentProcessor implements DeploymentUnitPr
                 }
             }
 
-            ServerWebSocketContainer container = new ServerWebSocketContainer(DefaultClassIntrospector.INSTANCE); //TODO: fix
+            WebSocketDeploymentInfo webSocketDeploymentInfo = new WebSocketDeploymentInfo();
 
-            doDeployment(container, annotatedEndpoints, config, endpoints);
+            doDeployment(webSocketDeploymentInfo, annotatedEndpoints, config, endpoints);
 
-            installWebsockets(phaseContext, metaData, container);
+            installWebsockets(phaseContext, metaData, webSocketDeploymentInfo);
 
         } finally {
             Thread.currentThread().setContextClassLoader(oldCl);
@@ -186,7 +184,7 @@ public class UndertowJSRWebSocketDeploymentProcessor implements DeploymentUnitPr
 
     }
 
-    private void installWebsockets(final DeploymentPhaseContext phaseContext, final WarMetaData metaData, final ServerWebSocketContainer container) {
+    private void installWebsockets(final DeploymentPhaseContext phaseContext, final WarMetaData metaData, final WebSocketDeploymentInfo webSocketDeploymentInfo) {
         DeploymentUnit deploymentUnit = phaseContext.getDeploymentUnit();
         final EEModuleDescription moduleDescription = deploymentUnit.getAttachment(org.jboss.as.ee.component.Attachments.EE_MODULE_DESCRIPTION);
         FiltersMetaData filters = metaData.getMergedJBossWebMetaData().getFilters();
@@ -209,34 +207,43 @@ public class UndertowJSRWebSocketDeploymentProcessor implements DeploymentUnitPr
         mapping.setUrlPatterns(Collections.singletonList("/*"));
         mappings.add(mapping);
 
-        deploymentUnit.addToAttachmentList(ServletContextAttribute.ATTACHMENT_KEY, new ServletContextAttribute(ServerContainer.class.getName(), container));
+        deploymentUnit.addToAttachmentList(ServletContextAttribute.ATTACHMENT_KEY, new ServletContextAttribute(ServerContainer.class.getName(), webSocketDeploymentInfo));
 
         final ServiceName serviceName = deploymentUnit.getServiceName().append(WebSocketContainerService.SERVICE_NAME);
-        WebSocketContainerService service = new WebSocketContainerService(container);
+        WebSocketContainerService service = new WebSocketContainerService(webSocketDeploymentInfo);
         phaseContext.getServiceTarget().addService(serviceName, service)
                 .addDependency(IOServices.WORKER.append("default"), XnioWorker.class, service.getXnioWorker()) //TODO: make this configurable
                 .addDependency(IOServices.BUFFER_POOL.append("default"), Pool.class, service.getInjectedBuffer())
                 .install();
 
+        deploymentUnit.addToAttachmentList(ServletContextAttribute.ATTACHMENT_KEY, new ServletContextAttribute(WebSocketDeploymentInfo.ATTRIBUTE_NAME, webSocketDeploymentInfo));
+
         //bind the container to JNDI to make it availble for resource injection
         //this is not request by the spec, but is an convenient extension
         final ServiceName moduleContextServiceName = ContextNames.contextServiceNameOfModule(moduleDescription.getApplicationName(), moduleDescription.getModuleName());
-        bindJndiServices(deploymentUnit, phaseContext.getServiceTarget(), moduleContextServiceName, serviceName);
+        bindJndiServices(deploymentUnit, phaseContext.getServiceTarget(), moduleContextServiceName, serviceName, webSocketDeploymentInfo);
 
         deploymentUnit.addToAttachmentList(Attachments.WEB_DEPENDENCIES, serviceName);
     }
 
-    private void bindJndiServices(final DeploymentUnit deploymentUnit, final ServiceTarget serviceTarget, final ServiceName contextServiceName, final ServiceName serviceName) {
+    private void bindJndiServices(final DeploymentUnit deploymentUnit, final ServiceTarget serviceTarget, final ServiceName contextServiceName, final ServiceName serviceName, final WebSocketDeploymentInfo webSocketInfo) {
         final ServiceName bindingServiceName = contextServiceName.append("ServerContainer");
         final BinderService binderService = new BinderService("ServerContainer");
         serviceTarget.addService(bindingServiceName, binderService)
-                .addDependency(serviceName, ServerWebSocketContainer.class, new ManagedReferenceInjector<ServerWebSocketContainer>(binderService.getManagedObjectInjector()))
+                .addDependency(serviceName)
                 .addDependency(contextServiceName, ServiceBasedNamingStore.class, binderService.getNamingStoreInjector())
                 .install();
+
+        webSocketInfo.addListener(new WebSocketDeploymentInfo.ContainerReadyListener() {
+            @Override
+            public void ready(ServerWebSocketContainer container) {
+                binderService.getManagedObjectInjector().inject(new ImmediateManagedReferenceFactory(container));
+            }
+        });
         deploymentUnit.addToAttachmentList(org.jboss.as.server.deployment.Attachments.JNDI_DEPENDENCIES, bindingServiceName);
     }
 
-    private void doDeployment(final ServerWebSocketContainer container, final Set<Class<?>> annotatedEndpoints, final Set<Class<? extends ServerApplicationConfig>> serverApplicationConfigClasses, final Set<Class<? extends Endpoint>> endpoints) throws DeploymentUnitProcessingException {
+    private void doDeployment(final WebSocketDeploymentInfo container, final Set<Class<?>> annotatedEndpoints, final Set<Class<? extends ServerApplicationConfig>> serverApplicationConfigClasses, final Set<Class<? extends Endpoint>> endpoints) throws DeploymentUnitProcessingException {
 
         Set<Class<? extends Endpoint>> allScannedEndpointImplementations = new HashSet<>(endpoints);
         Set<Class<?>> allScannedAnnotatedEndpoints = new HashSet<>(annotatedEndpoints);
@@ -253,14 +260,14 @@ public class UndertowJSRWebSocketDeploymentProcessor implements DeploymentUnitPr
         }
 
 
-        if(!configInstances.isEmpty()) {
+        if (!configInstances.isEmpty()) {
             for (ServerApplicationConfig config : configInstances) {
                 Set<Class<?>> returnedEndpoints = config.getAnnotatedEndpointClasses(allScannedAnnotatedEndpoints);
-                if(returnedEndpoints != null) {
+                if (returnedEndpoints != null) {
                     newAnnotatatedEndpoints.addAll(returnedEndpoints);
                 }
                 Set<ServerEndpointConfig> endpointConfigs = config.getEndpointConfigs(allScannedEndpointImplementations);
-                if(endpointConfigs != null) {
+                if (endpointConfigs != null) {
                     serverEndpointConfigurations.addAll(endpointConfigs);
                 }
             }
@@ -268,18 +275,13 @@ public class UndertowJSRWebSocketDeploymentProcessor implements DeploymentUnitPr
             newAnnotatatedEndpoints.addAll(allScannedAnnotatedEndpoints);
         }
 
-        //ok, now we have our endpoints, lets deploy them
-        try {
-            //annotated endpoints first
-            for (Class<?> endpoint : newAnnotatatedEndpoints) {
-                container.addEndpoint(endpoint);
-            }
+        //annotated endpoints first
+        for (Class<?> endpoint : newAnnotatatedEndpoints) {
+            container.addEndpoint(endpoint);
+        }
 
-            for (final ServerEndpointConfig endpoint : serverEndpointConfigurations) {
-                container.addEndpoint(endpoint);
-            }
-        } catch (DeploymentException e) {
-            throw new DeploymentUnitProcessingException(e);
+        for (final ServerEndpointConfig endpoint : serverEndpointConfigurations) {
+            container.addEndpoint(endpoint);
         }
     }
 

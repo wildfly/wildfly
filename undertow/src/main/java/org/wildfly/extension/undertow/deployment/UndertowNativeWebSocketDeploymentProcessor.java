@@ -22,10 +22,7 @@
 
 package org.wildfly.extension.undertow.deployment;
 
-import java.util.ArrayList;
-
 import io.undertow.servlet.websockets.WebSocketServlet;
-import io.undertow.websockets.api.WebSocketSessionHandler;
 import io.undertow.websockets.core.handler.WebSocketConnectionCallback;
 import org.jboss.as.server.deployment.Attachments;
 import org.jboss.as.server.deployment.DeploymentPhaseContext;
@@ -38,10 +35,12 @@ import org.jboss.metadata.javaee.spec.ParamValueMetaData;
 import org.jboss.metadata.web.jboss.JBossServletMetaData;
 import org.jboss.metadata.web.jboss.JBossWebMetaData;
 
+import java.util.ArrayList;
+
 /**
  * Deployment processor for native (not JSR) web sockets.
  * <p/>
- * If a {@link WebSocketSessionHandler} or {@link WebSocketSessionHandler}is mapped as a servlet then it is replaced by the
+ * If a {@link WebSocketConnectionCallback} is mapped as a servlet then it is replaced by the
  * handshake servlet
  *
  * @author Stuart Douglas
@@ -62,8 +61,7 @@ public class UndertowNativeWebSocketDeploymentProcessor implements DeploymentUni
                 if (servlet.getServletClass() != null) {
                     try {
                         Class<?> clazz = classIndex.classIndex(servlet.getServletClass()).getModuleClass();
-                        if (WebSocketSessionHandler.class.isAssignableFrom(clazz) ||
-                                WebSocketConnectionCallback.class.isAssignableFrom(clazz)) {
+                        if (WebSocketConnectionCallback.class.isAssignableFrom(clazz)) {
                             servlet.setServletClass(WebSocketServlet.class.getName());
                             if (servlet.getInitParam() == null) {
                                 servlet.setInitParam(new ArrayList<ParamValueMetaData>());

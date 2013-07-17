@@ -22,7 +22,7 @@
 
 package org.wildfly.extension.undertow.deployment;
 
-import io.undertow.websockets.jsr.ServerWebSocketContainer;
+import io.undertow.websockets.jsr.WebSocketDeploymentInfo;
 import org.jboss.msc.service.Service;
 import org.jboss.msc.service.ServiceName;
 import org.jboss.msc.service.StartContext;
@@ -35,32 +35,32 @@ import org.xnio.XnioWorker;
 /**
  * @author Stuart Douglas
  */
-public class WebSocketContainerService implements Service<ServerWebSocketContainer> {
+public class WebSocketContainerService implements Service<WebSocketDeploymentInfo> {
 
-    public static final ServiceName SERVICE_NAME = ServiceName.of("WebSocketContainerService");
+    public static final ServiceName SERVICE_NAME = ServiceName.of("WebSocketDeploymentService");
 
-    private final ServerWebSocketContainer container;
+    private final WebSocketDeploymentInfo webSocketDeploymentInfo;
     private final InjectedValue<Pool> injectedBuffer = new InjectedValue<>();
     private final InjectedValue<XnioWorker> xnioWorker = new InjectedValue<>();
 
-    public WebSocketContainerService(final ServerWebSocketContainer container) {
-        this.container = container;
+    public WebSocketContainerService(final WebSocketDeploymentInfo webSocketDeploymentInfo) {
+        this.webSocketDeploymentInfo = webSocketDeploymentInfo;
     }
 
     @Override
     public void start(final StartContext startContext) throws StartException {
         //HttpClient client = HttpClient.create(xnioWorker.getValue(), OptionMap.EMPTY);
-        container.start(xnioWorker.getValue(), injectedBuffer.getValue());
+        webSocketDeploymentInfo.setBuffers(injectedBuffer.getValue())
+                .setWorker(xnioWorker.getValue());
     }
 
     @Override
     public void stop(final StopContext stopContext) {
-        container.stop();
     }
 
     @Override
-    public ServerWebSocketContainer getValue() throws IllegalStateException, IllegalArgumentException {
-        return container;
+    public WebSocketDeploymentInfo getValue() throws IllegalStateException, IllegalArgumentException {
+        return webSocketDeploymentInfo;
     }
 
     public InjectedValue<Pool> getInjectedBuffer() {
