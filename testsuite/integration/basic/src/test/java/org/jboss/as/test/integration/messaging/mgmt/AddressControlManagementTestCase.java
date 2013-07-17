@@ -178,6 +178,7 @@ public class AddressControlManagementTestCase {
 
         ModelNode op = getAddressOperation("read-resource");
         op.get("include-runtime").set(true);
+        op.get("recursive").set(true);
         ModelNode result = execute(op, true);
         Assert.assertEquals(ModelType.OBJECT, result.getType());
 

@@ -33,6 +33,9 @@ import org.jboss.as.controller.PathElement;
 import org.jboss.as.controller.registry.Resource;
 import org.jboss.dmr.ModelNode;
 
+/**
+ * Custom {@link Resource} that represents a messaging security role.
+ */
 public class SecurityRoleResource implements Resource {
 
     public static final SecurityRoleResource INSTANCE = new SecurityRoleResource();
@@ -120,11 +123,11 @@ public class SecurityRoleResource implements Resource {
         return new SecurityRoleResource();
     }
 
-    public static class SecuriyRoleResourceEntry extends SecurityRoleResource implements ResourceEntry {
+    public static class SecurityRoleResourceEntry extends SecurityRoleResource implements ResourceEntry {
 
         final PathElement path;
 
-        public SecuriyRoleResourceEntry(String name) {
+        public SecurityRoleResourceEntry(String name) {
             path = PathElement.pathElement(ROLE, name);
         }
 
@@ -139,8 +142,8 @@ public class SecurityRoleResource implements Resource {
         }
 
         @Override
-        public SecuriyRoleResourceEntry clone() {
-            return new SecuriyRoleResourceEntry(path.getValue());
+        public SecurityRoleResourceEntry clone() {
+            return new SecurityRoleResourceEntry(path.getValue());
         }
     }
 }
