@@ -48,20 +48,21 @@ import org.jboss.as.patching.installation.InstalledImage;
  * |   |-- system (system bundles contains only bundles, no patches metadata)
  * |   |   |-- layers
  * |   |   |   |-- xyz
- * |   |   |   |   `-- patches (overlay directory)
+ * |   |   |   |   `-- .overlays (overlay directory)
+ * |   |   |   |       |-- .overlays (overlay metadata)
  * |   |   |   |       |-- patch-xyz-1
  * |   |   |   |       `-- patch-xyz-2
  * |   |   |   |-- vuw
- * |   |   |   |   `-- patches (overlay directory)
+ * |   |   |   |   `-- .overlays (overlay directory)
  * |   |   |   |       `-- patch-vuw-1
  * |   |   |   `-- base
- * |   |   |       |-- patches (overlay directory)
+ * |   |   |       |-- .overlays (overlay directory)
  * |   |   |       |   |-- patch-base-1
  * |   |   |       |   `-- patch-base-2
  * |   |   |       `-- org/jboss/as/osgi
  * |   |   `-- add-ons
  * |   |       `-- def
- * |   |           `-- patches (overlay directory)
+ * |   |           `-- .overlays (overlay directory)
  * |   |               |-- patch-def-1
  * |   |               `-- patch-def-2
  * |   |
@@ -73,21 +74,21 @@ import org.jboss.as.patching.installation.InstalledImage;
  * |   |-- system (system modules contains only modules, no patches metadata)
  * |   |   |-- layers
  * |   |   |   |-- xyz
- * |   |   |   |    `-- patches (overlay directory)
+ * |   |   |   |    `-- .overlays (overlay directory)
  * |   |   |   |       |-- patch-xyz-1
  * |   |   |   |       `-- patch-xyz-2
  * |   |   |   |-- vuw
- * |   |   |   |    `-- patches (overlay directory)
+ * |   |   |   |    `-- .overlays (overlay directory)
  * |   |   |   |        `-- patch-vuw-1
  * |   |   |   ` -- base
- * |   |   |        |-- patches (overlay directory)
+ * |   |   |        |-- .overlays (overlay directory)
  * |   |   |        |   |-- patch-base-1
  * |   |   |        |   `-- patch-base-2
  * |   |   |        |-- org/jboss/as/...
  * |   |   |        `-- org/jboss/as/server/main/module.xml
  * |   |   `-- add-ons
  * |   |       `-- def
- * |   |           `-- patches (overlay directory)
+ * |   |           `-- .overlays (overlay directory)
  * |   |               |-- patch-def-1
  * |   |               `-- patch-def-2
  * |   |
@@ -95,23 +96,23 @@ import org.jboss.as.patching.installation.InstalledImage;
  * |
  * |-- .installation (metadata directory for the installation)
  * |   |-- identity.conf (patched state for the installed identity)
- * |   `-- patches  (history of the patches applied to the identity)
- * |       `-- patch-identity-1
- * |           |-- patch.xml
- * |           |-- rollback.xml
- * |           |-- timestamp
- * |           |-- configuration   (configuration backup)
- * |           `-- misc            (misc backup)
- * |       |-- layers (metadata for patched layers)
- * |       |   |-- base
- * |       |   |   `-- layer.conf (patched state for the layer)
- * |       |   |-- xyz
- * |       |   |   `-- layer.conf
- * |       |   |-- vuw
- * |       |   |   `-- layer.conf
- * |       `-- add-ons (metadata for patched add-ons)
- * |           `-- def
- * |               `-- layer.conf
+ * |   |-- patches  (history of the patches applied to the identity)
+ * |   |    `-- patch-identity-1
+ * |   |       |-- patch.xml
+ * |   |       |-- rollback.xml
+ * |   |       |-- timestamp
+ * |   |       |-- configuration   (configuration backup)
+ * |   |       `-- misc            (misc backup)
+ * |   |-- layers (metadata for patched layers)
+ * |   |   |-- base
+ * |   |   |   `-- layer.conf (patched state for the layer)
+ * |   |   |-- xyz
+ * |   |   |   `-- layer.conf
+ * |   |   |-- vuw
+ * |   |   |   `-- layer.conf
+ * |   `-- add-ons (metadata for patched add-ons)
+ * |       `-- def
+ * |           `-- layer.conf
  * `-- jboss-modules.jar
  * </code>
  * </pre>

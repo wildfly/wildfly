@@ -22,7 +22,7 @@
 
 package org.jboss.as.patching.installation;
 
-import static org.jboss.as.patching.Constants.PATCHES;
+import static org.jboss.as.patching.Constants.OVERLAYS;
 
 import java.io.File;
 
@@ -55,8 +55,8 @@ abstract class LayerDirectoryStructure extends DirectoryStructure {
         if (getBundleRepositoryRoot() == null) {
             return null;
         }
-        // ${repo-root}/bundles/${layer.type+name}/patches/${patch.id}
-        final File patches = new File(getBundleRepositoryRoot(), PATCHES);
+        // ${repo-root}/bundles/${layer.type+name}/.overlays/${patch.id}
+        final File patches = new File(getBundleRepositoryRoot(), OVERLAYS);
         return new File(patches, patchId);
     }
 
@@ -65,8 +65,8 @@ abstract class LayerDirectoryStructure extends DirectoryStructure {
         if (getModuleRoot() == null) {
             return null;
         }
-        // ${repo-root}/modules/${layer.type+name}/patches/${patch.id}
-        final File patches = new File(getModuleRoot(), PATCHES);
+        // ${repo-root}/modules/${layer.type+name}/.overlays/${patch.id}
+        final File patches = new File(getModuleRoot(), OVERLAYS);
         return new File(patches, patchId);
     }
 
