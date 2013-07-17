@@ -88,6 +88,10 @@ public class AccessControlResourceDefinition extends SimpleResourceDefinition {
             .setValidator(new EnumValidator<Provider>(Provider.class, true, false))
             .build();
 
+    public static final SimpleAttributeDefinition USE_REALM_ROLES = new SimpleAttributeDefinitionBuilder(ModelDescriptionConstants.USE_REALM_ROLES, ModelType.BOOLEAN, false)
+    .setDefaultValue(new ModelNode(false))
+    .setAllowExpression(true).build();
+
     private final DelegatingConfigurableAuthorizer configurableAuthorizer;
     private final boolean isDomain;
     private final boolean isHostController;
@@ -125,6 +129,9 @@ public class AccessControlResourceDefinition extends SimpleResourceDefinition {
                     return !context.isBooting();
                 }
             });
+        } else {
+            // Start as model updates only
+            resourceRegistration.registerReadWriteAttribute(USE_REALM_ROLES, null, new ModelOnlyWriteAttributeHandler(USE_REALM_ROLES));
         }
 
         if (!isDomain) {
@@ -137,9 +144,9 @@ public class AccessControlResourceDefinition extends SimpleResourceDefinition {
 
     @Override
     public void registerChildren(ManagementResourceRegistration resourceRegistration) {
-        // Role Mapping
         if (!isHostController) {
-            // TODO
+            // Role Mapping
+            resourceRegistration.registerSubModel(RoleMappingResourceDefinition.INSTANCE);
         }
 
         // Scoped roles
@@ -151,8 +158,8 @@ public class AccessControlResourceDefinition extends SimpleResourceDefinition {
         }
 
         // Constraints
-        //  -- Application Type
         if (!isHostController) {
+            //  -- Application Type
             resourceRegistration.registerSubModel(ApplicationTypeParentResourceDefinition.INSTANCE);
             //  -- Sensitivity Classification
             resourceRegistration.registerSubModel(SensitivityClassificationParentResourceDefinition.INSTANCE);

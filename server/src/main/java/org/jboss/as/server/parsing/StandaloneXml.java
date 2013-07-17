@@ -1345,6 +1345,10 @@ public class StandaloneXml extends CommonXml {
                 requireNamespace(reader, expectedNs);
                 final Element element = Element.forName(reader.getLocalName());
                 switch (element) {
+                    case ROLE_MAPPING: {
+                        ManagementXml.parseAccessControlRoleMapping(reader, address, expectedNs, list);
+                        break;
+                    }
                     case CONSTRAINTS: {
                         ManagementXml.parseAccessControlConstraints(reader, accContAddr, expectedNs, list);
                         break;
