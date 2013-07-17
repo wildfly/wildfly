@@ -59,7 +59,7 @@ public class ApplicationTypeConfigResourceDefinition extends SimpleResourceDefin
 
     public static SimpleAttributeDefinition CONFIGURED_APPLICATION = SimpleAttributeDefinitionBuilder.create(ModelDescriptionConstants.CONFIGURED_APPLICATION, ModelType.BOOLEAN, true)
             .setXmlName(APPLICATION.getLocalName())
-            .setAllowExpression(true)
+//            .setAllowExpression(true)
             .build();
 
     ApplicationTypeConfigResourceDefinition() {

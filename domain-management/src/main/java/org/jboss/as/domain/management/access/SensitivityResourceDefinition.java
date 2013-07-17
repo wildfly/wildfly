@@ -76,18 +76,18 @@ public class SensitivityResourceDefinition extends SimpleResourceDefinition {
 
     public static SimpleAttributeDefinition CONFIGURED_REQUIRES_ACCESS = SimpleAttributeDefinitionBuilder.create(ModelDescriptionConstants.CONFIGURED_REQUIRES_ACCESS, ModelType.BOOLEAN, true)
             .setXmlName(REQUIRES_ACCESS.getLocalName())
-            .setAllowExpression(true)
+//            .setAllowExpression(true)
             .build();
 
 
     public static SimpleAttributeDefinition CONFIGURED_REQUIRES_READ = SimpleAttributeDefinitionBuilder.create(ModelDescriptionConstants.CONFIGURED_REQUIRES_READ, ModelType.BOOLEAN, true)
             .setXmlName(REQUIRES_READ.getLocalName())
-            .setAllowExpression(true)
+//            .setAllowExpression(true)
             .build();
 
     public static SimpleAttributeDefinition CONFIGURED_REQUIRES_WRITE = SimpleAttributeDefinitionBuilder.create(ModelDescriptionConstants.CONFIGURED_REQUIRES_WRITE, ModelType.BOOLEAN, true)
             .setXmlName(REQUIRES_WRITE.getLocalName())
-            .setAllowExpression(true)
+//            .setAllowExpression(true)
             .build();
 
     private SensitivityResourceDefinition(PathElement pathElement, ResourceDescriptionResolver resolver) {
