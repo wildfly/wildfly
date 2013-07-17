@@ -22,9 +22,6 @@
 
 package org.jboss.as.jpa.processor;
 
-import static org.jboss.as.jpa.messages.JpaMessages.MESSAGES;
-import static org.jboss.as.jpa.messages.JpaLogger.ROOT_LOGGER;
-
 import java.util.HashMap;
 import java.util.List;
 import java.util.Locale;
@@ -49,6 +46,7 @@ import org.jboss.as.ee.component.InjectionTarget;
 import org.jboss.as.ee.component.LookupInjectionSource;
 import org.jboss.as.ee.component.MethodInjectionTarget;
 import org.jboss.as.ee.component.ResourceInjectionConfiguration;
+import org.jboss.as.jpa.config.JPADeploymentSettings;
 import org.jboss.as.jpa.container.PersistenceUnitSearch;
 import org.jboss.as.jpa.injectors.PersistenceContextInjectionSource;
 import org.jboss.as.jpa.injectors.PersistenceUnitInjectionSource;
@@ -57,6 +55,7 @@ import org.jboss.as.server.deployment.DeploymentPhaseContext;
 import org.jboss.as.server.deployment.DeploymentUnit;
 import org.jboss.as.server.deployment.DeploymentUnitProcessingException;
 import org.jboss.as.server.deployment.DeploymentUnitProcessor;
+import org.jboss.as.server.deployment.DeploymentUtils;
 import org.jboss.as.server.deployment.JPADeploymentMarker;
 import org.jboss.as.server.deployment.annotation.CompositeIndex;
 import org.jboss.jandex.AnnotationInstance;
@@ -68,6 +67,9 @@ import org.jboss.jandex.FieldInfo;
 import org.jboss.jandex.MethodInfo;
 import org.jboss.msc.service.ServiceName;
 import org.jipijapa.plugin.spi.PersistenceUnitMetadata;
+
+import static org.jboss.as.jpa.messages.JpaLogger.ROOT_LOGGER;
+import static org.jboss.as.jpa.messages.JpaMessages.MESSAGES;
 
 /**
  * Handle PersistenceContext and PersistenceUnit annotations.
@@ -319,10 +321,11 @@ public class JPAAnnotationProcessor implements DeploymentUnitProcessor {
             } else {
                 properties = null;
             }
-
-            return new PersistenceContextInjectionSource(type, synchronizationType , properties, puServiceName, deploymentUnit, scopedPuName, injectionTypeName, pu);
+            // get deployment settings from top level du (jboss-all.xml is only parsed at the top level).
+            final JPADeploymentSettings jpaDeploymentSettings = DeploymentUtils.getTopDeploymentUnit(deploymentUnit).getAttachment(JpaAttachments.DEPLOYMENT_SETTINGS_KEY);
+            return new PersistenceContextInjectionSource(type, synchronizationType , properties, puServiceName, deploymentUnit.getServiceRegistry(), scopedPuName, injectionTypeName, pu, jpaDeploymentSettings);
         } else {
-            return new PersistenceUnitInjectionSource(puServiceName, deploymentUnit, injectionTypeName, pu);
+            return new PersistenceUnitInjectionSource(puServiceName, deploymentUnit.getServiceRegistry(), injectionTypeName, pu);
         }
     }
 

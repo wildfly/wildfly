@@ -43,6 +43,7 @@ import org.jboss.msc.service.StopContext;
 import org.jboss.msc.value.InjectedValue;
 import org.wildfly.extension.undertow.Host;
 import org.wildfly.extension.undertow.ServletContainerService;
+import org.wildfly.extension.undertow.UndertowLogger;
 import org.wildfly.extension.undertow.UndertowMessages;
 
 /**
@@ -91,18 +92,22 @@ public class UndertowDeploymentService implements Service<UndertowDeploymentServ
     @Override
     public void stop(final StopContext stopContext) {
         stopContext();
+        /*ServiceName infoServiceName = stopContext.getController().getName().append(UndertowDeploymentInfoService.SERVICE_NAME);
+        ServiceController infoServiceController = stopContext.getController().getServiceContainer().getService(infoServiceName);
+        infoServiceController.setMode(ServiceController.Mode.REMOVE);*/
     }
 
     public void stopContext() {
         if (deploymentManager != null) {
             Deployment deployment = deploymentManager.getDeployment();
             try {
+                host.getValue().unregisterDeployment(deployment);
                 deploymentManager.stop();
             } catch (ServletException e) {
                 throw new RuntimeException(e);
             }
             deploymentManager.undeploy();
-            host.getValue().unregisterDeployment(deployment);
+            container.getValue().getServletContainer().removeDeployment(deploymentInfoInjectedValue.getValue());
         }
         recursiveDelete(deploymentInfoInjectedValue.getValue().getTempDir());
     }
@@ -187,7 +192,7 @@ public class UndertowDeploymentService implements Service<UndertowDeploymentServ
             recursiveDelete(f);
         }
         if(!file.delete()) {
-            throw UndertowMessages.MESSAGES.couldNotDeleteTempFile(file);
+            UndertowLogger.ROOT_LOGGER.couldNotDeleteTempFile(file);
         }
     }
 }

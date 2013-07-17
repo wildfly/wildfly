@@ -136,6 +136,7 @@ public class PhaseOnePersistenceUnitServiceImpl implements Service<PhaseOnePersi
                         WritableServiceBasedNamingStore.popOwner();
                     }
                 }
+                properties.getValue().remove(CDI_BEAN_MANAGER);
                 context.complete();
             }
         };

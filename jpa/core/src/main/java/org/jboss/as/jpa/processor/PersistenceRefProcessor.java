@@ -40,12 +40,14 @@ import org.jboss.as.ee.component.InjectionSource;
 import org.jboss.as.ee.component.LookupInjectionSource;
 import org.jboss.as.ee.component.ResourceInjectionTarget;
 import org.jboss.as.ee.component.deployers.AbstractDeploymentDescriptorBindingsProcessor;
+import org.jboss.as.jpa.config.JPADeploymentSettings;
 import org.jboss.as.jpa.container.PersistenceUnitSearch;
 import org.jboss.as.jpa.injectors.PersistenceContextInjectionSource;
 import org.jboss.as.jpa.injectors.PersistenceUnitInjectionSource;
 import org.jboss.as.jpa.service.PersistenceUnitServiceImpl;
 import org.jboss.as.server.deployment.DeploymentUnit;
 import org.jboss.as.server.deployment.DeploymentUnitProcessingException;
+import org.jboss.as.server.deployment.DeploymentUtils;
 import org.jboss.as.server.deployment.JPADeploymentMarker;
 import org.jboss.as.server.deployment.reflect.DeploymentReflectionIndex;
 import org.jboss.metadata.javaee.spec.Environment;
@@ -208,7 +210,7 @@ public class PersistenceRefProcessor extends AbstractDeploymentDescriptorBinding
         final PersistenceUnitMetadata pu = PersistenceUnitSearch.resolvePersistenceUnitSupplier(deploymentUnit, searchName);
         String scopedPuName = pu.getScopedPersistenceUnitName();
         ServiceName puServiceName = getPuServiceName(scopedPuName);
-        return new PersistenceUnitInjectionSource(puServiceName, deploymentUnit, EntityManagerFactory.class.getName(), pu);
+        return new PersistenceUnitInjectionSource(puServiceName, deploymentUnit.getServiceRegistry(), EntityManagerFactory.class.getName(), pu);
     }
 
     private InjectionSource getPersistenceContextBindingSource(
@@ -221,7 +223,9 @@ public class PersistenceRefProcessor extends AbstractDeploymentDescriptorBinding
         PersistenceUnitMetadata pu = getPersistenceUnit(deploymentUnit, unitName);
         String scopedPuName = pu.getScopedPersistenceUnitName();
         ServiceName puServiceName = getPuServiceName(scopedPuName);
-        return new PersistenceContextInjectionSource(type, synchronizationType, properties, puServiceName, deploymentUnit, scopedPuName, EntityManager.class.getName(), pu);
+        // get deployment settings from top level du (jboss-all.xml is only parsed at the top level).
+        final JPADeploymentSettings jpaDeploymentSettings = DeploymentUtils.getTopDeploymentUnit(deploymentUnit).getAttachment(JpaAttachments.DEPLOYMENT_SETTINGS_KEY);
+        return new PersistenceContextInjectionSource(type, synchronizationType, properties, puServiceName, deploymentUnit.getServiceRegistry(), scopedPuName, EntityManager.class.getName(), pu, jpaDeploymentSettings);
     }
 
     private PersistenceUnitMetadata getPersistenceUnit(final DeploymentUnit deploymentUnit, final String puName)

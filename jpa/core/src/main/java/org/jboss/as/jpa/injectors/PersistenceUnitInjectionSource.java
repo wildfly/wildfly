@@ -23,8 +23,6 @@
 package org.jboss.as.jpa.injectors;
 
 
-import static org.jboss.as.jpa.messages.JpaMessages.MESSAGES;
-
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 
@@ -36,13 +34,15 @@ import org.jboss.as.naming.ManagedReference;
 import org.jboss.as.naming.ManagedReferenceFactory;
 import org.jboss.as.naming.ValueManagedReference;
 import org.jboss.as.server.deployment.DeploymentPhaseContext;
-import org.jboss.as.server.deployment.DeploymentUnit;
 import org.jboss.as.server.deployment.DeploymentUnitProcessingException;
 import org.jboss.msc.inject.Injector;
 import org.jboss.msc.service.ServiceBuilder;
 import org.jboss.msc.service.ServiceName;
+import org.jboss.msc.service.ServiceRegistry;
 import org.jboss.msc.value.ImmediateValue;
 import org.jipijapa.plugin.spi.PersistenceUnitMetadata;
+
+import static org.jboss.as.jpa.messages.JpaMessages.MESSAGES;
 
 /**
  * Represents the PersistenceUnit injected into a component.
@@ -57,9 +57,9 @@ public class PersistenceUnitInjectionSource extends InjectionSource {
     private final ServiceName puServiceName;
     private final PersistenceUnitMetadata pu;
 
-    public PersistenceUnitInjectionSource(final ServiceName puServiceName, final DeploymentUnit deploymentUnit, final String injectionTypeName, final PersistenceUnitMetadata pu) {
+    public PersistenceUnitInjectionSource(final ServiceName puServiceName, final ServiceRegistry serviceRegistry, final String injectionTypeName, final PersistenceUnitMetadata pu) {
 
-        injectable = new PersistenceUnitJndiInjectable(puServiceName, deploymentUnit, injectionTypeName, pu);
+        injectable = new PersistenceUnitJndiInjectable(puServiceName, serviceRegistry, injectionTypeName, pu);
         this.puServiceName = puServiceName;
         this.pu = pu;
     }
@@ -85,26 +85,26 @@ public class PersistenceUnitInjectionSource extends InjectionSource {
     private static final class PersistenceUnitJndiInjectable implements ManagedReferenceFactory {
 
         final ServiceName puServiceName;
-        final DeploymentUnit deploymentUnit;
+        final ServiceRegistry serviceRegistry;
         final String injectionTypeName;
         final PersistenceUnitMetadata pu;
         private static final String ENTITY_MANAGER_FACTORY_CLASS = "javax.persistence.EntityManagerFactory";
 
         public PersistenceUnitJndiInjectable(
             final ServiceName puServiceName,
-            final DeploymentUnit deploymentUnit,
+            final ServiceRegistry serviceRegistry,
             final String injectionTypeName,
             final PersistenceUnitMetadata pu) {
 
             this.puServiceName = puServiceName;
-            this.deploymentUnit = deploymentUnit;
+            this.serviceRegistry = serviceRegistry;
             this.injectionTypeName = injectionTypeName;
             this.pu = pu;
         }
 
         @Override
         public ManagedReference getReference() {
-            PersistenceUnitServiceImpl service = (PersistenceUnitServiceImpl) deploymentUnit.getServiceRegistry().getRequiredService(puServiceName).getValue();
+            PersistenceUnitServiceImpl service = (PersistenceUnitServiceImpl) serviceRegistry.getRequiredService(puServiceName).getValue();
             EntityManagerFactory emf = service.getEntityManagerFactory();
 
             if (!ENTITY_MANAGER_FACTORY_CLASS.equals(injectionTypeName)) { // inject non-standard wrapped class (e.g. org.hibernate.SessionFactory)

@@ -101,7 +101,7 @@
         <version.dom4j>1.6.1</version.dom4j>
         <version.gnu.getopt>1.0.13</version.gnu.getopt>
         <version.io.netty>3.6.6.Final</version.io.netty>
-        <version.io.undertow>1.0.0.Beta1</version.io.undertow>
+        <version.io.undertow>1.0.0.Beta3</version.io.undertow>
         <version.io.undertow.jastow>1.0.0.Alpha3</version.io.undertow.jastow>
         <version.javax.activation>1.1.1</version.javax.activation>
         <version.javax.enterprise>1.1</version.javax.enterprise>
@@ -184,7 +184,7 @@
         <version.org.jboss.metadata>8.0.0.Beta2</version.org.jboss.metadata>
         <version.org.jboss.mod_cluster>1.2.3.Final</version.org.jboss.mod_cluster>
         <version.org.jboss.modules.jboss-modules>1.2.4.Final</version.org.jboss.modules.jboss-modules>
-        <version.org.jboss.msc.jboss-msc>1.2.0.Beta1</version.org.jboss.msc.jboss-msc>
+        <version.org.jboss.msc.jboss-msc>1.2.0.Beta2</version.org.jboss.msc.jboss-msc>
         <version.org.jboss.osgi.metadata>3.0.0.Final</version.org.jboss.osgi.metadata>
         <version.org.jboss.remote-naming>2.0.0.Beta2</version.org.jboss.remote-naming>
         <version.org.jboss.remoting>4.0.0.Beta1</version.org.jboss.remoting>
@@ -239,7 +239,7 @@
         <version.org.jboss.xnio.xnio-api>${version.org.jboss.xnio}</version.org.jboss.xnio.xnio-api>
         <version.org.jboss.xnio.xnio-nio>${version.org.jboss.xnio}</version.org.jboss.xnio.xnio-nio>
         <version.org.jgroups>3.3.2.Final</version.org.jgroups>
-        <version.org.jipijapa>1.0.0.Alpha3</version.org.jipijapa>
+        <version.org.jipijapa>1.0.0.Alpha4</version.org.jipijapa>
         <version.org.kohsuke.rngom>201103.jboss-1</version.org.kohsuke.rngom>
         <version.org.mockito>1.9.5</version.org.mockito>
         <version.org.opensaml.opensaml>2.5.3</version.org.opensaml.opensaml>

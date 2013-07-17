@@ -30,6 +30,7 @@ import javax.persistence.EntityManagerFactory;
 import javax.persistence.spi.PersistenceProvider;
 import javax.sql.DataSource;
 
+import org.jboss.as.jpa.beanmanager.ProxyBeanManager;
 import org.jboss.as.jpa.classloader.TempClassLoaderFactoryImpl;
 import org.jboss.as.jpa.spi.PersistenceUnitService;
 import org.jboss.as.jpa.subsystem.PersistenceUnitRegistryImpl;
@@ -74,7 +75,7 @@ public class PersistenceUnitServiceImpl implements Service<PersistenceUnitServic
     private final ServiceName deploymentUnitServiceName;
 
     private volatile EntityManagerFactory entityManagerFactory;
-
+    private volatile ProxyBeanManager proxyBeanManager;
 
     public PersistenceUnitServiceImpl(
             final ClassLoader classLoader,
@@ -108,7 +109,8 @@ public class PersistenceUnitServiceImpl implements Service<PersistenceUnitServic
                         phaseOnePersistenceUnitService.setSecondPhaseStarted(true);
                         if (beanManagerInjector.getOptionalValue() != null) {
                             // update the bean manager proxy to the actual CDI bean manager
-                            phaseOnePersistenceUnitService.getBeanManager().setDelegate(beanManagerInjector.getOptionalValue());
+                            proxyBeanManager = phaseOnePersistenceUnitService.getBeanManager();
+                            proxyBeanManager.setDelegate(beanManagerInjector.getOptionalValue());
                         }
                         entityManagerFactory = phaseOnePersistenceUnitService.getEntityManagerFactoryBuilder().build();
                     }
@@ -120,7 +122,9 @@ public class PersistenceUnitServiceImpl implements Service<PersistenceUnitServic
                         pu.setNonJtaDataSource(nonJtaDataSource.getOptionalValue());
 
                         if (beanManagerInjector.getOptionalValue() != null) {
-                            properties.getValue().put(CDI_BEAN_MANAGER, beanManagerInjector.getOptionalValue());
+                            proxyBeanManager = new ProxyBeanManager();
+                            proxyBeanManager.setDelegate(beanManagerInjector.getOptionalValue());
+                            properties.getValue().put(CDI_BEAN_MANAGER, proxyBeanManager);
                         }
                         entityManagerFactory = createContainerEntityManagerFactory();
                     }
@@ -162,6 +166,10 @@ public class PersistenceUnitServiceImpl implements Service<PersistenceUnitServic
                         WritableServiceBasedNamingStore.popOwner();
                         persistenceUnitRegistry.remove(getScopedPersistenceUnitName());
                     }
+                }
+                if(proxyBeanManager != null) {
+                    proxyBeanManager.setDelegate(null);
+                    proxyBeanManager = null;
                 }
                 context.complete();
             }

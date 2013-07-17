@@ -176,4 +176,11 @@ public class SessionManagerFacade implements UndertowSessionManager {
     public int activeSessions() {
         return this.manager.size();
     }
+
+    @Override
+    public io.undertow.server.session.Session getSession(String sessionId) {
+        Session<Void> session = this.manager.findSession(sessionId);
+        if (session == null) { return null; }
+        return new SessionFacade(this, session, null);
+    }
 }

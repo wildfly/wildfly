@@ -28,6 +28,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.concurrent.CopyOnWriteArraySet;
 import javax.servlet.Servlet;
 
 import io.undertow.server.HttpHandler;
@@ -59,7 +60,7 @@ public class Host implements Service<Host>, WebHost {
     private final String name;
     private final InjectedValue<Server> server = new InjectedValue<>();
     private final InjectedValue<UndertowService> undertowService = new InjectedValue<>();
-    private final Set<Deployment> deployments = Collections.synchronizedSet(new HashSet<Deployment>());
+    private final Set<Deployment> deployments = new CopyOnWriteArraySet<>();
 
     protected Host(String name, List<String> aliases) {
         this.name = name;
@@ -213,15 +214,15 @@ public class Host implements Service<Host>, WebHost {
 
         @Override
         public void stop() throws Exception {
-            manager.stop();
             unregisterDeployment(manager.getDeployment());
+            manager.stop();
         }
 
         @Override
         public void destroy() throws Exception {
             manager.undeploy();
             ServletContainer container = getServerInjection().getValue().getServletContainer().getValue().getServletContainer();
-            container.removeDeployment(deploymentInfo.getDeploymentName());
+            container.removeDeployment(deploymentInfo);
         }
     }
 

@@ -22,7 +22,6 @@
 
 package org.wildfly.extension.undertow.deployment;
 
-import io.undertow.client.HttpClient;
 import io.undertow.websockets.jsr.ServerWebSocketContainer;
 import org.jboss.msc.service.Service;
 import org.jboss.msc.service.ServiceName;
@@ -30,7 +29,6 @@ import org.jboss.msc.service.StartContext;
 import org.jboss.msc.service.StartException;
 import org.jboss.msc.service.StopContext;
 import org.jboss.msc.value.InjectedValue;
-import org.xnio.OptionMap;
 import org.xnio.Pool;
 import org.xnio.XnioWorker;
 
@@ -51,8 +49,8 @@ public class WebSocketContainerService implements Service<ServerWebSocketContain
 
     @Override
     public void start(final StartContext startContext) throws StartException {
-        HttpClient client = HttpClient.create(xnioWorker.getValue(), OptionMap.EMPTY);
-        container.start(client, injectedBuffer.getValue());
+        //HttpClient client = HttpClient.create(xnioWorker.getValue(), OptionMap.EMPTY);
+        container.start(xnioWorker.getValue(), injectedBuffer.getValue());
     }
 
     @Override

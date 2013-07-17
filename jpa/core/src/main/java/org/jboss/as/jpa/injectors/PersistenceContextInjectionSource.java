@@ -22,9 +22,6 @@
 
 package org.jboss.as.jpa.injectors;
 
-import static org.jboss.as.jpa.messages.JpaLogger.JPA_LOGGER;
-import static org.jboss.as.jpa.messages.JpaMessages.MESSAGES;
-
 import java.lang.reflect.Proxy;
 import java.util.Map;
 
@@ -42,21 +39,22 @@ import org.jboss.as.jpa.container.ExtendedEntityManager;
 import org.jboss.as.jpa.container.ExtendedPersistenceDeepInheritance;
 import org.jboss.as.jpa.container.ExtendedPersistenceShallowInheritance;
 import org.jboss.as.jpa.container.TransactionScopedEntityManager;
-import org.jboss.as.jpa.processor.JpaAttachments;
 import org.jboss.as.jpa.service.JPAService;
 import org.jboss.as.jpa.service.PersistenceUnitServiceImpl;
 import org.jboss.as.naming.ManagedReference;
 import org.jboss.as.naming.ManagedReferenceFactory;
 import org.jboss.as.naming.ValueManagedReference;
 import org.jboss.as.server.deployment.DeploymentPhaseContext;
-import org.jboss.as.server.deployment.DeploymentUnit;
 import org.jboss.as.server.deployment.DeploymentUnitProcessingException;
-import org.jboss.as.server.deployment.DeploymentUtils;
 import org.jboss.msc.inject.Injector;
 import org.jboss.msc.service.ServiceBuilder;
 import org.jboss.msc.service.ServiceName;
+import org.jboss.msc.service.ServiceRegistry;
 import org.jboss.msc.value.ImmediateValue;
 import org.jipijapa.plugin.spi.PersistenceUnitMetadata;
+
+import static org.jboss.as.jpa.messages.JpaLogger.JPA_LOGGER;
+import static org.jboss.as.jpa.messages.JpaMessages.MESSAGES;
 
 /**
  * Represents the PersistenceContext injected into a component.
@@ -77,17 +75,18 @@ public class PersistenceContextInjectionSource extends InjectionSource {
      * @param type              The persistence context type
      * @param properties        The persistence context properties
      * @param puServiceName     represents the deployed persistence.xml that we are going to use.
-     * @param deploymentUnit    represents the deployment that we are injecting into
+     * @param serviceRegistry    The MSC service registry which will be used to find the PersistenceContext service
      * @param scopedPuName      the fully scoped reference to the persistence.xml
      * @param injectionTypeName is normally "javax.persistence.EntityManager" but could be a different target class
      *                          for example "org.hibernate.Session" in which case, EntityManager.unwrap(org.hibernate.Session.class is called)
      * @param pu
+     * @param jpaDeploymentSettings Optional {@link JPADeploymentSettings} applicable for the persistence context
      */
-    public PersistenceContextInjectionSource(final PersistenceContextType type, final SynchronizationType synchronizationType , final Map properties, final ServiceName puServiceName, final DeploymentUnit deploymentUnit, final String scopedPuName, final String injectionTypeName, final PersistenceUnitMetadata pu) {
+    public PersistenceContextInjectionSource(final PersistenceContextType type, final SynchronizationType synchronizationType , final Map properties, final ServiceName puServiceName,
+                                             final ServiceRegistry serviceRegistry, final String scopedPuName, final String injectionTypeName, final PersistenceUnitMetadata pu, final JPADeploymentSettings jpaDeploymentSettings) {
 
         this.type = type;
-
-        injectable = new PersistenceContextJndiInjectable(puServiceName, deploymentUnit, this.type, synchronizationType , properties, scopedPuName, injectionTypeName, pu);
+        injectable = new PersistenceContextJndiInjectable(puServiceName, serviceRegistry, this.type, synchronizationType , properties, scopedPuName, injectionTypeName, pu, jpaDeploymentSettings);
         this.puServiceName = puServiceName;
     }
 
@@ -112,39 +111,42 @@ public class PersistenceContextInjectionSource extends InjectionSource {
     private static final class PersistenceContextJndiInjectable implements ManagedReferenceFactory {
 
         private final ServiceName puServiceName;
-        private final DeploymentUnit deploymentUnit;
+        private final ServiceRegistry serviceRegistry;
         private final PersistenceContextType type;
         private final SynchronizationType synchronizationType;
         private final Map properties;
         private final String unitName;
         private final String injectionTypeName;
         private final PersistenceUnitMetadata pu;
+        private final JPADeploymentSettings jpaDeploymentSettings;
 
         private static final String ENTITY_MANAGER_CLASS = "javax.persistence.EntityManager";
 
         public PersistenceContextJndiInjectable(
             final ServiceName puServiceName,
-            final DeploymentUnit deploymentUnit,
+            final ServiceRegistry serviceRegistry,
             final PersistenceContextType type,
             SynchronizationType synchronizationType,
             final Map properties,
             final String unitName,
             final String injectionTypeName,
-            final PersistenceUnitMetadata pu) {
+            final PersistenceUnitMetadata pu,
+            final JPADeploymentSettings jpaDeploymentSettings) {
 
             this.puServiceName = puServiceName;
-            this.deploymentUnit = deploymentUnit;
+            this.serviceRegistry = serviceRegistry;
             this.type = type;
             this.properties = properties;
             this.unitName = unitName;
             this.injectionTypeName = injectionTypeName;
             this.pu = pu;
             this.synchronizationType = synchronizationType;
+            this.jpaDeploymentSettings = jpaDeploymentSettings;
         }
 
         @Override
         public ManagedReference getReference() {
-            PersistenceUnitServiceImpl service = (PersistenceUnitServiceImpl) deploymentUnit.getServiceRegistry().getRequiredService(puServiceName).getValue();
+            PersistenceUnitServiceImpl service = (PersistenceUnitServiceImpl) serviceRegistry.getRequiredService(puServiceName).getValue();
             EntityManagerFactory emf = service.getEntityManagerFactory();
             EntityManager entityManager;
             boolean standardEntityManager = ENTITY_MANAGER_CLASS.equals(injectionTypeName);
@@ -155,9 +157,6 @@ public class PersistenceContextInjectionSource extends InjectionSource {
                     JPA_LOGGER.debugf("created new TransactionScopedEntityManager for unit name=%s", unitName);
             } else {
                 boolean useDeepInheritance = !ExtendedPersistenceInheritance.SHALLOW.equals(JPAService.getDefaultExtendedPersistenceInheritance());
-                                                        // get deployment settings from top level du (jboss-all.xml is only parsed at the top level).
-                JPADeploymentSettings jpaDeploymentSettings =
-                        DeploymentUtils.getTopDeploymentUnit(deploymentUnit).getAttachment(JpaAttachments.DEPLOYMENT_SETTINGS_KEY);
                 if (jpaDeploymentSettings != null) {
                     useDeepInheritance = ExtendedPersistenceInheritance.DEEP.equals(jpaDeploymentSettings.getExtendedPersistenceInheritanceType());
                 }
