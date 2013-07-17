@@ -26,7 +26,11 @@ package org.jboss.as.domain.management.security;
  *
  * @author <a href="mailto:darran.lofthouse@jboss.com">Darran Lofthouse</a>
  */
-public class RealmGroup extends SecurityRealmPrincipal {
+public final class RealmGroup extends AbstractRealmPrincipal {
+
+    public RealmGroup(String realm, String name) {
+        super(realm, name);
+    }
 
     public RealmGroup(String name) {
         super(name);

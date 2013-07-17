@@ -89,7 +89,7 @@ public class PlugInSubjectSupplemental extends AbstractPlugInService implements 
                 String[] groups = ap.loadRoles(user.getName(), getRealmName());
                 response = new HashSet<RealmGroup>(groups.length);
                 for (String current : groups) {
-                    response.add(new RealmGroup(current));
+                    response.add(new RealmGroup(getRealmName(), current));
                 }
                 return response;
             }
