@@ -23,7 +23,7 @@
 package org.jboss.as.messaging;
 
 import static org.jboss.as.messaging.CommonAttributes.NAME;
-import static org.jboss.as.messaging.CommonAttributes.SECURITY_ROLE;
+import static org.jboss.as.messaging.CommonAttributes.ROLE;
 import static org.jboss.as.messaging.MessagingMessages.MESSAGES;
 
 import java.util.Collections;
@@ -70,10 +70,7 @@ public class CoreAddressResource implements Resource {
 
     @Override
     public boolean hasChild(PathElement element) {
-        if (CommonAttributes.SECURITY_ROLE.equals(element.getKey())) {
-            return hasSecurityRole(element);
-        }
-        return false;
+        return ROLE.equals(element.getKey()) && hasSecurityRole(element);
     }
 
     @Override
@@ -83,12 +80,16 @@ public class CoreAddressResource implements Resource {
 
     @Override
     public Resource requireChild(PathElement element) {
+        Resource child = getChild(element);
+        if (child != null) {
+            return child;
+        }
         throw new NoSuchResourceException(element);
     }
 
     @Override
     public boolean hasChildren(String childType) {
-        return false;
+        return getChildrenNames(childType).size() > 0;
     }
 
     @Override
@@ -98,14 +99,12 @@ public class CoreAddressResource implements Resource {
 
     @Override
     public Set<String> getChildTypes() {
-        Set<String> result = new HashSet<String>();
-        result.add(SECURITY_ROLE);
-        return result;
+        return Collections.singleton(ROLE);
     }
 
     @Override
     public Set<String> getChildrenNames(String childType) {
-        if (SECURITY_ROLE.equals(childType)) {
+        if (ROLE.equals(childType)) {
             return getSecurityRoles();
         }
         return Collections.emptySet();
@@ -113,10 +112,10 @@ public class CoreAddressResource implements Resource {
 
     @Override
     public Set<ResourceEntry> getChildren(String childType) {
-        if (SECURITY_ROLE.equals(childType)) {
+        if (ROLE.equals(childType)) {
             Set<ResourceEntry> result = new HashSet<ResourceEntry>();
             for (String name : getSecurityRoles()) {
-                result.add(new SecurityRoleResource.SecuriyRoleResourceEntry(name));
+                result.add(new SecurityRoleResource.SecurityRoleResourceEntry(name));
             }
             return result;
         }
@@ -172,8 +171,7 @@ public class CoreAddressResource implements Resource {
             return null;
         }
         Object obj = managementService.getResource(ResourceNames.CORE_ADDRESS + name);
-        AddressControl control = AddressControl.class.cast(obj);
-        return control;
+        return AddressControl.class.cast(obj);
     }
 
     private boolean hasSecurityRole(PathElement element) {
