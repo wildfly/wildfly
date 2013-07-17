@@ -59,14 +59,15 @@ public class BMScript {
         if (resource == null) {
             throw new RuntimeException("'" + scriptResourcePath + "' can't be found on the classpath");
         }
-        File file=new File(resource.getFile());
+        String path = java.net.URLDecoder.decode(resource.getFile().toString());
+        File file=new File(path);
 
         if(file.exists() && file.isFile()) {
             List<String> files = new ArrayList<String>();
-            files.add(resource.getFile());
+            files.add(path);
             return files;
         } else {
-            throw new RuntimeException("'" + scriptResourcePath + "' either doesn't exist or isn't a file");
+            throw new RuntimeException("'" + path + "' either doesn't exist or isn't a file");
         }
 
     }
