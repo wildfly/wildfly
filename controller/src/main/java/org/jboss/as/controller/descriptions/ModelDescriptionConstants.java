@@ -21,7 +21,6 @@
  */
 package org.jboss.as.controller.descriptions;
 
-import org.jboss.as.controller.registry.AttributeAccess;
 
 /**
  * String constants frequently used in model descriptions.
@@ -110,6 +109,7 @@ public class ModelDescriptionConstants {
     public static final String ENABLED = "enabled";
     public static final String EXECUTE = "execute";
     public static final String EXCEPTIONS = "exceptions";
+    public static final String EXCLUDE = "exclude";
     public static final String EXPRESSIONS_ALLOWED = "expressions-allowed";
     public static final String EXTENSION = "extension";
     public static final String FAILED = "failed";
@@ -229,6 +229,7 @@ public class ModelDescriptionConstants {
     public static final String READ_RESOURCE_METRICS = "read-resource-metrics";
     public static final String READ_RESOURCE_OPERATION = "read-resource";
     public static final String READ_TRANSFORMED_RESOURCE_OPERATION = "read-transformed-resource";
+    public static final String REALM = "realm";
     public static final String RECURSIVE = "recursive";
     public static final String RECURSIVE_DEPTH = "recursive-depth";
     public static final String REDEPLOY = "redeploy";
@@ -251,6 +252,7 @@ public class ModelDescriptionConstants {
     public static final String REASON = "reason";
     public static final String ROLE = "role";
     public static final String ROLES = "roles";
+    public static final String ROLE_MAPPING = "role-mapping";
     public static final String ROLLBACK_ACROSS_GROUPS = "rollback-across-groups";
     public static final String ROLLBACK_FAILURE_DESCRIPTION = "rollback-failure-description";
     public static final String ROLLBACK_ON_RUNTIME_FAILURE = "rollback-on-runtime-failure";
@@ -303,7 +305,7 @@ public class ModelDescriptionConstants {
     public static final String STEPS = "steps";
     public static final String STOP = "stop";
     public static final String STOP_SERVERS = "stop-servers";
-    /** The key for {@link AttributeAccess.Storage} fields. */
+    /** The key for {@link org.jboss.as.controller.registry.AttributeAccess.Storage} fields. */
     public static final String STORAGE = "storage";
     public static final String SUBDEPLOYMENT = "subdeployment";
     public static final String SUBSYSTEM = "subsystem";
@@ -325,6 +327,7 @@ public class ModelDescriptionConstants {
     public static final String USE_CURRENT_DOMAIN_CONFIG = "use-current-domain-config";
     public static final String USE_CURRENT_HOST_CONFIG = "use-current-host-config";
     public static final String USE_CURRENT_SERVER_CONFIG = "use-current-server-config";
+    public static final String USE_REALM_ROLES = "use-realm-roles";
     public static final String USER = "user";
     public static final String USER_DN = "user-dn";
     public static final String USERNAME = "username";

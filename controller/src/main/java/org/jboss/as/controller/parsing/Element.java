@@ -60,11 +60,14 @@ public enum Element {
     DEPLOYMENT_OVERLAYS("deployment-overlays"),
 
     ENVIRONMENT_VARIABLES("environment-variables"),
+    EXCLUDE("exclude"),
     EXTENSION("extension"),
     EXTENSIONS("extensions"),
 
     FS_ARCHIVE("fs-archive"),
     FS_EXPLODED("fs-exploded"),
+
+    GROUP("group"),
 
     HEAP("heap"),
     HOST("host"),
@@ -127,6 +130,7 @@ public enum Element {
     REMOTE("remote"),
     REMOTE_DESTINATION("remote-destination"),
     ROLE("role"),
+    ROLE_MAPPING("role-mapping"),
     ROLLOUT_PLANS("rollout-plans"),
 
     SECRET("secret"),

@@ -1,6 +1,6 @@
 /*
 * JBoss, Home of Professional Open Source.
-* Copyright 2011, Red Hat Middleware LLC, and individual contributors
+* Copyright 2013, Red Hat Middleware LLC, and individual contributors
 * as indicated by the @author tags. See the copyright.txt file in the
 * distribution for a full listing of individual contributors.
 *
@@ -21,8 +21,6 @@
 */
 package org.jboss.as.core.model.test.access;
 
-import org.jboss.as.controller.access.constraint.ApplicationTypeConfig;
-import org.jboss.as.controller.access.constraint.SensitivityClassification;
 import org.jboss.as.core.model.test.AbstractCoreModelTest;
 import org.jboss.as.core.model.test.KernelServices;
 import org.jboss.as.core.model.test.TestModelType;
@@ -31,11 +29,12 @@ import org.junit.Assert;
 import org.junit.Test;
 
 /**
- * Test of access control constraint handling in a standalone server.
+ * Simple test case to test the parsing and marshaling of the <access-control /> element within the standalone.xml
+ * configuration.
  *
  * @author <a href="kabir.khan@jboss.com">Kabir Khan</a>
  */
-public class StandaloneAccessConstraintTestCase extends AbstractCoreModelTest {
+public class StandaloneAccessControlTestCase extends AbstractCoreModelTest {
 
     @Test
     public void testConfiguration() throws Exception {
@@ -46,7 +45,7 @@ public class StandaloneAccessConstraintTestCase extends AbstractCoreModelTest {
                 .build();
         Assert.assertTrue(kernelServices.isSuccessfulBoot());
 
-//        System.out.println(kernelServices.readWholeModel());
+        // System.out.println(kernelServices.readWholeModel());
 
         String marshalled = kernelServices.getPersistedSubsystemXml();
         ModelTestUtils.compareXml(ModelTestUtils.readResource(this.getClass(), "constraints.xml"), marshalled);
