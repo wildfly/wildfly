@@ -22,14 +22,32 @@
 
 package org.jboss.as.test.integration.naming.remote.ejb;
 
+import javax.annotation.Resource;
+import javax.annotation.security.PermitAll;
+import javax.ejb.SessionContext;
 import javax.ejb.Singleton;
+
+import org.jboss.ejb3.annotation.SecurityDomain;
 
 /**
  * @author John Bailey, Ondrej Chaloupka
  */
 @Singleton
+@SecurityDomain("other")
+@PermitAll
 public class Bean implements Remote {
+
+    @Resource
+    private SessionContext ctx;
+
+    @Override
+    public String getCallerPrincipal() {
+        return ctx.getCallerPrincipal().getName();
+    }
+
     public String echo(String value) {
         return "Echo: " + value;
     }
+
+
 }

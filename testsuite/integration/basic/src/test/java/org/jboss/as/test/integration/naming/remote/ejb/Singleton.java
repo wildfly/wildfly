@@ -22,6 +22,8 @@
 
 package org.jboss.as.test.integration.naming.remote.ejb;
 
+import javax.annotation.Resource;
+import javax.ejb.SessionContext;
 import javax.ejb.Stateless;
 import javax.naming.InitialContext;
 import javax.naming.NamingException;
@@ -31,6 +33,15 @@ import javax.naming.NamingException;
  */
 @Stateless
 public class Singleton implements BinderRemote {
+
+    @Resource
+    private SessionContext ctx;
+
+    @Override
+    public String getCallerPrincipal() {
+        return ctx.getCallerPrincipal().getName();
+    }
+
     public String echo(String value) {
         return "Echo: " + value;
     }
