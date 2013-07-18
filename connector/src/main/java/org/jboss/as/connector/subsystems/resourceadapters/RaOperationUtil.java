@@ -110,7 +110,6 @@ import static org.jboss.as.connector.subsystems.resourceadapters.Constants.BOOTS
 import static org.jboss.as.connector.subsystems.resourceadapters.Constants.CLASS_NAME;
 import static org.jboss.as.connector.subsystems.resourceadapters.Constants.ENABLED;
 import static org.jboss.as.connector.subsystems.resourceadapters.Constants.ENLISTMENT;
-import static org.jboss.as.connector.subsystems.resourceadapters.Constants.WM_SECURITY_MAPPING_FROM;
 import static org.jboss.as.connector.subsystems.resourceadapters.Constants.INTERLEAVING;
 import static org.jboss.as.connector.subsystems.resourceadapters.Constants.JNDINAME;
 import static org.jboss.as.connector.subsystems.resourceadapters.Constants.NOTXSEPARATEPOOL;
@@ -125,7 +124,6 @@ import static org.jboss.as.connector.subsystems.resourceadapters.Constants.SAME_
 import static org.jboss.as.connector.subsystems.resourceadapters.Constants.SECURITY_DOMAIN;
 import static org.jboss.as.connector.subsystems.resourceadapters.Constants.SECURITY_DOMAIN_AND_APPLICATION;
 import static org.jboss.as.connector.subsystems.resourceadapters.Constants.SHARABLE;
-import static org.jboss.as.connector.subsystems.resourceadapters.Constants.WM_SECURITY_MAPPING_TO;
 import static org.jboss.as.connector.subsystems.resourceadapters.Constants.TRANSACTION_SUPPORT;
 import static org.jboss.as.connector.subsystems.resourceadapters.Constants.USE_CCM;
 import static org.jboss.as.connector.subsystems.resourceadapters.Constants.USE_JAVA_CONTEXT;
@@ -133,15 +131,16 @@ import static org.jboss.as.connector.subsystems.resourceadapters.Constants.WM_SE
 import static org.jboss.as.connector.subsystems.resourceadapters.Constants.WM_SECURITY_DEFAULT_GROUPS;
 import static org.jboss.as.connector.subsystems.resourceadapters.Constants.WM_SECURITY_DEFAULT_PRINCIPAL;
 import static org.jboss.as.connector.subsystems.resourceadapters.Constants.WM_SECURITY_DOMAIN;
+import static org.jboss.as.connector.subsystems.resourceadapters.Constants.WM_SECURITY_MAPPING_FROM;
 import static org.jboss.as.connector.subsystems.resourceadapters.Constants.WM_SECURITY_MAPPING_GROUPS;
 import static org.jboss.as.connector.subsystems.resourceadapters.Constants.WM_SECURITY_MAPPING_REQUIRED;
+import static org.jboss.as.connector.subsystems.resourceadapters.Constants.WM_SECURITY_MAPPING_TO;
 import static org.jboss.as.connector.subsystems.resourceadapters.Constants.WM_SECURITY_MAPPING_USERS;
 import static org.jboss.as.connector.subsystems.resourceadapters.Constants.WRAP_XA_RESOURCE;
 import static org.jboss.as.connector.subsystems.resourceadapters.Constants.XA_RESOURCE_TIMEOUT;
 
 
 public class RaOperationUtil {
-    private static final String RAR_EXTENSION = ".rar";
     private static final ServiceName RAR_MODULE = ServiceName.of("rarinsidemodule");
 
 
@@ -268,12 +267,13 @@ public class RaOperationUtil {
 
 
     public static ServiceName restartIfPresent(OperationContext context, final String raName, ServiceVerificationHandler svh) throws OperationFailedException {
-        final ServiceName raDeploymentServiceName = ConnectorServices.getDeploymentServiceName(raName);
-        if (raDeploymentServiceName != null) {
+        final ServiceName raDeploymentServiceName = ConnectorServices.getDeploymentServiceName(raName,(String)null);
+
             final ServiceRegistry registry = context.getServiceRegistry(true);
             ServiceController raServiceController = registry.getService(raDeploymentServiceName);
-            final org.jboss.msc.service.ServiceController.Mode originalMode = raServiceController.getMode();
+
             if (raServiceController != null) {
+                final org.jboss.msc.service.ServiceController.Mode originalMode = raServiceController.getMode();
                 if (svh != null) {
                     raServiceController.addListener(svh);
                 }
@@ -300,30 +300,20 @@ public class RaOperationUtil {
                     }
 
                 });
-
-
-
+                return raDeploymentServiceName;
+            } else {
+                return null;
             }
-        }
-
-        return raDeploymentServiceName;
-
     }
 
-    public static boolean removeIfActive(OperationContext context, String raName) throws OperationFailedException {
+    public static boolean removeIfActive(OperationContext context, String raName ) throws OperationFailedException {
         boolean wasActive = false;
         final ServiceName raDeploymentServiceName = ConnectorServices.getDeploymentServiceName(raName);
-        Integer identifier = 0;
-        if (raName.contains("->")) {
-            identifier = Integer.valueOf(raName.substring(raName.indexOf("->") + 2));
-            raName = raName.substring(0, raName.indexOf("->"));
-        }
-        if (raDeploymentServiceName != null) {
+
+        if(context.getServiceRegistry(true).getService(raDeploymentServiceName) != null){
             context.removeService(raDeploymentServiceName);
-            ConnectorServices.unregisterDeployment(raName, raDeploymentServiceName);
             wasActive = true;
         }
-        ConnectorServices.unregisterResourceIdentifier(raName, identifier);
 
         return wasActive;
 
@@ -331,18 +321,15 @@ public class RaOperationUtil {
 
     public static void activate(OperationContext context, String raName, final ServiceVerificationHandler serviceVerificationHandler) throws OperationFailedException {
         ServiceRegistry registry = context.getServiceRegistry(true);
-
         final ServiceController<?> inactiveRaController = registry.getService(ConnectorServices.INACTIVE_RESOURCE_ADAPTER_SERVICE.append(raName));
+
         if (inactiveRaController == null) {
-            throw new OperationFailedException("rar not yet deployed");
+            throw MESSAGES.RARNotYetDeployed(raName);
         }
         InactiveResourceAdapterDeploymentService.InactiveResourceAdapterDeployment inactive = (InactiveResourceAdapterDeploymentService.InactiveResourceAdapterDeployment) inactiveRaController.getValue();
         final ServiceController<?> RaxmlController = registry.getService(ServiceName.of(ConnectorServices.RA_SERVICE, raName));
-
         ResourceAdapter raxml = (ResourceAdapter) RaxmlController.getValue();
         RaServicesFactory.createDeploymentService(inactive.getRegistration(), inactive.getConnectorXmlDescriptor(), inactive.getModule(), inactive.getServiceTarget(), raName, inactive.getDeploymentUnitServiceName(), inactive.getDeployment(), raxml, inactive.getResource(), serviceVerificationHandler);
-
-
     }
 
     public static ServiceName installRaServices(OperationContext context, ServiceVerificationHandler verificationHandler, String name, ModifiableResourceAdapter resourceAdapter, final List<ServiceController<?>> newControllers) {

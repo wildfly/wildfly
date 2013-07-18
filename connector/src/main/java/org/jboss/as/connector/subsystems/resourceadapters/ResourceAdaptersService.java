@@ -56,7 +56,7 @@ public final class ResourceAdaptersService implements Service<ResourceAdaptersSe
 
     @Override
     public void stop(StopContext context) {
-
+        SUBSYSTEM_RA_LOGGER.debugf("Stopping ResourceAdapters Service");
     }
 
     public static final class ModifiableResourceAdaptors implements ResourceAdapters {

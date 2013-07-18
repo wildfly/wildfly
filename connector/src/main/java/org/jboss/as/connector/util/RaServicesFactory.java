@@ -52,8 +52,8 @@ public class RaServicesFactory {
 
     public static void createDeploymentService(final ManagementResourceRegistration registration, ConnectorXmlDescriptor connectorXmlDescriptor, Module module, ServiceTarget serviceTarget, final String deploymentUnitName, ServiceName deploymentUnitServiceName, String deployment, ResourceAdapter raxml, final Resource deploymentResource, final ServiceVerificationHandler serviceVerificationHandler) {
         // Create the service
-        ServiceName serviceName = ConnectorServices.registerDeployment(deploymentUnitName);
 
+        ServiceName serviceName = ConnectorServices.getDeploymentServiceName(deploymentUnitName,raxml);
         ResourceAdapterXmlDeploymentService service = new ResourceAdapterXmlDeploymentService(connectorXmlDescriptor,
                 raxml, module, deployment, serviceName, deploymentUnitServiceName);
         String bootStrapCtxName = DEFAULT_NAME;

@@ -21,17 +21,19 @@
  */
 package org.jboss.as.test.smoke.deployment.rar.tests.pure;
 
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
+
 import java.util.List;
 import java.util.Set;
 
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.junit.Arquillian;
 import org.jboss.arquillian.test.api.ArquillianResource;
-import org.jboss.as.arquillian.api.ServerSetup;
 import org.jboss.as.arquillian.container.ManagementClient;
-import org.jboss.as.connector.util.ConnectorServices;
 import org.jboss.as.connector.subsystems.resourceadapters.Namespace;
 import org.jboss.as.connector.subsystems.resourceadapters.ResourceAdapterSubsystemParser;
+import org.jboss.as.connector.util.ConnectorServices;
 import org.jboss.as.test.integration.management.base.AbstractMgmtServerSetupTask;
 import org.jboss.as.test.integration.management.base.AbstractMgmtTestBase;
 import org.jboss.as.test.integration.management.base.ContainerResourceMgmtTestBase;
@@ -52,38 +54,13 @@ import org.jboss.staxmapper.XMLElementWriter;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
-
 
 /**
  * @author <a href="vrastsel@redhat.com">Vladimir Rastseluev</a>
  *         JBQA-5742 -Pure RA deployment test
  */
 @RunWith(Arquillian.class)
-@ServerSetup(PureTestCase.PureTestCaseSetup.class)
 public class PureTestCase extends ContainerResourceMgmtTestBase {
-
-    static class PureTestCaseSetup extends AbstractMgmtServerSetupTask {
-
-        @Override
-        public void doSetup(final ManagementClient managementClient) throws Exception {
-            String xml = FileUtils.readFile(PureTestCase.class, "pure.xml");
-            List<ModelNode> operations = xmlToModelOperations(xml, Namespace.RESOURCEADAPTERS_1_0.getUriString(), new ResourceAdapterSubsystemParser());
-            executeOperation(operationListToCompositeOperation(operations));
-
-        }
-
-        @Override
-        public void tearDown(final ManagementClient managementClient, final String containerId) throws Exception {
-
-            final ModelNode address = new ModelNode();
-            address.add("subsystem", "resource-adapters");
-            address.add("resource-adapter", "pure.rar");
-            address.protect();
-            remove(address);
-        }
-    }
 
     /**
      * Define the deployment
@@ -97,9 +74,10 @@ public class PureTestCase extends ContainerResourceMgmtTestBase {
         ResourceAdapterArchive raa =
                 ShrinkWrap.create(ResourceAdapterArchive.class, deploymentName);
         JavaArchive javaArchive = ShrinkWrap.create(JavaArchive.class, "multiple.jar");
-        javaArchive.addClasses(PureTestCase.class, PureTestCaseSetup.class, MgmtOperationException.class, XMLElementReader.class, XMLElementWriter.class);
+        javaArchive.addClasses(PureTestCase.class, MgmtOperationException.class, XMLElementReader.class, XMLElementWriter.class);
         javaArchive.addPackage(PureInflowResourceAdapter.class.getPackage());
         javaArchive.addPackage(AbstractMgmtTestBase.class.getPackage());
+
         raa.addAsLibrary(javaArchive);
 
         raa.addAsManifestResource(PureTestCase.class.getPackage(), "ra.xml", "ra.xml")
@@ -126,7 +104,7 @@ public class PureTestCase extends ContainerResourceMgmtTestBase {
 
         assertNotNull(ids);
         //On a running server it's 3 beacause HornetQResourceAdapter is always present  + ra itself and 1 actrivation from DMR
-        assertEquals(2, ids.size());
+        assertEquals(1, ids.size());
 
         for (String piId : ids) {
             assertNotNull(piId);

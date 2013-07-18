@@ -119,13 +119,12 @@ public final class ResourceAdapterXmlDeploymentService extends AbstractResourceA
                 unregisterAll(raName);
                 throw MESSAGES.failedToStartRaDeployment(t, raName);
             }
-            ServiceName raServiceName = ConnectorServices.registerResourceAdapter(raName);
+            ServiceName raServiceName = ConnectorServices.getResourceAdapterServiceName(raName,raxml);
 
             value = new ResourceAdapterDeployment(raxmlDeployment, raName, raServiceName);
             managementRepository.getValue().getConnectors().add(value.getDeployment().getConnector());
 
             registry.getValue().registerResourceAdapterDeployment(value);
-
 
             context.getChildTarget()
                     .addService(raServiceName,
@@ -142,17 +141,12 @@ public final class ResourceAdapterXmlDeploymentService extends AbstractResourceA
      */
     @Override
     public void stop(StopContext context) {
-        DEPLOYMENT_CONNECTOR_LOGGER.debugf("Stopping service %s",
-                        ConnectorServices.RESOURCE_ADAPTER_SERVICE_PREFIX.append(this.value.getDeployment().getDeploymentName()));
+        DEPLOYMENT_CONNECTOR_LOGGER.debugf("Stopping service %s",deploymentServiceName);
         unregisterAll(raName);
     }
 
     @Override
     public void unregisterAll(String deploymentName) {
-
-        if (raName != null && deploymentServiceName != null) {
-            ConnectorServices.unregisterDeployment(raName, deploymentServiceName);
-        }
 
         if (raName != null) {
             ConnectorServices.unregisterResourceAdapterIdentifier(raName);
