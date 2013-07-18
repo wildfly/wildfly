@@ -30,6 +30,7 @@
            version="1.0">
     <!-- The batch subsystem root element -->
     <xs:element name="subsystem" type="batch-subsystemType"/>
+
     <xs:complexType name="batch-subsystemType">
         <xs:annotation>
             <xs:documentation>
@@ -38,6 +39,12 @@
             ]]>
             </xs:documentation>
         </xs:annotation>
-        <xs:attribute name="job-repository-type" type="xs:string" default="in-memory"/>
+        <xs:sequence>
+            <xs:element name="job-repository" type="job-repositoryType" minOccurs="0" maxOccurs="1"/>
+        </xs:sequence>
+    </xs:complexType>
+
+    <xs:complexType name="job-repositoryType">
+        <xs:attribute name="type" use="required" type="xs:string"/>
     </xs:complexType>
 </xs:schema>

@@ -20,26 +20,33 @@
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
 
-package org.wildfly.as.batch.extension;
+package org.wildfly.as.batch.messages;
 
-import org.jboss.as.controller.AbstractRemoveStepHandler;
-import org.jboss.as.controller.OperationContext;
-import org.jboss.as.controller.OperationFailedException;
-import org.jboss.dmr.ModelNode;
+import org.jboss.logging.BasicLogger;
+import org.jboss.logging.Logger;
+import org.jboss.logging.annotations.LogMessage;
+import org.jboss.logging.annotations.Message;
+import org.jboss.logging.annotations.MessageLogger;
+
+import static org.jboss.logging.Logger.Level.TRACE;
 
 /**
- * Handler responsible for removing the subsystem resource from the model.
+ * Messages for WildFly batch module (message id range 20500-20699, https://community.jboss.org/wiki/LoggingIds)
  */
-class SubsystemRemove extends AbstractRemoveStepHandler {
+@MessageLogger(projectCode = "JBAS")
+public interface BatchLogger extends BasicLogger {
+    /**
+     * A logger with the category {@code org.wildfly.as.batch}.
+     */
+    BatchLogger BATCH_LOGGER = Logger.getMessageLogger(BatchLogger.class, "org.wildfly.as.batch");
 
-    static final SubsystemRemove INSTANCE = new SubsystemRemove();
+    /**
+     * Logs a message indicating the configured batch job repository type.
+     *
+     * @param jobRepositoryType the configured batch job repository type
+     */
+    @LogMessage(level = TRACE)
+    @Message(id = 20500, value = "Configured batch job repository type is %s ")
+    void configuredJobRepository(String jobRepositoryType);
 
-    private SubsystemRemove() {
-    }
-
-    @Override
-    protected void performRuntime(OperationContext context, ModelNode operation, ModelNode model) throws OperationFailedException {
-        //Remove any services installed by the corresponding add handler here
-        //context.removeService(ServiceName.of("some", "name"));
-    }
 }
