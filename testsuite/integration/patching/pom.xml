@@ -37,6 +37,9 @@
                     <systemPropertyVariables>
                         <jbossas.version>${project.parent.version}</jbossas.version>
                         <jbossas.dist>${project.basedir}/target/jbossas</jbossas.dist>
+                        <!-- This does not really seem to speed up things after all
+                        <jboss.server.config.file.name>standalone-minimal.xml</jboss.server.config.file.name>
+                        -->
                     </systemPropertyVariables>
                 </configuration>
             </plugin>
