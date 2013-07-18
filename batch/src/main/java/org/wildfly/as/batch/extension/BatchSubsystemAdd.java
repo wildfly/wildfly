@@ -30,6 +30,7 @@ import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.ServiceVerificationHandler;
 import org.jboss.as.server.AbstractDeploymentChainStep;
 import org.jboss.as.server.DeploymentProcessorTarget;
+import org.jboss.as.server.deployment.Phase;
 import org.jboss.dmr.ModelNode;
 import org.jboss.msc.service.ServiceController;
 import org.wildfly.as.batch.deployment.BatchDeploymentProcessor;
@@ -37,17 +38,17 @@ import org.wildfly.as.batch.deployment.BatchDeploymentProcessor;
 /**
  * Handler responsible for adding the subsystem resource to the model.
  */
-class SubsystemAdd extends AbstractBoottimeAddStepHandler {
+class BatchSubsystemAdd extends AbstractBoottimeAddStepHandler {
 
-    static final SubsystemAdd INSTANCE = new SubsystemAdd();
+    static final BatchSubsystemAdd INSTANCE = new BatchSubsystemAdd();
 
-    private SubsystemAdd() {
+    private BatchSubsystemAdd() {
     }
 
     /** {@inheritDoc} */
     @Override
     protected void populateModel(ModelNode operation, ModelNode model) throws OperationFailedException {
-        model.setEmptyObject();
+        BatchSubsystemDefinition.jobRepositoryTypeAttribute.validateAndSet(operation, model);
     }
 
     /** {@inheritDoc} */
@@ -56,12 +57,10 @@ class SubsystemAdd extends AbstractBoottimeAddStepHandler {
             ServiceVerificationHandler verificationHandler, List<ServiceController<?>> newControllers)
             throws OperationFailedException {
 
-        //Add deployment processors here
-        //Remove this if you don't need to hook into the deployers, or you can add as many as you like
-        //see SubDeploymentProcessor for explanation of the phases
         context.addStep(new AbstractDeploymentChainStep() {
             public void execute(DeploymentProcessorTarget processorTarget) {
-                processorTarget.addDeploymentProcessor(BatchDeploymentProcessor.PHASE, BatchDeploymentProcessor.PRIORITY, new BatchDeploymentProcessor());
+                processorTarget.addDeploymentProcessor(BatchSubsystemExtension.SUBSYSTEM_NAME,
+                        Phase.DEPENDENCIES, Phase.DEPENDENCIES_BATCH, new BatchDeploymentProcessor());
 
             }
         }, OperationContext.Stage.RUNTIME);
