@@ -22,8 +22,8 @@
 
 package org.jboss.as.domain.management.access;
 
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ACCESS_CONTROL;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.CORE_SERVICE;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ACCESS;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.AUTHORIZATION;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ROLE;
 
 import java.util.Locale;
@@ -59,9 +59,9 @@ import org.jboss.dmr.ModelType;
  *
  * @author <a href="mailto:darran.lofthouse@jboss.com">Darran Lofthouse</a>
  */
-public class AccessControlResourceDefinition extends SimpleResourceDefinition {
+public class AccessAuthorizationResourceDefinition extends SimpleResourceDefinition {
 
-    public static final PathElement PATH_ELEMENT = PathElement.pathElement(CORE_SERVICE, ACCESS_CONTROL);
+    public static final PathElement PATH_ELEMENT = PathElement.pathElement(ACCESS, AUTHORIZATION);
     public static final Resource RESOURCE = createResource();
 
     public enum Provider {
@@ -96,23 +96,23 @@ public class AccessControlResourceDefinition extends SimpleResourceDefinition {
     private final boolean isDomain;
     private final boolean isHostController;
 
-    public static AccessControlResourceDefinition forDomain(DelegatingConfigurableAuthorizer configurableAuthorizer) {
-        return new AccessControlResourceDefinition(configurableAuthorizer, true, false);
+    public static AccessAuthorizationResourceDefinition forDomain(DelegatingConfigurableAuthorizer configurableAuthorizer) {
+        return new AccessAuthorizationResourceDefinition(configurableAuthorizer, true, false);
     }
 
-    public static AccessControlResourceDefinition forHost(DelegatingConfigurableAuthorizer configurableAuthorizer) {
-        return new AccessControlResourceDefinition(configurableAuthorizer, true, true);
+    public static AccessAuthorizationResourceDefinition forHost(DelegatingConfigurableAuthorizer configurableAuthorizer) {
+        return new AccessAuthorizationResourceDefinition(configurableAuthorizer, true, true);
     }
 
-    public static AccessControlResourceDefinition forDomainServer(DelegatingConfigurableAuthorizer configurableAuthorizer) {
-        return new AccessControlResourceDefinition(configurableAuthorizer, true, false);
+    public static AccessAuthorizationResourceDefinition forDomainServer(DelegatingConfigurableAuthorizer configurableAuthorizer) {
+        return new AccessAuthorizationResourceDefinition(configurableAuthorizer, true, false);
     }
 
-    public static AccessControlResourceDefinition forStandaloneServer(DelegatingConfigurableAuthorizer configurableAuthorizer) {
-        return new AccessControlResourceDefinition(configurableAuthorizer, false, false);
+    public static AccessAuthorizationResourceDefinition forStandaloneServer(DelegatingConfigurableAuthorizer configurableAuthorizer) {
+        return new AccessAuthorizationResourceDefinition(configurableAuthorizer, false, false);
     }
 
-    private AccessControlResourceDefinition(DelegatingConfigurableAuthorizer configurableAuthorizer, boolean domain, boolean hostController) {
+    private AccessAuthorizationResourceDefinition(DelegatingConfigurableAuthorizer configurableAuthorizer, boolean domain, boolean hostController) {
         super(PATH_ELEMENT, DomainManagementResolver.getResolver("core.access-control"));
         this.configurableAuthorizer = configurableAuthorizer;
         isDomain = domain;

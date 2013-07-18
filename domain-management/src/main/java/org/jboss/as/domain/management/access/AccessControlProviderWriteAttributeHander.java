@@ -50,18 +50,18 @@ class AccessControlProviderWriteAttributeHander implements OperationStepHandler 
     public void execute(OperationContext context, ModelNode operation) throws OperationFailedException {
 
         ModelNode model = context.readResourceForUpdate(PathAddress.EMPTY_ADDRESS).getModel();
-        ModelNode currentValue = AccessControlResourceDefinition.PROVIDER.resolveValue(context, model);
-        AccessControlResourceDefinition.PROVIDER.validateAndSet(operation, model);
-        final ModelNode newValue = AccessControlResourceDefinition.PROVIDER.resolveValue(context, model);
+        ModelNode currentValue = AccessAuthorizationResourceDefinition.PROVIDER.resolveValue(context, model);
+        AccessAuthorizationResourceDefinition.PROVIDER.validateAndSet(operation, model);
+        final ModelNode newValue = AccessAuthorizationResourceDefinition.PROVIDER.resolveValue(context, model);
         if (!newValue.equals(currentValue)) {
             context.addStep(new OperationStepHandler() {
                 @Override
                 public void execute(OperationContext context, ModelNode operation) throws OperationFailedException {
                     if (context.isBooting()) {
                         String providerName = newValue.asString().toUpperCase(Locale.ENGLISH);
-                        AccessControlResourceDefinition.Provider provider = AccessControlResourceDefinition.Provider.valueOf(providerName);
+                        AccessAuthorizationResourceDefinition.Provider provider = AccessAuthorizationResourceDefinition.Provider.valueOf(providerName);
                         ConfigurableAuthorizer delegate;
-                        if (provider == AccessControlResourceDefinition.Provider.SIMPLE) {
+                        if (provider == AccessAuthorizationResourceDefinition.Provider.SIMPLE) {
                             delegate = getSimpleAuthorizer();
                         } else {
                             delegate = getRoleBasedAuthorizer();

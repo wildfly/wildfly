@@ -63,7 +63,7 @@ public class ApplicationTypeConfigResourceDefinition extends SimpleResourceDefin
             .build();
 
     ApplicationTypeConfigResourceDefinition() {
-        super(PATH_ELEMENT, DomainManagementResolver.getResolver("core.access-constraint.application-type-config"));
+        super(PATH_ELEMENT, DomainManagementResolver.getResolver("core.access-control.constraint.application-type-config"));
     }
 
     static ResourceEntry createResource(ApplicationTypeConfig applicationType, String type, String name) {

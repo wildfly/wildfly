@@ -1,6 +1,6 @@
 /*
  * JBoss, Home of Professional Open Source.
- * Copyright 2012, Red Hat, Inc., and individual contributors
+ * Copyright 2013, Red Hat, Inc., and individual contributors
  * as indicated by the @author tags. See the copyright.txt file in the
  * distribution for a full listing of individual contributors.
  *
@@ -20,22 +20,13 @@
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
 
-package org.jboss.as.controller.descriptions.common;
-
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.CORE_SERVICE;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.MANAGEMENT;
-
-import org.jboss.as.controller.PathElement;
-import org.jboss.as.controller.SimpleResourceDefinition;
+package org.jboss.as.domain.management;
 
 /**
- * @author <a href="mailto:tomaz.cerar@redhat.com">Tomaz Cerar</a> (c) 2012 Red Hat Inc.
+ * A simple enumeration used by domain management resources to identify the environment running.
+ *
+ * @author <a href="mailto:darran.lofthouse@jboss.com">Darran Lofthouse</a>
  */
-public class CoreManagementDefinition extends SimpleResourceDefinition {
-    public static final CoreManagementDefinition INSTANCE = new CoreManagementDefinition();
-
-    private CoreManagementDefinition() {
-        super(PathElement.pathElement(CORE_SERVICE, MANAGEMENT),
-                ControllerResolver.getResolver("core", MANAGEMENT));
-    }
+public enum Environment {
+    DOMAIN, DOMAIN_SERVER, HOST_CONTROLLER, STANDALONE_SERVER;
 }
