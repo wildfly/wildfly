@@ -91,6 +91,7 @@ import org.jboss.as.controller.parsing.Attribute;
 import org.jboss.as.controller.parsing.Element;
 import org.jboss.as.controller.parsing.Namespace;
 import org.jboss.as.controller.parsing.ParseUtils;
+import org.jboss.as.domain.management.access.AccessControlResourceDefinition;
 import org.jboss.as.domain.management.access.ApplicationTypeConfigResourceDefinition;
 import org.jboss.as.domain.management.access.ApplicationTypeResourceDefinition;
 import org.jboss.as.domain.management.access.HostScopedRolesResourceDefinition;
@@ -1732,12 +1733,10 @@ public class ManagementXml {
         requireNoContent(reader);
     }
 
-    public static void parseAccessControlConstraints(final XMLExtendedStreamReader reader, final ModelNode address, final Namespace expectedNs,
+    public static void parseAccessControlConstraints(final XMLExtendedStreamReader reader, final ModelNode accContAddr, final Namespace expectedNs,
                                                      final List<ModelNode> list) throws XMLStreamException {
 
         ParseUtils.requireNoAttributes(reader);
-
-        ModelNode accContAddr = address.clone().add(CORE_SERVICE, ACCESS_CONTROL);
 
         while (reader.hasNext() && reader.nextTag() != END_ELEMENT) {
             requireNamespace(reader, expectedNs);
@@ -2127,15 +2126,19 @@ public class ManagementXml {
 
     private static void writeAccessControl(final XMLExtendedStreamWriter writer, final ModelNode accessControl) throws XMLStreamException {
 
+
         boolean hasServerGroupRoles = accessControl.isDefined() && accessControl.hasDefined(SERVER_GROUP_SCOPED_ROLE);
         boolean hasHostRoles = accessControl.isDefined() && (accessControl.hasDefined(HOST_SCOPED_ROLE) || accessControl.hasDefined(HOST_SCOPED_ROLES));
         Map<String, Map<String, Set<String>>> configuredAccessConstraints = getConfiguredAccessConstraints(accessControl);
+        boolean hasProvider = accessControl.isDefined() && accessControl.hasDefined(AccessControlResourceDefinition.PROVIDER.getName());
 
         if (!hasServerGroupRoles && !hasHostRoles && configuredAccessConstraints.size() == 0) {
             return;
         }
 
         writer.writeStartElement(Element.ACCESS_CONTROL.getLocalName());
+
+        AccessControlResourceDefinition.PROVIDER.marshallAsAttribute(accessControl, writer);
 
         // TODO role mapping
 

@@ -90,6 +90,7 @@ import org.jboss.as.controller.persistence.SubsystemMarshallingContext;
 import org.jboss.as.controller.resource.SocketBindingGroupResourceDefinition;
 import org.jboss.as.domain.controller.resources.DomainRootDefinition;
 import org.jboss.as.domain.controller.resources.ServerGroupResourceDefinition;
+import org.jboss.as.domain.management.access.AccessControlResourceDefinition;
 import org.jboss.as.domain.management.parsing.ManagementXml;
 import org.jboss.as.server.controller.resources.DeploymentAttributes;
 import org.jboss.as.server.parsing.CommonXml;
@@ -1133,8 +1134,31 @@ public class DomainXml extends CommonXml {
         @Override
         public void parseAccessControl(final XMLExtendedStreamReader reader, final ModelNode address, final Namespace expectedNs,
                                        final List<ModelNode> list) throws XMLStreamException {
-            ParseUtils.requireNoAttributes(reader);
             ModelNode accContAddr = address.clone().add(CORE_SERVICE, ACCESS_CONTROL);
+
+            final int count = reader.getAttributeCount();
+            for (int i = 0; i < count; i++) {
+
+                final String value = reader.getAttributeValue(i);
+                if (!isNoNamespaceAttribute(reader, i)) {
+                    throw ParseUtils.unexpectedAttribute(reader, i);
+                }
+
+                final Attribute attribute = Attribute.forName(reader.getAttributeLocalName(i));
+                if (attribute == Attribute.PROVIDER) {
+                    ModelNode provider = AccessControlResourceDefinition.PROVIDER.parse(value, reader);
+                    ModelNode op = new ModelNode();
+                    op.get(OP).set(WRITE_ATTRIBUTE_OPERATION);
+                    op.get(OP_ADDR).set(accContAddr);
+                    op.get(NAME).set(AccessControlResourceDefinition.PROVIDER.getName());
+                    op.get(VALUE).set(provider);
+
+                    list.add(op);
+                } else {
+                    throw unexpectedAttribute(reader, i);
+                }
+            }
+
             while (reader.hasNext() && reader.nextTag() != END_ELEMENT) {
                 requireNamespace(reader, expectedNs);
                 final Element element = Element.forName(reader.getLocalName());
@@ -1146,7 +1170,7 @@ public class DomainXml extends CommonXml {
                         ManagementXml.parseHostScopedRoles(reader, accContAddr, expectedNs, list);
                         break;
                     case CONSTRAINTS: {
-                        ManagementXml.parseAccessControlConstraints(reader, address, expectedNs, list);
+                        ManagementXml.parseAccessControlConstraints(reader, accContAddr, expectedNs, list);
                         break;
                     }
                     default: {

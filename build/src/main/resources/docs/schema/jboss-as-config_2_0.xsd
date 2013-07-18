@@ -2508,7 +2508,32 @@
             <xs:element name="host-scoped-roles" type="host-scoped-rolesType" minOccurs="0"/>
             <xs:element name="constraints" type="constraintsType" minOccurs="0"/>
         </xs:sequence>
+        <xs:attribute name="provider" type="access-control-providerType" use="optional" default="simple"/>
     </xs:complexType>
+
+    <xs:simpleType name="access-control-providerType">
+        <xs:restriction base="xs:token">
+            <xs:enumeration value="simple">
+                <xs:annotation>
+                    <xs:documentation>
+                        <![CDATA[
+                        Simple access control implementation that gives all permissions to any authenticated
+                        user.
+                        ]]>
+                    </xs:documentation>
+                </xs:annotation>
+            </xs:enumeration>
+            <xs:enumeration value="rbac">
+                <xs:annotation>
+                    <xs:documentation>
+                        <![CDATA[
+                        WildFly's standard Role Based Access Control implementation.
+                        ]]>
+                    </xs:documentation>
+                </xs:annotation>
+            </xs:enumeration>
+        </xs:restriction>
+    </xs:simpleType>
 
     <xs:complexType name="host-access-controlType">
         <xs:annotation>
@@ -2534,6 +2559,7 @@
         <xs:sequence>
             <xs:element name="constraints" type="constraintsType" minOccurs="0"/>
         </xs:sequence>
+        <xs:attribute name="provider" type="access-control-providerType" use="optional" default="simple"/>
     </xs:complexType>
 
     <xs:complexType name="server-group-scoped-rolesType">

@@ -22,17 +22,9 @@
 
 package org.jboss.as.controller.access;
 
-import java.util.HashSet;
-import java.util.LinkedHashSet;
 import java.util.Set;
 
 import org.jboss.as.controller.access.constraint.ScopingConstraint;
-import org.jboss.as.controller.access.permission.CombinationPolicy;
-import org.jboss.as.controller.access.permission.ManagementPermissionAuthorizer;
-import org.jboss.as.controller.access.rbac.DefaultPermissionFactory;
-import org.jboss.as.controller.access.rbac.MockRoleMapper;
-import org.jboss.as.controller.access.rbac.RoleMapper;
-import org.jboss.as.controller.access.rbac.StandardRole;
 
 /**
  * A {@link ConfigurableAuthorizer} that delegates to another. Used for initial boot to allow
@@ -44,9 +36,9 @@ import org.jboss.as.controller.access.rbac.StandardRole;
  */
 public class DelegatingConfigurableAuthorizer implements ConfigurableAuthorizer {
 
-    private volatile ConfigurableAuthorizer delegate = new DefaultDelegate();
+    private volatile ConfigurableAuthorizer delegate = new SimpleConfigurableAuthorizer();
 
-    void setDelegate(ConfigurableAuthorizer delegate) {
+    public void setDelegate(ConfigurableAuthorizer delegate) {
         assert delegate != null : "null delegate";
         this.delegate = delegate;
     }
@@ -86,60 +78,4 @@ public class DelegatingConfigurableAuthorizer implements ConfigurableAuthorizer 
         return delegate.authorize(caller, callEnvironment, action, target);
     }
 
-    private static class DefaultDelegate implements ConfigurableAuthorizer {
-
-        private final RoleMapper roleMapper = MockRoleMapper.INSTANCE;
-        private final DefaultPermissionFactory permissionFactory = new DefaultPermissionFactory(CombinationPolicy.PERMISSIVE, roleMapper);
-        private final Authorizer authorizer = new ManagementPermissionAuthorizer(permissionFactory);
-        private final Set<String> addedRoles = new HashSet<String>();
-
-        @Override
-        public boolean isRoleBased() {
-            return true;
-        }
-
-        @Override
-        public Set<String> getStandardRoles() {
-            Set<String> result = new LinkedHashSet<String>();
-            for (StandardRole stdRole : StandardRole.values()) {
-                result.add(stdRole.toString());
-            }
-            return result;
-        }
-
-        @Override
-        public Set<String> getAllRoles() {
-            Set<String> result = getStandardRoles();
-            synchronized (addedRoles) {
-                result.addAll(addedRoles);
-            }
-            return result;
-        }
-
-        @Override
-        public void addScopedRole(String roleName, String baseRole, ScopingConstraint scopingConstraint) {
-            synchronized (addedRoles) {
-                permissionFactory.addScopedRole(roleName, baseRole, scopingConstraint);
-                addedRoles.add(roleName);
-            }
-        }
-
-        @Override
-        public void removeScopedRole(String roleName) {
-            synchronized (addedRoles) {
-                permissionFactory.removeScopedRole(roleName);
-                addedRoles.remove(roleName);
-            }
-        }
-
-        @Override
-        public AuthorizationResult authorize(Caller caller, Environment callEnvironment, Action action, TargetAttribute target) {
-            return authorizer.authorize(caller, callEnvironment, action, target);
-        }
-
-        @Override
-        public AuthorizationResult authorize(Caller caller, Environment callEnvironment, Action action, TargetResource target) {
-            return authorizer.authorize(caller, callEnvironment, action, target);
-        }
-    }
 }

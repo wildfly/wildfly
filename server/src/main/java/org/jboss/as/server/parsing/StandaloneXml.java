@@ -46,7 +46,9 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.PER
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SOCKET_BINDING_GROUP;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SUBSYSTEM;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SYSTEM_PROPERTY;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.VALUE;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.VAULT;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.WRITE_ATTRIBUTE_OPERATION;
 import static org.jboss.as.controller.parsing.Namespace.DOMAIN_1_0;
 import static org.jboss.as.controller.parsing.ParseUtils.isNoNamespaceAttribute;
 import static org.jboss.as.controller.parsing.ParseUtils.missingRequired;
@@ -82,6 +84,7 @@ import org.jboss.as.controller.parsing.ProfileParsingCompletionHandler;
 import org.jboss.as.controller.persistence.ModelMarshallingContext;
 import org.jboss.as.controller.persistence.SubsystemMarshallingContext;
 import org.jboss.as.controller.resource.SocketBindingGroupResourceDefinition;
+import org.jboss.as.domain.management.access.AccessControlResourceDefinition;
 import org.jboss.as.domain.management.parsing.ManagementXml;
 import org.jboss.as.server.controller.resources.DeploymentAttributes;
 import org.jboss.as.server.controller.resources.ServerRootResourceDefinition;
@@ -1313,14 +1316,37 @@ public class StandaloneXml extends CommonXml {
         @Override
         public void parseAccessControl(final XMLExtendedStreamReader reader, final ModelNode address, final Namespace expectedNs,
                                        final List<ModelNode> list) throws XMLStreamException {
-            ParseUtils.requireNoAttributes(reader);
+            ModelNode accContAddr = address.clone().add(CORE_SERVICE, ACCESS_CONTROL);
+
+            final int count = reader.getAttributeCount();
+            for (int i = 0; i < count; i++) {
+
+                final String value = reader.getAttributeValue(i);
+                if (!isNoNamespaceAttribute(reader, i)) {
+                    throw ParseUtils.unexpectedAttribute(reader, i);
+                }
+
+                final Attribute attribute = Attribute.forName(reader.getAttributeLocalName(i));
+                if (attribute == Attribute.PROVIDER) {
+                    ModelNode provider = AccessControlResourceDefinition.PROVIDER.parse(value, reader);
+                    ModelNode op = new ModelNode();
+                    op.get(OP).set(WRITE_ATTRIBUTE_OPERATION);
+                    op.get(OP_ADDR).set(accContAddr);
+                    op.get(NAME).set(AccessControlResourceDefinition.PROVIDER.getName());
+                    op.get(VALUE).set(provider);
+
+                    list.add(op);
+                } else {
+                    throw unexpectedAttribute(reader, i);
+                }
+            }
 
             while (reader.hasNext() && reader.nextTag() != END_ELEMENT) {
                 requireNamespace(reader, expectedNs);
                 final Element element = Element.forName(reader.getLocalName());
                 switch (element) {
                     case CONSTRAINTS: {
-                        ManagementXml.parseAccessControlConstraints(reader, address, expectedNs, list);
+                        ManagementXml.parseAccessControlConstraints(reader, accContAddr, expectedNs, list);
                         break;
                     }
                     default: {
