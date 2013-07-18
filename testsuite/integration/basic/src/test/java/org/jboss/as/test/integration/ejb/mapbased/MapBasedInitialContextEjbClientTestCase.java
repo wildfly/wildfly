@@ -1,8 +1,8 @@
 /*
- * JBoss, Home of Professional Open Source
- * Copyright 2010, Red Hat Inc., and individual contributors as indicated
- * by the @authors tag. See the copyright.txt in the distribution for a
- * full listing of individual contributors.
+ * JBoss, Home of Professional Open Source.
+ * Copyright 2012, Red Hat, Inc., and individual contributors
+ * as indicated by the @author tags. See the copyright.txt file in the
+ * distribution for a full listing of individual contributors
  *
  * This is free software; you can redistribute it and/or modify it
  * under the terms of the GNU Lesser General Public License as
@@ -34,6 +34,8 @@ import org.junit.runner.RunWith;
 
 import javax.naming.Context;
 import javax.naming.InitialContext;
+import javax.naming.NamingException;
+import javax.security.auth.login.LoginException;
 import java.util.Properties;
 
 /**
@@ -76,6 +78,36 @@ public class MapBasedInitialContextEjbClientTestCase {
         }
     }
 
+    /**
+     * Regression test for EJBCLIENT-85.
+     * When an application creates two client contexts with different user credentials, check that
+     * the second created context uses the correct credentials.
+     */
+    @Test
+    public void testMultipleEJBClientContexts() throws NamingException, LoginException {
+        InitialContext ctxFoo = new InitialContext(getEjbClientProperties(System.getProperty("node0", "127.0.0.1"), 8080, "foo"));
+        InitialContext ctxBar = new InitialContext(getEjbClientProperties(System.getProperty("node0", "127.0.0.1"), 8080, "bar"));
+        try {
+            String lookupName = "ejb:/" + ARCHIVE_NAME + "/" + StatelessBean.class.getSimpleName() + "!" + StatelessIface.class.getCanonicalName();
+            StatelessIface beanStatelessFoo = (StatelessIface) ctxFoo.lookup(lookupName);
+            Assert.assertEquals("Unexpected credentials used for invoking stateless bean",
+                    "foo", beanStatelessFoo.getCallerPrincipalName());
+            StatelessIface beanStatelessBar = (StatelessIface) ctxBar.lookup(lookupName);
+            Assert.assertEquals("Unexpected credentials used for invoking stateless bean",
+                    "bar", beanStatelessBar.getCallerPrincipalName());
+
+            lookupName = "ejb:/" + ARCHIVE_NAME + "/" + StatefulBean.class.getSimpleName() + "!" + StatefulIface.class.getCanonicalName() + "?stateful";
+            StatefulIface beanStatefulFoo = (StatefulIface) ctxFoo.lookup(lookupName);
+            Assert.assertEquals("Unexpected credentials used for invoking stateful bean", "foo", beanStatefulFoo.getCallerPrincipalName());
+            StatefulIface beanStatefulBar = (StatefulIface) ctxBar.lookup(lookupName);
+            Assert.assertEquals("Unexpected credentials used for invoking stateful bean",
+                    "bar", beanStatefulBar.getCallerPrincipalName());
+        } finally {
+            ctxFoo.close();
+            ctxBar.close();
+        }
+    }
+
     private Properties getEjbClientProperties(String node, int port) {
         Properties props = new Properties();
         props.put("org.jboss.ejb.client.scoped.context", true);
@@ -86,6 +118,21 @@ public class MapBasedInitialContextEjbClientTestCase {
         props.put("remote.connection.main.port", Integer.toString(port));
         props.put("remote.connection.main.callback.handler.class", CustomCallbackHandler.class.getName());
         props.put("remote.connection.main.connect.options.org.xnio.Options.SASL_POLICY_NOANONYMOUS", "false");
+        props.put("remote.connection.main.connect.options.org.xnio.Options.SASL_POLICY_NOPLAINTEXT", "true");
+        props.put("remote.connectionprovider.create.options.org.xnio.Options.SSL_ENABLED", "false");
+        return props;
+    }
+
+    private Properties getEjbClientProperties(String node, int port, String username) {
+        Properties props = new Properties();
+        props.put("org.jboss.ejb.client.scoped.context", true);
+        props.put(Context.URL_PKG_PREFIXES, "org.jboss.ejb.client.naming");
+        props.put("endpoint.name", "client");
+        props.put("remote.connections", "main");
+        props.put("remote.connection.main.host", node);
+        props.put("remote.connection.main.port", Integer.toString(port));
+        props.put("remote.connection.main.username", username);
+        props.put("remote.connection.main.password", "");
         props.put("remote.connection.main.connect.options.org.xnio.Options.SASL_POLICY_NOPLAINTEXT", "true");
         props.put("remote.connectionprovider.create.options.org.xnio.Options.SSL_ENABLED", "false");
         return props;
