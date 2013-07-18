@@ -60,8 +60,9 @@ class ModClusterConfigResourceDefinition extends SimpleResourceDefinition {
             .build();
 
     static final SimpleAttributeDefinition SESSION_DRAINING_STRATEGY = SimpleAttributeDefinitionBuilder.create(CommonAttributes.SESSION_DRAINING_STRATEGY, ModelType.STRING, true)
+            .setAllowExpression(true)
             .setAlternatives("DEFAULT", "ALWAYS" , "NEVER")
-            // .setDefaultValue(new ModelNode("DEFAULT"))
+            .setDefaultValue(new ModelNode("DEFAULT"))
             .setRestartAllServices()
             .build();
 

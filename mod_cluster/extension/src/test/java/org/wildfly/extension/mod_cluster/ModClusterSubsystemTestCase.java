@@ -100,6 +100,7 @@ public class ModClusterSubsystemTestCase extends AbstractSubsystemBaseTest {
             public ModelNode fixModel(ModelNode modelNode) {
                 fixDefaultCapacity(modelNode.get(MOD_CLUSTER_CONFIG, CONFIGURATION, CommonAttributes.DYNAMIC_LOAD_PROVIDER, CONFIGURATION, CommonAttributes.LOAD_METRIC));
                 fixDefaultCapacity(modelNode.get(MOD_CLUSTER_CONFIG, CONFIGURATION, CommonAttributes.DYNAMIC_LOAD_PROVIDER, CONFIGURATION, CommonAttributes.CUSTOM_LOAD_METRIC));
+                modelNode.get(MOD_CLUSTER_CONFIG, CONFIGURATION).get(ModClusterConfigResourceDefinition.SESSION_DRAINING_STRATEGY.getName()).set("DEFAULT");
                 return modelNode;
             }
 
