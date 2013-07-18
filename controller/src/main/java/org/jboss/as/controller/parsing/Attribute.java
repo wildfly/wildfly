@@ -96,6 +96,7 @@ public enum Attribute {
     PREFIX("prefix"),
     PROFILE("profile"),
     PROTOCOL("protocol"),
+    PROVIDER("provider"),
     RECURSIVE("recursive"),
     REF("ref"),
     RELATIVE_TO("relative-to"),
