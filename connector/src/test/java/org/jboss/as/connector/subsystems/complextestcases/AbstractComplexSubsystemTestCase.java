@@ -57,8 +57,6 @@ public class AbstractComplexSubsystemTestCase extends AbstractSubsystemTest {
                 .build();
 
         ModelNode model = services.readWholeModel();
-        if (archiveName!=null)
-            ConnectorServices.unregisterResourceIdentifiers(archiveName);
 
         // Marshal the xml to see that it is the same as before
         String marshalled = services.getPersistedSubsystemXml();

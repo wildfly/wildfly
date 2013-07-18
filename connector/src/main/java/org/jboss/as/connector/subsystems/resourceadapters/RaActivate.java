@@ -22,6 +22,8 @@
 
 package org.jboss.as.connector.subsystems.resourceadapters;
 
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
+
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.OperationStepHandler;
@@ -30,21 +32,19 @@ import org.jboss.as.controller.ServiceVerificationHandler;
 import org.jboss.dmr.ModelNode;
 import org.jboss.msc.service.ServiceName;
 
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
-
 /**
  * Operation handler responsible for disabling an existing data-source.
  *
- * @author tefano Maestri
+ * @author Stefano Maestri
  */
 public class RaActivate implements OperationStepHandler {
     static final RaActivate INSTANCE = new RaActivate();
 
     public void execute(OperationContext context, ModelNode operation)  throws OperationFailedException {
 
-        final ModelNode model = context.readResourceForUpdate(PathAddress.EMPTY_ADDRESS).getModel();
         final ModelNode address = operation.require(OP_ADDR);
         final String raName = PathAddress.pathAddress(address).getLastElement().getValue();
+
         if (context.isNormalServer()) {
             context.addStep(new OperationStepHandler() {
                 public void execute(final OperationContext context, ModelNode operation) throws OperationFailedException {

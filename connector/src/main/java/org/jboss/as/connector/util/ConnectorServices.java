@@ -25,45 +25,36 @@ package org.jboss.as.connector.util;
 import static org.jboss.as.connector.logging.ConnectorLogger.ROOT_LOGGER;
 import static org.jboss.as.connector.logging.ConnectorMessages.MESSAGES;
 
-import java.util.Collections;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.Map;
-import java.util.Set;
 
+import org.jboss.as.connector.subsystems.resourceadapters.ModifiableResourceAdapter;
+import org.jboss.jca.common.api.metadata.resourceadapter.ResourceAdapter;
 import org.jboss.msc.service.ServiceName;
 
 /**
- * ConnectorServices contains some utility methods used internally and
- * constants for all connector's subsystems service names.
+ * ConnectorServices contains some utility methods used internally and constants for all connector's subsystems service names.
  *
  * @author <a href="mailto:stefano.maestri@redhat.comdhat.com">Stefano Maestri</a>
  * @author <a href="mailto:jesper.pedersen@jboss.org">Jesper Pedersen</a>
  */
 public class ConnectorServices {
 
-    private static Map<String, Set<ServiceName>> resourceAdapterServiceNames = new HashMap<String, Set<ServiceName>>();
-    private static Map<String, Set<Integer>> resourceAdapterIdentifiers = new HashMap<String, Set<Integer>>();
-
-    private static Map<String, ServiceName> deploymentServiceNames = new HashMap<String, ServiceName>();
-    private static Map<String, Set<Integer>> deploymentIdentifiers = new HashMap<String, Set<Integer>>();
-    private static Map<String, Set<Integer>> resourceIdentifiers = new HashMap<String, Set<Integer>>();
-
-
     /**
-     * A map whose key corresponds to a ra name and whose value is a identifier with which the RA
-     * is registered in the {@link org.jboss.jca.core.spi.rar.ResourceAdapterRepository}
+     * A map whose key corresponds to a ra name and whose value is a identifier with which the RA is registered in the
+     * {@link org.jboss.jca.core.spi.rar.ResourceAdapterRepository}
      */
     private static Map<String, String> resourceAdapterRepositoryIdentifiers = new HashMap<String, String>();
 
     public static final ServiceName CONNECTOR_CONFIG_SERVICE = ServiceName.JBOSS.append("connector", "config");
 
-    public static final ServiceName BEAN_VALIDATION_CONFIG_SERVICE = ServiceName.JBOSS.append("connector", "bean_validation", "config");
+    public static final ServiceName BEAN_VALIDATION_CONFIG_SERVICE = ServiceName.JBOSS.append("connector", "bean_validation",
+            "config");
 
-    public static final ServiceName ARCHIVE_VALIDATION_CONFIG_SERVICE = ServiceName.JBOSS.append("connector", "archive_validation", "config");
+    public static final ServiceName ARCHIVE_VALIDATION_CONFIG_SERVICE = ServiceName.JBOSS.append("connector",
+            "archive_validation", "config");
 
-    public static final ServiceName BOOTSTRAP_CONTEXT_SERVICE = ServiceName.JBOSS.append("connector",
-            "bootstrapcontext");
+    public static final ServiceName BOOTSTRAP_CONTEXT_SERVICE = ServiceName.JBOSS.append("connector", "bootstrapcontext");
 
     public static final ServiceName TRANSACTION_INTEGRATION_SERVICE = ServiceName.JBOSS.append("connector",
             "transactionintegration");
@@ -72,9 +63,11 @@ public class ConnectorServices {
 
     public static final ServiceName RESOURCE_ADAPTER_SERVICE_PREFIX = ServiceName.JBOSS.append("ra");
 
-    public static final ServiceName RESOURCE_ADAPTER_DEPLOYMENT_SERVICE_PREFIX = RESOURCE_ADAPTER_SERVICE_PREFIX.append("deployment");
+    public static final ServiceName RESOURCE_ADAPTER_DEPLOYMENT_SERVICE_PREFIX = RESOURCE_ADAPTER_SERVICE_PREFIX
+            .append("deployment");
 
-    public static final ServiceName RESOURCE_ADAPTER_DEPLOYER_SERVICE_PREFIX = RESOURCE_ADAPTER_SERVICE_PREFIX.append("deployer");
+    public static final ServiceName RESOURCE_ADAPTER_DEPLOYER_SERVICE_PREFIX = RESOURCE_ADAPTER_SERVICE_PREFIX
+            .append("deployer");
 
     public static final ServiceName RESOURCE_ADAPTER_REGISTRY_SERVICE = ServiceName.JBOSS.append("raregistry");
 
@@ -103,15 +96,13 @@ public class ConnectorServices {
 
     public static final ServiceName IDLE_REMOVER_SERVICE = ServiceName.JBOSS.append("ironjacamar", "idle-remover");
 
-    public static final ServiceName CONNECTION_VALIDATOR_SERVICE = ServiceName.JBOSS.append("ironjacamar", "connection-validator");
-
-    public static final String RA_SERVICE_NAME_SEPARATOR = "->";
-
+    public static final ServiceName CONNECTION_VALIDATOR_SERVICE = ServiceName.JBOSS.append("ironjacamar",
+            "connection-validator");
 
     /**
      * convenient method to check notNull of value
      *
-     * @param <T>   type of the value
+     * @param <T> type of the value
      * @param value the value
      * @return the value or throw an {@link IllegalStateException} if value is null (a.k.a. service not started)
      */
@@ -121,275 +112,87 @@ public class ConnectorServices {
         return value;
     }
 
-    //resource-adapter DMR resource
+    // resource-adapter DMR resource
 
-    public static Integer getResourceIdentifier(String raName) {
-        Set<Integer> entries = resourceIdentifiers.get(raName);
-
-        if (entries == null) {
-            Integer identifier = Integer.valueOf(0);
-
-            entries = new HashSet<Integer>();
-            resourceIdentifiers.put(raName, entries);
-
-            entries.add(identifier);
-            return identifier;
-        }
-
-        Integer identifier = Integer.valueOf(0);
-        for (; ; ) {
-            if (!entries.contains(identifier)) {
-                entries.add(identifier);
-                return identifier;
-            }
-
-            identifier = Integer.valueOf(identifier.intValue() + 1);
-        }
-    }
-
-    public static void unregisterResourceIdentifier(String raName, Integer identifier) {
-
-            Set<Integer> entries = resourceIdentifiers.get(raName);
-
-            if (entries != null) {
-
-                if (entries.contains(identifier)) {
-                    entries.remove(identifier);
-                }
-                if (entries.isEmpty()) {
-                    unregisterResourceIdentifiers(raName);
-                }
-
-            }
-        }
-
-    public static synchronized void unregisterResourceIdentifiers(String raName) {
-            if (raName == null)
-                throw MESSAGES.undefinedVar("RaName");
-
-
-            resourceIdentifiers.remove(raName);
-        }
-
-    // DEPLOYMENTS
-
-    private static Integer getDeploymentIdentifier(String raName) {
-        Set<Integer> entries = deploymentIdentifiers.get(raName);
-
-        if (entries == null) {
-            Integer identifier = Integer.valueOf(1);
-
-            entries = new HashSet<Integer>();
-            deploymentIdentifiers.put(raName, entries);
-
-            entries.add(identifier);
-            return identifier;
-        }
-
-        Integer identifier = Integer.valueOf(1);
-        for (; ; ) {
-            if (!entries.contains(identifier)) {
-                entries.add(identifier);
-                return identifier;
-            }
-
-            identifier = Integer.valueOf(identifier.intValue() + 1);
-        }
-    }
-
-    public static synchronized ServiceName registerDeployment(String raName) {
+    public static synchronized ServiceName getDeploymentServiceName(final String raName, final ResourceAdapter raxml) {
         if (raName == null)
             throw MESSAGES.undefinedVar("RaName");
 
-        Integer identifier = getDeploymentIdentifier(raName);
-        ServiceName serviceName = RESOURCE_ADAPTER_DEPLOYMENT_SERVICE_PREFIX.append(raName + "_" + identifier);
-
-        ServiceName entry = deploymentServiceNames.get(raName);
-
-        /*if (entry != null ) {
-            deploymentIdentifiers.get(raName).remove(identifier);
-            throw MESSAGES.serviceAlreadyRegistered(entry.getCanonicalName());
-        } */
-
-        deploymentServiceNames.put(raName, serviceName);
-
-        ROOT_LOGGER.tracef("ConnectorServices: registerDeployment(%s) -> %s", raName, serviceName);
-
-        return serviceName;
-    }
-
-    public static synchronized ServiceName getDeploymentServiceName(String raName) {
-            if (raName == null)
-                throw MESSAGES.undefinedVar("RaName");
-
-            ServiceName entry = deploymentServiceNames.get(raName);
-
-            ROOT_LOGGER.tracef("ConnectorServices: getDeploymentServiceName(%s) -> %s", raName, entry);
-
-            return entry;
-        }
-
-
-
-
-    public static synchronized void unregisterDeployment(String raName, ServiceName serviceName) {
-        if (raName == null)
-            throw MESSAGES.undefinedVar("RaName");
-
-        if (serviceName == null)
-            throw MESSAGES.undefinedVar("ServiceName");
-
-        ROOT_LOGGER.tracef("ConnectorServices: unregisterDeployment(%s, %s)", raName, serviceName);
-
-        ServiceName entry = deploymentServiceNames.get(raName);
-
-        if (entry != null) {
-            if (!entry.equals(serviceName))
-                throw MESSAGES.serviceIsntRegistered(serviceName.getCanonicalName());
-
-            deploymentServiceNames.remove(raName);
-            if (deploymentIdentifiers.get(raName).size() == 0) {
-                deploymentIdentifiers.remove(raName);
-            }
-
-        }
-    }
-
-    // RESOURCE ADAPTERS
-
-    private static Integer getResourceAdapterIdentifier(String raName) {
-        Set<Integer> entries = resourceAdapterIdentifiers.get(raName);
-
-        if (entries == null) {
-            Integer identifier = Integer.valueOf(1);
-
-            entries = new HashSet<Integer>();
-            resourceAdapterIdentifiers.put(raName, entries);
-
-            entries.add(identifier);
-            return identifier;
-        }
-
-        Integer identifier = Integer.valueOf(1);
-        for (; ; ) {
-            if (!entries.contains(identifier)) {
-                entries.add(identifier);
-                return identifier;
-            }
-
-            identifier = Integer.valueOf(identifier.intValue() + 1);
-        }
-    }
-
-    public static synchronized ServiceName registerResourceAdapter(String raName) {
-        if (raName == null || raName.trim().isEmpty()) {
-            throw MESSAGES.undefinedVar("RaName");
-        }
-
-        // There can be multiple activations for the same ra name. For example, multiple resource
-        // adapter elements (with different configs) in the resource adapter subsystem, all pointing to the same ra archive.
-        // The ServiceName for the first activation of a RA with raName *will always* be of the form:
-        // RESOURCE_ADAPTER_SERVICE_PREFIX.append(raName).
-        // Any subsequent activations for the same raName will have a numeric identifier appended to the service name
-        // as follows:
-        // RESOURCE_ADAPTER_SERVICE_PREFIX.append(raName).append(RA_SERVICE_NAME_SEPARATOR).append(<numeric-id>)
-
-        // Check if this is the first activation for the RA name
-        Set<ServiceName> serviceNamesForRAActivation = resourceAdapterServiceNames.get(raName);
-        if (serviceNamesForRAActivation == null) {
-            serviceNamesForRAActivation = new HashSet<ServiceName>();
-            resourceAdapterServiceNames.put(raName, serviceNamesForRAActivation);
-        }
-        final ServiceName serviceName;
-        if (serviceNamesForRAActivation.isEmpty()) {
-            // this is the first activation, so the service name *won't* have a numeric identifier
-            serviceName = RESOURCE_ADAPTER_SERVICE_PREFIX.append(raName);
+        ServiceName serviceName = null;
+        ModifiableResourceAdapter ra = (ModifiableResourceAdapter) raxml;
+        if (ra != null && ra.getId() != null) {
+            serviceName = getDeploymentServiceName(raName,ra.getId());
         } else {
-            // there was already an activation for the raName. So generate a service name with a numeric identifier
-            final Integer nextId = getResourceAdapterIdentifier(raName);
-            serviceName = RESOURCE_ADAPTER_SERVICE_PREFIX.append(raName).append(RA_SERVICE_NAME_SEPARATOR).append(nextId.toString());
+            serviceName = getDeploymentServiceName(raName,(String)null);
         }
-        serviceNamesForRAActivation.add(serviceName);
-
-        ROOT_LOGGER.tracef("ConnectorServices: registerResourceAdapter(%s) -> %s", raName, serviceName);
-
+        ROOT_LOGGER.tracef("ConnectorServices: getDeploymentServiceName(%s,%s) -> %s", raName, raxml,serviceName);
         return serviceName;
     }
 
-    public static synchronized void unregisterResourceAdapter(String raName, ServiceName serviceName) {
+    public static synchronized ServiceName getDeploymentServiceName(String raName, String raId) {
+        if (raName == null)
+            throw MESSAGES.undefinedVar("RaName");
+
+        // ServiceName entry = deploymentServiceNames.get(raName);
+        ServiceName serviceName = null;
+
+        if (raId == null || raId.equals(raName)) {
+            serviceName = RESOURCE_ADAPTER_DEPLOYMENT_SERVICE_PREFIX.append(raName);
+        } else {
+            serviceName = RESOURCE_ADAPTER_DEPLOYMENT_SERVICE_PREFIX.append(raName + "_" + raId);
+        }
+
+        ROOT_LOGGER.tracef("ConnectorServices: getDeploymentServiceName(%s,%s) -> %s", raName, raId,serviceName);
+        return serviceName;
+    }
+
+    public static synchronized ServiceName getDeploymentServiceName(final String raName) {
+        if (raName == null)
+            throw MESSAGES.undefinedVar("RaName");
+
+        final ServiceName serviceName = RESOURCE_ADAPTER_DEPLOYMENT_SERVICE_PREFIX.append(raName);
+        ROOT_LOGGER.tracef("ConnectorServices: getDeploymentServiceName(%s) -> %s", raName, serviceName);
+        return serviceName;
+    }
+
+    public static synchronized ServiceName getResourceAdapterServiceName(final String raName, final ResourceAdapter raxml) {
         if (raName == null || raName.trim().isEmpty()) {
             throw MESSAGES.undefinedVar("RaName");
         }
 
-        if (serviceName == null) {
-            throw MESSAGES.undefinedVar("ServiceName");
+        ServiceName serviceName = null;
+        ModifiableResourceAdapter ra = (ModifiableResourceAdapter) raxml;
+        if (ra != null && ra.getId() != null) {
+            serviceName = RESOURCE_ADAPTER_SERVICE_PREFIX.append(raName + "_" + ra.getId());
+        } else {
+            serviceName = RESOURCE_ADAPTER_SERVICE_PREFIX.append(raName);
         }
-
-        final Set<ServiceName> registeredServiceNames = resourceAdapterServiceNames.get(raName);
-        if (registeredServiceNames == null || registeredServiceNames.isEmpty() || !registeredServiceNames.contains(serviceName)) {
-            throw MESSAGES.serviceIsntRegistered(serviceName.getCanonicalName());
-        }
-
-        ROOT_LOGGER.tracef("ConnectorServices: unregisterResourceAdapter(%s, %s)", raName, serviceName);
-
-        // remove the service from the registered service names for this RA
-        registeredServiceNames.remove(serviceName);
-
-        // check if the ServiceName contains any numeric identifiers, or if it's just the first activation of a RA.
-        // if the service name has a numeric part, then we need to get that numeric part and unregister that number
-        // from the map which hold the in-use numeric ids.
-        // @see registerResourceAdapter method for more details on how the service names are generated
-        if (!serviceName.equals(RESOURCE_ADAPTER_SERVICE_PREFIX.append(raName))) {
-            final ServiceName baseServiceName = RESOURCE_ADAPTER_SERVICE_PREFIX.append(raName).append(RA_SERVICE_NAME_SEPARATOR);
-            // if the service name doesn't start with the RESOURCE_ADAPTER_SERVICE_PREFIX.append(raName).append(RA_SERVICE_NAME_SEPARATOR)
-            // format, then it isn't a RA service
-            if (!baseServiceName.isParentOf(serviceName)) {
-                throw MESSAGES.notResourceAdapterService(serviceName);
-            }
-            // get the service name parts
-            final String[] parts = serviceName.toArray();
-            // get the numerical id which will be the last part of the service name
-            final String lastPart = parts[parts.length - 1];
-            final Integer numericId;
-            try {
-                numericId = Integer.parseInt(lastPart);
-            } catch (NumberFormatException nfe) {
-                throw MESSAGES.notResourceAdapterService(serviceName);
-            }
-            // remove from the numeric id registration map
-            resourceAdapterIdentifiers.get(raName).remove(numericId);
-        }
+        ROOT_LOGGER.tracef("ConnectorServices: getResourceAdapterServiceName(%s, %s) -> %s", raName, raxml, serviceName);
+        return serviceName;
     }
 
     /**
-     * Returns the {@link ServiceName}s of the activations of the resource adapter named <code>raName</code>.
-     * The returned service names can be used by other services to add dependency on the resource adapter activations.
+     * Returns the {@link ServiceName}s of the activations of the resource adapter named <code>raName</code>. The returned
+     * service names can be used by other services to add dependency on the resource adapter activations.
      *
      * @param raName The resource adapter name
      * @return
      */
-    public static synchronized Set<ServiceName> getResourceAdapterServiceNames(final String raName) {
+    public static synchronized ServiceName getResourceAdapterServiceName(final String raName) {
         if (raName == null || raName.trim().isEmpty()) {
             throw MESSAGES.stringParamCannotBeNullOrEmpty("resource adapter name");
         }
-
-        ROOT_LOGGER.tracef("ConnectorServices: getResourceAdapterServiceNames(%s) -> %s",
-                           raName, resourceAdapterServiceNames.get(raName));
-
-        if (resourceAdapterServiceNames.get(raName) == null || resourceAdapterServiceNames.get(raName).isEmpty()) {
-            return Collections.singleton(RESOURCE_ADAPTER_SERVICE_PREFIX.append(raName));
-        }
-
-        // Return all active service names for a resource adapter. If the dependent service needs the service name of
-        // a specific activation of the RA, then a different method which accepts specific properties for that
-        // RA activation, will have to be used
-        return Collections.unmodifiableSet(resourceAdapterServiceNames.get(raName));
+        //TODO: XXX: this possibly should be removed in favor of method above. But it seems to work as EJB utils use
+        //different registry!
+        final ServiceName service = RESOURCE_ADAPTER_SERVICE_PREFIX.append(raName);
+        ROOT_LOGGER.tracef("ConnectorServices: getResourceAdapterServiceNames(%s) -> %s", raName, service);
+        return service;
     }
 
     /**
-     * Returns the identifier with which the resource adapter named <code>raName</code> is registered
-     * in the {@link org.jboss.jca.core.spi.rar.ResourceAdapterRepository}. Returns null, if there's no
-     * registration for a resource adapter named <code>raName</code>
+     * Returns the identifier with which the resource adapter named <code>raName</code> is registered in the
+     * {@link org.jboss.jca.core.spi.rar.ResourceAdapterRepository}. Returns null, if there's no registration for a resource
+     * adapter named <code>raName</code>
      *
      * @param raName The resource adapter name
      * @return
@@ -401,13 +204,13 @@ public class ConnectorServices {
     }
 
     /**
-     * Makes a note of the resource adapter identifier with which a resource adapter named <code>raName</code>
-     * is registered in the {@link org.jboss.jca.core.spi.rar.ResourceAdapterRepository}.
+     * Makes a note of the resource adapter identifier with which a resource adapter named <code>raName</code> is registered in
+     * the {@link org.jboss.jca.core.spi.rar.ResourceAdapterRepository}.
      * <p/>
-     * Subsequent calls to {@link #getRegisteredResourceAdapterIdentifier(String)} with the passed <code>raName</code>
-     * return the <code>raIdentifier</code>
+     * Subsequent calls to {@link #getRegisteredResourceAdapterIdentifier(String)} with the passed <code>raName</code> return
+     * the <code>raIdentifier</code>
      *
-     * @param raName       The resource adapter name
+     * @param raName The resource adapter name
      * @param raIdentifier The resource adapter identifier
      */
     public static void registerResourceAdapterIdentifier(final String raName, final String raIdentifier) {
@@ -417,13 +220,13 @@ public class ConnectorServices {
     }
 
     /**
-     * Clears the mapping between the <code>raName</code> and the resource adapter identifier, with which the resource
-     * adapter is registered with the {@link org.jboss.jca.core.spi.rar.ResourceAdapterRepository}
+     * Clears the mapping between the <code>raName</code> and the resource adapter identifier, with which the resource adapter
+     * is registered with the {@link org.jboss.jca.core.spi.rar.ResourceAdapterRepository}
      * <p/>
-     * Subsequent calls to {@link #getRegisteredResourceAdapterIdentifier(String)} with the passed <code>raName</code>
-     * return null
+     * Subsequent calls to {@link #getRegisteredResourceAdapterIdentifier(String)} with the passed <code>raName</code> return
+     * null
      *
-     * @param raName       The resource adapter name
+     * @param raName The resource adapter name
      */
     public static void unregisterResourceAdapterIdentifier(final String raName) {
         synchronized (resourceAdapterRepositoryIdentifiers) {

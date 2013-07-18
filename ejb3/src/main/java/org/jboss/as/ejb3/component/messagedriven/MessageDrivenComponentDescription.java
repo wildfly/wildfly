@@ -23,7 +23,6 @@ package org.jboss.as.ejb3.component.messagedriven;
 
 
 import java.util.Properties;
-import java.util.Set;
 
 import javax.ejb.MessageDrivenBean;
 import javax.ejb.TransactionManagementType;
@@ -68,8 +67,6 @@ import org.jboss.modules.ModuleLoader;
 import org.jboss.msc.service.Service;
 import org.jboss.msc.service.ServiceBuilder;
 import org.jboss.msc.service.ServiceName;
-
-import static org.jboss.as.ejb3.EjbMessages.MESSAGES;
 
 /**
  * @author <a href="mailto:cdewolf@redhat.com">Carlo de Wolf</a>
@@ -316,12 +313,10 @@ public class MessageDrivenComponentDescription extends EJBComponentDescription {
 
         @Override
         public void configureDependency(ServiceBuilder<?> serviceBuilder, MessageDrivenComponentCreateService service) throws DeploymentUnitProcessingException {
+            //TODO: XXX: this is fishy!
             final String suffixStrippedRaName = this.stripDotRarSuffix(MessageDrivenComponentDescription.this.resourceAdapterName);
-            final Set<ServiceName> raServiceNames = ConnectorServices.getResourceAdapterServiceNames(suffixStrippedRaName);
-            if (raServiceNames == null || raServiceNames.isEmpty()) {
-                throw MESSAGES.failToFindResourceAdapter(suffixStrippedRaName);
-            }
-            final ServiceName raServiceName = raServiceNames.iterator().next();
+
+            final ServiceName raServiceName = ConnectorServices.getResourceAdapterServiceName(suffixStrippedRaName);
             // add the dependency on the RA service
             serviceBuilder.addDependency(raServiceName, ResourceAdapter.class, service.getResourceAdapterInjector());
         }

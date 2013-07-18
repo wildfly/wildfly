@@ -71,3 +71,4 @@ public class ModifiableResourceAdapter extends ResourceAdapterImpl {
         this.raXmlDeploymentServiceName = raXmlDeploymentServiceName;
     }
 }
+

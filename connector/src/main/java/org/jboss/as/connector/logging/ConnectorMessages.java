@@ -539,4 +539,13 @@ public interface ConnectorMessages {
     @Message(id = 10479, value = "Failed to deploy datssource %s because driver is not specified")
     DeploymentUnitProcessingException FailedDeployDriverNotSpecified(String dsName);
 
+    /**
+     * Creates an exception indicating missing rar.
+     *
+     * @param raName - name.
+     * @return a {@link OperationFailedException} for the error.
+     */
+    @Message(id = 10480, value = "RAR '%s' not yet deployed.")
+    OperationFailedException RARNotYetDeployed(String raName);
+
 }

@@ -21,7 +21,6 @@
  */
 package org.jboss.as.connector.subsystems.resourceadapters;
 
-import org.jboss.as.connector.util.ConnectorServices;
 import org.jboss.as.controller.AttributeDefinition;
 import org.jboss.as.controller.AttributeMarshaller;
 import org.jboss.as.controller.ObjectListAttributeDefinition;
@@ -50,6 +49,8 @@ import org.jboss.jca.common.api.metadata.resourceadapter.v10.ResourceAdapter;
 
 import javax.xml.stream.XMLStreamException;
 import javax.xml.stream.XMLStreamWriter;
+
+
 
 
 /**
@@ -199,12 +200,7 @@ public class Constants {
                     if (resourceModel.hasDefined(attribute.getName())) {
                         writer.writeStartElement(attribute.getXmlName());
                         String archive = resourceModel.get(attribute.getName()).asString();
-                        if (archive.contains(ConnectorServices.RA_SERVICE_NAME_SEPARATOR)) {
-                            writer.writeCharacters(archive.substring(0, archive.indexOf(ConnectorServices.RA_SERVICE_NAME_SEPARATOR)));
-                        } else {
-                            writer.writeCharacters(archive);
-                        }
-
+                        writer.writeCharacters(archive);
                         writer.writeEndElement();
                     }
                 }
@@ -232,12 +228,7 @@ public class Constants {
                                 writer.writeAttribute("slot", "main");
                             }
                         }
-                        if (module.contains(ConnectorServices.RA_SERVICE_NAME_SEPARATOR)) {
-                            writer.writeAttribute("id", module.substring(0, module.indexOf(ConnectorServices.RA_SERVICE_NAME_SEPARATOR)));
-                        } else {
-                            writer.writeAttribute("id", module);
-                        }
-
+                        writer.writeAttribute("id", module);
                         writer.writeEndElement();
                     }
                 }
