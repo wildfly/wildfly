@@ -123,21 +123,19 @@ public class RaXmlDeploymentProcessor implements DeploymentUnitProcessor {
                 for (ResourceAdapter raxml : raxmls.getResourceAdapters()) {
 
                     String rarName = raxml.getArchive();
-                    Integer identifier = null;
-                    if (rarName.contains(ConnectorServices.RA_SERVICE_NAME_SEPARATOR)) {
-                        rarName = rarName.substring(0, rarName.indexOf(ConnectorServices.RA_SERVICE_NAME_SEPARATOR));
-                    }
+                    //TODO: XXX: check this/remove this - may IJ do this bad thing?
+//                    if (rarName.contains(ConnectorServices.RA_SERVICE_NAME_SEPARATOR)) {
+//                        rarName = rarName.substring(0, rarName.indexOf(ConnectorServices.RA_SERVICE_NAME_SEPARATOR));
+//                    }
+
                     if (deploymentUnitName.equals(rarName)) {
                         RaServicesFactory.createDeploymentService(registration, connectorXmlDescriptor, module, serviceTarget, deploymentUnitName, deploymentUnit.getServiceName(), deployment, raxml, deploymentResource, null);
-
-
                     }
                 }
             }
 
             //create service pointing to rar for other future activations
             ServiceName serviceName = ConnectorServices.INACTIVE_RESOURCE_ADAPTER_SERVICE.append(deploymentUnitName);
-
             InactiveResourceAdapterDeploymentService service = new InactiveResourceAdapterDeploymentService(connectorXmlDescriptor, module, deployment, deploymentUnitName, deploymentUnit.getServiceName(), registration, serviceTarget, deploymentResource);
             ServiceBuilder builder = serviceTarget
                     .addService(serviceName, service);
