@@ -34,13 +34,13 @@ import org.jboss.as.subsystem.test.AbstractSubsystemBaseTest;
 public class SubsystemBaseParsingTestCase extends AbstractSubsystemBaseTest {
 
     public SubsystemBaseParsingTestCase() {
-        super(SubsystemExtension.SUBSYSTEM_NAME, new SubsystemExtension());
+        super(BatchSubsystemExtension.SUBSYSTEM_NAME, new BatchSubsystemExtension());
     }
 
 
     @Override
     protected String getSubsystemXml() throws IOException {
-        return "<subsystem xmlns=\"" + SubsystemExtension.NAMESPACE + "\">" +
+        return "<subsystem xmlns=\"" + BatchSubsystemExtension.NAMESPACE + "\">" +
                 "</subsystem>";
     }
 

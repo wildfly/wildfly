@@ -28,6 +28,6 @@
 <config>
    <extension-module>org.wildfly.extension.batch</extension-module>
    <subsystem xmlns="urn:jboss:domain:batch:1.0">
-
+     <job-repository type="in-memory"/>
    </subsystem>
 </config>
