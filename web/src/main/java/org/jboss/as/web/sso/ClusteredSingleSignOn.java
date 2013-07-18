@@ -567,6 +567,31 @@ public class ClusteredSingleSignOn extends org.apache.catalina.authenticator.Sin
     }
 
     /**
+     * Logout the specified single sign on identifier from all sessions.
+     *
+     * @param ssoId Single sign on identifier to logout
+     */
+    public void removeLogin(String ssoId) {
+        // Look up and remove the corresponding SingleSignOnEntry
+        SingleSignOnEntry sso = getSingleSignOnEntry(ssoId);
+
+        if (sso == null)
+            return;
+
+        // Remove all authentication information from all associated sessions
+        for (Session session : sso.findSessions()) {
+            session.setAuthType(null);
+            session.setPrincipal(null);
+            session.removeNote(Constants.SESS_USERNAME_NOTE);
+            session.removeNote(Constants.SESS_PASSWORD_NOTE);
+        }
+        // Reset SSO authentication
+        if (sso.updateCredentials2(null, null, null, null)) {
+            ssoClusterManager.updateCredentials(ssoId, null, null, null);
+        }
+    }
+
+    /**
      * Look up and return the cached SingleSignOn entry associated with this sso id value, if there is one; otherwise return
      * <code>null</code>.
      *
