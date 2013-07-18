@@ -93,11 +93,11 @@ public class UndertowSubsystemParser_1_0 implements XMLStreamConstants, XMLEleme
                 )
                 .addChild(
                         builder(ServletContainerDefinition.INSTANCE)
+                                .addAttribute(ServletContainerDefinition.DEVELOPMENT_MODE)
                                 .addChild(
                                         builder(JspDefinition.INSTANCE)
                                                 .setXmlElementName(Constants.JSP_CONFIG)
                                                 .addAttributes(
-                                                        JspDefinition.DEVELOPMENT,
                                                         JspDefinition.DISABLED,
                                                         JspDefinition.KEEP_GENERATED,
                                                         JspDefinition.TRIM_SPACES,

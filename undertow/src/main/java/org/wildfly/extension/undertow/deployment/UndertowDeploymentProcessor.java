@@ -70,8 +70,10 @@ import org.wildfly.clustering.web.session.SessionManagerFactory;
 import org.wildfly.clustering.web.session.SessionManagerFactoryBuilder;
 import org.wildfly.clustering.web.session.SessionManagerFactoryBuilderService;
 import org.wildfly.extension.undertow.BufferCacheService;
+import org.wildfly.extension.undertow.Constants;
 import org.wildfly.extension.undertow.DeploymentDefinition;
 import org.wildfly.extension.undertow.Host;
+import org.wildfly.extension.undertow.JSPService;
 import org.wildfly.extension.undertow.ServletContainerService;
 import org.wildfly.extension.undertow.SessionCookieConfigService;
 import org.wildfly.extension.undertow.UndertowExtension;
@@ -219,6 +221,7 @@ public class UndertowDeploymentProcessor implements DeploymentUnitProcessor {
                 .addDependency(ServiceBuilder.DependencyType.OPTIONAL, BufferCacheService.SERVICE_NAME.append("default"), DirectBufferCache.class, undertowDeploymentInfoService.getBufferCacheInjectedValue())
                 .addDependencies(deploymentUnit.getAttachmentList(Attachments.WEB_DEPENDENCIES))
                 .addDependency(PathManagerService.SERVICE_NAME, PathManager.class, undertowDeploymentInfoService.getPathManagerInjector())
+                .addDependency(ServiceBuilder.DependencyType.OPTIONAL, UndertowService.SERVLET_CONTAINER.append(defaultContainer).append(Constants.JSP), JSPService.class, undertowDeploymentInfoService.getJspService())
                 .addDependencies(additionalDependencies);
 
         if(componentRegistryExists) {

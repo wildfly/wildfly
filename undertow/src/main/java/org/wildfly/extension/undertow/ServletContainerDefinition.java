@@ -30,12 +30,25 @@ import java.util.List;
 import org.jboss.as.controller.AttributeDefinition;
 import org.jboss.as.controller.PersistentResourceDefinition;
 import org.jboss.as.controller.ReloadRequiredRemoveStepHandler;
+import org.jboss.as.controller.SimpleAttributeDefinition;
+import org.jboss.as.controller.SimpleAttributeDefinitionBuilder;
+import org.jboss.as.controller.registry.AttributeAccess;
+import org.jboss.dmr.ModelNode;
+import org.jboss.dmr.ModelType;
 
 /**
  * @author <a href="mailto:tomaz.cerar@redhat.com">Tomaz Cerar</a> (c) 2013 Red Hat Inc.
  */
 public class ServletContainerDefinition extends PersistentResourceDefinition {
     static final ServletContainerDefinition INSTANCE = new ServletContainerDefinition();
+
+
+    protected static final SimpleAttributeDefinition DEVELOPMENT_MODE =
+            new SimpleAttributeDefinitionBuilder(Constants.DEVELOPMENT_MODE, ModelType.BOOLEAN, true)
+                    .setFlags(AttributeAccess.Flag.RESTART_ALL_SERVICES)
+                    .setDefaultValue(new ModelNode(false))
+                    .setAllowExpression(true)
+                    .build();
 
     private static final List<? extends PersistentResourceDefinition> CHILDREN;
 
@@ -55,7 +68,7 @@ public class ServletContainerDefinition extends PersistentResourceDefinition {
 
     @Override
     public Collection<AttributeDefinition> getAttributes() {
-        return Collections.emptySet();
+        return Collections.<AttributeDefinition>singleton(DEVELOPMENT_MODE);
     }
 
     @Override

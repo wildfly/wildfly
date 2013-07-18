@@ -182,6 +182,7 @@ public class UndertowDeploymentInfoService implements Service<DeploymentInfo> {
     private final InjectedValue<SessionCookieConfigService> defaultSessionCookieConfig = new InjectedValue<>();
     private final InjectedValue<PathManager> pathManagerInjector = new InjectedValue<PathManager>();
     private final InjectedValue<ComponentRegistry> componentRegistryInjectedValue = new InjectedValue<>();
+    private final InjectedValue<JSPService> jspService = new InjectedValue<>();
 
     private UndertowDeploymentInfoService(final JBossWebMetaData mergedMetaData, final String deploymentName, final TldsMetaData tldsMetaData, final List<TldMetaData> sharedTlds, final Module module, final ScisMetaData scisMetaData, final VirtualFile deploymentRoot, final String securityContextId, final String securityDomain, final List<ServletContextAttribute> attributes, final String contextPath, final List<SetupAction> setupActions, final Set<VirtualFile> overlays, final List<ExpressionFactoryWrapper> expressionFactoryWrappers, List<PredicatedHandler> predicatedHandlers) {
         this.mergedMetaData = mergedMetaData;
@@ -215,24 +216,24 @@ public class UndertowDeploymentInfoService implements Service<DeploymentInfo> {
             ServletSessionConfig config = null;
             //default session config
             SessionCookieConfigService defaultSessionConfig = defaultSessionCookieConfig.getOptionalValue();
-            if(defaultSessionConfig != null) {
+            if (defaultSessionConfig != null) {
                 config = new ServletSessionConfig();
-                if(defaultSessionConfig.getName() != null) {
+                if (defaultSessionConfig.getName() != null) {
                     config.setName(defaultSessionConfig.getName());
                 }
-                if(defaultSessionConfig.getDomain() != null) {
+                if (defaultSessionConfig.getDomain() != null) {
                     config.setDomain(defaultSessionConfig.getDomain());
                 }
-                if(defaultSessionConfig.getHttpOnly() != null) {
+                if (defaultSessionConfig.getHttpOnly() != null) {
                     config.setHttpOnly(defaultSessionConfig.getHttpOnly());
                 }
-                if(defaultSessionConfig.getSecure() != null) {
+                if (defaultSessionConfig.getSecure() != null) {
                     config.setSecure(defaultSessionConfig.getSecure());
                 }
-                if(defaultSessionConfig.getMaxAge() != null) {
+                if (defaultSessionConfig.getMaxAge() != null) {
                     config.setMaxAge(defaultSessionConfig.getMaxAge());
                 }
-                if(defaultSessionConfig.getComment() != null) {
+                if (defaultSessionConfig.getComment() != null) {
                     config.setComment(defaultSessionConfig.getComment());
                 }
             }
@@ -242,17 +243,17 @@ public class UndertowDeploymentInfoService implements Service<DeploymentInfo> {
                     deploymentInfo.setDefaultSessionTimeout(sessionConfig.getSessionTimeout() * 60);
                 }
                 CookieConfigMetaData cookieConfig = sessionConfig.getCookieConfig();
-                if(config == null) {
+                if (config == null) {
                     config = new ServletSessionConfig();
                 }
                 if (cookieConfig != null) {
                     if (cookieConfig.getName() != null) {
                         config.setName(cookieConfig.getName());
                     }
-                    if(cookieConfig.getDomain() != null) {
+                    if (cookieConfig.getDomain() != null) {
                         config.setDomain(cookieConfig.getDomain());
                     }
-                    if(cookieConfig.getComment() != null) {
+                    if (cookieConfig.getComment() != null) {
                         config.setComment(cookieConfig.getComment());
                     }
                     config.setSecure(cookieConfig.getSecure());
@@ -261,9 +262,9 @@ public class UndertowDeploymentInfoService implements Service<DeploymentInfo> {
                     config.setHttpOnly(cookieConfig.getHttpOnly());
                 }
                 List<SessionTrackingModeType> modes = sessionConfig.getSessionTrackingModes();
-                if(modes != null && !modes.isEmpty()) {
+                if (modes != null && !modes.isEmpty()) {
                     final Set<SessionTrackingMode> trackingModes = new HashSet<>();
-                    for(SessionTrackingModeType mode : modes) {
+                    for (SessionTrackingModeType mode : modes) {
                         switch (mode) {
                             case COOKIE:
                                 trackingModes.add(SessionTrackingMode.COOKIE);
@@ -279,7 +280,7 @@ public class UndertowDeploymentInfoService implements Service<DeploymentInfo> {
                     config.setSessionTrackingModes(trackingModes);
                 }
             }
-            if(config != null) {
+            if (config != null) {
                 deploymentInfo.setServletSessionConfig(config);
             }
 
@@ -355,7 +356,7 @@ public class UndertowDeploymentInfoService implements Service<DeploymentInfo> {
     private DeploymentInfo createServletConfig() throws StartException {
         final ComponentRegistry componentRegistry = componentRegistryInjectedValue.getValue();
         try {
-            if(!mergedMetaData.isMetadataComplete()) {
+            if (!mergedMetaData.isMetadataComplete()) {
                 mergedMetaData.resolveAnnotations();
             }
             final DeploymentInfo d = new DeploymentInfo();
@@ -395,10 +396,10 @@ public class UndertowDeploymentInfoService implements Service<DeploymentInfo> {
             } else {
                 is22OrOlder = false;
             }
-            JSPService jspService = container.getValue().getJspService().getOptionalValue();
+            JSPService jspService = getJspService().getOptionalValue();
             final Set<String> seenMappings = new HashSet<>();
 
-            HashMap <String, TagLibraryInfo> tldInfo = createTldsInfo(tldsMetaData, sharedTlds);
+            HashMap<String, TagLibraryInfo> tldInfo = createTldsInfo(tldsMetaData, sharedTlds);
 
             d.setDefaultServletConfig(new DefaultServletConfig(true, Collections.<String>emptySet()));
 
@@ -511,7 +512,7 @@ public class UndertowDeploymentInfoService implements Service<DeploymentInfo> {
                         }
                     }
 
-                    if(servlet.getMultipartConfig() != null) {
+                    if (servlet.getMultipartConfig() != null) {
                         MultipartConfigMetaData mp = servlet.getMultipartConfig();
                         s.setMultipartConfig(Servlets.multipartConfig(mp.getLocation(), mp.getMaxFileSize(), mp.getMaxRequestSize(), mp.getFileSizeThreshold()));
                     }
@@ -610,7 +611,7 @@ public class UndertowDeploymentInfoService implements Service<DeploymentInfo> {
                     final ErrorPage errorPage;
                     if (page.getExceptionType() != null && !page.getExceptionType().isEmpty()) {
                         errorPage = new ErrorPage(page.getLocation(), (Class<? extends Throwable>) module.getClassLoader().loadClass(page.getExceptionType()));
-                    } else if(page.getErrorCode() != null && !page.getErrorCode().isEmpty()){
+                    } else if (page.getErrorCode() != null && !page.getErrorCode().isEmpty()) {
                         errorPage = new ErrorPage(page.getLocation(), Integer.parseInt(page.getErrorCode()));
                     } else {
                         errorPage = new ErrorPage(page.getLocation());
@@ -684,11 +685,11 @@ public class UndertowDeploymentInfoService implements Service<DeploymentInfo> {
                 }
             }
 
-            if(predicatedHandlers != null && !predicatedHandlers.isEmpty()) {
+            if (predicatedHandlers != null && !predicatedHandlers.isEmpty()) {
                 d.addInitialHandlerChainWrapper(new HandlerWrapper() {
                     @Override
                     public HttpHandler wrap(HttpHandler handler) {
-                        if(predicatedHandlers.size() == 1) {
+                        if (predicatedHandlers.size() == 1) {
                             PredicatedHandler ph = predicatedHandlers.get(0);
                             return Handlers.predicate(ph.getPredicate(), ph.getHandler().wrap(handler), handler);
                         } else {
@@ -1024,6 +1025,10 @@ public class UndertowDeploymentInfoService implements Service<DeploymentInfo> {
         return componentRegistryInjectedValue;
     }
 
+    public InjectedValue<JSPService> getJspService() {
+        return jspService;
+    }
+
     private static class ComponentClassIntrospector implements ClassIntrospecter {
         private final ComponentRegistry componentRegistry;
 
@@ -1034,7 +1039,7 @@ public class UndertowDeploymentInfoService implements Service<DeploymentInfo> {
         @Override
         public <T> InstanceFactory<T> createInstanceFactory(final Class<T> clazz) throws NoSuchMethodException {
             final ManagedReferenceFactory component = componentRegistry.createInstanceFactory(clazz);
-                return new ManagedReferenceInstanceFactory<>(component);
+            return new ManagedReferenceInstanceFactory<>(component);
         }
     }
 

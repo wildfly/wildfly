@@ -25,7 +25,6 @@
 package org.wildfly.extension.undertow;
 
 import static org.wildfly.extension.undertow.Constants.CHECK_INTERVAL;
-import static org.wildfly.extension.undertow.Constants.DEVELOPMENT;
 import static org.wildfly.extension.undertow.Constants.DISABLED;
 import static org.wildfly.extension.undertow.Constants.DISPLAY_SOURCE_FRAGMENT;
 import static org.wildfly.extension.undertow.Constants.DUMP_SMAP;
@@ -51,33 +50,39 @@ import org.jboss.msc.service.Service;
 import org.jboss.msc.service.StartContext;
 import org.jboss.msc.service.StartException;
 import org.jboss.msc.service.StopContext;
+import org.jboss.msc.value.InjectedValue;
 
 /**
  * @author Tomaz Cerar (c) 2013 Red Hat Inc.
  */
 public class JSPService implements Service<JSPService> {
     private final ModelNode config;
-    private final ServletInfo servletInfo;
+    private ServletInfo servletInfo;
+
+    private final InjectedValue<ServletContainerService> servletContainerServiceInjectedValue = new InjectedValue<>();
 
 
     public JSPService(ModelNode config) {
         this.config = config;
-        this.servletInfo = configureServletInfo();
     }
 
     @Override
     public void start(StartContext context) throws StartException {
-
+        this.servletInfo = configureServletInfo();
     }
 
     @Override
     public void stop(StopContext context) {
-
+        this.servletInfo = null;
     }
 
     @Override
     public JSPService getValue() throws IllegalStateException, IllegalArgumentException {
         return this;
+    }
+
+    public InjectedValue<ServletContainerService> getServletContainerServiceInjectedValue() {
+        return servletContainerServiceInjectedValue;
     }
 
     /**
@@ -94,7 +99,7 @@ public class JSPService implements Service<JSPService> {
                 .addMapping("*.jspx");
 
 
-        jspServlet.addInitParam("development", config.require(DEVELOPMENT).asString());
+        jspServlet.addInitParam("development", Boolean.toString(servletContainerServiceInjectedValue.getValue().isDevelopmentMode()));
         jspServlet.addInitParam("keepgenerated", config.require(KEEP_GENERATED).asString());
         jspServlet.addInitParam("trimSpaces", config.require(TRIM_SPACES).asString());
         jspServlet.addInitParam("enablePooling", config.require(TAG_POOLING).asString());

@@ -93,6 +93,7 @@
             <xs:element name="session-cookie" type="session-cookieType" maxOccurs="1" minOccurs="0"/>
         </xs:sequence>
         <xs:attribute name="name" use="required" type="xs:string"/>
+        <xs:attribute name="development-mode" use="optional" type="xs:boolean" default="false"/>
     </xs:complexType>
     <xs:complexType name="hostType">
         <xs:sequence>
@@ -103,7 +104,6 @@
     </xs:complexType>
 
     <xs:complexType name="jsp-configurationType">
-        <xs:attribute name="development" default="false" type="xs:boolean"/>
         <xs:attribute name="disabled" default="false" type="xs:boolean"/>
         <xs:attribute name="keep-generated" default="true" type="xs:boolean"/>
         <xs:attribute name="trim-spaces" default="false" type="xs:boolean"/>

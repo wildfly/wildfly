@@ -43,8 +43,8 @@
            <host name="default-host"/>
        </server>
 
-    <servlet-container name="default">
-        <jsp-config development="${prop.development:true}"
+    <servlet-container name="default" development-mode="true" >
+        <jsp-config
                     disabled="${prop.disabled:false}"
                     keep-generated="${prop.keep-generated:true}"
                     trim-spaces="${prop.trim-spaces:true}"
