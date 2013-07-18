@@ -30,6 +30,7 @@ public class ModelDescriptionConstants {
 
     // KEEP THESE IN ALPHABETICAL ORDER!
 
+    public static final String ACCESS = "access";
     public static final String ACCESS_CONSTRAINTS = "access-constraints";
     public static final String ACCESS_CONTROL = "access-control";
     /** The key for {@link org.jboss.as.controller.registry.AttributeAccess.AccessType} fields. */

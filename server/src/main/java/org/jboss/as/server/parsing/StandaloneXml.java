@@ -25,8 +25,9 @@ package org.jboss.as.server.parsing;
 import static javax.xml.stream.XMLStreamConstants.END_ELEMENT;
 import static org.jboss.as.controller.ControllerLogger.ROOT_LOGGER;
 import static org.jboss.as.controller.ControllerMessages.MESSAGES;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ACCESS_CONTROL;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ACCESS;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ADD;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.AUTHORIZATION;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.CONTENT;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.CORE_SERVICE;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.DEPLOYMENT;
@@ -84,7 +85,7 @@ import org.jboss.as.controller.parsing.ProfileParsingCompletionHandler;
 import org.jboss.as.controller.persistence.ModelMarshallingContext;
 import org.jboss.as.controller.persistence.SubsystemMarshallingContext;
 import org.jboss.as.controller.resource.SocketBindingGroupResourceDefinition;
-import org.jboss.as.domain.management.access.AccessControlResourceDefinition;
+import org.jboss.as.domain.management.access.AccessAuthorizationResourceDefinition;
 import org.jboss.as.domain.management.parsing.ManagementXml;
 import org.jboss.as.server.controller.resources.DeploymentAttributes;
 import org.jboss.as.server.controller.resources.ServerRootResourceDefinition;
@@ -1196,7 +1197,7 @@ public class StandaloneXml extends CommonXml {
 
         if (modelNode.hasDefined(CORE_SERVICE)) {
             ManagementXml managementXml = new ManagementXml(new ManagementXmlDelegate());
-            managementXml.writeManagement(writer, modelNode.get(CORE_SERVICE, MANAGEMENT), modelNode.get(CORE_SERVICE, ACCESS_CONTROL), true);
+            managementXml.writeManagement(writer, modelNode.get(CORE_SERVICE, MANAGEMENT), true);
             writeNewLine(writer);
         }
 
@@ -1316,7 +1317,7 @@ public class StandaloneXml extends CommonXml {
         @Override
         public void parseAccessControl(final XMLExtendedStreamReader reader, final ModelNode address, final Namespace expectedNs,
                                        final List<ModelNode> list) throws XMLStreamException {
-            ModelNode accContAddr = address.clone().add(CORE_SERVICE, ACCESS_CONTROL);
+            ModelNode accContAddr = address.clone().add(ACCESS, AUTHORIZATION);
 
             final int count = reader.getAttributeCount();
             for (int i = 0; i < count; i++) {
@@ -1328,11 +1329,11 @@ public class StandaloneXml extends CommonXml {
 
                 final Attribute attribute = Attribute.forName(reader.getAttributeLocalName(i));
                 if (attribute == Attribute.PROVIDER) {
-                    ModelNode provider = AccessControlResourceDefinition.PROVIDER.parse(value, reader);
+                    ModelNode provider = AccessAuthorizationResourceDefinition.PROVIDER.parse(value, reader);
                     ModelNode op = new ModelNode();
                     op.get(OP).set(WRITE_ATTRIBUTE_OPERATION);
                     op.get(OP_ADDR).set(accContAddr);
-                    op.get(NAME).set(AccessControlResourceDefinition.PROVIDER.getName());
+                    op.get(NAME).set(AccessAuthorizationResourceDefinition.PROVIDER.getName());
                     op.get(VALUE).set(provider);
 
                     list.add(op);
@@ -1346,7 +1347,7 @@ public class StandaloneXml extends CommonXml {
                 final Element element = Element.forName(reader.getLocalName());
                 switch (element) {
                     case ROLE_MAPPING: {
-                        ManagementXml.parseAccessControlRoleMapping(reader, address, expectedNs, list);
+                        ManagementXml.parseAccessControlRoleMapping(reader, accContAddr, expectedNs, list);
                         break;
                     }
                     case CONSTRAINTS: {

@@ -40,7 +40,6 @@ import org.jboss.as.controller.SimpleMapAttributeDefinition;
 import org.jboss.as.controller.SimpleResourceDefinition;
 import org.jboss.as.controller.access.DelegatingConfigurableAuthorizer;
 import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
-import org.jboss.as.controller.descriptions.common.CoreManagementDefinition;
 import org.jboss.as.controller.extension.ExtensionRegistry;
 import org.jboss.as.controller.extension.ExtensionResourceDefinition;
 import org.jboss.as.controller.operations.common.NamespaceAddHandler;
@@ -67,9 +66,7 @@ import org.jboss.as.controller.resource.InterfaceDefinition;
 import org.jboss.as.controller.resource.SocketBindingGroupResourceDefinition;
 import org.jboss.as.controller.services.path.PathManagerService;
 import org.jboss.as.controller.services.path.PathResourceDefinition;
-import org.jboss.as.domain.management.access.AccessControlResourceDefinition;
-import org.jboss.as.domain.management.connections.ldap.LdapConnectionResourceDefinition;
-import org.jboss.as.domain.management.security.SecurityRealmResourceDefinition;
+import org.jboss.as.domain.management.CoreManagementResourceDefinition;
 import org.jboss.as.domain.management.security.WhoAmIOperation;
 import org.jboss.as.platform.mbean.PlatformMBeanResourceRegistrar;
 import org.jboss.as.repository.ContentRepository;
@@ -336,13 +333,15 @@ public class ServerRootResourceDefinition extends SimpleResourceDefinition {
 
         // Central Management
         // Start with the base /core-service=management MNR. The Resource for this is added by ServerService itself, so there is no add/remove op handlers
-        ManagementResourceRegistration management = resourceRegistration.registerSubModel(CoreManagementDefinition.INSTANCE);
-
-        management.registerSubModel(SecurityRealmResourceDefinition.INSTANCE);
-        management.registerSubModel(LdapConnectionResourceDefinition.INSTANCE);
-        management.registerSubModel(NativeManagementResourceDefinition.INSTANCE);
-        management.registerSubModel(NativeRemotingManagementResourceDefinition.INSTANCE);
-        management.registerSubModel(HttpManagementResourceDefinition.INSTANCE);
+        final ResourceDefinition managementDefinition;
+        if (isDomain) {
+            managementDefinition = CoreManagementResourceDefinition.forDomainServer(authorizer);
+        } else {
+            managementDefinition = CoreManagementResourceDefinition.forStandaloneServer(authorizer,
+                    NativeManagementResourceDefinition.INSTANCE, NativeRemotingManagementResourceDefinition.INSTANCE,
+                    HttpManagementResourceDefinition.INSTANCE);
+        }
+        resourceRegistration.registerSubModel(managementDefinition);
 
         // Other core services
         resourceRegistration.registerSubModel(new ServiceContainerResourceDefinition());
@@ -351,11 +350,6 @@ public class ServerRootResourceDefinition extends SimpleResourceDefinition {
 
         // Platform MBeans
         PlatformMBeanResourceRegistrar.registerPlatformMBeanResources(resourceRegistration);
-
-        //Access Control
-        ResourceDefinition accControl = isDomain ? AccessControlResourceDefinition.forDomainServer(authorizer)
-                : AccessControlResourceDefinition.forStandaloneServer(authorizer);
-        resourceRegistration.registerSubModel(accControl);
 
         // Paths
         resourceRegistration.registerSubModel(PathResourceDefinition.createSpecified(pathManager));

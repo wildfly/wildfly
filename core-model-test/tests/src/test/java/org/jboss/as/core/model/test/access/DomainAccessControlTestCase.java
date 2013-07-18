@@ -29,7 +29,7 @@ import org.jboss.as.core.model.test.AbstractCoreModelTest;
 import org.jboss.as.core.model.test.KernelServices;
 import org.jboss.as.core.model.test.ModelInitializer;
 import org.jboss.as.core.model.test.TestModelType;
-import org.jboss.as.domain.management.access.AccessControlResourceDefinition;
+import org.jboss.as.domain.management.access.AccessAuthorizationResourceDefinition;
 import org.jboss.as.model.test.ModelTestUtils;
 import org.junit.Assert;
 import org.junit.Test;
@@ -48,7 +48,11 @@ public class DomainAccessControlTestCase extends AbstractCoreModelTest {
                 .setModelInitializer(new ModelInitializer() {
                     @Override
                     public void populateModel(Resource rootResource) {
-                        rootResource.registerChild(PathElement.pathElement(ModelDescriptionConstants.CORE_SERVICE, ModelDescriptionConstants.ACCESS_CONTROL), AccessControlResourceDefinition.RESOURCE);
+                        Resource management = Resource.Factory.create();
+                        rootResource.registerChild(PathElement.pathElement(ModelDescriptionConstants.CORE_SERVICE,
+                                ModelDescriptionConstants.MANAGEMENT), management);
+                        management.registerChild(PathElement.pathElement(ModelDescriptionConstants.ACCESS,
+                                ModelDescriptionConstants.AUTHORIZATION), AccessAuthorizationResourceDefinition.RESOURCE);
                     }
                 }, null)
                 .setXmlResource("domain-all.xml")

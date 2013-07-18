@@ -28,6 +28,7 @@ import org.jboss.as.controller.ControlledProcessState;
 import org.jboss.as.controller.ObjectTypeAttributeDefinition;
 import org.jboss.as.controller.PathElement;
 import org.jboss.as.controller.ReloadRequiredWriteAttributeHandler;
+import org.jboss.as.controller.ResourceDefinition;
 import org.jboss.as.controller.SimpleAttributeDefinition;
 import org.jboss.as.controller.SimpleAttributeDefinitionBuilder;
 import org.jboss.as.controller.SimpleResourceDefinition;
@@ -57,9 +58,7 @@ import org.jboss.as.domain.controller.DomainController;
 import org.jboss.as.domain.controller.operations.DomainServerLifecycleHandlers;
 import org.jboss.as.domain.controller.operations.DomainSocketBindingGroupRemoveHandler;
 import org.jboss.as.domain.controller.operations.deployment.HostProcessReloadHandler;
-import org.jboss.as.domain.management.access.AccessControlResourceDefinition;
-import org.jboss.as.domain.management.connections.ldap.LdapConnectionResourceDefinition;
-import org.jboss.as.domain.management.security.SecurityRealmResourceDefinition;
+import org.jboss.as.domain.management.CoreManagementResourceDefinition;
 import org.jboss.as.host.controller.DirectoryGrouping;
 import org.jboss.as.host.controller.HostControllerConfigurationPersister;
 import org.jboss.as.host.controller.HostControllerEnvironment;
@@ -317,11 +316,9 @@ public class HostResourceDefinition extends SimpleResourceDefinition {
         hostRegistration.registerSubModel(new VaultResourceDefinition(vaultReader));
 
         // Central Management
-        ManagementResourceRegistration management = hostRegistration.registerSubModel(CoreServiceResourceDefinition.INSTANCE);
-        management.registerSubModel(SecurityRealmResourceDefinition.INSTANCE);
-        management.registerSubModel(LdapConnectionResourceDefinition.INSTANCE);
-        management.registerSubModel(new NativeManagementResourceDefinition(hostControllerInfo));
-        management.registerSubModel(new HttpManagementResourceDefinition(hostControllerInfo, environment));
+        ResourceDefinition nativeManagement = new NativeManagementResourceDefinition(hostControllerInfo);
+        ResourceDefinition httpManagement = new HttpManagementResourceDefinition(hostControllerInfo, environment);
+        hostRegistration.registerSubModel(CoreManagementResourceDefinition.forHost(authorizer, nativeManagement, httpManagement));
 
         // Other core services
         // TODO get a DumpServicesHandler that works on the domain
@@ -331,8 +328,6 @@ public class HostResourceDefinition extends SimpleResourceDefinition {
         //host-environment
         hostRegistration.registerSubModel(HostEnvironmentResourceDefinition.of(environment));
         hostRegistration.registerSubModel(new ModuleLoadingResourceDefinition());
-
-        hostRegistration.registerSubModel(AccessControlResourceDefinition.forHost(authorizer));
 
         // discovery options
         ManagementResourceRegistration discoveryOptions = hostRegistration.registerSubModel(DiscoveryOptionsResourceDefinition.INSTANCE);

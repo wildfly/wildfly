@@ -23,7 +23,7 @@
 package org.jboss.as.domain.management.parsing;
 
 import static javax.xml.stream.XMLStreamConstants.END_ELEMENT;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ACCESS_CONTROL;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ACCESS;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ADD;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.APPLICATION_TYPE;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.AUTHENTICATION;
@@ -95,7 +95,7 @@ import org.jboss.as.controller.parsing.Attribute;
 import org.jboss.as.controller.parsing.Element;
 import org.jboss.as.controller.parsing.Namespace;
 import org.jboss.as.controller.parsing.ParseUtils;
-import org.jboss.as.domain.management.access.AccessControlResourceDefinition;
+import org.jboss.as.domain.management.access.AccessAuthorizationResourceDefinition;
 import org.jboss.as.domain.management.access.ApplicationTypeConfigResourceDefinition;
 import org.jboss.as.domain.management.access.ApplicationTypeResourceDefinition;
 import org.jboss.as.domain.management.access.HostScopedRolesResourceDefinition;
@@ -196,11 +196,11 @@ public class ManagementXml {
          * <p>This default implementation does standard writing</p>
          *
          * @param writer  the xml writer
-         * @param accessControl the access control configuration
+         * @param accessAuthorization the access=authorization configuration
          * @throws XMLStreamException
          */
-        protected void writeAccessControl(XMLExtendedStreamWriter writer, ModelNode accessControl) throws XMLStreamException {
-            ManagementXml.writeAccessControl(writer, accessControl);
+        protected void writeAccessControl(XMLExtendedStreamWriter writer, ModelNode accessAuthorization) throws XMLStreamException {
+            ManagementXml.writeAccessControl(writer, accessAuthorization);
         }
 
         /**
@@ -332,7 +332,7 @@ public class ManagementXml {
                     break;
                 }
                 case ACCESS_CONTROL: {
-                    delegate.parseAccessControl(reader, address, expectedNs, list);
+                    delegate.parseAccessControl(reader, managementAddress, expectedNs, list);
                     break;
                 }
                 default: {
@@ -1738,11 +1738,8 @@ public class ManagementXml {
         requireNoContent(reader);
     }
 
-    public static void parseAccessControlRoleMapping(final XMLExtendedStreamReader reader, final ModelNode address,
+    public static void parseAccessControlRoleMapping(final XMLExtendedStreamReader reader, final ModelNode accContAddr,
             final Namespace expectedNs, final List<ModelNode> list) throws XMLStreamException {
-
-        ModelNode accContAddr = address.clone().add(CORE_SERVICE, ACCESS_CONTROL);
-
         int count = reader.getAttributeCount();
         for (int i = 0; i < count; i++) {
             final String value = reader.getAttributeValue(i);
@@ -1752,8 +1749,9 @@ public class ManagementXml {
                 final Attribute attribute = Attribute.forName(reader.getAttributeLocalName(i));
                 switch (attribute) {
                     case USE_REALM_ROLES: {
+                        ModelNode valNode = AccessAuthorizationResourceDefinition.USE_REALM_ROLES.parse(value, reader);
                         list.add(Util.getWriteAttributeOperation(accContAddr,
-                                AccessControlResourceDefinition.USE_REALM_ROLES.getName(), value));
+                                AccessAuthorizationResourceDefinition.USE_REALM_ROLES.getName(), valNode));
                         break;
                     }
                     default: {
@@ -1875,7 +1873,7 @@ public class ManagementXml {
         ParseUtils.requireNoContent(reader);
     }
 
-    public static void parseAccessControlConstraints(final XMLExtendedStreamReader reader, final ModelNode accContAddr, final Namespace expectedNs,
+    public static void parseAccessControlConstraints(final XMLExtendedStreamReader reader, final ModelNode accAuthzAddr, final Namespace expectedNs,
                                                      final List<ModelNode> list) throws XMLStreamException {
         ParseUtils.requireNoAttributes(reader);
 
@@ -1884,17 +1882,17 @@ public class ManagementXml {
             final Element element = Element.forName(reader.getLocalName());
             switch (element) {
                 case VAULT_EXPRESSION_SENSITIVITY: {
-                    ModelNode vaultAddr = accContAddr.clone().add(CONSTRAINT, VAULT_EXPRESSION);
+                    ModelNode vaultAddr = accAuthzAddr.clone().add(CONSTRAINT, VAULT_EXPRESSION);
                     parseClassificationType(reader, vaultAddr, expectedNs, list, true);
                     break;
                 }
                 case SENSITIVE_CLASSIFICATIONS: {
-                    ModelNode sensAddr = accContAddr.clone().add(CONSTRAINT, SENSITIVITY_CLASSIFICATION);
+                    ModelNode sensAddr = accAuthzAddr.clone().add(CONSTRAINT, SENSITIVITY_CLASSIFICATION);
                     parseSensitiveClassifications(reader, sensAddr, expectedNs, list);
                     break;
                 }
                 case APPLICATION_TYPES: {
-                    ModelNode applAddr = accContAddr.clone().add(CONSTRAINT, APPLICATION_TYPE);
+                    ModelNode applAddr = accAuthzAddr.clone().add(CONSTRAINT, APPLICATION_TYPE);
                     parseApplicationTypes(reader, applAddr, expectedNs, list);
                     break;
                 }
@@ -2233,15 +2231,18 @@ public class ManagementXml {
         }
     }
 
-    public void writeManagement(final XMLExtendedStreamWriter writer, final ModelNode management, final ModelNode accessControl, boolean allowInterfaces)
+    public void writeManagement(final XMLExtendedStreamWriter writer, final ModelNode management, boolean allowInterfaces)
             throws XMLStreamException {
         boolean hasSecurityRealm = management.hasDefined(SECURITY_REALM);
         boolean hasConnection = management.hasDefined(LDAP_CONNECTION);
         boolean hasInterface = allowInterfaces && management.hasDefined(MANAGEMENT_INTERFACE);
-        boolean hasServerGroupRoles = accessControl.isDefined() && accessControl.hasDefined(SERVER_GROUP_SCOPED_ROLE);
-        boolean hasHostRoles = accessControl.isDefined() && (accessControl.hasDefined(HOST_SCOPED_ROLE) || accessControl.hasDefined(HOST_SCOPED_ROLES));
-        boolean hasRoleMapping = accessControl.isDefined() && accessControl.hasDefined(ROLE_MAPPING);
-        Map<String, Map<String, Set<String>>> configuredAccessConstraints = getConfiguredAccessConstraints(accessControl);
+
+        ModelNode accessAuthorization = management.hasDefined(ACCESS) ? management.get(ACCESS, AUTHORIZATION) : null;
+        boolean accessAuthorizationDefined = accessAuthorization != null && accessAuthorization.isDefined();
+        boolean hasServerGroupRoles = accessAuthorizationDefined && accessAuthorization.hasDefined(SERVER_GROUP_SCOPED_ROLE);
+        boolean hasHostRoles = accessAuthorizationDefined && (accessAuthorization.hasDefined(HOST_SCOPED_ROLE) || accessAuthorization.hasDefined(HOST_SCOPED_ROLES));
+        boolean hasRoleMapping = accessAuthorizationDefined && accessAuthorization.hasDefined(ROLE_MAPPING);
+        Map<String, Map<String, Set<String>>> configuredAccessConstraints = getConfiguredAccessConstraints(accessAuthorization);
 
         if (!hasSecurityRealm && !hasConnection && !hasInterface && !hasServerGroupRoles
               && !hasHostRoles && !hasRoleMapping && configuredAccessConstraints.size() == 0) {
@@ -2261,18 +2262,23 @@ public class ManagementXml {
             writeManagementInterfaces(writer, management);
         }
 
-        delegate.writeAccessControl(writer, accessControl);
+        if (accessAuthorizationDefined) {
+            delegate.writeAccessControl(writer, accessAuthorization);
+        }
 
         writer.writeEndElement();
     }
 
-    private static void writeAccessControl(final XMLExtendedStreamWriter writer, final ModelNode accessControl) throws XMLStreamException {
+    private static void writeAccessControl(final XMLExtendedStreamWriter writer, final ModelNode accessAuthorization) throws XMLStreamException {
+        if (accessAuthorization == null || accessAuthorization.isDefined()==false) {
+            return; // All subsequent checks are based on this being defined.
+        }
 
-        boolean hasServerGroupRoles = accessControl.isDefined() && accessControl.hasDefined(SERVER_GROUP_SCOPED_ROLE);
-        boolean hasHostRoles = accessControl.isDefined() && (accessControl.hasDefined(HOST_SCOPED_ROLE) || accessControl.hasDefined(HOST_SCOPED_ROLES));
-        boolean hasRoleMapping = accessControl.isDefined() && accessControl.hasDefined(ROLE_MAPPING);
-        Map<String, Map<String, Set<String>>> configuredAccessConstraints = getConfiguredAccessConstraints(accessControl);
-        boolean hasProvider = accessControl.isDefined() && accessControl.hasDefined(AccessControlResourceDefinition.PROVIDER.getName());
+        boolean hasServerGroupRoles =  accessAuthorization.hasDefined(SERVER_GROUP_SCOPED_ROLE);
+        boolean hasHostRoles = accessAuthorization.hasDefined(HOST_SCOPED_ROLE) || accessAuthorization.hasDefined(HOST_SCOPED_ROLES);
+        boolean hasRoleMapping = accessAuthorization.hasDefined(ROLE_MAPPING);
+        Map<String, Map<String, Set<String>>> configuredAccessConstraints = getConfiguredAccessConstraints(accessAuthorization);
+        boolean hasProvider = accessAuthorization.hasDefined(AccessAuthorizationResourceDefinition.PROVIDER.getName());
 
         if (!hasProvider && !hasServerGroupRoles && !hasHostRoles && !hasRoleMapping && configuredAccessConstraints.size() == 0) {
             return;
@@ -2280,29 +2286,28 @@ public class ManagementXml {
 
         writer.writeStartElement(Element.ACCESS_CONTROL.getLocalName());
 
-        AccessControlResourceDefinition.PROVIDER.marshallAsAttribute(accessControl, writer);
+        AccessAuthorizationResourceDefinition.PROVIDER.marshallAsAttribute(accessAuthorization, writer);
 
-        // TODO role mapping
         if (hasServerGroupRoles) {
-            ModelNode serverGroupRoles = accessControl.get(SERVER_GROUP_SCOPED_ROLE);
+            ModelNode serverGroupRoles = accessAuthorization.get(SERVER_GROUP_SCOPED_ROLE);
             if (serverGroupRoles.asInt() > 0) {
                 writeServerGroupScopedRoles(writer, serverGroupRoles);
             }
         }
 
         if (hasHostRoles) {
-            ModelNode serverGroupRoles = accessControl.get(HOST_SCOPED_ROLE);
+            ModelNode serverGroupRoles = accessAuthorization.get(HOST_SCOPED_ROLE);
             if (serverGroupRoles.asInt() > 0) {
                 writeHostScopedRoles(writer, serverGroupRoles);
             }
         }
 
         if (hasRoleMapping) {
-            writeRoleMapping(writer, accessControl);
+            writeRoleMapping(writer, accessAuthorization);
         }
 
         if (configuredAccessConstraints.size() > 0) {
-            writeAccessConstraints(writer, accessControl, configuredAccessConstraints);
+            writeAccessConstraints(writer, accessAuthorization, configuredAccessConstraints);
         }
 
         writer.writeEndElement();
@@ -2523,10 +2528,10 @@ public class ManagementXml {
         writer.writeEndElement();
     }
 
-    private static Map<String, Map<String, Set<String>>> getConfiguredAccessConstraints(ModelNode accessControl) {
+    private static Map<String, Map<String, Set<String>>> getConfiguredAccessConstraints(ModelNode accessAuthorization) {
         Map<String, Map<String, Set<String>>> configuredConstraints = new HashMap<String, Map<String, Set<String>>>();
-        if (accessControl.hasDefined(CONSTRAINT)) {
-            ModelNode constraint = accessControl.get(CONSTRAINT);
+        if (accessAuthorization != null && accessAuthorization.hasDefined(CONSTRAINT)) {
+            ModelNode constraint = accessAuthorization.get(CONSTRAINT);
 
             configuredConstraints.putAll(getVaultConstraints(constraint));
             configuredConstraints.putAll(getSensitivityClassificationConstraints(constraint));
@@ -2622,11 +2627,11 @@ public class ManagementXml {
         return configuredConstraints;
     }
 
-    private static void writeRoleMapping(XMLExtendedStreamWriter writer, ModelNode accessControl) throws XMLStreamException {
+    private static void writeRoleMapping(XMLExtendedStreamWriter writer, ModelNode accessAuthorization) throws XMLStreamException {
         writer.writeStartElement(Element.ROLE_MAPPING.getLocalName());
 
-        ModelNode roleMappings = accessControl.get(ROLE_MAPPING);
-        AccessControlResourceDefinition.USE_REALM_ROLES.marshallAsAttribute(accessControl, writer);
+        ModelNode roleMappings = accessAuthorization.get(ROLE_MAPPING);
+        AccessAuthorizationResourceDefinition.USE_REALM_ROLES.marshallAsAttribute(accessAuthorization, writer);
 
         for (Property variable : roleMappings.asPropertyList()) {
             writer.writeStartElement(Element.ROLE.getLocalName());
@@ -2665,12 +2670,12 @@ public class ManagementXml {
         writer.writeEndElement();
     }
 
-    private static void writeAccessConstraints(XMLExtendedStreamWriter writer, ModelNode accessControl, Map<String, Map<String, Set<String>>> configuredConstraints) throws XMLStreamException {
+    private static void writeAccessConstraints(XMLExtendedStreamWriter writer, ModelNode accessAuthorization, Map<String, Map<String, Set<String>>> configuredConstraints) throws XMLStreamException {
         writer.writeStartElement(Element.CONSTRAINTS.getLocalName());
 
         if (configuredConstraints.containsKey(SensitivityResourceDefinition.VAULT_ELEMENT.getKey())){
             writer.writeStartElement(Element.VAULT_EXPRESSION_SENSITIVITY.getLocalName());
-            ModelNode model = accessControl.get(SensitivityResourceDefinition.VAULT_ELEMENT.getKey(),
+            ModelNode model = accessAuthorization.get(SensitivityResourceDefinition.VAULT_ELEMENT.getKey(),
                     SensitivityResourceDefinition.VAULT_ELEMENT.getValue());
             SensitivityResourceDefinition.CONFIGURED_REQUIRES_ACCESS.marshallAsAttribute(model, writer);
             SensitivityResourceDefinition.CONFIGURED_REQUIRES_READ.marshallAsAttribute(model, writer);
@@ -2688,7 +2693,7 @@ public class ManagementXml {
 
                 for (String type : entry.getValue()) {
                     writer.writeStartElement(Element.TYPE.getLocalName());
-                    ModelNode model = accessControl.get(CONSTRAINT, SENSITIVITY_CLASSIFICATION, SENSITIVITY_CLASSIFICATION, entry.getKey(), TYPE, type);
+                    ModelNode model = accessAuthorization.get(CONSTRAINT, SENSITIVITY_CLASSIFICATION, SENSITIVITY_CLASSIFICATION, entry.getKey(), TYPE, type);
                     writeAttribute(writer, Attribute.NAME, type);
                     SensitivityResourceDefinition.CONFIGURED_REQUIRES_ACCESS.marshallAsAttribute(model, writer);
                     SensitivityResourceDefinition.CONFIGURED_REQUIRES_READ.marshallAsAttribute(model, writer);
@@ -2709,7 +2714,7 @@ public class ManagementXml {
 
                 for (String type : entry.getValue()) {
                     writer.writeStartElement(Element.TYPE.getLocalName());
-                    ModelNode model = accessControl.get(CONSTRAINT, APPLICATION_TYPE, APPLICATION_TYPE, entry.getKey(), TYPE, type);
+                    ModelNode model = accessAuthorization.get(CONSTRAINT, APPLICATION_TYPE, APPLICATION_TYPE, entry.getKey(), TYPE, type);
                     writeAttribute(writer, Attribute.NAME, type);
                     ApplicationTypeConfigResourceDefinition.CONFIGURED_APPLICATION.marshallAsAttribute(model, writer);
                     writer.writeEndElement();

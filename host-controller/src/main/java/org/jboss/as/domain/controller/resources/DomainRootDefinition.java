@@ -91,7 +91,7 @@ import org.jboss.as.domain.controller.operations.deployment.DeploymentUploadByte
 import org.jboss.as.domain.controller.operations.deployment.DeploymentUploadStreamAttachmentHandler;
 import org.jboss.as.domain.controller.operations.deployment.DeploymentUploadURLHandler;
 import org.jboss.as.domain.controller.transformers.DomainTransformers;
-import org.jboss.as.domain.management.access.AccessControlResourceDefinition;
+import org.jboss.as.domain.management.CoreManagementResourceDefinition;
 import org.jboss.as.host.controller.HostControllerEnvironment;
 import org.jboss.as.host.controller.ignored.IgnoredDomainResourceRegistry;
 import org.jboss.as.host.controller.mgmt.DomainControllerRuntimeIgnoreTransformationRegistry;
@@ -296,7 +296,7 @@ public class DomainRootDefinition extends SimpleResourceDefinition {
                 false
         ));
 
-        resourceRegistration.registerSubModel(AccessControlResourceDefinition.forDomain(authorizer));
+        resourceRegistration.registerSubModel(CoreManagementResourceDefinition.forDomain(authorizer));
         resourceRegistration.registerSubModel(new ProfileResourceDefinition(extensionRegistry));
         resourceRegistration.registerSubModel(PathResourceDefinition.createNamed(pathManager));
         resourceRegistration.registerSubModel(DomainDeploymentResourceDefinition.createForDomainRoot(isMaster, contentRepo, fileRepository));

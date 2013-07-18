@@ -24,8 +24,9 @@ package org.jboss.as.host.controller.parsing;
 
 import static javax.xml.stream.XMLStreamConstants.END_ELEMENT;
 import static org.jboss.as.controller.ControllerMessages.MESSAGES;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ACCESS_CONTROL;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ACCESS;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ADD;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.AUTHORIZATION;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.CONTENT;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.CORE_SERVICE;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.DEPLOYMENT;
@@ -36,6 +37,7 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.INC
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.INCLUDES;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.INTERFACE;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.JVM;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.MANAGEMENT;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.MANAGEMENT_CLIENT_CONTENT;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.NAME;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP;
@@ -90,7 +92,7 @@ import org.jboss.as.controller.persistence.SubsystemMarshallingContext;
 import org.jboss.as.controller.resource.SocketBindingGroupResourceDefinition;
 import org.jboss.as.domain.controller.resources.DomainRootDefinition;
 import org.jboss.as.domain.controller.resources.ServerGroupResourceDefinition;
-import org.jboss.as.domain.management.access.AccessControlResourceDefinition;
+import org.jboss.as.domain.management.access.AccessAuthorizationResourceDefinition;
 import org.jboss.as.domain.management.parsing.ManagementXml;
 import org.jboss.as.server.controller.resources.DeploymentAttributes;
 import org.jboss.as.server.parsing.CommonXml;
@@ -179,11 +181,9 @@ public class DomainXml extends CommonXml {
             writeNewLine(writer);
         }
 
-        if (modelNode.hasDefined(CORE_SERVICE) && modelNode.get(CORE_SERVICE).hasDefined(ACCESS_CONTROL)) {
-
+        if (modelNode.hasDefined(CORE_SERVICE) && modelNode.get(CORE_SERVICE).hasDefined(MANAGEMENT)) {
             ManagementXml managementXml = new ManagementXml(new ManagementXmlDelegate());
-            //TODO pass in proper access-constraint node
-            managementXml.writeManagement(writer, new ModelNode(), modelNode.get(CORE_SERVICE, ACCESS_CONTROL), true);
+            managementXml.writeManagement(writer, modelNode.get(CORE_SERVICE, MANAGEMENT), true);
             writeNewLine(writer);
         }
 
@@ -1134,7 +1134,7 @@ public class DomainXml extends CommonXml {
         @Override
         public void parseAccessControl(final XMLExtendedStreamReader reader, final ModelNode address, final Namespace expectedNs,
                                        final List<ModelNode> list) throws XMLStreamException {
-            ModelNode accContAddr = address.clone().add(CORE_SERVICE, ACCESS_CONTROL);
+            ModelNode accAuthzAddr = address.clone().add(ACCESS, AUTHORIZATION);
 
             final int count = reader.getAttributeCount();
             for (int i = 0; i < count; i++) {
@@ -1146,11 +1146,11 @@ public class DomainXml extends CommonXml {
 
                 final Attribute attribute = Attribute.forName(reader.getAttributeLocalName(i));
                 if (attribute == Attribute.PROVIDER) {
-                    ModelNode provider = AccessControlResourceDefinition.PROVIDER.parse(value, reader);
+                    ModelNode provider = AccessAuthorizationResourceDefinition.PROVIDER.parse(value, reader);
                     ModelNode op = new ModelNode();
                     op.get(OP).set(WRITE_ATTRIBUTE_OPERATION);
-                    op.get(OP_ADDR).set(accContAddr);
-                    op.get(NAME).set(AccessControlResourceDefinition.PROVIDER.getName());
+                    op.get(OP_ADDR).set(accAuthzAddr);
+                    op.get(NAME).set(AccessAuthorizationResourceDefinition.PROVIDER.getName());
                     op.get(VALUE).set(provider);
 
                     list.add(op);
@@ -1164,13 +1164,13 @@ public class DomainXml extends CommonXml {
                 final Element element = Element.forName(reader.getLocalName());
                 switch (element) {
                     case SERVER_GROUP_SCOPED_ROLES:
-                        ManagementXml.parseServerGroupScopedRoles(reader, accContAddr, expectedNs, list);
+                        ManagementXml.parseServerGroupScopedRoles(reader, accAuthzAddr, expectedNs, list);
                         break;
                     case HOST_SCOPED_ROLES:
-                        ManagementXml.parseHostScopedRoles(reader, accContAddr, expectedNs, list);
+                        ManagementXml.parseHostScopedRoles(reader, accAuthzAddr, expectedNs, list);
                         break;
                     case CONSTRAINTS: {
-                        ManagementXml.parseAccessControlConstraints(reader, accContAddr, expectedNs, list);
+                        ManagementXml.parseAccessControlConstraints(reader, accAuthzAddr, expectedNs, list);
                         break;
                     }
                     default: {

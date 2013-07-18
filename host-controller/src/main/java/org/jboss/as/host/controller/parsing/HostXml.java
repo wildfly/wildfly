@@ -24,7 +24,8 @@ package org.jboss.as.host.controller.parsing;
 
 import static javax.xml.stream.XMLStreamConstants.END_ELEMENT;
 import static org.jboss.as.controller.ControllerMessages.MESSAGES;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ACCESS_CONTROL;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ACCESS;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.AUTHORIZATION;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ADD;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.CORE_SERVICE;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.DIRECTORY_GROUPING;
@@ -88,7 +89,7 @@ import org.jboss.as.controller.parsing.Element;
 import org.jboss.as.controller.parsing.Namespace;
 import org.jboss.as.controller.parsing.ParseUtils;
 import org.jboss.as.controller.persistence.ModelMarshallingContext;
-import org.jboss.as.domain.management.access.AccessControlResourceDefinition;
+import org.jboss.as.domain.management.access.AccessAuthorizationResourceDefinition;
 import org.jboss.as.domain.management.parsing.ManagementXml;
 import org.jboss.as.host.controller.HostControllerMessages;
 import org.jboss.as.host.controller.discovery.DiscoveryOptionResourceDefinition;
@@ -185,8 +186,7 @@ public class HostXml extends CommonXml {
 
         if (hasCoreServices) {
             ManagementXml managementXml = new ManagementXml(new ManagementXmlDelegate());
-            //TODO pass in proper access-constraint node
-            managementXml.writeManagement(writer, modelNode.get(CORE_SERVICE, MANAGEMENT), modelNode.get(CORE_SERVICE, ACCESS_CONTROL), true);
+            managementXml.writeManagement(writer, modelNode.get(CORE_SERVICE, MANAGEMENT), true);
             writeNewLine(writer);
         }
 
@@ -1883,12 +1883,12 @@ public class HostXml extends CommonXml {
         public void parseAccessControl(final XMLExtendedStreamReader reader, final ModelNode address, final Namespace expectedNs,
                                        final List<ModelNode> list) throws XMLStreamException {
             ParseUtils.requireNoAttributes(reader);
-            ModelNode accContAddr = address.clone().add(CORE_SERVICE, ACCESS_CONTROL);
+            ModelNode accAuthzAddr = address.clone().add(ACCESS, AUTHORIZATION);
             while (reader.hasNext() && reader.nextTag() != END_ELEMENT) {
                 requireNamespace(reader, expectedNs);
                 final Element element = Element.forName(reader.getLocalName());
                 if (element == Element.HOST_SCOPED_ROLES) {
-                    parseHostScopedRoles(reader, accContAddr, expectedNs, list);
+                    parseHostScopedRoles(reader, accAuthzAddr, expectedNs, list);
                 } else {
                     throw unexpectedElement(reader);
                 }
@@ -1901,7 +1901,7 @@ public class HostXml extends CommonXml {
             ModelNode op = new ModelNode();
             op.get(OP).set(WRITE_ATTRIBUTE_OPERATION);
             op.get(OP_ADDR).set(address);
-            op.get(NAME).set(AccessControlResourceDefinition.HOST_SCOPED_ROLES.getName());
+            op.get(NAME).set(AccessAuthorizationResourceDefinition.HOST_SCOPED_ROLES.getName());
             list.add(op);
 
             boolean found = false;
@@ -1911,7 +1911,7 @@ public class HostXml extends CommonXml {
                 if (element == Element.ROLE) {
                     found = true;
                     String value = ParseUtils.readStringAttributeElement(reader, Attribute.NAME.getLocalName());
-                    ModelNode valNode = AccessControlResourceDefinition.HOST_SCOPED_ROLES.parse(value, reader);
+                    ModelNode valNode = AccessAuthorizationResourceDefinition.HOST_SCOPED_ROLES.parse(value, reader);
                     op.get(VALUE).add(valNode);
                 } else {
                     throw unexpectedElement(reader);
@@ -1928,7 +1928,7 @@ public class HostXml extends CommonXml {
             if (accessControl.isDefined() && accessControl.hasDefined(HOST_SCOPED_ROLES)) {
                 writer.writeStartElement(Element.ACCESS_CONTROL.getLocalName());
                 writer.writeStartElement(Element.HOST_SCOPED_ROLES.getLocalName());
-                AccessControlResourceDefinition.HOST_SCOPED_ROLES.marshallAsElement(accessControl, writer);
+                AccessAuthorizationResourceDefinition.HOST_SCOPED_ROLES.marshallAsElement(accessControl, writer);
                 writer.writeEndElement();
                 writer.writeEndElement();
             }
