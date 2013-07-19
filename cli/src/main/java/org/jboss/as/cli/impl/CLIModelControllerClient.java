@@ -101,7 +101,7 @@ public class CLIModelControllerClient extends AbstractModelControllerClient {
         });
     }
 
-    private final Object lock = "lock";
+    private final Object lock = new Object();
 
     private final CallbackHandler handler;
     private final SSLContext sslContext;
