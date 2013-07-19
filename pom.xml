@@ -127,6 +127,7 @@
         <version.org.apache.maven.wagon.http-lightweight>2.2</version.org.apache.maven.wagon.http-lightweight>
         <version.org.apache.myfaces.core>2.1.8</version.org.apache.myfaces.core>
         <version.org.apache.neethi>3.0.2</version.org.apache.neethi>
+        <version.org.apache.qpid.proton>0.4</version.org.apache.qpid.proton>
         <version.org.apache.santuario>1.5.4</version.org.apache.santuario>
         <version.org.apache.velocity>1.7</version.org.apache.velocity>
         <version.org.apache.ws.security>1.6.10</version.org.apache.ws.security>
@@ -148,7 +149,7 @@
         <version.org.hibernate.javax.persistence.hibernate-jpa-2.0-api>1.0.1.Final</version.org.hibernate.javax.persistence.hibernate-jpa-2.0-api>
         <version.org.hibernate.validator>5.0.1.Final</version.org.hibernate.validator>
         <version.org.hibernate.javax.persistence.hibernate-jpa-2.1-api>1.0.0.Draft-16</version.org.hibernate.javax.persistence.hibernate-jpa-2.1-api>
-        <version.org.hornetq>2.3.1.Final</version.org.hornetq>
+        <version.org.hornetq>2.4.0.Alpha1</version.org.hornetq>
         <version.org.infinispan>5.3.0.Final</version.org.infinispan>
         <version.org.jacorb>2.3.2.jbossorg-4</version.org.jacorb>
         <version.org.javassist>3.18.0-GA</version.org.javassist>
@@ -3232,6 +3233,30 @@
             </dependency>
 
             <dependency>
+                <groupId>org.apache.qpid</groupId>
+                <artifactId>proton-api</artifactId>
+                <version>${version.org.apache.qpid.proton}</version>
+            </dependency>
+
+            <dependency>
+                <groupId>org.apache.qpid</groupId>
+                <artifactId>proton-jms</artifactId>
+                <version>${version.org.apache.qpid.proton}</version>
+            </dependency>
+
+            <dependency>
+                <groupId>org.apache.qpid</groupId>
+                <artifactId>proton-j-impl</artifactId>
+                <version>${version.org.apache.qpid.proton}</version>
+                <exclusions>
+                    <exclusion>
+                        <groupId>org.bouncycastle</groupId>
+                        <artifactId>bcpkix-jdk15on</artifactId>
+                    </exclusion>
+                </exclusions>
+            </dependency>
+
+            <dependency>
                 <groupId>org.apache.santuario</groupId>
                 <artifactId>xmlsec</artifactId>
                 <version>${version.org.apache.santuario}</version>
@@ -3565,12 +3590,6 @@
                         <groupId>org.jboss.naming</groupId>
                         <artifactId>jnpserver</artifactId>
                     </exclusion>
-                    <exclusion>
-                       <!-- TODO remove this exclusion once HornetQ supports JMS 2.0 -->
-                       <!-- superseded by org.jboss.spec.javax.jms:jboss-jms-api_2.0_spec -->
-                       <groupId>org.jboss.spec.javax.jms</groupId>
-                       <artifactId>jboss-jms-api_1.1_spec</artifactId>
-                    </exclusion>
                     <!-- TODO remove this exclusion once this supports JTA 1.2 -->
                     <!-- superseded by org.jboss.spec.javax.transaction:jboss-transaction-api_1.2_spec -->
                     <exclusion>
@@ -3584,14 +3603,6 @@
                 <groupId>org.hornetq</groupId>
                 <artifactId>hornetq-jms-client</artifactId>
                 <version>${version.org.hornetq}</version>
-                <exclusions>
-                   <exclusion>
-                      <!-- TODO remove this exclusion once HornetQ supports JMS 2.0 -->
-                      <!-- superseded by org.jboss.spec.javax.jms:jboss-jms-api_2.0_spec -->
-                      <groupId>org.jboss.spec.javax.jms</groupId>
-                      <artifactId>jboss-jms-api_1.1_spec</artifactId>
-                   </exclusion>
-                </exclusions>
             </dependency>
 
             <dependency>

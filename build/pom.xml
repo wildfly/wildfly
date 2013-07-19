@@ -637,6 +637,21 @@
                 </dependency>
 
                 <dependency>
+                    <groupId>org.apache.qpid</groupId>
+                    <artifactId>proton-api</artifactId>
+                </dependency>
+
+                <dependency>
+                    <groupId>org.apache.qpid</groupId>
+                    <artifactId>proton-jms</artifactId>
+                </dependency>
+
+                <dependency>
+                    <groupId>org.apache.qpid</groupId>
+                    <artifactId>proton-j-impl</artifactId>
+                </dependency>
+
+                <dependency>
                     <groupId>org.apache.santuario</groupId>
                     <artifactId>xmlsec</artifactId>
                 </dependency>
@@ -2170,6 +2185,9 @@
                                         <exclude>org.apache.httpcomponents:httpmime</exclude>
                                         <exclude>org.apache.james:apache-mime4j</exclude>
                                         <exclude>org.apache.neethi:neethi</exclude>
+                                        <exclude>org.apache.qpid.proton-api</exclude>
+                                        <exclude>org.apache.qpid.proton-jms</exclude>
+                                        <exclude>org.apache.qpid.proton</exclude>
                                         <exclude>org.apache.santuario:xmlsec</exclude>
                                         <exclude>org.apache.velocity:velocity</exclude>
                                         <exclude>org.apache.ws.xmlschema:xmlschema-core</exclude>

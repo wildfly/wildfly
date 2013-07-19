@@ -648,6 +648,12 @@
             <maven-resource group="org.apache.neethi" artifact="neethi"/>
         </module-def>
 
+        <module-def name="org.apache.qpid.proton">
+            <maven-resource group="org.apache.qpid" artifact="proton-api"/>
+            <maven-resource group="org.apache.qpid" artifact="proton-jms"/>
+            <maven-resource group="org.apache.qpid" artifact="proton-j-impl"/>
+        </module-def>
+
         <module-def name="org.apache.santuario.xmlsec">
             <maven-resource group="org.apache.santuario" artifact="xmlsec"/>
         </module-def>
