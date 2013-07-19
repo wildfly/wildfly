@@ -33,7 +33,7 @@ import org.jboss.staxmapper.XMLExtendedStreamWriter;
 /**
  * @author Emanuel Muckenhuber
  */
-class PatchXml_1_0 extends PatchXmlUtils implements XMLStreamConstants, XMLElementReader<PatchBuilderFactory>, XMLElementWriter<Patch> {
+class PatchXml_1_0 extends PatchXmlUtils implements XMLStreamConstants, XMLElementReader<PatchXml.Result<PatchMetadataResolver>>, XMLElementWriter<Patch> {
 
     @Override
     public void writeContent(final XMLExtendedStreamWriter writer, final Patch patch) throws XMLStreamException {
@@ -51,11 +51,10 @@ class PatchXml_1_0 extends PatchXmlUtils implements XMLStreamConstants, XMLEleme
     }
 
     @Override
-    public void readElement(XMLExtendedStreamReader reader, PatchBuilderFactory factory) throws XMLStreamException {
+    public void readElement(XMLExtendedStreamReader reader, PatchXml.Result<PatchMetadataResolver> factory) throws XMLStreamException {
         final PatchBuilder builder = new PatchBuilder();
-        factory.setBuilder(builder);
-
-        doReadElement(reader, factory);
+        doReadElement(reader, builder);
+        factory.setResult(builder);
     }
 
 }

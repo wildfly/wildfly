@@ -51,7 +51,7 @@ import org.jboss.staxmapper.XMLExtendedStreamWriter;
 /**
  * @author Emanuel Muckenhuber
  */
-class RollbackPatchXml_1_0 extends PatchXmlUtils implements XMLStreamConstants, XMLElementReader<PatchBuilderFactory>, XMLElementWriter<RollbackPatch> {
+class RollbackPatchXml_1_0 extends PatchXmlUtils implements XMLStreamConstants, XMLElementReader<PatchXml.Result<PatchMetadataResolver>>, XMLElementWriter<RollbackPatch> {
 
     static enum Element {
 
@@ -117,12 +117,10 @@ class RollbackPatchXml_1_0 extends PatchXmlUtils implements XMLStreamConstants, 
 
 
     @Override
-    public void readElement(XMLExtendedStreamReader reader, PatchBuilderFactory factory) throws XMLStreamException {
+    public void readElement(XMLExtendedStreamReader reader, PatchXml.Result<PatchMetadataResolver> factory) throws XMLStreamException {
         final RollbackPatchBuilder builder = new RollbackPatchBuilder();
-        factory.setBuilder(builder);
-
-        // Read the element
-        doReadElement(reader, factory);
+        doReadElement(reader, builder);
+        factory.setResult(builder);
     }
 
     @Override

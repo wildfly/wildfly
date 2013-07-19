@@ -28,6 +28,7 @@ import org.jboss.as.patching.metadata.LayerType;
 import org.jboss.as.patching.metadata.Patch;
 import org.jboss.as.patching.metadata.PatchElement;
 import org.jboss.as.patching.metadata.PatchElementProvider;
+import org.jboss.as.patching.metadata.PatchMetadataResolver;
 import org.jboss.as.patching.metadata.PatchXml;
 import org.jboss.as.patching.metadata.RollbackPatch;
 import org.jboss.as.patching.metadata.UpgradeCondition;
@@ -50,15 +51,16 @@ class IdentityPatchRunner implements InstallationManager.ModificationCompletion 
     /**
      * Apply a patch.
      *
-     * @param patch           the patch metadata
+     * @param patchResolver   the patch metadata resolver
      * @param contentProvider the patch content provider
      * @param contentPolicy   the content verification policy
      * @param modification    the installation modification
      * @throws PatchingException for any error
      */
-    public PatchingResult applyPatch(final Patch patch, final PatchContentProvider contentProvider, final ContentVerificationPolicy contentPolicy, final InstallationManager.InstallationModification modification) throws PatchingException {
+    public PatchingResult applyPatch(final PatchMetadataResolver patchResolver, final PatchContentProvider contentProvider, final ContentVerificationPolicy contentPolicy, final InstallationManager.InstallationModification modification) throws PatchingException {
         try {
             // Check if we can apply this patch
+            final Patch patch = patchResolver.resolvePatch(null, modification.getVersion());
             final String patchId = patch.getPatchId();
             final Identity identity = patch.getIdentity();
             final String appliesTo = identity.getVersion();
@@ -562,16 +564,16 @@ class IdentityPatchRunner implements InstallationManager.ModificationCompletion 
 
     }
 
-    static Patch loadPatchInformation(final String patchId, final InstalledImage installedImage) throws IOException, XMLStreamException {
+    static Patch loadPatchInformation(final String patchId, final InstalledImage installedImage) throws PatchingException, IOException, XMLStreamException {
         final File patchDir = installedImage.getPatchHistoryDir(patchId);
         final File patchXml = new File(patchDir, PatchXml.PATCH_XML);
-        return PatchXml.parse(patchXml);
+        return PatchXml.parse(patchXml).resolvePatch(null, null);
     }
 
-    static RollbackPatch loadRollbackInformation(final String patchId, final InstalledImage installedImage) throws IOException, XMLStreamException {
+    static RollbackPatch loadRollbackInformation(final String patchId, final InstalledImage installedImage) throws PatchingException, IOException, XMLStreamException {
         final File historyDir = installedImage.getPatchHistoryDir(patchId);
         final File patchXml = new File(historyDir, Constants.ROLLBACK_XML);
-        return (RollbackPatch) PatchXml.parse(patchXml);
+        return (RollbackPatch) PatchXml.parse(patchXml).resolvePatch(null, null);
     }
 
     static File createTempDir() throws PatchingException {

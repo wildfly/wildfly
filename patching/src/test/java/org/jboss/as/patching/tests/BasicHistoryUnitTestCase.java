@@ -26,16 +26,12 @@ import static org.jboss.as.patching.HashUtils.hashFile;
 import static org.jboss.as.patching.runner.TestUtils.dump;
 import static org.jboss.as.patching.runner.TestUtils.randomString;
 import static org.jboss.as.patching.runner.TestUtils.touch;
-import static org.jboss.as.patching.runner.TestUtils.tree;
 
 import java.io.File;
 import java.io.IOException;
 import java.util.Arrays;
 
 import org.jboss.as.patching.PatchingException;
-import org.jboss.as.patching.installation.InstallationManager;
-import org.jboss.as.patching.installation.PatchableTarget;
-import org.jboss.as.patching.tool.ContentVerificationPolicy;
 import org.junit.Assert;
 import org.junit.Test;
 
@@ -111,6 +107,36 @@ public class BasicHistoryUnitTestCase extends AbstractPatchingTest {
         Assert.assertTrue(builder.hasFile(FILE_ONE));
         Assert.assertTrue(builder.hasFile(FILE_EXISTING));
         Assert.assertTrue(Arrays.equals(existingHash, hashFile(existing)));
+
+    }
+
+    @Test
+    public void testAutoResolveConflicts() throws Exception {
+
+        final PatchingTestBuilder builder = createDefaultBuilder();
+
+        // Create a file
+        final File existing = builder.getFile(FILE_EXISTING);
+        touch(existing);
+        dump(existing, randomString());
+        final byte[] existingHash = hashFile(existing);
+        final byte[] initialHash = Arrays.copyOf(existingHash, existingHash.length);
+
+        final PatchingTestStepBuilder oo1 = builder.createBuilder();
+        oo1.setPatchId("one-off-one")
+                .oneOffPatchIdentity(PRODUCT_VERSION)
+                .updateFileWithRandomContent(initialHash, existingHash, FILE_EXISTING);
+        ;
+        // Apply OO1
+        apply(oo1);
+
+        final PatchingTestStepBuilder cp1 = builder.createBuilder();
+        cp1.setPatchId("CP1")
+                .upgradeIdentity(PRODUCT_VERSION, PRODUCT_VERSION)
+                .updateFileWithRandomContent(initialHash, existingHash, FILE_EXISTING);
+        ;
+        // Apply CP1
+        apply(cp1);
 
     }
 
