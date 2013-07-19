@@ -78,7 +78,15 @@ public abstract class AbstractModuleDeploymentTestCaseSetup extends AbstractMgmt
 	}
 
 	public void removeModule(final String moduleName) throws Exception {
+        removeModule(moduleName, false);
+    }
+
+    public void removeModule(final String moduleName, boolean deleteParent) throws Exception {
 		testModuleRoot = new File(getModulePath(), moduleName);
+        if (deleteParent) {
+            while (!getModulePath().equals(file.getParentFile()))
+                file = file.getParentFile();
+        }
 		deleteRecursively(testModuleRoot);
 	}
 
@@ -172,7 +180,7 @@ public abstract class AbstractModuleDeploymentTestCaseSetup extends AbstractMgmt
 			throws Exception {
 		takeSnapShot();
 		remove(address);
-		removeModule(defaultPath);
+        removeModule(defaultPath, true);
 	}
 
 	@Override
