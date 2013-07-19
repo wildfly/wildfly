@@ -118,6 +118,7 @@ public class BridgeAdd extends AbstractAddStepHandler {
         final double retryIntervalMultiplier = CommonAttributes.RETRY_INTERVAL_MULTIPLIER.resolveModelAttribute(context, model).asDouble();
         final long maxRetryInterval = CommonAttributes.MAX_RETRY_INTERVAL.resolveModelAttribute(context, model).asLong();
         final int reconnectAttempts = BridgeDefinition.RECONNECT_ATTEMPTS.resolveModelAttribute(context, model).asInt();
+        final int reconnectAttemptsOnSameNode = BridgeDefinition.RECONNECT_ATTEMPTS_ON_SAME_NODE.resolveModelAttribute(context, model).asInt();
         final boolean useDuplicateDetection = BridgeDefinition.USE_DUPLICATE_DETECTION.resolveModelAttribute(context, model).asBoolean();
         final int confirmationWindowSize = CommonAttributes.BRIDGE_CONFIRMATION_WINDOW_SIZE.resolveModelAttribute(context, model).asInt();
         final long clientFailureCheckPeriod = CommonAttributes.CHECK_PERIOD.resolveModelAttribute(context, model).asLong();
@@ -133,6 +134,7 @@ public class BridgeAdd extends AbstractAddStepHandler {
             return new BridgeConfiguration(name, queueName, forwardingAddress, filterString, transformerClassName,
                               minLargeMessageSize, clientFailureCheckPeriod, connectionTTL,
                               retryInterval, maxRetryInterval, retryIntervalMultiplier, reconnectAttempts,
+                              reconnectAttemptsOnSameNode,
                               useDuplicateDetection, confirmationWindowSize,
                               discoveryGroupName,
                               ha,
@@ -141,6 +143,7 @@ public class BridgeAdd extends AbstractAddStepHandler {
             return new BridgeConfiguration(name, queueName, forwardingAddress, filterString, transformerClassName,
                               minLargeMessageSize, clientFailureCheckPeriod, connectionTTL,
                               retryInterval, maxRetryInterval, retryIntervalMultiplier, reconnectAttempts,
+                              reconnectAttemptsOnSameNode,
                               useDuplicateDetection, confirmationWindowSize,
                               staticConnectors,
                               ha,

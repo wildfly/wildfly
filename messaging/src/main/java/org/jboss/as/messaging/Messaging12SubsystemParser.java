@@ -126,7 +126,7 @@ public class Messaging12SubsystemParser extends MessagingSubsystemParser {
                     break;
                 }
                 default: {
-                    throw ParseUtils.unexpectedElement(reader);
+                    handleUnknownBridgeAttribute(reader, element, bridgeAdd);
                 }
             }
         }
@@ -138,6 +138,10 @@ public class Messaging12SubsystemParser extends MessagingSubsystemParser {
         }
 
         updates.add(bridgeAdd);
+    }
+
+    protected void handleUnknownBridgeAttribute(XMLExtendedStreamReader reader, Element element, ModelNode bridgeAdd) throws XMLStreamException {
+        throw ParseUtils.unexpectedElement(reader);
     }
 
     @Override

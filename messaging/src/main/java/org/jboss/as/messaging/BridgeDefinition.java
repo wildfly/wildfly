@@ -102,6 +102,13 @@ public class BridgeDefinition extends SimpleResourceDefinition {
             .setRestartAllServices()
             .build();
 
+    public static final SimpleAttributeDefinition RECONNECT_ATTEMPTS_ON_SAME_NODE = create("reconnect-attempts-on-same-node", INT)
+            .setAllowNull(true)
+            .setDefaultValue(new ModelNode().set(HornetQDefaultConfiguration.getDefaultBridgeConnectSameNode()))
+            .setAllowExpression(true)
+            .setRestartAllServices()
+            .build();
+
     public static final SimpleAttributeDefinition FORWARDING_ADDRESS = create("forwarding-address", STRING)
             .setAllowNull(true)
             .setAllowExpression(true)
@@ -114,16 +121,22 @@ public class BridgeDefinition extends SimpleResourceDefinition {
             CommonAttributes.MIN_LARGE_MESSAGE_SIZE, CommonAttributes.CHECK_PERIOD, CommonAttributes.CONNECTION_TTL,
             CommonAttributes.RETRY_INTERVAL, CommonAttributes.RETRY_INTERVAL_MULTIPLIER, CommonAttributes.MAX_RETRY_INTERVAL,
             RECONNECT_ATTEMPTS,
+            RECONNECT_ATTEMPTS_ON_SAME_NODE,
             USE_DUPLICATE_DETECTION, CommonAttributes.BRIDGE_CONFIRMATION_WINDOW_SIZE,
             USER, PASSWORD,
             CONNECTOR_REFS, DISCOVERY_GROUP_NAME
     };
+
     public static final AttributeDefinition[] ATTRIBUTES_WITH_EXPRESSION_ALLOWED_IN_1_2_0 = { QUEUE_NAME, USE_DUPLICATE_DETECTION,
             RECONNECT_ATTEMPTS, FORWARDING_ADDRESS,
             CommonAttributes.FILTER, HA, CommonAttributes.MIN_LARGE_MESSAGE_SIZE,
             CommonAttributes.CHECK_PERIOD, CommonAttributes.CONNECTION_TTL,
             CommonAttributes.RETRY_INTERVAL, CommonAttributes.RETRY_INTERVAL_MULTIPLIER, CommonAttributes.MAX_RETRY_INTERVAL,
             BRIDGE_CONFIRMATION_WINDOW_SIZE };
+
+    public static final AttributeDefinition[] ATTRIBUTES_ADDED_IN_2_0_0 = {
+            RECONNECT_ATTEMPTS_ON_SAME_NODE
+    };
 
     public BridgeDefinition(final boolean registerRuntimeOnly) {
         super(PATH,
