@@ -222,6 +222,7 @@ public enum Element {
    PRODUCER_MAX_RATE(Common.PRODUCER_MAX_RATE),
    QUEUE_NAME(BridgeDefinition.QUEUE_NAME),
    RECONNECT_ATTEMPTS(getReconnectAttemptsDefinitions()),
+   RECONNECT_ATTEMPTS_ON_SAME_NODE(BridgeDefinition.RECONNECT_ATTEMPTS_ON_SAME_NODE),
    RETRY_INTERVAL(getRetryIntervalDefinitions()),
    RETRY_INTERVAL_MULTIPLIER(getRetryIntervalMultiplierDefinitions()),
    SELECTOR(CommonAttributes.SELECTOR),

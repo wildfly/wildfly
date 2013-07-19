@@ -186,6 +186,7 @@
                     <retry-interval-multiplier>${retry.interval.multiplier:2}</retry-interval-multiplier>
                     <max-retry-interval>${max.retry.interval:3000}</max-retry-interval>
                     <reconnect-attempts>${reconnect-attempts:3}</reconnect-attempts>
+                    <reconnect-attempts-on-same-node>${reconnect-attempts-on-same-node:5}</reconnect-attempts-on-same-node>
                     <use-duplicate-detection>${use.duplicate.detection:true}</use-duplicate-detection>
                     <confirmation-window-size>${confirmation.window.size:350}</confirmation-window-size>
                     <user>${user:Brian}</user>
