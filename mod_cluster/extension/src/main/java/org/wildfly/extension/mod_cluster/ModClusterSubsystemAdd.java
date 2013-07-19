@@ -40,6 +40,7 @@ import static org.wildfly.extension.mod_cluster.ModClusterConfigResourceDefiniti
 import static org.wildfly.extension.mod_cluster.ModClusterConfigResourceDefinition.PING;
 import static org.wildfly.extension.mod_cluster.ModClusterConfigResourceDefinition.PROXY_LIST;
 import static org.wildfly.extension.mod_cluster.ModClusterConfigResourceDefinition.PROXY_URL;
+import static org.wildfly.extension.mod_cluster.ModClusterConfigResourceDefinition.SESSION_DRAINING_STRATEGY;
 import static org.wildfly.extension.mod_cluster.ModClusterConfigResourceDefinition.SMAX;
 import static org.wildfly.extension.mod_cluster.ModClusterConfigResourceDefinition.SOCKET_TIMEOUT;
 import static org.wildfly.extension.mod_cluster.ModClusterConfigResourceDefinition.STICKY_SESSION;
