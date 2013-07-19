@@ -22,6 +22,9 @@
 
 package org.jboss.as.jpa.service;
 
+import java.security.AccessControlContext;
+import java.security.AccessController;
+import java.security.PrivilegedAction;
 import java.util.Map;
 import java.util.concurrent.ExecutorService;
 
@@ -45,6 +48,8 @@ import org.jboss.msc.service.StopContext;
 import org.jboss.msc.value.InjectedValue;
 import org.jipijapa.plugin.spi.PersistenceProviderAdaptor;
 import org.jipijapa.plugin.spi.PersistenceUnitMetadata;
+import org.wildfly.security.manager.GetAccessControlContextAction;
+import org.wildfly.security.manager.WildFlySecurityManager;
 
 
 import static org.jboss.as.jpa.messages.JpaLogger.JPA_LOGGER;
@@ -95,49 +100,67 @@ public class PersistenceUnitServiceImpl implements Service<PersistenceUnitServic
     @Override
     public void start(final StartContext context) throws StartException {
         final ExecutorService executor = executorInjector.getValue();
+        final AccessControlContext accessControlContext =
+                AccessController.doPrivileged(GetAccessControlContextAction.getInstance());
+
         final Runnable task = new Runnable() {
+            // run async in a background thread
             @Override
             public void run() {
-                try {
-                    PhaseOnePersistenceUnitServiceImpl phaseOnePersistenceUnitService = phaseOnePersistenceUnitServiceInjectedValue.getOptionalValue();
-                    WritableServiceBasedNamingStore.pushOwner(deploymentUnitServiceName);
+                PrivilegedAction<Void> privilegedAction =
+                        new PrivilegedAction<Void>() {
+                            // run as security privileged action
+                            @Override
+                            public Void run() {
 
-                    // handle phase 2 of 2 of bootstrapping the persistence unit
-                    if (phaseOnePersistenceUnitService != null) {
-                        JPA_LOGGER.startingPersistenceUnitService(2, pu.getScopedPersistenceUnitName());
-                        // indicate that the second phase of bootstrapping the persistence unit has started
-                        phaseOnePersistenceUnitService.setSecondPhaseStarted(true);
-                        if (beanManagerInjector.getOptionalValue() != null) {
-                            // update the bean manager proxy to the actual CDI bean manager
-                            proxyBeanManager = phaseOnePersistenceUnitService.getBeanManager();
-                            proxyBeanManager.setDelegate(beanManagerInjector.getOptionalValue());
-                        }
-                        entityManagerFactory = phaseOnePersistenceUnitService.getEntityManagerFactoryBuilder().build();
-                    }
-                    else {
-                        JPA_LOGGER.startingService("Persistence Unit", pu.getScopedPersistenceUnitName());
-                        // start the persistence unit in one pass (1 of 1)
-                        pu.setTempClassLoaderFactory(new TempClassLoaderFactoryImpl(classLoader));
-                        pu.setJtaDataSource(jtaDataSource.getOptionalValue());
-                        pu.setNonJtaDataSource(nonJtaDataSource.getOptionalValue());
+                                try {
+                                    PhaseOnePersistenceUnitServiceImpl phaseOnePersistenceUnitService = phaseOnePersistenceUnitServiceInjectedValue.getOptionalValue();
+                                    WritableServiceBasedNamingStore.pushOwner(deploymentUnitServiceName);
 
-                        if (beanManagerInjector.getOptionalValue() != null) {
-                            proxyBeanManager = new ProxyBeanManager();
-                            proxyBeanManager.setDelegate(beanManagerInjector.getOptionalValue());
-                            properties.getValue().put(CDI_BEAN_MANAGER, proxyBeanManager);
-                        }
-                        entityManagerFactory = createContainerEntityManagerFactory();
-                    }
-                    persistenceUnitRegistry.add(getScopedPersistenceUnitName(), getValue());
-                    context.complete();
-                } catch (Throwable t) {
-                    context.failed(new StartException(t));
-                } finally {
-                    pu.setTempClassLoaderFactory(null);    // release the temp classloader factory (only needed when creating the EMF)
-                    WritableServiceBasedNamingStore.popOwner();
-                }
+                                    // handle phase 2 of 2 of bootstrapping the persistence unit
+                                    if (phaseOnePersistenceUnitService != null) {
+                                        JPA_LOGGER.startingPersistenceUnitService(2, pu.getScopedPersistenceUnitName());
+                                        // indicate that the second phase of bootstrapping the persistence unit has started
+                                        phaseOnePersistenceUnitService.setSecondPhaseStarted(true);
+                                        if (beanManagerInjector.getOptionalValue() != null) {
+                                            // update the bean manager proxy to the actual CDI bean manager
+                                            proxyBeanManager = phaseOnePersistenceUnitService.getBeanManager();
+                                            proxyBeanManager.setDelegate(beanManagerInjector.getOptionalValue());
+                                        }
+                                        entityManagerFactory = phaseOnePersistenceUnitService.getEntityManagerFactoryBuilder().build();
+                                    } else {
+                                        JPA_LOGGER.startingService("Persistence Unit", pu.getScopedPersistenceUnitName());
+                                        // start the persistence unit in one pass (1 of 1)
+                                        pu.setTempClassLoaderFactory(new TempClassLoaderFactoryImpl(classLoader));
+                                        pu.setJtaDataSource(jtaDataSource.getOptionalValue());
+                                        pu.setNonJtaDataSource(nonJtaDataSource.getOptionalValue());
+
+                                        if (beanManagerInjector.getOptionalValue() != null) {
+                                            proxyBeanManager = new ProxyBeanManager();
+                                            proxyBeanManager.setDelegate(beanManagerInjector.getOptionalValue());
+                                            properties.getValue().put(CDI_BEAN_MANAGER, proxyBeanManager);
+                                        }
+                                        entityManagerFactory = createContainerEntityManagerFactory();
+                                    }
+                                    persistenceUnitRegistry.add(getScopedPersistenceUnitName(), getValue());
+                                    context.complete();
+                                } catch (Throwable t) {
+                                    context.failed(new StartException(t));
+                                } finally {
+                                    pu.setTempClassLoaderFactory(null);    // release the temp classloader factory (only needed when creating the EMF)
+                                    WritableServiceBasedNamingStore.popOwner();
+                                }
+                                return null;
+                            }
+
+                        };
+                WildFlySecurityManager.doChecked(privilegedAction, accessControlContext);
+
             }
+
         };
+
+
         context.asynchronous();
         executor.execute(task);
     }
@@ -145,34 +168,47 @@ public class PersistenceUnitServiceImpl implements Service<PersistenceUnitServic
     @Override
     public void stop(final StopContext context) {
         final ExecutorService executor = executorInjector.getValue();
+        final AccessControlContext accessControlContext =
+                AccessController.doPrivileged(GetAccessControlContextAction.getInstance());
         final Runnable task = new Runnable() {
+            // run async in a background thread
             @Override
             public void run() {
+                PrivilegedAction<Void> privilegedAction =
+                        new PrivilegedAction<Void>() {
+                            // run as security privileged action
+                            @Override
+                            public Void run() {
 
-                if (phaseOnePersistenceUnitServiceInjectedValue.getOptionalValue() != null) {
-                    JPA_LOGGER.stoppingPersistenceUnitService(2, pu.getScopedPersistenceUnitName());
-                } else {
-                    JPA_LOGGER.stoppingService("Persistence Unit", pu.getScopedPersistenceUnitName());
-                }
-                if (entityManagerFactory != null) {
-                    WritableServiceBasedNamingStore.pushOwner(deploymentUnitServiceName);
-                    try {
-                        entityManagerFactory.close();
-                    } catch (Throwable t) {
-                        JPA_LOGGER.failedToStopPUService(t, pu.getScopedPersistenceUnitName());
-                    } finally {
-                        entityManagerFactory = null;
-                        pu.setTempClassLoaderFactory(null);
-                        WritableServiceBasedNamingStore.popOwner();
-                        persistenceUnitRegistry.remove(getScopedPersistenceUnitName());
-                    }
-                }
-                if(proxyBeanManager != null) {
-                    proxyBeanManager.setDelegate(null);
-                    proxyBeanManager = null;
-                }
-                context.complete();
+                                if (phaseOnePersistenceUnitServiceInjectedValue.getOptionalValue() != null) {
+                                    JPA_LOGGER.stoppingPersistenceUnitService(2, pu.getScopedPersistenceUnitName());
+                                } else {
+                                    JPA_LOGGER.stoppingService("Persistence Unit", pu.getScopedPersistenceUnitName());
+                                }
+                                if (entityManagerFactory != null) {
+                                    WritableServiceBasedNamingStore.pushOwner(deploymentUnitServiceName);
+                                    try {
+                                        entityManagerFactory.close();
+                                    } catch (Throwable t) {
+                                        JPA_LOGGER.failedToStopPUService(t, pu.getScopedPersistenceUnitName());
+                                    } finally {
+                                        entityManagerFactory = null;
+                                        pu.setTempClassLoaderFactory(null);
+                                        WritableServiceBasedNamingStore.popOwner();
+                                        persistenceUnitRegistry.remove(getScopedPersistenceUnitName());
+                                    }
+                                }
+                                if (proxyBeanManager != null) {
+                                    proxyBeanManager.setDelegate(null);
+                                    proxyBeanManager = null;
+                                }
+                                context.complete();
+                                return null;
+                            }
+                        };
+                WildFlySecurityManager.doChecked(privilegedAction, accessControlContext);
             }
+
         };
         context.asynchronous();
         executor.execute(task);
