@@ -37,6 +37,7 @@ import org.jboss.as.controller.access.DelegatingConfigurableAuthorizer;
 import org.jboss.as.controller.registry.ManagementResourceRegistration;
 import org.jboss.as.domain.management._private.DomainManagementResolver;
 import org.jboss.as.domain.management.access.AccessAuthorizationResourceDefinition;
+import org.jboss.as.domain.management.audit.AccessAuditResourceDefinition;
 import org.jboss.as.domain.management.connections.ldap.LdapConnectionResourceDefinition;
 import org.jboss.as.domain.management.security.SecurityRealmResourceDefinition;
 
@@ -87,6 +88,7 @@ public class CoreManagementResourceDefinition extends SimpleResourceDefinition {
             case STANDALONE_SERVER:
                 resourceRegistration.registerSubModel(AccessAuthorizationResourceDefinition.forStandaloneServer(authorizer));
         }
+        resourceRegistration.registerSubModel(AccessAuditResourceDefinition.INSTANCE);
     }
 
     public static SimpleResourceDefinition forDomain(final DelegatingConfigurableAuthorizer authorizer) {
