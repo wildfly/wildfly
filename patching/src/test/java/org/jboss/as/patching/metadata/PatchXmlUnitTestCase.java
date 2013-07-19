@@ -43,7 +43,7 @@ public class PatchXmlUnitTestCase {
     public void testParseCP() throws Exception {
 
         final InputStream is = getResource("patch-01-CP.xml");
-        final Patch patch = PatchXml.parse(is);
+        final Patch patch = PatchXml.parse(is).resolvePatch(null, null);
         // Cumulative Patch
         assertNotNull(patch);
         assertNotNull(patch.getPatchId());
@@ -59,7 +59,7 @@ public class PatchXmlUnitTestCase {
     public void testParseOneOff() throws Exception {
 
         final InputStream is = getResource("patch-02-ONE-OFF.xml");
-        final Patch patch = PatchXml.parse(is);
+        final Patch patch = PatchXml.parse(is).resolvePatch(null, null);
         // One-off Patch
         assertNotNull(patch);
         assertNotNull(patch.getPatchId());
@@ -83,7 +83,7 @@ public class PatchXmlUnitTestCase {
         final String original = toString(fileName);
 
         final InputStream is = getResource(fileName);
-        final Patch patch = PatchXml.parse(is);
+        final Patch patch = PatchXml.parse(is).resolvePatch(null, null);
 
         final StringWriter writer = new StringWriter();
         PatchXml.marshal(writer, patch);

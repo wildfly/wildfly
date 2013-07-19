@@ -324,9 +324,9 @@ class PatchXmlUtils implements XMLStreamConstants {
         }
     }
 
-    protected void doReadElement(final XMLExtendedStreamReader reader, final PatchBuilderFactory factory) throws XMLStreamException {
+    protected void doReadElement(final XMLExtendedStreamReader reader, final PatchBuilder builder) throws XMLStreamException {
 
-        final PatchBuilder patch = factory.getBuilder();
+        final PatchBuilder patch = builder;
         final int count = reader.getAttributeCount();
         for (int i = 0; i < count; i++) {
             final String value = reader.getAttributeValue(i);

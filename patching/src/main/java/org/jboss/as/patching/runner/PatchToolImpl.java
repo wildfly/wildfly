@@ -40,7 +40,7 @@ import org.jboss.as.patching.ZipUtils;
 import org.jboss.as.patching.installation.Identity;
 import org.jboss.as.patching.installation.InstallationManager;
 import org.jboss.as.patching.installation.PatchableTarget;
-import org.jboss.as.patching.metadata.Patch;
+import org.jboss.as.patching.metadata.PatchMetadataResolver;
 import org.jboss.as.patching.metadata.PatchXml;
 import org.jboss.as.patching.tool.ContentVerificationPolicy;
 import org.jboss.as.patching.tool.PatchTool;
@@ -192,9 +192,9 @@ public class PatchToolImpl implements PatchTool {
         final PatchContentProvider contentProvider = PatchContentProvider.DefaultContentProvider.create(workDir);
         final File patchXml = new File(workDir, PatchXml.PATCH_XML);
         final InputStream patchIS = new FileInputStream(patchXml);
-        final Patch patch;
+        final PatchMetadataResolver patchResolver;
         try {
-            patch = PatchXml.parse(patchIS);
+            patchResolver = PatchXml.parse(patchIS);
             patchIS.close();
         } finally {
             safeClose(patchIS);
@@ -202,7 +202,7 @@ public class PatchToolImpl implements PatchTool {
         // Apply the patch
         final InstallationManager.InstallationModification modification = manager.modifyInstallation(callback);
         try {
-            return runner.applyPatch(patch, contentProvider, contentPolicy, modification);
+            return runner.applyPatch(patchResolver, contentProvider, contentPolicy, modification);
         } catch (Exception e) {
             modification.cancel();
             throw rethrowException(e);

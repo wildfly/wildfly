@@ -29,11 +29,14 @@ import static org.jboss.as.patching.IoUtils.safeClose;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
+import java.util.Arrays;
+import java.util.List;
 
 import org.jboss.as.patching.IoUtils;
 import org.jboss.as.patching.PatchMessages;
 import org.jboss.as.patching.metadata.ContentModification;
 import org.jboss.as.patching.metadata.MiscContentItem;
+import org.jboss.as.patching.metadata.ModificationType;
 
 /**
  * Base {@linkplain PatchingTask} for misc file updates.
@@ -81,6 +84,9 @@ abstract class AbstractFileTask extends AbstractPatchingTask<MiscContentItem> {
             }
             return NO_CONTENT;
         } else {
+            if (!target.exists()) {
+                createParentDirectories(target, item.getPath(), item.getPath().length, context);
+            }
             final InputStream is = loader.openContentStream(item);
             try {
                 // Replace the file
@@ -95,6 +101,22 @@ abstract class AbstractFileTask extends AbstractPatchingTask<MiscContentItem> {
     ContentModification createRollbackEntry(ContentModification original, byte[] targetHash, byte[] itemHash) {
         final MiscContentItem item = new MiscContentItem(contentItem.getName(), contentItem.getPath(), itemHash, contentItem.isDirectory(), contentItem.isAffectsRuntime());
         return createRollbackEntry(original, item, targetHash);
+    }
+
+    static void createParentDirectories(final File target, String[] path, int depth, final PatchingTaskContext context) throws IOException {
+        if (depth > 0) {
+            final File parent = target.getParentFile();
+            if (! parent.exists()) {
+                createParentDirectories(parent, path, depth - 1, context);
+            }
+            if(! parent.mkdir() && ! parent.isDirectory()) {
+                throw PatchMessages.MESSAGES.cannotCreateDirectory(target.getAbsolutePath());
+            }
+            // TODO record changes
+//            final String[] newPath = Arrays.copyOf(path, depth - 1);
+//            final MiscContentItem item = new MiscContentItem(parent.getName(), newPath, NO_CONTENT);
+//            context.recordChange(new ContentModification(item, NO_CONTENT, ModificationType.ADD), new ContentModification(item, NO_CONTENT, ModificationType.REMOVE));
+        }
     }
 
 }

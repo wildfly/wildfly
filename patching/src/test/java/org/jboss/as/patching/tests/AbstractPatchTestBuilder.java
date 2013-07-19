@@ -52,7 +52,7 @@ abstract class AbstractPatchTestBuilder<T> extends ModificationBuilderTarget<T> 
     }
 
     public T updateFileWithRandomContent(byte[] existingHash, byte[] resultingHash, String... path) throws IOException {
-        final ContentModification modification = ContentModificationUtils.modifyMisc(getPatchDir(), getPatchId(), randomString(), existingHash, path);
+        final ContentModification modification = ContentModificationUtils.modifyMisc(getPatchDir(), getPatchId(), randomString(), Arrays.copyOf(existingHash, existingHash.length), path);
         return addContentModification(modification, resultingHash);
     }
 
