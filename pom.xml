@@ -6105,6 +6105,7 @@
                 <module>jsr77</module>
                 <module>legacy/cmp</module>
                 <module>legacy/jaxr</module>
+                <module>legacy/web</module>
                 <module>logging</module>
                 <module>mail</module>
                 <module>messaging</module>
@@ -6121,7 +6122,6 @@
                 <module>transactions</module>
                 <module>undertow</module>
                 <module>web-common</module>
-                <module>web</module>
                 <module>webservices</module>
                 <module>weld</module>
                 <module>xts</module>
