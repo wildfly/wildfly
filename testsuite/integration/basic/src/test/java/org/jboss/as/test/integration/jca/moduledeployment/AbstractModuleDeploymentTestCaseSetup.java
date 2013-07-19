@@ -60,7 +60,6 @@ public abstract class AbstractModuleDeploymentTestCaseSetup extends AbstractMgmt
     protected File slot;
     public static ModelNode address;
     protected final String defaultPath = "org/jboss/ironjacamar/ra16out";
-    private boolean firstRemove = true;
 
     public void addModule(final String moduleName) throws Exception {
         addModule(moduleName, "module.xml");
@@ -68,18 +67,21 @@ public abstract class AbstractModuleDeploymentTestCaseSetup extends AbstractMgmt
 
     public void addModule(final String moduleName, String moduleXml) throws Exception {
         testModuleRoot = new File(getModulePath(), moduleName);
-        if (firstRemove) {
-            removeModule(moduleName);
-            firstRemove = false;
-        }
+        removeModule(moduleName);
         createTestModule(moduleXml);
     }
 
     public void removeModule(final String moduleName) throws Exception {
+        removeModule(moduleName, false);
+    }
+
+    public void removeModule(final String moduleName, boolean deleteParent) throws Exception {
         testModuleRoot = new File(getModulePath(), moduleName);
         File file = testModuleRoot;
-        while (!getModulePath().equals(file.getParentFile()))
-            file = file.getParentFile();
+        if (deleteParent) {
+            while (!getModulePath().equals(file.getParentFile()))
+                file = file.getParentFile();
+        }
         deleteRecursively(file);
     }
 
@@ -173,7 +175,7 @@ public abstract class AbstractModuleDeploymentTestCaseSetup extends AbstractMgmt
             throws Exception {
         takeSnapShot();
         remove(address);
-        removeModule(defaultPath);
+        removeModule(defaultPath, true);
     }
 
     @Override
