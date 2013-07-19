@@ -27,6 +27,7 @@ import static java.util.Collections.unmodifiableList;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.jboss.as.patching.PatchingException;
 import org.jboss.as.patching.metadata.Patch.PatchType;
 import org.jboss.as.patching.metadata.impl.IdentityImpl;
 import org.jboss.as.patching.metadata.impl.PatchElementProviderImpl;
@@ -34,7 +35,7 @@ import org.jboss.as.patching.metadata.impl.PatchElementProviderImpl;
 /**
  * @author Emanuel Muckenhuber
  */
-public class PatchBuilder extends ModificationBuilderTarget<PatchBuilder> implements Builder {
+public class PatchBuilder extends ModificationBuilderTarget<PatchBuilder> implements Builder, PatchMetadataResolver {
 
     protected String patchId;
     private String description;
@@ -123,6 +124,11 @@ public class PatchBuilder extends ModificationBuilderTarget<PatchBuilder> implem
 
     public List<ContentModification> getModifications() {
         return modifications;
+    }
+
+    @Override
+    public Patch resolvePatch(String name, String version) throws PatchingException {
+        return build();
     }
 
     @Override

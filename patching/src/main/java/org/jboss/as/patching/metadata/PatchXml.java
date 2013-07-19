@@ -120,22 +120,22 @@ public class PatchXml {
         streamWriter.close();
     }
 
-    public static Patch parse(final InputStream stream) throws XMLStreamException {
+    public static PatchMetadataResolver parse(final InputStream stream) throws XMLStreamException {
         try {
             final XMLInputFactory inputFactory = INPUT_FACTORY;
             setIfSupported(inputFactory, XMLInputFactory.IS_VALIDATING, Boolean.FALSE);
             setIfSupported(inputFactory, XMLInputFactory.SUPPORT_DTD, Boolean.FALSE);
             final XMLStreamReader streamReader = inputFactory.createXMLStreamReader(stream);
             //
-            final PatchBuilderFactory builder = new PatchBuilderFactory();
-            MAPPER.parseDocument(builder, streamReader);
-            return builder.getBuilder().build();
+            final Result<PatchMetadataResolver> result = new Result<PatchMetadataResolver>();
+            MAPPER.parseDocument(result, streamReader);
+            return result.getResult();
         } finally {
             safeClose(stream);
         }
     }
 
-    public static Patch parse(final File patchXml) throws IOException, XMLStreamException {
+    public static PatchMetadataResolver parse(final File patchXml) throws IOException, XMLStreamException {
         final InputStream is = new FileInputStream(patchXml);
         try {
             return parse(is);
@@ -149,4 +149,17 @@ public class PatchXml {
             inputFactory.setProperty(property, value);
         }
     }
+
+    public static class Result<T> {
+        private T result;
+
+        public T getResult() {
+            return result;
+        }
+
+        public void setResult(T result) {
+            this.result = result;
+        }
+    }
+
 }
