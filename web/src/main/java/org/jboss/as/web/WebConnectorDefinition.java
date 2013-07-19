@@ -23,11 +23,9 @@
 package org.jboss.as.web;
 
 import org.jboss.as.controller.AttributeDefinition;
-import org.jboss.as.controller.ReloadRequiredWriteAttributeHandler;
-import org.jboss.as.controller.ServiceRemoveStepHandler;
+import org.jboss.as.controller.ModelOnlyResourceDefinition;
 import org.jboss.as.controller.SimpleAttributeDefinition;
 import org.jboss.as.controller.SimpleAttributeDefinitionBuilder;
-import org.jboss.as.controller.SimpleResourceDefinition;
 import org.jboss.as.controller.StringListAttributeDefinition;
 import org.jboss.as.controller.access.constraint.management.SensitiveTargetAccessConstraintDefinition;
 import org.jboss.as.controller.operations.validation.IntRangeValidator;
@@ -41,16 +39,12 @@ import org.jboss.dmr.ModelType;
  * @author Tomaz Cerar
  * @created 22.2.12 15:03
  */
-public class WebConnectorDefinition extends SimpleResourceDefinition {
-    protected static final WebConnectorDefinition INSTANCE = new WebConnectorDefinition();
-
-
+public class WebConnectorDefinition extends ModelOnlyResourceDefinition {
     protected static final SimpleAttributeDefinition NAME =
             new SimpleAttributeDefinitionBuilder(Constants.NAME, ModelType.STRING)
                     .setXmlName(Constants.NAME)
                     .setAllowNull(true) // todo should be false, but 'add' won't validate then
                     .build();
-
     protected static final SimpleAttributeDefinition PROTOCOL =
             new SimpleAttributeDefinitionBuilder(Constants.PROTOCOL, ModelType.STRING)
                     .setAllowNull(false)
@@ -58,7 +52,6 @@ public class WebConnectorDefinition extends SimpleResourceDefinition {
                     .setValidator(new StringLengthValidator(1))
                     .setAllowExpression(true)
                     .build();
-
     protected static final SimpleAttributeDefinition SOCKET_BINDING =
             new SimpleAttributeDefinitionBuilder(Constants.SOCKET_BINDING, ModelType.STRING)
                     .setAllowNull(false)
@@ -66,23 +59,20 @@ public class WebConnectorDefinition extends SimpleResourceDefinition {
                     .setValidator(new StringLengthValidator(1))
                     .addAccessConstraint(SensitiveTargetAccessConstraintDefinition.SOCKET_BINDING_REF)
                     .build();
-
     protected static final SimpleAttributeDefinition SCHEME =
             new SimpleAttributeDefinitionBuilder(Constants.SCHEME, ModelType.STRING)
                     .setAllowNull(false)
                     .setFlags(AttributeAccess.Flag.RESTART_ALL_SERVICES)
                     .setValidator(new StringLengthValidator(1))
                     .setAllowExpression(true)
-                    //.setDefaultValue(new ModelNode("http"))
+                            //.setDefaultValue(new ModelNode("http"))
                     .build();
-
     protected static final SimpleAttributeDefinition EXECUTOR =
             new SimpleAttributeDefinitionBuilder(Constants.EXECUTOR, ModelType.STRING)
                     .setAllowNull(true)
                     .setFlags(AttributeAccess.Flag.RESTART_ALL_SERVICES)
                     .setValidator(new StringLengthValidator(1, true))
                     .build();
-
     protected static final SimpleAttributeDefinition ENABLED =
             new SimpleAttributeDefinitionBuilder(Constants.ENABLED, ModelType.BOOLEAN)
                     .setAllowNull(true)
@@ -90,7 +80,6 @@ public class WebConnectorDefinition extends SimpleResourceDefinition {
                     .setDefaultValue(new ModelNode(true))
                     .setAllowExpression(true)
                     .build();
-
     protected static final SimpleAttributeDefinition ENABLE_LOOKUPS =
             new SimpleAttributeDefinitionBuilder(Constants.ENABLE_LOOKUPS, ModelType.BOOLEAN)
                     .setAllowNull(true)
@@ -98,7 +87,6 @@ public class WebConnectorDefinition extends SimpleResourceDefinition {
                     .setDefaultValue(new ModelNode(false))
                     .setAllowExpression(true)
                     .build();
-
     protected static final SimpleAttributeDefinition PROXY_NAME =
             new SimpleAttributeDefinitionBuilder(Constants.PROXY_NAME, ModelType.STRING)
                     .setAllowNull(true)
@@ -106,7 +94,6 @@ public class WebConnectorDefinition extends SimpleResourceDefinition {
                     .setValidator(new StringLengthValidator(1, true))
                     .setAllowExpression(true)
                     .build();
-
     protected static final SimpleAttributeDefinition PROXY_PORT =
             new SimpleAttributeDefinitionBuilder(Constants.PROXY_PORT, ModelType.INT)
                     .setAllowNull(true)
@@ -114,7 +101,6 @@ public class WebConnectorDefinition extends SimpleResourceDefinition {
                     .setFlags(AttributeAccess.Flag.RESTART_ALL_SERVICES)
                     .setAllowExpression(true)
                     .build();
-
     protected static final SimpleAttributeDefinition MAX_POST_SIZE =
             new SimpleAttributeDefinitionBuilder(Constants.MAX_POST_SIZE, ModelType.INT)
                     .setAllowNull(true)
@@ -123,7 +109,6 @@ public class WebConnectorDefinition extends SimpleResourceDefinition {
                     .setDefaultValue(new ModelNode(2097152))
                     .setAllowExpression(true)
                     .build();
-
     protected static final SimpleAttributeDefinition MAX_SAVE_POST_SIZE =
             new SimpleAttributeDefinitionBuilder(Constants.MAX_SAVE_POST_SIZE, ModelType.INT)
                     .setAllowNull(true)
@@ -132,7 +117,6 @@ public class WebConnectorDefinition extends SimpleResourceDefinition {
                     .setDefaultValue(new ModelNode(4096))
                     .setAllowExpression(true)
                     .build();
-
     protected static final SimpleAttributeDefinition SECURE =
             new SimpleAttributeDefinitionBuilder(Constants.SECURE, ModelType.BOOLEAN)
                     .setAllowNull(true)
@@ -140,7 +124,6 @@ public class WebConnectorDefinition extends SimpleResourceDefinition {
                     .setFlags(AttributeAccess.Flag.RESTART_ALL_SERVICES)
                     .setDefaultValue(new ModelNode(false))
                     .build();
-
     protected static final SimpleAttributeDefinition REDIRECT_PORT =
             new SimpleAttributeDefinitionBuilder(Constants.REDIRECT_PORT, ModelType.INT)
                     .setAllowNull(true)
@@ -149,7 +132,6 @@ public class WebConnectorDefinition extends SimpleResourceDefinition {
                     .setDefaultValue(new ModelNode(443))
                     .setAllowExpression(true)
                     .build();
-
     protected static final SimpleAttributeDefinition MAX_CONNECTIONS =
             new SimpleAttributeDefinitionBuilder(Constants.MAX_CONNECTIONS, ModelType.INT)
                     .setAllowNull(true)
@@ -157,14 +139,12 @@ public class WebConnectorDefinition extends SimpleResourceDefinition {
                     .setFlags(AttributeAccess.Flag.RESTART_ALL_SERVICES)
                     .setAllowExpression(true)
                     .build();
-
     protected static final StringListAttributeDefinition VIRTUAL_SERVER = new StringListAttributeDefinition.Builder(Constants.VIRTUAL_SERVER)
             .setAllowNull(true)
             .setFlags(AttributeAccess.Flag.RESTART_RESOURCE_SERVICES)
             .setValidator(new StringLengthValidator(1, false))
             .build();
-
-    protected static final SimpleAttributeDefinition[] CONNECTOR_ATTRIBUTES = {
+    protected static final AttributeDefinition[] CONNECTOR_ATTRIBUTES = {
             //NAME, // name is read-only
             // IMPORTANT -- keep these in xsd order as this order controls marshalling
             PROTOCOL,
@@ -179,28 +159,23 @@ public class WebConnectorDefinition extends SimpleResourceDefinition {
             MAX_SAVE_POST_SIZE,
             ENABLED,
             EXECUTOR,
-            MAX_CONNECTIONS
+            MAX_CONNECTIONS,
+            VIRTUAL_SERVER
 
     };
+    static final WebConnectorDefinition INSTANCE = new WebConnectorDefinition();
 
     private WebConnectorDefinition() {
         super(WebExtension.CONNECTOR_PATH,
                 WebExtension.getResourceDescriptionResolver(Constants.CONNECTOR),
-                WebConnectorAdd.INSTANCE,
-                new ServiceRemoveStepHandler(WebSubsystemServices.JBOSS_WEB_CONNECTOR, WebConnectorAdd.INSTANCE));
+                new AddressToNameAddAdaptor(CONNECTOR_ATTRIBUTES),
+                CONNECTOR_ATTRIBUTES);
     }
-
 
     @Override
     public void registerAttributes(ManagementResourceRegistration connectors) {
+        super.registerAttributes(connectors);
         connectors.registerReadOnlyAttribute(NAME, null);
-        for (AttributeDefinition def : CONNECTOR_ATTRIBUTES) {
-            connectors.registerReadWriteAttribute(def, null, new ReloadRequiredWriteAttributeHandler(def));
-        }
-        connectors.registerReadWriteAttribute(VIRTUAL_SERVER,null,new ReloadRequiredWriteAttributeHandler(VIRTUAL_SERVER));
-
-        for (final SimpleAttributeDefinition def : WebConnectorMetrics.ATTRIBUTES) {
-            connectors.registerMetric(def, WebConnectorMetrics.INSTANCE);
-        }
     }
+
 }

@@ -21,7 +21,6 @@
         <extension module="org.jboss.as.security"/>
         <extension module="org.jboss.as.threads"/>
         <extension module="org.jboss.as.transactions"/>
-        <extension module="org.jboss.as.web"/>
         <extension module="org.jboss.as.webservices"/>
         <extension module="org.jboss.as.weld"/>
     </extensions>
@@ -242,13 +241,6 @@
             </core-environment>
             <recovery-environment socket-binding="txn-recovery-environment" status-socket-binding="txn-status-manager"/>
             <coordinator-environment default-timeout="300"/>
-        </subsystem>
-        <subsystem xmlns="urn:jboss:domain:web:1.2" default-virtual-server="default-host" native="false">
-            <connector name="http" protocol="HTTP/1.1" scheme="http" socket-binding="http"/>
-            <virtual-server name="default-host" enable-welcome-root="true">
-                <alias name="localhost"/>
-                <alias name="example.com"/>
-            </virtual-server>
         </subsystem>
         <subsystem xmlns="urn:jboss:domain:webservices:1.1">
             <modify-wsdl-address>true</modify-wsdl-address>

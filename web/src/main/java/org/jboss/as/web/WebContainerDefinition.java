@@ -24,14 +24,12 @@ package org.jboss.as.web;
 
 import org.jboss.as.controller.AttributeDefinition;
 import org.jboss.as.controller.ListAttributeDefinition;
+import org.jboss.as.controller.ModelOnlyResourceDefinition;
 import org.jboss.as.controller.OperationDefinition;
 import org.jboss.as.controller.PropertiesAttributeDefinition;
-import org.jboss.as.controller.ReloadRequiredRemoveStepHandler;
-import org.jboss.as.controller.ReloadRequiredWriteAttributeHandler;
 import org.jboss.as.controller.SimpleAttributeDefinition;
 import org.jboss.as.controller.SimpleAttributeDefinitionBuilder;
 import org.jboss.as.controller.SimpleOperationDefinitionBuilder;
-import org.jboss.as.controller.SimpleResourceDefinition;
 import org.jboss.as.controller.StringListAttributeDefinition;
 import org.jboss.as.controller.operations.validation.StringLengthValidator;
 import org.jboss.as.controller.registry.AttributeAccess;
@@ -42,8 +40,7 @@ import org.jboss.dmr.ModelType;
  * @author Tomaz Cerar
  * @created 23.2.12 18:03
  */
-public class WebContainerDefinition extends SimpleResourceDefinition {
-    public static final WebContainerDefinition INSTANCE = new WebContainerDefinition();
+public class WebContainerDefinition extends ModelOnlyResourceDefinition {
 
     protected static final ListAttributeDefinition WELCOME_FILES = new StringListAttributeDefinition.Builder(Constants.WELCOME_FILE)
             .setXmlName(Constants.WELCOME_FILE)
@@ -52,40 +49,35 @@ public class WebContainerDefinition extends SimpleResourceDefinition {
             .setAllowExpression(true)
             .setAllowNull(true)
             .build();
-
     protected static final PropertiesAttributeDefinition MIME_MAPPINGS = new PropertiesAttributeDefinition.Builder(Constants.MIME_MAPPING, true)
             .setAllowExpression(true)
             .setWrapXmlElement(false)
             .build();
-
+    protected static final AttributeDefinition[] CONTAINER_ATTRIBUTES = {
+            WELCOME_FILES,
+            MIME_MAPPINGS,
+    };
     private static final SimpleAttributeDefinition MIME_NAME = new SimpleAttributeDefinitionBuilder(Constants.NAME, ModelType.STRING, true)
             .setFlags(AttributeAccess.Flag.RESTART_ALL_SERVICES)
             .setValidator(new StringLengthValidator(1, true))
             .build();
-
     private static final SimpleAttributeDefinition MIME_VALUE = new SimpleAttributeDefinitionBuilder(Constants.VALUE, ModelType.STRING, true)
             .setFlags(AttributeAccess.Flag.RESTART_ALL_SERVICES)
             .setValidator(new StringLengthValidator(1, true))
             .build();
-
-    protected static final AttributeDefinition[] CONTAINER_ATTRIBUTES={
-            WELCOME_FILES,
-            MIME_MAPPINGS,
-    };
     private static final OperationDefinition ADD_MIME = new SimpleOperationDefinitionBuilder("add-mime", WebExtension.getResourceDescriptionResolver("container.mime-mapping"))
             .setParameters(MIME_NAME, MIME_VALUE)
             .build();
     private static final OperationDefinition REMOVE_MIME = new SimpleOperationDefinitionBuilder("remove-mime", WebExtension.getResourceDescriptionResolver("container.mime-mapping"))
-               .addParameter(MIME_NAME)
-               .build();
+            .addParameter(MIME_NAME)
+            .build();
+
+    static final WebContainerDefinition INSTANCE = new WebContainerDefinition();
 
     private WebContainerDefinition() {
         super(WebExtension.CONTAINER_PATH,
-                WebExtension.getResourceDescriptionResolver(Constants.CONTAINER),
-                WebContainerAdd.INSTANCE,
-                new ReloadRequiredRemoveStepHandler());
+                WebExtension.getResourceDescriptionResolver(Constants.CONTAINER), WELCOME_FILES, MIME_MAPPINGS);
     }
-
 
     /**
      * {@inheritDoc}
@@ -94,14 +86,9 @@ public class WebContainerDefinition extends SimpleResourceDefinition {
     @Override
     public void registerOperations(ManagementResourceRegistration container) {
         super.registerOperations(container);
-        container.registerOperationHandler(ADD_MIME,MimeMappingAdd.INSTANCE);
-        container.registerOperationHandler(REMOVE_MIME,MimeMappingRemove.INSTANCE);
+        container.registerOperationHandler(ADD_MIME, MimeMappingAdd.INSTANCE);
+        container.registerOperationHandler(REMOVE_MIME, MimeMappingRemove.INSTANCE);
     }
 
-    @Override
-    public void registerAttributes(ManagementResourceRegistration container) {
-        container.registerReadWriteAttribute(WELCOME_FILES, null, new ReloadRequiredWriteAttributeHandler(WELCOME_FILES));
-        container.registerReadWriteAttribute(MIME_MAPPINGS, null, new ReloadRequiredWriteAttributeHandler(MIME_MAPPINGS));
-    }
 
 }

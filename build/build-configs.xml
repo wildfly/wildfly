@@ -65,12 +65,6 @@
            paramSubsystemsFile="configuration/domain/subsystems.xml"
            paramOutputFile="${generated.configs.domain}/domain.xml"/>
 
-        <!-- configuration with web subsystem instead of undertow-->
-      <generate-server-config
-                  paramTemplateFile="configuration/standalone/template.xml"
-                  paramSubsystemsFile="configuration/standalone/subsystems-jbossweb.xml"
-                  paramOutputFile="${generated.configs.standalone}/standalone-jbossweb.xml"/>
-
       <!-- Example configs -->
       <generate-server-config 
            paramTemplateFile="configuration/standalone/template.xml" 

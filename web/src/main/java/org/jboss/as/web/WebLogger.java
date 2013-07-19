@@ -22,16 +22,8 @@
 
 package org.jboss.as.web;
 
-import static org.jboss.logging.Logger.Level.ERROR;
-import static org.jboss.logging.Logger.Level.INFO;
-import static org.jboss.logging.Logger.Level.WARN;
-
-import org.jboss.jandex.ClassInfo;
 import org.jboss.logging.BasicLogger;
 import org.jboss.logging.Logger;
-import org.jboss.logging.annotations.Cause;
-import org.jboss.logging.annotations.LogMessage;
-import org.jboss.logging.annotations.Message;
 import org.jboss.logging.annotations.MessageLogger;
 
 /**
@@ -54,24 +46,24 @@ public interface WebLogger extends BasicLogger {
      */
     WebLogger ROOT_LOGGER = Logger.getMessageLogger(WebLogger.class, WebLogger.class.getPackage().getName());
 
-    /**
+   /* *//**
      * A logger with the category {@code org.jboss.as.web.security}.
-     */
+     *//*
     WebLogger WEB_SECURITY_LOGGER = Logger.getMessageLogger(WebLogger.class, "org.jboss.as.web.security");
 
-    /**
+    *//**
      * A logger with the category {@code org.jboss.as.web.session}.
-     */
+     *//*
     WebLogger WEB_SESSION_LOGGER = Logger.getMessageLogger(WebLogger.class, "org.jboss.as.web.session");
 
-    /**
+    *//**
      * A logger with the category {@code org.jboss.as.web.sso}.
-     */
+     *//*
     WebLogger WEB_SSO_LOGGER = Logger.getMessageLogger(WebLogger.class, "org.jboss.as.web.sso");
 
-    /**
+    *//**
      * A logger with the category {@code org.jboss.web}.
-     */
+     *//*
     WebLogger WEB_LOGGER = Logger.getMessageLogger(WebLogger.class, "org.jboss.web");
 
     @LogMessage(level = ERROR)
@@ -164,5 +156,5 @@ public interface WebLogger extends BasicLogger {
 
     @LogMessage(level = INFO)
     @Message(id = 18227, value = "Could not load class designated by HandlesTypes [%s].")
-    void cannotLoadDesignatedHandleTypes(ClassInfo classInfo, @Cause Exception e);
+    void cannotLoadDesignatedHandleTypes(ClassInfo classInfo, @Cause Exception e);*/
 }

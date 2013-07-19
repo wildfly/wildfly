@@ -31,11 +31,9 @@ import org.jboss.as.controller.OperationStepHandler;
 import org.jboss.as.controller.PathAddress;
 import org.jboss.dmr.ModelNode;
 
-public class MimeMappingAdd implements OperationStepHandler{
+public class MimeMappingAdd implements OperationStepHandler {
 
     static final MimeMappingAdd INSTANCE = new MimeMappingAdd();
-
-
 
     @Override
     public void execute(OperationContext context, ModelNode operation)
@@ -46,22 +44,6 @@ public class MimeMappingAdd implements OperationStepHandler{
             mimetypes.get(operation.get("name").asString()).set(operation.get("value").asString());
         } else {
             throw new OperationFailedException(new ModelNode().set(MESSAGES.nameAndValueRequiredForAddMimeMapping()));
-        }
-
-        if (!context.isBooting() && context.isNormalServer()) {
-            context.addStep(new OperationStepHandler() {
-                @Override
-                public void execute(OperationContext context, ModelNode operation) throws OperationFailedException {
-
-                    context.reloadRequired();
-                    context.completeStep(new OperationContext.RollbackHandler() {
-                        @Override
-                        public void handleRollback(OperationContext context, ModelNode operation) {
-                            context.revertReloadRequired();
-                        }
-                    });
-                }
-            }, OperationContext.Stage.RUNTIME);
         }
 
         context.stepCompleted();

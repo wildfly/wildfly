@@ -40,6 +40,5 @@
     <modules>
         <module>extension</module>
         <module>undertow</module>
-        <module>web</module>
     </modules>
 </project>

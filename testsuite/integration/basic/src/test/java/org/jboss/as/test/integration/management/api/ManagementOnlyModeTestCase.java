@@ -98,10 +98,8 @@ public class ManagementOnlyModeTestCase extends ContainerResourceMgmtTestBase {
         op.get("port").set(TEST_PORT);
         result = executeOperation(op);
 
-        op = createOpNode("subsystem=web/connector=test", ADD);
+        op = createOpNode("subsystem=undertow/listener=test", ADD);
         op.get("socket-binding").set("test-binding");
-        op.get("protocol").set("HTTP/1.1");
-        op.get("scheme").set("http");
         result = executeOperation(op);
 
         // restart the server back to normal mode
@@ -131,7 +129,7 @@ public class ManagementOnlyModeTestCase extends ContainerResourceMgmtTestBase {
                 "http", url.getHost(), TEST_PORT, "/").toString()));
 
         // remove the conector
-        op = createOpNode("subsystem=web/connector=test", REMOVE);
+        op = createOpNode("subsystem=undertow/listener=test", REMOVE);
         result = executeOperation(op);
         op = createOpNode("socket-binding-group=standard-sockets/socket-binding=test-binding", REMOVE);
         result = executeOperation(op);

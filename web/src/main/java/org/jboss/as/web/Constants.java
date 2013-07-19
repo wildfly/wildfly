@@ -128,7 +128,7 @@ public interface Constants {
     String MAX_TIME = "maxTime";
     String REQUEST_COUNT = "requestCount";
 
-    String LOAD_TIME ="load-time";
+    String LOAD_TIME = "load-time";
     String MIN_TIME = "min-time";
     String MODULE = "module";
     String CLASS_NAME = "class-name";

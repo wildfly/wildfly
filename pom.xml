@@ -159,7 +159,6 @@
         <version.org.jboss.arquillian.core>1.0.3.Final</version.org.jboss.arquillian.core>
         <version.org.jboss.arquillian.osgi>2.0.0.CR3</version.org.jboss.arquillian.osgi>
         <version.org.jboss.as.console>2.0.0.Beta1</version.org.jboss.as.console>
-        <version.org.jboss.as.jbossweb-native>2.0.10.Final</version.org.jboss.as.jbossweb-native>
         <version.org.jboss.byteman>2.0.1</version.org.jboss.byteman>
         <version.org.jboss.classfilewriter>1.0.4.Final</version.org.jboss.classfilewriter>
         <version.org.jboss.common.jboss-common-beans>1.1.0.Final</version.org.jboss.common.jboss-common-beans>
@@ -212,8 +211,6 @@
         <version.org.jboss.spec.javax.rmi.jboss-rmi-api_1.0_spec>1.0.4.Final</version.org.jboss.spec.javax.rmi.jboss-rmi-api_1.0_spec>
         <version.org.jboss.spec.javax.security.auth.message.jboss-jaspi-api_1.0_spec>1.0.1.Final</version.org.jboss.spec.javax.security.auth.message.jboss-jaspi-api_1.0_spec>
         <version.org.jboss.spec.javax.security.jacc.jboss-jacc-api_1.4_spec>1.0.2.Final</version.org.jboss.spec.javax.security.jacc.jboss-jacc-api_1.4_spec>
-        <!-- needs to be removed when we swithc to undetow fully -->
-        <version.org.jboss.spec.javax.servlet.jboss-servlet-api_3.0_spec>1.0.2.Final</version.org.jboss.spec.javax.servlet.jboss-servlet-api_3.0_spec>
         <version.org.jboss.spec.javax.servlet.jboss-servlet-api_3.1_spec>1.0.0.Beta1</version.org.jboss.spec.javax.servlet.jboss-servlet-api_3.1_spec>
         <version.org.jboss.spec.javax.servlet.jsp.jboss-jsp-api_2.2_spec>1.0.1.Final</version.org.jboss.spec.javax.servlet.jsp.jboss-jsp-api_2.2_spec>
         <version.org.jboss.spec.javax.servlet.jstl.jboss-jstl-api_1.2_spec>1.0.3.Final</version.org.jboss.spec.javax.servlet.jstl.jboss-jstl-api_1.2_spec>
@@ -225,7 +222,6 @@
         <version.org.jboss.staxmapper>1.1.0.Final</version.org.jboss.staxmapper>
         <version.org.jboss.stdio>1.0.2.GA</version.org.jboss.stdio>
         <version.org.jboss.threads>2.1.0.Final</version.org.jboss.threads>
-        <version.org.jboss.web>8.0.0.Alpha1</version.org.jboss.web>
         <version.org.jboss.web.jasper-jdt>7.0.3.Final</version.org.jboss.web.jasper-jdt>
         <version.org.jboss.weld.weld>2.0.3.Final</version.org.jboss.weld.weld>
         <version.org.jboss.weld.weld-api>2.0.SP1</version.org.jboss.weld.weld-api>
@@ -820,13 +816,13 @@
             <dependency>
                 <groupId>org.wildfly</groupId>
                 <artifactId>wildfly-build</artifactId>
-                <exclusions>
+                <!--<exclusions>
                     <exclusion>
                         <groupId>org.jboss.spec.javax.servlet</groupId>
                         <artifactId>jboss-servlet-api_2.5_spec</artifactId>
                     </exclusion>
                 </exclusions>
-                <type>pom</type>
+                --><type>pom</type>
                 <version>${project.version}</version>
             </dependency>
 
@@ -887,12 +883,6 @@
             <dependency>
                 <groupId>org.wildfly</groupId>
                 <artifactId>wildfly-clustering-singleton</artifactId>
-                <version>${project.version}</version>
-            </dependency>
-
-            <dependency>
-                <groupId>org.wildfly</groupId>
-                <artifactId>wildfly-clustering-web-catalina</artifactId>
                 <version>${project.version}</version>
             </dependency>
 
@@ -4935,6 +4925,10 @@
                         <groupId>org.jboss.spec.javax.servlet</groupId>
                         <artifactId>jboss-servlet-api_3.0_spec</artifactId>
                     </exclusion>
+                    <exclusion>
+                        <groupId>org.jboss.web</groupId>
+                        <artifactId>jbossweb</artifactId>
+                    </exclusion>
                 </exclusions>
             </dependency>
 
@@ -4960,6 +4954,12 @@
                 <groupId>org.jboss.security</groupId>
                 <artifactId>jboss-negotiation-spnego</artifactId>
                 <version>${version.org.jboss.security.jboss-negotiation}</version>
+                <exclusions>
+                    <exclusion>
+                        <groupId>org.jboss.web</groupId>
+                        <artifactId>jbossweb</artifactId>
+                    </exclusion>
+                </exclusions>
             </dependency>
 
             <dependency>
@@ -5086,14 +5086,6 @@
                 </exclusions>
             </dependency>
 
-            <!-- TODO This is workaround until all deps are in sync with 3.1 -->
-            <dependency>
-                <groupId>org.jboss.spec.javax.servlet</groupId>
-                <artifactId>jboss-servlet-api_3.0_spec</artifactId>
-                <version>${version.org.jboss.spec.javax.servlet.jboss-servlet-api_3.0_spec}</version>
-                <scope>provided</scope>
-            </dependency>
-
             <dependency>
                 <groupId>org.jboss.spec.javax.servlet</groupId>
                 <artifactId>jboss-servlet-api_3.1_spec</artifactId>
@@ -5182,104 +5174,24 @@
                 <groupId>org.jboss.metadata</groupId>
                 <artifactId>jboss-metadata-common</artifactId>
                 <version>${version.org.jboss.metadata}</version>
-                <exclusions>
-                    <exclusion>
-                        <groupId>org.jboss</groupId>
-                        <artifactId>jboss-common-core</artifactId>
-                    </exclusion>
-                    <exclusion>
-                        <groupId>org.jboss.logging</groupId>
-                        <artifactId>jboss-logging-spi</artifactId>
-                    </exclusion>
-                    <exclusion>
-                        <groupId>org.jboss.javaee</groupId>
-                        <artifactId>jboss-ejb-api</artifactId>
-                    </exclusion>
-                    <exclusion>
-                        <groupId>org.jboss.spec.javax.annotation</groupId>
-                        <artifactId>jboss-annotations-api_1.1_spec</artifactId>
-                    </exclusion>
-                    <exclusion>
-                        <groupId>org.jboss.ws</groupId>
-                        <artifactId>jbossws-spi</artifactId>
-                    </exclusion>
-                    <exclusion>
-                        <groupId>org.hibernate</groupId>
-                        <artifactId>ejb3-persistence</artifactId>
-                    </exclusion>
-                    <exclusion>
-                        <groupId>org.jboss.javaee</groupId>
-                        <artifactId>jboss-jms-api</artifactId>
-                    </exclusion>
-                    <exclusion>
-                        <groupId>apache-xerces</groupId>
-                        <artifactId>xml-apis</artifactId>
-                    </exclusion>
-                    <exclusion>
-                        <groupId>org.jboss</groupId>
-                        <artifactId>jboss-reflect</artifactId>
-                    </exclusion>
-                    <exclusion>
-                        <groupId>sun-jaxb</groupId>
-                        <artifactId>jaxb-api</artifactId>
-                    </exclusion>
-                </exclusions>
             </dependency>
 
             <dependency>
                <groupId>org.jboss.metadata</groupId>
                <artifactId>jboss-metadata-ear</artifactId>
                <version>${version.org.jboss.metadata}</version>
-               <exclusions>
-                    <exclusion>
-                        <groupId>org.jboss</groupId>
-                        <artifactId>jboss-common-core</artifactId>
-                    </exclusion>
-                    <exclusion>
-                        <groupId>org.jboss.logging</groupId>
-                        <artifactId>jboss-logging-spi</artifactId>
-                    </exclusion>
-               </exclusions>
             </dependency>
 
             <dependency>
                <groupId>org.jboss.metadata</groupId>
                <artifactId>jboss-metadata-ejb</artifactId>
                <version>${version.org.jboss.metadata}</version>
-               <exclusions>
-                   <exclusion>
-                       <groupId>org.jboss</groupId>
-                       <artifactId>jbossxb</artifactId>
-                   </exclusion>
-               </exclusions>
             </dependency>
 
             <dependency>
                <groupId>org.jboss.metadata</groupId>
                <artifactId>jboss-metadata-web</artifactId>
                <version>${version.org.jboss.metadata}</version>
-               <exclusions>
-                    <exclusion>
-                        <groupId>org.jboss</groupId>
-                        <artifactId>jboss-common-core</artifactId>
-                    </exclusion>
-                    <exclusion>
-                        <groupId>org.jboss.logging</groupId>
-                        <artifactId>jboss-logging-spi</artifactId>
-                    </exclusion>
-                    <exclusion>
-                        <groupId>org.jboss.ejb3</groupId>
-                        <artifactId>jboss-ejb3-ext-api</artifactId>
-                    </exclusion>
-                    <exclusion>
-                        <groupId>jboss.web</groupId>
-                        <artifactId>servlet-api</artifactId>
-                    </exclusion>
-                   <exclusion>
-                        <groupId>org.jboss.spec.javax.servlet</groupId>
-                        <artifactId>jboss-servlet-api_3.0_spec</artifactId>
-                    </exclusion>
-               </exclusions>
             </dependency>
 
             <dependency>
@@ -5317,12 +5229,6 @@
                 <groupId>org.eclipse.jdt.core.compiler</groupId>
                 <artifactId>ecj</artifactId>
                 <version>${version.org.eclipse.jdt.core.compiler}</version>
-            </dependency>
-
-            <dependency>
-                <groupId>org.jboss.web</groupId>
-                <artifactId>jbossweb</artifactId>
-                <version>${version.org.jboss.web}</version>
             </dependency>
 
             <dependency>
@@ -5379,10 +5285,6 @@
                     <exclusion>
                         <groupId>org.jboss.weld</groupId>
                         <artifactId>weld-api</artifactId>
-                    </exclusion>
-                    <exclusion>
-                        <groupId>org.jboss.weld</groupId>
-                        <artifactId>weld-build-config</artifactId>
                     </exclusion>
                     <exclusion>
                         <groupId>org.jboss.weld</groupId>

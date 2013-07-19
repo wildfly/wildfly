@@ -22,14 +22,11 @@
 
 package org.jboss.as.web;
 
-import org.jboss.as.controller.ReloadRequiredRemoveStepHandler;
-import org.jboss.as.controller.ReloadRequiredWriteAttributeHandler;
+import org.jboss.as.controller.ModelOnlyResourceDefinition;
 import org.jboss.as.controller.SimpleAttributeDefinition;
 import org.jboss.as.controller.SimpleAttributeDefinitionBuilder;
-import org.jboss.as.controller.SimpleResourceDefinition;
 import org.jboss.as.controller.operations.validation.StringLengthValidator;
 import org.jboss.as.controller.registry.AttributeAccess;
-import org.jboss.as.controller.registry.ManagementResourceRegistration;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.ModelType;
 
@@ -37,9 +34,7 @@ import org.jboss.dmr.ModelType;
  * @author Tomaz Cerar
  * @created 23.2.12 16:34
  */
-public class WebAccessLogDirectoryDefinition extends SimpleResourceDefinition {
-    public static final WebAccessLogDirectoryDefinition INSTANCE = new WebAccessLogDirectoryDefinition();
-
+public class WebAccessLogDirectoryDefinition extends ModelOnlyResourceDefinition {
     protected static final SimpleAttributeDefinition RELATIVE_TO =
             new SimpleAttributeDefinitionBuilder(Constants.RELATIVE_TO, ModelType.STRING)
                     .setXmlName(Constants.RELATIVE_TO)
@@ -48,8 +43,6 @@ public class WebAccessLogDirectoryDefinition extends SimpleResourceDefinition {
                     .setValidator(new StringLengthValidator(1, true))
                     .setDefaultValue(new ModelNode("jboss.server.log.dir"))
                     .build();
-
-
     protected static final SimpleAttributeDefinition PATH =
             new SimpleAttributeDefinitionBuilder(Constants.PATH, ModelType.STRING)
                     .setXmlName(Constants.PATH)
@@ -58,18 +51,12 @@ public class WebAccessLogDirectoryDefinition extends SimpleResourceDefinition {
                     .setFlags(AttributeAccess.Flag.RESTART_ALL_SERVICES)
                     .setValidator(new StringLengthValidator(1, true, true))
                     .build();
-
+    static final WebAccessLogDirectoryDefinition INSTANCE = new WebAccessLogDirectoryDefinition();
 
     private WebAccessLogDirectoryDefinition() {
         super(WebExtension.DIRECTORY_PATH,
                 WebExtension.getResourceDescriptionResolver("virtual-server.access-log.directory"),
-                WebAccessLogDirectoryAdd.INSTANCE,
-                new ReloadRequiredRemoveStepHandler());
+                RELATIVE_TO, PATH);
     }
 
-    @Override
-    public void registerAttributes(ManagementResourceRegistration directory) {
-        directory.registerReadWriteAttribute(RELATIVE_TO, null, new ReloadRequiredWriteAttributeHandler(RELATIVE_TO));
-        directory.registerReadWriteAttribute(PATH, null, new ReloadRequiredWriteAttributeHandler(PATH));
-    }
 }

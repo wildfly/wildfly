@@ -2200,16 +2200,6 @@
       </licenses>
     </dependency>
     <dependency>
-      <groupId>org.wildfly</groupId>
-      <artifactId>jbossweb-native</artifactId>
-      <licenses>
-        <license>
-          <name>GNU Lesser General Public License, Version 2.1</name>
-          <url>http://repository.jboss.org/licenses/lgpl-2.1.txt</url>
-        </license>
-      </licenses>
-    </dependency>
-    <dependency>
       <groupId>org.jboss.classfilewriter</groupId>
       <artifactId>jboss-classfilewriter</artifactId>
       <licenses>
@@ -2484,16 +2474,6 @@
     <dependency>
       <groupId>org.jboss.mod_cluster</groupId>
       <artifactId>mod_cluster-container-catalina</artifactId>
-      <licenses>
-        <license>
-          <name>GNU Lesser General Public License, Version 2.1</name>
-          <url>http://repository.jboss.org/licenses/lgpl-2.1.txt</url>
-        </license>
-      </licenses>
-    </dependency>
-    <dependency>
-      <groupId>org.jboss.mod_cluster</groupId>
-      <artifactId>mod_cluster-container-jbossweb</artifactId>
       <licenses>
         <license>
           <name>GNU Lesser General Public License, Version 2.1</name>
@@ -3045,16 +3025,6 @@
     <dependency>
       <groupId>org.jboss.web</groupId>
       <artifactId>jasper-jdt</artifactId>
-      <licenses>
-        <license>
-          <name>GNU Lesser General Public License, Version 2.1</name>
-          <url>http://repository.jboss.org/licenses/lgpl-2.1.txt</url>
-        </license>
-      </licenses>
-    </dependency>
-    <dependency>
-      <groupId>org.jboss.web</groupId>
-      <artifactId>jbossweb</artifactId>
       <licenses>
         <license>
           <name>GNU Lesser General Public License, Version 2.1</name>

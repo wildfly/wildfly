@@ -22,22 +22,18 @@
 
 package org.jboss.as.web;
 
-import org.jboss.as.controller.ReloadRequiredRemoveStepHandler;
-import org.jboss.as.controller.ReloadRequiredWriteAttributeHandler;
+import org.jboss.as.controller.ModelOnlyResourceDefinition;
 import org.jboss.as.controller.SimpleAttributeDefinition;
 import org.jboss.as.controller.SimpleAttributeDefinitionBuilder;
-import org.jboss.as.controller.SimpleResourceDefinition;
 import org.jboss.as.controller.operations.validation.StringLengthValidator;
 import org.jboss.as.controller.registry.AttributeAccess;
-import org.jboss.as.controller.registry.ManagementResourceRegistration;
 import org.jboss.dmr.ModelType;
 
 /**
  * @author Tomaz Cerar
  * @created 23.2.12 17:32
  */
-public class WebReWriteConditionDefinition extends SimpleResourceDefinition {
-    public static final WebReWriteConditionDefinition INSTANCE = new WebReWriteConditionDefinition();
+public class WebReWriteConditionDefinition extends ModelOnlyResourceDefinition {
 
     protected static final SimpleAttributeDefinition TEST =
             new SimpleAttributeDefinitionBuilder(Constants.TEST, ModelType.STRING, false)
@@ -45,15 +41,12 @@ public class WebReWriteConditionDefinition extends SimpleResourceDefinition {
                     .setFlags(AttributeAccess.Flag.RESTART_ALL_SERVICES)
                     .setValidator(new StringLengthValidator(1, false))
                     .build();
-
     protected static final SimpleAttributeDefinition PATTERN =
             new SimpleAttributeDefinitionBuilder(Constants.PATTERN, ModelType.STRING, false)
                     .setAllowExpression(true)
                     .setFlags(AttributeAccess.Flag.RESTART_ALL_SERVICES)
                     .setValidator(new StringLengthValidator(1, false, true))
                     .build();
-
-
     protected static final SimpleAttributeDefinition FLAGS =
             new SimpleAttributeDefinitionBuilder(Constants.FLAGS, ModelType.STRING, false)
                     .setAllowExpression(true)
@@ -61,20 +54,14 @@ public class WebReWriteConditionDefinition extends SimpleResourceDefinition {
                     .setFlags(AttributeAccess.Flag.RESTART_ALL_SERVICES)
                     .setValidator(new StringLengthValidator(1, false, true))
                     .build();
+    protected static final SimpleAttributeDefinition[] ATTRIBUTES = {TEST, PATTERN, FLAGS};
 
-    protected static final SimpleAttributeDefinition[] ATTRIBUTES = { TEST, PATTERN, FLAGS };
+    public static final WebReWriteConditionDefinition INSTANCE = new WebReWriteConditionDefinition();
 
     private WebReWriteConditionDefinition() {
         super(WebExtension.REWRITECOND_PATH,
                 WebExtension.getResourceDescriptionResolver("virtual-server.rewrite.condition"),
-                WebReWriteConditionAdd.INSTANCE,
-                new ReloadRequiredRemoveStepHandler());
+                ATTRIBUTES);
     }
 
-    @Override
-    public void registerAttributes(ManagementResourceRegistration rewritecondition) {
-        rewritecondition.registerReadWriteAttribute(PATTERN, null, new ReloadRequiredWriteAttributeHandler(PATTERN));
-        rewritecondition.registerReadWriteAttribute(TEST, null, new ReloadRequiredWriteAttributeHandler(TEST));
-        rewritecondition.registerReadWriteAttribute(FLAGS, null, new ReloadRequiredWriteAttributeHandler(FLAGS));
-    }
 }
