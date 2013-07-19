@@ -20,7 +20,7 @@
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
 
-package org.jboss.as.modcluster;
+package org.wildfly.extension.mod_cluster;
 
 
 
@@ -31,7 +31,7 @@ import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.operations.validation.ParameterValidator;
 import org.jboss.dmr.ModelNode;
 
-import static org.jboss.as.modcluster.ModClusterMessages.MESSAGES;
+import static org.wildfly.extension.mod_cluster.ModClusterMessages.MESSAGES;
 
 /**
  * @author Jean-Frederic Clere
