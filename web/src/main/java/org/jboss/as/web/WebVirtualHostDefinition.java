@@ -23,10 +23,9 @@
 package org.jboss.as.web;
 
 import org.jboss.as.controller.ListAttributeDefinition;
-import org.jboss.as.controller.ReloadRequiredWriteAttributeHandler;
+import org.jboss.as.controller.ModelOnlyResourceDefinition;
 import org.jboss.as.controller.SimpleAttributeDefinition;
 import org.jboss.as.controller.SimpleAttributeDefinitionBuilder;
-import org.jboss.as.controller.SimpleResourceDefinition;
 import org.jboss.as.controller.StringListAttributeDefinition;
 import org.jboss.as.controller.operations.validation.StringLengthValidator;
 import org.jboss.as.controller.registry.AttributeAccess;
@@ -38,8 +37,7 @@ import org.jboss.dmr.ModelType;
  * @author Tomaz Cerar
  * @created 23.2.12 16:17
  */
-public class WebVirtualHostDefinition extends SimpleResourceDefinition {
-    public static final WebVirtualHostDefinition INSTANCE = new WebVirtualHostDefinition();
+public class WebVirtualHostDefinition extends ModelOnlyResourceDefinition {
 
     protected static final SimpleAttributeDefinition NAME =
             new SimpleAttributeDefinitionBuilder(Constants.NAME, ModelType.STRING, false)
@@ -47,7 +45,6 @@ public class WebVirtualHostDefinition extends SimpleResourceDefinition {
                     .setAllowNull(true)      // todo should be false, but 'add' won't validate then
                     .setFlags(AttributeAccess.Flag.RESTART_RESOURCE_SERVICES)
                     .build();
-
     protected static final ListAttributeDefinition ALIAS =
             new StringListAttributeDefinition.Builder(Constants.ALIAS)
                     .setXmlName(Constants.ALIAS)
@@ -68,23 +65,18 @@ public class WebVirtualHostDefinition extends SimpleResourceDefinition {
                     .setFlags(AttributeAccess.Flag.RESTART_RESOURCE_SERVICES)
                     .setDefaultValue(new ModelNode(false))
                     .build();
-
+    static final WebVirtualHostDefinition INSTANCE = new WebVirtualHostDefinition();
 
     private WebVirtualHostDefinition() {
         super(WebExtension.HOST_PATH,
                 WebExtension.getResourceDescriptionResolver(Constants.VIRTUAL_SERVER),
-                WebVirtualHostAdd.INSTANCE,
-                WebVirtualHostRemove.INSTANCE);
+                new AddressToNameAddAdaptor(ALIAS, ENABLE_WELCOME_ROOT, DEFAULT_WEB_MODULE),
+                ALIAS, ENABLE_WELCOME_ROOT, DEFAULT_WEB_MODULE);
     }
 
     @Override
     public void registerAttributes(ManagementResourceRegistration hosts) {
+        super.registerAttributes(hosts);
         hosts.registerReadOnlyAttribute(NAME, null);
-        hosts.registerReadWriteAttribute(ALIAS, null, new ReloadRequiredWriteAttributeHandler(ALIAS));
-        // They excluded each other...
-        hosts.registerReadWriteAttribute(ENABLE_WELCOME_ROOT, null, WriteEnableWelcomeRoot.INSTANCE);
-        hosts.registerReadWriteAttribute(DEFAULT_WEB_MODULE, null, WriteDefaultWebModule.INSTANCE);
-
-
     }
 }

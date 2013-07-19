@@ -34,7 +34,7 @@ import org.jboss.dmr.ModelNode;
 /**
  * @author Jean-Frederic Clere
  */
-public class WebValveParamAdd implements OperationStepHandler{
+public class WebValveParamAdd implements OperationStepHandler {
 
     static final WebValveParamAdd INSTANCE = new WebValveParamAdd();
 

@@ -43,6 +43,11 @@ public class ModelOnlyResourceDefinition extends SimpleResourceDefinition {
         this.attributes = attributes;
     }
 
+    public ModelOnlyResourceDefinition(PathElement pathElement, ResourceDescriptionResolver descriptionResolver, ModelOnlyAddStepHandler addStepHandler, AttributeDefinition... attributes) {
+        super(pathElement, descriptionResolver, addStepHandler, ModelOnlyRemoveStepHandler.INSTANCE);
+        this.attributes = attributes;
+    }
+
     @Override
     public void registerAttributes(ManagementResourceRegistration resourceRegistration) {
         OperationStepHandler writeHandler = new ModelOnlyWriteAttributeHandler(attributes);

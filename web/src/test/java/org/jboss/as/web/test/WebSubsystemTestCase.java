@@ -54,6 +54,9 @@ import java.util.List;
 import org.jboss.as.controller.ModelVersion;
 import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.PathElement;
+import org.jboss.as.controller.ProcessType;
+import org.jboss.as.controller.RunningMode;
+import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
 import org.jboss.as.controller.transform.OperationTransformer.TransformedOperation;
 import org.jboss.as.model.test.FailedOperationTransformationConfig;
 import org.jboss.as.model.test.ModelFixer;
@@ -73,7 +76,6 @@ import org.junit.Assert;
 import org.junit.Test;
 
 /**
- *
  * @author Jean-Frederic Clere
  * @author Kabir Khan
  */
@@ -87,11 +89,22 @@ public class WebSubsystemTestCase extends AbstractSubsystemBaseTest {
         super(WebExtension.SUBSYSTEM_NAME, new WebExtension());
     }
 
+    private static FailedOperationTransformationConfig.ChainedConfig createChainedConfig(String[] rejectedExpression, String[] newAttributes) {
+        String[] allAttributes = new String[rejectedExpression.length + newAttributes.length];
+        System.arraycopy(rejectedExpression, 0, allAttributes, 0, rejectedExpression.length);
+        System.arraycopy(newAttributes, 0, allAttributes, rejectedExpression.length, newAttributes.length);
+
+        return FailedOperationTransformationConfig.ChainedConfig.createBuilder(allAttributes)
+                .addConfig(new FailedOperationTransformationConfig.RejectExpressionsConfig(rejectedExpression))
+                .addConfig(new FailedOperationTransformationConfig.NewAttributesConfig(newAttributes)).build();
+    }
+
     @Override
     protected String getSubsystemXml() throws IOException {
         return readResource("subsystem.xml");
 
     }
+
     @Override
     protected String getSubsystemXml(String configId) throws IOException {
         return readResource(configId);
@@ -99,7 +112,18 @@ public class WebSubsystemTestCase extends AbstractSubsystemBaseTest {
 
     @Override
     protected AdditionalInitialization createAdditionalInitialization() {
-        return AdditionalInitialization.MANAGEMENT;
+        return new AdditionalInitialization() {
+
+            @Override
+            protected ProcessType getProcessType() {
+                return ProcessType.HOST_CONTROLLER;
+            }
+
+            @Override
+            protected RunningMode getRunningMode() {
+                return RunningMode.ADMIN_ONLY;
+            }
+        };
     }
 
     @Override
@@ -109,7 +133,7 @@ public class WebSubsystemTestCase extends AbstractSubsystemBaseTest {
 
     @Test
     public void testAliases() throws Exception {
-        KernelServices services = createKernelServicesBuilder(null)
+        KernelServices services = createKernelServicesBuilder(createAdditionalInitialization())
                 .setSubsystemXmlResource("subsystem.xml")
                 .build();
         ModelNode noAliasModel = services.readWholeModel();
@@ -124,12 +148,12 @@ public class WebSubsystemTestCase extends AbstractSubsystemBaseTest {
     public void testTransformation_1_1_0_JBPAPP_9314() throws Exception {
         String subsystemXml = readResource("subsystem-1.1.0-JBPAPP-9314.xml");
         ModelVersion modelVersion = ModelVersion.create(1, 1, 0);
-        KernelServicesBuilder builder = createKernelServicesBuilder(null)
+        KernelServicesBuilder builder = createKernelServicesBuilder(createAdditionalInitialization())
                 .setSubsystemXml(subsystemXml);
 
-        builder.createLegacyKernelServicesBuilder(null, ModelTestControllerVersion.V7_1_2_FINAL, modelVersion)
-            .addMavenResourceURL("org.jboss.as:jboss-as-web:7.1.2.Final")
-            .skipReverseControllerCheck();
+        builder.createLegacyKernelServicesBuilder(createAdditionalInitialization(), ModelTestControllerVersion.V7_1_2_FINAL, modelVersion)
+                .addMavenResourceURL("org.jboss.as:jboss-as-web:7.1.2.Final")
+                .skipReverseControllerCheck();
 
         KernelServices mainServices = builder.build();
         Assert.assertTrue(mainServices.isSuccessfulBoot());
@@ -162,8 +186,10 @@ public class WebSubsystemTestCase extends AbstractSubsystemBaseTest {
 
         //This legacy subsystem references classes in the removed org.jboss.as.controller.alias package,
         //which is why we need to include the jboss-as-controller artifact.
-        builder.createLegacyKernelServicesBuilder(null, controllerVersion, modelVersion)
-                .addMavenResourceURL("org.jboss.as:jboss-as-web:" + controllerVersion.getMavenGavVersion());
+        builder.createLegacyKernelServicesBuilder(createAdditionalInitialization(), controllerVersion, modelVersion)
+                .addMavenResourceURL("org.jboss.as:jboss-as-web:" + controllerVersion.getMavenGavVersion())
+                .setExtensionClassName("org.jboss.as.web.WebExtension")
+                .configureReverseControllerCheck(createAdditionalInitialization(), null);
 
         KernelServices mainServices = builder.build();
         KernelServices legacyServices = mainServices.getLegacyServices(modelVersion);
@@ -179,44 +205,44 @@ public class WebSubsystemTestCase extends AbstractSubsystemBaseTest {
                 new FailedOperationTransformationConfig()
                         // valve
                         .addFailedAttribute(subsystem.append(VALVE_PATH), REJECTED_RESOURCE)
-                        // configuration=container
+                                // configuration=container
                         .addFailedAttribute(subsystem.append(PathElement.pathElement("configuration", "container")),
                                 new FailedOperationTransformationConfig.RejectExpressionsConfig("welcome-file"))
-                        // configuration=static=resources
+                                // configuration=static=resources
                         .addFailedAttribute(subsystem.append(PathElement.pathElement("configuration", "static-resources")),
                                 new FailedOperationTransformationConfig.RejectExpressionsConfig("listings", "sendfile", "file-encoding",
                                         "read-only", "webdav", "secret", "max-depth", "disabled"))
-                        // configuration=jsp-configuration
+                                // configuration=jsp-configuration
                         .addFailedAttribute(subsystem.append(PathElement.pathElement("configuration", "jsp-configuration")),
                                 createChainedConfig(
-                                        new String[] {
+                                        new String[]{
                                                 "development", "disabled", "keep-generated",
                                                 "trim-spaces", "tag-pooling", "mapped-file", "check-interval", "modification-test-interval",
                                                 "recompile-on-fail", "smap", "dump-smap", "generate-strings-as-char-arrays",
                                                 "error-on-use-bean-invalid-class-attribute", "scratch-dir", "source-vm", "target-vm",
                                                 "java-encoding", "x-powered-by", "display-source-fragment"},
                                         new String[0]))
-                        // connector=http
+                                // connector=http
                         .addFailedAttribute(subsystem.append(PathElement.pathElement("connector", "http")),
                                 new FailedOperationTransformationConfig.RejectExpressionsConfig("socket-binding", "enabled", "enable-lookups",
                                         "proxy-name", "proxy-port", "max-post-size", "max-save-post-size", "redirect-port",
                                         "max-connections", "executor"))
-                        // Connector https
+                                // Connector https
                         .addFailedAttribute(subsystem.append(PathElement.pathElement("connector", "https"), PathElement.pathElement("configuration", "ssl")),
                                 new FailedOperationTransformationConfig.NewAttributesConfig("ssl-protocol")
                         )
                         .addFailedAttribute(subsystem.append(PathElement.pathElement("connector", "https"), PathElement.pathElement("configuration", "ssl")),
                                 new FailedOperationTransformationConfig.RejectExpressionsConfig("certificate-key-file", "ca-certificate-file", "key-alias",
                                         "password", "cipher-suite", "protocol", "verify-client", "verify-depth", "certificate-file", "ca-revocation-url",
-                                        "ca-certificate-password", "keystore-type", "truststore-type", "session-cache-size", "session-timeout", "ssl-protocol" )
+                                        "ca-certificate-password", "keystore-type", "truststore-type", "session-cache-size", "session-timeout", "ssl-protocol")
 
                         )
 
 
-                        // Connector http-vs
+                                // Connector http-vs
                         .addFailedAttribute(subsystem.append(PathElement.pathElement("connector", "http-vs")),
                                 new FailedOperationTransformationConfig.NewAttributesConfig("virtual-server"))
-                        // virtual-server=default-host
+                                // virtual-server=default-host
                         .addFailedAttribute(defaultHost.append(PathElement.pathElement("rewrite", "myrewrite")),
                                 new FailedOperationTransformationConfig.RejectExpressionsConfig("flags", "pattern", "substitution"))
                         .addFailedAttribute(defaultHost.append(PathElement.pathElement("rewrite", "with-conditions")),
@@ -225,7 +251,7 @@ public class WebSubsystemTestCase extends AbstractSubsystemBaseTest {
                                 new FailedOperationTransformationConfig.RejectExpressionsConfig("flags", "pattern", "test"))
                         .addFailedAttribute(defaultHost.append(PathElement.pathElement("configuration", "sso")),
                                 new FailedOperationTransformationConfig.RejectExpressionsConfig("reauthenticate", "domain"))
-                );
+        );
 
     }
 
@@ -242,13 +268,15 @@ public class WebSubsystemTestCase extends AbstractSubsystemBaseTest {
     private void testTransformation_1_1_0(ModelTestControllerVersion controllerVersion) throws Exception {
         String subsystemXml = readResource("subsystem-1.1.0.xml");
         ModelVersion modelVersion = ModelVersion.create(1, 1, 0);
-        KernelServicesBuilder builder = createKernelServicesBuilder(AdditionalInitialization.MANAGEMENT)
+        KernelServicesBuilder builder = createKernelServicesBuilder(createAdditionalInitialization())
                 .setSubsystemXml(subsystemXml);
 
         //This legacy subsystem references classes in the removed org.jboss.as.controller.alias package,
         //which is why we need to include the jboss-as-controller artifact.
-        builder.createLegacyKernelServicesBuilder(null, controllerVersion, modelVersion)
-            .addMavenResourceURL("org.jboss.as:jboss-as-web:" + controllerVersion.getMavenGavVersion());
+        builder.createLegacyKernelServicesBuilder(createAdditionalInitialization(), controllerVersion, modelVersion)
+                .addMavenResourceURL("org.jboss.as:jboss-as-web:" + controllerVersion.getMavenGavVersion())
+                .setExtensionClassName("org.jboss.as.web.WebExtension")
+                .configureReverseControllerCheck(createAdditionalInitialization(), null);
 
         KernelServices mainServices = builder.build();
         KernelServices legacyServices = mainServices.getLegacyServices(modelVersion);
@@ -302,7 +330,7 @@ public class WebSubsystemTestCase extends AbstractSubsystemBaseTest {
 
         //Now test that adding the connector with virtual server fails in the legacy controller
         ModelNode connectorAdd = createOperation(ADD, SUBSYSTEM, WebExtension.SUBSYSTEM_NAME, Constants.CONNECTOR, "test");
-        for (String key: connectorValues.keys()) {
+        for (String key : connectorValues.keys()) {
             connectorAdd.get(key).set(connectorValues.get(key));
         }
         checkOutcome(mainServices.executeOperation(connectorAdd));
@@ -316,7 +344,7 @@ public class WebSubsystemTestCase extends AbstractSubsystemBaseTest {
 
         // First, in add
         connectorAdd = createOperation(ADD, SUBSYSTEM, WebExtension.SUBSYSTEM_NAME, Constants.CONNECTOR, "as75871");
-        for (String key: connectorValues.keys()) {
+        for (String key : connectorValues.keys()) {
             if (!key.equals(REDIRECT_PORT) && !key.equals(VIRTUAL_SERVER)) {
                 connectorAdd.get(key).set(connectorValues.get(key));
             }
@@ -417,31 +445,31 @@ public class WebSubsystemTestCase extends AbstractSubsystemBaseTest {
         Assert.assertEquals(value2, readAttribute(services, attributeName, targetAddr));
     }
 
-    private void writeAttribute(KernelServices services, String name, String value, String...address) throws Exception {
+    private void writeAttribute(KernelServices services, String name, String value, String... address) throws Exception {
         ModelNode op = createOperation(WRITE_ATTRIBUTE_OPERATION, address);
         op.get(NAME).set(name);
         op.get(VALUE).set(value);
         services.executeForResult(op);
     }
 
-    private String readAttribute(KernelServices services, String name, String...address) throws Exception {
+    private String readAttribute(KernelServices services, String name, String... address) throws Exception {
         ModelNode op = createOperation(READ_ATTRIBUTE_OPERATION, address);
         op.get(NAME).set(name);
-        ModelNode result =  services.executeForResult(op);
+        ModelNode result = services.executeForResult(op);
         if (result.isDefined()) {
             return result.asString();
         }
         return null;
     }
 
-    private ModelNode createOperation(String operationName, String...address) {
+    private ModelNode createOperation(String operationName, String... address) {
         ModelNode operation = new ModelNode();
         operation.get(OP).set(operationName);
         if (address.length > 0) {
             if (address.length % 2 != 0) {
                 throw new IllegalArgumentException("Address must be in pairs");
             }
-            for (int i = 0 ; i < address.length ; i+=2) {
+            for (int i = 0; i < address.length; i += 2) {
                 operation.get(OP_ADDR).add(address[i], address[i + 1]);
             }
         } else {
@@ -451,19 +479,16 @@ public class WebSubsystemTestCase extends AbstractSubsystemBaseTest {
         return operation;
     }
 
-
-    private String[] getAddress(String...addr) {
+    private String[] getAddress(String... addr) {
         return addr;
     }
 
-    private static FailedOperationTransformationConfig.ChainedConfig createChainedConfig(String[] rejectedExpression, String[] newAttributes) {
-        String[] allAttributes = new String[rejectedExpression.length + newAttributes.length];
-        System.arraycopy(rejectedExpression, 0, allAttributes, 0, rejectedExpression.length);
-        System.arraycopy(newAttributes, 0, allAttributes, rejectedExpression.length, newAttributes.length);
-
-        return FailedOperationTransformationConfig.ChainedConfig.createBuilder(allAttributes)
-                .addConfig(new FailedOperationTransformationConfig.RejectExpressionsConfig(rejectedExpression))
-                .addConfig(new FailedOperationTransformationConfig.NewAttributesConfig(newAttributes)).build();
+    @Override
+    protected void validateDescribeOperation(KernelServices hc, AdditionalInitialization serverInit, ModelNode expectedModel) throws Exception {
+        final ModelNode operation = createDescribeOperation();
+        final ModelNode result = hc.executeOperation(operation);
+        Assert.assertTrue("The subsystem describe operation must fail",
+                result.hasDefined(ModelDescriptionConstants.FAILURE_DESCRIPTION));
     }
 
     private static class AccessLogPrefixFixer implements ModelFixer {

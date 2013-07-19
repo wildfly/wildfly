@@ -22,16 +22,13 @@
 
 package org.jboss.as.web;
 
-import org.jboss.as.controller.ReloadRequiredRemoveStepHandler;
-import org.jboss.as.controller.ReloadRequiredWriteAttributeHandler;
+import org.jboss.as.controller.ModelOnlyResourceDefinition;
 import org.jboss.as.controller.SimpleAttributeDefinition;
 import org.jboss.as.controller.SimpleAttributeDefinitionBuilder;
-import org.jboss.as.controller.SimpleResourceDefinition;
 import org.jboss.as.controller.operations.validation.IntRangeValidator;
 import org.jboss.as.controller.operations.validation.ModelTypeValidator;
 import org.jboss.as.controller.operations.validation.StringLengthValidator;
 import org.jboss.as.controller.registry.AttributeAccess;
-import org.jboss.as.controller.registry.ManagementResourceRegistration;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.ModelType;
 
@@ -39,8 +36,7 @@ import org.jboss.dmr.ModelType;
  * @author Tomaz Cerar
  * @created 24.2.12 12:26
  */
-public class WebStaticResources extends SimpleResourceDefinition {
-    public static final WebStaticResources INSTANCE = new WebStaticResources();
+public class WebStaticResources extends ModelOnlyResourceDefinition {
 
     protected static final SimpleAttributeDefinition LISTINGS =
             new SimpleAttributeDefinitionBuilder(Constants.LISTINGS, ModelType.BOOLEAN, true)
@@ -110,19 +106,13 @@ public class WebStaticResources extends SimpleResourceDefinition {
             MAX_DEPTH,
             DISABLED
     };
+    public static final WebStaticResources INSTANCE = new WebStaticResources();
 
     private WebStaticResources() {
         super(WebExtension.STATIC_RESOURCES_PATH,
                 WebExtension.getResourceDescriptionResolver("configuration.static"),
-                WebStaticResourcesAdd.INSTANCE,
-                new ReloadRequiredRemoveStepHandler());
+                STATIC_ATTRIBUTES);
     }
 
-    @Override
-    public void registerAttributes(ManagementResourceRegistration resources) {
-        for (SimpleAttributeDefinition def : STATIC_ATTRIBUTES) {
-            resources.registerReadWriteAttribute(def, null, new ReloadRequiredWriteAttributeHandler(def));
-        }
 
-    }
 }

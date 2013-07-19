@@ -23,47 +23,19 @@
 package org.jboss.as.web;
 
 
-import static org.jboss.as.web.Constants.MIME_MAPPING;
-import static org.jboss.as.web.WebMessages.MESSAGES;
-
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.OperationStepHandler;
-import org.jboss.as.controller.PathAddress;
 import org.jboss.dmr.ModelNode;
 
-public class MimeMappingRemove implements OperationStepHandler{
+public class MimeMappingRemove implements OperationStepHandler {
 
     static final MimeMappingRemove INSTANCE = new MimeMappingRemove();
-
-
 
     @Override
     public void execute(OperationContext context, ModelNode operation)
             throws OperationFailedException {
 
-        final ModelNode mimetypes = context.readResourceForUpdate(PathAddress.EMPTY_ADDRESS).getModel().get(MIME_MAPPING);
-        if (operation.hasDefined("name")) {
-            mimetypes.remove(operation.get("name").asString());
-        } else {
-            throw new OperationFailedException(new ModelNode().set(MESSAGES.nameRequiredForRemoveMimeMapping()));
-        }
-
-        if (!context.isBooting() && context.isNormalServer()) {
-            context.addStep(new OperationStepHandler() {
-                @Override
-                public void execute(OperationContext context, ModelNode operation) throws OperationFailedException {
-
-                    context.reloadRequired();
-                    context.completeStep(new OperationContext.RollbackHandler() {
-                        @Override
-                        public void handleRollback(OperationContext context, ModelNode operation) {
-                            context.revertReloadRequired();
-                        }
-                    });
-                }
-            }, OperationContext.Stage.RUNTIME);
-        }
 
         context.stepCompleted();
     }

@@ -26,8 +26,8 @@ import static org.jboss.as.web.WebMessages.MESSAGES;
 
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
-import org.jboss.as.controller.ReloadRequiredWriteAttributeHandler;
 import org.jboss.as.controller.PathAddress;
+import org.jboss.as.controller.ReloadRequiredWriteAttributeHandler;
 import org.jboss.as.controller.registry.Resource;
 import org.jboss.dmr.ModelNode;
 
@@ -43,7 +43,7 @@ public class WriteDefaultWebModule extends ReloadRequiredWriteAttributeHandler {
         super.validateUpdatedModel(context, model);
 
         final ModelNode virtualHost = context.readResource(PathAddress.EMPTY_ADDRESS).getModel();
-        if(virtualHost.hasDefined(Constants.DEFAULT_WEB_MODULE) && virtualHost.hasDefined(Constants.ENABLE_WELCOME_ROOT) && Boolean.parseBoolean(virtualHost.get(Constants.ENABLE_WELCOME_ROOT).toString())) {
+        if (virtualHost.hasDefined(Constants.DEFAULT_WEB_MODULE) && virtualHost.hasDefined(Constants.ENABLE_WELCOME_ROOT) && Boolean.parseBoolean(virtualHost.get(Constants.ENABLE_WELCOME_ROOT).toString())) {
             // That is not supported.
             throw new OperationFailedException(MESSAGES.noWelcomeWebappWithDefaultWebModule());
         }

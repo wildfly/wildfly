@@ -31,10 +31,11 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.VAL
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.WRITE_ATTRIBUTE_OPERATION;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
-import org.jboss.as.controller.Extension;
 import org.jboss.as.controller.ExtensionContext;
 import org.jboss.as.controller.ModelVersion;
 import org.jboss.as.controller.OperationFailedException;
@@ -42,7 +43,7 @@ import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.PathElement;
 import org.jboss.as.controller.SubsystemRegistration;
 import org.jboss.as.controller.descriptions.StandardResourceDescriptionResolver;
-import org.jboss.as.controller.operations.common.GenericSubsystemDescribeHandler;
+import org.jboss.as.controller.extension.AbstractLegacyExtension;
 import org.jboss.as.controller.parsing.ExtensionParsingContext;
 import org.jboss.as.controller.registry.AliasEntry;
 import org.jboss.as.controller.registry.ManagementResourceRegistration;
@@ -63,7 +64,7 @@ import org.jboss.dmr.ModelNode;
  * @author Emanuel Muckenhuber
  * @author Tomaz Cerar
  */
-public class WebExtension implements Extension {
+public class WebExtension extends AbstractLegacyExtension {
     public static final String SUBSYSTEM_NAME = "web";
     public static final PathElement SUBSYSTEM_PATH = PathElement.pathElement(SUBSYSTEM, SUBSYSTEM_NAME);
     public static final PathElement VALVE_PATH = PathElement.pathElement(Constants.VALVE);
@@ -87,22 +88,23 @@ public class WebExtension implements Extension {
     private static final int MANAGEMENT_API_MAJOR_VERSION = 2;
     private static final int MANAGEMENT_API_MINOR_VERSION = 0;
     private static final int MANAGEMENT_API_MICRO_VERSION = 0;
+    private static final String extensionName = "org.jboss.as.web";
+
+    public WebExtension() {
+        super(extensionName, SUBSYSTEM_NAME);
+    }
 
     static StandardResourceDescriptionResolver getResourceDescriptionResolver(final String keyPrefix) {
         String prefix = SUBSYSTEM_NAME + (keyPrefix == null ? "" : "." + keyPrefix);
         return new StandardResourceDescriptionResolver(prefix, RESOURCE_NAME, WebExtension.class.getClassLoader(), true, false);
     }
 
-    /**
-     * {@inheritDoc}
-     */
     @Override
-    public void initialize(ExtensionContext context) {
-
+    protected Set<ManagementResourceRegistration> initializeLegacyModel(ExtensionContext context) {
         final SubsystemRegistration subsystem = context.registerSubsystem(SUBSYSTEM_NAME, MANAGEMENT_API_MAJOR_VERSION,
                 MANAGEMENT_API_MINOR_VERSION, MANAGEMENT_API_MICRO_VERSION);
+
         final ManagementResourceRegistration registration = subsystem.registerSubsystemModel(WebDefinition.INSTANCE);
-        registration.registerOperationHandler(GenericSubsystemDescribeHandler.DEFINITION, GenericSubsystemDescribeHandler.INSTANCE);
         subsystem.registerXMLElementWriter(WebSubsystemParser.getInstance());
 
         // connectors
@@ -143,23 +145,17 @@ public class WebExtension implements Extension {
         registration.registerSubModel(WebContainerDefinition.INSTANCE);
 
 
-        //deployment
-        final ManagementResourceRegistration deployments = subsystem.registerDeploymentModel(WebDeploymentDefinition.INSTANCE);
-        deployments.registerSubModel(WebDeploymentServletDefinition.INSTANCE);
-
         // Global valve.
         registration.registerSubModel(WebValveDefinition.INSTANCE);
 
         if (context.isRegisterTransformers()) {
             registerTransformers_1_1_0(subsystem);
         }
+        return Collections.singleton(registration);
     }
 
-    /**
-     * {@inheritDoc}
-     */
     @Override
-    public void initializeParsers(ExtensionParsingContext context) {
+    protected void initializeLegacyParsers(ExtensionParsingContext context) {
         for (Namespace ns : Namespace.values()) {
             if (ns.getUriString() != null) {
                 context.setSubsystemXmlMapping(SUBSYSTEM_NAME, ns.getUriString(), WebSubsystemParser.getInstance());
@@ -208,23 +204,23 @@ public class WebExtension implements Extension {
                 }, WebConnectorDefinition.REDIRECT_PORT.getName())
                 .end()
                 .addOperationTransformationOverride(UNDEFINE_ATTRIBUTE_OPERATION)
-                    .inheritResourceAttributeDefinitions() // although probably not necessary
-                    .setCustomOperationTransformer(new OperationTransformer() {
-                        @Override
-                        public TransformedOperation transformOperation(TransformationContext context, PathAddress address, ModelNode operation) throws OperationFailedException {
-                            final String attributeName = operation.require(NAME).asString();
-                            if(WebConnectorDefinition.REDIRECT_PORT.getName().equals(attributeName)) {
-                                final ModelNode transformed = new ModelNode();
-                                transformed.get(OP).set(WRITE_ATTRIBUTE_OPERATION);
-                                transformed.get(OP_ADDR).set(address.toModelNode());
-                                transformed.get(NAME).set(attributeName);
-                                transformed.get(VALUE).set(defaultRedirectPort);
-                                return new TransformedOperation(transformed, OperationResultTransformer.ORIGINAL_RESULT);
-                            }
-                            return new TransformedOperation(operation, OperationResultTransformer.ORIGINAL_RESULT);
+                .inheritResourceAttributeDefinitions() // although probably not necessary
+                .setCustomOperationTransformer(new OperationTransformer() {
+                    @Override
+                    public TransformedOperation transformOperation(TransformationContext context, PathAddress address, ModelNode operation) throws OperationFailedException {
+                        final String attributeName = operation.require(NAME).asString();
+                        if (WebConnectorDefinition.REDIRECT_PORT.getName().equals(attributeName)) {
+                            final ModelNode transformed = new ModelNode();
+                            transformed.get(OP).set(WRITE_ATTRIBUTE_OPERATION);
+                            transformed.get(OP_ADDR).set(address.toModelNode());
+                            transformed.get(NAME).set(attributeName);
+                            transformed.get(VALUE).set(defaultRedirectPort);
+                            return new TransformedOperation(transformed, OperationResultTransformer.ORIGINAL_RESULT);
                         }
-                    })
-                ;
+                        return new TransformedOperation(operation, OperationResultTransformer.ORIGINAL_RESULT);
+                    }
+                })
+        ;
 
         //
         connectorBuilder.addChildRedirection(SSL_PATH, SSL_ALIAS).getAttributeBuilder()

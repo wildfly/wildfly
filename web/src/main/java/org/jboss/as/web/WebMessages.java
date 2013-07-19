@@ -22,19 +22,9 @@
 
 package org.jboss.as.web;
 
-import java.util.concurrent.TimeoutException;
-
-import org.jboss.as.server.deployment.DeploymentUnit;
-import org.jboss.as.server.deployment.DeploymentUnitProcessingException;
-import org.jboss.jandex.AnnotationTarget;
-import org.jboss.jandex.DotName;
 import org.jboss.logging.Messages;
-import org.jboss.logging.annotations.Cause;
 import org.jboss.logging.annotations.Message;
 import org.jboss.logging.annotations.MessageBundle;
-import org.jboss.modules.ModuleIdentifier;
-import org.jboss.msc.service.ServiceName;
-import org.jboss.vfs.VirtualFile;
 
 /**
  * This module is using message IDs in the range 18000-18099 and 18200-18399.
@@ -58,7 +48,7 @@ public interface WebMessages {
 
     @Message(id = 18000, value = "Name and value are required to add mime mapping")
     String nameAndValueRequiredForAddMimeMapping();
-
+    /*
     @Message(id = 18001, value = "Name is required to remove mime mapping")
     String nameRequiredForRemoveMimeMapping();
 
@@ -85,10 +75,12 @@ public interface WebMessages {
 
     @Message(id = 18010, value = "A default web module can not be specified when the welcome root has been enabled")
     String noRootWebappWithWelcomeWebapp();
+    */
 
     @Message(id = 18011, value = "The welcome root can not be enabled on a host that has the default web module")
     String noWelcomeWebappWithDefaultWebModule();
 
+    /*
     @Message(id = 18012, value = "Failed to create welcome context")
     String createWelcomeContextFailed();
 
@@ -232,11 +224,11 @@ public interface WebMessages {
 
     @Message(id = 18100, value = "Timeout context service activation: %s")
     TimeoutException timeoutContextActivation(ServiceName service);
-
+*/
     @Message(id = 18101, value = "Version 1.1.0 of the web subsystem had a bug meaning referencing virtual-server from connector is not supported. See https://issues.jboss.org/browse/JBPAPP-9314")
     String transformationVersion_1_1_0_JBPAPP_9314();
 
-    @Message(id = 18102, value = "Error loading SCI from module: %s")
+  /*  @Message(id = 18102, value = "Error loading SCI from module: %s")
     DeploymentUnitProcessingException errorLoadingSCIFromModule(ModuleIdentifier identifier, @Cause Exception e);
 
     @Message(id = 18103, value = "Unable to resolve annotation index for deployment unit: %s")
@@ -246,7 +238,7 @@ public interface WebMessages {
     DeploymentUnitProcessingException errorProcessingSCI(String jar, @Cause Exception e);
 
     @Message(id = 18105, value = "Not applicable")
-    RuntimeException notApplicable();
+    RuntimeException notApplicable();*/
 
     @Message(id = 18106, value = "Param-name and param-value are required to add parameter")
     String paramNameAndParamValueRequiredForAddParam();

@@ -22,22 +22,19 @@
 
 package org.jboss.as.web;
 
-import org.jboss.as.controller.ReloadRequiredRemoveStepHandler;
-import org.jboss.as.controller.ReloadRequiredWriteAttributeHandler;
+import org.jboss.as.controller.ModelOnlyResourceDefinition;
 import org.jboss.as.controller.SimpleAttributeDefinition;
 import org.jboss.as.controller.SimpleAttributeDefinitionBuilder;
-import org.jboss.as.controller.SimpleResourceDefinition;
 import org.jboss.as.controller.operations.validation.StringLengthValidator;
 import org.jboss.as.controller.registry.AttributeAccess;
-import org.jboss.as.controller.registry.ManagementResourceRegistration;
 import org.jboss.dmr.ModelType;
 
 /**
  * @author Tomaz Cerar
  * @created 23.2.12 17:13
  */
-public class WebReWriteDefinition extends SimpleResourceDefinition {
-    public static final WebReWriteDefinition INSTANCE = new WebReWriteDefinition();
+public class WebReWriteDefinition extends ModelOnlyResourceDefinition {
+
 
     protected static final SimpleAttributeDefinition PATTERN =
             new SimpleAttributeDefinitionBuilder(Constants.PATTERN, ModelType.STRING, false)
@@ -60,18 +57,12 @@ public class WebReWriteDefinition extends SimpleResourceDefinition {
                     .build();
 
     protected static final SimpleAttributeDefinition[] ATTRIBUTES = {PATTERN, SUBSTITUTION, FLAGS};
+    public static final WebReWriteDefinition INSTANCE = new WebReWriteDefinition();
 
     private WebReWriteDefinition() {
         super(WebExtension.REWRITE_PATH,
                 WebExtension.getResourceDescriptionResolver("virtual-server.rewrite"),
-                WebReWriteAdd.INSTANCE,
-                new ReloadRequiredRemoveStepHandler());
+                ATTRIBUTES);
     }
 
-    @Override
-    public void registerAttributes(ManagementResourceRegistration rewrite) {
-        rewrite.registerReadWriteAttribute(PATTERN, null, new ReloadRequiredWriteAttributeHandler(PATTERN));
-        rewrite.registerReadWriteAttribute(SUBSTITUTION, null, new ReloadRequiredWriteAttributeHandler(SUBSTITUTION));
-        rewrite.registerReadWriteAttribute(FLAGS, null, new ReloadRequiredWriteAttributeHandler(FLAGS));
-    }
 }

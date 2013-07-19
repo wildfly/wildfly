@@ -60,6 +60,7 @@ import java.util.List;
 import javax.xml.stream.XMLStreamConstants;
 import javax.xml.stream.XMLStreamException;
 
+import org.jboss.as.controller.AttributeDefinition;
 import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.PathElement;
 import org.jboss.as.controller.SimpleAttributeDefinition;
@@ -110,8 +111,10 @@ class WebSubsystemParser implements XMLStreamConstants, XMLElementReader<List<Mo
                 final ModelNode config = connector.getValue();
                 writer.writeStartElement(Element.CONNECTOR.getLocalName());
                 writer.writeAttribute(NAME, connector.getName());
-                for (SimpleAttributeDefinition attr : WebConnectorDefinition.CONNECTOR_ATTRIBUTES) {
-                    attr.marshallAsAttribute(config, true, writer);
+                for (AttributeDefinition attr : WebConnectorDefinition.CONNECTOR_ATTRIBUTES) {
+                    if (attr instanceof SimpleAttributeDefinition) {
+                        ((SimpleAttributeDefinition) attr).marshallAsAttribute(config, true, writer);
+                    }
 
                 }
                 if (config.get(SSL_PATH.getKey(), SSL_PATH.getValue()).isDefined()) {
@@ -175,7 +178,7 @@ class WebSubsystemParser implements XMLStreamConstants, XMLElementReader<List<Mo
                         Property prop = rewritenode.asProperty();
                         ModelNode rewrite = prop.getValue();
                         writer.writeStartElement(REWRITE);
-                        writer.writeAttribute(NAME,prop.getName());
+                        writer.writeAttribute(NAME, prop.getName());
                         WebReWriteDefinition.PATTERN.marshallAsAttribute(rewrite, false, writer);
                         WebReWriteDefinition.SUBSTITUTION.marshallAsAttribute(rewrite, false, writer);
                         WebReWriteDefinition.FLAGS.marshallAsAttribute(rewrite, false, writer);
@@ -213,8 +216,10 @@ class WebSubsystemParser implements XMLStreamConstants, XMLElementReader<List<Mo
                     final ModelNode config = valve.getValue();
                     writer.writeStartElement(Element.VALVE.getLocalName());
                     writer.writeAttribute(NAME, valve.getName());
-                    for (SimpleAttributeDefinition attr : WebValveDefinition.ATTRIBUTES) {
-                        attr.marshallAsAttribute(config, false, writer);
+                    for (AttributeDefinition attr : WebValveDefinition.ATTRIBUTES) {
+                        if (attr instanceof SimpleAttributeDefinition) {
+                            ((SimpleAttributeDefinition) attr).marshallAsAttribute(config, false, writer);
+                        }
                     }
                     if (config.hasDefined(PARAM)) {
                         for (final Property entry : config.get(PARAM).asPropertyList()) {
@@ -282,7 +287,7 @@ class WebSubsystemParser implements XMLStreamConstants, XMLElementReader<List<Mo
     }
 
     private boolean writeStaticResourceAttribute(XMLExtendedStreamWriter writer, SimpleAttributeDefinition attribute,
-            ModelNode config, boolean startWritten) throws XMLStreamException {
+                                                 ModelNode config, boolean startWritten) throws XMLStreamException {
         if (attribute.isMarshallable(config, false)) {
             if (!startWritten) {
                 writer.writeStartElement(Element.CONTAINER_CONFIG.getLocalName());
@@ -310,7 +315,7 @@ class WebSubsystemParser implements XMLStreamConstants, XMLElementReader<List<Mo
     }
 
     private boolean writeJspConfigAttribute(XMLExtendedStreamWriter writer, SimpleAttributeDefinition attribute,
-            ModelNode config, boolean startWritten, boolean containerConfigStartWritten) throws XMLStreamException {
+                                            ModelNode config, boolean startWritten, boolean containerConfigStartWritten) throws XMLStreamException {
         if (attribute.isMarshallable(config, false)) {
             if (!startWritten) {
                 if (!containerConfigStartWritten) {
@@ -472,29 +477,29 @@ class WebSubsystemParser implements XMLStreamConstants, XMLElementReader<List<Mo
     }
 
     private static void parseDirOrFile(XMLExtendedStreamReader reader, PathAddress address, List<ModelNode> list,
-            PathElement filePath) throws XMLStreamException {
-                    final PathAddress dirAddress = PathAddress.pathAddress(address, filePath);
-                    final ModelNode directory = new ModelNode();
-                    directory.get(OP).set(ADD);
-                    directory.get(OP_ADDR).set(dirAddress.toModelNode());
-                    final int count2 = reader.getAttributeCount();
-                    for (int i = 0; i < count2; i++) {
-                        requireNoNamespaceAttribute(reader, i);
-                        final String value = reader.getAttributeValue(i);
-                        final Attribute attribute = Attribute.forName(reader.getAttributeLocalName(i));
-                        switch (attribute) {
-                            case PATH:
-                                directory.get(PATH).set(value);
-                                break;
-                            case RELATIVE_TO:
-                                directory.get(RELATIVE_TO).set(value);
-                                break;
-                            default:
-                                throw unexpectedAttribute(reader, i);
-                        }
-                    }
-                    requireNoContent(reader);
-                    list.add(directory);
+                                       PathElement filePath) throws XMLStreamException {
+        final PathAddress dirAddress = PathAddress.pathAddress(address, filePath);
+        final ModelNode directory = new ModelNode();
+        directory.get(OP).set(ADD);
+        directory.get(OP_ADDR).set(dirAddress.toModelNode());
+        final int count2 = reader.getAttributeCount();
+        for (int i = 0; i < count2; i++) {
+            requireNoNamespaceAttribute(reader, i);
+            final String value = reader.getAttributeValue(i);
+            final Attribute attribute = Attribute.forName(reader.getAttributeLocalName(i));
+            switch (attribute) {
+                case PATH:
+                    directory.get(PATH).set(value);
+                    break;
+                case RELATIVE_TO:
+                    directory.get(RELATIVE_TO).set(value);
+                    break;
+                default:
+                    throw unexpectedAttribute(reader, i);
+            }
+        }
+        requireNoContent(reader);
+        list.add(directory);
     }
 
     static void addDefaultContainerConfig(final PathAddress parent, List<ModelNode> list) {
@@ -739,7 +744,7 @@ class WebSubsystemParser implements XMLStreamConstants, XMLElementReader<List<Mo
                     break;
                 }
                 case WEB_1_4:
-                case WEB_2_0:{
+                case WEB_2_0: {
                     final Element element = Element.forName(reader.getLocalName());
                     switch (element) {
                         case ALIAS:
@@ -827,8 +832,8 @@ class WebSubsystemParser implements XMLStreamConstants, XMLElementReader<List<Mo
                     throw unexpectedAttribute(reader, i);
             }
         }
-        final PathAddress address = PathAddress.pathAddress(parent, PathElement.pathElement(REWRITE,name));
-         rewrite.get(OP_ADDR).set(address.toModelNode());
+        final PathAddress address = PathAddress.pathAddress(parent, PathElement.pathElement(REWRITE, name));
+        rewrite.get(OP_ADDR).set(address.toModelNode());
         list.add(rewrite);
         int conditionCount = 0;
         while (reader.hasNext() && reader.nextTag() != END_ELEMENT) {
@@ -929,7 +934,7 @@ class WebSubsystemParser implements XMLStreamConstants, XMLElementReader<List<Mo
                     switch (element) {
                         case DIRECTORY:
                             parseDirOrFile(reader, address, list, WebExtension.DIRECTORY_PATH);
-                             break;
+                            break;
                         default:
                             throw unexpectedElement(reader);
                     }
@@ -1022,7 +1027,7 @@ class WebSubsystemParser implements XMLStreamConstants, XMLElementReader<List<Mo
                             break;
                         case VIRTUAL_SERVER:
                             String value = readStringAttributeElement(reader, Attribute.NAME.getLocalName());
-                            WebConnectorDefinition.VIRTUAL_SERVER.parseAndAddParameterElement(value,connector,reader);
+                            WebConnectorDefinition.VIRTUAL_SERVER.parseAndAddParameterElement(value, connector, reader);
                             break;
                         default:
                             throw unexpectedElement(reader);
@@ -1113,7 +1118,7 @@ class WebSubsystemParser implements XMLStreamConstants, XMLElementReader<List<Mo
 
     // todo, attribute.marshallAsAttribute should return boolean
     private boolean writeAttribute(XMLExtendedStreamWriter writer, SimpleAttributeDefinition attribute, ModelNode node,
-            boolean startWriten, String origin) throws XMLStreamException {
+                                   boolean startWriten, String origin) throws XMLStreamException {
 
         if (attribute.isMarshallable(node, false)) {
             if (!startWriten) {

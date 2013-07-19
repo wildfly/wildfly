@@ -111,8 +111,7 @@ enum Attribute {
     CLASS_NAME(Constants.CLASS_NAME),
     PARAM_NAME(Constants.PARAM_NAME),
     PARAM_VALUE(Constants.PARAM_VALUE),
-    PARAM(Constants.PARAM),
-    ;
+    PARAM(Constants.PARAM),;
 
     private final String name;
 
@@ -135,8 +134,7 @@ enum Attribute {
         final Map<String, Attribute> map = new HashMap<String, Attribute>();
         for (Attribute element : values()) {
             final String name = element.getLocalName();
-            if (name != null)
-                map.put(name, element);
+            if (name != null) { map.put(name, element); }
         }
         MAP = map;
     }

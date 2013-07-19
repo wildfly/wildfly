@@ -22,13 +22,11 @@
 
 package org.jboss.as.web;
 
-import org.jboss.as.controller.ReloadRequiredWriteAttributeHandler;
+import org.jboss.as.controller.ModelOnlyResourceDefinition;
 import org.jboss.as.controller.SimpleAttributeDefinition;
 import org.jboss.as.controller.SimpleAttributeDefinitionBuilder;
-import org.jboss.as.controller.SimpleResourceDefinition;
 import org.jboss.as.controller.operations.validation.StringLengthValidator;
 import org.jboss.as.controller.registry.AttributeAccess;
-import org.jboss.as.controller.registry.ManagementResourceRegistration;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.ModelType;
 
@@ -36,8 +34,8 @@ import org.jboss.dmr.ModelType;
  * @author Tomaz Cerar
  * @created 23.2.12 16:33
  */
-public class WebAccessLogDefinition extends SimpleResourceDefinition {
-    public static final WebAccessLogDefinition INSTANCE = new WebAccessLogDefinition();
+public class WebAccessLogDefinition extends ModelOnlyResourceDefinition {
+
 
     protected static final SimpleAttributeDefinition PATTERN =
             new SimpleAttributeDefinitionBuilder(Constants.PATTERN, ModelType.STRING, true)
@@ -84,18 +82,13 @@ public class WebAccessLogDefinition extends SimpleResourceDefinition {
             ROTATE
     };
 
+    static final WebAccessLogDefinition INSTANCE = new WebAccessLogDefinition();
+
 
     private WebAccessLogDefinition() {
         super(WebExtension.ACCESS_LOG_PATH,
                 WebExtension.getResourceDescriptionResolver("virtual-server.access-log"),
-                WebAccessLogAdd.INSTANCE,
-                WebAccessLogRemove.INSTANCE);
+                ACCESS_LOG_ATTRIBUTES);
     }
 
-    @Override
-    public void registerAttributes(ManagementResourceRegistration accesslog) {
-        for (SimpleAttributeDefinition def : ACCESS_LOG_ATTRIBUTES) {
-            accesslog.registerReadWriteAttribute(def, null, new ReloadRequiredWriteAttributeHandler(def));
-        }
-    }
 }

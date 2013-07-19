@@ -47,8 +47,7 @@ enum Element {
     VIRTUAL_SERVER(Constants.VIRTUAL_SERVER),
     WELCOME_FILE(Constants.WELCOME_FILE),
     VALVE(Constants.VALVE),
-    PARAM(Constants.PARAM),
-    ;
+    PARAM(Constants.PARAM),;
 
     private final String name;
 
@@ -71,8 +70,7 @@ enum Element {
         final Map<String, Element> map = new HashMap<String, Element>();
         for (Element element : values()) {
             final String name = element.getLocalName();
-            if (name != null)
-                map.put(name, element);
+            if (name != null) { map.put(name, element); }
         }
         MAP = map;
     }

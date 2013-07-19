@@ -22,15 +22,12 @@
 
 package org.jboss.as.web;
 
+import org.jboss.as.controller.ModelOnlyResourceDefinition;
 import org.jboss.as.controller.PathElement;
-import org.jboss.as.controller.ReloadRequiredRemoveStepHandler;
-import org.jboss.as.controller.ReloadRequiredWriteAttributeHandler;
 import org.jboss.as.controller.SimpleAttributeDefinition;
 import org.jboss.as.controller.SimpleAttributeDefinitionBuilder;
-import org.jboss.as.controller.SimpleResourceDefinition;
 import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
 import org.jboss.as.controller.registry.AttributeAccess;
-import org.jboss.as.controller.registry.ManagementResourceRegistration;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.ModelType;
 
@@ -38,9 +35,7 @@ import org.jboss.dmr.ModelType;
  * @author Tomaz Cerar
  * @created 22.2.12 14:29
  */
-public class WebDefinition extends SimpleResourceDefinition {
-    public static final WebDefinition INSTANCE = new WebDefinition();
-
+public class WebDefinition extends ModelOnlyResourceDefinition {
     protected static final SimpleAttributeDefinition DEFAULT_VIRTUAL_SERVER =
             new SimpleAttributeDefinitionBuilder(Constants.DEFAULT_VIRTUAL_SERVER, ModelType.STRING, true)
                     .setAllowExpression(true)
@@ -59,19 +54,13 @@ public class WebDefinition extends SimpleResourceDefinition {
                     .setFlags(AttributeAccess.Flag.RESTART_ALL_SERVICES)
                     .setDefaultValue(null)
                     .build();
+    public static final WebDefinition INSTANCE = new WebDefinition();
 
     private WebDefinition() {
         super(PathElement.pathElement(ModelDescriptionConstants.SUBSYSTEM, WebExtension.SUBSYSTEM_NAME),
                 WebExtension.getResourceDescriptionResolver(null)
-                , WebSubsystemAdd.INSTANCE,
-                ReloadRequiredRemoveStepHandler.INSTANCE);
+                , DEFAULT_VIRTUAL_SERVER, NATIVE, INSTANCE_ID);
     }
 
 
-    @Override
-    public void registerAttributes(ManagementResourceRegistration registration) {
-        registration.registerReadWriteAttribute(DEFAULT_VIRTUAL_SERVER, null, new ReloadRequiredWriteAttributeHandler(DEFAULT_VIRTUAL_SERVER));
-        registration.registerReadWriteAttribute(NATIVE, null, new ReloadRequiredWriteAttributeHandler(NATIVE));
-        registration.registerReadWriteAttribute(INSTANCE_ID, null, new ReloadRequiredWriteAttributeHandler(INSTANCE_ID));
-    }
 }
