@@ -48,7 +48,11 @@ public class WeldInjectionInterceptor implements Interceptor {
     @Override
     public Object processInvocation(final InterceptorContext context) throws Exception {
         WeldInjectionContext injectionContext = context.getPrivateData(WeldInjectionContext.class);
-        injectionContext.inject(targetReference.get().getInstance());
+        ManagedReference reference = targetReference.get();
+        if (reference == null) {
+            return null;
+        }
+        injectionContext.inject(reference.getInstance());
         return context.proceed();
     }
 
