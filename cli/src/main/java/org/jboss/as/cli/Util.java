@@ -21,9 +21,11 @@
  */
 package org.jboss.as.cli;
 
+import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
+import java.io.PrintStream;
 import java.util.ArrayDeque;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -917,5 +919,12 @@ public class Util {
             StreamUtils.safeClose(is);
         }
         return bytes;
+    }
+
+    public static String readExceptionTrace(Exception e){
+        ByteArrayOutputStream baos = new ByteArrayOutputStream();
+        PrintStream ps = new PrintStream(baos);
+        e.printStackTrace(ps);
+        return new String(baos.toByteArray());
     }
 }

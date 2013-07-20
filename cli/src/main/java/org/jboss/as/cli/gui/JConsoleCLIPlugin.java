@@ -18,8 +18,8 @@
  */
 package org.jboss.as.cli.gui;
 
-import com.sun.tools.jconsole.JConsoleContext;
-import com.sun.tools.jconsole.JConsolePlugin;
+import static java.security.AccessController.doPrivileged;
+
 import java.awt.BorderLayout;
 import java.awt.Component;
 import java.io.IOException;
@@ -31,27 +31,32 @@ import java.util.concurrent.ThreadFactory;
 import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
+
 import javax.management.MBeanServerConnection;
+import javax.management.ObjectName;
 import javax.swing.ImageIcon;
 import javax.swing.JInternalFrame;
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.SwingWorker;
+
 import org.jboss.as.cli.CliInitializationException;
 import org.jboss.as.cli.CommandContext;
 import org.jboss.as.cli.CommandContextFactory;
+import org.jboss.as.cli.Util;
 import org.jboss.as.controller.client.ModelControllerClient;
 import org.jboss.as.controller.client.impl.ExistingChannelModelControllerClient;
-import org.wildfly.security.manager.GetAccessControlContextAction;
 import org.jboss.dmr.ModelNode;
 import org.jboss.remoting3.Channel;
 import org.jboss.remoting3.Connection;
 import org.jboss.remotingjmx.RemotingMBeanServerConnection;
 import org.jboss.threads.JBossThreadFactory;
+import org.wildfly.security.manager.GetAccessControlContextAction;
 import org.xnio.IoFuture;
 import org.xnio.OptionMap;
 
-import static java.security.AccessController.doPrivileged;
+import com.sun.tools.jconsole.JConsoleContext;
+import com.sun.tools.jconsole.JConsolePlugin;
 
 /**
  *
@@ -59,6 +64,11 @@ import static java.security.AccessController.doPrivileged;
  */
 public class JConsoleCLIPlugin extends JConsolePlugin {
 
+    private static final String FALLBACK_MBEAN = "jboss.as:socket-binding-group=standard-sockets,socket-binding=management-http";
+    private static final int FALLBACK_DEFAULT_PORT = 9990;
+    private static final String FALLBACK_DEFAULT_ADDRESS = "localhost";
+    private static final String FALLBACK_BOUND_PORT = "boundPort";
+    private static final String FALLBACK_BOUND_ADDRESS = "boundAddress";
     private static final int DEFAULT_MAX_THREADS = 6;
 
     // Global count of created pools
@@ -100,14 +110,28 @@ public class JConsoleCLIPlugin extends JConsolePlugin {
         if (mbeanServerConn instanceof RemotingMBeanServerConnection) {
             return connectUsingRemoting(cmdCtx, (RemotingMBeanServerConnection)mbeanServerConn);
         } else {
+            ObjectName fallbackBeanName = new ObjectName(FALLBACK_MBEAN);
+            String address = FALLBACK_DEFAULT_ADDRESS;
+            int port = FALLBACK_DEFAULT_PORT;
             try {
-                cmdCtx.connectController("http-remoting", "localhost", 9990);
+                if(true)throw new IOException();
+                if (mbeanServerConn.isRegistered(fallbackBeanName)) {
+                    address = (String) mbeanServerConn.getAttribute(fallbackBeanName, FALLBACK_BOUND_ADDRESS);
+                    port = (int) mbeanServerConn.getAttribute(fallbackBeanName, FALLBACK_BOUND_PORT);
+                } else {
+                    String message = "The socket binding bean '"+FALLBACK_MBEAN+" is not available, falling back to default' ";
+                    message+=" connector address '"+address+":"+port+"'.";
+                    JOptionPane.showMessageDialog(null, message);
+                }
+
+                cmdCtx.connectController("http-remoting", address,port);
             } catch (Exception e) {
-                String message = "CLI GUI unable to connect to JBoss AS with localhost:9999 \n";
+                String message = "CLI GUI unable to connect to JBoss AS at "+address+":"+port+" \n";
                 message += "Go to Connection -> New Connection and enter a Remote Process \n";
                 message += "of the form service:jmx:remoting-jmx://{host_name}:{port}  where \n";
                 message += "{host_name} and {port} are the address of the native management \n";
                 message += "interface of the AS7 installation being monitored.";
+                message+="\n\nFailure reason:\n"+Util.readExceptionTrace(e);
                 JOptionPane.showMessageDialog(null, message);
                 return false;
             }
