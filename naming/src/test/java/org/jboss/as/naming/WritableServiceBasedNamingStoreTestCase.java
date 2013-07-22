@@ -25,6 +25,7 @@ package org.jboss.as.naming;
 import java.security.AccessControlException;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.Set;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
 import javax.naming.CompositeName;
@@ -42,9 +43,7 @@ import org.jboss.msc.service.ServiceController;
 import org.jboss.msc.service.ServiceName;
 
 import static org.jboss.as.naming.SecurityHelper.testActionWithPermission;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertTrue;
-import static org.junit.Assert.fail;
+import static org.junit.Assert.*;
 
 import org.junit.After;
 import org.junit.Before;
@@ -57,34 +56,15 @@ import org.junit.Test;
 public class WritableServiceBasedNamingStoreTestCase {
     private ServiceContainer container;
     private WritableServiceBasedNamingStore store;
-    private static final ServiceName owner = ServiceName.of("Foo");
+    private static final ServiceName OWNER_FOO = ServiceName.of("Foo");
+    private static final ServiceName OWNER_BAR = ServiceName.of("Bar");
 
     @SuppressWarnings({ "unchecked", "rawtypes" })
     @Before
     public void setup() throws Exception {
         container = ServiceContainer.Factory.create();
-        final CountDownLatch latch1 = new CountDownLatch(1);
-        container.addService(JndiNamingDependencyProcessor.serviceName(owner), new RuntimeBindReleaseService())
-        .setInitialMode(ServiceController.Mode.ACTIVE)
-        .addListener(new AbstractServiceListener() {
-            public void transition(ServiceController controller, ServiceController.Transition transition) {
-                switch (transition) {
-                    case STARTING_to_UP: {
-                        latch1.countDown();
-                        break;
-                    }
-                    case STARTING_to_START_FAILED: {
-                        latch1.countDown();
-                        fail("Did not install store service - " + controller.getStartException().getMessage());
-                        break;
-                    }
-                    default:
-                        break;
-                }
-            }
-        })
-        .install();
-        latch1.await(10, TimeUnit.SECONDS);
+        installOwnerService(OWNER_FOO);
+        installOwnerService(OWNER_BAR);
         store = new WritableServiceBasedNamingStore(container, ContextNames.JAVA_CONTEXT_SERVICE_NAME,container.subTarget());
         final CountDownLatch latch2 = new CountDownLatch(1);
         container.addService(ContextNames.JAVA_CONTEXT_SERVICE_NAME, new NamingStoreService(store))
@@ -108,6 +88,31 @@ public class WritableServiceBasedNamingStoreTestCase {
                 })
                 .install();
         latch2.await(10, TimeUnit.SECONDS);
+    }
+
+    private void installOwnerService(ServiceName owner) throws InterruptedException {
+        final CountDownLatch latch1 = new CountDownLatch(1);
+        container.addService(JndiNamingDependencyProcessor.serviceName(owner), new RuntimeBindReleaseService())
+                .setInitialMode(ServiceController.Mode.ACTIVE)
+                .addListener(new AbstractServiceListener() {
+                    public void transition(ServiceController controller, ServiceController.Transition transition) {
+                        switch (transition) {
+                            case STARTING_to_UP: {
+                                latch1.countDown();
+                                break;
+                            }
+                            case STARTING_to_START_FAILED: {
+                                latch1.countDown();
+                                fail("Did not install store service - " + controller.getStartException().getMessage());
+                                break;
+                            }
+                            default:
+                                break;
+                        }
+                    }
+                })
+                .install();
+        latch1.await(10, TimeUnit.SECONDS);
     }
 
     @After
@@ -139,7 +144,7 @@ public class WritableServiceBasedNamingStoreTestCase {
     public void testBind() throws Exception {
         final Name name = new CompositeName("test");
         final Object value = new Object();
-        WritableServiceBasedNamingStore.pushOwner(owner);
+        WritableServiceBasedNamingStore.pushOwner(OWNER_FOO);
         try {
             store.bind(name, value);
         } finally {
@@ -152,7 +157,7 @@ public class WritableServiceBasedNamingStoreTestCase {
     public void testBindNested() throws Exception {
         final Name name = new CompositeName("nested/test");
         final Object value = new Object();
-        WritableServiceBasedNamingStore.pushOwner(owner);
+        WritableServiceBasedNamingStore.pushOwner(OWNER_FOO);
         try {
             store.bind(name, value);
         } finally {
@@ -165,7 +170,7 @@ public class WritableServiceBasedNamingStoreTestCase {
     public void testUnbind() throws Exception {
         final Name name = new CompositeName("test");
         final Object value = new Object();
-        WritableServiceBasedNamingStore.pushOwner(owner);
+        WritableServiceBasedNamingStore.pushOwner(OWNER_FOO);
         try {
             store.bind(name, value);
             store.unbind(name);
@@ -190,7 +195,7 @@ public class WritableServiceBasedNamingStoreTestCase {
 
     @Test
     public void testCreateSubcontext() throws Exception {
-        WritableServiceBasedNamingStore.pushOwner(owner);
+        WritableServiceBasedNamingStore.pushOwner(OWNER_FOO);
         try {
             assertTrue(((NamingContext) store.createSubcontext(new CompositeName("test"))).getNamingStore() instanceof WritableServiceBasedNamingStore);
         } finally {
@@ -212,7 +217,7 @@ public class WritableServiceBasedNamingStoreTestCase {
         final Name name = new CompositeName("test");
         final Object value = new Object();
         final Object newValue = new Object();
-        WritableServiceBasedNamingStore.pushOwner(owner);
+        WritableServiceBasedNamingStore.pushOwner(OWNER_FOO);
         try {
             store.bind(name, value);
             store.rebind(name, newValue);
@@ -244,7 +249,7 @@ public class WritableServiceBasedNamingStoreTestCase {
         ArrayList<JndiPermission> permissions = new ArrayList<JndiPermission>();
 
         // simple bind test, note that permission must have absolute path
-        WritableServiceBasedNamingStore.pushOwner(owner);
+        WritableServiceBasedNamingStore.pushOwner(OWNER_FOO);
         try {
             permissions.add(new JndiPermission(store.getBaseName()+"/"+name,"bind,list,listBindings"));
             store.bind(new CompositeName(name), value);
@@ -304,6 +309,92 @@ public class WritableServiceBasedNamingStoreTestCase {
             fail("Should have failed due to missing permission");
         } catch (AccessControlException e) {
 
+        }
+    }
+
+    @Test
+    public void testOwnerBindingReferences() throws Exception {
+        final Name name = new CompositeName("test");
+        final ServiceName serviceName = store.buildServiceName(name);
+        final Object value = new Object();
+
+        // ensure bind does not exists
+        try {
+            store.lookup(name);
+            fail("Should have thrown name not found");
+        } catch (NameNotFoundException expect) {
+        }
+        // ensure the Foo's RuntimeBindReleaseService has no reference to the future bind
+        final Set<ServiceName> duBindingReferences = (Set<ServiceName>) container.getService(JndiNamingDependencyProcessor.serviceName(OWNER_FOO)).getValue();
+        assertFalse(duBindingReferences.contains(serviceName));
+
+        WritableServiceBasedNamingStore.pushOwner(OWNER_FOO);
+        try {
+            store.bind(name, value);
+            // Foo's RuntimeBindReleaseService should now have a reference to the new bind
+            assertTrue(duBindingReferences.contains(serviceName));
+
+            store.rebind(name, value);
+            // after rebind, Foo's RuntimeBindReleaseService should continue to have a reference to the bind
+            assertTrue(duBindingReferences.contains(serviceName));
+
+            store.unbind(name);
+            // Foo's RuntimeBindReleaseService reference to the bind should have been removed
+            assertFalse(duBindingReferences.contains(serviceName));
+        } finally {
+            WritableServiceBasedNamingStore.popOwner();
+        }
+    }
+
+    @Test
+    public void testMultipleOwnersBindingReferences() throws Exception {
+        final Name name = new CompositeName("test");
+        final ServiceName serviceName = store.buildServiceName(name);
+        final Object value = new Object();
+
+        // ensure bind does not exists
+        try {
+            store.lookup(name);
+            fail("Should have thrown name not found");
+        } catch (NameNotFoundException expect) {
+        }
+        // ensure the owners RuntimeBindReleaseService have no reference to the future bind
+        final Set<ServiceName> fooDuBindingReferences = (Set<ServiceName>) container.getService(JndiNamingDependencyProcessor.serviceName(OWNER_FOO)).getValue();
+        assertFalse(fooDuBindingReferences.contains(serviceName));
+        final Set<ServiceName> barDuBindingReferences = (Set<ServiceName>) container.getService(JndiNamingDependencyProcessor.serviceName(OWNER_BAR)).getValue();
+        assertFalse(barDuBindingReferences.contains(serviceName));
+
+        WritableServiceBasedNamingStore.pushOwner(OWNER_FOO);
+        try {
+            store.bind(name, value);
+            // Foo's RuntimeBindReleaseService should now have a reference to the new bind
+            assertTrue(fooDuBindingReferences.contains(serviceName));
+            // Bar's RuntimeBindReleaseService reference to the bind should not exist
+            assertFalse(barDuBindingReferences.contains(serviceName));
+        } finally {
+            WritableServiceBasedNamingStore.popOwner();
+        }
+
+        WritableServiceBasedNamingStore.pushOwner(OWNER_BAR);
+        try {
+            store.rebind(name, value);
+            // after rebind, Foo's RuntimeBindReleaseService reference to the bind should have been removed
+            assertFalse(fooDuBindingReferences.contains(serviceName));
+            // after rebind, Bar's RuntimeBindReleaseService reference to the bind should now exist
+            assertTrue(barDuBindingReferences.contains(serviceName));
+        } finally {
+            WritableServiceBasedNamingStore.popOwner();
+        }
+
+        WritableServiceBasedNamingStore.pushOwner(OWNER_FOO);
+        try {
+            store.unbind(name);
+            // after unbind, Foo's RuntimeBindReleaseService reference to the bind should still not exist
+            assertFalse(fooDuBindingReferences.contains(serviceName));
+            // after unbind, Bar's RuntimeBindReleaseService reference to the bind should have been removed
+            assertFalse(barDuBindingReferences.contains(serviceName));
+        } finally {
+            WritableServiceBasedNamingStore.popOwner();
         }
     }
 }
