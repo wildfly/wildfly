@@ -1,5 +1,7 @@
 package org.jboss.as.patching.runner;
 
+import static org.jboss.as.patching.runner.PatchingTaskContext.Mode.APPLY;
+import static org.jboss.as.patching.runner.PatchingTaskContext.Mode.ROLLBACK;
 import static org.jboss.as.patching.runner.PatchingTasks.ContentTaskDefinition;
 import static org.jboss.as.patching.runner.PatchingTasks.apply;
 
@@ -75,7 +77,7 @@ class IdentityPatchRunner implements InstallationManager.ModificationCompletion 
             checkUpgradeConditions(identity, modification);
             // Apply the patch
             final File backup = installedImage.getPatchHistoryDir(patchId);
-            final IdentityPatchContext context = new IdentityPatchContext(backup, contentProvider, contentPolicy, modification, installedImage);
+            final IdentityPatchContext context = new IdentityPatchContext(backup, contentProvider, contentPolicy, modification, APPLY, installedImage);
             try {
                 return applyPatch(patchId, patch, context);
             } catch (Exception e) {
@@ -220,7 +222,7 @@ class IdentityPatchRunner implements InstallationManager.ModificationCompletion 
         }
         final File workDir = createTempDir();
         final PatchContentProvider provider = null;
-        final IdentityPatchContext context = new IdentityPatchContext(workDir, provider, contentPolicy, modification, installedImage);
+        final IdentityPatchContext context = new IdentityPatchContext(workDir, provider, contentPolicy, modification, ROLLBACK, installedImage);
         try {
             // Rollback patches
             for (final String rollback : patches) {
@@ -266,34 +268,7 @@ class IdentityPatchRunner implements InstallationManager.ModificationCompletion 
             patchId = oneOffs.get(oneOffs.size() - 1);
         }
 
-        final File historyDir = installedImage.getPatchHistoryDir(patchId);
-        if (!historyDir.exists()) {
-            throw PatchMessages.MESSAGES.cannotRollbackPatch(patchId);
-        }
-        final File patchXml = new File(historyDir, Constants.ROLLBACK_XML);
-        if (!patchXml.exists()) {
-            throw PatchMessages.MESSAGES.cannotRollbackPatch(patchId);
-        }
-        final File workDir = createTempDir();
-        final PatchContentProvider provider = null;
-        final IdentityPatchContext context = new IdentityPatchContext(workDir, provider, contentPolicy, modification, installedImage);
-        try {
-            // Rollback patches
-            if (!Constants.BASE.equals(patchId)) {
-                rollback(patchId, context, true);
-            }
-            // Execute the tasks
-            final IdentityPatchContext.PatchEntry identity = context.getIdentityEntry();
-            final IdentityRollbackCallback callback = new IdentityRollbackCallback(patchId, Collections.singletonList(patchId), resetConfiguration, identity.getDirectoryStructure());
-            try {
-                return executeTasks(context, callback);
-            } catch (Exception e) {
-                throw rethrowException(e);
-            }
-
-        } finally {
-            context.cleanup();
-        }
+        return rollbackPatch(patchId, contentPolicy, false, resetConfiguration, modification);
     }
 
     @Override

@@ -40,7 +40,7 @@ class PatchingTestBuilder {
         return root;
     }
 
-    public PatchingTestStepBuilder createBuilder() {
+    public PatchingTestStepBuilder createStepBuilder() {
         return new PatchingTestStepBuilder(this);
     }
 
