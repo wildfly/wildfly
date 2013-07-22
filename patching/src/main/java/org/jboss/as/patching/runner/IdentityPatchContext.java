@@ -66,6 +66,7 @@ class IdentityPatchContext implements PatchContentProvider {
     private final Map<String, PatchEntry> layers = new LinkedHashMap<String, PatchEntry>();
     private final Map<String, PatchEntry> addOns = new LinkedHashMap<String, PatchEntry>();
 
+    private PatchingTaskContext.Mode mode;
     private volatile State state = State.NEW;
     private static final AtomicReferenceFieldUpdater<IdentityPatchContext, State> stateUpdater = AtomicReferenceFieldUpdater.newUpdater(IdentityPatchContext.class, State.class, "state");
 
@@ -79,10 +80,12 @@ class IdentityPatchContext implements PatchContentProvider {
     }
 
     IdentityPatchContext(final File backup, final PatchContentProvider contentProvider, final ContentVerificationPolicy contentPolicy,
-                         final InstallationManager.InstallationModification modification, final InstalledImage installedImage) {
+                         final InstallationManager.InstallationModification modification, final PatchingTaskContext.Mode mode,
+                         final InstalledImage installedImage) {
 
         this.miscTargetRoot = installedImage.getJbossHome();
 
+        this.mode = mode;
         this.contentProvider = contentProvider;
         this.contentPolicy = contentPolicy;
         this.modification = modification;
@@ -269,6 +272,7 @@ class IdentityPatchContext implements PatchContentProvider {
             // Was actually completed already
             return false;
         }
+        mode = PatchingTaskContext.Mode.UNDO;
         final PatchContentLoader loader = PatchContentLoader.create(miscBackup, null, null);
         // Undo changes for the identity
         undoChanges(identityEntry, loader);
@@ -537,6 +541,11 @@ class IdentityPatchContext implements PatchContentProvider {
             if (rollbackAction != null) {
                 rollbackActions.add(rollbackAction);
             }
+        }
+
+        @Override
+        public Mode getCurrentMode() {
+            return mode;
         }
 
         @Override

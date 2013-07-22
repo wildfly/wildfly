@@ -58,7 +58,7 @@ public class BasicHistoryUnitTestCase extends AbstractPatchingTest {
         final byte[] existingHash = hashFile(existing);
         final byte[] initialHash = Arrays.copyOf(existingHash, existingHash.length);
 
-        final PatchingTestStepBuilder cp1 = builder.createBuilder();
+        final PatchingTestStepBuilder cp1 = builder.createStepBuilder();
         cp1.setPatchId("CP1")
                 .upgradeIdentity(PRODUCT_VERSION, PRODUCT_VERSION)
                 .upgradeElement("base:CP1", "base", false)
@@ -74,7 +74,7 @@ public class BasicHistoryUnitTestCase extends AbstractPatchingTest {
         Assert.assertTrue(builder.hasFile(FILE_EXISTING));
         Assert.assertTrue(Arrays.equals(existingHash, hashFile(existing)));
 
-        final PatchingTestStepBuilder oneOff1 = builder.createBuilder();
+        final PatchingTestStepBuilder oneOff1 = builder.createStepBuilder();
         oneOff1.setPatchId("oneOff1")
                 .oneOffPatchIdentity(PRODUCT_VERSION)
                 .oneOffPatchElement("base:oneOff1", "base", false)
@@ -90,7 +90,7 @@ public class BasicHistoryUnitTestCase extends AbstractPatchingTest {
         Assert.assertTrue(builder.hasFile(FILE_EXISTING));
         Assert.assertTrue(Arrays.equals(existingHash, hashFile(existing)));
 
-        final PatchingTestStepBuilder cp2 = builder.createBuilder();
+        final PatchingTestStepBuilder cp2 = builder.createStepBuilder();
         cp2.setPatchId("CP2")
                 .upgradeIdentity(PRODUCT_VERSION, PRODUCT_VERSION)
                 .upgradeElement("base:CP2", "base", false)
@@ -122,7 +122,7 @@ public class BasicHistoryUnitTestCase extends AbstractPatchingTest {
         final byte[] existingHash = hashFile(existing);
         final byte[] initialHash = Arrays.copyOf(existingHash, existingHash.length);
 
-        final PatchingTestStepBuilder oo1 = builder.createBuilder();
+        final PatchingTestStepBuilder oo1 = builder.createStepBuilder();
         oo1.setPatchId("one-off-one")
                 .oneOffPatchIdentity(PRODUCT_VERSION)
                 .updateFileWithRandomContent(initialHash, existingHash, FILE_EXISTING);
@@ -130,7 +130,7 @@ public class BasicHistoryUnitTestCase extends AbstractPatchingTest {
         // Apply OO1
         apply(oo1);
 
-        final PatchingTestStepBuilder cp1 = builder.createBuilder();
+        final PatchingTestStepBuilder cp1 = builder.createStepBuilder();
         cp1.setPatchId("CP1")
                 .upgradeIdentity(PRODUCT_VERSION, PRODUCT_VERSION)
                 .updateFileWithRandomContent(initialHash, existingHash, FILE_EXISTING);
@@ -148,7 +148,7 @@ public class BasicHistoryUnitTestCase extends AbstractPatchingTest {
         final byte[] standaloneHash = new byte[20];
         final byte[] moduleHash = new byte[20];
 
-        final PatchingTestStepBuilder cp1 = builder.createBuilder();
+        final PatchingTestStepBuilder cp1 = builder.createStepBuilder();
         cp1.setPatchId("CP1")
                 .upgradeIdentity(PRODUCT_VERSION, PRODUCT_VERSION)
                 .upgradeElement("base:CP1", "base", false)
@@ -161,7 +161,7 @@ public class BasicHistoryUnitTestCase extends AbstractPatchingTest {
 
         Assert.assertTrue(builder.hasFile(FILE_ONE));
 
-        final PatchingTestStepBuilder cp2 = builder.createBuilder();
+        final PatchingTestStepBuilder cp2 = builder.createStepBuilder();
         cp2.setPatchId("CP2")
                 .upgradeIdentity(PRODUCT_VERSION, PRODUCT_VERSION)
                 .upgradeElement("layer2:CP2", "layer2", false)
@@ -177,7 +177,7 @@ public class BasicHistoryUnitTestCase extends AbstractPatchingTest {
 
         Assert.assertTrue(builder.hasFile(FILE_ONE));
 
-        final PatchingTestStepBuilder cp3 = builder.createBuilder();
+        final PatchingTestStepBuilder cp3 = builder.createStepBuilder();
         cp3.setPatchId("CP3")
                 .upgradeIdentity(PRODUCT_VERSION, PRODUCT_VERSION)
                 .removeFile(Arrays.copyOf(standaloneHash, standaloneHash.length), FILE_ONE)

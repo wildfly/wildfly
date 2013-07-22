@@ -23,7 +23,6 @@
 package org.jboss.as.patching.tests;
 
 import static org.jboss.as.patching.Constants.BASE;
-import static org.jboss.as.patching.Constants.NOT_PATCHED;
 import static org.jboss.as.patching.IoUtils.NO_CONTENT;
 import static org.jboss.as.patching.runner.TestUtils.createModule0;
 import static org.jboss.as.patching.runner.TestUtils.randomString;
@@ -67,7 +66,7 @@ public class PatchConflictsUnitTestCase extends AbstractPatchingTest {
         final File base = builder.getFile("modules", "system", "layers", "base");
         createModule0(base, "org.jboss.test", randomString());
 
-        final PatchingTestStepBuilder oneOff1 = builder.createBuilder();
+        final PatchingTestStepBuilder oneOff1 = builder.createStepBuilder();
         oneOff1.setPatchId("one-off-1")
                 .oneOffPatchIdentity(PRODUCT_VERSION)
                 .oneOffPatchElement("base:oo1", BASE, false)
