@@ -62,6 +62,7 @@ import org.jboss.msc.service.ServiceBuilder;
 import org.jboss.msc.service.ServiceController.Mode;
 import org.jboss.msc.service.ServiceName;
 import org.jboss.msc.service.ServiceTarget;
+import org.jboss.msc.value.ImmediateValue;
 import org.jboss.security.SecurityConstants;
 import org.jboss.security.SecurityUtil;
 import org.jboss.vfs.VirtualFile;
@@ -150,8 +151,10 @@ public class UndertowDeploymentProcessor implements DeploymentUnitProcessor {
             }
         }
 
+        boolean componentRegistryExists = true;
         ComponentRegistry componentRegistry = deploymentUnit.getAttachment(org.jboss.as.ee.component.Attachments.COMPONENT_REGISTRY);
         if (componentRegistry == null) {
+            componentRegistryExists = false;
             //we do this to avoid lots of other null checks
             //this will only happen if the EE subsystem is not installed
             componentRegistry = new ComponentRegistry(null);
@@ -191,11 +194,9 @@ public class UndertowDeploymentProcessor implements DeploymentUnitProcessor {
         TldsMetaData tldsMetaData = deploymentUnit.getAttachment(TldsMetaData.ATTACHMENT_KEY);
         UndertowDeploymentInfoService undertowDeploymentInfoService = UndertowDeploymentInfoService.builder()
                         .setAttributes(deploymentUnit.getAttachment(ServletContextAttribute.ATTACHMENT_KEY))
-                .setComponentRegistry(componentRegistry)
                 .setContextPath(pathName)
                 .setDeploymentName(deploymentUnit.getName())
                 .setDeploymentRoot(deploymentRoot)
-                .setInjectionContainer(injectionContainer)
                 .setMergedMetaData(warMetaData.getMergedJBossWebMetaData())
                 .setModule(module)
                 .setScisMetaData(scisMetaData)
@@ -219,6 +220,12 @@ public class UndertowDeploymentProcessor implements DeploymentUnitProcessor {
                 .addDependencies(deploymentUnit.getAttachmentList(Attachments.WEB_DEPENDENCIES))
                 .addDependency(PathManagerService.SERVICE_NAME, PathManager.class, undertowDeploymentInfoService.getPathManagerInjector())
                 .addDependencies(additionalDependencies);
+
+        if(componentRegistryExists) {
+            infoBuilder.addDependency(ComponentRegistry.serviceName(deploymentUnit), ComponentRegistry.class, undertowDeploymentInfoService.getComponentRegistryInjectedValue());
+        } else {
+            undertowDeploymentInfoService.getComponentRegistryInjectedValue().setValue(new ImmediateValue<>(componentRegistry));
+        }
 
         if (metaData.getDistributable() != null) {
             SessionManagerFactoryBuilderService factoryBuilderService = new SessionManagerFactoryBuilderService();

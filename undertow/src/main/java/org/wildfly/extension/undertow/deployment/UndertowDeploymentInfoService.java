@@ -23,44 +23,20 @@
 package org.wildfly.extension.undertow.deployment;
 
 import io.undertow.Handlers;
-import io.undertow.server.HandlerWrapper;
-import io.undertow.server.HttpHandler;
-import io.undertow.server.handlers.builder.PredicatedHandler;
-import io.undertow.servlet.Servlets;
-import io.undertow.servlet.api.DeploymentInfo;
-
-import static io.undertow.servlet.api.SecurityInfo.EmptyRoleSemantic.AUTHENTICATE;
-import static io.undertow.servlet.api.SecurityInfo.EmptyRoleSemantic.DENY;
-import static io.undertow.servlet.api.SecurityInfo.EmptyRoleSemantic.PERMIT;
-
-import java.io.File;
-import java.io.IOException;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.Comparator;
-import java.util.EventListener;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.LinkedHashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-
-import javax.servlet.Filter;
-import javax.servlet.Servlet;
-import javax.servlet.ServletContainerInitializer;
-import javax.servlet.SessionTrackingMode;
-import javax.servlet.http.HttpServletRequest;
-
 import io.undertow.jsp.JspFileWrapper;
 import io.undertow.jsp.JspServletBuilder;
+import io.undertow.server.HandlerWrapper;
+import io.undertow.server.HttpHandler;
 import io.undertow.server.HttpServerExchange;
+import io.undertow.server.handlers.builder.PredicatedHandler;
 import io.undertow.server.handlers.cache.DirectBufferCache;
 import io.undertow.server.handlers.resource.CachingResourceManager;
 import io.undertow.server.handlers.resource.ResourceManager;
+import io.undertow.servlet.Servlets;
 import io.undertow.servlet.api.ClassIntrospecter;
 import io.undertow.servlet.api.ConfidentialPortManager;
 import io.undertow.servlet.api.DefaultServletConfig;
+import io.undertow.servlet.api.DeploymentInfo;
 import io.undertow.servlet.api.ErrorPage;
 import io.undertow.servlet.api.FilterInfo;
 import io.undertow.servlet.api.HttpMethodSecurityInfo;
@@ -76,9 +52,7 @@ import io.undertow.servlet.api.ServletSecurityInfo;
 import io.undertow.servlet.api.ServletSessionConfig;
 import io.undertow.servlet.api.ThreadSetupAction;
 import io.undertow.servlet.api.WebResourceCollection;
-import io.undertow.servlet.util.ConstructorInstanceFactory;
 import io.undertow.servlet.util.ImmediateInstanceFactory;
-
 import org.apache.jasper.deploy.FunctionInfo;
 import org.apache.jasper.deploy.JspPropertyGroup;
 import org.apache.jasper.deploy.TagAttributeInfo;
@@ -92,6 +66,7 @@ import org.jboss.annotation.javaee.Icon;
 import org.jboss.as.controller.services.path.PathManager;
 import org.jboss.as.ee.component.ComponentRegistry;
 import org.jboss.as.naming.ManagedReference;
+import org.jboss.as.naming.ManagedReferenceFactory;
 import org.jboss.as.security.plugins.SecurityDomainContext;
 import org.jboss.as.server.deployment.SetupAction;
 import org.jboss.as.web.common.ExpressionFactoryWrapper;
@@ -149,6 +124,26 @@ import org.wildfly.extension.undertow.security.JAASIdentityManagerImpl;
 import org.wildfly.extension.undertow.security.SecurityContextAssociationHandler;
 import org.wildfly.extension.undertow.security.SecurityContextCreationHandler;
 
+import javax.servlet.Filter;
+import javax.servlet.Servlet;
+import javax.servlet.ServletContainerInitializer;
+import javax.servlet.SessionTrackingMode;
+import javax.servlet.http.HttpServletRequest;
+import java.io.File;
+import java.io.IOException;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Comparator;
+import java.util.EventListener;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.LinkedHashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+
+import static io.undertow.servlet.api.SecurityInfo.EmptyRoleSemantic.*;
+
 /**
  * Service that builds up the undertow metadata.
  *
@@ -168,8 +163,6 @@ public class UndertowDeploymentInfoService implements Service<DeploymentInfo> {
     private final TldsMetaData tldsMetaData;
     private final List<TldMetaData> sharedTlds;
     private final Module module;
-    private final WebInjectionContainer injectionContainer;
-    private final ComponentRegistry componentRegistry;
     private final ScisMetaData scisMetaData;
     private final VirtualFile deploymentRoot;
     private final String securityContextId;
@@ -188,15 +181,14 @@ public class UndertowDeploymentInfoService implements Service<DeploymentInfo> {
     private final InjectedValue<DirectBufferCache> bufferCacheInjectedValue = new InjectedValue<>();
     private final InjectedValue<SessionCookieConfigService> defaultSessionCookieConfig = new InjectedValue<>();
     private final InjectedValue<PathManager> pathManagerInjector = new InjectedValue<PathManager>();
+    private final InjectedValue<ComponentRegistry> componentRegistryInjectedValue = new InjectedValue<>();
 
-    private UndertowDeploymentInfoService(final JBossWebMetaData mergedMetaData, final String deploymentName, final TldsMetaData tldsMetaData, final List<TldMetaData> sharedTlds, final Module module, final WebInjectionContainer injectionContainer, final ComponentRegistry componentRegistry, final ScisMetaData scisMetaData, final VirtualFile deploymentRoot, final String securityContextId, final String securityDomain, final List<ServletContextAttribute> attributes, final String contextPath, final List<SetupAction> setupActions, final Set<VirtualFile> overlays, final List<ExpressionFactoryWrapper> expressionFactoryWrappers, List<PredicatedHandler> predicatedHandlers) {
+    private UndertowDeploymentInfoService(final JBossWebMetaData mergedMetaData, final String deploymentName, final TldsMetaData tldsMetaData, final List<TldMetaData> sharedTlds, final Module module, final ScisMetaData scisMetaData, final VirtualFile deploymentRoot, final String securityContextId, final String securityDomain, final List<ServletContextAttribute> attributes, final String contextPath, final List<SetupAction> setupActions, final Set<VirtualFile> overlays, final List<ExpressionFactoryWrapper> expressionFactoryWrappers, List<PredicatedHandler> predicatedHandlers) {
         this.mergedMetaData = mergedMetaData;
         this.deploymentName = deploymentName;
         this.tldsMetaData = tldsMetaData;
         this.sharedTlds = sharedTlds;
         this.module = module;
-        this.injectionContainer = injectionContainer;
-        this.componentRegistry = componentRegistry;
         this.scisMetaData = scisMetaData;
         this.deploymentRoot = deploymentRoot;
         this.securityContextId = securityContextId;
@@ -361,6 +353,7 @@ public class UndertowDeploymentInfoService implements Service<DeploymentInfo> {
 
 
     private DeploymentInfo createServletConfig() throws StartException {
+        final ComponentRegistry componentRegistry = componentRegistryInjectedValue.getValue();
         try {
             if(!mergedMetaData.isMetadataComplete()) {
                 mergedMetaData.resolveAnnotations();
@@ -413,7 +406,7 @@ public class UndertowDeploymentInfoService implements Service<DeploymentInfo> {
             final ServletInfo jspServlet = jspService != null ? jspService.getJSPServletInfo() : null;
             if (jspServlet != null) { //this would be null if jsp support is disabled
                 HashMap<String, JspPropertyGroup> propertyGroups = createJspConfig(mergedMetaData);
-                JspServletBuilder.setupDeployment(d, propertyGroups, tldInfo, new UndertowJSPInstanceManager(injectionContainer));
+                JspServletBuilder.setupDeployment(d, propertyGroups, tldInfo, new UndertowJSPInstanceManager(new WebInjectionContainer(module.getClassLoader(), componentRegistryInjectedValue.getValue())));
 
                 if (mergedMetaData.getJspConfig() != null) {
                     d.setJspConfigDescriptor(new JspConfigDescriptorImpl(tldInfo.values(), propertyGroups.values()));
@@ -456,7 +449,7 @@ public class UndertowDeploymentInfoService implements Service<DeploymentInfo> {
                         s.addHandlerChainWrapper(new JspFileWrapper(servlet.getJspFile()));
                     } else {
                         Class<? extends Servlet> servletClass = (Class<? extends Servlet>) module.getClassLoader().loadClass(servlet.getServletClass());
-                        ComponentRegistry.ComponentManagedReferenceFactory creator = componentRegistry.getComponentsByClass().get(servletClass);
+                        ManagedReferenceFactory creator = componentRegistry.createInstanceFactory(servletClass);
                         if (creator != null) {
                             InstanceFactory<Servlet> factory = createInstanceFactory(creator);
                             s = new ServletInfo(servlet.getName(), servletClass, factory);
@@ -530,7 +523,7 @@ public class UndertowDeploymentInfoService implements Service<DeploymentInfo> {
             if (mergedMetaData.getFilters() != null) {
                 for (final FilterMetaData filter : mergedMetaData.getFilters()) {
                     Class<? extends Filter> filterClass = (Class<? extends Filter>) module.getClassLoader().loadClass(filter.getFilterClass());
-                    ComponentRegistry.ComponentManagedReferenceFactory creator = componentRegistry.getComponentsByClass().get(filterClass);
+                    ManagedReferenceFactory creator = componentRegistry.createInstanceFactory(filterClass);
                     FilterInfo f;
                     if (creator != null) {
                         InstanceFactory<Filter> instanceFactory = createInstanceFactory(creator);
@@ -969,7 +962,7 @@ public class UndertowDeploymentInfoService implements Service<DeploymentInfo> {
 
         ListenerInfo l;
         final Class<? extends EventListener> listenerClass = (Class<? extends EventListener>) classLoader.loadClass(listener.getListenerClass());
-        ComponentRegistry.ComponentManagedReferenceFactory creator = components.getComponentsByClass().get(listenerClass);
+        ManagedReferenceFactory creator = components.createInstanceFactory(listenerClass);
         if (creator != null) {
             InstanceFactory<EventListener> factory = createInstanceFactory(creator);
             l = new ListenerInfo(listenerClass, factory);
@@ -979,7 +972,7 @@ public class UndertowDeploymentInfoService implements Service<DeploymentInfo> {
         d.addListener(l);
     }
 
-    private static <T> InstanceFactory<T> createInstanceFactory(final ComponentRegistry.ComponentManagedReferenceFactory creator) {
+    private static <T> InstanceFactory<T> createInstanceFactory(final ManagedReferenceFactory creator) {
         return new InstanceFactory<T>() {
             @Override
             public InstanceHandle<T> createInstance() throws InstantiationException {
@@ -1027,6 +1020,10 @@ public class UndertowDeploymentInfoService implements Service<DeploymentInfo> {
         return pathManagerInjector;
     }
 
+    public InjectedValue<ComponentRegistry> getComponentRegistryInjectedValue() {
+        return componentRegistryInjectedValue;
+    }
+
     private static class ComponentClassIntrospector implements ClassIntrospecter {
         private final ComponentRegistry componentRegistry;
 
@@ -1036,19 +1033,15 @@ public class UndertowDeploymentInfoService implements Service<DeploymentInfo> {
 
         @Override
         public <T> InstanceFactory<T> createInstanceFactory(final Class<T> clazz) throws NoSuchMethodException {
-            final ComponentRegistry.ComponentManagedReferenceFactory component = componentRegistry.getComponentsByClass().get(clazz);
-            if (component == null) {
-                return new ConstructorInstanceFactory<>(clazz.getDeclaredConstructor());
-            } else {
+            final ManagedReferenceFactory component = componentRegistry.createInstanceFactory(clazz);
                 return new ManagedReferenceInstanceFactory<>(component);
-            }
         }
     }
 
     private static class ManagedReferenceInstanceFactory<T> implements InstanceFactory<T> {
-        private final ComponentRegistry.ComponentManagedReferenceFactory component;
+        private final ManagedReferenceFactory component;
 
-        public ManagedReferenceInstanceFactory(final ComponentRegistry.ComponentManagedReferenceFactory component) {
+        public ManagedReferenceInstanceFactory(final ManagedReferenceFactory component) {
             this.component = component;
         }
 
@@ -1079,8 +1072,6 @@ public class UndertowDeploymentInfoService implements Service<DeploymentInfo> {
         private TldsMetaData tldsMetaData;
         private List<TldMetaData> sharedTlds;
         private Module module;
-        private WebInjectionContainer injectionContainer;
-        private ComponentRegistry componentRegistry;
         private ScisMetaData scisMetaData;
         private VirtualFile deploymentRoot;
         private String securityContextId;
@@ -1114,16 +1105,6 @@ public class UndertowDeploymentInfoService implements Service<DeploymentInfo> {
 
         public Builder setModule(final Module module) {
             this.module = module;
-            return this;
-        }
-
-        public Builder setInjectionContainer(final WebInjectionContainer injectionContainer) {
-            this.injectionContainer = injectionContainer;
-            return this;
-        }
-
-        public Builder setComponentRegistry(final ComponentRegistry componentRegistry) {
-            this.componentRegistry = componentRegistry;
             return this;
         }
 
@@ -1178,7 +1159,7 @@ public class UndertowDeploymentInfoService implements Service<DeploymentInfo> {
         }
 
         public UndertowDeploymentInfoService createUndertowDeploymentInfoService() {
-            return new UndertowDeploymentInfoService(mergedMetaData, deploymentName, tldsMetaData, sharedTlds, module, injectionContainer, componentRegistry, scisMetaData, deploymentRoot, securityContextId, securityDomain, attributes, contextPath, setupActions, overlays, expressionFactoryWrappers, predicatedHandlers);
+            return new UndertowDeploymentInfoService(mergedMetaData, deploymentName, tldsMetaData, sharedTlds, module, scisMetaData, deploymentRoot, securityContextId, securityDomain, attributes, contextPath, setupActions, overlays, expressionFactoryWrappers, predicatedHandlers);
         }
     }
 }

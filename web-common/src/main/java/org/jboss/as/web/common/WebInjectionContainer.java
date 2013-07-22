@@ -29,6 +29,7 @@ import javax.naming.NamingException;
 
 import org.jboss.as.ee.component.ComponentRegistry;
 import org.jboss.as.naming.ManagedReference;
+import org.jboss.as.naming.ManagedReferenceFactory;
 
 /**
  * The web injection container.
@@ -63,7 +64,8 @@ public class WebInjectionContainer {
     }
 
     public Object newInstance(Class<?> clazz) throws IllegalAccessException, InvocationTargetException, NamingException, InstantiationException {
-        final ManagedReference reference = componentRegistry.createInstance(clazz);
+        final ManagedReferenceFactory factory = componentRegistry.createInstanceFactory(clazz);
+        ManagedReference reference = factory.getReference();
         if (reference != null) {
             instanceMap.put(reference.getInstance(), reference);
             return reference.getInstance();

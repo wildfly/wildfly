@@ -33,6 +33,7 @@ import java.util.Map;
 
 import org.jboss.as.ee.component.interceptors.InterceptorClassDescription;
 import org.jboss.as.ee.naming.InjectedEENamespaceContextSelector;
+import org.jboss.msc.service.ServiceName;
 
 /**
  * @author <a href="mailto:david.lloyd@redhat.com">David M. Lloyd</a>
@@ -66,6 +67,8 @@ public final class EEModuleDescription implements ResourceInjectionTarget {
     private final Map<String, Map<InjectionTarget, ResourceInjectionConfiguration>> resourceInjections = new HashMap<String, Map<InjectionTarget, ResourceInjectionConfiguration>>();
 
     private final boolean appClient;
+
+    private ServiceName defaultClassIntrospectorServiceName = ReflectiveClassIntrospector.SERVICE_NAME;
 
     /**
      * Construct a new instance.
@@ -120,6 +123,14 @@ public final class EEModuleDescription implements ResourceInjectionTarget {
      */
     public Collection<EEModuleClassDescription> getClassDescriptions() {
         return classDescriptions.values();
+    }
+
+    public ServiceName getDefaultClassIntrospectorServiceName() {
+        return defaultClassIntrospectorServiceName;
+    }
+
+    public void setDefaultClassIntrospectorServiceName(ServiceName defaultClassIntrospectorServiceName) {
+        this.defaultClassIntrospectorServiceName = defaultClassIntrospectorServiceName;
     }
 
     /**
