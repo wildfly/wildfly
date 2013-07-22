@@ -12,6 +12,22 @@ import org.jboss.as.patching.metadata.MiscContentItem;
  */
 public interface PatchingTaskContext {
 
+    static enum Mode {
+
+        APPLY,
+        UNDO,
+        ROLLBACK,
+        ;
+
+    }
+
+    /**
+     * Get whether the patch is applied or rolled back.
+     *
+     * @return the current mode
+     */
+    Mode getCurrentMode();
+
     /**
      * Get the target location for a given content item.
      *

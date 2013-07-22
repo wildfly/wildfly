@@ -25,6 +25,7 @@ package org.jboss.as.patching.runner;
 import java.io.File;
 import java.io.IOException;
 
+import org.jboss.as.patching.HashUtils;
 import org.jboss.as.patching.IoUtils;
 import org.jboss.as.patching.metadata.ContentModification;
 import org.jboss.as.patching.metadata.ModificationType;
@@ -48,7 +49,8 @@ class ModuleUpdateTask extends AbstractModuleTask {
         final File sourceDir = loader.getFile(contentItem);
         // Recursively copy module contents (incl. native libs)
         IoUtils.copyFile(sourceDir, targetDir);
-        return contentItem.getContentHash();
+        // return contentItem.getContentHash();
+        return HashUtils.hashFile(targetDir);
     }
 
     @Override

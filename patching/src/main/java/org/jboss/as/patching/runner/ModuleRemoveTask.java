@@ -49,6 +49,11 @@ class ModuleRemoveTask extends AbstractModuleTask {
     }
 
     @Override
+    protected boolean failOnContentMismatch(PatchingTaskContext context) {
+        return false;
+    }
+
+    @Override
     byte[] apply(PatchingTaskContext context, PatchContentLoader loader) throws IOException {
         final File targetDir = context.getTargetFile(contentItem);
         if(! targetDir.mkdirs()) {

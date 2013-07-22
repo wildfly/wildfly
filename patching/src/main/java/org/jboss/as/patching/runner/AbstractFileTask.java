@@ -29,14 +29,11 @@ import static org.jboss.as.patching.IoUtils.safeClose;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
-import java.util.Arrays;
-import java.util.List;
 
 import org.jboss.as.patching.IoUtils;
 import org.jboss.as.patching.PatchMessages;
 import org.jboss.as.patching.metadata.ContentModification;
 import org.jboss.as.patching.metadata.MiscContentItem;
-import org.jboss.as.patching.metadata.ModificationType;
 
 /**
  * Base {@linkplain PatchingTask} for misc file updates.
@@ -71,6 +68,10 @@ abstract class AbstractFileTask extends AbstractPatchingTask<MiscContentItem> {
             final byte[] backupHash = IoUtils.copy(target, backup);
             context.store(backupHash, backup, true);
             return backupHash;
+        } else if (contentItem.isDirectory() && target.isDirectory()) {
+            // Completely ignore the apply step if the directory already exists
+            // This will basically skip the creation of the rollback item
+            setIgnoreApply();
         }
         return NO_CONTENT;
     }
