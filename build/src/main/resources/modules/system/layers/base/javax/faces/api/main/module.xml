@@ -25,11 +25,13 @@
 <module xmlns="urn:jboss:module:1.1" name="javax.faces.api">
     <dependencies>
         <module name="com.sun.jsf-impl"/>
+        <module name="javax.enterprise.api" export="true"/>
         <module name="javax.servlet.api" export="true"/>
         <module name="javax.servlet.jsp.api" export="true"/>
         <module name="javax.servlet.jstl.api" export="true"/>
         <module name="javax.validation.api" export="true"/>
         <module name="org.glassfish.javax.el" export="true"/>
+        <module name="javax.api"/>
     </dependencies>
 
     <resources>
