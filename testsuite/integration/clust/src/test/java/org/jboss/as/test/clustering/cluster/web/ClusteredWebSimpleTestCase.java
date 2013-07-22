@@ -49,15 +49,16 @@ import org.jboss.arquillian.container.test.api.TargetsContainer;
 import org.jboss.arquillian.junit.Arquillian;
 import org.jboss.arquillian.junit.InSequence;
 import org.jboss.arquillian.test.api.ArquillianResource;
+import org.jboss.as.arquillian.container.ManagementClient;
 import org.jboss.as.test.clustering.cluster.ClusterAbstractTestCase;
 import org.jboss.as.test.clustering.single.web.SimpleSecuredServlet;
 import org.jboss.as.test.clustering.single.web.SimpleServlet;
 import org.jboss.as.test.http.util.HttpClientUtils;
+import org.jboss.as.test.integration.web.sso.SSOTestBase;
 import org.jboss.shrinkwrap.api.Archive;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.spec.WebArchive;
 import org.junit.Assert;
-import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
@@ -96,11 +97,37 @@ public class ClusteredWebSimpleTestCase extends ClusterAbstractTestCase {
     @Override
     protected void setUp() {
         super.setUp();
-        deploy(DEPLOYMENTS);
     }
 
     @Test
     @InSequence(1)
+    public void setupSSO(@ArquillianResource @OperateOnDeployment(DEPLOYMENT_1) ManagementClient client1,
+            @ArquillianResource @OperateOnDeployment(DEPLOYMENT_2) ManagementClient client2) throws Exception {
+
+        // add sso valves
+        SSOTestBase.addClusteredSso(client1.getControllerClient());
+        SSOTestBase.addClusteredSso(client2.getControllerClient());
+
+        stop(CONTAINERS);
+        start(CONTAINERS);
+        deploy(DEPLOYMENTS);
+
+    }
+
+    @Test
+    @InSequence(7)
+    public void stopServers(@ArquillianResource @OperateOnDeployment(DEPLOYMENT_1) ManagementClient client1,
+            @ArquillianResource @OperateOnDeployment(DEPLOYMENT_2) ManagementClient client2) throws Exception {
+
+        SSOTestBase.removeSso(client1.getControllerClient());
+        SSOTestBase.removeSso(client2.getControllerClient());
+
+        undeploy(DEPLOYMENTS);
+        stop(CONTAINERS);
+    }
+
+    @Test
+    @InSequence(2)
     @OperateOnDeployment(DEPLOYMENT_1)
     public void testSerialized(@ArquillianResource(SimpleServlet.class) URL baseURL) throws ClientProtocolException,
             IOException {
@@ -129,7 +156,7 @@ public class ClusteredWebSimpleTestCase extends ClusterAbstractTestCase {
     }
 
     @Test
-    @InSequence(2)
+    @InSequence(3)
     @OperateOnDeployment(DEPLOYMENT_2)
     // For change, operate on the 2nd deployment first
     public void testSessionReplication(
@@ -183,9 +210,8 @@ public class ClusteredWebSimpleTestCase extends ClusterAbstractTestCase {
      * @throws IOException when an HTTP client problem occurs
      */
     @Test
-    @InSequence(3)
+    @InSequence(4)
     @OperateOnDeployment(DEPLOYMENT_1)
-    @Ignore("bz-973610 Clustered authentication doesn't work")
     public void testAuthnPropagation(
             @ArquillianResource(SimpleSecuredServlet.class) @OperateOnDeployment(DEPLOYMENT_1) URL baseURL1,
             @ArquillianResource(SimpleSecuredServlet.class) @OperateOnDeployment(DEPLOYMENT_2) URL baseURL2) throws IOException {
@@ -226,7 +252,7 @@ public class ClusteredWebSimpleTestCase extends ClusterAbstractTestCase {
      * Test that a session is gracefully served when a clustered application is undeployed.
      */
     @Test
-    @InSequence(4)
+    @InSequence(5)
     public void testGracefulServeOnUndeploy(
             @ArquillianResource(SimpleServlet.class) @OperateOnDeployment(DEPLOYMENT_1) URL baseURL1)
             throws IllegalStateException, IOException, InterruptedException, Exception {
@@ -237,7 +263,7 @@ public class ClusteredWebSimpleTestCase extends ClusterAbstractTestCase {
      * Test that a session is gracefully served when clustered AS instanced is shutdown.
      */
     @Test
-    @InSequence(5)
+    @InSequence(6)
     public void testGracefulServeOnShutdown(
             @ArquillianResource(SimpleServlet.class) @OperateOnDeployment(DEPLOYMENT_1) URL baseURL1)
             throws IllegalStateException, IOException, InterruptedException, Exception {
