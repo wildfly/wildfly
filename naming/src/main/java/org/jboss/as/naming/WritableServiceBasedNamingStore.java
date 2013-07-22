@@ -27,13 +27,11 @@ import static org.jboss.as.naming.util.NamingUtils.isLastComponentEmpty;
 import static org.jboss.as.naming.util.NamingUtils.namingException;
 
 import java.util.Hashtable;
-import java.util.Set;
 
 import javax.naming.Context;
 import javax.naming.Name;
 import javax.naming.NamingException;
 
-import org.jboss.as.naming.deployment.JndiNamingDependencyProcessor;
 import org.jboss.as.naming.service.BinderService;
 import org.jboss.as.naming.util.ThreadLocalStack;
 import org.jboss.msc.service.ServiceBuilder;
@@ -68,7 +66,7 @@ public class WritableServiceBasedNamingStore extends ServiceBasedNamingStore imp
     @SuppressWarnings("unchecked")
     private void bind(final Name name, final ServiceName bindName, final Object object, final ServiceName deploymentUnitServiceName) throws NamingException {
         try {
-            final BinderService binderService = new BinderService(name.toString());
+            final BinderService binderService = new BinderService(name.toString(), null, deploymentUnitServiceName);
             final ServiceBuilder<?> builder = serviceTarget.addService(bindName, binderService)
                     .addDependency(getServiceNameBase(), ServiceBasedNamingStore.class, binderService.getNamingStoreInjector())
                     .addInjection(binderService.getManagedObjectInjector(), new ValueManagedReferenceFactory(new ImmediateValue<Object>(object)))
@@ -86,9 +84,6 @@ public class WritableServiceBasedNamingStore extends ServiceBasedNamingStore imp
                 throw startException;
             }
             binderService.acquire();
-            // add the service name to runtime bindings management service, which on stop releases the services.
-            final Set<ServiceName> duBindingReferences = (Set<ServiceName>) getServiceRegistry().getService(JndiNamingDependencyProcessor.serviceName(deploymentUnitServiceName)).getValue();
-            duBindingReferences.add(bindName);
         } catch (Exception e) {
             throw namingException("Failed to bind [" + object + "] at location [" + bindName + "]", e);
         }
@@ -115,13 +110,10 @@ public class WritableServiceBasedNamingStore extends ServiceBasedNamingStore imp
 
     @SuppressWarnings("unchecked")
     public void unbind(final Name name) throws NamingException {
-        final ServiceName deploymentUnitServiceName = requireOwner();
+        requireOwner();
         final ServiceName bindName = buildServiceName(name);
         // do the unbinding
         unbind(name, bindName);
-        // remove the service name from runtime bindings management service
-        final Set<ServiceName> duBindingReferences = (Set<ServiceName>) getServiceRegistry().getService(JndiNamingDependencyProcessor.serviceName(deploymentUnitServiceName)).getValue();
-        duBindingReferences.remove(bindName);
     }
 
     private void unbind(final Name name, final ServiceName bindName) throws NamingException {
