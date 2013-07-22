@@ -59,10 +59,17 @@ public class ManagementModel extends JPanel {
 
     private CliGuiContext cliGuiCtx;
 
+    private JTree tree;
+
+    // used for the true root '/'
     public ManagementModel(CliGuiContext cliGuiCtx) {
+        this(new ManagementModelNode(cliGuiCtx), cliGuiCtx);
+    }
+
+    public ManagementModel(ManagementModelNode root, CliGuiContext cliGuiCtx) {
         this.cliGuiCtx = cliGuiCtx;
         setLayout(new BorderLayout(10,10));
-        JTree tree = makeTree();
+        this.tree = makeTree(root);
         add(new JLabel(GENERAL_HELP_TEXT), BorderLayout.NORTH);
         add(new JScrollPane(tree), BorderLayout.CENTER);
         add(makeFilterPanel(tree), BorderLayout.SOUTH);
@@ -93,8 +100,7 @@ public class ManagementModel extends JPanel {
         return filterPanel;
     }
 
-    private JTree makeTree() {
-        ManagementModelNode root = new ManagementModelNode(cliGuiCtx);
+    private JTree makeTree(ManagementModelNode root) {
         root.explore();
         JTree tree = new CommandBuilderTree(cliGuiCtx, new DefaultTreeModel(root));
         tree.getSelectionModel().setSelectionMode(TreeSelectionModel.SINGLE_TREE_SELECTION);
@@ -102,6 +108,16 @@ public class ManagementModel extends JPanel {
         tree.addTreeSelectionListener(new ManagementTreeSelectionListener());
         tree.addMouseListener(new ManagementTreeMouseListener(tree));
         return tree;
+    }
+
+    /**
+     * Get the node that has been selected by the user, or null if
+     * nothing is selected.
+     * @return The node or <code>null</code>
+     */
+    public ManagementModelNode getSelectedNode() {
+        if (tree.getSelectionPath() == null) return null;
+        return (ManagementModelNode)tree.getSelectionPath().getLastPathComponent();
     }
 
     private class ClearFilterListener implements ActionListener {
