@@ -625,7 +625,9 @@ public class JBossWebRealm extends RealmBase {
             ok = helper.hasUserDataPermission(map, request, response, PolicyContext.getContextID(), callerSubject,
                     getPrincipalRoles(request));
         }
-
+        if(!ok) {
+            response.sendError(Response.SC_FORBIDDEN);
+        }
         return ok;
     }
 

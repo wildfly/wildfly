@@ -1,0 +1,15 @@
+<jboss-web>
+<!--
+define test domain in standalone.xml:
+<security-domain name="test-deny">
+    <authentication>
+        <login-module code="UsersRoles" flag="required"/>
+    </authentication>
+    <authorization>
+        <policy-module code="org.jboss.security.authorization.modules.AllDenyAuthorizationModule" flag="required"/>
+    </authorization>
+</security-domain>
+ -->
+	<security-domain>deny-all</security-domain>
+	<use-jboss-authorization>true</use-jboss-authorization>
+</jboss-web>
