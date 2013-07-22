@@ -40,16 +40,6 @@ public class CliUtilsForPatching {
     public static final String KEEP_CONFIGURATION = "--keep-configuration";
     public static final String ROLLBACK_TO = "--rollback-to";
 
-    /**
-     * Use the CLI to apply a patch
-     *
-     * @param patchFilePath absolute path to the ZIP file containing the patch
-     * @throws Exception
-     */
-    public static boolean applyPatch(String patchFilePath) throws Exception {
-        return applyPatch(patchFilePath, null);
-    }
-
 
     /**
      * Use the CLI to apply a patch
@@ -77,16 +67,6 @@ public class CliUtilsForPatching {
                 cli.quit();
             }
         }
-    }
-
-    /**
-     * Use the CLI to rollback a patch
-     *
-     * @param oneOffPatchID the ID of the patch that should be rolled back
-     * @throws Exception
-     */
-    public static boolean rollbackPatch(String oneOffPatchID) throws Exception {
-        return rollbackPatch(oneOffPatchID, null);
     }
 
     /**
@@ -197,6 +177,7 @@ public class CliUtilsForPatching {
 
     /**
      * Rollback all installed patched
+     *
      * @return true if operation was successful or false if at least one rollback failed
      * @throws Exception
      */
@@ -222,7 +203,6 @@ public class CliUtilsForPatching {
             }
         }
     }
-
 
 
 }
