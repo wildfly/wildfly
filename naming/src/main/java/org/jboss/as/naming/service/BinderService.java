@@ -24,13 +24,16 @@ package org.jboss.as.naming.service;
 
 import static org.jboss.as.naming.NamingLogger.ROOT_LOGGER;
 
+import java.util.Set;
 import java.util.concurrent.atomic.AtomicInteger;
 
 import org.jboss.as.naming.ManagedReferenceFactory;
 import org.jboss.as.naming.ServiceBasedNamingStore;
+import org.jboss.as.naming.deployment.JndiNamingDependencyProcessor;
 import org.jboss.msc.inject.Injector;
 import org.jboss.msc.service.Service;
 import org.jboss.msc.service.ServiceController;
+import org.jboss.msc.service.ServiceName;
 import org.jboss.msc.service.StartContext;
 import org.jboss.msc.service.StartException;
 import org.jboss.msc.service.StopContext;
@@ -51,13 +54,16 @@ public class BinderService implements Service<ManagedReferenceFactory> {
     private final Object source;
     private final AtomicInteger refcnt = new AtomicInteger(0);
     private ServiceController<?> controller;
+    private final ServiceName deploymentServiceName;
 
     /**
      * Construct new instance.
      *
      * @param name The JNDI name to use for binding. May be either an absolute or relative name
+     * @param source
+     * @param deploymentServiceName the service name for the related deployment unit
      */
-    public BinderService(final String name, Object source) {
+    public BinderService(final String name, Object source, ServiceName deploymentServiceName) {
         if (name.startsWith("java:")) {
             //this is an absolute reference
             this.name = name.substring(name.indexOf('/') + 1);
@@ -65,10 +71,20 @@ public class BinderService implements Service<ManagedReferenceFactory> {
             this.name = name;
         }
         this.source = source;
+        this.deploymentServiceName = deploymentServiceName;
+    }
+
+    /**
+     * Construct new instance.
+     *
+     * @param name The JNDI name to use for binding. May be either an absolute or relative name
+     */
+    public BinderService(final String name, Object source) {
+        this(name,source,null);
     }
 
     public BinderService(final String name) {
-        this(name, null);
+        this(name, null, null);
     }
 
     public Object getSource() {
@@ -96,6 +112,11 @@ public class BinderService implements Service<ManagedReferenceFactory> {
         this.controller = controller;
         namingStore.add(controller.getName());
         ROOT_LOGGER.tracef("Bound resource %s into naming store %s (service name %s)", name, namingStore, controller.getName());
+        if(deploymentServiceName != null) {
+            // add this controller service name to the related deployment runtime bindings management service, which if stop will release this service too, thus removing the bind
+            final Set<ServiceName> duBindingReferences = (Set<ServiceName>) controller.getServiceContainer().getService(JndiNamingDependencyProcessor.serviceName(deploymentServiceName)).getValue();
+            duBindingReferences.add(controller.getName());
+        }
     }
 
     /**
@@ -106,6 +127,14 @@ public class BinderService implements Service<ManagedReferenceFactory> {
     public synchronized void stop(StopContext context) {
         final ServiceBasedNamingStore namingStore = namingStoreValue.getValue();
         namingStore.remove(context.getController().getName());
+        if(deploymentServiceName != null) {
+            // remove the service name from the related deployment runtime bindings management service,
+            final Set<ServiceName> duBindingReferences = (Set<ServiceName>) controller.getServiceContainer().getService(JndiNamingDependencyProcessor.serviceName(deploymentServiceName)).getValue();
+            if(duBindingReferences != null) {
+                // the set is null if the binder service was stopped by the deployment unit undeploy
+                duBindingReferences.remove(controller.getName());
+            }
+        }
     }
 
     /**
@@ -138,6 +167,6 @@ public class BinderService implements Service<ManagedReferenceFactory> {
 
     @Override
     public String toString() {
-        return "BinderService[name=" + name + ",source=" + source + "]";
+        return "BinderService[name=" + name + ",source=" + source + ",deployment=" + deploymentServiceName +"]";
     }
 }
