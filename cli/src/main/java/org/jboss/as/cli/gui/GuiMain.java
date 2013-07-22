@@ -47,6 +47,7 @@ import javax.swing.UIManager.LookAndFeelInfo;
 import org.jboss.as.cli.CommandContext;
 import org.jboss.as.cli.gui.component.CLIOutput;
 import org.jboss.as.cli.gui.component.ScriptMenu;
+import org.jboss.as.cli.gui.component.TabsMenu;
 import org.jboss.as.cli.gui.metacommand.DeployAction;
 import org.jboss.as.cli.gui.metacommand.UndeployAction;
 
@@ -141,6 +142,7 @@ public class GuiMain {
     public static JMenuBar makeMenuBar(CliGuiContext cliGuiCtx) {
         JMenuBar menuBar = new JMenuBar();
         menuBar.add(makeDeploymentsMenu(cliGuiCtx));
+        menuBar.add(new TabsMenu(cliGuiCtx));
         menuBar.add(new ScriptMenu(cliGuiCtx));
         JMenu lfMenu = makeLookAndFeelMenu(cliGuiCtx);
         if (lfMenu != null) menuBar.add(lfMenu);

@@ -57,6 +57,17 @@ public class ManagementModelNode extends DefaultMutableTreeNode {
     }
 
     /**
+     * Clone as a root node
+     * @return The cloned node.
+     */
+    @Override
+    public ManagementModelNode clone() {
+        UserObject toBeCloned = (UserObject)getUserObject();
+        UserObject clonedUsrObj = new UserObject(toBeCloned, addressPath(), true);
+        return new ManagementModelNode(cliGuiCtx, clonedUsrObj);
+    }
+
+    /**
      * Refresh children using read-resource operation.
      */
     public void explore() {
@@ -125,12 +136,14 @@ public class ManagementModelNode extends DefaultMutableTreeNode {
             return parent.addressPath();
         }
 
-        StringBuilder builder = new StringBuilder("/"); // start with root
+        StringBuilder builder = new StringBuilder();
         for (Object pathElement : getUserObjectPath()) {
-            String pathElementStr = pathElement.toString();
-            if (pathElementStr.equals("/")) continue; // don't want to escape root
-
             UserObject userObj = (UserObject)pathElement;
+            if (userObj.isRoot()) { // don't want to escape root
+                builder.append(userObj.getName());
+                continue;
+            }
+
             builder.append(userObj.getName());
             builder.append("=");
             builder.append(userObj.getEscapedValue());
@@ -160,12 +173,13 @@ public class ManagementModelNode extends DefaultMutableTreeNode {
     /**
      * Encapsulates name/value pair.  Also encapsulates escaping of the value.
      */
-    class UserObject {
+    public class UserObject {
         private ModelNode backingNode;
         private String name;
         private String value;
         private boolean isLeaf;
         private boolean isGeneric = false;
+        private boolean isRoot = false;
         private String separator;
         private AttributeDescription attribDesc = null;
 
@@ -177,7 +191,23 @@ public class ManagementModelNode extends DefaultMutableTreeNode {
             this.name = "/";
             this.value = "";
             this.isLeaf = false;
+            this.isRoot = true;
             this.separator = "";
+        }
+
+        /**
+         * Constructor for cloning purposes.
+         * @param usrObj The object to be cloned.
+         */
+        public UserObject(UserObject usrObj, String addressPath, boolean isRoot) {
+            if (usrObj.backingNode != null) this.backingNode = usrObj.backingNode.clone();
+            this.name = addressPath;
+            this.value = usrObj.value;
+            this.isLeaf = usrObj.isLeaf;
+            this.isRoot = isRoot;
+            this.isGeneric = usrObj.isGeneric;
+            this.separator = usrObj.separator;
+            if (usrObj.attribDesc != null) this.attribDesc = new AttributeDescription(usrObj.attribDesc);
         }
 
         /**
@@ -238,6 +268,10 @@ public class ManagementModelNode extends DefaultMutableTreeNode {
             return ManagementModelNode.escapeAddressElement(this.value);
         }
 
+        public boolean isRoot() {
+            return this.isRoot;
+        }
+
         public boolean isLeaf() {
             return this.isLeaf;
         }
@@ -248,7 +282,11 @@ public class ManagementModelNode extends DefaultMutableTreeNode {
 
         @Override
         public String toString() {
-            return this.name + this.separator + this.value;
+            if (isRoot) {
+                return this.name;
+            } else {
+                return this.name + this.separator + this.value;
+            }
         }
     }
 
@@ -258,6 +296,11 @@ public class ManagementModelNode extends DefaultMutableTreeNode {
 
         AttributeDescription(ModelNode attributes) {
             this.attributes = attributes;
+        }
+
+        // Used for cloning
+        AttributeDescription(AttributeDescription attrDesc) {
+            this.attributes = attrDesc.attributes.clone();
         }
 
         /**

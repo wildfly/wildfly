@@ -23,6 +23,7 @@ import java.util.Collections;
 import java.util.LinkedList;
 import java.util.List;
 import javax.swing.AbstractAction;
+import javax.swing.JTabbedPane;
 import javax.swing.text.BadLocationException;
 import org.jboss.as.cli.gui.component.CLIOutput;
 
@@ -55,7 +56,8 @@ public class DoOperationActionListener extends AbstractAction {
         } catch (Exception e) {
             output.postCommandWithResponse(command, e.getMessage());
         } finally {
-            cliGuiCtx.getTabs().setSelectedIndex(1); // set to Output tab to view the output
+            JTabbedPane tabs = cliGuiCtx.getTabs();
+            tabs.setSelectedIndex(tabs.getTabCount() - 1); // set to Output tab to view the output
         }
     }
 
