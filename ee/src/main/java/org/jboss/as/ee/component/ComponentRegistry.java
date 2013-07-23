@@ -79,7 +79,7 @@ public class ComponentRegistry {
 
         final ComponentManagedReferenceFactory factory = componentsByClass.get(instance.getClass());
         if (factory == null) {
-            return null;
+            return classIntrospectorInjectedValue.getValue().createInstance(instance);
         }
         return factory.getReference(instance);
     }

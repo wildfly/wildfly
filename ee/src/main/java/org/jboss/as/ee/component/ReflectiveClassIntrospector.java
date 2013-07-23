@@ -1,6 +1,7 @@
 package org.jboss.as.ee.component;
 
 import org.jboss.as.naming.ConstructorManagedReferenceFactory;
+import org.jboss.as.naming.ManagedReference;
 import org.jboss.as.naming.ManagedReferenceFactory;
 import org.jboss.msc.service.Service;
 import org.jboss.msc.service.ServiceName;
@@ -22,6 +23,11 @@ public class ReflectiveClassIntrospector implements EEClassIntrospector, Service
         } catch (NoSuchMethodException e) {
             throw new RuntimeException(e);
         }
+    }
+
+    @Override
+    public ManagedReference createInstance(Object instance) {
+        return null;
     }
 
     @Override

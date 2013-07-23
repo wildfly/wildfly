@@ -1,5 +1,6 @@
 package org.jboss.as.ee.component;
 
+import org.jboss.as.naming.ManagedReference;
 import org.jboss.as.naming.ManagedReferenceFactory;
 
 /**
@@ -10,4 +11,6 @@ import org.jboss.as.naming.ManagedReferenceFactory;
 public interface EEClassIntrospector {
 
     ManagedReferenceFactory createFactory(final Class<?> clazz);
+
+    ManagedReference createInstance(Object instance);
 }
