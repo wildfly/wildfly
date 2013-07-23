@@ -25,7 +25,6 @@ package org.wildfly.extension.undertow;
 import java.util.List;
 
 import io.undertow.Version;
-
 import org.jboss.as.controller.AbstractBoottimeAddStepHandler;
 import org.jboss.as.controller.AttributeDefinition;
 import org.jboss.as.controller.OperationContext;
@@ -35,9 +34,14 @@ import org.jboss.as.server.AbstractDeploymentChainStep;
 import org.jboss.as.server.DeploymentProcessorTarget;
 import org.jboss.as.server.deployment.Phase;
 import org.jboss.as.server.deployment.jbossallxml.JBossAllXmlParserRegisteringProcessor;
+import org.jboss.as.web.common.SharedTldsMetaDataBuilder;
+import org.jboss.as.web.host.CommonWebServer;
+import org.jboss.dmr.ModelNode;
+import org.jboss.msc.service.ServiceController;
+import org.jboss.msc.service.ServiceTarget;
+import org.jboss.msc.value.ImmediateValue;
 import org.wildfly.clustering.web.session.SessionManagerFactoryBuilder;
 import org.wildfly.clustering.web.session.SessionManagerFactoryBuilderService;
-import org.wildfly.extension.undertow.deployment.ELExpressionFactoryProcessor;
 import org.wildfly.extension.undertow.deployment.EarContextRootProcessor;
 import org.wildfly.extension.undertow.deployment.JBossWebParsingDeploymentProcessor;
 import org.wildfly.extension.undertow.deployment.ServletContainerInitializerDeploymentProcessor;
@@ -53,12 +57,6 @@ import org.wildfly.extension.undertow.deployment.WarStructureDeploymentProcessor
 import org.wildfly.extension.undertow.deployment.WebFragmentParsingDeploymentProcessor;
 import org.wildfly.extension.undertow.deployment.WebJBossAllParser;
 import org.wildfly.extension.undertow.deployment.WebParsingDeploymentProcessor;
-import org.jboss.as.web.common.SharedTldsMetaDataBuilder;
-import org.jboss.as.web.host.CommonWebServer;
-import org.jboss.dmr.ModelNode;
-import org.jboss.msc.service.ServiceController;
-import org.jboss.msc.service.ServiceTarget;
-import org.jboss.msc.value.ImmediateValue;
 
 
 /**
@@ -128,7 +126,6 @@ class UndertowSubsystemAdd extends AbstractBoottimeAddStepHandler {
 
                 processorTarget.addDeploymentProcessor(UndertowExtension.SUBSYSTEM_NAME, Phase.DEPENDENCIES, Phase.DEPENDENCIES_WAR_MODULE, new UndertowDependencyProcessor());
 
-                processorTarget.addDeploymentProcessor(UndertowExtension.SUBSYSTEM_NAME, Phase.POST_MODULE, Phase.POST_MODULE_EL_EXPRESSION_FACTORY, new ELExpressionFactoryProcessor());
                 processorTarget.addDeploymentProcessor(UndertowExtension.SUBSYSTEM_NAME, Phase.POST_MODULE, Phase.POST_MODULE_UNDERTOW_WEBSOCKETS, new UndertowJSRWebSocketDeploymentProcessor());
                 processorTarget.addDeploymentProcessor(UndertowExtension.SUBSYSTEM_NAME, Phase.POST_MODULE, Phase.POST_MODULE_UNDERTOW_HANDLERS, new UndertowHandlersDeploymentProcessor());
 

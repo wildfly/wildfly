@@ -50,8 +50,8 @@
       <artifactId>jboss-ejb-api_3.2_spec</artifactId>
     </dependency>
     <dependency>
-      <groupId>org.jboss.spec.javax.el</groupId>
-      <artifactId>jboss-el-api_2.2_spec</artifactId>
+        <groupId>org.glassfish</groupId>
+        <artifactId>javax.el</artifactId>
     </dependency>
     <dependency>
       <groupId>org.jboss.spec.javax.faces</groupId>

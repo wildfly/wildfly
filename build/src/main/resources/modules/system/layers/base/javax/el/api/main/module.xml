@@ -22,8 +22,4 @@
   ~ 02110-1301 USA, or see the FSF site: http://www.fsf.org.
   -->
 
-<module xmlns="urn:jboss:module:1.1" name="javax.el.api">
-    <resources>
-        <!-- Insert resources here -->
-    </resources>
-</module>
+<module-alias xmlns="urn:jboss:module:1.1" name="javax.el.api" target-name="org.glassfish.javax.el"/>
