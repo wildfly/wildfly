@@ -46,6 +46,7 @@
         <module name="org.jgroups"/>
         <module name="org.wildfly.clustering.api"/>
         <module name="org.wildfly.clustering.singleton"/>
+        <module name="org.wildfly.extension.cluster" services="import" optional="true"/>
         <module name="org.wildfly.security.manager"/>
     </dependencies>
 </module>

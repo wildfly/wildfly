@@ -12,6 +12,7 @@ import org.jboss.as.controller.operations.common.GenericSubsystemDescribeHandler
 import org.jboss.as.controller.parsing.ExtensionParsingContext;
 import org.jboss.as.controller.registry.ManagementResourceRegistration;
 import org.jboss.as.controller.registry.OperationEntry;
+import org.jboss.msc.service.ServiceName;
 
 
 /**
@@ -26,6 +27,7 @@ public class ClusterExtension implements Extension {
 
     public static final PathElement SUBSYSTEM_PATH = PathElement.pathElement(SUBSYSTEM, SUBSYSTEM_NAME);
     private static final String RESOURCE_NAME = ClusterExtension.class.getPackage().getName() + ".LocalDescriptions";
+    public static final ServiceName CLUSTER_EXTENSION_SERVICE_NAME = ServiceName.JBOSS.append("clustering");
 
     static StandardResourceDescriptionResolver getResourceDescriptionResolver(final String keyPrefix) {
         String prefix = SUBSYSTEM_NAME + (keyPrefix == null ? "" : "." + keyPrefix);
@@ -46,5 +48,4 @@ public class ClusterExtension implements Extension {
 
         subsystem.registerXMLElementWriter(new ClusterSubsystemXMLWriter());
     }
-
 }

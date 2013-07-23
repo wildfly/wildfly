@@ -60,6 +60,7 @@
         <module name="org.jgroups"/>
         <module name="org.wildfly.clustering.api" optional="true"/>
         <module name="org.wildfly.clustering.server" services="import" optional="true"/>
+        <module name="org.wildfly.clustering.subsystem" services="import" optional="true"/>
         <module name="org.wildfly.security.manager"/>
     </dependencies>
 </module>

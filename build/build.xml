@@ -981,10 +981,6 @@
             <maven-resource group="org.wildfly" artifact="wildfly-clustering-web-undertow"/>
         </module-def>
 
-        <module-def name="org.wildfly.extension.cluster">
-            <maven-resource group="org.wildfly" artifact="wildfly-clustering-subsystem"/>
-        </module-def>
-
         <module-def name="org.jboss.as.cmp">
             <maven-resource group="org.wildfly" artifact="wildfly-cmp"/>
         </module-def>
@@ -1508,6 +1504,10 @@
         <module-def name="sun.jdk"/>
 
         <module-def name="ibm.jdk"/>
+
+        <module-def name="org.wildfly.extension.cluster">
+            <maven-resource group="org.wildfly" artifact="wildfly-clustering-subsystem"/>
+        </module-def>
 
         <module-def name="org.wildfly.extension.undertow">
             <maven-resource group="org.wildfly" artifact="wildfly-undertow"/>

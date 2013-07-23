@@ -984,6 +984,11 @@
 
                 <dependency>
                     <groupId>org.wildfly</groupId>
+                    <artifactId>wildfly-clustering-subsystem</artifactId>
+                </dependency>
+
+                <dependency>
+                    <groupId>org.wildfly</groupId>
                     <artifactId>wildfly-clustering-web-api</artifactId>
                 </dependency>
                 <dependency>
@@ -994,14 +999,10 @@
                     <groupId>org.wildfly</groupId>
                     <artifactId>wildfly-clustering-web-spi</artifactId>
                 </dependency>
-                <dependency>
-                    <groupId>org.wildfly</groupId>
-                    <artifactId>wildfly-clustering-web-undertow</artifactId>
-                </dependency>
 
                 <dependency>
                     <groupId>org.wildfly</groupId>
-                    <artifactId>wildfly-clustering-subsystem</artifactId>
+                    <artifactId>wildfly-clustering-web-undertow</artifactId>
                 </dependency>
 
                 <dependency>

@@ -5,12 +5,8 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_
 import static org.wildfly.extension.cluster.ClusterSubsystemMessages.MESSAGES;
 
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 
-import org.jboss.as.clustering.management.support.impl.ManagementAPIClusterSupport;
-import org.jboss.as.clustering.management.support.impl.ManagementAPIClusterSupportService;
-import org.jboss.as.clustering.management.support.impl.RemoteCacheResponse;
 import org.jboss.as.clustering.msc.ServiceContainerHelper;
 import org.jboss.as.controller.AbstractRuntimeOnlyHandler;
 import org.jboss.as.controller.AttributeDefinition;
@@ -20,6 +16,10 @@ import org.jboss.as.controller.PathAddress;
 import org.jboss.dmr.ModelNode;
 import org.jboss.msc.service.ServiceController;
 import org.jboss.msc.service.ServiceName;
+import org.wildfly.clustering.Node;
+import org.wildfly.extension.cluster.cache.CacheManagement;
+import org.wildfly.extension.cluster.cache.CacheManagementService;
+import org.wildfly.extension.cluster.cache.CacheState;
 
 /**
  * Handler for reading run-time only attributes from an underlying cache service.
@@ -72,11 +72,11 @@ public class DeploymentMetricsHandler extends AbstractRuntimeOnlyHandler {
         DeploymentMetrics metric = DeploymentMetrics.getStat(attrName);
 
         // lookup the channel RPC support for this channel
-        ServiceName rpcServiceName = ManagementAPIClusterSupportService.getServiceName(channelName);
-        ServiceController<ManagementAPIClusterSupport> controller = ServiceContainerHelper.getService(context.getServiceRegistry(false), rpcServiceName);
+        ServiceName serviceName = CacheManagementService.getServiceName(channelName);
+        ServiceController<CacheManagement> controller = ServiceContainerHelper.findService(context.getServiceRegistry(false), serviceName);
 
         // check that the service has been installed and started
-        boolean started = controller != null && controller.getValue() != null;
+        boolean started = controller != null && controller.getState().in(ServiceController.State.UP);
         ModelNode result = new ModelNode();
 
         if (metric == null) {
@@ -84,27 +84,27 @@ public class DeploymentMetricsHandler extends AbstractRuntimeOnlyHandler {
         } else if (!started) {
             context.getFailureDescription().set(ClusterSubsystemMessages.MESSAGES.rpcServiceNotStarted(channelName));
         } else {
-            ManagementAPIClusterSupport support = (ManagementAPIClusterSupport) controller.getValue();
+            CacheManagement management = controller.getValue();
 
             try {
                 // if the cache is not available on the other node, we can get service not found!
-                List<RemoteCacheResponse> rsps = support.getCacheState(channelName, cacheName);
+                Map<Node, CacheState> states = management.getCacheState(cacheName);
 
                 switch (metric) {
                     case CACHE_VIEW:
-                        result.set(createCacheView(rsps));
+                        result.set(createCacheView(states));
                         break;
                     case DISTRIBUTION:
-                        result.set(createDistribution(rsps));
+                        result.set(createDistribution(states));
                         break;
                     case OPERATION_STATS:
-                        result.set(createOperationStats(rsps));
+                        result.set(createOperationStats(states));
                         break;
                     case RPC_STATS:
-                        result.set(createRpcStats(rsps));
+                        result.set(createRpcStats(states));
                         break;
                     case TXN_STATS:
-                        result.set(createTxnStats(rsps));
+                        result.set(createTxnStats(states));
                         break;
                 }
 
@@ -122,55 +122,55 @@ public class DeploymentMetricsHandler extends AbstractRuntimeOnlyHandler {
      * on A and C to refer to B. We use rsp.isInView() for this.
      */
 
-    private ModelNode createCacheView(List<RemoteCacheResponse> rsps) {
+    private ModelNode createCacheView(Map<Node, CacheState> states) {
         ModelNode result = new ModelNode();
-        for (RemoteCacheResponse rsp : rsps) {
-            if (rsp.isInView()) {
-                result.add(rsp.getResponder().getName(), rsp.getView());
-            }
+        for (Map.Entry<Node, CacheState> entry: states.entrySet()) {
+            Node node = entry.getKey();
+            CacheState state = entry.getValue();
+            result.add(node.getName(), state.getView());
         }
         return result;
     }
 
-    private ModelNode createDistribution(List<RemoteCacheResponse> rsps) {
+    private ModelNode createDistribution(Map<Node, CacheState> states) {
         ModelNode result = new ModelNode();
-        for (RemoteCacheResponse rsp : rsps) {
-            if (rsp.isInView()) {
-                result.add(rsp.getResponder().getName(), MESSAGES.cacheDistributionStats(rsp.getEntries()));
-            }
+        for (Map.Entry<Node, CacheState> entry: states.entrySet()) {
+            Node node = entry.getKey();
+            CacheState state = entry.getValue();
+            result.add(node.getName(), MESSAGES.cacheDistributionStats(state.getEntries()));
         }
         return result;
     }
 
-    private ModelNode createOperationStats(List<RemoteCacheResponse> rsps) {
+    private ModelNode createOperationStats(Map<Node, CacheState> states) {
         ModelNode result = new ModelNode();
-        for (RemoteCacheResponse rsp : rsps) {
-            if (rsp.isInView()) {
-                String stats = MESSAGES.cacheOperationStats(rsp.getHits(), rsp.getMisses(), rsp.getStores(), rsp.getRemoveHits(), rsp.getRemoveMisses());
-                result.add(rsp.getResponder().getName(), stats);
-            }
+        for (Map.Entry<Node, CacheState> entry: states.entrySet()) {
+            Node node = entry.getKey();
+            CacheState state = entry.getValue();
+            String stats = MESSAGES.cacheOperationStats(state.getHits(), state.getMisses(), state.getStores(), state.getRemoveHits(), state.getRemoveMisses());
+            result.add(node.getName(), stats);
         }
         return result;
     }
 
-    private ModelNode createRpcStats(List<RemoteCacheResponse> rsps) {
+    private ModelNode createRpcStats(Map<Node, CacheState> states) {
         ModelNode result = new ModelNode();
-        for (RemoteCacheResponse rsp : rsps) {
-            if (rsp.isInView()) {
-                String stats = MESSAGES.cacheRPCStats(rsp.getRPCCount(), rsp.getRPCFailures());
-                result.add(rsp.getResponder().getName(), stats);
-            }
+        for (Map.Entry<Node, CacheState> entry: states.entrySet()) {
+            Node node = entry.getKey();
+            CacheState state = entry.getValue();
+            String stats = MESSAGES.cacheRPCStats(state.getRpcCount(), state.getRpcFailures());
+            result.add(node.getName(), stats);
         }
         return result;
     }
 
-    private ModelNode createTxnStats(List<RemoteCacheResponse> rsps) {
+    private ModelNode createTxnStats(Map<Node, CacheState> states) {
         ModelNode result = new ModelNode();
-        for (RemoteCacheResponse rsp : rsps) {
-            if (rsp.isInView()) {
-                String stats = MESSAGES.cacheTxnStats(rsp.getPrepares(), rsp.getCommits(), rsp.getRollbacks());
-                result.add(rsp.getResponder().getName(), stats);
-            }
+        for (Map.Entry<Node, CacheState> entry: states.entrySet()) {
+            Node node = entry.getKey();
+            CacheState state = entry.getValue();
+            String stats = MESSAGES.cacheTxnStats(state.getPrepares(), state.getCommits(), state.getRollbacks());
+            result.add(node.getName(), stats);
         }
         return result;
     }

@@ -12,6 +12,8 @@ import org.jboss.as.controller.ServiceVerificationHandler;
 import org.jboss.as.controller.registry.Resource;
 import org.jboss.dmr.ModelNode;
 import org.jboss.msc.service.ServiceController;
+import org.jboss.msc.service.ValueService;
+import org.jboss.msc.value.ImmediateValue;
 
 /**
  * Handler responsible for adding the subsystem resource to the model
@@ -54,5 +56,7 @@ class ClusterSubsystemAdd extends AbstractAddStepHandler {
 
         // this subsystem gets started before jgroups and infinispan! Need to have it started after these two.
         ROOT_LOGGER.activatingSubsystem();
+
+        newControllers.add(context.getServiceTarget().addService(ClusterExtension.CLUSTER_EXTENSION_SERVICE_NAME, new ValueService<Void>(new ImmediateValue<Void>(null))).install());
     }
 }

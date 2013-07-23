@@ -5,12 +5,8 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_
 import static org.wildfly.extension.cluster.ClusterSubsystemMessages.MESSAGES;
 
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 
-import org.jboss.as.clustering.management.support.impl.ManagementAPIClusterSupport;
-import org.jboss.as.clustering.management.support.impl.ManagementAPIClusterSupportService;
-import org.jboss.as.clustering.management.support.impl.RemoteClusterResponse;
 import org.jboss.as.clustering.msc.ServiceContainerHelper;
 import org.jboss.as.controller.AbstractRuntimeOnlyHandler;
 import org.jboss.as.controller.AttributeDefinition;
@@ -20,6 +16,10 @@ import org.jboss.as.controller.PathAddress;
 import org.jboss.dmr.ModelNode;
 import org.jboss.msc.service.ServiceController;
 import org.jboss.msc.service.ServiceName;
+import org.wildfly.clustering.Node;
+import org.wildfly.extension.cluster.channel.ChannelManagement;
+import org.wildfly.extension.cluster.channel.ChannelManagementService;
+import org.wildfly.extension.cluster.channel.ChannelState;
 
 /**
  * Handler for reading run-time only attributes from an underlying channel service.
@@ -69,11 +69,11 @@ public class ClusterMetricsHandler extends AbstractRuntimeOnlyHandler {
         ClusterMetrics metric = ClusterMetrics.getStat(attrName);
 
         // lookup the channel RPC support for this channel
-        ServiceName rpcServiceName = ManagementAPIClusterSupportService.getServiceName(channelName);
-        ServiceController<ManagementAPIClusterSupport> controller = ServiceContainerHelper.getService(context.getServiceRegistry(false), rpcServiceName);
+        ServiceName serviceName = ChannelManagementService.getServiceName(channelName);
+        ServiceController<ChannelManagement> controller = ServiceContainerHelper.findService(context.getServiceRegistry(false), serviceName);
 
         // check that the service has been installed and started
-        boolean started = controller != null && controller.getValue() != null;
+        boolean started = controller != null && controller.getState().in(ServiceController.State.UP);
         ModelNode result = new ModelNode();
 
         if (metric == null) {
@@ -81,20 +81,20 @@ public class ClusterMetricsHandler extends AbstractRuntimeOnlyHandler {
         } else if (!started) {
             context.getFailureDescription().set(ClusterSubsystemMessages.MESSAGES.rpcServiceNotStarted(channelName));
         } else {
-            ManagementAPIClusterSupport support = (ManagementAPIClusterSupport) controller.getValue();
+            ChannelManagement management = controller.getValue();
 
             try {
-                List<RemoteClusterResponse> rsps = support.getClusterState(channelName);
+                Map<Node, ChannelState> states = management.getClusterState();
 
                 switch (metric) {
                     case RPC_STATS:
-                        result.set(createClusterRPCStats(rsps));
+                        result.set(createClusterRPCStats(states));
                         break;
                     case VIEW:
-                        result.set(createClusterView(rsps));
+                        result.set(createClusterView(states));
                         break;
                     case VIEW_HISTORY:
-                        result.set(createClusterViewHistory(rsps));
+                        result.set(createClusterViewHistory(states));
                         break;
                 }
 
@@ -109,41 +109,47 @@ public class ClusterMetricsHandler extends AbstractRuntimeOnlyHandler {
         context.completeStep(OperationContext.ResultHandler.NOOP_RESULT_HANDLER);
     }
 
-    private ModelNode createClusterRPCStats(List<RemoteClusterResponse> rsps) {
+    private ModelNode createClusterRPCStats(Map<Node, ChannelState> states) {
         ModelNode result = new ModelNode();
-        for (RemoteClusterResponse rsp : rsps) {
+        for (Map.Entry<Node, ChannelState> entry: states.entrySet()) {
+            Node node = entry.getKey();
+            ChannelState state = entry.getValue();
             // create a LIST of PROPERTY
-            int unicasts = rsp.getAsyncUnicasts() + rsp.getSyncUnicasts();
-            int multicasts = rsp.getAsyncMulticasts() + rsp.getSyncMulticasts();
-            int anycasts = rsp.getAsyncAnycasts() + rsp.getSyncAnycasts();
-            result.add(rsp.getResponder().getName(), MESSAGES.clusterRPCStats(unicasts, multicasts, anycasts));
+            int unicasts = state.getRpcStatistics().get(ChannelState.RpcType.ASYNC_UNICAST).intValue() + state.getRpcStatistics().get(ChannelState.RpcType.SYNC_UNICAST).intValue();
+            int multicasts = state.getRpcStatistics().get(ChannelState.RpcType.ASYNC_MULTICAST).intValue() + state.getRpcStatistics().get(ChannelState.RpcType.SYNC_MULTICAST).intValue();
+            int anycasts = state.getRpcStatistics().get(ChannelState.RpcType.ASYNC_ANYCAST).intValue() + state.getRpcStatistics().get(ChannelState.RpcType.SYNC_ANYCAST).intValue();
+            result.add(node.getName(), MESSAGES.clusterRPCStats(unicasts, multicasts, anycasts));
         }
         return result;
     }
 
-    private ModelNode createClusterView(List<RemoteClusterResponse> rsps) {
+    private ModelNode createClusterView(Map<Node, ChannelState> states) {
         ModelNode result = new ModelNode();
-        for (RemoteClusterResponse rsp : rsps) {
+        for (Map.Entry<Node, ChannelState> entry: states.entrySet()) {
+            Node node = entry.getKey();
+            ChannelState state = entry.getValue();
             // create a LIST of PROPERTY
-            result.add(rsp.getResponder().getName(), rsp.getView());
+            result.add(node.getName(), state.getView());
         }
         return result;
     }
 
-    private ModelNode createClusterViewHistory(List<RemoteClusterResponse> rsps) {
+    private ModelNode createClusterViewHistory(Map<Node, ChannelState> states) {
         ModelNode result = new ModelNode();
-        for (RemoteClusterResponse rsp : rsps) {
+        for (Map.Entry<Node, ChannelState> entry: states.entrySet()) {
+            Node node = entry.getKey();
+            ChannelState state = entry.getValue();
             // create a LIST of PROPERTY
-            String viewHistory = rsp.getViewHistory();
+            String viewHistory = state.getViewHistory();
             if (viewHistory != null) {
                 String[] viewHistoryElements = viewHistory.split("\n");
                 ModelNode parts = new ModelNode();
                 for (String viewHistoryElement : viewHistoryElements) {
                     parts.add(new ModelNode(viewHistoryElement));
                 }
-                result.add(rsp.getResponder().getName(), parts);
+                result.add(node.getName(), parts);
             } else {
-                result.add(rsp.getResponder().getName(), new ModelNode());
+                result.add(node.getName(), new ModelNode());
             }
         }
         return result;
