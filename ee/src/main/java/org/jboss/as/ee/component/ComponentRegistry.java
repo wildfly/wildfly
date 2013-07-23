@@ -61,10 +61,13 @@ public class ComponentRegistry {
     }
 
     public void addComponent(final ComponentConfiguration componentConfiguration) {
-        if(componentConfiguration.getViews().size() > 1) {
-
+        if(componentConfiguration.getViews().size() < 2) {
+            if(componentConfiguration.getViews().size() == 0) {
+                componentsByClass.put(componentConfiguration.getComponentClass(), new ComponentManagedReferenceFactory(componentConfiguration.getComponentDescription().getStartServiceName(), null));
+            } else {
+                componentsByClass.put(componentConfiguration.getComponentClass(), new ComponentManagedReferenceFactory(componentConfiguration.getComponentDescription().getStartServiceName(), componentConfiguration.getViews().get(0).getViewServiceName()));
+            }
         }
-        componentsByClass.put(componentConfiguration.getComponentClass(), new ComponentManagedReferenceFactory(componentConfiguration.getComponentDescription().getStartServiceName()));
     }
 
     public ManagedReferenceFactory createInstanceFactory(final Class<?> componentClass) {
@@ -114,10 +117,13 @@ public class ComponentRegistry {
     public class ComponentManagedReferenceFactory implements ManagedReferenceFactory {
 
         private final ServiceName serviceName;
+        private final ServiceName viewServiceName;
         private volatile ServiceController<Component> component;
+        private volatile ServiceController<ViewService.View> view;
 
-        private ComponentManagedReferenceFactory(final ServiceName serviceName) {
+        private ComponentManagedReferenceFactory(final ServiceName serviceName, ServiceName viewServiceName) {
             this.serviceName = serviceName;
+            this.viewServiceName = viewServiceName;
         }
 
         @Override
@@ -129,10 +135,25 @@ public class ComponentRegistry {
                     }
                 }
             }
+            if (view == null && viewServiceName != null) {
+                synchronized (this) {
+                    if (view == null) {
+                        view = (ServiceController<ViewService.View>) serviceRegistry.getService(viewServiceName);
+                    }
+                }
+            }
             if (component == null) {
                 return null;
             }
-            return new ComponentManagedReference(component.getValue().createInstance());
+            if(view == null) {
+                return new ComponentManagedReference(component.getValue().createInstance());
+            } else {
+                try {
+                    return view.getValue().createInstance();
+                } catch (Exception e) {
+                    throw new RuntimeException(e);
+                }
+            }
         }
 
 
