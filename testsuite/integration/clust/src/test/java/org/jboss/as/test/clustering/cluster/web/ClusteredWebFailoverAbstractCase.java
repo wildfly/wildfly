@@ -35,7 +35,6 @@ import org.apache.http.impl.client.DefaultHttpClient;
 import org.jboss.arquillian.container.test.api.OperateOnDeployment;
 import org.jboss.arquillian.container.test.api.RunAsClient;
 import org.jboss.arquillian.junit.Arquillian;
-import org.jboss.arquillian.junit.InSequence;
 import org.jboss.arquillian.test.api.ArquillianResource;
 import org.jboss.as.test.clustering.ClusterHttpClientUtil;
 import org.jboss.as.test.clustering.cluster.ClusterAbstractTestCase;
@@ -54,12 +53,6 @@ import org.junit.runner.RunWith;
 @RunAsClient
 public abstract class ClusteredWebFailoverAbstractCase extends ClusterAbstractTestCase {
 
-    @Override
-    protected void setUp() {
-        super.setUp();
-        deploy(DEPLOYMENTS);
-    }
-
     /**
      * Test simple graceful shutdown failover:
      * <p/>
@@ -75,7 +68,6 @@ public abstract class ClusteredWebFailoverAbstractCase extends ClusterAbstractTe
      * @throws URISyntaxException
      */
     @Test
-    @InSequence(1)
     public void testGracefulSimpleFailover(
             @ArquillianResource(SimpleServlet.class) @OperateOnDeployment(DEPLOYMENT_1) URL baseURL1,
             @ArquillianResource(SimpleServlet.class) @OperateOnDeployment(DEPLOYMENT_2) URL baseURL2)
@@ -183,7 +175,6 @@ public abstract class ClusteredWebFailoverAbstractCase extends ClusterAbstractTe
      * @throws URISyntaxException
      */
     @Test
-    @InSequence(2)
     public void testGracefulUndeployFailover(
             @ArquillianResource(SimpleServlet.class) @OperateOnDeployment(DEPLOYMENT_1) URL baseURL1,
             @ArquillianResource(SimpleServlet.class) @OperateOnDeployment(DEPLOYMENT_2) URL baseURL2)
@@ -272,12 +263,6 @@ public abstract class ClusteredWebFailoverAbstractCase extends ClusterAbstractTe
         }
 
         // Assert.fail("Show me the logs please!");
-    }
-
-    @Test
-    @InSequence(3)
-    public void testCleanup() {
-        undeploy(DEPLOYMENTS);
     }
 
     private void establishView(HttpClient client, URL baseURL, String... members) throws URISyntaxException, IOException {

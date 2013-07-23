@@ -24,12 +24,9 @@ package org.jboss.as.test.clustering.cluster.ejb3.stateful.remote.failover;
 
 import javax.naming.NamingException;
 
-import org.jboss.arquillian.container.test.api.ContainerController;
-import org.jboss.arquillian.container.test.api.Deployer;
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.container.test.api.TargetsContainer;
 import org.jboss.arquillian.junit.Arquillian;
-import org.jboss.arquillian.test.api.ArquillianResource;
 import org.jboss.as.test.clustering.ClusteringTestConstants;
 import org.jboss.as.test.clustering.EJBClientContextSelector;
 import org.jboss.as.test.clustering.EJBDirectory;
@@ -73,12 +70,6 @@ public class LocalEJBClientFailoverTestCase extends ClusterAbstractTestCase {
     private static final String NODE_NAME_ARQ_DEPLOYMENT_CONTAINER_1 = "node-name-arq-deployment-container-1";
     private static final String NODE_NAME_ARQ_DEPLOYMENT_CONTAINER_2 = "node-name-arq-deployment-container-2";
 
-    @ArquillianResource
-    private ContainerController container;
-
-    @ArquillianResource
-    private Deployer deployer;
-
     private static EJBDirectory directory;
     private static EJBDirectory clientDirectory;
 
@@ -97,7 +88,6 @@ public class LocalEJBClientFailoverTestCase extends ClusterAbstractTestCase {
         return jar;
     }
 
-
     @Deployment(name = NODE_NAME_ARQ_DEPLOYMENT_CONTAINER_1, testable = false, managed = false)
     @TargetsContainer(CONTAINER_1)
     public static Archive<?> createNodeNameApplicationForContainer1() {
@@ -106,7 +96,7 @@ public class LocalEJBClientFailoverTestCase extends ClusterAbstractTestCase {
 
     @Deployment(name = NODE_NAME_ARQ_DEPLOYMENT_CONTAINER_2, testable = false, managed = false)
     @TargetsContainer(CONTAINER_2)
-    public static Archive createNodeNameApplicationForContainer2() {
+    public static Archive<?> createNodeNameApplicationForContainer2() {
         return createNodeNameApplication();
     }
 

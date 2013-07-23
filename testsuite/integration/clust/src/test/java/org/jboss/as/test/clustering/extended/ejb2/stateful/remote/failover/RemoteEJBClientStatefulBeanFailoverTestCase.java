@@ -54,7 +54,7 @@ import org.junit.runner.RunWith;
  */
 @RunWith(Arquillian.class)
 @RunAsClient
-public class RemoteEJBClientStatefulBeanFailoverTestCase extends RemoteEJBClientStatefulFaliloverTestBase {
+public class RemoteEJBClientStatefulBeanFailoverTestCase extends RemoteEJBClientStatefulFailoverTestBase {
 
     @ArquillianResource
     private ContainerController container;

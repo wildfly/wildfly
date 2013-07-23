@@ -62,7 +62,7 @@ import org.junit.runner.RunWith;
  */
 @RunWith(Arquillian.class)
 @RunAsClient
-@Ignore("AS7-6604") // now WFLY-828
+@Ignore("https://issues.jboss.org/browse/WFLY-828")
 public class RemoteEJBClientStatefulBeanFailoverTestCase extends ClusterAbstractTestCase {
 
     private static final Logger logger = Logger.getLogger(RemoteEJBClientStatefulBeanFailoverTestCase.class);
@@ -107,14 +107,6 @@ public class RemoteEJBClientStatefulBeanFailoverTestCase extends ClusterAbstract
     @AfterClass
     public static void destroy() throws NamingException {
         context.close();
-    }
-
-    @Override
-    protected void setUp() {
-        super.setUp();
-
-        // Also deploy
-        deploy(DEPLOYMENTS);
     }
 
     /**

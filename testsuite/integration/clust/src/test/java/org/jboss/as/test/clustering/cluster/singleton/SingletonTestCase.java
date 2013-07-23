@@ -80,12 +80,6 @@ public class SingletonTestCase extends ClusterAbstractTestCase {
         return war;
     }
 
-    @Override
-    protected void setUp() {
-        super.setUp();
-        deploy(DEPLOYMENTS);
-    }
-
     @Test
     public void testSingletonService(
             @ArquillianResource() @OperateOnDeployment(DEPLOYMENT_1) URL baseURL1,
@@ -275,11 +269,6 @@ public class SingletonTestCase extends ClusterAbstractTestCase {
             }
         } finally {
             HttpClientUtils.closeQuietly(client);
-
-            deployer.undeploy(DEPLOYMENT_1);
-            controller.stop(CONTAINER_1);
-            deployer.undeploy(DEPLOYMENT_2);
-            controller.stop(CONTAINER_2);
         }
     }
 

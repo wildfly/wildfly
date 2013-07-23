@@ -34,14 +34,12 @@ import org.apache.http.Header;
 import org.apache.http.HttpResponse;
 import org.apache.http.client.HttpClient;
 import org.apache.http.client.methods.HttpGet;
-//import org.apache.http.client.utils.HttpClientUtils;
 import org.apache.http.impl.client.DefaultHttpClient;
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.container.test.api.OperateOnDeployment;
 import org.jboss.arquillian.container.test.api.RunAsClient;
 import org.jboss.arquillian.container.test.api.TargetsContainer;
 import org.jboss.arquillian.junit.Arquillian;
-import org.jboss.arquillian.junit.InSequence;
 import org.jboss.arquillian.test.api.ArquillianResource;
 import org.jboss.as.test.clustering.AbstractEJBDirectory;
 import org.jboss.as.test.clustering.ClusterHttpClientUtil;
@@ -110,12 +108,6 @@ public class StatefulWithXPCFailoverTestCase extends ClusterAbstractTestCase {
         return war;
     }
 
-    @Override
-    protected void setUp() {
-        super.setUp();
-        deploy(DEPLOYMENTS);
-    }
-
     /**
      * Use the second level cache statistics to ensure that deleting an entity on a cluster node, will
      * remove the entity from the second level cache on other nodes.
@@ -131,7 +123,6 @@ public class StatefulWithXPCFailoverTestCase extends ClusterAbstractTestCase {
      * @throws URISyntaxException
      */
     @Test
-    @InSequence(1)
     public void testSecondLevelCache(
             @ArquillianResource() @OperateOnDeployment(DEPLOYMENT_1) URL baseURL1,
             @ArquillianResource() @OperateOnDeployment(DEPLOYMENT_2) URL baseURL2)
@@ -161,7 +152,7 @@ public class StatefulWithXPCFailoverTestCase extends ClusterAbstractTestCase {
             assertExecuteUrl(client, xpc1_echo_url + "StartingTestSecondLevelCache");  // echo message to server.log
             assertExecuteUrl(client, xpc2_echo_url + "StartingTestSecondLevelCache"); // echo message to server.log
 
-            String employeeName = executeUrlWithAnswer(client, xpc1_create_url, "create entity in node1 in memory db");                           //
+            String employeeName = executeUrlWithAnswer(client, xpc1_create_url, "create entity in node1 in memory db");
             assertEquals(employeeName, "Tom Brady");
             log.info(new Date() + "about to read entity on node1 (from xpc queue)");
 
@@ -210,7 +201,6 @@ public class StatefulWithXPCFailoverTestCase extends ClusterAbstractTestCase {
     }
 
     @Test
-    @InSequence(2)
     public void testBasicXPC(
             @ArquillianResource() @OperateOnDeployment(DEPLOYMENT_1) URL baseURL1,
             @ArquillianResource() @OperateOnDeployment(DEPLOYMENT_2) URL baseURL2)
@@ -273,14 +263,6 @@ public class StatefulWithXPCFailoverTestCase extends ClusterAbstractTestCase {
         } finally {
             org.apache.http.client.utils.HttpClientUtils.closeQuietly(client);
         }
-    }
-
-    @Test
-    @InSequence(3)
-    public void testCleanup() {
-        // node-1 was last shutdown, lets bring it up and remove deployments
-        start(CONTAINER_1);
-        undeploy(DEPLOYMENTS);
     }
 
     private String executeUrlWithAnswer(HttpClient client, String url, String message) throws IOException, InterruptedException {

@@ -21,11 +21,14 @@
  */
 package org.jboss.as.test.clustering.cluster.ejb3.deployment;
 
-import org.jboss.arquillian.container.test.api.Deployment;
+import javax.naming.Context;
+import javax.naming.InitialContext;
+
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.container.test.api.RunAsClient;
 import org.jboss.arquillian.container.test.api.TargetsContainer;
 import org.jboss.arquillian.junit.Arquillian;
+import org.jboss.arquillian.junit.InSequence;
 import org.jboss.as.test.clustering.ClusteringTestConstants;
 import org.jboss.as.test.clustering.cluster.ClusterAbstractTestCase;
 import org.jboss.shrinkwrap.api.Archive;
@@ -34,16 +37,6 @@ import org.jboss.shrinkwrap.api.spec.JavaArchive;
 import org.junit.Assert;
 import org.junit.Test;
 import org.junit.runner.RunWith;
-
-import javax.naming.Context;
-import javax.naming.InitialContext;
-
-import org.jboss.arquillian.junit.InSequence;
-import org.jboss.arquillian.test.api.ArquillianResource;
-
-import static org.jboss.as.test.clustering.ClusteringTestConstants.*;
-
-import org.jboss.as.test.clustering.NodeUtil;
 
 /**
  * The purpose of this testcase is to ensure that a EJB marked as clustered, either via annotation or deployment descriptor,
@@ -58,7 +51,7 @@ public class ClusteredBeanDeploymentTestCase extends ClusterAbstractTestCase {
 
     @Deployment(name = DEPLOYMENT_1, managed = false)
     @TargetsContainer(CONTAINER_1)
-    public static Archive createDDBasedDeployment() {
+    public static Archive<?> createDDBasedDeployment() {
         final JavaArchive ejbJar = ShrinkWrap.create(JavaArchive.class, DD_BASED_MODULE_NAME + ".jar");
         ejbJar.addClasses(DDBasedClusteredBean.class, ClusteredBean.class);
         ejbJar.addClasses(ClusterAbstractTestCase.class, ClusteringTestConstants.class);
@@ -66,10 +59,32 @@ public class ClusteredBeanDeploymentTestCase extends ClusterAbstractTestCase {
         return ejbJar;
     }
 
+    // TODO: Workaround for https://issues.jboss.org/browse/ARQ-351, remove after fixed.
+
     @Override
-    protected void setUp() {
-        super.setUp();
+    public void beforeTestMethod() {
+        // Do nothing.
+    }
+
+    @Override
+    public void afterTestMethod() {
+        // Do nothing.
+    }
+
+    @Test
+    @InSequence(Integer.MIN_VALUE)
+    @RunAsClient
+    public void setup() {
+        start(CONTAINER_1);
         deploy(DEPLOYMENT_1);
+    }
+
+    @Test
+    @InSequence(Integer.MAX_VALUE)
+    @RunAsClient
+    public void cleanup() {
+        start(CONTAINER_1);
+        undeploy(DEPLOYMENT_1);
     }
 
     /**

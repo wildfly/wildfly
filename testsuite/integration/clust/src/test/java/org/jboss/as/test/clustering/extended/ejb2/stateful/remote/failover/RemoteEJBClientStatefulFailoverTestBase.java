@@ -29,8 +29,8 @@ import org.junit.BeforeClass;
 /**
  * @author Ondrej Chaloupka
  */
-public abstract class RemoteEJBClientStatefulFaliloverTestBase {
-    private static final Logger log = Logger.getLogger(RemoteEJBClientStatefulFaliloverTestBase.class);
+public abstract class RemoteEJBClientStatefulFailoverTestBase {
+    private static final Logger log = Logger.getLogger(RemoteEJBClientStatefulFailoverTestBase.class);
 
     protected static final String PROPERTIES_FILE = "cluster/ejb3/stateful/failover/sfsb-failover-jboss-ejb-client.properties";
     protected static final String ARCHIVE_NAME = "ejb2-failover-test";

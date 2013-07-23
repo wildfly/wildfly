@@ -104,12 +104,6 @@ public class XSiteSimpleTestCase extends ExtendedClusterAbstractTestCase {
         return war;
     }
 
-    @Override
-    protected void setUp() {
-        super.setUp();
-        deploy(XSITE_DEPLOYMENTS);
-    }
-
     /*
      * Tests that puts get relayed to their backup sites
      *
