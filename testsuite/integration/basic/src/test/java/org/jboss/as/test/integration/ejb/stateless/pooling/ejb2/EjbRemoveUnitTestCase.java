@@ -44,6 +44,7 @@ import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.asset.StringAsset;
 import org.jboss.shrinkwrap.api.spec.JavaArchive;
 import org.junit.Assert;
+import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
@@ -59,6 +60,7 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SUC
  *
  * Dimitris Andreadis, Ondrej Chaloupka
  */
+@Ignore("WFLY-1745")
 @RunWith(Arquillian.class)
 @ServerSetup(EjbRemoveUnitTestCase.EjbRemoveUnitTestCaseSetup.class)
 public class EjbRemoveUnitTestCase {
