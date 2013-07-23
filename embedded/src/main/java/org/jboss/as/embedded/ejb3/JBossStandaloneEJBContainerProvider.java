@@ -21,16 +21,9 @@
  */
 package org.jboss.as.embedded.ejb3;
 
-import static org.jboss.as.controller.client.helpers.ClientConstants.ADD;
-import static org.jboss.as.controller.client.helpers.ClientConstants.EXTENSION;
-import static org.jboss.as.controller.client.helpers.ClientConstants.OP;
-import static org.jboss.as.controller.client.helpers.ClientConstants.OP_ADDR;
-import static org.jboss.as.controller.client.helpers.ClientConstants.OUTCOME;
-import static org.jboss.as.controller.client.helpers.ClientConstants.SUCCESS;
 import static org.jboss.as.embedded.EmbeddedMessages.MESSAGES;
 
 import java.io.File;
-import java.io.IOException;
 import java.util.Map;
 
 import javax.ejb.EJBException;
@@ -40,25 +33,12 @@ import javax.ejb.spi.EJBContainerProvider;
 import org.jboss.as.embedded.EmbeddedServerFactory;
 import org.jboss.as.embedded.StandaloneServer;
 import org.wildfly.security.manager.WildFlySecurityManager;
-import org.jboss.dmr.ModelNode;
 import org.jboss.modules.Module;
 
 /**
  * @author <a href="mailto:cdewolf@redhat.com">Carlo de Wolf</a>
  */
 public class JBossStandaloneEJBContainerProvider implements EJBContainerProvider {
-
-    private void addEmbeddedExtensionTo(final StandaloneServer server) throws IOException {
-        // FIXME: doesn't work, because org.jboss.as.embedded lives on the wrong side of the CL
-        final ModelNode address = new ModelNode().setEmptyList();
-        final ModelNode add = new ModelNode();
-        add.get(OP_ADDR).set(address).add(EXTENSION, "org.jboss.as.embedded");
-        add.get(OP).set(ADD);
-        final ModelNode result = server.getModelControllerClient().execute(add);
-        if (!result.get(OUTCOME).equals(SUCCESS)) {
-            throw new EJBException(result.asString());
-        }
-    }
 
     @Override
     public EJBContainer createEJBContainer(Map<?, ?> properties) throws EJBException {
@@ -87,7 +67,6 @@ public class JBossStandaloneEJBContainerProvider implements EJBContainerProvider
             server = EmbeddedServerFactory.create(Module.getContextModuleLoader(), jbossHomeDir);
         try {
             server.start();
-//            addEmbeddedExtensionTo(server);
             final JBossStandaloneEJBContainer container = new JBossStandaloneEJBContainer(server);
             boolean okay = false;
             try {
