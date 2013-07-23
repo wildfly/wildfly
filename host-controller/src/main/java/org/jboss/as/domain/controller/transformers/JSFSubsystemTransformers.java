@@ -117,7 +117,7 @@ class JSFSubsystemTransformers {
                 final String name = operation.require(NAME).asString();
                 final ModelNode value = operation.get(ModelDescriptionConstants.VALUE);
                 if (SLOT_ATTRIBUTE_NAME.equals(name)) {
-                    if (value.isDefined() && value.equals(SLOT_DEFAULT_VALUE)) {
+                    if (value.isDefined() && SLOT_DEFAULT_VALUE.equals(value.asString())) {
                         return DISCARD.transformOperation(context, address, operation);
                     } else {
                         return new TransformedOperation(operation,
