@@ -26,6 +26,7 @@ import java.net.URISyntaxException;
 import java.net.URL;
 import java.util.Formatter;
 
+import org.apache.http.Header;
 import org.apache.http.HttpResponse;
 import org.apache.http.client.methods.HttpGet;
 import org.apache.http.client.utils.HttpClientUtils;
@@ -55,8 +56,7 @@ public abstract class SessionPassivationTestCase extends ClusterAbstractTestCase
 
     @Test
     @InSequence(1)
-    public void test(@ArquillianResource(SessionOperationServlet.class) @OperateOnDeployment(DEPLOYMENT_1) URL baseURL1,
-                     @ArquillianResource(SessionOperationServlet.class) @OperateOnDeployment(DEPLOYMENT_2) URL baseURL2)
+    public void test(@ArquillianResource(SessionOperationServlet.class) @OperateOnDeployment(DEPLOYMENT_1) URL baseURL1)
                              throws IOException, URISyntaxException, InterruptedException {
         DefaultHttpClient client1 = org.jboss.as.test.http.util.HttpClientUtils.relaxedCookieHttpClient();
         DefaultHttpClient client2 = org.jboss.as.test.http.util.HttpClientUtils.relaxedCookieHttpClient();
@@ -168,29 +168,17 @@ public abstract class SessionPassivationTestCase extends ClusterAbstractTestCase
         }
     }
 
-    static private void checkResponseForHeader(HttpResponse response, String headerName) {
-        Assert.assertTrue("response doesn't contain header '"+headerName+"', all response headers=" +
-                showHeaders(response.getAllHeaders()),response.containsHeader(headerName));
+    private static void checkResponseForHeader(HttpResponse response, String headerName) {
+        Assert.assertTrue("response doesn't contain header '" + headerName + "', all response headers=" +
+                showHeaders(response.getAllHeaders()), response.containsHeader(headerName));
     }
 
-    static private String showHeaders(final org.apache.http.Header[] headers) {
+    private static String showHeaders(final org.apache.http.Header[] headers) {
         StringBuilder stringBuilder = new StringBuilder();
         Formatter result = new Formatter(stringBuilder);
-        for (int looper = 0; looper < headers.length;looper++) {
-            result.format("{name=%s, value=%s}, ", headers[looper].getName(), headers[looper].getValue());
+        for (Header header : headers) {
+            result.format("{name=%s, value=%s}, ", header.getName(), header.getValue());
         }
         return result.toString();
-    }
-
-    @Override
-    protected void setUp() {
-        super.setUp();
-        deploy(DEPLOYMENTS);
-    }
-
-    @Test
-    @InSequence(Integer.MAX_VALUE)
-    public void testCleanup() {
-        undeploy(DEPLOYMENTS);
     }
 }

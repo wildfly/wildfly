@@ -94,12 +94,6 @@ public class RemoteEJBClientDDBasedSFSBFailoverTestCase extends ClusterAbstractT
         context.close();
     }
 
-    @Override
-    protected void setUp() {
-        super.setUp();
-        deploy(DEPLOYMENTS);
-    }
-
     /**
      * Starts 2 nodes with the clustered beans deployed on each node. Invokes a (deployment descriptor based) clustered SFSB a few times.
      * Then stops a node from among the cluster (the one which received the last invocation) and continues invoking
@@ -112,8 +106,6 @@ public class RemoteEJBClientDDBasedSFSBFailoverTestCase extends ClusterAbstractT
     public void testRemoteClientFailoverOnShutdown() throws Exception {
 
         final ContextSelector<EJBClientContext> previousSelector = EJBClientContextSelector.setup("cluster/ejb3/stateful/failover/sfsb-failover-jboss-ejb-client.properties");
-        boolean container1Stopped = false;
-        boolean container2Stopped = false;
         try {
             final RemoteCounter remoteCounter = context.lookupStateful(DDBasedClusteredSFSB.class, RemoteCounter.class);
             // invoke on the bean a few times
@@ -131,13 +123,9 @@ public class RemoteEJBClientDDBasedSFSBFailoverTestCase extends ClusterAbstractT
             final String previousInvocationNodeName = result.getNodeName();
             // the value is configured in arquillian.xml of the project
             if (previousInvocationNodeName.equals(NODE_1)) {
-                undeploy(DEPLOYMENT_1);
                 stop(CONTAINER_1);
-                container1Stopped = true;
             } else {
-                undeploy(DEPLOYMENT_2);
                 stop(CONTAINER_2);
-                container2Stopped = true;
             }
             // invoke again
             CounterResult resultAfterShuttingDownANode = remoteCounter.increment();

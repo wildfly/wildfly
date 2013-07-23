@@ -49,7 +49,6 @@ import org.jboss.arquillian.container.test.api.OperateOnDeployment;
 import org.jboss.arquillian.container.test.api.RunAsClient;
 import org.jboss.arquillian.container.test.api.TargetsContainer;
 import org.jboss.arquillian.junit.Arquillian;
-import org.jboss.arquillian.junit.InSequence;
 import org.jboss.arquillian.test.api.ArquillianResource;
 import org.jboss.as.test.clustering.ClusterHttpClientUtil;
 import org.jboss.as.test.clustering.ViewChangeListener;
@@ -97,12 +96,6 @@ public class JSFFailoverTestCase extends ClusterAbstractTestCase {
         war.addAsWebInfResource(EmptyAsset.INSTANCE, "beans.xml");
         war.setManifest(new StringAsset("Manifest-Version: 1.0\nDependencies: org.jboss.msc, org.jboss.as.clustering.common, org.infinispan\n"));
         return war;
-    }
-
-    @Override
-    protected void setUp() {
-        super.setUp();
-        deploy(DEPLOYMENTS);
     }
 
     /**
@@ -216,7 +209,6 @@ public class JSFFailoverTestCase extends ClusterAbstractTestCase {
      * @throws URISyntaxException
      */
     @Test
-    @InSequence(1)
     public void testGracefulSimpleFailover(
             @ArquillianResource() @OperateOnDeployment(DEPLOYMENT_1) URL baseURL1,
             @ArquillianResource() @OperateOnDeployment(DEPLOYMENT_2) URL baseURL2)
@@ -351,7 +343,6 @@ public class JSFFailoverTestCase extends ClusterAbstractTestCase {
      * @throws URISyntaxException
      */
     @Test
-    @InSequence(2)
     public void testGracefulUndeployFailover(
             @ArquillianResource() @OperateOnDeployment(DEPLOYMENT_1) URL baseURL1,
             @ArquillianResource() @OperateOnDeployment(DEPLOYMENT_2) URL baseURL2)
@@ -468,12 +459,6 @@ public class JSFFailoverTestCase extends ClusterAbstractTestCase {
         }
 
         // Assert.fail("Show me the logs please!");
-    }
-
-    @Test
-    @InSequence(3)
-    public void testUndeploy() {
-        undeploy(DEPLOYMENTS);
     }
 
     /**

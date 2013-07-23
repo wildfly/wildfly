@@ -8,7 +8,6 @@ import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.container.test.api.RunAsClient;
 import org.jboss.arquillian.container.test.api.TargetsContainer;
 import org.jboss.arquillian.junit.Arquillian;
-import org.jboss.arquillian.junit.InSequence;
 import org.jboss.as.test.clustering.EJBClientContextSelector;
 import org.jboss.as.test.clustering.EJBDirectory;
 import org.jboss.as.test.clustering.RemoteEJBDirectory;
@@ -69,16 +68,7 @@ public class CommandDispatcherTestCase extends ClusterAbstractTestCase {
         context.close();
     }
 
-    @Override
-    protected void setUp() {
-        super.setUp();
-
-        // Also deploy
-        deploy(DEPLOYMENTS);
-    }
-
     @Test
-    @InSequence(1)
     public void test() throws Exception {
 
         String cluster = "ejb";

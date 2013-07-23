@@ -44,8 +44,6 @@ import org.junit.Assert;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
-import static org.jboss.as.test.clustering.ClusteringTestConstants.*;
-
 /**
  * Tests that the stateful timeout annotation works
  *
@@ -83,22 +81,37 @@ public class StatefulTimeoutTestCase extends ClusterAbstractTestCase {
         return beanType.cast(iniCtx.lookup("java:global/" + ARCHIVE_NAME + "/" + beanType.getSimpleName() + "!" + beanType.getName()));
     }
 
-    /**
-     * Ensure the containers are running.
-     */
+    // TODO: Workaround for https://issues.jboss.org/browse/ARQ-351, remove after fixed.
+
     @Override
+    public void beforeTestMethod() {
+        // Do nothing.
+    }
+
+    @Override
+    public void afterTestMethod() {
+        // Do nothing.
+    }
+
     @Test
-    @InSequence(-1)
+    @InSequence(Integer.MIN_VALUE)
     @RunAsClient
-    public void testSetup() {
+    public void setup() {
         start(CONTAINERS);
         deploy(DEPLOYMENTS);
     }
 
     @Test
+    @InSequence(Integer.MAX_VALUE)
+    @RunAsClient
+    public void cleanup() {
+        start(CONTAINERS);
+        undeploy(DEPLOYMENTS);
+    }
+
+    @Test
     @OperateOnDeployment(DEPLOYMENT_1)
     public void testStatefulTimeout(@ArquillianResource InitialContext iniCtx) throws Exception {
-
         ClusteredCacheBean.preDestroy = false;
         ClusteredCacheBean.prePassivate = false;
         ClusteredCacheBean sfsb1 = lookup(iniCtx, ClusteredCacheBean.class);
@@ -120,7 +133,6 @@ public class StatefulTimeoutTestCase extends ClusterAbstractTestCase {
     @Test
     @OperateOnDeployment(DEPLOYMENT_1)
     public void testClusteredStatefulTimeout(@ArquillianResource InitialContext iniCtx) throws Exception {
-
         ClusteredBean.preDestroy = false;
         ClusteredBean.prePassivate = false;
         ClusteredBean sfsb1 = lookup(iniCtx, ClusteredBean.class);

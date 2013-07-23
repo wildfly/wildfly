@@ -23,13 +23,9 @@
 package org.jboss.as.test.clustering.cluster.ejb3.security;
 
 import org.jboss.arquillian.container.test.api.Deployment;
-import org.jboss.arquillian.container.test.api.OperateOnDeployment;
 import org.jboss.arquillian.container.test.api.RunAsClient;
 import org.jboss.arquillian.container.test.api.TargetsContainer;
 import org.jboss.arquillian.junit.Arquillian;
-import org.jboss.arquillian.junit.InSequence;
-import org.jboss.arquillian.test.api.ArquillianResource;
-import org.jboss.as.arquillian.container.ManagementClient;
 import org.jboss.as.test.clustering.EJBClientContextSelector;
 import org.jboss.as.test.clustering.NodeInfoServlet;
 import org.jboss.as.test.clustering.NodeNameGetter;
@@ -89,17 +85,8 @@ public class FailoverWithSecurityTestCase extends ClusterAbstractTestCase {
         context = new RemoteEJBDirectory(ARCHIVE_NAME);
     }
 
-    @Override
-    protected void setUp() {
-        super.setUp();
-        deploy(DEPLOYMENTS);
-    }
-
     @Test
-    @InSequence(1)
-    public void testDomainSecurityAnnotation(@ArquillianResource @OperateOnDeployment(DEPLOYMENT_1) ManagementClient client1,
-                                             @ArquillianResource @OperateOnDeployment(DEPLOYMENT_2) ManagementClient client2)
-            throws Exception {
+    public void testDomainSecurityAnnotation() throws Exception {
 
         final ContextSelector<EJBClientContext> previousSelector = EJBClientContextSelector.setup(PROPERTIES_FILE);
 
@@ -165,7 +152,6 @@ public class FailoverWithSecurityTestCase extends ClusterAbstractTestCase {
             }
         }
     }
-
 
     private void establishView(ViewChangeListener listener, String... members) throws InterruptedException {
         listener.establishView("ejb", members);

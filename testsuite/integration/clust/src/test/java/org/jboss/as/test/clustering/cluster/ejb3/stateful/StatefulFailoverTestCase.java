@@ -39,7 +39,6 @@ import org.jboss.arquillian.container.test.api.OperateOnDeployment;
 import org.jboss.arquillian.container.test.api.RunAsClient;
 import org.jboss.arquillian.container.test.api.TargetsContainer;
 import org.jboss.arquillian.junit.Arquillian;
-import org.jboss.arquillian.junit.InSequence;
 import org.jboss.arquillian.test.api.ArquillianResource;
 import org.jboss.as.test.clustering.AbstractEJBDirectory;
 import org.jboss.as.test.clustering.ClusterHttpClientUtil;
@@ -56,7 +55,6 @@ import org.jboss.shrinkwrap.api.Archive;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.asset.StringAsset;
 import org.jboss.shrinkwrap.api.spec.WebArchive;
-import org.junit.BeforeClass;
 import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -96,14 +94,7 @@ public class StatefulFailoverTestCase extends ClusterAbstractTestCase {
         return war;
     }
 
-    @Override
-    protected void setUp() {
-        super.setUp();
-        deploy(DEPLOYMENTS);
-    }
-
     @Test
-    @InSequence(1)
     public void testRestart(
             @ArquillianResource() @OperateOnDeployment(DEPLOYMENT_1) URL baseURL1,
             @ArquillianResource() @OperateOnDeployment(DEPLOYMENT_2) URL baseURL2)
@@ -175,7 +166,6 @@ public class StatefulFailoverTestCase extends ClusterAbstractTestCase {
     }
 
     @Test
-    @InSequence(2)
     public void testRedeploy(
             @ArquillianResource() @OperateOnDeployment(DEPLOYMENT_1) URL baseURL1,
             @ArquillianResource() @OperateOnDeployment(DEPLOYMENT_2) URL baseURL2)
@@ -195,7 +185,6 @@ public class StatefulFailoverTestCase extends ClusterAbstractTestCase {
             assertEquals(20020202, this.queryCount(client, url1));
 
             start(CONTAINER_2);
-            //deploy(DEPLOYMENT_2);
 
             this.establishView(client, baseURL1, NODE_1, NODE_2);
 
@@ -241,12 +230,6 @@ public class StatefulFailoverTestCase extends ClusterAbstractTestCase {
         } finally {
             client.getConnectionManager().shutdown();
         }
-    }
-
-    @Test
-    @InSequence(3)
-    public void testCleanup() {
-        undeploy(DEPLOYMENTS);
     }
 
     private int queryCount(HttpClient client, String url) throws IOException {

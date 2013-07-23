@@ -24,7 +24,6 @@ package org.jboss.as.test.clustering.cluster.web.expiration;
 import java.io.IOException;
 import java.net.URISyntaxException;
 import java.net.URL;
-
 import javax.servlet.http.HttpServletResponse;
 
 import org.apache.http.HttpResponse;
@@ -32,7 +31,6 @@ import org.apache.http.client.methods.HttpGet;
 import org.apache.http.client.utils.HttpClientUtils;
 import org.apache.http.impl.client.DefaultHttpClient;
 import org.jboss.arquillian.container.test.api.OperateOnDeployment;
-import org.jboss.arquillian.junit.InSequence;
 import org.jboss.arquillian.test.api.ArquillianResource;
 import org.jboss.as.test.clustering.cluster.ClusterAbstractTestCase;
 import org.jboss.as.test.clustering.cluster.web.ClusteredWebSimpleTestCase;
@@ -43,6 +41,7 @@ import org.junit.Test;
 
 /**
  * Validates get/set/remove/invalidate session operations, session expiration, and their corresponding events
+ *
  * @author Paul Ferraro
  */
 public abstract class SessionExpirationTestCase extends ClusterAbstractTestCase {
@@ -55,14 +54,7 @@ public abstract class SessionExpirationTestCase extends ClusterAbstractTestCase 
         return war;
     }
 
-    @Override
-    protected void setUp() {
-        super.setUp();
-        deploy(DEPLOYMENTS);
-    }
-
     @Test
-    @InSequence(1)
     public void test(@ArquillianResource(SessionOperationServlet.class) @OperateOnDeployment(DEPLOYMENT_1) URL baseURL1,
                      @ArquillianResource(SessionOperationServlet.class) @OperateOnDeployment(DEPLOYMENT_2) URL baseURL2)
                              throws IOException, URISyntaxException, InterruptedException {
@@ -405,11 +397,5 @@ public abstract class SessionExpirationTestCase extends ClusterAbstractTestCase 
         } finally {
             HttpClientUtils.closeQuietly(client);
         }
-    }
-
-    @Test
-    @InSequence(Integer.MAX_VALUE)
-    public void testCleanup() {
-        undeploy(DEPLOYMENTS);
     }
 }

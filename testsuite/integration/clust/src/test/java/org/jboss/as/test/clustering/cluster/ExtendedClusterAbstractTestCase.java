@@ -21,11 +21,7 @@
  */
 package org.jboss.as.test.clustering.cluster;
 
-import org.jboss.arquillian.container.test.api.RunAsClient;
-import org.jboss.arquillian.junit.InSequence;
 import org.jboss.as.test.clustering.ExtendedClusteringTestConstants;
-import org.jboss.as.test.clustering.NodeUtil;
-import org.junit.Test;
 
 /**
  * Base cluster test that ensures the custom containers are already running.
@@ -35,21 +31,16 @@ import org.junit.Test;
  */
 public abstract class ExtendedClusterAbstractTestCase extends ClusterAbstractTestCase implements ExtendedClusteringTestConstants {
 
-    /**
-     * Ensure the containers are running, otherwise start them.
-     */
-    @Test
-    @InSequence(-1)
-    @RunAsClient
-    public void testSetup() {
-        this.setUp();
+    @Override
+    public void beforeTestMethod() {
+        this.start(XSITE_CONTAINERS);
+        this.deploy(XSITE_DEPLOYMENTS);
     }
 
-    /**
-     * Override this method for different behavior of the test.
-     */
-    protected void setUp() {
-        NodeUtil.start(controller, XSITE_CONTAINERS);
+    @Override
+    public void afterTestMethod() {
+        this.start(XSITE_CONTAINERS);
+        this.undeploy(XSITE_DEPLOYMENTS);
     }
-
 }
+

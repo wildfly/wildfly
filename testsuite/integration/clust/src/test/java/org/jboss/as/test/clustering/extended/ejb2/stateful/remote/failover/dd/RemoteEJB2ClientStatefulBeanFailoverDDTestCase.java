@@ -37,7 +37,7 @@ import org.jboss.as.test.clustering.extended.ejb2.stateful.remote.failover.Count
 import org.jboss.as.test.clustering.extended.ejb2.stateful.remote.failover.CounterRemote;
 import org.jboss.as.test.clustering.extended.ejb2.stateful.remote.failover.CounterRemoteHome;
 import org.jboss.as.test.clustering.extended.ejb2.stateful.remote.failover.CounterResult;
-import org.jboss.as.test.clustering.extended.ejb2.stateful.remote.failover.RemoteEJBClientStatefulFaliloverTestBase;
+import org.jboss.as.test.clustering.extended.ejb2.stateful.remote.failover.RemoteEJBClientStatefulFailoverTestBase;
 import org.jboss.logging.Logger;
 import org.jboss.shrinkwrap.api.Archive;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
@@ -52,7 +52,7 @@ import org.junit.runner.RunWith;
  */
 @RunWith(Arquillian.class)
 @RunAsClient
-public class RemoteEJB2ClientStatefulBeanFailoverDDTestCase extends RemoteEJBClientStatefulFaliloverTestBase {
+public class RemoteEJB2ClientStatefulBeanFailoverDDTestCase extends RemoteEJBClientStatefulFailoverTestBase {
     private static final Logger log = Logger.getLogger(RemoteEJB2ClientStatefulBeanFailoverDDTestCase.class);
 
     @ArquillianResource

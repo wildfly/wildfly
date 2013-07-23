@@ -36,7 +36,6 @@ import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.container.test.api.RunAsClient;
 import org.jboss.arquillian.container.test.api.TargetsContainer;
 import org.jboss.arquillian.junit.Arquillian;
-import org.jboss.arquillian.junit.InSequence;
 import org.jboss.as.test.clustering.EJBClientContextSelector;
 import org.jboss.as.test.clustering.EJBDirectory;
 import org.jboss.as.test.clustering.NodeNameGetter;
@@ -46,7 +45,6 @@ import org.jboss.as.test.clustering.ViewChangeListenerBean;
 import org.jboss.as.test.clustering.cluster.ClusterAbstractTestCase;
 import org.jboss.as.test.clustering.cluster.ejb3.stateless.bean.Stateless;
 import org.jboss.as.test.clustering.cluster.ejb3.stateless.bean.StatelessBean;
-import org.jboss.ejb.client.ContextSelector;
 import org.jboss.ejb.client.EJBClientContext;
 import org.jboss.logging.Logger;
 import org.jboss.shrinkwrap.api.Archive;
@@ -56,7 +54,6 @@ import org.jboss.shrinkwrap.api.spec.JavaArchive;
 import org.junit.AfterClass;
 import org.junit.Assert;
 import org.junit.BeforeClass;
-import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
@@ -67,14 +64,14 @@ import org.junit.runner.RunWith;
  */
 @RunWith(Arquillian.class)
 @RunAsClient
-@Ignore("May deploy duplicate cluster-passivation-test-helper.jar")
 public class RemoteStatelessFailoverTestCase extends ClusterAbstractTestCase {
     private static final Logger log = Logger.getLogger(RemoteStatelessFailoverTestCase.class);
     private static final String MODULE_NAME = "remote-ejb-client-stateless-bean-failover-test";
     private static final String CLIENT_PROPERTIES = "cluster/ejb3/stateless/jboss-ejb-client.properties";
     private static EJBDirectory context;
 
-    private static final Integer PORT_2 = 4547;
+    // TODO: remove hardcoded stuff :-(
+    private static final Integer PORT_2 = 8180;
     private static final String HOST_2 = System.getProperty("node1");
     private static final String REMOTE_PORT_PROPERTY_NAME = "remote.connection.default.port";
     private static final String REMOTE_HOST_PROPERTY_NAME = "remote.connection.default.host";
@@ -110,24 +107,12 @@ public class RemoteStatelessFailoverTestCase extends ClusterAbstractTestCase {
         context.close();
     }
 
-    @Override
-    protected void setUp() {
-        stop(CONTAINER_2);
-
-        // Make sure only one container is running now.
-        start(CONTAINER_1);
-        deploy(DEPLOYMENT_1);
-    }
-
     @Test
-    @InSequence(1)
     public void testFailoverOnStop() throws Exception {
 
-        // In case something went wrong.
-        start(CONTAINER_1);
-        deploy(DEPLOYMENT_1);
+        stop(CONTAINER_2);
 
-        final ContextSelector<EJBClientContext> selector = EJBClientContextSelector.setup(CLIENT_PROPERTIES);
+        EJBClientContextSelector.setup(CLIENT_PROPERTIES);
 
         try {
             ViewChangeListener listener = context.lookupStateless(ViewChangeListenerBean.class, ViewChangeListener.class);
@@ -139,7 +124,6 @@ public class RemoteStatelessFailoverTestCase extends ClusterAbstractTestCase {
             assertEquals(NODES[0], bean.getNodeName());
 
             start(CONTAINER_2);
-            deploy(DEPLOYMENT_2);
 
             this.establishView(listener, NODES);
 
@@ -148,8 +132,8 @@ public class RemoteStatelessFailoverTestCase extends ClusterAbstractTestCase {
                 results.add(bean.getNodeName());
             }
 
-            for (int i = 0; i < NODES.length; ++i) {
-                int frequency = Collections.frequency(results, NODES[i]);
+            for (String NODE : NODES) {
+                int frequency = Collections.frequency(results, NODE);
                 Assert.assertTrue(String.valueOf(frequency), frequency > 0);
             }
 
@@ -159,24 +143,16 @@ public class RemoteStatelessFailoverTestCase extends ClusterAbstractTestCase {
 
             assertEquals(NODES[1], bean.getNodeName());
         } finally {
-            // reset the selector
-            if (selector != null) {
-                EJBClientContext.setSelector(selector);
-            }
-            // shutdown the 2nd container
-            stop(CONTAINER_2);
+            EJBClientContext.getCurrent().close();
         }
     }
 
     @Test
-    @InSequence(2)
     public void testFailoverOnUndeploy() throws Exception {
 
-        // In case the previous test failed.
-        start(CONTAINER_1);
-        deploy(DEPLOYMENT_1);
+        undeploy(DEPLOYMENT_2);
 
-        final ContextSelector<EJBClientContext> selector = EJBClientContextSelector.setup(CLIENT_PROPERTIES);
+        EJBClientContextSelector.setup(CLIENT_PROPERTIES);
 
         try {
             ViewChangeListener listener = context.lookupStateless(ViewChangeListenerBean.class, ViewChangeListener.class);
@@ -187,8 +163,7 @@ public class RemoteStatelessFailoverTestCase extends ClusterAbstractTestCase {
 
             assertEquals(NODES[0], bean.getNodeName());
 
-            start(CONTAINER_2);
-            deploy(DEPLOYMENT_2); // TODO: Should be still deployed.
+            deploy(DEPLOYMENT_2);
 
             this.establishView(listener, NODES);
 
@@ -197,8 +172,8 @@ public class RemoteStatelessFailoverTestCase extends ClusterAbstractTestCase {
                 results.add(bean.getNodeName());
             }
 
-            for (int i = 0; i < NODES.length; ++i) {
-                int frequency = Collections.frequency(results, NODES[i]);
+            for (String NODE : NODES) {
+                int frequency = Collections.frequency(results, NODE);
                 Assert.assertTrue(String.valueOf(frequency), frequency > 0);
             }
 
@@ -208,12 +183,7 @@ public class RemoteStatelessFailoverTestCase extends ClusterAbstractTestCase {
 
             assertEquals(NODES[1], bean.getNodeName());
         } finally {
-            // reset the selector
-            if (selector != null) {
-                EJBClientContext.setSelector(selector);
-            }
-
-            // Keep containers running
+            EJBClientContext.getCurrent().close();
         }
     }
 
@@ -221,16 +191,9 @@ public class RemoteStatelessFailoverTestCase extends ClusterAbstractTestCase {
      * Basic load balance testing. A random distribution is used amongst nodes for client now.
      */
     @Test
-    @InSequence(3)
     public void testLoadBalance() throws Exception {
 
-        // In case the previous test failed.
-        start(CONTAINER_1);
-        deploy(DEPLOYMENT_1);
-        start(CONTAINER_2);
-        deploy(DEPLOYMENT_2);
-
-        final ContextSelector<EJBClientContext> previousSelector = EJBClientContextSelector.setup(CLIENT_PROPERTIES);
+        EJBClientContextSelector.setup(CLIENT_PROPERTIES);
 
         int numberOfServers = 2;
         int numberOfCalls = 50;
@@ -276,10 +239,7 @@ public class RemoteStatelessFailoverTestCase extends ClusterAbstractTestCase {
 
             validateBalancing(bean, numberOfCalls, numberOfServers, serversProcessedAtLeast);
         } finally {
-            // reset the selector
-            if (previousSelector != null) {
-                EJBClientContext.setSelector(previousSelector);
-            }
+            EJBClientContext.getCurrent().close();
         }
     }
 

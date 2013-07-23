@@ -116,13 +116,6 @@ public class XSiteBackupForTestCase extends ExtendedClusterAbstractTestCase {
         return war;
     }
 
-
-    @Override
-    protected void setUp() {
-        super.setUp();
-        deploy(XSITE_DEPLOYMENTS);
-    }
-
     /*
      * Tests that puts get relayed to their backup sites, even when using backup-for to rename
      * the backup cache name.

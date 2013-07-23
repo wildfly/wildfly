@@ -24,7 +24,6 @@ package org.jboss.as.test.clustering.cluster.ejb3.descriptor.disable;
 
 
 import java.util.Properties;
-
 import javax.naming.NamingException;
 
 import org.jboss.arquillian.container.test.api.Deployment;
@@ -32,7 +31,6 @@ import org.jboss.arquillian.container.test.api.OperateOnDeployment;
 import org.jboss.arquillian.container.test.api.RunAsClient;
 import org.jboss.arquillian.container.test.api.TargetsContainer;
 import org.jboss.arquillian.junit.Arquillian;
-import org.jboss.arquillian.junit.InSequence;
 import org.jboss.arquillian.test.api.ArquillianResource;
 import org.jboss.as.arquillian.container.ManagementClient;
 import org.jboss.as.test.clustering.EJBClientContextSelector;
@@ -103,22 +101,12 @@ public class DisableClusteredTestCase extends ClusterAbstractTestCase {
         directory.close();
     }
 
-    @Override
-    protected void setUp() {
-        super.setUp();
-        deploy(DEPLOYMENTS);
-        node1Running = true;
-        node2Running = true;
-    }
-
     /**
      * Validate the stateful bean is not clustered by having failover not work
      */
     @Test
-    @InSequence(1)
     public void testStatefulBean() throws Exception {
-        previousSelector = EJBClientContextSelector
-                .setup(PROPERTIES_FILENAME);
+        previousSelector = EJBClientContextSelector.setup(PROPERTIES_FILENAME);
         DisableClusteredRemote stateful = directory.lookupStateful("DisableClusteredAnnotationStateful", DisableClusteredRemote.class);
 
         String node1 = stateful.getNodeState();
@@ -145,10 +133,15 @@ public class DisableClusteredTestCase extends ClusterAbstractTestCase {
      * Test stateless bean by demonstrating no load balancing
      */
     @Test
-    @InSequence(2)
     public void testStatelessBean(
             @ArquillianResource @OperateOnDeployment(DEPLOYMENT_1) ManagementClient client1,
             @ArquillianResource @OperateOnDeployment(DEPLOYMENT_2) ManagementClient client2) throws Exception {
+
+        if (node1Running) {
+            stop(CONTAINER_2);
+        } else {
+            stop(CONTAINER_1);
+        }
 
         String hostName = node1Running ? client1.getRemoteEjbURL().getHost() : client2.getRemoteEjbURL().getHost();
         int port = node1Running ? client1.getRemoteEjbURL().getPort() : client2.getRemoteEjbURL().getPort();

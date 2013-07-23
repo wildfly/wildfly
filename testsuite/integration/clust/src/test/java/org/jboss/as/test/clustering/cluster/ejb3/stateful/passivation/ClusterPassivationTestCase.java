@@ -1,6 +1,6 @@
 /*
  * JBoss, Home of Professional Open Source.
- * Copyright 2012, Red Hat, Inc., and individual contributors
+ * Copyright 2013, Red Hat, Inc., and individual contributors
  * as indicated by the @author tags. See the copyright.txt file in the
  * distribution for a full listing of individual contributors.
  *
@@ -69,7 +69,6 @@ import org.junit.runner.RunWith;
  */
 @RunWith(Arquillian.class)
 @RunAsClient
-@Ignore("May deploy duplicate cluster-passivation-test-helper.jar")
 public class ClusterPassivationTestCase extends ClusterAbstractTestCase {
     private static Logger log = Logger.getLogger(ClusterPassivationTestCase.class);
     public static final String ARCHIVE_NAME = "cluster-passivation-test";
@@ -154,25 +153,17 @@ public class ClusterPassivationTestCase extends ClusterAbstractTestCase {
                 .setup("cluster/ejb3/stateful/failover/sfsb-failover-jboss-ejb-client.properties");
     }
 
-    /**
-     * Start servers whether their are not started.
-     *
-     * @param client1 client for server1
-     * @param client2 client for server2
-     */
-    private void startServers(ManagementClient client1, ManagementClient client2) {
-        if (client1 == null || !client1.isServerInRunningState()) {
-            log.info("Starting server: " + CONTAINER_1);
-            start(CONTAINER_1);
-            deploy(DEPLOYMENT_HELPER_1);
-            deploy(DEPLOYMENT_1);
-        }
-        if (client2 == null || !client2.isServerInRunningState()) {
-            log.info("Starting server: " + CONTAINER_2);
-            start(CONTAINER_2);
-            deploy(DEPLOYMENT_HELPER_2);
-            deploy(DEPLOYMENT_2);
-        }
+    @Override
+    public void beforeTestMethod() {
+        start(CONTAINERS);
+        deploy(DEPLOYMENT_HELPERS);
+        deploy(DEPLOYMENTS);
+    }
+
+    @Override
+    public void afterTestMethod() {
+        super.afterTestMethod();
+        undeploy(DEPLOYMENT_HELPERS);
     }
 
     /**
@@ -189,13 +180,6 @@ public class ClusterPassivationTestCase extends ClusterAbstractTestCase {
         } while (clusterContext == null && counter < CLUSTER_ESTABLISHMENT_LOOP_COUNT);
         Assert.assertNotNull("Cluster context for " + CLUSTER_NAME + " was not taken in "
                 + (CLUSTER_ESTABLISHMENT_LOOP_COUNT * CLUSTER_ESTABLISHMENT_WAIT_MS) + " ms", clusterContext);
-    }
-
-    // TEST METHODS -------------------------------------------------------------
-    @Test
-    @InSequence(-2)
-    public void arquillianStartServers() {
-        startServers(null, null);
     }
 
     /**
@@ -282,7 +266,7 @@ public class ClusterPassivationTestCase extends ClusterAbstractTestCase {
         waitForClusterContext();
 
         // Stopping node #2
-        deployer.undeploy(node2deployment.get(calledNodeSecond));
+        // deployer.undeploy(node2deployment.get(calledNodeSecond)); -- only stop the container to simulate downtime
         controller.stop(node2container.get(calledNodeSecond));
 
         // We killed second node and we check the value on first node
@@ -315,7 +299,7 @@ public class ClusterPassivationTestCase extends ClusterAbstractTestCase {
 
     @Test
     @InSequence(1)
-    @Ignore("https://issues.jboss.org/browse/AS7-4266")
+    @Ignore("https://issues.jboss.org/browse/WFLY-12")
     public void testPassivationOverNodesPassivated(
             @ArquillianResource @OperateOnDeployment(DEPLOYMENT_1) ManagementClient client1,
             @ArquillianResource @OperateOnDeployment(DEPLOYMENT_2) ManagementClient client2) throws Exception {
@@ -328,7 +312,6 @@ public class ClusterPassivationTestCase extends ClusterAbstractTestCase {
         DMRUtil.reload(client2);
 
         runPassivation(isPassivated);
-        startServers(client1, client2);
     }
 
     @Test
@@ -345,18 +328,15 @@ public class ClusterPassivationTestCase extends ClusterAbstractTestCase {
         DMRUtil.reload(client2);
 
         runPassivation(isPassivated);
-        startServers(client1, client2);
     }
 
 
-    @Test
-    @InSequence(3)
     /**
      * Testing behaviour of passivation of bean inherited from another one with more complex data structure.
      */
+    @Test
+    @InSequence(3)
     public void testMoreDataPassivation(
-            @ArquillianResource @OperateOnDeployment(DEPLOYMENT_1) URL baseURL1,
-            @ArquillianResource @OperateOnDeployment(DEPLOYMENT_2) URL baseURL2,
             @ArquillianResource @OperateOnDeployment(DEPLOYMENT_1) ManagementClient client1,
             @ArquillianResource @OperateOnDeployment(DEPLOYMENT_2) ManagementClient client2)
             throws Exception {
@@ -397,7 +377,7 @@ public class ClusterPassivationTestCase extends ClusterAbstractTestCase {
 
         // Stopping called node
         unsetPassivationAttributes(node2client.get(calledNodeName).getControllerClient());
-        undeploy(node2deployment.get(calledNodeName));
+        // undeploy(node2deployment.get(calledNodeName)); -- only stop the container to simulate downtime
         stop(node2container.get(calledNodeName));
         log.info("Node " + calledNodeName + " was stopped.");
 
@@ -413,7 +393,7 @@ public class ClusterPassivationTestCase extends ClusterAbstractTestCase {
 
     @Test
     @InSequence(100)
-    public void stopAndClean(
+    public void testCleanup(
             @OperateOnDeployment(DEPLOYMENT_1) @ArquillianResource ManagementClient client1,
             @OperateOnDeployment(DEPLOYMENT_2) @ArquillianResource ManagementClient client2) throws Exception {
         log.info("Stop&Clean...");
@@ -423,10 +403,11 @@ public class ClusterPassivationTestCase extends ClusterAbstractTestCase {
             EJBClientContext.setSelector(previousSelector);
         }
 
-        // Start containers to clean them
-        start(CONTAINERS);
+        // Containers are already started, so we can nicely clean them now
 
-        // unset & undeploy & stop
+        // Unset passivation attributes
+
+        // TODO: There aren't any try blocks! Either way, should this start to fail, the note is here..
         // the try blocks were added to be sure that the attempt for undeploy will be provided although that
         // client1/2 does not respond - e.g. after failed reload operation
         if(client1.isServerInRunningState()) {
@@ -436,9 +417,5 @@ public class ClusterPassivationTestCase extends ClusterAbstractTestCase {
         if(client2.isServerInRunningState()) {
             unsetPassivationAttributes(client2.getControllerClient());
         }
-
-        // Undeploy
-        undeploy(DEPLOYMENTS);
-        undeploy(DEPLOYMENT_HELPERS);
     }
 }
