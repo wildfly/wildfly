@@ -59,11 +59,12 @@
         <jboss.as.scm.url>https://github.com/jbossas/jboss-as</jboss.as.scm.url>
         <jboss.as.scm.connection>git@github.com:jbossas/jboss-as.git</jboss.as.scm.connection>
 
-        <!-- 
+        <!--
             Build configuration.  Override JBoss Parent settings as necessary.
             For example: <version.surefire.plugin>2.11</version.surefire.plugin>
           -->
 
+        <version.surefire.plugin>2.11</version.surefire.plugin>
         <!--
             Dependency versions. Please keep alphabetical.
 
