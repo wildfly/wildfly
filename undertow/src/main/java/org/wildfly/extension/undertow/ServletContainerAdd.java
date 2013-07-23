@@ -58,8 +58,9 @@ final class ServletContainerAdd extends AbstractBoottimeAddStepHandler {
         final String name = address.getLastElement().getValue();
 
         final boolean developmentMode = ServletContainerDefinition.DEVELOPMENT_MODE.resolveModelAttribute(context, model).asBoolean();
+        final boolean allowNonStandardWrappers = ServletContainerDefinition.ALLOW_NON_STANDARD_WRAPPERS.resolveModelAttribute(context, model).asBoolean();
 
-        final ServletContainerService container = new ServletContainerService(developmentMode);
+        final ServletContainerService container = new ServletContainerService(developmentMode, allowNonStandardWrappers);
         final ServiceTarget target = context.getServiceTarget();
         newControllers.add(target.addService(UndertowService.SERVLET_CONTAINER.append(name), container)
                 .setInitialMode(ServiceController.Mode.ON_DEMAND)

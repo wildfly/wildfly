@@ -41,12 +41,14 @@ import org.jboss.msc.service.StopContext;
 public class ServletContainerService implements Service<ServletContainerService> {
 
     private final boolean developmentMode;
+    private final boolean allowNonStandardWrappers;
     private volatile ServletContainer servletContainer;
     @Deprecated
     private final Map<String, Integer> secureListeners = new ConcurrentHashMap<>(1);
 
-    public ServletContainerService(boolean developmentMode) {
+    public ServletContainerService(boolean developmentMode, boolean allowNonStandardWrappers) {
         this.developmentMode = developmentMode;
+        this.allowNonStandardWrappers = allowNonStandardWrappers;
     }
 
     static String getDeployedContextPath(DeploymentInfo deploymentInfo) {
@@ -72,6 +74,10 @@ public class ServletContainerService implements Service<ServletContainerService>
 
     public boolean isDevelopmentMode() {
         return developmentMode;
+    }
+
+    public boolean isAllowNonStandardWrappers() {
+        return allowNonStandardWrappers;
     }
 
     public Integer lookupSecurePort(final String listenerName) {

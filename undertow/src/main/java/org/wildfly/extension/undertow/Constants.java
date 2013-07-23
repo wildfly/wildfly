@@ -112,4 +112,5 @@ public interface Constants {
     String HTTP_ONLY = "http-only";
     String SECURE = "secure";
     String MAX_AGE = "max-age";
+    String ALLOW_NON_STANDARD_WRAPPERS = "allow-non-standard-wrappers";
 }

@@ -50,6 +50,13 @@ public class ServletContainerDefinition extends PersistentResourceDefinition {
                     .setAllowExpression(true)
                     .build();
 
+    protected static final SimpleAttributeDefinition ALLOW_NON_STANDARD_WRAPPERS =
+            new SimpleAttributeDefinitionBuilder(Constants.ALLOW_NON_STANDARD_WRAPPERS, ModelType.BOOLEAN, true)
+                    .setFlags(AttributeAccess.Flag.RESTART_ALL_SERVICES)
+                    .setDefaultValue(new ModelNode(false))
+                    .setAllowExpression(true)
+                    .build();
+
     private static final List<? extends PersistentResourceDefinition> CHILDREN;
 
     static {
@@ -68,7 +75,10 @@ public class ServletContainerDefinition extends PersistentResourceDefinition {
 
     @Override
     public Collection<AttributeDefinition> getAttributes() {
-        return Collections.<AttributeDefinition>singleton(DEVELOPMENT_MODE);
+        final List<AttributeDefinition> attributes = new ArrayList<>();
+        attributes.add(DEVELOPMENT_MODE);
+        attributes.add(ALLOW_NON_STANDARD_WRAPPERS);
+        return attributes;
     }
 
     @Override
