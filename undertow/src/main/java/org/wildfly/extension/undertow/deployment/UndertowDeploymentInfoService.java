@@ -370,7 +370,10 @@ public class UndertowDeploymentInfoService implements Service<DeploymentInfo> {
             try {
                 //TODO: make the caching limits configurable
                 ResourceManager resourceManager = new ServletResourceManager(deploymentRoot, overlays);
-                d.setResourceManager(new CachingResourceManager(100, 10 * 1024 * 1024, bufferCacheInjectedValue.getOptionalValue(), resourceManager, -1));
+                if(!container.getValue().isDevelopmentMode()) {
+                    resourceManager = new CachingResourceManager(100, 10 * 1024 * 1024, bufferCacheInjectedValue.getOptionalValue(), resourceManager, -1);
+                }
+                d.setResourceManager(resourceManager);
             } catch (IOException e) {
                 throw new StartException(e);
             }
