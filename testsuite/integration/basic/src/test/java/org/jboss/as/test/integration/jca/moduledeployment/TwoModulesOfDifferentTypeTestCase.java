@@ -82,7 +82,9 @@ public class TwoModulesOfDifferentTypeTestCase extends TwoModulesFlatTestCase {
 
         @Override
         protected String getSlot() {
-            return TwoModulesOfDifferentTypeTestCase.class.getSimpleName().toLowerCase();
+            // change the "main" slot to something different, preferably to XXXYourNewTestCase.class.getSimpleName().toLowerCase(),
+            // if you are going to clone this test case
+            return "main";
         }
     }
 
