@@ -1,5 +1,5 @@
 <?xml version='1.0' ?>
-<!DOCTYPE ejb-jar PUBLIC "-//Sun Microsystems, Inc.//DTD Enterprise JavaBeans 2.0//EN" 
+<!DOCTYPE ejb-jar PUBLIC "-//Sun Microsystems, Inc.//DTD Enterprise JavaBeans 2.0//EN"
                          "http://java.sun.com/dtd/ejb-jar_2_0.dtd">
 <!--
   ~ JBoss, Home of Professional Open Source.
@@ -31,6 +31,14 @@
          	<ejb-class>org.jboss.as.test.clustering.extended.ejb2.stateful.remote.failover.dd.CounterBeanDD</ejb-class>
          	<session-type>Stateful</session-type>
          	<transaction-type>Container</transaction-type>
-         </session>
+        </session>
+        <session>
+            <ejb-name>ViewChangeListenerBean</ejb-name>
+            <home>org.jboss.as.test.clustering.ViewChangeListenerHome</home>
+            <remote>org.jboss.as.test.clustering.ViewChangeListener</remote>
+            <ejb-class>org.jboss.as.test.clustering.ViewChangeListenerBean</ejb-class>
+            <session-type>Stateless</session-type>
+            <transaction-type>Bean</transaction-type>
+        </session>
 	</enterprise-beans>
 </ejb-jar>

@@ -22,19 +22,11 @@
 
 package org.jboss.as.test.clustering.extended.ejb2.stateful.remote.failover;
 
-import static org.jboss.as.test.clustering.ClusteringTestConstants.CONTAINER_1;
-import static org.jboss.as.test.clustering.ClusteringTestConstants.CONTAINER_2;
-import static org.jboss.as.test.clustering.ClusteringTestConstants.DEPLOYMENT_1;
-import static org.jboss.as.test.clustering.ClusteringTestConstants.DEPLOYMENT_2;
-
-import org.jboss.arquillian.container.test.api.ContainerController;
-import org.jboss.arquillian.container.test.api.Deployer;
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.container.test.api.RunAsClient;
 import org.jboss.arquillian.container.test.api.TargetsContainer;
 import org.jboss.arquillian.junit.Arquillian;
 import org.jboss.arquillian.junit.InSequence;
-import org.jboss.arquillian.test.api.ArquillianResource;
 import org.jboss.as.test.clustering.NodeNameGetter;
 import org.jboss.as.test.clustering.ViewChangeListener;
 import org.jboss.as.test.clustering.ViewChangeListenerBean;
@@ -50,25 +42,21 @@ import org.junit.runner.RunWith;
  * other node(s) in cases like a node going down.
  * This test is taken from test of ejb3 beans.
  *
- * @author Jaikiran Pai, Radoslav Husar, Ondrej Chaloupka
+ * @author Jaikiran Pai
+ * @author Radoslav Husar
+ * @author Ondrej Chaloupka
  */
 @RunWith(Arquillian.class)
 @RunAsClient
 public class RemoteEJBClientStatefulBeanFailoverTestCase extends RemoteEJBClientStatefulFailoverTestBase {
 
-    @ArquillianResource
-    private ContainerController container;
-
-    @ArquillianResource
-    private Deployer deployer;
-    
-    @Deployment(name = DEPLOYMENT_1_SINGLE, managed = false, testable = false)
+    @Deployment(name = DEPLOYMENT_HELPER_1, managed = false, testable = false)
     @TargetsContainer(CONTAINER_1)
     public static Archive<?> createDeploymentForContainer1Singleton() {
         return createDeploymentSingleton();
     }
 
-    @Deployment(name = DEPLOYMENT_2_SINGLE, managed = false, testable = false)
+    @Deployment(name = DEPLOYMENT_HELPER_2, managed = false, testable = false)
     @TargetsContainer(CONTAINER_2)
     public static Archive<?> createDeploymentForContainer2Singleton() {
         return createDeploymentSingleton();
@@ -90,9 +78,8 @@ public class RemoteEJBClientStatefulBeanFailoverTestCase extends RemoteEJBClient
         final JavaArchive jar = ShrinkWrap.create(JavaArchive.class, ARCHIVE_NAME + ".jar");
         jar.addClasses(CounterBaseBean.class, CounterBean.class, CounterRemote.class, CounterRemoteHome.class, CounterResult.class);
         jar.addClass(NodeNameGetter.class);
-        jar.addAsManifestResource(new StringAsset("Dependencies: deployment." + ARCHIVE_NAME_SINGLE + ".jar\n"), "MANIFEST.MF");
+        jar.addAsManifestResource(new StringAsset("Manifest-Version: 1.0\nDependencies: deployment." + ARCHIVE_NAME_SINGLE + ".jar, org.jboss.msc, org.jboss.as.clustering.common, org.infinispan\n"), "MANIFEST.MF");
         jar.addClasses(ViewChangeListener.class, ViewChangeListenerBean.class);
-        jar.setManifest(new StringAsset("Manifest-Version: 1.0\nDependencies: org.jboss.msc, org.jboss.as.clustering.common, org.infinispan\n"));
         return jar;
     }
     
@@ -100,13 +87,13 @@ public class RemoteEJBClientStatefulBeanFailoverTestCase extends RemoteEJBClient
     @InSequence(1)
     @Test
     public void testFailoverFromRemoteClientWhenOneNodeGoesDown() throws Exception {
-        failoverFromRemoteClient(container, deployer, false);
+        failoverFromRemoteClient(false);
     }
 
     @Override
     @InSequence(2)
     @Test
     public void testFailoverFromRemoteClientWhenOneNodeUndeploys() throws Exception {
-        failoverFromRemoteClient(container, deployer, true);
+        failoverFromRemoteClient(true);
     }
 }

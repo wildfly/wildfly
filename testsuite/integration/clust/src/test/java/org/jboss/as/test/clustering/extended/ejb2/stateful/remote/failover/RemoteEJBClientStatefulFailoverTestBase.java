@@ -1,21 +1,13 @@
 package org.jboss.as.test.clustering.extended.ejb2.stateful.remote.failover;
 
-import static org.jboss.as.test.clustering.ClusteringTestConstants.CONTAINER_1;
-import static org.jboss.as.test.clustering.ClusteringTestConstants.CONTAINER_2;
-import static org.jboss.as.test.clustering.ClusteringTestConstants.DEPLOYMENT_1;
-import static org.jboss.as.test.clustering.ClusteringTestConstants.DEPLOYMENT_2;
-import static org.jboss.as.test.clustering.ClusteringTestConstants.NODE_1;
-import static org.jboss.as.test.clustering.ClusteringTestConstants.NODE_2;
-
 import javax.naming.NamingException;
 
-import org.jboss.arquillian.container.test.api.ContainerController;
-import org.jboss.arquillian.container.test.api.Deployer;
 import org.jboss.as.test.clustering.EJBClientContextSelector;
 import org.jboss.as.test.clustering.EJBDirectory;
 import org.jboss.as.test.clustering.RemoteEJBDirectory;
 import org.jboss.as.test.clustering.ViewChangeListener;
 import org.jboss.as.test.clustering.ViewChangeListenerBean;
+import org.jboss.as.test.clustering.cluster.ClusterAbstractTestCase;
 import org.jboss.ejb.client.ContextSelector;
 import org.jboss.ejb.client.EJBClientContext;
 import org.jboss.logging.Logger;
@@ -29,14 +21,12 @@ import org.junit.BeforeClass;
 /**
  * @author Ondrej Chaloupka
  */
-public abstract class RemoteEJBClientStatefulFailoverTestBase {
+public abstract class RemoteEJBClientStatefulFailoverTestBase extends ClusterAbstractTestCase {
     private static final Logger log = Logger.getLogger(RemoteEJBClientStatefulFailoverTestBase.class);
 
     protected static final String PROPERTIES_FILE = "cluster/ejb3/stateful/failover/sfsb-failover-jboss-ejb-client.properties";
     protected static final String ARCHIVE_NAME = "ejb2-failover-test";
     protected static final String ARCHIVE_NAME_SINGLE = ARCHIVE_NAME + "-single";
-    protected static final String DEPLOYMENT_1_SINGLE = DEPLOYMENT_1 + "-single";
-    protected static final String DEPLOYMENT_2_SINGLE = DEPLOYMENT_2 + "-single";
 
     protected static EJBDirectory singletonDirectory;
     protected static EJBDirectory directory;
@@ -59,6 +49,19 @@ public abstract class RemoteEJBClientStatefulFailoverTestBase {
         singletonDirectory.close();
     }
 
+    @Override
+    public void beforeTestMethod() {
+        start(CONTAINERS);
+        deploy(DEPLOYMENT_HELPERS);
+        deploy(DEPLOYMENTS);
+    }
+
+    @Override
+    public void afterTestMethod() {
+        super.afterTestMethod();
+        undeploy(DEPLOYMENT_HELPERS);
+    }
+
     /**
      * Starts 2 nodes with the clustered beans deployed on each node. Invokes a clustered SFSB a few times.
      * Then stops a node from among the cluster (the one which received the last invocation) and continues invoking
@@ -79,21 +82,9 @@ public abstract class RemoteEJBClientStatefulFailoverTestBase {
     /**
      * Implementation of defined abstract tests above.
      */
-    protected void failoverFromRemoteClient(ContainerController container, Deployer deployer, boolean undeployOnly) throws Exception {
-        // Container is unmanaged, so start it ourselves
-        container.start(CONTAINER_1);
-        // deploy to container1
-        deployer.deploy(DEPLOYMENT_1_SINGLE);
-        deployer.deploy(DEPLOYMENT_1);
-
-        // start the other container too
-        container.start(CONTAINER_2);
-        deployer.deploy(DEPLOYMENT_2_SINGLE);
-        deployer.deploy(DEPLOYMENT_2);
-
+    protected void failoverFromRemoteClient(boolean undeployOnly) throws Exception {
         final ContextSelector<EJBClientContext> previousSelector = EJBClientContextSelector.setup(PROPERTIES_FILE);
-        boolean container1Stopped = false;
-        boolean container2Stopped = false;
+
         try {
             ViewChangeListener listener = directory.lookupStateless(ViewChangeListenerBean.class, ViewChangeListener.class);
 
@@ -124,25 +115,21 @@ public abstract class RemoteEJBClientStatefulFailoverTestBase {
             if (previousInvocationNodeName.equals(NODE_1)) {
                 if (undeployOnly) {
                     deployer.undeploy(DEPLOYMENT_1);
-                    deployer.undeploy(DEPLOYMENT_1_SINGLE);
+                    deployer.undeploy(DEPLOYMENT_HELPER_1);
                 } else {
-                    container.stop(CONTAINER_1);
+                    stop(CONTAINER_1);
                 }
 
                 this.establishView(listener, NODE_2);
-
-                container1Stopped = true;
             } else {
                 if (undeployOnly) {
                     deployer.undeploy(DEPLOYMENT_2);
-                    deployer.undeploy(DEPLOYMENT_2_SINGLE);
+                    deployer.undeploy(DEPLOYMENT_HELPER_2);
                 } else {
-                    container.stop(CONTAINER_2);
+                    stop(CONTAINER_2);
                 }
 
                 this.establishView(listener, NODE_1);
-
-                container2Stopped = true;
             }
             // invoke again
             CounterResult resultAfterShuttingDownANode = remoteCounter.increment();
@@ -174,18 +161,6 @@ public abstract class RemoteEJBClientStatefulFailoverTestBase {
             // reset the selector
             if (previousSelector != null) {
                 EJBClientContext.setSelector(previousSelector);
-            }
-            // shutdown the containers
-            if (!container1Stopped) {
-                deployer.undeploy(DEPLOYMENT_1);
-                deployer.undeploy(DEPLOYMENT_1_SINGLE);
-                container.stop(CONTAINER_1);
-            }
-
-            if (!container2Stopped) {
-                deployer.undeploy(DEPLOYMENT_2);
-                deployer.undeploy(DEPLOYMENT_2_SINGLE);
-                container.stop(CONTAINER_2);
             }
         }
     }
