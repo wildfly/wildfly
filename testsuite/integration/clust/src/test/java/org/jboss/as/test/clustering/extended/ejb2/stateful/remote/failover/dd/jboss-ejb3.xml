@@ -29,5 +29,11 @@
             <c:clustered>true</c:clustered>
         </c:clustering>
     </jee:assembly-descriptor>
+    <jee:assembly-descriptor>
+        <c:clustering>
+            <jee:ejb-name>ViewChangeListenerBean</jee:ejb-name>
+            <c:clustered>true</c:clustered>
+        </c:clustering>
+    </jee:assembly-descriptor>
 	
 </jboss>
