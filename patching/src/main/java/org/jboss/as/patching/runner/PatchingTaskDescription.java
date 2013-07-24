@@ -41,7 +41,8 @@ class PatchingTaskDescription {
     private final boolean conflicts;
     private final boolean skipIfTheSame;
 
-    PatchingTaskDescription(String patchId, ContentModification modification, PatchContentLoader loader, boolean conflicts, boolean skipIfExists) {
+    PatchingTaskDescription(String patchId, ContentModification modification, PatchContentLoader loader,
+                            boolean conflicts, boolean skipIfExists) {
         this.patchId = patchId;
         this.modification = modification;
         this.loader = loader;

@@ -139,9 +139,12 @@ public class RollbackLastUnitTestCase extends AbstractTaskTestCase {
         final String patchID2 = randomString();
         final String patchElementId2 = randomString();
 
+        final File patchedModule = newFile(baseModuleDir, ".overlays", patchElementId, moduleName);
+        final File patchedBundle = newFile(baseBundleDir, ".overlays", patchElementId, bundleName);
+
         ContentModification fileModified2 = ContentModificationUtils.modifyMisc(patchDir, patchID2, "another file update", miscFile, "bin", fileName);
-        ContentModification moduleModified2 = ContentModificationUtils.modifyModule(patchDir, patchElementId2, moduleDir, "another module update");
-        ContentModification bundleModified2 = ContentModificationUtils.modifyBundle(patchDir, patchElementId2, bundleDir, "another bundle update");
+        ContentModification moduleModified2 = ContentModificationUtils.modifyModule(patchDir, patchElementId2, patchedModule, "another module update");
+        ContentModification bundleModified2 = ContentModificationUtils.modifyBundle(patchDir, patchElementId2, patchedBundle, "another bundle update");
 
         Patch patch2 = PatchBuilder.create()
                 .setPatchId(patchID2)

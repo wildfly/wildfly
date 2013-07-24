@@ -40,6 +40,7 @@ import org.jboss.as.patching.PatchingException;
 import org.jboss.as.patching.installation.InstallationManager;
 import org.jboss.as.patching.installation.InstallationManagerImpl;
 import org.jboss.as.patching.installation.InstalledIdentity;
+import org.jboss.as.patching.installation.PatchableTarget;
 import org.jboss.as.patching.metadata.Patch;
 import org.jboss.as.patching.metadata.PatchXml;
 import org.jboss.as.patching.tool.ContentVerificationPolicy;
@@ -86,11 +87,8 @@ public class AbstractPatchingTest {
         return new InstallationManagerImpl(identity);
     }
 
-    static InstalledIdentity loadInstalledIdentity(File tempDir, ProductConfig productConfig) throws IOException {
-        final File jbossHome = new File(tempDir, JBOSS_INSTALLATION);
-        final File modules = new File(jbossHome, MODULES);
-        final InstalledIdentity installedIdentity = InstalledIdentity.load(jbossHome, productConfig, modules);
-        return installedIdentity;
+    PatchableTarget getLayer(final String layerName) {
+        return installationManager.getLayer(layerName);
     }
 
     /**
@@ -214,6 +212,13 @@ public class AbstractPatchingTest {
                 IoUtils.safeClose(os);
             }
         }
+    }
+
+    static InstalledIdentity loadInstalledIdentity(File tempDir, ProductConfig productConfig) throws IOException {
+        final File jbossHome = new File(tempDir, JBOSS_INSTALLATION);
+        final File modules = new File(jbossHome, MODULES);
+        final InstalledIdentity installedIdentity = InstalledIdentity.load(jbossHome, productConfig, modules);
+        return installedIdentity;
     }
 
 }

@@ -115,7 +115,7 @@ class IdentityPatchRunner implements InstallationManager.ModificationCompletion 
         }
         // Invalidate the installed patches first
         for (final String rollback : invalidation) {
-            rollback(rollback, context, false);
+            rollback(rollback, context);
         }
 
 //        if (patchType == Patch.PatchType.UPGRADE) {
@@ -221,13 +221,13 @@ class IdentityPatchRunner implements InstallationManager.ModificationCompletion 
             throw PatchMessages.MESSAGES.cannotRollbackPatch(patchId);
         }
         final File workDir = createTempDir();
-        final PatchContentProvider provider = null;
+        final PatchContentProvider provider = PatchContentProvider.ROLLBACK_PROVIDER;
         final IdentityPatchContext context = new IdentityPatchContext(workDir, provider, contentPolicy, modification, ROLLBACK, installedImage);
         try {
             // Rollback patches
             for (final String rollback : patches) {
                 if (!Constants.BASE.equals(rollback)) {
-                    rollback(rollback, context, true);
+                    rollback(rollback, context);
                 }
             }
             // Execute the tasks
@@ -323,12 +323,13 @@ class IdentityPatchRunner implements InstallationManager.ModificationCompletion 
      *
      * @param patchID the patch id
      * @param context the patch context
-     * @param restoreFromHistory restore from history
      * @throws PatchingException
      */
-    private void rollback(final String patchID, final IdentityPatchContext context, boolean restoreFromHistory) throws PatchingException {
+    private void rollback(final String patchID, final IdentityPatchContext context) throws PatchingException {
         try {
+
             // Load the patch history
+            final PatchingTaskContext.Mode mode = context.getMode();
             final Patch originalPatch = loadPatchInformation(patchID, installedImage);
             final RollbackPatch rollbackPatch = loadRollbackInformation(patchID, installedImage);
             final Patch.PatchType patchType = rollbackPatch.getIdentity().getPatchType();
@@ -382,7 +383,7 @@ class IdentityPatchRunner implements InstallationManager.ModificationCompletion 
                 final IdentityPatchContext.PatchEntry entry = context.resolveForElement(patchElement);
                 final Map<Location, ContentTaskDefinition> modifications = entry.getDefinitions();
                 // Create the rollback
-                PatchingTasks.rollback(elementPatchId, original.getModifications(), patchElement.getModifications(), modifications, ContentItemFilter.MISC_ONLY, !restoreFromHistory);
+                PatchingTasks.rollback(elementPatchId, original.getModifications(), patchElement.getModifications(), modifications, ContentItemFilter.ALL_BUT_MISC, mode);
                 entry.rollback(original.getId());
 
                 // We need to restore the previous state
@@ -393,7 +394,7 @@ class IdentityPatchRunner implements InstallationManager.ModificationCompletion 
                 } else {
                     info = history.getLayer(layerName).loadTargetInfo();
                 }
-                if (restoreFromHistory) {
+                if (mode == ROLLBACK) {
                     restoreFromHistory(entry, elementPatchId, elementPatchType, info);
                 }
             }
@@ -403,12 +404,12 @@ class IdentityPatchRunner implements InstallationManager.ModificationCompletion 
 
             // Rollback the patch
             final IdentityPatchContext.PatchEntry identity = context.getIdentityEntry();
-            PatchingTasks.rollback(patchID, originalPatch.getModifications(), rollbackPatch.getModifications(), identity.getDefinitions(), ContentItemFilter.MISC_ONLY, !restoreFromHistory);
+            PatchingTasks.rollback(patchID, originalPatch.getModifications(), rollbackPatch.getModifications(), identity.getDefinitions(), ContentItemFilter.MISC_ONLY, mode);
             identity.rollback(patchID);
 
             // Restore previous state
             final PatchableTarget.TargetInfo identityHistory = history.getIdentity().loadTargetInfo();
-            if (restoreFromHistory) {
+            if (mode == ROLLBACK) {
                 restoreFromHistory(identity, rollbackPatch.getPatchId(), patchType, identityHistory);
             }
             if (patchType == Patch.PatchType.CUMULATIVE) {

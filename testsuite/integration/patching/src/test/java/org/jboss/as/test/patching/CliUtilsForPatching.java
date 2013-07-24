@@ -112,9 +112,20 @@ public class CliUtilsForPatching {
      * @throws Exception
      */
     public static ModelNode info() throws Exception {
+        return info(true);
+    }
+
+    /**
+     * Use the CLI to read information about the installed patches
+     *
+     * @param connect to the server
+     * @return output of "patch info" command or null if output is empty
+     * @throws Exception
+     */
+    public static ModelNode info(boolean connect) throws Exception {
         CLIWrapper cli = null;
         try {
-            cli = new CLIWrapper(true);
+            cli = new CLIWrapper(connect);
             String command = "patch info";
             logger.info("----- sending command to CLI: " + command + " -----");
             cli.sendLine(command);
@@ -217,7 +228,7 @@ public class CliUtilsForPatching {
         CLIWrapper cli = null;
         boolean success = true;
         final String infoCommand = "patch info --distribution=%s";
-        final String rollbackCommand = "patch rollback --patch-id=%s --distribution=%s --reset-configuration=true";
+        final String rollbackCommand = "patch rollback --patch-id=%s --distribution=%s --reset-configuration=true --override-all";
         try {
             cli = new CLIWrapper(false);
             String command = String.format(infoCommand, PatchingTestUtil.AS_DISTRIBUTION);

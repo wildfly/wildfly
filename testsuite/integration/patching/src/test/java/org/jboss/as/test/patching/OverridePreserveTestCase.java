@@ -92,12 +92,20 @@ public class OverridePreserveTestCase {
     public void cleanup() throws Exception {
         if(controller.isStarted(CONTAINER))
             controller.stop(CONTAINER);
-        CliUtilsForPatching.rollbackAll();
+
+        final boolean success = CliUtilsForPatching.rollbackAll();
+
         PatchingTestUtil.setFileContent(file1, file1originalContent);
         PatchingTestUtil.setFileContent(file2, file2originalContent);
 
         if (IoUtils.recursiveDelete(tempDir)) {
             tempDir.deleteOnExit();
+        }
+        if (!success) {
+            // Reset installation state
+            final File home = new File(PatchingTestUtil.AS_DISTRIBUTION);
+            PatchingTestUtil.resetInstallationState(home, baseModuleDir);
+            Assert.fail("failed to rollback all patches");
         }
     }
 
@@ -422,7 +430,7 @@ public class OverridePreserveTestCase {
 
         // rollback patch
         Assert.assertTrue("Rollback should be accepted",
-                CliUtilsForPatching.rollbackPatch(patchID));
+                CliUtilsForPatching.rollbackPatch(patchID, CliUtilsForPatching.OVERRIDE_MODULES));
         Assert.assertTrue("server should be in restart-required mode", CliUtilsForPatching.doesServerRequireRestart());
         controller.stop(CONTAINER);
 

@@ -55,7 +55,7 @@ public class PatchConflictsUnitTestCase extends AbstractPatchingTest {
     @Test
     public void testModuleOverrideAndRollback() throws Exception {
         final PatchingTestStepBuilder step = testModuleConflicts(policyBuilder().overrideAll().createPolicy());
-        rollback(step, ContentVerificationPolicy.STRICT);
+        rollback(step);
     }
 
     protected PatchingTestStepBuilder testModuleConflicts(final ContentVerificationPolicy resolvePolicy) throws Exception {

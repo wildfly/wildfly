@@ -109,12 +109,15 @@ public class PatchBuilder extends ModificationBuilderTarget<PatchBuilder> implem
         this.elements.add(new PatchElementHolder() {
             @Override
             public PatchElement createElement(PatchType patchType) {
-                if (element.getProvider().getPatchType() == null) {
+                final PatchType type = element.getProvider().getPatchType();
+                if (type == null) {
                     if (patchType == PatchType.CUMULATIVE) {
                         ((PatchElementProviderImpl)element.getProvider()).upgrade();
                     } else {
                         ((PatchElementProviderImpl)element.getProvider()).oneOffPatch();
                     }
+                } else if (patchType != PatchBuilder.this.patchType) {
+                    throw new RuntimeException("patch types don't match");
                 }
                 return element;
             }

@@ -4,6 +4,7 @@ import org.jboss.arquillian.container.test.api.ContainerController;
 import org.jboss.arquillian.container.test.api.RunAsClient;
 import org.jboss.arquillian.junit.Arquillian;
 import org.jboss.arquillian.test.api.ArquillianResource;
+import org.jboss.as.patching.IoUtils;
 import org.jboss.as.patching.metadata.ContentModification;
 import org.jboss.as.patching.metadata.Patch;
 import org.jboss.as.patching.metadata.PatchBuilder;
@@ -51,10 +52,16 @@ public class CumulativePatchingScenariosTestCase {
     public void cleanup() throws Exception {
         if(controller.isStarted(CONTAINER))
             controller.stop(CONTAINER);
-        CliUtilsForPatching.rollbackAll();
 
-        if (recursiveDelete(tempDir)) {
+        final boolean success = CliUtilsForPatching.rollbackAll();
+        if (IoUtils.recursiveDelete(tempDir)) {
             tempDir.deleteOnExit();
+        }
+        if (!success) {
+            // Reset installation state
+            final File home = new File(PatchingTestUtil.AS_DISTRIBUTION);
+            PatchingTestUtil.resetInstallationState(home, baseModuleDir);
+            Assert.fail("failed to rollback all patches " + CliUtilsForPatching.info(false));
         }
     }
 
@@ -115,7 +122,7 @@ public class CumulativePatchingScenariosTestCase {
                 .setDescription("A cp patch.")
                 .upgradeIdentity(productConfig.getProductName(), productConfig.getProductVersion(), "EAP with cp patch")
                 .getParent()
-                .oneOffPatchElement(layerPatchID, "base", false)
+                .upgradeElement(layerPatchID, "base", false)
                 .addContentModification(moduleAdded)
                 .getParent()
                 .build();
