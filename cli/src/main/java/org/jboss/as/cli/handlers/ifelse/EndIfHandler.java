@@ -110,7 +110,7 @@ public class EndIfHandler extends CommandHandlerWithHelp {
             try {
                 final ModelNode response = client.execute(ifRequest);
                 if(!Util.isSuccess(response)) {
-                    new CommandLineException("if request failed: " + Util.getFailureDescription(response));
+                    throw new CommandLineException("if request failed: " + Util.getFailureDescription(response));
                 }
             } catch (IOException e) {
                 throw new CommandLineException("if request failed", e);
