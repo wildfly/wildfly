@@ -46,5 +46,8 @@
         <module name="org.jboss.ws.api" />
         <module name="org.jboss.ws.spi" />
         <module name="org.apache.cxf" />
+        <module name="javax.persistence.api" />
+        <module name="org.hibernate" />
+        <module name="org.javassist" />
     </dependencies>
 </module>
