@@ -87,6 +87,14 @@ public class ContentModificationUtils {
         return moduleUpdated;
     }
 
+    public static ContentModification modifyModule(File patchDir, String patchElementID, String moduleName, byte[] existingHash, TestUtils.ContentTask task) throws IOException {
+        File modulesDir = newFile(patchDir, patchElementID, MODULES);
+        File modifiedModule = createModule0(modulesDir, moduleName, task);
+        byte[] updatedHash = hashFile(modifiedModule);
+        ContentModification moduleUpdated = new ContentModification(new ModuleItem(moduleName, ModuleItem.MAIN_SLOT, updatedHash), existingHash, MODIFY);
+        return moduleUpdated;
+    }
+
     public static ContentModification addBundle(File patchDir, String patchElementID, String bundleName) throws IOException {
         File bundlesDir = newFile(patchDir, patchElementID, BUNDLES);
         File bundleDir = createBundle0(bundlesDir, bundleName, randomString());
@@ -149,4 +157,5 @@ public class ContentModificationUtils {
         ContentModification fileUpdated = new ContentModification(new MiscContentItem(modifiedFile.getName(), subdir, modifiedHash), existingHash, MODIFY);
         return fileUpdated;
     }
+
 }

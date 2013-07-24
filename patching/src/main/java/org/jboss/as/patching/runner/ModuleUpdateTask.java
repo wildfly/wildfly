@@ -57,7 +57,15 @@ class ModuleUpdateTask extends AbstractModuleTask {
     ContentModification createRollbackEntry(ContentModification original, byte[] targetHash, byte[] itemHash) {
         // Although modules are ignored for rollback, we still keep track of our changes
         final ModuleItem item = createContentItem(contentItem, itemHash);
-        return new ContentModification(item, targetHash, ModificationType.MODIFY);
+        final ModificationType type;
+        // Check if the module did not exist before. Invalidated patches might include the module already
+        // and we need to track that they can be rolled back to the last state
+        if (original.getType() != ModificationType.MODIFY && itemHash.length == 0) {
+            type = ModificationType.REMOVE;
+        } else {
+            type = ModificationType.MODIFY;
+        }
+        return new ContentModification(item, targetHash, type);
     }
 
 }

@@ -26,6 +26,7 @@ import org.jboss.arquillian.container.test.api.ContainerController;
 import org.jboss.arquillian.container.test.api.RunAsClient;
 import org.jboss.arquillian.junit.Arquillian;
 import org.jboss.arquillian.test.api.ArquillianResource;
+import org.jboss.as.patching.Constants;
 import org.jboss.as.patching.IoUtils;
 import org.jboss.as.patching.metadata.ContentModification;
 import org.jboss.as.patching.metadata.Patch;
@@ -86,10 +87,16 @@ public class BasicOneOffPatchingScenariosTestCase {
     public void cleanup() throws Exception {
         if(controller.isStarted(CONTAINER))
             controller.stop(CONTAINER);
-        CliUtilsForPatching.rollbackAll();
 
+        final boolean success = CliUtilsForPatching.rollbackAll();
         if (IoUtils.recursiveDelete(tempDir)) {
             tempDir.deleteOnExit();
+        }
+        if (!success) {
+            // Reset installation state
+            final File home = new File(PatchingTestUtil.AS_DISTRIBUTION);
+            PatchingTestUtil.resetInstallationState(home, baseModuleDir);
+            Assert.fail("failed to rollback all patches " + CliUtilsForPatching.info());
         }
     }
 
@@ -1066,7 +1073,7 @@ public class BasicOneOffPatchingScenariosTestCase {
         Assert.assertTrue("File " + newFilePath + " should exist", new File(newFilePath).exists());
 
         // rollback the patch and check if server is in restart-required mode
-        CliUtilsForPatching.rollbackPatch(patchID);
+        Assert.assertTrue(CliUtilsForPatching.rollbackPatch(patchID));
         Assert.assertTrue("server should be in restart-required mode",
                 CliUtilsForPatching.doesServerRequireRestart());
         controller.stop(CONTAINER);

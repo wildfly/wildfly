@@ -132,35 +132,30 @@ public class TestUtils {
         return moduleXMLFile;
     }
 
-    public static File createModule(File baseDir, String moduleName, String... resourcesContents) throws IOException {
-        File moduleDir = IoUtils.mkdir(baseDir, "modules", moduleName);
-        File mainDir = IoUtils.mkdir(moduleDir, "main");
-        String resourceFilePrefix = randomString();
-        String[] resourceFileNames = new String[resourcesContents.length];
-        for (int i = 0; i < resourcesContents.length; i++) {
-            String content = resourcesContents[i];
-            String fileName = resourceFilePrefix + "-" + i;
-            resourceFileNames[i] = fileName;
-            File f = touch(mainDir, fileName);
-            dump(f, content);
-        }
-        createModuleXmlFile(mainDir, moduleName, resourceFileNames);
-        return moduleDir;
+    public static File createModule0(final File baseDir, final String moduleName, final String... resourcesContents) throws IOException {
+        final ContentTask task = new ContentTask() {
+            @Override
+            public String[] writeContent(File mainDir) throws IOException {
+                String resourceFilePrefix = randomString();
+                String[] resourceFileNames = new String[resourcesContents.length];
+                for (int i = 0; i < resourcesContents.length; i++) {
+                    String content = resourcesContents[i];
+                    String fileName = resourceFilePrefix + "-" + i;
+                    resourceFileNames[i] = fileName;
+                    File f = touch(mainDir, fileName);
+                    dump(f, content);
+                }
+                return resourceFileNames;
+            }
+        };
+        return createModule0(baseDir, moduleName, task);
     }
 
-    public static File createModule0(File baseDir, String moduleName, String... resourcesContents) throws IOException {
-        File mainDir = createModuleRoot(baseDir, moduleName);
-        String resourceFilePrefix = randomString();
-        String[] resourceFileNames = new String[resourcesContents.length];
-        for (int i = 0; i < resourcesContents.length; i++) {
-            String content = resourcesContents[i];
-            String fileName = resourceFilePrefix + "-" + i;
-            resourceFileNames[i] = fileName;
-            File f = touch(mainDir, fileName);
-            dump(f, content);
-        }
-        createModuleXmlFile(mainDir, moduleName, resourceFileNames);
-        return mainDir.getParentFile();
+    public static File createModule0(final File baseDir, final String moduleName, final ContentTask task) throws IOException {
+        final File main = createModuleRoot(baseDir, moduleName);
+        final String[] resources = task.writeContent(main);
+        createModuleXmlFile(main, moduleName, resources);
+        return main.getParentFile();
     }
 
     public static File createModule1(File baseDir, String moduleName, String... resourceFileNames) throws IOException {
@@ -170,6 +165,12 @@ public class TestUtils {
     }
 
     public static File createModuleRoot(File baseDir, String moduleSpec) throws IOException {
+        final File dir = getModuleRoot(baseDir, moduleSpec);
+        dir.mkdirs();
+        return dir;
+    }
+
+    public static File getModuleRoot(final File baseDir, final String moduleSpec) {
         final int c1 = moduleSpec.lastIndexOf(':');
         final String name;
         final String slot;
@@ -188,7 +189,6 @@ public class TestUtils {
             dir = new File(dir, segment);
         }
         dir = new File(dir, slot);
-        dir.mkdirs();
         return dir;
     }
 
@@ -292,6 +292,19 @@ public class TestUtils {
         } catch (IOException e) {
             throw new RuntimeException(e);
         }
+    }
+
+    public interface ContentTask {
+
+        /**
+         * Write the content.
+         *
+         * @param target the target file
+         * @return the created resources
+         * @throws IOException for any error
+         */
+        String[] writeContent(File target) throws IOException;
+
     }
 
 }

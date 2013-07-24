@@ -23,6 +23,7 @@ package org.jboss.as.test.patching;
 
 import com.google.common.base.Joiner;
 
+import org.jboss.as.patching.Constants;
 import org.jboss.as.patching.DirectoryStructure;
 import org.jboss.as.patching.IoUtils;
 import org.jboss.as.patching.ZipUtils;
@@ -59,6 +60,7 @@ import static org.jboss.as.patching.IoUtils.mkdir;
 import static org.jboss.as.patching.IoUtils.newFile;
 import static org.jboss.as.patching.IoUtils.safeClose;
 import static org.jboss.as.patching.PatchLogger.ROOT_LOGGER;
+import static org.jboss.as.test.patching.PatchingTestUtil.baseModuleDir;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
@@ -340,7 +342,7 @@ public class PatchingTestUtil {
             }
         }));
         if(patchElements == null) {
-            assertTrue(patchDirs.isEmpty());
+            assertTrue(patchDirs.toString(), patchDirs.isEmpty());
         } else {
             final List<String> ids = Arrays.asList(patchElements);
             assertEquals(patchDirs.size(), patchElements.length);
@@ -349,4 +351,14 @@ public class PatchingTestUtil {
             }
         }
     }
+
+    public static void resetInstallationState(final File home, final File... layerDirs) {
+        final File installation = new File(home, Constants.INSTALLATION_METADATA);
+        IoUtils.recursiveDelete(installation);
+        for (final File root : layerDirs) {
+            final File overlays = new File(root, Constants.OVERLAYS);
+            IoUtils.recursiveDelete(overlays);
+        }
+    }
+
 }

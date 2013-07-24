@@ -114,7 +114,6 @@ class FileRemoveTask implements PatchingTask {
         } else {
             // Copy and record the backup action
             final byte[] hash = copy(root, backupLocation);
-            context.store(hash, backupLocation, true);
             rollback.add(createRollbackItem(root.getName(), path, hash, false));
         }
     }

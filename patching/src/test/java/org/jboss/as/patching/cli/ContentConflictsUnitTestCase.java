@@ -267,8 +267,8 @@ public class ContentConflictsUnitTestCase extends AbstractTaskTestCase {
         } catch(CommandLineException e) {
             final int relativeIndex = env.getInstalledImage().getJbossHome().getAbsolutePath().length() + 1;
             // TODO modules and bundles are not checked at the moment
-            //assertConflicts(e, bundleConflictName + ":main", moduleConflictName + ":main", conflictFile.getAbsolutePath().substring(relativeIndex));
-            assertConflicts(e, conflictFile.getAbsolutePath().substring(relativeIndex));
+            assertConflicts(e, bundleConflictName + ":main", moduleConflictName + ":main", conflictFile.getAbsolutePath().substring(relativeIndex));
+            //assertConflicts(e, conflictFile.getAbsolutePath().substring(relativeIndex));
         } finally {
             ctx.terminateSession();
         }

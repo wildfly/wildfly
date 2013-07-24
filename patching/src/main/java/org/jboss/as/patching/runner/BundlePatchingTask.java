@@ -60,9 +60,8 @@ class BundlePatchingTask extends AbstractPatchingTask<BundleItem> {
                 if(children == null || children.length == 0) {
                     return NO_CONTENT;
                 }
-                final byte[] hash = HashUtils.hashFile(bundlePath);
-                context.store(hash, bundlePath, false);
-                return hash;
+                context.invalidateRoot(bundlePath);
+                return HashUtils.hashFile(bundlePath);
             }
         }
         return NO_CONTENT;
@@ -70,6 +69,9 @@ class BundlePatchingTask extends AbstractPatchingTask<BundleItem> {
 
     @Override
     byte[] apply(PatchingTaskContext context, PatchContentLoader loader) throws IOException {
+        if (context.getCurrentMode() == PatchingTaskContext.Mode.ROLLBACK) {
+            return getContentItem().getContentHash();
+        }
         // Copy the new bundle resources to the patching directory
         final File targetDir = context.getTargetFile(contentItem);
         final File sourceDir = loader.getFile(contentItem);

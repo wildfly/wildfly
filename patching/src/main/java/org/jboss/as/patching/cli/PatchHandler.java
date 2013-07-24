@@ -338,14 +338,36 @@ public class PatchHandler extends CommandHandlerWithHelp {
             return targetDistro;
         }
         final String env = "JBOSS_HOME";
+        String resolved;
         if (System.getSecurityManager() == null) {
-            return System.getenv(env);
+            resolved = System.getenv(env);
         } else {
-            return (String) AccessController.doPrivileged(new PrivilegedAction<Object>() {
+            resolved = (String) AccessController.doPrivileged(new PrivilegedAction<Object>() {
                 public Object run() {
-                    return System.getProperty(env);
+                    return System.getenv(env);
                 }
             });
         }
+        if (resolved == null) {
+            if (System.getSecurityManager() == null) {
+                resolved = System.getProperty("jboss.home.dir");
+            } else {
+                resolved = (String) AccessController.doPrivileged(new PrivilegedAction<Object>() {
+                    public Object run() {
+                        return System.getProperty("jboss.home.dir");
+                    }
+                });
+            }
+        }
+        if (resolved == null) {
+            throw new RuntimeException("failed to resolve the home.dir use the --distribution attribute to point to the home.dir");
+        }
+        // TODO proper check
+        final File home = new File(resolved);
+        final File modules = new File(home, "modules");
+        if (! modules.isDirectory()) {
+            throw new RuntimeException("failed to resolve the home.dir use the --distribution attribute to point to the home.dir: " + resolved);
+        }
+        return resolved;
     }
 }

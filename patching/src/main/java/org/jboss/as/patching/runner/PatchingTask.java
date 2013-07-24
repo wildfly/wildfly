@@ -71,7 +71,7 @@ public interface PatchingTask {
                 case MISC:
                     return createMiscTask(description, (MiscContentItem) item, context);
                 case MODULE:
-                    return createModuleTask(description);
+                    return createModuleTask(description, context.getCurrentMode());
                 default:
                     throw new IllegalStateException();
             }
@@ -81,12 +81,16 @@ public interface PatchingTask {
             return new BundlePatchingTask(description);
         }
 
-        static PatchingTask createModuleTask(final PatchingTaskDescription description) {
-            final ModificationType type = description.getModificationType();
-            if(type == ModificationType.REMOVE) {
-                return new ModuleRemoveTask(description);
+        static PatchingTask createModuleTask(final PatchingTaskDescription description, PatchingTaskContext.Mode mode) {
+            if (mode == PatchingTaskContext.Mode.APPLY) {
+                final ModificationType type = description.getModificationType();
+                if(type == ModificationType.REMOVE) {
+                    return new ModuleRemoveTask(description);
+                } else {
+                    return new ModuleUpdateTask(description);
+                }
             } else {
-                return new ModuleUpdateTask(description);
+                return new ModuleRollbackTask(description);
             }
         }
 
