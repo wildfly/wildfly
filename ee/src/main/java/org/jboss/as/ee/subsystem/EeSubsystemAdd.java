@@ -31,6 +31,7 @@ import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.ProcessType;
 import org.jboss.as.controller.ServiceVerificationHandler;
 import org.jboss.as.ee.beanvalidation.BeanValidationFactoryDeployer;
+import org.jboss.as.ee.component.ReflectiveClassIntrospector;
 import org.jboss.as.ee.component.deployers.ApplicationClassesAggregationProcessor;
 import org.jboss.as.ee.component.deployers.AroundInvokeAnnotationParsingProcessor;
 import org.jboss.as.ee.component.deployers.ComponentInstallProcessor;
@@ -199,6 +200,8 @@ public class EeSubsystemAdd extends AbstractBoottimeAddStepHandler {
 
             }
         }, OperationContext.Stage.RUNTIME);
+
+        newControllers.add(context.getServiceTarget().addService(ReflectiveClassIntrospector.SERVICE_NAME, new ReflectiveClassIntrospector()).addListener(verificationHandler).install());
 
     }
 

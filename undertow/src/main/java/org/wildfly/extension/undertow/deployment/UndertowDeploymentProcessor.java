@@ -62,6 +62,7 @@ import org.jboss.msc.service.ServiceBuilder;
 import org.jboss.msc.service.ServiceController.Mode;
 import org.jboss.msc.service.ServiceName;
 import org.jboss.msc.service.ServiceTarget;
+import org.jboss.msc.value.ImmediateValue;
 import org.jboss.security.SecurityConstants;
 import org.jboss.security.SecurityUtil;
 import org.jboss.vfs.VirtualFile;
@@ -69,8 +70,10 @@ import org.wildfly.clustering.web.session.SessionManagerFactory;
 import org.wildfly.clustering.web.session.SessionManagerFactoryBuilder;
 import org.wildfly.clustering.web.session.SessionManagerFactoryBuilderService;
 import org.wildfly.extension.undertow.BufferCacheService;
+import org.wildfly.extension.undertow.Constants;
 import org.wildfly.extension.undertow.DeploymentDefinition;
 import org.wildfly.extension.undertow.Host;
+import org.wildfly.extension.undertow.JSPService;
 import org.wildfly.extension.undertow.ServletContainerService;
 import org.wildfly.extension.undertow.SessionCookieConfigService;
 import org.wildfly.extension.undertow.UndertowExtension;
@@ -150,8 +153,10 @@ public class UndertowDeploymentProcessor implements DeploymentUnitProcessor {
             }
         }
 
+        boolean componentRegistryExists = true;
         ComponentRegistry componentRegistry = deploymentUnit.getAttachment(org.jboss.as.ee.component.Attachments.COMPONENT_REGISTRY);
         if (componentRegistry == null) {
+            componentRegistryExists = false;
             //we do this to avoid lots of other null checks
             //this will only happen if the EE subsystem is not installed
             componentRegistry = new ComponentRegistry(null);
@@ -191,11 +196,9 @@ public class UndertowDeploymentProcessor implements DeploymentUnitProcessor {
         TldsMetaData tldsMetaData = deploymentUnit.getAttachment(TldsMetaData.ATTACHMENT_KEY);
         UndertowDeploymentInfoService undertowDeploymentInfoService = UndertowDeploymentInfoService.builder()
                         .setAttributes(deploymentUnit.getAttachment(ServletContextAttribute.ATTACHMENT_KEY))
-                .setComponentRegistry(componentRegistry)
                 .setContextPath(pathName)
                 .setDeploymentName(deploymentUnit.getName())
                 .setDeploymentRoot(deploymentRoot)
-                .setInjectionContainer(injectionContainer)
                 .setMergedMetaData(warMetaData.getMergedJBossWebMetaData())
                 .setModule(module)
                 .setScisMetaData(scisMetaData)
@@ -218,7 +221,14 @@ public class UndertowDeploymentProcessor implements DeploymentUnitProcessor {
                 .addDependency(ServiceBuilder.DependencyType.OPTIONAL, BufferCacheService.SERVICE_NAME.append("default"), DirectBufferCache.class, undertowDeploymentInfoService.getBufferCacheInjectedValue())
                 .addDependencies(deploymentUnit.getAttachmentList(Attachments.WEB_DEPENDENCIES))
                 .addDependency(PathManagerService.SERVICE_NAME, PathManager.class, undertowDeploymentInfoService.getPathManagerInjector())
+                .addDependency(ServiceBuilder.DependencyType.OPTIONAL, UndertowService.SERVLET_CONTAINER.append(defaultContainer).append(Constants.JSP), JSPService.class, undertowDeploymentInfoService.getJspService())
                 .addDependencies(additionalDependencies);
+
+        if(componentRegistryExists) {
+            infoBuilder.addDependency(ComponentRegistry.serviceName(deploymentUnit), ComponentRegistry.class, undertowDeploymentInfoService.getComponentRegistryInjectedValue());
+        } else {
+            undertowDeploymentInfoService.getComponentRegistryInjectedValue().setValue(new ImmediateValue<>(componentRegistry));
+        }
 
         if (metaData.getDistributable() != null) {
             SessionManagerFactoryBuilderService factoryBuilderService = new SessionManagerFactoryBuilderService();

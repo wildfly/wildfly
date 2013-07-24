@@ -49,6 +49,7 @@ import org.jboss.as.server.deployment.reflect.DeploymentClassIndex;
 import org.jboss.as.weld.WeldBootstrapService;
 import org.jboss.as.weld.WeldMessages;
 import org.jboss.as.weld.WeldStartService;
+import org.jboss.as.weld.deployment.WeldClassIntrospector;
 import org.jboss.as.weld.ejb.EjbRequestScopeActivationInterceptor;
 import org.jboss.as.weld.ejb.Jsr299BindingsInterceptor;
 import org.jboss.as.weld.injection.WeldComponentService;
@@ -85,6 +86,10 @@ public class WeldComponentIntegrationProcessor implements DeploymentUnitProcesso
         final EEModuleDescription eeModuleDescription = deploymentUnit.getAttachment(org.jboss.as.ee.component.Attachments.EE_MODULE_DESCRIPTION);
         final ServiceName weldBootstrapService = topLevelDeployment.getServiceName().append(WeldBootstrapService.SERVICE_NAME);
         final ServiceName weldStartService = topLevelDeployment.getServiceName().append(WeldStartService.SERVICE_NAME);
+
+        WeldClassIntrospector.install(deploymentUnit, phaseContext.getServiceTarget());
+
+        eeModuleDescription.setDefaultClassIntrospectorServiceName(WeldClassIntrospector.serviceName(deploymentUnit));
 
         for (ComponentDescription component : eeModuleDescription.getComponentDescriptions()) {
             final String beanName;

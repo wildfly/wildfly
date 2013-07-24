@@ -32,7 +32,6 @@ import org.jboss.msc.service.Service;
 import org.jboss.msc.service.StartContext;
 import org.jboss.msc.service.StartException;
 import org.jboss.msc.service.StopContext;
-import org.jboss.msc.value.InjectedValue;
 
 /**
  * Central Undertow 'Container' HTTP listeners will make this container accessible whilst deployers will add content.
@@ -40,10 +39,17 @@ import org.jboss.msc.value.InjectedValue;
  * @author <a href="mailto:darran.lofthouse@jboss.com">Darran Lofthouse</a>
  */
 public class ServletContainerService implements Service<ServletContainerService> {
+
+    private final boolean developmentMode;
+    private final boolean allowNonStandardWrappers;
     private volatile ServletContainer servletContainer;
     @Deprecated
     private final Map<String, Integer> secureListeners = new ConcurrentHashMap<>(1);
-    private final InjectedValue<JSPService> jspService = new InjectedValue<>();
+
+    public ServletContainerService(boolean developmentMode, boolean allowNonStandardWrappers) {
+        this.developmentMode = developmentMode;
+        this.allowNonStandardWrappers = allowNonStandardWrappers;
+    }
 
     static String getDeployedContextPath(DeploymentInfo deploymentInfo) {
         return "".equals(deploymentInfo.getContextPath()) ? "/" : deploymentInfo.getContextPath();
@@ -62,12 +68,16 @@ public class ServletContainerService implements Service<ServletContainerService>
         return this;
     }
 
-    public InjectedValue<JSPService> getJspService() {
-        return jspService;
-    }
-
     public ServletContainer getServletContainer() {
         return servletContainer;
+    }
+
+    public boolean isDevelopmentMode() {
+        return developmentMode;
+    }
+
+    public boolean isAllowNonStandardWrappers() {
+        return allowNonStandardWrappers;
     }
 
     public Integer lookupSecurePort(final String listenerName) {

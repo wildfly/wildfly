@@ -46,6 +46,7 @@ import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.ModelType;
 import org.jboss.msc.service.ServiceBuilder;
 import org.jboss.msc.service.ServiceController;
+import org.jboss.msc.service.ServiceName;
 import org.jboss.msc.service.ServiceTarget;
 
 /**
@@ -53,12 +54,6 @@ import org.jboss.msc.service.ServiceTarget;
  * @created 23.2.12 18:47
  */
 class JspDefinition extends PersistentResourceDefinition {
-    protected static final SimpleAttributeDefinition DEVELOPMENT =
-            new SimpleAttributeDefinitionBuilder(Constants.DEVELOPMENT, ModelType.BOOLEAN, true)
-                    .setFlags(AttributeAccess.Flag.RESTART_ALL_SERVICES)
-                    .setDefaultValue(new ModelNode(false))
-                    .setAllowExpression(true)
-                    .build();
     protected static final SimpleAttributeDefinition DISABLED =
             new SimpleAttributeDefinitionBuilder(Constants.DISABLED, ModelType.BOOLEAN, true)
                     .setFlags(AttributeAccess.Flag.RESTART_ALL_SERVICES)
@@ -174,7 +169,6 @@ class JspDefinition extends PersistentResourceDefinition {
                     .build();
     protected static final SimpleAttributeDefinition[] ATTRIBUTES = {
             // IMPORTANT -- keep these in xsd order as this order controls marshalling
-            DEVELOPMENT,
             DISABLED,
             KEEP_GENERATED,
             TRIM_SPACES,
@@ -236,10 +230,14 @@ class JspDefinition extends PersistentResourceDefinition {
                 for (AttributeDefinition attribute : ATTRIBUTES) {
                     resolved.get(attribute.getName()).set(attribute.resolveModelAttribute(context, model));
                 }
+
+
                 final JSPService jspService = new JSPService(resolved);
                 final ServiceTarget target = context.getServiceTarget();
-                ServiceBuilder<JSPService> svcBuilder = target.addService(UndertowService.SERVLET_CONTAINER.append(servletContainerName).append(Constants.JSP), jspService)
-                        .setInitialMode(ServiceController.Mode.ON_DEMAND);
+                final ServiceName servletContainerServiceName = UndertowService.SERVLET_CONTAINER.append(servletContainerName);
+                ServiceBuilder<JSPService> svcBuilder = target.addService(servletContainerServiceName.append(Constants.JSP), jspService)
+                        .addDependency(servletContainerServiceName, ServletContainerService.class, jspService.getServletContainerServiceInjectedValue())
+                        .setInitialMode(ServiceController.Mode.ACTIVE);
 
                 if (verificationHandler != null) {
                     svcBuilder.addListener(verificationHandler);

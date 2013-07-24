@@ -22,24 +22,23 @@
 
 package org.jboss.as.ee.structure;
 
-import java.util.List;
-import java.util.Map;
-
 import org.jboss.as.ee.component.ComponentDescription;
 import org.jboss.as.ee.component.ComponentRegistry;
 import org.jboss.as.ee.component.EEApplicationDescription;
+import org.jboss.as.ee.component.EEClassIntrospector;
 import org.jboss.as.ee.component.EEModuleDescription;
-import org.jboss.as.ee.component.deployers.EEModuleConfigurationProcessor;
 import org.jboss.as.server.deployment.DeploymentPhaseContext;
 import org.jboss.as.server.deployment.DeploymentUnit;
 import org.jboss.as.server.deployment.DeploymentUnitProcessingException;
 import org.jboss.as.server.deployment.DeploymentUnitProcessor;
 import org.jboss.as.server.deployment.module.ResourceRoot;
-import org.jboss.logging.Logger;
+import org.jboss.msc.service.ValueService;
+import org.jboss.msc.value.ImmediateValue;
 
-import static org.jboss.as.ee.component.Attachments.COMPONENT_REGISTRY;
-import static org.jboss.as.ee.component.Attachments.EE_APPLICATION_DESCRIPTION;
-import static org.jboss.as.ee.component.Attachments.EE_MODULE_DESCRIPTION;
+import java.util.List;
+import java.util.Map;
+
+import static org.jboss.as.ee.component.Attachments.*;
 import static org.jboss.as.server.deployment.Attachments.SUB_DEPLOYMENTS;
 
 /**
@@ -48,12 +47,20 @@ import static org.jboss.as.server.deployment.Attachments.SUB_DEPLOYMENTS;
  */
 public final class ComponentAggregationProcessor implements DeploymentUnitProcessor {
 
-    private static final Logger logger = Logger.getLogger(EEModuleConfigurationProcessor.class);
-
     public void deploy(final DeploymentPhaseContext phaseContext) throws DeploymentUnitProcessingException {
         DeploymentUnit deploymentUnit = phaseContext.getDeploymentUnit();
 
         final ComponentRegistry componentRegistry = new ComponentRegistry(phaseContext.getServiceRegistry());
+
+        final EEModuleDescription moduleDescription = deploymentUnit.getAttachment(EE_MODULE_DESCRIPTION);
+        if(moduleDescription == null) {
+            return;
+        }
+
+        phaseContext.getServiceTarget().addService(ComponentRegistry.serviceName(deploymentUnit), new ValueService<>(new ImmediateValue<Object>(componentRegistry)))
+                .addDependency(moduleDescription.getDefaultClassIntrospectorServiceName(), EEClassIntrospector.class, componentRegistry.getClassIntrospectorInjectedValue())
+                .install();
+
         deploymentUnit.putAttachment(COMPONENT_REGISTRY, componentRegistry);
 
         if (deploymentUnit.getAttachment(Attachments.DEPLOYMENT_TYPE) == DeploymentType.EAR) {
@@ -61,12 +68,8 @@ public final class ComponentAggregationProcessor implements DeploymentUnitProces
             final EEApplicationDescription applicationDescription = new EEApplicationDescription();
             deploymentUnit.putAttachment(org.jboss.as.ee.component.Attachments.EE_APPLICATION_DESCRIPTION, applicationDescription);
 
-
-            final EEModuleDescription earDesc = deploymentUnit.getAttachment(EE_MODULE_DESCRIPTION);
-            if (earDesc != null) {
-                for (final Map.Entry<String, String> messageDestination : earDesc.getMessageDestinations().entrySet()) {
-                    applicationDescription.addMessageDestination(messageDestination.getKey(), messageDestination.getValue(), deploymentUnit.getAttachment(org.jboss.as.server.deployment.Attachments.DEPLOYMENT_ROOT).getRoot());
-                }
+            for (final Map.Entry<String, String> messageDestination : moduleDescription.getMessageDestinations().entrySet()) {
+                applicationDescription.addMessageDestination(messageDestination.getKey(), messageDestination.getValue(), deploymentUnit.getAttachment(org.jboss.as.server.deployment.Attachments.DEPLOYMENT_ROOT).getRoot());
             }
 
             /*
@@ -76,16 +79,16 @@ public final class ComponentAggregationProcessor implements DeploymentUnitProces
             // Add the application description
             final List<DeploymentUnit> subdeployments = deploymentUnit.getAttachmentList(SUB_DEPLOYMENTS);
             for (final DeploymentUnit subdeployment : subdeployments) {
-                final EEModuleDescription moduleDescription = subdeployment.getAttachment(EE_MODULE_DESCRIPTION);
+                final EEModuleDescription subDeploymentModuleDescription = subdeployment.getAttachment(EE_MODULE_DESCRIPTION);
                 final ResourceRoot deploymentRoot = subdeployment.getAttachment(org.jboss.as.server.deployment.Attachments.DEPLOYMENT_ROOT);
-                if (moduleDescription == null) {
+                if (subDeploymentModuleDescription == null) {
                     // Not an EE deployment.
                     continue;
                 }
-                for (final ComponentDescription componentDescription : moduleDescription.getComponentDescriptions()) {
+                for (final ComponentDescription componentDescription : subDeploymentModuleDescription.getComponentDescriptions()) {
                     applicationDescription.addComponent(componentDescription, deploymentRoot.getRoot());
                 }
-                for (final Map.Entry<String, String> messageDestination : moduleDescription.getMessageDestinations().entrySet()) {
+                for (final Map.Entry<String, String> messageDestination : subDeploymentModuleDescription.getMessageDestinations().entrySet()) {
                     applicationDescription.addMessageDestination(messageDestination.getKey(), messageDestination.getValue(), deploymentRoot.getRoot());
                 }
                 for (final ComponentDescription componentDescription : subdeployment.getAttachmentList(org.jboss.as.ee.component.Attachments.ADDITIONAL_RESOLVABLE_COMPONENTS)) {
@@ -103,11 +106,7 @@ public final class ComponentAggregationProcessor implements DeploymentUnitProces
              * our local EE module index.
              */
             final ResourceRoot deploymentRoot = deploymentUnit.getAttachment(org.jboss.as.server.deployment.Attachments.DEPLOYMENT_ROOT);
-            final EEModuleDescription moduleDescription = deploymentUnit.getAttachment(EE_MODULE_DESCRIPTION);
-            if (moduleDescription == null) {
-                // Not an EE deployment.
-                return;
-            }
+
             for (final ComponentDescription componentDescription : moduleDescription.getComponentDescriptions()) {
                 applicationDescription.addComponent(componentDescription, deploymentRoot.getRoot());
             }

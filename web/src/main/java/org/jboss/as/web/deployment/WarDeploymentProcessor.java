@@ -299,8 +299,10 @@ public class WarDeploymentProcessor implements DeploymentUnitProcessor {
                     .addDependency(DependencyType.REQUIRED, SecurityDomainService.SERVICE_NAME.append(securityDomain), SecurityDomainContext.class,
                             realmService.getSecurityDomainContextInjector()).setInitialMode(Mode.ACTIVE).install();
 
+            boolean componentRegistryExists = true;
             ComponentRegistry componentRegistry = deploymentUnit.getAttachment(org.jboss.as.ee.component.Attachments.COMPONENT_REGISTRY);
             if(componentRegistry == null) {
+                componentRegistryExists = false;
                 //we do this to avoid lots of other null checks
                 //this will only happen if the EE subsystem is not installed
                 componentRegistry = new ComponentRegistry(null);
@@ -313,6 +315,9 @@ public class WarDeploymentProcessor implements DeploymentUnitProcessor {
                     .addDependencies(dependentComponents).addDependency(realmServiceName, Realm.class, webappService.getRealm())
                     .addDependencies(deploymentUnit.getAttachmentList(Attachments.WEB_DEPENDENCIES))
                     .addDependency(JndiNamingDependencyProcessor.serviceName(deploymentUnit.getServiceName()));
+            if(componentRegistryExists) {
+                webappBuilder.addDependency(ComponentRegistry.serviceName(deploymentUnit));
+            }
 
             // inject the server executor which can be used by the WebDeploymentService for blocking tasks in start/stop
             // of that service

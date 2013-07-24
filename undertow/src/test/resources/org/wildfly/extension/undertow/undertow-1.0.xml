@@ -44,7 +44,7 @@
 
 
     <servlet-container name="default">
-        <jsp-config development="${prop.development:true}"
+        <jsp-config
                     disabled="${prop.disabled:false}"
                     keep-generated="${prop.keep-generated:true}"
                     trim-spaces="${prop.trim-spaces:true}"

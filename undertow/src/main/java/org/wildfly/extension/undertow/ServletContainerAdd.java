@@ -57,10 +57,12 @@ final class ServletContainerAdd extends AbstractBoottimeAddStepHandler {
         final PathAddress address = PathAddress.pathAddress(operation.get(OP_ADDR));
         final String name = address.getLastElement().getValue();
 
-        final ServletContainerService container = new ServletContainerService();
+        final boolean developmentMode = ServletContainerDefinition.DEVELOPMENT_MODE.resolveModelAttribute(context, model).asBoolean();
+        final boolean allowNonStandardWrappers = ServletContainerDefinition.ALLOW_NON_STANDARD_WRAPPERS.resolveModelAttribute(context, model).asBoolean();
+
+        final ServletContainerService container = new ServletContainerService(developmentMode, allowNonStandardWrappers);
         final ServiceTarget target = context.getServiceTarget();
         newControllers.add(target.addService(UndertowService.SERVLET_CONTAINER.append(name), container)
-                .addDependency(UndertowService.SERVLET_CONTAINER.append(name).append(Constants.JSP), JSPService.class, container.getJspService())
                 .setInitialMode(ServiceController.Mode.ON_DEMAND)
                 .install());
 
