@@ -32,6 +32,7 @@ import java.util.Arrays;
 import org.jboss.as.patching.metadata.ContentModification;
 import org.jboss.as.patching.metadata.ModificationBuilderTarget;
 import org.jboss.as.patching.runner.ContentModificationUtils;
+import org.jboss.as.patching.runner.TestUtils;
 
 /**
  * @author Emanuel Muckenhuber
@@ -74,6 +75,11 @@ abstract class AbstractPatchTestBuilder<T> extends ModificationBuilderTarget<T> 
 
     public T updateModuleWithRandomContent(final String moduleName, byte[] existingHash, byte[] resultingHash) throws IOException {
         final ContentModification modification = ContentModificationUtils.modifyModule(getPatchDir(), getPatchId(), moduleName, existingHash, randomString());
+        return addContentModification(modification, resultingHash);
+    }
+
+    public T updateModule(final String moduleName, byte[] existingHash, byte[] resultingHash, final TestUtils.ContentTask task) throws IOException {
+        final ContentModification modification = ContentModificationUtils.modifyModule(getPatchDir(), getPatchId(), moduleName, existingHash, task);
         return addContentModification(modification, resultingHash);
     }
 

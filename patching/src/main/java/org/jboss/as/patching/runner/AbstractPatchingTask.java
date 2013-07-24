@@ -98,6 +98,17 @@ abstract class AbstractPatchingTask<T extends ContentItem> implements PatchingTa
     }
 
     /**
+     * Get the original modification. Tasks like module remove can override this and fix the hashes based on the created content.
+     *
+     * @param targetHash the new target hash code (current content)
+     * @param itemHash the new content item hash (backup content)
+     * @return the original modification
+     */
+    protected ContentModification getOriginalModification(byte[] targetHash, byte[] itemHash) {
+        return description.getModification();
+    }
+
+    /**
      * Completely skip the apply step.
      */
     protected void setIgnoreApply() {
@@ -130,7 +141,6 @@ abstract class AbstractPatchingTask<T extends ContentItem> implements PatchingTa
             return;
         }
         final PatchContentLoader contentLoader = description.getLoader();
-        final ContentModification original = description.getModification();
         final boolean skip = skipExecution | context.isExcluded(contentItem);
         final byte[] contentHash;
         if(skip) {
@@ -139,8 +149,9 @@ abstract class AbstractPatchingTask<T extends ContentItem> implements PatchingTa
             contentHash = apply(context, contentLoader); // Copy the content
         }
         // Add the rollback action
+        final ContentModification original = getOriginalModification(contentHash, backupHash);
         final ContentModification rollbackAction = createRollbackEntry(original, contentHash, backupHash);
-        context.recordChange(description.getModification(), rollbackAction);
+        context.recordChange(original, rollbackAction);
         // Fail after adding the undo action
         if (! Arrays.equals(contentHash, contentItem.getContentHash()) && failOnContentMismatch(context)) {
             throw new SyncFailedException("copied content does not match expected hash for item: " + contentItem);

@@ -32,7 +32,6 @@ import java.util.Map;
 
 import org.jboss.as.patching.metadata.ContentItem;
 import org.jboss.as.patching.metadata.ContentModification;
-import org.jboss.as.patching.metadata.ModificationType;
 
 /**
  * Utility class to auto resolve conflicts when rolling back/invalidating patches.
@@ -59,10 +58,11 @@ class PatchingTasks {
      * @param rollbackPatch the rollback modifications
      * @param modifications the definitions
      * @param filter        the content filter
-     * @param originalsOnly whether to include only items part of the original patch
+     * @param mode          the current patching mode
      */
     static void rollback(final String patchId, final Collection<ContentModification> originalPatch, final Collection<ContentModification> rollbackPatch,
-                         final Map<Location, ContentTaskDefinition> modifications, final ContentItemFilter filter, final boolean originalsOnly) {
+                         final Map<Location, ContentTaskDefinition> modifications, final ContentItemFilter filter,
+                         final PatchingTaskContext.Mode mode) {
 
         // Process the original patch information
         final Map<Location, ContentModification> originalModifications = new HashMap<Location, ContentModification>();
@@ -79,15 +79,6 @@ class PatchingTasks {
             }
             final Location location = new Location(item);
             final ContentModification original = originalModifications.remove(location);
-            if (original == null) {
-                if (originalsOnly) {
-                    continue;
-                }
-                if (modification.getType() != ModificationType.ADD) {
-                    throw new IllegalStateException(item.toString()); // Only for development purpose
-                }
-            }
-
             final ContentEntry contentEntry = new ContentEntry(patchId, modification);
             ContentTaskDefinition definition = modifications.get(location);
             if (definition == null) {
@@ -107,7 +98,8 @@ class PatchingTasks {
                 //
                 definition.setTarget(contentEntry);
             }
-            if (original == null) {
+            if (original == null
+                    || mode == PatchingTaskContext.Mode.ROLLBACK) {
                 continue;
             }
 

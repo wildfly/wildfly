@@ -40,7 +40,6 @@ import org.jboss.as.patching.metadata.Patch;
 import org.jboss.as.patching.metadata.PatchElement;
 import org.jboss.as.patching.metadata.PatchElementProvider;
 import org.jboss.as.patching.runner.PatchContentLoader;
-import org.jboss.as.patching.runner.PatchUtils;
 import org.jboss.as.patching.runner.TestUtils;
 import org.junit.Assert;
 

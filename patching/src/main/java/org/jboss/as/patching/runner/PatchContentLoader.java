@@ -26,11 +26,8 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
-import java.util.Arrays;
 
 import org.jboss.as.patching.Constants;
-import org.jboss.as.patching.HashUtils;
-import org.jboss.as.patching.IoUtils;
 import org.jboss.as.patching.metadata.BundleItem;
 import org.jboss.as.patching.metadata.ContentItem;
 import org.jboss.as.patching.metadata.ContentType;
@@ -143,25 +140,6 @@ public abstract class PatchContentLoader {
 
         File getBundlePath(final BundleItem item) {
             return getModulePath(bundlesRoot, item.getName(), item.getSlot());
-        }
-    }
-
-    static class HashBasedContentLoader extends PatchContentLoader {
-
-        private final File objectStoreRoot;
-        HashBasedContentLoader(File objectStoreRoot) {
-            this.objectStoreRoot = objectStoreRoot;
-        }
-
-        @Override
-        public File getFile(final ContentItem item) {
-            final byte[] hash = item.getContentHash();
-            if (Arrays.equals(hash, IoUtils.NO_CONTENT)) {
-                return null;
-            }
-            final String hex = HashUtils.bytesToHexString(hash);
-            final File base = new File(objectStoreRoot, hex.substring(0, 2));
-            return new File(base, hex.substring(2));
         }
     }
 

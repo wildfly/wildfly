@@ -31,6 +31,7 @@ import static org.jboss.as.patching.IoUtils.mkdir;
 import static org.jboss.as.patching.IoUtils.newFile;
 import static org.jboss.as.test.patching.PatchingTestUtil.CONTAINER;
 import static org.jboss.as.test.patching.PatchingTestUtil.assertPatchElements;
+import static org.jboss.as.test.patching.PatchingTestUtil.baseModuleDir;
 import static org.jboss.as.test.patching.PatchingTestUtil.createBundle0;
 import static org.jboss.as.test.patching.PatchingTestUtil.createModule0;
 import static org.jboss.as.test.patching.PatchingTestUtil.createPatchXMLFile;
@@ -56,6 +57,7 @@ import org.jboss.as.patching.metadata.PatchBuilder;
 import org.jboss.as.test.integration.management.util.CLITestUtil;
 import org.jboss.as.version.ProductConfig;
 import org.junit.After;
+import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -85,10 +87,16 @@ public class RollbackLastUnitTestCase {
     public void cleanup() throws Exception {
         if(controller.isStarted(CONTAINER))
             controller.stop(CONTAINER);
-        CliUtilsForPatching.rollbackAll();
 
+        final boolean success = CliUtilsForPatching.rollbackAll();
         if (IoUtils.recursiveDelete(tempDir)) {
             tempDir.deleteOnExit();
+        }
+        if (!success) {
+            // Reset installation state
+            final File home = new File(PatchingTestUtil.AS_DISTRIBUTION);
+            PatchingTestUtil.resetInstallationState(home, baseModuleDir);
+            Assert.fail("failed to rollback all patches");
         }
     }
 
@@ -169,9 +177,12 @@ public class RollbackLastUnitTestCase {
         final String patchID2 = randomString();
         final String patchElementId2 = randomString();
 
+        final File patchedModule = newFile(baseModuleDir, ".overlays", patchElementId, moduleName);
+        final File patchedBundle = newFile(baseBundleDir, ".overlays", patchElementId, bundleName);
+
         ContentModification fileModified2 = ContentModificationUtils.modifyMisc(patchDir, patchID2, "another file update", miscFile, "bin", fileName);
-        ContentModification moduleModified2 = ContentModificationUtils.modifyModule(patchDir, patchElementId2, moduleDir, new ResourceItem("resource-test", "another module update".getBytes()));
-        ContentModification bundleModified2 = ContentModificationUtils.modifyBundle(patchDir, patchElementId2, bundleDir, "another bundle update");
+        ContentModification moduleModified2 = ContentModificationUtils.modifyModule(patchDir, patchElementId2, patchedModule, new ResourceItem("resource-test", "another module update".getBytes()));
+        ContentModification bundleModified2 = ContentModificationUtils.modifyBundle(patchDir, patchElementId2, patchedBundle, "another bundle update");
 
         Patch patch2 = PatchBuilder.create()
                 .setPatchId(patchID2)

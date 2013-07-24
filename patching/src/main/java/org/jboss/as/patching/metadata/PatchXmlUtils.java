@@ -727,7 +727,7 @@ class PatchXmlUtils implements XMLStreamConstants {
             writer.writeAttribute(Attribute.SLOT.name, item.getSlot());
         }
         byte[] hash = item.getContentHash();
-        if (hash.length > 0) {
+        if (hash.length > 0 && type != ModificationType.REMOVE) {
             writer.writeAttribute(Attribute.HASH.name,  bytesToHexString(hash));
         }
         if(type == ModificationType.REMOVE) {

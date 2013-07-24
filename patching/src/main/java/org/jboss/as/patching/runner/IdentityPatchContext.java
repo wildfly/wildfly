@@ -4,6 +4,7 @@ import javax.xml.stream.XMLStreamException;
 import java.io.File;
 import java.io.FileFilter;
 import java.io.FileOutputStream;
+import java.io.FilenameFilter;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.util.ArrayList;
@@ -69,13 +70,16 @@ class IdentityPatchContext implements PatchContentProvider {
     private PatchingTaskContext.Mode mode;
     private volatile State state = State.NEW;
     private static final AtomicReferenceFieldUpdater<IdentityPatchContext, State> stateUpdater = AtomicReferenceFieldUpdater.newUpdater(IdentityPatchContext.class, State.class, "state");
+    private final List<File> moduleInvalidations = new ArrayList<File>();
 
     static enum State {
 
         NEW,
-        FINISHED,
+        PREPARED,
         COMPLETED,
-        ROLLBACK_ONLY,;
+        INVALIDATE,
+        ROLLBACK_ONLY,
+        ;
 
     }
 
@@ -110,20 +114,51 @@ class IdentityPatchContext implements PatchContentProvider {
         return identityEntry;
     }
 
+    /**
+     * Get a patch entry for either a layer or add-on.
+     *
+     * @param name  the layer name
+     * @param addOn whether the target is a add-on
+     * @return the patch entry, {@code null} if it there is no such layer
+     */
     PatchEntry getEntry(final String name, boolean addOn) {
         return addOn ? addOns.get(name) : layers.get(name);
     }
 
+    /**
+     * Get all entries.
+     *
+     * @return the entries for all layers
+     */
     Collection<PatchEntry> getLayers() {
         return layers.values();
     }
 
+    /**
+     * Get all add-ons.
+     *
+     * @return the entries for all add-ons
+     */
     Collection<PatchEntry> getAddOns() {
         return addOns.values();
     }
 
+    /**
+     * Get the current modification.
+     *
+     * @return the modification
+     */
     InstallationManager.InstallationModification getModification() {
         return modification;
+    }
+
+    /**
+     * Get the current mode.
+     *
+     * @return the mode
+     */
+    PatchingTaskContext.Mode getMode() {
+        return mode;
     }
 
     @Override
@@ -138,16 +173,18 @@ class IdentityPatchContext implements PatchContentProvider {
     @Override
     public void cleanup() {
         // If cleanup gets called before we return, something went wrong
-        if (state != State.FINISHED) {
+        if (state != State.PREPARED) {
             undoChanges();
         }
     }
 
-    @Override
-    public File getPatchContentRootDir() {
-        return contentProvider.getPatchContentRootDir();
-    }
-
+    /**
+     * Get the target entry for a given patch element.
+     *
+     * @param element the patch element
+     * @return the patch entry
+     * @throws PatchingException
+     */
     protected PatchEntry resolveForElement(final PatchElement element) throws PatchingException {
         assert state == State.NEW;
         final PatchElementProvider provider = element.getProvider();
@@ -203,7 +240,7 @@ class IdentityPatchContext implements PatchContentProvider {
             }
             throw e;
         }
-        state = State.FINISHED;
+        state = State.PREPARED;
         return new PatchingResult() {
             @Override
             public String getPatchId() {
@@ -233,15 +270,8 @@ class IdentityPatchContext implements PatchContentProvider {
 
             @Override
             public void commit() {
-                if (state == State.FINISHED) {
-                    try {
-                        callback.completed(IdentityPatchContext.this);
-                        modification.complete();
-                        state = State.COMPLETED;
-                    } catch (Exception e) {
-                        undoChanges(); // Hmm, is this right here?
-                        throw new RuntimeException(e);
-                    }
+                if (state == State.PREPARED) {
+                    complete(modification, callback);
                 } else {
                     undoChanges();
                     throw new IllegalStateException();
@@ -262,6 +292,43 @@ class IdentityPatchContext implements PatchContentProvider {
     }
 
     /**
+     * Complete the current operation and persist the current state to the disk. This will also trigger the invalidation
+     * of outdated modules.
+     *
+     * @param modification the current modification
+     * @param callback     the completion callback
+     */
+    private void complete(final InstallationManager.InstallationModification modification, final FinalizeCallback callback) {
+        final List<File> processed = new ArrayList<File>();
+        try {
+            try {
+                // Update the state to invalidate and process module resources
+                if (stateUpdater.compareAndSet(this, State.PREPARED, State.INVALIDATE)
+                        && mode == PatchingTaskContext.Mode.APPLY) {
+                    // Only invalidate modules when applying patches; on rollback files are immediately restored
+                    for (final File invalidation : moduleInvalidations) {
+                        processed.add(invalidation);
+                        PatchModuleInvalidationUtils.processFile(invalidation, mode);
+                    }
+                }
+                modification.complete();
+                callback.completed(this);
+                state = State.COMPLETED;
+            } catch (Exception e) {
+                this.moduleInvalidations.clear();
+                this.moduleInvalidations.addAll(processed);
+                throw new RuntimeException(e);
+            }
+        } finally {
+            if (state != State.COMPLETED) {
+                modification.cancel();
+                callback.operationCancelled(this);
+                undoChanges();
+            }
+        }
+    }
+
+    /**
      * Internally undo recorded changes we did so far.
      *
      * @return whether the state required undo actions
@@ -272,11 +339,24 @@ class IdentityPatchContext implements PatchContentProvider {
             // Was actually completed already
             return false;
         }
+        PatchingTaskContext.Mode currentMode = this.mode;
         mode = PatchingTaskContext.Mode.UNDO;
         final PatchContentLoader loader = PatchContentLoader.create(miscBackup, null, null);
         // Undo changes for the identity
         undoChanges(identityEntry, loader);
         // TODO maybe check if we need to do something for the layers too !?
+        if (state == State.INVALIDATE || currentMode == PatchingTaskContext.Mode.ROLLBACK) {
+            // For apply the state needs to be invalidate
+            // For rollback the files are invalidated as part of the tasks
+            final PatchingTaskContext.Mode mode = currentMode == PatchingTaskContext.Mode.APPLY ? PatchingTaskContext.Mode.ROLLBACK : PatchingTaskContext.Mode.APPLY;
+            for (final File file : moduleInvalidations) {
+                try {
+                    PatchModuleInvalidationUtils.processFile(file, mode);
+                } catch (Exception e) {
+                    PatchLogger.ROOT_LOGGER.debugf(e, "failed to restore state for %s", file);
+                }
+            }
+        }
         return true;
     }
 
@@ -321,12 +401,16 @@ class IdentityPatchContext implements PatchContentProvider {
         final File modulesRoot = structure.getModulePatchDirectory(patchId);
         final File bundlesRoot = structure.getBundlesPatchDirectory(patchId);
         final PatchContentLoader loader = PatchContentLoader.create(miscRoot, bundlesRoot, modulesRoot);
-//        final File objectStoreRoot = new File(image.getInstallationMetadata(), "contents");
-//        final PatchContentLoader loader = // new PatchContentLoader.HashBasedContentLoader(objectStoreRoot);
         //
         recordContentLoader(patchId, loader);
     }
 
+    /**
+     * Record a content loader for a given patch id.
+     *
+     * @param patchID       the patch id
+     * @param contentLoader the content loader
+     */
     protected void recordContentLoader(final String patchID, final PatchContentLoader contentLoader) {
         if (contentLoaders.containsKey(patchID)) {
             throw new IllegalStateException("Content loader already registered for patch " + patchID);
@@ -371,8 +455,8 @@ class IdentityPatchContext implements PatchContentProvider {
     }
 
     /**
-     * Create a patch representing what we actually processed. This may contain additional items in case we had
-     * to port forward modules which were not changed in the actual patch.
+     * Create a patch representing what we actually processed. This may contain some fixed content hashes for removed
+     * modules.
      *
      * @param original the original
      * @return the processed patch
@@ -399,8 +483,8 @@ class IdentityPatchContext implements PatchContentProvider {
     /**
      * Create a rollback patch based on the recorded actions.
      *
-     * @param patchId          the new patch id, depending on release or one-off
-     * @param patchType        the current patch identity
+     * @param patchId   the new patch id, depending on release or one-off
+     * @param patchType the current patch identity
      * @return the rollback patch
      */
     protected RollbackPatch createRollbackPatch(final String patchId, final Patch.PatchType patchType) {
@@ -431,10 +515,20 @@ class IdentityPatchContext implements PatchContentProvider {
         return new PatchImpl.RollbackPatchImpl(delegate, installedIdentity);
     }
 
+    /**
+     * Get a misc file.
+     *
+     * @param root the root
+     * @param item the misc content item
+     * @return the misc file
+     */
     static File getTargetFile(final File root, final MiscContentItem item) {
         return PatchContentLoader.getMiscPath(root, item);
     }
 
+    /**
+     * Modification information for a patchable target.
+     */
     class PatchEntry implements InstallationManager.MutablePatchingTarget, PatchingTaskContext {
 
         private String applyPatchId;
@@ -557,7 +651,7 @@ class IdentityPatchContext implements PatchContentProvider {
         public File[] getTargetBundlePath() {
             // We need the updated state for invalidating one-off patches
             // When applying the overlay directory should not exist yet (in theory)
-            final PatchableTarget.TargetInfo updated = delegate.getModifiedState();
+            final PatchableTarget.TargetInfo updated = mode == Mode.APPLY ? delegate : delegate.getModifiedState();
             return PatchUtils.getBundlePath(delegate.getDirectoryStructure(), updated);
         }
 
@@ -565,7 +659,7 @@ class IdentityPatchContext implements PatchContentProvider {
         public File[] getTargetModulePath() {
             // We need the updated state for invalidating one-off patches
             // When applying the overlay directory should not exist yet (in theory)
-            final PatchableTarget.TargetInfo updated = delegate.getModifiedState();
+            final PatchableTarget.TargetInfo updated = mode == Mode.APPLY ? delegate : delegate.getModifiedState();
             return PatchUtils.getModulePath(delegate.getDirectoryStructure(), updated);
         }
 
@@ -588,27 +682,27 @@ class IdentityPatchContext implements PatchContentProvider {
         }
 
         @Override
-        public void store(byte[] hash, File file, boolean move) throws IOException {
-            // We currently don't store in content in a central repository
-//            final File objectStoreRoot = new File(installedImage.getInstallationMetadata(), "contents");
-//            if (Arrays.equals(hash, IoUtils.NO_CONTENT)) {
-//                throw new FileNotFoundException();
-//            }
-//            final String hex = HashUtils.bytesToHexString(hash);
-//            final File base = new File(objectStoreRoot, hex.substring(0, 2));
-//            final File backup = new File(base, hex.substring(2));
-//            base.mkdirs();
-//            if (! backup.exists()) {
-//                if (move) {
-//                    if (!file.renameTo(backup)) {
-//                        throw new SyncFailedException(backup.getAbsolutePath());
-//                    }
-//                } else {
-//                    IoUtils.copyFile(file, backup);
-//                }
-//            }
+        public void invalidateRoot(final File moduleRoot) throws IOException {
+            final File[] files = moduleRoot.listFiles(new FilenameFilter() {
+                @Override
+                public boolean accept(File dir, String name) {
+                    return name.endsWith(".jar");
+                }
+            });
+            if (files != null && files.length > 0) {
+                for (final File file : files) {
+                    moduleInvalidations.add(file);
+                    if (mode == Mode.ROLLBACK) {
+                        // For rollback we need to restore the file before calculating the hash
+                        PatchModuleInvalidationUtils.processFile(file, mode);
+                    }
+                }
+            }
         }
 
+        /**
+         * Cleanup the history directories for all recorded rolled back patches.
+         */
         protected void cleanupRollbackPatchHistory() {
             final DirectoryStructure structure = getDirectoryStructure();
             for (final String rollback : rollbacks) {
@@ -744,7 +838,7 @@ class IdentityPatchContext implements PatchContentProvider {
         final File bs = new File(backupConfigurationDir, Constants.STANDALONE);
 
         final String configuration;
-        if(resetConfiguration) {
+        if (resetConfiguration) {
             configuration = Constants.CONFIGURATION;
         } else {
             configuration = Constants.CONFIGURATION + File.separator + Constants.RESTORED_CONFIGURATION;

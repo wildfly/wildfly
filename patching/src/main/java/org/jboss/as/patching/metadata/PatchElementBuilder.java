@@ -86,6 +86,9 @@ public class PatchElementBuilder extends ModificationBuilderTarget<PatchElementB
     public PatchElement createElement(Patch.PatchType patchType) {
         assert patchId != null;
         assert provider != null;
+        if (patchType != getProvider().getPatchType()) {
+            throw new RuntimeException("patch types don't match");
+        }
         // provider.forType(provider.getPatchType(), PatchElementProvider.class);
         return element;
     }

@@ -23,6 +23,7 @@
 package org.jboss.as.patching.tests;
 
 import static org.jboss.as.patching.HashUtils.hashFile;
+import static org.jboss.as.patching.runner.TestUtils.createModule0;
 import static org.jboss.as.patching.runner.TestUtils.dump;
 import static org.jboss.as.patching.runner.TestUtils.randomString;
 import static org.jboss.as.patching.runner.TestUtils.touch;
@@ -108,6 +109,9 @@ public class BasicHistoryUnitTestCase extends AbstractPatchingTest {
         Assert.assertTrue(builder.hasFile(FILE_EXISTING));
         Assert.assertTrue(Arrays.equals(existingHash, hashFile(existing)));
 
+        rollback(cp2);
+        rollback(oneOff1);
+        rollback(cp1);
     }
 
     @Test
@@ -122,10 +126,14 @@ public class BasicHistoryUnitTestCase extends AbstractPatchingTest {
         final byte[] existingHash = hashFile(existing);
         final byte[] initialHash = Arrays.copyOf(existingHash, existingHash.length);
 
+        final byte[] moduleHash = new byte[20];
+
         final PatchingTestStepBuilder oo1 = builder.createStepBuilder();
         oo1.setPatchId("one-off-one")
                 .oneOffPatchIdentity(PRODUCT_VERSION)
-                .updateFileWithRandomContent(initialHash, existingHash, FILE_EXISTING);
+                .updateFileWithRandomContent(initialHash, existingHash, FILE_EXISTING)
+                .oneOffPatchElement("base:one-off", "base", false)
+                .addModuleWithRandomContent("test.module", moduleHash)
         ;
         // Apply OO1
         apply(oo1);
@@ -133,11 +141,14 @@ public class BasicHistoryUnitTestCase extends AbstractPatchingTest {
         final PatchingTestStepBuilder cp1 = builder.createStepBuilder();
         cp1.setPatchId("CP1")
                 .upgradeIdentity(PRODUCT_VERSION, PRODUCT_VERSION)
-                .updateFileWithRandomContent(initialHash, existingHash, FILE_EXISTING);
+                .updateFileWithRandomContent(initialHash, existingHash, FILE_EXISTING)
+                .upgradeElement("base:cp1", "base", false)
+                .addModuleWithRandomContent("test.module", moduleHash)
         ;
         // Apply CP1
         apply(cp1);
-
+        rollback(cp1);
+        rollback(oo1);
     }
 
     @Test
@@ -195,6 +206,29 @@ public class BasicHistoryUnitTestCase extends AbstractPatchingTest {
         rollback(cp1);
         Assert.assertFalse(builder.hasFile(FILE_ONE));
 
+    }
+
+    @Test
+    public void testRemoveModule() throws Exception {
+
+        final PatchingTestBuilder testBuilder = createDefaultBuilder();
+
+        final File root = testBuilder.getRoot();
+        final File installation = new File(root, JBOSS_INSTALLATION);
+        final File moduleRoot = new File(installation, "modules/system/layers/base");
+        final File module0 = createModule0(moduleRoot, "test.module", randomString());
+
+        final byte[] existing = hashFile(module0);
+
+        final PatchingTestStepBuilder step1 = testBuilder.createStepBuilder();
+        step1.setPatchId("step1")
+                .oneOffPatchIdentity(PRODUCT_VERSION)
+                .oneOffPatchElement("base:1", "base", false)
+                .removeModule("test.module", "main", existing)
+                ;
+
+        apply(step1);
+        rollback(step1);
     }
 
 }

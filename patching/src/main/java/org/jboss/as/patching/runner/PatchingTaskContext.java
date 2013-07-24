@@ -62,14 +62,11 @@ public interface PatchingTaskContext {
     void recordChange(ContentModification change, ContentModification rollbackAction);
 
     /**
-     * Store content for further reuse.
+     * Add a root for invalidation.
      *
-     * @param hash the content hash
-     * @param file the content root
-     * @param move try to move the file
-     * @throws IOException
+     * @param root the invalidation root
      */
-    void store(byte[] hash, File file, boolean move) throws IOException;
+    void invalidateRoot(final File root) throws IOException;
 
     /**
      * Get the current bundle path.

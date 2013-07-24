@@ -2,6 +2,8 @@ package org.jboss.as.patching.runner;
 
 import java.io.File;
 
+import org.jboss.as.patching.metadata.ContentItem;
+
 /**
  * @author Emanuel Muckenhuber
  */
@@ -14,11 +16,6 @@ public interface PatchContentProvider {
      * @return the content loader
      */
     PatchContentLoader getLoader(String patchId);
-
-    /**
-     * @return the root directory of the patch content
-     */
-    File getPatchContentRootDir();
 
     /**
      * Cleanup
@@ -39,11 +36,6 @@ public interface PatchContentProvider {
         }
 
         @Override
-        public File getPatchContentRootDir() {
-            return workDir;
-        }
-
-        @Override
         public void cleanup() {
             // Nothing by default
         }
@@ -59,5 +51,22 @@ public interface PatchContentProvider {
         }
 
     }
+
+    PatchContentProvider ROLLBACK_PROVIDER = new PatchContentProvider() {
+        @Override
+        public PatchContentLoader getLoader(String patchId) {
+            return new PatchContentLoader() {
+                @Override
+                public File getFile(ContentItem item) {
+                    throw new IllegalStateException();
+                }
+            };
+        }
+
+        @Override
+        public void cleanup() {
+            //
+        }
+    };
 
 }

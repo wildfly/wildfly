@@ -85,10 +85,15 @@ public class NativeApiPatchingTestCase {
     public void cleanup() throws Exception {
         if(controller.isStarted(CONTAINER))
             controller.stop(CONTAINER);
-        CliUtilsForPatching.rollbackAll();
-
+        final boolean success = CliUtilsForPatching.rollbackAll();
         if (IoUtils.recursiveDelete(tempDir)) {
             tempDir.deleteOnExit();
+        }
+        if (!success) {
+            // Reset installation state
+            final File home = new File(PatchingTestUtil.AS_DISTRIBUTION);
+            PatchingTestUtil.resetInstallationState(home, baseModuleDir);
+            Assert.fail("failed to rollback all patches");
         }
     }
 
