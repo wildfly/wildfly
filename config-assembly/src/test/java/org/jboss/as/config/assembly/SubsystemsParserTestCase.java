@@ -29,7 +29,6 @@ import org.junit.Assert;
 import org.junit.Test;
 
 /**
- *
  * @author <a href="kabir.khan@jboss.com">Kabir Khan</a>
  */
 public class SubsystemsParserTestCase {
@@ -64,6 +63,39 @@ public class SubsystemsParserTestCase {
         Assert.assertNull(unnamed[0].getSupplement());
         Assert.assertEquals("empty-with-attributes.xml", unnamed[1].getSubsystem());
         Assert.assertNull(unnamed[1].getSupplement());
+    }
+
+    @Test
+    public void testConditionalIncludes() throws Exception {
+
+        URL url = this.getClass().getResource("subsystems-conditional.xml");
+        System.clearProperty("prop.include.me");
+        SubsystemsParser templateParser = new SubsystemsParser(new File(url.toURI()));
+        templateParser.parse();
+        Map<String, SubsystemConfig[]> config = templateParser.getSubsystemConfigs();
+        Assert.assertEquals(1, config.size());
+        SubsystemConfig[] defaultConfig = config.get("default");
+        Assert.assertNotNull(defaultConfig);
+        Assert.assertEquals(2, defaultConfig.length);
+        Assert.assertEquals("simple-with-text-and-comments.xml", defaultConfig[0].getSubsystem());
+        Assert.assertNull(defaultConfig[0].getSupplement());
+        Assert.assertEquals("empty-with-attributes.xml", defaultConfig[1].getSubsystem());
+        Assert.assertNull(defaultConfig[1].getSupplement());
+
+        System.setProperty("prop.include.me", "true");
+        templateParser = new SubsystemsParser(new File(url.toURI()));
+        templateParser.parse();
+        config = templateParser.getSubsystemConfigs();
+        Assert.assertEquals(1, config.size());
+        defaultConfig = config.get("default");
+        Assert.assertNotNull(defaultConfig);
+        Assert.assertEquals(3, defaultConfig.length);
+        Assert.assertEquals("simple-with-text-and-comments.xml", defaultConfig[0].getSubsystem());
+        Assert.assertNull(defaultConfig[0].getSupplement());
+        Assert.assertEquals("empty-with-attributes.xml", defaultConfig[1].getSubsystem());
+        Assert.assertNull(defaultConfig[1].getSupplement());
+        Assert.assertEquals("simple.xml", defaultConfig[2].getSubsystem());
+        Assert.assertNull(defaultConfig[2].getSupplement());
     }
 
 }

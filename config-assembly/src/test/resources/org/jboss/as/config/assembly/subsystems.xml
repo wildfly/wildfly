@@ -14,5 +14,5 @@
       <!-- Default subsystem to be used for standalone  -->
       <subsystem>simple-with-text-and-comments.xml</subsystem>
       <subsystem>empty-with-attributes.xml</subsystem>
-   </subsystems>  
+   </subsystems>
 </config>
