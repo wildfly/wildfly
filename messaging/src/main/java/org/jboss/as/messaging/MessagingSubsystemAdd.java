@@ -28,6 +28,8 @@ import org.jboss.as.controller.AbstractBoottimeAddStepHandler;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.ServiceVerificationHandler;
+import org.jboss.as.messaging.deployment.MessagingJMSDefinitionAnnotationParser;
+import org.jboss.as.messaging.deployment.MessagingJMSDefinitionDeploymentProcessor;
 import org.jboss.as.messaging.deployment.MessagingJndiBindingProcessor;
 import org.jboss.as.messaging.deployment.MessagingXmlInstallDeploymentUnitProcessor;
 import org.jboss.as.messaging.deployment.MessagingXmlParsingDeploymentUnitProcessor;
@@ -60,6 +62,8 @@ class MessagingSubsystemAdd extends AbstractBoottimeAddStepHandler {
             @Override
             protected void execute(DeploymentProcessorTarget processorTarget) {
                 processorTarget.addDeploymentProcessor(MessagingExtension.SUBSYSTEM_NAME, Phase.PARSE, Phase.PARSE_MESSAGING_XML_RESOURCES, new MessagingXmlParsingDeploymentUnitProcessor());
+                processorTarget.addDeploymentProcessor(MessagingExtension.SUBSYSTEM_NAME, Phase.PARSE, Phase.PARSE_EE_ANNOTATIONS, new MessagingJMSDefinitionAnnotationParser());
+                processorTarget.addDeploymentProcessor(MessagingExtension.SUBSYSTEM_NAME, Phase.POST_MODULE, Phase.POST_MODULE_EJB_REF, new MessagingJMSDefinitionDeploymentProcessor());
                 processorTarget.addDeploymentProcessor(MessagingExtension.SUBSYSTEM_NAME, Phase.INSTALL, Phase.INSTALL_MESSAGING_XML_RESOURCES, new MessagingXmlInstallDeploymentUnitProcessor());
                 processorTarget.addDeploymentProcessor(MessagingExtension.SUBSYSTEM_NAME, Phase.INSTALL, Phase.INSTALL_JMS_BINDINGS, new MessagingJndiBindingProcessor());
             }

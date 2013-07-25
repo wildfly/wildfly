@@ -25,10 +25,20 @@ package org.jboss.as.messaging.jms;
 import static org.jboss.as.messaging.MessagingLogger.MESSAGING_LOGGER;
 import static org.jboss.as.messaging.MessagingMessages.MESSAGES;
 
+import java.util.List;
 import java.util.concurrent.ExecutorService;
 
+import javax.jms.Topic;
+
+import org.hornetq.jms.client.HornetQTopic;
 import org.hornetq.jms.server.JMSServerManager;
+import org.jboss.as.controller.ServiceVerificationHandler;
+import org.jboss.as.messaging.HornetQActivationService;
 import org.jboss.msc.service.Service;
+import org.jboss.msc.service.ServiceBuilder;
+import org.jboss.msc.service.ServiceController;
+import org.jboss.msc.service.ServiceName;
+import org.jboss.msc.service.ServiceTarget;
 import org.jboss.msc.service.StartContext;
 import org.jboss.msc.service.StartException;
 import org.jboss.msc.service.StopContext;
@@ -39,21 +49,22 @@ import org.jboss.msc.value.InjectedValue;
  *
  * @author Emanuel Muckenhuber
  */
-public class JMSTopicService implements Service<Void> {
+public class JMSTopicService implements Service<Topic> {
 
     private final InjectedValue<JMSServerManager> jmsServer = new InjectedValue<JMSServerManager>();
     private final InjectedValue<ExecutorService> executorInjector = new InjectedValue<ExecutorService>();
 
-
     private final String name;
     private final String[] jndi;
+
+    private Topic topic;
 
     public JMSTopicService(String name, String[] jndi) {
         this.name = name;
         this.jndi = jndi;
     }
 
-    /** {@inheritDoc} */
+    @Override
     public synchronized void start(final StartContext context) throws StartException {
         final JMSServerManager jmsManager = jmsServer.getValue();
 
@@ -63,6 +74,7 @@ public class JMSTopicService implements Service<Void> {
             public void run() {
                 try {
                     jmsManager.createTopic(false, name, jndi);
+                    topic = new HornetQTopic(name);
                     context.complete();
                 } catch (Throwable e) {
                     context.failed(MESSAGES.failedToCreate(e, "queue"));
@@ -71,7 +83,7 @@ public class JMSTopicService implements Service<Void> {
         });
     }
 
-    /** {@inheritDoc} */
+    @Override
     public synchronized void stop(final StopContext context) {
         final JMSServerManager jmsManager = jmsServer.getValue();
 
@@ -82,6 +94,7 @@ public class JMSTopicService implements Service<Void> {
             public void run() {
                 try {
                     jmsManager.removeTopicFromJNDI(name);
+                    topic = null;
                 } catch (Throwable e) {
                     MESSAGING_LOGGER.failedToDestroy(e, "jms topic", name);
                 }
@@ -90,16 +103,29 @@ public class JMSTopicService implements Service<Void> {
         });
     }
 
-    /** {@inheritDoc} */
-    public Void getValue() throws IllegalStateException {
-        return null;
+    @Override
+    public Topic getValue() throws IllegalStateException {
+        return topic;
     }
 
-    public InjectedValue<JMSServerManager> getJmsServer() {
-        return jmsServer;
-    }
+    public static JMSTopicService installService(final ServiceVerificationHandler verificationHandler, final List<ServiceController<?>> newControllers, final String name, final ServiceName hqServiceName, final ServiceTarget serviceTarget, final String[] jndiBindings) {
+        final JMSTopicService service = new JMSTopicService(name, jndiBindings);
+        final ServiceName serviceName = JMSServices.getJmsTopicBaseServiceName(hqServiceName).append(name);
 
-    public InjectedValue<ExecutorService> getExecutorInjector() {
-        return executorInjector;
+        final ServiceBuilder<Topic> serviceBuilder = serviceTarget.addService(serviceName, service)
+                .addDependency(HornetQActivationService.getHornetQActivationServiceName(hqServiceName))
+                .addDependency(JMSServices.getJmsManagerBaseServiceName(hqServiceName), JMSServerManager.class, service.jmsServer)
+                .setInitialMode(ServiceController.Mode.PASSIVE);
+        org.jboss.as.server.Services.addServerExecutorDependency(serviceBuilder, service.executorInjector, false);
+        if(verificationHandler != null) {
+            serviceBuilder.addListener(verificationHandler);
+        }
+
+        final ServiceController<Topic> controller = serviceBuilder.install();
+        if(newControllers != null) {
+            newControllers.add(controller);
+        }
+
+        return service;
     }
 }

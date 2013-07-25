@@ -26,7 +26,6 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_
 
 import java.util.List;
 
-import org.hornetq.jms.server.JMSServerManager;
 import org.jboss.as.controller.AbstractAddStepHandler;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
@@ -34,12 +33,9 @@ import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.ServiceVerificationHandler;
 import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
 import org.jboss.as.messaging.CommonAttributes;
-import org.jboss.as.messaging.HornetQActivationService;
 import org.jboss.as.messaging.MessagingServices;
 import org.jboss.dmr.ModelNode;
-import org.jboss.msc.service.ServiceBuilder;
 import org.jboss.msc.service.ServiceController;
-import org.jboss.msc.service.ServiceController.Mode;
 import org.jboss.msc.service.ServiceName;
 import org.jboss.msc.service.ServiceTarget;
 
@@ -66,25 +62,13 @@ public class JMSTopicAdd extends AbstractAddStepHandler {
 
         final ModelNode entries = CommonAttributes.DESTINATION_ENTRIES.resolveModelAttribute(context, model);
         final String[] jndiBindings = JMSServices.getJndiBindings(entries);
-        installServices(verificationHandler, newControllers, name, hqServiceName, serviceTarget, jndiBindings);
+        JMSTopicService.installService(verificationHandler, newControllers, name, hqServiceName, serviceTarget, jndiBindings);
     }
 
+    /**
+     * @deprecated use {@link JMSTopicService#installService(org.jboss.as.controller.ServiceVerificationHandler, java.util.List, String, org.jboss.msc.service.ServiceName, org.jboss.msc.service.ServiceTarget, String[])} instead.
+     */
     public void installServices(final ServiceVerificationHandler verificationHandler, final List<ServiceController<?>> newControllers, final String name, final ServiceName hqServiceName, final ServiceTarget serviceTarget, final String[] jndiBindings) {
-        final JMSTopicService service = new JMSTopicService(name, jndiBindings);
-        final ServiceName serviceName = JMSServices.getJmsTopicBaseServiceName(hqServiceName).append(name);
-
-        final ServiceBuilder<Void> serviceBuilder = serviceTarget.addService(serviceName, service)
-                .addDependency(HornetQActivationService.getHornetQActivationServiceName(hqServiceName))
-                .addDependency(JMSServices.getJmsManagerBaseServiceName(hqServiceName), JMSServerManager.class, service.getJmsServer())
-                .setInitialMode(Mode.PASSIVE);
-        org.jboss.as.server.Services.addServerExecutorDependency(serviceBuilder, service.getExecutorInjector(), false);
-        if(verificationHandler != null) {
-            serviceBuilder.addListener(verificationHandler);
-        }
-
-        final ServiceController<Void> controller = serviceBuilder.install();
-        if(newControllers != null) {
-            newControllers.add(controller);
-        }
+        JMSTopicService.installService(verificationHandler, newControllers, name, hqServiceName, serviceTarget, jndiBindings);
     }
 }
