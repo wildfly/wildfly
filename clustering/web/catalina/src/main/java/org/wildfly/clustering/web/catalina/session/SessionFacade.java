@@ -148,12 +148,12 @@ public class SessionFacade implements org.apache.catalina.Session {
 
     @Override
     public boolean isValid() {
-        return true;
+        return this.session.isValid();
     }
 
     @Override
     public boolean isValidInternal() {
-        return this.isValidInternal();
+        return this.isValid();
     }
 
     @Override

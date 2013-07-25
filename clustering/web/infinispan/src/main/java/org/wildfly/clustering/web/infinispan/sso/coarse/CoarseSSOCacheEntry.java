@@ -43,7 +43,7 @@ public class CoarseSSOCacheEntry<L> implements Credentials {
 
     @Override
     public void setAuthenticationType(AuthenticationType type) {
-        this.authType = authType;
+        this.authType = type;
     }
 
     @Override

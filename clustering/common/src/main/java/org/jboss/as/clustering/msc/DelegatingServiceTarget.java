@@ -86,7 +86,7 @@ public class DelegatingServiceTarget implements ServiceTarget {
 
     @Override
     public Set<ServiceListener<Object>> getListeners() {
-        return this.getListeners();
+        return this.target.getListeners();
     }
 
     @Override
@@ -130,24 +130,24 @@ public class DelegatingServiceTarget implements ServiceTarget {
 
     @Override
     public ServiceTarget addMonitor(StabilityMonitor monitor) {
-        target.addMonitor(monitor);
+        this.target.addMonitor(monitor);
         return this;
     }
 
     @Override
     public ServiceTarget addMonitors(StabilityMonitor... monitors) {
-        target.addMonitors(monitors);
+        this.target.addMonitors(monitors);
         return this;
     }
 
     @Override
     public ServiceTarget removeMonitor(StabilityMonitor monitor) {
-        target.removeMonitor(monitor);
+        this.target.removeMonitor(monitor);
         return this;
     }
 
     @Override
     public Set<StabilityMonitor> getMonitors() {
-        return target.getMonitors();
+        return this.target.getMonitors();
     }
 }

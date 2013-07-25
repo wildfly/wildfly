@@ -49,7 +49,7 @@ public class InfinispanSSOManagerFactory extends AbstractService<SSOManagerFacto
 
     @Override
     public <L> SSOManager<L> createSSOManager(LocalContextFactory<L> localContextFactory) {
-        Cache<String, CoarseSSOCacheEntry<L>> cache = (Cache<String, CoarseSSOCacheEntry<L>>) this.cache.getValue();
+        Cache<String, CoarseSSOCacheEntry<L>> cache = this.cache.getValue();
         SSOFactory<CoarseSSOCacheEntry<L>, L> factory = new CoarseSSOFactory<>(cache, this.invoker, localContextFactory);
         return new InfinispanSSOManager<>(factory, cache);
     }

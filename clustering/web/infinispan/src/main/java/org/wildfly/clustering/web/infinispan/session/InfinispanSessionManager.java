@@ -209,6 +209,7 @@ public class InfinispanSessionManager<V, L> implements SessionManager<L>, KeyGen
 
     @CacheEntryActivated
     public void activated(CacheEntryActivatedEvent<String, ?> event) {
+        // Cache may contain non-string keys, so ignore any others
         if (!event.isPre() && event.isOriginLocal() && (event.getKey() instanceof String)) {
             String id = event.getKey();
             InfinispanWebLogger.ROOT_LOGGER.tracef("Session %s was activated", id);
@@ -228,6 +229,7 @@ public class InfinispanSessionManager<V, L> implements SessionManager<L>, KeyGen
 
     @CacheEntryPassivated
     public void passivated(CacheEntryPassivatedEvent<String, ?> event) {
+        // Cache may contain non-string keys, so ignore any others
         if (event.isPre() && (event.getKey() instanceof String)) {
             String id = event.getKey();
             this.activeSessions.remove(id);
@@ -250,6 +252,7 @@ public class InfinispanSessionManager<V, L> implements SessionManager<L>, KeyGen
 
     @CacheEntryRemoved
     public void removed(CacheEntryRemovedEvent<String, ?> event) {
+        // Cache may contain non-string keys, so ignore any others
         if (event.isPre() && event.isOriginLocal() && (event.getKey() instanceof String)) {
             String id = event.getKey();
             this.activeSessions.remove(id);
@@ -319,7 +322,7 @@ public class InfinispanSessionManager<V, L> implements SessionManager<L>, KeyGen
         public void close() {
             this.session.close();
             for (Scheduler<Session<L>> scheduler: this.schedulers) {
-                scheduler.schedule(session);
+                scheduler.schedule(this.session);
             }
         }
 

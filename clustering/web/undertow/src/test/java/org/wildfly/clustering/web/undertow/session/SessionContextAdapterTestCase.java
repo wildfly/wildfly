@@ -57,7 +57,7 @@ public class SessionContextAdapterTestCase {
         ServletContainer container = mock(ServletContainer.class);
 
         when(this.deployment.getDeploymentInfo()).thenReturn(info);
-        ServletContextImpl context = new ServletContextImpl(container, deployment);
+        ServletContextImpl context = new ServletContextImpl(container, this.deployment);
 
         when(this.deployment.getServletContext()).thenReturn(context);
 

@@ -57,7 +57,7 @@ public class InfinispanSessionManagerFactoryBuilder implements SessionManagerFac
 
     @Override
     public ServiceBuilder<SessionManagerFactory> build(ServiceTarget target, ServiceName name, ServiceName deploymentServiceName, Module module, JBossWebMetaData metaData) {
-        ServiceName templateCacheServiceName = this.getCacheServiceName(metaData.getReplicationConfig());
+        ServiceName templateCacheServiceName = getCacheServiceName(metaData.getReplicationConfig());
         String templateCacheName = templateCacheServiceName.getSimpleName();
         ServiceName containerServiceName = templateCacheServiceName.getParent();
         String containerName = containerServiceName.getSimpleName();
@@ -111,7 +111,7 @@ public class InfinispanSessionManagerFactoryBuilder implements SessionManagerFac
         ;
     }
 
-    private ServiceName getCacheServiceName(ReplicationConfig config) {
+    private static ServiceName getCacheServiceName(ReplicationConfig config) {
         ServiceName baseServiceName = EmbeddedCacheManagerService.getServiceName(null);
         String cacheName = (config != null) ? config.getCacheName() : null;
         ServiceName serviceName = ServiceName.parse((cacheName != null) ? cacheName : DEFAULT_CACHE_CONTAINER);
