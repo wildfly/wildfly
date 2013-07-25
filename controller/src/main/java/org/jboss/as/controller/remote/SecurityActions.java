@@ -25,10 +25,6 @@ package org.jboss.as.controller.remote;
 import java.security.AccessController;
 import java.security.PrivilegedAction;
 
-import javax.security.auth.Subject;
-
-import org.jboss.as.controller.security.SecurityContext;
-
 /**
  * Security Actions for classes in the org.jboss.as.controller.remote package.
  *
@@ -48,24 +44,6 @@ class SecurityActions {
             @Override
             public String run() {
                 return System.getProperty(key, defaultValue);
-            }
-        });
-    }
-
-    static void setSecurityContextSubject(final Subject subject) {
-        AccessController.doPrivileged(new PrivilegedAction<Void>() {
-            public Void run() {
-                SecurityContext.setSubject(subject);
-                return null;
-            }
-        });
-    }
-
-    static void clearSubjectSecurityContext() {
-        AccessController.doPrivileged(new PrivilegedAction<Void>() {
-            public Void run() {
-                SecurityContext.clearSubject();
-                return null;
             }
         });
     }

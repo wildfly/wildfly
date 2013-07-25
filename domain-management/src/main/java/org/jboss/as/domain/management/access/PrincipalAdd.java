@@ -26,6 +26,10 @@ import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.OperationStepHandler;
 import org.jboss.as.controller.PathAddress;
+import org.jboss.as.controller.OperationContext.Stage;
+import org.jboss.as.controller.access.rbac.ConfigurableRoleMapper;
+import org.jboss.as.controller.access.rbac.ConfigurableRoleMapper.MatchType;
+import org.jboss.as.controller.access.rbac.ConfigurableRoleMapper.PrincipalType;
 import org.jboss.dmr.ModelNode;
 
 /**
@@ -35,20 +39,52 @@ import org.jboss.dmr.ModelNode;
  */
 public class PrincipalAdd implements OperationStepHandler {
 
-    public static final PrincipalAdd INSTANCE = new PrincipalAdd();
+    private final ConfigurableRoleMapper roleMapper;
+    private final ConfigurableRoleMapper.MatchType matchType;
 
-    private PrincipalAdd() {
+    private PrincipalAdd(final ConfigurableRoleMapper roleMapper, final ConfigurableRoleMapper.MatchType matchType) {
+        this.roleMapper = roleMapper;
+        this.matchType = matchType;
+    }
+
+    public static OperationStepHandler createForInclude(final ConfigurableRoleMapper roleMapper) {
+        return new PrincipalAdd(roleMapper, MatchType.INCLUDE);
+    }
+
+    public static OperationStepHandler createForExclude(final ConfigurableRoleMapper roleMapper) {
+        return new PrincipalAdd(roleMapper, MatchType.EXCLUDE);
     }
 
     @Override
     public void execute(OperationContext context, ModelNode operation) throws OperationFailedException {
         ModelNode model = context.createResource(PathAddress.EMPTY_ADDRESS).getModel();
 
+        // TODO - Somewhere we need to check that these 3 values combined are unique.
         PrincipalResourceDefinition.TYPE.validateAndSet(operation, model);
         PrincipalResourceDefinition.REALM.validateAndSet(operation, model);
         PrincipalResourceDefinition.NAME.validateAndSet(operation, model);
 
+        final String roleName = RoleMappingResourceDefinition.getRoleName(operation);
+        final PrincipalType principalType = PrincipalResourceDefinition.getPrincipalType(context, model);
+        final String realm = PrincipalResourceDefinition.getRealm(context, model);
+        final String name = PrincipalResourceDefinition.getName(context, model);
+
+        /*
+         * The address of the resource whilst hopefully being related to the attributes of the Principal resource is not
+         * guaranteed, a unique name is needed but not one attribute can be regarded as being suitable as a unique key.
+         */
+        context.addStep(new OperationStepHandler() {
+
+            @Override
+            public void execute(OperationContext context, ModelNode operation) throws OperationFailedException {
+                roleMapper.addPrincipal(roleName, principalType, matchType, name, realm, context.isBooting());
+                context.stepCompleted();
+            }
+        }, Stage.RUNTIME);
+
         context.stepCompleted();
     }
+
+
 
 }

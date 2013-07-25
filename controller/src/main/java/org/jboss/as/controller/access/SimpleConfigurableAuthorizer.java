@@ -52,10 +52,20 @@ import org.jboss.as.controller.access.rbac.StandardRole;
  */
 public class SimpleConfigurableAuthorizer implements ConfigurableAuthorizer {
 
-    private final RoleMapper roleMapper = MockRoleMapper.INSTANCE;
-    private final DefaultPermissionFactory permissionFactory = new DefaultPermissionFactory(CombinationPolicy.PERMISSIVE, roleMapper);
-    private final Authorizer authorizer = new ManagementPermissionAuthorizer(permissionFactory);
+    private final RoleMapper roleMapper;
+    private final DefaultPermissionFactory permissionFactory;
+    private final Authorizer authorizer;
     private final Set<String> addedRoles = new HashSet<String>();
+
+    public SimpleConfigurableAuthorizer() {
+        this(MockRoleMapper.INSTANCE);
+    }
+
+    public SimpleConfigurableAuthorizer(final RoleMapper roleMapper) {
+        this.roleMapper = roleMapper;
+        permissionFactory = new DefaultPermissionFactory(CombinationPolicy.PERMISSIVE, roleMapper);
+        authorizer = new ManagementPermissionAuthorizer(permissionFactory);
+    }
 
     @Override
     public boolean isRoleBased() {

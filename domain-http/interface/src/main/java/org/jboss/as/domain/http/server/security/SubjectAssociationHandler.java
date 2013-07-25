@@ -23,6 +23,8 @@
 package org.jboss.as.domain.http.server.security;
 
 import java.io.IOException;
+import java.security.PrivilegedActionException;
+import java.security.PrivilegedExceptionAction;
 
 import javax.security.auth.Subject;
 
@@ -46,11 +48,33 @@ public class SubjectAssociationHandler implements HttpHandler {
     @Override
     public void handle(HttpExchange exchange) throws IOException {
         Subject subject = (Subject) exchange.getAttribute(Subject.class.getName(), AttributeScope.CONNECTION);
-        SecurityActions.setSecurityContextSubject(subject);
-        try {
+        handleRequest(exchange, subject);
+    }
+
+    void handleRequest(final HttpExchange exchange, final Subject subject) throws IOException {
+        if (subject != null) {
+            try {
+                Subject.doAs(subject, new PrivilegedExceptionAction<Void>() {
+
+                    @Override
+                    public Void run() throws Exception {
+                        wrapped.handle(exchange);
+                        return null;
+                    }
+
+                });
+            } catch (PrivilegedActionException e) {
+                Exception cause = e.getException();
+                if (cause instanceof IOException) {
+                    throw (IOException) cause;
+                } else if (cause instanceof RuntimeException) {
+                    throw (RuntimeException) cause;
+                } else {
+                    throw new RuntimeException(cause);
+                }
+            }
+        } else {
             wrapped.handle(exchange);
-        } finally {
-            SecurityActions.clearSubjectSecurityContext();
         }
     }
 

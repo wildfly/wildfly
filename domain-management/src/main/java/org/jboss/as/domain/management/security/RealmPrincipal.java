@@ -22,15 +22,11 @@
 
 package org.jboss.as.domain.management.security;
 
-import java.security.Principal;
-
 /**
  * An extension of a {@link Principal} for principals that also have a realm name to uniquely identify them.
  *
  * @author <a href="mailto:darran.lofthouse@jboss.com">Darran Lofthouse</a>
  */
-public interface RealmPrincipal extends Principal {
-
-    String getRealm();
+public interface RealmPrincipal extends org.jboss.as.controller.security.RealmPrincipal {
 
 }

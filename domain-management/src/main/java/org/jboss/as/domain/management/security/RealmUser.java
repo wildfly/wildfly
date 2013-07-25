@@ -22,12 +22,14 @@
 
 package org.jboss.as.domain.management.security;
 
+import org.jboss.as.controller.security.AccountPrincipal;
+
 /**
  * The Principal used to represent the name of an authenticated user.
  *
  * @author <a href="mailto:darran.lofthouse@jboss.com">Darran Lofthouse</a>
  */
-public class RealmUser extends AbstractRealmPrincipal {
+public class RealmUser extends AbstractRealmPrincipal implements AccountPrincipal {
 
     public RealmUser(String realm, String name) {
         super(realm, name);

@@ -22,10 +22,14 @@
 
 package org.jboss.as.domain.management.access;
 
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
+
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.OperationStepHandler;
 import org.jboss.as.controller.PathAddress;
+import org.jboss.as.controller.OperationContext.Stage;
+import org.jboss.as.controller.access.rbac.ConfigurableRoleMapper;
 import org.jboss.dmr.ModelNode;
 
 /**
@@ -37,14 +41,30 @@ import org.jboss.dmr.ModelNode;
  */
 public class RoleMappingAdd implements OperationStepHandler {
 
-    public static final RoleMappingAdd INSTANCE = new RoleMappingAdd();
+    private final ConfigurableRoleMapper roleMapper;
 
-    private RoleMappingAdd() {
+    private RoleMappingAdd(final ConfigurableRoleMapper roleMapper) {
+        this.roleMapper = roleMapper;
+    }
+
+    public static OperationStepHandler create(final ConfigurableRoleMapper roleMapper) {
+        return new RoleMappingAdd(roleMapper);
     }
 
     @Override
     public void execute(OperationContext context, ModelNode operation) throws OperationFailedException {
         context.createResource(PathAddress.EMPTY_ADDRESS);
+        PathAddress address = PathAddress.pathAddress(operation.get(OP_ADDR));
+        final String roleName = address.getLastElement().getValue().toUpperCase();
+
+        context.addStep(new OperationStepHandler() {
+
+            @Override
+            public void execute(OperationContext context, ModelNode operation) throws OperationFailedException {
+                roleMapper.addRole(roleName, context.isBooting());
+                context.stepCompleted(); // TODO - Add roll back support.
+            }
+        }, Stage.RUNTIME);
 
         context.stepCompleted();
     }

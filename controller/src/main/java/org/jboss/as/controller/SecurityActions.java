@@ -1,6 +1,10 @@
 /*
  * JBoss, Home of Professional Open Source.
+<<<<<<< HEAD
  * Copyright 2011, Red Hat, Inc., and individual contributors
+=======
+ * Copyright 2013, Red Hat, Inc., and individual contributors
+>>>>>>> ebf893b... [WFLY-1618] / [WFLY-490] Addition of the runtime role mapping implementation.
  * as indicated by the @author tags. See the copyright.txt file in the
  * distribution for a full listing of individual contributors.
  *
@@ -22,8 +26,15 @@
 
 package org.jboss.as.controller;
 
+import static java.security.AccessController.doPrivileged;
+
+import java.security.AccessControlContext;
 import java.security.AccessController;
 import java.security.PrivilegedAction;
+
+import javax.security.auth.Subject;
+
+import org.jboss.as.controller.access.Caller;
 
 /**
  * Security actions to perform possibly privileged operations.  no methods in
@@ -117,6 +128,49 @@ class SecurityActions {
                         return null;
                     }
                 });
+            }
+        };
+    }
+
+    static Caller createCaller() {
+        return createCallerActions().createCaller();
+    }
+
+    private static CreateCallerActions createCallerActions() {
+        return System.getSecurityManager() != null ? CreateCallerActions.PRIVILEGED : CreateCallerActions.NON_PRIVILEGED;
+    }
+
+    private interface CreateCallerActions {
+
+        Caller createCaller();
+
+        CreateCallerActions NON_PRIVILEGED = new CreateCallerActions() {
+
+            @Override
+            public Caller createCaller() {
+                AccessControlContext acc = AccessController.getContext();
+                Subject subject = Subject.getSubject(acc);
+                if (subject != null) {
+                    subject.setReadOnly();
+                }
+
+                return Caller.createCaller(subject);
+            }
+        };
+
+        CreateCallerActions PRIVILEGED = new CreateCallerActions() {
+
+            PrivilegedAction<Caller> ACTION = new PrivilegedAction<Caller>() {
+
+                @Override
+                public Caller run() {
+                    return NON_PRIVILEGED.createCaller();
+                }
+            };
+
+            @Override
+            public Caller createCaller() {
+                return doPrivileged(ACTION);
             }
         };
     }

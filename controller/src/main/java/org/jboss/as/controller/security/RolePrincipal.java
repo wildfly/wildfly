@@ -1,6 +1,6 @@
 /*
  * JBoss, Home of Professional Open Source.
- * Copyright 2012, Red Hat, Inc., and individual contributors
+ * Copyright 2013, Red Hat, Inc., and individual contributors
  * as indicated by the @author tags. See the copyright.txt file in the
  * distribution for a full listing of individual contributors.
  *
@@ -20,33 +20,15 @@
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
 
-package org.jboss.as.domain.management.security;
+package org.jboss.as.controller.security;
 
-import java.security.AccessController;
-import java.security.PrivilegedAction;
-
-import javax.security.auth.Subject;
-
-import org.jboss.as.controller.security.SecurityContext;
+import java.security.Principal;
 
 /**
- * Security actions for use by classes in the org.jboss.as.domain.management.security package.
- *
- * No methods in this class are to be made public under any circumstances!
+ * An interfaces to be implemented by {@link Principal} instances that represent role assignment.
  *
  * @author <a href="mailto:darran.lofthouse@jboss.com">Darran Lofthouse</a>
  */
-class SecurityActions {
-
-    /**
-     * @return The Subject currently associated with the SecurityContext.
-     */
-    static Subject getSecurityContextSubject() {
-        return AccessController.doPrivileged(new PrivilegedAction<Subject>() {
-            public Subject run() {
-                return SecurityContext.getSubject();
-            }
-        });
-    }
+public interface RolePrincipal extends Principal {
 
 }

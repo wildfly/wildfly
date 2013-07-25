@@ -31,6 +31,8 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.USE
 
 import java.io.DataInput;
 import java.io.IOException;
+import java.security.PrivilegedActionException;
+import java.security.PrivilegedExceptionAction;
 
 import javax.security.auth.Subject;
 
@@ -103,11 +105,16 @@ public class ModelControllerClientOperationHandler implements ManagementRequestH
                 public void execute(final ManagementRequestContext<Void> context) throws Exception {
                     final ManagementResponseHeader response = ManagementResponseHeader.create(context.getRequestHeader());
                     final ModelNode result;
-                    SecurityActions.setSecurityContextSubject(subject);
                     try {
-                        result = doExecute(operation, attachmentsLength, context);
-                    } finally {
-                        SecurityActions.clearSubjectSecurityContext();
+                        result = Subject.doAs(subject, new PrivilegedExceptionAction<ModelNode>() {
+
+                            @Override
+                            public ModelNode run() throws Exception {
+                                return doExecute(operation, attachmentsLength, context);
+                            }
+                        });
+                    } catch (PrivilegedActionException e) {
+                        throw e.getException();
                     }
 
                     final FlushableDataOutput output = context.writeMessage(response);
