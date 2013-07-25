@@ -444,6 +444,7 @@ final class SubsystemTestDelegate {
         //The transformed model is done via the resource transformers
         //The model in the legacy controller is built up via transformed operations
         ModelNode transformed = kernelServices.readTransformedModel(modelVersion).get(SUBSYSTEM, mainSubsystemName);
+
         ModelTestUtils.compare(legacySubsystem, transformed, true);
 
         //2) Check that the transformed model is valid according to the resource definition in the legacy subsystem controller

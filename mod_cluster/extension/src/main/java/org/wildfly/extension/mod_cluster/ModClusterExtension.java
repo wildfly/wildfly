@@ -33,6 +33,7 @@ import static org.wildfly.extension.mod_cluster.ModClusterConfigResourceDefiniti
 import static org.wildfly.extension.mod_cluster.ModClusterConfigResourceDefinition.AUTO_ENABLE_CONTEXTS;
 import static org.wildfly.extension.mod_cluster.ModClusterConfigResourceDefinition.FLUSH_PACKETS;
 import static org.wildfly.extension.mod_cluster.ModClusterConfigResourceDefinition.PING;
+import static org.wildfly.extension.mod_cluster.ModClusterConfigResourceDefinition.SESSION_DRAINING_STRATEGY;
 import static org.wildfly.extension.mod_cluster.ModClusterConfigResourceDefinition.STICKY_SESSION;
 import static org.wildfly.extension.mod_cluster.ModClusterConfigResourceDefinition.STICKY_SESSION_FORCE;
 import static org.wildfly.extension.mod_cluster.ModClusterConfigResourceDefinition.STICKY_SESSION_REMOVE;
@@ -43,7 +44,6 @@ import static org.wildfly.extension.mod_cluster.ModClusterSSLResourceDefinition.
 
 import java.util.List;
 import java.util.Map;
-import java.util.regex.Pattern;
 
 import javax.xml.stream.XMLStreamConstants;
 
@@ -64,7 +64,6 @@ import org.jboss.as.controller.transform.description.ResourceTransformationDescr
 import org.jboss.as.controller.transform.description.TransformationDescription;
 import org.jboss.as.controller.transform.description.TransformationDescriptionBuilder;
 import org.jboss.dmr.ModelNode;
-import org.jboss.dmr.ModelType;
 import org.jboss.dmr.Property;
 import org.jboss.staxmapper.XMLElementReader;
 
@@ -141,6 +140,8 @@ public class ModClusterExtension implements XMLStreamConstants, Extension {
         ResourceTransformationDescriptionBuilder dynamicLoadProvider = configurationBuilder
             .getAttributeBuilder()
                 .addRejectCheck(RejectAttributeChecker.SIMPLE_EXPRESSIONS, ADVERTISE, AUTO_ENABLE_CONTEXTS, FLUSH_PACKETS, STICKY_SESSION, STICKY_SESSION_REMOVE, STICKY_SESSION_FORCE, PING)
+                .addRejectCheck(SessionDrainingStrategyChecker.INSTANCE, SESSION_DRAINING_STRATEGY)
+                .setDiscard(SessionDrainingStrategyChecker.INSTANCE, SESSION_DRAINING_STRATEGY)
                 .end()
             .addChildResource(DYNAMIC_LOAD_PROVIDER_PATH)
                 .getAttributeBuilder()
@@ -175,7 +176,6 @@ public class ModClusterExtension implements XMLStreamConstants, Extension {
     static class CapacityCheckerAndConverter extends DefaultCheckersAndConverter {
 
         static final CapacityCheckerAndConverter INSTANCE = new CapacityCheckerAndConverter();
-        private static final Pattern EXPRESSION_PATTERN = Pattern.compile(".*\\$\\{.*\\}.*");
 
         @Override
         public String getRejectionLogMessage(Map<String, ModelNode> attributes) {
@@ -216,11 +216,6 @@ public class ModClusterExtension implements XMLStreamConstants, Extension {
             return null;
         }
 
-        private boolean checkForExpression(final ModelNode node) {
-            return (node.getType() == ModelType.EXPRESSION || node.getType() == ModelType.STRING)
-                    && EXPRESSION_PATTERN.matcher(node.asString()).matches();
-        }
-
         private boolean isIntegerValue(double raw) {
             return raw == Double.valueOf(Math.round(raw)).doubleValue();
         }
@@ -257,6 +252,45 @@ public class ModClusterExtension implements XMLStreamConstants, Extension {
         @Override
         protected boolean isValueDiscardable(PathAddress address, String attributeName, ModelNode attributeValue, TransformationContext context) {
             //Not used for discard
+            return false;
+        }
+    }
+
+    private static class SessionDrainingStrategyChecker extends DefaultCheckersAndConverter {
+        private static final SessionDrainingStrategyChecker INSTANCE = new SessionDrainingStrategyChecker();
+
+        @Override
+        public String getRejectionLogMessage(Map<String, ModelNode> attributes) {
+            return ModClusterMessages.MESSAGES.sessionDrainingStrategyMustBeUndefinedOrDefault();
+        }
+
+        @Override
+        protected boolean rejectAttribute(PathAddress address, String attributeName, ModelNode attributeValue,
+                TransformationContext context) {
+            if (attributeValue.isDefined()) {
+                if (checkForExpression(attributeValue)) {
+                    return true;
+                }
+                return !attributeValue.asString().equals("DEFAULT");
+            }
+            return false;
+        }
+
+        @Override
+        protected void convertAttribute(PathAddress address, String attributeName, ModelNode attributeValue,
+                TransformationContext context) {
+            //No conversion needed
+        }
+
+        @Override
+        protected boolean isValueDiscardable(PathAddress address, String attributeName, ModelNode attributeValue,
+                TransformationContext context) {
+            if (attributeValue.isDefined()) {
+                if (checkForExpression(attributeValue)) {
+                    return false;
+                }
+                return attributeValue.asString().equals("DEFAULT");
+            }
             return false;
         }
     }
