@@ -4,9 +4,6 @@
    <extension-module>org.wildfly.extension.security.manager</extension-module>
     <subsystem xmlns="urn:jboss:domain:security-manager:1.0">
         <deployment-permissions>
-            <minimum-set>
-                <permission class="java.lang.RuntimePermission" name="createClassLoader"/>
-            </minimum-set>
             <maximum-set>
                 <permission class="java.security.AllPermission"/>
             </maximum-set>

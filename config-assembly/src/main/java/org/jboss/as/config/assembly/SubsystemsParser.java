@@ -47,7 +47,6 @@ import javax.xml.stream.XMLStreamReader;
 class SubsystemsParser {
 
     static String NAMESPACE = "urn:subsystems-config:1.0";
-
     private final File inputFile;
     Map<String, SubsystemConfig[]> subsystemConfigs = new HashMap<String, SubsystemConfig[]>();
 
@@ -125,29 +124,39 @@ class SubsystemsParser {
         reader.next();
         while (true) {
             switch (reader.getEventType()) {
-            case START_ELEMENT:
-                if (reader.getLocalName().equals("subsystem")) {
-                    String supplement = null;
-                    for (int i = 0 ; i < reader.getAttributeCount() ; i++) {
-                        String attr = reader.getAttributeLocalName(i);
-                        if (attr.equals("supplement")) {
-                            supplement = reader.getAttributeValue(i);
-                        } else {
-                            throw new XMLStreamException("Unknown attribute " + attr, reader.getLocation());
-                        }
+                case START_ELEMENT:
+                    if (reader.getLocalName().equals("subsystem")) {
+                        String supplement = null;
+                        String systemProperty = null;
+                        for (int i = 0; i < reader.getAttributeCount(); i++) {
+                            String attr = reader.getAttributeLocalName(i);
+                            if (attr.equals("supplement")) {
+                                supplement = reader.getAttributeValue(i);
+                            } else if (attr.equals("include-if-set")) {
+                                systemProperty = reader.getAttributeValue(i);
+                            } else {
+                                throw new XMLStreamException("Unknown attribute " + attr, reader.getLocation());
+                            }
 
+                        }
+                        String text = reader.getElementText();
+                        if (systemProperty != null) {
+                            if (System.getProperty(systemProperty) != null) {
+                                subsystems.add(new SubsystemConfig(text, supplement));
+                            }
+                        } else {
+                            subsystems.add(new SubsystemConfig(text, supplement));
+                        }
+                    } else {
+                        throw new XMLStreamException("Invalid element " + reader.getLocalName(), reader.getLocation());
                     }
-                    subsystems.add(new SubsystemConfig(reader.getElementText(), supplement));
-                } else {
-                    throw new XMLStreamException("Invalid element " + reader.getLocalName(), reader.getLocation());
-                }
-                break;
-            case END_ELEMENT:
-                if (reader.getLocalName().equals("subsystems")) {
-                    return;
-                }
-            default:
-                reader.next();
+                    break;
+                case END_ELEMENT:
+                    if (reader.getLocalName().equals("subsystems")) {
+                        return;
+                    }
+                default:
+                    reader.next();
             }
         }
     }
