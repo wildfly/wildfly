@@ -22,6 +22,8 @@
 package org.wildfly.clustering.server.dispatcher;
 
 import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
+import java.io.IOException;
 import java.io.InputStream;
 import java.net.InetSocketAddress;
 import java.security.AccessController;
@@ -33,6 +35,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.AbstractMap.SimpleImmutableEntry;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.ExecutorService;
@@ -47,6 +50,7 @@ import org.jboss.as.clustering.marshalling.DynamicClassTable;
 import org.jboss.as.clustering.marshalling.MarshallingConfigurationFactory;
 import org.jboss.as.clustering.marshalling.MarshallingContext;
 import org.jboss.as.clustering.marshalling.VersionedMarshallingConfiguration;
+import org.jboss.marshalling.Marshaller;
 import org.jboss.marshalling.Marshalling;
 import org.jboss.marshalling.MarshallingConfiguration;
 import org.jboss.marshalling.Unmarshaller;
@@ -92,8 +96,8 @@ public class CommandDispatcherFactoryService implements CommandDispatcherFactory
     private static final short SCOPE_ID = 222;
     private static final int CURRENT_VERSION = 1;
 
-    private final MarshallingContext marshallingContext = new MarshallingContext(this);
-    final Map<ServiceName, Map.Entry<MembershipListener, Object>> services = new ConcurrentHashMap<>();
+    final MarshallingContext marshallingContext = new MarshallingContext(this);
+    final Map<ServiceName, Map.Entry<Object, MembershipListener>> services = new ConcurrentHashMap<>();
     final ConcurrentMap<Address, Node> nodes = new ConcurrentHashMap<>();
     private final Map<Integer, MarshallingConfiguration> configurations = new HashMap<>();
     private final Value<Channel> channel;
@@ -116,8 +120,30 @@ public class CommandDispatcherFactoryService implements CommandDispatcherFactory
     }
 
     @Override
-    public <C> CommandDispatcher<C> createCommandDispatcher(ServiceName service, C context, MembershipListener listener) {
-        return new ServiceCommandDispatcher<>(this.dispatcher, new ServiceCommandMarshaller<>(service, context, listener, this.services, this.marshallingContext, CURRENT_VERSION), this, this.timeout);
+    public <C> CommandDispatcher<C> createCommandDispatcher(final ServiceName service, C context, MembershipListener listener) {
+        final int version = CURRENT_VERSION;
+        CommandMarshaller<C> marshaller = new CommandMarshaller<C>() {
+            @Override
+            public <R> byte[] marshal(Command<R, C> command) throws IOException {
+                try (ByteArrayOutputStream output = new ByteArrayOutputStream()) {
+                    output.write(version);
+                    try (Marshaller marshaller = CommandDispatcherFactoryService.this.marshallingContext.createMarshaller(version)) {
+                        marshaller.start(Marshalling.createByteOutput(output));
+                        marshaller.writeUTF(service.getCanonicalName());
+                        marshaller.writeObject(command);
+                        marshaller.flush();
+                    }
+                    return output.toByteArray();
+                }
+            }
+        };
+        this.services.put(service, new SimpleImmutableEntry<Object, MembershipListener>(context, listener));
+        return new ServiceCommandDispatcher<C>(this.dispatcher, marshaller, this, this.timeout) {
+            @Override
+            public void close() {
+                CommandDispatcherFactoryService.this.services.remove(service);
+            }
+        };
     }
 
     @Override
@@ -147,6 +173,7 @@ public class CommandDispatcherFactoryService implements CommandDispatcherFactory
             }
         };
 
+        Channel channel = this.channel.getValue();
         final RpcDispatcher.Marshaller marshaller = new CommandResponseMarshaller(this.marshallingContext, CURRENT_VERSION);
         this.dispatcher = new MuxMessageDispatcher(SCOPE_ID) {
             @Override
@@ -156,22 +183,24 @@ public class CommandDispatcherFactoryService implements CommandDispatcherFactory
                 return correlator;
             }
         };
-        this.dispatcher.setChannel(this.channel.getValue());
+        this.dispatcher.setChannel(channel);
         this.dispatcher.setRequestHandler(this);
         this.dispatcher.setMembershipListener(this);
         this.dispatcher.start();
-        Set<Node> view = new HashSet<>();
-        for (Address address: this.dispatcher.getChannel().getView().getMembers()) {
-            view.add(this.getNode(address));
-        }
-        this.view = view;
+        // Process initial view
+        new ViewTask(channel.getView()).run();
     }
 
     @Override
     public void stop(StopContext context) {
-        this.dispatcher.stop();
-        this.executor.shutdown();
-        this.configurations.clear();
+        try {
+            this.dispatcher.stop();
+        } finally {
+            this.executor.shutdown();
+            this.configurations.clear();
+            this.nodes.clear();
+            this.view = Collections.emptySet();
+        }
     }
 
     @Override
@@ -257,10 +286,9 @@ public class CommandDispatcherFactoryService implements CommandDispatcherFactory
                 unmarshaller.start(Marshalling.createByteInput(input));
                 ServiceName service = ServiceName.parse(unmarshaller.readUTF());
                 Command<Object, Object> command = (Command<Object, Object>) unmarshaller.readObject();
-                Map.Entry<MembershipListener, Object> entry = this.services.get(service);
+                Map.Entry<Object, MembershipListener> entry = this.services.get(service);
                 if (entry == null) return new NoSuchService();
-                Object context = entry.getValue();
-                return command.execute(context);
+                return command.execute(entry.getKey());
             }
         }
     }
@@ -310,10 +338,10 @@ public class CommandDispatcherFactoryService implements CommandDispatcherFactory
             CommandDispatcherFactoryService.this.view = new HashSet<>(allNodes);
             CommandDispatcherFactoryService.this.nodes.values().removeAll(deadNodes);
 
-            final Collection<Map.Entry<MembershipListener, Object>> listeners = CommandDispatcherFactoryService.this.services.values();
+            final Collection<Map.Entry<Object, MembershipListener>> listeners = CommandDispatcherFactoryService.this.services.values();
             final List<List<Node>> groups = this.createGroups(this.view);
-            for (Map.Entry<MembershipListener, Object> entry: listeners) {
-                MembershipListener listener = entry.getKey();
+            for (Map.Entry<Object, MembershipListener> entry: listeners) {
+                MembershipListener listener = entry.getValue();
                 if (listener != null) {
                     listener.membershipChanged(deadNodes, newNodes, allNodes, groups);
                 }

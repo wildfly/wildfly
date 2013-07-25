@@ -47,7 +47,7 @@ public class SimpleNodeExternalizer extends AbstractSimpleExternalizer<SimpleNod
     }
 
     @Override
-    public SimpleNode readObject(ObjectInput input) throws IOException, ClassNotFoundException {
+    public SimpleNode readObject(ObjectInput input) throws IOException {
         String name = input.readUTF();
         byte[] address = new byte[input.readInt()];
         input.readFully(address);

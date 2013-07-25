@@ -36,7 +36,6 @@ import org.jboss.as.clustering.infinispan.invoker.CacheInvoker;
 import org.jboss.msc.service.Service;
 import org.jboss.msc.service.ServiceName;
 import org.jboss.msc.service.StartContext;
-import org.jboss.msc.service.StartException;
 import org.jboss.msc.service.StopContext;
 import org.jboss.msc.value.Value;
 import org.wildfly.clustering.Node;
@@ -116,9 +115,9 @@ public class ServiceProviderRegistryFactoryService implements ServiceProviderReg
     }
 
     @Override
-    public void start(StartContext context) throws StartException {
+    public void start(StartContext context) {
         this.dispatcher = this.dispatcherFactory.getValue().<ServiceProvider>createCommandDispatcher(this.name, this, this);
-        this.cache = (Cache<ServiceName, Set<Node>>) this.cacheRef.getValue();
+        this.cache = this.cacheRef.getValue();
         this.cache.addListener(this);
     }
 

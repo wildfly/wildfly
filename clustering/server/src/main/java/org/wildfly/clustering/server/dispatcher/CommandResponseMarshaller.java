@@ -44,7 +44,7 @@ public class CommandResponseMarshaller implements RpcDispatcher.Marshaller {
     @Override
     public Buffer objectToBuffer(Object object) throws Exception {
         try (ByteArrayOutputStream output = new ByteArrayOutputStream()) {
-            output.write(currentVersion);
+            output.write(this.currentVersion);
             try (Marshaller marshaller = this.context.createMarshaller(this.currentVersion)) {
                 marshaller.start(Marshalling.createByteOutput(output));
                 marshaller.writeObject(object);
