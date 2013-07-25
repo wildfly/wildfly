@@ -51,19 +51,19 @@ import org.wildfly.clustering.dispatcher.CommandDispatcherFactory;
 public class CommandDispatcherFactoryProvider implements ChannelDependentServiceProvider {
     private static final Logger logger = Logger.getLogger(CommandDispatcherFactoryProvider.class);
 
-    private ServiceName getServiceName(String cluster) {
+    private static ServiceName getServiceName(String cluster) {
         return CommandDispatcherFactory.SERVICE_NAME.append(cluster);
     }
 
     @Override
     public Collection<ServiceName> getServiceNames(String cluster) {
-        return Arrays.asList(this.getServiceName(cluster), this.createBinding(cluster).getBinderServiceName());
+        return Arrays.asList(getServiceName(cluster), createBinding(cluster).getBinderServiceName());
     }
 
     @Override
     public Collection<ServiceController<?>> install(ServiceTarget target, String cluster, ModuleIdentifier moduleId) {
-        ServiceName name = this.getServiceName(cluster);
-        ContextNames.BindInfo bindInfo = this.createBinding(cluster);
+        ServiceName name = getServiceName(cluster);
+        ContextNames.BindInfo bindInfo = createBinding(cluster);
 
         logger.debugf("Installing %s service, bound to ", name.getCanonicalName(), bindInfo.getAbsoluteJndiName());
 
@@ -90,7 +90,7 @@ public class CommandDispatcherFactoryProvider implements ChannelDependentService
         return Arrays.asList(controller, binderController);
     }
 
-    private ContextNames.BindInfo createBinding(String cluster) {
+    private static ContextNames.BindInfo createBinding(String cluster) {
         return ContextNames.bindInfoFor(JndiNameFactory.createJndiName(JndiNameFactory.DEFAULT_JNDI_NAMESPACE, "clustering", "dispatcher", cluster).getAbsoluteName());
     }
 }

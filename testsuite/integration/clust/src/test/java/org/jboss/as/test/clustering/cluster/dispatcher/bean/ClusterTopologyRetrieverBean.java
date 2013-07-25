@@ -11,6 +11,7 @@ import javax.ejb.Stateless;
 
 import org.jboss.ejb3.annotation.Clustered;
 import org.wildfly.clustering.Node;
+import org.wildfly.clustering.dispatcher.Command;
 import org.wildfly.clustering.dispatcher.CommandDispatcher;
 import org.wildfly.clustering.dispatcher.CommandDispatcherFactory;
 import org.wildfly.clustering.dispatcher.CommandResponse;
@@ -23,12 +24,13 @@ public class ClusterTopologyRetrieverBean implements ClusterTopologyRetriever {
     private CommandDispatcher<Node> dispatcher;
     @EJB
     private CommandDispatcherFactory factory;
+    private final Command<String, Node> command = new TestCommand();
 
     @Override
     public ClusterTopology getClusterTopology() {
         try {
             System.out.println("Executing command on cluster");
-            Collection<CommandResponse<String>> responses = this.dispatcher.executeOnCluster(new TestCommand()).values();
+            Collection<CommandResponse<String>> responses = this.dispatcher.executeOnCluster(this.command).values();
             List<String> nodes = new ArrayList<>(responses.size());
             for (CommandResponse<String> response: responses) {
                 nodes.add(response.get());
@@ -36,10 +38,10 @@ public class ClusterTopologyRetrieverBean implements ClusterTopologyRetriever {
 
             Node localNode = this.factory.getLocalNode();
             System.out.println("Executing command on node: " + localNode);
-            String local = this.dispatcher.executeOnNode(new TestCommand(), localNode).get();
+            String local = this.dispatcher.executeOnNode(this.command, localNode).get();
 
             System.out.println("Executing command on cluster excluding node: " + localNode);
-            responses = this.dispatcher.executeOnCluster(new TestCommand(), localNode).values();
+            responses = this.dispatcher.executeOnCluster(this.command, localNode).values();
             List<String> remote = new ArrayList<>(responses.size());
             for (CommandResponse<String> response: responses) {
                 remote.add(response.get());

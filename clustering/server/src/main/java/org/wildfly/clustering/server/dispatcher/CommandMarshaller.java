@@ -31,7 +31,7 @@ import org.wildfly.clustering.dispatcher.Command;
  *
  * @param <C> command execution context
  */
-public interface CommandMarshaller<C> extends AutoCloseable {
+public interface CommandMarshaller<C> {
     /**
      * Marshals the specified command to a byte[].
      * @param command a command
@@ -39,10 +39,4 @@ public interface CommandMarshaller<C> extends AutoCloseable {
      * @throws IOException if marshalling fails.
      */
     <R> byte[] marshal(Command<R, C> command) throws IOException;
-
-    /**
-     * Closes resources used by this marshaller.
-     */
-    @Override
-    void close();
 }

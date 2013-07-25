@@ -51,7 +51,7 @@ import org.wildfly.clustering.dispatcher.CommandResponse;
  *
  * @param <C> command execution context
  */
-public class ServiceCommandDispatcher<C> implements CommandDispatcher<C> {
+public abstract class ServiceCommandDispatcher<C> implements CommandDispatcher<C> {
 
     private static final RspFilter FILTER = new RspFilter() {
         @Override
@@ -86,7 +86,9 @@ public class ServiceCommandDispatcher<C> implements CommandDispatcher<C> {
 
             Map<Node, CommandResponse<R>> results = new HashMap<>();
             for (Map.Entry<Address, Rsp<R>> entry: responses.entrySet()) {
-                results.put(this.registry.getNode(entry.getKey()), createCommandResponse(entry.getValue()));
+                Address address = entry.getKey();
+                Rsp<R> response = entry.getValue();
+                results.put(this.registry.getNode(address), createCommandResponse(response));
             }
 
             return results;
@@ -145,9 +147,9 @@ public class ServiceCommandDispatcher<C> implements CommandDispatcher<C> {
     public <R> CommandResponse<R> executeOnNode(Command<R, C> command, Node node) {
         try {
             R result = this.dispatcher.sendMessage(this.createMessage(command, node), this.createRequestOptions());
-            return new CommandResponseImpl<>(result);
+            return new SimpleCommandResponse<>(result);
         } catch (Throwable e) {
-            return new CommandResponseImpl<>(e);
+            return new SimpleCommandResponse<>(e);
         }
     }
 
@@ -156,33 +158,7 @@ public class ServiceCommandDispatcher<C> implements CommandDispatcher<C> {
         try {
             return this.dispatcher.sendMessageWithFuture(this.createMessage(command, node), this.createRequestOptions());
         } catch (Throwable e) {
-            final ExecutionException exception = new ExecutionException(e);
-            return new Future<R>() {
-                @Override
-                public boolean cancel(boolean mayInterruptIfRunning) {
-                    return false;
-                }
-
-                @Override
-                public R get() throws ExecutionException {
-                    throw exception;
-                }
-
-                @Override
-                public R get(long timeout, TimeUnit unit) throws ExecutionException {
-                    throw exception;
-                }
-
-                @Override
-                public boolean isCancelled() {
-                    return false;
-                }
-
-                @Override
-                public boolean isDone() {
-                    return true;
-                }
-            };
+            return new SimpleFuture<>(e);
         }
     }
 
@@ -209,6 +185,7 @@ public class ServiceCommandDispatcher<C> implements CommandDispatcher<C> {
             for (int i = 0; i < excludedNodes.length; ++i) {
                 addresses[i] = this.registry.getAddress(excludedNodes[i]);
             }
+            System.out.println("Exclusion list: " + Arrays.asList(addresses));
             options.setExclusionList(addresses);
         }
         return options;
@@ -220,28 +197,23 @@ public class ServiceCommandDispatcher<C> implements CommandDispatcher<C> {
 
     static <R> CommandResponse<R> createCommandResponse(Rsp<R> response) {
         Throwable exception = response.getException();
-        return (exception != null) ? new CommandResponseImpl<R>(exception) : new CommandResponseImpl<>(response.wasReceived() ? response.getValue() : null);
-    }
-
-    @Override
-    public void close() {
-        this.marshaller.close();
+        return (exception != null) ? new SimpleCommandResponse<R>(exception) : new SimpleCommandResponse<>(response.wasReceived() ? response.getValue() : null);
     }
 
     private Address getLocalAddress() {
         return this.dispatcher.getChannel().getAddress();
     }
 
-    private static class CommandResponseImpl<T> implements CommandResponse<T> {
+    private static class SimpleCommandResponse<T> implements CommandResponse<T> {
         private final T value;
         private final ExecutionException exception;
 
-        CommandResponseImpl(T value) {
+        SimpleCommandResponse(T value) {
             this.value = value;
             this.exception = null;
         }
 
-        CommandResponseImpl(Throwable exception) {
+        SimpleCommandResponse(Throwable exception) {
             this.value = null;
             this.exception = new ExecutionException(exception);
         }
@@ -252,6 +224,37 @@ public class ServiceCommandDispatcher<C> implements CommandDispatcher<C> {
                 throw this.exception;
             }
             return this.value;
+        }
+    }
+
+    private static class SimpleFuture<T> extends SimpleCommandResponse<T> implements Future<T> {
+
+        SimpleFuture(T value) {
+            super(value);
+        }
+
+        SimpleFuture(Throwable exception) {
+            super(exception);
+        }
+
+        @Override
+        public boolean cancel(boolean mayInterruptIfRunning) {
+            return false;
+        }
+
+        @Override
+        public boolean isCancelled() {
+            return false;
+        }
+
+        @Override
+        public boolean isDone() {
+            return true;
+        }
+
+        @Override
+        public T get(long timeout, TimeUnit unit) throws ExecutionException {
+            return this.get();
         }
     }
 }

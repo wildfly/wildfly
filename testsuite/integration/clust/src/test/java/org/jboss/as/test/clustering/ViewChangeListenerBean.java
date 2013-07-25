@@ -42,7 +42,7 @@ import org.jboss.msc.service.ServiceRegistry;
  */
 @Stateless
 @Remote(ViewChangeListener.class)
-@Listener(sync = false)
+@Listener
 public class ViewChangeListenerBean implements ViewChangeListener {
     // TODO lower this timeout; workarounds issue when AS process became stale and FD kicks in after 30 seconds
     public static final long TIMEOUT = 35000;
