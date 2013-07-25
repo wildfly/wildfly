@@ -23,6 +23,7 @@
 package org.jboss.as.test.patching;
 
 import java.io.File;
+import java.io.IOException;
 import java.net.UnknownHostException;
 
 import com.google.common.base.Joiner;
@@ -41,6 +42,7 @@ import org.jboss.as.version.ProductConfig;
 import org.jboss.dmr.ModelNode;
 import org.junit.After;
 import org.junit.Assert;
+import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
@@ -50,6 +52,8 @@ import static org.jboss.as.test.patching.PatchingTestUtil.AS_VERSION;
 import static org.jboss.as.test.patching.PatchingTestUtil.CONTAINER;
 import static org.jboss.as.test.patching.PatchingTestUtil.FILE_SEPARATOR;
 import static org.jboss.as.test.patching.PatchingTestUtil.PRODUCT;
+import static org.jboss.as.test.patching.PatchingTestUtil.assertPatchElements;
+import static org.jboss.as.test.patching.PatchingTestUtil.baseModuleDir;
 import static org.jboss.as.test.patching.PatchingTestUtil.createPatchXMLFile;
 import static org.jboss.as.test.patching.PatchingTestUtil.createZippedPatchFile;
 import static org.jboss.as.test.patching.PatchingTestUtil.randomString;
@@ -66,11 +70,23 @@ public class NativeApiPatchingTestCase {
     @ArquillianResource
     private ContainerController controller;
 
+    private File tempDir;
+
+    @Before
+    public void prepare() throws IOException {
+        tempDir = mkdir(new File(System.getProperty("java.io.tmpdir")), randomString());
+        assertPatchElements(baseModuleDir, null);
+    }
+
     @After
     public void cleanup() throws Exception {
         if(controller.isStarted(CONTAINER))
             controller.stop(CONTAINER);
         CliUtilsForPatching.rollbackAll();
+
+        if (IoUtils.recursiveDelete(tempDir)) {
+            tempDir.deleteOnExit();
+        }
     }
 
     /**
@@ -84,7 +100,6 @@ public class NativeApiPatchingTestCase {
 
         final String fileContent = "Hello World!";
         // prepare the patch
-        File tempDir = mkdir(new File(System.getProperty("java.io.tmpdir")), randomString());
         String patchID = randomString();
         File oneOffPatchDir = mkdir(tempDir, patchID);
         String[] miscFileLocation = new String[] {"newPatchDirectory", "awesomeFile"};
@@ -118,6 +133,9 @@ public class NativeApiPatchingTestCase {
 
         Assert.assertTrue("The patch " + patchID + " should be listed as installed",
                 NativeApiUtilsForPatching.getInstalledPatches(client).contains(patchID));
+
+        ModelNode itemForPatch = NativeApiUtilsForPatching.getHistoryItemForOneOffPatch(client, patchID);
+        Assert.assertNotNull("The patch should appear in patching history", itemForPatch);
 
         Assert.assertEquals("Unexpected contents of misc file", fileContent, readFile(path));
 
