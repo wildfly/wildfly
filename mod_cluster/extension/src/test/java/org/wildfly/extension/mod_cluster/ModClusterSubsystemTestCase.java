@@ -100,7 +100,6 @@ public class ModClusterSubsystemTestCase extends AbstractSubsystemBaseTest {
             public ModelNode fixModel(ModelNode modelNode) {
                 fixDefaultCapacity(modelNode.get(MOD_CLUSTER_CONFIG, CONFIGURATION, CommonAttributes.DYNAMIC_LOAD_PROVIDER, CONFIGURATION, CommonAttributes.LOAD_METRIC));
                 fixDefaultCapacity(modelNode.get(MOD_CLUSTER_CONFIG, CONFIGURATION, CommonAttributes.DYNAMIC_LOAD_PROVIDER, CONFIGURATION, CommonAttributes.CUSTOM_LOAD_METRIC));
-                modelNode.get(MOD_CLUSTER_CONFIG, CONFIGURATION).get(ModClusterConfigResourceDefinition.SESSION_DRAINING_STRATEGY.getName()).set("DEFAULT");
                 return modelNode;
             }
 
@@ -161,7 +160,7 @@ public class ModClusterSubsystemTestCase extends AbstractSubsystemBaseTest {
         ModelTestUtils.checkFailedTransformedBootOperations(mainServices, modelVersion, parse(subsystemXml),
                 new FailedOperationTransformationConfig()
                         .addFailedAttribute(metrAddr,
-                                ChainedConfig.createBuilder(CommonAttributes.CAPACITY, CommonAttributes.WEIGHT, CommonAttributes.PROPERTY)
+                                ChainedConfig.createBuilder(CommonAttributes.CAPACITY, CommonAttributes.WEIGHT, CommonAttributes.PROPERTY, CommonAttributes.SESSION_DRAINING_STRATEGY)
                                     .addConfig(CapacityConfig.INSTANCE)
                                     .addConfig(new FailedOperationTransformationConfig.RejectExpressionsConfig(CommonAttributes.WEIGHT))
                                     .addConfig(new FailedOperationTransformationConfig.RejectExpressionsConfig(CommonAttributes.PROPERTY))
@@ -179,12 +178,20 @@ public class ModClusterSubsystemTestCase extends AbstractSubsystemBaseTest {
                                         CommonAttributes.CIPHER_SUITE, CommonAttributes.KEY_ALIAS,
                                         CommonAttributes.PROTOCOL))
                         .addFailedAttribute(confAddr,
-                                new FailedOperationTransformationConfig.RejectExpressionsConfig(CommonAttributes.ADVERTISE,
+                                ChainedConfig.createBuilder(CommonAttributes.ADVERTISE,
                                         CommonAttributes.ADVERTISE_SOCKET, CommonAttributes.ADVERTISE_SOCKET,
                                         CommonAttributes.AUTO_ENABLE_CONTEXTS, CommonAttributes.FLUSH_PACKETS,
                                         CommonAttributes.PING,
-                                        CommonAttributes.STICKY_SESSION, CommonAttributes.STICKY_SESSION_FORCE, CommonAttributes.STICKY_SESSION_REMOVE
-                                ))
+                                        CommonAttributes.STICKY_SESSION, CommonAttributes.STICKY_SESSION_FORCE, CommonAttributes.STICKY_SESSION_REMOVE,
+                                        CommonAttributes.SESSION_DRAINING_STRATEGY)
+                                        .addConfig(new FailedOperationTransformationConfig.RejectExpressionsConfig(CommonAttributes.ADVERTISE,
+                                                CommonAttributes.ADVERTISE_SOCKET, CommonAttributes.ADVERTISE_SOCKET,
+                                                CommonAttributes.AUTO_ENABLE_CONTEXTS, CommonAttributes.FLUSH_PACKETS,
+                                                CommonAttributes.PING,
+                                                CommonAttributes.STICKY_SESSION, CommonAttributes.STICKY_SESSION_FORCE, CommonAttributes.STICKY_SESSION_REMOVE,
+                                                CommonAttributes.SESSION_DRAINING_STRATEGY))
+                                        .addConfig(new NeverToDefaultConfig(CommonAttributes.SESSION_DRAINING_STRATEGY)).build())
+
         );
     }
 
@@ -258,6 +265,33 @@ public class ModClusterSubsystemTestCase extends AbstractSubsystemBaseTest {
         protected boolean isAttributeWritable(String attributeName) {
             return false;
         }
+    }
+
+
+    private static class NeverToDefaultConfig extends AttributesPathAddressConfig<NeverToDefaultConfig> {
+        public NeverToDefaultConfig(String...attributes) {
+            super(attributes);
+        }
+
+        @Override
+        protected boolean isAttributeWritable(String attributeName) {
+            return true;
+        }
+
+        @Override
+        protected boolean checkValue(String attrName, ModelNode attribute, boolean isWriteAttribute) {
+            if (!attribute.isDefined()) {
+                return false;
+            }
+            return !attribute.asString().equals("DEFAULT");
+        }
+
+        @Override
+        protected ModelNode correctValue(ModelNode toResolve, boolean isWriteAttribute) {
+            return new ModelNode("DEFAULT");
+        }
+
+
     }
 
     /**

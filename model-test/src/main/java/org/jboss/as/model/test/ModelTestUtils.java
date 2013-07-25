@@ -468,7 +468,7 @@ public class ModelTestUtils {
                     }
                 }
             } else {
-                if (children.contains(pe.getKeyValuePair())) {
+                if (children.contains(pe.getKey()) && model.hasDefined(pe.getKey()) && model.get(pe.getKey()).hasDefined(pe.getValue())) {
                     String name = pe.getValue();
                     ModelNode value = model.get(pe.getKeyValuePair());
                     ManagementResourceRegistration sub = rr.getSubModel(PathAddress.pathAddress(pe));
