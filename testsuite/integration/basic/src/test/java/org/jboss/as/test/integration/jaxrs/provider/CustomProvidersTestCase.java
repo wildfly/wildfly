@@ -25,6 +25,7 @@ import static org.junit.Assert.assertEquals;
 
 import java.net.URL;
 import java.util.concurrent.TimeUnit;
+import java.util.Currency;
 
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.container.test.api.OperateOnDeployment;
@@ -100,7 +101,7 @@ public class CustomProvidersTestCase {
                 + CurrencyConverterProvider.PATH_CONVERTER.substring(1).replace(
                         "{" + CurrencyConverterProvider.PARAM_CURRENCY + "}", "USD");
         LOGGER.info("Requested path: " + converterPath);
-        assertEquals("$", HttpRequest.get(converterPath, 10, TimeUnit.SECONDS));
+        assertEquals(Currency.getInstance("USD").getSymbol(), HttpRequest.get(converterPath, 10, TimeUnit.SECONDS));
     }
 
 }
