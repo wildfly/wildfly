@@ -30,6 +30,7 @@ import static org.jboss.as.patching.Constants.SYSTEM;
 import static org.jboss.as.patching.IoUtils.mkdir;
 import static org.jboss.as.patching.IoUtils.newFile;
 import static org.jboss.as.test.patching.PatchingTestUtil.CONTAINER;
+import static org.jboss.as.test.patching.PatchingTestUtil.assertPatchElements;
 import static org.jboss.as.test.patching.PatchingTestUtil.createBundle0;
 import static org.jboss.as.test.patching.PatchingTestUtil.createModule0;
 import static org.jboss.as.test.patching.PatchingTestUtil.createPatchXMLFile;
@@ -38,15 +39,9 @@ import static org.jboss.as.test.patching.PatchingTestUtil.dump;
 import static org.jboss.as.test.patching.PatchingTestUtil.randomString;
 import static org.jboss.as.test.patching.PatchingTestUtil.touch;
 import static org.junit.Assert.assertArrayEquals;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNull;
-import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 
 import java.io.File;
-import java.io.FileFilter;
-import java.util.Arrays;
-import java.util.List;
 
 import org.jboss.arquillian.container.test.api.ContainerController;
 import org.jboss.arquillian.container.test.api.RunAsClient;
@@ -252,29 +247,6 @@ public class RollbackLastUnitTestCase {
         assertArrayEquals(curFileHash, originalFileHash);
     }
 
-    private static void assertPatchElements(File baseModuleDir, String[] patchElements) {
-
-        File modulesPatchesDir = new File(baseModuleDir, ".overlays");
-        if(!modulesPatchesDir.exists()) {
-            assertNull(patchElements);
-            return;
-        }
-        assertTrue(modulesPatchesDir.exists());
-        final List<File> patchDirs = Arrays.asList(modulesPatchesDir.listFiles(new FileFilter(){
-            @Override
-            public boolean accept(File pathname) {
-                return pathname.isDirectory();
-            }}));
-        if(patchElements == null) {
-            assertTrue(patchDirs.isEmpty());
-        } else {
-            final List<String> ids = Arrays.asList(patchElements);
-            assertEquals(patchDirs.size(), patchElements.length);
-            for (File f : patchDirs) {
-                assertTrue(ids.contains(f.getName()));
-            }
-        }
-    }
 
     private static void assertNotEqual(byte[] a1, byte[] a2) {
         if(a1.length != a2.length) {

@@ -80,4 +80,32 @@ public class NativeApiUtilsForPatching {
         return patchesListString;
     }
 
+    public static List<ModelNode> getHistory(ModelControllerClient client) throws IOException {
+        final ModelNode readOp = new ModelNode();
+        readOp.get(ModelDescriptionConstants.OP_ADDR).add("core-service", "patching");
+        readOp.get(ModelDescriptionConstants.OP).set("show-history");
+        return client.execute(readOp).get("result").asList();
+    }
+
+    /**
+     * Gets the history item of a patch specified by patchId.
+     * Returns a ModelNode like this:
+     * {
+     *    "one-off" : "ed7a416f-a53b-4583-8d7e-6c01afc249f6",
+     *    "applied-at" : "7/25/13 4:47 PM";
+     * }
+     */
+    public static ModelNode getHistoryItemForOneOffPatch(ModelControllerClient client, String patchId)
+            throws IOException {
+        final ModelNode readOp = new ModelNode();
+        readOp.get(ModelDescriptionConstants.OP_ADDR).add("core-service", "patching");
+        readOp.get(ModelDescriptionConstants.OP).set("show-history");
+        List<ModelNode> list = client.execute(readOp).get("result").asList();
+        for (ModelNode item : list) {
+            if (item.get("one-off").asString().equalsIgnoreCase(patchId))
+                return item;
+        }
+        return null;
+    }
+
 }

@@ -31,8 +31,16 @@ import org.jboss.as.patching.metadata.PatchXml;
 import org.jboss.as.process.protocol.StreamUtils;
 import org.junit.Assert;
 
-import java.io.*;
+import java.io.File;
+import java.io.FileFilter;
+import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
+import java.io.FileWriter;
+import java.io.IOException;
+import java.io.OutputStream;
 import java.nio.charset.Charset;
+import java.util.Arrays;
+import java.util.List;
 import java.util.Properties;
 import java.util.Scanner;
 import java.util.UUID;
@@ -49,6 +57,8 @@ import static org.jboss.as.patching.IoUtils.newFile;
 import static org.jboss.as.patching.IoUtils.safeClose;
 import static org.jboss.as.patching.Constants.*;
 import static org.jboss.as.patching.PatchLogger.ROOT_LOGGER;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
 
 /**
@@ -65,6 +75,7 @@ public class PatchingTestUtil {
     public static final String PATCHES_PATH = AS_DISTRIBUTION + FILE_SEPARATOR + RELATIVE_PATCHES_PATH;
     private static final String RELATIVE_MODULES_PATH = Joiner.on(FILE_SEPARATOR).join(new String[] {MODULES, SYSTEM, LAYERS, BASE});
     public static final String MODULES_PATH = AS_DISTRIBUTION + FILE_SEPARATOR + RELATIVE_MODULES_PATH;
+    public static File baseModuleDir = newFile(new File(PatchingTestUtil.AS_DISTRIBUTION), MODULES, SYSTEM, LAYERS, BASE);
 
     public static String randomString() {
         return UUID.randomUUID().toString();
@@ -307,5 +318,30 @@ public class PatchingTestUtil {
             StreamUtils.safeClose(jar);
         }
         return binDir;
+    }
+
+    public static void assertPatchElements(File baseModuleDir, String[] patchElements) {
+
+        File modulesPatchesDir = new File(baseModuleDir, ".overlays");
+        if(!modulesPatchesDir.exists()) {
+            assertNull(patchElements);
+            return;
+        }
+        assertTrue(modulesPatchesDir.exists());
+        final List<File> patchDirs = Arrays.asList(modulesPatchesDir.listFiles(new FileFilter() {
+            @Override
+            public boolean accept(File pathname) {
+                return pathname.isDirectory();
+            }
+        }));
+        if(patchElements == null) {
+            assertTrue(patchDirs.isEmpty());
+        } else {
+            final List<String> ids = Arrays.asList(patchElements);
+            assertEquals(patchDirs.size(), patchElements.length);
+            for (File f : patchDirs) {
+                assertTrue(ids.contains(f.getName()));
+            }
+        }
     }
 }
