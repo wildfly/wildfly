@@ -34,7 +34,6 @@ import javax.mail.MailSessionDefinitions;
 
 import org.jboss.as.ee.component.Attachments;
 import org.jboss.as.ee.component.BindingConfiguration;
-import org.jboss.as.ee.component.EEApplicationClasses;
 import org.jboss.as.ee.component.EEModuleClassDescription;
 import org.jboss.as.ee.component.EEModuleDescription;
 import org.jboss.as.server.deployment.DeploymentPhaseContext;
@@ -66,36 +65,35 @@ public class MailSessionDefinitionAnnotationParser implements DeploymentUnitProc
         final DeploymentUnit deploymentUnit = phaseContext.getDeploymentUnit();
         final EEModuleDescription eeModuleDescription = deploymentUnit.getAttachment(Attachments.EE_MODULE_DESCRIPTION);
         final CompositeIndex index = deploymentUnit.getAttachment(org.jboss.as.server.deployment.Attachments.COMPOSITE_ANNOTATION_INDEX);
-        final EEApplicationClasses applicationClasses = deploymentUnit.getAttachment(Attachments.EE_APPLICATION_CLASSES_DESCRIPTION);
 
-        // @DataSourceDefinitions
-        List<AnnotationInstance> datasourceDefinitions = index.getAnnotations(MAIL_SESSION_DEFINITIONS);
-        if (datasourceDefinitions != null) {
-            for (AnnotationInstance annotation : datasourceDefinitions) {
+        // @MailSessionDefinitions
+        List<AnnotationInstance> mailSessionDefinitions = index.getAnnotations(MAIL_SESSION_DEFINITIONS);
+        if (mailSessionDefinitions != null) {
+            for (AnnotationInstance annotation : mailSessionDefinitions) {
                 final AnnotationTarget target = annotation.target();
                 if (!(target instanceof ClassInfo)) {
                     throw MESSAGES.classOnlyAnnotation("@MailSessionDefinitions", target);
                 }
-                // get the nested @DataSourceDefinition out of the outer @DataSourceDefinitions
-                List<AnnotationInstance> datasources = this.getNestedMailSessionAnnotations(annotation);
-                // process the nested @DataSourceDefinition
-                for (AnnotationInstance datasource : datasources) {
+                // get the nested @MailSessionDefinition out of the outer @MailSessionDefinitions
+                List<AnnotationInstance> mailSessions = this.getNestedMailSessionAnnotations(annotation);
+                // process the nested @MailSessionDefinition
+                for (AnnotationInstance mailSession : mailSessions) {
                     // create binding configurations out of it
-                    this.processDataSourceDefinition(eeModuleDescription, datasource, (ClassInfo) target, applicationClasses);
+                    this.processMailSession(eeModuleDescription, mailSession, (ClassInfo) target);
                 }
             }
         }
 
-        // @DataSourceDefinition
-        List<AnnotationInstance> datasources = index.getAnnotations(MAIL_SESSION_DEFINITION);
-        if (datasources != null) {
-            for (AnnotationInstance datasource : datasources) {
-                final AnnotationTarget target = datasource.target();
+        // @MailSessionDefinition
+        List<AnnotationInstance> mailSessions = index.getAnnotations(MAIL_SESSION_DEFINITION);
+        if (mailSessions != null) {
+            for (AnnotationInstance mailSession : mailSessions) {
+                final AnnotationTarget target = mailSession.target();
                 if (!(target instanceof ClassInfo)) {
                     throw MESSAGES.classOnlyAnnotation("@MailSessionDefinition", target);
                 }
                 // create binding configurations out of it
-                this.processDataSourceDefinition(eeModuleDescription, datasource, (ClassInfo) target, applicationClasses);
+                this.processMailSession(eeModuleDescription, mailSession, (ClassInfo) target);
             }
         }
     }
@@ -104,9 +102,9 @@ public class MailSessionDefinitionAnnotationParser implements DeploymentUnitProc
     public void undeploy(DeploymentUnit context) {
     }
 
-    private void processDataSourceDefinition(final EEModuleDescription eeModuleDescription, final AnnotationInstance datasourceDefinition, final ClassInfo targetClass, final EEApplicationClasses applicationClasses) throws DeploymentUnitProcessingException {
-        // create BindingConfiguration out of the @DataSource annotation
-        final BindingConfiguration bindingConfiguration = this.getBindingConfiguration(datasourceDefinition);
+    private void processMailSession(final EEModuleDescription eeModuleDescription, final AnnotationInstance mailSessionDefinition, final ClassInfo targetClass) throws DeploymentUnitProcessingException {
+        // create BindingConfiguration out of the @MailSessionDefinition annotation
+        final BindingConfiguration bindingConfiguration = this.getBindingConfiguration(mailSessionDefinition);
         EEModuleClassDescription classDescription = eeModuleDescription.addOrGetLocalClassDescription(targetClass.name().toString());
         // add the binding configuration via a class configurator
         classDescription.getBindingConfigurations().add(bindingConfiguration);
@@ -120,11 +118,11 @@ public class MailSessionDefinitionAnnotationParser implements DeploymentUnitProc
         }
 
         /*String storeProtocol() default "";
-                    String transportProtocol() default "";
-                    String host() default "";
-                    String user() default "";
-                    String password() default "";
-                    String from() default "";*/
+        String transportProtocol() default "";
+        String host() default "";
+        String user() default "";
+        String password() default "";
+        String from() default "";*/
 
         MailSessionMetaData metaData = new MailSessionMetaData();
         metaData.setTransportProtocol(asString(annotationInstance, "transportProtocol"));
@@ -139,7 +137,7 @@ public class MailSessionDefinitionAnnotationParser implements DeploymentUnitProc
 
         for (String fullProp : asArray(annotationInstance, "properties")) {
             PropertyMetaData p = new PropertyMetaData();
-            String[] prop = fullProp.split("\\\\=");
+            String[] prop = fullProp.split("=", 2);
             p.setName(prop[0]);
             p.setValue(prop[1]);
             metaData.getProperties().add(p);
@@ -165,7 +163,7 @@ public class MailSessionDefinitionAnnotationParser implements DeploymentUnitProc
      * Returns the nested {@link MailSessionDefinition} annotations out of the outer {@link MailSessionDefinitions} annotation
      *
      * @param mailSessionDefinitions The outer {@link MailSessionDefinitions} annotation
-     * @return
+     * @return annotations
      */
     private List<AnnotationInstance> getNestedMailSessionAnnotations(AnnotationInstance mailSessionDefinitions) {
         if (mailSessionDefinitions == null) {

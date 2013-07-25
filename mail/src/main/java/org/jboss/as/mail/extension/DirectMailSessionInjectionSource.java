@@ -44,9 +44,9 @@ import org.jboss.msc.service.ServiceTarget;
 
 
 /**
- * A binding description for DataSourceDefinition annotations.
+ * A binding description for {@link MailSessionDefinition} annotations.
  * <p/>
- * The referenced datasource must be directly visible to the
+ * The referenced mail session must be directly visible to the
  * component declaring the annotation.
  *
  * @author Tomaz Cerar
@@ -68,24 +68,24 @@ class DirectMailSessionInjectionSource extends InjectionSource {
 
         try {
             MailSessionService mailSessionService = new DirectMailSessionService(provider);
-            startDataSource(mailSessionService, jndiName, eeModuleDescription, context, phaseContext.getServiceTarget(), serviceBuilder, injector);
+            startMailSession(mailSessionService, jndiName, eeModuleDescription, context, phaseContext.getServiceTarget(), serviceBuilder, injector);
 
         } catch (Exception e) {
             throw new DeploymentUnitProcessingException(e);
         }
     }
 
-    private void startDataSource(final MailSessionService mailSessionService,
-                                 final String jndiName,
-                                 final EEModuleDescription moduleDescription,
-                                 final ResolutionContext context,
-                                 final ServiceTarget serviceTarget,
-                                 final ServiceBuilder valueSourceServiceBuilder, final Injector<ManagedReferenceFactory> injector) {
+    private void startMailSession(final MailSessionService mailSessionService,
+                                  final String jndiName,
+                                  final EEModuleDescription moduleDescription,
+                                  final ResolutionContext context,
+                                  final ServiceTarget serviceTarget,
+                                  final ServiceBuilder valueSourceServiceBuilder, final Injector<ManagedReferenceFactory> injector) {
 
 
-        final ServiceName dataSourceServiceName = MailSessionAdd.MAIL_SESSION_SERVICE_NAME.append("MailSessionDefinition", moduleDescription.getApplicationName(), moduleDescription.getModuleName(), jndiName);
-        final ServiceBuilder<?> dataSourceServiceBuilder = serviceTarget
-                .addService(dataSourceServiceName, mailSessionService);
+        final ServiceName mailSessionServiceName = MailSessionAdd.MAIL_SESSION_SERVICE_NAME.append("MailSessionDefinition", moduleDescription.getApplicationName(), moduleDescription.getModuleName(), jndiName);
+        final ServiceBuilder<?> mailSessionServiceBuilder = serviceTarget
+                .addService(mailSessionServiceName, mailSessionService);
 
         final ContextNames.BindInfo bindInfo = ContextNames.bindInfoForEnvEntry(context.getApplicationName(), context.getModuleName(), context.getComponentName(), !context.isCompUsesModule(), jndiName);
 
@@ -114,7 +114,7 @@ class DirectMailSessionInjectionSource extends InjectionSource {
                     }
                 });
 
-        dataSourceServiceBuilder.setInitialMode(ServiceController.Mode.ACTIVE).install();
+        mailSessionServiceBuilder.setInitialMode(ServiceController.Mode.ACTIVE).install();
         binderBuilder.setInitialMode(ServiceController.Mode.ACTIVE).install();
 
         valueSourceServiceBuilder.addDependency(bindInfo.getBinderServiceName(), ManagedReferenceFactory.class, injector);
