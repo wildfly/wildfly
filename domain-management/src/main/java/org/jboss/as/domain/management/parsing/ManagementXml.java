@@ -2663,7 +2663,7 @@ public class ManagementXml {
     }
 
     private static void writePrincipal(XMLExtendedStreamWriter writer, ModelNode principal) throws XMLStreamException {
-        String elementName = principal.require(TYPE).asString().equals(GROUP) ? Element.GROUP.getLocalName() : Element.USER.getLocalName();
+        String elementName = principal.require(TYPE).asString().equalsIgnoreCase(GROUP) ? Element.GROUP.getLocalName() : Element.USER.getLocalName();
         writer.writeStartElement(elementName);
         PrincipalResourceDefinition.REALM.marshallAsAttribute(principal, writer);
         PrincipalResourceDefinition.NAME.marshallAsAttribute(principal, writer);

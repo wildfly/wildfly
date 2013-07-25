@@ -25,13 +25,12 @@ package org.jboss.as.domain.management.access;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.EXCLUDE;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.INCLUDE;
 
-import org.jboss.as.controller.ModelOnlyWriteAttributeHandler;
-import org.jboss.as.controller.OperationStepHandler;
 import org.jboss.as.controller.PathElement;
 import org.jboss.as.controller.SimpleAttributeDefinition;
 import org.jboss.as.controller.SimpleAttributeDefinitionBuilder;
 import org.jboss.as.controller.SimpleResourceDefinition;
 import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
+import org.jboss.as.controller.operations.validation.EnumValidator;
 import org.jboss.as.controller.registry.ManagementResourceRegistration;
 import org.jboss.as.domain.management._private.DomainManagementResolver;
 import org.jboss.dmr.ModelType;
@@ -43,7 +42,13 @@ import org.jboss.dmr.ModelType;
  */
 public class PrincipalResourceDefinition extends SimpleResourceDefinition {
 
+    public enum Type {
+        GROUP,
+        USER
+    }
+
     public static final SimpleAttributeDefinition TYPE = new SimpleAttributeDefinitionBuilder(ModelDescriptionConstants.TYPE, ModelType.STRING, false)
+            .setValidator(new EnumValidator<>(Type.class, false, false))
             .build();
 
     public static final SimpleAttributeDefinition REALM = new SimpleAttributeDefinitionBuilder(ModelDescriptionConstants.REALM, ModelType.STRING, true)
@@ -67,10 +72,9 @@ public class PrincipalResourceDefinition extends SimpleResourceDefinition {
 
     @Override
     public void registerAttributes(ManagementResourceRegistration resourceRegistration) {
-        OperationStepHandler writeHandler = new ModelOnlyWriteAttributeHandler(TYPE, REALM, NAME);
-        resourceRegistration.registerReadWriteAttribute(TYPE, null, writeHandler); // TODO - This will need validating to ensure it is only group or user.
-        resourceRegistration.registerReadWriteAttribute(REALM, null, writeHandler);
-        resourceRegistration.registerReadWriteAttribute(NAME, null, writeHandler);
+        resourceRegistration.registerReadOnlyAttribute(TYPE, null);
+        resourceRegistration.registerReadOnlyAttribute(REALM, null);
+        resourceRegistration.registerReadOnlyAttribute(NAME, null);
     }
 
 }
