@@ -50,7 +50,7 @@ public interface Evictor<K> {
 
         @Override
         public Boolean invoke(Cache<K, V> cache) {
-            boolean locked = cache.getAdvancedCache().lock(Collections.singleton(key));
+            boolean locked = cache.getAdvancedCache().lock(Collections.singleton(this.key));
             if (locked) {
                 cache.getAdvancedCache().withFlags(Flag.SKIP_LOCKING).evict(this.key);
             }

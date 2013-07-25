@@ -17,7 +17,7 @@ import org.wildfly.clustering.web.session.Session;
 
 public class SessionEvictionSchedulerTestCase {
     @Test
-    public void test() throws InterruptedException {
+    public void test() {
         String evictedSessionId = "evicted";
         String activeSessionId = "active";
         Session<Void> evictedSession = mock(Session.class);

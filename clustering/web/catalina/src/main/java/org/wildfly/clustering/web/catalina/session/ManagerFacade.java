@@ -21,7 +21,6 @@
  */
 package org.wildfly.clustering.web.catalina.session;
 
-import java.io.IOException;
 import java.util.AbstractMap;
 import java.util.HashMap;
 import java.util.Map;
@@ -30,7 +29,6 @@ import java.util.concurrent.TimeUnit;
 
 import org.apache.catalina.Context;
 import org.apache.catalina.Lifecycle;
-import org.apache.catalina.LifecycleException;
 import org.apache.catalina.LifecycleListener;
 import org.apache.catalina.session.ManagerBase;
 import org.apache.catalina.util.LifecycleSupport;
@@ -76,7 +74,7 @@ public class ManagerFacade extends ManagerBase implements Lifecycle, RoutingSupp
     }
 
     @Override
-    public synchronized void start() throws LifecycleException {
+    public synchronized void start() {
         // JBoss Web likes to start the manager both when it is set in the context and again when the context is started
         // so we need to defend against sloppy lifecycle behavior
         if (this.started) return;
@@ -89,7 +87,7 @@ public class ManagerFacade extends ManagerBase implements Lifecycle, RoutingSupp
     }
 
     @Override
-    public synchronized void stop() throws LifecycleException {
+    public synchronized void stop() {
         if (!this.started) return;
 
         this.manager.stop();
@@ -138,12 +136,12 @@ public class ManagerFacade extends ManagerBase implements Lifecycle, RoutingSupp
     }
 
     @Override
-    public void load() throws ClassNotFoundException, IOException {
+    public void load() {
         // Do nothing
     }
 
     @Override
-    public void unload() throws IOException {
+    public void unload() {
         // Do nothing
     }
 
