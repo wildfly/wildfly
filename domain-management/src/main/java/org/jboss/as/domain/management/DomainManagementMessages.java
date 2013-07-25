@@ -88,8 +88,8 @@ public interface DomainManagementMessages {
      *
      * @return an {@link IllegalStateException} for the error.
      */
-    @Message(id = 15223, value = "No authentication mechanism defined in security realm.")
-    IllegalStateException noAuthenticationDefined();
+    //@Message(id = 15223, value = "No authentication mechanism defined in security realm.")
+    //IllegalStateException noAuthenticationDefined();
 
     /**
      * Creates an exception indicating no username was provided.
@@ -182,8 +182,8 @@ public interface DomainManagementMessages {
      *
      * @return a {@link String} for the message.
      */
-    @Message(id = 15233, value = "JBOSS_HOME environment variable not set.")
-    String jbossHomeNotSet();
+    //@Message(id = 15233, value = "JBOSS_HOME environment variable not set.")
+    //String jbossHomeNotSet();
 
     /**
      * A message indicating no mgmt-users.properties have been found.
@@ -454,8 +454,8 @@ public interface DomainManagementMessages {
      *
      * @param count - The number of RealmUser instances found.
      */
-    @Message(id = 15250, value = "An unexpected number (%d) of RealmUsers are associated with the SecurityContext.")
-    String unexpectedNumberOfRealmUsers(int count);
+    //@Message(id = 15250, value = "An unexpected number (%d) of RealmUsers are associated with the SecurityContext.")
+    //String unexpectedNumberOfRealmUsers(int count);
 
     /**
      * Prompt for the file to update in add-users
@@ -513,8 +513,6 @@ public interface DomainManagementMessages {
      */
     @Message(id = Message.NONE, value = "Updated user '%s' to file '%s'")
     String updateUser(String userName, String canonicalPath);
-
-
 
     /**
      * The error message if updating user to the file fails.

@@ -65,6 +65,7 @@ import org.jboss.as.controller.access.Action;
 import org.jboss.as.controller.access.Action.ActionEffect;
 import org.jboss.as.controller.access.AuthorizationResponse;
 import org.jboss.as.controller.access.AuthorizationResult;
+import org.jboss.as.controller.access.Caller;
 import org.jboss.as.controller.access.constraint.management.AccessConstraintDefinition;
 import org.jboss.as.controller.client.MessageSeverity;
 import org.jboss.as.controller.client.OperationAttachments;
@@ -532,6 +533,12 @@ public abstract class AbstractOperationTestCase {
                     return AuthorizationResult.PERMITTED;
                 }
             };
+        }
+
+        @Override
+        public Caller getCaller() {
+            // TODO Auto-generated method stub
+            return null;
         }
     }
 

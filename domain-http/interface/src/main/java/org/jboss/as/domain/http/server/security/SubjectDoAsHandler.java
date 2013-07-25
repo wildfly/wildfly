@@ -21,6 +21,11 @@
  */
 package org.jboss.as.domain.http.server.security;
 
+import java.security.PrivilegedActionException;
+import java.security.PrivilegedExceptionAction;
+
+import javax.security.auth.Subject;
+
 import io.undertow.security.api.SecurityContext;
 import io.undertow.security.idm.Account;
 import io.undertow.server.HttpHandler;
@@ -31,27 +36,44 @@ import io.undertow.server.HttpServerExchange;
  *
  * @author <a href="mailto:darran.lofthouse@jboss.com">Darran Lofthouse</a>
  */
-public class SubjectAssociationHandler implements HttpHandler {
+public class SubjectDoAsHandler implements HttpHandler {
 
     private final HttpHandler wrapped;
 
-    public SubjectAssociationHandler(final HttpHandler toWrap) {
+    public SubjectDoAsHandler(final HttpHandler toWrap) {
         this.wrapped = toWrap;
     }
 
     @Override
     public void handleRequest(HttpServerExchange exchange) throws Exception {
         SecurityContext securityContext = exchange.getAttachment(SecurityContext.ATTACHMENT_KEY);
-        try {
-            if (securityContext != null) {
-                Account account = securityContext.getAuthenticatedAccount();
-                if (account instanceof SubjectAccount) {
-                    SecurityActions.setSecurityContextSubject(((SubjectAccount) account).getSubject());
-                }
+        Subject subject = null;
+        if (securityContext != null) {
+            Account account = securityContext.getAuthenticatedAccount();
+            if (account instanceof SubjectAccount) {
+                subject = ((SubjectAccount) account).getSubject();
             }
+        }
+        handleRequest(exchange, subject);
+    }
+
+    void handleRequest(final HttpServerExchange exchange, final Subject subject) throws Exception {
+        if (subject != null) {
+            try {
+                Subject.doAs(subject, new PrivilegedExceptionAction<Void>() {
+
+                    @Override
+                    public Void run() throws Exception {
+                        wrapped.handleRequest(exchange);
+                        return null;
+                    }
+
+                });
+            } catch (PrivilegedActionException e) {
+                throw e.getException();
+            }
+        } else {
             wrapped.handleRequest(exchange);
-        } finally {
-            SecurityActions.clearSubjectSecurityContext();
         }
     }
 

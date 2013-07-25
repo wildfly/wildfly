@@ -21,12 +21,14 @@
  */
 package org.jboss.as.domain.management.security;
 
+import java.nio.file.attribute.GroupPrincipal;
+
 /**
  * A {@link Principal} used to represent an authenticated identities group membership.
  *
  * @author <a href="mailto:darran.lofthouse@jboss.com">Darran Lofthouse</a>
  */
-public final class RealmGroup extends AbstractRealmPrincipal {
+public final class RealmGroup extends AbstractRealmPrincipal implements GroupPrincipal {
 
     public RealmGroup(String realm, String name) {
         super(realm, name);

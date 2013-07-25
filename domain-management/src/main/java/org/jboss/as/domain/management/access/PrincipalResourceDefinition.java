@@ -25,14 +25,20 @@ package org.jboss.as.domain.management.access;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.EXCLUDE;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.INCLUDE;
 
+import org.jboss.as.controller.OperationContext;
+import org.jboss.as.controller.OperationFailedException;
+import org.jboss.as.controller.OperationStepHandler;
 import org.jboss.as.controller.PathElement;
 import org.jboss.as.controller.SimpleAttributeDefinition;
 import org.jboss.as.controller.SimpleAttributeDefinitionBuilder;
 import org.jboss.as.controller.SimpleResourceDefinition;
+import org.jboss.as.controller.access.rbac.ConfigurableRoleMapper;
+import org.jboss.as.controller.access.rbac.ConfigurableRoleMapper.PrincipalType;
 import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
 import org.jboss.as.controller.operations.validation.EnumValidator;
 import org.jboss.as.controller.registry.ManagementResourceRegistration;
 import org.jboss.as.domain.management._private.DomainManagementResolver;
+import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.ModelType;
 
 /**
@@ -43,31 +49,31 @@ import org.jboss.dmr.ModelType;
 public class PrincipalResourceDefinition extends SimpleResourceDefinition {
 
     public enum Type {
-        GROUP,
-        USER
+        GROUP, USER
     }
 
-    public static final SimpleAttributeDefinition TYPE = new SimpleAttributeDefinitionBuilder(ModelDescriptionConstants.TYPE, ModelType.STRING, false)
-            .setValidator(new EnumValidator<>(Type.class, false, false))
-            .build();
+    public static final SimpleAttributeDefinition TYPE = new SimpleAttributeDefinitionBuilder(ModelDescriptionConstants.TYPE,
+            ModelType.STRING, false).setValidator(new EnumValidator<>(Type.class, false, false)).build();
 
-    public static final SimpleAttributeDefinition REALM = new SimpleAttributeDefinitionBuilder(ModelDescriptionConstants.REALM, ModelType.STRING, true)
-            .build();
+    public static final SimpleAttributeDefinition REALM = new SimpleAttributeDefinitionBuilder(ModelDescriptionConstants.REALM,
+            ModelType.STRING, true).build();
 
-    public static final SimpleAttributeDefinition NAME = new SimpleAttributeDefinitionBuilder(ModelDescriptionConstants.NAME, ModelType.STRING, false)
-            .build();
+    public static final SimpleAttributeDefinition NAME = new SimpleAttributeDefinitionBuilder(ModelDescriptionConstants.NAME,
+            ModelType.STRING, false).build();
 
-    private PrincipalResourceDefinition(final PathElement pathElement) {
-        super(pathElement, DomainManagementResolver.getResolver("core.access-control.role-mapping.principal"),
-                PrincipalAdd.INSTANCE, PrincipalRemove.INSTANCE);
+    private PrincipalResourceDefinition(final PathElement pathElement, final OperationStepHandler add,
+            final OperationStepHandler remove) {
+        super(pathElement, DomainManagementResolver.getResolver("core.access-control.role-mapping.principal"), add, remove);
     }
 
-    static PrincipalResourceDefinition includeResourceDefinition() {
-        return new PrincipalResourceDefinition(PathElement.pathElement(INCLUDE));
+    static PrincipalResourceDefinition includeResourceDefinition(final ConfigurableRoleMapper roleMapper) {
+        return new PrincipalResourceDefinition(PathElement.pathElement(INCLUDE), PrincipalAdd.createForInclude(roleMapper),
+                PrincipalRemove.createForInclude(roleMapper));
     }
 
-    static PrincipalResourceDefinition excludeResourceDefinition() {
-        return new PrincipalResourceDefinition(PathElement.pathElement(EXCLUDE));
+    static PrincipalResourceDefinition excludeResourceDefinition(final ConfigurableRoleMapper roleMapper) {
+        return new PrincipalResourceDefinition(PathElement.pathElement(EXCLUDE), PrincipalAdd.createForExclude(roleMapper),
+                PrincipalRemove.createForExclude(roleMapper));
     }
 
     @Override
@@ -75,6 +81,24 @@ public class PrincipalResourceDefinition extends SimpleResourceDefinition {
         resourceRegistration.registerReadOnlyAttribute(TYPE, null);
         resourceRegistration.registerReadOnlyAttribute(REALM, null);
         resourceRegistration.registerReadOnlyAttribute(NAME, null);
+    }
+
+    static ConfigurableRoleMapper.PrincipalType getPrincipalType(final OperationContext context, final ModelNode model)
+            throws OperationFailedException {
+        return PrincipalType.valueOf(TYPE.resolveValue(context, model.get(TYPE.getName())).asString());
+    }
+
+    static String getRealm(final OperationContext context, final ModelNode model) throws OperationFailedException {
+        ModelNode value;
+        if ((value = model.get(REALM.getName())).isDefined()) {
+            return REALM.resolveValue(context, value).asString();
+        } else {
+            return null;
+        }
+    }
+
+    static String getName(final OperationContext context, final ModelNode model) throws OperationFailedException {
+        return NAME.resolveValue(context, model.get(NAME.getName())).asString();
     }
 
 }

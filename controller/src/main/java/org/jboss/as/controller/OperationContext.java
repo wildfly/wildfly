@@ -28,6 +28,7 @@ import java.util.Set;
 import org.jboss.as.controller.access.Action;
 import org.jboss.as.controller.access.AuthorizationResponse;
 import org.jboss.as.controller.access.AuthorizationResult;
+import org.jboss.as.controller.access.Caller;
 import org.jboss.as.controller.client.MessageSeverity;
 import org.jboss.as.controller.registry.ImmutableManagementResourceRegistration;
 import org.jboss.as.controller.registry.ManagementResourceRegistration;
@@ -676,6 +677,13 @@ public interface OperationContext extends ExpressionResolver {
 
     //TODO javadoc operations
     AuthorizationResult authorizeOperation(ModelNode operation, boolean access);
+
+    /**
+     * Obtain the {@link Caller} for the current request.
+     *
+     * @return The current caller.
+     */
+    Caller getCaller();
 
     /**
      * The stage at which a step should apply.

@@ -1110,11 +1110,6 @@ final class OperationContextImpl extends AbstractOperationContext {
         return Collections.emptySet();
     }
 
-    private Caller getCaller() {
-        // TODO implement
-        return null;
-    }
-
     private Resource getAuthorizationResource(PathAddress address) {
         Resource model = this.model;
         final Iterator<PathElement> iterator = address.iterator();

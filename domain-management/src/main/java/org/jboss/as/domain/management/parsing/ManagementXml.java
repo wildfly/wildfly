@@ -2237,15 +2237,20 @@ public class ManagementXml {
         boolean hasConnection = management.hasDefined(LDAP_CONNECTION);
         boolean hasInterface = allowInterfaces && management.hasDefined(MANAGEMENT_INTERFACE);
 
+        // TODO - These checks are going to become a source of bugs in certain cases - what we really need is a way to allow writing to continue and
+        // if an element is empty by the time it is closed then undo the write of that element.
+
         ModelNode accessAuthorization = management.hasDefined(ACCESS) ? management.get(ACCESS, AUTHORIZATION) : null;
         boolean accessAuthorizationDefined = accessAuthorization != null && accessAuthorization.isDefined();
         boolean hasServerGroupRoles = accessAuthorizationDefined && accessAuthorization.hasDefined(SERVER_GROUP_SCOPED_ROLE);
         boolean hasHostRoles = accessAuthorizationDefined && (accessAuthorization.hasDefined(HOST_SCOPED_ROLE) || accessAuthorization.hasDefined(HOST_SCOPED_ROLES));
         boolean hasRoleMapping = accessAuthorizationDefined && accessAuthorization.hasDefined(ROLE_MAPPING);
         Map<String, Map<String, Set<String>>> configuredAccessConstraints = getConfiguredAccessConstraints(accessAuthorization);
+        boolean hasUseRealmRoles = accessAuthorizationDefined && accessAuthorization.hasDefined(AccessAuthorizationResourceDefinition.USE_REALM_ROLES.getName());
+        boolean hasProvider = accessAuthorizationDefined && accessAuthorization.hasDefined(AccessAuthorizationResourceDefinition.PROVIDER.getName());
 
         if (!hasSecurityRealm && !hasConnection && !hasInterface && !hasServerGroupRoles
-              && !hasHostRoles && !hasRoleMapping && configuredAccessConstraints.size() == 0) {
+              && !hasHostRoles && !hasRoleMapping && configuredAccessConstraints.size() == 0 && !hasProvider && !hasUseRealmRoles) {
             return;
         }
 
@@ -2278,9 +2283,10 @@ public class ManagementXml {
         boolean hasHostRoles = accessAuthorization.hasDefined(HOST_SCOPED_ROLE) || accessAuthorization.hasDefined(HOST_SCOPED_ROLES);
         boolean hasRoleMapping = accessAuthorization.hasDefined(ROLE_MAPPING);
         Map<String, Map<String, Set<String>>> configuredAccessConstraints = getConfiguredAccessConstraints(accessAuthorization);
+        boolean hasUseRealmRoles = accessAuthorization.hasDefined(AccessAuthorizationResourceDefinition.USE_REALM_ROLES.getName());
         boolean hasProvider = accessAuthorization.hasDefined(AccessAuthorizationResourceDefinition.PROVIDER.getName());
 
-        if (!hasProvider && !hasServerGroupRoles && !hasHostRoles && !hasRoleMapping && configuredAccessConstraints.size() == 0) {
+        if (!hasProvider && !hasUseRealmRoles && !hasServerGroupRoles && !hasHostRoles && !hasRoleMapping && configuredAccessConstraints.size() == 0) {
             return;
         }
 
@@ -2302,7 +2308,7 @@ public class ManagementXml {
             }
         }
 
-        if (hasRoleMapping) {
+        if (hasUseRealmRoles || hasRoleMapping) {
             writeRoleMapping(writer, accessAuthorization);
         }
 
@@ -2627,25 +2633,29 @@ public class ManagementXml {
         return configuredConstraints;
     }
 
-    private static void writeRoleMapping(XMLExtendedStreamWriter writer, ModelNode accessAuthorization) throws XMLStreamException {
+    private static void writeRoleMapping(XMLExtendedStreamWriter writer, ModelNode accessAuthorization)
+            throws XMLStreamException {
         writer.writeStartElement(Element.ROLE_MAPPING.getLocalName());
 
-        ModelNode roleMappings = accessAuthorization.get(ROLE_MAPPING);
         AccessAuthorizationResourceDefinition.USE_REALM_ROLES.marshallAsAttribute(accessAuthorization, writer);
 
-        for (Property variable : roleMappings.asPropertyList()) {
-            writer.writeStartElement(Element.ROLE.getLocalName());
-            writeAttribute(writer, Attribute.NAME, variable.getName());
-            ModelNode role = variable.getValue();
-            if (role.hasDefined(INCLUDE)) {
-                writeIncludeExclude(writer, Element.INCLUDE.getLocalName(), role.get(INCLUDE));
-            }
+        if (accessAuthorization.hasDefined(ROLE_MAPPING)) {
+            ModelNode roleMappings = accessAuthorization.get(ROLE_MAPPING);
 
-            if (role.hasDefined(EXCLUDE)) {
-                writeIncludeExclude(writer, Element.EXCLUDE.getLocalName(), role.get(EXCLUDE));
-            }
+            for (Property variable : roleMappings.asPropertyList()) {
+                writer.writeStartElement(Element.ROLE.getLocalName());
+                writeAttribute(writer, Attribute.NAME, variable.getName());
+                ModelNode role = variable.getValue();
+                if (role.hasDefined(INCLUDE)) {
+                    writeIncludeExclude(writer, Element.INCLUDE.getLocalName(), role.get(INCLUDE));
+                }
 
-            writer.writeEndElement();
+                if (role.hasDefined(EXCLUDE)) {
+                    writeIncludeExclude(writer, Element.EXCLUDE.getLocalName(), role.get(EXCLUDE));
+                }
+
+                writer.writeEndElement();
+            }
         }
 
         writer.writeEndElement();

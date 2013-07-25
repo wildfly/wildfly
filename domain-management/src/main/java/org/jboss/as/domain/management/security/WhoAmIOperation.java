@@ -31,7 +31,6 @@ import static org.jboss.as.domain.management.ModelDescriptionConstants.USERNAME;
 import static org.jboss.as.domain.management.ModelDescriptionConstants.WHOAMI;
 
 import java.util.Set;
-import javax.security.auth.Subject;
 
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
@@ -40,6 +39,7 @@ import org.jboss.as.controller.SimpleAttributeDefinition;
 import org.jboss.as.controller.SimpleAttributeDefinitionBuilder;
 import org.jboss.as.controller.SimpleOperationDefinition;
 import org.jboss.as.controller.SimpleOperationDefinitionBuilder;
+import org.jboss.as.controller.access.Caller;
 import org.jboss.as.controller.descriptions.common.ControllerResolver;
 import org.jboss.as.domain.management.ModelDescriptionConstants;
 import org.jboss.dmr.ModelNode;
@@ -76,39 +76,33 @@ public class WhoAmIOperation implements OperationStepHandler {
     public void execute(OperationContext context, ModelNode operation) throws OperationFailedException {
         boolean verbose = VERBOSE.resolveModelAttribute(context, operation).asBoolean();
 
-        Subject subject = SecurityActions.getSecurityContextSubject();
-        if (subject == null) {
+        Caller caller = context.getCaller();
+        if (caller == null) {
             throw new OperationFailedException(new ModelNode().set(MESSAGES.noSecurityContextEstablished()));
         }
 
-        Set<RealmUser> realmUsers = subject.getPrincipals(RealmUser.class);
-        if (realmUsers.size() != 1) {
-            throw new OperationFailedException(new ModelNode().set(MESSAGES.unexpectedNumberOfRealmUsers(realmUsers.size())));
-        }
-
-        RealmUser user = realmUsers.iterator().next();
         ModelNode result = context.getResult();
         ModelNode identity = result.get(IDENTITY);
-        identity.get(USERNAME).set(user.getName());
-        String realm = user.getRealm();
+        identity.get(USERNAME).set(caller.getName());
+        String realm = caller.getRealm();
         if (realm != null) {
             identity.get(REALM).set(realm);
         }
 
         if (verbose) {
-            Set<RealmGroup> groupSet = subject.getPrincipals(RealmGroup.class);
+            Set<String> groupSet = caller.getAssociatedGroups();
             if (groupSet.size() > 0) {
                 ModelNode groups = result.get(GROUPS);
-                for (RealmGroup current : groupSet) {
-                    groups.add(current.getName());
+                for (String current : groupSet) {
+                    groups.add(current);
                 }
             }
 
-            Set<RealmRole> roleSet = subject.getPrincipals(RealmRole.class);
+            Set<String> roleSet = caller.getAssociatedRoles();
             if (roleSet.size() > 0) {
                 ModelNode roles = result.get(ROLES);
-                for (RealmRole current : roleSet) {
-                    roles.add(current.getName());
+                for (String current : roleSet) {
+                    roles.add(current);
                 }
             }
         }

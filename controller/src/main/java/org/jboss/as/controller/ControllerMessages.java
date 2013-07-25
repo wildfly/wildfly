@@ -2668,5 +2668,11 @@ public interface ControllerMessages {
     @Message(id = 13457, value = "Users with multiple roles are not allowed")
     SecurityException illegalMultipleRoles();
 
+    @Message(id = 13458, value = "An unexpected number of AccountPrincipals %d have been found in the current Subject.")
+    IllegalStateException unexpectedAccountPrincipalCount(int count);
+
+    @Message(id = 13459, value = "Different realms '%s' '%s' found in single Subject")
+    IllegalStateException differentRealmsInSubject(String realmOne, String realmTwo);
+
     // 13499 IS END OF 134xx SERIES USABLE FOR NON-LOGGER MESSAGES
 }

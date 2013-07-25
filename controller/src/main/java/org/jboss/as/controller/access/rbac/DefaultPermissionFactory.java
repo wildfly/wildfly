@@ -94,11 +94,11 @@ public class DefaultPermissionFactory implements PermissionFactory {
         return getUserPermissions(roleMapper.mapRoles(caller, callEnvironment, action, target));
     }
 
-    private PermissionCollection getUserPermissions(Set<String> user) {
+    private PermissionCollection getUserPermissions(Set<String> roles) {
         configureRolePermissions();
         ManagementPermissionCollection simple = null;
         Map<Action.ActionEffect, CombinationManagementPermission> combined = null;
-        for (String roleName : user) {
+        for (String roleName : roles) {
             if (combinationPolicy == CombinationPolicy.REJECTING && simple != null) {
                 throw ControllerMessages.MESSAGES.illegalMultipleRoles();
             }

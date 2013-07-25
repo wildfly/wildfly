@@ -44,6 +44,7 @@ import org.jboss.as.controller.SimpleAttributeDefinitionBuilder;
 import org.jboss.as.controller.SimpleListAttributeDefinition;
 import org.jboss.as.controller.SimpleResourceDefinition;
 import org.jboss.as.controller.access.DelegatingConfigurableAuthorizer;
+import org.jboss.as.controller.access.rbac.ConfigurableRoleMapper;
 import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
 import org.jboss.as.controller.operations.validation.EnumValidator;
 import org.jboss.as.controller.parsing.Attribute;
@@ -89,10 +90,17 @@ public class AccessAuthorizationResourceDefinition extends SimpleResourceDefinit
             .build();
 
     public static final SimpleAttributeDefinition USE_REALM_ROLES = new SimpleAttributeDefinitionBuilder(ModelDescriptionConstants.USE_REALM_ROLES, ModelType.BOOLEAN, false)
-    .setDefaultValue(new ModelNode(false))
-    .setAllowExpression(true).build();
+            .setDefaultValue(new ModelNode(false))
+            .setAllowExpression(true).build();
 
     private final DelegatingConfigurableAuthorizer configurableAuthorizer;
+
+    /*
+     * Currently this needs to exist even if it is not currently being used so that even if the current provider is 'simple'
+     * updates to the ConfigurableRoleMapper will be in place should the provider be switched to 'rbac'.
+     */
+    private final ConfigurableRoleMapper roleMapper = new ConfigurableRoleMapper();
+
     private final boolean isDomain;
     private final boolean isHostController;
 
@@ -130,12 +138,11 @@ public class AccessAuthorizationResourceDefinition extends SimpleResourceDefinit
                 }
             });
         } else {
-            // Start as model updates only
-            resourceRegistration.registerReadWriteAttribute(USE_REALM_ROLES, null, new ModelOnlyWriteAttributeHandler(USE_REALM_ROLES));
+            resourceRegistration.registerReadWriteAttribute(USE_REALM_ROLES, null, new AccessAuthorizationUseRealmRolesWriteAttributeHandler(roleMapper));
         }
 
         if (!isDomain) {
-            resourceRegistration.registerReadWriteAttribute(PROVIDER, null, new AccessControlProviderWriteAttributeHander(configurableAuthorizer));
+            resourceRegistration.registerReadWriteAttribute(PROVIDER, null, new AccessAuthorizationProviderWriteAttributeHander(configurableAuthorizer, roleMapper));
         } else {
             // TODO handle managed domain
             resourceRegistration.registerReadWriteAttribute(PROVIDER, null, new ModelOnlyWriteAttributeHandler(PROVIDER));
@@ -146,7 +153,7 @@ public class AccessAuthorizationResourceDefinition extends SimpleResourceDefinit
     public void registerChildren(ManagementResourceRegistration resourceRegistration) {
         if (!isHostController) {
             // Role Mapping
-            resourceRegistration.registerSubModel(RoleMappingResourceDefinition.INSTANCE);
+            resourceRegistration.registerSubModel(RoleMappingResourceDefinition.create(roleMapper));
         }
 
         // Scoped roles

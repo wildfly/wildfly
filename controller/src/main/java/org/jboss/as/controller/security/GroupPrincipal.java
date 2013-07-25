@@ -20,24 +20,15 @@
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
 
-package org.jboss.as.controller.access.rbac;
+package org.jboss.as.controller.security;
 
-import java.util.Set;
-
-import org.jboss.as.controller.access.Action;
-import org.jboss.as.controller.access.Caller;
-import org.jboss.as.controller.access.Environment;
-import org.jboss.as.controller.access.TargetAttribute;
-import org.jboss.as.controller.access.TargetResource;
+import java.security.Principal;
 
 /**
- * Determines the set of roles applicable for a management request.
+ * An interfaces to be implemented by {@link Principal} instances that represent group membership.
  *
- * @author Brian Stansberry (c) 2013 Red Hat Inc.
+ * @author <a href="mailto:darran.lofthouse@jboss.com">Darran Lofthouse</a>
  */
-public interface RoleMapper {
-
-    Set<String> mapRoles(Caller caller, Environment callEnvironment, Action action, TargetAttribute attribute);
-    Set<String> mapRoles(Caller caller, Environment callEnvironment, Action action, TargetResource resource);
+public interface GroupPrincipal extends Principal {
 
 }

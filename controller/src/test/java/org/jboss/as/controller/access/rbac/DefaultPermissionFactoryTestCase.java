@@ -56,7 +56,7 @@ public class DefaultPermissionFactoryTestCase {
 
     @Before
     public void setUp() {
-        caller = new Caller();
+        //caller = new Caller();
         ControlledProcessState processState = new ControlledProcessState(false);
         processState.setRunning();
         environment = new Environment(processState, ProcessType.EMBEDDED_SERVER);

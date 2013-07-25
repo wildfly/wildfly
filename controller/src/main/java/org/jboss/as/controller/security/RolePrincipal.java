@@ -20,41 +20,15 @@
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
 
-package org.jboss.as.domain.http.server.security;
+package org.jboss.as.controller.security;
 
-import static java.security.AccessController.doPrivileged;
-
-import java.security.PrivilegedAction;
-
-import javax.security.auth.Subject;
-
-import org.jboss.as.controller.security.SecurityContext;
+import java.security.Principal;
 
 /**
- * Security Actions for classes in the org.jboss.as.domain.http.server.security package.
- *
- * No methods in this class are to be made public under any circumstances!
+ * An interfaces to be implemented by {@link Principal} instances that represent role assignment.
  *
  * @author <a href="mailto:darran.lofthouse@jboss.com">Darran Lofthouse</a>
  */
-class SecurityActions {
-
-    static void setSecurityContextSubject(final Subject subject) {
-        doPrivileged(new PrivilegedAction<Void>() {
-            public Void run() {
-                SecurityContext.setSubject(subject);
-                return null;
-            }
-        });
-    }
-
-    static void clearSubjectSecurityContext() {
-        doPrivileged(new PrivilegedAction<Void>() {
-            public Void run() {
-                SecurityContext.clearSubject();
-                return null;
-            }
-        });
-    }
+public interface RolePrincipal extends Principal {
 
 }

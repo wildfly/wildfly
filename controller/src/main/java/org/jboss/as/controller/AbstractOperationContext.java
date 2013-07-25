@@ -53,6 +53,7 @@ import java.util.Set;
 import java.util.concurrent.LinkedBlockingDeque;
 import java.util.concurrent.atomic.AtomicReference;
 
+import org.jboss.as.controller.access.Caller;
 import org.jboss.as.controller.client.MessageSeverity;
 import org.jboss.as.controller.persistence.ConfigurationPersistenceException;
 import org.jboss.as.controller.persistence.ConfigurationPersister;
@@ -96,6 +97,7 @@ abstract class AbstractOperationContext implements OperationContext {
     boolean cancelled;
     /** Currently executing step */
     Step activeStep;
+    Caller caller;
 
     enum ContextFlag {
         ROLLBACK_ON_FAIL, ALLOW_RESOURCE_SERVICE_RESTART,
@@ -706,6 +708,15 @@ abstract class AbstractOperationContext implements OperationContext {
     abstract void releaseStepLocks(Step step);
 
     abstract void waitForRemovals() throws InterruptedException;
+
+    public Caller getCaller() {
+        // TODO Consider threading but in general no harm in multiple instances being created rather than adding synchronization.
+        if (caller == null) {
+            caller = SecurityActions.createCaller();
+        }
+
+        return caller;
+    }
 
     class Step {
         private final OperationStepHandler handler;
