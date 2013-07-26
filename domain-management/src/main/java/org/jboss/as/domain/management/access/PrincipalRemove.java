@@ -43,6 +43,8 @@ public class PrincipalRemove implements OperationStepHandler {
     @Override
     public void execute(OperationContext context, ModelNode operation) throws OperationFailedException {
         context.removeResource(PathAddress.EMPTY_ADDRESS);
+
+        context.stepCompleted();
     }
 
 }
