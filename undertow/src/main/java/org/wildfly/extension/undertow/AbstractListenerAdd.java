@@ -68,9 +68,10 @@ abstract class AbstractListenerAdd extends AbstractAddStepHandler {
         String workerName = AbstractListenerResourceDefinition.WORKER.resolveModelAttribute(context, model).asString();
         String bufferPoolName = AbstractListenerResourceDefinition.BUFFER_POOL.resolveModelAttribute(context, model).asString();
         boolean enabled = AbstractListenerResourceDefinition.ENABLED.resolveModelAttribute(context, model).asBoolean();
+        long maxUploadSize = AbstractListenerResourceDefinition.MAX_POST_SIZE.resolveModelAttribute(context, model).asLong();
         String serverName = parent.getLastElement().getValue();
         if (enabled) {
-            final AbstractListenerService<? extends AbstractListenerService> service = createService(name, serverName, context, model);
+            final AbstractListenerService<? extends AbstractListenerService> service = createService(name, serverName, context, model, maxUploadSize);
             final ServiceBuilder<? extends AbstractListenerService> serviceBuilder = context.getServiceTarget().addService(constructServiceName(name), service);
             serviceBuilder.addDependency(IOServices.WORKER.append(workerName), XnioWorker.class, service.getWorker())
                     .addDependency(SocketBinding.JBOSS_BINDING_NAME.append(bindingRef), SocketBinding.class, service.getBinding())
@@ -88,7 +89,7 @@ abstract class AbstractListenerAdd extends AbstractAddStepHandler {
 
     abstract ServiceName constructServiceName(final String name);
 
-    abstract AbstractListenerService<? extends AbstractListenerService> createService(final String name, String serverName, final OperationContext context, ModelNode model) throws OperationFailedException;
+    abstract AbstractListenerService<? extends AbstractListenerService> createService(final String name, String serverName, final OperationContext context, ModelNode model, long maxUploadSize) throws OperationFailedException;
 
     abstract void configureAdditionalDependencies(OperationContext context, ServiceBuilder<? extends AbstractListenerService> serviceBuilder, ModelNode model, AbstractListenerService service) throws OperationFailedException;
 

@@ -65,6 +65,7 @@ public interface Constants {
     String ERROR_PAGES = "error-pages";
     String SIMPLE_ERROR_PAGE = "simple-error-page";
     String SCHEME = "scheme";
+    String MAX_POST_SIZE = "max-post-size";
     /*JSP config */
     String CHECK_INTERVAL = "check-interval";
     String CONTAINER = "container";
@@ -113,4 +114,5 @@ public interface Constants {
     String SECURE = "secure";
     String MAX_AGE = "max-age";
     String ALLOW_NON_STANDARD_WRAPPERS = "allow-non-standard-wrappers";
+
 }

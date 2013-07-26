@@ -45,8 +45,8 @@ public class HttpListenerAdd extends AbstractListenerAdd {
     }
 
     @Override
-    AbstractListenerService<? extends AbstractListenerService> createService(String name, final String serverName, final OperationContext context, ModelNode model) throws OperationFailedException {
-        return new HttpListenerService(name, serverName);
+    AbstractListenerService<? extends AbstractListenerService> createService(String name, final String serverName, final OperationContext context, ModelNode model, long maxUploadSize) throws OperationFailedException {
+        return new HttpListenerService(name, serverName, maxUploadSize);
     }
 
     @Override

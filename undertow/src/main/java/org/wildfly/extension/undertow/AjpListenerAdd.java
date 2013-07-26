@@ -42,9 +42,9 @@ class AjpListenerAdd extends AbstractListenerAdd {
     }
 
     @Override
-    AbstractListenerService<? extends AbstractListenerService> createService(String name, final String serverName, final OperationContext context, ModelNode model) throws OperationFailedException {
+    AbstractListenerService<? extends AbstractListenerService> createService(String name, final String serverName, final OperationContext context, ModelNode model, long maxUploadSize) throws OperationFailedException {
         String scheme = AjpListenerResourceDefinition.SCHEME.resolveModelAttribute(context, model).asString();
-        return new AjpListenerService(name, scheme);
+        return new AjpListenerService(name, scheme, maxUploadSize);
     }
 
     @Override
