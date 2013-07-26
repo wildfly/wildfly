@@ -40,6 +40,7 @@ import org.jboss.as.test.integration.jca.rar.MultipleConnectionFactory1;
 import org.jboss.as.test.integration.management.base.AbstractMgmtServerSetupTask;
 import org.jboss.as.test.shared.FileUtils;
 import org.jboss.dmr.ModelNode;
+import org.jboss.logging.Logger;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.exporter.ExplodedExporter;
 import org.jboss.shrinkwrap.api.exporter.ZipExporter;
@@ -51,8 +52,10 @@ import org.xnio.IoUtils;
  * AS7-5768 -Support for RA module deployment
  *
  * @author <a href="vrastsel@redhat.com">Vladimir Rastseluev</a>
+ * @author <a href="istudens@redhat.com">Ivo Studensky</a>
  */
 public abstract class AbstractModuleDeploymentTestCaseSetup extends AbstractMgmtServerSetupTask {
+    private static final Logger log = Logger.getLogger(AbstractModuleDeploymentTestCaseSetup.class);
 
     private static final Pattern MODULE_SLOT_PATTERN = Pattern.compile("slot=\"main\"");
 
@@ -92,26 +95,25 @@ public abstract class AbstractModuleDeploymentTestCaseSetup extends AbstractMgmt
                     deleteRecursively(new File(file, name));
                 }
             }
-            file.delete();
+            if (!file.delete()) {
+                log.warn("Could not delete " + file);
+            }
         }
     }
 
     private void createTestModule(String moduleXml) throws IOException {
-        if (testModuleRoot.exists()) {
-            throw new IllegalArgumentException(testModuleRoot
-                    + " already exists");
+        slot = new File(testModuleRoot, getSlot());
+        if (slot.exists()) {
+            throw new IllegalArgumentException(slot + " already exists");
         }
-        File file = new File(testModuleRoot, getSlot());
-        if (!file.mkdirs()) {
-            throw new IllegalArgumentException("Could not create " + file);
+        if (!slot.mkdirs()) {
+            throw new IllegalArgumentException("Could not create " + slot);
         }
-        slot = file;
         URL url = this.getClass().getResource(moduleXml);
         if (url == null) {
-            throw new IllegalStateException("Could not find module.xml");
+            throw new IllegalStateException("Could not find " + moduleXml);
         }
         copyModuleXml(slot, url.openStream());
-
     }
 
     protected void copyFile(File target, InputStream src) throws IOException {
@@ -196,7 +198,6 @@ public abstract class AbstractModuleDeploymentTestCaseSetup extends AbstractMgmt
             executeOperation(op);
         }
         //executeOperation(operationListToCompositeOperation(operations));
-
     }
 
     /**
@@ -206,7 +207,6 @@ public abstract class AbstractModuleDeploymentTestCaseSetup extends AbstractMgmt
      * @throws Exception
      */
     protected void fillModuleWithFlatClasses(String raFile) throws Exception {
-
         ResourceAdapterArchive rar = ShrinkWrap
                 .create(ResourceAdapterArchive.class);
         JavaArchive jar = ShrinkWrap.create(JavaArchive.class, "ra16out.jar");

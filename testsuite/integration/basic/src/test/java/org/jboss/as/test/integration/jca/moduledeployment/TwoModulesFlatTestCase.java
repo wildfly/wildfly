@@ -78,7 +78,7 @@ public class TwoModulesFlatTestCase extends TwoRaFlatTestCase {
 				String containerId) throws Exception {
 			super.tearDown(managementClient, containerId);
 			remove(address1);
-			removeModule("org/jboss/ironjacamar/ra16out1");
+			removeModule("org/jboss/ironjacamar/ra16out1", true);
 		}
 
         @Override
