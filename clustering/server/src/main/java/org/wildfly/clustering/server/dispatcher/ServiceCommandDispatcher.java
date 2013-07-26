@@ -185,7 +185,6 @@ public abstract class ServiceCommandDispatcher<C> implements CommandDispatcher<C
             for (int i = 0; i < excludedNodes.length; ++i) {
                 addresses[i] = this.registry.getAddress(excludedNodes[i]);
             }
-            System.out.println("Exclusion list: " + Arrays.asList(addresses));
             options.setExclusionList(addresses);
         }
         return options;
