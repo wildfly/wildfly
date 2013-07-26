@@ -57,10 +57,12 @@ public class HttpListenerService extends AbstractListenerService<HttpListenerSer
     static final ServiceName HTTP_UPGRADE_REGISTRY = ServiceName.JBOSS.append("http-upgrade-registry");
 
     private final String serverName;
+    private final long maxUploadSize;
 
-    public HttpListenerService(String name, final String serverName) {
+    public HttpListenerService(String name, final String serverName, long maxUploadSize) {
         super(name);
         this.serverName = serverName;
+        this.maxUploadSize = maxUploadSize;
         listenerHandlerWrappers.add(new HandlerWrapper() {
             @Override
             public HttpHandler wrap(final HttpHandler handler) {
@@ -93,7 +95,7 @@ public class HttpListenerService extends AbstractListenerService<HttpListenerSer
 
     protected void startListening(XnioWorker worker, InetSocketAddress socketAddress, ChannelListener<AcceptingChannel<StreamConnection>> acceptListener)
             throws IOException {
-        server = worker.createStreamConnectionServer(socketAddress, acceptListener, SERVER_OPTIONS);
+        server = worker.createStreamConnectionServer(socketAddress, acceptListener, OptionMap.builder().addAll(SERVER_OPTIONS).set(UndertowOptions.MAX_ENTITY_SIZE, maxUploadSize).getMap());
         server.resumeAccepts();
         UndertowLogger.ROOT_LOGGER.listenerStarted("HTTP", getName(), socketAddress);
     }

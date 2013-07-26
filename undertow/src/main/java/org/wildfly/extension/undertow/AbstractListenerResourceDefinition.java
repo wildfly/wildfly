@@ -64,7 +64,15 @@ abstract class AbstractListenerResourceDefinition extends PersistentResourceDefi
             .setDefaultValue(new ModelNode(true))
             .setAllowExpression(true)
             .build();
-    protected static AttributeDefinition[] ATTRIBUTES = {SOCKET_BINDING, WORKER, BUFFER_POOL, ENABLED};
+
+    protected static final SimpleAttributeDefinition MAX_POST_SIZE = new SimpleAttributeDefinitionBuilder(Constants.MAX_POST_SIZE, ModelType.LONG)
+            .setAllowNull(true)
+            .setFlags(AttributeAccess.Flag.RESTART_ALL_SERVICES)
+            .setDefaultValue(new ModelNode(0)) //10mb
+            .setAllowExpression(true)
+            .build();
+
+    protected static AttributeDefinition[] ATTRIBUTES = {SOCKET_BINDING, WORKER, BUFFER_POOL, ENABLED, MAX_POST_SIZE};
 
 
     public AbstractListenerResourceDefinition(PathElement pathElement) {

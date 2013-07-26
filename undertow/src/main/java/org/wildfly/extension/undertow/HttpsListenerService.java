@@ -29,6 +29,7 @@ import java.io.IOException;
 import java.net.InetSocketAddress;
 import javax.net.ssl.SSLContext;
 
+import io.undertow.UndertowOptions;
 import org.jboss.as.domain.management.AuthMechanism;
 import org.jboss.as.domain.management.SecurityRealm;
 import org.jboss.msc.value.InjectedValue;
@@ -54,9 +55,11 @@ public class HttpsListenerService extends HttpListenerService {
 
     private final InjectedValue<SecurityRealm> securityRealm = new InjectedValue<>();
     private volatile AcceptingChannel<SslConnection> sslServer;
+    private final long maxUploadSize;
 
-    public HttpsListenerService(final String name, String serverName) {
-        super(name, serverName);
+    public HttpsListenerService(final String name, String serverName, long maxUploadSize) {
+        super(name, serverName, maxUploadSize);
+        this.maxUploadSize = maxUploadSize;
     }
 
     @Override
@@ -64,6 +67,7 @@ public class HttpsListenerService extends HttpListenerService {
 
         SSLContext sslContext = securityRealm.getValue().getSSLContext();
         Builder builder = OptionMap.builder().addAll(SERVER_OPTIONS);
+        builder.set(UndertowOptions.MAX_ENTITY_SIZE, maxUploadSize);
         if (securityRealm.getValue().getSupportedAuthenticationMechanisms().contains(AuthMechanism.CLIENT_CERT)) {
             builder.set(SSL_CLIENT_AUTH_MODE, REQUESTED);
         }
