@@ -29,6 +29,8 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 
+import static org.jboss.as.patching.Constants.BASE;
+
 /**
  * @author Jan Martiska
  */
@@ -147,6 +149,27 @@ public class CliUtilsForPatching {
     }
 
     /**
+     * Use CLI to get the cumulative patch id
+     *
+     * @return the current cumulative patch id (string)
+     * @throws Exception
+     */
+    public static String getCumulativePatchId() throws Exception {
+        CLIWrapper cli = null;
+        try {
+            cli = new CLIWrapper(true);
+            cli.sendLine("patch info");
+            String response = cli.readOutput();
+            ModelNode responseNode = ModelNode.fromJSONString(response);
+            return responseNode.get("result").get("cumulative-patch-id").asString();
+        } finally {
+            if (cli != null) {
+                cli.quit();
+            }
+        }
+    }
+
+    /**
      * Check if the server is in restart-required state, that means
      * management operation return "response-headers" : {"process-state" : "restart-required"}
      *
@@ -176,7 +199,60 @@ public class CliUtilsForPatching {
     }
 
     /**
-     * Rollback all installed patched
+     * Rollback all installed oneoffs, offline!!
+     *
+     * @return true if operation was successful or false if at least one rollback failed
+     * @throws Exception
+     */
+    public static boolean rollbackAllOneOffs() throws Exception {
+        CLIWrapper cli = null;
+        boolean success = true;
+        final String infoCommand = "patch info --distribution=%s";
+        final String rollbackCommand = "patch rollback --patch-id=%s --distribution=%s --reset-configuration=true";
+        try {
+            cli = new CLIWrapper(false);
+            cli.sendLine(String.format(infoCommand, PatchingTestUtil.AS_DISTRIBUTION));
+            String response = cli.readOutput();
+            ModelNode responseNode = ModelNode.fromJSONString(response);
+            List<ModelNode> patchesList = responseNode.get("result").get("patches").asList();
+            for (ModelNode n : patchesList) {
+                success = success && cli.sendLine(String.format(rollbackCommand, n.asString(), PatchingTestUtil.AS_DISTRIBUTION), true);
+            }
+            return success;
+        } finally {
+            if (cli != null) {
+                cli.quit();
+            }
+        }
+    }
+
+    /**
+     * Rollback cumulative patch, online!!
+     *
+     * @return true if operation was successful or false if at least one rollback failed
+     * @param resetConfiguration
+     * @throws Exception
+     */
+    public static boolean rollbackCumulativePatch(boolean resetConfiguration) throws Exception {
+        CLIWrapper cli = null;
+        final String infoCommand = "patch info --distribution=%s";
+        final String rollbackCommand = "patch rollback --patch-id=%s --distribution=%s --reset-configuration=%s";
+        try {
+            cli = new CLIWrapper(true);
+            cli.sendLine(String.format(infoCommand, PatchingTestUtil.AS_DISTRIBUTION));
+            String response = cli.readOutput();
+            ModelNode responseNode = ModelNode.fromJSONString(response);
+            String cumulativePatchId = responseNode.get("result").get("cumulative-patch-id").asString();
+            return cli.sendLine(String.format(rollbackCommand, cumulativePatchId, PatchingTestUtil.AS_DISTRIBUTION, resetConfiguration), true);
+        } finally {
+            if (cli != null) {
+                cli.quit();
+            }
+        }
+    }
+
+    /**
+     * Rollback cumulative patch and all picked up one-offs, offline
      *
      * @return true if operation was successful or false if at least one rollback failed
      * @throws Exception
@@ -191,8 +267,14 @@ public class CliUtilsForPatching {
             cli.sendLine(String.format(infoCommand, PatchingTestUtil.AS_DISTRIBUTION));
             String response = cli.readOutput();
             ModelNode responseNode = ModelNode.fromJSONString(response);
+            String cumulativePatchId = responseNode.get("result").get("cumulative-patch-id").asString();
+            if(!cumulativePatchId.equalsIgnoreCase(BASE)) {
+                success = success && cli.sendLine(String.format(rollbackCommand, cumulativePatchId, PatchingTestUtil.AS_DISTRIBUTION), true);
+            }
+            cli.sendLine(String.format(infoCommand, PatchingTestUtil.AS_DISTRIBUTION));
+            response = cli.readOutput();
+            responseNode = ModelNode.fromJSONString(response);
             List<ModelNode> patchesList = responseNode.get("result").get("patches").asList();
-            List<String> patchesListString = new ArrayList<String>();
             for (ModelNode n : patchesList) {
                 success = success && cli.sendLine(String.format(rollbackCommand, n.asString(), PatchingTestUtil.AS_DISTRIBUTION), true);
             }
@@ -203,6 +285,5 @@ public class CliUtilsForPatching {
             }
         }
     }
-
 
 }
