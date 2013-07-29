@@ -30,6 +30,7 @@
     <dependencies>
         <module name="io.undertow.core"/>
         <module name="io.undertow.servlet"/>
+        <module name="io.undertow.jsp"/>
         <module name="io.undertow.websocket"/>
         <module name="sun.jdk"/>
         <module name="javax.annotation.api"/>
