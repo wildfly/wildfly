@@ -1050,6 +1050,7 @@ public class TimerServiceImpl implements TimerService, Service<TimerService> {
         public void afterCompletion(int status) {
             if (status == Status.STATUS_COMMITTED) {
                 ROOT_LOGGER.debug("commit timer creation: " + this.timer);
+                timers.put(timer.getId(), timer);
 
                 TimerState timerState = this.timer.getState();
                 switch (timerState) {
@@ -1061,7 +1062,6 @@ public class TimerServiceImpl implements TimerService, Service<TimerService> {
                         this.timer.scheduleTimeout(true);
                         break;
                 }
-                timers.put(timer.getId(), timer);
             } else if (status == Status.STATUS_ROLLEDBACK) {
                 ROOT_LOGGER.debug("Rolling back timer creation: " + this.timer);
                 this.timer.setTimerState(TimerState.CANCELED);
