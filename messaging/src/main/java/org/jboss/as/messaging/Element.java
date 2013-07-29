@@ -164,6 +164,7 @@ public enum Element {
    ADDRESS_SETTING(CommonAttributes.ADDRESS_SETTING),
    DEAD_LETTER_ADDRESS(CommonAttributes.DEAD_LETTER_ADDRESS),
    EXPIRY_ADDRESS(CommonAttributes.EXPIRY_ADDRESS),
+   EXPIRY_DELAY(AddressSettingDefinition.EXPIRY_DELAY),
    REDELIVERY_DELAY(AddressSettingDefinition.REDELIVERY_DELAY),
    MAX_DELIVERY_ATTEMPTS(AddressSettingDefinition.MAX_DELIVERY_ATTEMPTS),
    MAX_SIZE_BYTES(AddressSettingDefinition.MAX_SIZE_BYTES),
