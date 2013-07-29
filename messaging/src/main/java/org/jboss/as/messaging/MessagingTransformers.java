@@ -269,6 +269,12 @@ public class MessagingTransformers {
                 .addRejectCheck(DEFINED, BridgeDefinition.ATTRIBUTES_ADDED_IN_2_0_0)
                 .end();
 
+        hornetqServer.addChildResource(AddressSettingDefinition.PATH)
+                .getAttributeBuilder()
+                .setDiscard(UNDEFINED, AddressSettingDefinition.ATTRIBUTES_ADDED_IN_2_0_0)
+                .addRejectCheck(DEFINED, AddressSettingDefinition.ATTRIBUTES_ADDED_IN_2_0_0)
+                .end();
+
         hornetqServer.rejectChildResource(ServletConnectorDefinition.PATH);
 
         TransformationDescription.Tools.register(subsystemRoot.build(), subsystem, VERSION_1_2_1);

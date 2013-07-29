@@ -266,6 +266,7 @@
                <address-setting match="#">
                   <dead-letter-address>${dead.letter.address:jms.queue.DLQ}</dead-letter-address>
                   <expiry-address>${expiry.address:jms.queue.ExpiryQueue}</expiry-address>
+                  <expiry-delay>${expiry.delay:12345}</expiry-delay>
                   <redelivery-delay>${redelivery.delay:0}</redelivery-delay>
                   <max-delivery-attempts>${max.delivery.attempts:5}</max-delivery-attempts>
                   <max-size-bytes>${max.size.bytes:10485760}</max-size-bytes>
