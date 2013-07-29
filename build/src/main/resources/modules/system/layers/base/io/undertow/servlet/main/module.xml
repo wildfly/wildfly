@@ -26,6 +26,11 @@
     <resources>
         <!-- Insert resources here -->
     </resources>
+    
+    <exports>
+        <exclude path="org/eclipse/jdt/**"/>
+        <include path="**"/>
+    </exports>
 
     <dependencies>
         <module name="javax.api"/>
