@@ -43,14 +43,16 @@ public class ServletContainerService implements Service<ServletContainerService>
     private final boolean developmentMode;
     private final boolean allowNonStandardWrappers;
     private final SessionCookieConfig sessionCookieConfig;
+    private final JSPConfig jspConfig;
     private volatile ServletContainer servletContainer;
     @Deprecated
     private final Map<String, Integer> secureListeners = new ConcurrentHashMap<>(1);
 
-    public ServletContainerService(boolean developmentMode, boolean allowNonStandardWrappers, SessionCookieConfig sessionCookieConfig) {
+    public ServletContainerService(boolean developmentMode, boolean allowNonStandardWrappers, SessionCookieConfig sessionCookieConfig, JSPConfig jspConfig) {
         this.developmentMode = developmentMode;
         this.allowNonStandardWrappers = allowNonStandardWrappers;
         this.sessionCookieConfig = sessionCookieConfig;
+        this.jspConfig = jspConfig;
     }
 
     static String getDeployedContextPath(DeploymentInfo deploymentInfo) {
@@ -80,6 +82,10 @@ public class ServletContainerService implements Service<ServletContainerService>
 
     public boolean isAllowNonStandardWrappers() {
         return allowNonStandardWrappers;
+    }
+
+    public JSPConfig getJspConfig() {
+        return jspConfig;
     }
 
     public Integer lookupSecurePort(final String listenerName) {

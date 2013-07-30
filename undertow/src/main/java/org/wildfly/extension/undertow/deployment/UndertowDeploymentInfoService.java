@@ -117,7 +117,7 @@ import org.jboss.security.audit.AuditManager;
 import org.jboss.vfs.VirtualFile;
 import org.wildfly.clustering.web.session.SessionManagerFactory;
 import org.wildfly.clustering.web.undertow.session.SessionManagerFacadeFactory;
-import org.wildfly.extension.undertow.JSPService;
+import org.wildfly.extension.undertow.JSPConfig;
 import org.wildfly.extension.undertow.ServletContainerService;
 import org.wildfly.extension.undertow.SessionCookieConfig;
 import org.wildfly.extension.undertow.UndertowService;
@@ -183,7 +183,6 @@ public class UndertowDeploymentInfoService implements Service<DeploymentInfo> {
     private final InjectedValue<DirectBufferCache> bufferCacheInjectedValue = new InjectedValue<>();
     private final InjectedValue<PathManager> pathManagerInjector = new InjectedValue<PathManager>();
     private final InjectedValue<ComponentRegistry> componentRegistryInjectedValue = new InjectedValue<>();
-    private final InjectedValue<JSPService> jspService = new InjectedValue<>();
 
     private UndertowDeploymentInfoService(final JBossWebMetaData mergedMetaData, final String deploymentName, final TldsMetaData tldsMetaData, final List<TldMetaData> sharedTlds, final Module module, final ScisMetaData scisMetaData, final VirtualFile deploymentRoot, final String securityContextId, final String securityDomain, final List<ServletContextAttribute> attributes, final String contextPath, final List<SetupAction> setupActions, final Set<VirtualFile> overlays, final List<ExpressionFactoryWrapper> expressionFactoryWrappers, List<PredicatedHandler> predicatedHandlers) {
         this.mergedMetaData = mergedMetaData;
@@ -406,7 +405,7 @@ public class UndertowDeploymentInfoService implements Service<DeploymentInfo> {
             } else {
                 is22OrOlder = false;
             }
-            JSPService jspService = getJspService().getOptionalValue();
+            JSPConfig jspConfig = container.getValue().getJspConfig();
             final Set<String> seenMappings = new HashSet<>();
 
             HashMap<String, TagLibraryInfo> tldInfo = createTldsInfo(tldsMetaData, sharedTlds);
@@ -414,7 +413,7 @@ public class UndertowDeploymentInfoService implements Service<DeploymentInfo> {
             d.setDefaultServletConfig(new DefaultServletConfig(true, Collections.<String>emptySet()));
 
             //default JSP servlet
-            final ServletInfo jspServlet = jspService != null ? jspService.getJSPServletInfo() : null;
+            final ServletInfo jspServlet = jspConfig != null ? jspConfig.getJSPServletInfo() : null;
             if (jspServlet != null) { //this would be null if jsp support is disabled
                 HashMap<String, JspPropertyGroup> propertyGroups = createJspConfig(mergedMetaData);
                 JspServletBuilder.setupDeployment(d, propertyGroups, tldInfo, new UndertowJSPInstanceManager(new WebInjectionContainer(module.getClassLoader(), componentRegistryInjectedValue.getValue())));
@@ -1029,10 +1028,6 @@ public class UndertowDeploymentInfoService implements Service<DeploymentInfo> {
 
     public InjectedValue<ComponentRegistry> getComponentRegistryInjectedValue() {
         return componentRegistryInjectedValue;
-    }
-
-    public InjectedValue<JSPService> getJspService() {
-        return jspService;
     }
 
     private static class ComponentClassIntrospector implements ClassIntrospecter {
