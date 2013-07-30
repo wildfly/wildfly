@@ -151,7 +151,7 @@ class TransactionSubsystem20Parser implements XMLStreamConstants, XMLElementRead
                 }
                 choiceObjectStoreEncountered = true;
 
-                parseJdbcStoreElementAndEnrichOperation(reader, subsystemOperation);
+                parseJdbcStoreElementAndEnrichOperation(reader, logStoreOperation, subsystemOperation);
                 subsystemOperation.get(CommonAttributes.USE_JDBC_STORE).set(true);
                 break;
             }
@@ -210,7 +210,8 @@ class TransactionSubsystem20Parser implements XMLStreamConstants, XMLElementRead
 
     }
 
-    protected void parseJdbcStoreElementAndEnrichOperation(final XMLExtendedStreamReader reader, ModelNode operation) throws XMLStreamException {
+    protected void parseJdbcStoreElementAndEnrichOperation(final XMLExtendedStreamReader reader, final ModelNode logStoreOperation, ModelNode operation) throws XMLStreamException {
+        logStoreOperation.get(LogStoreConstants.LOG_STORE_TYPE.getName()).set("jdbc");
 
         final int count = reader.getAttributeCount();
         for (int i = 0; i < count; i++) {
