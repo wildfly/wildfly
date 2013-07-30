@@ -200,7 +200,7 @@
                                     <systemPropertyVariables>
                                         <arquillian.launch>clustering-all</arquillian.launch>
                                         <jboss.server.config.file.name>standalone-ha.xml</jboss.server.config.file.name>
-                                        <cacheMode>SYNC</cacheMode>
+                                        <cacheMode>ASYNC</cacheMode>
                                         <stack>tcp</stack>
                                     </systemPropertyVariables>
                                     <reportNameSuffix>ASYNC-tcp</reportNameSuffix>
