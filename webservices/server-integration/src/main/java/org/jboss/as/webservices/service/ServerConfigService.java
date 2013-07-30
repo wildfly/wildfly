@@ -67,6 +67,7 @@ public final class ServerConfigService implements Service<ServerConfig> {
     public void start(final StartContext context) throws StartException {
         try {
             serverConfig.create();
+            WSServices.saveContainerRegistry(context.getController().getServiceContainer());
         } catch (final Exception e) {
             ROOT_LOGGER.configServiceCreationFailed();
             throw new StartException(e);
@@ -89,7 +90,6 @@ public final class ServerConfigService implements Service<ServerConfig> {
         builder.addListener(listener);
         builder.setInitialMode(Mode.ACTIVE);
         ServiceController<?> sc = builder.install();
-        WSServices.saveContainerRegistry(sc.getServiceContainer());
         return sc;
     }
 
