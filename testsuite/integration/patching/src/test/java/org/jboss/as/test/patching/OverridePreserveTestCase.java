@@ -65,12 +65,12 @@ public class OverridePreserveTestCase {
 
     private static final Logger logger = Logger.getLogger(OverridePreserveTestCase.class);
 
-    private final String file1 = PatchingTestUtil.AS_DISTRIBUTION + "/README.txt";
+    private final String file1 = PatchingTestUtil.AS_DISTRIBUTION + FILE_SEPARATOR + "README.txt";
     private final String file1patchedContent = "Patched content for README.txt";
     private String file1originalContent;
     private final String file1modifiedContent = "I manually edited README.txt and it now looks like this.";
 
-    private final String file2 = PatchingTestUtil.AS_DISTRIBUTION + "/LICENSE.txt";
+    private final String file2 = PatchingTestUtil.AS_DISTRIBUTION + FILE_SEPARATOR + "LICENSE.txt";
     private final String file2patchedContent = "Patched content for LICENSE.txt";
     private String file2originalContent;
     private final String file2modifiedContent = "I manually edited LICENSE.txt and it now looks like this.";
