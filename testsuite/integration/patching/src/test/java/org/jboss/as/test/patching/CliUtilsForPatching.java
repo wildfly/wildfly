@@ -24,6 +24,7 @@ package org.jboss.as.test.patching;
 import org.jboss.as.controller.client.helpers.ClientConstants;
 import org.jboss.as.test.integration.management.util.CLIWrapper;
 import org.jboss.dmr.ModelNode;
+import org.jboss.logging.Logger;
 
 import java.util.ArrayList;
 import java.util.Collection;
@@ -35,6 +36,9 @@ import static org.jboss.as.patching.Constants.BASE;
  * @author Jan Martiska
  */
 public class CliUtilsForPatching {
+
+    private static final Logger logger = Logger.getLogger(CliUtilsForPatching.class);
+
     public static final String OVERRIDE_ALL = "--override-all";
     public static final String OVERRIDE_MODULES = "--override-modules";
     public static final String OVERRIDE = "--override=%s";
@@ -63,6 +67,7 @@ public class CliUtilsForPatching {
             }
             builder.append(" ").append(patchFilePath);
             String command = builder.toString();
+            logger.info("----- sending command to CLI: " + command + " -----");
             return cli.sendLine(command, true);
         } finally {
             if (cli != null) {
@@ -90,6 +95,7 @@ public class CliUtilsForPatching {
             }
             builder.append(" --patch-id=").append(oneoffPatchID);
             String command = builder.toString();
+            logger.info("----- sending command to CLI: " + command + " -----");
             return cli.sendLine(command, true);
         } finally {
             if (cli != null) {
@@ -110,6 +116,7 @@ public class CliUtilsForPatching {
         try {
             cli = new CLIWrapper(true);
             String command = "patch info";
+            logger.info("----- sending command to CLI: " + command + " -----");
             cli.sendLine(command);
             String output = cli.readOutput();
             return ModelNode.fromJSONString(output);
@@ -132,7 +139,9 @@ public class CliUtilsForPatching {
         CLIWrapper cli = null;
         try {
             cli = new CLIWrapper(true);
-            cli.sendLine("patch info");
+            String command = "patch info";
+            logger.info("----- sending command to CLI: " + command + " -----");
+            cli.sendLine(command);
             String response = cli.readOutput();
             ModelNode responseNode = ModelNode.fromJSONString(response);
             List<ModelNode> patchesList = responseNode.get("result").get("patches").asList();
@@ -211,7 +220,9 @@ public class CliUtilsForPatching {
         final String rollbackCommand = "patch rollback --patch-id=%s --distribution=%s --reset-configuration=true";
         try {
             cli = new CLIWrapper(false);
-            cli.sendLine(String.format(infoCommand, PatchingTestUtil.AS_DISTRIBUTION));
+            String command = String.format(infoCommand, PatchingTestUtil.AS_DISTRIBUTION);
+            logger.info("----- sending command to CLI: " + command + " -----");
+            cli.sendLine(command);
             String response = cli.readOutput();
             ModelNode responseNode = ModelNode.fromJSONString(response);
             List<ModelNode> patchesList = responseNode.get("result").get("patches").asList();
@@ -239,7 +250,9 @@ public class CliUtilsForPatching {
         final String rollbackCommand = "patch rollback --patch-id=%s --distribution=%s --reset-configuration=%s";
         try {
             cli = new CLIWrapper(true);
-            cli.sendLine(String.format(infoCommand, PatchingTestUtil.AS_DISTRIBUTION));
+            String command = String.format(infoCommand, PatchingTestUtil.AS_DISTRIBUTION);
+            logger.info("----- sending command to CLI: " + command + " -----");
+            cli.sendLine(command);
             String response = cli.readOutput();
             ModelNode responseNode = ModelNode.fromJSONString(response);
             String cumulativePatchId = responseNode.get("result").get("cumulative-patch-id").asString();
@@ -264,7 +277,9 @@ public class CliUtilsForPatching {
         final String rollbackCommand = "patch rollback --patch-id=%s --distribution=%s --reset-configuration=true";
         try {
             cli = new CLIWrapper(false);
-            cli.sendLine(String.format(infoCommand, PatchingTestUtil.AS_DISTRIBUTION));
+            String command = String.format(infoCommand, PatchingTestUtil.AS_DISTRIBUTION);
+            logger.info("----- sending command to CLI: " + command + " -----");
+            cli.sendLine(command);
             String response = cli.readOutput();
             ModelNode responseNode = ModelNode.fromJSONString(response);
             String cumulativePatchId = responseNode.get("result").get("cumulative-patch-id").asString();

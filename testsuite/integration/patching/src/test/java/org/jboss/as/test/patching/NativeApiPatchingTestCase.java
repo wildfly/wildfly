@@ -40,6 +40,7 @@ import org.jboss.as.patching.metadata.Patch;
 import org.jboss.as.patching.metadata.PatchBuilder;
 import org.jboss.as.version.ProductConfig;
 import org.jboss.dmr.ModelNode;
+import org.jboss.logging.Logger;
 import org.junit.After;
 import org.junit.Assert;
 import org.junit.Before;
@@ -66,6 +67,8 @@ import static org.jboss.as.test.patching.PatchingTestUtil.readFile;
 @RunWith(Arquillian.class)
 @RunAsClient
 public class NativeApiPatchingTestCase {
+
+    private static final Logger logger = Logger.getLogger(CliUtilsForPatching.class);
 
     @ArquillianResource
     private ContainerController controller;
@@ -96,6 +99,7 @@ public class NativeApiPatchingTestCase {
      */
     @Test
     public void testApplyOneoff() throws Exception {
+        logger.info("APPLYING ONEOFF:)");
         ModelControllerClient client = getControllerClient();
 
         final String fileContent = "Hello World!";
@@ -119,9 +123,9 @@ public class NativeApiPatchingTestCase {
         controller.start(CONTAINER);
         Operation o = NativeApiUtilsForPatching.createPatchOperation(zippedPatch);
 
-        System.out.println(o.getOperation().toJSONString(false));
+        logger.info(o.getOperation().toJSONString(false));
         ModelNode ret = client.execute(o);
-        System.out.println(ret.toJSONString(false));
+        logger.info(ret.toJSONString(false));
         Assert.assertTrue(ret.get("outcome").asString().equalsIgnoreCase("success"));
 
         controller.stop(CONTAINER);
@@ -140,9 +144,9 @@ public class NativeApiPatchingTestCase {
         Assert.assertEquals("Unexpected contents of misc file", fileContent, readFile(path));
 
         o = NativeApiUtilsForPatching.createRollbackOperation(patchID);
-        System.out.println(o.getOperation().toJSONString(false));
+        logger.info(o.getOperation().toJSONString(false));
         ret = client.execute(o);
-        System.out.println(ret.toJSONString(false));
+        logger.info(ret.toJSONString(false));
         Assert.assertTrue(ret.get("outcome").asString().equalsIgnoreCase("success"));
 
         controller.stop(CONTAINER);
