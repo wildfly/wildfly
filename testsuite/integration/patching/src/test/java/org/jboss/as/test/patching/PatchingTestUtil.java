@@ -29,6 +29,7 @@ import org.jboss.as.patching.ZipUtils;
 import org.jboss.as.patching.metadata.Patch;
 import org.jboss.as.patching.metadata.PatchXml;
 import org.jboss.as.process.protocol.StreamUtils;
+import org.jboss.logging.Logger;
 import org.junit.Assert;
 
 import java.io.File;
@@ -51,11 +52,12 @@ import java.util.jar.Manifest;
 import static java.lang.String.format;
 import static org.jboss.as.patching.Constants.BASE;
 import static org.jboss.as.patching.Constants.LAYERS;
+import static org.jboss.as.patching.Constants.MODULES;
+import static org.jboss.as.patching.Constants.OVERLAYS;
 import static org.jboss.as.patching.Constants.SYSTEM;
 import static org.jboss.as.patching.IoUtils.mkdir;
 import static org.jboss.as.patching.IoUtils.newFile;
 import static org.jboss.as.patching.IoUtils.safeClose;
-import static org.jboss.as.patching.Constants.*;
 import static org.jboss.as.patching.PatchLogger.ROOT_LOGGER;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNull;
@@ -65,6 +67,9 @@ import static org.junit.Assert.assertTrue;
  * @author Jan Martiska, Jeff Mesnil
  */
 public class PatchingTestUtil {
+
+    private static final Logger logger = Logger.getLogger(PatchingTestUtil.class);
+
 
     public static final String CONTAINER = "jboss";
     public static final String AS_DISTRIBUTION = System.getProperty("jbossas.dist");
@@ -117,7 +122,7 @@ public class PatchingTestUtil {
         StringBuilder out = new StringBuilder();
         out.append(dir.getParentFile().getAbsolutePath() + "\n");
         tree0(out, dir, 1, "  ");
-        System.out.println(out);
+        logger.info(out);
         ROOT_LOGGER.trace(out.toString());
     }
 
