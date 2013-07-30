@@ -66,6 +66,7 @@ public class PojoEndpoint implements EndpointIface {
             fault.setFaultActor("mr.actor");
             fault.addDetail().addChildElement("test");
             fault.appendFaultSubcode(new QName("http://ws.gss.redhat.com/", "NullPointerException"));
+            fault.appendFaultSubcode(new QName("http://ws.gss.redhat.com/", "OperatorNotFound"));
             throw new SOAPFaultException(fault);
         } catch (SOAPException ex) {
             ex.printStackTrace();
