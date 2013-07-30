@@ -93,6 +93,7 @@ public class UndertowSubsystemParser_1_0 implements XMLStreamConstants, XMLEleme
                 .addChild(
                         builder(ServletContainerDefinition.INSTANCE)
                                 .addAttribute(ServletContainerDefinition.ALLOW_NON_STANDARD_WRAPPERS)
+                                .addAttribute(ServletContainerDefinition.DEFAULT_BUFFER_CACHE)
                                 .addChild(
                                         builder(JspDefinition.INSTANCE)
                                                 .setXmlElementName(Constants.JSP_CONFIG)
