@@ -34,9 +34,6 @@ import org.jboss.msc.service.ServiceController;
 import org.jboss.msc.service.ServiceName;
 import org.junit.Assert;
 import org.junit.Test;
-import org.wildfly.extension.undertow.LocationService;
-import org.wildfly.extension.undertow.UndertowExtension;
-import org.wildfly.extension.undertow.UndertowService;
 import org.wildfly.extension.undertow.filters.FilterService;
 
 /**
@@ -79,12 +76,12 @@ public class UndertowSubsystemTestCase extends AbstractSubsystemBaseTest {
         /*FilterService injectedFilter = locationService.getFilterInjector().get(0).getValue();
         Assert.assertNotNull(injectedFilter);
         */filter.setMode(ServiceController.Mode.REMOVE);
-        final ServiceName jspServiceName = UndertowService.SERVLET_CONTAINER.append("default").append("jsp");
-        ServiceController<JSPService> jspServiceServiceController = (ServiceController<JSPService>) mainServices.getContainer().getService(jspServiceName);
+        final ServiceName jspServiceName = UndertowService.SERVLET_CONTAINER.append("default");
+        ServiceController<ServletContainerService> jspServiceServiceController = (ServiceController<ServletContainerService>) mainServices.getContainer().getService(jspServiceName);
         Assert.assertNotNull(jspServiceServiceController);
-        JSPService jspService = jspServiceServiceController.getService().getValue();
-        Assert.assertNotNull(jspService);
-        Assert.assertNotNull(jspService.getJSPServletInfo());
+        JSPConfig jspConfig = jspServiceServiceController.getService().getValue().getJspConfig();
+        Assert.assertNotNull(jspConfig);
+        Assert.assertNotNull(jspConfig.getJSPServletInfo());
 
 
     }
