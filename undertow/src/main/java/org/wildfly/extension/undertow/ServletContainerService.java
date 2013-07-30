@@ -22,16 +22,17 @@
 
 package org.wildfly.extension.undertow;
 
-import java.util.ConcurrentModificationException;
-import java.util.Map;
-import java.util.concurrent.ConcurrentHashMap;
-
 import io.undertow.servlet.api.DeploymentInfo;
+import io.undertow.servlet.api.DevelopmentModeInfo;
 import io.undertow.servlet.api.ServletContainer;
 import org.jboss.msc.service.Service;
 import org.jboss.msc.service.StartContext;
 import org.jboss.msc.service.StartException;
 import org.jboss.msc.service.StopContext;
+
+import java.util.ConcurrentModificationException;
+import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
 
 /**
  * Central Undertow 'Container' HTTP listeners will make this container accessible whilst deployers will add content.
@@ -40,15 +41,15 @@ import org.jboss.msc.service.StopContext;
  */
 public class ServletContainerService implements Service<ServletContainerService> {
 
-    private final boolean developmentMode;
     private final boolean allowNonStandardWrappers;
     private final SessionCookieConfig sessionCookieConfig;
     private final JSPConfig jspConfig;
+    private final DevelopmentModeInfo developmentMode;
     private volatile ServletContainer servletContainer;
     @Deprecated
     private final Map<String, Integer> secureListeners = new ConcurrentHashMap<>(1);
 
-    public ServletContainerService(boolean developmentMode, boolean allowNonStandardWrappers, SessionCookieConfig sessionCookieConfig, JSPConfig jspConfig) {
+    public ServletContainerService(DevelopmentModeInfo developmentMode, boolean allowNonStandardWrappers, SessionCookieConfig sessionCookieConfig, JSPConfig jspConfig) {
         this.developmentMode = developmentMode;
         this.allowNonStandardWrappers = allowNonStandardWrappers;
         this.sessionCookieConfig = sessionCookieConfig;
@@ -76,7 +77,7 @@ public class ServletContainerService implements Service<ServletContainerService>
         return servletContainer;
     }
 
-    public boolean isDevelopmentMode() {
+    public DevelopmentModeInfo getDevelopmentMode() {
         return developmentMode;
     }
 

@@ -24,11 +24,6 @@
 
 package org.wildfly.extension.undertow;
 
-import java.util.List;
-
-import javax.xml.stream.XMLStreamConstants;
-import javax.xml.stream.XMLStreamException;
-
 import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.PersistentResourceXMLDescription;
 import org.jboss.as.controller.operations.common.Util;
@@ -45,6 +40,10 @@ import org.wildfly.extension.undertow.filters.FilterDefinitions;
 import org.wildfly.extension.undertow.filters.FilterRefDefinition;
 import org.wildfly.extension.undertow.handlers.FileHandler;
 import org.wildfly.extension.undertow.handlers.HandlerDefinitions;
+
+import javax.xml.stream.XMLStreamConstants;
+import javax.xml.stream.XMLStreamException;
+import java.util.List;
 
 import static org.jboss.as.controller.PersistentResourceXMLDescription.builder;
 
@@ -93,7 +92,6 @@ public class UndertowSubsystemParser_1_0 implements XMLStreamConstants, XMLEleme
                 )
                 .addChild(
                         builder(ServletContainerDefinition.INSTANCE)
-                                .addAttribute(ServletContainerDefinition.DEVELOPMENT_MODE)
                                 .addAttribute(ServletContainerDefinition.ALLOW_NON_STANDARD_WRAPPERS)
                                 .addChild(
                                         builder(JspDefinition.INSTANCE)
@@ -129,6 +127,12 @@ public class UndertowSubsystemParser_1_0 implements XMLStreamConstants, XMLEleme
                                                         SessionCookieDefinition.MAX_AGE
                                                 )
                                 )
+                        .       addChild(
+                                builder(DevelopmentModeDefinition.INSTANCE)
+                                        .addAttributes(
+                                                DevelopmentModeDefinition.PERSISTENT_SESSIONS
+                                        )
+                        )
                 )
                 .addChild(
                         builder(ErrorPageDefinition.INSTANCE)
