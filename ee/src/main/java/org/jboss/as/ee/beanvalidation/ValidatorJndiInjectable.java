@@ -21,14 +21,13 @@
  */
 package org.jboss.as.ee.beanvalidation;
 
+import javax.validation.Validator;
 import javax.validation.ValidatorFactory;
 
 import org.jboss.as.naming.ContextListAndJndiViewManagedReferenceFactory;
-import org.jboss.as.naming.ContextListManagedReferenceFactory;
+import org.jboss.as.naming.ImmediateManagedReference;
+import org.jboss.as.naming.JndiViewManagedReferenceFactory;
 import org.jboss.as.naming.ManagedReference;
-import org.jboss.as.naming.ValueManagedReference;
-import org.jboss.msc.value.ImmediateValue;
-import org.wildfly.security.manager.WildFlySecurityManager;
 
 /**
 * @author Stuart Douglas
@@ -43,40 +42,18 @@ final class ValidatorJndiInjectable implements ContextListAndJndiViewManagedRefe
 
     @Override
     public ManagedReference getReference() {
-        return new ValueManagedReference(new ImmediateValue<Object>(factory.getValidator()));
-    }
-
-    private Object getInstanceSafely() {
-        final ClassLoader cl = WildFlySecurityManager.getCurrentContextClassLoaderPrivileged();
-        try {
-            WildFlySecurityManager.setCurrentContextClassLoaderPrivileged(factory.getClass().getClassLoader());
-            return factory.getValidator();
-        } finally {
-            WildFlySecurityManager.setCurrentContextClassLoaderPrivileged(cl);
-        }
+        return new ImmediateManagedReference(factory.getValidator());
     }
 
     @Override
     public String getInstanceClassName() {
-        final Object instance = getInstanceSafely();
-        if (instance == null) {
-            return ContextListManagedReferenceFactory.DEFAULT_INSTANCE_CLASS_NAME;
-        }
-        return instance.getClass().getName();
+        // the default and safe value. A more appropriate value, for instance using the getReference() result, may be provided extending the method
+        return Validator.class.getName();
     }
 
     @Override
     public String getJndiViewInstanceValue() {
-        final Object instance = getInstanceSafely();
-        if (instance == null) {
-            return "null";
-        }
-        final ClassLoader cl = WildFlySecurityManager.getCurrentContextClassLoaderPrivileged();
-        try {
-            WildFlySecurityManager.setCurrentContextClassLoaderPrivileged(instance.getClass().getClassLoader());
-            return instance.toString();
-        } finally {
-            WildFlySecurityManager.setCurrentContextClassLoaderPrivileged(cl);
-        }
+        // the default and safe value. A more appropriate value, for instance using the getReference() result, may be provided extending the method
+        return JndiViewManagedReferenceFactory.DEFAULT_JNDI_VIEW_INSTANCE_VALUE;
     }
 }
