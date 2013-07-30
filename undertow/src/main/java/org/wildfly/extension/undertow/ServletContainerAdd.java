@@ -22,6 +22,7 @@
 
 package org.wildfly.extension.undertow;
 
+import io.undertow.servlet.api.DevelopmentModeInfo;
 import org.jboss.as.controller.AbstractBoottimeAddStepHandler;
 import org.jboss.as.controller.AttributeDefinition;
 import org.jboss.as.controller.OperationContext;
@@ -66,13 +67,12 @@ final class ServletContainerAdd extends AbstractBoottimeAddStepHandler {
         final ModelNode fullModel = Resource.Tools.readModel(context.readResource(PathAddress.EMPTY_ADDRESS));
 
         SessionCookieConfig config = SessionCookieDefinition.INSTANCE.getConfig(context, fullModel.get(SessionCookieDefinition.INSTANCE.getPathElement().getKeyValuePair()));
-
-        final boolean developmentMode = ServletContainerDefinition.DEVELOPMENT_MODE.resolveModelAttribute(context, model).asBoolean();
+        DevelopmentModeInfo devMode = DevelopmentModeDefinition.INSTANCE.getConfig(context, fullModel.get(SessionCookieDefinition.INSTANCE.getPathElement().getKeyValuePair()));
         final boolean allowNonStandardWrappers = ServletContainerDefinition.ALLOW_NON_STANDARD_WRAPPERS.resolveModelAttribute(context, model).asBoolean();
 
-        JSPConfig jspConfig = JspDefinition.INSTANCE.getConfig(context, fullModel.get(JspDefinition.INSTANCE.getPathElement().getKeyValuePair()), developmentMode);
+        JSPConfig jspConfig = JspDefinition.INSTANCE.getConfig(context, fullModel.get(JspDefinition.INSTANCE.getPathElement().getKeyValuePair()), devMode != null);
 
-        final ServletContainerService container = new ServletContainerService(developmentMode, allowNonStandardWrappers, config, jspConfig);
+        final ServletContainerService container = new ServletContainerService(devMode, allowNonStandardWrappers, config, jspConfig);
         final ServiceTarget target = context.getServiceTarget();
         newControllers.add(target.addService(UndertowService.SERVLET_CONTAINER.append(name), container)
                 .setInitialMode(ServiceController.Mode.ON_DEMAND)

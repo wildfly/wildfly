@@ -37,7 +37,6 @@ import io.undertow.servlet.api.ClassIntrospecter;
 import io.undertow.servlet.api.ConfidentialPortManager;
 import io.undertow.servlet.api.DefaultServletConfig;
 import io.undertow.servlet.api.DeploymentInfo;
-import io.undertow.servlet.api.DevelopmentModeInfo;
 import io.undertow.servlet.api.ErrorPage;
 import io.undertow.servlet.api.FilterInfo;
 import io.undertow.servlet.api.HttpMethodSecurityInfo;
@@ -54,7 +53,6 @@ import io.undertow.servlet.api.ServletSessionConfig;
 import io.undertow.servlet.api.ThreadSetupAction;
 import io.undertow.servlet.api.WebResourceCollection;
 import io.undertow.servlet.util.ImmediateInstanceFactory;
-import io.undertow.servlet.util.InMemorySessionPersistence;
 import org.apache.jasper.deploy.FunctionInfo;
 import org.apache.jasper.deploy.JspPropertyGroup;
 import org.apache.jasper.deploy.TagAttributeInfo;
@@ -365,10 +363,11 @@ public class UndertowDeploymentInfoService implements Service<DeploymentInfo> {
                 d.setDisplayName(mergedMetaData.getDescriptionGroup().getDisplayName());
             }
             d.setDeploymentName(deploymentName);
+            final ServletContainerService servletContainer = container.getValue();
             try {
                 //TODO: make the caching limits configurable
                 ResourceManager resourceManager = new ServletResourceManager(deploymentRoot, overlays);
-                if(!container.getValue().isDevelopmentMode()) {
+                if(servletContainer.getDevelopmentMode() == null) {
                     resourceManager = new CachingResourceManager(100, 10 * 1024 * 1024, bufferCacheInjectedValue.getOptionalValue(), resourceManager, -1);
                 }
                 d.setResourceManager(resourceManager);
@@ -390,10 +389,10 @@ public class UndertowDeploymentInfoService implements Service<DeploymentInfo> {
                 d.setMinorVersion(1);
             }
 
-            d.setAllowNonStandardWrappers(container.getValue().isAllowNonStandardWrappers());
+            d.setAllowNonStandardWrappers(servletContainer.isAllowNonStandardWrappers());
 
-            if(container.getValue().isDevelopmentMode()) {
-                d.setDevelopmentMode(new DevelopmentModeInfo(true, new InMemorySessionPersistence()));
+            if(servletContainer.getDevelopmentMode() != null) {
+                d.setDevelopmentMode(servletContainer.getDevelopmentMode());
             }
 
             //for 2.2 apps we do not require a leading / in path mappings
@@ -405,7 +404,7 @@ public class UndertowDeploymentInfoService implements Service<DeploymentInfo> {
             } else {
                 is22OrOlder = false;
             }
-            JSPConfig jspConfig = container.getValue().getJspConfig();
+            JSPConfig jspConfig = servletContainer.getJspConfig();
             final Set<String> seenMappings = new HashSet<>();
 
             HashMap<String, TagLibraryInfo> tldInfo = createTldsInfo(tldsMetaData, sharedTlds);

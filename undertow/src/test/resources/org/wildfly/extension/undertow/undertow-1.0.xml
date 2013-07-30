@@ -69,6 +69,7 @@
                         secure="true"
                         http-only="true"
                         max-age="1000"/>
+        <development-mode persistent-sessions="false" />
     </servlet-container>
 
     <error-pages>

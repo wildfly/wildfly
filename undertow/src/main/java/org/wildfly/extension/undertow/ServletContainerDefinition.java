@@ -42,14 +42,6 @@ import org.jboss.dmr.ModelType;
 public class ServletContainerDefinition extends PersistentResourceDefinition {
     static final ServletContainerDefinition INSTANCE = new ServletContainerDefinition();
 
-
-    protected static final SimpleAttributeDefinition DEVELOPMENT_MODE =
-            new SimpleAttributeDefinitionBuilder(Constants.DEVELOPMENT_MODE, ModelType.BOOLEAN, true)
-                    .setFlags(AttributeAccess.Flag.RESTART_ALL_SERVICES)
-                    .setDefaultValue(new ModelNode(false))
-                    .setAllowExpression(true)
-                    .build();
-
     protected static final SimpleAttributeDefinition ALLOW_NON_STANDARD_WRAPPERS =
             new SimpleAttributeDefinitionBuilder(Constants.ALLOW_NON_STANDARD_WRAPPERS, ModelType.BOOLEAN, true)
                     .setFlags(AttributeAccess.Flag.RESTART_ALL_SERVICES)
@@ -63,6 +55,7 @@ public class ServletContainerDefinition extends PersistentResourceDefinition {
         List<PersistentResourceDefinition>  children = new ArrayList<>();
         children.add(JspDefinition.INSTANCE);
         children.add(SessionCookieDefinition.INSTANCE);
+        children.add(DevelopmentModeDefinition.INSTANCE);
         CHILDREN = Collections.unmodifiableList(children);
     }
 
@@ -76,7 +69,6 @@ public class ServletContainerDefinition extends PersistentResourceDefinition {
     @Override
     public Collection<AttributeDefinition> getAttributes() {
         final List<AttributeDefinition> attributes = new ArrayList<>();
-        attributes.add(DEVELOPMENT_MODE);
         attributes.add(ALLOW_NON_STANDARD_WRAPPERS);
         return attributes;
     }
