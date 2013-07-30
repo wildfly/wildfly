@@ -31,6 +31,7 @@ import org.jboss.as.patching.metadata.ContentModification;
 import org.jboss.as.patching.metadata.Patch;
 import org.jboss.as.patching.metadata.PatchBuilder;
 import org.jboss.as.version.ProductConfig;
+import org.jboss.logging.Logger;
 import org.junit.After;
 import org.junit.Assert;
 import org.junit.Before;
@@ -72,6 +73,8 @@ public class BasicOneOffPatchingScenariosTestCase {
     private ContainerController controller;
 
     private File tempDir;
+
+    private static final Logger logger = Logger.getLogger(BasicOneOffPatchingScenariosTestCase.class);
 
     @Before
     public void prepare() throws IOException {
@@ -1024,7 +1027,7 @@ public class BasicOneOffPatchingScenariosTestCase {
 
         File moduleDir = createModule0(baseModuleDir, moduleName);
 
-        System.out.println("moduleDir = " + moduleDir.getAbsolutePath());
+        logger.info("moduleDir = " + moduleDir.getAbsolutePath());
 
         // prepare the patch
         String patchID = randomString();
@@ -1046,7 +1049,7 @@ public class BasicOneOffPatchingScenariosTestCase {
                 .build();
         createPatchXMLFile(patchDir, patch);
         File zippedPatch = createZippedPatchFile(patchDir, patchID);
-        System.out.println(zippedPatch.getAbsolutePath());
+        logger.info(zippedPatch.getAbsolutePath());
 
         // apply patch and check if server is in restart-required mode
         controller.start(CONTAINER);

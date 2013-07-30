@@ -30,6 +30,7 @@ import org.jboss.as.patching.metadata.ContentModification;
 import org.jboss.as.patching.metadata.Patch;
 import org.jboss.as.patching.metadata.PatchBuilder;
 import org.jboss.as.version.ProductConfig;
+import org.jboss.logging.Logger;
 import org.junit.After;
 import org.junit.Assert;
 import org.junit.Before;
@@ -61,6 +62,9 @@ import static org.jboss.as.patching.IoUtils.newFile;
 @RunWith(Arquillian.class)
 @RunAsClient
 public class OverridePreserveTestCase {
+
+    private static final Logger logger = Logger.getLogger(OverridePreserveTestCase.class);
+
     private final String file1 = PatchingTestUtil.AS_DISTRIBUTION + "/README.txt";
     private final String file1patchedContent = "Patched content for README.txt";
     private String file1originalContent;
@@ -374,7 +378,7 @@ public class OverridePreserveTestCase {
         File baseModuleDir = newFile(new File(PatchingTestUtil.AS_DISTRIBUTION), "modules", SYSTEM, LAYERS, BASE);
         File moduleDir = createModule0(baseModuleDir, moduleName);
 
-        System.out.println("moduleDir = " + moduleDir.getAbsolutePath());
+        logger.info("moduleDir = " + moduleDir.getAbsolutePath());
 
         // prepare the patch
         String patchID = randomString();
@@ -396,7 +400,7 @@ public class OverridePreserveTestCase {
                 .build();
         createPatchXMLFile(patchDir, patch);
         File zippedPatch = createZippedPatchFile(patchDir, patchID);
-        System.out.println(zippedPatch.getAbsolutePath());
+        logger.info(zippedPatch.getAbsolutePath());
 
         // modify module
         File fileModifyModule = new File(moduleDir.getAbsolutePath() + FILE_SEPARATOR + "main", "newFile");
