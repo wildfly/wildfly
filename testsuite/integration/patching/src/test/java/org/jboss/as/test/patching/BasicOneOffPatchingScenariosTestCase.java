@@ -125,7 +125,7 @@ public class BasicOneOffPatchingScenariosTestCase {
 
         // apply the patch and check if server is in restart-required mode
         controller.start(CONTAINER);
-        CliUtilsForPatching.applyPatch(zippedPatch.getAbsolutePath());
+        Assert.assertTrue("Patch should be accepted", CliUtilsForPatching.applyPatch(zippedPatch.getAbsolutePath()));
         Assert.assertTrue("server should be in restart-required mode", CliUtilsForPatching.doesServerRequireRestart());
         controller.stop(CONTAINER);
 
@@ -138,7 +138,7 @@ public class BasicOneOffPatchingScenariosTestCase {
 
 
         // rollback the patch and check if server is in restart-required mode
-        CliUtilsForPatching.rollbackPatch(patchID);
+        Assert.assertTrue("Rollback should be accepted", CliUtilsForPatching.rollbackPatch(patchID));
         Assert.assertTrue("server should be in restart-required mode", CliUtilsForPatching.doesServerRequireRestart());
         controller.stop(CONTAINER);
 
@@ -148,7 +148,7 @@ public class BasicOneOffPatchingScenariosTestCase {
         Assert.assertFalse("File + " + path + " should have been deleted", new File(path).exists());
 
         //reapply patch and check if server is in restart-required mode
-        CliUtilsForPatching.applyPatch(zippedPatch.getAbsolutePath());
+        Assert.assertTrue("Patch should be accepted", CliUtilsForPatching.applyPatch(zippedPatch.getAbsolutePath()));
         Assert.assertTrue("server should be in restart-required mode", CliUtilsForPatching.doesServerRequireRestart());
         controller.stop(CONTAINER);
 
@@ -196,7 +196,7 @@ public class BasicOneOffPatchingScenariosTestCase {
 
         // apply the patch and check if server is in restart-required mode
         controller.start(CONTAINER);
-        CliUtilsForPatching.applyPatch(zippedPatch.getAbsolutePath());
+        Assert.assertTrue("Patch should be accepted", CliUtilsForPatching.applyPatch(zippedPatch.getAbsolutePath()));
         Assert.assertTrue("server should be in restart-required mode", CliUtilsForPatching.doesServerRequireRestart());
         controller.stop(CONTAINER);
 
@@ -211,7 +211,7 @@ public class BasicOneOffPatchingScenariosTestCase {
         Assert.assertEquals("check content of file2 after applying patch", testContent2, patchContent);
 
         // rollback the patch and check if server is in restart-required mode
-        CliUtilsForPatching.rollbackPatch(patchID);
+        Assert.assertTrue("Rollback should be accepted", CliUtilsForPatching.rollbackPatch(patchID));
         Assert.assertTrue("server should be in restart-required mode", CliUtilsForPatching.doesServerRequireRestart());
         controller.stop(CONTAINER);
 
@@ -223,7 +223,7 @@ public class BasicOneOffPatchingScenariosTestCase {
         Assert.assertFalse("File2 + " + testFilePath1 + " should have been deleted", new File(testFilePath1).exists());
 
         // reapply the patch and check if server is in restart-required mode
-        CliUtilsForPatching.applyPatch(zippedPatch.getAbsolutePath());
+        Assert.assertTrue("Patch should be accepted", CliUtilsForPatching.applyPatch(zippedPatch.getAbsolutePath()));
         Assert.assertTrue("server should be in restart-required mode", CliUtilsForPatching.doesServerRequireRestart());
         controller.stop(CONTAINER);
 
@@ -268,7 +268,7 @@ public class BasicOneOffPatchingScenariosTestCase {
 
         // apply the patch and check if server is in restart-required mode
         controller.start(CONTAINER);
-        CliUtilsForPatching.applyPatch(zippedPatch.getAbsolutePath());
+        Assert.assertTrue("Patch should be accepted", CliUtilsForPatching.applyPatch(zippedPatch.getAbsolutePath()));
         Assert.assertTrue("server should be in restart-required mode", CliUtilsForPatching.doesServerRequireRestart());
         controller.stop(CONTAINER);
 
@@ -279,7 +279,7 @@ public class BasicOneOffPatchingScenariosTestCase {
         Assert.assertEquals(testContent, patchContent);
 
         //rollback the patch and check if server is in restart-required mode
-        CliUtilsForPatching.rollbackPatch(patchID);
+        Assert.assertTrue("Rollback should be accepted", CliUtilsForPatching.rollbackPatch(patchID));
         Assert.assertTrue("server should be in restart-required mode", CliUtilsForPatching.doesServerRequireRestart());
         controller.stop(CONTAINER);
 
@@ -291,7 +291,7 @@ public class BasicOneOffPatchingScenariosTestCase {
         Assert.assertEquals("check content of file after rollback", originalContent, patchContent);
 
         //reapply the patch and check if server is in restart-required mode
-        CliUtilsForPatching.applyPatch(zippedPatch.getAbsolutePath());
+        Assert.assertTrue("Patch should be accepted", CliUtilsForPatching.applyPatch(zippedPatch.getAbsolutePath()));
         Assert.assertTrue("server should be in restart-required mode", CliUtilsForPatching.doesServerRequireRestart());
         controller.stop(CONTAINER);
 
@@ -338,7 +338,7 @@ public class BasicOneOffPatchingScenariosTestCase {
 
         // apply the patch and check if server is in restart-required mode
         controller.start(CONTAINER);
-        CliUtilsForPatching.applyPatch(zippedPatch.getAbsolutePath());
+        Assert.assertTrue("Patch should be accepted", CliUtilsForPatching.applyPatch(zippedPatch.getAbsolutePath()));
         Assert.assertTrue("server should be in restart-required mode", CliUtilsForPatching.doesServerRequireRestart());
         controller.stop(CONTAINER);
 
@@ -351,7 +351,7 @@ public class BasicOneOffPatchingScenariosTestCase {
         Assert.assertEquals("check content of applying patch2", testContent2, patchContent2);
 
         //rollback the patch and check if server is in restart-required mode
-        CliUtilsForPatching.rollbackPatch(patchID);
+        Assert.assertTrue("Rollback should be accepted", CliUtilsForPatching.rollbackPatch(patchID));
         Assert.assertTrue("server should be in restart-required mode", CliUtilsForPatching.doesServerRequireRestart());
         controller.stop(CONTAINER);
 
@@ -365,7 +365,7 @@ public class BasicOneOffPatchingScenariosTestCase {
         Assert.assertEquals("check content of file after rollback2", originalContent2, patchContent2);
 
         //reapply the patch and check if server is in restart-required mode
-        CliUtilsForPatching.applyPatch(zippedPatch.getAbsolutePath());
+        Assert.assertTrue("Patch should be accepted", CliUtilsForPatching.applyPatch(zippedPatch.getAbsolutePath()));
         Assert.assertTrue("server should be in restart-required mode", CliUtilsForPatching.doesServerRequireRestart());
         controller.stop(CONTAINER);
 
@@ -408,7 +408,7 @@ public class BasicOneOffPatchingScenariosTestCase {
 
         // apply the patch and check if server is in restart-required mode
         controller.start(CONTAINER);
-        CliUtilsForPatching.applyPatch(zippedPatch.getAbsolutePath());
+        Assert.assertTrue("Rollback should be accepted", CliUtilsForPatching.rollbackPatch(patchID));
         Assert.assertTrue("server should be in restart-required mode", CliUtilsForPatching.doesServerRequireRestart());
         controller.stop(CONTAINER);
 
@@ -419,7 +419,7 @@ public class BasicOneOffPatchingScenariosTestCase {
         Assert.assertFalse("File " + testFilePath + " should have been deleted", new File(testFilePath).exists());
 
         // rollback the patch and check if server is in restart-required mode
-        CliUtilsForPatching.rollbackPatch(patchID);
+        Assert.assertTrue("Rollback should be accepted", CliUtilsForPatching.rollbackPatch(patchID));
         Assert.assertTrue("server should be in restart-required mode", CliUtilsForPatching.doesServerRequireRestart());
         controller.stop(CONTAINER);
 
@@ -431,7 +431,7 @@ public class BasicOneOffPatchingScenariosTestCase {
         Assert.assertEquals("Unexpected contents of misc file", originalContent, readFile(testFilePath));
 
         // reapply patch and check if server is in restart-required mode
-        CliUtilsForPatching.applyPatch(zippedPatch.getAbsolutePath());
+        Assert.assertTrue("Rollback should be accepted", CliUtilsForPatching.rollbackPatch(patchID));
         Assert.assertTrue("server should be in restart-required mode", CliUtilsForPatching.doesServerRequireRestart());
         controller.stop(CONTAINER);
 
@@ -477,7 +477,7 @@ public class BasicOneOffPatchingScenariosTestCase {
 
         // apply the patch and check if server is in restart-required mode
         controller.start(CONTAINER);
-        CliUtilsForPatching.applyPatch(zippedPatch.getAbsolutePath());
+        Assert.assertTrue("Patch should be accepted", CliUtilsForPatching.applyPatch(zippedPatch.getAbsolutePath()));
         Assert.assertTrue("server should be in restart-required mode", CliUtilsForPatching.doesServerRequireRestart());
         controller.stop(CONTAINER);
 
@@ -491,7 +491,7 @@ public class BasicOneOffPatchingScenariosTestCase {
                 new File(testFilePath2).exists());
 
         // rollback the patch and check if server is in restart-required mode
-        CliUtilsForPatching.rollbackPatch(patchID);
+        Assert.assertTrue("Rollback should be accepted", CliUtilsForPatching.rollbackPatch(patchID));
         Assert.assertTrue("server should be in restart-required mode", CliUtilsForPatching.doesServerRequireRestart());
         controller.stop(CONTAINER);
 
@@ -505,7 +505,7 @@ public class BasicOneOffPatchingScenariosTestCase {
         Assert.assertEquals("Unexpected contents of misc file", originalContent2, readFile(testFilePath2));
 
         // reapply patch and check if server is in restart-required mode
-        CliUtilsForPatching.applyPatch(zippedPatch.getAbsolutePath());
+        Assert.assertTrue("Patch should be accepted", CliUtilsForPatching.applyPatch(zippedPatch.getAbsolutePath()));
         Assert.assertTrue("server should be in restart-required mode", CliUtilsForPatching.doesServerRequireRestart());
         controller.stop(CONTAINER);
 
@@ -552,7 +552,7 @@ public class BasicOneOffPatchingScenariosTestCase {
 
         // apply the patch and check if server is in restart-required mode
         controller.start(CONTAINER);
-        CliUtilsForPatching.applyPatch(zippedPatch.getAbsolutePath());
+        Assert.assertTrue("Patch should be accepted", CliUtilsForPatching.applyPatch(zippedPatch.getAbsolutePath()));
         Assert.assertTrue("server should be in restart-required mode", CliUtilsForPatching.doesServerRequireRestart());
         controller.stop(CONTAINER);
 
@@ -563,8 +563,8 @@ public class BasicOneOffPatchingScenariosTestCase {
         Assert.assertFalse("File " + testFilePathDeleted + " should have been deleted", new File(testFilePathDeleted).exists());
 
         // rollback the patch  and check if server is in restart-required mode
-        CliUtilsForPatching.rollbackPatch(patchID);
-        CliUtilsForPatching.applyPatch(zippedPatch.getAbsolutePath());
+        Assert.assertTrue("Rollback should be accepted", CliUtilsForPatching.rollbackPatch(patchID));
+        Assert.assertTrue("server should be in restart-required mode", CliUtilsForPatching.doesServerRequireRestart());
         controller.stop(CONTAINER);
 
         // check if patch is uninstalled
@@ -576,8 +576,8 @@ public class BasicOneOffPatchingScenariosTestCase {
         Assert.assertEquals("Unexpected contents of misc file", originalContentOfDeletedFile, readFile(testFilePathDeleted));
 
         // reapply the patch  and check if server is in restart-required mode
-        CliUtilsForPatching.applyPatch(zippedPatch.getAbsolutePath());
-        CliUtilsForPatching.applyPatch(zippedPatch.getAbsolutePath());
+        Assert.assertTrue("Patch should be accepted", CliUtilsForPatching.applyPatch(zippedPatch.getAbsolutePath()));
+        Assert.assertTrue("server should be in restart-required mode", CliUtilsForPatching.doesServerRequireRestart());
         controller.stop(CONTAINER);
 
         // check if patch is installed, if files exists and check content of files
@@ -634,7 +634,7 @@ public class BasicOneOffPatchingScenariosTestCase {
 
         // apply the patch and check if server is in restart-required mode
         controller.start(CONTAINER);
-        CliUtilsForPatching.applyPatch(zippedPatch.getAbsolutePath());
+        Assert.assertTrue("Patch should be accepted", CliUtilsForPatching.applyPatch(zippedPatch.getAbsolutePath()));
         Assert.assertTrue("server should be in restart-required mode", CliUtilsForPatching.doesServerRequireRestart());
         controller.stop(CONTAINER);
 
@@ -647,7 +647,7 @@ public class BasicOneOffPatchingScenariosTestCase {
         Assert.assertFalse("File " + testFilePathDeleted2 + " should have been deleted", new File(testFilePathDeleted2).exists());
 
         //rollback the patch and check if server is in restart-required mode
-        CliUtilsForPatching.rollbackPatch(patchID);
+        Assert.assertTrue("Rollback should be accepted", CliUtilsForPatching.rollbackPatch(patchID));
         Assert.assertTrue("server should be in restart-required mode", CliUtilsForPatching.doesServerRequireRestart());
         controller.stop(CONTAINER);
 
@@ -663,7 +663,7 @@ public class BasicOneOffPatchingScenariosTestCase {
         Assert.assertEquals("Unexpected contents of misc file", originalContentOfDeletedFile2, readFile(testFilePathDeleted2));
 
         //reapply the patch and check if server is in restart-required mode
-        CliUtilsForPatching.applyPatch(zippedPatch.getAbsolutePath());
+        Assert.assertTrue("Patch should be accepted", CliUtilsForPatching.applyPatch(zippedPatch.getAbsolutePath()));
         Assert.assertTrue("server should be in restart-required mode", CliUtilsForPatching.doesServerRequireRestart());
         controller.stop(CONTAINER);
 
@@ -713,7 +713,7 @@ public class BasicOneOffPatchingScenariosTestCase {
 
         // apply the patch and check if server is in restart-required mode
         controller.start(CONTAINER);
-        CliUtilsForPatching.applyPatch(zippedPatch.getAbsolutePath());
+        Assert.assertTrue("Patch should be accepted", CliUtilsForPatching.applyPatch(zippedPatch.getAbsolutePath()));
         Assert.assertTrue("server should be in restart-required mode", CliUtilsForPatching.doesServerRequireRestart());
         controller.stop(CONTAINER);
 
@@ -726,7 +726,7 @@ public class BasicOneOffPatchingScenariosTestCase {
         Assert.assertEquals("check content of file after applying patch", testContentAdded, readFile(testFilePathAdded));
 
         // rollback the patch and check if server is in restart-required mode
-        CliUtilsForPatching.rollbackPatch(patchID);
+        Assert.assertTrue("Rollback should be accepted", CliUtilsForPatching.rollbackPatch(patchID));
         Assert.assertTrue("server should be in restart-required mode", CliUtilsForPatching.doesServerRequireRestart());
         controller.stop(CONTAINER);
 
@@ -741,7 +741,7 @@ public class BasicOneOffPatchingScenariosTestCase {
         Assert.assertEquals("check content of file after patch rollback", originalContentOfDeletedFile, readFile(testFilePathDeleted));
 
         // reapply the patch and check if server is in restart-required mode
-        CliUtilsForPatching.applyPatch(zippedPatch.getAbsolutePath());
+        Assert.assertTrue("Patch should be accepted", CliUtilsForPatching.applyPatch(zippedPatch.getAbsolutePath()));
         Assert.assertTrue("server should be in restart-required mode", CliUtilsForPatching.doesServerRequireRestart());
         controller.stop(CONTAINER);
 
@@ -801,7 +801,7 @@ public class BasicOneOffPatchingScenariosTestCase {
 
         // apply the patch and check if server is in restart-required mode
         controller.start(CONTAINER);
-        CliUtilsForPatching.applyPatch(zippedPatch.getAbsolutePath());
+        Assert.assertTrue("Patch should be accepted", CliUtilsForPatching.applyPatch(zippedPatch.getAbsolutePath()));
         Assert.assertTrue("server should be in restart-required mode", CliUtilsForPatching.doesServerRequireRestart());
         controller.stop(CONTAINER);
 
@@ -816,7 +816,7 @@ public class BasicOneOffPatchingScenariosTestCase {
         Assert.assertEquals("check content of file after applying patch", testContentAdded2, readFile(testFilePathAdded2));
 
         // rollback the patch and check if server is in restart-required mode
-        CliUtilsForPatching.rollbackPatch(patchID);
+        Assert.assertTrue("Rollback should be accepted", CliUtilsForPatching.rollbackPatch(patchID));
         Assert.assertTrue("server should be in restart-required mode", CliUtilsForPatching.doesServerRequireRestart());
         controller.stop(CONTAINER);
 
@@ -832,7 +832,7 @@ public class BasicOneOffPatchingScenariosTestCase {
         Assert.assertEquals("check content of file after patch rollback", originalContentOfDeletedFile2, readFile(testFilePathDeleted2));
 
         // reapply the patch and check if server is in restart-required mode
-        CliUtilsForPatching.applyPatch(zippedPatch.getAbsolutePath());
+        Assert.assertTrue("Patch should be accepted", CliUtilsForPatching.applyPatch(zippedPatch.getAbsolutePath()));
         Assert.assertTrue("server should be in restart-required mode", CliUtilsForPatching.doesServerRequireRestart());
         controller.stop(CONTAINER);
 
@@ -883,7 +883,7 @@ public class BasicOneOffPatchingScenariosTestCase {
 
         // apply the patch and check if server is in restart-required mode
         controller.start(CONTAINER);
-        CliUtilsForPatching.applyPatch(zippedPatch.getAbsolutePath());
+        Assert.assertTrue("Patch should be accepted", CliUtilsForPatching.applyPatch(zippedPatch.getAbsolutePath()));
         Assert.assertTrue("server should be in restart-required mode",
                 CliUtilsForPatching.doesServerRequireRestart());
         controller.stop(CONTAINER);
@@ -897,7 +897,7 @@ public class BasicOneOffPatchingScenariosTestCase {
         Assert.assertTrue("The file " + resourceItem2.getItemName() + " should exist", new File(modulePath + FILE_SEPARATOR + resourceItem2.getItemName()).exists());
 
         // rollback the patch and check if server is in restart-required mode
-        CliUtilsForPatching.rollbackPatch(patchID);
+        Assert.assertTrue("Rollback should be accepted", CliUtilsForPatching.rollbackPatch(patchID));
         Assert.assertTrue("server should be in restart-required mode",
                 CliUtilsForPatching.doesServerRequireRestart());
         controller.stop(CONTAINER);
@@ -911,7 +911,7 @@ public class BasicOneOffPatchingScenariosTestCase {
         Assert.assertFalse("The file " + resourceItem2.getItemName() + "should have been deleted", new File(modulePath + FILE_SEPARATOR + resourceItem2.getItemName()).exists());
 
         // reapply patch and check if server is in restart-required mode
-        CliUtilsForPatching.applyPatch(zippedPatch.getAbsolutePath());
+        Assert.assertTrue("Patch should be accepted", CliUtilsForPatching.applyPatch(zippedPatch.getAbsolutePath()));
         Assert.assertTrue("server should be in restart-required mode",
                 CliUtilsForPatching.doesServerRequireRestart());
         controller.stop(CONTAINER);
@@ -965,7 +965,7 @@ public class BasicOneOffPatchingScenariosTestCase {
 
         // apply the patch and check if server is in restart-required mode
         controller.start(CONTAINER);
-        CliUtilsForPatching.applyPatch(zippedPatch.getAbsolutePath());
+        Assert.assertTrue("Patch should be accepted", CliUtilsForPatching.applyPatch(zippedPatch.getAbsolutePath()));
         Assert.assertTrue("server should be in restart-required mode",
                 CliUtilsForPatching.doesServerRequireRestart());
         controller.stop(CONTAINER);
@@ -982,7 +982,7 @@ public class BasicOneOffPatchingScenariosTestCase {
 
 
         // rollback the patch and check if server is in restart-required mode
-        CliUtilsForPatching.rollbackPatch(patchID);
+        Assert.assertTrue("Rollback should be accepted", CliUtilsForPatching.rollbackPatch(patchID));
         Assert.assertTrue("server should be in restart-required mode",
                 CliUtilsForPatching.doesServerRequireRestart());
         controller.stop(CONTAINER);
@@ -1000,7 +1000,7 @@ public class BasicOneOffPatchingScenariosTestCase {
         Assert.assertFalse("The directory " + modulePath2+ "should have been deleted", new File(modulePath2).exists());
 
         // reapply patch and check if server is in restart-required mode
-        CliUtilsForPatching.applyPatch(zippedPatch.getAbsolutePath());
+        Assert.assertTrue("Patch should be accepted", CliUtilsForPatching.applyPatch(zippedPatch.getAbsolutePath()));
         Assert.assertTrue("server should be in restart-required mode",
                 CliUtilsForPatching.doesServerRequireRestart());
         controller.stop(CONTAINER);
@@ -1060,7 +1060,7 @@ public class BasicOneOffPatchingScenariosTestCase {
 
         // apply patch and check if server is in restart-required mode
         controller.start(CONTAINER);
-        CliUtilsForPatching.applyPatch(zippedPatch.getAbsolutePath());
+        Assert.assertTrue("Patch should be accepted", CliUtilsForPatching.applyPatch(zippedPatch.getAbsolutePath()));
         Assert.assertTrue("server should be in restart-required mode",
                 CliUtilsForPatching.doesServerRequireRestart());
         controller.stop(CONTAINER);
@@ -1073,7 +1073,7 @@ public class BasicOneOffPatchingScenariosTestCase {
         Assert.assertTrue("File " + newFilePath + " should exist", new File(newFilePath).exists());
 
         // rollback the patch and check if server is in restart-required mode
-        Assert.assertTrue(CliUtilsForPatching.rollbackPatch(patchID));
+        Assert.assertTrue("Rollback should be accepted", CliUtilsForPatching.rollbackPatch(patchID));
         Assert.assertTrue("server should be in restart-required mode",
                 CliUtilsForPatching.doesServerRequireRestart());
         controller.stop(CONTAINER);
@@ -1084,7 +1084,7 @@ public class BasicOneOffPatchingScenariosTestCase {
         Assert.assertFalse("File " + newFilePath + " should not exist", new File(newFilePath).exists());
 
         // reapply patch and check if server is in restart-required mode
-        CliUtilsForPatching.applyPatch(zippedPatch.getAbsolutePath());
+        Assert.assertTrue("Patch should be accepted", CliUtilsForPatching.applyPatch(zippedPatch.getAbsolutePath()));
         Assert.assertTrue("server should be in restart-required mode",
                 CliUtilsForPatching.doesServerRequireRestart());
         controller.stop(CONTAINER);
@@ -1132,7 +1132,7 @@ public class BasicOneOffPatchingScenariosTestCase {
 
         // apply the patch and check if server is in restart-required mode
         controller.start(CONTAINER);
-        CliUtilsForPatching.applyPatch(zippedPatch.getAbsolutePath());
+        Assert.assertTrue("Patch should be accepted", CliUtilsForPatching.applyPatch(zippedPatch.getAbsolutePath()));
         Assert.assertTrue("server should be in restart-required mode",
                 CliUtilsForPatching.doesServerRequireRestart());
         controller.stop(CONTAINER);
@@ -1145,7 +1145,7 @@ public class BasicOneOffPatchingScenariosTestCase {
         Assert.assertTrue("The file " + moduleXml.getName() + " should exist", moduleXml.exists());
 
         // rollback the patch and check if server is in restart-required mode
-        CliUtilsForPatching.rollbackPatch(patchID);
+        Assert.assertTrue("Rollback should be accepted", CliUtilsForPatching.rollbackPatch(patchID));
         Assert.assertTrue("server should be in restart-required mode",
                 CliUtilsForPatching.doesServerRequireRestart());
         controller.stop(CONTAINER);
@@ -1158,7 +1158,7 @@ public class BasicOneOffPatchingScenariosTestCase {
         Assert.assertFalse("The file " + patchModuleDir + "should have been deleted", patchModuleDir.exists());
 
         // reapply patch and check if server is in restart-required mode
-        CliUtilsForPatching.applyPatch(zippedPatch.getAbsolutePath());
+        Assert.assertTrue("Patch should be accepted", CliUtilsForPatching.applyPatch(zippedPatch.getAbsolutePath()));
         Assert.assertTrue("server should be in restart-required mode",
                 CliUtilsForPatching.doesServerRequireRestart());
         controller.stop(CONTAINER);
@@ -1216,7 +1216,7 @@ public class BasicOneOffPatchingScenariosTestCase {
 
         // apply the patch and check if server is in restart-required mode
         controller.start(CONTAINER);
-        CliUtilsForPatching.applyPatch(zippedPatch.getAbsolutePath());
+        Assert.assertTrue("Patch should be accepted", CliUtilsForPatching.applyPatch(zippedPatch.getAbsolutePath()));
         Assert.assertTrue("server should be in restart-required mode",
                 CliUtilsForPatching.doesServerRequireRestart());
         controller.stop(CONTAINER);
@@ -1230,7 +1230,7 @@ public class BasicOneOffPatchingScenariosTestCase {
         Assert.assertTrue("The file " + moduleXml2.getName() + " should exist", moduleXml2.exists());
 
         // rollback the patch and check if server is in restart-required mode
-        CliUtilsForPatching.rollbackPatch(patchID);
+        Assert.assertTrue("Rollback should be accepted", CliUtilsForPatching.rollbackPatch(patchID));
         Assert.assertTrue("server should be in restart-required mode",
                 CliUtilsForPatching.doesServerRequireRestart());
         controller.stop(CONTAINER);
@@ -1244,7 +1244,7 @@ public class BasicOneOffPatchingScenariosTestCase {
         Assert.assertFalse("The file " + patchModuleDir2 + "should have been deleted", patchModuleDir2.exists());
 
         // reapply patch and check if server is in restart-required mode
-        CliUtilsForPatching.applyPatch(zippedPatch.getAbsolutePath());
+        Assert.assertTrue("Patch should be accepted", CliUtilsForPatching.applyPatch(zippedPatch.getAbsolutePath()));
         Assert.assertTrue("server should be in restart-required mode",
                 CliUtilsForPatching.doesServerRequireRestart());
         controller.stop(CONTAINER);
