@@ -22,6 +22,7 @@
 
 package org.wildfly.extension.undertow;
 
+import io.undertow.server.handlers.cache.DirectBufferCache;
 import io.undertow.servlet.api.DevelopmentModeInfo;
 import org.jboss.as.controller.AbstractBoottimeAddStepHandler;
 import org.jboss.as.controller.AttributeDefinition;
@@ -31,6 +32,7 @@ import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.ServiceVerificationHandler;
 import org.jboss.as.controller.registry.Resource;
 import org.jboss.dmr.ModelNode;
+import org.jboss.msc.service.ServiceBuilder;
 import org.jboss.msc.service.ServiceController;
 import org.jboss.msc.service.ServiceTarget;
 
@@ -69,12 +71,19 @@ final class ServletContainerAdd extends AbstractBoottimeAddStepHandler {
         SessionCookieConfig config = SessionCookieDefinition.INSTANCE.getConfig(context, fullModel.get(SessionCookieDefinition.INSTANCE.getPathElement().getKeyValuePair()));
         DevelopmentModeInfo devMode = DevelopmentModeDefinition.INSTANCE.getConfig(context, fullModel.get(SessionCookieDefinition.INSTANCE.getPathElement().getKeyValuePair()));
         final boolean allowNonStandardWrappers = ServletContainerDefinition.ALLOW_NON_STANDARD_WRAPPERS.resolveModelAttribute(context, model).asBoolean();
+        final ModelNode bufferCacheValue = ServletContainerDefinition.DEFAULT_BUFFER_CACHE.resolveModelAttribute(context, model);
+        final String bufferCache = bufferCacheValue.isDefined() ? bufferCacheValue.asString() : null;
 
         JSPConfig jspConfig = JspDefinition.INSTANCE.getConfig(context, fullModel.get(JspDefinition.INSTANCE.getPathElement().getKeyValuePair()), devMode != null);
 
         final ServletContainerService container = new ServletContainerService(devMode, allowNonStandardWrappers, config, jspConfig);
         final ServiceTarget target = context.getServiceTarget();
-        newControllers.add(target.addService(UndertowService.SERVLET_CONTAINER.append(name), container)
+        final ServiceBuilder<ServletContainerService> builder = target.addService(UndertowService.SERVLET_CONTAINER.append(name), container);
+        if(bufferCache != null) {
+            builder.addDependency(BufferCacheService.SERVICE_NAME.append(bufferCache), DirectBufferCache.class, container.getBufferCacheInjectedValue());
+        }
+
+        newControllers.add(builder
                 .setInitialMode(ServiceController.Mode.ON_DEMAND)
                 .install());
     }

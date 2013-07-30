@@ -22,6 +22,7 @@
 
 package org.wildfly.extension.undertow;
 
+import io.undertow.server.handlers.cache.DirectBufferCache;
 import io.undertow.servlet.api.DeploymentInfo;
 import io.undertow.servlet.api.DevelopmentModeInfo;
 import io.undertow.servlet.api.ServletContainer;
@@ -29,6 +30,7 @@ import org.jboss.msc.service.Service;
 import org.jboss.msc.service.StartContext;
 import org.jboss.msc.service.StartException;
 import org.jboss.msc.service.StopContext;
+import org.jboss.msc.value.InjectedValue;
 
 import java.util.ConcurrentModificationException;
 import java.util.Map;
@@ -48,6 +50,8 @@ public class ServletContainerService implements Service<ServletContainerService>
     private volatile ServletContainer servletContainer;
     @Deprecated
     private final Map<String, Integer> secureListeners = new ConcurrentHashMap<>(1);
+
+    private final InjectedValue<DirectBufferCache> bufferCacheInjectedValue = new InjectedValue<>();
 
     public ServletContainerService(DevelopmentModeInfo developmentMode, boolean allowNonStandardWrappers, SessionCookieConfig sessionCookieConfig, JSPConfig jspConfig) {
         this.developmentMode = developmentMode;
@@ -122,5 +126,13 @@ public class ServletContainerService implements Service<ServletContainerService>
 
     public SessionCookieConfig getSessionCookieConfig() {
         return sessionCookieConfig;
+    }
+
+    InjectedValue<DirectBufferCache> getBufferCacheInjectedValue() {
+        return bufferCacheInjectedValue;
+    }
+
+    public DirectBufferCache getBufferCache() {
+        return bufferCacheInjectedValue.getOptionalValue();
     }
 }

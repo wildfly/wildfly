@@ -29,7 +29,6 @@ import io.undertow.server.HandlerWrapper;
 import io.undertow.server.HttpHandler;
 import io.undertow.server.HttpServerExchange;
 import io.undertow.server.handlers.builder.PredicatedHandler;
-import io.undertow.server.handlers.cache.DirectBufferCache;
 import io.undertow.server.handlers.resource.CachingResourceManager;
 import io.undertow.server.handlers.resource.ResourceManager;
 import io.undertow.servlet.Servlets;
@@ -178,7 +177,6 @@ public class UndertowDeploymentInfoService implements Service<DeploymentInfo> {
     private final InjectedValue<SessionManagerFactory> sessionManagerFactory = new InjectedValue<SessionManagerFactory>();
     private final InjectedValue<SecurityDomainContext> securityDomainContextValue = new InjectedValue<SecurityDomainContext>();
     private final InjectedValue<ServletContainerService> container = new InjectedValue<>();
-    private final InjectedValue<DirectBufferCache> bufferCacheInjectedValue = new InjectedValue<>();
     private final InjectedValue<PathManager> pathManagerInjector = new InjectedValue<PathManager>();
     private final InjectedValue<ComponentRegistry> componentRegistryInjectedValue = new InjectedValue<>();
 
@@ -368,7 +366,7 @@ public class UndertowDeploymentInfoService implements Service<DeploymentInfo> {
                 //TODO: make the caching limits configurable
                 ResourceManager resourceManager = new ServletResourceManager(deploymentRoot, overlays);
                 if(servletContainer.getDevelopmentMode() == null) {
-                    resourceManager = new CachingResourceManager(100, 10 * 1024 * 1024, bufferCacheInjectedValue.getOptionalValue(), resourceManager, -1);
+                    resourceManager = new CachingResourceManager(100, 10 * 1024 * 1024, servletContainer.getBufferCache(), resourceManager, -1);
                 }
                 d.setResourceManager(resourceManager);
             } catch (IOException e) {
@@ -1015,10 +1013,6 @@ public class UndertowDeploymentInfoService implements Service<DeploymentInfo> {
 
     public InjectedValue<UndertowService> getUndertowService() {
         return undertowService;
-    }
-
-    public InjectedValue<DirectBufferCache> getBufferCacheInjectedValue() {
-        return bufferCacheInjectedValue;
     }
 
     public InjectedValue<PathManager> getPathManagerInjector() {
