@@ -119,7 +119,7 @@ import org.wildfly.clustering.web.session.SessionManagerFactory;
 import org.wildfly.clustering.web.undertow.session.SessionManagerFacadeFactory;
 import org.wildfly.extension.undertow.JSPService;
 import org.wildfly.extension.undertow.ServletContainerService;
-import org.wildfly.extension.undertow.SessionCookieConfigService;
+import org.wildfly.extension.undertow.SessionCookieConfig;
 import org.wildfly.extension.undertow.UndertowService;
 import org.wildfly.extension.undertow.security.AuditNotificationReceiver;
 import org.wildfly.extension.undertow.security.JAASIdentityManagerImpl;
@@ -181,7 +181,6 @@ public class UndertowDeploymentInfoService implements Service<DeploymentInfo> {
     private final InjectedValue<SecurityDomainContext> securityDomainContextValue = new InjectedValue<SecurityDomainContext>();
     private final InjectedValue<ServletContainerService> container = new InjectedValue<>();
     private final InjectedValue<DirectBufferCache> bufferCacheInjectedValue = new InjectedValue<>();
-    private final InjectedValue<SessionCookieConfigService> defaultSessionCookieConfig = new InjectedValue<>();
     private final InjectedValue<PathManager> pathManagerInjector = new InjectedValue<PathManager>();
     private final InjectedValue<ComponentRegistry> componentRegistryInjectedValue = new InjectedValue<>();
     private final InjectedValue<JSPService> jspService = new InjectedValue<>();
@@ -217,7 +216,7 @@ public class UndertowDeploymentInfoService implements Service<DeploymentInfo> {
             SessionConfigMetaData sessionConfig = mergedMetaData.getSessionConfig();
             ServletSessionConfig config = null;
             //default session config
-            SessionCookieConfigService defaultSessionConfig = defaultSessionCookieConfig.getOptionalValue();
+            SessionCookieConfig defaultSessionConfig = container.getValue().getSessionCookieConfig();
             if (defaultSessionConfig != null) {
                 config = new ServletSessionConfig();
                 if (defaultSessionConfig.getName() != null) {
@@ -1022,10 +1021,6 @@ public class UndertowDeploymentInfoService implements Service<DeploymentInfo> {
 
     public InjectedValue<DirectBufferCache> getBufferCacheInjectedValue() {
         return bufferCacheInjectedValue;
-    }
-
-    public InjectedValue<SessionCookieConfigService> getDefaultSessionCookieConfig() {
-        return defaultSessionCookieConfig;
     }
 
     public InjectedValue<PathManager> getPathManagerInjector() {

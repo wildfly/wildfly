@@ -32,6 +32,7 @@ import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.ServiceVerificationHandler;
+import org.jboss.as.controller.registry.Resource;
 import org.jboss.dmr.ModelNode;
 import org.jboss.msc.service.ServiceController;
 import org.jboss.msc.service.ServiceTarget;
@@ -57,14 +58,23 @@ final class ServletContainerAdd extends AbstractBoottimeAddStepHandler {
         final PathAddress address = PathAddress.pathAddress(operation.get(OP_ADDR));
         final String name = address.getLastElement().getValue();
 
+        installRuntimeServices(context, model, newControllers, name);
+
+    }
+
+    public void installRuntimeServices(OperationContext context, ModelNode model, List<ServiceController<?>> newControllers, String name) throws OperationFailedException {
+        final ModelNode fullModel = Resource.Tools.readModel(context.readResource(PathAddress.EMPTY_ADDRESS));
+
+
+        SessionCookieConfig config = SessionCookieDefinition.INSTANCE.getConfig(context, fullModel.get(SessionCookieDefinition.INSTANCE.getPathElement().getKeyValuePair()));
+
         final boolean developmentMode = ServletContainerDefinition.DEVELOPMENT_MODE.resolveModelAttribute(context, model).asBoolean();
         final boolean allowNonStandardWrappers = ServletContainerDefinition.ALLOW_NON_STANDARD_WRAPPERS.resolveModelAttribute(context, model).asBoolean();
 
-        final ServletContainerService container = new ServletContainerService(developmentMode, allowNonStandardWrappers);
+        final ServletContainerService container = new ServletContainerService(developmentMode, allowNonStandardWrappers, config);
         final ServiceTarget target = context.getServiceTarget();
         newControllers.add(target.addService(UndertowService.SERVLET_CONTAINER.append(name), container)
                 .setInitialMode(ServiceController.Mode.ON_DEMAND)
                 .install());
-
     }
 }

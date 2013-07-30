@@ -22,16 +22,8 @@
 
 package org.wildfly.extension.undertow.deployment;
 
-import static org.wildfly.extension.undertow.UndertowMessages.MESSAGES;
 import io.undertow.server.handlers.cache.DirectBufferCache;
 import io.undertow.servlet.api.DeploymentInfo;
-
-import java.util.Collection;
-import java.util.Collections;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
-
 import org.jboss.as.controller.PathElement;
 import org.jboss.as.controller.services.path.PathManager;
 import org.jboss.as.controller.services.path.PathManagerService;
@@ -75,10 +67,17 @@ import org.wildfly.extension.undertow.DeploymentDefinition;
 import org.wildfly.extension.undertow.Host;
 import org.wildfly.extension.undertow.JSPService;
 import org.wildfly.extension.undertow.ServletContainerService;
-import org.wildfly.extension.undertow.SessionCookieConfigService;
 import org.wildfly.extension.undertow.UndertowExtension;
 import org.wildfly.extension.undertow.UndertowLogger;
 import org.wildfly.extension.undertow.UndertowService;
+
+import java.util.Collection;
+import java.util.Collections;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
+
+import static org.wildfly.extension.undertow.UndertowMessages.MESSAGES;
 
 public class UndertowDeploymentProcessor implements DeploymentUnitProcessor {
 
@@ -215,7 +214,6 @@ public class UndertowDeploymentProcessor implements DeploymentUnitProcessor {
         final ServiceName deploymentInfoServiceName = deploymentServiceName.append(UndertowDeploymentInfoService.SERVICE_NAME);
         ServiceBuilder<DeploymentInfo> infoBuilder = serviceTarget.addService(deploymentInfoServiceName, undertowDeploymentInfoService)
                 .addDependency(UndertowService.SERVLET_CONTAINER.append(defaultContainer), ServletContainerService.class, undertowDeploymentInfoService.getContainer())
-                .addDependency(ServiceBuilder.DependencyType.OPTIONAL, SessionCookieConfigService.SERVICE_NAME.append(defaultContainer), SessionCookieConfigService.class, undertowDeploymentInfoService.getDefaultSessionCookieConfig())
                 .addDependency(SecurityDomainService.SERVICE_NAME.append(securityDomain), SecurityDomainContext.class, undertowDeploymentInfoService.getSecurityDomainContextValue())
                 .addDependency(UndertowService.UNDERTOW, UndertowService.class, undertowDeploymentInfoService.getUndertowService())
                 .addDependency(ServiceBuilder.DependencyType.OPTIONAL, BufferCacheService.SERVICE_NAME.append("default"), DirectBufferCache.class, undertowDeploymentInfoService.getBufferCacheInjectedValue())
