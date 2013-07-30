@@ -442,24 +442,30 @@ class FileSystemDeploymentService implements DeploymentScanner {
                             break;
                         }
 
-                        final List<Property> resultList = results.get(RESULT).asPropertyList();
                         final List<ModelNode> toRetry = new ArrayList<ModelNode>();
                         final List<ScannerTask> retryTasks = new ArrayList<ScannerTask>();
-                        for (int i = 0; i < resultList.size(); i++) {
-                            final ModelNode result = resultList.get(i).getValue();
-                            final ScannerTask task = scannerTasks.get(i);
-                            final ModelNode outcome = result.get(OUTCOME);
-                            if (outcome.isDefined() && SUCCESS.equals(outcome.asString())) {
-                                task.handleSuccessResult();
-                            } else if (outcome.isDefined() && CANCELLED.equals(outcome.asString())) {
-                                toRetry.add(updates.get(i));
-                                retryTasks.add(task);
-                            } else {
-                                task.handleFailureResult(result);
+                        if (results.hasDefined(RESULT)) {
+                            final List<Property> resultList = results.get(RESULT).asPropertyList();
+                            for (int i = 0; i < resultList.size(); i++) {
+                                final ModelNode result = resultList.get(i).getValue();
+                                final ScannerTask task = scannerTasks.get(i);
+                                final ModelNode outcome = result.get(OUTCOME);
+                                if (outcome.isDefined() && SUCCESS.equals(outcome.asString())) {
+                                    task.handleSuccessResult();
+                                } else if (outcome.isDefined() && CANCELLED.equals(outcome.asString())) {
+                                    toRetry.add(updates.get(i));
+                                    retryTasks.add(task);
+                                } else {
+                                    task.handleFailureResult(result);
+                                }
+                            }
+                            updates = toRetry;
+                            scannerTasks = retryTasks;
+                        } else {
+                            for (ScannerTask current : scannerTasks) {
+                                current.handleFailureResult(results);
                             }
                         }
-                        updates = toRetry;
-                        scannerTasks = retryTasks;
                     }
                 }
                 ROOT_LOGGER.tracef("Scan complete");
