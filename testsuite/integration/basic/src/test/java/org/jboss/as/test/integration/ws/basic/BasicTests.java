@@ -72,6 +72,9 @@ public class BasicTests {
              Assert.assertTrue(iter.hasNext());
              QName subcode = (QName) iter.next();
              Assert.assertEquals( new QName("http://ws.gss.redhat.com/", "NullPointerException"), subcode);
+             Assert.assertTrue(iter.hasNext());
+             subcode = (QName) iter.next();
+             Assert.assertEquals( new QName("http://ws.gss.redhat.com/", "OperatorNotFound"), subcode);
         }
     }
 
