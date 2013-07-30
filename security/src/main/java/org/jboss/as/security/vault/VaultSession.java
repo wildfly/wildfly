@@ -97,7 +97,8 @@ public final class VaultSession {
         File f = new File(keystoreURL);
         if (!f.exists()) {
             throw new Exception("Keystore [" + keystoreURL + "] doesn't exist."
-                    + "\nkeystore could be created: keytool -genkey -alias vault -keyalg RSA -keysize 1024  -keystore "
+                    + "\nkeystore could be created: "
+                    + "keytool -genseckey -alias vault -storetype jceks -keyalg AES -keysize 128 -storepass secretsecret -keypass secretsecret -keystore "
                     + keystoreURL);
         } else if (!f.canWrite() || !f.isFile()) {
             throw new Exception("Keystore [" + keystoreURL + "] is not writable or not a file.");
