@@ -91,7 +91,7 @@
                                     </includes>
 
                                     <!-- Parameters to test cases. -->
-                                    <systemPropertyVariables>
+                                    <systemPropertyVariables combine.children="append">
                                         <arquillian.launch>iiop</arquillian.launch>
                                         <jboss.server.config.file.name>standalone-full.xml</jboss.server.config.file.name>
                                     </systemPropertyVariables>

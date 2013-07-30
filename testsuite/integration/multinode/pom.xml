@@ -93,7 +93,7 @@
                                     </includes>
 
                                     <!-- Parameters to test cases. -->
-                                    <systemPropertyVariables>
+                                    <systemPropertyVariables combine.children="append">
                                         <arquillian.launch>multinode</arquillian.launch>
                                         <jboss.server.config.file.name>standalone.xml</jboss.server.config.file.name>
                                     </systemPropertyVariables>

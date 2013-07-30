@@ -104,7 +104,7 @@
                                     <excludes>
                                         <exclude>**/embedded/osgi/**/*TestCase.java</exclude>
                                     </excludes>
-                                    <systemPropertyVariables>
+                                    <systemPropertyVariables combine.children="append">
                                         <arquillian.launch>osgi</arquillian.launch>
                                         <jboss.server.config.file.name>standalone.xml</jboss.server.config.file.name>
                                     </systemPropertyVariables>
@@ -120,7 +120,7 @@
                                     </includes>
                                     <!-- Fork every test because it will launch a separate AS instance -->
                                     <forkMode>always</forkMode>
-                                    <systemPropertyVariables>
+                                    <systemPropertyVariables combine.children="append">
                                         <java.util.logging.manager>org.jboss.logmanager.LogManager</java.util.logging.manager>
                                         <jboss.home>${basedir}/target/jbossas</jboss.home>
                                         <module.path>${jboss.home}/modules</module.path>

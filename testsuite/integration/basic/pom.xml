@@ -204,7 +204,7 @@
                                     </includes>
 
                                     <!-- Parameters to test cases. -->
-                                    <systemPropertyVariables>
+                                    <systemPropertyVariables combine.children="append">
                                         <jboss.server.config.file.name>standalone-full.xml</jboss.server.config.file.name>
                                         <jboss.inst>${basedir}/target/jbossas</jboss.inst>
                                         <!-- Needed for the IIOP tests-->
@@ -252,7 +252,7 @@
                                     </excludes>
 
                                     <!-- Parameters to test cases. -->
-                                    <systemPropertyVariables>
+                                    <systemPropertyVariables combine.children="append">
                                         <jboss.server.config.file.name>standalone.xml</jboss.server.config.file.name>
                                         <jboss.inst>${basedir}/target/jbossas</jboss.inst>
                                     </systemPropertyVariables>
@@ -293,7 +293,7 @@
                                         <include>org/jboss/as/test/integration/security/loginmodules/Ldap*TestCase.java</include>                                        
                                     </includes>
                                     
-                                    <systemPropertyVariables>
+                                    <systemPropertyVariables combine.children="append">
                                         <jboss.server.config.file.name>standalone.xml</jboss.server.config.file.name>
                                         <jboss.inst>${basedir}/target/jbossas</jboss.inst>
                                     </systemPropertyVariables>
@@ -342,7 +342,7 @@
                                 <goals><goal>test</goal></goals>
                                 <configuration>
                                     <redirectTestOutputToFile>false</redirectTestOutputToFile>
-                                    <systemPropertyVariables>
+                                    <systemPropertyVariables combine.children="append">
                                         <jboss.server.config.file.name>standalone-full.xml</jboss.server.config.file.name>
                                     </systemPropertyVariables>
                                     <includes>
