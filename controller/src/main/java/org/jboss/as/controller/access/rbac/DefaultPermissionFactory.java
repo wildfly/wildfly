@@ -31,6 +31,7 @@ import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
+import java.util.NoSuchElementException;
 import java.util.Set;
 import java.util.TreeSet;
 
@@ -65,6 +66,7 @@ import org.jboss.as.controller.access.permission.SimpleManagementPermission;
  */
 public class DefaultPermissionFactory implements PermissionFactory {
 
+    private static final PermissionCollection NO_PERMISSIONS = new NoPermissionsCollection();
     private final CombinationPolicy combinationPolicy;
     private final RoleMapper roleMapper;
     private final Set<ConstraintFactory> constraintFactories;
@@ -139,7 +141,7 @@ public class DefaultPermissionFactory implements PermissionFactory {
         }
         PermissionCollection result;
         if (combined == null) {
-            result = simple;
+            result = simple != null ? simple : NO_PERMISSIONS;
         } else {
             result = new ManagementPermissionCollection(CombinationManagementPermission.class);
             for (CombinationManagementPermission cmp : combined.values()) {
@@ -288,4 +290,40 @@ public class DefaultPermissionFactory implements PermissionFactory {
             this.constraint = constraint;
         }
     }
+
+    private static class NoPermissionsCollection extends PermissionCollection {
+
+        private NoPermissionsCollection() {
+            super.setReadOnly();
+        }
+
+        @Override
+        public void add(Permission permission) {
+            throw new UnsupportedOperationException();
+        }
+
+        @Override
+        public boolean implies(Permission permission) {
+            return false;
+        }
+
+        @Override
+        public Enumeration<Permission> elements() {
+            return new Enumeration<Permission>() {
+
+                @Override
+                public boolean hasMoreElements() {
+                    return false;
+                }
+
+                @Override
+                public Permission nextElement() {
+                    throw new NoSuchElementException();
+                }
+
+            };
+        }
+
+    }
+
 }
