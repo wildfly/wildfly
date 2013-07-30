@@ -43,7 +43,7 @@
            <host name="default-host"/>
        </server>
 
-    <servlet-container name="default" development-mode="true" >
+    <servlet-container name="default" >
         <jsp-config
                     disabled="${prop.disabled:false}"
                     keep-generated="${prop.keep-generated:true}"
