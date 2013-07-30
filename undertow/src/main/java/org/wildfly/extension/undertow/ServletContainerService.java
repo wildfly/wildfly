@@ -42,13 +42,15 @@ public class ServletContainerService implements Service<ServletContainerService>
 
     private final boolean developmentMode;
     private final boolean allowNonStandardWrappers;
+    private final SessionCookieConfig sessionCookieConfig;
     private volatile ServletContainer servletContainer;
     @Deprecated
     private final Map<String, Integer> secureListeners = new ConcurrentHashMap<>(1);
 
-    public ServletContainerService(boolean developmentMode, boolean allowNonStandardWrappers) {
+    public ServletContainerService(boolean developmentMode, boolean allowNonStandardWrappers, SessionCookieConfig sessionCookieConfig) {
         this.developmentMode = developmentMode;
         this.allowNonStandardWrappers = allowNonStandardWrappers;
+        this.sessionCookieConfig = sessionCookieConfig;
     }
 
     static String getDeployedContextPath(DeploymentInfo deploymentInfo) {
@@ -111,4 +113,7 @@ public class ServletContainerService implements Service<ServletContainerService>
         secureListeners.remove(name);
     }
 
+    public SessionCookieConfig getSessionCookieConfig() {
+        return sessionCookieConfig;
+    }
 }
