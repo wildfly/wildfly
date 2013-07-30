@@ -98,6 +98,7 @@
         </xs:sequence>
         <xs:attribute name="name" use="required" type="xs:string"/>
         <xs:attribute name="allow-non-standard-wrappers" use="optional" type="xs:boolean" default="false"/>
+        <xs:attribute name="default-buffer-cache" use="optional" type="xs:string" />
     </xs:complexType>
     <xs:complexType name="hostType">
         <xs:sequence>

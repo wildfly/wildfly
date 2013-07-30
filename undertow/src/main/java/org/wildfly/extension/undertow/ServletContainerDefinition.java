@@ -49,6 +49,13 @@ public class ServletContainerDefinition extends PersistentResourceDefinition {
                     .setAllowExpression(true)
                     .build();
 
+
+    protected static final SimpleAttributeDefinition DEFAULT_BUFFER_CACHE =
+            new SimpleAttributeDefinitionBuilder(Constants.DEFAULT_BUFFER_CACHE, ModelType.STRING, true)
+                    .setFlags(AttributeAccess.Flag.RESTART_ALL_SERVICES)
+                    .setAllowExpression(true)
+                    .build();
+
     private static final List<? extends PersistentResourceDefinition> CHILDREN;
 
     static {
@@ -70,6 +77,7 @@ public class ServletContainerDefinition extends PersistentResourceDefinition {
     public Collection<AttributeDefinition> getAttributes() {
         final List<AttributeDefinition> attributes = new ArrayList<>();
         attributes.add(ALLOW_NON_STANDARD_WRAPPERS);
+        attributes.add(DEFAULT_BUFFER_CACHE);
         return attributes;
     }
 
