@@ -101,7 +101,7 @@
                                     </includes>
 
                                     <!-- Parameters to test cases. -->
-                                    <systemPropertyVariables>
+                                    <systemPropertyVariables combine.children="append">
                                         <arquillian.launch>clustering-all</arquillian.launch>
                                         <!-- Use combine.children="append" to pick up parent properties automatically. -->
                                         <jboss.server.config.file.name>standalone-ha.xml</jboss.server.config.file.name>
@@ -125,7 +125,7 @@
                                     </includes>
 
                                     <!-- Parameters to test cases. -->
-                                    <systemPropertyVariables>
+                                    <systemPropertyVariables combine.children="append">
                                         <arquillian.launch>clustering-udp-single</arquillian.launch>
                                         <jboss.server.config.file.name>standalone.xml</jboss.server.config.file.name>
                                     </systemPropertyVariables>
@@ -197,7 +197,7 @@
                                     <includes>
                                         <include>org/jboss/as/test/clustering/cluster/**/*TestCase.java</include>
                                     </includes>
-                                    <systemPropertyVariables>
+                                    <systemPropertyVariables combine.children="append">
                                         <arquillian.launch>clustering-all</arquillian.launch>
                                         <jboss.server.config.file.name>standalone-ha.xml</jboss.server.config.file.name>
                                         <cacheMode>ASYNC</cacheMode>
@@ -216,7 +216,7 @@
                                     <includes>
                                         <include>org/jboss/as/test/clustering/cluster/**/*TestCase.java</include>
                                     </includes>
-                                    <systemPropertyVariables>
+                                    <systemPropertyVariables combine.children="append">
                                         <arquillian.launch>clustering-all</arquillian.launch>
                                         <jboss.server.config.file.name>standalone-ha.xml</jboss.server.config.file.name>
                                         <cacheMode>SYNC</cacheMode>
@@ -235,7 +235,7 @@
                                     <includes>
                                         <include>org/jboss/as/test/clustering/cluster/**/*TestCase.java</include>
                                     </includes>
-                                    <systemPropertyVariables>
+                                    <systemPropertyVariables combine.children="append">
                                         <arquillian.launch>clustering-all</arquillian.launch>
                                         <jboss.server.config.file.name>standalone-ha.xml</jboss.server.config.file.name>
                                         <cacheMode>ASYNC</cacheMode>
@@ -259,7 +259,7 @@
                                     </includes>
 
                                     <!-- Parameters to test cases. -->
-                                    <systemPropertyVariables>
+                                    <systemPropertyVariables combine.children="append">
                                         <arquillian.launch>clustering-all</arquillian.launch>
                                         <jboss.server.config.file.name>standalone-ha.xml</jboss.server.config.file.name>
                                         <stack>udp</stack>
@@ -373,7 +373,7 @@
                                     </includes>
 
                                     <!-- Parameters to test cases. -->
-                                    <systemPropertyVariables>
+                                    <systemPropertyVariables combine.children="append">
                                         <arquillian.launch>clustering-udp-single-jdbc-store</arquillian.launch>
                                         <jboss.server.config.file.name>standalone.xml</jboss.server.config.file.name>
                                     </systemPropertyVariables>
@@ -452,7 +452,7 @@
                                     </includes>
 
                                     <!-- Parameters to test cases. -->
-                                    <systemPropertyVariables>
+                                    <systemPropertyVariables combine.children="append">
                                         <arquillian.launch>clustering-xsite</arquillian.launch>
                                         <jboss.server.config.file.name>standalone-ha.xml</jboss.server.config.file.name>
                                         <stack>udp</stack>
