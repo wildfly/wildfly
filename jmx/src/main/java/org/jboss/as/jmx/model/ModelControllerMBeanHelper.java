@@ -35,6 +35,7 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.VAL
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.WRITE_ATTRIBUTE_OPERATION;
 import static org.jboss.as.jmx.JmxMessages.MESSAGES;
 
+import java.util.Collections;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.Map;
@@ -135,6 +136,9 @@ public class ModelControllerMBeanHelper {
 
             @Override
             public Set<ObjectInstance> getResult() {
+                if (set.size() == 1 && set.contains(ModelControllerMBeanHelper.createRootObjectName(domain))) {
+                    return Collections.emptySet();
+                }
                 return set;
             }
         }).iterate();
@@ -159,6 +163,9 @@ public class ModelControllerMBeanHelper {
 
             @Override
             public Set<ObjectName> getResult() {
+                if (set.size() == 1 && set.contains(ModelControllerMBeanHelper.createRootObjectName(domain))) {
+                  return Collections.emptySet();
+                }
                 return set;
             }
         }).iterate();

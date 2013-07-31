@@ -30,7 +30,7 @@ import static java.security.AccessController.doPrivileged;
  *
  * @author <a href="kabir.khan@jboss.com">Kabir Khan</a>
  */
-public class SecurityActions {
+class SecurityActions {
     static ClassLoader getClassLoader(final Class<?> clazz) {
         return ! WildFlySecurityManager.isChecking() ? clazz.getClassLoader() : doPrivileged(new GetClassLoaderAction(clazz));
     }

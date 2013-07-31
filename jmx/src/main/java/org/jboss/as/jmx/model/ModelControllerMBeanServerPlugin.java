@@ -48,10 +48,6 @@ import org.jboss.as.jmx.BaseMBeanServerPlugin;
 
 /**
  * An MBeanServer wrapper that exposes the ModelController via JMX.
- * <p/>
- * <b>Note:</b> This only gets invoked when connecting via JConsole
- * if you connect via a remote process URL. If you connect to a 'Local Process' the platform MBean
- * Server is used directly.
  *
  * @author <a href="kabir.khan@jboss.com">Kabir Khan</a>
  */
