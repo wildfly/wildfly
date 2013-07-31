@@ -53,6 +53,13 @@ class DevelopmentModeDefinition extends PersistentResourceDefinition {
     static final DevelopmentModeDefinition INSTANCE = new DevelopmentModeDefinition();
 
 
+    protected static final SimpleAttributeDefinition ENABLED =
+            new SimpleAttributeDefinitionBuilder(Constants.ENABLED, ModelType.BOOLEAN, true)
+                    .setFlags(AttributeAccess.Flag.RESTART_ALL_SERVICES)
+                    .setDefaultValue(new ModelNode(false))
+                    .setAllowExpression(true)
+                    .build();
+
     protected static final SimpleAttributeDefinition PERSISTENT_SESSIONS =
             new SimpleAttributeDefinitionBuilder(Constants.PERSISTENT_SESSIONS, ModelType.BOOLEAN, true)
                     .setFlags(AttributeAccess.Flag.RESTART_ALL_SERVICES)
@@ -60,8 +67,8 @@ class DevelopmentModeDefinition extends PersistentResourceDefinition {
                     .setAllowExpression(true)
                     .build();
 
-
     protected static final SimpleAttributeDefinition[] ATTRIBUTES = {
+            ENABLED,
             PERSISTENT_SESSIONS
     };
     static final Map<String, AttributeDefinition> ATTRIBUTES_MAP = new HashMap<>();
@@ -87,6 +94,10 @@ class DevelopmentModeDefinition extends PersistentResourceDefinition {
 
     public DevelopmentModeInfo getConfig(final OperationContext context, final ModelNode model) throws OperationFailedException {
         if (!model.isDefined()) {
+            return null;
+        }
+        boolean enabled = ENABLED.resolveModelAttribute(context, model).asBoolean();
+        if(!enabled) {
             return null;
         }
         boolean persistentSessionsAttribute = PERSISTENT_SESSIONS.resolveModelAttribute(context, model).asBoolean();
