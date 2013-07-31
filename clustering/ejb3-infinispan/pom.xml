@@ -34,10 +34,18 @@
 
     <artifactId>wildfly-clustering-ejb3-infinispan</artifactId>
     <packaging>jar</packaging>
-    
+
     <name>WildFly: Clustered Stateful Session Bean cache Infinispan provider</name>
 
     <dependencies>
+        <dependency>
+            <groupId>org.jboss.logging</groupId>
+            <artifactId>jboss-logging-annotations</artifactId>
+            <!-- This is a compile-time dependency of this project, but is not needed at compile or runtime by other
+                  projects that depend on this project.-->
+            <scope>provided</scope>
+            <optional>true</optional>
+        </dependency>
         <dependency>
             <groupId>org.jboss.logging</groupId>
             <artifactId>jboss-logging-processor</artifactId>
@@ -59,5 +67,5 @@
             <artifactId>wildfly-ejb3</artifactId>
         </dependency>
     </dependencies>
-    
+
 </project>
