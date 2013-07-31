@@ -29,7 +29,7 @@ import java.security.PrivilegedAction;
  *
  * @author <a href="kabir.khan@jboss.com">Kabir Khan</a>
  */
-public class SecurityActions {
+class SecurityActions {
     static ClassLoader getClassLoader(final Class<?> clazz) {
         if (System.getSecurityManager() == null) {
             return GetClassLoaderAction.NON_PRIVILEGED.getClassLoader(clazz);

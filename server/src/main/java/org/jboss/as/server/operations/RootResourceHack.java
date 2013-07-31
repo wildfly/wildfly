@@ -23,6 +23,11 @@ package org.jboss.as.server.operations;
 
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP;
 
+import java.util.Collections;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+
 import org.jboss.as.controller.ModelController;
 import org.jboss.as.controller.ModelController.OperationTransactionControl;
 import org.jboss.as.controller.OperationContext;
@@ -30,14 +35,23 @@ import org.jboss.as.controller.OperationDefinition;
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.OperationStepHandler;
 import org.jboss.as.controller.PathAddress;
+import org.jboss.as.controller.PathElement;
+import org.jboss.as.controller.ProxyController;
 import org.jboss.as.controller.SimpleOperationDefinitionBuilder;
+import org.jboss.as.controller.UnauthorizedException;
+import org.jboss.as.controller.access.constraint.management.AccessConstraintDefinition;
+import org.jboss.as.controller.descriptions.DescriptionProvider;
+import org.jboss.as.controller.registry.AliasEntry;
+import org.jboss.as.controller.registry.AttributeAccess;
 import org.jboss.as.controller.registry.ImmutableManagementResourceRegistration;
+import org.jboss.as.controller.registry.OperationEntry;
+import org.jboss.as.controller.registry.OperationEntry.Flag;
 import org.jboss.as.controller.registry.Resource;
 import org.jboss.as.server.ServerMessages;
 import org.jboss.dmr.ModelNode;
 
 /**
- * Ugly hack to be able to get the root resurce and registration.
+ * Ugly hack to be able to get the root resource and registration.
  *
  * @author <a href="kabir.khan@jboss.com">Kabir Khan</a>
  */
@@ -68,7 +82,11 @@ public class RootResourceHack implements OperationStepHandler {
         if (threadResource == null || threadResource != ResourceAndRegistration.NULL) {
             throw ServerMessages.MESSAGES.internalUseOnly();
         }
+        try {
         resource.set(new ResourceAndRegistration(context.readResourceFromRoot(PathAddress.EMPTY_ADDRESS, true), context.getResourceRegistration()));
+        } catch (UnauthorizedException e) {
+            resource.set(new ResourceAndRegistration(Resource.Factory.create(), new EmptyResourceRegistration()));
+        }
         context.stepCompleted();
     }
 
@@ -104,5 +122,99 @@ public class RootResourceHack implements OperationStepHandler {
         public ImmutableManagementResourceRegistration getRegistration() {
             return registry;
         }
+    }
+
+    private static class EmptyResourceRegistration implements ImmutableManagementResourceRegistration {
+
+        @Override
+        public boolean isRuntimeOnly() {
+            return false;
+        }
+
+        @Override
+        public boolean isRemote() {
+            return false;
+        }
+
+        @Override
+        public boolean isAlias() {
+            return false;
+        }
+
+        @Override
+        public AliasEntry getAliasEntry() {
+            return null;
+        }
+
+        @Override
+        public OperationStepHandler getOperationHandler(PathAddress address, String operationName) {
+            return null;
+        }
+
+        @Override
+        public DescriptionProvider getOperationDescription(PathAddress address, String operationName) {
+            return null;
+        }
+
+        @Override
+        public Set<Flag> getOperationFlags(PathAddress address, String operationName) {
+            return null;
+        }
+
+        @Override
+        public OperationEntry getOperationEntry(PathAddress address, String operationName) {
+            return null;
+        }
+
+        @Override
+        public Set<String> getAttributeNames(PathAddress address) {
+            return Collections.emptySet();
+        }
+
+        @Override
+        public AttributeAccess getAttributeAccess(PathAddress address, String attributeName) {
+            return null;
+        }
+
+        @Override
+        public Set<String> getChildNames(PathAddress address) {
+            return Collections.emptySet();
+        }
+
+        @Override
+        public Set<PathElement> getChildAddresses(PathAddress address) {
+            return Collections.emptySet();
+        }
+
+        @Override
+        public DescriptionProvider getModelDescription(PathAddress address) {
+            return null;
+        }
+
+        @Override
+        public Map<String, OperationEntry> getOperationDescriptions(PathAddress address, boolean inherited) {
+            return Collections.emptyMap();
+        }
+
+        @Override
+        public ProxyController getProxyController(PathAddress address) {
+            return null;
+        }
+
+        @Override
+        public Set<ProxyController> getProxyControllers(PathAddress address) {
+            return Collections.emptySet();
+        }
+
+        @Override
+        public ImmutableManagementResourceRegistration getSubModel(PathAddress address) {
+            return null;
+        }
+
+        @Override
+        public List<AccessConstraintDefinition> getAccessConstraints() {
+            return Collections.emptyList();
+        }
+
     }
 }
