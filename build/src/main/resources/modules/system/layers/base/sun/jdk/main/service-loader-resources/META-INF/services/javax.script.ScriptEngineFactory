@@ -1,1 +1,2 @@
 com.sun.script.javascript.RhinoScriptEngineFactory
+jdk.nashorn.api.scripting.NashornScriptEngineFactory
