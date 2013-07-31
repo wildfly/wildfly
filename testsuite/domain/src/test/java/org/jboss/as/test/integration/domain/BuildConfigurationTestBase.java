@@ -55,7 +55,7 @@ public abstract class BuildConfigurationTestBase {
 
     static final File CONFIG_DIR = new File("target/jbossas/domain/configuration/");
 
-    static JBossAsManagedConfiguration createConfiguration(final String domainXmlName, final String hostXmlName, final String testConfiguration) {
+    protected static JBossAsManagedConfiguration createConfiguration(final String domainXmlName, final String hostXmlName, final String testConfiguration) {
         return createConfiguration(domainXmlName, hostXmlName, testConfiguration, "master", masterAddress, 9999);
     }
 

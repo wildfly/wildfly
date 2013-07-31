@@ -328,11 +328,15 @@ public abstract class SSOTestBase {
         applyUpdates(updates, client);
     }
 
-    public static void addClusteredSso(ModelControllerClient client) throws Exception {
+    public static void addClusteredSso(ModelControllerClient client, String serverMode) throws Exception {
         final List<ModelNode> updates = new ArrayList<ModelNode>();
 
         // SSO element name must be 'configuration'
-        ModelNode addOp = createOpNode("subsystem=web/virtual-server=default-host/sso=configuration", ADD);
+        ModelNode addOp;
+        if (serverMode.equals("domain"))
+            addOp = createOpNode("profile=ha/subsystem=web/virtual-server=default-host/sso=configuration", ADD);
+        else
+            addOp = createOpNode("subsystem=web/virtual-server=default-host/sso=configuration", ADD);
         addOp.get("cache-container").set("web");
         addOp.get("cache-name").set("sso");
         updates.add(addOp);
@@ -340,10 +344,12 @@ public abstract class SSOTestBase {
         applyUpdates(updates, client);
     }
 
-    public static void removeSso(final ModelControllerClient client) throws Exception {
+    public static void removeSso(final ModelControllerClient client, String serverMode) throws Exception {
         final List<ModelNode> updates = new ArrayList<ModelNode>();
-
-        updates.add(createOpNode("subsystem=web/virtual-server=default-host/sso=configuration", REMOVE));
+        if (serverMode.equals("domain"))
+            updates.add(createOpNode("profile=ha/subsystem=web/virtual-server=default-host/sso=configuration", REMOVE));
+        else
+            updates.add(createOpNode("subsystem=web/virtual-server=default-host/sso=configuration", REMOVE));
 
         applyUpdates(updates, client);
     }

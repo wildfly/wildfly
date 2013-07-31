@@ -61,7 +61,7 @@ public class SingleSignOnUnitTestCase {
         }
 
         public void tearDown(final ManagementClient managementClient, final String containerId) throws Exception {
-            SSOTestBase.removeSso(managementClient.getControllerClient());
+            SSOTestBase.removeSso(managementClient.getControllerClient(), "standalone");
         }
     }
 

@@ -166,12 +166,14 @@ public class DomainLifecycleUtil {
             fos = new FileOutputStream(appUsersProps);
             pw = new PrintWriter(fos, true);
             pw.println("# Application users");
+            pw.println("user1=" + new UsernamePasswordHashUtil().generateHashedHexURP("user1", "ApplicationRealm", "password1".toCharArray()));
             pw.close();
             fos.close();
             File appRolesProps = new File(domainPath + "/configuration/application-roles.properties");
             fos = new FileOutputStream(appRolesProps);
             pw = new PrintWriter(fos, true);
             pw.println("# Application roles");
+            pw.println("user1=Users");
             pw.close();
             fos.close();
 

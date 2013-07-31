@@ -105,8 +105,8 @@ public class ClusteredWebSimpleTestCase extends ClusterAbstractTestCase {
             @ArquillianResource @OperateOnDeployment(DEPLOYMENT_2) ManagementClient client2) throws Exception {
 
         // add sso valves
-        SSOTestBase.addClusteredSso(client1.getControllerClient());
-        SSOTestBase.addClusteredSso(client2.getControllerClient());
+        SSOTestBase.addClusteredSso(client1.getControllerClient(), "standalone");
+        SSOTestBase.addClusteredSso(client2.getControllerClient(), "standalone");
 
         stop(CONTAINERS);
         start(CONTAINERS);
@@ -119,8 +119,8 @@ public class ClusteredWebSimpleTestCase extends ClusterAbstractTestCase {
     public void stopServers(@ArquillianResource @OperateOnDeployment(DEPLOYMENT_1) ManagementClient client1,
             @ArquillianResource @OperateOnDeployment(DEPLOYMENT_2) ManagementClient client2) throws Exception {
 
-        SSOTestBase.removeSso(client1.getControllerClient());
-        SSOTestBase.removeSso(client2.getControllerClient());
+        SSOTestBase.removeSso(client1.getControllerClient(), "standalone");
+        SSOTestBase.removeSso(client2.getControllerClient(), "standalone");
 
         undeploy(DEPLOYMENTS);
         stop(CONTAINERS);
