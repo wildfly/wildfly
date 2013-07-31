@@ -219,7 +219,8 @@ class JspDefinition extends PersistentResourceDefinition {
         boolean dumpSnap = DUMP_SMAP.resolveModelAttribute(context, model).asBoolean();
         boolean generateStringsAsCharArrays = GENERATE_STRINGS_AS_CHAR_ARRAYS.resolveModelAttribute(context, model).asBoolean();
         boolean errorOnUseBeanInvalidClassAttribute = ERROR_ON_USE_BEAN_INVALID_CLASS_ATTRIBUTE.resolveModelAttribute(context, model).asBoolean();
-        String scratchDir = SCRATCH_DIR.resolveModelAttribute(context, model).asString();
+        final ModelNode scratchDirValue = SCRATCH_DIR.resolveModelAttribute(context, model);
+        String scratchDir = scratchDirValue.isDefined() ? scratchDirValue.asString() : null;
         String sourceVm = SOURCE_VM.resolveModelAttribute(context, model).asString();
         String targetVm = TARGET_VM.resolveModelAttribute(context, model).asString();
         String javaEncoding = JAVA_ENCODING.resolveModelAttribute(context, model).asString();
