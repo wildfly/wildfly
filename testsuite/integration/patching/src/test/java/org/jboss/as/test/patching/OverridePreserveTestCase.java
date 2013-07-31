@@ -21,11 +21,8 @@
 
 package org.jboss.as.test.patching;
 
-import org.jboss.arquillian.container.test.api.ContainerController;
 import org.jboss.arquillian.container.test.api.RunAsClient;
 import org.jboss.arquillian.junit.Arquillian;
-import org.jboss.arquillian.test.api.ArquillianResource;
-import org.jboss.as.patching.IoUtils;
 import org.jboss.as.patching.metadata.ContentModification;
 import org.jboss.as.patching.metadata.Patch;
 import org.jboss.as.patching.metadata.PatchBuilder;
@@ -33,80 +30,57 @@ import org.jboss.as.version.ProductConfig;
 import org.jboss.logging.Logger;
 import org.junit.After;
 import org.junit.Assert;
-import org.junit.Before;
+import org.junit.BeforeClass;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
 import java.io.File;
 
-import static org.jboss.as.test.patching.PatchingTestUtil.CONTAINER;
-import static org.jboss.as.test.patching.PatchingTestUtil.PRODUCT;
-import static org.jboss.as.test.patching.PatchingTestUtil.AS_VERSION;
-import static org.jboss.as.test.patching.PatchingTestUtil.FILE_SEPARATOR;
-import static org.jboss.as.test.patching.PatchingTestUtil.assertPatchElements;
-import static org.jboss.as.test.patching.PatchingTestUtil.baseModuleDir;
-import static org.jboss.as.test.patching.PatchingTestUtil.createModule0;
-import static org.jboss.as.test.patching.PatchingTestUtil.createPatchXMLFile;
-import static org.jboss.as.test.patching.PatchingTestUtil.createZippedPatchFile;
-import static org.jboss.as.test.patching.PatchingTestUtil.dump;
-import static org.jboss.as.test.patching.PatchingTestUtil.randomString;
 import static org.jboss.as.patching.Constants.BASE;
 import static org.jboss.as.patching.Constants.LAYERS;
 import static org.jboss.as.patching.Constants.SYSTEM;
 import static org.jboss.as.patching.IoUtils.mkdir;
 import static org.jboss.as.patching.IoUtils.newFile;
+import static org.jboss.as.test.patching.PatchingTestUtil.AS_VERSION;
+import static org.jboss.as.test.patching.PatchingTestUtil.CONTAINER;
+import static org.jboss.as.test.patching.PatchingTestUtil.FILE_SEPARATOR;
+import static org.jboss.as.test.patching.PatchingTestUtil.PRODUCT;
+import static org.jboss.as.test.patching.PatchingTestUtil.createModule0;
+import static org.jboss.as.test.patching.PatchingTestUtil.createPatchXMLFile;
+import static org.jboss.as.test.patching.PatchingTestUtil.createZippedPatchFile;
+import static org.jboss.as.test.patching.PatchingTestUtil.dump;
+import static org.jboss.as.test.patching.PatchingTestUtil.randomString;
 
 /**
  * @author Jan Martiska
  */
 @RunWith(Arquillian.class)
 @RunAsClient
-public class OverridePreserveTestCase {
+public class OverridePreserveTestCase extends AbstractPatchingTestCase {
 
     private static final Logger logger = Logger.getLogger(OverridePreserveTestCase.class);
 
-    private final String file1 = PatchingTestUtil.AS_DISTRIBUTION + FILE_SEPARATOR + "README.txt";
+    private static final String FILE1 = PatchingTestUtil.AS_DISTRIBUTION + FILE_SEPARATOR + "README.txt";
     private final String file1patchedContent = "Patched content for README.txt";
-    private String file1originalContent;
+    private static String file1originalContent;
     private final String file1modifiedContent = "I manually edited README.txt and it now looks like this.";
 
-    private final String file2 = PatchingTestUtil.AS_DISTRIBUTION + FILE_SEPARATOR + "LICENSE.txt";
+    private static final String FILE2 = PatchingTestUtil.AS_DISTRIBUTION + FILE_SEPARATOR + "LICENSE.txt";
     private final String file2patchedContent = "Patched content for LICENSE.txt";
-    private String file2originalContent;
+    private static String file2originalContent;
     private final String file2modifiedContent = "I manually edited LICENSE.txt and it now looks like this.";
 
-    private File tempDir;
 
-    @ArquillianResource
-    private ContainerController controller;
-
-    @Before
-    public void setUp() throws Exception {
-        file1originalContent = PatchingTestUtil.readFile(file1);
-        file2originalContent = PatchingTestUtil.readFile(file2);
-        tempDir = mkdir(new File(System.getProperty("java.io.tmpdir")), randomString());
-        assertPatchElements(baseModuleDir, null);
+    @BeforeClass
+    public static void setUp() throws Exception {
+        file1originalContent = PatchingTestUtil.readFile(FILE1);
+        file2originalContent = PatchingTestUtil.readFile(FILE2);
     }
 
     @After
     public void cleanup() throws Exception {
-        if(controller.isStarted(CONTAINER))
-            controller.stop(CONTAINER);
-
-        final boolean success = CliUtilsForPatching.rollbackAll();
-
-        PatchingTestUtil.setFileContent(file1, file1originalContent);
-        PatchingTestUtil.setFileContent(file2, file2originalContent);
-
-        if (IoUtils.recursiveDelete(tempDir)) {
-            tempDir.deleteOnExit();
-        }
-        if (!success) {
-            // Reset installation state
-            final File home = new File(PatchingTestUtil.AS_DISTRIBUTION);
-            PatchingTestUtil.resetInstallationState(home, baseModuleDir);
-            Assert.fail("failed to rollback all patches");
-        }
+        PatchingTestUtil.setFileContent(FILE1, file1originalContent);
+        PatchingTestUtil.setFileContent(FILE2, file2originalContent);
     }
 
     /**
@@ -121,8 +95,8 @@ public class OverridePreserveTestCase {
         String patchID = randomString();
         File oneOffPatchDir = mkdir(tempDir, patchID);
 
-        ContentModification file1Modified = ContentModificationUtils.modifyMisc(oneOffPatchDir, patchID, file1patchedContent, new File(file1), "README.txt");
-        ContentModification file2Modified = ContentModificationUtils.modifyMisc(oneOffPatchDir, patchID, file2patchedContent, new File(file2), "LICENSE.txt");
+        ContentModification file1Modified = ContentModificationUtils.modifyMisc(oneOffPatchDir, patchID, file1patchedContent, new File(FILE1), "README.txt");
+        ContentModification file2Modified = ContentModificationUtils.modifyMisc(oneOffPatchDir, patchID, file2patchedContent, new File(FILE2), "LICENSE.txt");
 
         ProductConfig productConfig = new ProductConfig(PRODUCT, AS_VERSION, "main");
         Patch oneOffPatch = PatchBuilder.create()
@@ -137,15 +111,15 @@ public class OverridePreserveTestCase {
         File zippedPatch = PatchingTestUtil.createZippedPatchFile(oneOffPatchDir, patchID);
 
         // modify files
-        PatchingTestUtil.setFileContent(file1, file1modifiedContent);
-        PatchingTestUtil.setFileContent(file2, file2modifiedContent);
+        PatchingTestUtil.setFileContent(FILE1, file1modifiedContent);
+        PatchingTestUtil.setFileContent(FILE2, file2modifiedContent);
 
         // apply the patch without override/preserve
         controller.start(CONTAINER);
         Assert.assertFalse("Server should reject patch installation in this case",
                 CliUtilsForPatching.applyPatch(zippedPatch.getAbsolutePath()));
-        Assert.assertEquals("Misc file should not be overwritten", file1modifiedContent, PatchingTestUtil.readFile(file1));
-        Assert.assertEquals("Misc file should not be overwritten", file2modifiedContent, PatchingTestUtil.readFile(file2));
+        Assert.assertEquals("Misc file should not be overwritten", file1modifiedContent, PatchingTestUtil.readFile(FILE1));
+        Assert.assertEquals("Misc file should not be overwritten", file2modifiedContent, PatchingTestUtil.readFile(FILE2));
 
         // apply patch with --preserve=LICENSE,txt,README.txt
         Assert.assertTrue("Patch should be accepted",
@@ -155,8 +129,8 @@ public class OverridePreserveTestCase {
 
         controller.start(CONTAINER);
         Assert.assertTrue("The patch " + patchID + " should be listed as installed", CliUtilsForPatching.getInstalledPatches().contains(patchID));
-        Assert.assertEquals("Misc file should not be overwritten", file1modifiedContent, PatchingTestUtil.readFile(file1));
-        Assert.assertEquals("Misc file should not be overwritten", file2modifiedContent, PatchingTestUtil.readFile(file2));
+        Assert.assertEquals("Misc file should not be overwritten", file1modifiedContent, PatchingTestUtil.readFile(FILE1));
+        Assert.assertEquals("Misc file should not be overwritten", file2modifiedContent, PatchingTestUtil.readFile(FILE2));
 
         // rollback patch
         Assert.assertTrue("Rollback should be accepted",
@@ -167,10 +141,10 @@ public class OverridePreserveTestCase {
         controller.stop(CONTAINER);
 
         controller.start(CONTAINER);
-        Assert.assertFalse("The patch " + patchID + " NOT should be listed as installed" ,
+        Assert.assertFalse("The patch " + patchID + " NOT should be listed as installed",
                 CliUtilsForPatching.getInstalledPatches().contains(patchID));
-        Assert.assertEquals("Misc file should not be overridden", file1modifiedContent, PatchingTestUtil.readFile(file1));
-        Assert.assertEquals("Misc file should not be overridden", file2modifiedContent, PatchingTestUtil.readFile(file2));
+        Assert.assertEquals("Misc file should not be overridden", file1modifiedContent, PatchingTestUtil.readFile(FILE1));
+        Assert.assertEquals("Misc file should not be overridden", file2modifiedContent, PatchingTestUtil.readFile(FILE2));
         controller.stop(CONTAINER);
     }
 
@@ -186,8 +160,8 @@ public class OverridePreserveTestCase {
         String patchID = randomString();
         File oneOffPatchDir = mkdir(tempDir, patchID);
 
-        ContentModification file1Modified = ContentModificationUtils.modifyMisc(oneOffPatchDir, patchID, file1patchedContent, new File(file1), "README.txt");
-        ContentModification file2Modified = ContentModificationUtils.modifyMisc(oneOffPatchDir, patchID, file2patchedContent, new File(file2), "LICENSE.txt");
+        ContentModification file1Modified = ContentModificationUtils.modifyMisc(oneOffPatchDir, patchID, file1patchedContent, new File(FILE1), "README.txt");
+        ContentModification file2Modified = ContentModificationUtils.modifyMisc(oneOffPatchDir, patchID, file2patchedContent, new File(FILE2), "LICENSE.txt");
 
         ProductConfig productConfig = new ProductConfig(PRODUCT, AS_VERSION, "main");
         Patch oneOffPatch = PatchBuilder.create()
@@ -202,15 +176,15 @@ public class OverridePreserveTestCase {
         File zippedPatch = PatchingTestUtil.createZippedPatchFile(oneOffPatchDir, patchID);
 
         // modify files
-        PatchingTestUtil.setFileContent(file1, file1modifiedContent);
-        PatchingTestUtil.setFileContent(file2, file2modifiedContent);
+        PatchingTestUtil.setFileContent(FILE1, file1modifiedContent);
+        PatchingTestUtil.setFileContent(FILE2, file2modifiedContent);
 
         // apply the patch without override/preserve
         controller.start(CONTAINER);
         Assert.assertFalse("Server should reject patch installation in this case",
                 CliUtilsForPatching.applyPatch(zippedPatch.getAbsolutePath()));
-        Assert.assertEquals("Misc file should not be overwritten", file1modifiedContent, PatchingTestUtil.readFile(file1));
-        Assert.assertEquals("Misc file should not be overwritten", file2modifiedContent, PatchingTestUtil.readFile(file2));
+        Assert.assertEquals("Misc file should not be overwritten", file1modifiedContent, PatchingTestUtil.readFile(FILE1));
+        Assert.assertEquals("Misc file should not be overwritten", file2modifiedContent, PatchingTestUtil.readFile(FILE2));
 
         // apply patch with --override=LICENSE,txt,README.txt
         Assert.assertTrue("Patch should be accepted",
@@ -220,8 +194,8 @@ public class OverridePreserveTestCase {
 
         controller.start(CONTAINER);
         Assert.assertTrue("The patch " + patchID + " should be listed as installed", CliUtilsForPatching.getInstalledPatches().contains(patchID));
-        Assert.assertEquals("Misc file should be overwritten", file1patchedContent, PatchingTestUtil.readFile(file1));
-        Assert.assertEquals("Misc file should be overwritten", file2patchedContent, PatchingTestUtil.readFile(file2));
+        Assert.assertEquals("Misc file should be overwritten", file1patchedContent, PatchingTestUtil.readFile(FILE1));
+        Assert.assertEquals("Misc file should be overwritten", file2patchedContent, PatchingTestUtil.readFile(FILE2));
 
         // rollback patch
         Assert.assertTrue("Rollback should be accepted",
@@ -232,10 +206,10 @@ public class OverridePreserveTestCase {
         controller.stop(CONTAINER);
 
         controller.start(CONTAINER);
-        Assert.assertFalse("The patch " + patchID + " NOT should be listed as installed" ,
+        Assert.assertFalse("The patch " + patchID + " NOT should be listed as installed",
                 CliUtilsForPatching.getInstalledPatches().contains(patchID));
-        Assert.assertEquals("Misc file should not be overridden", file1patchedContent, PatchingTestUtil.readFile(file1));
-        Assert.assertEquals("Misc file should be restored", file2modifiedContent, PatchingTestUtil.readFile(file2));
+        Assert.assertEquals("Misc file should not be overridden", file1patchedContent, PatchingTestUtil.readFile(FILE1));
+        Assert.assertEquals("Misc file should be restored", file2modifiedContent, PatchingTestUtil.readFile(FILE2));
         controller.stop(CONTAINER);
     }
 
@@ -251,8 +225,8 @@ public class OverridePreserveTestCase {
         String patchID = randomString();
         File oneOffPatchDir = mkdir(tempDir, patchID);
 
-        ContentModification file1Modified = ContentModificationUtils.modifyMisc(oneOffPatchDir, patchID, file1patchedContent, new File(file1), "README.txt");
-        ContentModification file2Modified = ContentModificationUtils.modifyMisc(oneOffPatchDir, patchID, file2patchedContent, new File(file2), "LICENSE.txt");
+        ContentModification file1Modified = ContentModificationUtils.modifyMisc(oneOffPatchDir, patchID, file1patchedContent, new File(FILE1), "README.txt");
+        ContentModification file2Modified = ContentModificationUtils.modifyMisc(oneOffPatchDir, patchID, file2patchedContent, new File(FILE2), "LICENSE.txt");
 
         ProductConfig productConfig = new ProductConfig(PRODUCT, AS_VERSION, "main");
         Patch oneOffPatch = PatchBuilder.create()
@@ -267,15 +241,15 @@ public class OverridePreserveTestCase {
         File zippedPatch = PatchingTestUtil.createZippedPatchFile(oneOffPatchDir, patchID);
 
         // modify files
-        PatchingTestUtil.setFileContent(file1, file1modifiedContent);
-        PatchingTestUtil.setFileContent(file2, file2modifiedContent);
+        PatchingTestUtil.setFileContent(FILE1, file1modifiedContent);
+        PatchingTestUtil.setFileContent(FILE2, file2modifiedContent);
 
         // apply the patch without override/preserve
         controller.start(CONTAINER);
         Assert.assertFalse("Server should reject patch installation in this case",
                 CliUtilsForPatching.applyPatch(zippedPatch.getAbsolutePath()));
-        Assert.assertEquals("Misc file should not be overwritten", file1modifiedContent, PatchingTestUtil.readFile(file1));
-        Assert.assertEquals("Misc file should not be overwritten", file2modifiedContent, PatchingTestUtil.readFile(file2));
+        Assert.assertEquals("Misc file should not be overwritten", file1modifiedContent, PatchingTestUtil.readFile(FILE1));
+        Assert.assertEquals("Misc file should not be overwritten", file2modifiedContent, PatchingTestUtil.readFile(FILE2));
 
         // apply patch with --override-all
         Assert.assertTrue("Patch should be accepted",
@@ -285,8 +259,8 @@ public class OverridePreserveTestCase {
 
         controller.start(CONTAINER);
         Assert.assertTrue("The patch " + patchID + " should be listed as installed", CliUtilsForPatching.getInstalledPatches().contains(patchID));
-        Assert.assertEquals("Misc file should be overwritten", file1patchedContent, PatchingTestUtil.readFile(file1));
-        Assert.assertEquals("Misc file should be overwritten", file2patchedContent, PatchingTestUtil.readFile(file2));
+        Assert.assertEquals("Misc file should be overwritten", file1patchedContent, PatchingTestUtil.readFile(FILE1));
+        Assert.assertEquals("Misc file should be overwritten", file2patchedContent, PatchingTestUtil.readFile(FILE2));
 
         // rollback patch
         Assert.assertTrue("Rollback should be accepted",
@@ -297,10 +271,10 @@ public class OverridePreserveTestCase {
         controller.stop(CONTAINER);
 
         controller.start(CONTAINER);
-        Assert.assertFalse("The patch " + patchID + " NOT should be listed as installed" ,
+        Assert.assertFalse("The patch " + patchID + " NOT should be listed as installed",
                 CliUtilsForPatching.getInstalledPatches().contains(patchID));
-        Assert.assertEquals("Misc file should not be overridden", file1patchedContent, PatchingTestUtil.readFile(file1));
-        Assert.assertEquals("Misc file should be restored", file2modifiedContent, PatchingTestUtil.readFile(file2));
+        Assert.assertEquals("Misc file should not be overridden", file1patchedContent, PatchingTestUtil.readFile(FILE1));
+        Assert.assertEquals("Misc file should be restored", file2modifiedContent, PatchingTestUtil.readFile(FILE2));
         controller.stop(CONTAINER);
     }
 
@@ -316,8 +290,8 @@ public class OverridePreserveTestCase {
         String patchID = randomString();
         File oneOffPatchDir = mkdir(tempDir, patchID);
 
-        ContentModification file1Modified = ContentModificationUtils.modifyMisc(oneOffPatchDir, patchID, file1patchedContent, new File(file1), "README.txt");
-        ContentModification file2Modified = ContentModificationUtils.modifyMisc(oneOffPatchDir, patchID, file2patchedContent, new File(file2), "LICENSE.txt");
+        ContentModification file1Modified = ContentModificationUtils.modifyMisc(oneOffPatchDir, patchID, file1patchedContent, new File(FILE1), "README.txt");
+        ContentModification file2Modified = ContentModificationUtils.modifyMisc(oneOffPatchDir, patchID, file2patchedContent, new File(FILE2), "LICENSE.txt");
 
         ProductConfig productConfig = new ProductConfig(PRODUCT, AS_VERSION, "main");
         Patch oneOffPatch = PatchBuilder.create()
@@ -332,15 +306,15 @@ public class OverridePreserveTestCase {
         File zippedPatch = PatchingTestUtil.createZippedPatchFile(oneOffPatchDir, patchID);
 
         // modify files
-        PatchingTestUtil.setFileContent(file1, file1modifiedContent);
-        PatchingTestUtil.setFileContent(file2, file2modifiedContent);
+        PatchingTestUtil.setFileContent(FILE1, file1modifiedContent);
+        PatchingTestUtil.setFileContent(FILE2, file2modifiedContent);
 
         // apply the patch without override/preserve
         controller.start(CONTAINER);
         Assert.assertFalse("Server should reject patch installation in this case",
                 CliUtilsForPatching.applyPatch(zippedPatch.getAbsolutePath()));
-        Assert.assertEquals("Misc file should not be overwritten", file1modifiedContent, PatchingTestUtil.readFile(file1));
-        Assert.assertEquals("Misc file should not be overwritten", file2modifiedContent, PatchingTestUtil.readFile(file2));
+        Assert.assertEquals("Misc file should not be overwritten", file1modifiedContent, PatchingTestUtil.readFile(FILE1));
+        Assert.assertEquals("Misc file should not be overwritten", file2modifiedContent, PatchingTestUtil.readFile(FILE2));
 
         // apply patch with --override=LICENSE,txt --preserve=README.txt
         Assert.assertTrue("Patch should be accepted",
@@ -352,8 +326,8 @@ public class OverridePreserveTestCase {
 
         controller.start(CONTAINER);
         Assert.assertTrue("The patch " + patchID + " should be listed as installed", CliUtilsForPatching.getInstalledPatches().contains(patchID));
-        Assert.assertEquals("Misc file should not be overwritten", file1modifiedContent, PatchingTestUtil.readFile(file1));
-        Assert.assertEquals("Misc file should be overwritten", file2patchedContent, PatchingTestUtil.readFile(file2));
+        Assert.assertEquals("Misc file should not be overwritten", file1modifiedContent, PatchingTestUtil.readFile(FILE1));
+        Assert.assertEquals("Misc file should be overwritten", file2patchedContent, PatchingTestUtil.readFile(FILE2));
 
         // rollback patch
         Assert.assertTrue("Rollback should be accepted",
@@ -364,10 +338,10 @@ public class OverridePreserveTestCase {
         controller.stop(CONTAINER);
 
         controller.start(CONTAINER);
-        Assert.assertFalse("The patch " + patchID + " NOT should be listed as installed" ,
+        Assert.assertFalse("The patch " + patchID + " NOT should be listed as installed",
                 CliUtilsForPatching.getInstalledPatches().contains(patchID));
-        Assert.assertEquals("Misc file should not be overridden", file1modifiedContent, PatchingTestUtil.readFile(file1));
-        Assert.assertEquals("Misc file should be restored", file2modifiedContent, PatchingTestUtil.readFile(file2));
+        Assert.assertEquals("Misc file should not be overridden", file1modifiedContent, PatchingTestUtil.readFile(FILE1));
+        Assert.assertEquals("Misc file should be restored", file2modifiedContent, PatchingTestUtil.readFile(FILE2));
         controller.stop(CONTAINER);
     }
 
@@ -435,7 +409,7 @@ public class OverridePreserveTestCase {
         controller.stop(CONTAINER);
 
         controller.start(CONTAINER);
-        Assert.assertFalse("The patch " + patchID + " NOT should be listed as installed" ,
+        Assert.assertFalse("The patch " + patchID + " NOT should be listed as installed",
                 CliUtilsForPatching.getInstalledPatches().contains(patchID));
         controller.stop(CONTAINER);
     }

@@ -22,16 +22,9 @@
 
 package org.jboss.as.test.patching;
 
-import java.io.File;
-import java.io.IOException;
-import java.net.UnknownHostException;
-
 import com.google.common.base.Joiner;
-
-import org.jboss.arquillian.container.test.api.ContainerController;
 import org.jboss.arquillian.container.test.api.RunAsClient;
 import org.jboss.arquillian.junit.Arquillian;
-import org.jboss.arquillian.test.api.ArquillianResource;
 import org.jboss.as.controller.client.ModelControllerClient;
 import org.jboss.as.controller.client.Operation;
 import org.jboss.as.patching.IoUtils;
@@ -41,11 +34,12 @@ import org.jboss.as.patching.metadata.PatchBuilder;
 import org.jboss.as.version.ProductConfig;
 import org.jboss.dmr.ModelNode;
 import org.jboss.logging.Logger;
-import org.junit.After;
 import org.junit.Assert;
-import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
+
+import java.io.File;
+import java.net.UnknownHostException;
 
 import static org.jboss.as.patching.IoUtils.mkdir;
 import static org.jboss.as.test.patching.PatchingTestUtil.AS_DISTRIBUTION;
@@ -53,8 +47,6 @@ import static org.jboss.as.test.patching.PatchingTestUtil.AS_VERSION;
 import static org.jboss.as.test.patching.PatchingTestUtil.CONTAINER;
 import static org.jboss.as.test.patching.PatchingTestUtil.FILE_SEPARATOR;
 import static org.jboss.as.test.patching.PatchingTestUtil.PRODUCT;
-import static org.jboss.as.test.patching.PatchingTestUtil.assertPatchElements;
-import static org.jboss.as.test.patching.PatchingTestUtil.baseModuleDir;
 import static org.jboss.as.test.patching.PatchingTestUtil.createPatchXMLFile;
 import static org.jboss.as.test.patching.PatchingTestUtil.createZippedPatchFile;
 import static org.jboss.as.test.patching.PatchingTestUtil.randomString;
@@ -62,44 +54,19 @@ import static org.jboss.as.test.patching.PatchingTestUtil.readFile;
 
 /**
  * Smoke test to cover patching through the native API.
+ *
  * @author Jan Martiska
  */
 @RunWith(Arquillian.class)
 @RunAsClient
-public class NativeApiPatchingTestCase {
+public class NativeApiPatchingTestCase extends AbstractPatchingTestCase {
 
     private static final Logger logger = Logger.getLogger(CliUtilsForPatching.class);
-
-    @ArquillianResource
-    private ContainerController controller;
-
-    private File tempDir;
-
-    @Before
-    public void prepare() throws IOException {
-        tempDir = mkdir(new File(System.getProperty("java.io.tmpdir")), randomString());
-        assertPatchElements(baseModuleDir, null);
-    }
-
-    @After
-    public void cleanup() throws Exception {
-        if(controller.isStarted(CONTAINER))
-            controller.stop(CONTAINER);
-        final boolean success = CliUtilsForPatching.rollbackAll();
-        if (IoUtils.recursiveDelete(tempDir)) {
-            tempDir.deleteOnExit();
-        }
-        if (!success) {
-            // Reset installation state
-            final File home = new File(PatchingTestUtil.AS_DISTRIBUTION);
-            PatchingTestUtil.resetInstallationState(home, baseModuleDir);
-            Assert.fail("failed to rollback all patches");
-        }
-    }
 
     /**
      * Apply a simple one-off patch through the native API.
      * Roll it back.
+     *
      * @throws Exception
      */
     @Test
@@ -111,7 +78,7 @@ public class NativeApiPatchingTestCase {
         // prepare the patch
         String patchID = randomString();
         File oneOffPatchDir = mkdir(tempDir, patchID);
-        String[] miscFileLocation = new String[] {"newPatchDirectory", "awesomeFile"};
+        String[] miscFileLocation = new String[]{"newPatchDirectory", "awesomeFile"};
         ContentModification miscFileAdded = ContentModificationUtils.addMisc(oneOffPatchDir, patchID,
                 fileContent, miscFileLocation);
         ProductConfig productConfig = new ProductConfig(PRODUCT, AS_VERSION, "main");
