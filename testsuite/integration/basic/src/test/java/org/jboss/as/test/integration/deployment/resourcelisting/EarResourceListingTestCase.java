@@ -26,7 +26,6 @@ import org.jboss.arquillian.junit.Arquillian;
 import org.jboss.as.test.integration.deployment.classloading.war.WebInfLibClass;
 import org.jboss.logging.Logger;
 import org.jboss.modules.ModuleClassLoader;
-import org.jboss.modules.Resource;
 import org.jboss.shrinkwrap.api.Archive;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.asset.EmptyAsset;
@@ -40,14 +39,14 @@ import org.junit.runner.RunWith;
 
 import java.util.ArrayList;
 import java.util.Collections;
-import java.util.Iterator;
 import java.util.List;
 
 @RunWith(Arquillian.class)
 public class EarResourceListingTestCase {
 
     private static final Logger log = Logger.getLogger(EarResourceListingTestCase.class);
-    private static final String innerWarArchiveName = "innerWarDeployment.jar";
+    private static final String INNER_WAR_ARCHIVE_NAME = "innerWarDeployment.war";
+    private static final String INNER_JAR_ARCHIVE_NAME = "innerJarLibrary.jar";
 
     @Deployment
     public static Archive<?> deploy() {
@@ -58,45 +57,23 @@ public class EarResourceListingTestCase {
         earLib.addAsManifestResource(EmptyAsset.INSTANCE, "properties/nestedJarLib.properties");
         ear.addAsLibraries(earLib);
 
-        WebArchive war = ShrinkWrap.create(WebArchive.class, innerWarArchiveName);
+        WebArchive war = ShrinkWrap.create(WebArchive.class, INNER_WAR_ARCHIVE_NAME);
         war.addClass(TestA.class);
         war.add(EmptyAsset.INSTANCE, "META-INF/example.txt");
         war.add(EmptyAsset.INSTANCE, "META-INF/properties/nested.properties");
         war.add(EmptyAsset.INSTANCE, "example2.txt");
         war.addAsResource(EarResourceListingTestCase.class.getPackage(), "TextFile1.txt", "TextFile1.txt");
         war.addAsWebInfResource(EarResourceListingTestCase.class.getPackage(), "web.xml", "web.xml");
-        JavaArchive libJar = ShrinkWrap.create(JavaArchive.class);
+
+        JavaArchive libJar = ShrinkWrap.create(JavaArchive.class, INNER_JAR_ARCHIVE_NAME);
         libJar.addClass(WebInfLibClass.class);
+
         war.addAsLibraries(libJar);
         ear.addAsModules(libJar, war);
         ear.addAsManifestResource(EmptyAsset.INSTANCE, "MANIFEST.MF");
         ear.addAsResource(EmptyAsset.INSTANCE, "emptyEarResource");
+        ear.addAsManifestResource(EarResourceListingTestCase.class.getPackage(),"application.xml","application.xml");
 
-        ear.addAsManifestResource(new StringAsset("<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n" +
-                "\n" +
-                "<application xmlns=\"http://java.sun.com/xml/ns/javaee\" xmlns:xsi=\"http://www.w3.org/2001/XMLSchema-instance\"\n" +
-                "   xsi:schemaLocation=\"http://java.sun.com/xml/ns/javaee http://java.sun.com/xml/ns/javaee/application_6.xsd\" version=\"6\">\n" +
-                "\n" +
-                "  <module>\n" +
-                "     <web>\n" +
-                "       <web-uri>"+war.getName()+"</web-uri>\n" +
-                "       <context-root>"+war.getName().replace(".war", "")+"</context-root>\n" +
-                "     </web>\n" +
-                "   </module>\n" +
-                "\n" +
-                "  <module>\n" +
-                "     <java>"+libJar.getName()+"</java>\n" +
-                "  </module>\n" +
-                "\n" +
-                "</application>"), "application.xml");
-
-        ear.addAsManifestResource(new StringAsset("<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n" +
-                "<jboss-deployment-structure> \n" +
-                "  <ear-subdeployments-isolated>false</ear-subdeployments-isolated>\n" +
-                "  <sub-deployment name=\""+war.getName()+"\"/>\n" +
-                "</jboss-deployment-structure>"), "jboss-deployment-structure.xml");
-
-//        ear.as(org.jboss.shrinkwrap.api.exporter.ZipExporter.class).exportTo(new java.io.File("/tmp/" + ear.getName()), true);
         return ear;
     }
 
