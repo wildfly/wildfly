@@ -70,12 +70,14 @@ class HostScopedRoleWriteAttributeHandler extends AbstractWriteAttributeHandler<
         // null means the resource shouldn't exist and we should have failed in Stage.MODEL
         assert constraint != null : "unknown role " + roleName;
 
-        List<String> serverGroups = new ArrayList<String>();
-        for (ModelNode group : resolvedValue.asList()) {
-            serverGroups.add(group.asString());
+        List<String> hosts = new ArrayList<String>();
+        if (resolvedValue.isDefined()) {
+            for (ModelNode host : resolvedValue.asList()) {
+                hosts.add(host.asString());
+            }
         }
 
-        constraint.setAllowedHosts(serverGroups);
+        constraint.setAllowedHosts(hosts);
     }
 
 

@@ -22,6 +22,7 @@
 
 package org.jboss.as.domain.management.access;
 
+import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 
@@ -63,7 +64,8 @@ class HostScopedRoleRemove implements OperationStepHandler {
 
                 final String roleName = PathAddress.pathAddress(operation.require(ModelDescriptionConstants.OP_ADDR)).getLastElement().getValue();
                 final String baseRole = ServerGroupScopedRoleResourceDefinition.BASE_ROLE.resolveModelAttribute(context, model).asString();
-                final List<ModelNode> hostNodes = HostScopedRolesResourceDefinition.HOSTS.resolveModelAttribute(context, model).asList();
+                ModelNode hostsAttribute = HostScopedRolesResourceDefinition.HOSTS.resolveModelAttribute(context, model);
+                final List<ModelNode> hostNodes = hostsAttribute.isDefined() ? hostsAttribute.asList() : Collections.<ModelNode>emptyList();
 
                 authorizer.removeScopedRole(roleName);
                 constraintMap.remove(roleName);
