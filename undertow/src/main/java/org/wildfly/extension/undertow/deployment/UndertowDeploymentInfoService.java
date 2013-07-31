@@ -154,6 +154,7 @@ public class UndertowDeploymentInfoService implements Service<DeploymentInfo> {
 
     private static final String TEMP_DIR = "jboss.server.temp.dir";
     private static final String HOME_DIR = "jboss.home.dir";
+    public static final String JAVAX_FACES_PROJECT_STAGE = "javax.faces.PROJECT_STAGE";
 
     private DeploymentInfo deploymentInfo;
 
@@ -595,6 +596,13 @@ public class UndertowDeploymentInfoService implements Service<DeploymentInfo> {
             if (mergedMetaData.getContextParams() != null) {
                 for (ParamValueMetaData param : mergedMetaData.getContextParams()) {
                     d.addInitParameter(param.getParamName(), param.getParamValue());
+                }
+            }
+
+            //set the JSF project stage in development mode
+            if(servletContainer.getDevelopmentMode() != null) {
+                if(!d.getInitParameters().containsKey(JAVAX_FACES_PROJECT_STAGE)) {
+                    d.addInitParameter(JAVAX_FACES_PROJECT_STAGE, "Development");
                 }
             }
 
