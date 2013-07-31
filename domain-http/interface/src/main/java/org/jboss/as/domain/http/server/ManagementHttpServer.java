@@ -60,7 +60,6 @@ import javax.net.ssl.SSLContext;
 import org.jboss.as.controller.ControlledProcessStateService;
 import org.jboss.as.controller.ModelController;
 import org.jboss.as.domain.http.server.security.AuthenticationMechanismWrapper;
-import org.jboss.as.domain.http.server.security.ConnectionAuthenticationCacheHandler;
 import org.jboss.as.domain.http.server.security.DmrFailureReadinessHandler;
 import org.jboss.as.domain.http.server.security.LogoutHandler;
 import org.jboss.as.domain.http.server.security.RealmIdentityManager;
@@ -226,7 +225,11 @@ public class ManagementHttpServer {
         pathHandler.addPath(DomainApiCheckHandler.PATH, readinessHandler);
 
         if (securityRealm != null) {
-            pathHandler.addPath(LogoutHandler.PATH, new LogoutHandler(securityRealm.getName()));
+            try {
+                pathHandler.addPath(LogoutHandler.PATH, LogoutHandler.createLogoutContext(securityRealm.getName()));
+            } catch (ModuleLoadException e) {
+                ROOT_LOGGER.error(consoleSlot == null ? "main" : consoleSlot);
+            }
         }
     }
 
@@ -260,7 +263,8 @@ public class ManagementHttpServer {
                 // this point.
                 current = new AuthenticationConstraintHandler(current);
                 current = new AuthenticationMechanismsHandler(current, undertowMechanisms);
-                current = new ConnectionAuthenticationCacheHandler(current);
+                // Disabled temporarily, to prevent security issues with /logout
+                //current = new ConnectionAuthenticationCacheHandler(current);
 
                 return new SecurityInitialHandler(AuthenticationMode.PRO_ACTIVE, new RealmIdentityManager(securityRealm),
                         current);
