@@ -23,6 +23,7 @@
 package org.jboss.as.domain.management.access;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 
@@ -68,9 +69,10 @@ class HostScopedRoleAdd extends AbstractAddStepHandler {
 
         String roleName = PathAddress.pathAddress(operation.require(ModelDescriptionConstants.OP_ADDR)).getLastElement().getValue();
 
-        String baseRole = ServerGroupScopedRoleResourceDefinition.BASE_ROLE.resolveModelAttribute(context, model).asString();
+        String baseRole = HostScopedRolesResourceDefinition.BASE_ROLE.resolveModelAttribute(context, model).asString();
 
-        List<ModelNode> nodeList = ServerGroupScopedRoleResourceDefinition.SERVER_GROUPS.resolveModelAttribute(context, model).asList();
+        ModelNode hostsAttribute = HostScopedRolesResourceDefinition.HOSTS.resolveModelAttribute(context, model);
+        List<ModelNode> nodeList = hostsAttribute.isDefined() ? hostsAttribute.asList() : Collections.<ModelNode>emptyList();
 
         addScopedRole(roleName, baseRole, nodeList, authorizer, constraintMap);
     }
@@ -86,11 +88,11 @@ class HostScopedRoleAdd extends AbstractAddStepHandler {
     static void addScopedRole(final String roleName, final String baseRole, final List<ModelNode> hostNodes,
                               final ConfigurableAuthorizer authorizer, final Map<String, HostEffectConstraint> constraintMap) {
 
-        List<String> serverGroups = new ArrayList<String>();
-        for (ModelNode group : hostNodes) {
-            serverGroups.add(group.asString());
+        List<String> hosts = new ArrayList<String>();
+        for (ModelNode host : hostNodes) {
+            hosts.add(host.asString());
         }
-        HostEffectConstraint constraint = new HostEffectConstraint(serverGroups);
+        HostEffectConstraint constraint = new HostEffectConstraint(hosts);
         authorizer.addScopedRole(roleName, baseRole, constraint);
         constraintMap.put(roleName, constraint);
     }
