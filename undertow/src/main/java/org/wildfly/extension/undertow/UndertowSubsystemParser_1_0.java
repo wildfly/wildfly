@@ -131,6 +131,7 @@ public class UndertowSubsystemParser_1_0 implements XMLStreamConstants, XMLEleme
                         .       addChild(
                                 builder(DevelopmentModeDefinition.INSTANCE)
                                         .addAttributes(
+                                                DevelopmentModeDefinition.ENABLED,
                                                 DevelopmentModeDefinition.PERSISTENT_SESSIONS
                                         )
                         )

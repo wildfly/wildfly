@@ -139,8 +139,10 @@
     </xs:complexType>
 
     <xs:complexType name="development-modeType">
-        <xs:attribute name="persistent-sessions" type="xs:boolean" />
+        <xs:attribute name="enabled" type="xs:boolean" use="optional" default="false"/>
+        <xs:attribute name="persistent-sessions" type="xs:boolean" use="optional" default="true" />
     </xs:complexType>
+
     <xs:complexType name="handlerType">
         <xs:sequence>
             <xs:element name="file" type="file-handlerType" minOccurs="0" maxOccurs="unbounded"/>
