@@ -15,6 +15,7 @@ import static org.jboss.as.test.patching.PatchingTestUtil.BASE_MODULE_DIRECTORY;
 import static org.jboss.as.test.patching.PatchingTestUtil.CONTAINER;
 import static org.jboss.as.test.patching.PatchingTestUtil.MODULES_PATH;
 import static org.jboss.as.test.patching.PatchingTestUtil.assertPatchElements;
+import static org.jboss.as.test.patching.PatchingTestUtil.doCleanup;
 import static org.jboss.as.test.patching.PatchingTestUtil.randomString;
 
 /**
@@ -38,10 +39,15 @@ public class AbstractPatchingTestCase {
         if (controller.isStarted(CONTAINER))
             controller.stop(CONTAINER);
 
-        final boolean success = CliUtilsForPatching.rollbackAll();
-        if (IoUtils.recursiveDelete(tempDir)) {
-            tempDir.deleteOnExit();
+        // clean up created temporary files and directories
+        if(doCleanup) {
+            if (IoUtils.recursiveDelete(tempDir)) {
+                tempDir.deleteOnExit();
+            }
         }
+
+        // rollback all installed patches
+        final boolean success = CliUtilsForPatching.rollbackAll();
         if (!success) {
             // Reset installation state
             final File home = new File(PatchingTestUtil.AS_DISTRIBUTION);
