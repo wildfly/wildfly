@@ -41,6 +41,9 @@
         <!-- Used to provide an absolute location for the XSLT scripts. -->
         <xslt.scripts.dir>${jbossas.ts.integ.dir}/src/test/xslt</xslt.scripts.dir>
 
+        <!-- used to override HA configuration file names to test with alternative configuration files -->
+        <standalone.ha.xml>standalone-ha.xml</standalone.ha.xml>
+
         <ts.skipTests>${skipTests}</ts.skipTests>
     </properties>
 
@@ -221,6 +224,7 @@
                                     <includes>
                                          <include>standalone-xts.xml</include>
                                          <include>standalone-rts.xml</include>
+                                         <include>standalone-ec2-*.xml</include>
                                     </includes>
                                 </resource>
                             </resources>

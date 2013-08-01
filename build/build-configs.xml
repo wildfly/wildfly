@@ -66,6 +66,28 @@
            paramOutputFile="${generated.configs.domain}/domain.xml"/>
 
       <!-- Example configs -->
+      <sequential>
+          <xslt 
+                in="${generated.configs.src.dir}/configuration/standalone/subsystems-full-ha.xml" 
+                out="${project.build.directory}/generated-subsystems/examples/standalone/subsystems-ec2-full-ha.xml"
+                style="${generated.configs.src.dir}/configuration/examples/xslt/supplement-ec2.xsl"/>
+          <generate-server-config
+                paramTemplateFile="configuration/standalone/template.xml"
+                paramSubsystemsFileBaseDir="${project.build.directory}/generated-subsystems/"
+                paramSubsystemsFile="examples/standalone/subsystems-ec2-full-ha.xml"
+                paramOutputFile="${generated.configs.examples}/standalone-ec2-full-ha.xml"/>
+      </sequential>
+      <sequential>
+          <xslt
+                in="${generated.configs.src.dir}/configuration/standalone/subsystems-ha.xml"
+                out="${project.build.directory}/generated-subsystems/examples/standalone/subsystems-ec2-ha.xml"
+                style="${generated.configs.src.dir}/configuration/examples/xslt/supplement-ec2.xsl"/>
+          <generate-server-config
+                paramTemplateFile="configuration/standalone/template.xml"
+                paramSubsystemsFileBaseDir="${project.build.directory}/generated-subsystems/"
+                paramSubsystemsFile="examples/standalone/subsystems-ec2-ha.xml"
+                paramOutputFile="${generated.configs.examples}/standalone-ec2-ha.xml"/>
+      </sequential>
       <generate-server-config 
            paramTemplateFile="configuration/standalone/template.xml" 
            paramSubsystemsFile="configuration/examples/subsystems-hornetq-colocated.xml"
@@ -92,11 +114,12 @@
       <attribute name="paramTemplateFile"/>
       <attribute name="paramSubsystemsFile"/>
       <attribute name="paramOutputFile"/> 
+      <attribute name="paramSubsystemsFileBaseDir" default="${generated.configs.src.dir}/"/>
 
     	<sequential>
     		<generate-configuration 
     			paramTemplateFile="@{paramTemplateFile}"
-    		   paramSubsystemsFile="@{paramSubsystemsFile}"
+    		   paramSubsystemsFile="@{paramSubsystemsFileBaseDir}@{paramSubsystemsFile}"
     		   paramOutputFile="@{paramOutputFile}"
     		   className="StandaloneMain"/>
       </sequential>
@@ -110,7 +133,7 @@
       <sequential>
          <generate-configuration 
             paramTemplateFile="@{paramTemplateFile}"
-            paramSubsystemsFile="@{paramSubsystemsFile}"
+            paramSubsystemsFile="${generated.configs.src.dir}/@{paramSubsystemsFile}"
             paramOutputFile="@{paramOutputFile}"
             className="DomainMain"/>
       </sequential>
@@ -133,7 +156,7 @@
             
             <arg value="${generated.configs.src.dir}"/>
             <arg value="${generated.configs.src.dir}/@{paramTemplateFile}"/>
-            <arg value="${generated.configs.src.dir}/@{paramSubsystemsFile}"/>
+            <arg value="@{paramSubsystemsFile}"/>
             <arg value="@{paramOutputFile}"/>
          </java>
       </sequential>
