@@ -32,10 +32,11 @@
     </resources>
 
     <dependencies>
-        <module name="org.wildfly.clustering.web.spi"/>
+        <module name="javax.servlet.api"/>
+
         <module name="org.jboss.as.web"/>
         <module name="org.jboss.logging"/>
         <module name="org.jboss.metadata"/>
-        <module name="javax.servlet.api"/>
+        <module name="org.wildfly.clustering.web.spi"/>
     </dependencies>
 </module>
