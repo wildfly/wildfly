@@ -51,8 +51,9 @@ if [ -z "$JBOSS_CONFIG" ]; then
 fi
 
 JBOSS_SCRIPT=$JBOSS_HOME/bin/standalone.sh
-
-prog='jboss-as'
+if [ -z "$PROG" ]; then
+  PROG='jboss-as'
+fi
 
 CMD_PREFIX=''
 
@@ -65,14 +66,14 @@ if [ ! -z "$JBOSS_USER" ]; then
 fi
 
 start() {
-  echo -n "Starting $prog: "
+  echo -n "Starting $PROG: "
   if [ -f $JBOSS_PIDFILE ]; then
     read ppid < $JBOSS_PIDFILE
     if [ `ps --pid $ppid 2> /dev/null | grep -c $ppid 2> /dev/null` -eq '1' ]; then
-      echo -n "$prog is already running"
+      echo -n "$PROG is already running"
       failure
       echo
-      return 1 
+      return 1
     else
       rm -f $JBOSS_PIDFILE
     fi
@@ -98,22 +99,22 @@ start() {
 
   until [ $count -gt $STARTUP_WAIT ]
   do
-    grep 'JBAS015874:' $JBOSS_CONSOLE_LOG > /dev/null 
+    grep 'JBAS015874:' $JBOSS_CONSOLE_LOG > /dev/null
     if [ $? -eq 0 ] ; then
       launched=true
       break
-    fi 
+    fi
     sleep 1
     let count=$count+1;
   done
-  
+
   success
   echo
   return 0
 }
 
 stop() {
-  echo -n $"Stopping $prog: "
+  echo -n $"Stopping $PROG: "
   count=0;
 
   if [ -f $JBOSS_PIDFILE ]; then
@@ -142,14 +143,14 @@ status() {
   if [ -f $JBOSS_PIDFILE ]; then
     read ppid < $JBOSS_PIDFILE
     if [ `ps --pid $ppid 2> /dev/null | grep -c $ppid 2> /dev/null` -eq '1' ]; then
-      echo "$prog is running (pid $ppid)"
+      echo "$PROG is running (pid $ppid)"
       return 0
     else
-      echo "$prog dead but pid file exists"
+      echo "$PROG dead but pid file exists"
       return 1
     fi
   fi
-  echo "$prog is not running"
+  echo "$PROG is not running"
   return 3
 }
 
