@@ -52,7 +52,7 @@ fi
 
 JBOSS_SCRIPT=$JBOSS_HOME/bin/standalone.sh
 if [ -z "$JBOSS_PROG_NAME" ]; then
-  JBOSS_PROG_NAME='jboss-as'
+  JBOSS_PROG_NAME='WildFly'
 fi
 
 CMD_PREFIX=''
