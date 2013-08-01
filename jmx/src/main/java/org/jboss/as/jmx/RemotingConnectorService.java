@@ -57,7 +57,7 @@ public class RemotingConnectorService implements Service<RemotingConnectorServer
 
     @Override
     public synchronized void start(final StartContext context) throws StartException {
-        server = new RemotingConnectorServer(mBeanServer.getValue(), endpoint.getValue());
+        server = new RemotingConnectorServer(mBeanServer.getValue(), endpoint.getValue(), new ServerInterceptorFactory());
         try {
             server.start();
         } catch (IOException e) {
