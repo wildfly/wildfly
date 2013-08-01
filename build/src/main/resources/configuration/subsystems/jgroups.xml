@@ -1,16 +1,20 @@
 <?xml version='1.0' encoding='UTF-8'?>
 <!--  See src/resources/configuration/ReadMe.txt for how the configuration assembly works -->
-<config>
+<config default-supplement="default">
    <extension-module>org.jboss.as.clustering.jgroups</extension-module>
    <subsystem xmlns="urn:jboss:domain:jgroups:2.0" default-stack="udp">
        <stack name="udp">
-           <transport type="UDP" socket-binding="jgroups-udp"/>
-           <protocol type="PING"/>
+           <transport type="UDP" socket-binding="jgroups-udp">
+               <?UDPOPTS?>
+           </transport>
+           <?UDPDISCOVERY?>
            <protocol type="MERGE3"/>
            <protocol type="FD_SOCK" socket-binding="jgroups-udp-fd"/>
            <protocol type="FD"/>
            <protocol type="VERIFY_SUSPECT"/>
-           <protocol type="pbcast.NAKACK2"/>
+           <protocol type="pbcast.NAKACK2">
+               <?UDPNAKACKOPTS?>
+           </protocol>
            <protocol type="UNICAST2"/>
            <protocol type="pbcast.STABLE"/>
            <protocol type="pbcast.GMS"/>
@@ -21,12 +25,14 @@
        </stack>
        <stack name="tcp">
            <transport type="TCP" socket-binding="jgroups-tcp"/>
-           <protocol type="MPING" socket-binding="jgroups-mping"/>
+           <?TCPDISCOVERY?>
            <protocol type="MERGE2"/>
            <protocol type="FD_SOCK" socket-binding="jgroups-tcp-fd"/>
            <protocol type="FD"/>
            <protocol type="VERIFY_SUSPECT"/>
-           <protocol type="pbcast.NAKACK2"/>
+           <protocol type="pbcast.NAKACK2">
+               <?TCPNAKACKOPTS?>
+           </protocol>
            <protocol type="UNICAST2"/>
            <protocol type="pbcast.STABLE"/>
            <protocol type="pbcast.GMS"/>
@@ -35,6 +41,44 @@
            <protocol type="RSVP"/>
        </stack>
    </subsystem>
+   <supplement name="default">
+       <replacement placeholder="TCPDISCOVERY">
+           <protocol type="MPING" socket-binding="jgroups-mping"/>
+       </replacement>
+       <replacement placeholder="UDPDISCOVERY">
+           <protocol type="PING"/>
+       </replacement>
+   </supplement>
+   <supplement name="nomcast">
+       <replacement placeholder="UDPOPTS">
+           <property name="ip_mcast">false</property>
+       </replacement>
+       <replacement placeholder="TCPNAKACKOPTS">
+           <property name="use_mcast_xmit">false</property>
+           <property name="use_mcast_xmit_req">false</property>
+       </replacement>
+       <replacement placeholder="UDPNAKACKOPTS">
+           <property name="use_mcast_xmit">false</property>
+           <property name="use_mcast_xmit_req">false</property>
+        </replacement>
+   </supplement>
+   <supplement name="s3ping">
+       <replacement placeholder="TCPDISCOVERY">
+           <protocol type="S3_PING">
+               <property name="access_key">${jboss.jgroups.s3_ping.access_key}</property>
+               <property name="secret_access_key">${jboss.jgroups.s3_ping.secret_access_key}</property>
+               <property name="location">${jboss.jgroups.s3_ping.bucket}</property>
+           </protocol>
+       </replacement>
+       <replacement placeholder="UDPDISCOVERY">
+           <protocol type="S3_PING">
+               <property name="access_key">${jboss.jgroups.s3_ping.access_key}</property>
+               <property name="secret_access_key">${jboss.jgroups.s3_ping.secret_access_key}</property>
+               <property name="location">${jboss.jgroups.s3_ping.bucket}</property>
+           </protocol>
+       </replacement>
+   </supplement>
+   <supplement name="ec2" includes="nomcast s3ping"/>
    <socket-binding name="jgroups-mping" port="0" multicast-address="${jboss.default.multicast.address:230.0.0.4}" multicast-port="45700"/>
    <socket-binding name="jgroups-tcp" port="7600"/>
    <socket-binding name="jgroups-tcp-fd" port="57600"/>

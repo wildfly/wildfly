@@ -431,7 +431,7 @@
                   extension=".xml.mod"
                   useImplicitFileset="false">
                 <fileset dir="@{output.dir}/@{name}/@{config.dir.name}">
-                    <include name="**/standalone-ha.xml"/>
+                    <include name="**/standalone*-ha.xml"/>
                     <include name="**/standalone.xml"/>
                     <include name="**/standalone-full.xml"/>
                 </fileset>
@@ -441,7 +441,7 @@
             <!-- Move processed files back. -->
             <move todir="@{output.dir}/@{name}/@{config.dir.name}">
                <fileset dir="@{output.dir}/@{name}/@{config.dir.name}">
-                   <include name="**/standalone-ha.xml.mod"/>
+                   <include name="**/standalone*-ha.xml.mod"/>
                    <include name="**/standalone.xml.mod"/>
                    <include name="**/standalone-full.xml.mod"/>
                </fileset>

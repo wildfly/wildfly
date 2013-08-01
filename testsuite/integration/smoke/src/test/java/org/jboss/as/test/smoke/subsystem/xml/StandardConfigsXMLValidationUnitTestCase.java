@@ -114,6 +114,16 @@ public class StandardConfigsXMLValidationUnitTestCase extends AbstractValidation
 //    }
 //
     @Test
+    public void testStandaloneEC2HA() throws Exception {
+        parseXml("docs/examples/configs/standalone-ec2-ha.xml");
+    }
+
+    @Test
+    public void testStandaloneEC2FullHA() throws Exception {
+        parseXml("docs/examples/configs/standalone-ec2-full-ha.xml");
+    }
+
+    @Test
     public void testHornetQColocated() throws Exception {
         parseXml("docs/examples/configs/standalone-hornetq-colocated.xml");
     }
