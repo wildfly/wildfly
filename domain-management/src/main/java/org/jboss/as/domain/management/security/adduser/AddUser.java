@@ -104,12 +104,16 @@ public class AddUser {
             return;
         }
         stateValues.setUserName(user);
-        // Password should not be null or empty.
-        if (password == null || password.isEmpty()) {
+        // Password can be null or empty when disabling/enabling an existing user
+        if (!options.isEnableDisableMode() && (password == null || password.isEmpty())) {
             nextState = new ErrorState(theConsole, MESSAGES.noPasswordExiting(), null, stateValues);
             return;
         }
-        stateValues.setPassword(password.toCharArray());
+        if (password == null) {
+            stateValues.setPassword(new char[0]);
+        } else {
+            stateValues.setPassword(password.toCharArray());
+        }
         stateValues.setRealm(realm);
         stateValues.setRealmMode(realmMode);
         stateValues.setFileMode(fileMode);
@@ -168,6 +172,10 @@ public class AddUser {
                         final String value;
                         if (CommandLineArgument.SILENT.equals(commandLineArgument)) {
                             value = Boolean.TRUE.toString();
+                        } else if (CommandLineArgument.DISABLE.equals(commandLineArgument)) {
+                            value = Boolean.TRUE.toString();
+                        } else if (CommandLineArgument.ENABLE.equals(commandLineArgument)) {
+                            value = Boolean.TRUE.toString();
                         } else {
                             value = it.hasNext() ? it.next() : null;
                         }
@@ -202,6 +210,11 @@ public class AddUser {
         if (argsCliProps.containsKey(CommandLineArgument.PASSWORD.key()) || argsCliProps.containsKey(CommandLineArgument.USER.key())) {
             final String password = argsCliProps.getProperty(CommandLineArgument.PASSWORD.key());
             final String user = argsCliProps.getProperty(CommandLineArgument.USER.key());
+            final boolean enableArgExists = argsCliProps.getProperty(CommandLineArgument.ENABLE.key()) != null;
+            final boolean disableArgExists = argsCliProps.getProperty(CommandLineArgument.DISABLE.key()) != null;
+            final boolean disable = Boolean.valueOf(argsCliProps.getProperty(CommandLineArgument.DISABLE.key()));
+            options.setEnableDisableMode(enableArgExists || disableArgExists);
+            options.setDisable(disable);
             if (argsCliProps.containsKey(CommandLineArgument.REALM.key())) {
                 new AddUser(options, fileMode, user, password, argsCliProps.getProperty(CommandLineArgument.REALM.key()), RealmMode.USER_SUPPLIED).run();
             } else {
@@ -355,7 +368,6 @@ public class AddUser {
             /*
              * Deprecated in favour of groups.
              */
-
             @Override
             public String argumentExample() {
                 return super.argumentExample().concat(" <value>");
@@ -364,6 +376,18 @@ public class AddUser {
             @Override
             public String instructions() {
                 return MESSAGES.argRole();
+            }
+        },
+        ENABLE("-e", "--enable") {
+            @Override
+            public String instructions() {
+                return MESSAGES.argSilent();
+            }
+        },
+        DISABLE("-d", "--disable") {
+            @Override
+            public String instructions() {
+                return MESSAGES.argSilent();
             }
         },
         HELP("-h", "--help") {

@@ -51,7 +51,15 @@ public class AddUserState extends UpdatePropertiesHandler implements State {
 
     @Override
     public State execute() {
-        State nextState = update(stateValues);
+        char[] password = stateValues.getPassword();
+        State nextState;
+        if (password.length == 0) {
+            // The user doesn't exist and the password is empty !
+            nextState = new ErrorState(theConsole, MESSAGES.noPasswordExiting(), null, stateValues);
+        } else {
+            nextState = update(stateValues);
+        }
+
         /*
          * If this is interactive mode and no error occurred offer to display the
          * Base64 password of the user - otherwise the util can end.
@@ -80,6 +88,9 @@ public class AddUserState extends UpdatePropertiesHandler implements State {
             }
             Properties prob = propertiesHandler.getProperties();
             prob.setProperty(entry[0], entry[1]);
+            if (entry.length > 2) {
+                prob.setProperty(entry[0] + "!disable", entry[2]);
+            }
             propertiesHandler.persistProperties();
         } catch (StartException e) {
             throw new IllegalStateException(MESSAGES.unableToAddUser(file.getAbsolutePath(), e.getMessage()));

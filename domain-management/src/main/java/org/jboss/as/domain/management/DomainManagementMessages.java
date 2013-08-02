@@ -822,11 +822,25 @@ public interface DomainManagementMessages {
     String argRole();
 
     /**
-     * Instructions for the {@link org.jboss.as.domain.management.security.adduser.AddUser.CommandLineArgument#GROUP} command line argument.
+     * Instructions for the {@link org.jboss.as.domain.management.security.adduser.AddUser.CommandLineArgument#GROUPS} command line argument.
      * @return the message.
      */
     @Message(id = Message.NONE, value = "Comma-separated list of groups for the user.")
     String argGroup();
+
+    /**
+     * Instructions for the {@link org.jboss.as.domain.management.security.adduser.AddUser.CommandLineArgument#ENABLE} command line argument.
+     * @return the message.
+     */
+    @Message(id = Message.NONE, value = "Enable the user")
+    String argEnable();
+
+    /**
+     * Instructions for the {@link org.jboss.as.domain.management.security.adduser.AddUser.CommandLineArgument#DISABLE} command line argument.
+     * @return the message.
+     */
+    @Message(id = Message.NONE, value = "Disable the user")
+    String argDisable();
 
     /**
      * Instructions for the {@link org.jboss.as.domain.management.security.adduser.AddUser.CommandLineArgument#HELP} command line argument.

@@ -40,6 +40,8 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Properties;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 import org.jboss.msc.service.StartContext;
 import org.jboss.msc.service.StartException;
@@ -56,6 +58,18 @@ public class PropertiesFileLoader {
 
     private static final char[] ESCAPE_ARRAY = new char[] { '=' };
     protected static final String COMMENT_PREFIX = "#";
+
+    /**
+     * Pattern that matches :
+     * <ul>
+     * <li>{@code #key=value}</li>
+     * <li>{@code key=value}</li>
+     * </ul>
+     * {@code value} must be a any character except "=" and {@code key} must be any character except "#".<br/>
+     * {@code group(1)} returns the key of the property.<br/>
+     * {@code group(2)} returns the value of the property.
+     */
+    public static final Pattern PROPERTY_PATTERN = Pattern.compile("#??([^#]*)=([^=]*)");
 
     private final String path;
     private final InjectedValue<String> relativeTo = new InjectedValue<String>();
@@ -150,41 +164,28 @@ public class PropertiesFileLoader {
     public synchronized void persistProperties() throws IOException {
         beginPersistence();
 
-        List<String> content = new ArrayList<String>();
-        FileReader fileReader = new FileReader(propertiesFile);
-        BufferedReader bufferedFileReader = new BufferedReader(fileReader);
-
         // Read the properties file into memory
         // Shouldn't be so bad - it's a small file
-        try {
-            String line = null;
-            int i = 0;
-            while ((line = bufferedFileReader.readLine()) != null) {
-                content.add(line);
-            }
-        } finally {
-            safeClose(bufferedFileReader);
-            safeClose(fileReader);
-        }
+        List<String> content = readFile(propertiesFile);
 
         BufferedWriter bw = new BufferedWriter(new OutputStreamWriter(new FileOutputStream(propertiesFile), "UTF8"));
 
         try {
             for (String line : content) {
                 String trimmed = line.trim();
-                if (trimmed.startsWith(COMMENT_PREFIX)) {
-                    write(bw, line, true);
-                } else if (trimmed.length() == 0) {
+                if (trimmed.length() == 0) {
                     bw.newLine();
                 } else {
-                    int equals = trimmed.indexOf('=');
-                    if (equals > 0) {
-                        String userName = trimmed.substring(0, equals);
-                        if (toSave.containsKey(userName)) {
-                            String escapedUserName = escapeString(userName, ESCAPE_ARRAY);
-                            write(bw, escapedUserName + "=" + toSave.getProperty(userName), true);
-                            toSave.remove(userName);
+                    Matcher matcher = PROPERTY_PATTERN.matcher(trimmed);
+                    if (matcher.matches()) {
+                        final String key = matcher.group(1);
+                        if (toSave.containsKey(key)) {
+                            writeProperty(bw, key);
+                            toSave.remove(key);
+                            toSave.remove(key + "!disable");
                         }
+                    } else {
+                        write(bw, line, true);
                     }
                 }
             }
@@ -193,6 +194,34 @@ public class PropertiesFileLoader {
         } finally {
             safeClose(bw);
         }
+    }
+
+    protected List<String> readFile(File file) throws IOException {
+        FileReader fileReader = new FileReader(file);
+        BufferedReader bufferedFileReader = new BufferedReader(fileReader);
+        List<String> content = new ArrayList<String>();
+        try {
+            String line;
+            while ((line = bufferedFileReader.readLine()) != null) {
+                addLineContent(bufferedFileReader, content, line);
+            }
+        } finally {
+            safeClose(bufferedFileReader);
+            safeClose(fileReader);
+        }
+        return content;
+    }
+
+    /**
+     * Add the line to the content
+     *
+     * @param bufferedFileReader The file reader
+     * @param content            The content of the file
+     * @param line               The current read line
+     * @throws IOException
+     */
+    protected void addLineContent(BufferedReader bufferedFileReader, List<String> content, String line) throws IOException {
+        content.add(line);
     }
 
     /**
@@ -219,11 +248,25 @@ public class PropertiesFileLoader {
     protected void endPersistence(final BufferedWriter writer) throws IOException {
         // Append any additional users to the end of the file.
         for (Object currentKey : toSave.keySet()) {
-            String escapedUserName = escapeString((String) currentKey, ESCAPE_ARRAY);
-            write(writer, escapedUserName + "=" + toSave.getProperty((String) currentKey), true);
+            String key = (String) currentKey;
+            if (!key.contains("!disable")) {
+                writeProperty(writer, key);
+            }
         }
 
         toSave = null;
+    }
+
+    private void writeProperty(BufferedWriter writer, String key) throws IOException {
+        String escapedKey = escapeString(key, ESCAPE_ARRAY);
+        final String newLine;
+        if (Boolean.valueOf(toSave.getProperty(key + "!disable"))) {
+            // Commented property
+            newLine = "#" + escapedKey + "=" + toSave.getProperty(key);
+        } else {
+            newLine = escapedKey + "=" + toSave.getProperty(key);
+        }
+        write(writer, newLine, true);
     }
 
     public static String escapeString(String name, char[] escapeArray) {
