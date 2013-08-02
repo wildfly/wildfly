@@ -22,12 +22,14 @@
 package org.jboss.as.weld.services.bootstrap;
 
 import static org.jboss.as.weld.util.ResourceInjectionUtilities.getResourceAnnotated;
+import static org.jboss.weld.logging.messages.BeanMessage.INVALID_RESOURCE_PRODUCER_TYPE;
 
 import java.lang.reflect.AnnotatedElement;
 import java.lang.reflect.ParameterizedType;
 import java.lang.reflect.Type;
 
 import javax.enterprise.inject.spi.InjectionPoint;
+import javax.xml.ws.Service;
 import javax.xml.ws.WebServiceRef;
 
 import org.jboss.as.naming.ManagedReferenceFactory;
@@ -35,8 +37,10 @@ import org.jboss.as.server.deployment.DeploymentUnit;
 import org.jboss.as.server.deployment.DeploymentUnitProcessingException;
 import org.jboss.as.webservices.webserviceref.WSRefAnnotationWrapper;
 import org.jboss.as.webservices.webserviceref.WebServiceReferences;
+import org.jboss.weld.exceptions.DefinitionException;
 import org.jboss.weld.injection.spi.JaxwsInjectionServices;
 import org.jboss.weld.injection.spi.ResourceReferenceFactory;
+import org.jboss.weld.util.reflection.Reflections;
 
 /**
  * @author Stuart Douglas
@@ -58,10 +62,21 @@ public class WeldJaxwsInjectionServices implements JaxwsInjectionServices {
         }
         try {
             ManagedReferenceFactory factory = WebServiceReferences.createWebServiceFactory(deploymentUnit, classNameFromType(injectionPoint.getType()), new WSRefAnnotationWrapper(annotation), (AnnotatedElement) injectionPoint.getMember(), annotation.name());
+            validateWebServiceReferenceDefinition(injectionPoint, annotation, factory);
             return new ManagedReferenceFactoryToResourceReferenceFactoryAdapter<>(factory);
         } catch (DeploymentUnitProcessingException e) {
             throw new RuntimeException(e);
         }
+    }
+
+    private void validateWebServiceReferenceDefinition(final InjectionPoint injectionPoint, final WebServiceRef annotation, ManagedReferenceFactory factory) {
+        Class<? extends Service> serviceType = annotation.value();
+        if (serviceType != null) {
+            if (!Reflections.getRawType(injectionPoint.getType()).isAssignableFrom(serviceType)) {
+                throw new DefinitionException(INVALID_RESOURCE_PRODUCER_TYPE, injectionPoint.getAnnotated(), serviceType.getName());
+            }
+        }
+        AbstractResourceInjectionServices.validateResourceInjectionPointType(factory, injectionPoint);
     }
 
     private String classNameFromType(final Type type) {
