@@ -15,7 +15,7 @@
                 </authentication>
                 <authorization map-groups-to-roles="false">
                     <properties path="mgmt-groups.properties" relative-to="jboss.server.config.dir"/>
-                </authorization>                
+                </authorization>
             </security-realm>
             <security-realm name="ApplicationRealm">
                 <authentication>
@@ -35,6 +35,15 @@
                 <socket-binding http="management-http"/>
             </http-interface>
         </management-interfaces>
+        <access-control provider="simple">
+            <role-mapping>
+                <role name="SuperUser">
+                    <include>
+                        <user name="$local"/>
+                    </include>
+                </role>
+            </role-mapping>
+        </access-control>
     </management>
 
     <profile>
