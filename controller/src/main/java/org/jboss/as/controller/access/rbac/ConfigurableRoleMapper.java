@@ -23,6 +23,8 @@
 package org.jboss.as.controller.access.rbac;
 
 import static org.jboss.as.controller.ControllerLogger.ACCESS_LOGGER;
+
+import java.security.Permission;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -40,6 +42,9 @@ import org.jboss.as.controller.access.TargetResource;
  * @author <a href="mailto:darran.lofthouse@jboss.com">Darran Lofthouse</a>
  */
 public class ConfigurableRoleMapper implements RoleMapper {
+
+    private static final String IN_VM_ROLE = StandardRole.SUPERUSER.toString();
+    private static final RunAsRolePermission RUN_AS_IN_VM_ROLE = new RunAsRolePermission(IN_VM_ROLE);
 
     private volatile HashMap<String, Role> roles = new HashMap<String, Role>();
     private volatile boolean useRealmRoles;
@@ -127,66 +132,79 @@ public class ConfigurableRoleMapper implements RoleMapper {
 
         boolean traceEnabled = ACCESS_LOGGER.isTraceEnabled();
 
-        HashMap<String, Role> rolesToCheck;
-        if (useRealmRoles) {
-            rolesToCheck = new HashMap<String, Role>(roles);
-            Set<String> realmRoles = caller.getAssociatedRoles();
-            for (String current : realmRoles) {
-                String roleName = current.toUpperCase();
-                if (rolesToCheck.containsKey(roleName)) {
-                    Role role = rolesToCheck.remove(roleName);
-                    Principal exclusion = role.isExcluded(caller);
-                    if (exclusion == null) {
-                        if (traceEnabled) {
-                            ACCESS_LOGGER
-                                    .tracef("User '%s' assigned role '%s' due to realm assignment and no exclusion in role mapping definition.",
-                                            caller.getName(), roleName);
+        if (caller.hasSubject()) {
+            HashMap<String, Role> rolesToCheck;
+            if (useRealmRoles) {
+                rolesToCheck = new HashMap<String, Role>(roles);
+                Set<String> realmRoles = caller.getAssociatedRoles();
+                for (String current : realmRoles) {
+                    String roleName = current.toUpperCase();
+                    if (rolesToCheck.containsKey(roleName)) {
+                        Role role = rolesToCheck.remove(roleName);
+                        Principal exclusion = role.isExcluded(caller);
+                        if (exclusion == null) {
+                            if (traceEnabled) {
+                                ACCESS_LOGGER
+                                        .tracef("User '%s' assigned role '%s' due to realm assignment and no exclusion in role mapping definition.",
+                                                caller.getName(), roleName);
+                            }
+                            mappedRoles.add(roleName);
+                        } else {
+                            if (traceEnabled) {
+                                ACCESS_LOGGER
+                                        .tracef("User '%s' NOT assigned role '%s' despite realm assignment due to exclusion match against %s.",
+                                                caller.getName(), roleName, exclusion);
+                            }
                         }
-                        mappedRoles.add(roleName);
                     } else {
                         if (traceEnabled) {
                             ACCESS_LOGGER
-                                    .tracef("User '%s' NOT assigned role '%s' despite realm assignment due to exclusion match against %s.",
-                                            caller.getName(), roleName, exclusion);
+                                    .tracef("User '%s' assigned role '%s' due to realm assignment and no role mapping to check for exclusion.",
+                                            caller.getName(), roleName);
+                        }
+                        mappedRoles.add(roleName);
+                    }
+                }
+            } else {
+                // A clone is not needed here as the whole set of values is to be iterated with no need for removal.
+                rolesToCheck = roles;
+            }
+
+            for (Role current : rolesToCheck.values()) {
+                Principal inclusion = current.isIncluded(caller);
+                if (inclusion != null) {
+                    Principal exclusion = current.isExcluded(caller);
+                    if (exclusion == null) {
+                        if (traceEnabled) {
+                            ACCESS_LOGGER.tracef("User '%s' assiged role '%s' due to match on inclusion %s", caller.getName(),
+                                    current.getName(), inclusion);
+                        }
+                        mappedRoles.add(current.getName());
+                    } else {
+                        if (traceEnabled) {
+                            ACCESS_LOGGER.tracef("User '%s' denied membership of role '%s' due to exclusion %s",
+                                    caller.getName(), current.getName(), exclusion);
                         }
                     }
                 } else {
                     if (traceEnabled) {
-                        ACCESS_LOGGER
-                                .tracef("User '%s' assigned role '%s' due to realm assignment and no role mapping to check for exclusion.",
-                                        caller.getName(), roleName);
+                        ACCESS_LOGGER.tracef(
+                                "User '%s' not assigned role '%s' as no match on the include definition of the role mapping.",
+                                caller.getName(), current.getName());
                     }
-                    mappedRoles.add(roleName);
                 }
             }
         } else {
-            // A clone is not needed here as the whole set of values is to be iterated with no need for removal.
-            rolesToCheck = roles;
-        }
+            /*
+             * If the IN-VM code does not have the required permission a SecurityException will be thrown.
+             *
+             * At the moment clients should not be making speculation requests so in a correctly configured installation this
+             * check should pass with no error.
+             */
+            checkPermission(RUN_AS_IN_VM_ROLE);
+            ACCESS_LOGGER.tracef("Assigning role '%s' for call with no assigned Subject (An IN-VM Call).", IN_VM_ROLE);
 
-        for (Role current : rolesToCheck.values()) {
-            Principal inclusion = current.isIncluded(caller);
-            if (inclusion != null) {
-                Principal exclusion = current.isExcluded(caller);
-                if (exclusion == null) {
-                    if (traceEnabled) {
-                        ACCESS_LOGGER.tracef("User '%s' assiged role '%s' due to match on inclusion %s", caller.getName(),
-                                current.getName(), inclusion);
-                    }
-                    mappedRoles.add(current.getName());
-                } else {
-                    if (traceEnabled) {
-                        ACCESS_LOGGER.tracef("User '%s' denied membership of role '%s' due to exclusion %s", caller.getName(),
-                                current.getName(), exclusion);
-                    }
-                }
-            } else {
-                if (traceEnabled) {
-                    ACCESS_LOGGER.tracef(
-                            "User '%s' not assigned role '%s' as no match on the include definition of the role mapping.",
-                            caller.getName(), current.getName());
-                }
-            }
+            mappedRoles.add(IN_VM_ROLE);
         }
 
         if (traceEnabled) {
@@ -201,6 +219,13 @@ public class ConfigurableRoleMapper implements RoleMapper {
         // TODO - We could consider something along the lines of a WeakHashMap to hold this result keyed on the Caller.
         // The contents of the Caller are not expected to change during a call and we could clear the cache on a config change.
         return Collections.unmodifiableSet(mappedRoles);
+    }
+
+    private static void checkPermission(final Permission permission) {
+        SecurityManager securityManager = System.getSecurityManager();
+        if (securityManager != null) {
+            securityManager.checkPermission(permission);
+        }
     }
 
     private class Role {
