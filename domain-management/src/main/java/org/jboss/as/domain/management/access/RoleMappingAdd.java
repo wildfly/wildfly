@@ -61,7 +61,11 @@ public class RoleMappingAdd implements OperationStepHandler {
 
             @Override
             public void execute(OperationContext context, ModelNode operation) throws OperationFailedException {
-                roleMapper.addRole(roleName, context.isBooting());
+                if (context.isBooting()) {
+                    roleMapper.addRoleImmediate(roleName);
+                } else {
+                    roleMapper.addRole(roleName);
+                }
                 context.stepCompleted(); // TODO - Add roll back support.
             }
         }, Stage.RUNTIME);
