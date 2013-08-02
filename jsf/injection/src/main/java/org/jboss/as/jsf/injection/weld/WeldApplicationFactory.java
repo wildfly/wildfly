@@ -28,6 +28,13 @@ public class WeldApplicationFactory extends ForwardingApplicationFactory {
 
     private volatile Application application;
 
+    // This private constructor must never be called, but it is here to suppress the WELD-001529 warning
+    // that an InjectionTarget is created for this class with no appropriate constructor.
+    private WeldApplicationFactory() {
+        super();
+        applicationFactory = null;
+    }
+
     public WeldApplicationFactory(ApplicationFactory applicationFactory) {
         this.applicationFactory = applicationFactory;
     }
