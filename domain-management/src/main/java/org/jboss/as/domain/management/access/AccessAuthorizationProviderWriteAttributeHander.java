@@ -34,8 +34,8 @@ import org.jboss.as.controller.access.rbac.RoleMapper;
 import org.jboss.dmr.ModelNode;
 
 /**
- * An {@link OperationStepHandler} handling write updates to the 'provider' attribute allowing for the authorization provider to
- * be switched.
+ * An {@link org.jboss.as.controller.OperationStepHandler} handling write updates to the 'provider' attribute allowing
+ * for the authorization provider to be switched.
  *
  * @author Brian Stansberry (c) 2013 Red Hat Inc.
  * @author <a href="mailto:darran.lofthouse@jboss.com">Darran Lofthouse</a>

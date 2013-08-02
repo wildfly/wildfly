@@ -16,6 +16,20 @@
  */
 package org.jboss.as.arquillian.container;
 
+import static org.jboss.as.controller.client.helpers.ClientConstants.CONTROLLER_PROCESS_STATE_STARTING;
+import static org.jboss.as.controller.client.helpers.ClientConstants.CONTROLLER_PROCESS_STATE_STOPPING;
+import static org.jboss.as.controller.client.helpers.ClientConstants.DEPLOYMENT;
+import static org.jboss.as.controller.client.helpers.ClientConstants.FAILURE_DESCRIPTION;
+import static org.jboss.as.controller.client.helpers.ClientConstants.OP;
+import static org.jboss.as.controller.client.helpers.ClientConstants.OP_ADDR;
+import static org.jboss.as.controller.client.helpers.ClientConstants.OUTCOME;
+import static org.jboss.as.controller.client.helpers.ClientConstants.READ_ATTRIBUTE_OPERATION;
+import static org.jboss.as.controller.client.helpers.ClientConstants.READ_RESOURCE_OPERATION;
+import static org.jboss.as.controller.client.helpers.ClientConstants.RECURSIVE;
+import static org.jboss.as.controller.client.helpers.ClientConstants.RESULT;
+import static org.jboss.as.controller.client.helpers.ClientConstants.SUBSYSTEM;
+import static org.jboss.as.controller.client.helpers.ClientConstants.SUCCESS;
+
 import java.io.IOException;
 import java.net.URI;
 import java.net.URISyntaxException;
@@ -53,20 +67,6 @@ import org.jboss.arquillian.container.spi.client.protocol.metadata.Servlet;
 import org.jboss.as.controller.client.ModelControllerClient;
 import org.jboss.dmr.ModelNode;
 import org.jboss.logging.Logger;
-
-import static org.jboss.as.controller.client.helpers.ClientConstants.CONTROLLER_PROCESS_STATE_STARTING;
-import static org.jboss.as.controller.client.helpers.ClientConstants.CONTROLLER_PROCESS_STATE_STOPPING;
-import static org.jboss.as.controller.client.helpers.ClientConstants.DEPLOYMENT;
-import static org.jboss.as.controller.client.helpers.ClientConstants.FAILURE_DESCRIPTION;
-import static org.jboss.as.controller.client.helpers.ClientConstants.OP;
-import static org.jboss.as.controller.client.helpers.ClientConstants.OP_ADDR;
-import static org.jboss.as.controller.client.helpers.ClientConstants.OUTCOME;
-import static org.jboss.as.controller.client.helpers.ClientConstants.READ_ATTRIBUTE_OPERATION;
-import static org.jboss.as.controller.client.helpers.ClientConstants.READ_RESOURCE_OPERATION;
-import static org.jboss.as.controller.client.helpers.ClientConstants.RECURSIVE;
-import static org.jboss.as.controller.client.helpers.ClientConstants.RESULT;
-import static org.jboss.as.controller.client.helpers.ClientConstants.SUBSYSTEM;
-import static org.jboss.as.controller.client.helpers.ClientConstants.SUCCESS;
 
 /**
  * A helper class to join management related operations, like extract sub system ip/port (web/jmx)

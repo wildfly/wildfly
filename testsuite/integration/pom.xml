@@ -54,9 +54,10 @@
                 <module>smoke</module>
                 <module>basic</module>
                 <module>osgi</module>
-                <module>clust</module>
                 <module>iiop</module>
                 <module>xts</module>
+                <module>rbac</module>
+                <module>clust</module>
                 <module>multinode</module>
                 <module>manualmode</module>
             </modules>
@@ -71,6 +72,7 @@
                 <module>clust</module>
                 <module>iiop</module>
                 <module>xts</module>
+                <module>rbac</module>
                 <module>multinode</module>
                 <module>manualmode</module>
             </modules>
@@ -145,6 +147,15 @@
             <activation><property><name>ts.manualmode</name></property></activation>
             <modules>
                 <module>manualmode</module>
+            </modules>
+        </profile>
+
+        <!-- -Dts.rbac -->
+        <profile>
+            <id>ts.integ.group.rbac</id>
+            <activation><property><name>ts.rbac</name></property></activation>
+            <modules>
+                <module>rbac</module>
             </modules>
         </profile>
 
@@ -254,7 +265,7 @@
 
                 </configuration>
             </plugin>
-            
+
             <plugin>
                 <groupId>com.google.code.maven-replacer-plugin</groupId>
                 <artifactId>maven-replacer-plugin</artifactId>
@@ -274,7 +285,7 @@
                         <!-- Fix double newlines. -->
                         <replacement> <token>\n(?=\n)</token> <value></value> </replacement>
                     </replacements>
-                   
+
                     <regexFlags>
                         <regexFlag>MULTILINE</regexFlag>
                     </regexFlags>
