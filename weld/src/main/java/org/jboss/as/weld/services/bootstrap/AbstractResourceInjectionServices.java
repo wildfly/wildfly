@@ -65,10 +65,7 @@ public abstract class AbstractResourceInjectionServices {
          * Try to obtain ManagedReferenceFactory and validate the resource type
          */
         final ManagedReferenceFactory factory = getManagedReferenceFactory(ejbBindInfo);
-        if (factory instanceof ContextListManagedReferenceFactory && injectionPoint != null) {
-            validateResourceInjectionPointType((ContextListManagedReferenceFactory) factory, injectionPoint);
-        }
-        // otherwise, the validation is skipped as we have no information about the resource type
+        validateResourceInjectionPointType(factory, injectionPoint);
 
         if (factory != null) {
             return new ManagedReferenceFactoryToResourceReferenceFactoryAdapter<Object>(factory);
@@ -77,16 +74,19 @@ public abstract class AbstractResourceInjectionServices {
         }
     }
 
-    protected static void validateResourceInjectionPointType(ContextListManagedReferenceFactory factory, InjectionPoint injectionPoint) {
-        // the resource class may come from JBoss AS
-        Class<?> resourceClass = org.jboss.as.weld.util.Reflections.loadClass(factory.getInstanceClassName(), factory.getClass().getClassLoader());
-        // or it may come from deployment
-        if (resourceClass == null) {
-            resourceClass = org.jboss.as.weld.util.Reflections.loadClass(factory.getInstanceClassName(), WildFlySecurityManager.getCurrentContextClassLoaderPrivileged());
-        }
+    protected static void validateResourceInjectionPointType(ManagedReferenceFactory factory, InjectionPoint injectionPoint) {
+        if (factory instanceof ContextListManagedReferenceFactory && injectionPoint != null) {
+            ContextListManagedReferenceFactory clmrfContextListManagedReferenceFactory = (ContextListManagedReferenceFactory) factory;
+            // the resource class may come from JBoss AS
+            Class<?> resourceClass = org.jboss.as.weld.util.Reflections.loadClass(clmrfContextListManagedReferenceFactory.getInstanceClassName(), factory.getClass().getClassLoader());
+            // or it may come from deployment
+            if (resourceClass == null) {
+                resourceClass = org.jboss.as.weld.util.Reflections.loadClass(clmrfContextListManagedReferenceFactory.getInstanceClassName(), WildFlySecurityManager.getCurrentContextClassLoaderPrivileged());
+            }
 
-        if (resourceClass != null) {
-            validateResourceInjectionPointType(resourceClass, injectionPoint);
+            if (resourceClass != null) {
+                validateResourceInjectionPointType(resourceClass, injectionPoint);
+            }
         }
         // otherwise, the validation is skipped as we have no information about the resource type
     }
