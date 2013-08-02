@@ -22,6 +22,7 @@
 
 package org.jboss.as.controller;
 
+import static java.security.AccessController.doPrivileged;
 import static org.jboss.as.controller.ControllerLogger.MGMT_OP_LOGGER;
 import static org.jboss.as.controller.ControllerLogger.ROOT_LOGGER;
 import static org.jboss.as.controller.ControllerMessages.MESSAGES;
@@ -38,6 +39,8 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.RES
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ROLLBACK_ON_RUNTIME_FAILURE;
 
 import java.io.IOException;
+import java.security.AccessControlContext;
+import java.security.PrivilegedAction;
 import java.security.SecureRandom;
 import java.util.ArrayList;
 import java.util.EnumSet;
@@ -69,6 +72,7 @@ import org.jboss.msc.service.ServiceRegistry;
 import org.jboss.msc.service.ServiceTarget;
 import org.jboss.threads.AsyncFuture;
 import org.jboss.threads.AsyncFutureTask;
+import org.wildfly.security.manager.GetAccessControlContextAction;
 
 /**
  * Default {@link ModelController} implementation.
@@ -500,11 +504,19 @@ class ModelControllerImpl implements ModelController {
                     }
                 }
                 final OpTask opTask = new OpTask();
+                final AccessControlContext acc = doPrivileged(GetAccessControlContextAction.getInstance());
                 executor.execute(new Runnable() {
                     public void run() {
                         try {
                             if (opThread.compareAndSet(null, Thread.currentThread())) {
-                                ModelNode response = ModelControllerImpl.this.execute(operation, messageHandler, OperationTransactionControl.COMMIT, attachments);
+                                ModelNode response = doPrivileged(new PrivilegedAction<ModelNode>() {
+
+                                    @Override
+                                    public ModelNode run() {
+                                        return ModelControllerImpl.this.execute(operation, messageHandler,
+                                                OperationTransactionControl.COMMIT, attachments);
+                                    }
+                                }, acc);
                                 opTask.handleResult(response);
                             }
                         } finally {

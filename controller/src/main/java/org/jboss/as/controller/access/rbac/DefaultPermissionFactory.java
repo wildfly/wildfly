@@ -293,6 +293,8 @@ public class DefaultPermissionFactory implements PermissionFactory {
 
     private static class NoPermissionsCollection extends PermissionCollection {
 
+        private static final long serialVersionUID = 426277167342589940L;
+
         private NoPermissionsCollection() {
             super.setReadOnly();
         }

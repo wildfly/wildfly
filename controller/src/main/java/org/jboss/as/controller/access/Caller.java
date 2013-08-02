@@ -163,6 +163,15 @@ public final class Caller {
     }
 
     /**
+     * Check if this {@link Caller} has a {@link Subject} without needing to access it.
+     *
+     * @return true if this {@link Caller} has a {@link Subject}
+     */
+    public boolean hasSubject() {
+        return subject != null;
+    }
+
+    /**
      * Obtain the {@link Subject} used to create this caller.
      *
      * @return The {@link Subject} used to create this caller.
