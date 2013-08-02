@@ -410,6 +410,7 @@ public enum Phase {
     public static final int POST_MODULE_WELD_BEAN_ARCHIVE               = 0x0D00;
     public static final int POST_MODULE_WELD_EXTERNAL_BEAN_ARCHIVE      = 0x0D50;
     public static final int POST_MODULE_WELD_PORTABLE_EXTENSIONS        = 0x0E00;
+    public static final int POST_MODULE_XTS_PORTABLE_EXTENSIONS         = 0x0E10;
     public static final int POST_MODULE_JMS_CDI_EXTENSIONS              = 0x0F00;
     // should come before ejb jndi bindings processor
     public static final int POST_MODULE_EJB_IMPLICIT_NO_INTERFACE_VIEW  = 0x1000;
