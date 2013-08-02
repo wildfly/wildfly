@@ -71,13 +71,14 @@ public abstract class UpdatePropertiesHandler {
     abstract String errorMessage(String fileName, Throwable e);
 
     State update(StateValues stateValues) {
-        String[] entry = new String[2];
+        String[] entry = new String[3];
 
         try {
             String hash = new UsernamePasswordHashUtil().generateHashedHexURP(stateValues.getUserName(), stateValues.getRealm(),
                     stateValues.getPassword());
             entry[0] = stateValues.getUserName();
             entry[1] = hash;
+            entry[2] = String.valueOf(stateValues.getOptions().isDisable());
         } catch (NoSuchAlgorithmException e) {
             return new ErrorState(theConsole, e.getMessage(), null, stateValues);
         }
@@ -96,7 +97,7 @@ public abstract class UpdatePropertiesHandler {
 
         if (stateValues.groupPropertiesFound() && stateValues.getGroups() != null) {
             for (final File current : stateValues.getGroupFiles()) {
-                String[] groups = {stateValues.getUserName(), stateValues.getGroups()};
+                String[] groups = {stateValues.getUserName(), stateValues.getGroups(), String.valueOf(stateValues.getOptions().isDisable())};
                 try {
                     persist(groups, current);
                     if (stateValues.isSilent() == false) {

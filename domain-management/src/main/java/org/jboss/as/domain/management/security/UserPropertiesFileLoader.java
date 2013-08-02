@@ -26,6 +26,9 @@ import java.io.BufferedReader;
 import java.io.BufferedWriter;
 import java.io.FileReader;
 import java.io.IOException;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.regex.Matcher;
 
 /**
  * An extension of {@link PropertiesFileLoader} that is realm aware.
@@ -61,6 +64,18 @@ public class UserPropertiesFileLoader extends PropertiesFileLoader {
 
     public void setRealmName(final String realmName) {
         this.realmName = realmName;
+    }
+
+    public List<String> getUserNames() throws IOException {
+        List<String> userNames = new ArrayList<String>();
+        List<String> content = readFile(propertiesFile);
+        for (String line : content) {
+            Matcher matcher = PROPERTY_PATTERN.matcher(line.trim());
+            if (matcher.matches()) {
+                userNames.add(matcher.group(1));
+            }
+        }
+        return userNames;
     }
 
     @Override
@@ -115,6 +130,32 @@ public class UserPropertiesFileLoader extends PropertiesFileLoader {
 
         if (realmWritten == false) {
             writeRealm(writer, realmName);
+        }
+    }
+
+    /**
+     * Remove the realm name block.
+     *
+     * @see PropertiesFileLoader#addLineContent(java.io.BufferedReader, java.util.List, String)
+     */
+    @Override
+    protected void addLineContent(BufferedReader bufferedFileReader, List<String> content, String line) throws IOException {
+        // Is the line an empty comment "#" ?
+        if (line.startsWith(COMMENT_PREFIX) && line.length() == 1) {
+            String nextLine = bufferedFileReader.readLine();
+            // Is the next line the realm name "#$REALM_NAME=" ?
+            if (nextLine.startsWith(COMMENT_PREFIX) && nextLine.contains(REALM_COMMENT_PREFIX)) {
+                // Realm name block detected!
+                // The next line must be and empty comment "#"
+                bufferedFileReader.readLine();
+                // Avoid adding the realm block
+            } else {
+                // It's a user comment...
+                content.add(line);
+                content.add(nextLine);
+            }
+        } else {
+            super.addLineContent(bufferedFileReader, content, line);
         }
     }
 

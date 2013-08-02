@@ -48,11 +48,13 @@ public class ValidatePasswordState extends AbstractValidationState {
 
     @Override
     protected Collection<State> getValidationStates() {
-        List<State> validationStates = new ArrayList<State>(2);
-        validationStates.add(getUsernameMatchState());
-        validationStates.add(getDetailedCheckState());
-
-        return validationStates;
+        if (!stateValues.getOptions().isEnableDisableMode()) {
+            List<State> validationStates = new ArrayList<State>(2);
+            validationStates.add(getUsernameMatchState());
+            validationStates.add(getDetailedCheckState());
+            return validationStates;
+        }
+        return new ArrayList<State>();
     }
 
     private State getRetryState() {

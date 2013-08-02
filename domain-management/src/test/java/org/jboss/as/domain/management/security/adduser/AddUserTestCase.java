@@ -22,13 +22,15 @@
 
 package org.jboss.as.domain.management.security.adduser;
 
-import org.jboss.as.domain.management.security.adduser.AddUser;
 import org.jboss.msc.service.StartException;
 import org.junit.Test;
 
 import java.io.IOException;
 
 import static org.jboss.as.domain.management.DomainManagementMessages.MESSAGES;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertNull;
 
 /**
  * Test the AddUser state
@@ -45,16 +47,141 @@ public class AddUserTestCase extends PropertyTestHelper {
         AssertConsoleBuilder consoleBuilder = new AssertConsoleBuilder().
                 expectedDisplayText(MESSAGES.addedUser(values.getUserName(), values.getUserFiles().get(0).getCanonicalPath())).
                 expectedDisplayText(AddUser.NEW_LINE).
-                expectedDisplayText(MESSAGES.addedGroups(values.getUserName(), values.getGroups(),values.getGroupFiles().get(0).getCanonicalPath())).
+                expectedDisplayText(MESSAGES.addedGroups(values.getUserName(), values.getGroups(), values.getGroupFiles().get(0).getCanonicalPath())).
                 expectedDisplayText(AddUser.NEW_LINE);
         consoleMock.setResponses(consoleBuilder);
         addUserState.update(values);
 
-        assertRolePropertyFile(USER_NAME);
-        assertUserPropertyFile(USER_NAME);
+        assertRolePropertyFile(values.getUserName());
+        assertUserPropertyFile(values.getUserName());
 
         consoleBuilder.validate();
     }
 
 
+    @Test
+    public void testAddEnabledUser() throws IOException, StartException {
+        values.setUserName("Donny.Donowitz");
+        values.setGroups(ROLES);
+        values.getOptions().setDisable(false);
+        AddUserState addUserState = new AddUserState(consoleMock, values);
+
+        AssertConsoleBuilder consoleBuilder = new AssertConsoleBuilder().
+                expectedDisplayText(MESSAGES.addedUser(values.getUserName(), values.getUserFiles().get(0).getCanonicalPath())).
+                expectedDisplayText(AddUser.NEW_LINE).
+                expectedDisplayText(MESSAGES.addedGroups(values.getUserName(), values.getGroups(), values.getGroupFiles().get(0).getCanonicalPath())).
+                expectedDisplayText(AddUser.NEW_LINE);
+        consoleMock.setResponses(consoleBuilder);
+        addUserState.update(values);
+
+        assertRolePropertyFile(values.getUserName());
+        assertUserPropertyFile(values.getUserName());
+
+        consoleBuilder.validate();
+    }
+
+    @Test
+    public void testAddDisabledUser() throws IOException, StartException {
+        values.setGroups(ROLES);
+        values.getOptions().setDisable(true);
+        values.setUserName("Omar.Ulmer");
+        AddUserState addUserState = new AddUserState(consoleMock, values);
+
+        AssertConsoleBuilder consoleBuilder = new AssertConsoleBuilder().
+                expectedDisplayText(MESSAGES.addedUser(values.getUserName(), values.getUserFiles().get(0).getCanonicalPath())).
+                expectedDisplayText(AddUser.NEW_LINE).
+                expectedDisplayText(MESSAGES.addedGroups(values.getUserName(), values.getGroups(), values.getGroupFiles().get(0).getCanonicalPath())).
+                expectedDisplayText(AddUser.NEW_LINE);
+        consoleMock.setResponses(consoleBuilder);
+        addUserState.update(values);
+
+        assertNull("The user is disabled, the user line must start with #", getPasswordFromUserProperty(values.getUserName()));
+        assertNull("The user is disabled, the roles line must start with #", getRolesFromRoleProperty(values.getUserName()));
+        assertRolePropertyFile(values.getUserName(), true);
+        assertUserPropertyFile(values.getUserName(), true);
+
+        consoleBuilder.validate();
+    }
+
+    @Test
+    public void testEnableDisabledUser() throws IOException, StartException {
+        // Disable user
+        values.setGroups(ROLES);
+        values.getOptions().setDisable(true);
+        values.setUserName("Omar.Ulmer");
+        AddUserState addUserState = new AddUserState(consoleMock, values);
+        AssertConsoleBuilder consoleBuilder = new AssertConsoleBuilder().
+                expectedDisplayText(MESSAGES.addedUser(values.getUserName(), values.getUserFiles().get(0).getCanonicalPath())).
+                expectedDisplayText(AddUser.NEW_LINE).
+                expectedDisplayText(MESSAGES.addedGroups(values.getUserName(), values.getGroups(), values.getGroupFiles().get(0).getCanonicalPath())).
+                expectedDisplayText(AddUser.NEW_LINE);
+        consoleMock.setResponses(consoleBuilder);
+        addUserState.update(values);
+
+        assertNull("The user is disabled, the user line must start with #", getPasswordFromUserProperty(values.getUserName()));
+        assertNull("The user is disabled, the roles line must start with #", getRolesFromRoleProperty(values.getUserName()));
+        assertRolePropertyFile(values.getUserName(), true);
+        assertUserPropertyFile(values.getUserName(), true);
+        consoleBuilder.validate();
+
+        int roleFileLineNumber = countLineNumberRoleFile();
+        int userFileLineNumber = countLineNumberUserFile();
+
+        // Enable user
+        values.getOptions().setDisable(false);
+        consoleBuilder = new AssertConsoleBuilder().
+                expectedDisplayText(MESSAGES.addedUser(values.getUserName(), values.getUserFiles().get(0).getCanonicalPath())).
+                expectedDisplayText(AddUser.NEW_LINE).
+                expectedDisplayText(MESSAGES.addedGroups(values.getUserName(), values.getGroups(), values.getGroupFiles().get(0).getCanonicalPath())).
+                expectedDisplayText(AddUser.NEW_LINE);
+        consoleMock.setResponses(consoleBuilder);
+        addUserState = new AddUserState(consoleMock, values);
+        addUserState.update(values);
+
+        assertRolePropertyFile(values.getUserName());
+        assertUserPropertyFile(values.getUserName());
+        assertEquals("Enabling a role just uncomment the line and must not create a new one", roleFileLineNumber, countLineNumberRoleFile());
+        assertEquals("Enabling a user just uncomment the line and must not create a new one", userFileLineNumber, countLineNumberUserFile());
+        consoleBuilder.validate();
+    }
+
+    @Test
+    public void testEnableEnabledUser() throws IOException, StartException {
+        // Enable user
+        values.setGroups(ROLES);
+        values.getOptions().setDisable(false);
+        values.setUserName("Aldo.Raine");
+        AddUserState addUserState = new AddUserState(consoleMock, values);
+        AssertConsoleBuilder consoleBuilder = new AssertConsoleBuilder().
+                expectedDisplayText(MESSAGES.addedUser(values.getUserName(), values.getUserFiles().get(0).getCanonicalPath())).
+                expectedDisplayText(AddUser.NEW_LINE).
+                expectedDisplayText(MESSAGES.addedGroups(values.getUserName(), values.getGroups(), values.getGroupFiles().get(0).getCanonicalPath())).
+                expectedDisplayText(AddUser.NEW_LINE);
+        consoleMock.setResponses(consoleBuilder);
+        addUserState.update(values);
+
+        assertRolePropertyFile(values.getUserName());
+        assertUserPropertyFile(values.getUserName());
+        consoleBuilder.validate();
+
+        int roleFileLineNumber = countLineNumberRoleFile();
+        int userFileLineNumber = countLineNumberUserFile();
+
+        // (Re)Enable user
+        values.getOptions().setDisable(false);
+        consoleBuilder = new AssertConsoleBuilder().
+                expectedDisplayText(MESSAGES.addedUser(values.getUserName(), values.getUserFiles().get(0).getCanonicalPath())).
+                expectedDisplayText(AddUser.NEW_LINE).
+                expectedDisplayText(MESSAGES.addedGroups(values.getUserName(), values.getGroups(), values.getGroupFiles().get(0).getCanonicalPath())).
+                expectedDisplayText(AddUser.NEW_LINE);
+        consoleMock.setResponses(consoleBuilder);
+        addUserState = new AddUserState(consoleMock, values);
+        addUserState.update(values);
+
+        assertRolePropertyFile(values.getUserName());
+        assertUserPropertyFile(values.getUserName());
+        assertEquals("Enabling a role just uncomment the line and must not create a new one", roleFileLineNumber, countLineNumberRoleFile());
+        assertEquals("Enabling a user just uncomment the line and must not create a new one", userFileLineNumber, countLineNumberUserFile());
+        consoleBuilder.validate();
+    }
 }

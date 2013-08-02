@@ -41,6 +41,16 @@ class RuntimeOptions {
 
     private String groupProperties;
 
+    /**
+     * Enable/Disable mode is active by using --enable or --disable argument
+     */
+    private boolean enableDisableMode = false;
+
+    /**
+     * Disable a user
+     */
+    private boolean disable = false;
+
     public ConsoleWrapper getConsoleWrapper() {
         return consoleWrapper;
     }
@@ -89,4 +99,19 @@ class RuntimeOptions {
         this.groupProperties = groupProperties;
     }
 
+    boolean isEnableDisableMode() {
+        return enableDisableMode;
+    }
+
+    void setEnableDisableMode(boolean enableDisableMode) {
+        this.enableDisableMode = enableDisableMode;
+    }
+
+    boolean isDisable() {
+        return disable;
+    }
+
+    void setDisable(boolean disable) {
+        this.disable = disable;
+    }
 }

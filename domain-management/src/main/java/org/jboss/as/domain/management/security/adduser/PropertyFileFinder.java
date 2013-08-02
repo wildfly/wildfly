@@ -114,7 +114,7 @@ public class PropertyFileFinder implements State {
             UserPropertiesFileLoader pfl = null;
             try {
                 pfl = loadUsersFile(current);
-                foundUsers.addAll(pfl.getProperties().stringPropertyNames());
+                foundUsers.addAll(pfl.getUserNames());
                 if (realmName == null) {
                     realmName = pfl.getRealmName();
                 } else {
