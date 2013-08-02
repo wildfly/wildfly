@@ -169,7 +169,7 @@ class XTSSubsystemAdd extends AbstractBoottimeAddStepHandler {
             protected void execute(DeploymentProcessorTarget processorTarget) {
                 processorTarget.addDeploymentProcessor(XTSExtension.SUBSYSTEM_NAME, Phase.PARSE, Phase.PARSE_XTS_COMPONENT_INTERCEPTORS, new XTSInterceptorDeploymentProcessor());
                 processorTarget.addDeploymentProcessor(XTSExtension.SUBSYSTEM_NAME, Phase.PARSE, Phase.PARSE_XTS_SOAP_HANDLERS, new XTSHandlerDeploymentProcessor());
-                processorTarget.addDeploymentProcessor(XTSExtension.SUBSYSTEM_NAME, Phase.POST_MODULE, Phase.POST_MODULE_WELD_PORTABLE_EXTENSIONS + 10, new CDIExtensionProcessor());
+                processorTarget.addDeploymentProcessor(XTSExtension.SUBSYSTEM_NAME, Phase.POST_MODULE, Phase.POST_MODULE_XTS_PORTABLE_EXTENSIONS, new CDIExtensionProcessor());
             }
         }, OperationContext.Stage.RUNTIME);
 
