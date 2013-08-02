@@ -33,6 +33,7 @@ import org.jboss.arquillian.container.test.api.OperateOnDeployment;
 import org.jboss.arquillian.container.test.api.RunAsClient;
 import org.jboss.arquillian.container.test.api.TargetsContainer;
 import org.jboss.arquillian.junit.Arquillian;
+import org.jboss.arquillian.junit.InSequence;
 import org.jboss.arquillian.test.api.ArquillianResource;
 import org.jboss.as.test.clustering.cluster.ClusterAbstractTestCase;
 import org.jboss.as.test.clustering.single.web.SimpleServlet;
@@ -65,14 +66,13 @@ public class NonHaWebSessionPersistenceTestCase extends ClusterAbstractTestCase 
     @Override
     public void testSetup() {
         // TODO rethink how this can be done faster with one less stopping (eg. make this test last)
-        stop(CONTAINER_1);
-        stop(CONTAINER_2);
-
+        stop(CONTAINERS);
         start(CONTAINER_SINGLE);
         deploy(DEPLOYMENT_1);
     }
 
     @Test
+    @InSequence(1)
     @OperateOnDeployment(DEPLOYMENT_1)
     public void testSessionPersistence(@ArquillianResource(SimpleServlet.class) @OperateOnDeployment(DEPLOYMENT_1) URL baseURL) throws IOException {
         DefaultHttpClient client = new DefaultHttpClient();
@@ -103,10 +103,9 @@ public class NonHaWebSessionPersistenceTestCase extends ClusterAbstractTestCase 
             Assert.assertTrue(Boolean.valueOf(response.getFirstHeader("serialized").getValue()));
             response.getEntity().getContent().close();
         } finally {
+            undeploy(DEPLOYMENT_1);
+            stop(CONTAINER_SINGLE);
             client.getConnectionManager().shutdown();
         }
-
-        undeploy(DEPLOYMENT_1);
-        stop(CONTAINER_SINGLE);
     }
 }
