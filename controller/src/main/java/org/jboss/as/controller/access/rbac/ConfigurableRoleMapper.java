@@ -53,7 +53,9 @@ public class ConfigurableRoleMapper implements RoleMapper {
 
     // TODO - May want to consider COMPOSITE operations so all updates are applied simultaneously.
 
-    // TODO - Split immediate into different methods, synchronization isn't needed either.
+    public void addRoleImmediate(final String roleName) {
+        roles.put(roleName, new Role(roleName));
+    }
 
     /**
      * Adds a new role to the list of defined roles.
@@ -61,13 +63,11 @@ public class ConfigurableRoleMapper implements RoleMapper {
      * @param roleName - The name of the role being added.
      * @param immediate - Should the change be applied immediately without cloning the internal collection.
      */
-    public synchronized void addRole(final String roleName, final boolean immediate) {
-        HashMap<String, Role> newRoles = immediate ? roles : new HashMap<String, Role>(roles);
+    public synchronized void addRole(final String roleName) {
+        HashMap<String, Role> newRoles = new HashMap<String, Role>(roles);
         if (newRoles.containsKey(roleName) == false) {
             newRoles.put(roleName, new Role(roleName));
-            if (immediate == false) {
-                roles = newRoles;
-            }
+            roles = newRoles;
         }
     }
 
@@ -90,7 +90,11 @@ public class ConfigurableRoleMapper implements RoleMapper {
     public void addPrincipal(final String roleName, final PrincipalType principalType, final MatchType matchType,
             final String name, final String realm, final boolean immediate) {
         Role role = roles.get(roleName);
-        role.addPrincipal(createPrincipal(principalType, name, realm), matchType, immediate);
+        if (immediate) {
+            role.addPrincipalImmediate(createPrincipal(principalType, name, realm), matchType);
+        } else {
+            role.addPrincipal(createPrincipal(principalType, name, realm), matchType);
+        }
     }
 
     public void removePrincipal(final String roleName, final PrincipalType principalType, final MatchType matchType,
@@ -183,11 +187,17 @@ public class ConfigurableRoleMapper implements RoleMapper {
             return sb.toString();
         }
 
-        private synchronized void addPrincipal(final Principal principal, final MatchType matchType, final boolean immediate) {
-            HashSet<Principal> set = getSet(matchType, immediate);
+        private void addPrincipalImmediate(final Principal principal, final MatchType matchType) {
+            HashSet<Principal> set = getSet(matchType, true);
+            set.add(principal); // TODO - Work out how to handle duplicates.
+            setSet(set, matchType, true);
+        }
+
+        private synchronized void addPrincipal(final Principal principal, final MatchType matchType) {
+            HashSet<Principal> set = getSet(matchType, false);
             set.add(principal); // TODO - Work out how to handle duplicates.
 
-            setSet(set, matchType, immediate);
+            setSet(set, matchType, false);
         }
 
         private synchronized void removePrincipal(final Principal principal, final MatchType matchType) {
