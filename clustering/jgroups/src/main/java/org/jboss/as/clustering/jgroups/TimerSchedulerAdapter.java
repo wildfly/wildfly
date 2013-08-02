@@ -165,23 +165,22 @@ public class TimerSchedulerAdapter implements TimeScheduler {
     private static ThreadPoolExecutor getThreadPool(Executor executor) {
         if (executor instanceof ThreadPoolExecutor) {
             return (ThreadPoolExecutor) executor;
-        } else {
-            // This must be a decorator - try to hack out the delegate
-            final Field field = getField(executor.getClass(), Executor.class);
-            if (field != null) {
-                PrivilegedAction<Void> action = new PrivilegedAction<Void>() {
-                    @Override
-                    public Void run() {
-                        field.setAccessible(true);
-                        return null;
-                    }
-                };
-                AccessController.doPrivileged(action);
-                try {
-                    return getThreadPool((Executor) field.get(executor));
-                } catch (IllegalAccessException e) {
-                    throw new IllegalStateException(e);
+        }
+        // This must be a decorator - try to hack out the delegate
+        final Field field = getField(executor.getClass(), Executor.class);
+        if (field != null) {
+            PrivilegedAction<Void> action = new PrivilegedAction<Void>() {
+                @Override
+                public Void run() {
+                    field.setAccessible(true);
+                    return null;
                 }
+            };
+            AccessController.doPrivileged(action);
+            try {
+                return getThreadPool((Executor) field.get(executor));
+            } catch (IllegalAccessException e) {
+                throw new IllegalStateException(e);
             }
         }
         throw new UnsupportedOperationException();

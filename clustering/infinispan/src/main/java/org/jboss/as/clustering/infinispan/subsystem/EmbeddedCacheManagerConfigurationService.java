@@ -32,7 +32,7 @@ import org.infinispan.configuration.global.GlobalConfigurationBuilder;
 import org.infinispan.configuration.global.GlobalJmxStatisticsConfigurationBuilder;
 import org.infinispan.configuration.global.ShutdownHookBehavior;
 import org.infinispan.configuration.global.TransportConfigurationBuilder;
-import org.infinispan.marshall.Ids;
+import org.infinispan.marshall.core.Ids;
 import org.jboss.as.clustering.infinispan.ChannelProvider;
 import org.jboss.as.clustering.infinispan.InfinispanLogger;
 import org.jboss.as.clustering.infinispan.MBeanServerProvider;
@@ -57,6 +57,7 @@ import org.jboss.msc.service.StopContext;
  * @author Paul Ferraro
  */
 public class EmbeddedCacheManagerConfigurationService implements Service<EmbeddedCacheManagerConfiguration>, EmbeddedCacheManagerConfiguration {
+
     public static ServiceName getServiceName(String name) {
         return EmbeddedCacheManagerService.getServiceName(name).append("config");
     }

@@ -27,7 +27,6 @@ import org.jboss.as.clustering.jgroups.ProtocolStackConfiguration;
 import org.jboss.msc.service.Service;
 import org.jboss.msc.service.ServiceName;
 import org.jboss.msc.service.StartContext;
-import org.jboss.msc.service.StartException;
 import org.jboss.msc.service.StopContext;
 
 /**
@@ -49,7 +48,7 @@ public class ChannelFactoryService implements Service<ChannelFactory> {
     }
 
     @Override
-    public void start(StartContext context) throws StartException {
+    public void start(StartContext context) {
         this.factory = new JChannelFactory(this.configuration);
     }
 

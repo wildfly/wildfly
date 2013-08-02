@@ -35,20 +35,19 @@ import org.jgroups.util.TopologyUUID;
 public class TopologyAddressGenerator implements AddressGenerator {
 
     private final Channel channel;
-    private final String machineId;
-    private final String rackId;
-    private final String siteId;
+    private final String machine;
+    private final String rack;
+    private final String site;
 
-    public TopologyAddressGenerator(Channel channel, String siteId, String rackId, String machineId) {
+    public TopologyAddressGenerator(Channel channel, String site, String rack, String machine) {
         this.channel = channel;
-        this.siteId = siteId;
-        this.rackId = rackId;
-        this.machineId = machineId;
+        this.site = site;
+        this.rack = rack;
+        this.machine = machine;
     }
 
     @Override
     public Address generateAddress() {
-        return TopologyUUID.randomUUID(channel.getName(), siteId, rackId, machineId);
+        return TopologyUUID.randomUUID(this.channel.getName(), this.site, this.rack, this.machine);
     }
-
 }

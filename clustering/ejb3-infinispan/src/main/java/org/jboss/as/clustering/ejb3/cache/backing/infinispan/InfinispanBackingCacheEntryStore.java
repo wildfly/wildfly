@@ -32,13 +32,13 @@ import org.infinispan.affinity.KeyAffinityService;
 import org.infinispan.affinity.KeyGenerator;
 import org.infinispan.context.Flag;
 import org.infinispan.distribution.DistributionManager;
-import org.infinispan.loaders.CacheLoaderException;
-import org.infinispan.loaders.CacheLoaderManager;
 import org.infinispan.notifications.Listener;
 import org.infinispan.notifications.cachelistener.annotation.CacheEntryActivated;
 import org.infinispan.notifications.cachelistener.annotation.CacheEntryPassivated;
 import org.infinispan.notifications.cachelistener.event.CacheEntryActivatedEvent;
 import org.infinispan.notifications.cachelistener.event.CacheEntryPassivatedEvent;
+import org.infinispan.persistence.CacheLoaderException;
+import org.infinispan.persistence.manager.PersistenceManager;
 import org.infinispan.remoting.transport.Address;
 import org.jboss.as.clustering.infinispan.affinity.KeyAffinityServiceFactory;
 import org.jboss.as.clustering.infinispan.invoker.CacheInvoker;
@@ -296,10 +296,9 @@ public class InfinispanBackingCacheEntryStore<K extends Serializable, V extends 
     @Override
     public int getPassivatedCount() {
         try {
-            return this.cache.getAdvancedCache().getComponentRegistry().getComponent(CacheLoaderManager.class).getCacheStore()
-                    .loadAll().size();
+            return this.cache.getAdvancedCache().getComponentRegistry().getComponent(PersistenceManager.class).size();
         } catch (CacheLoaderException e) {
-            throw InfinispanEjbMessages.MESSAGES.CacheLoaderFailure(e);
+            throw InfinispanEjbMessages.MESSAGES.cacheLoaderFailure(e);
         }
     }
 

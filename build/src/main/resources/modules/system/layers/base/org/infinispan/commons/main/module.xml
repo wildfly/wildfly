@@ -20,11 +20,7 @@
   ~ Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
   ~ 02110-1301 USA, or see the FSF site: http://www.fsf.org.
   -->
-<module xmlns="urn:jboss:module:1.1" name="org.infinispan.cachestore.jdbc">
-    <properties>
-        <property name="jboss.api" value="private"/>
-    </properties>
-
+<module xmlns="urn:jboss:module:1.1" name="org.infinispan.commons">
     <resources>
         <!-- Insert resources here -->
     </resources>
@@ -32,9 +28,9 @@
     <dependencies>
         <module name="javax.api"/>
         <module name="javax.transaction.api"/>
-        <module name="org.apache.commons.pool"/>
-        <module name="org.infinispan"/>
-        <module name="org.infinispan.commons"/>
         <module name="org.jboss.logging"/>
+        <module name="org.jboss.marshalling"/>
+        <module name="org.jboss.marshalling.river"/>
+        <module name="sun.jdk"/>
     </dependencies>
 </module>

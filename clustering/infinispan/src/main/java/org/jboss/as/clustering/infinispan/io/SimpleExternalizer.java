@@ -21,7 +21,7 @@
  */
 package org.jboss.as.clustering.infinispan.io;
 
-import org.infinispan.marshall.AdvancedExternalizer;
+import org.infinispan.commons.marshall.AdvancedExternalizer;
 
 /**
  * This is mostly a marker interface for dynamic loading of externalizers via ServiceLoader.

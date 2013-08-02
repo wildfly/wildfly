@@ -126,7 +126,7 @@ public class CacheService<K, V> implements Service<Cache<K, V>> {
 
         @Override
         public String toString() {
-            return container.getCacheManagerConfiguration().globalJmxStatistics().cacheManagerName() + "." + this.cacheName;
+            return this.container.getCacheManagerConfiguration().globalJmxStatistics().cacheManagerName() + "." + this.cacheName;
         }
     }
 }
