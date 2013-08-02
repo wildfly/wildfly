@@ -22,9 +22,6 @@
 
 package org.jboss.as.clustering.infinispan;
 
-import java.lang.reflect.Field;
-import java.security.AccessController;
-import java.security.PrivilegedAction;
 import java.util.HashSet;
 import java.util.LinkedHashSet;
 import java.util.Set;
@@ -34,7 +31,6 @@ import org.infinispan.AdvancedCache;
 import org.infinispan.Cache;
 import org.infinispan.configuration.cache.Configuration;
 import org.infinispan.configuration.global.GlobalConfiguration;
-import org.infinispan.factories.GlobalComponentRegistry;
 import org.infinispan.manager.AbstractDelegatingEmbeddedCacheManager;
 import org.infinispan.manager.DefaultCacheManager;
 import org.infinispan.manager.EmbeddedCacheManager;
@@ -195,30 +191,6 @@ public class DefaultCacheContainer extends AbstractDelegatingEmbeddedCacheManage
     @Override
     public String toString() {
         return this.cm.getCacheManagerConfiguration().globalJmxStatistics().cacheManagerName();
-    }
-
-    // This is only exposed in Infinispan 6.0.
-    // Until then, use a reflection hack.
-    @Override
-    public GlobalComponentRegistry getGlobalComponentRegistry() {
-        PrivilegedAction<Field> action = new PrivilegedAction<Field>() {
-            @Override
-            public Field run() {
-                try {
-                    Field field = DefaultCacheManager.class.getDeclaredField("globalComponentRegistry");
-                    field.setAccessible(true);
-                    return field;
-                } catch (NoSuchFieldException e) {
-                    throw new IllegalStateException(e);
-                }
-            }
-        };
-        Field field = AccessController.doPrivileged(action);
-        try {
-            return (GlobalComponentRegistry) field.get(this.cm);
-        } catch (IllegalAccessException e) {
-            throw new IllegalStateException(e);
-        }
     }
 
     private class DelegatingCache<K, V> extends AbstractDelegatingAdvancedCache<K, V> {

@@ -31,7 +31,7 @@ import org.jboss.as.clustering.concurrent.ManagedExecutorService;
  * Executor factory that produces {@link ManagedExecutorService} instances.
  * @author Paul Ferraro
  */
-public class ManagedExecutorFactory implements org.infinispan.executors.ExecutorFactory {
+public class ManagedExecutorFactory implements org.infinispan.commons.executors.ExecutorFactory {
 
     private final Executor executor;
 

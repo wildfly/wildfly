@@ -28,7 +28,6 @@ import java.util.List;
 
 import org.jboss.as.controller.AbstractAddStepHandler;
 import org.jboss.as.controller.OperationContext;
-import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.ServiceVerificationHandler;
 import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
 import org.jboss.as.controller.operations.common.Util;
@@ -42,24 +41,27 @@ public class InfinispanSubsystemAdd extends AbstractAddStepHandler {
 
     public static final InfinispanSubsystemAdd INSTANCE = new InfinispanSubsystemAdd();
 
-    static ModelNode createOperation(ModelNode address, ModelNode existing) throws OperationFailedException {
+    static ModelNode createOperation(ModelNode address, ModelNode existing) {
         ModelNode operation = Util.getEmptyOperation(ModelDescriptionConstants.ADD, address);
         populate(existing, operation);
         return operation;
     }
 
-    private static void populate(ModelNode source, ModelNode target) throws OperationFailedException {
+    private static void populate(ModelNode source, ModelNode target) {
         target.get(ModelKeys.CACHE_CONTAINER).setEmptyObject();
     }
 
-    protected void populateModel(ModelNode operation, ModelNode model) throws OperationFailedException {
+    @Override
+    protected void populateModel(ModelNode operation, ModelNode model) {
         populate(operation, model);
     }
 
-    protected void performRuntime(OperationContext context, ModelNode operation, ModelNode model, ServiceVerificationHandler verificationHandler, List<ServiceController<?>> newControllers) throws OperationFailedException {
+    @Override
+    protected void performRuntime(OperationContext context, ModelNode operation, ModelNode model, ServiceVerificationHandler verificationHandler, List<ServiceController<?>> newControllers) {
         ROOT_LOGGER.activatingSubsystem();
     }
 
+    @Override
     protected boolean requiresRuntimeVerification() {
         return false;
     }

@@ -1,6 +1,5 @@
 package org.jboss.as.clustering.infinispan;
 
-import org.infinispan.factories.GlobalComponentRegistry;
 import org.infinispan.manager.EmbeddedCacheManager;
 
 public interface CacheContainer extends EmbeddedCacheManager {
@@ -14,6 +13,4 @@ public interface CacheContainer extends EmbeddedCacheManager {
      * @return a cache name
      */
     String getDefaultCacheName();
-
-    GlobalComponentRegistry getGlobalComponentRegistry();
 }

@@ -34,6 +34,7 @@
         <module name="javax.transaction.api"/>
         <module name="org.infinispan"/>
         <module name="org.infinispan.client.hotrod"/>
+        <module name="org.infinispan.commons"/>
         <module name="org.jboss.logging"/>
     </dependencies>
 </module>

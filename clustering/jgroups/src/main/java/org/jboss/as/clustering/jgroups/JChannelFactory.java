@@ -107,12 +107,9 @@ public class JChannelFactory implements ChannelFactory, ChannelListener, Protoco
                 };
                 bridges.put(clusterName, bridge);
             }
-            // Acquire consistent order of sites
-            Collections.sort(sites);
             final RELAY2 relay = new RELAY2().site(localSite);
-            for (short i = 0; i < sites.size(); ++i) {
-                final String site = sites.get(i);
-                RelayConfig.SiteConfig siteConfig = new RelayConfig.SiteConfig(site, i);
+            for (String site: sites) {
+                RelayConfig.SiteConfig siteConfig = new RelayConfig.SiteConfig(site);
                 relay.addSite(site, siteConfig);
                 if (site.equals(localSite)) {
                     for (RelayConfig.BridgeConfig bridge: bridges.values()) {
@@ -177,7 +174,7 @@ public class JChannelFactory implements ChannelFactory, ChannelListener, Protoco
         ScheduledExecutorService timerExecutor = transportConfig.getTimerExecutor();
         if (timerExecutor != null) {
             if (!(transport.getTimer() instanceof TimerSchedulerAdapter)) {
-                this.setValue(transport, "timer", new TimerSchedulerAdapter(new ManagedScheduledExecutorService(timerExecutor)));
+                setValue(transport, "timer", new TimerSchedulerAdapter(new ManagedScheduledExecutorService(timerExecutor)));
             }
         }
     }
@@ -208,16 +205,16 @@ public class JChannelFactory implements ChannelFactory, ChannelListener, Protoco
 
         SocketBinding binding = transport.getSocketBinding();
         if (binding != null) {
-            this.configureBindAddress(transport, config, binding);
-            this.configureServerSocket(transport, config, "bind_port", binding);
-            this.configureMulticastSocket(transport, config, "mcast_addr", "mcast_port", binding);
+            configureBindAddress(transport, config, binding);
+            configureServerSocket(transport, config, "bind_port", binding);
+            configureMulticastSocket(transport, config, "mcast_addr", "mcast_port", binding);
         }
 
         SocketBinding diagnosticsSocketBinding = transport.getDiagnosticsSocketBinding();
         boolean diagnostics = (diagnosticsSocketBinding != null);
         properties.put("enable_diagnostics", String.valueOf(diagnostics));
         if (diagnostics) {
-            this.configureMulticastSocket(transport, config, "diagnostics_addr", "diagnostics_port", diagnosticsSocketBinding);
+            configureMulticastSocket(transport, config, "diagnostics_addr", "diagnostics_port", diagnosticsSocketBinding);
         }
 
         configs.add(config);
@@ -228,16 +225,16 @@ public class JChannelFactory implements ChannelFactory, ChannelListener, Protoco
             config = this.createProtocol(protocol);
             binding = protocol.getSocketBinding();
             if (binding != null) {
-                this.configureBindAddress(protocol, config, binding);
-                this.configureServerSocket(protocol, config, "bind_port", binding);
-                this.configureServerSocket(protocol, config, "start_port", binding);
-                this.configureMulticastSocket(protocol, config, "mcast_addr", "mcast_port", binding);
+                configureBindAddress(protocol, config, binding);
+                configureServerSocket(protocol, config, "bind_port", binding);
+                configureServerSocket(protocol, config, "start_port", binding);
+                configureMulticastSocket(protocol, config, "mcast_addr", "mcast_port", binding);
             } else if (transport.getSocketBinding() != null) {
                 // If no socket-binding was specified, use bind address of transport
-                this.configureBindAddress(protocol, config, transport.getSocketBinding());
+                configureBindAddress(protocol, config, transport.getSocketBinding());
             }
             if (!supportsMulticast) {
-                this.setProperty(protocol, config, "use_mcast_xmit", String.valueOf(false));
+                setProperty(protocol, config, "use_mcast_xmit", String.valueOf(false));
             }
             configs.add(config);
         }
@@ -252,44 +249,37 @@ public class JChannelFactory implements ChannelFactory, ChannelListener, Protoco
         return configs;
     }
 
-    private void configureBindAddress(ProtocolConfiguration protocol, org.jgroups.conf.ProtocolConfiguration config, SocketBinding binding) {
-        this.setPropertyNoOverride(protocol, config, "bind_addr", binding.getSocketAddress().getAddress().getHostAddress());
+    private static void configureBindAddress(ProtocolConfiguration protocol, org.jgroups.conf.ProtocolConfiguration config, SocketBinding binding) {
+        setPropertyNoOverride(protocol, config, "bind_addr", binding.getSocketAddress().getAddress().getHostAddress());
     }
 
-    private void configureServerSocket(ProtocolConfiguration protocol, org.jgroups.conf.ProtocolConfiguration config, String property, SocketBinding binding) {
-        this.setPropertyNoOverride(protocol, config, property, String.valueOf(binding.getSocketAddress().getPort()));
+    private static void configureServerSocket(ProtocolConfiguration protocol, org.jgroups.conf.ProtocolConfiguration config, String property, SocketBinding binding) {
+        setPropertyNoOverride(protocol, config, property, String.valueOf(binding.getSocketAddress().getPort()));
     }
 
-    private void configureMulticastSocket(ProtocolConfiguration protocol, org.jgroups.conf.ProtocolConfiguration config, String addressProperty, String portProperty, SocketBinding binding) {
+    private static void configureMulticastSocket(ProtocolConfiguration protocol, org.jgroups.conf.ProtocolConfiguration config, String addressProperty, String portProperty, SocketBinding binding) {
         try {
             InetSocketAddress mcastSocketAddress = binding.getMulticastSocketAddress();
-            this.setPropertyNoOverride(protocol, config, addressProperty, mcastSocketAddress.getAddress().getHostAddress());
-            this.setPropertyNoOverride(protocol, config, portProperty, String.valueOf(mcastSocketAddress.getPort()));
+            setPropertyNoOverride(protocol, config, addressProperty, mcastSocketAddress.getAddress().getHostAddress());
+            setPropertyNoOverride(protocol, config, portProperty, String.valueOf(mcastSocketAddress.getPort()));
         } catch (IllegalStateException e) {
             ROOT_LOGGER.couldNotSetAddressAndPortNoMulticastSocket(e, config.getProtocolName(), addressProperty, config.getProtocolName(), portProperty, binding.getName());
         }
     }
 
-    private void setPropertyNoOverride(ProtocolConfiguration protocol, org.jgroups.conf.ProtocolConfiguration config, String name, String value) {
-        boolean overridden = false ;
-        String propertyValue = null ;
-        // check if the property has been overridden by the user and log a message
+    private static void setPropertyNoOverride(ProtocolConfiguration protocol, org.jgroups.conf.ProtocolConfiguration config, String name, String value) {
         try {
-            if (overridden = config.getOriginalProperties().containsKey(name))
-               propertyValue = config.getOriginalProperties().get(name);
-        }
-        catch(Exception e) {
+            Map<String, String> originalProperties = config.getOriginalProperties();
+            if (originalProperties.containsKey(name)) {
+                ROOT_LOGGER.unableToOverrideSocketBindingValue(name, protocol.getName(), value, originalProperties.get(name));
+            }
+        } catch (Exception e) {
             ROOT_LOGGER.unableToAccessProtocolPropertyValue(e, name, protocol.getName());
-        }
-
-        // log a warning if property tries to override
-        if (overridden) {
-            ROOT_LOGGER.unableToOverrideSocketBindingValue(name, protocol.getName(), value, propertyValue);
         }
         setProperty(protocol, config, name, value);
     }
 
-    private void setProperty(ProtocolConfiguration protocol, org.jgroups.conf.ProtocolConfiguration config, String name, String value) {
+    private static void setProperty(ProtocolConfiguration protocol, org.jgroups.conf.ProtocolConfiguration config, String name, String value) {
         if (protocol.hasProperty(name)) {
             config.getProperties().put(name, value);
         }
@@ -307,7 +297,7 @@ public class JChannelFactory implements ChannelFactory, ChannelListener, Protoco
         };
     }
 
-    private void setValue(Protocol protocol, String property, Object value) {
+    private static void setValue(Protocol protocol, String property, Object value) {
         ROOT_LOGGER.setProtocolPropertyValue(protocol.getName(), property, value);
         try {
             protocol.setValue(property, value);

@@ -41,6 +41,7 @@ import org.infinispan.affinity.KeyGenerator;
 import org.infinispan.context.Flag;
 import org.infinispan.distribution.DistributionManager;
 import org.infinispan.distribution.ch.ConsistentHash;
+import org.infinispan.notifications.KeyFilter;
 import org.infinispan.notifications.Listener;
 import org.infinispan.notifications.cachelistener.annotation.CacheEntryActivated;
 import org.infinispan.notifications.cachelistener.annotation.CacheEntryPassivated;
@@ -75,7 +76,7 @@ import org.wildfly.clustering.web.session.SessionMetaData;
  * @author Paul Ferraro
  */
 @Listener
-public class InfinispanSessionManager<V, L> implements SessionManager<L>, KeyGenerator<String>, Batcher {
+public class InfinispanSessionManager<V, L> implements SessionManager<L>, KeyGenerator<String>, Batcher, KeyFilter {
     private final SessionContext context;
     final Cache<String, V> cache;
     private final SessionFactory<V, L> factory;
@@ -100,7 +101,7 @@ public class InfinispanSessionManager<V, L> implements SessionManager<L>, KeyGen
 
     @Override
     public void start() {
-        this.cache.addListener(this);
+        this.cache.addListener(this, this);
         this.affinity.start();
         this.schedulers.add(new SessionExpirationScheduler(this, new ExpiredSessionRemover<>(this.factory)));
         if (this.maxActiveSessions > 0) {
@@ -116,6 +117,11 @@ public class InfinispanSessionManager<V, L> implements SessionManager<L>, KeyGen
         this.schedulers.clear();
         this.affinity.stop();
         this.cache.removeListener(this);
+    }
+
+    @Override
+    public boolean accept(Object key) {
+        return key instanceof String;
     }
 
     @Override
@@ -246,11 +252,9 @@ public class InfinispanSessionManager<V, L> implements SessionManager<L>, KeyGen
         return result;
     }
 
-    @SuppressWarnings("cast")
     @CacheEntryActivated
     public void activated(CacheEntryActivatedEvent<String, ?> event) {
-        // Cache may contain non-string keys, so ignore any others
-        if (!event.isPre() && event.isOriginLocal() && (event.getKey() instanceof String)) {
+        if (!event.isPre()) {
             String id = event.getKey();
             InfinispanWebLogger.ROOT_LOGGER.tracef("Session %s was activated", id);
             ImmutableSession session = this.factory.createImmutableSession(id, this.factory.findValue(id));
@@ -267,11 +271,9 @@ public class InfinispanSessionManager<V, L> implements SessionManager<L>, KeyGen
         }
     }
 
-    @SuppressWarnings("cast")
     @CacheEntryPassivated
     public void passivated(CacheEntryPassivatedEvent<String, ?> event) {
-        // Cache may contain non-string keys, so ignore any others
-        if (event.isPre() && (event.getKey() instanceof String)) {
+        if (event.isPre()) {
             String id = event.getKey();
             if (event.isOriginLocal()) {
                 InfinispanWebLogger.ROOT_LOGGER.tracef("Session %s will be passivated", id);
@@ -290,11 +292,9 @@ public class InfinispanSessionManager<V, L> implements SessionManager<L>, KeyGen
         }
     }
 
-    @SuppressWarnings("cast")
     @CacheEntryRemoved
     public void removed(CacheEntryRemovedEvent<String, ?> event) {
-        // Cache may contain non-string keys, so ignore any others
-        if (event.isPre() && event.isOriginLocal() && (event.getKey() instanceof String)) {
+        if (event.isPre() && event.isOriginLocal()) {
             String id = event.getKey();
             if (event.isOriginLocal()) {
                 InfinispanWebLogger.ROOT_LOGGER.tracef("Session %s will be removed", id);

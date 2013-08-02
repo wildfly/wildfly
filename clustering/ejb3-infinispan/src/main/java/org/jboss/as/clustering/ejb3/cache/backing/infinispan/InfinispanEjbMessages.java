@@ -54,5 +54,5 @@ public interface InfinispanEjbMessages {
     RuntimeException lockAcquisitionInterruption(@Cause Throwable cause, Object key);
 
     @Message(id = 10364, value = "Failed to load infinispan cache store")
-    RuntimeException CacheLoaderFailure(@Cause Throwable cause);
+    RuntimeException cacheLoaderFailure(@Cause Throwable cause);
 }

@@ -46,6 +46,7 @@ import org.jboss.as.subsystem.test.KernelServices;
 import org.jboss.as.subsystem.test.KernelServicesBuilder;
 import org.jboss.dmr.ModelNode;
 import org.junit.Assert;
+import org.junit.Ignore;
 import org.junit.Test;
 
 /**
@@ -65,6 +66,7 @@ import org.junit.Test;
  */
 
 //@RunWith(BMUnitRunner.class)
+@Ignore("Subsystem testing framework uses incorrect subsystem dependencies for old versions")
 public class InfinispanSubsystemTransformerTestCase extends OperationTestCaseBase {
 
     @Override
