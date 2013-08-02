@@ -59,6 +59,8 @@ public class NonStandardSituationsTestCase extends AbstractPatchingTestCase {
 
 
     /**
+     * bug: https://issues.jboss.org/browse/WFLY-1803
+     *
      * Prepare a patch which modifies a file, but the file will not be writable for the patching process.
      * Check that the patch rolls back completely and doesn't leave itself half-applied.
      */
