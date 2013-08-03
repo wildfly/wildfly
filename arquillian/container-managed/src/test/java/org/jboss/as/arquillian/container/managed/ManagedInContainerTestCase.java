@@ -19,6 +19,7 @@ package org.jboss.as.arquillian.container.managed;
 import java.io.File;
 import java.lang.management.ManagementFactory;
 import java.net.URL;
+import java.net.URLDecoder;
 
 import javax.management.MBeanServerConnection;
 
@@ -45,7 +46,8 @@ public class ManagedInContainerTestCase extends AbstractContainerTestCase {
         archive.addClasses(AbstractContainerTestCase.class);
         String path = "META-INF/jboss-service.xml";
         URL resourceURL = ManagedInContainerTestCase.class.getResource("/sar-example.sar/" + path);
-        archive.addAsResource(new File(resourceURL.getFile()), path);
+        String resourceFilePath = URLDecoder.decode(resourceURL.getFile(), "UTF-8");
+        archive.addAsResource(new File(resourceFilePath), path);
         return archive;
     }
 
