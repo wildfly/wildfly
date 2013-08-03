@@ -29,6 +29,7 @@ import static java.util.Collections.addAll;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.PrintStream;
+import java.net.URLDecoder;
 import java.security.Permission;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -53,10 +54,18 @@ public class VaultToolTestCase {
   private static final String KEYSTORE_ALIAS_VALUE = "vault";
   private static final String ITERATION_COUNT_VALUE = "12";
   private static final String CODE_LOCATION = VaultToolTestCase.class.getProtectionDomain().getCodeSource().getLocation().getFile();
-  private static final String KEYSTORE_URL_VALUE = CODE_LOCATION + "org/jboss/as/security/vault.keystore";
+  private static final String KEYSTORE_URL_VALUE = getKeystorePath();
   private static final String MASKED_MYPASSWORD_VALUE = "MASK-UWB5tlhOmKYzJVl9KZaPN";
   private static final String SALT_VALUE = "bdfbdf12";
   private static final ByteArrayOutputStream SYSTEM_OUT = new ByteArrayOutputStream();
+
+  private static final String getKeystorePath() {
+     try {
+       return new String(URLDecoder.decode( CODE_LOCATION, "UTF-8" ) + "org/jboss/as/security/vault.keystore");
+     } catch (Exception e) {
+       throw new Error("Unable to decode url", e);
+     }
+  }
 
   @Test
   public void testVaultTool() throws IOException, VaultReaderException {
