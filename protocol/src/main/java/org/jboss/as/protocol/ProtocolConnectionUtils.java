@@ -137,9 +137,7 @@ public class ProtocolConnectionUtils {
         builder.addAll(configuration.getOptionMap());
         builder.set(SASL_POLICY_NOANONYMOUS, Boolean.FALSE);
         builder.set(SASL_POLICY_NOPLAINTEXT, Boolean.FALSE);
-        if (isLocal(configuration.getUri()) == false) {
-            builder.set(Options.SASL_DISALLOWED_MECHANISMS, Sequence.of(JBOSS_LOCAL_USER));
-        }
+        configureSaslMechnisms(saslOptions, isLocal(configuration.getUri()), builder);
         List<Property> tempProperties = new ArrayList<Property>(saslOptions != null ? saslOptions.size() : 1);
         tempProperties.add(Property.of("jboss.sasl.local-user.quiet-auth", "true"));
         if (saslOptions != null) {
@@ -152,6 +150,36 @@ public class ProtocolConnectionUtils {
         builder.set(Options.SSL_STARTTLS, true);
 
         return builder.getMap();
+    }
+
+    private static void configureSaslMechnisms(Map<String, String> saslOptions, boolean isLocal, OptionMap.Builder builder) {
+        String[] mechanisms = null;
+        String listed;
+        if (saslOptions != null && (listed = saslOptions.get(Options.SASL_DISALLOWED_MECHANISMS.getName())) != null) {
+            // Disallowed mechanisms were passed via the saslOptions map; need to convert to an XNIO option
+            String[] split = listed.split(" ");
+            if (isLocal) {
+                mechanisms = new String[split.length + 1];
+                mechanisms[0] = JBOSS_LOCAL_USER;
+                System.arraycopy(split, 0, mechanisms, 1, split.length);
+            } else {
+                mechanisms = split;
+            }
+        } else if (!isLocal) {
+            mechanisms = new String[]{ JBOSS_LOCAL_USER };
+        }
+
+        if (mechanisms != null) {
+            builder.set(Options.SASL_DISALLOWED_MECHANISMS, Sequence.of(mechanisms));
+        }
+
+        if (saslOptions != null && (listed = saslOptions.get(Options.SASL_MECHANISMS.getName())) != null) {
+            // SASL mechanisms were passed via the saslOptions map; need to convert to an XNIO option
+            String[] split = listed.split(" ");
+            if (split.length > 0) {
+                builder.set(Options.SASL_MECHANISMS, Sequence.of(split));
+            }
+        }
     }
 
     private static boolean isLocal(final URI uri) {
