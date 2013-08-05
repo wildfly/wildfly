@@ -86,6 +86,7 @@ public abstract class AbstractModuleDeploymentTestCaseSetup extends AbstractMgmt
 
     public void removeModule(final String moduleName, boolean deleteParent) throws Exception {
 		testModuleRoot = new File(getModulePath(), moduleName);
+        File file = testModuleRoot;
         if (deleteParent) {
             while (!getModulePath().equals(file.getParentFile()))
                 file = file.getParentFile();
