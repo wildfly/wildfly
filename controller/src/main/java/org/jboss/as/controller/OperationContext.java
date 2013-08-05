@@ -26,7 +26,7 @@ import java.io.InputStream;
 import java.util.Set;
 
 import org.jboss.as.controller.access.Action;
-import org.jboss.as.controller.access.AuthorizationResponse;
+import org.jboss.as.controller.access.ResourceAuthorization;
 import org.jboss.as.controller.access.AuthorizationResult;
 import org.jboss.as.controller.access.Caller;
 import org.jboss.as.controller.client.MessageSeverity;
@@ -666,17 +666,50 @@ public interface OperationContext extends ExpressionResolver {
      */
     AuthorizationResult authorize(ModelNode operation);
 
+    /**
+     * Check for authorization of the given effects for the given operation.
+     * @param operation the operation. Cannot be {@code null}
+     * @param effects the relevant effects. If empty, all effects associated with the operation are tested.
+     * @return  the authorization result
+     */
     AuthorizationResult authorize(ModelNode operation, Set<Action.ActionEffect> effects);
 
-    AuthorizationResponse authorizeResource(boolean attributes, boolean isDefaultResource);
+    /**
+     * Check for authorization for a resource and, optionally, its individual attributes
+     * @param attributes {@code true} if the result should include attribute authorizations
+     * @param isDefaultResource {@code true} if
+     * @return the resource authorization
+     */
+    ResourceAuthorization authorizeResource(boolean attributes, boolean isDefaultResource);
 
-    //TODO javadoc attributes
+    /**
+     * Check for authorization to read or modify an attribute, checking all effects of the given operation
+     * @param operation the operation that will read or modify
+     * @param attribute the attribute name
+     * @param currentValue the current value of the attribute
+     * @return the authorization result
+     */
     AuthorizationResult authorize(ModelNode operation, String attribute, ModelNode currentValue);
 
+    /**
+     * Check for authorization to read or modify an attribute, limiting the check to the given effects of the operation
+     * @param operation the operation that will read or modify
+     * @param attribute the attribute name
+     * @param currentValue the current value of the attribute
+     * @param effects the effects to check, or, if empty, all effects
+     * @return the authorization result
+     */
     AuthorizationResult authorize(ModelNode operation, String attribute, ModelNode currentValue, Set<Action.ActionEffect> effects);
 
-    //TODO javadoc operations
-    AuthorizationResult authorizeOperation(ModelNode operation, boolean access);
+    /**
+     * Check for authorization to execute an operation.
+     *
+     * @param operation the operation. Cannot be {@code null}
+     * @param addressabilityOnly {@code true} if only {@link Action.ActionEffect#ADDRESS} should be authorized;
+     *                           {@code false} if all relevant effects should be authorized
+     * @return  the authorization result
+     */
+    AuthorizationResult authorizeOperation(ModelNode operation, boolean addressabilityOnly);
 
     /**
      * Obtain the {@link Caller} for the current request.

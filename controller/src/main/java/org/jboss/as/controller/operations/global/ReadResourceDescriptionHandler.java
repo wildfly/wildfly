@@ -66,7 +66,7 @@ import org.jboss.as.controller.SimpleAttributeDefinitionBuilder;
 import org.jboss.as.controller.SimpleOperationDefinitionBuilder;
 import org.jboss.as.controller.UnauthorizedException;
 import org.jboss.as.controller.access.Action.ActionEffect;
-import org.jboss.as.controller.access.AuthorizationResponse;
+import org.jboss.as.controller.access.ResourceAuthorization;
 import org.jboss.as.controller.access.AuthorizationResult;
 import org.jboss.as.controller.access.AuthorizationResult.Decision;
 import org.jboss.as.controller.descriptions.DescriptionProvider;
@@ -370,7 +370,7 @@ public class ReadResourceDescriptionHandler implements OperationStepHandler {
         public void execute(OperationContext context, ModelNode operation) throws OperationFailedException {
             ModelNode result = new ModelNode();
             boolean customDefaultCheck = operation.get(OP).asString().equals(GlobalOperationHandlers.CHECK_DEFAULT_RESOURCE_ACCESS);
-            AuthorizationResponse authResp = context.authorizeResource(true, customDefaultCheck);
+            ResourceAuthorization authResp = context.authorizeResource(true, customDefaultCheck);
             if (authResp.getResourceResult(ActionEffect.ADDRESS).getDecision() == Decision.DENY) {
                 if (!defaultSetting) {
                     //We are not allowed to see the resource, so we don't set the accessControlResult, meaning that the ReadResourceAssemblyHandler will ignore it for this address
@@ -420,19 +420,19 @@ public class ReadResourceDescriptionHandler implements OperationStepHandler {
             context.stepCompleted();
         }
 
-        private void addResourceAuthorizationResults(ModelNode result, AuthorizationResponse authResp) {
+        private void addResourceAuthorizationResults(ModelNode result, ResourceAuthorization authResp) {
             addResourceAuthorizationResult(result, authResp, ActionEffect.READ_CONFIG);
             addResourceAuthorizationResult(result, authResp, ActionEffect.WRITE_CONFIG);
             addResourceAuthorizationResult(result, authResp, ActionEffect.READ_RUNTIME);
             addResourceAuthorizationResult(result, authResp, ActionEffect.WRITE_RUNTIME);
         }
 
-        private void addResourceAuthorizationResult(ModelNode result, AuthorizationResponse authResp, ActionEffect actionEffect) {
+        private void addResourceAuthorizationResult(ModelNode result, ResourceAuthorization authResp, ActionEffect actionEffect) {
             AuthorizationResult authResult = authResp.getResourceResult(actionEffect);
             result.get(actionEffect.toString()).set(authResult.getDecision() == Decision.PERMIT);
         }
 
-        private void addAttributeAuthorizationResults(ModelNode result, String attributeName, AuthorizationResponse authResp, boolean runtime) {
+        private void addAttributeAuthorizationResults(ModelNode result, String attributeName, ResourceAuthorization authResp, boolean runtime) {
             if (runtime) {
                 addAttributeAuthorizationResult(result, attributeName, authResp, ActionEffect.READ_RUNTIME);
                 addAttributeAuthorizationResult(result, attributeName, authResp, ActionEffect.WRITE_RUNTIME);
@@ -442,7 +442,7 @@ public class ReadResourceDescriptionHandler implements OperationStepHandler {
             }
         }
 
-        private void addAttributeAuthorizationResult(ModelNode result, String attributeName, AuthorizationResponse authResp, ActionEffect actionEffect) {
+        private void addAttributeAuthorizationResult(ModelNode result, String attributeName, ResourceAuthorization authResp, ActionEffect actionEffect) {
             AuthorizationResult authorizationResult = authResp.getAttributeResult(attributeName, actionEffect);
             result.get(actionEffect.toString()).set(authorizationResult.getDecision() == Decision.PERMIT);
         }
@@ -586,7 +586,7 @@ public class ReadResourceDescriptionHandler implements OperationStepHandler {
                     resource = context.readResourceFromRoot(currentAddress);
                 } catch (UnauthorizedException e) {
                     //We could not read the resource, now check if that is due not to having access or read-config permissions
-                    AuthorizationResponse response = context.authorizeResource(false, false);
+                    ResourceAuthorization response = context.authorizeResource(false, false);
                     if (response.getResourceResult(ActionEffect.ADDRESS).getDecision() != Decision.PERMIT) {
                         //We do not have access permissions
                         return;

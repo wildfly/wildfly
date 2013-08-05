@@ -29,7 +29,7 @@ import java.util.List;
 import java.util.Set;
 
 import org.jboss.as.controller.access.Action;
-import org.jboss.as.controller.access.AuthorizationResponse;
+import org.jboss.as.controller.access.ResourceAuthorization;
 import org.jboss.as.controller.access.AuthorizationResult;
 import org.jboss.as.controller.client.MessageSeverity;
 import org.jboss.as.controller.persistence.ConfigurationPersistenceException;
@@ -379,12 +379,12 @@ class ParallelBootOperationContext extends AbstractOperationContext {
     }
 
     @Override
-    public AuthorizationResult authorizeOperation(ModelNode operation, boolean access) {
-        return primaryContext.authorizeOperation(operation, access);
+    public AuthorizationResult authorizeOperation(ModelNode operation, boolean addressabilityOnly) {
+        return primaryContext.authorizeOperation(operation, addressabilityOnly);
     }
 
     @Override
-    public AuthorizationResponse authorizeResource(boolean attributes, boolean isDefaultResource) {
+    public ResourceAuthorization authorizeResource(boolean attributes, boolean isDefaultResource) {
         return primaryContext.authorizeResource(attributes, isDefaultResource);
     }
 }

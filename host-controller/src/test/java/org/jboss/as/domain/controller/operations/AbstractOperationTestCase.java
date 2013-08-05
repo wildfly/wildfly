@@ -63,7 +63,7 @@ import org.jboss.as.controller.ResourceDefinition;
 import org.jboss.as.controller.RunningMode;
 import org.jboss.as.controller.access.Action;
 import org.jboss.as.controller.access.Action.ActionEffect;
-import org.jboss.as.controller.access.AuthorizationResponse;
+import org.jboss.as.controller.access.ResourceAuthorization;
 import org.jboss.as.controller.access.AuthorizationResult;
 import org.jboss.as.controller.access.Caller;
 import org.jboss.as.controller.access.constraint.management.AccessConstraintDefinition;
@@ -510,13 +510,13 @@ public abstract class AbstractOperationTestCase {
         }
 
         @Override
-        public AuthorizationResult authorizeOperation(ModelNode operation, boolean access) {
+        public AuthorizationResult authorizeOperation(ModelNode operation, boolean addressabilityOnly) {
             return AuthorizationResult.PERMITTED;
         }
 
         @Override
-        public AuthorizationResponse authorizeResource(boolean attributes, boolean isDefaultResource) {
-            return new AuthorizationResponse() {
+        public ResourceAuthorization authorizeResource(boolean attributes, boolean isDefaultResource) {
+            return new ResourceAuthorization() {
 
                 @Override
                 public AuthorizationResult getResourceResult(ActionEffect actionEffect) {
@@ -524,7 +524,7 @@ public abstract class AbstractOperationTestCase {
                 }
 
                 @Override
-                public AuthorizationResult getOperationResult(String operationName, boolean access) {
+                public AuthorizationResult getOperationResult(String operationName, boolean addressabilityOnly) {
                     return AuthorizationResult.PERMITTED;
                 }
 

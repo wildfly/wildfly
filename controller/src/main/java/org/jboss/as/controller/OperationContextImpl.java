@@ -46,7 +46,7 @@ import java.util.concurrent.TimeoutException;
 
 import org.jboss.as.controller.access.Action;
 import org.jboss.as.controller.access.Action.ActionEffect;
-import org.jboss.as.controller.access.AuthorizationResponse;
+import org.jboss.as.controller.access.ResourceAuthorization;
 import org.jboss.as.controller.access.AuthorizationResult;
 import org.jboss.as.controller.access.AuthorizationResult.Decision;
 import org.jboss.as.controller.access.Caller;
@@ -910,7 +910,7 @@ final class OperationContextImpl extends AbstractOperationContext {
     }
 
     @Override
-    public AuthorizationResult authorizeOperation(ModelNode operation, boolean access) {
+    public AuthorizationResult authorizeOperation(ModelNode operation, boolean addressabilityOnly) {
         OperationId opId = new OperationId(operation);
         AuthorizationResult resourceResult = authorize(opId, operation, false, EnumSet.of(ActionEffect.ADDRESS));
         if (resourceResult.getDecision() == AuthorizationResult.Decision.DENY) {
@@ -924,23 +924,23 @@ final class OperationContextImpl extends AbstractOperationContext {
             AuthorizationResponseImpl authResp = authorizations.get(opId);
             assert authResp != null : "perform resource authorization before operation authorization";
 
-            AuthorizationResult authResult = authResp.getOperationResult(operationName, access);
+            AuthorizationResult authResult = authResp.getOperationResult(operationName, addressabilityOnly);
             if (authResult == null) {
                 OperationEntry operationEntry = authResp.targetResource.getResourceRegistration().getOperationEntry(PathAddress.EMPTY_ADDRESS, operationName);
 
                 operation.get(OPERATION_HEADERS).set(activeStep.operation.get(OPERATION_HEADERS));
                 Action targetAction = new Action(operation, operationEntry);
 
-                if (access) {
+                if (addressabilityOnly) {
                     Action action = targetAction.limitAction(ActionEffect.ADDRESS);
                     authResult = modelController.getAuthorizer().authorize(getCaller(), callEnvironment, action, authResp.targetResource);
-                    authResp.addOperationResult(operationName, access, authResult);
+                    authResp.addOperationResult(operationName, addressabilityOnly, authResult);
                 } else {
                     authResult = modelController.getAuthorizer().authorize(getCaller(), callEnvironment, targetAction, authResp.targetResource);
-                    authResp.addOperationResult(operationName, access, authResult);
+                    authResp.addOperationResult(operationName, addressabilityOnly, authResult);
 
                     //When authorizing the remove operation, make sure that all the attributes are accessible
-                    if (authResult.getDecision() == AuthorizationResult.Decision.PERMIT && !access && operationName.equals(ModelDescriptionConstants.REMOVE)) {
+                    if (authResult.getDecision() == AuthorizationResult.Decision.PERMIT && !addressabilityOnly && operationName.equals(ModelDescriptionConstants.REMOVE)) {
                         if (!authResp.attributesComplete) {
                             authResp = authorizeResource(true, false);
                         }
@@ -949,7 +949,7 @@ final class OperationContextImpl extends AbstractOperationContext {
                             for (Map<Action.ActionEffect, AuthorizationResult> attributeResults : authResp.attributeResults.values()) {
                                 authResult = attributeResults.get(actionEffect);
                                 if (authResult.getDecision() == AuthorizationResult.Decision.DENY) {
-                                    authResp.addOperationResult(operationName, access, authResult);
+                                    authResp.addOperationResult(operationName, addressabilityOnly, authResult);
                                     break out;
                                 }
                             }
@@ -1540,7 +1540,7 @@ final class OperationContextImpl extends AbstractOperationContext {
         }
     }
 
-    private static class AuthorizationResponseImpl implements AuthorizationResponse {
+    private static class AuthorizationResponseImpl implements ResourceAuthorization {
 
         private Map<Action.ActionEffect, AuthorizationResult> resourceResults = new HashMap<Action.ActionEffect, AuthorizationResult>();
         private Map<String, Map<Action.ActionEffect, AuthorizationResult>> attributeResults = new HashMap<String, Map<Action.ActionEffect, AuthorizationResult>>();
@@ -1563,9 +1563,9 @@ final class OperationContextImpl extends AbstractOperationContext {
             return attrResults == null ? null : attrResults.get(actionEffect);
         }
 
-        public AuthorizationResult getOperationResult(String operationName, boolean access) {
+        public AuthorizationResult getOperationResult(String operationName, boolean addressabilityOnly) {
             Map<Boolean, AuthorizationResult> opResults = operationResults.get(operationName);
-            return opResults == null ? null : opResults.get(access);
+            return opResults == null ? null : opResults.get(addressabilityOnly);
         }
 
         private void addResourceResult(Action.ActionEffect actionEffect, AuthorizationResult result) {
@@ -1581,13 +1581,13 @@ final class OperationContextImpl extends AbstractOperationContext {
             attrResults.put(actionEffect, result);
         }
 
-        private void addOperationResult(String operationName, Boolean access, AuthorizationResult result) {
+        private void addOperationResult(String operationName, Boolean addressabilityOnly, AuthorizationResult result) {
             Map<Boolean, AuthorizationResult> opResults = operationResults.get(operationName);
             if (opResults == null) {
                 opResults = new HashMap<Boolean, AuthorizationResult>();
                 operationResults.put(operationName, opResults);
             }
-            opResults.put(access, result);
+            opResults.put(addressabilityOnly, result);
         }
 
     }
