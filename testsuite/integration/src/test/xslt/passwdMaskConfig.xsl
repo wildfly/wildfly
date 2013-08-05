@@ -20,7 +20,8 @@
             </xsl:element>
             <xsl:element name="vault-option">
                 <xsl:attribute name="name">KEYSTORE_PASSWORD</xsl:attribute>
-                <xsl:attribute name="value">MASK-5WNXs8oEbrs</xsl:attribute>
+                <!-- clear text password for keystore is secretsecret -->
+                <xsl:attribute name="value">MASK-1CY3kNqbYVLo5njerVXKG7</xsl:attribute>
             </xsl:element>
             <xsl:element name="vault-option">
                 <xsl:attribute name="name">KEYSTORE_ALIAS</xsl:attribute>
@@ -52,7 +53,8 @@
                 <xsl:element name="driver">h2</xsl:element>
                 <xsl:element name="security">
                     <xsl:element name="user-name">sa</xsl:element>
-                    <xsl:element name="password">${VAULT::ds_ExampleDS::password::MWNjZWNkZjgtMWI2OC00MTMwLTlmNGItYWI0OTFiY2U4ZThiTElORV9CUkVBS3ZhdWx0}</xsl:element>
+                    <!-- clear text password is sa -->
+                    <xsl:element name="password">${VAULT::ds_ExampleDS::password::1}</xsl:element>
                 </xsl:element>
             </xsl:element>
             <xsl:apply-templates select="node()"/>
