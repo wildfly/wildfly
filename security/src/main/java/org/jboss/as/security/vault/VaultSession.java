@@ -59,7 +59,6 @@ public final class VaultSession {
 
     private SecurityVault vault;
     private String vaultAlias;
-    private byte[] handshakeKey;
 
     /**
      * Constructor to create VaultSession.
@@ -207,7 +206,7 @@ public final class VaultSession {
     private void handshake() throws SecurityVaultException {
         Map<String, Object> handshakeOptions = new HashMap<String, Object>();
         handshakeOptions.put(PicketBoxSecurityVault.PUBLIC_CERT, vaultAlias);
-        handshakeKey = vault.handshake(handshakeOptions);
+        vault.handshake(handshakeOptions);
     }
 
     /**
@@ -220,11 +219,8 @@ public final class VaultSession {
      * @return secured attribute configuration
      */
     public String addSecuredAttribute(String vaultBlock, String attributeName, char[] attributeValue) throws Exception {
-        if (handshakeKey == null) {
-            throw new Exception("addSecuredAttribute method has to be called after successful startVaultSession() call.");
-        }
-        vault.store(vaultBlock, attributeName, attributeValue, handshakeKey);
-        return securedAttributeConfigurationString(vaultBlock, attributeName, null);
+        vault.store(vaultBlock, attributeName, attributeValue, null);
+        return securedAttributeConfigurationString(vaultBlock, attributeName);
     }
 
     /**
@@ -239,10 +235,7 @@ public final class VaultSession {
      * @throws Exception
      */
     public void addSecuredAttributeWithDisplay(String vaultBlock, String attributeName, char[] attributeValue) throws Exception {
-        if (handshakeKey == null) {
-            throw new Exception("addSecuredAttribute method has to be called after successful startVaultSession() call.");
-        }
-        vault.store(vaultBlock, attributeName, attributeValue, handshakeKey);
+        vault.store(vaultBlock, attributeName, attributeValue, null);
         attributeCreatedDisplay(vaultBlock, attributeName);
     }
 
@@ -256,9 +249,6 @@ public final class VaultSession {
      * @throws Exception
      */
     public boolean checkSecuredAttribute(String vaultBlock, String attributeName) throws Exception {
-        if (handshakeKey == null) {
-            throw new Exception("checkSecuredAttribute method has to be called after successful startVaultSession() call.");
-        }
         return vault.exists(vaultBlock, attributeName);
     }
 
@@ -269,30 +259,26 @@ public final class VaultSession {
      * @param attributeName
      */
     private void attributeCreatedDisplay(String vaultBlock, String attributeName) {
-        String keyAsString = new String(handshakeKey, CHARSET);
         System.out.println("Secured attribute value has been stored in vault. ");
         System.out.println("Please make note of the following:");
         System.out.println("********************************************");
         System.out.println("Vault Block:" + vaultBlock);
         System.out.println("Attribute Name:" + attributeName);
-        System.out.println("Shared Key:" + keyAsString);
         System.out.println("Configuration should be done as follows:");
-        System.out.println(securedAttributeConfigurationString(vaultBlock, attributeName, keyAsString));
+        System.out.println(securedAttributeConfigurationString(vaultBlock, attributeName));
         System.out.println("********************************************");
     }
 
 
     /**
      * Returns configuration string for secured attribute.
-     * keyAsString parameter can be null. In this case proper value will be calculated.
      *
      * @param vaultBlock
      * @param attributeName
-     * @param keyAsString
      * @return
      */
-    private String securedAttributeConfigurationString(String vaultBlock, String attributeName, String keyAsString) {
-        return "VAULT::" + vaultBlock + "::" + attributeName + "::" + (keyAsString != null ? keyAsString : new String(handshakeKey, CHARSET));
+    private String securedAttributeConfigurationString(String vaultBlock, String attributeName) {
+        return "VAULT::" + vaultBlock + "::" + attributeName + "::1";
     }
 
     /**
