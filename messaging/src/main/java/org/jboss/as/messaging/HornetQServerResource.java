@@ -51,7 +51,7 @@ import org.jboss.msc.service.ServiceController;
 public class HornetQServerResource implements Resource {
 
     private final Resource delegate;
-    private ServiceController<HornetQServer> hornetQServerServiceController;
+    private volatile ServiceController<HornetQServer> hornetQServerServiceController;
 
     public HornetQServerResource() {
         this(Resource.Factory.create());
