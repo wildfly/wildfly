@@ -238,7 +238,9 @@ public class CliUtilsForPatching {
             ModelNode responseNode = ModelNode.fromJSONString(response);
             List<ModelNode> patchesList = responseNode.get("result").get("patches").asList();
             for (ModelNode n : patchesList) {
-                success = success && cli.sendLine(String.format(rollbackCommand, n.asString(), PatchingTestUtil.AS_DISTRIBUTION), true);
+                command = String.format(rollbackCommand, n.asString(), PatchingTestUtil.AS_DISTRIBUTION);
+                logger.info("----- sending command to CLI: " + command + " -----");
+                success = success && cli.sendLine(command, true);
             }
             return success;
         } finally {
@@ -267,7 +269,9 @@ public class CliUtilsForPatching {
             String response = cli.readOutput();
             ModelNode responseNode = ModelNode.fromJSONString(response);
             String cumulativePatchId = responseNode.get("result").get("cumulative-patch-id").asString();
-            return cli.sendLine(String.format(rollbackCommand, cumulativePatchId, PatchingTestUtil.AS_DISTRIBUTION, resetConfiguration), true);
+            command = String.format(rollbackCommand, cumulativePatchId, PatchingTestUtil.AS_DISTRIBUTION, resetConfiguration);
+            logger.info("----- sending command to CLI: " + command + " -----");
+            return cli.sendLine(command, true);
         } finally {
             if (cli != null) {
                 cli.quit();
@@ -295,14 +299,18 @@ public class CliUtilsForPatching {
             ModelNode responseNode = ModelNode.fromJSONString(response);
             String cumulativePatchId = responseNode.get("result").get("cumulative-patch-id").asString();
             if(!cumulativePatchId.equalsIgnoreCase(BASE)) {
-                success = success && cli.sendLine(String.format(rollbackCommand, cumulativePatchId, PatchingTestUtil.AS_DISTRIBUTION), true);
+                command = String.format(rollbackCommand, cumulativePatchId, PatchingTestUtil.AS_DISTRIBUTION);
+                logger.info("----- sending command to CLI: " + command + " -----");
+                success = success && cli.sendLine(command, true);
             }
             cli.sendLine(String.format(infoCommand, PatchingTestUtil.AS_DISTRIBUTION));
             response = cli.readOutput();
             responseNode = ModelNode.fromJSONString(response);
             List<ModelNode> patchesList = responseNode.get("result").get("patches").asList();
             for (ModelNode n : patchesList) {
-                success = success && cli.sendLine(String.format(rollbackCommand, n.asString(), PatchingTestUtil.AS_DISTRIBUTION), true);
+                command = String.format(rollbackCommand, n.asString(), PatchingTestUtil.AS_DISTRIBUTION);
+                logger.info("----- sending command to CLI: " + command + " -----");
+                success = success && cli.sendLine(command, true);
             }
             return success;
         } finally {
