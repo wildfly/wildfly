@@ -99,7 +99,7 @@ public class WriteAttributeTestCase extends AbstractRbacTestBase {
 
     @Test
     public void testOperator() {
-        test(true, false, StandardRole.OPERATOR);
+        test(false, false, StandardRole.OPERATOR);
     }
 
     @Test
@@ -139,10 +139,11 @@ public class WriteAttributeTestCase extends AbstractRbacTestBase {
                 NEW_VALUE_OF_APPLICATION_CONSTRAINED_READWRITE_ATTRIBUTE, role);
 
         readExpectation = ResultExpectation.PERMITTED;
-        writeExpectation = ResultExpectation.PERMITTED;
+        writeExpectation = ResultExpectation.DENIED;
         testOperation(readExpectation, writeExpectation, UNCONSTRAINED_RESOURCE, APPLICATION_CONSTRAINED_READWRITE_ATTRIBUTE,
                 OLD_VALUE_OF_APPLICATION_CONSTRAINED_READWRITE_ATTRIBUTE,
                 NEW_VALUE_OF_APPLICATION_CONSTRAINED_READWRITE_ATTRIBUTE, role);
+        writeExpectation = ResultExpectation.PERMITTED;
         testOperation(readExpectation, writeExpectation, APPLICATION_CONSTRAINED_RESOURCE, UNCONSTRAINED_READWRITE_ATTRIBUTE,
                 OLD_VALUE_OF_UNCONSTRAINED_READWRITE_ATTRIBUTE,
                 NEW_VALUE_OF_UNCONSTRAINED_READWRITE_ATTRIBUTE, role);
@@ -177,7 +178,12 @@ public class WriteAttributeTestCase extends AbstractRbacTestBase {
 
     @Test
     public void testMonitorOperator() {
-        test(true, false, StandardRole.MONITOR, StandardRole.OPERATOR);
+        test(false, false, StandardRole.MONITOR, StandardRole.OPERATOR);
+    }
+
+    @Test
+    public void testMonitorMaintainer() {
+        test(true, false, StandardRole.MONITOR, StandardRole.MAINTAINER);
     }
 
     @Test
