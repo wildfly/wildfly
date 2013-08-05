@@ -71,11 +71,11 @@ public class CmpEntityBeanHomeFinderInterceptorFactory extends EntityBeanHomeFin
 
         // as per the spec 9.6.4, entities must be synchronized with the datastore when an ejbFind<METHOD> is called.
         if (finderMethod.getName().equals("findByPrimaryKey")) {
-            if(finderMethod.getParameterTypes() == null) {
-                throw MESSAGES.nullArgumentForFindByPrimaryKey();
+            if(finderMethod.getParameterTypes() == null || finderMethod.getParameterTypes().length != 1) {
+                throw MESSAGES.illegalNumberOfArgumentsForFindByPrimaryKey(finderMethod.getParameterTypes() == null ? 0 : finderMethod.getParameterTypes().length);
             }
-            if(finderMethod.getParameterTypes().length != 1) {
-                throw MESSAGES.illegalNumberOfArgumentsForFindByPrimaryKey(finderMethod.getParameterTypes().length);
+            if(context.getParameters()[0] == null) {
+                throw MESSAGES.nullArgumentForFindByPrimaryKey();
             }
             final ReadyEntityCache cache = cmpComponent.getCache();
             if(cache.containsNotRemoved(context.getParameters()[0])) {
