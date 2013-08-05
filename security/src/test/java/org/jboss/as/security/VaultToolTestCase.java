@@ -169,6 +169,7 @@ public class VaultToolTestCase {
   @After
   public void tearDown() throws Exception {
     System.setSecurityManager(null); // or save and restore original
+    cleanDirectory(ENC_FILE_DIR_VALUE);
   }
 
   /**
