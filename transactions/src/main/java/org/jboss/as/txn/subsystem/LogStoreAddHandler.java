@@ -50,7 +50,11 @@ class LogStoreAddHandler implements OperationStepHandler {
             if (operation.get(attribute.getName()).isDefined())  {
                 attribute.validateAndSet(operation, model);
             } else {
-                model.get(attribute.getName()).set(attribute.getDefaultValue());
+                ModelNode modelAttrNode = model.get(attribute.getName());
+                ModelNode defaultValue = attribute.getDefaultValue();
+                if (defaultValue != null) {
+                    modelAttrNode.set(defaultValue);
+                }
             }
         }
         context.addResource(PathAddress.EMPTY_ADDRESS, resource);
