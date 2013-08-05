@@ -566,7 +566,7 @@ final class OperationContextImpl extends AbstractOperationContext {
             throw MESSAGES.stageAlreadyComplete(Stage.MODEL);
         }
         rejectUserDomainServerUpdates();
-        // TODO I believe that >>   authorize(false, READ_WRITE_CONFIG);   << belongs here; see readModelForUpdate
+        authorize(false, READ_WRITE_CONFIG);
         if (!isModelAffected()) {
             takeWriteLock();
             model = model.clone();
