@@ -48,7 +48,11 @@ public class JMSQueueConfigurationRuntimeHandler extends AbstractJMSRuntimeHandl
         } else if(includeDefault) {
             for (AttributeDefinition attr : JMSQueueDefinition.ATTRIBUTES) {
                 if(attr.getName().equals(attributeName)) {
-                    context.getResult().set(attr.getDefaultValue());
+                    ModelNode resultNode = context.getResult();
+                    ModelNode defaultValue = attr.getDefaultValue();
+                    if (defaultValue != null) {
+                        resultNode.set(defaultValue);
+                    }
                 }
             }
         }
