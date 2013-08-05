@@ -33,7 +33,6 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OUT
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.READ_ATTRIBUTE_OPERATION;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.READ_RESOURCE_OPERATION;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.RESULT;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SUCCESS;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
@@ -42,6 +41,7 @@ import static org.junit.Assert.fail;
 import java.io.IOException;
 import java.net.InetAddress;
 import java.net.UnknownHostException;
+import java.util.concurrent.ExecutionException;
 
 import org.jboss.arquillian.container.test.api.ContainerController;
 import org.jboss.arquillian.container.test.api.RunAsClient;
@@ -129,6 +129,9 @@ public class HornetQBackupActivationTestCase {
         checkJMSTopic(backupClient, jmsTopicName, false);
         checkConnectionFactory(backupClient, false);
 
+        System.out.println("===================");
+        System.out.println("STOP LIVE SERVER...");
+        System.out.println("===================");
         // shutdown live server
         container.stop(LIVE_SERVER);
         // let some time for the backup to detect the failure
@@ -140,6 +143,9 @@ public class HornetQBackupActivationTestCase {
         checkJMSTopic(backupClient, jmsTopicName, true);
         checkConnectionFactory(backupClient, true);
 
+        System.out.println("====================");
+        System.out.println("START LIVE SERVER...");
+        System.out.println("====================");
         // restart the live server
         container.start(LIVE_SERVER);
         // let some time for the backup to detect the live node and failback
@@ -155,6 +161,21 @@ public class HornetQBackupActivationTestCase {
         checkJMSQueue(backupClient, jmsQueueName, false);
         checkJMSTopic(backupClient, jmsTopicName, false);
         checkConnectionFactory(backupClient, false);
+
+        System.out.println("=============================");
+        System.out.println("RETURN TO NORMAL OPERATION...");
+        System.out.println("=============================");
+
+        // https://issues.jboss.org/browse/WFLY-1710
+        // set the boolean to true to verify that there are no
+        // XA recovery warnings anymore
+        if (false) {
+            Thread.sleep(36000);
+
+            System.out.println("=============================");
+            System.out.println("DONE...");
+            System.out.println("=============================");
+        }
     }
 
     // https://issues.jboss.org/browse/AS7-6840
@@ -175,22 +196,34 @@ public class HornetQBackupActivationTestCase {
         checkJMSTopic(backupClient, jmsTopicName, false);
         checkConnectionFactory(backupClient, false);
 
+        System.out.println("===================");
+        System.out.println("STOP LIVE SERVER...");
+        System.out.println("===================");
         // shutdown live server
         container.stop(LIVE_SERVER);
+
         // let some time for the backup to detect the failure
         waitForHornetQServerActivation(backupClient, true, TimeoutUtil.adjust(ACTIVATION_TIMEOUT));
         checkHornetQServerStartedAndActiveAttributes(backupClient, true, true);
 
+        System.out.println("====================");
+        System.out.println("START LIVE SERVER...");
+        System.out.println("====================");
         // restart the live server
         container.start(LIVE_SERVER);
+
         // let some time for the backup to detect the live node and failback
         waitForHornetQServerActivation(liveClient, true, TimeoutUtil.adjust(ACTIVATION_TIMEOUT));
         checkHornetQServerStartedAndActiveAttributes(liveClient, true, true);
         waitForHornetQServerActivation(backupClient, false, TimeoutUtil.adjust(ACTIVATION_TIMEOUT));
         checkHornetQServerStartedAndActiveAttributes(backupClient, true, false);
 
+        System.out.println("==============================");
+        System.out.println("STOP LIVE SERVER A 2ND TIME...");
+        System.out.println("==============================");
         // shutdown live servera 2nd time
         container.stop(LIVE_SERVER);
+
         // let some time for the backup to detect the failure
         waitForHornetQServerActivation(backupClient, true, TimeoutUtil.adjust(ACTIVATION_TIMEOUT));
         checkHornetQServerStartedAndActiveAttributes(backupClient, true, true);
@@ -252,8 +285,16 @@ public class HornetQBackupActivationTestCase {
         ModelNode operation = new ModelNode();
         operation.get(OP_ADDR).setEmptyList();
         operation.get(OP).set("reload");
-        operation.get("blocking").set(true);
-        execute(client, operation);
+        try {
+            execute(client, operation);
+        } catch(IOException e) {
+            final Throwable cause = e.getCause();
+            if (cause instanceof ExecutionException) {
+                // ignore, this might happen if the channel gets closed before we got the response
+            } else {
+                throw e;
+            }
+        }
     }
 
     private static void waitForHornetQServerActivation(ModelControllerClient client, boolean expectedActive, int timeout) throws IOException {
@@ -458,13 +499,11 @@ public class HornetQBackupActivationTestCase {
 
     private static ModelNode execute(ModelControllerClient client, ModelNode operation) throws IOException {
         ModelNode result = client.execute(operation);
-        System.out.println(operation.toJSONString(false) + "\n=>\n" + result.toJSONString(false));
         return result;
     }
 
     private static void executeWithFailure(ModelControllerClient client, ModelNode operation) throws IOException {
         ModelNode result = client.execute(operation);
-        System.out.println(operation.toJSONString(false) + "\n=>\n" + result.toJSONString(false));
         assertEquals(result.toJSONString(true), FAILED, result.get(OUTCOME).asString());
         assertTrue(result.toJSONString(true), result.get(FAILURE_DESCRIPTION).asString().contains("JBAS011678"));
         assertFalse(result.has(RESULT));

@@ -24,6 +24,7 @@ package org.jboss.as.messaging.jms;
 
 import static org.jboss.as.messaging.MessagingLogger.ROOT_LOGGER;
 import static org.jboss.as.messaging.MessagingMessages.MESSAGES;
+import static org.jboss.as.messaging.MessagingServices.getHornetQServiceName;
 
 import java.io.InputStream;
 import java.util.ArrayList;
@@ -48,6 +49,7 @@ import org.jboss.as.connector.services.resourceadapters.ResourceAdapterActivator
 import org.jboss.as.connector.services.resourceadapters.deployment.registry.ResourceAdapterDeploymentRegistry;
 import org.jboss.as.connector.subsystems.jca.JcaSubsystemConfiguration;
 import org.jboss.as.connector.util.ConnectorServices;
+import org.jboss.as.messaging.HornetQActivationService;
 import org.jboss.as.messaging.JGroupsChannelLocator;
 import org.jboss.as.messaging.MessagingLogger;
 import org.jboss.as.messaging.MessagingServices;
@@ -314,6 +316,7 @@ public class PooledConnectionFactoryService implements Service<Void> {
 
             ServiceController<ResourceAdapterDeployment> controller = serviceTarget
                     .addService(ConnectorServices.RESOURCE_ADAPTER_ACTIVATOR_SERVICE.append(name), activator)
+                    .addDependency(HornetQActivationService.getHornetQActivationServiceName(getHornetQServiceName(hqServerName)))
                     .addDependency(ConnectorServices.IRONJACAMAR_MDR, AS7MetadataRepository.class,
                             activator.getMdrInjector())
                     .addDependency(ConnectorServices.RA_REPOSITORY_SERVICE, ResourceAdapterRepository.class,
@@ -332,7 +335,7 @@ public class PooledConnectionFactoryService implements Service<Void> {
                             activator.getCcmInjector()).addDependency(NamingService.SERVICE_NAME)
                     .addDependency(TxnServices.JBOSS_TXN_TRANSACTION_MANAGER)
                     .addDependency(ConnectorServices.BOOTSTRAP_CONTEXT_SERVICE.append("default"))
-                    .setInitialMode(ServiceController.Mode.ACTIVE).install();
+                    .setInitialMode(ServiceController.Mode.PASSIVE).install();
 
             createJNDIAliases(jndiName, jndiAliases, controller);
 
