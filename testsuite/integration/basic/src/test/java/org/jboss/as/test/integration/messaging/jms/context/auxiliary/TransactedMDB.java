@@ -63,15 +63,23 @@ public class TransactedMDB implements MessageListener {
     {
        System.out.println("TransactedMDB.onMessage");
         try {
+            // ignore redelivered message
+            if (m.getJMSRedelivered()) {
+                return;
+            }
+
             TextMessage message = (TextMessage)m;
             Destination replyTo = m.getJMSReplyTo();
 
+            System.out.println("got message " + message.getText());
+            System.out.println("replying to " + replyTo);
             context.createProducer()
                    .setJMSCorrelationID(message.getJMSMessageID())
                    .send(replyTo, message.getText());
             System.out.println("sent reply");
             if (m.getBooleanProperty("rollback")) {
                 mdbContext.setRollbackOnly();
+                System.out.println("set mdb as rollback only");
             }
         } catch (Exception e) {
             e.printStackTrace();
