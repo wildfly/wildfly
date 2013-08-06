@@ -66,6 +66,10 @@ public class PrincipalRemove implements OperationStepHandler {
 
         context.removeResource(PathAddress.EMPTY_ADDRESS);
 
+        if (matchType == MatchType.INCLUDE) {
+            RbacSanityCheckOperation.registerOperation(context);
+        }
+
         /*
          * The address of the resource whilst hopefully being related to the attributes of the Principal resource is not
          * guaranteed, a unique name is needed but not one attribute can be regarded as being suitable as a unique key.

@@ -850,6 +850,14 @@ public interface DomainManagementMessages {
     @Message(id = 15276, value = "A realm name must be specified.")
     String realmMustBeSpecified();
 
+    /**
+     * Creates an exception indicating that RBAC has been enabled but it is not possible for users to be mapped to roles.
+     *
+     * @return an {@link OperationFailedException} for the error.
+     */
+    @Message(id = 15277, value = "The current operation(s) would result in role based access control being enabled but leave it impossible for authenticated users to be assigned roles.")
+    OperationFailedException inconsistentRbacConfiguration();
+
     /*
      * Logging IDs 15200 to 15299 are reserved for domain management, the file DomainManagementLogger also contains messages in
      * this range commencing 15200.

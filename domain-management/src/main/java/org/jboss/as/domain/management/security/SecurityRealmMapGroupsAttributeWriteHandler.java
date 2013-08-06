@@ -1,6 +1,6 @@
 /*
  * JBoss, Home of Professional Open Source.
- * Copyright 2011, Red Hat, Inc., and individual contributors
+ * Copyright 2013, Red Hat, Inc., and individual contributors
  * as indicated by the @author tags. See the copyright.txt file in the
  * distribution for a full listing of individual contributors.
  *
@@ -24,35 +24,33 @@ package org.jboss.as.domain.management.security;
 
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
-import org.jboss.as.controller.PathAddress;
+import org.jboss.as.controller.ReloadRequiredWriteAttributeHandler;
+import org.jboss.as.controller.registry.Resource;
 import org.jboss.as.domain.management.access.RbacSanityCheckOperation;
 import org.jboss.dmr.ModelNode;
 
 /**
- * Remove handler for a child resource of a management security realm.
+ * An {@link OperationStepHandler} for updates to the map-groups-to-roles attribute.
  *
- * @author Brian Stansberry (c) 2011 Red Hat Inc.
+ * A restart is required as this change is made as the security realm is started - however validation for RBAC is also required.
+ *
+ * @author <a href="mailto:darran.lofthouse@jboss.com">Darran Lofthouse</a>
  */
-public class SecurityRealmChildRemoveHandler extends SecurityRealmParentRestartHandler {
+public class SecurityRealmMapGroupsAttributeWriteHandler extends ReloadRequiredWriteAttributeHandler {
 
-    private final boolean validateAuthentication;
-    private final boolean validateRbac;
+    public static final SecurityRealmMapGroupsAttributeWriteHandler INSTANCE = new SecurityRealmMapGroupsAttributeWriteHandler();
 
-    public SecurityRealmChildRemoveHandler(boolean validateAuthentication, boolean validateRbac) {
-        this.validateAuthentication = validateAuthentication;
-        this.validateRbac = validateRbac;
+    private SecurityRealmMapGroupsAttributeWriteHandler() {
+        super(SecurityRealmResourceDefinition.MAP_GROUPS_TO_ROLES);
     }
 
     @Override
-    protected void updateModel(OperationContext context, ModelNode operation) throws OperationFailedException {
-        context.removeResource(PathAddress.EMPTY_ADDRESS);
-
-        if (validateAuthentication && !context.isBooting()) {
-            ModelNode validationOp = AuthenticationValidatingHandler.createOperation(operation);
-            context.addStep(validationOp, AuthenticationValidatingHandler.INSTANCE, OperationContext.Stage.MODEL);
-        } // else we know the SecurityRealmAddHandler is part of this overall set of ops and it added AuthenticationValidatingHandler
-        if (validateRbac) {
+    protected void finishModelStage(OperationContext context, ModelNode operation, String attributeName, ModelNode newValue,
+            ModelNode oldValue, Resource model) throws OperationFailedException {
+        if ((oldValue.equals(newValue) == false) && (newValue.asBoolean() == false)) {
             RbacSanityCheckOperation.registerOperation(context);
         }
+        super.finishModelStage(context, operation, attributeName, newValue, oldValue, model);
     }
+
 }
