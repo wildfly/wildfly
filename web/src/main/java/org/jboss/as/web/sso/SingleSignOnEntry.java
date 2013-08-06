@@ -118,7 +118,7 @@ public class SingleSignOnEntry extends org.apache.catalina.authenticator.SingleS
      */
     public synchronized boolean updateCredentials2(Principal principal, String authType, String username, String password) {
 
-        boolean changed = (safeEquals(this.principal, principal) || safeEquals(this.authType, authType) || safeEquals(this.username, username) || safeEquals(this.password, password));
+        boolean changed = !(safeEquals(this.principal, principal) || safeEquals(this.authType, authType) || safeEquals(this.username, username) || safeEquals(this.password, password));
 
         this.principal = principal;
         this.authType = authType;

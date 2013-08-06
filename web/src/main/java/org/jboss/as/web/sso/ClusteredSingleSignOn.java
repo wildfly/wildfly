@@ -586,8 +586,10 @@ public class ClusteredSingleSignOn extends org.apache.catalina.authenticator.Sin
             session.removeNote(Constants.SESS_PASSWORD_NOTE);
         }
         // Reset SSO authentication
-        if (sso.updateCredentials2(null, null, null, null)) {
-            ssoClusterManager.updateCredentials(ssoId, null, null, null);
+        synchronized (sso) {
+            if (sso.updateCredentials2(null, null, null, null)) {
+                ssoClusterManager.updateCredentials(ssoId, null, null, null);
+            }
         }
     }
 
@@ -807,13 +809,21 @@ public class ClusteredSingleSignOn extends org.apache.catalina.authenticator.Sin
     public void remoteUpdate(String ssoId, SSOCredentials credentials) {
         SingleSignOnEntry sso = localLookup(ssoId);
         // Only update if the entry is missing information
-        if (sso != null && sso.getCanReauthenticate() == false) {
-            WebLogger.WEB_SSO_LOGGER.tracef("Update sso id %s to auth type %s", ssoId, credentials.getAuthType());
+        if (sso != null) {
+            if (credentials.getAuthType() == null && credentials.getUsername() == null && credentials.getPassword() == null) {
+                WebLogger.WEB_SSO_LOGGER.tracef("Uppdating local SSO cache after SSO id %s was logged out on other cluster member", ssoId);
 
-            synchronized (sso) {
-                // Use the existing principal
-                Principal p = sso.getPrincipal();
-                sso.updateCredentials(p, credentials.getAuthType(), credentials.getUsername(), credentials.getPassword());
+                synchronized (sso) {
+                    sso.updateCredentials(null, credentials.getAuthType(), credentials.getUsername(), credentials.getPassword());
+                }
+            } else if (sso.getCanReauthenticate() == false) {
+                WebLogger.WEB_SSO_LOGGER.tracef("Update sso id %s to auth type %s", ssoId, credentials.getAuthType());
+
+                synchronized (sso) {
+                    // Use the existing principal
+                    Principal p = sso.getPrincipal();
+                    sso.updateCredentials(p, credentials.getAuthType(), credentials.getUsername(), credentials.getPassword());
+                }
             }
         }
 
