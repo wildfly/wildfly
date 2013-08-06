@@ -21,17 +21,16 @@
  */
 package org.jboss.as.test.integration.ejb.container.interceptor.security;
 
-import java.security.Principal;
-import java.util.Map;
-
 import javax.ejb.EJBAccessException;
 import javax.interceptor.AroundInvoke;
 import javax.interceptor.InvocationContext;
 import javax.resource.spi.IllegalStateException;
 import javax.security.auth.Subject;
+import java.security.Principal;
+import java.util.Map;
 
-import org.jboss.as.controller.security.SubjectUserInfo;
-import org.jboss.as.domain.management.security.RealmUser;
+import org.jboss.as.core.security.RealmUser;
+import org.jboss.as.core.security.SubjectUserInfo;
 import org.jboss.as.security.remoting.RemotingContext;
 import org.jboss.logging.Logger;
 import org.jboss.remoting3.Connection;
@@ -43,7 +42,7 @@ import org.jboss.security.SimplePrincipal;
 
 /**
  * The server side security interceptor responsible for handling any security identity propagated from the client.
- * 
+ *
  * @author <a href="mailto:darran.lofthouse@jboss.com">Darran Lofthouse</a>
  * @author Josef Cacek
  */

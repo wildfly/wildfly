@@ -298,6 +298,7 @@
         <module>build-modular</module>
         <module>controller</module>
         <module>controller-client</module>
+        <module>core-security</module>
         <module>deployment-repository</module>
         <module>domain-http</module>
         <module>domain-management</module>
@@ -931,6 +932,12 @@
             <dependency>
                 <groupId>org.wildfly</groupId>
                 <artifactId>wildfly-controller</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+
+            <dependency>
+                <groupId>org.wildfly</groupId>
+                <artifactId>wildfly-core-security</artifactId>
                 <version>${project.version}</version>
             </dependency>
 
@@ -6092,6 +6099,7 @@
                 <module>config-assembly</module>
                 <module>connector</module>
                 <module>core-model-test</module>
+                <module>core-security</module>
                 <module>deployment-scanner</module>
                 <module>dist</module>
                 <module>ee</module>

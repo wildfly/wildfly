@@ -458,5 +458,34 @@ public interface ControllerLogger extends BasicLogger {
     @LogMessage(level = INFO)
     void ignoringUnsupportedLegacyExtension(List<String> subsystemNames, String extensionName);
 
+    /**
+     * Logs an error message indicating that updating the audit log failed
+     */
+    @LogMessage(level = Level.ERROR)
+    @Message(id = 13406, value = "Update of the management operation audit log failed")
+    void failedToUpdateAuditLog(@Cause Exception e);
+
+    /**
+     * Logs an error message indicating that audit logging is being disabled due to logging failures.
+     */
+    @LogMessage(level = Level.ERROR)
+    @Message(id = 13407, value = "[%d] consecutive management operation audit logging failures have occurred; disabling audit logging")
+    void disablingLoggingDueToFailures(short failureCount);
+
+    /**
+     * Logs an error message indicating that a handler failed writing a log message
+     */
+    @LogMessage(level = Level.ERROR)
+    @Message(id = 13408, value = "Update of the management operation audit log failed in handler '%s'")
+    void logHandlerWriteFailed(@Cause Throwable t, String name);
+
+    /**
+     * Logs an error message indicating that audit logging is being disabled due to logging failures.
+     */
+    @LogMessage(level = Level.ERROR)
+    @Message(id = 13409, value = "[%d] consecutive management operation audit logging failures have occurred in handler '%s'; disabling this handler for audit logging")
+    void disablingLogHandlerDueToFailures(int failureCount, String name);
+
     // 13449 IS END OF 134xx SERIES USABLE FOR LOGGER MESSAGES
+
 }

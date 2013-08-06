@@ -107,6 +107,10 @@ public class ParallelBootOperationStepHandler implements OperationStepHandler {
         final CountDownLatch completeLatch = new CountDownLatch(opsBySubsystem.size());
         final Thread controllingThread = Thread.currentThread();
 
+        if (!(context instanceof AbstractOperationContext)) {
+            throw ControllerMessages.MESSAGES.operationContextIsNotAbstractOperationContext();
+        }
+
         for (Map.Entry<String, List<ParsedBootOp>> entry : opsBySubsystem.entrySet()) {
             String subsystemName = entry.getKey();
             List<ParsedBootOp> subsystemRuntimeOps = new ArrayList<ParsedBootOp>();
@@ -116,7 +120,7 @@ public class ParallelBootOperationStepHandler implements OperationStepHandler {
             transactionControls.put(entry.getKey(), txControl);
 
             // Execute the subsystem's ops in another thread
-            ParallelBootTask subsystemTask = new ParallelBootTask(subsystemName, entry.getValue(), context, txControl,
+            ParallelBootTask subsystemTask = new ParallelBootTask(subsystemName, entry.getValue(), (AbstractOperationContext)context, txControl,
                     subsystemRuntimeOps, controllingThread, controller, operationId);
             executor.execute(subsystemTask);
         }
@@ -240,13 +244,18 @@ public class ParallelBootOperationStepHandler implements OperationStepHandler {
                 final CountDownLatch completeLatch = new CountDownLatch(runtimeOpsBySubsystem.size());
                 final Thread controllingThread = Thread.currentThread();
 
+                if (!(context instanceof AbstractOperationContext)) {
+                    throw ControllerMessages.MESSAGES.operationContextIsNotAbstractOperationContext();
+                }
+
+
                 for (Map.Entry<String, List<ParsedBootOp>> entry : runtimeOpsBySubsystem.entrySet()) {
                     String subsystemName = entry.getKey();
                     final ParallelBootTransactionControl txControl = new ParallelBootTransactionControl(preparedLatch, committedLatch, completeLatch);
                     transactionControls.put(subsystemName, txControl);
 
                     // Execute the subsystem's ops in another thread
-                    ParallelBootTask subsystemTask = new ParallelBootTask(subsystemName, entry.getValue(), context, txControl, null, controllingThread, controller, operationId);
+                    ParallelBootTask subsystemTask = new ParallelBootTask(subsystemName, entry.getValue(), (AbstractOperationContext)context, txControl, null, controllingThread, controller, operationId);
                     executor.execute(subsystemTask);
                 }
 
@@ -292,7 +301,7 @@ public class ParallelBootOperationStepHandler implements OperationStepHandler {
 
         private final String subsystemName;
         private final List<ParsedBootOp> bootOperations;
-        private final OperationContext primaryContext;
+        private final AbstractOperationContext primaryContext;
         private final OperationContext.Stage executionStage;
         private final ParallelBootTransactionControl transactionControl;
         private final List<ParsedBootOp> runtimeOps;
@@ -302,7 +311,7 @@ public class ParallelBootOperationStepHandler implements OperationStepHandler {
 
         public ParallelBootTask(final String subsystemName,
                                 final List<ParsedBootOp> bootOperations,
-                                final OperationContext primaryContext,
+                                final AbstractOperationContext primaryContext,
                                 final ParallelBootTransactionControl transactionControl,
                                 final List<ParsedBootOp> runtimeOps,
                                 final Thread controllingThread,
@@ -325,7 +334,7 @@ public class ParallelBootOperationStepHandler implements OperationStepHandler {
             ParallelBootOperationContext operationContext = null;
             try {
                 operationContext = new ParallelBootOperationContext(transactionControl, processState,
-                        primaryContext, runtimeOps, controllingThread, controller, lockId);
+                        primaryContext, runtimeOps, controllingThread, controller, lockId, controller.getAuditLogger(), controller.getRootResource());
                 for (ParsedBootOp op : bootOperations) {
                     final OperationStepHandler osh = op.handler == null ? rootRegistration.getOperationHandler(op.address, op.operationName) : op.handler;
                     operationContext.addStep(op.response, op.operation, osh, executionStage);

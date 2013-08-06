@@ -35,7 +35,9 @@
         <module name="org.wildfly.security.manager" />
         <module name="org.jboss.as.controller" />
         <module name="org.jboss.common-core"/>
+        <module name="org.jboss.as.core-security"/>
         <module name="org.jboss.logging" />
+        <module name="org.jboss.logmanager"/>
         <module name="org.jboss.modules" />
         <module name="org.jboss.msc" />
         <module name="org.jboss.sasl"/>
@@ -45,6 +47,6 @@
     </dependencies>
     
     <exports>
-        <exclude path="org.jboss.as.domain.management._private"/>    
-    </exports>        
+        <exclude path="org.jboss.as.domain.management._private"/>
+    </exports>
 </module>

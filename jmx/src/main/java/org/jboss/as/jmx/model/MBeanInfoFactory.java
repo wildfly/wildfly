@@ -82,6 +82,7 @@ import org.jboss.as.controller.registry.AttributeAccess;
 import org.jboss.as.controller.registry.AttributeAccess.AccessType;
 import org.jboss.as.controller.registry.ImmutableManagementResourceRegistration;
 import org.jboss.as.controller.registry.OperationEntry;
+import org.jboss.as.controller.registry.OperationEntry.Flag;
 import org.jboss.as.jmx.model.ChildAddOperationFinder.ChildAddOperationEntry;
 import org.jboss.as.server.deployment.DeploymentUploadStreamAttachmentHandler;
 import org.jboss.as.server.operations.RootResourceHack;
@@ -238,7 +239,7 @@ public class MBeanInfoFactory {
                 getDescription(opNode),
                 params,
                 getReturnType(opNode),
-                MBeanOperationInfo.UNKNOWN,
+                entry.getFlags().contains(Flag.READ_ONLY) ? MBeanOperationInfo.INFO : MBeanOperationInfo.UNKNOWN,
                 createOperationDescriptor());
     }
 

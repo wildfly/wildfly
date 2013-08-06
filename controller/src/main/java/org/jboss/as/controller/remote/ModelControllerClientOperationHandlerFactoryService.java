@@ -22,7 +22,7 @@
 package org.jboss.as.controller.remote;
 
 
-import org.jboss.as.controller.security.SubjectUserInfo;
+import org.jboss.as.core.security.SubjectUserInfo;
 import org.jboss.as.protocol.mgmt.ManagementChannelHandler;
 import org.jboss.as.protocol.mgmt.ManagementClientChannelStrategy;
 import org.jboss.remoting3.Channel;

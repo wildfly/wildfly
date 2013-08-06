@@ -186,6 +186,10 @@ public interface Resource extends Cloneable {
 
     public static class Tools {
 
+        /**
+         * A {@link ResourceFilter} that returns {@code false} for {@link Resource#isRuntime() runtime} and
+         * {@link Resource#isProxy() proxy} resources.
+         */
         public static final ResourceFilter ALL_BUT_RUNTIME_AND_PROXIES_FILTER = new ResourceFilter() {
             @Override
             public boolean accepts(PathAddress address, Resource resource) {
@@ -198,32 +202,35 @@ public interface Resource extends Cloneable {
 
         private Tools() { }
 
-                /**
-         * Recursively read the local model.
+        /**
+         * Recursively reads an entire resource tree, ignoring runtime-only and proxy resources, and generates
+         * a DMR tree representing all of the non-ignored resources.
          *
          * @param resource the root resource
-         * @return the model
+         * @return the DMR tree
          */
         public static ModelNode readModel(final Resource resource) {
             return readModel(resource, -1);
         }
 
         /**
-         * Read the local model.
+         * Reads a resource tree, recursing up to the given number of levels but ignoring runtime-only and proxy resources,
+         * and generates a DMR tree representing all of the non-ignored resources.
          *
          * @param resource the model
-         * @param level the recursion level
-         * @return the model
+         * @param level the number of levels to recurse, or {@code -1} for no limit
+         * @return the DMR tree
          */
         public static ModelNode readModel(final Resource resource, final int level) {
             return readModel(resource, level, ALL_BUT_RUNTIME_AND_PROXIES_FILTER);
         }
 
         /**
-         * Read the local model.
+         * Reads a resource tree, recursing up to the given number of levels but ignoring resources not accepted
+         * by the given {@code filter}, and generates a DMR tree representing all of the non-ignored resources.
          *
          * @param resource the model
-         * @param level the recursion level
+         * @param level the number of levels to recurse, or {@code -1} for no limit
          * @param filter a resource filter
          * @return the model
          */

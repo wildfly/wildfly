@@ -29,6 +29,7 @@ import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
 
+import org.jboss.as.controller.audit.AuditLogger;
 import org.jboss.as.controller.descriptions.DescriptionProvider;
 import org.jboss.as.controller.descriptions.NonResolvingResourceDescriptionResolver;
 import org.jboss.as.controller.persistence.ConfigurationPersister;
@@ -58,14 +59,14 @@ public abstract class TestModelControllerService extends AbstractControllerServi
     }
 
     protected TestModelControllerService(final ProcessType processType, final ConfigurationPersister configurationPersister, final ControlledProcessState processState,
-                                         final ResourceDefinition rootDescriptionProvider) {
-        super(processType, new RunningModeControl(RunningMode.NORMAL), configurationPersister, processState, rootDescriptionProvider, null, ExpressionResolver.TEST_RESOLVER);
+                                         final ResourceDefinition rootResourceDefinition) {
+        super(processType, new RunningModeControl(RunningMode.NORMAL), configurationPersister, processState, rootResourceDefinition, null, ExpressionResolver.TEST_RESOLVER, AuditLogger.NO_OP_LOGGER);
         this.processState = processState;
     }
     @SuppressWarnings("deprecation")
     protected TestModelControllerService(final ProcessType processType, final ConfigurationPersister configurationPersister, final ControlledProcessState processState,
                                          final DescriptionProvider rootDescriptionProvider) {
-        super(processType, new RunningModeControl(RunningMode.NORMAL), configurationPersister, processState, rootDescriptionProvider, null, ExpressionResolver.TEST_RESOLVER);
+        super(processType, new RunningModeControl(RunningMode.NORMAL), configurationPersister, processState, rootDescriptionProvider, null, ExpressionResolver.TEST_RESOLVER, AuditLogger.NO_OP_LOGGER);
         this.processState = processState;
     }
 

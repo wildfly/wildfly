@@ -27,6 +27,19 @@
                 </authorization>
             </security-realm>
         </security-realms>
+        <audit-log>
+            <formatters>
+               <json-formatter name="json-formatter"/>
+            </formatters>        
+            <handlers>
+               <file-handler name="file" formatter="json-formatter" relative-to="jboss.server.data.dir" path="audit-log.log"/>
+            </handlers>
+            <logger log-boot="true" log-read-only="true" enabled="false">
+               <handlers>
+                  <handler name="file"/>
+               </handlers>
+            </logger>
+        </audit-log>
         <management-interfaces>
             <native-interface security-realm="ManagementRealm">
                 <socket-binding native="management-native"/>

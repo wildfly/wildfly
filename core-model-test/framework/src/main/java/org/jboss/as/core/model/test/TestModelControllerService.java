@@ -40,6 +40,7 @@ import org.jboss.as.controller.ProcessType;
 import org.jboss.as.controller.ProxyController;
 import org.jboss.as.controller.RunningMode;
 import org.jboss.as.controller.RunningModeControl;
+import org.jboss.as.controller.audit.AuditLogger;
 import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
 import org.jboss.as.controller.extension.ExtensionRegistry;
 import org.jboss.as.controller.persistence.ExtensibleConfigurationPersister;
@@ -406,7 +407,8 @@ class TestModelControllerService extends ModelTestModelControllerService {
                     parallelBoot,
                     pathManagerService,
                     null,
-                    authorizer));
+                    authorizer,
+                    AuditLogger.NO_OP_LOGGER));
         }
 
         @Override
@@ -449,7 +451,8 @@ class TestModelControllerService extends ModelTestModelControllerService {
                             ignoredRegistry,
                             processState,
                             pathManagerService,
-                            authorizer));
+                            authorizer,
+                            AuditLogger.NO_OP_LOGGER));
         }
 
         @Override
@@ -481,7 +484,8 @@ class TestModelControllerService extends ModelTestModelControllerService {
                     ignoredRegistry,
                     processState,
                     pathManagerService,
-                    authorizer);
+                    authorizer,
+                    AuditLogger.NO_OP_LOGGER);
         }
     }
 

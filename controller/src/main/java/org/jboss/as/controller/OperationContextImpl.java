@@ -53,6 +53,7 @@ import org.jboss.as.controller.access.Environment;
 import org.jboss.as.controller.access.ResourceAuthorization;
 import org.jboss.as.controller.access.TargetAttribute;
 import org.jboss.as.controller.access.TargetResource;
+import org.jboss.as.controller.audit.AuditLogger;
 import org.jboss.as.controller.client.MessageSeverity;
 import org.jboss.as.controller.client.OperationAttachments;
 import org.jboss.as.controller.client.OperationMessageHandler;
@@ -109,6 +110,7 @@ final class OperationContextImpl extends AbstractOperationContext {
     private final EnumSet<ContextFlag> contextFlags;
     private final OperationMessageHandler messageHandler;
     private final ServiceTarget serviceTarget;
+    private final String domainUUID;
     private final Map<ServiceName, ServiceController<?>> realRemovingControllers = new HashMap<ServiceName, ServiceController<?>>();
     // protected by "realRemovingControllers"
     private final Map<ServiceName, Step> removalSteps = new HashMap<ServiceName, Step>();
@@ -137,14 +139,16 @@ final class OperationContextImpl extends AbstractOperationContext {
     private Step containerMonitorStep;
     private volatile Boolean requiresModelUpdateAuthorization;
 
+
     private final Integer operationId;
 
     OperationContextImpl(final ModelControllerImpl modelController, final ProcessType processType,
                          final RunningMode runningMode, final EnumSet<ContextFlag> contextFlags,
                             final OperationMessageHandler messageHandler, final OperationAttachments attachments,
                             final Resource model, final ModelController.OperationTransactionControl transactionControl,
-                            final ControlledProcessState processState, final boolean booting, final Integer operationId) {
-        super(processType, runningMode, transactionControl, processState, booting);
+                            final ControlledProcessState processState, final AuditLogger auditLogger, final boolean booting,
+                            final Integer operationId, final String domainUUID) {
+        super(processType, runningMode, transactionControl, processState, booting, auditLogger);
         this.model = model;
         this.originalModel = model;
         this.modelController = modelController;
@@ -155,6 +159,7 @@ final class OperationContextImpl extends AbstractOperationContext {
         this.serviceTarget = new ContextServiceTarget(modelController);
         this.callEnvironment = new Environment(processState, processType);
         this.operationId = operationId;
+        this.domainUUID = domainUUID;
     }
 
     public InputStream getAttachmentStream(final int index) {
@@ -782,6 +787,11 @@ final class OperationContextImpl extends AbstractOperationContext {
     }
 
     @Override
+    void logAuditRecord() {
+        super.logAuditRecord();
+    }
+
+    @Override
     public <V> V attach(final AttachmentKey<V> key, final V value) {
         if (key == null) {
             throw MESSAGES.nullVar("key");
@@ -895,6 +905,16 @@ final class OperationContextImpl extends AbstractOperationContext {
         return authResp;
     }
 
+    Resource getModel() {
+        return model;
+    }
+
+
+    @Override
+    String getDomainUUID() {
+        return domainUUID;
+    }
+
     private TargetAttribute createTargetAttribute(AuthorizationResponseImpl authResp, String attributeName, boolean isDefaultResponse) {
         ModelNode model = authResp.targetResource.getResource().getModel();
         ModelNode currentValue;
@@ -968,6 +988,7 @@ final class OperationContextImpl extends AbstractOperationContext {
             }
         }
     }
+
 
     private boolean isModelUpdateRejectionRequired() {
         if (requiresModelUpdateAuthorization == null) {

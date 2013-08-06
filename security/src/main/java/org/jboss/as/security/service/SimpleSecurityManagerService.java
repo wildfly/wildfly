@@ -21,7 +21,7 @@
  */
 package org.jboss.as.security.service;
 
-import org.jboss.as.controller.security.ServerSecurityManager;
+import org.jboss.as.core.security.ServerSecurityManager;
 import org.jboss.as.security.SecurityExtension;
 import org.jboss.msc.inject.Injector;
 import org.jboss.msc.service.Service;

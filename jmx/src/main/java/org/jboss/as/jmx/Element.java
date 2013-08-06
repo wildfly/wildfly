@@ -32,8 +32,11 @@ enum Element {
     // must be first
     UNKNOWN(null),
 
+    AUDIT_LOG(CommonAttributes.AUDIT_LOG),
     EXPOSE_RESOLVED_MODEL(CommonAttributes.EXPOSE_RESOLVED_MODEL),
     EXPOSE_EXPRESSION_MODEL(CommonAttributes.EXPOSE_EXPRESSION_MODEL),
+    HANDLER(CommonAttributes.HANDLER),
+    HANDLERS(CommonAttributes.HANDLERS),
     JMX_CONNECTOR(CommonAttributes.JMX_CONNECTOR),
     SHOW_MODEL(CommonAttributes.SHOW_MODEL),
     REMOTING_CONNECTOR(CommonAttributes.REMOTING_CONNECTOR),

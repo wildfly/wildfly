@@ -37,6 +37,7 @@
          <xs:element name="expose-resolved-model" type="resolvedModelType" minOccurs="0" maxOccurs="1"/>
          <xs:element name="expose-expression-model" type="expressionModelType" minOccurs="0" maxOccurs="1"/>
          <xs:element name="remoting-connector" type="remotingConnectorRefType" minOccurs="0"/>
+         <xs:element name="audit-log" type="audit-logType" minOccurs="0"/>
       </xs:sequence>
     </xs:complexType>
 
@@ -60,4 +61,56 @@
         </xs:attribute>
     </xs:complexType>
 
+    <xs:complexType name="audit-logType">
+        <xs:annotation>
+            <xs:documentation>
+                Declaration of management operation audit logging configuration.
+            </xs:documentation>
+        </xs:annotation>
+        <xs:choice minOccurs="0" maxOccurs="unbounded">
+            <xs:element name="handlers" type="audit-log-handlers-refType"/>
+        </xs:choice>        
+        <xs:attribute name="log-boot" type="xs:boolean" default="false">
+            <xs:annotation>
+                <xs:documentation>
+                    Whether operations should be logged on boot.
+                </xs:documentation>
+            </xs:annotation>
+        </xs:attribute>
+        <xs:attribute name="log-read-only" type="xs:boolean" default="false">
+            <xs:annotation>
+                <xs:documentation>
+                    Whether operations that do not modify the configuration or any runtime services should be logged.
+                </xs:documentation>
+            </xs:annotation>
+        </xs:attribute>
+        <xs:attribute name="enabled" type="xs:boolean" default="true">
+            <xs:annotation>
+                <xs:documentation>
+                    Whether audit logging is enabled.
+                </xs:documentation>
+            </xs:annotation>
+        </xs:attribute>
+    </xs:complexType>
+    
+    <xs:complexType name="audit-log-handlers-refType">
+        <xs:annotation>
+            <xs:documentation>
+                References to audit-log-handlers defined in the audit-log-handlers section
+            </xs:documentation>
+        </xs:annotation>
+        <xs:choice minOccurs="0">
+            <xs:element name="handler" type="audit-log-handler-refType" minOccurs="0"/>
+        </xs:choice>
+    </xs:complexType>
+
+    <xs:complexType name="audit-log-handler-refType">
+        <xs:annotation>
+            <xs:documentation>
+                A reference to an audit-log-handler defined in the audit-log-appenders section
+            </xs:documentation>
+        </xs:annotation>
+        <xs:attribute name="name" type="xs:string" use="required"/>
+    </xs:complexType>
+    
 </xs:schema>

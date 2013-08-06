@@ -29,8 +29,12 @@ import java.util.Set;
 import javax.naming.NamingException;
 import javax.security.auth.callback.Callback;
 import javax.security.auth.callback.UnsupportedCallbackException;
+import javax.xml.stream.Location;
+import javax.xml.stream.XMLStreamException;
 
 import org.jboss.as.controller.OperationFailedException;
+import org.jboss.as.controller.PathAddress;
+import org.jboss.as.controller.PathElement;
 import org.jboss.logging.Messages;
 import org.jboss.logging.annotations.Cause;
 import org.jboss.logging.annotations.Message;
@@ -432,14 +436,14 @@ public interface DomainManagementMessages {
     @Message(id = 15247, value = "Only one of '%s' or '%s' is required.")
     OperationFailedException operationFailedOnlyOneOfRequired(String attr1, String attr2);
 
-    /**
-     * Creates an IllegalArgumentException indicating that a value can not be null.
-     *
-     * @param name - The name of the parameter that can not be null.
-     * @return an {@link IllegalArgumentException} for the error.
-     */
-    @Message(id = 15248, value = "'%s' can not be null.")
-    IllegalArgumentException canNotBeNull(String name);
+//    /**
+//     * Creates an IllegalArgumentException indicating that a value can not be null.
+//     *
+//     * @param name - The name of the parameter that can not be null.
+//     * @return an {@link IllegalArgumentException} for the error.
+//     */
+//    @Message(id = 15248, value = "'%s' can not be null.")
+//    IllegalArgumentException canNotBeNull(String name);
 
     /**
      * Creates a String for use in an OperationFailedException to indicate that no security context has been established for a
@@ -664,6 +668,64 @@ public interface DomainManagementMessages {
     @Message(id = 15272, value = "Unable to create delegate trust manager.")
     IllegalStateException unableToCreateDelegateTrustManager();
 
+    @Message(id = 15273, value = "The syslog-handler can only contain one protocol %s")
+    XMLStreamException onlyOneSyslogHandlerProtocol(Location location);
+
+    @Message(id = 15274, value = "There is no handler called '%s'")
+    IllegalStateException noHandlerCalled(String name);
+
+    @Message(id = 15275, value = "There is already a protocol configured for the syslog handler at %s")
+    OperationFailedException sysLogProtocolAlreadyConfigured(PathAddress append);
+
+    @Message(id = 15276, value = "No syslog protocol was given")
+    OperationFailedException noSyslogProtocol();
+
+    @Message(id = 15277, value = "There is no formatter called '%s'")
+    OperationFailedException noFormatterCalled(String formatterName);
+
+    @Message(id = 15278, value = "Can not remove formatter, it is still referenced by the hander '%s'")
+    OperationFailedException cannotRemoveReferencedFormatter(PathElement pathElement);
+
+    @Message(id = 15279, value = "Handler names must be unique. There is already a handler called '%s' at %s")
+    OperationFailedException handlerAlreadyExists(String name, PathAddress append);
+
+    /**
+     * Parsing the user property file different realm names have been detected, the add-user utility requires the same realm
+     * name to be used across all propery files a user is being added to.
+     */
+    @Message(id = 15280, value = "Different realm names detected '%s', '%s' reading user property files, all realms must be equal.")
+    String multipleRealmsDetected(final String realmOne, final String realmTwo);
+
+    /**
+     * The user has supplied a realm name but the supplied name does not match the name discovered from the property files.
+     */
+    @Message(id = 15281, value = "The user supplied realm name '%s' does not match the realm name discovered from the property file(s) '%s'.")
+    String userRealmNotMatchDiscovered(final String supplied, final String discovered);
+
+    /**
+     * The user has supplied a group properties file name but no user propertites file name.
+     */
+    @Message(id = 15282, value = "A group properties file '%s' has been specified, however no user properties has been specified.")
+    String groupPropertiesButNoUserProperties(final String groupProperties);
+
+    /**
+     * There is no default realm name and the user has not specified one either.
+     */
+    @Message(id = 15283, value = "A realm name must be specified.")
+    String realmMustBeSpecified();
+
+    /**
+     * Creates an exception indicating that RBAC has been enabled but it is not possible for users to be mapped to roles.
+     *
+     * @return an {@link OperationFailedException} for the error.
+     */
+    @Message(id = 15284, value = "The current operation(s) would result in role based access control being enabled but leave it impossible for authenticated users to be assigned roles.")
+    OperationFailedException inconsistentRbacConfiguration();
+
+    /*
+     * Logging IDs 15200 to 15299 are reserved for domain management, the file DomainManagementLogger also contains messages in
+     * this range commencing 15200.
+     */
     /**
      * A prompt to double check the user is really sure they want to set password.
      *
@@ -825,49 +887,5 @@ public interface DomainManagementMessages {
     @Message(id = Message.NONE, value = "Are you sure you want to set the realm to '%s'")
     String realmConfirmation(final String chosenRealm);
 
-    /**
-     * Parsing the user property file different realm names have been detected, the add-user utility requires the same realm
-     * name to be used across all propery files a user is being added to.
-     */
-    @Message(id = 15273, value = "Different realm names detected '%s', '%s' reading user property files, all realms must be equal.")
-    String multipleRealmsDetected(final String realmOne, final String realmTwo);
-
-    /**
-     * The user has supplied a realm name but the supplied name does not match the name discovered from the property files.
-     */
-    @Message(id = 15274, value = "The user supplied realm name '%s' does not match the realm name discovered from the property file(s) '%s'.")
-    String userRealmNotMatchDiscovered(final String supplied, final String discovered);
-
-    /**
-     * The user has supplied a group properties file name but no user propertites file name.
-     */
-    @Message(id = 15275, value = "A group properties file '%s' has been specified, however no user properties has been specified.")
-    String groupPropertiesButNoUserProperties(final String groupProperties);
-
-    /**
-     * There is no default realm name and the user has not specified one either.
-     */
-    @Message(id = 15276, value = "A realm name must be specified.")
-    String realmMustBeSpecified();
-
-    /**
-     * Creates an exception indicating that RBAC has been enabled but it is not possible for users to be mapped to roles.
-     *
-     * @return an {@link OperationFailedException} for the error.
-     */
-    @Message(id = 15277, value = "The current operation(s) would result in role based access control being enabled but leave it impossible for authenticated users to be assigned roles.")
-    OperationFailedException inconsistentRbacConfiguration();
-
-    /**
-     * Creates an exception indicating that the runtime role mapping state is inconsistent.
-     *
-     * @return an {@link OperationFailedException} for the error.
-     */
-    @Message(id = 15278, value = "The runtime role mapping configuration is inconsistent, the server must be restarted.")
-    OperationFailedException inconsistentRbacRuntimeState();
-
-    /*
-     * Logging IDs 15200 to 15299 are reserved for domain management, the file DomainManagementLogger also contains messages in
-     * this range commencing 15200.
-     */
+    //PUT YOUR NUMBERED MESSAGES ABOVE THE id=NONE ones!
 }

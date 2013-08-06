@@ -34,6 +34,7 @@ import org.jboss.as.controller.SimpleAttributeDefinitionBuilder;
 import org.jboss.as.controller.SimpleResourceDefinition;
 import org.jboss.as.controller.access.DelegatingConfigurableAuthorizer;
 import org.jboss.as.controller.access.constraint.management.SensitiveTargetAccessConstraintDefinition;
+import org.jboss.as.controller.audit.ManagedAuditLogger;
 import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
 import org.jboss.as.controller.extension.ExtensionRegistry;
 import org.jboss.as.controller.operations.common.NamespaceAddHandler;
@@ -59,6 +60,7 @@ import org.jboss.as.domain.controller.operations.DomainServerLifecycleHandlers;
 import org.jboss.as.domain.controller.operations.DomainSocketBindingGroupRemoveHandler;
 import org.jboss.as.domain.controller.operations.deployment.HostProcessReloadHandler;
 import org.jboss.as.domain.management.CoreManagementResourceDefinition;
+import org.jboss.as.domain.management.audit.EnvironmentNameReader;
 import org.jboss.as.host.controller.DirectoryGrouping;
 import org.jboss.as.host.controller.HostControllerConfigurationPersister;
 import org.jboss.as.host.controller.HostControllerEnvironment;
@@ -193,6 +195,7 @@ public class HostResourceDefinition extends SimpleResourceDefinition {
     private final ControlledProcessState processState;
     private final PathManagerService pathManager;
     private final DelegatingConfigurableAuthorizer authorizer;
+    private final ManagedAuditLogger auditLogger;
 
     public HostResourceDefinition(final String hostName,
                                   final HostControllerConfigurationPersister configurationPersister,
@@ -209,7 +212,8 @@ public class HostResourceDefinition extends SimpleResourceDefinition {
                                   final IgnoredDomainResourceRegistry ignoredRegistry,
                                   final ControlledProcessState processState,
                                   final PathManagerService pathManager,
-                                  final DelegatingConfigurableAuthorizer authorizer) {
+                                  final DelegatingConfigurableAuthorizer authorizer,
+                                  final ManagedAuditLogger auditLogger) {
         super(PathElement.pathElement(HOST, hostName), HostModelUtil.getResourceDescriptionResolver());
         this.configurationPersister = configurationPersister;
         this.environment = environment;
@@ -226,6 +230,7 @@ public class HostResourceDefinition extends SimpleResourceDefinition {
         this.processState = processState;
         this.pathManager = pathManager;
         this.authorizer = authorizer;
+        this.auditLogger = auditLogger;
     }
 
     @Override
@@ -318,7 +323,29 @@ public class HostResourceDefinition extends SimpleResourceDefinition {
         // Central Management
         ResourceDefinition nativeManagement = new NativeManagementResourceDefinition(hostControllerInfo);
         ResourceDefinition httpManagement = new HttpManagementResourceDefinition(hostControllerInfo, environment);
-        hostRegistration.registerSubModel(CoreManagementResourceDefinition.forHost(authorizer, nativeManagement, httpManagement));
+
+        // audit log environment reader
+        final EnvironmentNameReader environmentNameReader = new EnvironmentNameReader() {
+            public boolean isServer() {
+                return false;
+            }
+
+            public String getServerName() {
+                return null;
+            }
+
+            public String getHostName() {
+                return environment.getHostControllerName();
+            }
+
+            public String getProductName() {
+                if (environment.getProductConfig() != null && environment.getProductConfig().getProductName() != null) {
+                    return environment.getProductConfig().getProductName();
+                }
+                return null;
+            }
+        };
+        hostRegistration.registerSubModel(CoreManagementResourceDefinition.forHost(authorizer, auditLogger, pathManager, environmentNameReader, nativeManagement, httpManagement));
 
         // Other core services
         // TODO get a DumpServicesHandler that works on the domain
