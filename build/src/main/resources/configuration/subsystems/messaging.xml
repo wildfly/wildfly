@@ -62,8 +62,6 @@
                        <connector-ref connector-name="in-vm"/>
                    </connectors>
                    <entries>
-                       <!-- Global JNDI entry used to provide a default JMS Connection factory to EE application -->
-                       <entry name="java:jboss/DefaultJMSConnectionFactory"/>
                        <entry name="java:/ConnectionFactory"/>
                    </entries>
                </connection-factory>
@@ -90,6 +88,7 @@
                        <connector-ref connector-name="in-vm"/>
                    </connectors>
                    <entries>
+                       <!-- Global JNDI entry used to provide a default JMS Connection factory to EE application -->
                        <entry name="java:/JmsXA"/>
                    </entries>
                </pooled-connection-factory>

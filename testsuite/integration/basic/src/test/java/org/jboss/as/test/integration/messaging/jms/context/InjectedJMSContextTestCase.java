@@ -65,12 +65,12 @@ public class InjectedJMSContextTestCase {
     public static final String QUEUE_NAME = "java:app/InjectedJMSContextTestCaseQueue";
 
     @Inject
-    @JMSConnectionFactory("/ConnectionFactory")
+    @JMSConnectionFactory("/JmsXA")
     @JMSPasswordCredential(userName="guest",password="guest")
     @JMSSessionMode(JMSContext.AUTO_ACKNOWLEDGE)
     private JMSContext context;
 
-    @Resource(mappedName = "/ConnectionFactory")
+    @Resource(mappedName = "/JmsXA")
     private ConnectionFactory factory;
 
     @Resource(mappedName = QUEUE_NAME)

@@ -45,7 +45,9 @@ import org.jboss.msc.service.ServiceTarget;
 public class MessagingJndiBindingProcessor implements DeploymentUnitProcessor {
 
     public static final String DEFAULT_JMS_CONNECTION_FACTORY = "DefaultJMSConnectionFactory";
-    public static final String JBOSS_DEFAULT_JMS_CONNECTION_FACTORY_LOOKUP = "java:jboss/DefaultJMSConnectionFactory";
+
+    /* Use a pooled connection factory as the default cf */
+    public static final String JBOSS_DEFAULT_JMS_CONNECTION_FACTORY_LOOKUP = "java:/JmsXA";
 
     @Override
     public void deploy(DeploymentPhaseContext phaseContext) throws DeploymentUnitProcessingException {
