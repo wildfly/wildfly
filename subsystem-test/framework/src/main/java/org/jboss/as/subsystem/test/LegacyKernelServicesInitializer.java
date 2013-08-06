@@ -116,7 +116,6 @@ public interface LegacyKernelServicesInitializer {
     LegacyKernelServicesInitializer dontPersistXml();
 
     /**
-<<<<<<< HEAD
      * By default the {@link KernelServicesBuilder#build()} method will use the boot operations passed into the
      * legacy controller and try to boot up the current controller with those. This is for checking that e.g. cli scripts written
      * against the legacy controller still work with the current one. To turn this check off call this method.

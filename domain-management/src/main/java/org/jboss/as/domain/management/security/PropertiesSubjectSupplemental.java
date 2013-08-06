@@ -32,6 +32,8 @@ import java.util.Set;
 
 import javax.security.auth.Subject;
 
+import org.jboss.as.core.security.RealmGroup;
+import org.jboss.as.core.security.RealmUser;
 import org.jboss.msc.service.Service;
 import org.jboss.msc.service.StartContext;
 import org.jboss.msc.service.StartException;

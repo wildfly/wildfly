@@ -53,6 +53,12 @@ public class Util {
         return pe == null ? null : pe.getValue();
     }
 
+    public static String getNameFromAddress(PathAddress address) {
+        PathElement pe = PathAddress.pathAddress(address).getLastElement();
+        return pe == null ? null : pe.getValue();
+    }
+
+
     public static ModelNode createAddOperation(final PathAddress address) {
         return createOperation(ModelDescriptionConstants.ADD, address);
     }

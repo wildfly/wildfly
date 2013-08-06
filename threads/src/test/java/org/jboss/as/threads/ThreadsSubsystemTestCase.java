@@ -152,5 +152,4 @@ public class ThreadsSubsystemTestCase extends AbstractSubsystemBaseTest {
                 .addFailedAttribute(subsystemAddress.append(PathElement.pathElement(CommonAttributes.THREAD_FACTORY)),
                         threadFactory);
     }
-
 }

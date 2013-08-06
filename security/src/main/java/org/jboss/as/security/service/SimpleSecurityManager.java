@@ -23,6 +23,7 @@ package org.jboss.as.security.service;
 
 import static java.security.AccessController.doPrivileged;
 
+import javax.security.auth.Subject;
 import java.lang.reflect.Method;
 import java.security.AccessController;
 import java.security.CodeSource;
@@ -38,10 +39,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-import javax.security.auth.Subject;
-
-import org.jboss.as.controller.security.ServerSecurityManager;
-import org.jboss.as.controller.security.SubjectUserInfo;
+import org.jboss.as.core.security.ServerSecurityManager;
+import org.jboss.as.core.security.SubjectUserInfo;
 import org.jboss.as.domain.management.security.PasswordCredential;
 import org.jboss.as.security.SecurityMessages;
 import org.jboss.as.security.remoting.RemotingConnectionCredential;

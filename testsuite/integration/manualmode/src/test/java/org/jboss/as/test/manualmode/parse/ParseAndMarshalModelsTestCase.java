@@ -72,6 +72,7 @@ import org.jboss.as.controller.RunningMode;
 import org.jboss.as.controller.RunningModeControl;
 import org.jboss.as.controller.SimpleOperationDefinitionBuilder;
 import org.jboss.as.controller.access.DelegatingConfigurableAuthorizer;
+import org.jboss.as.controller.audit.AuditLogger;
 import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
 import org.jboss.as.controller.descriptions.NonResolvingResourceDescriptionResolver;
 import org.jboss.as.controller.extension.ExtensionRegistry;
@@ -96,6 +97,7 @@ import org.jboss.as.domain.controller.LocalHostControllerInfo;
 import org.jboss.as.domain.controller.SlaveRegistrationException;
 import org.jboss.as.domain.controller.resources.DomainRootDefinition;
 import org.jboss.as.domain.management.CoreManagementResourceDefinition;
+import org.jboss.as.domain.management.audit.EnvironmentNameReader;
 import org.jboss.as.host.controller.discovery.DiscoveryOption;
 import org.jboss.as.host.controller.ignored.IgnoredDomainResourceRegistry;
 import org.jboss.as.host.controller.mgmt.DomainControllerRuntimeIgnoreTransformationEntry;
@@ -571,7 +573,7 @@ public class ParseAndMarshalModelsTestCase {
     }
 
     private ModelNode loadServerModel(final File file) throws Exception {
-        final ExtensionRegistry extensionRegistry = new ExtensionRegistry(ProcessType.STANDALONE_SERVER, new RunningModeControl(RunningMode.ADMIN_ONLY));
+        final ExtensionRegistry extensionRegistry = new ExtensionRegistry(ProcessType.STANDALONE_SERVER, new RunningModeControl(RunningMode.ADMIN_ONLY), null);
         final QName rootElement = new QName(Namespace.CURRENT.getUriString(), "server");
         final StandaloneXml parser = new StandaloneXml(Module.getBootModuleLoader(), null, extensionRegistry);
         final XmlConfigurationPersister persister = new XmlConfigurationPersister(file, rootElement, parser, parser);
@@ -587,7 +589,7 @@ public class ParseAndMarshalModelsTestCase {
         final ModelController controller = createController(ProcessType.STANDALONE_SERVER, model, new Setup() {
             @Override
             public void setup(Resource resource, ManagementResourceRegistration rootRegistration, DelegatingConfigurableAuthorizer authorizer) {
-                ServerRootResourceDefinition def = new ServerRootResourceDefinition(new MockContentRepository(), persister, null, null, null, null, extensionRegistry, false, MOCK_PATH_MANAGER, null, authorizer);
+                ServerRootResourceDefinition def = new ServerRootResourceDefinition(new MockContentRepository(), persister, null, null, null, null, extensionRegistry, false, MOCK_PATH_MANAGER, null, authorizer, AuditLogger.NO_OP_LOGGER);
                 def.registerAttributes(rootRegistration);
                 def.registerOperations(rootRegistration);
                 def.registerChildren(rootRegistration);
@@ -656,7 +658,28 @@ public class ParseAndMarshalModelsTestCase {
                 ResourceDefinition nativeDef = new NativeManagementResourceDefinition(hostControllerInfo);
                 ResourceDefinition httpDef = new HttpManagementResourceDefinition(hostControllerInfo, null);
 
-                ResourceDefinition core = CoreManagementResourceDefinition.forHost(authorizer, nativeDef, httpDef);
+                ResourceDefinition core = CoreManagementResourceDefinition.forHost(authorizer, AuditLogger.NO_OP_LOGGER, MOCK_PATH_MANAGER, new EnvironmentNameReader() {
+
+                    @Override
+                    public boolean isServer() {
+                        return false;
+                    }
+
+                    @Override
+                    public String getServerName() {
+                        return null;
+                    }
+
+                    @Override
+                    public String getProductName() {
+                        return null;
+                    }
+
+                    @Override
+                    public String getHostName() {
+                        return null;
+                    }
+                }, nativeDef, httpDef);
                 hostRegistration.registerSubModel(core);
 
                 // Domain controller
@@ -700,7 +723,7 @@ public class ParseAndMarshalModelsTestCase {
     }
 
     private ModelNode loadDomainModel(File file) throws Exception {
-        final ExtensionRegistry extensionRegistry = new ExtensionRegistry(ProcessType.HOST_CONTROLLER, new RunningModeControl(RunningMode.NORMAL));
+        final ExtensionRegistry extensionRegistry = new ExtensionRegistry(ProcessType.HOST_CONTROLLER, new RunningModeControl(RunningMode.NORMAL), null);
         final QName rootElement = new QName(Namespace.CURRENT.getUriString(), "domain");
         final DomainXml parser = new DomainXml(Module.getBootModuleLoader(), null, extensionRegistry);
         final XmlConfigurationPersister persister = new XmlConfigurationPersister(file, rootElement, parser, parser);
@@ -854,7 +877,7 @@ public class ParseAndMarshalModelsTestCase {
 
         ModelControllerService(final ProcessType processType, final Setup registration, final ModelNode model) {
             super(processType, new RunningModeControl(RunningMode.ADMIN_ONLY), new NullConfigurationPersister(), new ControlledProcessState(true),
-                    ResourceBuilder.Factory.create(PathElement.pathElement("root"), new NonResolvingResourceDescriptionResolver()).build(), null, ExpressionResolver.TEST_RESOLVER);
+                    ResourceBuilder.Factory.create(PathElement.pathElement("root"), new NonResolvingResourceDescriptionResolver()).build(), null, ExpressionResolver.TEST_RESOLVER, AuditLogger.NO_OP_LOGGER);
             this.model = model;
             this.registration = registration;
         }

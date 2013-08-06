@@ -29,8 +29,9 @@ import java.util.List;
 import java.util.Set;
 
 import org.jboss.as.controller.access.Action;
-import org.jboss.as.controller.access.ResourceAuthorization;
 import org.jboss.as.controller.access.AuthorizationResult;
+import org.jboss.as.controller.access.ResourceAuthorization;
+import org.jboss.as.controller.audit.AuditLogger;
 import org.jboss.as.controller.client.MessageSeverity;
 import org.jboss.as.controller.persistence.ConfigurationPersistenceException;
 import org.jboss.as.controller.persistence.ConfigurationPersister;
@@ -51,7 +52,7 @@ import org.jboss.msc.service.ServiceTarget;
 @SuppressWarnings("deprecation")
 class ParallelBootOperationContext extends AbstractOperationContext {
 
-    private final OperationContext primaryContext;
+    private final AbstractOperationContext primaryContext;
     private final List<ParsedBootOp> runtimeOps;
 
     private Step lockStep;
@@ -59,10 +60,10 @@ class ParallelBootOperationContext extends AbstractOperationContext {
     private final ModelControllerImpl controller;
 
     ParallelBootOperationContext(final ModelController.OperationTransactionControl transactionControl,
-                                 final ControlledProcessState processState, final OperationContext primaryContext,
+                                 final ControlledProcessState processState, final AbstractOperationContext primaryContext,
                                  final List<ParsedBootOp> runtimeOps, final Thread controllingThread,
-                                 final ModelControllerImpl controller, final int operationId) {
-        super(primaryContext.getProcessType(), primaryContext.getRunningMode(), transactionControl, processState, true);
+                                 final ModelControllerImpl controller, final int operationId, final AuditLogger auditLogger, final Resource model) {
+        super(primaryContext.getProcessType(), primaryContext.getRunningMode(), transactionControl, processState, true, auditLogger);
         this.primaryContext = primaryContext;
         this.runtimeOps = runtimeOps;
         AbstractOperationContext.controllingThread.set(controllingThread);
@@ -386,5 +387,14 @@ class ParallelBootOperationContext extends AbstractOperationContext {
     @Override
     public ResourceAuthorization authorizeResource(boolean attributes, boolean isDefaultResource) {
         return primaryContext.authorizeResource(attributes, isDefaultResource);
+    }
+
+    Resource getModel() {
+        return primaryContext.getModel();
+    }
+
+    @Override
+    String getDomainUUID() {
+        return primaryContext.getDomainUUID();
     }
 }

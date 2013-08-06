@@ -54,11 +54,11 @@
                 <xs:element name="management-client-content" type="management-client-contentType" minOccurs="0" maxOccurs="1"/>
             </xs:sequence>
             <xs:attribute name="name" type="xs:string" use="optional" default="Unnamed Domain">
-               <xs:annotation>
-                  <xs:documentation>
-                     The name to use for the domain controller. Useful for administrators who need to work with multiple domains.
-                  </xs:documentation>
-               </xs:annotation>
+                <xs:annotation>
+                    <xs:documentation>
+                        The name to use for the domain controller. Useful for administrators who need to work with multiple domains.
+                    </xs:documentation>
+                </xs:annotation>
             </xs:attribute>
         </xs:complexType>
     </xs:element>
@@ -159,7 +159,7 @@
             <xs:element name="outbound-connections" minOccurs="0">
                 <xs:complexType>
                     <xs:sequence>
-                      <xs:element name="ldap" type="ldapType" minOccurs="1" /> <!-- TODO minOccurs only while ldap is only supported connection. -->
+                        <xs:element name="ldap" type="ldapType" minOccurs="1" /> <!-- TODO minOccurs only while ldap is only supported connection. -->
                     </xs:sequence>
                 </xs:complexType>
             </xs:element>
@@ -175,6 +175,16 @@
         <xs:complexContent>
             <xs:extension base="base-managementType">
                 <xs:sequence>
+                    <xs:element name="audit-log" minOccurs="0">
+                        <xs:complexType>
+                            <xs:sequence minOccurs="0">
+                                <xs:element name="formatters" type="audit-log-formattersType"/>
+                                <xs:element name="handlers" type="audit-log-handlersType"/>
+                                <xs:element name="logger" type="audit-log-loggerType"/>
+                                <xs:element name="server-logger" type="audit-log-loggerType" minOccurs="0"/>
+                            </xs:sequence>
+                        </xs:complexType>
+                    </xs:element>
                     <xs:element name="management-interfaces" type="host-management-interfacesType" minOccurs="1"/>
                     <xs:element name="access-control" type="host-access-controlType" minOccurs="0"/>
                 </xs:sequence>
@@ -191,6 +201,15 @@
         <xs:complexContent>
             <xs:extension base="base-managementType">
                 <xs:sequence>
+                    <xs:element name="audit-log" minOccurs="0">
+                        <xs:complexType>
+                            <xs:sequence minOccurs="0">
+                                <xs:element name="formatters" type="audit-log-formattersType"/>
+                                <xs:element name="handlers" type="audit-log-handlersType"/>
+                                <xs:element name="logger" type="audit-log-loggerType"/>
+                            </xs:sequence>
+                        </xs:complexType>
+                    </xs:element>
                     <xs:element name="management-interfaces" type="server-management-interfacesType" minOccurs="0"/>
                     <xs:element name="access-control" type="server-access-controlType" minOccurs="0"/>
                 </xs:sequence>
@@ -327,18 +346,18 @@
             </xs:annotation>
         </xs:attribute>
         <xs:attribute name="mechanism" default="DIGEST" use="optional">
-           <xs:annotation>
-              <xs:documentation>
-                   By default plug-ins will be assumed to be used with the DIGEST authentication mechanism,
-                   this attribute can override the plug-in for use with the PLAIN mechanism.
-              </xs:documentation>
-           </xs:annotation>
-           <xs:simpleType>
-              <xs:restriction base="xs:string">
-                 <xs:enumeration value="DIGEST" />
-                 <xs:enumeration value="PLAIN" />
-              </xs:restriction>
-           </xs:simpleType>
+            <xs:annotation>
+                <xs:documentation>
+                    By default plug-ins will be assumed to be used with the DIGEST authentication mechanism,
+                    this attribute can override the plug-in for use with the PLAIN mechanism.
+                </xs:documentation>
+            </xs:annotation>
+            <xs:simpleType>
+                <xs:restriction base="xs:string">
+                    <xs:enumeration value="DIGEST" />
+                    <xs:enumeration value="PLAIN" />
+                </xs:restriction>
+            </xs:simpleType>
         </xs:attribute>
     </xs:complexType>
 
@@ -374,8 +393,8 @@
             </xs:documentation>
         </xs:annotation>
         <xs:sequence>
-          <xs:element name="ssl" type="sslType" minOccurs="0" />
-          <xs:element name="secret" type="secretType" minOccurs="0" />
+            <xs:element name="ssl" type="sslType" minOccurs="0" />
+            <xs:element name="secret" type="secretType" minOccurs="0" />
         </xs:sequence>
     </xs:complexType>
 
@@ -451,7 +470,7 @@
                 and key password to be specified.
             </xs:documentation>
         </xs:annotation>
-	    <xs:complexContent>
+        <xs:complexContent>
             <xs:extension base="keyStoreType">
                 <xs:attribute name="alias" type="xs:string" use="optional">
                     <xs:annotation>
@@ -468,8 +487,8 @@
                         </xs:documentation>
                     </xs:annotation>
                 </xs:attribute>
-		    </xs:extension>
-	    </xs:complexContent>
+            </xs:extension>
+        </xs:complexContent>
     </xs:complexType>
 
     <xs:complexType name="localType">
@@ -633,7 +652,7 @@
 
 
     <xs:complexType name="usersAuthenticationType">
-           <xs:annotation>
+        <xs:annotation>
             <xs:documentation>
                 A set of users
             </xs:documentation>
@@ -705,9 +724,372 @@
                             of 'username : realm : password'.
                         </xs:documentation>
                     </xs:annotation>
-            </xs:attribute>
+                </xs:attribute>
             </xs:extension>
         </xs:complexContent>
+    </xs:complexType>
+
+   <xs:complexType name="audit-log-formattersType">
+        <xs:annotation>
+            <xs:documentation>
+                Declaration of management operation audit logging formatters.
+            </xs:documentation>
+        </xs:annotation>
+        <xs:choice minOccurs="1" maxOccurs="unbounded">
+            <xs:element name="json-formatter" type="json-audit-log-formatterType"/>
+        </xs:choice>
+   </xs:complexType>
+
+   <xs:complexType name="base-audit-log-formatterType">
+        <xs:annotation>
+            <xs:documentation>
+                Shared configuration for audit log formatters..
+            </xs:documentation>
+        </xs:annotation>
+        <xs:attribute name="name" type="xs:string" use="required">
+            <xs:annotation>
+               <xs:documentation>
+                  The name of the formatter. Must be unique across all types of formatter
+                  (there is only the JSON formatter at present but more are planned for the
+                  future)
+               </xs:documentation>
+            </xs:annotation>
+        </xs:attribute>
+        <xs:attribute name="include-date" type="xs:boolean" default="true">
+            <xs:annotation>
+               <xs:documentation>
+                  Whether or not to include the date in the formatted log record
+               </xs:documentation>
+            </xs:annotation>
+        </xs:attribute>
+        <xs:attribute name="date-format" type="xs:string" default="yyyy-MM-dd HH:mm:ss">
+            <xs:annotation>
+               <xs:documentation>
+                  The date format to use as understood by {@link java.text.SimpleDateFormat}.
+                  Will be ignored if include-date="false".
+               </xs:documentation>
+            </xs:annotation>
+        </xs:attribute>
+        <xs:attribute name="date-separator" type="xs:string" default=" - ">
+            <xs:annotation>
+               <xs:documentation>
+                  The separator between the date and the rest of the formatted log message.
+                  Will be ignored if include-date="false".
+               </xs:documentation>
+            </xs:annotation>
+        </xs:attribute>
+   </xs:complexType>
+
+   <xs:complexType name="json-audit-log-formatterType">
+        <xs:annotation>
+            <xs:documentation>
+                Configuration of a JSON formatter for the audit log.
+            </xs:documentation>
+        </xs:annotation>
+        <xs:complexContent>
+            <xs:extension base="base-audit-log-formatterType">
+		        <xs:attribute name="compact" type="xs:boolean" default="false">
+		            <xs:annotation>
+		               <xs:documentation>
+		                   If true will format the JSON on one line. There may still be
+		                   values containing new lines, so if having the whole record on
+		                   one line is important, set escape-new-line or escape-control-characters to true.
+		               </xs:documentation>
+		            </xs:annotation>
+		        </xs:attribute>
+              <xs:attribute name="escape-new-line" type="xs:boolean" default="false">
+                  <xs:annotation>
+                     <xs:documentation>
+                         If true will escape all new lines with the ascii code in octal,
+                         e.g. #012.
+                     </xs:documentation>
+                  </xs:annotation>
+              </xs:attribute>
+              <xs:attribute name="escape-control-characters" type="xs:boolean" default="false">
+                  <xs:annotation>
+                     <xs:documentation>
+                         If true will escape all control characters (ascii entries with a decimal
+                         value less than 32) with the ascii code in octal, e.g.'\n\ becomes '#012'.
+                         If this is true, it will override escape-new-line="false"
+                     </xs:documentation>
+                  </xs:annotation>
+              </xs:attribute>
+            </xs:extension>
+        </xs:complexContent>
+   </xs:complexType>
+
+    <xs:complexType name="audit-log-handlersType">
+        <xs:annotation>
+            <xs:documentation>
+                Declaration of management operation audit logging handlers.
+            </xs:documentation>
+        </xs:annotation>
+        <xs:choice minOccurs="1" maxOccurs="unbounded">
+            <xs:element name="file-handler" type="file-audit-log-handlerType"/>
+            <xs:element name="syslog-handler" type="syslog-audit-log-handlerType"/>
+        </xs:choice>
+    </xs:complexType>
+
+    <xs:complexType name="base-audit-log-handlerType">
+        <xs:annotation>
+            <xs:documentation>
+                Common configuration of a handler for the audit log.
+            </xs:documentation>
+        </xs:annotation>
+        <xs:attribute name="name" type="xs:string" use="required">
+            <xs:annotation>
+                <xs:documentation>
+                    The name of the handler. The name must be unique across all types of handler.
+                </xs:documentation>
+            </xs:annotation>
+        </xs:attribute>
+        <xs:attribute name="formatter" type="xs:string" use="required">
+            <xs:annotation>
+                <xs:documentation>
+                    The name of the formatter to use for the handler.
+                </xs:documentation>
+            </xs:annotation>
+        </xs:attribute>
+        <xs:attribute name="max-failure-count" type="xs:string" default="10">
+            <xs:annotation>
+                <xs:documentation>
+                    The number of logging failures before this handler is disabled.
+                </xs:documentation>
+            </xs:annotation>
+        </xs:attribute>
+    </xs:complexType>
+
+    <xs:complexType name="file-audit-log-handlerType">
+        <xs:annotation>
+            <xs:documentation>
+                Configuration of a simple file handler for the audit log. This writes to a local file.
+            </xs:documentation>
+        </xs:annotation>
+        <xs:complexContent>
+            <xs:extension base="base-audit-log-handlerType">
+			        <xs:attribute name="path" type="xs:string" use="required">
+			            <xs:annotation>
+			                <xs:documentation>
+			                    The path of the audit log.
+			                </xs:documentation>
+			            </xs:annotation>
+			        </xs:attribute>
+			        <xs:attribute name="relative-to" use="optional" type="xs:string">
+			            <xs:annotation>
+			                <xs:documentation>
+			                    The name of another previously named path, or of one of the
+			                    standard paths provided by the system. If 'relative-to' is
+			                    provided, the value of the 'path' attribute is treated as
+			                    relative to the path specified by this attribute.
+			                </xs:documentation>
+			            </xs:annotation>
+			        </xs:attribute>
+			   </xs:extension>
+			</xs:complexContent>
+    </xs:complexType>
+
+    <xs:complexType name="syslog-audit-log-handlerType">
+        <xs:annotation>
+            <xs:documentation>
+                Configuration of a syslog file handler for the audit log on a server. This writes to syslog server.
+            </xs:documentation>
+        </xs:annotation>
+        <xs:complexContent>
+            <xs:extension base="base-audit-log-handlerType">
+                <xs:choice minOccurs="1">
+                    <xs:annotation>
+                        <xs:documentation>
+                            The configuration of the protocol to use communication with the syslog server. See your
+                            syslog provider's documentation for configuration options.
+                        </xs:documentation>
+                    </xs:annotation>
+                    <xs:element name="udp" type="udp-audit-log-protocolType">
+                    </xs:element>
+                    <xs:element name="tcp" type="tcp-audit-log-protocolType">
+                    </xs:element>
+                    <xs:element name="tls" type="tls-audit-log-protocolType">
+                    </xs:element>
+                </xs:choice>
+                <xs:attribute name="syslog-format" default="RFC5424">
+		            <xs:annotation>
+		                <xs:documentation>
+		                    The format to use for the syslog messages. See your syslog provider's documentation for what is supported.
+		                </xs:documentation>
+		            </xs:annotation>
+		            <xs:simpleType>
+		                <xs:restriction base="xs:token">
+		                    <xs:enumeration value="RFC5424">
+		                        <xs:annotation>
+		                            <xs:documentation>Format the syslog data according to the RFC-5424 standard</xs:documentation>
+		                        </xs:annotation>
+		                    </xs:enumeration>
+		                    <xs:enumeration value="RFC3164">
+		                        <xs:annotation>
+		                            <xs:documentation>Format the syslog data according to the RFC-3164 standard</xs:documentation>
+		                        </xs:annotation>
+		                    </xs:enumeration>
+		                </xs:restriction>
+		            </xs:simpleType>
+		        </xs:attribute>
+		        <xs:attribute name="max-length" type="xs:int">
+		          <xs:annotation>
+		             <xs:documentation>
+		                The maximum length in bytes a log message, including the header, is allowed to be. If undefined, it will default to 1024 bytes if the syslog-format is RFC3164, or 2048 bytes if the syslog-format is RFC5424.
+		             </xs:documentation>
+		          </xs:annotation> 
+		        </xs:attribute>
+              <xs:attribute name="truncate" type="xs:boolean" default="true">
+                <xs:annotation>
+                   <xs:documentation>
+                      Whether or not a message, including the header, should truncate the message if the length in bytes is greater than the maximum length. If set to false messages will be split and sent with the same header values.
+                   </xs:documentation>
+                </xs:annotation> 
+              </xs:attribute>
+            </xs:extension>
+        </xs:complexContent>
+    </xs:complexType>
+
+    <xs:complexType name="base-audit-log-protocolType">
+        <xs:attribute name="host" default="localhost">
+            <xs:annotation>
+                <xs:documentation>
+                    The host of the syslog server.
+                </xs:documentation>
+            </xs:annotation>
+        </xs:attribute>
+        <xs:attribute name="port" default="514">
+            <xs:annotation>
+                <xs:documentation>
+                    The port of the syslog server.
+                </xs:documentation>
+            </xs:annotation>
+        </xs:attribute>
+    </xs:complexType>
+
+    <xs:complexType name="udp-audit-log-protocolType">
+        <xs:annotation>
+            <xs:documentation>Configure udp as the protocol for communicating with the syslog server</xs:documentation>
+        </xs:annotation>
+        <xs:complexContent>
+            <xs:extension base="base-audit-log-protocolType"/>
+        </xs:complexContent>
+    </xs:complexType>
+
+    <xs:complexType name="tcp-audit-log-protocolType">
+        <xs:annotation>
+            <xs:documentation>Configure tcp as the protocol for communicating with the syslog server</xs:documentation>
+        </xs:annotation>
+        <xs:complexContent>
+            <xs:extension base="base-audit-log-protocolType">
+                <xs:attribute name="message-transfer" default="NON_TRANSPARENT_FRAMING">
+                    <xs:annotation>
+                        <xs:documentation>
+                            The message transfer setting as described in section 3.4 of RFC-6587. See your syslog provider's
+                            documentation for what is supported
+                        </xs:documentation>
+                    </xs:annotation>
+                    <xs:simpleType>
+                        <xs:restriction base="xs:token">
+                            <xs:enumeration value="OCTET_COUNTING">
+                                <xs:annotation>
+                                    <xs:documentation>
+                                        Use the octet counting format for message transfer as described in section 3.4.1 of RFC-6587.
+                                    </xs:documentation>
+                                </xs:annotation>
+                            </xs:enumeration>
+                            <xs:enumeration value="NON_TRANSPARENT_FRAMING">
+                                <xs:annotation>
+                                    <xs:documentation>
+                                        Use the non-transparent-framing format for message transfer as described in section 3.4.1 of RFC-6587.
+                                    </xs:documentation>
+                                </xs:annotation>
+                            </xs:enumeration>
+                        </xs:restriction>
+                    </xs:simpleType>
+                </xs:attribute>
+            </xs:extension>
+        </xs:complexContent>
+    </xs:complexType>
+
+    <xs:complexType name="tls-audit-log-protocolType">
+        <xs:annotation>
+            <xs:documentation>Configure tls as the protocol for communicating with the syslog server</xs:documentation>
+        </xs:annotation>
+        <xs:complexContent>
+            <xs:extension base="tcp-audit-log-protocolType">
+                <xs:sequence>
+                    <xs:element name="truststore" type="keyStoreType" minOccurs="0">
+                        <xs:annotation>
+                            <xs:documentation>
+                                Configuration of a keystore to use to create a trust manager to verify the server
+                                certificate for encrypted comminications. If the server certificate is signed off by a
+                                signing authority, tls can be used without a truststore.
+                            </xs:documentation>
+                        </xs:annotation>
+                    </xs:element>
+                    <xs:element name="client-certificate-store" type="extendedKeyStoreType" minOccurs="0">
+                        <xs:annotation>
+                            <xs:documentation>
+                                Configuration of a keystore containing a client certificate and a private key, e.g. in
+                                PKCS12 format. This turns on authenticating the clients against the syslog server.
+                            </xs:documentation>
+                        </xs:annotation>
+                    </xs:element>
+                </xs:sequence>
+            </xs:extension>
+        </xs:complexContent>
+    </xs:complexType>
+
+    <xs:complexType name="audit-log-loggerType">
+        <xs:annotation>
+            <xs:documentation>
+                Declaration of management operation audit logging configuration coming from the model controller core.
+            </xs:documentation>
+        </xs:annotation>
+        <xs:choice minOccurs="0" maxOccurs="unbounded">
+            <xs:element name="handlers" type="audit-log-handlers-refType"/>
+        </xs:choice>
+        <xs:attribute name="log-boot" type="xs:boolean" default="false">
+            <xs:annotation>
+                <xs:documentation>
+                    Whether operations should be logged on boot.
+                </xs:documentation>
+            </xs:annotation>
+        </xs:attribute>
+        <xs:attribute name="log-read-only" type="xs:boolean" default="false">
+            <xs:annotation>
+                <xs:documentation>
+                    Whether operations that do not modify the configuration or any runtime services should be logged.
+                </xs:documentation>
+            </xs:annotation>
+        </xs:attribute>
+        <xs:attribute name="enabled" type="xs:boolean" default="true">
+            <xs:annotation>
+                <xs:documentation>
+                    Whether audit logging is enabled.
+                </xs:documentation>
+            </xs:annotation>
+        </xs:attribute>
+    </xs:complexType>
+
+    <xs:complexType name="audit-log-handlers-refType">
+        <xs:annotation>
+            <xs:documentation>
+                References to audit-log-handlers defined in the audit-log-handlers section
+            </xs:documentation>
+        </xs:annotation>
+        <xs:choice minOccurs="0">
+            <xs:element name="handler" type="audit-log-handler-refType" minOccurs="0"/>
+        </xs:choice>
+    </xs:complexType>
+
+    <xs:complexType name="audit-log-handler-refType">
+        <xs:annotation>
+            <xs:documentation>
+                A reference to an audit-log-handler defined in the audit-log-appenders section
+            </xs:documentation>
+        </xs:annotation>
+        <xs:attribute name="name" type="xs:string" use="required"/>
     </xs:complexType>
 
     <xs:complexType name="host-management-interfacesType">
@@ -976,10 +1358,10 @@
         <xs:attribute name="username" type="xs:string" use="optional" />
         <xs:attribute name="ignore-unused-configuration" type="xs:boolean" default="false">
             <xs:annotation>
-               <xs:documentation>
-                   Set to true to instruct the master Host Controller to automatically not forward configuration and
-                   operations for profiles, socket binding groups and server groups which do not affect our servers.
-               </xs:documentation>
+                <xs:documentation>
+                    Set to true to instruct the master Host Controller to automatically not forward configuration and
+                    operations for profiles, socket binding groups and server groups which do not affect our servers.
+                </xs:documentation>
             </xs:annotation>
         </xs:attribute>
     </xs:complexType>
@@ -998,8 +1380,8 @@
                 Supports the following attributes:
 
                 type -- the type of resource (e.g. 'profile' or 'socket-binding-group') certain instances of which
-                        should be ignored. The value corresponds to the 'key' portion of the first element in the
-                        resource's address (e.g. 'profile' in the address /profile=ha/subsystem=web)
+                should be ignored. The value corresponds to the 'key' portion of the first element in the
+                resource's address (e.g. 'profile' in the address /profile=ha/subsystem=web)
 
                 wildcard -- if 'true', all resources of the given type should be ignored.
 
@@ -1134,7 +1516,7 @@
     <xs:complexType name="server-socket-bindingsType">
         <xs:annotation>
             <xs:documentation>
-            <![CDATA[
+                <![CDATA[
                 Server-specific overrides to the default socket binding configuration inherited from the server group.
             ]]>
             </xs:documentation>
@@ -1142,7 +1524,7 @@
         <xs:attribute name="socket-binding-group" type="xs:string" use="optional">
             <xs:annotation>
                 <xs:documentation>
-                <![CDATA[
+                    <![CDATA[
                     The socket binding group to use for the server. If undefined, the socket binding group
                     specified for the server group is used.
                 ]]>
@@ -1152,7 +1534,7 @@
         <xs:attribute name="port-offset" type="xs:int" default="0" use="optional">
             <xs:annotation>
                 <xs:documentation>
-                <![CDATA[
+                    <![CDATA[
                     Increment to apply to the base port values defined in the
                     referenced socket binding group to derive the values to use on this
                     server.
@@ -1496,15 +1878,15 @@
                 </xs:documentation>
             </xs:annotation>
         </xs:attribute>
-	    <xs:attribute name="port-offset" type="xs:int" use="optional" default="0">
-	        <xs:annotation>
+        <xs:attribute name="port-offset" type="xs:int" use="optional" default="0">
+            <xs:annotation>
                 <xs:documentation>
-	                    Increment to apply to the base port values defined in the
-	                    socket group to derive the values to use on this
-	                    server.
-	            </xs:documentation>
-	        </xs:annotation>
-	    </xs:attribute>
+                    Increment to apply to the base port values defined in the
+                    socket group to derive the values to use on this
+                    server.
+                </xs:documentation>
+            </xs:annotation>
+        </xs:attribute>
     </xs:complexType>
 
     <xs:complexType name="socket-bindingType">
@@ -1575,13 +1957,13 @@
 
     <xs:complexType name="socket-binding-client-mappingType">
         <xs:annotation>
-                <xs:documentation>
-                    Type definition for a client mapping on a socket binding. A client
-                    mapping specifies how external clients should connect to this
-                    socket's port, provided that the client's outbound interface
-                    match the specified source network value.
-                </xs:documentation>
-            </xs:annotation>
+            <xs:documentation>
+                Type definition for a client mapping on a socket binding. A client
+                mapping specifies how external clients should connect to this
+                socket's port, provided that the client's outbound interface
+                match the specified source network value.
+            </xs:documentation>
+        </xs:annotation>
         <xs:attribute name="source-network" type="xs:string" use="optional">
             <xs:annotation>
                 <xs:documentation>
@@ -2063,20 +2445,20 @@
                 <xs:attribute name="name" type="xs:string" use="required">
                     <xs:annotation>
                         <xs:documentation>
-                        The name of the path. Cannot be one of the standard fixed paths
-                        provided by the system:
+                            The name of the path. Cannot be one of the standard fixed paths
+                            provided by the system:
 
-                        jboss.home.dir - the root directory of the JBoss AS distribution
-                        user.home - user's home directory
-                        user.dir - user's current working directory
-                        java.home - java installation directory
-                        jboss.server.base.dir - root directory for an individual server
-                                                instance
+                            jboss.home.dir - the root directory of the JBoss AS distribution
+                            user.home - user's home directory
+                            user.dir - user's current working directory
+                            java.home - java installation directory
+                            jboss.server.base.dir - root directory for an individual server
+                            instance
 
-                        Note that the system provides other standard paths that can be
-                        overridden by declaring them in the configuration file. See
-                        the 'relative-to' attribute documentation for a complete
-                        list of standard paths.
+                            Note that the system provides other standard paths that can be
+                            overridden by declaring them in the configuration file. See
+                            the 'relative-to' attribute documentation for a complete
+                            list of standard paths.
                         </xs:documentation>
                     </xs:annotation>
                 </xs:attribute>
@@ -2088,21 +2470,21 @@
         <xs:attribute name="path">
             <xs:annotation>
                 <xs:documentation>
-                The actual filesystem path. Treated as an absolute path, unless the
-                'relative-to' attribute is specified, in which case the value
-                is treated as relative to that path.
+                    The actual filesystem path. Treated as an absolute path, unless the
+                    'relative-to' attribute is specified, in which case the value
+                    is treated as relative to that path.
 
-                If treated as an absolute path, the actual runtime pathname specified
-                by the value of this attribute will be determined as follows:
+                    If treated as an absolute path, the actual runtime pathname specified
+                    by the value of this attribute will be determined as follows:
 
-                If this value is already absolute, then the value is directly
-                used.  Otherwise the runtime pathname is resolved in a
-                system-dependent way.  On UNIX systems, a relative pathname is
-                made absolute by resolving it against the current user directory.
-                On Microsoft Windows systems, a relative pathname is made absolute
-                by resolving it against the current directory of the drive named by the
-                pathname, if any; if not, it is resolved against the current user
-                directory.
+                    If this value is already absolute, then the value is directly
+                    used.  Otherwise the runtime pathname is resolved in a
+                    system-dependent way.  On UNIX systems, a relative pathname is
+                    made absolute by resolving it against the current user directory.
+                    On Microsoft Windows systems, a relative pathname is made absolute
+                    by resolving it against the current directory of the drive named by the
+                    pathname, if any; if not, it is resolved against the current user
+                    directory.
                 </xs:documentation>
             </xs:annotation>
             <xs:simpleType>
@@ -2114,29 +2496,29 @@
         <xs:attribute name="relative-to" type="xs:string" use="optional">
             <xs:annotation>
                 <xs:documentation>
-                The name of another previously named path, or of one of the
-                standard paths provided by the system. If 'relative-to' is
-                provided, the value of the 'path' attribute is treated as
-                relative to the path specified by this attribute. The standard
-                paths provided by the system include:
+                    The name of another previously named path, or of one of the
+                    standard paths provided by the system. If 'relative-to' is
+                    provided, the value of the 'path' attribute is treated as
+                    relative to the path specified by this attribute. The standard
+                    paths provided by the system include:
 
-                jboss.home.dir - the root directory of the JBoss AS distribution
-                user.home - user's home directory
-                user.dir - user's current working directory
-                java.home - java installation directory
-                jboss.server.base.dir - root directory for an individual server
-                                        instance
-                jboss.server.config.dir - directory in which server configuration
-                                          files are stored.
-                jboss.server.data.dir - directory the server will use for persistent
-                                        data file storage
-                jboss.server.log.dir - directory the server will use for
-                                       log file storage
-                jboss.server.temp.dir - directory the server will use for
-                                       temporary file storage
-                jboss.domain.servers.dir - directory under which a host controller
-                                           will create the working area for
-                                           individual server instances
+                    jboss.home.dir - the root directory of the JBoss AS distribution
+                    user.home - user's home directory
+                    user.dir - user's current working directory
+                    java.home - java installation directory
+                    jboss.server.base.dir - root directory for an individual server
+                    instance
+                    jboss.server.config.dir - directory in which server configuration
+                    files are stored.
+                    jboss.server.data.dir - directory the server will use for persistent
+                    data file storage
+                    jboss.server.log.dir - directory the server will use for
+                    log file storage
+                    jboss.server.temp.dir - directory the server will use for
+                    temporary file storage
+                    jboss.domain.servers.dir - directory under which a host controller
+                    will create the working area for
+                    individual server instances
                 </xs:documentation>
             </xs:annotation>
         </xs:attribute>
@@ -2162,43 +2544,43 @@
         <xs:attribute name="name" type="xs:string" use="required">
             <xs:annotation>
                 <xs:documentation>
-                The name of the path. Cannot be one of the standard fixed paths
-                provided by the system:
+                    The name of the path. Cannot be one of the standard fixed paths
+                    provided by the system:
 
-                jboss.home.dir - the root directory of the JBoss AS distribution
-                user.home - user's home directory
-                user.dir - user's current working directory
-                java.home - java installation directory
-                jboss.server.base.dir - root directory for an individual server
-                                        instance
+                    jboss.home.dir - the root directory of the JBoss AS distribution
+                    user.home - user's home directory
+                    user.dir - user's current working directory
+                    java.home - java installation directory
+                    jboss.server.base.dir - root directory for an individual server
+                    instance
 
-                Note that the system provides other standard paths that can be
-                overridden by declaring them in the configuration file. See
-                the 'relative-to' attribute documentation for a complete
-                list of standard paths.
+                    Note that the system provides other standard paths that can be
+                    overridden by declaring them in the configuration file. See
+                    the 'relative-to' attribute documentation for a complete
+                    list of standard paths.
                 </xs:documentation>
             </xs:annotation>
         </xs:attribute>
         <xs:attribute name="path" use="required">
             <xs:annotation>
                 <xs:documentation>
-                The actual filesystem path. Treated as an absolute path, unless the
-                'relative-to' attribute is specified, in which case the value
-                is treated as relative to that path.
+                    The actual filesystem path. Treated as an absolute path, unless the
+                    'relative-to' attribute is specified, in which case the value
+                    is treated as relative to that path.
 
-                If treated as an absolute path, the actual runtime pathname specified
-                by the value of this attribute will be determined as follows:
+                    If treated as an absolute path, the actual runtime pathname specified
+                    by the value of this attribute will be determined as follows:
 
-                If this value is already absolute, then the value is directly
-                used.  Otherwise the runtime pathname is resolved in a
-                system-dependent way.  On UNIX systems, a relative pathname is
-                made absolute by resolving it against the current user directory.
-                On Microsoft Windows systems, a relative pathname is made absolute
-                by resolving it against the current directory of the drive named by the
-                pathname, if any; if not, it is resolved against the current user
-                directory.
+                    If this value is already absolute, then the value is directly
+                    used.  Otherwise the runtime pathname is resolved in a
+                    system-dependent way.  On UNIX systems, a relative pathname is
+                    made absolute by resolving it against the current user directory.
+                    On Microsoft Windows systems, a relative pathname is made absolute
+                    by resolving it against the current directory of the drive named by the
+                    pathname, if any; if not, it is resolved against the current user
+                    directory.
 
-                Note relative path declarations have to use '/' as file separator.
+                    Note relative path declarations have to use '/' as file separator.
                 </xs:documentation>
             </xs:annotation>
             <xs:simpleType>
@@ -2210,29 +2592,29 @@
         <xs:attribute name="relative-to" type="xs:string" use="optional">
             <xs:annotation>
                 <xs:documentation>
-                The name of another previously named path, or of one of the
-                standard paths provided by the system. If 'relative-to' is
-                provided, the value of the 'path' attribute is treated as
-                relative to the path specified by this attribute. The standard
-                paths provided by the system include:
+                    The name of another previously named path, or of one of the
+                    standard paths provided by the system. If 'relative-to' is
+                    provided, the value of the 'path' attribute is treated as
+                    relative to the path specified by this attribute. The standard
+                    paths provided by the system include:
 
-                jboss.home.dir - the root directory of the JBoss AS distribution
-                user.home - user's home directory
-                user.dir - user's current working directory
-                java.home - java installation directory
-                jboss.server.base.dir - root directory for an individual server
-                                        instance
-                jboss.server.config.dir - directory in which server configuration
-                                          files are stored.
-                jboss.server.data.dir - directory the server will use for persistent
-                                        data file storage
-                jboss.server.log.dir - directory the server will use for
-                                       log file storage
-                jboss.server.temp.dir - directory the server will use for
-                                       temporary file storage
-                jboss.domain.servers.dir - directory under which a host controller
-                                           will create the working area for
-                                           individual server instances
+                    jboss.home.dir - the root directory of the JBoss AS distribution
+                    user.home - user's home directory
+                    user.dir - user's current working directory
+                    java.home - java installation directory
+                    jboss.server.base.dir - root directory for an individual server
+                    instance
+                    jboss.server.config.dir - directory in which server configuration
+                    files are stored.
+                    jboss.server.data.dir - directory the server will use for persistent
+                    data file storage
+                    jboss.server.log.dir - directory the server will use for
+                    log file storage
+                    jboss.server.temp.dir - directory the server will use for
+                    temporary file storage
+                    jboss.domain.servers.dir - directory under which a host controller
+                    will create the working area for
+                    individual server instances
                 </xs:documentation>
             </xs:annotation>
         </xs:attribute>
@@ -2263,9 +2645,9 @@
             <xs:simpleType>
                 <xs:restriction base="xs:token">
                     <xs:enumeration value="SUN">
-			            <xs:annotation>
-			                <xs:documentation>Allows the full set of JVM options to be set via the jvm schema elements</xs:documentation>
-			            </xs:annotation>
+                        <xs:annotation>
+                            <xs:documentation>Allows the full set of JVM options to be set via the jvm schema elements</xs:documentation>
+                        </xs:annotation>
                     </xs:enumeration>
                     <xs:enumeration value="IBM">
                         <xs:annotation>
@@ -2386,19 +2768,19 @@
         </xs:complexContent>
     </xs:complexType>
 
-   <xs:complexType name="vaultType">
-      <xs:annotation>
-         <xs:documentation>
-               <![CDATA[
+    <xs:complexType name="vaultType">
+        <xs:annotation>
+            <xs:documentation>
+                <![CDATA[
                     Vault Configuration.
                 ]]>
-         </xs:documentation>
-      </xs:annotation>
-      <xs:sequence>
-          <xs:element name="vault-option" type="propertyType" minOccurs="0" maxOccurs="unbounded"/>
-      </xs:sequence>
-      <xs:attribute name="code" type="xs:string" use="optional"/>
-   </xs:complexType>
+            </xs:documentation>
+        </xs:annotation>
+        <xs:sequence>
+            <xs:element name="vault-option" type="propertyType" minOccurs="0" maxOccurs="unbounded"/>
+        </xs:sequence>
+        <xs:attribute name="code" type="xs:string" use="optional"/>
+    </xs:complexType>
 
     <xs:complexType name="management-client-contentType">
         <xs:annotation>

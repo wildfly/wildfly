@@ -75,6 +75,10 @@
         <dependency>
             <groupId>org.wildfly</groupId>
             <artifactId>wildfly-domain-management</artifactId>
+				</dependency>
+				<dependency>
+            <groupId>org.wildfly</groupId>
+            <artifactId>wildfly-core-security</artifactId>
         </dependency>
         <dependency>
             <groupId>org.wildfly</groupId>

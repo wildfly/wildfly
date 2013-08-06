@@ -46,13 +46,13 @@ import java.util.Set;
 
 import javax.security.auth.Subject;
 
-import org.jboss.as.controller.security.AccountPrincipal;
-import org.jboss.as.controller.security.GroupPrincipal;
-import org.jboss.as.controller.security.RealmPrincipal;
-import org.jboss.as.controller.security.RolePrincipal;
 import org.jboss.as.core.model.test.AbstractCoreModelTest;
 import org.jboss.as.core.model.test.KernelServices;
 import org.jboss.as.core.model.test.TestModelType;
+import org.jboss.as.core.security.AccountPrincipal;
+import org.jboss.as.core.security.GroupPrincipal;
+import org.jboss.as.core.security.RealmPrincipal;
+import org.jboss.as.core.security.RolePrincipal;
 import org.jboss.dmr.ModelNode;
 import org.junit.Before;
 import org.junit.Test;

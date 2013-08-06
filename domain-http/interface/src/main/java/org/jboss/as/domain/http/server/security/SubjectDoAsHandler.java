@@ -21,15 +21,24 @@
  */
 package org.jboss.as.domain.http.server.security;
 
+import io.undertow.security.api.SecurityContext;
+import io.undertow.security.idm.Account;
+import io.undertow.server.HttpHandler;
+import io.undertow.server.HttpServerExchange;
+
+import java.net.InetSocketAddress;
+import java.net.SocketAddress;
+import java.security.AccessController;
+import java.security.PrivilegedAction;
 import java.security.PrivilegedActionException;
 import java.security.PrivilegedExceptionAction;
 
 import javax.security.auth.Subject;
 
-import io.undertow.security.api.SecurityContext;
-import io.undertow.security.idm.Account;
-import io.undertow.server.HttpHandler;
-import io.undertow.server.HttpServerExchange;
+import org.jboss.as.controller.security.AccessMechanismPrincipal;
+import org.jboss.as.core.security.AccessMechanism;
+import org.jboss.remoting3.security.InetAddressPrincipal;
+import org.wildfly.security.manager.WildFlySecurityManager;
 
 /**
  * HttpHandler to ensure the Subject for the current authenticated user is correctly associated for the request.
@@ -45,16 +54,35 @@ public class SubjectDoAsHandler implements HttpHandler {
     }
 
     @Override
-    public void handleRequest(HttpServerExchange exchange) throws Exception {
-        SecurityContext securityContext = exchange.getAttachment(SecurityContext.ATTACHMENT_KEY);
-        Subject subject = null;
+    public void handleRequest(final HttpServerExchange exchange) throws Exception {
+        final SecurityContext securityContext = exchange.getAttachment(SecurityContext.ATTACHMENT_KEY);
+        Subject useSubject = null;
         if (securityContext != null) {
-            Account account = securityContext.getAuthenticatedAccount();
+            final Account account = securityContext.getAuthenticatedAccount();
             if (account instanceof SubjectAccount) {
-                subject = ((SubjectAccount) account).getSubject();
+                PrivilegedAction<Subject> copyAction = new PrivilegedAction<Subject>() {
+                    @Override
+                    public Subject run() {
+                        final Subject subject = ((SubjectAccount) account).getSubject();
+                        final Subject copySubject = new Subject();
+                        copySubject.getPrincipals().addAll(subject.getPrincipals());
+                        copySubject.getPrivateCredentials().addAll(subject.getPrivateCredentials());
+                        copySubject.getPublicCredentials().addAll(subject.getPublicCredentials());
+                        //Add the remote address and the access mechanism
+                        SocketAddress address = exchange.getConnection().getPeerAddress();
+                        if (address instanceof InetSocketAddress) {
+                            InetAddressPrincipal principal = new InetAddressPrincipal(((InetSocketAddress)address).getAddress());
+                            copySubject.getPrincipals().add(new org.jboss.as.controller.security.InetAddressPrincipal(principal));
+                        }
+                        copySubject.getPrincipals().add(new AccessMechanismPrincipal(AccessMechanism.HTTP));
+                        copySubject.setReadOnly();
+                        return copySubject;                            }
+                };
+
+                useSubject = WildFlySecurityManager.isChecking() ? AccessController.doPrivileged(copyAction) : copyAction.run();
             }
         }
-        handleRequest(exchange, subject);
+        handleRequest(exchange, useSubject);
     }
 
     void handleRequest(final HttpServerExchange exchange, final Subject subject) throws Exception {
