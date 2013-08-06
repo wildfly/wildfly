@@ -132,8 +132,8 @@ class SecurityActions {
         };
     }
 
-    static Caller createCaller() {
-        return createCallerActions().createCaller();
+    static Caller getCaller(final Caller currentCaller) {
+        return createCallerActions().getCaller(currentCaller);
     }
 
     private static CreateCallerActions createCallerActions() {
@@ -142,35 +142,37 @@ class SecurityActions {
 
     private interface CreateCallerActions {
 
-        Caller createCaller();
+        Caller getCaller(Caller currentCaller);
 
         CreateCallerActions NON_PRIVILEGED = new CreateCallerActions() {
 
             @Override
-            public Caller createCaller() {
+            public Caller getCaller(Caller currentCaller) {
                 AccessControlContext acc = AccessController.getContext();
                 Subject subject = Subject.getSubject(acc);
-                if (subject != null) {
-                    subject.setReadOnly();
+                // This is deliberately checking the Subject is the exact same instance.
+                if (currentCaller == null || subject != currentCaller.getSubject()) {
+                    if (subject != null) {
+                        subject.setReadOnly();
+                    }
+                    return Caller.createCaller(subject);
                 }
 
-                return Caller.createCaller(subject);
+                return currentCaller;
             }
         };
 
         CreateCallerActions PRIVILEGED = new CreateCallerActions() {
 
-            PrivilegedAction<Caller> ACTION = new PrivilegedAction<Caller>() {
-
-                @Override
-                public Caller run() {
-                    return NON_PRIVILEGED.createCaller();
-                }
-            };
-
             @Override
-            public Caller createCaller() {
-                return doPrivileged(ACTION);
+            public Caller getCaller(final Caller currentCaller) {
+                return doPrivileged(new PrivilegedAction<Caller>() {
+
+                    @Override
+                    public Caller run() {
+                        return NON_PRIVILEGED.getCaller(currentCaller);
+                    }
+                });
             }
         };
     }

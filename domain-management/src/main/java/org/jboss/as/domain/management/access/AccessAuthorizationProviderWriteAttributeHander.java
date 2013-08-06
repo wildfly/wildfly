@@ -31,6 +31,8 @@ import org.jboss.as.controller.access.ConfigurableAuthorizer;
 import org.jboss.as.controller.access.DelegatingConfigurableAuthorizer;
 import org.jboss.as.controller.access.SimpleConfigurableAuthorizer;
 import org.jboss.as.controller.access.rbac.RoleMapper;
+import org.jboss.as.controller.registry.Resource;
+import org.jboss.as.domain.management.access.AccessAuthorizationResourceDefinition.Provider;
 import org.jboss.dmr.ModelNode;
 
 /**
@@ -54,6 +56,19 @@ class AccessAuthorizationProviderWriteAttributeHander extends AbstractWriteAttri
         super(AccessAuthorizationResourceDefinition.PROVIDER);
         this.configurableAuthorizer = configurableAuthorizer;
         this.rbacRoleMapper = rbacRoleMapper;
+    }
+
+
+    @Override
+    protected void finishModelStage(OperationContext context, ModelNode operation, String attributeName, ModelNode newValue,
+            ModelNode oldValue, Resource model) throws OperationFailedException {
+         Provider provider = Provider.valueOf(newValue.asString());
+         if (provider == Provider.RBAC) {
+             /*
+              * As the provider is being set to RBAC we need to be sure roles can be assigned.
+              */
+             RbacSanityCheckOperation.registerOperation(context);
+         }
     }
 
     @Override
@@ -84,10 +99,9 @@ class AccessAuthorizationProviderWriteAttributeHander extends AbstractWriteAttri
 
     private void updateAuthorizer(final ModelNode value) {
         String providerName = value.asString().toUpperCase(Locale.ENGLISH);
-        AccessAuthorizationResourceDefinition.Provider provider = AccessAuthorizationResourceDefinition.Provider
-                .valueOf(providerName);
+        Provider provider = Provider.valueOf(providerName);
         ConfigurableAuthorizer delegate;
-        if (provider == AccessAuthorizationResourceDefinition.Provider.SIMPLE) {
+        if (provider == Provider.SIMPLE) {
             delegate = getSimpleAuthorizer();
         } else {
             delegate = getRoleBasedAuthorizer();

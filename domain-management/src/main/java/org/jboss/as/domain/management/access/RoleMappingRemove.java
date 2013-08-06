@@ -58,6 +58,8 @@ public class RoleMappingRemove implements OperationStepHandler {
         PathAddress address = PathAddress.pathAddress(operation.get(OP_ADDR));
         final String roleName = address.getLastElement().getValue().toUpperCase();
 
+        RbacSanityCheckOperation.registerOperation(context);
+
         context.addStep(new OperationStepHandler() {
 
             @Override

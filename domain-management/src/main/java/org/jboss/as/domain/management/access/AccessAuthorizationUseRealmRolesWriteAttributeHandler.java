@@ -26,6 +26,7 @@ import org.jboss.as.controller.AbstractWriteAttributeHandler;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.access.rbac.ConfigurableRoleMapper;
+import org.jboss.as.controller.registry.Resource;
 import org.jboss.dmr.ModelNode;
 
 /**
@@ -41,6 +42,18 @@ public class AccessAuthorizationUseRealmRolesWriteAttributeHandler extends Abstr
     AccessAuthorizationUseRealmRolesWriteAttributeHandler(final ConfigurableRoleMapper rbacRoleMapper) {
         super(AccessAuthorizationResourceDefinition.USE_REALM_ROLES);
         this.rbacRoleMapper = rbacRoleMapper;
+    }
+
+    @Override
+    protected void finishModelStage(OperationContext context, ModelNode operation, String attributeName, ModelNode newValue,
+            ModelNode oldValue, Resource model) throws OperationFailedException {
+        if (newValue.asBoolean() == false) {
+            /*
+             * Using roles from the realm has been disabled so now need to check if there that RBAC has been disabled or an
+             * alternative mapping strategy is in place.
+             */
+            RbacSanityCheckOperation.registerOperation(context);
+        }
     }
 
     @Override

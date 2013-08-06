@@ -67,7 +67,7 @@ public class CoreManagementResourceDefinition extends SimpleResourceDefinition {
 
     @Override
     public void registerChildren(ManagementResourceRegistration resourceRegistration) {
-        // TODO Currently these trickly through from the host controller definition - may need to consider how this merges with the domain.xml
+        // TODO Currently these trickle through from the host controller definition - may need to consider how this merges with the domain.xml
         resourceRegistration.registerSubModel(SecurityRealmResourceDefinition.INSTANCE);
         resourceRegistration.registerSubModel(LdapConnectionResourceDefinition.INSTANCE);
 

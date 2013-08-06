@@ -711,11 +711,10 @@ abstract class AbstractOperationContext implements OperationContext {
 
     public Caller getCaller() {
         // TODO Consider threading but in general no harm in multiple instances being created rather than adding synchronization.
-        if (caller == null) {
-            caller = SecurityActions.createCaller();
-        }
+        Caller response = SecurityActions.getCaller(caller); // This allows for a change of Subject whilst the same OperationContext is in use.
+        caller = response;
 
-        return caller;
+        return response;
     }
 
     class Step {

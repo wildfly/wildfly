@@ -25,6 +25,7 @@ package org.jboss.as.server.operations;
 import org.jboss.as.controller.AbstractRemoveStepHandler;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
+import org.jboss.as.domain.management.access.RbacSanityCheckOperation;
 import org.jboss.as.server.mgmt.HttpManagementService;
 import org.jboss.dmr.ModelNode;
 
@@ -38,6 +39,13 @@ public class HttpManagementRemoveHandler extends AbstractRemoveStepHandler {
     public static final HttpManagementRemoveHandler INSTANCE = new HttpManagementRemoveHandler();
 
     private HttpManagementRemoveHandler() {
+    }
+
+    @Override
+    protected void performRemove(OperationContext context, ModelNode operation, ModelNode model)
+            throws OperationFailedException {
+        RbacSanityCheckOperation.registerOperation(context);
+        super.performRemove(context, operation, model);
     }
 
     @Override

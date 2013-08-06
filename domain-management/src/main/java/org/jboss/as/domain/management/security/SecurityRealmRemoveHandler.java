@@ -28,6 +28,7 @@ import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.OperationStepHandler;
 import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.registry.Resource;
+import org.jboss.as.domain.management.access.RbacSanityCheckOperation;
 import org.jboss.dmr.ModelNode;
 import org.jboss.msc.service.ServiceName;
 
@@ -47,6 +48,7 @@ public class SecurityRealmRemoveHandler implements OperationStepHandler {
     public void execute(OperationContext context, ModelNode operation) throws OperationFailedException {
         final ModelNode model = Resource.Tools.readModel(context.readResource(PathAddress.EMPTY_ADDRESS));
         context.removeResource(PathAddress.EMPTY_ADDRESS);
+        RbacSanityCheckOperation.registerOperation(context);
         context.addStep(new OperationStepHandler() {
             @Override
             public void execute(OperationContext context, ModelNode operation) throws OperationFailedException {
