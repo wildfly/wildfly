@@ -1271,7 +1271,17 @@ public class DistributableSessionManager<O extends OutgoingDistributableSessionD
                                 if (osu.isPassivated()) {
                                     // Passivated session needs to be expired. A call to
                                     // findSession will bring it out of passivation
-                                    Session session = findSession(realId);
+                                    Session session = null;
+                                    try {
+                                        session = findSession(realId);
+                                    } finally {
+                                        // BZ 993559 loadSession(...) will have started a batch to bring the session out of passivation - so we need to end it here
+                                        BatchingManager bm = this.distributedCacheManager.getBatchingManager();
+                                        if (bm.isBatchInProgress()) {
+                                            bm.setBatchRollbackOnly();
+                                            bm.endBatch();
+                                        }
+                                    }
                                     if (session != null) {
                                         session.isValid(); // will expire
                                         continue;
