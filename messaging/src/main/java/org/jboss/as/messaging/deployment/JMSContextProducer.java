@@ -60,7 +60,6 @@ import javax.transaction.Synchronization;
 import javax.transaction.SystemException;
 import javax.transaction.Transaction;
 import javax.transaction.TransactionManager;
-import javax.transaction.xa.XAResource;
 
 import org.jboss.as.messaging.jms.TransactionManagerLocator;
 
@@ -168,7 +167,7 @@ public class JMSContextProducer {
 
         private final JMSInfo info;
         private JMSContext delegate;
-        private XAResource xares;
+        private boolean inTx = false;
 
         JMSContextWrapper(JMSInfo info) {
             this.info = info;
@@ -180,9 +179,8 @@ public class JMSContextProducer {
                 ctx = new InitialContext();
                 ConnectionFactory cf = (ConnectionFactory) ctx.lookup(info.connectionFactoryLookup);
                 if (tx != null) {
+                    inTx = true;
                     XAJMSContext xaContext = ((XAConnectionFactory) cf).createXAContext(info.userName, info.password);
-                    xares = xaContext.getXAResource();
-                    tx.enlistResource(xares);
                     return xaContext.getContext();
                 } else {
                     return cf.createContext(info.userName, info.password, info.ackMode);
@@ -211,7 +209,7 @@ public class JMSContextProducer {
 
         private void internalClose() {
             if (delegate != null) {
-                if (xares == null) {
+                if (!inTx) {
                     delegate.close();
                     delegate = null;
                 }
@@ -236,6 +234,7 @@ public class JMSContextProducer {
                             public synchronized void afterCompletion(int status) {
                                 delegate.close();
                                 delegate = null;
+                                inTx = false;
                             }
                         });
                     }
