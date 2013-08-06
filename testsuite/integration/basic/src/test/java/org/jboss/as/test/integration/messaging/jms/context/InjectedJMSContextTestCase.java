@@ -23,11 +23,8 @@
 package org.jboss.as.test.integration.messaging.jms.context;
 
 import static org.hamcrest.CoreMatchers.is;
-import static org.hamcrest.CoreMatchers.notNullValue;
 import static org.hamcrest.CoreMatchers.nullValue;
 import static org.jboss.as.test.shared.TimeoutUtil.adjust;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertThat;
 
 import java.util.UUID;
@@ -38,23 +35,24 @@ import javax.inject.Inject;
 import javax.jms.ConnectionFactory;
 import javax.jms.Destination;
 import javax.jms.JMSConnectionFactory;
+import javax.jms.JMSConsumer;
 import javax.jms.JMSContext;
+import javax.jms.JMSException;
 import javax.jms.JMSPasswordCredential;
 import javax.jms.JMSSessionMode;
+import javax.jms.Message;
 import javax.jms.Queue;
 import javax.jms.TemporaryQueue;
 
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.junit.Arquillian;
-import org.jboss.as.arquillian.api.ServerSetup;
-import org.jboss.as.test.integration.common.jms.JMSOperations;
+import org.jboss.as.test.integration.messaging.jms.context.auxiliary.Definitions;
 import org.jboss.as.test.integration.messaging.jms.context.auxiliary.TransactedMessageProducer;
-import org.jboss.as.test.jms.auxiliary.CreateQueueSetupTask;
 import org.jboss.as.test.shared.TimeoutUtil;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.asset.EmptyAsset;
-import org.jboss.shrinkwrap.api.asset.StringAsset;
 import org.jboss.shrinkwrap.api.spec.JavaArchive;
+import org.junit.After;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
@@ -62,10 +60,9 @@ import org.junit.runner.RunWith;
  * @author <a href="http://jmesnil.net/">Jeff Mesnil</a> (c) 2013 Red Hat inc.
  */
 @RunWith(Arquillian.class)
-@ServerSetup(CreateQueueSetupTask.class)
 public class InjectedJMSContextTestCase {
 
-    public static final String QUEUE_NAME = "/queue/myAwesomeQueue";
+    public static final String QUEUE_NAME = "java:app/InjectedJMSContextTestCaseQueue";
 
     @Inject
     @JMSConnectionFactory("/ConnectionFactory")
@@ -85,31 +82,37 @@ public class InjectedJMSContextTestCase {
     @Deployment
     public static JavaArchive createTestArchive() {
         return ShrinkWrap.create(JavaArchive.class, "InjectedJMSContextTestCase.jar")
-                .addPackage(JMSOperations.class.getPackage())
-                .addClass(CreateQueueSetupTask.class)
                 .addClass(TimeoutUtil.class)
-                .addPackage(TransactedMessageProducer.class.getPackage())
+                .addPackage(Definitions.class.getPackage())
                 .addAsManifestResource(EmptyAsset.INSTANCE,
-                        "beans.xml")
-                .addAsManifestResource(new StringAsset("Dependencies: org.jboss.as.controller-client,org.jboss.dmr,org.jboss.as.cli\n"),
-                        "MANIFEST.MF");
+                        "beans.xml");
+    }
+
+    @After
+    public void tearDown() throws JMSException {
+        // drain the queue to remove any pending messages from it
+        try (JMSConsumer consumer = context.createConsumer(queue)) {
+            Message m;
+            do {
+                m = consumer.receiveNoWait();
+            }
+            while (m != null);
+        }
     }
 
     @Test
-    public void testSendAndReceiveWithInjectedContext() {
+    public void testSendAndReceiveWithInjectedContext() throws JMSException {
         sendAndReceiveWithContext(context);
     }
 
     @Test
-    public void testSendAndReceiveWithCreatedContext() {
-        try (
-                JMSContext ctx = factory.createContext()
-        ) {
+    public void testSendAndReceiveWithCreatedContext() throws JMSException {
+        try (JMSContext ctx = factory.createContext()) {
             sendAndReceiveWithContext(ctx);
         }
     }
 
-    private void sendAndReceiveWithContext(JMSContext ctx) {
+    private void sendAndReceiveWithContext(JMSContext ctx) throws JMSException {
         String text = UUID.randomUUID().toString();
 
         TemporaryQueue tempQueue = ctx.createTemporaryQueue();
@@ -121,16 +124,16 @@ public class InjectedJMSContextTestCase {
     }
 
     @Test
-    public void testSendWith_REQUIRED_transaction() {
+    public void testSendWith_REQUIRED_transaction() throws JMSException {
         sendWith_REQUIRED_transaction(false);
     }
 
     @Test
-    public void testSendWith_REQUIRED_transactionAndRollback() {
+    public void testSendWith_REQUIRED_transactionAndRollback() throws JMSException {
         sendWith_REQUIRED_transaction(true);
     }
 
-    private void sendWith_REQUIRED_transaction(boolean rollback) {
+    private void sendWith_REQUIRED_transaction(boolean rollback) throws JMSException {
         String text = UUID.randomUUID().toString();
 
         TemporaryQueue tempQueue = context.createTemporaryQueue();
@@ -141,17 +144,17 @@ public class InjectedJMSContextTestCase {
     }
 
     @Test
-    public void testSendAndReceiveFromMDB() {
+    public void testSendAndReceiveFromMDB() throws JMSException {
         sendAndReceiveFromMDB(false);
     }
 
     @Test
-    public void testSendAndReceiveFromMDBWithRollback() {
+    public void testSendAndReceiveFromMDBWithRollback() throws JMSException {
         sendAndReceiveFromMDB(true);
     }
 
-    private void sendAndReceiveFromMDB(boolean rollback) {
-        String text = UUID.randomUUID().toString();
+    private void sendAndReceiveFromMDB(boolean rollback) throws JMSException {
+        String text = "sendAndReceiveFromMDB " + rollback;
 
         TemporaryQueue replyTo = context.createTemporaryQueue();
 
@@ -164,13 +167,14 @@ public class InjectedJMSContextTestCase {
     }
 
     private void assertMessageIsReceived(Destination destination, JMSContext ctx, String expectedText, boolean rollback) {
-        String t = ctx.createConsumer(destination)
-                .receiveBody(String.class, adjust(2000));
+        try (JMSConsumer consumer = ctx.createConsumer(destination)) {
+            String t = consumer.receiveBody(String.class, adjust(2000));
 
-        if (rollback) {
-            assertThat(t, is(nullValue()));
-        } else {
-            assertThat(t, is(expectedText));
+            if (rollback) {
+                assertThat("from " + destination, t, is(nullValue()));
+            } else {
+                assertThat("from " + destination, t, is(expectedText));
+            }
         }
     }
 }
