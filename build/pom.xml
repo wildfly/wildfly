@@ -974,17 +974,22 @@
 
                 <dependency>
                     <groupId>org.wildfly</groupId>
+                    <artifactId>wildfly-clustering-monitor-extension</artifactId>
+                </dependency>
+
+                <dependency>
+                    <groupId>org.wildfly</groupId>
+                    <artifactId>wildfly-clustering-monitor-services</artifactId>
+                </dependency>
+
+                <dependency>
+                    <groupId>org.wildfly</groupId>
                     <artifactId>wildfly-clustering-server</artifactId>
                 </dependency>
 
                 <dependency>
                     <groupId>org.wildfly</groupId>
                     <artifactId>wildfly-clustering-singleton</artifactId>
-                </dependency>
-
-                <dependency>
-                    <groupId>org.wildfly</groupId>
-                    <artifactId>wildfly-clustering-subsystem</artifactId>
                 </dependency>
 
                 <dependency>

@@ -1,6 +1,6 @@
 <xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema"
-            targetNamespace="urn:jboss:domain:cluster:1.0"
-            xmlns:tns="urn:jboss:domain:cluster:1.0"
+            targetNamespace="urn:jboss:domain:clustering-monitor:1.0"
+            xmlns:tns="urn:jboss:domain:clustering-monitor:1.0"
             elementFormDefault="qualified"
             attributeFormDefault="unqualified"
             version="1.0">
@@ -8,7 +8,7 @@
     <!-- The subsystem root element -->
     <xs:element name="subsystem" type="xs:string">
         <xs:annotation>
-            <xs:documentation>Allows configuration of cluster subsystem.</xs:documentation>
+            <xs:documentation>Allows configuration of clustering-monitor subsystem.</xs:documentation>
         </xs:annotation>
     </xs:element>
 

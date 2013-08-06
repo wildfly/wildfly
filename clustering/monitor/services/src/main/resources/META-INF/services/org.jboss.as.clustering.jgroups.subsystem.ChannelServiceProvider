@@ -1,0 +1,2 @@
+org.wildfly.clustering.monitor.services.channel.ChannelManagementServiceProvider
+org.wildfly.clustering.monitor.services.cache.CacheManagementServiceProvider

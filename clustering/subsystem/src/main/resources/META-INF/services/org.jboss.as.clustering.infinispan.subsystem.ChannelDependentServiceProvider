@@ -1,2 +1,0 @@
-org.wildfly.extension.cluster.cache.CacheManagementServiceProvider
-org.wildfly.extension.cluster.channel.ChannelManagementServiceProvider

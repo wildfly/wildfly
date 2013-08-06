@@ -1,0 +1,56 @@
+/*
+ * JBoss, Home of Professional Open Source.
+ * Copyright 2013, Red Hat, Inc., and individual contributors
+ * as indicated by the @author tags. See the copyright.txt file in the
+ * distribution for a full listing of individual contributors.
+ *
+ * This is free software; you can redistribute it and/or modify it
+ * under the terms of the GNU Lesser General Public License as
+ * published by the Free Software Foundation; either version 2.1 of
+ * the License, or (at your option) any later version.
+ *
+ * This software is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
+ * Lesser General Public License for more details.
+ *
+ * You should have received a copy of the GNU Lesser General Public
+ * License along with this software; if not, write to the Free
+ * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
+ * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
+ */
+package org.wildfly.clustering.monitor.services.channel;
+
+import java.util.Collection;
+import java.util.Collections;
+
+import org.jboss.as.clustering.jgroups.subsystem.ChannelServiceProvider;
+import org.jboss.modules.ModuleIdentifier;
+import org.jboss.msc.service.Service;
+import org.jboss.msc.service.ServiceController;
+import org.jboss.msc.service.ServiceName;
+import org.jboss.msc.service.ServiceTarget;
+import org.jboss.msc.value.InjectedValue;
+import org.wildfly.clustering.dispatcher.CommandDispatcherFactory;
+import org.wildfly.clustering.server.dispatcher.CommandDispatcherFactoryProvider;
+
+public class ChannelManagementServiceProvider implements ChannelServiceProvider {
+
+    @Override
+    public Collection<ServiceName> getServiceNames(String cluster) {
+        return Collections.singleton(ChannelManagementService.getServiceName(cluster));
+    }
+
+    @Override
+    public Collection<ServiceController<?>> install(ServiceTarget target, String cluster, ModuleIdentifier moduleId) {
+        ServiceName name = ChannelManagementService.getServiceName(cluster);
+        InjectedValue<CommandDispatcherFactory> dispatcherFactory = new InjectedValue<CommandDispatcherFactory>();
+        Service<ChannelManagement> service = new ChannelManagementService(name, dispatcherFactory, cluster);
+        ServiceController<ChannelManagement> controller = target.addService(name, service)
+               .addDependency(CommandDispatcherFactoryProvider.getServiceName(cluster), CommandDispatcherFactory.class, dispatcherFactory)
+                //.addDependency(ClusterExtension.CLUSTER_EXTENSION_SERVICE_NAME)
+               .setInitialMode(ServiceController.Mode.ON_DEMAND)
+               .install();
+        return Collections.<ServiceController<?>>singleton(controller);
+    }
+}

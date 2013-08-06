@@ -958,6 +958,14 @@
             <maven-resource group="org.wildfly" artifact="wildfly-clustering-jgroups"/>
         </module-def>
 
+        <module-def name="org.wildfly.clustering.monitor.extension">
+            <maven-resource group="org.wildfly" artifact="wildfly-clustering-monitor-extension"/>
+        </module-def>
+
+        <module-def name="org.wildfly.clustering.monitor.services">
+            <maven-resource group="org.wildfly" artifact="wildfly-clustering-monitor-services"/>
+        </module-def>
+
         <module-def name="org.wildfly.clustering.server">
             <maven-resource group="org.wildfly" artifact="wildfly-clustering-server"/>
         </module-def>
@@ -1504,10 +1512,6 @@
         <module-def name="sun.jdk"/>
 
         <module-def name="ibm.jdk"/>
-
-        <module-def name="org.wildfly.extension.cluster">
-            <maven-resource group="org.wildfly" artifact="wildfly-clustering-subsystem"/>
-        </module-def>
 
         <module-def name="org.wildfly.extension.undertow">
             <maven-resource group="org.wildfly" artifact="wildfly-undertow"/>
