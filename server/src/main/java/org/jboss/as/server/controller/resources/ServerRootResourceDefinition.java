@@ -39,6 +39,7 @@ import org.jboss.as.controller.SimpleAttributeDefinitionBuilder;
 import org.jboss.as.controller.SimpleMapAttributeDefinition;
 import org.jboss.as.controller.SimpleResourceDefinition;
 import org.jboss.as.controller.access.DelegatingConfigurableAuthorizer;
+import org.jboss.as.controller.audit.ManagedAuditLogger;
 import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
 import org.jboss.as.controller.extension.ExtensionRegistry;
 import org.jboss.as.controller.extension.ExtensionResourceDefinition;
@@ -67,6 +68,7 @@ import org.jboss.as.controller.resource.SocketBindingGroupResourceDefinition;
 import org.jboss.as.controller.services.path.PathManagerService;
 import org.jboss.as.controller.services.path.PathResourceDefinition;
 import org.jboss.as.domain.management.CoreManagementResourceDefinition;
+import org.jboss.as.domain.management.audit.EnvironmentNameReader;
 import org.jboss.as.domain.management.security.WhoAmIOperation;
 import org.jboss.as.platform.mbean.PlatformMBeanResourceRegistrar;
 import org.jboss.as.repository.ContentRepository;
@@ -182,6 +184,7 @@ public class ServerRootResourceDefinition extends SimpleResourceDefinition {
     private final boolean parallelBoot;
     private final PathManagerService pathManager;
     private final DelegatingConfigurableAuthorizer authorizer;
+    private final ManagedAuditLogger auditLogger;
 
     public ServerRootResourceDefinition(
             final ContentRepository contentRepository,
@@ -193,7 +196,8 @@ public class ServerRootResourceDefinition extends SimpleResourceDefinition {
             final ExtensionRegistry extensionRegistry,
             final boolean parallelBoot,
             final PathManagerService pathManager,
-            final DelegatingConfigurableAuthorizer authorizer) {
+            final DelegatingConfigurableAuthorizer authorizer,
+            final ManagedAuditLogger auditLogger) {
         super(null, ServerDescriptions.getResourceDescriptionResolver(SERVER, false));
         this.contentRepository = contentRepository;
         this.extensibleConfigurationPersister = extensibleConfigurationPersister;
@@ -204,7 +208,7 @@ public class ServerRootResourceDefinition extends SimpleResourceDefinition {
         this.extensionRegistry = extensionRegistry;
         this.parallelBoot = parallelBoot;
         this.pathManager = pathManager;
-
+        this.auditLogger = auditLogger;
         this.isDomain = serverEnvironment == null || serverEnvironment.getLaunchType() == LaunchType.DOMAIN;
         this.authorizer = authorizer;
     }
@@ -316,11 +320,32 @@ public class ServerRootResourceDefinition extends SimpleResourceDefinition {
 
         // Central Management
         // Start with the base /core-service=management MNR. The Resource for this is added by ServerService itself, so there is no add/remove op handlers
+        final EnvironmentNameReader environmentReader = new EnvironmentNameReader() {
+            public boolean isServer() {
+                return true;
+            }
+
+            public String getServerName() {
+                return serverEnvironment.getServerName();
+            }
+
+            public String getHostName() {
+                return serverEnvironment.getHostControllerName();
+            }
+
+
+            public String getProductName() {
+                if (serverEnvironment.getProductConfig() != null && serverEnvironment.getProductConfig().getProductName() != null) {
+                    return serverEnvironment.getProductConfig().getProductName();
+                }
+                return null;
+            }
+        };
         final ResourceDefinition managementDefinition;
         if (isDomain) {
-            managementDefinition = CoreManagementResourceDefinition.forDomainServer(authorizer);
+            managementDefinition = CoreManagementResourceDefinition.forDomainServer(authorizer, auditLogger, pathManager, environmentReader);
         } else {
-            managementDefinition = CoreManagementResourceDefinition.forStandaloneServer(authorizer,
+            managementDefinition = CoreManagementResourceDefinition.forStandaloneServer(authorizer, auditLogger, pathManager, environmentReader,
                     NativeManagementResourceDefinition.INSTANCE, NativeRemotingManagementResourceDefinition.INSTANCE,
                     HttpManagementResourceDefinition.INSTANCE);
         }

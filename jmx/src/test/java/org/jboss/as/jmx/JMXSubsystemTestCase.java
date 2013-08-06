@@ -23,6 +23,7 @@ package org.jboss.as.jmx;
 
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ADD;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.DESCRIBE;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.FILE_HANDLER;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.NAME;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
@@ -55,6 +56,7 @@ import org.jboss.as.controller.registry.AttributeAccess;
 import org.jboss.as.controller.registry.ManagementResourceRegistration;
 import org.jboss.as.controller.registry.Resource;
 import org.jboss.as.controller.transform.OperationTransformer.TransformedOperation;
+import org.jboss.as.domain.management.audit.AccessAuditResourceDefinition;
 import org.jboss.as.model.test.FailedOperationTransformationConfig;
 import org.jboss.as.model.test.FailedOperationTransformationConfig.AttributesPathAddressConfig;
 import org.jboss.as.model.test.ModelFixer;
@@ -198,6 +200,8 @@ public class JMXSubsystemTestCase extends AbstractSubsystemTest {
         KernelServices services = createKernelServicesBuilder(new BaseAdditionalInitalization())
                 .setSubsystemXml(subsystemXml)
                 .build();
+
+        Assert.assertTrue(services.isSuccessfulBoot());
 
         //Read the whole model and make sure it looks as expected
         ModelNode model = services.readWholeModel();
@@ -390,6 +394,7 @@ public class JMXSubsystemTestCase extends AbstractSubsystemTest {
         AdditionalInitialization additionalInit = new BaseAdditionalInitalization();
 
         KernelServices servicesA = createKernelServicesBuilder(additionalInit).setSubsystemXml(subsystemXml).build();
+        Assert.assertTrue(servicesA.isSuccessfulBoot());
         //Get the model and the persisted xml from the first controller
         ModelNode modelA = servicesA.readWholeModel();
         Assert.assertTrue(modelA.get(SUBSYSTEM, "jmx", CommonAttributes.EXPOSE_MODEL, CommonAttributes.RESOLVED).hasDefined(CommonAttributes.PROPER_PROPERTY_FORMAT));
@@ -409,13 +414,91 @@ public class JMXSubsystemTestCase extends AbstractSubsystemTest {
     }
 
     @Test
+    public void testParseAndMarshallModel1_2WithAuditLogButNoHandlerReferences() throws Exception {
+        String subsystemXml =
+                "<subsystem xmlns=\"" + Namespace.JMX_1_2.getUriString() + "\">" +
+                "   <expose-resolved-model domain-name=\"jboss.RESOLVED\" proper-property-format=\"false\"/>" +
+                "   <expose-expression-model domain-name=\"jboss.EXPRESSION\"/>" +
+                "   <audit-log log-boot=\"true\" log-read-only=\"false\" enabled=\"false\"/>" +
+                "</subsystem>";
+
+        AdditionalInitialization additionalInit = new BaseAdditionalInitalization();
+
+        KernelServices servicesA = createKernelServicesBuilder(additionalInit).setSubsystemXml(subsystemXml).build();
+        Assert.assertTrue(servicesA.isSuccessfulBoot());
+        //Get the model and the persisted xml from the first controller
+        ModelNode modelA = servicesA.readWholeModel();
+        Assert.assertTrue(modelA.get(SUBSYSTEM, "jmx", CommonAttributes.EXPOSE_MODEL, CommonAttributes.RESOLVED).hasDefined(CommonAttributes.PROPER_PROPERTY_FORMAT));
+        Assert.assertFalse(modelA.get(SUBSYSTEM, "jmx", CommonAttributes.EXPOSE_MODEL, CommonAttributes.RESOLVED, CommonAttributes.PROPER_PROPERTY_FORMAT).asBoolean());
+        String marshalled = servicesA.getPersistedSubsystemXml();
+        servicesA.shutdown();
+
+        Assert.assertTrue(marshalled.contains(Namespace.CURRENT.getUriString()));
+        compareXml(null, subsystemXml, marshalled, true);
+
+        //Install the persisted xml from the first controller into a second controller
+        KernelServices servicesB = createKernelServicesBuilder(additionalInit).setSubsystemXml(marshalled).build();
+        ModelNode modelB = servicesB.readWholeModel();
+
+        //Make sure the models from the two controllers are identical
+        super.compare(modelA, modelB);
+    }
+
+    @Test
+    public void testParseAndMarshallModel1_2WithAuditLogAndHandlerReferences() throws Exception {
+        String subsystemXml =
+                "<subsystem xmlns=\"" + Namespace.JMX_1_2.getUriString() + "\">" +
+                "   <expose-resolved-model domain-name=\"jboss.RESOLVED\" proper-property-format=\"false\"/>" +
+                "   <expose-expression-model domain-name=\"jboss.EXPRESSION\"/>" +
+                "   <audit-log log-boot=\"true\" log-read-only=\"false\" enabled=\"false\">" +
+                "       <handlers>" +
+                "               <handler name=\"test\"/>" +
+                "       </handlers>" +
+                "   </audit-log>" +
+                "</subsystem>";
+
+        AdditionalInitialization additionalInit = new BaseAdditionalInitalization() {
+
+            @Override
+            protected void initializeExtraSubystemsAndModel(ExtensionRegistry extensionRegistry, Resource rootResource,
+                    ManagementResourceRegistration rootRegistration) {
+                super.initializeExtraSubystemsAndModel(extensionRegistry, rootResource, rootRegistration);
+
+                Resource auditLog = Resource.Factory.create();
+                rootResource.registerChild(AccessAuditResourceDefinition.PATH_ELEMENT, auditLog);
+                Resource testHandler = Resource.Factory.create();
+                testHandler.getModel().setEmptyObject();
+                auditLog.registerChild(PathElement.pathElement(FILE_HANDLER, "test"), testHandler);
+            }
+        };
+
+        KernelServices servicesA = createKernelServicesBuilder(additionalInit).setSubsystemXml(subsystemXml).build();
+        Assert.assertTrue(servicesA.isSuccessfulBoot());
+        //Get the model and the persisted xml from the first controller
+        ModelNode modelA = servicesA.readWholeModel();
+        Assert.assertTrue(modelA.get(SUBSYSTEM, "jmx", CommonAttributes.EXPOSE_MODEL, CommonAttributes.RESOLVED).hasDefined(CommonAttributes.PROPER_PROPERTY_FORMAT));
+        Assert.assertFalse(modelA.get(SUBSYSTEM, "jmx", CommonAttributes.EXPOSE_MODEL, CommonAttributes.RESOLVED, CommonAttributes.PROPER_PROPERTY_FORMAT).asBoolean());
+        String marshalled = servicesA.getPersistedSubsystemXml();
+        servicesA.shutdown();
+
+        Assert.assertTrue(marshalled.contains(Namespace.CURRENT.getUriString()));
+        compareXml(null, subsystemXml, marshalled, true);
+
+        //Install the persisted xml from the first controller into a second controller
+        KernelServices servicesB = createKernelServicesBuilder(additionalInit).setSubsystemXml(marshalled).build();
+        ModelNode modelB = servicesB.readWholeModel();
+
+        //Make sure the models from the two controllers are identical
+        super.compare(modelA, modelB);
+    }
+    @Test
     public void testDescribeHandler() throws Exception {
         //Parse the subsystem xml and install into the first controller
         String subsystemXml =
                 "<subsystem xmlns=\"" + Namespace.CURRENT.getUriString() + "\">" +
                 "   <expose-resolved-model domain-name=\"jboss.RESOLVED\"/>" +
                 "   <expose-expression-model domain-name=\"jboss.EXPRESSION\"/>" +
-                "    <remoting-connector />" +
+                "   <remoting-connector />" +
                 "</subsystem>";
         KernelServices servicesA = createKernelServicesBuilder(null).setSubsystemXml(subsystemXml).build();
         //Get the model and the describe operations from the first controller
@@ -485,11 +568,15 @@ public class JMXSubsystemTestCase extends AbstractSubsystemTest {
                 "<subsystem xmlns=\"" + Namespace.CURRENT.getUriString() + "\">" +
                 "   <expose-resolved-model domain-name=\"jboss.as\" proper-property-format=\"false\"/>" +
                 "   <remoting-connector />" +
+                "   <audit-log enabled=\"false\" log-boot=\"true\" log-read-only=\"true\">" +
+                "      <handlers>" +
+                "          <handler name=\"test\"/>" +
+                "      </handlers>" +
+                "   </audit-log>" +
                 "</subsystem>";
 
         ModelVersion oldVersion = ModelVersion.create(1, 0, 0);
-        KernelServicesBuilder builder = createKernelServicesBuilder(new BaseAdditionalInitalization())
-                .setSubsystemXml(subsystemXml);
+        KernelServicesBuilder builder = createKernelServicesBuilder(new AuditLogInitialization()).setSubsystemXml(subsystemXml);
         builder.createLegacyKernelServicesBuilder(null, controllerVersion, oldVersion)
                 .setExtensionClassName(JMXExtension.class.getName())
                 .addMavenResourceURL("org.jboss.as:jboss-as-jmx:" + controllerVersion.getMavenGavVersion())
@@ -500,11 +587,20 @@ public class JMXSubsystemTestCase extends AbstractSubsystemTest {
                         //The reason is that in 7.2 the default behaviour is 'true' which is the a new feature, while 7.1.x uses 'false' under the scenes
                         //So the ops from 7.1.x can never result in 'true'
                         modelNode.get(CommonAttributes.EXPOSE_MODEL, CommonAttributes.RESOLVED, CommonAttributes.PROPER_PROPERTY_FORMAT).set(false);
+
+                        //The audit log operations will get rejected, so the audit log will not be present in the reverse model
+                        ModelNode logger = modelNode.get(JmxAuditLoggerResourceDefinition.PATH_ELEMENT.getKey(), JmxAuditLoggerResourceDefinition.PATH_ELEMENT.getValue());
+                        logger.get(JmxAuditLoggerResourceDefinition.LOG_BOOT.getName()).set(true);
+                        logger.get(JmxAuditLoggerResourceDefinition.LOG_READ_ONLY.getName()).set(true);
+                        logger.get(JmxAuditLoggerResourceDefinition.ENABLED.getName()).set(false);
+                        logger.get(JmxAuditLogHandlerReferenceResourceDefinition.PATH_ELEMENT.getKey(), "test").setEmptyObject();
+
                         return modelNode;
                     }
                 });
 
         KernelServices mainServices = builder.build();
+        Assert.assertTrue(mainServices.isSuccessfulBoot());
         KernelServices legacyServices = mainServices.getLegacyServices(oldVersion);
         Assert.assertNotNull(legacyServices);
 
@@ -596,8 +692,37 @@ public class JMXSubsystemTestCase extends AbstractSubsystemTest {
         legacyModel = checkSubsystemModelTransformation(mainServices, oldVersion, modelFixer7_1_x);
         check_1_0_0_Model(legacyModel.get(SUBSYSTEM, getMainSubsystemName()), true, true);
         Assert.assertFalse(legacyModel.get(SUBSYSTEM, getMainSubsystemName(), CommonAttributes.REMOTING_CONNECTOR, CommonAttributes.JMX, CommonAttributes.USE_MANAGEMENT_ENDPOINT).asBoolean());
+
+        //Check that these audit log operations get discarded/rejected
+        PathAddress address = PathAddress.pathAddress(
+                PathElement.pathElement(SUBSYSTEM, getMainSubsystemName()),
+                JmxAuditLoggerResourceDefinition.PATH_ELEMENT);
+        checkDiscardedOperation(Util.getWriteAttributeOperation(address, JmxAuditLoggerResourceDefinition.LOG_BOOT.getName(), new ModelNode(false)), mainServices, oldVersion);
+        checkDiscardedOperation(Util.getUndefineAttributeOperation(address, JmxAuditLoggerResourceDefinition.LOG_BOOT.getName()), mainServices, oldVersion);
+        checkDiscardedOperation(Util.getReadAttributeOperation(address, JmxAuditLoggerResourceDefinition.LOG_BOOT.getName()), mainServices, oldVersion);
+        checkDiscardedOperation(Util.getWriteAttributeOperation(address, JmxAuditLoggerResourceDefinition.LOG_READ_ONLY.getName(), new ModelNode(false)), mainServices, oldVersion);
+        checkDiscardedOperation(Util.getUndefineAttributeOperation(address, JmxAuditLoggerResourceDefinition.LOG_READ_ONLY.getName()), mainServices, oldVersion);
+        checkDiscardedOperation(Util.getReadAttributeOperation(address, JmxAuditLoggerResourceDefinition.LOG_READ_ONLY.getName()), mainServices, oldVersion);
+        checkRejectedOperation(Util.getWriteAttributeOperation(address, JmxAuditLoggerResourceDefinition.ENABLED.getName(), new ModelNode(true)), mainServices, oldVersion);
+        checkRejectedOperation(Util.getUndefineAttributeOperation(address, JmxAuditLoggerResourceDefinition.ENABLED.getName()), mainServices, oldVersion);
+        checkDiscardedOperation(Util.getReadAttributeOperation(address, JmxAuditLoggerResourceDefinition.ENABLED.getName()), mainServices, oldVersion);
+        checkDiscardedOperation(Util.createRemoveOperation(address), mainServices, oldVersion);
+        address = address.append(JmxAuditLogHandlerReferenceResourceDefinition.PATH_ELEMENT.getKey(), "test");
+        checkDiscardedOperation(Util.createAddOperation(address), mainServices, oldVersion);
+        checkDiscardedOperation(Util.createRemoveOperation(address), mainServices, oldVersion);
     }
 
+    private void checkDiscardedOperation(ModelNode op, KernelServices mainServices, ModelVersion oldVersion) throws OperationFailedException {
+        TransformedOperation transformedOp = mainServices.transformOperation(oldVersion, op);
+        Assert.assertNull(transformedOp.getTransformedOperation());
+        Assert.assertNull(transformedOp.getFailureDescription());
+    }
+
+    private void checkRejectedOperation(ModelNode op, KernelServices mainServices, ModelVersion oldVersion) throws OperationFailedException {
+        TransformedOperation transformedOp = mainServices.transformOperation(oldVersion, op);
+        Assert.assertNull(transformedOp.getTransformedOperation());
+        Assert.assertNotNull(transformedOp.getFailureDescription());
+    }
 
     @Test
     public void testRejectExpressionsAS712() throws Exception {
@@ -620,10 +745,15 @@ public class JMXSubsystemTestCase extends AbstractSubsystemTest {
                     "   <expose-resolved-model domain-name=\"${test.domain-name:non-standard}\" proper-property-format=\"${test.proper-property-format:true}\"/>" +
                     "   <expose-expression-model domain-name=\"jboss.as\"/>" +
                     "   <remoting-connector use-management-endpoint=\"${test.exp:false}\"/>" +
+                    "   <audit-log enabled=\"false\" log-boot=\"true\" log-read-only=\"true\">" +
+                    "      <handlers>" +
+                    "          <handler name=\"test\"/>" +
+                    "      </handlers>" +
+                    "   </audit-log>" +
                     "</subsystem>";
 
         // create builder for current subsystem version
-        KernelServicesBuilder builder = createKernelServicesBuilder(AdditionalInitialization.MANAGEMENT);
+        KernelServicesBuilder builder = createKernelServicesBuilder(new ManagementAuditLogInitialization());
 
         // create builder for legacy subsystem version
         ModelVersion version_1_0_0 = ModelVersion.create(1, 0, 0);
@@ -655,7 +785,13 @@ public class JMXSubsystemTestCase extends AbstractSubsystemTest {
                                 FailedOperationTransformationConfig.REJECTED_RESOURCE)
                         .addFailedAttribute(
                                 subsystemAddress.append(RemotingConnectorResource.REMOTE_CONNECTOR_CONFIG_PATH),
-                                new FailedOperationTransformationConfig.RejectExpressionsConfig(RemotingConnectorResource.USE_MANAGEMENT_ENDPOINT)));
+                                new FailedOperationTransformationConfig.RejectExpressionsConfig(RemotingConnectorResource.USE_MANAGEMENT_ENDPOINT))
+                        .addFailedAttribute(
+                                subsystemAddress.append(JmxAuditLoggerResourceDefinition.PATH_ELEMENT),
+                                new FailedOperationTransformationConfig.ChainedConfig(
+                                        createChainedConfigList(
+                                            new FailedOperationTransformationConfig.RejectExpressionsConfig(JmxAuditLoggerResourceDefinition.ENABLED),
+                                            new ChangeEnabledFromTrueToFalseConfig(JmxAuditLoggerResourceDefinition.ENABLED)), JmxAuditLoggerResourceDefinition.ENABLED)));
     }
 
     private List<FailedOperationTransformationConfig.AttributesPathAddressConfig<?>> createChainedConfigList(FailedOperationTransformationConfig.AttributesPathAddressConfig<?>...cfgs){
@@ -732,6 +868,38 @@ public class JMXSubsystemTestCase extends AbstractSubsystemTest {
         }
     }
 
+    private static class AuditLogInitialization extends BaseAdditionalInitalization {
+
+        @Override
+        protected void initializeExtraSubystemsAndModel(ExtensionRegistry extensionRegistry, Resource rootResource,
+                                        ManagementResourceRegistration rootRegistration) {
+            super.initializeExtraSubystemsAndModel(extensionRegistry, rootResource, rootRegistration);
+
+            Resource auditLogResource = Resource.Factory.create();
+            rootResource.registerChild(AccessAuditResourceDefinition.PATH_ELEMENT, auditLogResource);
+
+            Resource testFileHandler = Resource.Factory.create();
+            testFileHandler.getModel().setEmptyObject();
+            auditLogResource.registerChild(PathElement.pathElement(FILE_HANDLER, "test"), testFileHandler);
+        }
+    }
+
+    private static class ManagementAuditLogInitialization extends AdditionalInitialization.ManagementAdditionalInitialization {
+
+        @Override
+        protected void initializeExtraSubystemsAndModel(ExtensionRegistry extensionRegistry, Resource rootResource,
+                                        ManagementResourceRegistration rootRegistration) {
+            super.initializeExtraSubystemsAndModel(extensionRegistry, rootResource, rootRegistration);
+
+            Resource auditLogResource = Resource.Factory.create();
+            rootResource.registerChild(AccessAuditResourceDefinition.PATH_ELEMENT, auditLogResource);
+
+            Resource testFileHandler = Resource.Factory.create();
+            testFileHandler.getModel().setEmptyObject();
+            auditLogResource.registerChild(PathElement.pathElement(FILE_HANDLER, "test"), testFileHandler);
+        }
+    }
+
     private static class CorrectDomainNameConfig extends FailedOperationTransformationConfig.AttributesPathAddressConfig<CorrectDomainNameConfig>{
 
         public CorrectDomainNameConfig(AttributeDefinition...attributes) {
@@ -776,5 +944,28 @@ public class JMXSubsystemTestCase extends AbstractSubsystemTest {
         protected ModelNode correctValue(ModelNode toResolve, boolean isWriteAttribute) {
             return new ModelNode(false);
         }
+    }
+
+    private static class ChangeEnabledFromTrueToFalseConfig extends FailedOperationTransformationConfig.AttributesPathAddressConfig<ChangeEnabledFromTrueToFalseConfig>{
+
+        ChangeEnabledFromTrueToFalseConfig(AttributeDefinition...attributes){
+            super(convert(attributes));
+        }
+
+        @Override
+        protected boolean isAttributeWritable(String attributeName) {
+            return true;
+        }
+
+        @Override
+        protected boolean checkValue(String attrName, ModelNode attribute, boolean isWriteAttribute) {
+            return attribute.asBoolean();
+        }
+
+        @Override
+        protected ModelNode correctValue(ModelNode toResolve, boolean isWriteAttribute) {
+            return new ModelNode(false);
+        }
+
     }
 }

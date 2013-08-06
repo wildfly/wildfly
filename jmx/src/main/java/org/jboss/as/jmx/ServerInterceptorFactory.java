@@ -31,11 +31,11 @@ import java.util.Collection;
 
 import javax.security.auth.Subject;
 
-import org.jboss.as.controller.security.AccessMechanism;
 import org.jboss.as.controller.security.AccessMechanismPrincipal;
-import org.jboss.as.controller.security.InetAddressPrincipal;
-import org.jboss.as.controller.security.SubjectUserInfo;
+import org.jboss.as.core.security.AccessMechanism;
+import org.jboss.as.core.security.SubjectUserInfo;
 import org.jboss.remoting3.Channel;
+import org.jboss.remoting3.security.InetAddressPrincipal;
 import org.jboss.remoting3.security.UserInfo;
 import org.jboss.remotingjmx.ServerMessageInterceptor;
 import org.jboss.remotingjmx.ServerMessageInterceptorFactory;

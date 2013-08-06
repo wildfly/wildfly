@@ -25,8 +25,8 @@ package org.jboss.as.host.controller.parsing;
 import static javax.xml.stream.XMLStreamConstants.END_ELEMENT;
 import static org.jboss.as.controller.ControllerMessages.MESSAGES;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ACCESS;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.AUTHORIZATION;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ADD;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.AUTHORIZATION;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.CORE_SERVICE;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.DIRECTORY_GROUPING;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.DOMAIN_CONTROLLER;
@@ -85,6 +85,7 @@ import org.jboss.as.controller.parsing.Namespace;
 import org.jboss.as.controller.parsing.ParseUtils;
 import org.jboss.as.controller.persistence.ModelMarshallingContext;
 import org.jboss.as.domain.management.access.AccessAuthorizationResourceDefinition;
+import org.jboss.as.domain.management.parsing.AuditLogXml;
 import org.jboss.as.domain.management.parsing.ManagementXml;
 import org.jboss.as.host.controller.HostControllerMessages;
 import org.jboss.as.host.controller.ignored.IgnoredDomainTypeResourceDefinition;
@@ -1405,6 +1406,8 @@ public class HostXml extends CommonXml {
 
     private class ManagementXmlDelegate extends ManagementXml.Delegate {
 
+        AuditLogXml auditLogDelegate = new AuditLogXml(true);
+
         @Override
         public void parseManagementInterfaces(final XMLExtendedStreamReader reader, final ModelNode address, final Namespace expectedNs,
                                               final List<ModelNode> list) throws XMLStreamException {
@@ -1475,6 +1478,12 @@ public class HostXml extends CommonXml {
             }
         }
 
+        @Override
+        protected void parseAuditLog(XMLExtendedStreamReader reader, ModelNode address, Namespace expectedNs, List<ModelNode> list)
+                throws XMLStreamException {
+            auditLogDelegate.parseAuditLog(reader, address, expectedNs, list);
+        }
+
         private void parseHostScopedRoles(XMLExtendedStreamReader reader, ModelNode address, Namespace expectedNs, List<ModelNode> list) throws XMLStreamException {
             ParseUtils.requireNoAttributes(reader);
 
@@ -1515,7 +1524,7 @@ public class HostXml extends CommonXml {
         }
 
         @Override
-        public void writeNativeManagementProtocol(final XMLExtendedStreamWriter writer, final ModelNode protocol)
+        protected void writeNativeManagementProtocol(final XMLExtendedStreamWriter writer, final ModelNode protocol)
                 throws XMLStreamException {
 
             writer.writeStartElement(Element.NATIVE_INTERFACE.getLocalName());
@@ -1529,7 +1538,7 @@ public class HostXml extends CommonXml {
         }
 
         @Override
-        public void writeHttpManagementProtocol(final XMLExtendedStreamWriter writer, final ModelNode protocol)
+        protected void writeHttpManagementProtocol(final XMLExtendedStreamWriter writer, final ModelNode protocol)
                 throws XMLStreamException {
 
             writer.writeStartElement(Element.HTTP_INTERFACE.getLocalName());
@@ -1544,6 +1553,9 @@ public class HostXml extends CommonXml {
             writer.writeEndElement();
         }
 
+        @Override
+        protected void writeAuditLog(XMLExtendedStreamWriter writer, ModelNode auditLog) throws XMLStreamException {
+            auditLogDelegate.writeAuditLog(writer, auditLog);
+        }
     }
-
 }

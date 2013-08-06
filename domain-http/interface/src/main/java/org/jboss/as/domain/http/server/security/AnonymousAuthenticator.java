@@ -27,7 +27,7 @@ import java.util.Set;
 
 import javax.security.auth.Subject;
 
-import org.jboss.as.domain.management.security.RealmUser;
+import org.jboss.as.core.security.RealmUser;
 import org.jboss.com.sun.net.httpserver.Authenticator;
 import org.jboss.com.sun.net.httpserver.HttpExchange;
 import org.jboss.com.sun.net.httpserver.HttpExchange.AttributeScope;

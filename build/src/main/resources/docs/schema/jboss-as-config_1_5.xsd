@@ -175,6 +175,16 @@
         <xs:complexContent>
             <xs:extension base="base-managementType">
                 <xs:sequence>
+                    <xs:element name="audit-log" minOccurs="0">
+                        <xs:complexType>
+                            <xs:sequence minOccurs="0">
+                                <xs:element name="formatters" type="audit-log-formattersType"/>
+                                <xs:element name="handlers" type="audit-log-handlersType"/>
+                                <xs:element name="logger" type="audit-log-loggerType"/>
+                                <xs:element name="server-logger" type="audit-log-loggerType" minOccurs="0"/>
+                            </xs:sequence>
+                        </xs:complexType>
+                    </xs:element>
                     <xs:element name="management-interfaces" type="host-management-interfacesType" minOccurs="1"/>
                     <xs:element name="access-control" type="host-access-controlType" minOccurs="0"/>
                 </xs:sequence>
@@ -191,6 +201,15 @@
         <xs:complexContent>
             <xs:extension base="base-managementType">
                 <xs:sequence>
+                    <xs:element name="audit-log" minOccurs="0">
+                        <xs:complexType>
+                            <xs:sequence minOccurs="0">
+                                <xs:element name="formatters" type="audit-log-formattersType"/>
+                                <xs:element name="handlers" type="audit-log-handlersType"/>
+                                <xs:element name="logger" type="audit-log-loggerType"/>
+                            </xs:sequence>
+                        </xs:complexType>
+                    </xs:element>
                     <xs:element name="management-interfaces" type="server-management-interfacesType" minOccurs="0"/>
                     <xs:element name="access-control" type="server-access-controlType" minOccurs="0"/>
                 </xs:sequence>
@@ -708,6 +727,369 @@
             </xs:attribute>
             </xs:extension>
         </xs:complexContent>
+    </xs:complexType>
+
+    <xs:complexType name="audit-log-formattersType">
+        <xs:annotation>
+            <xs:documentation>
+                Declaration of management operation audit logging formatters.
+            </xs:documentation>
+        </xs:annotation>
+        <xs:choice minOccurs="1" maxOccurs="unbounded">
+            <xs:element name="json-formatter" type="json-audit-log-formatterType"/>
+        </xs:choice>
+    </xs:complexType>
+
+    <xs:complexType name="base-audit-log-formatterType">
+        <xs:annotation>
+            <xs:documentation>
+                Shared configuration for audit log formatters..
+            </xs:documentation>
+        </xs:annotation>
+        <xs:attribute name="name" type="xs:string" use="required">
+            <xs:annotation>
+                <xs:documentation>
+                    The name of the formatter. Must be unique across all types of formatter
+                    (there is only the JSON formatter at present but more are planned for the
+                    future)
+                </xs:documentation>
+            </xs:annotation>
+        </xs:attribute>
+        <xs:attribute name="include-date" type="xs:boolean" default="true">
+            <xs:annotation>
+                <xs:documentation>
+                    Whether or not to include the date in the formatted log record
+                </xs:documentation>
+            </xs:annotation>
+        </xs:attribute>
+        <xs:attribute name="date-format" type="xs:string" default="yyyy-MM-dd HH:mm:ss">
+            <xs:annotation>
+                <xs:documentation>
+                    The date format to use as understood by {@link java.text.SimpleDateFormat}.
+                    Will be ignored if include-date="false".
+                </xs:documentation>
+            </xs:annotation>
+        </xs:attribute>
+        <xs:attribute name="date-separator" type="xs:string" default=" - ">
+            <xs:annotation>
+                <xs:documentation>
+                    The separator between the date and the rest of the formatted log message.
+                    Will be ignored if include-date="false".
+                </xs:documentation>
+            </xs:annotation>
+        </xs:attribute>
+    </xs:complexType>
+
+    <xs:complexType name="json-audit-log-formatterType">
+        <xs:annotation>
+            <xs:documentation>
+                Configuration of a JSON formatter for the audit log.
+            </xs:documentation>
+        </xs:annotation>
+        <xs:complexContent>
+            <xs:extension base="base-audit-log-formatterType">
+                <xs:attribute name="compact" type="xs:boolean" default="false">
+                    <xs:annotation>
+                        <xs:documentation>
+                            If true will format the JSON on one line. There may still be
+                            values containing new lines, so if having the whole record on
+                            one line is important, set escape-new-line or escape-control-characters to true.
+                        </xs:documentation>
+                    </xs:annotation>
+                </xs:attribute>
+                <xs:attribute name="escape-new-line" type="xs:boolean" default="false">
+                    <xs:annotation>
+                        <xs:documentation>
+                            If true will escape all new lines with the ascii code in octal,
+                            e.g. #012.
+                        </xs:documentation>
+                    </xs:annotation>
+                </xs:attribute>
+                <xs:attribute name="escape-control-characters" type="xs:boolean" default="false">
+                    <xs:annotation>
+                        <xs:documentation>
+                            If true will escape all control characters (ascii entries with a decimal
+                            value less than 32) with the ascii code in octal, e.g.'\n\ becomes '#012'.
+                            If this is true, it will override escape-new-line="false"
+                        </xs:documentation>
+                    </xs:annotation>
+                </xs:attribute>
+            </xs:extension>
+        </xs:complexContent>
+    </xs:complexType>
+
+    <xs:complexType name="audit-log-handlersType">
+        <xs:annotation>
+            <xs:documentation>
+                Declaration of management operation audit logging handlers.
+            </xs:documentation>
+        </xs:annotation>
+        <xs:choice minOccurs="1" maxOccurs="unbounded">
+            <xs:element name="file-handler" type="file-audit-log-handlerType"/>
+            <xs:element name="syslog-handler" type="syslog-audit-log-handlerType"/>
+        </xs:choice>
+    </xs:complexType>
+
+    <xs:complexType name="base-audit-log-handlerType">
+        <xs:annotation>
+            <xs:documentation>
+                Common configuration of a handler for the audit log.
+            </xs:documentation>
+        </xs:annotation>
+        <xs:attribute name="name" type="xs:string" use="required">
+            <xs:annotation>
+                <xs:documentation>
+                    The name of the handler. The name must be unique across all types of handler.
+                </xs:documentation>
+            </xs:annotation>
+        </xs:attribute>
+        <xs:attribute name="formatter" type="xs:string" use="required">
+            <xs:annotation>
+                <xs:documentation>
+                    The name of the formatter to use for the handler.
+                </xs:documentation>
+            </xs:annotation>
+        </xs:attribute>
+        <xs:attribute name="max-failure-count" type="xs:string" default="10">
+            <xs:annotation>
+                <xs:documentation>
+                    The number of logging failures before this handler is disabled.
+                </xs:documentation>
+            </xs:annotation>
+        </xs:attribute>
+    </xs:complexType>
+
+    <xs:complexType name="file-audit-log-handlerType">
+        <xs:annotation>
+            <xs:documentation>
+                Configuration of a simple file handler for the audit log. This writes to a local file.
+            </xs:documentation>
+        </xs:annotation>
+        <xs:complexContent>
+            <xs:extension base="base-audit-log-handlerType">
+                <xs:attribute name="path" type="xs:string" use="required">
+                    <xs:annotation>
+                        <xs:documentation>
+                            The path of the audit log.
+                        </xs:documentation>
+                    </xs:annotation>
+                </xs:attribute>
+                <xs:attribute name="relative-to" use="optional" type="xs:string">
+                    <xs:annotation>
+                        <xs:documentation>
+                            The name of another previously named path, or of one of the
+                            standard paths provided by the system. If 'relative-to' is
+                            provided, the value of the 'path' attribute is treated as
+                            relative to the path specified by this attribute.
+                        </xs:documentation>
+                    </xs:annotation>
+                </xs:attribute>
+            </xs:extension>
+        </xs:complexContent>
+    </xs:complexType>
+
+    <xs:complexType name="syslog-audit-log-handlerType">
+        <xs:annotation>
+            <xs:documentation>
+                Configuration of a syslog file handler for the audit log on a server. This writes to syslog server.
+            </xs:documentation>
+        </xs:annotation>
+        <xs:complexContent>
+            <xs:extension base="base-audit-log-handlerType">
+                <xs:choice minOccurs="1">
+                    <xs:annotation>
+                        <xs:documentation>
+                            The configuration of the protocol to use communication with the syslog server. See your
+                            syslog provider's documentation for configuration options.
+                        </xs:documentation>
+                    </xs:annotation>
+                    <xs:element name="udp" type="udp-audit-log-protocolType">
+                    </xs:element>
+                    <xs:element name="tcp" type="tcp-audit-log-protocolType">
+                    </xs:element>
+                    <xs:element name="tls" type="tls-audit-log-protocolType">
+                    </xs:element>
+                </xs:choice>
+                <xs:attribute name="syslog-format" default="RFC5424">
+                    <xs:annotation>
+                        <xs:documentation>
+                            The format to use for the syslog messages. See your syslog provider's documentation for what is supported.
+                        </xs:documentation>
+                    </xs:annotation>
+                    <xs:simpleType>
+                        <xs:restriction base="xs:token">
+                            <xs:enumeration value="RFC5424">
+                                <xs:annotation>
+                                    <xs:documentation>Format the syslog data according to the RFC-5424 standard</xs:documentation>
+                                </xs:annotation>
+                            </xs:enumeration>
+                            <xs:enumeration value="RFC3164">
+                                <xs:annotation>
+                                    <xs:documentation>Format the syslog data according to the RFC-3164 standard</xs:documentation>
+                                </xs:annotation>
+                            </xs:enumeration>
+                        </xs:restriction>
+                    </xs:simpleType>
+                </xs:attribute>
+                <xs:attribute name="max-length" type="xs:int">
+                    <xs:annotation>
+                        <xs:documentation>
+                            The maximum length in bytes a log message, including the header, is allowed to be. If undefined, it will default to 1024 bytes if the syslog-format is RFC3164, or 2048 bytes if the syslog-format is RFC5424.
+                        </xs:documentation>
+                    </xs:annotation>
+                </xs:attribute>
+                <xs:attribute name="truncate" type="xs:boolean" default="true">
+                    <xs:annotation>
+                        <xs:documentation>
+                            Whether or not a message, including the header, should truncate the message if the length in bytes is greater than the maximum length. If set to false messages will be split and sent with the same header values.
+                        </xs:documentation>
+                    </xs:annotation>
+                </xs:attribute>
+            </xs:extension>
+        </xs:complexContent>
+    </xs:complexType>
+
+    <xs:complexType name="base-audit-log-protocolType">
+        <xs:attribute name="host" default="localhost">
+            <xs:annotation>
+                <xs:documentation>
+                    The host of the syslog server.
+                </xs:documentation>
+            </xs:annotation>
+        </xs:attribute>
+        <xs:attribute name="port" default="514">
+            <xs:annotation>
+                <xs:documentation>
+                    The port of the syslog server.
+                </xs:documentation>
+            </xs:annotation>
+        </xs:attribute>
+    </xs:complexType>
+
+    <xs:complexType name="udp-audit-log-protocolType">
+        <xs:annotation>
+            <xs:documentation>Configure udp as the protocol for communicating with the syslog server</xs:documentation>
+        </xs:annotation>
+        <xs:complexContent>
+            <xs:extension base="base-audit-log-protocolType"/>
+        </xs:complexContent>
+    </xs:complexType>
+
+    <xs:complexType name="tcp-audit-log-protocolType">
+        <xs:annotation>
+            <xs:documentation>Configure tcp as the protocol for communicating with the syslog server</xs:documentation>
+        </xs:annotation>
+        <xs:complexContent>
+            <xs:extension base="base-audit-log-protocolType">
+                <xs:attribute name="message-transfer" default="NON_TRANSPARENT_FRAMING">
+                    <xs:annotation>
+                        <xs:documentation>
+                            The message transfer setting as described in section 3.4 of RFC-6587. See your syslog provider's
+                            documentation for what is supported
+                        </xs:documentation>
+                    </xs:annotation>
+                    <xs:simpleType>
+                        <xs:restriction base="xs:token">
+                            <xs:enumeration value="OCTET_COUNTING">
+                                <xs:annotation>
+                                    <xs:documentation>
+                                        Use the octet counting format for message transfer as described in section 3.4.1 of RFC-6587.
+                                    </xs:documentation>
+                                </xs:annotation>
+                            </xs:enumeration>
+                            <xs:enumeration value="NON_TRANSPARENT_FRAMING">
+                                <xs:annotation>
+                                    <xs:documentation>
+                                        Use the non-transparent-framing format for message transfer as described in section 3.4.1 of RFC-6587.
+                                    </xs:documentation>
+                                </xs:annotation>
+                            </xs:enumeration>
+                        </xs:restriction>
+                    </xs:simpleType>
+                </xs:attribute>
+            </xs:extension>
+        </xs:complexContent>
+    </xs:complexType>
+
+    <xs:complexType name="tls-audit-log-protocolType">
+        <xs:annotation>
+            <xs:documentation>Configure tls as the protocol for communicating with the syslog server</xs:documentation>
+        </xs:annotation>
+        <xs:complexContent>
+            <xs:extension base="tcp-audit-log-protocolType">
+                <xs:sequence>
+                    <xs:element name="truststore" type="keyStoreType" minOccurs="0">
+                        <xs:annotation>
+                            <xs:documentation>
+                                Configuration of a keystore to use to create a trust manager to verify the server
+                                certificate for encrypted comminications. If the server certificate is signed off by a
+                                signing authority, tls can be used without a truststore.
+                            </xs:documentation>
+                        </xs:annotation>
+                    </xs:element>
+                    <xs:element name="client-certificate-store" type="extendedKeyStoreType" minOccurs="0">
+                        <xs:annotation>
+                            <xs:documentation>
+                                Configuration of a keystore containing a client certificate and a private key, e.g. in
+                                PKCS12 format. This turns on authenticating the clients against the syslog server.
+                            </xs:documentation>
+                        </xs:annotation>
+                    </xs:element>
+                </xs:sequence>
+            </xs:extension>
+        </xs:complexContent>
+    </xs:complexType>
+
+    <xs:complexType name="audit-log-loggerType">
+        <xs:annotation>
+            <xs:documentation>
+                Declaration of management operation audit logging configuration coming from the model controller core.
+            </xs:documentation>
+        </xs:annotation>
+        <xs:choice minOccurs="0" maxOccurs="unbounded">
+            <xs:element name="handlers" type="audit-log-handlers-refType"/>
+        </xs:choice>
+        <xs:attribute name="log-boot" type="xs:boolean" default="false">
+            <xs:annotation>
+                <xs:documentation>
+                    Whether operations should be logged on boot.
+                </xs:documentation>
+            </xs:annotation>
+        </xs:attribute>
+        <xs:attribute name="log-read-only" type="xs:boolean" default="false">
+            <xs:annotation>
+                <xs:documentation>
+                    Whether operations that do not modify the configuration or any runtime services should be logged.
+                </xs:documentation>
+            </xs:annotation>
+        </xs:attribute>
+        <xs:attribute name="enabled" type="xs:boolean" default="true">
+            <xs:annotation>
+                <xs:documentation>
+                    Whether audit logging is enabled.
+                </xs:documentation>
+            </xs:annotation>
+        </xs:attribute>
+    </xs:complexType>
+
+    <xs:complexType name="audit-log-handlers-refType">
+        <xs:annotation>
+            <xs:documentation>
+                References to audit-log-handlers defined in the audit-log-handlers section
+            </xs:documentation>
+        </xs:annotation>
+        <xs:choice minOccurs="0">
+            <xs:element name="handler" type="audit-log-handler-refType" minOccurs="0"/>
+        </xs:choice>
+    </xs:complexType>
+
+    <xs:complexType name="audit-log-handler-refType">
+        <xs:annotation>
+            <xs:documentation>
+                A reference to an audit-log-handler defined in the audit-log-appenders section
+            </xs:documentation>
+        </xs:annotation>
+        <xs:attribute name="name" type="xs:string" use="required"/>
     </xs:complexType>
 
     <xs:complexType name="host-management-interfacesType">

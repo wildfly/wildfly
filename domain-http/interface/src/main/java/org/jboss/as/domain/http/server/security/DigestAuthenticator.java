@@ -48,7 +48,7 @@ import javax.security.auth.callback.NameCallback;
 import javax.security.auth.callback.PasswordCallback;
 import javax.security.sasl.RealmCallback;
 
-import org.jboss.as.controller.security.SubjectUserInfo;
+import org.jboss.as.core.security.SubjectUserInfo;
 import org.jboss.as.domain.management.AuthenticationMechanism;
 import org.jboss.as.domain.management.AuthorizingCallbackHandler;
 import org.jboss.as.domain.management.SecurityRealm;

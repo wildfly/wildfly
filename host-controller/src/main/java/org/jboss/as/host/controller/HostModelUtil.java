@@ -25,6 +25,7 @@ import org.jboss.as.controller.ControlledProcessState;
 import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.ProcessType;
 import org.jboss.as.controller.access.DelegatingConfigurableAuthorizer;
+import org.jboss.as.controller.audit.ManagedAuditLogger;
 import org.jboss.as.controller.descriptions.StandardResourceDescriptionResolver;
 import org.jboss.as.controller.extension.ExtensionRegistry;
 import org.jboss.as.controller.operations.common.ValidateOperationHandler;
@@ -102,7 +103,8 @@ public class HostModelUtil {
                                           final IgnoredDomainResourceRegistry ignoredRegistry,
                                           final ControlledProcessState processState,
                                           final PathManagerService pathManager,
-                                          DelegatingConfigurableAuthorizer authorizer) {
+                                          DelegatingConfigurableAuthorizer authorizer,
+                                          final ManagedAuditLogger auditLogger) {
         // Add of the host itself
         //ManagementResourceRegistration hostRegistration = root.registerSubModel(PathElement.pathElement(HOST, hostName), HostDescriptionProviders.HOST_ROOT_PROVIDER);
         ManagementResourceRegistration hostRegistration = root.registerSubModel(
@@ -110,7 +112,7 @@ public class HostModelUtil {
                         environment, runningModeControl, localFileRepository,
                         hostControllerInfo, serverInventory, remoteFileRepository,
                         contentRepository, domainController, extensionRegistry,
-                        vaultReader, ignoredRegistry, processState, pathManager, authorizer));
+                        vaultReader, ignoredRegistry, processState, pathManager, authorizer, auditLogger));
 
         //TODO See if some of all these parameters can come from domain controller
         LocalDomainControllerAddHandler localDcAddHandler = LocalDomainControllerAddHandler.getInstance(root, hostControllerInfo,

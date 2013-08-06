@@ -23,6 +23,7 @@
 package org.jboss.as.host.controller;
 
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ADD;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.AUDIT_LOG;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.AUTHENTICATION;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.AUTHORIZATION;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.CONTENT;
@@ -32,12 +33,15 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.DEP
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.DEPLOYMENT_OVERLAY;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ENABLED;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.EXTENSION;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.FILE_HANDLER;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.GROUP;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.HASH;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.INCLUDES;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.INTERFACE;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.JSON_FORMATTER;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.LDAP_CONNECTION;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.LOCAL_DESTINATION_OUTBOUND_SOCKET_BINDING;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.LOGGER;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.MANAGEMENT;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.NAMESPACES;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP;
@@ -54,9 +58,11 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SEC
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SERVER_CONFIG;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SERVER_GROUP;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SERVER_IDENTITY;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SERVER_LOGGER;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SOCKET_BINDING;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SOCKET_BINDING_GROUP;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SOCKET_BINDING_PORT_OFFSET;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SYSLOG_HANDLER;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SYSTEM_PROPERTY;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.VALUE;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.VAULT;
@@ -86,6 +92,10 @@ import org.jboss.as.controller.parsing.Attribute;
 import org.jboss.as.controller.resource.InterfaceDefinition;
 import org.jboss.as.controller.services.path.PathAddHandler;
 import org.jboss.as.domain.controller.DomainController;
+import org.jboss.as.domain.management.audit.AuditLogLoggerResourceDefinition;
+import org.jboss.as.domain.management.audit.FileAuditLogHandlerResourceDefinition;
+import org.jboss.as.domain.management.audit.JsonAuditLogFormatterResourceDefinition;
+import org.jboss.as.domain.management.audit.SyslogAuditLogHandlerResourceDefinition;
 import org.jboss.as.repository.HostFileRepository;
 import org.jboss.as.server.controller.resources.SystemPropertyResourceDefinition;
 import org.jboss.as.server.operations.SystemPropertyAddHandler;
@@ -196,6 +206,7 @@ public final class ManagedServerOperationsFactory {
         addSystemProperties(updates);
         addVault(updates);
         addManagementSecurityRealms(updates);
+        addAuditLog(updates);
         addManagementConnections(updates);
         addInterfaces(updates);
         addSocketBindings(updates, portOffSet, socketBindingRef);
@@ -331,10 +342,9 @@ public final class ManagedServerOperationsFactory {
             if (codeNode.isDefined()) {
                 vault.get(Attribute.CODE.getLocalName()).set(codeNode.asString());
             }
-            vault.get(OP).set(ADD);
             ModelNode vaultAddress = new ModelNode();
             vaultAddress.add(CORE_SERVICE, VAULT);
-            vault.get(OP_ADDR).set(vaultAddress);
+            addAddNameAndAddress(vault, vaultAddress);
 
             ModelNode optionsNode = vaultNode.get(VAULT_OPTIONS);
             if (optionsNode.isDefined()) {
@@ -352,8 +362,7 @@ public final class ManagedServerOperationsFactory {
                 ModelNode addOp = new ModelNode();
                 ModelNode realmAddress = new ModelNode();
                 realmAddress.add(CORE_SERVICE, MANAGEMENT).add(SECURITY_REALM, current);
-                addOp.get(OP).set(ADD);
-                addOp.get(OP_ADDR).set(realmAddress);
+                addAddNameAndAddress(addOp, realmAddress);
                 updates.add(addOp);
 
                 ModelNode currentRealm = securityRealms.get(current);
@@ -378,10 +387,40 @@ public final class ManagedServerOperationsFactory {
 
             // Now convert it to an operation by adding a name and address.
             ModelNode identityAddress = parentAddress.clone().add(key, currentComponent);
-            addComponent.get(OP).set(ADD);
-            addComponent.get(OP_ADDR).set(identityAddress);
+            addAddNameAndAddress(addComponent, identityAddress);
 
             updates.add(addComponent);
+        }
+    }
+
+    private void addAuditLog(ModelNodeList updates) {
+        final ModelNode auditLogModel = hostModel.get(CORE_SERVICE, AUDIT_LOG);
+        if (auditLogModel.isDefined()){
+            final PathAddress auditLogAddr = PathAddress.pathAddress(CORE_SERVICE, AUDIT_LOG);
+            updates.add(Util.createAddOperation(auditLogAddr));
+            if (auditLogModel.get(JSON_FORMATTER).isDefined()) {
+                for (Property formatterProp : auditLogModel.get(JSON_FORMATTER).asPropertyList()) {
+                    final PathAddress formatterAddress = auditLogAddr.append(PathElement.pathElement(JSON_FORMATTER, formatterProp.getName()));
+                    updates.add(JsonAuditLogFormatterResourceDefinition.createServerAddOperation(formatterAddress, formatterProp.getValue()));
+                }
+            }
+            if (auditLogModel.get(FILE_HANDLER).isDefined()){
+                for (Property fileProp : auditLogModel.get(FILE_HANDLER).asPropertyList()){
+                    final PathAddress fileHandlerAddress = auditLogAddr.append(PathElement.pathElement(FILE_HANDLER, fileProp.getName()));
+                    updates.add(FileAuditLogHandlerResourceDefinition.createServerAddOperation(fileHandlerAddress, fileProp.getValue()));
+                }
+            }
+            if (auditLogModel.get(SYSLOG_HANDLER).isDefined()){
+                for (Property syslogProp : auditLogModel.get(SYSLOG_HANDLER).asPropertyList()){
+                    final PathAddress syslogHandlerAddress = auditLogAddr.append(SYSLOG_HANDLER, syslogProp.getName());
+                    SyslogAuditLogHandlerResourceDefinition.createServerAddOperations(updates, syslogHandlerAddress, syslogProp.getValue());
+                }
+            }
+            if (auditLogModel.get(SERVER_LOGGER, AUDIT_LOG).isDefined()){
+                //server-logger=audit-log becomes logger=audit-log on the server
+                final PathAddress loggerAddress = auditLogAddr.append(LOGGER, AUDIT_LOG);
+                AuditLogLoggerResourceDefinition.createServerAddOperations(updates, loggerAddress, auditLogModel.get(SERVER_LOGGER, AUDIT_LOG));
+            }
         }
     }
 
@@ -398,8 +437,7 @@ public final class ManagedServerOperationsFactory {
 
                 // Now convert it to an operation by adding a name and address.
                 ModelNode identityAddress = baseAddress.clone().add(LDAP_CONNECTION, connectionName);
-                addConnection.get(OP).set(ADD);
-                addConnection.get(OP_ADDR).set(identityAddress);
+                addAddNameAndAddress(addConnection, identityAddress);
 
                 updates.add(addConnection);
             }
@@ -639,6 +677,16 @@ public final class ManagedServerOperationsFactory {
 
             }
         }
+    }
+
+    private ModelNode addAddNameAndAddress(ModelNode op, PathAddress address){
+        return addAddNameAndAddress(op, address.toModelNode());
+    }
+
+    private ModelNode addAddNameAndAddress(ModelNode op, ModelNode address){
+        op.get(OP).set(ADD);
+        op.get(OP_ADDR).set(address);
+        return op;
     }
 
     private class ModelNodeList extends AbstractList<ModelNode> implements List<ModelNode> {

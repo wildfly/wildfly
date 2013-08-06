@@ -34,6 +34,7 @@ import javax.security.auth.Subject;
  * add anything else relevant to the identity of the user.
  *
  * @author <a href="mailto:darran.lofthouse@jboss.com">Darran Lofthouse</a>
+ * @author kabir
  */
 interface SubjectSupplemental {
 

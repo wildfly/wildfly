@@ -59,6 +59,8 @@ import org.jboss.msc.service.ServiceContainer;
 import org.jboss.msc.service.ServiceName;
 import org.jboss.msc.service.ServiceTarget;
 import org.jboss.staxmapper.XMLElementWriter;
+import org.jboss.msc.service.StartContext;
+import org.jboss.msc.service.StartException;
 import org.junit.After;
 import org.junit.Assert;
 import org.junit.Before;
@@ -114,7 +116,7 @@ public abstract class AbstractControllerTestBase {
             executeForResult(operation);
             Assert.fail("Should have given error");
         } catch (OperationFailedException expected) {
-            // good
+            // ignore
         }
     }
 
@@ -199,9 +201,6 @@ public abstract class AbstractControllerTestBase {
             super(rootDeparser);
         }
 
-        /**
-         * {@inheritDoc}
-         */
         @Override
         public PersistenceResource store(final ModelNode model, Set<PathAddress> affectedAddresses) {
             return NullPersistenceResource.INSTANCE;

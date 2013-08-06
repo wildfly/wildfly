@@ -31,9 +31,9 @@ import java.security.PrivilegedExceptionAction;
 
 import javax.security.auth.Subject;
 
-import org.jboss.as.controller.security.AccessMechanism;
 import org.jboss.as.controller.security.AccessMechanismPrincipal;
 import org.jboss.as.controller.security.InetAddressPrincipal;
+import org.jboss.as.core.security.AccessMechanism;
 import org.jboss.com.sun.net.httpserver.HttpExchange;
 import org.jboss.com.sun.net.httpserver.HttpExchange.AttributeScope;
 import org.jboss.com.sun.net.httpserver.HttpHandler;
@@ -73,10 +73,11 @@ public class SubjectAssociationHandler implements HttpHandler {
                     }
                     copySubject.getPrincipals().add(new AccessMechanismPrincipal(AccessMechanism.HTTP));
                     copySubject.setReadOnly();
-                    return copySubject;                            }
+                    return copySubject;
+                }
             };
 
-                useSubject = System.getSecurityManager() != null ? AccessController.doPrivileged(copyAction) : copyAction.run();
+            useSubject = System.getSecurityManager() != null ? AccessController.doPrivileged(copyAction) : copyAction.run();
         }
         handleRequest(exchange, useSubject);
     }

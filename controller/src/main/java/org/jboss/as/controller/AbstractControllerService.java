@@ -29,6 +29,8 @@ import java.util.List;
 import java.util.concurrent.ExecutorService;
 
 import org.jboss.as.controller.access.DelegatingConfigurableAuthorizer;
+import org.jboss.as.controller.audit.AuditLogger;
+import org.jboss.as.controller.audit.ManagedAuditLogger;
 import org.jboss.as.controller.client.OperationAttachments;
 import org.jboss.as.controller.client.OperationMessageHandler;
 import org.jboss.as.controller.descriptions.DescriptionProvider;
@@ -107,6 +109,7 @@ public abstract class AbstractControllerService implements Service<ModelControll
     private final ExpressionResolver expressionResolver;
     private volatile ModelControllerImpl controller;
     private ConfigurationPersister configurationPersister;
+    private final ManagedAuditLogger auditLogger;
 
     /**
      * Construct a new instance.
@@ -118,22 +121,17 @@ public abstract class AbstractControllerService implements Service<ModelControll
      * @param rootDescriptionProvider the root description provider
      * @param prepareStep             the prepare step to prepend to operation execution
      * @param expressionResolver      the expression resolver
+     * @param auditLogger             the audit logger
      */
     @Deprecated
     protected AbstractControllerService(final ProcessType processType, final RunningModeControl runningModeControl,
                                         final ConfigurationPersister configurationPersister,
                                         final ControlledProcessState processState, final DescriptionProvider rootDescriptionProvider,
-                                        final OperationStepHandler prepareStep, final ExpressionResolver expressionResolver) {
-        assert rootDescriptionProvider != null : "Null root description provider";
-        assert expressionResolver != null : "Null expressionResolver";
-        this.processType = processType;
-        this.runningModeControl = runningModeControl;
-        this.configurationPersister = configurationPersister;
-        this.rootDescriptionProvider = rootDescriptionProvider;
-        this.rootResourceDefinition = null;
-        this.processState = processState;
-        this.prepareStep = prepareStep;
-        this.expressionResolver = expressionResolver;
+                                        final OperationStepHandler prepareStep, final ExpressionResolver expressionResolver,
+                                        final ManagedAuditLogger auditLogger) {
+        this(processType, runningModeControl, configurationPersister, processState, null, rootDescriptionProvider,
+                prepareStep, expressionResolver, auditLogger);
+
     }
 
     /**
@@ -146,22 +144,78 @@ public abstract class AbstractControllerService implements Service<ModelControll
      * @param rootResourceDefinition  the root resource definition
      * @param prepareStep             the prepare step to prepend to operation execution
      * @param expressionResolver      the expression resolver
+     * @param auditLogger             the audit logger
+     */
+    protected AbstractControllerService(final ProcessType processType, final RunningModeControl runningModeControl,
+                                        final ConfigurationPersister configurationPersister,
+                                        final ControlledProcessState processState, final ResourceDefinition rootResourceDefinition,
+                                        final OperationStepHandler prepareStep, final ExpressionResolver expressionResolver,
+                                        final ManagedAuditLogger auditLogger) {
+        this(processType, runningModeControl, configurationPersister, processState, rootResourceDefinition, null,
+                prepareStep, expressionResolver, auditLogger);
+    }
+
+    /**
+     * Construct a new instance.
+     * Simplified constructor for test case subclasses.
+     *
+     * @param processType             the type of process being controlled
+     * @param runningModeControl      the controller of the process' running mode
+     * @param configurationPersister  the configuration persister
+     * @param processState            the controlled process state
+     * @param rootDescriptionProvider the root description provider
+     * @param prepareStep             the prepare step to prepend to operation execution
+     * @param expressionResolver      the expression resolver
+     *
+     * @deprecated Here for backwards compatibility for ModelTestModelControllerService
+     */
+    @Deprecated
+    protected AbstractControllerService(final ProcessType processType, final RunningModeControl runningModeControl,
+                                        final ConfigurationPersister configurationPersister,
+                                        final ControlledProcessState processState, final DescriptionProvider rootDescriptionProvider,
+                                        final OperationStepHandler prepareStep, final ExpressionResolver expressionResolver) {
+        this(processType, runningModeControl, configurationPersister, processState, null, rootDescriptionProvider,
+                prepareStep, expressionResolver, AuditLogger.NO_OP_LOGGER);
+
+    }
+
+    /**
+     * Construct a new instance.
+     *
+     * @param processType             the type of process being controlled
+     * @param runningModeControl      the controller of the process' running mode
+     * @param configurationPersister  the configuration persister
+     * @param processState            the controlled process state
+     * @param rootResourceDefinition  the root resource definition
+     * @param prepareStep             the prepare step to prepend to operation execution
+     * @param expressionResolver      the expression resolver
+     *
+     * @deprecated Here for backwards compatibility for ModelTestModelControllerService
      */
     protected AbstractControllerService(final ProcessType processType, final RunningModeControl runningModeControl,
                                         final ConfigurationPersister configurationPersister,
                                         final ControlledProcessState processState, final ResourceDefinition rootResourceDefinition,
                                         final OperationStepHandler prepareStep, final ExpressionResolver expressionResolver) {
-        assert rootResourceDefinition != null : "Null root resource definition";
+        this(processType, runningModeControl, configurationPersister, processState, rootResourceDefinition, null,
+                prepareStep, expressionResolver, AuditLogger.NO_OP_LOGGER);
+    }
+
+    private AbstractControllerService(final ProcessType processType, final RunningModeControl runningModeControl,
+                                      final ConfigurationPersister configurationPersister, final ControlledProcessState processState,
+                                      final ResourceDefinition rootResourceDefinition, final DescriptionProvider rootDescriptionProvider,
+                                      final OperationStepHandler prepareStep, final ExpressionResolver expressionResolver, final ManagedAuditLogger auditLogger) {
+        assert rootDescriptionProvider != null || rootResourceDefinition != null: rootDescriptionProvider == null ? "Null root description provider" : "Null root resource definition";
         assert expressionResolver != null : "Null expressionResolver";
+        assert auditLogger != null : "Null auditLogger";
         this.processType = processType;
         this.runningModeControl = runningModeControl;
         this.configurationPersister = configurationPersister;
-        this.rootDescriptionProvider = null;
+        this.rootDescriptionProvider = rootDescriptionProvider;
         this.rootResourceDefinition = rootResourceDefinition;
         this.processState = processState;
         this.prepareStep = prepareStep;
         this.expressionResolver = expressionResolver;
-
+        this.auditLogger = auditLogger;
     }
 
     public void start(final StartContext context) throws StartException {
@@ -178,7 +232,7 @@ public abstract class AbstractControllerService implements Service<ModelControll
                 rootResourceRegistration,
                 new ContainerStateMonitor(container, serviceController),
                 configurationPersister, processType, runningModeControl, prepareStep,
-                processState, executorService, expressionResolver, authorizer);
+                processState, executorService, expressionResolver, authorizer, auditLogger);
         initModel(controller.getRootResource(), controller.getRootRegistration());
         this.controller = controller;
 
@@ -279,5 +333,8 @@ public abstract class AbstractControllerService implements Service<ModelControll
 
     protected abstract void initModel(Resource rootResource, ManagementResourceRegistration rootRegistration);
 
-
+    protected ManagedAuditLogger getAuditLogger() {
+        return auditLogger;
+    }
 }
+

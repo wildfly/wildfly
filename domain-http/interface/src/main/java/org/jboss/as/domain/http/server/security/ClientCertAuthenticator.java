@@ -36,7 +36,7 @@ import javax.net.ssl.SSLPeerUnverifiedException;
 import javax.net.ssl.SSLSession;
 import javax.security.auth.Subject;
 
-import org.jboss.as.controller.security.SubjectUserInfo;
+import org.jboss.as.core.security.SubjectUserInfo;
 import org.jboss.as.domain.management.AuthenticationMechanism;
 import org.jboss.as.domain.management.SecurityRealm;
 import org.jboss.com.sun.net.httpserver.Authenticator;

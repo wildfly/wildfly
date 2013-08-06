@@ -24,7 +24,7 @@ package org.jboss.as.ejb3.security;
 import java.util.Map;
 import java.util.Set;
 
-import org.jboss.as.controller.security.ServerSecurityManager;
+import org.jboss.as.core.security.ServerSecurityManager;
 
 /**
  * A simple transfer object

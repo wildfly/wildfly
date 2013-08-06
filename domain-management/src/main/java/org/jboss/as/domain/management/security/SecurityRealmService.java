@@ -42,8 +42,12 @@ import javax.security.auth.callback.CallbackHandler;
 import javax.security.auth.callback.UnsupportedCallbackException;
 import javax.security.sasl.AuthorizeCallback;
 
-import org.jboss.as.controller.security.SubjectUserInfo;
 import org.jboss.as.domain.management.AuthenticationMechanism;
+import org.jboss.as.core.security.RealmGroup;
+import org.jboss.as.core.security.RealmRole;
+import org.jboss.as.core.security.RealmSubjectUserInfo;
+import org.jboss.as.core.security.RealmUser;
+import org.jboss.as.core.security.SubjectUserInfo;
 import org.jboss.as.domain.management.AuthorizingCallbackHandler;
 import org.jboss.as.domain.management.CallbackHandlerFactory;
 import org.jboss.as.domain.management.SSLIdentity;
@@ -251,30 +255,5 @@ public class SecurityRealmService implements Service<SecurityRealm>, SecurityRea
 
     public CallbackHandlerFactory getSecretCallbackHandlerFactory() {
         return secretCallbackFactory.getOptionalValue();
-    }
-
-    private static class RealmSubjectUserInfo implements SubjectUserInfo {
-
-        private final String userName;
-        private final Subject subject;
-
-        private RealmSubjectUserInfo(Subject subject) {
-            this.subject = subject;
-            Set<RealmUser> users = subject.getPrincipals(RealmUser.class);
-            userName = users.isEmpty() ? null : users.iterator().next().getName();
-        }
-
-        public String getUserName() {
-            return userName;
-        }
-
-        public Collection<Principal> getPrincipals() {
-            return subject.getPrincipals();
-        }
-
-        public Subject getSubject() {
-            return subject;
-        }
-
     }
 }

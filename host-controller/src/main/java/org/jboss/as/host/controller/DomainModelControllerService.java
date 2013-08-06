@@ -60,6 +60,7 @@ import org.jboss.as.controller.BootContext;
 import org.jboss.as.controller.ControlledProcessState;
 import org.jboss.as.controller.ExpressionResolver;
 import org.jboss.as.controller.ModelController;
+import org.jboss.as.controller.ModelController.OperationTransactionControl;
 import org.jboss.as.controller.OperationStepHandler;
 import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.PathElement;
@@ -69,6 +70,8 @@ import org.jboss.as.controller.ProxyOperationAddressTranslator;
 import org.jboss.as.controller.ResourceDefinition;
 import org.jboss.as.controller.RunningMode;
 import org.jboss.as.controller.TransformingProxyController;
+import org.jboss.as.controller.audit.ManagedAuditLogger;
+import org.jboss.as.controller.audit.ManagedAuditLoggerImpl;
 import org.jboss.as.controller.client.OperationAttachments;
 import org.jboss.as.controller.client.OperationMessageHandler;
 import org.jboss.as.controller.client.helpers.domain.ServerStatus;
@@ -113,6 +116,7 @@ import org.jboss.as.server.RuntimeExpressionResolver;
 import org.jboss.as.server.controller.resources.VersionModelInitializer;
 import org.jboss.as.server.mgmt.HttpManagementService;
 import org.jboss.as.server.services.security.AbstractVaultReader;
+import org.jboss.as.version.Version;
 import org.jboss.dmr.ModelNode;
 import org.jboss.msc.service.Service;
 import org.jboss.msc.service.ServiceBuilder;
@@ -187,13 +191,16 @@ public class DomainModelControllerService extends AbstractControllerService impl
         final AbstractVaultReader vaultReader = service(AbstractVaultReader.class);
         ROOT_LOGGER.debugf("Using VaultReader %s", vaultReader);
         final ContentRepository contentRepository = ContentRepository.Factory.create(environment.getDomainContentDir());
-        IgnoredDomainResourceRegistry ignoredRegistry = new IgnoredDomainResourceRegistry(hostControllerInfo);
+        final IgnoredDomainResourceRegistry ignoredRegistry = new IgnoredDomainResourceRegistry(hostControllerInfo);
+        final ManagedAuditLogger auditLogger = createAuditLogger(environment);
+        final ExtensionRegistry extensionRegistry = new ExtensionRegistry(ProcessType.HOST_CONTROLLER, runningModeControl, auditLogger);
         final PrepareStepHandler prepareStepHandler = new PrepareStepHandler(hostControllerInfo, contentRepository,
                 hostProxies, serverProxies, ignoredRegistry);
         final ExpressionResolver expressionResolver = new RuntimeExpressionResolver(vaultReader);
-        DomainModelControllerService service = new DomainModelControllerService(environment, runningModeControl, processState,
+        final DomainModelControllerService service = new DomainModelControllerService(environment, runningModeControl, processState,
                 hostControllerInfo, contentRepository, hostProxies, serverProxies, prepareStepHandler, vaultReader,
-                ignoredRegistry, bootstrapListener, pathManager, expressionResolver, new DelegatingResourceDefinition());
+                ignoredRegistry, bootstrapListener, pathManager, expressionResolver, new DelegatingResourceDefinition(),
+                auditLogger);
         return serviceTarget.addService(SERVICE_NAME, service)
                 .addDependency(HostControllerService.HC_EXECUTOR_SERVICE_NAME, ExecutorService.class, service.getExecutorServiceInjector())
                 .addDependency(ProcessControllerConnectionService.SERVICE_NAME, ProcessControllerConnectionService.class, service.injectedProcessControllerConnection)
@@ -215,9 +222,10 @@ public class DomainModelControllerService extends AbstractControllerService impl
                                          final BootstrapListener bootstrapListener,
                                          final PathManagerService pathManager,
                                          final ExpressionResolver expressionResolver,
-                                         final DelegatingResourceDefinition rootResourceDefinition) {
+                                         final DelegatingResourceDefinition rootResourceDefinition,
+                                         final ManagedAuditLogger auditLogger) {
         super(ProcessType.HOST_CONTROLLER, runningModeControl, null, processState,
-                rootResourceDefinition, prepareStepHandler, new RuntimeExpressionResolver(vaultReader));
+                rootResourceDefinition, prepareStepHandler, new RuntimeExpressionResolver(vaultReader), auditLogger);
         this.environment = environment;
         this.runningModeControl = runningModeControl;
         this.processState = processState;
@@ -236,6 +244,12 @@ public class DomainModelControllerService extends AbstractControllerService impl
         this.pathManager = pathManager;
         this.expressionResolver = expressionResolver;
         this.rootResourceDefinition = rootResourceDefinition;
+    }
+
+    private static ManagedAuditLogger createAuditLogger(HostControllerEnvironment environment) {
+        final File auditLogDir = new File(environment.getDomainDataDir(), "mgmt-audit");
+        final File domainLogFile = new File(auditLogDir, "mgmt-audit.log");
+        return new ManagedAuditLoggerImpl(Version.AS_VERSION, false);
     }
 
     @Override
@@ -600,7 +614,7 @@ public class DomainModelControllerService extends AbstractControllerService impl
     public void registerHostModel(String hostName, ManagementResourceRegistration root) {
         HostModelUtil.createHostRegistry(hostName, root, hostControllerConfigurationPersister, environment, runningModeControl,
                 localFileRepository, hostControllerInfo, new DelegatingServerInventory(), remoteFileRepository, contentRepository,
-                this, extensionRegistry,vaultReader, ignoredRegistry, processState, pathManager, authorizer);
+                this, extensionRegistry,vaultReader, ignoredRegistry, processState, pathManager, authorizer, getAuditLogger());
     }
 
 

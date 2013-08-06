@@ -43,25 +43,39 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.RUN
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SERVER_GROUPS;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SUCCESS;
 
+import java.net.InetAddress;
+import java.security.AccessController;
+import java.security.Principal;
+import java.security.PrivilegedAction;
 import java.util.ArrayDeque;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.Deque;
 import java.util.EnumMap;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Set;
 import java.util.concurrent.LinkedBlockingDeque;
 import java.util.concurrent.atomic.AtomicReference;
 
+import javax.security.auth.Subject;
+
 import org.jboss.as.controller.access.Caller;
+import org.jboss.as.controller.audit.AuditLogger;
 import org.jboss.as.controller.client.MessageSeverity;
 import org.jboss.as.controller.persistence.ConfigurationPersistenceException;
 import org.jboss.as.controller.persistence.ConfigurationPersister;
+import org.jboss.as.controller.registry.Resource;
+import org.jboss.as.controller.security.AccessMechanismPrincipal;
+import org.jboss.as.controller.security.InetAddressPrincipal;
+import org.jboss.as.core.security.AccessMechanism;
+import org.jboss.as.core.security.RealmUser;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.Property;
 
 /**
- * Operation context implementation.
+ * Base class for operation context implementations.
  *
  * @author <a href="mailto:david.lloyd@redhat.com">David M. Lloyd</a>
  */
@@ -74,6 +88,7 @@ abstract class AbstractOperationContext implements OperationContext {
 
     static final ThreadLocal<Thread> controllingThread = new ThreadLocal<Thread>();
 
+    /** Thread that initiated execution of the overall operation for which this context is the whole or a part */
     final Thread initiatingThread;
     private final EnumMap<Stage, Deque<Step>> steps;
     private final ModelController.OperationTransactionControl transactionControl;
@@ -97,6 +112,13 @@ abstract class AbstractOperationContext implements OperationContext {
     /** Currently executing step */
     Step activeStep;
     Caller caller;
+    /** Whether operation execution has begun; i.e. whether completeStep() has been called */
+    private boolean executing;
+
+    /** Operations that were added by the controller, before execution started */
+    private final List<ModelNode> controllerOperations = new ArrayList<ModelNode>(2);
+    private boolean auditLogged;
+    private final AuditLogger auditLogger;
 
     enum ContextFlag {
         ROLLBACK_ON_FAIL, ALLOW_RESOURCE_SERVICE_RESTART,
@@ -105,12 +127,14 @@ abstract class AbstractOperationContext implements OperationContext {
     AbstractOperationContext(final ProcessType processType, final RunningMode runningMode,
                              final ModelController.OperationTransactionControl transactionControl,
                              final ControlledProcessState processState,
-                             boolean booting) {
+                             final boolean booting,
+                             final AuditLogger auditLogger) {
         this.processType = processType;
         this.runningMode = runningMode;
         this.transactionControl = transactionControl;
         this.processState = processState;
         this.booting = booting;
+        this.auditLogger = auditLogger;
         steps = new EnumMap<Stage, Deque<Step>>(Stage.class);
         for (Stage stage : Stage.values()) {
             if (booting && stage == Stage.VERIFY) {
@@ -220,6 +244,10 @@ abstract class AbstractOperationContext implements OperationContext {
                 deque.addLast(new Step(step, response, operation, address));
             }
         }
+
+        if (!executing) {
+            recordControllerOperation(operation);
+        }
     }
 
     @Override
@@ -292,6 +320,127 @@ abstract class AbstractOperationContext implements OperationContext {
     }
 
     /**
+     * If appropriate for this implementation, block waiting for the
+     * {@link ModelControllerImpl#acquireContainerMonitor()} method to return, ensuring that the controller's
+     * MSC ServiceContainer is settled and it is safe to proceed to service status verification.
+     *
+     * @throws InterruptedException if the thread is interrupted while blocking
+     */
+    abstract void awaitModelControllerContainerMonitor() throws InterruptedException;
+
+    /**
+     * Create a persistence resource (if appropriate for this implementation) for use in persisting the configuration
+     * model that results from this operation. If a resource is created, it should perform as much persistence work
+     * as possible without modifying the official persistence store (i.e. the config file) in order to detect any
+     * persistence issues.
+     *
+     * @return the persistence resource, or {@code null} if persistence is not supported
+     *
+     * @throws ConfigurationPersistenceException if there is a problem creating the persistence resource
+     */
+    abstract ConfigurationPersister.PersistenceResource createPersistenceResource() throws ConfigurationPersistenceException;
+
+    /**
+     * Release any locks held by the given step.
+     *
+     * @param step the step
+     */
+    abstract void releaseStepLocks(Step step);
+
+    /**
+     * Wait for completion of removal of any services removed by this context.
+     *
+     * @throws InterruptedException if the thread is interrupted while waiting
+     */
+    abstract void waitForRemovals() throws InterruptedException;
+
+    /**
+     * Gets whether the currently executing thread is allowed to control this operation context.
+     *
+     * @return {@code true} if the currently executing thread is allowed to control the context
+     */
+    boolean isControllingThread() {
+        return Thread.currentThread() == initiatingThread || controllingThread.get() == initiatingThread;
+    }
+
+    /**
+     * Log an audit record of this operation.
+     */
+    void logAuditRecord() {
+        if (!auditLogged) {
+            if (auditLogger.getLoggerStatus() != AuditLogger.Status.DISABLED) {
+                try {
+                    PrivilegedAction<Subject> getCurrentAction = new PrivilegedAction<Subject>() {
+                        @Override
+                        public Subject run() {
+                            return Subject.getSubject(AccessController.getContext());
+                        }
+                    };
+                    Subject subject = System.getSecurityManager() == null ?
+                            getCurrentAction.run() : AccessController.doPrivileged(getCurrentAction);
+                    auditLogger.log(
+                            !isModelAffected(),
+                            isBooting(),
+                            resultAction,
+                            getCallerUserId(subject),
+                            getDomainUUID(),
+                            getSubjectAccessMechanism(subject),
+                            getSubjectInetAddress(subject),
+                            getModel(),
+                            controllerOperations);
+                    auditLogged = true;
+                } catch (Exception e) {
+                    ControllerLogger.MGMT_OP_LOGGER.failedToUpdateAuditLog(e);
+                }
+            }
+        }
+    }
+
+    private String getCallerUserId(Subject subject) {
+        String userId = null;
+        if (subject != null) {
+            Set<RealmUser> realmUsers = subject.getPrincipals(RealmUser.class);
+            RealmUser user = realmUsers.iterator().next();
+            userId = user.getName();
+        }
+        return userId;
+    }
+
+    private InetAddress getSubjectInetAddress(Subject subject) {
+        InetAddressPrincipal principal = getPrincipal(subject, InetAddressPrincipal.class);
+        return principal != null ? principal.getInetAddress() : null;
+    }
+
+    private AccessMechanism getSubjectAccessMechanism(Subject subject) {
+        AccessMechanismPrincipal principal = getPrincipal(subject, AccessMechanismPrincipal.class);
+        return principal != null ? principal.getAccessMechanism() : null;
+    }
+
+    private <T extends Principal> T getPrincipal(Subject subject, Class<T> clazz) {
+        if (subject == null) {
+            return null;
+        }
+        Set<T> principals = subject.getPrincipals(clazz);
+        assert principals.size() <= 1;
+        if (principals.size() == 0) {
+            return null;
+        }
+        return principals.iterator().next();
+    }
+
+    /**
+     * Record an operation added before execution began (i.e. added by the controller and not by a step)
+     * @param operation the operation
+     */
+    private void recordControllerOperation(ModelNode operation) {
+        controllerOperations.add(operation);
+    }
+
+    abstract Resource getModel();
+
+    abstract String getDomainUUID();
+
+    /**
      * Perform the work of completing a step.
      */
     private void doCompleteStep() {
@@ -302,10 +451,13 @@ abstract class AbstractOperationContext implements OperationContext {
             throw MESSAGES.operationAlreadyComplete();
         }
 
-        // If previous steps have put us in a state where we shouldn't do any
-        // more, just stop
+        /** Execution has begun */
+        executing = true;
+
+        // If previous steps have put us in a state where we shouldn't do any more, just stop
         if (!canContinueProcessing()) {
             respectInterruption = false;
+            logAuditRecord();
             return;
         }
 
@@ -332,6 +484,7 @@ abstract class AbstractOperationContext implements OperationContext {
                             }
                             resultAction = ResultAction.ROLLBACK;
                             respectInterruption = false;
+                            logAuditRecord();
                             Thread.currentThread().interrupt();
                             if (activeStep != null && activeStep.resultHandler != null) {
                                 // Finalize
@@ -344,6 +497,8 @@ abstract class AbstractOperationContext implements OperationContext {
             } else {
                 // Execute the step, but make sure we always finalize any steps
                 Throwable toThrow = null;
+                // Whether to return after try/finally
+                boolean exit = false;
                 try {
                     executeStep(step);
                 } catch (RuntimeException re) {
@@ -354,7 +509,7 @@ abstract class AbstractOperationContext implements OperationContext {
                     if (step.resultHandler == null) {
                         // A recursive step executed
                         throwThrowable(toThrow);
-                        return;
+                        exit = true; // we're on the return path
                     } else {
                         // A non-recursive step executed
                         // See if it put us in a state where we shouldn't do any
@@ -364,14 +519,18 @@ abstract class AbstractOperationContext implements OperationContext {
                             // executeStep's finally block
                             // if this was a recursive step
                             respectInterruption = false;
+                            logAuditRecord();
                             step.finalizeStep(toThrow);
-                            return;
+                            exit = true; // we're on the return path
                         } else {
                             throwThrowable(toThrow);
                             // else move on to next step
                             response = activeStep.response;
                         }
                     }
+                }
+                if (exit) {
+                    return;
                 }
             }
         } while (currentStage != Stage.DONE);
@@ -391,6 +550,7 @@ abstract class AbstractOperationContext implements OperationContext {
                     response.get(FAILURE_DESCRIPTION).set(MESSAGES.failedToPersistConfigurationChange(e.getLocalizedMessage()));
                 }
                 resultAction = ResultAction.ROLLBACK;
+                logAuditRecord();
                 return;
             }
         }
@@ -422,11 +582,9 @@ abstract class AbstractOperationContext implements OperationContext {
                 persistenceResource.commit();
             }
         }
+
+        logAuditRecord();
     }
-
-    abstract void awaitModelControllerContainerMonitor() throws InterruptedException;
-
-    abstract ConfigurationPersister.PersistenceResource createPersistenceResource() throws ConfigurationPersistenceException;
 
     private boolean canContinueProcessing() {
 
@@ -455,6 +613,7 @@ abstract class AbstractOperationContext implements OperationContext {
         return resultAction != ResultAction.ROLLBACK;
     }
 
+    @SuppressWarnings("ConstantConditions")
     private void executeStep(final Step step) {
         step.predecessor = this.activeStep;
         this.activeStep = step;
@@ -472,6 +631,7 @@ abstract class AbstractOperationContext implements OperationContext {
                 // Special handling for OperationClientException marker
                 // interface
                 if (!(t instanceof OperationClientException)) {
+                    logAuditRecord();
                     throw t;
                 } else if (currentStage != Stage.DONE) {
                     // Handler threw OCE before calling completeStep(); that's
@@ -499,6 +659,9 @@ abstract class AbstractOperationContext implements OperationContext {
             }
         } catch (Throwable t) {
             if (t instanceof StackOverflowError) {
+                // This can happen with an operation with many, many steps that use the recursive no-arg completeStep()
+                // variant. This should be rare now as handlers are largely migrated from this variant.
+                // But, log a special message for this case
                 MGMT_OP_LOGGER.operationFailed(t, step.operation.get(OP), step.operation.get(OP_ADDR),
                         AbstractControllerService.BOOT_STACK_SIZE_PROPERTY, AbstractControllerService.DEFAULT_BOOT_STACK_SIZE);
             } else {
@@ -522,7 +685,7 @@ abstract class AbstractOperationContext implements OperationContext {
                 report(MessageSeverity.WARN, MESSAGES.stepHandlerFailed(step.handler));
             }
         } finally {
-
+            // Make sure non-recursive steps finalize
             finishStep(step);
         }
     }
@@ -701,13 +864,6 @@ abstract class AbstractOperationContext implements OperationContext {
         return more;
     }
 
-    boolean isControllingThread() {
-        return Thread.currentThread() == initiatingThread || controllingThread.get() == initiatingThread;
-    }
-
-    abstract void releaseStepLocks(Step step);
-
-    abstract void waitForRemovals() throws InterruptedException;
 
     public Caller getCaller() {
         // TODO Consider threading but in general no harm in multiple instances being created rather than adding synchronization.

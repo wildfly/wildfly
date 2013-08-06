@@ -28,7 +28,7 @@ import java.util.Collection;
 
 import javax.security.auth.callback.CallbackHandler;
 
-import org.jboss.as.controller.security.SubjectUserInfo;
+import org.jboss.as.core.security.SubjectUserInfo;
 
 /**
  * An extension to the CallbackHandler interface to allow additional use info to be loaded

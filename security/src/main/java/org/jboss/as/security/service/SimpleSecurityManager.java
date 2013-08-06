@@ -21,6 +21,9 @@
  */
 package org.jboss.as.security.service;
 
+import static java.security.AccessController.doPrivileged;
+
+import javax.security.auth.Subject;
 import java.lang.reflect.Method;
 import java.security.CodeSource;
 import java.security.Principal;
@@ -36,11 +39,9 @@ import java.util.Map;
 import java.util.Set;
 import java.util.UUID;
 
-import javax.security.auth.Subject;
-
-import org.jboss.as.controller.security.ServerSecurityManager;
-import org.jboss.as.controller.security.SubjectUserInfo;
-import org.jboss.as.controller.security.UniqueIdUserInfo;
+import org.jboss.as.core.security.ServerSecurityManager;
+import org.jboss.as.core.security.SubjectUserInfo;
+import org.jboss.as.core.security.UniqueIdUserInfo;
 import org.jboss.as.domain.management.security.PasswordCredential;
 import org.jboss.as.security.SecurityMessages;
 import org.jboss.metadata.javaee.spec.SecurityRolesMetaData;
@@ -68,8 +69,6 @@ import org.jboss.security.identity.plugins.SimpleIdentity;
 import org.jboss.security.identity.plugins.SimpleRoleGroup;
 import org.jboss.security.javaee.AbstractEJBAuthorizationHelper;
 import org.jboss.security.javaee.SecurityHelperFactory;
-
-import static java.security.AccessController.doPrivileged;
 
 /**
  * @author <a href="mailto:cdewolf@redhat.com">Carlo de Wolf</a>

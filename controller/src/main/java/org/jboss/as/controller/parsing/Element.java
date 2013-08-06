@@ -45,9 +45,11 @@ public enum Element {
     ANY_IPV6_ADDRESS("any-ipv6-address"),
     APPLICATION_CLASSIFICATION("application-classification"),
     APPLICATION_CLASSIFICATIONS("application-classifications"),
+    AUDIT_LOG("audit-log"),
     AUTHENTICATION("authentication"),
     AUTHORIZATION("authorization"),
 
+    CLIENT_CERT_STORE("client-certificate-store"),
     CLIENT_MAPPING("client-mapping"),
     CONSTRAINTS("constraints"),
     CONTENT("content"),
@@ -64,11 +66,16 @@ public enum Element {
     EXTENSION("extension"),
     EXTENSIONS("extensions"),
 
+    FILE_HANDLER("file-handler"),
+    FORMATTER("formatter"),
+    FORMATTERS("formatters"),
     FS_ARCHIVE("fs-archive"),
     FS_EXPLODED("fs-exploded"),
 
     GROUP("group"),
 
+    HANDLER("handler"),
+    HANDLERS("handlers"),
     HEAP("heap"),
     HOST("host"),
     HOSTS("hosts"),
@@ -85,6 +92,7 @@ public enum Element {
 
     JAAS("jaas"),
     JAVA_AGENT("java-agent"),
+    JSON_FORMATTER("json-formatter"),
     JVM("jvm"),
     JVMS("jvms"),
     JVM_OPTIONS("jvm-options"),
@@ -95,6 +103,7 @@ public enum Element {
     LINK_LOCAL_ADDRESS("link-local-address"),
     LOCAL("local"),
     LOCAL_DESTINATION("local-destination"),
+    LOGGER ("logger"),
     LOOPBACK("loopback"),
     LOOPBACK_ADDRESS("loopback-address"),
 
@@ -140,6 +149,7 @@ public enum Element {
     SENSITIVE_CLASSIFICATIONS("sensitive-classifications"),
     SERVER("server"),
     SERVER_GROUP_SCOPED_ROLES("server-group-scoped-roles"),
+    SERVER_LOGGER("server-logger"),
     SERVER_IDENTITIES("server-identities"),
     SERVERS("servers"),
     SERVER_GROUP("server-group"),
@@ -154,11 +164,14 @@ public enum Element {
     STACK("stack"),
     SUBNET_MATCH("subnet-match"),
     SUBSYSTEM("subsystem"),
+    SYSLOG_HANDLER("syslog-handler"),
     SYSTEM_PROPERTIES("system-properties"),
-
+    TCP("tcp"),
+    TLS("tls"),
     TRUSTSTORE("truststore"),
     TYPE("type"),
 
+    UDP("udp"),
     UP("up"),
     USER("user"),
     USERNAME_FILTER("username-filter"),

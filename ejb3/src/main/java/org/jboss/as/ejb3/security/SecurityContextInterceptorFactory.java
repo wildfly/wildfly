@@ -27,7 +27,7 @@ import static org.jboss.as.ejb3.EjbMessages.MESSAGES;
 import java.util.Map;
 import java.util.Set;
 
-import org.jboss.as.controller.security.ServerSecurityManager;
+import org.jboss.as.core.security.ServerSecurityManager;
 import org.jboss.as.ee.component.Component;
 import org.jboss.as.ee.component.ComponentInterceptorFactory;
 import org.jboss.as.ejb3.component.EJBComponent;
