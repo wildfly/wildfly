@@ -1,6 +1,6 @@
 <?xml version='1.0' encoding='UTF-8'?>
 <server xmlns="urn:jboss:domain:1.5">
-    <management>
+   <management>
       <access-control>
          <role-mapping use-realm-roles="true">
             <role name="Monitor">
@@ -26,14 +26,17 @@
                </exclude>
             </role>
          </role-mapping>
-
          <constraints>
-            <vault-expression-sensitivity requires-access="false" requires-read="false"/>
+            <vault-expression-sensitivity requires-access="false" requires-read="false" requires-write="false" />
             <sensitive-classifications>
+               <sensitive-classification type="core" name="access-control" requires-access="false" requires-read="false" requires-write="false" />
                <sensitive-classification type="core" name="security-realm" requires-access="false" requires-read="false" requires-write="false" />
+               <sensitive-classification type="play" name="security-realm" requires-access="false" requires-read="false" requires-write="false" />
             </sensitive-classifications>
             <application-classifications>
-               <application-classification type="core" name="deployment" application="false" />
+               <application-classification type="core" name="deployment" application="false"/>
+               <application-classification type="play" name="deployment" application="false"/>
+               <!--  TODO add more core classifications as they get used in the model -->
             </application-classifications>
          </constraints>
       </access-control>

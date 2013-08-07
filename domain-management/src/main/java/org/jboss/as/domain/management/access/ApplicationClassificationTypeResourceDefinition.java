@@ -20,7 +20,8 @@
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
 package org.jboss.as.domain.management.access;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SENSITIVITY_CLASSIFICATION;
+
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.CLASSIFICATION;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.TYPE;
 
 import java.util.Collections;
@@ -30,43 +31,48 @@ import java.util.Set;
 
 import org.jboss.as.controller.PathElement;
 import org.jboss.as.controller.SimpleResourceDefinition;
-import org.jboss.as.controller.access.constraint.SensitivityClassification;
+import org.jboss.as.controller.access.constraint.ApplicationTypeConfig;
 import org.jboss.as.controller.registry.ManagementResourceRegistration;
 import org.jboss.as.controller.registry.Resource.ResourceEntry;
 import org.jboss.as.domain.management._private.DomainManagementResolver;
+
 
 /**
  *
  * @author <a href="kabir.khan@jboss.com">Kabir Khan</a>
  */
-public class SensitivityClassificationResourceDefinition extends SimpleResourceDefinition {
+public class ApplicationClassificationTypeResourceDefinition extends SimpleResourceDefinition {
 
-    public static final PathElement PATH_ELEMENT = PathElement.pathElement(SENSITIVITY_CLASSIFICATION);
+    public static final PathElement PATH_ELEMENT = PathElement.pathElement(TYPE);
 
-    SensitivityClassificationResourceDefinition() {
-        super(PATH_ELEMENT, DomainManagementResolver.getResolver("core.access-control.constraint.sensitivity-classification"));
+    static ApplicationClassificationTypeResourceDefinition INSTANCE = new ApplicationClassificationTypeResourceDefinition();
+
+    private ApplicationClassificationTypeResourceDefinition() {
+        super(PATH_ELEMENT, DomainManagementResolver
+                .getResolver("core.access-control.constraint.application-classification-type"));
     }
 
-    static ResourceEntry createResource(Map<String, SensitivityClassification> classificationsByType, String type, String name) {
+
+    static ResourceEntry createResource(Map<String, ApplicationTypeConfig> classificationsByType, String type, String name) {
         return createResource(classificationsByType, PathElement.pathElement(type, name));
     }
 
-    static ResourceEntry createResource(Map<String, SensitivityClassification> classificationsByType, PathElement pathElement) {
-        return new SensitivityClassificationResource(pathElement, classificationsByType);
+    static ResourceEntry createResource(Map<String, ApplicationTypeConfig> classificationsByType, PathElement pathElement) {
+        return new ApplicationTypeResource(pathElement, classificationsByType);
     }
 
     @Override
     public void registerChildren(ManagementResourceRegistration resourceRegistration) {
-        resourceRegistration.registerSubModel(SensitivityResourceDefinition.createSensitivityClassification());
+        resourceRegistration.registerSubModel(new ApplicationClassificationConfigResourceDefinition());
     }
 
-    private static class SensitivityClassificationResource extends AbstractClassificationResource {
-        private static final Set<String> CHILD_TYPES = Collections.singleton(TYPE);
-        private final Map<String, SensitivityClassification> classificationsByType;
+    private static class ApplicationTypeResource extends AbstractClassificationResource {
+        private static final Set<String> CHILD_TYPES = Collections.singleton(CLASSIFICATION);
+        private final Map<String, ApplicationTypeConfig> applicationClassificationsByName;
 
-        SensitivityClassificationResource(PathElement pathElement, Map<String, SensitivityClassification> classificationsByType) {
+        ApplicationTypeResource(PathElement pathElement, Map<String, ApplicationTypeConfig> classificationsByType) {
             super(pathElement);
-            this.classificationsByType = classificationsByType;
+            this.applicationClassificationsByName = classificationsByType;
         }
 
         @Override
@@ -77,10 +83,10 @@ public class SensitivityClassificationResourceDefinition extends SimpleResourceD
 
         @Override
         ResourceEntry getChildEntry(String type, String name) {
-            if (type.equals(TYPE)) {
-                SensitivityClassification classification = classificationsByType.get(name);
+            if (type.equals(CLASSIFICATION)) {
+                ApplicationTypeConfig classification = applicationClassificationsByName.get(name);
                 if (classification != null) {
-                    return SensitivityResourceDefinition.createResource(classification, type, name);
+                    return ApplicationClassificationConfigResourceDefinition.createResource(classification, type, name);
                 }
             }
             return null;
@@ -88,18 +94,18 @@ public class SensitivityClassificationResourceDefinition extends SimpleResourceD
 
         @Override
         public Set<String> getChildrenNames(String type) {
-            if (type.equals(TYPE)) {
-                return classificationsByType.keySet();
+            if (type.equals(CLASSIFICATION)) {
+                return applicationClassificationsByName.keySet();
             }
             return Collections.emptySet();
         }
 
         @Override
         public Set<ResourceEntry> getChildren(String childType) {
-            if (childType.equals(TYPE)) {
+            if (childType.equals(CLASSIFICATION)) {
                 Set<ResourceEntry> entries = new HashSet<ResourceEntry>();
-                for (Map.Entry<String, SensitivityClassification> entry : classificationsByType.entrySet()) {
-                    entries.add(SensitivityResourceDefinition.createResource(entry.getValue(), childType, entry.getKey()));
+                for (Map.Entry<String, ApplicationTypeConfig> entry : applicationClassificationsByName.entrySet()) {
+                    entries.add(ApplicationClassificationConfigResourceDefinition.createResource(entry.getValue(), childType, entry.getKey()));
                 }
                 return entries;
             }

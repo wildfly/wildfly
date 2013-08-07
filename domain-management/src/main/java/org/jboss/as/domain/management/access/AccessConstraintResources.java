@@ -25,14 +25,15 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.APP
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.CONSTRAINT;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.CORE;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SENSITIVITY_CLASSIFICATION;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.TYPE;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.VAULT_EXPRESSION;
 
 import java.util.Collection;
 import java.util.Collections;
-import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
+import java.util.TreeMap;
 
 import org.jboss.as.controller.PathElement;
 import org.jboss.as.controller.access.constraint.ApplicationTypeConfig;
@@ -62,38 +63,40 @@ public class AccessConstraintResources {
     private static volatile Map<String, Map<String, SensitivityClassification>> classifications;
     private static volatile Map<String, Map<String, ApplicationTypeConfig>> applicationTypes;
 
-    private static Map<String, Map<String, SensitivityClassification>> getClassifications(){
+    private static Map<String, Map<String, SensitivityClassification>> getSensitivityClassifications(){
         Collection<SensitivityClassification> current = SensitiveTargetConstraint.FACTORY.getSensitivities();
         if (classifications == null || classifications.size() != current.size()) {
-            Map<String, Map<String, SensitivityClassification>> classificationsMap = new HashMap<String, Map<String,SensitivityClassification>>();
+            Map<String, Map<String, SensitivityClassification>> classificationsMap = new TreeMap<String, Map<String,SensitivityClassification>>();
             for (SensitivityClassification classification : current) {
-                Map<String, SensitivityClassification> byType = classificationsMap.get(classification.getName());
-                if (byType == null) {
-                    byType = new HashMap<String, SensitivityClassification>();
-                    classificationsMap.put(classification.getName(), byType);
+                final String type = classification.isCore() ? CORE : classification.getSubsystem();
+                Map<String, SensitivityClassification> byName = classificationsMap.get(type);
+                if (byName == null) {
+                    byName = new TreeMap<String, SensitivityClassification>();
+                    classificationsMap.put(type, byName);
                 }
-                String type = classification.isCore() ? CORE : classification.getSubsystem();
-                byType.put(type, classification);
+
+                byName.put(classification.getName(), classification);
             }
             classifications = classificationsMap;
         }
         return classifications;
     }
 
-    private static Map<String, Map<String, ApplicationTypeConfig>> getApplicationTypes(){
+    private static Map<String, Map<String, ApplicationTypeConfig>> getApplicationClassifications(){
         Collection<ApplicationTypeConfig> current = ApplicationTypeConstraint.FACTORY.getApplicationTypeConfigs();
         if (applicationTypes == null || applicationTypes.size() != current.size()) {
-            Map<String, Map<String, ApplicationTypeConfig>> applicationTypeConfigMap = new HashMap<String, Map<String,ApplicationTypeConfig>>();
-            for (ApplicationTypeConfig applicationType : current) {
-                Map<String, ApplicationTypeConfig> byType = applicationTypeConfigMap.get(applicationType.getName());
-                if (byType == null) {
-                    byType = new HashMap<String, ApplicationTypeConfig>();
-                    applicationTypeConfigMap.put(applicationType.getName(), byType);
+            Map<String, Map<String, ApplicationTypeConfig>> classificationsMap = new TreeMap<String, Map<String,ApplicationTypeConfig>>();
+            for (ApplicationTypeConfig classification : current) {
+                final String type = classification.isCore() ? CORE : classification.getSubsystem();
+                Map<String, ApplicationTypeConfig> byName = classificationsMap.get(type);
+                if (byName == null) {
+                    byName = new TreeMap<String, ApplicationTypeConfig>();
+                    classificationsMap.put(type, byName);
                 }
-                String type = applicationType.isCore() ? CORE : applicationType.getSubsystem();
-                byType.put(type, applicationType);
+
+                byName.put(classification.getName(), classification);
             }
-            applicationTypes = applicationTypeConfigMap;
+            applicationTypes = classificationsMap;
         }
         return applicationTypes;
     }
@@ -101,7 +104,7 @@ public class AccessConstraintResources {
 
     private static class ApplicationClassificationResource extends AbstractClassificationResource {
 
-        private static final Set<String> CHILD_TYPES = Collections.singleton(APPLICATION_CLASSIFICATION);
+        private static final Set<String> CHILD_TYPES = Collections.singleton(TYPE);
 
         private ApplicationClassificationResource() {
           super(APPLICATION_PATH_ELEMENT);
@@ -114,11 +117,11 @@ public class AccessConstraintResources {
 
         @Override
         ResourceEntry getChildEntry(String type, String name) {
-            if (APPLICATION_CLASSIFICATION.equals(type)) {
-                Map<String, Map<String, ApplicationTypeConfig>> applicationTypes = getApplicationTypes();
-                Map<String, ApplicationTypeConfig> applicationTypesByType = applicationTypes.get(name);
-                if (applicationTypesByType != null) {
-                    return ApplicationClassificationResourceDefinition.createResource(applicationTypesByType, type, name);
+            if (TYPE.equals(type)) {
+                Map<String, Map<String, ApplicationTypeConfig>> applicationTypes = getApplicationClassifications();
+                Map<String, ApplicationTypeConfig> byName = applicationTypes.get(name);
+                if (byName != null) {
+                    return ApplicationClassificationTypeResourceDefinition.createResource(byName, type, name);
                 }
             }
             return null;
@@ -126,8 +129,8 @@ public class AccessConstraintResources {
 
         @Override
         public Set<String> getChildrenNames(String type) {
-            if (APPLICATION_CLASSIFICATION.equals(type)) {
-                Map<String, Map<String, ApplicationTypeConfig>> configs = getApplicationTypes();
+            if (TYPE.equals(type)) {
+                Map<String, Map<String, ApplicationTypeConfig>> configs = getApplicationClassifications();
                 return configs.keySet();
             }
             return Collections.emptySet();
@@ -135,11 +138,11 @@ public class AccessConstraintResources {
 
         @Override
         public Set<ResourceEntry> getChildren(String childType) {
-            if (APPLICATION_CLASSIFICATION.equals(childType)) {
-                Map<String, Map<String, ApplicationTypeConfig>> applicationTypes = getApplicationTypes();
+            if (TYPE.equals(childType)) {
+                Map<String, Map<String, ApplicationTypeConfig>> applicationTypes = getApplicationClassifications();
                 Set<ResourceEntry> children = new HashSet<ResourceEntry>();
                 for (Map.Entry<String, Map<String, ApplicationTypeConfig>> entry : applicationTypes.entrySet()) {
-                    children.add(ApplicationClassificationResourceDefinition.createResource(entry.getValue(), childType, entry.getKey()));
+                    children.add(ApplicationClassificationTypeResourceDefinition.createResource(entry.getValue(), childType, entry.getKey()));
                 }
                 return children;
             }
@@ -150,7 +153,7 @@ public class AccessConstraintResources {
 
     private static class SensitivityClassificationResource extends AbstractClassificationResource {
 
-        private static final Set<String> CHILD_TYPES = Collections.singleton(SENSITIVITY_CLASSIFICATION);
+        private static final Set<String> CHILD_TYPES = Collections.singleton(TYPE);
 
         private SensitivityClassificationResource() {
             super(SENSITIVITY_PATH_ELEMENT);
@@ -163,11 +166,11 @@ public class AccessConstraintResources {
 
         @Override
         ResourceEntry getChildEntry(String type, String name) {
-            if (SENSITIVITY_CLASSIFICATION.equals(type)) {
-                Map<String, Map<String, SensitivityClassification>> classifications = getClassifications();
-                Map<String, SensitivityClassification> classificationsByType = classifications.get(name);
-                if (classificationsByType != null) {
-                    return SensitivityClassificationResourceDefinition.createResource(classificationsByType, type, name);
+            if (TYPE.equals(type)) {
+                Map<String, Map<String, SensitivityClassification>> classifications = getSensitivityClassifications();
+                Map<String, SensitivityClassification> byName = classifications.get(name);
+                if (byName != null) {
+                    return SensitivityClassificationTypeResourceDefinition.createResource(byName, type, name);
                 }
             }
             return null;
@@ -175,8 +178,8 @@ public class AccessConstraintResources {
 
         @Override
         public Set<String> getChildrenNames(String type) {
-            if (SENSITIVITY_CLASSIFICATION.equals(type)) {
-                Map<String, Map<String, SensitivityClassification>> classifications = getClassifications();
+            if (TYPE.equals(type)) {
+                Map<String, Map<String, SensitivityClassification>> classifications = getSensitivityClassifications();
                 return classifications.keySet();
             }
             return Collections.emptySet();
@@ -184,11 +187,11 @@ public class AccessConstraintResources {
 
         @Override
         public Set<ResourceEntry> getChildren(String childType) {
-            if (SENSITIVITY_CLASSIFICATION.equals(childType)) {
-                Map<String, Map<String, SensitivityClassification>> classifications = getClassifications();
+            if (TYPE.equals(childType)) {
+                Map<String, Map<String, SensitivityClassification>> classifications = getSensitivityClassifications();
                 Set<ResourceEntry> children = new HashSet<ResourceEntry>();
                 for (Map.Entry<String, Map<String, SensitivityClassification>> entry : classifications.entrySet()) {
-                    children.add(SensitivityClassificationResourceDefinition.createResource(entry.getValue(), childType,
+                    children.add(SensitivityClassificationTypeResourceDefinition.createResource(entry.getValue(), childType,
                             entry.getKey()));
                 }
                 return children;

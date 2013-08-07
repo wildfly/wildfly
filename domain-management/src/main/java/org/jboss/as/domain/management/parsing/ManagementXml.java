@@ -28,6 +28,7 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ADD
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.APPLICATION_CLASSIFICATION;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.AUTHENTICATION;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.AUTHORIZATION;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.CLASSIFICATION;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.CONSTRAINT;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.CORE_SERVICE;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.EXCLUDE;
@@ -84,6 +85,8 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.TreeMap;
+import java.util.TreeSet;
 
 import javax.xml.stream.XMLStreamException;
 
@@ -97,10 +100,10 @@ import org.jboss.as.controller.parsing.Namespace;
 import org.jboss.as.controller.parsing.ParseUtils;
 import org.jboss.as.domain.management.access.AccessAuthorizationResourceDefinition;
 import org.jboss.as.domain.management.access.ApplicationClassificationConfigResourceDefinition;
-import org.jboss.as.domain.management.access.ApplicationClassificationResourceDefinition;
+import org.jboss.as.domain.management.access.ApplicationClassificationTypeResourceDefinition;
 import org.jboss.as.domain.management.access.HostScopedRolesResourceDefinition;
 import org.jboss.as.domain.management.access.PrincipalResourceDefinition;
-import org.jboss.as.domain.management.access.SensitivityClassificationResourceDefinition;
+import org.jboss.as.domain.management.access.SensitivityClassificationTypeResourceDefinition;
 import org.jboss.as.domain.management.access.SensitivityResourceDefinition;
 import org.jboss.as.domain.management.access.ServerGroupScopedRoleResourceDefinition;
 import org.jboss.as.domain.management.connections.ldap.LdapConnectionResourceDefinition;
@@ -1914,7 +1917,7 @@ public class ManagementXml {
             final Element element = Element.forName(reader.getLocalName());
             switch (element) {
                 case SENSITIVE_CLASSIFICATION: {
-                    parseClassification(reader, address, expectedNs, list);
+                    parseSensitivityClassification(reader, address, expectedNs, list);
                     break;
                 }
                 default: {
@@ -1924,51 +1927,55 @@ public class ManagementXml {
         }
     }
 
-    private static void parseClassification(final XMLExtendedStreamReader reader, final ModelNode address, final Namespace expectedNs,
+    private static void parseSensitivityClassification(final XMLExtendedStreamReader reader, final ModelNode address, final Namespace expectedNs,
             final List<ModelNode> list) throws XMLStreamException {
-        String name = null;
-        final int count = reader.getAttributeCount();
-        for (int i = 0; i < count; i++) {
-            final String value = reader.getAttributeValue(i);
-            if (!isNoNamespaceAttribute(reader, i)) {
-                throw unexpectedAttribute(reader, i);
-            } else {
-                final Attribute attribute = Attribute.forName(reader.getAttributeLocalName(i));
-                switch (attribute) {
-                    case NAME:
-                        name = value;
-                        break;
-                    default: {
-                        throw unexpectedAttribute(reader, i);
-                    }
-                }
-            }
-        }
-
-        if (name == null) {
-            throw ParseUtils.missingRequired(reader, Collections.singleton(NAME));
-        }
-
-        ModelNode newAddress = address.clone().add(SensitivityClassificationResourceDefinition.PATH_ELEMENT.getKey(), name);
-        while (reader.hasNext() && reader.nextTag() != END_ELEMENT) {
-            requireNamespace(reader, expectedNs);
-            final Element element = Element.forName(reader.getLocalName());
-            switch (element) {
-                case TYPE: {
-                    parseClassificationType(reader, newAddress, expectedNs, list, false);
-                    break;
-                }
-                default: {
-                    throw unexpectedElement(reader);
-                }
-            }
-        }
+        parseClassificationType(reader, address, expectedNs, list, false);
+//        String name = null;
+//        final int count = reader.getAttributeCount();
+//        for (int i = 0; i < count; i++) {
+//            final String value = reader.getAttributeValue(i);
+//            if (!isNoNamespaceAttribute(reader, i)) {
+//                throw unexpectedAttribute(reader, i);
+//            } else {
+//                final Attribute attribute = Attribute.forName(reader.getAttributeLocalName(i));
+//                switch (attribute) {
+//                    case NAME:
+//                        name = value;
+//                        break;
+//                    default: {
+//                        throw unexpectedAttribute(reader, i);
+//                    }
+//                }
+//            }
+//        }
+//
+//        if (name == null) {
+//            throw ParseUtils.missingRequired(reader, Collections.singleton(NAME));
+//        }
+//
+//        ModelNode newAddress = address.clone().add(SensitivityClassificationTypeResourceDefinition.PATH_ELEMENT.getKey(), name);
+//        while (reader.hasNext() && reader.nextTag() != END_ELEMENT) {
+//            requireNamespace(reader, expectedNs);
+//            final Element element = Element.forName(reader.getLocalName());
+//            String name = null;
+//
+//            switch (element) {
+//                case TYPE: {
+//                    parseClassificationType(reader, newAddress, expectedNs, list, false);
+//                    break;
+//                }
+//                default: {
+//                    throw unexpectedElement(reader);
+//                }
+//            }
+//        }
     }
 
     private static void parseClassificationType(final XMLExtendedStreamReader reader, final ModelNode address, final Namespace expectedNs,
             final List<ModelNode> list, boolean vault) throws XMLStreamException {
         final int count = reader.getAttributeCount();
         String name = null;
+        String type = null;
         Map<String, ModelNode> values = new HashMap<String, ModelNode>();
         for (int i = 0; i < count; i++) {
             final String value = reader.getAttributeValue(i);
@@ -1979,6 +1986,10 @@ public class ManagementXml {
                 switch (attribute) {
                     case NAME: {
                         name = value;
+                        break;
+                    }
+                    case TYPE: {
+                        type = value;
                         break;
                     }
                     case REQUIRES_ACCESS: {
@@ -2007,8 +2018,15 @@ public class ManagementXml {
             throw ParseUtils.missingRequired(reader, Collections.singleton(Attribute.NAME));
         }
 
-        final ModelNode newAddress = vault ? address : address.clone().add(SensitivityResourceDefinition.PATH_ELEMENT.getKey(),
-                name);
+        if (type == null && !vault) {
+            throw ParseUtils.missingRequired(reader, Collections.singleton(Attribute.TYPE));
+        }
+
+        final ModelNode newAddress = vault ? address :
+            address.clone()
+            .add(SensitivityClassificationTypeResourceDefinition.PATH_ELEMENT.getKey(), type)
+            .add(SensitivityResourceDefinition.PATH_ELEMENT.getKey(), name);
+
         for (Map.Entry<String, ModelNode> entry : values.entrySet()) {
             list.add(Util.getWriteAttributeOperation(newAddress, entry.getKey(), entry.getValue()));
         }
@@ -2025,7 +2043,7 @@ public class ManagementXml {
             final Element element = Element.forName(reader.getLocalName());
             switch (element) {
                 case APPLICATION_CLASSIFICATION: {
-                    parseApplicationType(reader, address, expectedNs, list);
+                    parseApplicationClassification(reader, address, expectedNs, list);
                     break;
                 }
                 default: {
@@ -2035,9 +2053,11 @@ public class ManagementXml {
         }
     }
 
-    private static void parseApplicationType(final XMLExtendedStreamReader reader, final ModelNode address, final Namespace expectedNs,
+    private static void parseApplicationClassification(final XMLExtendedStreamReader reader, final ModelNode address, final Namespace expectedNs,
             final List<ModelNode> list) throws XMLStreamException {
         String name = null;
+        String type = null;
+        Boolean applicationValue = null;
         final int count = reader.getAttributeCount();
         for (int i = 0; i < count; i++) {
             final String value = reader.getAttributeValue(i);
@@ -2049,6 +2069,12 @@ public class ManagementXml {
                     case NAME:
                         name = value;
                         break;
+                    case TYPE:
+                        type = value;
+                        break;
+                    case APPLICATION:
+                        applicationValue = Boolean.valueOf(value);
+                        break;
                     default: {
                         throw unexpectedAttribute(reader, i);
                     }
@@ -2059,58 +2085,19 @@ public class ManagementXml {
         if (name == null) {
             throw ParseUtils.missingRequired(reader, Collections.singleton(NAME));
         }
-
-        ModelNode newAddress = address.clone().add(ApplicationClassificationResourceDefinition.PATH_ELEMENT.getKey(), name);
-        while (reader.hasNext() && reader.nextTag() != END_ELEMENT) {
-            requireNamespace(reader, expectedNs);
-            final Element element = Element.forName(reader.getLocalName());
-            switch (element) {
-                case TYPE: {
-                    parseApplicationTypeType(reader, newAddress, expectedNs, list);
-                    break;
-                }
-                default: {
-                    throw unexpectedElement(reader);
-                }
-            }
-        }
-    }
-
-    private static void parseApplicationTypeType(final XMLExtendedStreamReader reader, final ModelNode address, final Namespace expectedNs,
-            final List<ModelNode> list) throws XMLStreamException {
-        final int count = reader.getAttributeCount();
-        String name = null;
-        ModelNode applicationValue = null;
-        for (int i = 0; i < count; i++) {
-            final String value = reader.getAttributeValue(i);
-            if (!isNoNamespaceAttribute(reader, i)) {
-                throw unexpectedAttribute(reader, i);
-            } else {
-                final Attribute attribute = Attribute.forName(reader.getAttributeLocalName(i));
-                switch (attribute) {
-                    case NAME: {
-                        name = value;
-                        break;
-                    }
-                    case APPLICATION: {
-                        applicationValue = ApplicationClassificationConfigResourceDefinition.CONFIGURED_APPLICATION.parse(value, reader);
-                        break;
-                    }
-                    default: {
-                        throw unexpectedAttribute(reader, i);
-                    }
-                }
-            }
-        }
-
-        if (name == null) {
-            throw ParseUtils.missingRequired(reader, Collections.singleton(Attribute.NAME));
+        if (type == null) {
+            throw ParseUtils.missingRequired(reader, Collections.singleton(Attribute.TYPE));
         }
         if (applicationValue == null) {
             throw ParseUtils.missingRequired(reader, Collections.singleton(Attribute.APPLICATION));
         }
-        final ModelNode newAddress = address.clone().add(ApplicationClassificationConfigResourceDefinition.PATH_ELEMENT.getKey(), name);
-        list.add(Util.getWriteAttributeOperation(newAddress, ApplicationClassificationConfigResourceDefinition.CONFIGURED_APPLICATION.getName(), applicationValue));
+
+        ModelNode newAddress = address.clone()
+                .add(ApplicationClassificationTypeResourceDefinition.PATH_ELEMENT.getKey(), type)
+                .add(ApplicationClassificationConfigResourceDefinition.PATH_ELEMENT.getKey(), name);
+
+
+        list.add(Util.getWriteAttributeOperation(newAddress, ApplicationClassificationConfigResourceDefinition.CONFIGURED_APPLICATION.getName(), applicationValue.toString()));
         ParseUtils.requireNoContent(reader);
     }
 
@@ -2570,11 +2557,11 @@ public class ManagementXml {
         if (constraint.hasDefined(SENSITIVITY_CLASSIFICATION)) {
             ModelNode sensitivityParent = constraint.require(SENSITIVITY_CLASSIFICATION);
 
-            if (sensitivityParent.hasDefined(SENSITIVITY_CLASSIFICATION)) {
-                for (Property sensitivityProperty : sensitivityParent.get(SENSITIVITY_CLASSIFICATION).asPropertyList()) {
-                    if (sensitivityProperty.getValue().hasDefined(TYPE)) {
-                        for (Property typeProperty : sensitivityProperty.getValue().get(TYPE).asPropertyList()) {
-                            ModelNode classification = typeProperty.getValue();
+            if (sensitivityParent.hasDefined(TYPE)) {
+                for (Property typeProperty : sensitivityParent.get(TYPE).asPropertyList()) {
+                    if (typeProperty.getValue().hasDefined(CLASSIFICATION)) {
+                        for (Property sensitivityProperty : typeProperty.getValue().get(CLASSIFICATION).asPropertyList()) {
+                            ModelNode classification = sensitivityProperty.getValue();
                             if (classification.hasDefined(SensitivityResourceDefinition.CONFIGURED_REQUIRES_ACCESS.getName())
                                     || classification.hasDefined(SensitivityResourceDefinition.CONFIGURED_REQUIRES_WRITE
                                             .getName())
@@ -2582,15 +2569,15 @@ public class ManagementXml {
                                             .getName())) {
                                 Map<String, Set<String>> constraintMap = configuredConstraints.get(SENSITIVITY_CLASSIFICATION);
                                 if (constraintMap == null) {
-                                    constraintMap = new HashMap<String, Set<String>>();
+                                    constraintMap = new TreeMap<String, Set<String>>();
                                     configuredConstraints.put(SENSITIVITY_CLASSIFICATION, constraintMap);
                                 }
-                                Set<String> types = constraintMap.get(sensitivityProperty.getName());
+                                Set<String> types = constraintMap.get(typeProperty.getName());
                                 if (types == null) {
-                                    types = new HashSet<String>();
-                                    constraintMap.put(sensitivityProperty.getName(), types);
+                                    types = new TreeSet<String>();
+                                    constraintMap.put(typeProperty.getName(), types);
                                 }
-                                types.add(typeProperty.getName());
+                                types.add(sensitivityProperty.getName());
                             }
                         }
                     }
@@ -2607,23 +2594,23 @@ public class ManagementXml {
         if (constraint.hasDefined(APPLICATION_CLASSIFICATION)) {
             ModelNode appTypeParent = constraint.require(APPLICATION_CLASSIFICATION);
 
-            if (appTypeParent.hasDefined(APPLICATION_CLASSIFICATION)) {
-                for (Property applicationTypeProperty : appTypeParent.get(APPLICATION_CLASSIFICATION).asPropertyList()) {
-                    if (applicationTypeProperty.getValue().hasDefined(TYPE)) {
-                        for (Property typeProperty : applicationTypeProperty.getValue().get(TYPE).asPropertyList()) {
-                            ModelNode applicationType = typeProperty.getValue();
+            if (appTypeParent.hasDefined(TYPE)) {
+                for (Property typeProperty : appTypeParent.get(TYPE).asPropertyList()) {
+                    if (typeProperty.getValue().hasDefined(CLASSIFICATION)) {
+                        for (Property applicationProperty : typeProperty.getValue().get(CLASSIFICATION).asPropertyList()) {
+                            ModelNode applicationType = applicationProperty.getValue();
                             if (applicationType.hasDefined(ApplicationClassificationConfigResourceDefinition.CONFIGURED_APPLICATION.getName())) {
                                 Map<String, Set<String>> constraintMap = configuredConstraints.get(APPLICATION_CLASSIFICATION);
                                 if (constraintMap == null) {
-                                    constraintMap = new HashMap<String, Set<String>>();
+                                    constraintMap = new TreeMap<String, Set<String>>();
                                     configuredConstraints.put(APPLICATION_CLASSIFICATION, constraintMap);
                                 }
-                                Set<String> types = constraintMap.get(applicationTypeProperty.getName());
+                                Set<String> types = constraintMap.get(typeProperty.getName());
                                 if (types == null) {
-                                    types = new HashSet<String>();
-                                    constraintMap.put(applicationTypeProperty.getName(), types);
+                                    types = new TreeSet<String>();
+                                    constraintMap.put(typeProperty.getName(), types);
                                 }
-                                types.add(typeProperty.getName());
+                                types.add(applicationProperty.getName());
                             }
                         }
                     }
@@ -2690,34 +2677,27 @@ public class ManagementXml {
         writer.writeStartElement(Element.CONSTRAINTS.getLocalName());
 
         if (configuredConstraints.containsKey(SensitivityResourceDefinition.VAULT_ELEMENT.getKey())){
-            writer.writeStartElement(Element.VAULT_EXPRESSION_SENSITIVITY.getLocalName());
+            writer.writeEmptyElement(Element.VAULT_EXPRESSION_SENSITIVITY.getLocalName());
             ModelNode model = accessAuthorization.get(SensitivityResourceDefinition.VAULT_ELEMENT.getKey(),
                     SensitivityResourceDefinition.VAULT_ELEMENT.getValue());
             SensitivityResourceDefinition.CONFIGURED_REQUIRES_ACCESS.marshallAsAttribute(model, writer);
             SensitivityResourceDefinition.CONFIGURED_REQUIRES_READ.marshallAsAttribute(model, writer);
             SensitivityResourceDefinition.CONFIGURED_REQUIRES_WRITE.marshallAsAttribute(model, writer);
-
-            writer.writeEndElement();
         }
 
         if (configuredConstraints.containsKey(SENSITIVITY_CLASSIFICATION)) {
             writer.writeStartElement(Element.SENSITIVE_CLASSIFICATIONS.getLocalName());
             Map<String, Set<String>> constraints = configuredConstraints.get(SENSITIVITY_CLASSIFICATION);
             for (Map.Entry<String, Set<String>> entry : constraints.entrySet()) {
-                writer.writeStartElement(Element.SENSITIVE_CLASSIFICATION.getLocalName());
-                writeAttribute(writer, Attribute.NAME, entry.getKey());
-
-                for (String type : entry.getValue()) {
-                    writer.writeStartElement(Element.TYPE.getLocalName());
-                    ModelNode model = accessAuthorization.get(CONSTRAINT, SENSITIVITY_CLASSIFICATION, SENSITIVITY_CLASSIFICATION, entry.getKey(), TYPE, type);
-                    writeAttribute(writer, Attribute.NAME, type);
+                for (String classification : entry.getValue()) {
+                    writer.writeEmptyElement(Element.SENSITIVE_CLASSIFICATION.getLocalName());
+                    ModelNode model = accessAuthorization.get(CONSTRAINT, SENSITIVITY_CLASSIFICATION, TYPE, entry.getKey(), CLASSIFICATION, classification);
+                    writeAttribute(writer, Attribute.TYPE, entry.getKey());
+                    writeAttribute(writer, Attribute.NAME, classification);
                     SensitivityResourceDefinition.CONFIGURED_REQUIRES_ACCESS.marshallAsAttribute(model, writer);
                     SensitivityResourceDefinition.CONFIGURED_REQUIRES_READ.marshallAsAttribute(model, writer);
                     SensitivityResourceDefinition.CONFIGURED_REQUIRES_WRITE.marshallAsAttribute(model, writer);
-                    writer.writeEndElement();
                 }
-
-                writer.writeEndElement();
             }
             writer.writeEndElement();
         }
@@ -2725,18 +2705,14 @@ public class ManagementXml {
             writer.writeStartElement(Element.APPLICATION_CLASSIFICATIONS.getLocalName());
             Map<String, Set<String>> constraints = configuredConstraints.get(APPLICATION_CLASSIFICATION);
             for (Map.Entry<String, Set<String>> entry : constraints.entrySet()) {
-                writer.writeStartElement(Element.APPLICATION_CLASSIFICATION.getLocalName());
-                writeAttribute(writer, Attribute.NAME, entry.getKey());
 
-                for (String type : entry.getValue()) {
-                    writer.writeStartElement(Element.TYPE.getLocalName());
-                    ModelNode model = accessAuthorization.get(CONSTRAINT, APPLICATION_CLASSIFICATION, APPLICATION_CLASSIFICATION, entry.getKey(), TYPE, type);
-                    writeAttribute(writer, Attribute.NAME, type);
+                for (String classification : entry.getValue()) {
+                    writer.writeEmptyElement(Element.APPLICATION_CLASSIFICATION.getLocalName());
+                    ModelNode model = accessAuthorization.get(CONSTRAINT, APPLICATION_CLASSIFICATION, TYPE, entry.getKey(), CLASSIFICATION, classification);
+                    writeAttribute(writer, Attribute.TYPE, entry.getKey());
+                    writeAttribute(writer, Attribute.NAME, classification);
                     ApplicationClassificationConfigResourceDefinition.CONFIGURED_APPLICATION.marshallAsAttribute(model, writer);
-                    writer.writeEndElement();
                 }
-
-                writer.writeEndElement();
             }
             writer.writeEndElement();
         }

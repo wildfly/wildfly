@@ -27,6 +27,7 @@ import static org.jboss.as.controller.PathElement.pathElement;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ACCESS;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ADD;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.AUTHORIZATION;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.CLASSIFICATION;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.CONFIGURED_REQUIRES_ACCESS;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.CONFIGURED_REQUIRES_READ;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.CONFIGURED_REQUIRES_WRITE;
@@ -199,8 +200,8 @@ public class RuntimeSensitivityReconfigurationTestCase extends AbstractCoreModel
                 pathElement(CORE_SERVICE, MANAGEMENT),
                 pathElement(ACCESS, AUTHORIZATION),
                 pathElement(CONSTRAINT, SENSITIVITY_CLASSIFICATION),
-                pathElement(SENSITIVITY_CLASSIFICATION, sensitivity),
-                pathElement(TYPE, CORE));
+                pathElement(TYPE, CORE),
+                pathElement(CLASSIFICATION, sensitivity));
 
         ModelNode operation = Util.createOperation(WRITE_ATTRIBUTE_OPERATION, address);
 

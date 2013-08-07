@@ -2695,9 +2695,27 @@
                 ]]>
             </xs:documentation>
         </xs:annotation>
-        <xs:attribute name="requires-access" type="xs:boolean"/>
-        <xs:attribute name="requires-read" type="xs:boolean"/>
-        <xs:attribute name="requires-write" type="xs:boolean"/>
+        <xs:attribute name="requires-access" type="xs:boolean">
+            <xs:annotation>
+                <xs:documentation>
+                    Configuration of if a classification's access is sensitive
+                </xs:documentation>
+            </xs:annotation>
+        </xs:attribute>
+        <xs:attribute name="requires-read" type="xs:boolean">
+            <xs:annotation>
+                <xs:documentation>
+                    Configuration of if a classification's read is sensitive
+                </xs:documentation>
+            </xs:annotation>
+        </xs:attribute>
+        <xs:attribute name="requires-write" type="xs:boolean">
+            <xs:annotation>
+                <xs:documentation>
+                    Configuration of if a classification's write is sensitive
+                </xs:documentation>
+            </xs:annotation>
+        </xs:attribute>
     </xs:complexType>
 
     <xs:complexType name="vault-expression-sensitivityType">
