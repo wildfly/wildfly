@@ -232,67 +232,67 @@ public class SyslogAuditLogHandler extends AuditLogHandler {
     }
 
     @Override
-    boolean compare(AuditLogHandler other){
+    boolean isDifferent(AuditLogHandler other){
         if (other instanceof SyslogAuditLogHandler == false){
-            return false;
+            return true;
         }
         SyslogAuditLogHandler otherHandler = (SyslogAuditLogHandler)other;
         if (!name.equals(otherHandler.name)){
-            return false;
+            return true;
         }
         if (!getFormatterName().equals(otherHandler.getFormatterName())) {
-            return false;
+            return true;
         }
         if (!appName.equals(otherHandler.appName)){
-            return false;
+            return true;
         }
         if (!hostName.equals(otherHandler.hostName)){
-            return false;
+            return true;
         }
         if (!syslogType.equals(otherHandler.syslogType)){
-            return false;
+            return true;
         }
         if (!truncate == otherHandler.truncate) {
-            return false;
+            return true;
         }
         if (maxLength != otherHandler.maxLength) {
-            return false;
+            return true;
         }
         if (!syslogServerAddress.equals(otherHandler.syslogServerAddress)){
-            return false;
+            return true;
         }
         if (port != otherHandler.port){
-            return false;
+            return true;
         }
         if (!transport.equals(otherHandler.transport)){
-            return false;
+            return true;
         }
         //These may or not be null depending on the transport
         if (!compare(messageTransfer, otherHandler.messageTransfer)){
-            return false;
+            return true;
         }
         if (!compare(tlsTrustStorePath, otherHandler.tlsTrustStorePath)){
-            return false;
+            return true;
         }
         if (!compare(tlsTrustStoreRelativeTo, otherHandler.tlsTrustStoreRelativeTo)){
-            return false;
+            return true;
         }
         if (!compare(tlsTrustStorePassword, otherHandler.tlsTrustStorePassword)){
-            return false;
+            return true;
         }
         if (!compare(tlsClientCertStorePath, otherHandler.tlsClientCertStorePath)){
-            return false;
+            return true;
         }
         if (!compare(tlsClientCertStoreRelativeTo, otherHandler.tlsClientCertStoreRelativeTo)){
-            return false;
+            return true;
         }
         if (!compare(tlsClientCertStorePassword, otherHandler.tlsClientCertStorePassword)){
-            return false;
+            return true;
         }
         if (!compare(tlsClientCertStoreKeyPassword, otherHandler.tlsClientCertStoreKeyPassword)){
-            return false;
+            return true;
         }
-        return true;
+        return false;
     }
 
     private boolean compare(Object one, Object two){

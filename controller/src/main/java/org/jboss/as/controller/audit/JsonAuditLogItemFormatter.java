@@ -27,6 +27,7 @@ import org.jboss.as.controller.audit.AuditLogItem.ModelControllerAuditLogItem;
 import org.jboss.dmr.ModelNode;
 
 /**
+ * All methods on this class should be called with {@link ManagedAuditLoggerImpl}'s lock taken.
  *
  * @author <a href="kabir.khan@jboss.com">Kabir Khan</a>
  */

@@ -33,13 +33,14 @@ enum Namespace {
     UNKNOWN(null),
     JMX_1_0("urn:jboss:domain:jmx:1.0"),
     JMX_1_1("urn:jboss:domain:jmx:1.1"),
-    JMX_1_2("urn:jboss:domain:jmx:1.2")
+    JMX_1_2("urn:jboss:domain:jmx:1.2"),
+    JMX_1_3("urn:jboss:domain:jmx:1.3")
     ;
 
     /**
      * The current namespace version.
      */
-    public static final Namespace CURRENT = JMX_1_2;
+    public static final Namespace CURRENT = JMX_1_3;
 
     private final String name;
 

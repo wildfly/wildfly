@@ -2673,7 +2673,7 @@ public interface ControllerMessages {
     IllegalStateException resolvedFileDoesNotExistOrIsDirectory(File file);
 
     @Message(id = 13464, value = "Could not back up '%s' to '%s'")
-    IllegalStateException couldNotBackUp(String absolutePath, String absolutePath1);
+    IllegalStateException couldNotBackUp(@Cause IOException cause, String absolutePath, String absolutePath1);
 
     @Message(id = 13465, value = "Attempt was made to both remove and add a handler from a composite operation - update the handler instead")
     IllegalStateException attemptToBothRemoveAndAddHandlerUpdateInstead();

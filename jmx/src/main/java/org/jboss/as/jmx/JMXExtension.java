@@ -102,14 +102,14 @@ public class JMXExtension implements Extension {
             new SensitivityClassification(SUBSYSTEM_NAME, "jmx", false, false, true);
 
     static final SensitiveTargetAccessConstraintDefinition JMX_SENSITIVITY_DEF = new SensitiveTargetAccessConstraintDefinition(JMX_SENSITIVITY);
-
-    static final JMXSubsystemParser_1_2 parserCurrent = new JMXSubsystemParser_1_2();
+    static final JMXSubsystemParser_2_0 parserCurrent = new JMXSubsystemParser_2_0();
+    static final JMXSubsystemParser_1_2 parser12 = new JMXSubsystemParser_1_2();
     static final JMXSubsystemParser_1_1 parser11 = new JMXSubsystemParser_1_1();
     static final JMXSubsystemParser_1_0 parser10 = new JMXSubsystemParser_1_0();
     static final JMXSubsystemWriter writer = new JMXSubsystemWriter();
 
     private static final int MANAGEMENT_API_MAJOR_VERSION = 1;
-    private static final int MANAGEMENT_API_MINOR_VERSION = 2;
+    private static final int MANAGEMENT_API_MINOR_VERSION = 3;
     private static final int MANAGEMENT_API_MICRO_VERSION = 0;
 
     /**
@@ -139,7 +139,8 @@ public class JMXExtension implements Extension {
     public void initializeParsers(ExtensionParsingContext context) {
         context.setSubsystemXmlMapping(SUBSYSTEM_NAME, Namespace.JMX_1_0.getUriString(), parser10);
         context.setSubsystemXmlMapping(SUBSYSTEM_NAME, Namespace.JMX_1_1.getUriString(), parser11);
-        context.setSubsystemXmlMapping(SUBSYSTEM_NAME, Namespace.JMX_1_2.getUriString(), parserCurrent);
+        context.setSubsystemXmlMapping(SUBSYSTEM_NAME, Namespace.JMX_1_2.getUriString(), parser12);
+        context.setSubsystemXmlMapping(SUBSYSTEM_NAME, Namespace.JMX_1_3.getUriString(), parserCurrent);
     }
 
     private static ModelNode createAddOperation() {
@@ -505,13 +506,6 @@ public class JMXExtension implements Extension {
                         connectorAdd = true;
                         list.add(parseRemoteConnector(reader));
                         break;
-                    case AUDIT_LOG:
-                        if (auditLog) {
-                            throw ParseUtils.duplicateNamedElement(reader, Element.AUDIT_LOG.getLocalName());
-                        }
-                        auditLog = true;
-                        parseAuditLogElement(reader, list);
-                        break;
                     default: {
                         throw ParseUtils.unexpectedElement(reader);
                     }
@@ -519,7 +513,7 @@ public class JMXExtension implements Extension {
             }
         }
 
-        private ModelNode parseShowModelElement(XMLExtendedStreamReader reader, String showModelChild) throws XMLStreamException {
+        protected ModelNode parseShowModelElement(XMLExtendedStreamReader reader, String showModelChild) throws XMLStreamException {
 
             ModelNode op = createOperation(ADD, CommonAttributes.EXPOSE_MODEL, showModelChild);
 
@@ -550,7 +544,57 @@ public class JMXExtension implements Extension {
             }
             return op;
         }
+    }
 
+    private static class JMXSubsystemParser_2_0 extends JMXSubsystemParser_1_2 {
+        @Override
+        public void readElement(XMLExtendedStreamReader reader, List<ModelNode> list) throws XMLStreamException {
+            boolean showResolvedModel = false;
+            boolean showExpressionModel = false;
+            boolean connectorAdd = false;
+            boolean auditLog = false;
+
+            ParseUtils.requireNoAttributes(reader);
+
+            list.add(createAddOperation());
+
+            while (reader.hasNext() && reader.nextTag() != END_ELEMENT) {
+                final Element element = Element.forName(reader.getLocalName());
+                switch (element) {
+                    case EXPOSE_RESOLVED_MODEL:
+                        if (showResolvedModel) {
+                            throw ParseUtils.duplicateNamedElement(reader, Element.EXPOSE_RESOLVED_MODEL.getLocalName());
+                        }
+                        showResolvedModel = true;
+                        list.add(parseShowModelElement(reader, CommonAttributes.RESOLVED));
+                        break;
+                    case EXPOSE_EXPRESSION_MODEL:
+                        if (showExpressionModel) {
+                            throw ParseUtils.duplicateNamedElement(reader, Element.EXPOSE_EXPRESSION_MODEL.getLocalName());
+                        }
+                        showExpressionModel = true;
+                        list.add(parseShowModelElement(reader, CommonAttributes.EXPRESSION));
+                        break;
+                    case REMOTING_CONNECTOR:
+                        if (connectorAdd) {
+                            throw ParseUtils.duplicateNamedElement(reader, Element.REMOTING_CONNECTOR.getLocalName());
+                        }
+                        connectorAdd = true;
+                        list.add(parseRemoteConnector(reader));
+                        break;
+                    case AUDIT_LOG:
+                        if (auditLog) {
+                            throw ParseUtils.duplicateNamedElement(reader, Element.AUDIT_LOG.getLocalName());
+                        }
+                        auditLog = true;
+                        parseAuditLogElement(reader, list);
+                        break;
+                    default: {
+                        throw ParseUtils.unexpectedElement(reader);
+                    }
+                }
+            }
+        }
 
         private void parseAuditLogElement(XMLExtendedStreamReader reader, List<ModelNode> list) throws XMLStreamException {
 
@@ -636,6 +680,7 @@ public class JMXExtension implements Extension {
             ParseUtils.requireNoContent(reader);
         }
     }
+
 
     private static class JMXSubsystemWriter implements XMLStreamConstants, XMLElementWriter<SubsystemMarshallingContext> {
         /**

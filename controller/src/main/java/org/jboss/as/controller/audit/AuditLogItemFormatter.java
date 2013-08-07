@@ -25,8 +25,9 @@ import java.text.SimpleDateFormat;
 
 
 /**
- *
- * @author <a href="kabir.khan@jboss.com">Kabir Khan</a>
+  * All methods on this class should be called with {@link ManagedAuditLoggerImpl}'s lock taken.
+  *
+  * @author <a href="kabir.khan@jboss.com">Kabir Khan</a>
  */
 public abstract class AuditLogItemFormatter {
 
@@ -34,6 +35,8 @@ public abstract class AuditLogItemFormatter {
     private volatile String formattedString;
     private volatile boolean includeDate ;
     private volatile String dateSeparator;
+    //SimpleDateFormat is not good to store among threads, since it stores intermediate results in its fields
+    //Methods on this class will only ever be called from one thread (see class javadoc) so although it looks shared here it is not
     private volatile SimpleDateFormat dateFormat;
 
     protected AuditLogItemFormatter(String name, boolean includeDate, String dateSeparator, String dateFormat) {

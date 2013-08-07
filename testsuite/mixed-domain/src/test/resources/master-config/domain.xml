@@ -178,7 +178,7 @@
                 <cached-connection-manager/>
             </subsystem>
             <subsystem xmlns="urn:jboss:domain:jdr:1.0"/>
-            <subsystem xmlns="urn:jboss:domain:jmx:1.2">
+            <subsystem xmlns="urn:jboss:domain:jmx:1.3">
                 <expose-resolved-model/>
                 <expose-expression-model/>
                 <!--<remoting-connector use-management-endpoint="false"/>-->
@@ -400,7 +400,7 @@
                     </replicated-cache>
                     <!--
                       ~  Clustered cache used internally by EJB subsytem for managing the client-mapping(s) of
-                      ~                 the socketbinding referenced by the EJB remoting connector 
+                      ~                 the socketbinding referenced by the EJB remoting connector
                       -->
                     <replicated-cache name="remote-connector-client-mappings" mode="SYNC" batching="true"/>
                     <distributed-cache name="dist" mode="ASYNC" batching="true" l1-lifespan="0">
@@ -451,7 +451,7 @@
                 <stack name="udp">
                     <transport type="UDP" socket-binding="jgroups-udp"/>
                     <protocol type="PING"/>
-                    <!--  
+                    <!--
                         MERGE3 does not exist in 7.1.x, so use MERGE2 for these tests
                         A server not starting is not a problem, it just means it needs to use another profile
                     <protocol type="MERGE3"/>
@@ -460,7 +460,7 @@
                     <protocol type="FD_SOCK" socket-binding="jgroups-udp-fd"/>
                     <protocol type="FD"/>
                     <protocol type="VERIFY_SUSPECT"/>
-                    <!--  
+                    <!--
                         NAKACK does not exist in 7.1.x, so use NAKACK for these tests
                         A server not starting is not a problem, it just means it needs to use another profile
                     <protocol type="NAKACK2"/>
@@ -481,7 +481,7 @@
                     <protocol type="FD_SOCK" socket-binding="jgroups-tcp-fd"/>
                     <protocol type="FD"/>
                     <protocol type="VERIFY_SUSPECT"/>
-                    <!--  
+                    <!--
                         NAKACK does not exist in 7.1.x, so use NAKACK for these tests
                         A server not starting is not a problem, it just means it needs to use another profile
                     <protocol type="NAKACK2"/>
@@ -496,7 +496,7 @@
                     <protocol type="RSVP"/>
                 </stack>
             </subsystem>
-            <subsystem xmlns="urn:jboss:domain:jmx:1.2">
+            <subsystem xmlns="urn:jboss:domain:jmx:1.3">
                 <expose-resolved-model/>
                 <expose-expression-model/>
                 <!--<remoting-connector use-management-endpoint="false"/>-->
@@ -757,7 +757,7 @@
                 <cached-connection-manager/>
             </subsystem>
             <subsystem xmlns="urn:jboss:domain:jdr:1.0"/>
-            <subsystem xmlns="urn:jboss:domain:jmx:1.2">
+            <subsystem xmlns="urn:jboss:domain:jmx:1.3">
                 <expose-resolved-model/>
                 <expose-expression-model/>
                 <!--<remoting-connector use-management-endpoint="false"/>-->
@@ -1054,7 +1054,7 @@
                     </replicated-cache>
                     <!--
                       ~  Clustered cache used internally by EJB subsytem for managing the client-mapping(s) of
-                      ~                 the socketbinding referenced by the EJB remoting connector 
+                      ~                 the socketbinding referenced by the EJB remoting connector
                       -->
                     <replicated-cache name="remote-connector-client-mappings" mode="SYNC" batching="true"/>
                     <distributed-cache name="dist" mode="ASYNC" batching="true" l1-lifespan="0">
@@ -1113,7 +1113,7 @@
                 <stack name="udp">
                     <transport type="UDP" socket-binding="jgroups-udp"/>
                     <protocol type="PING"/>
-                    <!--  
+                    <!--
                         MERGE3 does not exist in 7.1.x, so use MERGE2 for these tests
                         A server not starting is not a problem, it just means it needs to use another profile
                     <protocol type="MERGE3"/>
@@ -1122,7 +1122,7 @@
                     <protocol type="FD_SOCK" socket-binding="jgroups-udp-fd"/>
                     <protocol type="FD"/>
                     <protocol type="VERIFY_SUSPECT"/>
-                    <!--  
+                    <!--
                         NAKACK does not exist in 7.1.x, so use NAKACK for these tests
                         A server not starting is not a problem, it just means it needs to use another profile
                     <protocol type="NAKACK2"/>
@@ -1143,7 +1143,7 @@
                     <protocol type="FD_SOCK" socket-binding="jgroups-tcp-fd"/>
                     <protocol type="FD"/>
                     <protocol type="VERIFY_SUSPECT"/>
-                    <!--  
+                    <!--
                         NAKACK does not exist in 7.1.x, so use NAKACK for these tests
                         A server not starting is not a problem, it just means it needs to use another profile
                     <protocol type="NAKACK2"/>
@@ -1158,7 +1158,7 @@
                     <protocol type="RSVP"/>
                 </stack>
             </subsystem>
-            <subsystem xmlns="urn:jboss:domain:jmx:1.2">
+            <subsystem xmlns="urn:jboss:domain:jmx:1.3">
                 <expose-resolved-model/>
                 <expose-expression-model/>
                 <!--<remoting-connector use-management-endpoint="false"/>-->
@@ -1356,13 +1356,13 @@
         </profile>
     </profiles>
     <!--
-      ~ 
+      ~
       ~          Named interfaces that can be referenced elsewhere in the configuration. The configuration
       ~          for how to associate these logical names with an actual network interface can either
       ~          be specified here or can be declared on a per-host basis in the equivalent element in host.xml.
-      ~ 
+      ~
       ~          These default configurations require the binding specification to be done in host.xml.
-      ~     
+      ~
       -->
     <interfaces>
         <interface name="management"/>
@@ -1423,9 +1423,9 @@
                 <remote-destination host="localhost" port="25"/>
             </outbound-socket-binding>
         </socket-binding-group>
-        <!-- 
+        <!--
             Use expressions in places they are allowed since expressions should be allowd on all versions.
-            The defaults will be used 
+            The defaults will be used
         -->
         <socket-binding-group name="full-ha-sockets" default-interface="${test.not.set.anywhere:public}">
             <!-- Needed for server groups using the 'full-ha' profile  -->
