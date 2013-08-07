@@ -73,7 +73,7 @@ public class ModelDescriptionConstants {
     public static final String CONSTRAINT = "constraint";
     public static final String CONCURRENT_GROUPS = "concurrent-groups";
     public static final String CONFIGURED_APPLICATION = "configured-application";
-    public static final String CONFIGURED_REQUIRES_ACCESS = "configured-requires-access";
+    public static final String CONFIGURED_REQUIRES_ADDRESSABLE = "configured-requires-addressable";
     public static final String CONFIGURED_REQUIRES_READ = "configured-requires-read";
     public static final String CONFIGURED_REQUIRES_WRITE = "configured-requires-write";
     public static final String CONNECTION = "connection";
@@ -89,7 +89,7 @@ public class ModelDescriptionConstants {
     public static final String DEFAULT_INTERFACE = "default-interface";
     public static final String DEFAULT_REQUIRES_WRITE = "default-requires-write";
     public static final String DEFAULT_REQUIRES_READ = "default-requires-read";
-    public static final String DEFAULT_REQUIRES_ACCESS = "default-requires-access";
+    public static final String DEFAULT_REQUIRES_ADDRESSABLE = "default-requires-addressable";
     public static final String DEPLOY = "deploy";
     public static final String DEPLOYMENT = "deployment";
     public static final String DEPLOYMENT_OVERLAY = "deployment-overlay";

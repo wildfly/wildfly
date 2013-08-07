@@ -63,7 +63,6 @@ import org.jboss.as.controller.operations.global.GlobalOperationHandlers;
 import org.jboss.as.controller.registry.ManagementResourceRegistration;
 import org.jboss.as.controller.registry.Resource;
 import org.jboss.as.controller.test.AbstractControllerTestBase;
-import org.jboss.as.controller.test.AbstractControllerTestBase.ModelControllerService;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.ModelType;
 import org.jboss.dmr.Property;
@@ -192,13 +191,8 @@ public class ReadResourceDescriptionAccessConstraintDefinitionTestCase extends A
 
 
     private void checkAccessConstraint(ModelNode constraint, String type, boolean access, boolean read, boolean write) {
+        System.out.println(constraint);
         Assert.assertEquals(type, constraint.get("type").asString());
-//        Assert.assertEquals(read, constraint.get("default-read").asBoolean());
-//        Assert.assertEquals(read, constraint.get("requires-read").asBoolean());
-//        Assert.assertEquals(write, constraint.get("default-write").asBoolean());
-//        Assert.assertEquals(write, constraint.get("requires-write").asBoolean());
-//        Assert.assertEquals(access, constraint.get("default-access").asBoolean());
-//        Assert.assertEquals(access, constraint.get("requires-access").asBoolean());
     }
 
     private void checkDeploymentApplicationConstraint(ModelNode constraint) {
@@ -333,7 +327,6 @@ public class ReadResourceDescriptionAccessConstraintDefinitionTestCase extends A
 
 
         public TestWriteAttributeHandler(AttributeDefinition... definitions) {
-            // FIXME TestWriteAttributeHandler constructor
             super(definitions);
         }
 

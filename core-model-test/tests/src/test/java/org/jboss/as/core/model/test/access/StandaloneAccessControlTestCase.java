@@ -48,7 +48,7 @@ public class StandaloneAccessControlTestCase extends AbstractCoreModelTest {
 
 
         KernelServices kernelServices = createKernelServicesBuilder(TestModelType.STANDALONE)
-                .setXmlResource("constraints.xml")
+                .setXmlResource("standalone.xml")
                 .validateDescription()
                 .build();
         Assert.assertTrue(kernelServices.isSuccessfulBoot());

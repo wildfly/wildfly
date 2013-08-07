@@ -103,7 +103,7 @@ public enum Attribute {
     RECURSIVE("recursive"),
     REF("ref"),
     RELATIVE_TO("relative-to"),
-    REQUIRES_ACCESS("requires-access"),
+    REQUIRES_ADDRESSABLE("requires-addressable"),
     REQUIRES_READ("requires-read"),
     REQUIRES_WRITE("requires-write"),
     RUNTIME_NAME("runtime-name"),
