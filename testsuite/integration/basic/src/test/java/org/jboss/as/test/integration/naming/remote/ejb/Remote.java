@@ -28,4 +28,5 @@ package org.jboss.as.test.integration.naming.remote.ejb;
 @javax.ejb.Remote
 public interface Remote {
     String echo(String value);
+    String getCallerPrincipal();
 }

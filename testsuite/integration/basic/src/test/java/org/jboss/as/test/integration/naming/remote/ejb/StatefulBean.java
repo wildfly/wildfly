@@ -22,6 +22,8 @@
 
 package org.jboss.as.test.integration.naming.remote.ejb;
 
+import javax.annotation.Resource;
+import javax.ejb.SessionContext;
 import javax.ejb.Stateful;
 
 /**
@@ -29,6 +31,15 @@ import javax.ejb.Stateful;
  */
 @Stateful
 public class StatefulBean implements Remote {
+
+    @Resource
+    private SessionContext ctx;
+
+    @Override
+    public String getCallerPrincipal() {
+        return ctx.getCallerPrincipal().getName();
+    }
+
     public String echo(String value) {
         return "Echo: " + value;
     }

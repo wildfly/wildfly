@@ -80,6 +80,19 @@ public class RemoteNamingEjbTestCase {
         return new InitialContext(env);
     }
 
+    public InitialContext getRemoteContext(String username) throws Exception {
+        final Properties env = new Properties();
+        env.put(Context.INITIAL_CONTEXT_FACTORY, org.jboss.naming.remote.client.InitialContextFactory.class.getName());
+        env.put(Context.PROVIDER_URL, managementClient.getRemoteEjbURL().toString());
+        env.put("jboss.naming.client.ejb.context", true);
+        env.put("jboss.naming.client.connect.options.org.xnio.Options.SASL_POLICY_NOPLAINTEXT", "false");
+        env.put("jboss.naming.client.connect.options.org.xnio.Options.SASL_POLICY_NOANONYMOUS", "true");
+
+        env.put(Context.SECURITY_PRINCIPAL, username);
+        env.put(Context.SECURITY_CREDENTIALS, "");
+        return new InitialContext(env);
+    }
+
     @Test
     public void testIt() throws Exception {
         final InitialContext ctx = getRemoteContext();
@@ -189,6 +202,26 @@ public class RemoteNamingEjbTestCase {
                 // expected
             }
             ctx.close();
+        }
+    }
+
+    /**
+     * When an application creates two client contexts with different user credentials, check that
+     * the second created context uses the correct credentials.
+     */
+    @Test
+    public void testMultipleContextsSecurity() throws Exception {
+        final InitialContext ctx = getRemoteContext("foo");
+        final InitialContext ctx2 = getRemoteContext("bar");
+        try {
+            Remote remote1  = (Remote) ctx.lookup(ARCHIVE_NAME + "/" + Bean.class.getSimpleName() + "!" + Remote.class.getName());
+            Remote remote2  = (Remote) ctx2.lookup(ARCHIVE_NAME + "/" + Bean.class.getSimpleName() + "!" + Remote.class.getName());
+            Assert.assertEquals("unexpected credentials used", "foo", remote1.getCallerPrincipal());
+            Assert.assertEquals("unexpected credentials used", "bar", remote2.getCallerPrincipal());
+            Assert.assertEquals("unexpected credentials used", "foo", remote1.getCallerPrincipal());
+        } finally {
+            ctx.close();
+            ctx2.close();
         }
     }
 }
