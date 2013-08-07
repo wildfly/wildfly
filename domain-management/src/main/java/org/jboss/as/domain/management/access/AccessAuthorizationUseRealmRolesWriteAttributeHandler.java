@@ -28,9 +28,10 @@ import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.access.rbac.ConfigurableRoleMapper;
 import org.jboss.as.controller.registry.Resource;
 import org.jboss.dmr.ModelNode;
+import org.jboss.dmr.ModelType;
 
 /**
- * An {@link OperationStepHandler} for updates to the use-realm-roles attribute and to pass the current value on to the
+ * An {@link org.jboss.as.controller.OperationStepHandler} for updates to the use-realm-roles attribute and to pass the current value on to the
  * {@link ConfigurableRoleMapper}.
  *
  * @author <a href="mailto:darran.lofthouse@jboss.com">Darran Lofthouse</a>
@@ -47,7 +48,7 @@ public class AccessAuthorizationUseRealmRolesWriteAttributeHandler extends Abstr
     @Override
     protected void finishModelStage(OperationContext context, ModelNode operation, String attributeName, ModelNode newValue,
             ModelNode oldValue, Resource model) throws OperationFailedException {
-        if (newValue.asBoolean() == false) {
+        if (newValue.getType() == ModelType.EXPRESSION || newValue.asBoolean(false) == false) {
             /*
              * Using roles from the realm has been disabled so now need to check if there that RBAC has been disabled or an
              * alternative mapping strategy is in place.

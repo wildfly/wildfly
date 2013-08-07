@@ -135,6 +135,8 @@ public class RbacSanityCheckOperation implements OperationStepHandler {
     public static void registerOperation(final OperationContext context) {
         RbacSanityCheckOperation registered = context.getAttachment(KEY);
         if (registered == null) {
+            // TODO support managed domain
+            if (!context.isNormalServer()) return;
             context.addStep(createOperation(), INSTANCE, Stage.MODEL);
             context.attach(KEY, INSTANCE);
         }
