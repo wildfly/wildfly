@@ -103,17 +103,18 @@ public class ServerOperationResolver {
     private enum DomainKey {
 
         UNKNOWN(null),
-        EXTENSION("extension"),
-        PATH("path"),
-        SYSTEM_PROPERTY("system-property"),
-        PROFILE("profile"),
-        INTERFACE("interface"),
-        SOCKET_BINDING_GROUP("socket-binding-group"),
-        DEPLOYMENT("deployment"),
-        SERVER_GROUP("server-group"),
-        MANAGMENT_CLIENT_CONTENT("management-client-content"),
-        HOST("host"),
-        DEPLOYMENT_OVERLAY("deployment-overlay"),;
+        EXTENSION(ModelDescriptionConstants.EXTENSION),
+        PATH(ModelDescriptionConstants.PATH),
+        SYSTEM_PROPERTY(ModelDescriptionConstants.SYSTEM_PROPERTY),
+        CORE_SERVICE(ModelDescriptionConstants.CORE_SERVICE),
+        PROFILE(ModelDescriptionConstants.PROFILE),
+        INTERFACE(ModelDescriptionConstants.INTERFACE),
+        SOCKET_BINDING_GROUP(ModelDescriptionConstants.SOCKET_BINDING_GROUP),
+        DEPLOYMENT(ModelDescriptionConstants.DEPLOYMENT),
+        SERVER_GROUP(ModelDescriptionConstants.SERVER_GROUP),
+        MANAGMENT_CLIENT_CONTENT(ModelDescriptionConstants.MANAGEMENT_CLIENT_CONTENT),
+        HOST(ModelDescriptionConstants.HOST),
+        DEPLOYMENT_OVERLAY(ModelDescriptionConstants.DEPLOYMENT_OVERLAY),;
 
         private final String name;
 
@@ -142,13 +143,13 @@ public class ServerOperationResolver {
     private enum HostKey {
 
         UNKNOWN(null),
-        PATH("path"),
-        SYSTEM_PROPERTY("system-property"),
-        CORE_SERVICE("core-service"),
-        INTERFACE("interface"),
-        JVM("jvm"),
-        SERVER("server"),
-        SERVER_CONFIG("server-config");
+        PATH(ModelDescriptionConstants.PATH),
+        SYSTEM_PROPERTY(ModelDescriptionConstants.SYSTEM_PROPERTY),
+        CORE_SERVICE(ModelDescriptionConstants.CORE_SERVICE),
+        INTERFACE(ModelDescriptionConstants.INTERFACE),
+        JVM(ModelDescriptionConstants.JVM),
+        SERVER(ModelDescriptionConstants.SERVER),
+        SERVER_CONFIG(ModelDescriptionConstants.SERVER_CONFIG);
 
         private final String name;
 
@@ -175,7 +176,7 @@ public class ServerOperationResolver {
     }
 
     private enum Level {
-        DOMAIN, SERVER_GROUP, HOST, SERVER;
+        DOMAIN, SERVER_GROUP, HOST, SERVER
     }
 
     private final String localHostName;
@@ -248,6 +249,9 @@ public class ServerOperationResolver {
                 case SYSTEM_PROPERTY: {
                     return getServerSystemPropertyOperations(operation, address, Level.DOMAIN, domain, null, host);
                 }
+                case CORE_SERVICE: {
+                    return getServerCoreServiceOperations(operation, host);
+                }
                 case PROFILE: {
                     return getServerProfileOperations(operation, address, domain, host);
                 }
@@ -294,6 +298,12 @@ public class ServerOperationResolver {
     }
 
     private Map<Set<ServerIdentity>, ModelNode> getDeploymentOverlayOperations(ModelNode operation,
+                                                                               ModelNode host) {
+        final Set<ServerIdentity> allServers = getAllRunningServers(host, localHostName, serverProxies);
+        return Collections.singletonMap(allServers, operation.clone());
+    }
+
+    private Map<Set<ServerIdentity>, ModelNode> getServerCoreServiceOperations(ModelNode operation,
                                                                                ModelNode host) {
         final Set<ServerIdentity> allServers = getAllRunningServers(host, localHostName, serverProxies);
         return Collections.singletonMap(allServers, operation.clone());

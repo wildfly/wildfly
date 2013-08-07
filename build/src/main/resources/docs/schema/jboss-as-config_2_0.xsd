@@ -936,14 +936,14 @@
 		             <xs:documentation>
 		                The maximum length in bytes a log message, including the header, is allowed to be. If undefined, it will default to 1024 bytes if the syslog-format is RFC3164, or 2048 bytes if the syslog-format is RFC5424.
 		             </xs:documentation>
-		          </xs:annotation> 
+		          </xs:annotation>
 		        </xs:attribute>
               <xs:attribute name="truncate" type="xs:boolean" default="true">
                 <xs:annotation>
                    <xs:documentation>
                       Whether or not a message, including the header, should truncate the message if the length in bytes is greater than the maximum length. If set to false messages will be split and sent with the same header values.
                    </xs:documentation>
-                </xs:annotation> 
+                </xs:annotation>
               </xs:attribute>
             </xs:extension>
         </xs:complexContent>
@@ -2888,6 +2888,7 @@
         <xs:sequence>
             <xs:element name="server-group-scoped-roles" type="server-group-scoped-rolesType" minOccurs="0"/>
             <xs:element name="host-scoped-roles" type="host-scoped-rolesType" minOccurs="0"/>
+            <xs:element name="role-mapping" type="role-mappingType" minOccurs="0"/>
             <xs:element name="constraints" type="constraintsType" minOccurs="0"/>
         </xs:sequence>
         <xs:attribute name="provider" type="access-control-providerType" use="optional" default="simple"/>
@@ -3165,21 +3166,21 @@
         </xs:annotation>
         <xs:attribute name="requires-addressable" type="xs:boolean">
           <xs:annotation>
-             <xs:documentation>   
-                Configuration of if a classification's addressability is sensitive 
+             <xs:documentation>
+                Configuration of if a classification's addressability is sensitive
              </xs:documentation>
           </xs:annotation>
         </xs:attribute>
         <xs:attribute name="requires-read" type="xs:boolean">
           <xs:annotation>
-             <xs:documentation>   
+             <xs:documentation>
                 Configuration of if a classification's read is sensitive
              </xs:documentation>
           </xs:annotation>
         </xs:attribute>
         <xs:attribute name="requires-write" type="xs:boolean">
           <xs:annotation>
-             <xs:documentation>   
+             <xs:documentation>
                 Configuration of if a classification's write is sensitive
              </xs:documentation>
           </xs:annotation>
@@ -3217,14 +3218,14 @@
             <xs:extension base="base-sensitivityType">
                 <xs:attribute name="name" type="xs:string" use="required">
                   <xs:annotation>
-                     <xs:documentation>   
-                        The name of the constraint, must be unique for each name 
+                     <xs:documentation>
+                        The name of the constraint, must be unique for each name
                      </xs:documentation>
                   </xs:annotation>
                 </xs:attribute>
                 <xs:attribute name="type" type="xs:string" use="required">
                   <xs:annotation>
-                     <xs:documentation>   
+                     <xs:documentation>
                         'core' or the name of the subsystem defining the constraint
                      </xs:documentation>
                   </xs:annotation>
@@ -3256,14 +3257,14 @@
         </xs:annotation>
            <xs:attribute name="name" type="xs:string" use="required">
              <xs:annotation>
-                <xs:documentation>   
-                   The name of the constraint, must be unique for each name 
+                <xs:documentation>
+                   The name of the constraint, must be unique for each name
                 </xs:documentation>
              </xs:annotation>
            </xs:attribute>
            <xs:attribute name="type" type="xs:string" use="required">
              <xs:annotation>
-                <xs:documentation>   
+                <xs:documentation>
                    'core' or the name of the subsystem defining the constraint
                 </xs:documentation>
              </xs:annotation>
