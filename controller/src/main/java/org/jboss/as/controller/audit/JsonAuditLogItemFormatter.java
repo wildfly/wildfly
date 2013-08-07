@@ -27,6 +27,7 @@ import org.jboss.as.controller.audit.AuditLogItem.ModelControllerAuditLogItem;
 import org.jboss.dmr.ModelNode;
 
 /**
+ * All methods on this class should be called with {@link ManagedAuditLoggerImpl}'s lock taken.
  *
  * @author <a href="kabir.khan@jboss.com">Kabir Khan</a>
  */
@@ -148,7 +149,7 @@ public class JsonAuditLogItemFormatter extends AuditLogItemFormatter {
                     if (c < 8) {
                         escaped.append('0').append('0').append((int) c);
                     } else {
-                        escaped.append('0').append(c >> 3).append(c & 0b111);
+                        escaped.append('0').append(c >> 3).append(c & 0x07);
                     }
                 } else {
                     escaped.append(c);
