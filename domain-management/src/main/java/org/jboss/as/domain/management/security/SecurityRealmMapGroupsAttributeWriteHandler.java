@@ -28,9 +28,10 @@ import org.jboss.as.controller.ReloadRequiredWriteAttributeHandler;
 import org.jboss.as.controller.registry.Resource;
 import org.jboss.as.domain.management.access.RbacSanityCheckOperation;
 import org.jboss.dmr.ModelNode;
+import org.jboss.dmr.ModelType;
 
 /**
- * An {@link OperationStepHandler} for updates to the map-groups-to-roles attribute.
+ * An {@link org.jboss.as.controller.OperationStepHandler} for updates to the map-groups-to-roles attribute.
  *
  * A restart is required as this change is made as the security realm is started - however validation for RBAC is also required.
  *
@@ -47,7 +48,8 @@ public class SecurityRealmMapGroupsAttributeWriteHandler extends ReloadRequiredW
     @Override
     protected void finishModelStage(OperationContext context, ModelNode operation, String attributeName, ModelNode newValue,
             ModelNode oldValue, Resource model) throws OperationFailedException {
-        if ((oldValue.equals(newValue) == false) && (newValue.asBoolean() == false)) {
+        if ((oldValue.equals(newValue) == false) && newValue.isDefined() &&
+                (newValue.getType() == ModelType.EXPRESSION || newValue.asBoolean() == false)) {
             RbacSanityCheckOperation.registerOperation(context);
         }
         super.finishModelStage(context, operation, attributeName, newValue, oldValue, model);
