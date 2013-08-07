@@ -2663,8 +2663,13 @@ public class ManagementXml {
 
     private static void writeIncludeExclude(XMLExtendedStreamWriter writer, String elementName, ModelNode includeExclude)
             throws XMLStreamException {
+        List<Property> list = includeExclude.asPropertyList();
+        if (list.isEmpty()) {
+            return;
+        }
+
         writer.writeStartElement(elementName);
-        for (Property current : includeExclude.asPropertyList()) {
+        for (Property current : list) {
             // The names where only arbitrary to allow unique referencing.
             writePrincipal(writer, current.getValue());
         }
