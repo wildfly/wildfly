@@ -42,7 +42,10 @@ import org.jboss.shrinkwrap.impl.base.exporter.zip.ZipExporterImpl;
 import org.junit.AfterClass;
 import org.junit.Assert;
 import org.junit.BeforeClass;
+import org.junit.FixMethodOrder;
+import org.junit.Ignore;
 import org.junit.Test;
+import org.junit.runners.MethodSorters;
 
 /**
  *
@@ -363,14 +366,14 @@ public class RolloutPlanTestCase extends AbstractCliTestBase {
     }
 
     private CLIOpResult testAddConnector(String rolloutPlanId) throws Exception {
-        cli.sendLine("/profile=default/subsystem=web/connector=test-http:add" +
-                "(socket-binding=test-binding, scheme=http, protocol=\"HTTP/1.1\", enabled=true)"
+        cli.sendLine("/profile=default/subsystem=undertow/server=default-server/http-listener="+rolloutPlanId+":add" +
+                "(socket-binding=test-binding)"
                 + "{rollout id=" + rolloutPlanId + "}", true);
         return cli.readAllAsOpResult();
     }
 
     private CLIOpResult testRemoveConnector(String rolloutPlanId) throws Exception {
-        cli.sendLine("/profile=default/subsystem=web/connector=test-http:remove" +
+        cli.sendLine("/profile=default/subsystem=undertow/server=default-server/http-listener="+rolloutPlanId+":remove" +
                 "{rollout id=" + rolloutPlanId + "; allow-resource-service-restart=true}");
         return cli.readAllAsOpResult();
     }

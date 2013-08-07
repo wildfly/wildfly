@@ -39,7 +39,6 @@
 
     <modules>
         <module>spi</module>
-        <module>catalina</module>
         <module>undertow</module>
         <module>infinispan</module>
     </modules>

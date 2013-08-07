@@ -171,11 +171,6 @@
         </dependency>
 
         <dependency>
-            <groupId>org.jboss.as</groupId>
-            <artifactId>jbossweb-native</artifactId>
-        </dependency>
-
-        <dependency>
             <groupId>org.jboss.invocation</groupId>
             <artifactId>jboss-invocation</artifactId>
         </dependency>
@@ -931,11 +926,6 @@
 
                 <dependency>
                     <groupId>org.wildfly</groupId>
-                    <artifactId>wildfly-clustering-web-catalina</artifactId>
-                </dependency>
-
-                <dependency>
-                    <groupId>org.wildfly</groupId>
                     <artifactId>wildfly-clustering-web-infinispan</artifactId>
                 </dependency>
 
@@ -1083,11 +1073,6 @@
                 <dependency>
                     <groupId>org.wildfly</groupId>
                     <artifactId>wildfly-mod_cluster-undertow</artifactId>
-                </dependency>
-
-                <dependency>
-                    <groupId>org.wildfly</groupId>
-                    <artifactId>wildfly-mod_cluster-web</artifactId>
                 </dependency>
 
                 <dependency>
@@ -1389,10 +1374,6 @@
                     <groupId>org.jboss.mod_cluster</groupId>
                     <artifactId>mod_cluster-container-catalina</artifactId>
                 </dependency>
-                <dependency>
-                    <groupId>org.jboss.mod_cluster</groupId>
-                    <artifactId>mod_cluster-container-jbossweb</artifactId>
-                </dependency>
 
                 <dependency>
                     <groupId>io.undertow</groupId>
@@ -1667,11 +1648,6 @@
                 <dependency>
                     <groupId>org.eclipse.jdt.core.compiler</groupId>
                     <artifactId>ecj</artifactId>
-                </dependency>
-
-                <dependency>
-                    <groupId>org.jboss.web</groupId>
-                    <artifactId>jbossweb</artifactId>
                 </dependency>
 
                 <dependency>
@@ -2305,7 +2281,6 @@
                                         <exclude>org.jboss.metadata:jboss-metadata-ejb</exclude>
                                         <exclude>org.jboss.metadata:jboss-metadata-web</exclude>
                                         <exclude>org.jboss.mod_cluster:mod_cluster-container-catalina</exclude>
-                                        <exclude>org.jboss.mod_cluster:mod_cluster-container-jbossweb</exclude>
                                         <exclude>org.jboss.mod_cluster:mod_cluster-container-spi</exclude>
                                         <exclude>org.jboss.mod_cluster:mod_cluster-core</exclude>
                                         <exclude>org.jboss.resteasy:resteasy-cdi</exclude>
@@ -2323,7 +2298,6 @@
                                         <exclude>org.jboss:staxmapper</exclude>
                                         <exclude>org.jboss.stdio:jboss-stdio</exclude>
                                         <exclude>org.jboss.threads:jboss-threads</exclude>
-                                        <exclude>org.jboss.web:jbossweb</exclude>
                                         <exclude>org.jboss.weld:weld-core</exclude>
                                         <exclude>org.jboss.weld:weld-spi</exclude>
                                         <exclude>org.jboss.ws.cxf:jbossws-cxf-client</exclude>
@@ -3117,10 +3091,6 @@
                                         <group>
                                             <title>Module org.jboss.mod_cluster-container-spi</title>
                                             <packages>org.jboss.modcluster.container</packages>
-                                        </group>
-                                        <group>
-                                            <title>Module org.jboss.mod_cluster-container-jbosssweb</title>
-                                            <packages>org.jboss.modcluster.container.catalina:org.jboss.modcluster.container.jbossweb</packages>
                                         </group>
                                         <group>
                                             <title>Module org.jboss.mod_cluster-core</title>

@@ -110,10 +110,8 @@ public class SocketsAndInterfacesTestCase extends ContainerResourceMgmtTestBase 
 
 
         // add a web connector so we can test the interface
-        op = createOpNode("subsystem=web/connector=test", ADD);
+        op = createOpNode("subsystem=undertow/server=default-server/http-listener=test", ADD);
         op.get("socket-binding").set("test-binding");
-        op.get("protocol").set("HTTP/1.1");
-        op.get("scheme").set("http");
         result = executeOperation(op);
 
         // test the connector
@@ -163,7 +161,7 @@ public class SocketsAndInterfacesTestCase extends ContainerResourceMgmtTestBase 
         Assert.assertFalse("Removed socked binding with connector still using it.", SUCCESS.equals(result.get(OUTCOME).asString()));
 
         // remove connector
-        op = createOpNode("subsystem=web/connector=test", REMOVE);
+        op = createOpNode("subsystem=undertow/server=default-server/http-listener=test", REMOVE);
         result = executeOperation(op);
 
         // check that the connector is down
