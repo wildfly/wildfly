@@ -30,7 +30,9 @@ import static org.jboss.as.controller.parsing.Attribute.REQUIRES_ADDRESSABLE;
 import static org.jboss.as.controller.parsing.Attribute.REQUIRES_READ;
 import static org.jboss.as.controller.parsing.Attribute.REQUIRES_WRITE;
 
+import java.util.Arrays;
 import java.util.Collections;
+import java.util.List;
 import java.util.Set;
 
 import org.jboss.as.controller.AttributeDefinition;
@@ -89,6 +91,12 @@ public class SensitivityResourceDefinition extends SimpleResourceDefinition {
             .setXmlName(REQUIRES_WRITE.getLocalName())
 //            .setAllowExpression(true)
             .build();
+
+    public static List<AttributeDefinition> getWritableAttributeDefinitions() {
+        return Arrays.asList((AttributeDefinition) CONFIGURED_REQUIRES_ADDRESSABLE,
+                (AttributeDefinition) CONFIGURED_REQUIRES_READ,
+                (AttributeDefinition) CONFIGURED_REQUIRES_WRITE);
+    }
 
     private SensitivityResourceDefinition(PathElement pathElement, ResourceDescriptionResolver resolver) {
         super(pathElement, resolver);

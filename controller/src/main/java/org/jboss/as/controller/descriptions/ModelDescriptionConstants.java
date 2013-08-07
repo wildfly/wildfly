@@ -244,6 +244,7 @@ public class ModelDescriptionConstants {
     public static final String PROPERTIES = "properties";
     public static final String PROPERTY = "property";
     public static final String PROTOCOL = "protocol";
+    public static final String PROVIDER = "provider";
     public static final String PROXIES = "proxies";
     public static final String READ = "read";
     public static final String READ_ATTRIBUTE_OPERATION = "read-attribute";

@@ -1147,11 +1147,7 @@ public class DomainXml extends CommonXml {
                 final Attribute attribute = Attribute.forName(reader.getAttributeLocalName(i));
                 if (attribute == Attribute.PROVIDER) {
                     ModelNode provider = AccessAuthorizationResourceDefinition.PROVIDER.parse(value, reader);
-                    ModelNode op = new ModelNode();
-                    op.get(OP).set(WRITE_ATTRIBUTE_OPERATION);
-                    op.get(OP_ADDR).set(accAuthzAddr);
-                    op.get(NAME).set(AccessAuthorizationResourceDefinition.PROVIDER.getName());
-                    op.get(VALUE).set(provider);
+                    ModelNode op = Util.getWriteAttributeOperation(accAuthzAddr, AccessAuthorizationResourceDefinition.PROVIDER.getName(), provider);
 
                     list.add(op);
                 } else {
@@ -1163,6 +1159,9 @@ public class DomainXml extends CommonXml {
                 requireNamespace(reader, expectedNs);
                 final Element element = Element.forName(reader.getLocalName());
                 switch (element) {
+                    case ROLE_MAPPING:
+                        ManagementXml.parseAccessControlRoleMapping(reader, accAuthzAddr, expectedNs, list);
+                        break;
                     case SERVER_GROUP_SCOPED_ROLES:
                         ManagementXml.parseServerGroupScopedRoles(reader, accAuthzAddr, expectedNs, list);
                         break;

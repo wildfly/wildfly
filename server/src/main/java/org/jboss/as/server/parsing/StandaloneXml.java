@@ -47,9 +47,7 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.PER
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SOCKET_BINDING_GROUP;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SUBSYSTEM;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SYSTEM_PROPERTY;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.VALUE;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.VAULT;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.WRITE_ATTRIBUTE_OPERATION;
 import static org.jboss.as.controller.parsing.Namespace.DOMAIN_1_0;
 import static org.jboss.as.controller.parsing.ParseUtils.isNoNamespaceAttribute;
 import static org.jboss.as.controller.parsing.ParseUtils.missingRequired;
@@ -1319,7 +1317,7 @@ public class StandaloneXml extends CommonXml {
         @Override
         public void parseAccessControl(final XMLExtendedStreamReader reader, final ModelNode address, final Namespace expectedNs,
                                        final List<ModelNode> list) throws XMLStreamException {
-            ModelNode accContAddr = address.clone().add(ACCESS, AUTHORIZATION);
+            ModelNode accAuthzAddr = address.clone().add(ACCESS, AUTHORIZATION);
 
             final int count = reader.getAttributeCount();
             for (int i = 0; i < count; i++) {
@@ -1332,11 +1330,7 @@ public class StandaloneXml extends CommonXml {
                 final Attribute attribute = Attribute.forName(reader.getAttributeLocalName(i));
                 if (attribute == Attribute.PROVIDER) {
                     ModelNode provider = AccessAuthorizationResourceDefinition.PROVIDER.parse(value, reader);
-                    ModelNode op = new ModelNode();
-                    op.get(OP).set(WRITE_ATTRIBUTE_OPERATION);
-                    op.get(OP_ADDR).set(accContAddr);
-                    op.get(NAME).set(AccessAuthorizationResourceDefinition.PROVIDER.getName());
-                    op.get(VALUE).set(provider);
+                    ModelNode op = Util.getWriteAttributeOperation(accAuthzAddr, AccessAuthorizationResourceDefinition.PROVIDER.getName(), provider);
 
                     list.add(op);
                 } else {
@@ -1349,11 +1343,11 @@ public class StandaloneXml extends CommonXml {
                 final Element element = Element.forName(reader.getLocalName());
                 switch (element) {
                     case ROLE_MAPPING: {
-                        ManagementXml.parseAccessControlRoleMapping(reader, accContAddr, expectedNs, list);
+                        ManagementXml.parseAccessControlRoleMapping(reader, accAuthzAddr, expectedNs, list);
                         break;
                     }
                     case CONSTRAINTS: {
-                        ManagementXml.parseAccessControlConstraints(reader, accContAddr, expectedNs, list);
+                        ManagementXml.parseAccessControlConstraints(reader, accAuthzAddr, expectedNs, list);
                         break;
                     }
                     default: {

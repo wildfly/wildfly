@@ -11,6 +11,18 @@
         <property name="java.net.preferIPv4Stack" value="true"/>
     </system-properties>
 
+    <management>
+        <access-control provider="simple">
+            <role-mapping>
+                <role name="SuperUser">
+                    <include>
+                        <user name="$local"/>
+                    </include>
+                </role>
+            </role-mapping>
+        </access-control>
+    </management>
+
     <profiles>
        <profile name="default">
            <?SUBSYSTEMS socket-binding-group="standard-sockets"?>

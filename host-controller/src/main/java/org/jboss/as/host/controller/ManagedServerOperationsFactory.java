@@ -26,18 +26,23 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ACC
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ADD;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.AUDIT;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.AUDIT_LOG;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.APPLICATION_CLASSIFICATION;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.AUTHENTICATION;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.AUTHORIZATION;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.CONSTRAINT;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.CONTENT;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.CORE_SERVICE;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.DEFAULT_INTERFACE;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.DEPLOYMENT;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.DEPLOYMENT_OVERLAY;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ENABLED;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.EXCLUDE;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.EXTENSION;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.FILE_HANDLER;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.GROUP;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.HASH;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.HOST_SCOPED_ROLE;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.INCLUDE;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.INCLUDES;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.INTERFACE;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.JSON_FORMATTER;
@@ -52,13 +57,17 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.PAT
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.PORT_OFFSET;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.PROFILE;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.PROFILE_NAME;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.PROVIDER;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.RELATIVE_TO;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.REMOTE_DESTINATION_OUTBOUND_SOCKET_BINDING;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ROLE_MAPPING;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.RUNTIME_NAME;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SCHEMA_LOCATIONS;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SECURITY_REALM;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SENSITIVITY_CLASSIFICATION;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SERVER_CONFIG;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SERVER_GROUP;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SERVER_GROUP_SCOPED_ROLE;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SERVER_IDENTITY;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SERVER_LOGGER;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SOCKET_BINDING;
@@ -66,8 +75,10 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SOC
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SOCKET_BINDING_PORT_OFFSET;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SYSLOG_HANDLER;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SYSTEM_PROPERTY;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.USE_REALM_ROLES;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.VALUE;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.VAULT;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.VAULT_EXPRESSION;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.VAULT_OPTIONS;
 import static org.jboss.as.host.controller.HostControllerMessages.MESSAGES;
 
@@ -98,6 +109,7 @@ import org.jboss.as.domain.management.audit.AuditLogLoggerResourceDefinition;
 import org.jboss.as.domain.management.audit.FileAuditLogHandlerResourceDefinition;
 import org.jboss.as.domain.management.audit.JsonAuditLogFormatterResourceDefinition;
 import org.jboss.as.domain.management.audit.SyslogAuditLogHandlerResourceDefinition;
+import org.jboss.as.domain.management.access.SensitivityResourceDefinition;
 import org.jboss.as.repository.HostFileRepository;
 import org.jboss.as.server.controller.resources.SystemPropertyResourceDefinition;
 import org.jboss.as.server.operations.SystemPropertyAddHandler;
@@ -212,6 +224,7 @@ public final class ManagedServerOperationsFactory {
         addManagementSecurityRealms(updates);
         addAuditLog(updates);
         addManagementConnections(updates);
+        addManagementAuthorization(updates);
         addInterfaces(updates);
         addSocketBindings(updates, portOffSet, socketBindingRef);
         addSubsystems(updates);
@@ -444,6 +457,62 @@ public final class ManagedServerOperationsFactory {
                 addAddNameAndAddress(addConnection, identityAddress);
 
                 updates.add(addConnection);
+            }
+        }
+    }
+
+    private void addManagementAuthorization(ModelNodeList updates) {
+        ModelNode domainConfig = domainModel.get(CORE_SERVICE, MANAGEMENT, ACCESS, AUTHORIZATION);
+        if (domainConfig.isDefined()) {
+            ModelNode baseAddress = new ModelNode();
+            baseAddress.add(CORE_SERVICE, MANAGEMENT);
+            baseAddress.add(ACCESS, AUTHORIZATION);
+
+            if (domainConfig.hasDefined(PROVIDER)) {
+                ModelNode providerOp = Util.getWriteAttributeOperation(baseAddress, PROVIDER, domainConfig.get(PROVIDER));
+                updates.add(providerOp);
+            }
+            if (domainConfig.hasDefined(USE_REALM_ROLES)) {
+                ModelNode realmRolesOp = Util.getWriteAttributeOperation(baseAddress, USE_REALM_ROLES, domainConfig.get(USE_REALM_ROLES));
+                updates.add(realmRolesOp);
+            }
+
+            addRoleMappings(domainConfig, baseAddress, updates);
+            convertSimpleResources(domainConfig, SERVER_GROUP_SCOPED_ROLE, baseAddress, updates);
+            convertSimpleResources(domainConfig, HOST_SCOPED_ROLE, baseAddress, updates);
+            if (domainConfig.hasDefined(CONSTRAINT)) {
+                ModelNode constraints = domainConfig.get(CONSTRAINT);
+                if (constraints.hasDefined(APPLICATION_CLASSIFICATION)) {
+                    convertSimpleResources(constraints.get(APPLICATION_CLASSIFICATION), APPLICATION_CLASSIFICATION, baseAddress, updates);
+                }
+                if (constraints.hasDefined(SENSITIVITY_CLASSIFICATION)) {
+                    convertSimpleResources(constraints.get(SENSITIVITY_CLASSIFICATION), SENSITIVITY_CLASSIFICATION,
+                            baseAddress, updates);
+                }
+                if (constraints.hasDefined(VAULT_EXPRESSION)) {
+                    ModelNode address = baseAddress.clone().add(CONSTRAINT, VAULT_EXPRESSION);
+                    ModelNode ve = constraints.get(VAULT_EXPRESSION);
+                    // No add for this one; need to write attributes
+                    for (AttributeDefinition ad : SensitivityResourceDefinition.getWritableAttributeDefinitions()) {
+                        String attr = ad.getName();
+                        if (ve.hasDefined(attr)) {
+                            updates.add(Util.getWriteAttributeOperation(address, attr, ve.get(attr)));
+                        }
+                    }
+                }
+            }
+        }
+    }
+
+    private void addRoleMappings(ModelNode accessControl, ModelNode baseAddress, ModelNodeList updates) {
+        if (accessControl.hasDefined(ROLE_MAPPING)) {
+            for (Property roleProp : accessControl.get(ROLE_MAPPING).asPropertyList()) {
+                ModelNode roleAddress = baseAddress.clone().add(ROLE_MAPPING, roleProp.getName());
+                updates.add(Util.getEmptyOperation(ADD, roleAddress));
+
+                ModelNode roleMapping = roleProp.getValue();
+                convertSimpleResources(roleMapping, INCLUDE, roleAddress, updates);
+                convertSimpleResources(roleMapping, EXCLUDE, roleAddress, updates);
             }
         }
     }
@@ -690,6 +759,28 @@ public final class ManagedServerOperationsFactory {
         op.get(OP).set(ADD);
         op.get(OP_ADDR).set(address);
         return op;
+    }
+
+    private static void convertSimpleResources(ModelNode model, String type, ModelNode baseAddress, ModelNodeList updates) {
+        if (model.hasDefined(type)) {
+            for (Property prop : model.get(type).asPropertyList()) {
+                ModelNode address = baseAddress.clone().add(type, prop.getName());
+                ModelNode addOp = Util.getEmptyOperation(ADD, address);
+                convertAttributesToParams(prop.getValue(), addOp);
+                updates.add(addOp);
+            }
+        }
+    }
+
+    private static void convertAttributesToParams(ModelNode value, ModelNode addOp) {
+        if (value.isDefined()) {
+            for (Property prop : value.asPropertyList()) {
+                ModelNode attrVal = prop.getValue();
+                if (attrVal.isDefined()) {
+                    addOp.get(prop.getName()).set(attrVal);
+                }
+            }
+        }
     }
 
     private class ModelNodeList extends AbstractList<ModelNode> implements List<ModelNode> {
