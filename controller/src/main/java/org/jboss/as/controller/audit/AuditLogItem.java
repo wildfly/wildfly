@@ -132,7 +132,7 @@ abstract class AuditLogItem {
      * @return the date
      */
     public Date getDate() {
-        return date;
+        return (Date)date.clone();
     }
 
 

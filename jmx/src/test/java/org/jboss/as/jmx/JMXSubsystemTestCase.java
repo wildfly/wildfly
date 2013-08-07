@@ -413,10 +413,70 @@ public class JMXSubsystemTestCase extends AbstractSubsystemTest {
         super.compare(modelA, modelB);
     }
 
+
     @Test
-    public void testParseAndMarshallModel1_2WithAuditLogButNoHandlerReferences() throws Exception {
+    public void testParseAndMarshalModel2_0WithShowModels() throws Exception {
+        //Parse the subsystem xml and install into the first controller
         String subsystemXml =
-                "<subsystem xmlns=\"" + Namespace.JMX_1_2.getUriString() + "\">" +
+                "<subsystem xmlns=\"" + Namespace.JMX_2_0.getUriString() + "\">" +
+                "   <expose-resolved-model domain-name=\"jboss.RESOLVED\"/>" +
+                "   <expose-expression-model domain-name=\"jboss.EXPRESSION\"/>" +
+                "</subsystem>";
+
+        AdditionalInitialization additionalInit = new BaseAdditionalInitalization();
+
+        KernelServices servicesA = createKernelServicesBuilder(additionalInit).setSubsystemXml(subsystemXml).build();
+        //Get the model and the persisted xml from the first controller
+        ModelNode modelA = servicesA.readWholeModel();
+        String marshalled = servicesA.getPersistedSubsystemXml();
+        servicesA.shutdown();
+
+        Assert.assertTrue(marshalled.contains(Namespace.CURRENT.getUriString()));
+        compareXml(null, subsystemXml, marshalled, true);
+
+        //Install the persisted xml from the first controller into a second controller
+        KernelServices servicesB = createKernelServicesBuilder(additionalInit).setSubsystemXml(marshalled).build();
+        ModelNode modelB = servicesB.readWholeModel();
+
+        //Make sure the models from the two controllers are identical
+        super.compare(modelA, modelB);
+    }
+
+    @Test
+    public void testParseAndMarshalModel2_0WithShowModelsAndOldPropertyFormat() throws Exception {
+        //Parse the subsystem xml and install into the first controller
+        String subsystemXml =
+                "<subsystem xmlns=\"" + Namespace.JMX_2_0.getUriString() + "\">" +
+                "   <expose-resolved-model domain-name=\"jboss.RESOLVED\" proper-property-format=\"false\"/>" +
+                "   <expose-expression-model domain-name=\"jboss.EXPRESSION\"/>" +
+                "</subsystem>";
+
+        AdditionalInitialization additionalInit = new BaseAdditionalInitalization();
+
+        KernelServices servicesA = createKernelServicesBuilder(additionalInit).setSubsystemXml(subsystemXml).build();
+        Assert.assertTrue(servicesA.isSuccessfulBoot());
+        //Get the model and the persisted xml from the first controller
+        ModelNode modelA = servicesA.readWholeModel();
+        Assert.assertTrue(modelA.get(SUBSYSTEM, "jmx", CommonAttributes.EXPOSE_MODEL, CommonAttributes.RESOLVED).hasDefined(CommonAttributes.PROPER_PROPERTY_FORMAT));
+        Assert.assertFalse(modelA.get(SUBSYSTEM, "jmx", CommonAttributes.EXPOSE_MODEL, CommonAttributes.RESOLVED, CommonAttributes.PROPER_PROPERTY_FORMAT).asBoolean());
+        String marshalled = servicesA.getPersistedSubsystemXml();
+        servicesA.shutdown();
+
+        Assert.assertTrue(marshalled.contains(Namespace.CURRENT.getUriString()));
+        compareXml(null, subsystemXml, marshalled, true);
+
+        //Install the persisted xml from the first controller into a second controller
+        KernelServices servicesB = createKernelServicesBuilder(additionalInit).setSubsystemXml(marshalled).build();
+        ModelNode modelB = servicesB.readWholeModel();
+
+        //Make sure the models from the two controllers are identical
+        super.compare(modelA, modelB);
+    }
+
+    @Test
+    public void testParseAndMarshallModelWithAuditLogButNoHandlerReferences() throws Exception {
+        String subsystemXml =
+                "<subsystem xmlns=\"" + Namespace.CURRENT.getUriString() + "\">" +
                 "   <expose-resolved-model domain-name=\"jboss.RESOLVED\" proper-property-format=\"false\"/>" +
                 "   <expose-expression-model domain-name=\"jboss.EXPRESSION\"/>" +
                 "   <audit-log log-boot=\"true\" log-read-only=\"false\" enabled=\"false\"/>" +
@@ -445,9 +505,9 @@ public class JMXSubsystemTestCase extends AbstractSubsystemTest {
     }
 
     @Test
-    public void testParseAndMarshallModel1_2WithAuditLogAndHandlerReferences() throws Exception {
+    public void testParseAndMarshallModelWithAuditLogAndHandlerReferences() throws Exception {
         String subsystemXml =
-                "<subsystem xmlns=\"" + Namespace.JMX_1_2.getUriString() + "\">" +
+                "<subsystem xmlns=\"" + Namespace.CURRENT.getUriString() + "\">" +
                 "   <expose-resolved-model domain-name=\"jboss.RESOLVED\" proper-property-format=\"false\"/>" +
                 "   <expose-expression-model domain-name=\"jboss.EXPRESSION\"/>" +
                 "   <audit-log log-boot=\"true\" log-read-only=\"false\" enabled=\"false\">" +
@@ -491,6 +551,7 @@ public class JMXSubsystemTestCase extends AbstractSubsystemTest {
         //Make sure the models from the two controllers are identical
         super.compare(modelA, modelB);
     }
+
     @Test
     public void testDescribeHandler() throws Exception {
         //Parse the subsystem xml and install into the first controller
@@ -711,6 +772,7 @@ public class JMXSubsystemTestCase extends AbstractSubsystemTest {
         checkDiscardedOperation(Util.createAddOperation(address), mainServices, oldVersion);
         checkDiscardedOperation(Util.createRemoveOperation(address), mainServices, oldVersion);
     }
+
 
     private void checkDiscardedOperation(ModelNode op, KernelServices mainServices, ModelVersion oldVersion) throws OperationFailedException {
         TransformedOperation transformedOp = mainServices.transformOperation(oldVersion, op);

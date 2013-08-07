@@ -116,7 +116,7 @@ abstract class AuditLogHandler {
         return failureCount;
     }
 
-    abstract boolean compare(AuditLogHandler other);
+    abstract boolean isDifferent(AuditLogHandler other);
     abstract void initialize();
     abstract void stop();
     abstract void writeLogItem(String formattedItem) throws IOException;
