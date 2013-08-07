@@ -45,7 +45,7 @@ public class PasswordCheckUtil {
 
     private PasswordStrengthChecker passwordStrengthChecker;
     private PasswordStrength acceptable = PasswordStrength.MODERATE;
-    private List<PasswordRestriction> passwordValuesRestrictions = new ArrayList<PasswordRestriction>();
+    public List<PasswordRestriction> passwordValuesRestrictions = new ArrayList<PasswordRestriction>();
 
     private PasswordCheckUtil() {
         InputStream is = Keyboard.class.getResourceAsStream("utility.properties");

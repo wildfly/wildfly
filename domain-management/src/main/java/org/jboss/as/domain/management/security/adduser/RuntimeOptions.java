@@ -41,6 +41,8 @@ class RuntimeOptions {
 
     private String groupProperties;
 
+    private boolean relaxPassword = false;
+
     /**
      * Enable/Disable mode is active by using --enable or --disable argument
      */
@@ -113,5 +115,13 @@ class RuntimeOptions {
 
     void setDisable(boolean disable) {
         this.disable = disable;
+    }
+
+    boolean isRelaxPassword() {
+        return relaxPassword;
+    }
+
+    void setRelaxPassword(boolean relaxPassword) {
+        this.relaxPassword = relaxPassword;
     }
 }

@@ -47,13 +47,15 @@ public class ValidatePasswordState extends AbstractValidationState {
 
     @Override
     protected Collection<State> getValidationStates() {
-        if (!stateValues.getOptions().isEnableDisableMode()) {
-            List<State> validationStates = new ArrayList<State>(2);
+        final List<State> validationStates;
+        if (!stateValues.getOptions().isRelaxPassword() && !stateValues.getOptions().isEnableDisableMode()) {
+            validationStates = new ArrayList<State>(2);
             validationStates.add(getUsernameMatchState());
             validationStates.add(getDetailedCheckState());
-            return validationStates;
+        } else {
+            validationStates = new ArrayList<State>(0);
         }
-        return new ArrayList<State>();
+        return validationStates;
     }
 
     private State getRetryState() {

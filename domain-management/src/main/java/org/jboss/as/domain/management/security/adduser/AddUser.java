@@ -168,6 +168,8 @@ public class AddUser {
                         final String value;
                         if (CommandLineArgument.SILENT.equals(commandLineArgument)) {
                             value = Boolean.TRUE.toString();
+                        } else  if (CommandLineArgument.RELAX_PASSWORD.equals(commandLineArgument)) {
+                            value = Boolean.TRUE.toString();
                         } else if (CommandLineArgument.DISABLE.equals(commandLineArgument)) {
                             value = Boolean.TRUE.toString();
                         } else if (CommandLineArgument.ENABLE.equals(commandLineArgument)) {
@@ -203,6 +205,9 @@ public class AddUser {
             }
         }
 
+        if (argsCliProps.containsKey(CommandLineArgument.RELAX_PASSWORD.key())) {
+            options.setRelaxPassword(true);
+        }
         if (argsCliProps.containsKey(CommandLineArgument.PASSWORD.key()) || argsCliProps.containsKey(CommandLineArgument.USER.key())) {
             final String password = argsCliProps.getProperty(CommandLineArgument.PASSWORD.key());
             final String user = argsCliProps.getProperty(CommandLineArgument.USER.key());
@@ -384,6 +389,12 @@ public class AddUser {
             @Override
             public String instructions() {
                 return MESSAGES.argSilent();
+            }
+        },
+        RELAX_PASSWORD("-rx", "--relax") {
+            @Override
+            public String instructions() {
+                return MESSAGES.argRelaxPassword();
             }
         },
         HELP("-h", "--help") {
