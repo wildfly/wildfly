@@ -28,7 +28,7 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ACC
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ADD;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.AUTHORIZATION;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.CLASSIFICATION;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.CONFIGURED_REQUIRES_ACCESS;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.CONFIGURED_REQUIRES_ADDRESSABLE;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.CONFIGURED_REQUIRES_READ;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.CONFIGURED_REQUIRES_WRITE;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.CONSTRAINT;
@@ -206,7 +206,7 @@ public class RuntimeSensitivityReconfigurationTestCase extends AbstractCoreModel
         ModelNode operation = Util.createOperation(WRITE_ATTRIBUTE_OPERATION, address);
 
         if (requiresAccess != null) {
-            operation.get(NAME).set(CONFIGURED_REQUIRES_ACCESS);
+            operation.get(NAME).set(CONFIGURED_REQUIRES_ADDRESSABLE);
             operation.get(VALUE).set(requiresAccess);
             executeWithRoles(operation, StandardRole.SUPERUSER);
         }

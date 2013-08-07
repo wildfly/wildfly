@@ -28,9 +28,9 @@
          </role-mapping>
 
          <constraints>
-            <vault-expression-sensitivity requires-access="false" requires-read="false"/>
+            <vault-expression-sensitivity requires-addressable="false" requires-read="false"/>
             <sensitive-classifications>
-               <sensitive-classification type="core" name="security-realm" requires-access="false" requires-read="false" requires-write="false" />
+               <sensitive-classification type="core" name="security-realm" requires-addressable="false" requires-read="false" requires-write="false" />
             </sensitive-classifications>
             <application-classifications>
                <application-classification type="core" name="deployment" application="false" />

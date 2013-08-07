@@ -26,7 +26,7 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.CON
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.NAME;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.VALUE;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.VAULT_EXPRESSION;
-import static org.jboss.as.controller.parsing.Attribute.REQUIRES_ACCESS;
+import static org.jboss.as.controller.parsing.Attribute.REQUIRES_ADDRESSABLE;
 import static org.jboss.as.controller.parsing.Attribute.REQUIRES_READ;
 import static org.jboss.as.controller.parsing.Attribute.REQUIRES_WRITE;
 
@@ -61,7 +61,7 @@ public class SensitivityResourceDefinition extends SimpleResourceDefinition {
 
     public static PathElement VAULT_ELEMENT = PathElement.pathElement(CONSTRAINT, VAULT_EXPRESSION);
 
-    public static SimpleAttributeDefinition DEFAULT_REQUIRES_ACCESS = SimpleAttributeDefinitionBuilder.create(ModelDescriptionConstants.DEFAULT_REQUIRES_ACCESS, ModelType.BOOLEAN, false)
+    public static SimpleAttributeDefinition DEFAULT_REQUIRES_ADDRESSABLE = SimpleAttributeDefinitionBuilder.create(ModelDescriptionConstants.DEFAULT_REQUIRES_ADDRESSABLE, ModelType.BOOLEAN, false)
             .setStorageRuntime()
             .build();
 
@@ -74,8 +74,8 @@ public class SensitivityResourceDefinition extends SimpleResourceDefinition {
             .setStorageRuntime()
             .build();
 
-    public static SimpleAttributeDefinition CONFIGURED_REQUIRES_ACCESS = SimpleAttributeDefinitionBuilder.create(ModelDescriptionConstants.CONFIGURED_REQUIRES_ACCESS, ModelType.BOOLEAN, true)
-            .setXmlName(REQUIRES_ACCESS.getLocalName())
+    public static SimpleAttributeDefinition CONFIGURED_REQUIRES_ADDRESSABLE = SimpleAttributeDefinitionBuilder.create(ModelDescriptionConstants.CONFIGURED_REQUIRES_ADDRESSABLE, ModelType.BOOLEAN, true)
+            .setXmlName(REQUIRES_ADDRESSABLE.getLocalName())
 //            .setAllowExpression(true)
             .build();
 
@@ -112,10 +112,10 @@ public class SensitivityResourceDefinition extends SimpleResourceDefinition {
 
     @Override
     public void registerAttributes(ManagementResourceRegistration resourceRegistration) {
-        resourceRegistration.registerReadOnlyAttribute(DEFAULT_REQUIRES_ACCESS, SensitivityClassificationReadAttributeHandler.INSTANCE);
+        resourceRegistration.registerReadOnlyAttribute(DEFAULT_REQUIRES_ADDRESSABLE, SensitivityClassificationReadAttributeHandler.INSTANCE);
         resourceRegistration.registerReadOnlyAttribute(DEFAULT_REQUIRES_READ, SensitivityClassificationReadAttributeHandler.INSTANCE);
         resourceRegistration.registerReadOnlyAttribute(DEFAULT_REQUIRES_WRITE, SensitivityClassificationReadAttributeHandler.INSTANCE);
-        resourceRegistration.registerReadWriteAttribute(CONFIGURED_REQUIRES_ACCESS, SensitivityClassificationReadAttributeHandler.INSTANCE, SensitivityClassificationWriteAttributeHandler.INSTANCE);
+        resourceRegistration.registerReadWriteAttribute(CONFIGURED_REQUIRES_ADDRESSABLE, SensitivityClassificationReadAttributeHandler.INSTANCE, SensitivityClassificationWriteAttributeHandler.INSTANCE);
         resourceRegistration.registerReadWriteAttribute(CONFIGURED_REQUIRES_READ, SensitivityClassificationReadAttributeHandler.INSTANCE, SensitivityClassificationWriteAttributeHandler.INSTANCE);
         resourceRegistration.registerReadWriteAttribute(CONFIGURED_REQUIRES_WRITE, SensitivityClassificationReadAttributeHandler.INSTANCE, SensitivityClassificationWriteAttributeHandler.INSTANCE);
     }
@@ -130,13 +130,13 @@ public class SensitivityResourceDefinition extends SimpleResourceDefinition {
             final SensitivityClassificationResource resource = (SensitivityClassificationResource)context.readResource(PathAddress.EMPTY_ADDRESS);
             final AbstractSensitivity classification = resource.classification;
             Boolean result = null;
-            if (attribute.equals(DEFAULT_REQUIRES_ACCESS.getName())) {
+            if (attribute.equals(DEFAULT_REQUIRES_ADDRESSABLE.getName())) {
                 result = classification.isDefaultRequiresAccessPermission();
             } else if (attribute.equals(DEFAULT_REQUIRES_READ.getName())) {
                 result = classification.isDefaultRequiresReadPermission();
             } else if (attribute.equals(DEFAULT_REQUIRES_WRITE.getName())) {
                 result = classification.isDefaultRequiresWritePermission();
-            } else if (attribute.equals(CONFIGURED_REQUIRES_ACCESS.getName())) {
+            } else if (attribute.equals(CONFIGURED_REQUIRES_ADDRESSABLE.getName())) {
                 result = classification.getConfiguredRequiresAccessPermission();
             } else if (attribute.equals(CONFIGURED_REQUIRES_READ.getName())) {
                 result = classification.getConfiguredRequiresReadPermission();
@@ -163,8 +163,8 @@ public class SensitivityResourceDefinition extends SimpleResourceDefinition {
             final ModelNode value = operation.require(VALUE);
             final SensitivityClassificationResource resource = (SensitivityClassificationResource)context.readResourceForUpdate(PathAddress.EMPTY_ADDRESS);
             final AbstractSensitivity classification = resource.classification;
-            if (attribute.equals(CONFIGURED_REQUIRES_ACCESS.getName())) {
-                classification.setConfiguredRequiresAccessPermission(readValue(context, value, CONFIGURED_REQUIRES_ACCESS));
+            if (attribute.equals(CONFIGURED_REQUIRES_ADDRESSABLE.getName())) {
+                classification.setConfiguredRequiresAccessPermission(readValue(context, value, CONFIGURED_REQUIRES_ADDRESSABLE));
             } else if (attribute.equals(CONFIGURED_REQUIRES_READ.getName())) {
                 classification.setConfiguredRequiresReadPermission(readValue(context, value, CONFIGURED_REQUIRES_READ));
             } else if (attribute.equals(CONFIGURED_REQUIRES_WRITE.getName())) {
@@ -195,10 +195,10 @@ public class SensitivityResourceDefinition extends SimpleResourceDefinition {
         @Override
         public ModelNode getModel() {
             ModelNode model = new ModelNode();
-            model.get(DEFAULT_REQUIRES_ACCESS.getName()).set(classification.isDefaultRequiresAccessPermission());
+            model.get(DEFAULT_REQUIRES_ADDRESSABLE.getName()).set(classification.isDefaultRequiresAccessPermission());
             model.get(DEFAULT_REQUIRES_READ.getName()).set(classification.isDefaultRequiresReadPermission());
             model.get(DEFAULT_REQUIRES_WRITE.getName()).set(classification.isDefaultRequiresWritePermission());
-            model.get(CONFIGURED_REQUIRES_ACCESS.getName()).set(getBoolean(classification.getConfiguredRequiresAccessPermission()));
+            model.get(CONFIGURED_REQUIRES_ADDRESSABLE.getName()).set(getBoolean(classification.getConfiguredRequiresAccessPermission()));
             model.get(CONFIGURED_REQUIRES_READ.getName()).set(getBoolean(classification.getConfiguredRequiresReadPermission()));
             model.get(CONFIGURED_REQUIRES_WRITE.getName()).set(getBoolean(classification.getConfiguredRequiresWritePermission()));
             return model;
