@@ -42,5 +42,6 @@
         <module name="org.jboss.staxmapper"/>
         <module name="org.jboss.vfs"/>
         <module name="org.wildfly.security.manager"/>
+        <module name="javax.api"/>
     </dependencies>
 </module>
