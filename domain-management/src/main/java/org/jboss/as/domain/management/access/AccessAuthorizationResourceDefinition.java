@@ -167,7 +167,7 @@ public class AccessAuthorizationResourceDefinition extends SimpleResourceDefinit
         // Constraints
         if (!isHostController) {
             //  -- Application Type
-            resourceRegistration.registerSubModel(ApplicationTypeParentResourceDefinition.INSTANCE);
+            resourceRegistration.registerSubModel(ApplicationClassificationParentResourceDefinition.INSTANCE);
             //  -- Sensitivity Classification
             resourceRegistration.registerSubModel(SensitivityClassificationParentResourceDefinition.INSTANCE);
             //  -- Vault Expression

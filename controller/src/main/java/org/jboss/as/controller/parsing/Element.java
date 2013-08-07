@@ -43,8 +43,8 @@ public enum Element {
     ANY_ADDRESS("any-address"),
     ANY_IPV4_ADDRESS("any-ipv4-address"),
     ANY_IPV6_ADDRESS("any-ipv6-address"),
-    APPLICATION_TYPE("application-type"),
-    APPLICATION_TYPES("application-types"),
+    APPLICATION_CLASSIFICATION("application-classification"),
+    APPLICATION_CLASSIFICATIONS("application-classifications"),
     AUTHENTICATION("authentication"),
     AUTHORIZATION("authorization"),
 

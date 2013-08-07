@@ -22,7 +22,7 @@
 
 package org.jboss.as.domain.management.access;
 
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.APPLICATION_TYPE;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.APPLICATION_CLASSIFICATION;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.CONSTRAINT;
 
 import org.jboss.as.controller.PathElement;
@@ -35,19 +35,19 @@ import org.jboss.as.domain.management._private.DomainManagementResolver;
  *
  * @author <a href="mailto:darran.lofthouse@jboss.com">Darran Lofthouse</a>
  */
-public class ApplicationTypeParentResourceDefinition extends SimpleResourceDefinition {
+public class ApplicationClassificationParentResourceDefinition extends SimpleResourceDefinition {
 
-    public static final PathElement PATH_ELEMENT = PathElement.pathElement(CONSTRAINT, APPLICATION_TYPE);
-    public static final ApplicationTypeParentResourceDefinition INSTANCE = new ApplicationTypeParentResourceDefinition();
+    public static final PathElement PATH_ELEMENT = PathElement.pathElement(CONSTRAINT, APPLICATION_CLASSIFICATION);
+    public static final ApplicationClassificationParentResourceDefinition INSTANCE = new ApplicationClassificationParentResourceDefinition();
 
-    private ApplicationTypeParentResourceDefinition() {
+    private ApplicationClassificationParentResourceDefinition() {
         super(PATH_ELEMENT, DomainManagementResolver
-                .getResolver("core.access-control.constraint.application-type"));
+                .getResolver("core.access-control.constraint.application-classification"));
     }
 
     @Override
     public void registerChildren(ManagementResourceRegistration resourceRegistration) {
-        resourceRegistration.registerSubModel(ApplicationTypeResourceDefinition.INSTANCE);
+        resourceRegistration.registerSubModel(ApplicationClassificationResourceDefinition.INSTANCE);
     }
 
 }
