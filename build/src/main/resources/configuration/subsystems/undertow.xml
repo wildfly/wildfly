@@ -38,7 +38,8 @@
                 </location>
             </host>
         </server>
-        <servlet-container name="default">
+        <servlet-container name="default" default-buffer-cache="default">
+            <development-mode enabled="${jboss.development.mode:false}" />
             <jsp-config/>
         </servlet-container>
         <handlers>

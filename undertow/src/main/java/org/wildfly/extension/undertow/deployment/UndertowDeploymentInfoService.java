@@ -29,7 +29,6 @@ import io.undertow.server.HandlerWrapper;
 import io.undertow.server.HttpHandler;
 import io.undertow.server.HttpServerExchange;
 import io.undertow.server.handlers.builder.PredicatedHandler;
-import io.undertow.server.handlers.cache.DirectBufferCache;
 import io.undertow.server.handlers.resource.CachingResourceManager;
 import io.undertow.server.handlers.resource.ResourceManager;
 import io.undertow.servlet.Servlets;
@@ -37,7 +36,6 @@ import io.undertow.servlet.api.ClassIntrospecter;
 import io.undertow.servlet.api.ConfidentialPortManager;
 import io.undertow.servlet.api.DefaultServletConfig;
 import io.undertow.servlet.api.DeploymentInfo;
-import io.undertow.servlet.api.DevelopmentModeInfo;
 import io.undertow.servlet.api.ErrorPage;
 import io.undertow.servlet.api.FilterInfo;
 import io.undertow.servlet.api.HttpMethodSecurityInfo;
@@ -54,7 +52,6 @@ import io.undertow.servlet.api.ServletSessionConfig;
 import io.undertow.servlet.api.ThreadSetupAction;
 import io.undertow.servlet.api.WebResourceCollection;
 import io.undertow.servlet.util.ImmediateInstanceFactory;
-import io.undertow.servlet.util.InMemorySessionPersistence;
 import org.apache.jasper.deploy.FunctionInfo;
 import org.apache.jasper.deploy.JspPropertyGroup;
 import org.apache.jasper.deploy.TagAttributeInfo;
@@ -117,9 +114,9 @@ import org.jboss.security.audit.AuditManager;
 import org.jboss.vfs.VirtualFile;
 import org.wildfly.clustering.web.session.SessionManagerFactory;
 import org.wildfly.clustering.web.undertow.session.SessionManagerFacadeFactory;
-import org.wildfly.extension.undertow.JSPService;
+import org.wildfly.extension.undertow.JSPConfig;
 import org.wildfly.extension.undertow.ServletContainerService;
-import org.wildfly.extension.undertow.SessionCookieConfigService;
+import org.wildfly.extension.undertow.SessionCookieConfig;
 import org.wildfly.extension.undertow.UndertowService;
 import org.wildfly.extension.undertow.security.AuditNotificationReceiver;
 import org.wildfly.extension.undertow.security.JAASIdentityManagerImpl;
@@ -157,6 +154,7 @@ public class UndertowDeploymentInfoService implements Service<DeploymentInfo> {
 
     private static final String TEMP_DIR = "jboss.server.temp.dir";
     private static final String HOME_DIR = "jboss.home.dir";
+    public static final String JAVAX_FACES_PROJECT_STAGE = "javax.faces.PROJECT_STAGE";
 
     private DeploymentInfo deploymentInfo;
 
@@ -180,11 +178,8 @@ public class UndertowDeploymentInfoService implements Service<DeploymentInfo> {
     private final InjectedValue<SessionManagerFactory> sessionManagerFactory = new InjectedValue<SessionManagerFactory>();
     private final InjectedValue<SecurityDomainContext> securityDomainContextValue = new InjectedValue<SecurityDomainContext>();
     private final InjectedValue<ServletContainerService> container = new InjectedValue<>();
-    private final InjectedValue<DirectBufferCache> bufferCacheInjectedValue = new InjectedValue<>();
-    private final InjectedValue<SessionCookieConfigService> defaultSessionCookieConfig = new InjectedValue<>();
     private final InjectedValue<PathManager> pathManagerInjector = new InjectedValue<PathManager>();
     private final InjectedValue<ComponentRegistry> componentRegistryInjectedValue = new InjectedValue<>();
-    private final InjectedValue<JSPService> jspService = new InjectedValue<>();
 
     private UndertowDeploymentInfoService(final JBossWebMetaData mergedMetaData, final String deploymentName, final TldsMetaData tldsMetaData, final List<TldMetaData> sharedTlds, final Module module, final ScisMetaData scisMetaData, final VirtualFile deploymentRoot, final String securityContextId, final String securityDomain, final List<ServletContextAttribute> attributes, final String contextPath, final List<SetupAction> setupActions, final Set<VirtualFile> overlays, final List<ExpressionFactoryWrapper> expressionFactoryWrappers, List<PredicatedHandler> predicatedHandlers) {
         this.mergedMetaData = mergedMetaData;
@@ -217,7 +212,7 @@ public class UndertowDeploymentInfoService implements Service<DeploymentInfo> {
             SessionConfigMetaData sessionConfig = mergedMetaData.getSessionConfig();
             ServletSessionConfig config = null;
             //default session config
-            SessionCookieConfigService defaultSessionConfig = defaultSessionCookieConfig.getOptionalValue();
+            SessionCookieConfig defaultSessionConfig = container.getValue().getSessionCookieConfig();
             if (defaultSessionConfig != null) {
                 config = new ServletSessionConfig();
                 if (defaultSessionConfig.getName() != null) {
@@ -367,11 +362,12 @@ public class UndertowDeploymentInfoService implements Service<DeploymentInfo> {
                 d.setDisplayName(mergedMetaData.getDescriptionGroup().getDisplayName());
             }
             d.setDeploymentName(deploymentName);
+            final ServletContainerService servletContainer = container.getValue();
             try {
                 //TODO: make the caching limits configurable
                 ResourceManager resourceManager = new ServletResourceManager(deploymentRoot, overlays);
-                if(!container.getValue().isDevelopmentMode()) {
-                    resourceManager = new CachingResourceManager(100, 10 * 1024 * 1024, bufferCacheInjectedValue.getOptionalValue(), resourceManager, -1);
+                if(servletContainer.getDevelopmentMode() == null) {
+                    resourceManager = new CachingResourceManager(100, 10 * 1024 * 1024, servletContainer.getBufferCache(), resourceManager, -1);
                 }
                 d.setResourceManager(resourceManager);
             } catch (IOException e) {
@@ -392,10 +388,10 @@ public class UndertowDeploymentInfoService implements Service<DeploymentInfo> {
                 d.setMinorVersion(1);
             }
 
-            d.setAllowNonStandardWrappers(container.getValue().isAllowNonStandardWrappers());
+            d.setAllowNonStandardWrappers(servletContainer.isAllowNonStandardWrappers());
 
-            if(container.getValue().isDevelopmentMode()) {
-                d.setDevelopmentMode(new DevelopmentModeInfo(true, new InMemorySessionPersistence()));
+            if(servletContainer.getDevelopmentMode() != null) {
+                d.setDevelopmentMode(servletContainer.getDevelopmentMode());
             }
 
             //for 2.2 apps we do not require a leading / in path mappings
@@ -407,7 +403,7 @@ public class UndertowDeploymentInfoService implements Service<DeploymentInfo> {
             } else {
                 is22OrOlder = false;
             }
-            JSPService jspService = getJspService().getOptionalValue();
+            JSPConfig jspConfig = servletContainer.getJspConfig();
             final Set<String> seenMappings = new HashSet<>();
 
             HashMap<String, TagLibraryInfo> tldInfo = createTldsInfo(tldsMetaData, sharedTlds);
@@ -415,7 +411,7 @@ public class UndertowDeploymentInfoService implements Service<DeploymentInfo> {
             d.setDefaultServletConfig(new DefaultServletConfig(true, Collections.<String>emptySet()));
 
             //default JSP servlet
-            final ServletInfo jspServlet = jspService != null ? jspService.getJSPServletInfo() : null;
+            final ServletInfo jspServlet = jspConfig != null ? jspConfig.getJSPServletInfo() : null;
             if (jspServlet != null) { //this would be null if jsp support is disabled
                 HashMap<String, JspPropertyGroup> propertyGroups = createJspConfig(mergedMetaData);
                 JspServletBuilder.setupDeployment(d, propertyGroups, tldInfo, new UndertowJSPInstanceManager(new WebInjectionContainer(module.getClassLoader(), componentRegistryInjectedValue.getValue())));
@@ -600,6 +596,13 @@ public class UndertowDeploymentInfoService implements Service<DeploymentInfo> {
             if (mergedMetaData.getContextParams() != null) {
                 for (ParamValueMetaData param : mergedMetaData.getContextParams()) {
                     d.addInitParameter(param.getParamName(), param.getParamValue());
+                }
+            }
+
+            //set the JSF project stage in development mode
+            if(servletContainer.getDevelopmentMode() != null) {
+                if(!d.getInitParameters().containsKey(JAVAX_FACES_PROJECT_STAGE)) {
+                    d.addInitParameter(JAVAX_FACES_PROJECT_STAGE, "Development");
                 }
             }
 
@@ -1020,24 +1023,12 @@ public class UndertowDeploymentInfoService implements Service<DeploymentInfo> {
         return undertowService;
     }
 
-    public InjectedValue<DirectBufferCache> getBufferCacheInjectedValue() {
-        return bufferCacheInjectedValue;
-    }
-
-    public InjectedValue<SessionCookieConfigService> getDefaultSessionCookieConfig() {
-        return defaultSessionCookieConfig;
-    }
-
     public InjectedValue<PathManager> getPathManagerInjector() {
         return pathManagerInjector;
     }
 
     public InjectedValue<ComponentRegistry> getComponentRegistryInjectedValue() {
         return componentRegistryInjectedValue;
-    }
-
-    public InjectedValue<JSPService> getJspService() {
-        return jspService;
     }
 
     private static class ComponentClassIntrospector implements ClassIntrospecter {

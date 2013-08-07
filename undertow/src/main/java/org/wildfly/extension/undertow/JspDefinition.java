@@ -22,20 +22,13 @@
 
 package org.wildfly.extension.undertow;
 
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
-
-import java.util.Collection;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-
-import org.jboss.as.controller.AbstractBoottimeAddStepHandler;
 import org.jboss.as.controller.AttributeDefinition;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.PersistentResourceDefinition;
-import org.jboss.as.controller.ReloadRequiredRemoveStepHandler;
+import org.jboss.as.controller.RestartParentResourceAddHandler;
+import org.jboss.as.controller.RestartParentResourceRemoveHandler;
 import org.jboss.as.controller.ServiceVerificationHandler;
 import org.jboss.as.controller.SimpleAttributeDefinition;
 import org.jboss.as.controller.SimpleAttributeDefinitionBuilder;
@@ -44,10 +37,11 @@ import org.jboss.as.controller.operations.validation.StringLengthValidator;
 import org.jboss.as.controller.registry.AttributeAccess;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.ModelType;
-import org.jboss.msc.service.ServiceBuilder;
-import org.jboss.msc.service.ServiceController;
 import org.jboss.msc.service.ServiceName;
-import org.jboss.msc.service.ServiceTarget;
+
+import java.util.Collection;
+import java.util.HashMap;
+import java.util.Map;
 
 /**
  * @author Tomaz Cerar
@@ -201,7 +195,7 @@ class JspDefinition extends PersistentResourceDefinition {
         super(UndertowExtension.PATH_JSP,
                 UndertowExtension.getResolver(UndertowExtension.PATH_JSP.getKeyValuePair()),
                 new JSPAdd(),
-                new ReloadRequiredRemoveStepHandler());
+                new JSPRemove());
     }
 
     @Override
@@ -209,7 +203,40 @@ class JspDefinition extends PersistentResourceDefinition {
         return ATTRIBUTES_MAP.values();
     }
 
-    private static class JSPAdd extends AbstractBoottimeAddStepHandler {
+    public JSPConfig getConfig(final OperationContext context, final ModelNode model, final boolean developmentMode) throws OperationFailedException {
+        if (!model.isDefined()) {
+            return null;
+        }
+        boolean disabled = DISABLED.resolveModelAttribute(context, model).asBoolean();
+        boolean keepGenerated = KEEP_GENERATED.resolveModelAttribute(context, model).asBoolean();
+        boolean trimSpaces = TRIM_SPACES.resolveModelAttribute(context, model).asBoolean();
+        boolean tagPooling = TAG_POOLING.resolveModelAttribute(context, model).asBoolean();
+        boolean mappedFile = MAPPED_FILE.resolveModelAttribute(context, model).asBoolean();
+        int checkInterval = CHECK_INTERVAL.resolveModelAttribute(context, model).asInt();
+        int modificationTestInterval = MODIFICATION_TEST_INTERVAL.resolveModelAttribute(context, model).asInt();
+        boolean recompileOnFile = RECOMPILE_ON_FAIL.resolveModelAttribute(context, model).asBoolean();
+        boolean snap = SMAP.resolveModelAttribute(context, model).asBoolean();
+        boolean dumpSnap = DUMP_SMAP.resolveModelAttribute(context, model).asBoolean();
+        boolean generateStringsAsCharArrays = GENERATE_STRINGS_AS_CHAR_ARRAYS.resolveModelAttribute(context, model).asBoolean();
+        boolean errorOnUseBeanInvalidClassAttribute = ERROR_ON_USE_BEAN_INVALID_CLASS_ATTRIBUTE.resolveModelAttribute(context, model).asBoolean();
+        final ModelNode scratchDirValue = SCRATCH_DIR.resolveModelAttribute(context, model);
+        String scratchDir = scratchDirValue.isDefined() ? scratchDirValue.asString() : null;
+        String sourceVm = SOURCE_VM.resolveModelAttribute(context, model).asString();
+        String targetVm = TARGET_VM.resolveModelAttribute(context, model).asString();
+        String javaEncoding = JAVA_ENCODING.resolveModelAttribute(context, model).asString();
+        boolean xPoweredBy = X_POWERED_BY.resolveModelAttribute(context, model).asBoolean();
+        boolean displaySourceFragment = DISPLAY_SOURCE_FRAGMENT.resolveModelAttribute(context, model).asBoolean();
+
+        return new JSPConfig(developmentMode, disabled, keepGenerated, trimSpaces, tagPooling, mappedFile, checkInterval, modificationTestInterval,
+                recompileOnFile, snap, dumpSnap, generateStringsAsCharArrays, errorOnUseBeanInvalidClassAttribute, scratchDir,
+                sourceVm, targetVm, javaEncoding, xPoweredBy, displaySourceFragment);
+    }
+
+    private static class JSPAdd extends RestartParentResourceAddHandler {
+        protected JSPAdd() {
+            super(ServletContainerDefinition.INSTANCE.getPathElement().getKey());
+        }
+
         @Override
         protected void populateModel(ModelNode operation, ModelNode model) throws OperationFailedException {
             for (AttributeDefinition def : ATTRIBUTES) {
@@ -218,35 +245,30 @@ class JspDefinition extends PersistentResourceDefinition {
         }
 
         @Override
-        protected void performBoottime(OperationContext context, ModelNode operation, ModelNode model, ServiceVerificationHandler verificationHandler, List<ServiceController<?>> newControllers) throws OperationFailedException {
-            try {
-                Class.forName("org.apache.jasper.compiler.JspRuntimeContext", true, this.getClass().getClassLoader());
+        protected void recreateParentService(OperationContext context, PathAddress parentAddress, ModelNode parentModel, ServiceVerificationHandler verificationHandler) throws OperationFailedException {
+            ServletContainerAdd.INSTANCE.installRuntimeServices(context, parentModel, null, parentAddress.getLastElement().getValue());
+        }
 
-                final PathAddress address = PathAddress.pathAddress(operation.get(OP_ADDR));
-                final PathAddress parent = address.subAddress(0, address.size() - 1);
-                String servletContainerName = parent.getLastElement().getValue();
+        @Override
+        protected ServiceName getParentServiceName(PathAddress parentAddress) {
+            return UndertowService.SERVLET_CONTAINER.append(parentAddress.getLastElement().getValue());
+        }
+    }
 
-                ModelNode resolved = new ModelNode();
-                for (AttributeDefinition attribute : ATTRIBUTES) {
-                    resolved.get(attribute.getName()).set(attribute.resolveModelAttribute(context, model));
-                }
+    private static class JSPRemove extends RestartParentResourceRemoveHandler {
 
+        protected JSPRemove() {
+            super(ServletContainerDefinition.INSTANCE.getPathElement().getKey());
+        }
 
-                final JSPService jspService = new JSPService(resolved);
-                final ServiceTarget target = context.getServiceTarget();
-                final ServiceName servletContainerServiceName = UndertowService.SERVLET_CONTAINER.append(servletContainerName);
-                ServiceBuilder<JSPService> svcBuilder = target.addService(servletContainerServiceName.append(Constants.JSP), jspService)
-                        .addDependency(servletContainerServiceName, ServletContainerService.class, jspService.getServletContainerServiceInjectedValue())
-                        .setInitialMode(ServiceController.Mode.ACTIVE);
+        @Override
+        protected void recreateParentService(OperationContext context, PathAddress parentAddress, ModelNode parentModel, ServiceVerificationHandler verificationHandler) throws OperationFailedException {
+            ServletContainerAdd.INSTANCE.installRuntimeServices(context, parentModel, null, parentAddress.getLastElement().getValue());
+        }
 
-                if (verificationHandler != null) {
-                    svcBuilder.addListener(verificationHandler);
-                }
-                newControllers.add(svcBuilder.install());
-
-            } catch (ClassNotFoundException e) {
-                UndertowLogger.ROOT_LOGGER.couldNotInitJsp(e);
-            }
+        @Override
+        protected ServiceName getParentServiceName(PathAddress parentAddress) {
+            return UndertowService.SERVLET_CONTAINER.append(parentAddress.getLastElement().getValue());
         }
     }
 }

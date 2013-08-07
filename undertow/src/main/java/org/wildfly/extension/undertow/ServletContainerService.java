@@ -22,16 +22,19 @@
 
 package org.wildfly.extension.undertow;
 
-import java.util.ConcurrentModificationException;
-import java.util.Map;
-import java.util.concurrent.ConcurrentHashMap;
-
+import io.undertow.server.handlers.cache.DirectBufferCache;
 import io.undertow.servlet.api.DeploymentInfo;
+import io.undertow.servlet.api.DevelopmentModeInfo;
 import io.undertow.servlet.api.ServletContainer;
 import org.jboss.msc.service.Service;
 import org.jboss.msc.service.StartContext;
 import org.jboss.msc.service.StartException;
 import org.jboss.msc.service.StopContext;
+import org.jboss.msc.value.InjectedValue;
+
+import java.util.ConcurrentModificationException;
+import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
 
 /**
  * Central Undertow 'Container' HTTP listeners will make this container accessible whilst deployers will add content.
@@ -40,15 +43,21 @@ import org.jboss.msc.service.StopContext;
  */
 public class ServletContainerService implements Service<ServletContainerService> {
 
-    private final boolean developmentMode;
     private final boolean allowNonStandardWrappers;
+    private final SessionCookieConfig sessionCookieConfig;
+    private final JSPConfig jspConfig;
+    private final DevelopmentModeInfo developmentMode;
     private volatile ServletContainer servletContainer;
     @Deprecated
     private final Map<String, Integer> secureListeners = new ConcurrentHashMap<>(1);
 
-    public ServletContainerService(boolean developmentMode, boolean allowNonStandardWrappers) {
+    private final InjectedValue<DirectBufferCache> bufferCacheInjectedValue = new InjectedValue<>();
+
+    public ServletContainerService(DevelopmentModeInfo developmentMode, boolean allowNonStandardWrappers, SessionCookieConfig sessionCookieConfig, JSPConfig jspConfig) {
         this.developmentMode = developmentMode;
         this.allowNonStandardWrappers = allowNonStandardWrappers;
+        this.sessionCookieConfig = sessionCookieConfig;
+        this.jspConfig = jspConfig;
     }
 
     static String getDeployedContextPath(DeploymentInfo deploymentInfo) {
@@ -72,12 +81,16 @@ public class ServletContainerService implements Service<ServletContainerService>
         return servletContainer;
     }
 
-    public boolean isDevelopmentMode() {
+    public DevelopmentModeInfo getDevelopmentMode() {
         return developmentMode;
     }
 
     public boolean isAllowNonStandardWrappers() {
         return allowNonStandardWrappers;
+    }
+
+    public JSPConfig getJspConfig() {
+        return jspConfig;
     }
 
     public Integer lookupSecurePort(final String listenerName) {
@@ -111,4 +124,15 @@ public class ServletContainerService implements Service<ServletContainerService>
         secureListeners.remove(name);
     }
 
+    public SessionCookieConfig getSessionCookieConfig() {
+        return sessionCookieConfig;
+    }
+
+    InjectedValue<DirectBufferCache> getBufferCacheInjectedValue() {
+        return bufferCacheInjectedValue;
+    }
+
+    public DirectBufferCache getBufferCache() {
+        return bufferCacheInjectedValue.getOptionalValue();
+    }
 }

@@ -115,4 +115,6 @@ public interface Constants {
     String MAX_AGE = "max-age";
     String ALLOW_NON_STANDARD_WRAPPERS = "allow-non-standard-wrappers";
 
+    String PERSISTENT_SESSIONS = "persistent-sessions";
+    String DEFAULT_BUFFER_CACHE = "default-buffer-cache";
 }

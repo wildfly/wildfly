@@ -22,19 +22,23 @@
 
 package org.wildfly.extension.undertow;
 
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
-
-import java.util.List;
-
+import io.undertow.server.handlers.cache.DirectBufferCache;
+import io.undertow.servlet.api.DevelopmentModeInfo;
 import org.jboss.as.controller.AbstractBoottimeAddStepHandler;
 import org.jboss.as.controller.AttributeDefinition;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.ServiceVerificationHandler;
+import org.jboss.as.controller.registry.Resource;
 import org.jboss.dmr.ModelNode;
+import org.jboss.msc.service.ServiceBuilder;
 import org.jboss.msc.service.ServiceController;
 import org.jboss.msc.service.ServiceTarget;
+
+import java.util.List;
+
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
 
 /**
  * @author <a href="mailto:tomaz.cerar@redhat.com">Tomaz Cerar</a> (c) 2013 Red Hat Inc.
@@ -57,14 +61,30 @@ final class ServletContainerAdd extends AbstractBoottimeAddStepHandler {
         final PathAddress address = PathAddress.pathAddress(operation.get(OP_ADDR));
         final String name = address.getLastElement().getValue();
 
-        final boolean developmentMode = ServletContainerDefinition.DEVELOPMENT_MODE.resolveModelAttribute(context, model).asBoolean();
-        final boolean allowNonStandardWrappers = ServletContainerDefinition.ALLOW_NON_STANDARD_WRAPPERS.resolveModelAttribute(context, model).asBoolean();
+        installRuntimeServices(context, model, newControllers, name);
 
-        final ServletContainerService container = new ServletContainerService(developmentMode, allowNonStandardWrappers);
+    }
+
+    public void installRuntimeServices(OperationContext context, ModelNode model, List<ServiceController<?>> newControllers, String name) throws OperationFailedException {
+        final ModelNode fullModel = Resource.Tools.readModel(context.readResource(PathAddress.EMPTY_ADDRESS));
+
+        SessionCookieConfig config = SessionCookieDefinition.INSTANCE.getConfig(context, fullModel.get(SessionCookieDefinition.INSTANCE.getPathElement().getKeyValuePair()));
+        DevelopmentModeInfo devMode = DevelopmentModeDefinition.INSTANCE.getConfig(context, fullModel.get(SessionCookieDefinition.INSTANCE.getPathElement().getKeyValuePair()));
+        final boolean allowNonStandardWrappers = ServletContainerDefinition.ALLOW_NON_STANDARD_WRAPPERS.resolveModelAttribute(context, model).asBoolean();
+        final ModelNode bufferCacheValue = ServletContainerDefinition.DEFAULT_BUFFER_CACHE.resolveModelAttribute(context, model);
+        final String bufferCache = bufferCacheValue.isDefined() ? bufferCacheValue.asString() : null;
+
+        JSPConfig jspConfig = JspDefinition.INSTANCE.getConfig(context, fullModel.get(JspDefinition.INSTANCE.getPathElement().getKeyValuePair()), devMode != null);
+
+        final ServletContainerService container = new ServletContainerService(devMode, allowNonStandardWrappers, config, jspConfig);
         final ServiceTarget target = context.getServiceTarget();
-        newControllers.add(target.addService(UndertowService.SERVLET_CONTAINER.append(name), container)
+        final ServiceBuilder<ServletContainerService> builder = target.addService(UndertowService.SERVLET_CONTAINER.append(name), container);
+        if(bufferCache != null) {
+            builder.addDependency(BufferCacheService.SERVICE_NAME.append(bufferCache), DirectBufferCache.class, container.getBufferCacheInjectedValue());
+        }
+
+        newControllers.add(builder
                 .setInitialMode(ServiceController.Mode.ON_DEMAND)
                 .install());
-
     }
 }

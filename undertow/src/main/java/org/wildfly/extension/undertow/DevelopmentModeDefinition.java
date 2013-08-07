@@ -22,6 +22,8 @@
 
 package org.wildfly.extension.undertow;
 
+import io.undertow.servlet.api.DevelopmentModeInfo;
+import io.undertow.servlet.util.InMemorySessionPersistence;
 import org.jboss.as.controller.AttributeDefinition;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
@@ -46,50 +48,28 @@ import java.util.Map;
  *
  * @author Stuart Douglas
  */
-class SessionCookieDefinition extends PersistentResourceDefinition {
+class DevelopmentModeDefinition extends PersistentResourceDefinition {
 
-    static final SessionCookieDefinition INSTANCE = new SessionCookieDefinition();
+    static final DevelopmentModeDefinition INSTANCE = new DevelopmentModeDefinition();
 
-    protected static final SimpleAttributeDefinition NAME =
-            new SimpleAttributeDefinitionBuilder(Constants.NAME, ModelType.STRING, true)
+
+    protected static final SimpleAttributeDefinition ENABLED =
+            new SimpleAttributeDefinitionBuilder(Constants.ENABLED, ModelType.BOOLEAN, true)
                     .setFlags(AttributeAccess.Flag.RESTART_ALL_SERVICES)
-                    .setAllowExpression(true)
-                    .build();
-    protected static final SimpleAttributeDefinition DOMAIN =
-            new SimpleAttributeDefinitionBuilder(Constants.DOMAIN, ModelType.STRING, true)
-                    .setFlags(AttributeAccess.Flag.RESTART_ALL_SERVICES)
-                    .setAllowExpression(true)
-                    .build();
-    protected static final SimpleAttributeDefinition COMMENT =
-            new SimpleAttributeDefinitionBuilder(Constants.COMMENT, ModelType.STRING, true)
-                    .setFlags(AttributeAccess.Flag.RESTART_ALL_SERVICES)
-                    .setAllowExpression(true)
-                    .build();
-    protected static final SimpleAttributeDefinition HTTP_ONLY =
-            new SimpleAttributeDefinitionBuilder(Constants.HTTP_ONLY, ModelType.BOOLEAN, true)
-                    .setFlags(AttributeAccess.Flag.RESTART_ALL_SERVICES)
+                    .setDefaultValue(new ModelNode(false))
                     .setAllowExpression(true)
                     .build();
 
-    protected static final SimpleAttributeDefinition SECURE =
-            new SimpleAttributeDefinitionBuilder(Constants.SECURE, ModelType.BOOLEAN, true)
+    protected static final SimpleAttributeDefinition PERSISTENT_SESSIONS =
+            new SimpleAttributeDefinitionBuilder(Constants.PERSISTENT_SESSIONS, ModelType.BOOLEAN, true)
                     .setFlags(AttributeAccess.Flag.RESTART_ALL_SERVICES)
+                    .setDefaultValue(new ModelNode(true))
                     .setAllowExpression(true)
                     .build();
-    protected static final SimpleAttributeDefinition MAX_AGE =
-            new SimpleAttributeDefinitionBuilder(Constants.MAX_AGE, ModelType.INT, true)
-                    .setFlags(AttributeAccess.Flag.RESTART_ALL_SERVICES)
-                    .setAllowExpression(true)
-                    .build();
-
 
     protected static final SimpleAttributeDefinition[] ATTRIBUTES = {
-            NAME,
-            DOMAIN,
-            COMMENT,
-            HTTP_ONLY,
-            SECURE,
-            MAX_AGE
+            ENABLED,
+            PERSISTENT_SESSIONS
     };
     static final Map<String, AttributeDefinition> ATTRIBUTES_MAP = new HashMap<>();
 
@@ -100,11 +80,11 @@ class SessionCookieDefinition extends PersistentResourceDefinition {
     }
 
 
-    private SessionCookieDefinition() {
-        super(UndertowExtension.PATH_SESSION_COOKIE,
-                UndertowExtension.getResolver(UndertowExtension.PATH_SESSION_COOKIE.getKeyValuePair()),
-                new SessionCookieAdd(),
-                new SessionCookieRemove());
+    private DevelopmentModeDefinition() {
+        super(UndertowExtension.PATH_DEVELOPMENT_MODE,
+                UndertowExtension.getResolver(UndertowExtension.PATH_DEVELOPMENT_MODE.getKeyValuePair()),
+                new DevelopmentModeAdd(),
+                new DevelopmentModeRemove());
     }
 
     @Override
@@ -112,28 +92,24 @@ class SessionCookieDefinition extends PersistentResourceDefinition {
         return ATTRIBUTES_MAP.values();
     }
 
-    public SessionCookieConfig getConfig(final OperationContext context, final ModelNode model) throws OperationFailedException {
-        if(!model.isDefined()) {
+    public DevelopmentModeInfo getConfig(final OperationContext context, final ModelNode model) throws OperationFailedException {
+        if (!model.isDefined()) {
             return null;
         }
-        ModelNode nameValue = NAME.resolveModelAttribute(context, model);
-        ModelNode domainValue = DOMAIN.resolveModelAttribute(context, model);
-        ModelNode commentValue = COMMENT.resolveModelAttribute(context, model);
-        ModelNode secureValue = SECURE.resolveModelAttribute(context, model);
-        ModelNode httpOnlyValue = HTTP_ONLY.resolveModelAttribute(context, model);
-        ModelNode maxAgeValue = MAX_AGE.resolveModelAttribute(context, model);
-        final String name = nameValue.isDefined() ? nameValue.asString() : null;
-        final String domain = domainValue.isDefined() ? domainValue.asString() : null;
-        final String comment = commentValue.isDefined() ? commentValue.asString() : null;
-        final Boolean secure = secureValue.isDefined() ? secureValue.asBoolean() : null;
-        final Boolean httpOnly = httpOnlyValue.isDefined() ? httpOnlyValue.asBoolean() : null;
-        final Integer maxAge = maxAgeValue.isDefined() ? maxAgeValue.asInt() : null;
-        return new SessionCookieConfig(name, domain, comment, httpOnly, secure, maxAge);
+        boolean enabled = ENABLED.resolveModelAttribute(context, model).asBoolean();
+        if(!enabled) {
+            return null;
+        }
+        boolean persistentSessionsAttribute = PERSISTENT_SESSIONS.resolveModelAttribute(context, model).asBoolean();
+
+        DevelopmentModeInfo info = new DevelopmentModeInfo(true, persistentSessionsAttribute ? new InMemorySessionPersistence() : null);
+
+        return info;
     }
 
 
-    private static class SessionCookieAdd extends RestartParentResourceAddHandler {
-        protected SessionCookieAdd() {
+    private static class DevelopmentModeAdd extends RestartParentResourceAddHandler {
+        protected DevelopmentModeAdd() {
             super(ServletContainerDefinition.INSTANCE.getPathElement().getKey());
         }
 
@@ -155,9 +131,9 @@ class SessionCookieDefinition extends PersistentResourceDefinition {
         }
     }
 
-    private static class SessionCookieRemove extends RestartParentResourceRemoveHandler {
+    private static class DevelopmentModeRemove extends RestartParentResourceRemoveHandler {
 
-        protected SessionCookieRemove() {
+        protected DevelopmentModeRemove() {
             super(ServletContainerDefinition.INSTANCE.getPathElement().getKey());
         }
 

@@ -94,10 +94,11 @@
         <xs:sequence>
             <xs:element name="jsp-config" type="jsp-configurationType" maxOccurs="1" minOccurs="0"/>
             <xs:element name="session-cookie" type="session-cookieType" maxOccurs="1" minOccurs="0"/>
+            <xs:element name="development-mode" type="development-modeType" maxOccurs="1" minOccurs="0"/>
         </xs:sequence>
         <xs:attribute name="name" use="required" type="xs:string"/>
-        <xs:attribute name="development-mode" use="optional" type="xs:boolean" default="false"/>
         <xs:attribute name="allow-non-standard-wrappers" use="optional" type="xs:boolean" default="false"/>
+        <xs:attribute name="default-buffer-cache" use="optional" type="xs:string" />
     </xs:complexType>
     <xs:complexType name="hostType">
         <xs:sequence>
@@ -136,6 +137,12 @@
         <xs:attribute name="secure" type="xs:boolean"/>
         <xs:attribute name="max-age" type="xs:int"/>
     </xs:complexType>
+
+    <xs:complexType name="development-modeType">
+        <xs:attribute name="enabled" type="xs:string" use="optional" default="false"/>
+        <xs:attribute name="persistent-sessions" type="xs:string" use="optional" default="true" />
+    </xs:complexType>
+
     <xs:complexType name="handlerType">
         <xs:sequence>
             <xs:element name="file" type="file-handlerType" minOccurs="0" maxOccurs="unbounded"/>

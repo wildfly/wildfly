@@ -43,7 +43,7 @@
     </server>
 
 
-    <servlet-container name="default">
+    <servlet-container name="default" default-buffer-cache="default">
         <jsp-config
                     disabled="${prop.disabled:false}"
                     keep-generated="${prop.keep-generated:true}"
@@ -69,6 +69,7 @@
                         secure="true"
                         http-only="true"
                         max-age="1000"/>
+        <development-mode persistent-sessions="false" />
     </servlet-container>
 
     <error-pages>
