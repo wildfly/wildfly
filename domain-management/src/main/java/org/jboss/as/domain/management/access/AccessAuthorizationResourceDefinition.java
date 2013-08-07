@@ -32,7 +32,6 @@ import javax.xml.stream.XMLStreamWriter;
 import org.jboss.as.controller.AttributeDefinition;
 import org.jboss.as.controller.AttributeMarshaller;
 import org.jboss.as.controller.ListAttributeDefinition;
-import org.jboss.as.controller.ModelOnlyWriteAttributeHandler;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.PathElement;
@@ -93,7 +92,7 @@ public class AccessAuthorizationResourceDefinition extends SimpleResourceDefinit
             .setWrapXmlList(false)
             .build();
 
-    public static final SimpleAttributeDefinition PROVIDER = new SimpleAttributeDefinitionBuilder("provider", ModelType.STRING, true)
+    public static final SimpleAttributeDefinition PROVIDER = new SimpleAttributeDefinitionBuilder(ModelDescriptionConstants.PROVIDER, ModelType.STRING, true)
             .setDefaultValue(new ModelNode(Provider.SIMPLE.toString()))
             .setValidator(new EnumValidator<Provider>(Provider.class, true, false))
             .build();
@@ -150,11 +149,8 @@ public class AccessAuthorizationResourceDefinition extends SimpleResourceDefinit
             resourceRegistration.registerReadWriteAttribute(USE_REALM_ROLES, null, new AccessAuthorizationUseRealmRolesWriteAttributeHandler(roleMapper));
         }
 
-        if (!isDomain) {
+        if (!isHostController) {
             resourceRegistration.registerReadWriteAttribute(PROVIDER, null, new AccessAuthorizationProviderWriteAttributeHander(configurableAuthorizer, roleMapper));
-        } else {
-            // TODO handle managed domain
-            resourceRegistration.registerReadWriteAttribute(PROVIDER, null, new ModelOnlyWriteAttributeHandler(PROVIDER));
         }
     }
 

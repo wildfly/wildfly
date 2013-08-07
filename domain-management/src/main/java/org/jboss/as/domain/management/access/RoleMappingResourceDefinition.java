@@ -34,7 +34,7 @@ import org.jboss.as.domain.management._private.DomainManagementResolver;
 import org.jboss.dmr.ModelNode;
 
 /**
- * A {@link ResourceDefinition} representing an individual role mapping.
+ * A {@link org.jboss.as.controller.ResourceDefinition} representing an individual role mapping.
  *
  * @author <a href="mailto:darran.lofthouse@jboss.com">Darran Lofthouse</a>
  */

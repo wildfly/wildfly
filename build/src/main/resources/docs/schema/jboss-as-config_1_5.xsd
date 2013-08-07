@@ -2802,6 +2802,7 @@
         <xs:sequence>
             <xs:element name="server-group-scoped-roles" type="server-group-scoped-rolesType" minOccurs="0"/>
             <xs:element name="host-scoped-roles" type="host-scoped-rolesType" minOccurs="0"/>
+            <xs:element name="role-mapping" type="role-mappingType" minOccurs="0"/>
             <xs:element name="constraints" type="constraintsType" minOccurs="0"/>
         </xs:sequence>
         <xs:attribute name="provider" type="access-control-providerType" use="optional" default="simple"/>
