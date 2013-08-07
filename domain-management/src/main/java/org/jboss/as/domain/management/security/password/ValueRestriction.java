@@ -31,7 +31,7 @@ public class ValueRestriction extends PasswordRestriction {
     private final String forbiddenValue;
 
     /**
-     * @param desiredLength
+     * @param forbiddenValue
      */
     public ValueRestriction(String forbiddenValue) {
         super(MESSAGES.passwordMustNotBeEqual(forbiddenValue));

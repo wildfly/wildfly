@@ -22,9 +22,13 @@
 
 package org.jboss.as.domain.management.security.adduser;
 
-import static org.jboss.as.domain.management.DomainManagementMessages.MESSAGES;
+import org.jboss.as.domain.management.security.password.PasswordCheckUtil;
+import org.jboss.as.domain.management.security.password.PasswordRestriction;
 
 import java.util.Arrays;
+
+import static org.jboss.as.domain.management.DomainManagementMessages.MESSAGES;
+import static org.jboss.as.domain.management.security.adduser.AddUser.NEW_LINE;
 
 /**
  * State to prompt the user for a password
@@ -51,9 +55,24 @@ public class PromptPasswordState implements State {
     public State execute() {
         if (stateValues.isSilentOrNonInteractive() == false) {
             if (rePrompt == false) {
-                /*
-                 * Prompt for password.
-                 */
+                // Password requirements.
+                if (stateValues.getOptions().isRelaxPassword() == false) {
+                    theConsole.printf(MESSAGES.passwordRequirements());
+                    theConsole.printf(NEW_LINE);
+                    theConsole.printf(MESSAGES.passwordMustHaveAlpha());
+                    theConsole.printf(NEW_LINE);
+                    theConsole.printf(MESSAGES.passwordMustHaveDigit());
+                    theConsole.printf(NEW_LINE);
+                    theConsole.printf(MESSAGES.passwordMustHaveSymbol());
+                    theConsole.printf(NEW_LINE);
+                    for (PasswordRestriction passwordValuesRestriction : PasswordCheckUtil.INSTANCE.passwordValuesRestrictions) {
+                        theConsole.printf(passwordValuesRestriction.getMessage());
+                        theConsole.printf(NEW_LINE);
+                    }
+                    theConsole.printf(MESSAGES.usernamePasswordMatch());
+                    theConsole.printf(NEW_LINE);
+                }
+                // Prompt for password.
                 theConsole.printf(MESSAGES.passwordPrompt());
                 char[] tempChar = theConsole.readPassword(" : ");
                 if (tempChar == null || tempChar.length == 0) {

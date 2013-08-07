@@ -861,6 +861,13 @@ public interface DomainManagementMessages {
     String argDisable();
 
     /**
+     * Instructions for the {@link org.jboss.as.domain.management.security.adduser.AddUser.CommandLineArgument#RELAX_PASSWORD} command line argument.
+     * @return the message.
+     */
+    @Message(id = Message.NONE, value = "Relax password restrictions")
+    String argRelaxPassword();
+
+    /**
      * Instructions for the {@link org.jboss.as.domain.management.security.adduser.AddUser.CommandLineArgument#HELP} command line argument.
      * @return the message.
      */
@@ -926,6 +933,12 @@ public interface DomainManagementMessages {
      */
     @Message(id = Message.NONE, value = "Are you sure you want to set the realm to '%s'")
     String realmConfirmation(final String chosenRealm);
+
+    /**
+     * Display password requirements and the command line argument option to relax these restrictions
+     */
+    @Message(id = Message.NONE, value = "Password requirements are listed below. To relax these restrictions use -rx or --relax option.")
+    String passwordRequirements();
 
     //PUT YOUR NUMBERED MESSAGES ABOVE THE id=NONE ones!
 }
