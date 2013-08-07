@@ -22,8 +22,6 @@
 
 package org.jboss.as.test.patching;
 
-import java.io.File;
-
 import org.jboss.arquillian.container.test.api.RunAsClient;
 import org.jboss.arquillian.junit.Arquillian;
 import org.jboss.as.patching.metadata.ContentModification;
@@ -33,8 +31,11 @@ import org.jboss.as.version.ProductConfig;
 import org.jboss.logging.Logger;
 import org.junit.Assert;
 import org.junit.Assume;
+import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.runner.RunWith;
+
+import java.io.File;
 
 import static org.jboss.as.patching.IoUtils.mkdir;
 import static org.jboss.as.test.patching.PatchingTestUtil.AS_DISTRIBUTION;
@@ -65,6 +66,7 @@ public class NonStandardSituationsTestCase extends AbstractPatchingTestCase {
      * Check that the patch rolls back completely and doesn't leave itself half-applied.
      */
     @Test
+    @Ignore("WFLY-1803")
     public void testWritePermissionDenied() throws Exception {
         // prepare the patch
         String patchID = randomString();
