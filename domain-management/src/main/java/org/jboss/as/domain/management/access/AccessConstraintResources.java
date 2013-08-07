@@ -21,7 +21,7 @@
  */
 package org.jboss.as.domain.management.access;
 
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.APPLICATION_TYPE;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.APPLICATION_CLASSIFICATION;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.CONSTRAINT;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.CORE;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SENSITIVITY_CLASSIFICATION;
@@ -50,7 +50,7 @@ import org.jboss.as.controller.registry.Resource;
 public class AccessConstraintResources {
 
     // Application Classification Resource
-    public static final PathElement APPLICATION_PATH_ELEMENT = PathElement.pathElement(CONSTRAINT, APPLICATION_TYPE);
+    public static final PathElement APPLICATION_PATH_ELEMENT = PathElement.pathElement(CONSTRAINT, APPLICATION_CLASSIFICATION);
     public static final Resource APPLICATION_RESOURCE = new ApplicationClassificationResource();
     // Sensitivity Classification Resource
     public static final PathElement SENSITIVITY_PATH_ELEMENT = PathElement.pathElement(CONSTRAINT, SENSITIVITY_CLASSIFICATION);
@@ -101,7 +101,7 @@ public class AccessConstraintResources {
 
     private static class ApplicationClassificationResource extends AbstractClassificationResource {
 
-        private static final Set<String> CHILD_TYPES = Collections.singleton(APPLICATION_TYPE);
+        private static final Set<String> CHILD_TYPES = Collections.singleton(APPLICATION_CLASSIFICATION);
 
         private ApplicationClassificationResource() {
           super(APPLICATION_PATH_ELEMENT);
@@ -114,11 +114,11 @@ public class AccessConstraintResources {
 
         @Override
         ResourceEntry getChildEntry(String type, String name) {
-            if (APPLICATION_TYPE.equals(type)) {
+            if (APPLICATION_CLASSIFICATION.equals(type)) {
                 Map<String, Map<String, ApplicationTypeConfig>> applicationTypes = getApplicationTypes();
                 Map<String, ApplicationTypeConfig> applicationTypesByType = applicationTypes.get(name);
                 if (applicationTypesByType != null) {
-                    return ApplicationTypeResourceDefinition.createResource(applicationTypesByType, type, name);
+                    return ApplicationClassificationResourceDefinition.createResource(applicationTypesByType, type, name);
                 }
             }
             return null;
@@ -126,7 +126,7 @@ public class AccessConstraintResources {
 
         @Override
         public Set<String> getChildrenNames(String type) {
-            if (APPLICATION_TYPE.equals(type)) {
+            if (APPLICATION_CLASSIFICATION.equals(type)) {
                 Map<String, Map<String, ApplicationTypeConfig>> configs = getApplicationTypes();
                 return configs.keySet();
             }
@@ -135,11 +135,11 @@ public class AccessConstraintResources {
 
         @Override
         public Set<ResourceEntry> getChildren(String childType) {
-            if (APPLICATION_TYPE.equals(childType)) {
+            if (APPLICATION_CLASSIFICATION.equals(childType)) {
                 Map<String, Map<String, ApplicationTypeConfig>> applicationTypes = getApplicationTypes();
                 Set<ResourceEntry> children = new HashSet<ResourceEntry>();
                 for (Map.Entry<String, Map<String, ApplicationTypeConfig>> entry : applicationTypes.entrySet()) {
-                    children.add(ApplicationTypeResourceDefinition.createResource(entry.getValue(), childType, entry.getKey()));
+                    children.add(ApplicationClassificationResourceDefinition.createResource(entry.getValue(), childType, entry.getKey()));
                 }
                 return children;
             }

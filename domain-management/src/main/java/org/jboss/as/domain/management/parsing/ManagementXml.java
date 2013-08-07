@@ -25,7 +25,7 @@ package org.jboss.as.domain.management.parsing;
 import static javax.xml.stream.XMLStreamConstants.END_ELEMENT;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ACCESS;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ADD;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.APPLICATION_TYPE;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.APPLICATION_CLASSIFICATION;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.AUTHENTICATION;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.AUTHORIZATION;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.CONSTRAINT;
@@ -96,8 +96,8 @@ import org.jboss.as.controller.parsing.Element;
 import org.jboss.as.controller.parsing.Namespace;
 import org.jboss.as.controller.parsing.ParseUtils;
 import org.jboss.as.domain.management.access.AccessAuthorizationResourceDefinition;
-import org.jboss.as.domain.management.access.ApplicationTypeConfigResourceDefinition;
-import org.jboss.as.domain.management.access.ApplicationTypeResourceDefinition;
+import org.jboss.as.domain.management.access.ApplicationClassificationConfigResourceDefinition;
+import org.jboss.as.domain.management.access.ApplicationClassificationResourceDefinition;
 import org.jboss.as.domain.management.access.HostScopedRolesResourceDefinition;
 import org.jboss.as.domain.management.access.PrincipalResourceDefinition;
 import org.jboss.as.domain.management.access.SensitivityClassificationResourceDefinition;
@@ -1891,9 +1891,9 @@ public class ManagementXml {
                     parseSensitiveClassifications(reader, sensAddr, expectedNs, list);
                     break;
                 }
-                case APPLICATION_TYPES: {
-                    ModelNode applAddr = accAuthzAddr.clone().add(CONSTRAINT, APPLICATION_TYPE);
-                    parseApplicationTypes(reader, applAddr, expectedNs, list);
+                case APPLICATION_CLASSIFICATIONS: {
+                    ModelNode applAddr = accAuthzAddr.clone().add(CONSTRAINT, APPLICATION_CLASSIFICATION);
+                    parseApplicationClassifications(reader, applAddr, expectedNs, list);
                     break;
                 }
                 default: {
@@ -2014,7 +2014,7 @@ public class ManagementXml {
         ParseUtils.requireNoContent(reader);
     }
 
-    private static void parseApplicationTypes(final XMLExtendedStreamReader reader, final ModelNode address, final Namespace expectedNs,
+    private static void parseApplicationClassifications(final XMLExtendedStreamReader reader, final ModelNode address, final Namespace expectedNs,
             final List<ModelNode> list) throws XMLStreamException {
 
         ParseUtils.requireNoAttributes(reader);
@@ -2023,7 +2023,7 @@ public class ManagementXml {
             requireNamespace(reader, expectedNs);
             final Element element = Element.forName(reader.getLocalName());
             switch (element) {
-                case APPLICATION_TYPE: {
+                case APPLICATION_CLASSIFICATION: {
                     parseApplicationType(reader, address, expectedNs, list);
                     break;
                 }
@@ -2059,7 +2059,7 @@ public class ManagementXml {
             throw ParseUtils.missingRequired(reader, Collections.singleton(NAME));
         }
 
-        ModelNode newAddress = address.clone().add(ApplicationTypeResourceDefinition.PATH_ELEMENT.getKey(), name);
+        ModelNode newAddress = address.clone().add(ApplicationClassificationResourceDefinition.PATH_ELEMENT.getKey(), name);
         while (reader.hasNext() && reader.nextTag() != END_ELEMENT) {
             requireNamespace(reader, expectedNs);
             final Element element = Element.forName(reader.getLocalName());
@@ -2092,7 +2092,7 @@ public class ManagementXml {
                         break;
                     }
                     case APPLICATION: {
-                        applicationValue = ApplicationTypeConfigResourceDefinition.CONFIGURED_APPLICATION.parse(value, reader);
+                        applicationValue = ApplicationClassificationConfigResourceDefinition.CONFIGURED_APPLICATION.parse(value, reader);
                         break;
                     }
                     default: {
@@ -2108,8 +2108,8 @@ public class ManagementXml {
         if (applicationValue == null) {
             throw ParseUtils.missingRequired(reader, Collections.singleton(Attribute.APPLICATION));
         }
-        final ModelNode newAddress = address.clone().add(ApplicationTypeConfigResourceDefinition.PATH_ELEMENT.getKey(), name);
-        list.add(Util.getWriteAttributeOperation(newAddress, ApplicationTypeConfigResourceDefinition.CONFIGURED_APPLICATION.getName(), applicationValue));
+        final ModelNode newAddress = address.clone().add(ApplicationClassificationConfigResourceDefinition.PATH_ELEMENT.getKey(), name);
+        list.add(Util.getWriteAttributeOperation(newAddress, ApplicationClassificationConfigResourceDefinition.CONFIGURED_APPLICATION.getName(), applicationValue));
         ParseUtils.requireNoContent(reader);
     }
 
@@ -2541,7 +2541,7 @@ public class ManagementXml {
 
             configuredConstraints.putAll(getVaultConstraints(constraint));
             configuredConstraints.putAll(getSensitivityClassificationConstraints(constraint));
-            configuredConstraints.putAll(getApplicationTypeConstraints(constraint));
+            configuredConstraints.putAll(getApplicationClassificationConstraints(constraint));
         }
 
         return configuredConstraints;
@@ -2600,22 +2600,22 @@ public class ManagementXml {
         return configuredConstraints;
     }
 
-    private static Map<String, Map<String, Set<String>>> getApplicationTypeConstraints(final ModelNode constraint) {
+    private static Map<String, Map<String, Set<String>>> getApplicationClassificationConstraints(final ModelNode constraint) {
         Map<String, Map<String, Set<String>>> configuredConstraints = new HashMap<String, Map<String, Set<String>>>();
 
-        if (constraint.hasDefined(APPLICATION_TYPE)) {
-            ModelNode appTypeParent = constraint.require(APPLICATION_TYPE);
+        if (constraint.hasDefined(APPLICATION_CLASSIFICATION)) {
+            ModelNode appTypeParent = constraint.require(APPLICATION_CLASSIFICATION);
 
-            if (appTypeParent.hasDefined(APPLICATION_TYPE)) {
-                for (Property applicationTypeProperty : appTypeParent.get(APPLICATION_TYPE).asPropertyList()) {
+            if (appTypeParent.hasDefined(APPLICATION_CLASSIFICATION)) {
+                for (Property applicationTypeProperty : appTypeParent.get(APPLICATION_CLASSIFICATION).asPropertyList()) {
                     if (applicationTypeProperty.getValue().hasDefined(TYPE)) {
                         for (Property typeProperty : applicationTypeProperty.getValue().get(TYPE).asPropertyList()) {
                             ModelNode applicationType = typeProperty.getValue();
-                            if (applicationType.hasDefined(ApplicationTypeConfigResourceDefinition.CONFIGURED_APPLICATION.getName())) {
-                                Map<String, Set<String>> constraintMap = configuredConstraints.get(APPLICATION_TYPE);
+                            if (applicationType.hasDefined(ApplicationClassificationConfigResourceDefinition.CONFIGURED_APPLICATION.getName())) {
+                                Map<String, Set<String>> constraintMap = configuredConstraints.get(APPLICATION_CLASSIFICATION);
                                 if (constraintMap == null) {
                                     constraintMap = new HashMap<String, Set<String>>();
-                                    configuredConstraints.put(APPLICATION_TYPE, constraintMap);
+                                    configuredConstraints.put(APPLICATION_CLASSIFICATION, constraintMap);
                                 }
                                 Set<String> types = constraintMap.get(applicationTypeProperty.getName());
                                 if (types == null) {
@@ -2720,18 +2720,18 @@ public class ManagementXml {
             }
             writer.writeEndElement();
         }
-        if (configuredConstraints.containsKey(APPLICATION_TYPE)) {
-            writer.writeStartElement(Element.APPLICATION_TYPES.getLocalName());
-            Map<String, Set<String>> constraints = configuredConstraints.get(APPLICATION_TYPE);
+        if (configuredConstraints.containsKey(APPLICATION_CLASSIFICATION)) {
+            writer.writeStartElement(Element.APPLICATION_CLASSIFICATIONS.getLocalName());
+            Map<String, Set<String>> constraints = configuredConstraints.get(APPLICATION_CLASSIFICATION);
             for (Map.Entry<String, Set<String>> entry : constraints.entrySet()) {
-                writer.writeStartElement(Element.APPLICATION_TYPE.getLocalName());
+                writer.writeStartElement(Element.APPLICATION_CLASSIFICATION.getLocalName());
                 writeAttribute(writer, Attribute.NAME, entry.getKey());
 
                 for (String type : entry.getValue()) {
                     writer.writeStartElement(Element.TYPE.getLocalName());
-                    ModelNode model = accessAuthorization.get(CONSTRAINT, APPLICATION_TYPE, APPLICATION_TYPE, entry.getKey(), TYPE, type);
+                    ModelNode model = accessAuthorization.get(CONSTRAINT, APPLICATION_CLASSIFICATION, APPLICATION_CLASSIFICATION, entry.getKey(), TYPE, type);
                     writeAttribute(writer, Attribute.NAME, type);
-                    ApplicationTypeConfigResourceDefinition.CONFIGURED_APPLICATION.marshallAsAttribute(model, writer);
+                    ApplicationClassificationConfigResourceDefinition.CONFIGURED_APPLICATION.marshallAsAttribute(model, writer);
                     writer.writeEndElement();
                 }
 

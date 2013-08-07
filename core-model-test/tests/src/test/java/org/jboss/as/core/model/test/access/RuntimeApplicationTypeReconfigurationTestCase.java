@@ -26,7 +26,7 @@ import static org.jboss.as.controller.PathAddress.pathAddress;
 import static org.jboss.as.controller.PathElement.pathElement;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ACCESS;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ADD;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.APPLICATION_TYPE;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.APPLICATION_CLASSIFICATION;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.AUTHORIZATION;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.BYTES;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.CONFIGURED_APPLICATION;
@@ -155,8 +155,8 @@ public class RuntimeApplicationTypeReconfigurationTestCase extends AbstractCoreM
         PathAddress address = pathAddress(
                 pathElement(CORE_SERVICE, MANAGEMENT),
                 pathElement(ACCESS, AUTHORIZATION),
-                pathElement(CONSTRAINT, APPLICATION_TYPE),
-                pathElement(APPLICATION_TYPE, applicationType),
+                pathElement(CONSTRAINT, APPLICATION_CLASSIFICATION),
+                pathElement(APPLICATION_CLASSIFICATION, applicationType),
                 pathElement(TYPE, CORE));
 
         ModelNode operation = Util.createOperation(WRITE_ATTRIBUTE_OPERATION, address);

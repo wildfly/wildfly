@@ -2769,7 +2769,7 @@
         <xs:sequence>
             <xs:element name="vault-expression-sensitivity" type="vault-expression-sensitivityType" minOccurs="0"/>
             <xs:element name="sensitive-classifications" type="sensitive-classificationsType" minOccurs="0"/>
-            <xs:element name="application-types" type="application-typesType" minOccurs="0"/>
+            <xs:element name="application-classifications" type="application-classificationsType" minOccurs="0"/>
         </xs:sequence>
     </xs:complexType>
 
@@ -2827,24 +2827,24 @@
         </xs:complexContent>
     </xs:complexType>
 
-    <xs:complexType name="application-typesType">
+    <xs:complexType name="application-classificationsType">
         <xs:annotation>
             <xs:documentation>
                 <![CDATA[
-                   Stores information about configured application types
+                   Stores information about configured application classifications
                 ]]>
             </xs:documentation>
         </xs:annotation>
         <xs:choice minOccurs="1" maxOccurs="unbounded">
-            <xs:element name="application-type" type="application-typeType"/>
+            <xs:element name="application-classification" type="application-classificationType"/>
         </xs:choice>
 
     </xs:complexType>
-    <xs:complexType name="application-typeType">
+    <xs:complexType name="application-classificationType">
         <xs:annotation>
             <xs:documentation>
                 <![CDATA[
-                   Stores information about configured application types
+                   Stores information about configured application classifications
                 ]]>
             </xs:documentation>
         </xs:annotation>

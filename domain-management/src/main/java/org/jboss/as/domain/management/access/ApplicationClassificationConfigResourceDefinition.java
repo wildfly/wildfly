@@ -49,7 +49,7 @@ import org.jboss.dmr.ModelType;
  *
  * @author <a href="kabir.khan@jboss.com">Kabir Khan</a>
  */
-public class ApplicationTypeConfigResourceDefinition extends SimpleResourceDefinition {
+public class ApplicationClassificationConfigResourceDefinition extends SimpleResourceDefinition {
 
     public static PathElement PATH_ELEMENT = PathElement.pathElement(TYPE);
 
@@ -62,8 +62,8 @@ public class ApplicationTypeConfigResourceDefinition extends SimpleResourceDefin
 //            .setAllowExpression(true)
             .build();
 
-    ApplicationTypeConfigResourceDefinition() {
-        super(PATH_ELEMENT, DomainManagementResolver.getResolver("core.access-control.constraint.application-type-config"));
+    ApplicationClassificationConfigResourceDefinition() {
+        super(PATH_ELEMENT, DomainManagementResolver.getResolver("core.access-control.constraint.application-classification-config"));
     }
 
     static ResourceEntry createResource(ApplicationTypeConfig applicationType, String type, String name) {

@@ -49,7 +49,7 @@ public class ModelDescriptionConstants {
     public static final String ANY_IPV6_ADDRESS = "any-ipv6-address";
     public static final String APPCLIENT = "appclient";
     public static final String APPLICATION = "application";
-    public static final String APPLICATION_TYPE = "application-type";
+    public static final String APPLICATION_CLASSIFICATION = "application-classification";
     public static final String ARCHIVE = "archive";
     public static final String ATTRIBUTES = "attributes";
     public static final String ATTRIBUTES_ONLY = "attributes-only";

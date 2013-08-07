@@ -22,7 +22,7 @@
 
 package org.jboss.as.domain.management.access;
 
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.APPLICATION_TYPE;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.APPLICATION_CLASSIFICATION;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.TYPE;
 
 import java.util.Collections;
@@ -41,13 +41,13 @@ import org.jboss.as.domain.management._private.DomainManagementResolver;
  *
  * @author <a href="kabir.khan@jboss.com">Kabir Khan</a>
  */
-public class ApplicationTypeResourceDefinition extends SimpleResourceDefinition {
+public class ApplicationClassificationResourceDefinition extends SimpleResourceDefinition {
 
-    public static PathElement PATH_ELEMENT = PathElement.pathElement(APPLICATION_TYPE);
-    public static final ApplicationTypeResourceDefinition INSTANCE = new ApplicationTypeResourceDefinition();
+    public static PathElement PATH_ELEMENT = PathElement.pathElement(APPLICATION_CLASSIFICATION);
+    public static final ApplicationClassificationResourceDefinition INSTANCE = new ApplicationClassificationResourceDefinition();
 
-    private ApplicationTypeResourceDefinition() {
-        super(PATH_ELEMENT, DomainManagementResolver.getResolver("core.access-control.constraint.application-type"));
+    private ApplicationClassificationResourceDefinition() {
+        super(PATH_ELEMENT, DomainManagementResolver.getResolver("core.access-control.constraint.application-classification"));
     }
 
     static ResourceEntry createResource(Map<String, ApplicationTypeConfig> classificationsByType, String type, String name) {
@@ -60,7 +60,7 @@ public class ApplicationTypeResourceDefinition extends SimpleResourceDefinition 
 
     @Override
     public void registerChildren(ManagementResourceRegistration resourceRegistration) {
-        resourceRegistration.registerSubModel(new ApplicationTypeConfigResourceDefinition());
+        resourceRegistration.registerSubModel(new ApplicationClassificationConfigResourceDefinition());
     }
 
     private static class ApplicationTypeResource extends AbstractClassificationResource {
@@ -83,7 +83,7 @@ public class ApplicationTypeResourceDefinition extends SimpleResourceDefinition 
             if (type.equals(TYPE)) {
                 ApplicationTypeConfig classification = applicationTypesByType.get(name);
                 if (classification != null) {
-                    return ApplicationTypeConfigResourceDefinition.createResource(classification, type, name);
+                    return ApplicationClassificationConfigResourceDefinition.createResource(classification, type, name);
                 }
             }
             return null;
@@ -102,7 +102,7 @@ public class ApplicationTypeResourceDefinition extends SimpleResourceDefinition 
             if (childType.equals(TYPE)) {
                 Set<ResourceEntry> entries = new HashSet<ResourceEntry>();
                 for (Map.Entry<String, ApplicationTypeConfig> entry : applicationTypesByType.entrySet()) {
-                    entries.add(ApplicationTypeConfigResourceDefinition.createResource(entry.getValue(), childType, entry.getKey()));
+                    entries.add(ApplicationClassificationConfigResourceDefinition.createResource(entry.getValue(), childType, entry.getKey()));
                 }
                 return entries;
             }
