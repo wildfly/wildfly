@@ -23,6 +23,10 @@
 package org.jboss.as.core.model.test.access;
 
 import org.jboss.as.controller.PathElement;
+import org.jboss.as.controller.access.constraint.ApplicationTypeConfig;
+import org.jboss.as.controller.access.constraint.SensitivityClassification;
+import org.jboss.as.controller.access.constraint.management.ApplicationTypeAccessConstraintDefinition;
+import org.jboss.as.controller.access.constraint.management.SensitiveTargetAccessConstraintDefinition;
 import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
 import org.jboss.as.controller.registry.Resource;
 import org.jboss.as.core.model.test.AbstractCoreModelTest;
@@ -43,6 +47,9 @@ public class DomainAccessControlTestCase extends AbstractCoreModelTest {
 
     @Test
     public void testConfiguration() throws Exception {
+        //Initialize some additional constraints
+        new SensitiveTargetAccessConstraintDefinition(new SensitivityClassification("play", "security-realm", true, true, true));
+        new ApplicationTypeAccessConstraintDefinition(new ApplicationTypeConfig("play", "deployment", false));
 
         KernelServices kernelServices = createKernelServicesBuilder(TestModelType.DOMAIN)
                 .setModelInitializer(new ModelInitializer() {

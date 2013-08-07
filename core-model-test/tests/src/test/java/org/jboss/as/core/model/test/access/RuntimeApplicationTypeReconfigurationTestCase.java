@@ -29,14 +29,13 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ADD
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.APPLICATION_CLASSIFICATION;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.AUTHORIZATION;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.BYTES;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.CLASSIFICATION;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.CONFIGURED_APPLICATION;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.CONSTRAINT;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.CONTENT;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.CORE;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.CORE_SERVICE;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.FAILED;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.FAILURE_DESCRIPTION;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.MANAGEMENT;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.NAME;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OPERATION_HEADERS;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OUTCOME;
@@ -55,6 +54,8 @@ import org.jboss.as.controller.operations.common.Util;
 import org.jboss.as.core.model.test.AbstractCoreModelTest;
 import org.jboss.as.core.model.test.KernelServices;
 import org.jboss.as.core.model.test.TestModelType;
+import org.jboss.as.domain.management.CoreManagementResourceDefinition;
+import org.jboss.as.model.test.ModelTestUtils;
 import org.jboss.dmr.ModelNode;
 import org.junit.Before;
 import org.junit.Test;
@@ -153,18 +154,18 @@ public class RuntimeApplicationTypeReconfigurationTestCase extends AbstractCoreM
 
     private void reconfigureApplicationType(String applicationType, Boolean isApplication) {
         PathAddress address = pathAddress(
-                pathElement(CORE_SERVICE, MANAGEMENT),
+                CoreManagementResourceDefinition.PATH_ELEMENT,
                 pathElement(ACCESS, AUTHORIZATION),
                 pathElement(CONSTRAINT, APPLICATION_CLASSIFICATION),
-                pathElement(APPLICATION_CLASSIFICATION, applicationType),
-                pathElement(TYPE, CORE));
+                pathElement(TYPE, CORE),
+                pathElement(CLASSIFICATION, applicationType));
 
         ModelNode operation = Util.createOperation(WRITE_ATTRIBUTE_OPERATION, address);
 
         if (isApplication != null) {
             operation.get(NAME).set(CONFIGURED_APPLICATION);
             operation.get(VALUE).set(isApplication);
-            executeWithRoles(operation, StandardRole.SUPERUSER);
+            ModelTestUtils.checkOutcome(executeWithRoles(operation, StandardRole.SUPERUSER));
         }
     }
 

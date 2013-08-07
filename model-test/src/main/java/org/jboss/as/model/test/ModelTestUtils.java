@@ -264,7 +264,6 @@ public class ModelTestUtils {
             xmlMarshalled = marshalled;
         }
 
-
         Assert.assertEquals(normalizeXML(xmlOriginal), normalizeXML(xmlMarshalled));
     }
 

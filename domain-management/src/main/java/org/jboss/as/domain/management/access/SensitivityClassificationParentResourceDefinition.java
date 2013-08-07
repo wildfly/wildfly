@@ -46,7 +46,7 @@ public class SensitivityClassificationParentResourceDefinition extends SimpleRes
 
     @Override
     public void registerChildren(ManagementResourceRegistration resourceRegistration) {
-        resourceRegistration.registerSubModel(new SensitivityClassificationResourceDefinition());
+        resourceRegistration.registerSubModel(new SensitivityClassificationTypeResourceDefinition());
     }
 
 }

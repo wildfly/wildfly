@@ -47,7 +47,7 @@ public class ApplicationClassificationParentResourceDefinition extends SimpleRes
 
     @Override
     public void registerChildren(ManagementResourceRegistration resourceRegistration) {
-        resourceRegistration.registerSubModel(ApplicationClassificationResourceDefinition.INSTANCE);
+        resourceRegistration.registerSubModel(ApplicationClassificationTypeResourceDefinition.INSTANCE);
     }
 
 }

@@ -18,19 +18,19 @@
                 </role>
                 <role name="d" base-role="Administrator"/>
             </host-scoped-roles>
-            <constraints>
-                <vault-expression-sensitivity requires-access="false" requires-read="false" requires-write="false"/>
-                <sensitive-classifications>
-                    <sensitive-classification name="security-realm">
-                        <type name="core" requires-access="false" requires-read="false" requires-write="false"/>
-                    </sensitive-classification>
-                </sensitive-classifications>
-                <application-classifications>
-                    <application-classification name="deployment">
-                        <type name="core" application="false"/>
-                    </application-classification>
-                </application-classifications>
-            </constraints>
+	         <constraints>
+	            <vault-expression-sensitivity requires-access="false" requires-read="false" requires-write="false" />
+	            <sensitive-classifications>
+	               <sensitive-classification type="core" name="access-control" requires-access="false" requires-read="false" requires-write="false" />
+	               <sensitive-classification type="core" name="security-realm" requires-access="false" requires-read="false" requires-write="false" />
+	               <sensitive-classification type="play" name="security-realm" requires-access="false" requires-read="false" requires-write="false" />
+	            </sensitive-classifications>
+	            <application-classifications>
+	               <application-classification type="core" name="deployment" application="false"/>
+	               <application-classification type="play" name="deployment" application="false"/>
+	               <!--  TODO add more core classifications as they get used in the model -->
+	            </application-classifications>
+	         </constraints>
         </access-control>
     </management>
 </domain>

@@ -21,7 +21,7 @@
  */
 package org.jboss.as.domain.management.access;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.NAME;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.TYPE;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.CLASSIFICATION;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.VALUE;
 import static org.jboss.as.controller.parsing.Attribute.APPLICATION;
 
@@ -51,7 +51,7 @@ import org.jboss.dmr.ModelType;
  */
 public class ApplicationClassificationConfigResourceDefinition extends SimpleResourceDefinition {
 
-    public static PathElement PATH_ELEMENT = PathElement.pathElement(TYPE);
+    public static PathElement PATH_ELEMENT = PathElement.pathElement(CLASSIFICATION);
 
     public static SimpleAttributeDefinition DEFAULT_APPLICATION = SimpleAttributeDefinitionBuilder.create(ModelDescriptionConstants.DEFAULT_APPLICATION, ModelType.BOOLEAN, false)
             .setStorageRuntime()
