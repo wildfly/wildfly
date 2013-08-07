@@ -96,6 +96,7 @@
         <version.commons-cli>1.2</version.commons-cli>
         <version.commons-codec>1.4</version.commons-codec>
         <version.commons-collections>3.2.1</version.commons-collections>
+        <version.commons-digester>1.8</version.commons-digester>
         <version.commons-io>2.1</version.commons-io>
         <version.commons-configuration>1.6</version.commons-configuration>
         <version.commons-lang>2.6</version.commons-lang>
@@ -1603,6 +1604,26 @@
                 <groupId>commons-collections</groupId>
                 <artifactId>commons-collections</artifactId>
                 <version>${version.commons-collections}</version>
+            </dependency>
+
+            <dependency>
+                <groupId>commons-digester</groupId>
+                <artifactId>commons-digester</artifactId>
+                <version>${version.commons-digester}</version>
+                <exclusions>
+                    <exclusion>
+                        <artifactId>commons-logging</artifactId>
+                        <groupId>commons-logging</groupId>
+                    </exclusion>
+                    <exclusion>
+                        <artifactId>commons-beanutils</artifactId>
+                        <groupId>commons-beanutils</groupId>
+                    </exclusion>
+                    <exclusion>
+                        <artifactId>javax.servlet</artifactId>
+                        <groupId>servlet-api</groupId>
+                    </exclusion>
+                </exclusions>
             </dependency>
 
             <dependency>

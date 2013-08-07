@@ -1,0 +1,42 @@
+<assembly xmlns="http://maven.apache.org/plugins/maven-assembly-plugin/assembly/1.1.2" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+  xsi:schemaLocation="http://maven.apache.org/plugins/maven-assembly-plugin/assembly/1.1.2 http://maven.apache.org/xsd/assembly-1.1.2.xsd">
+  <!--<id>jar-with-packed-dependencies</id>-->
+  <id>jboss-jsf-installer-${jsf-impl-name}-${jsf-version}</id>
+  <formats>
+    <format>zip</format>
+  </formats>
+  <includeBaseDirectory>false</includeBaseDirectory>
+  <dependencySets>
+    <dependencySet>
+      <outputDirectory>/</outputDirectory>
+      <useProjectArtifact>true</useProjectArtifact>
+      <useTransitiveDependencies>false</useTransitiveDependencies>
+      <unpack>false</unpack>
+      <scope>runtime</scope>
+    </dependencySet>
+  </dependencySets>
+  <fileSets>
+    <fileSet>
+      <outputDirectory>/</outputDirectory>
+      <directory>${project.basedir}/src/main/resources</directory>
+      <filtered>true</filtered>
+      <includes>
+        <include>${jsf-impl-name}*.xml</include>
+        <include>injection-module.xml</include>
+      </includes>
+      <useDefaultExcludes>true</useDefaultExcludes>
+    </fileSet>
+  </fileSets>
+  <files>
+      <file>
+          <source>${project.basedir}/src/main/resources/${jsf-impl-name}-deploy.scr</source>
+          <destName>deploy.scr</destName>
+          <filtered>true</filtered>
+      </file>
+      <file>
+          <source>${project.basedir}/src/main/resources/${jsf-impl-name}-undeploy.scr</source>
+          <destName>undeploy.scr</destName>
+          <filtered>true</filtered>
+      </file>
+  </files>
+</assembly>
