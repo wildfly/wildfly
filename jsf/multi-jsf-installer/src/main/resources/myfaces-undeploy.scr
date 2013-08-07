@@ -1,0 +1,3 @@
+module remove --name=javax.faces.api --slot=myfaces-${jsf-version}
+module remove --name=com.sun.jsf-impl --slot=myfaces-${jsf-version}
+module remove --name=org.jboss.as.jsf-injection --slot=myfaces-${jsf-version}
