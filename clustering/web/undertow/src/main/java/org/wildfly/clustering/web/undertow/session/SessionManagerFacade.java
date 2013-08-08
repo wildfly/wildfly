@@ -28,7 +28,9 @@ import io.undertow.server.session.SessionListener;
 import io.undertow.server.session.SessionListeners;
 
 import java.util.AbstractMap;
+import java.util.Collections;
 import java.util.Map;
+import java.util.Set;
 import java.util.concurrent.TimeUnit;
 
 import org.jboss.metadata.web.jboss.ReplicationConfig;
@@ -175,6 +177,22 @@ public class SessionManagerFacade implements UndertowSessionManager {
     @Override
     public int activeSessions() {
         return this.manager.size();
+    }
+
+    @Override
+    public Set<String> getTransientSessions() {
+        return Collections.emptySet();
+    }
+
+    @Override
+    public Set<String> getActiveSessions() {
+        return Collections.emptySet();
+    }
+
+    @Override
+    public Set<String> getAllSessions() {
+        //TODO: real implementation
+        return Collections.emptySet();
     }
 
     @Override

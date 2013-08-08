@@ -36,7 +36,10 @@ import org.jboss.logging.annotations.MessageBundle;
 import org.jboss.logging.annotations.Param;
 import org.jboss.modules.ModuleIdentifier;
 import org.jboss.msc.service.ServiceName;
+import org.jboss.msc.service.StartException;
 import org.jboss.vfs.VirtualFile;
+
+import java.io.File;
 
 /**
  * This module is using message IDs in the range 17300 - 17699.
@@ -157,5 +160,9 @@ public interface UndertowMessages {
     @Message(id = 17346, value = "Could not construct handler for class: %s. with parameters %s")
     RuntimeException cannotCreateHttpHandler(Class<?> handlerClass, ModelNode parameters, @Cause Throwable cause);
 
+    @Message(id = 17347, value = "Invalid persistent sessions directory %s")
+    StartException invalidPersistentSessionDir(File baseDir);
 
+    @Message(id = 17348, value = "Failed to create persistent sessions dir %s")
+    StartException failedToCreatePersistentSessionDir(File baseDir);
 }

@@ -33,7 +33,6 @@ public interface Constants {
     String BUFFER_SIZE = "buffer-size";
     String BUFFERS_PER_REGION = "buffers-per-region";
     String CONFIGURATION = "configuration";
-    String DEVELOPMENT_MODE = "development-mode";
     String MAX_REGIONS = "max-regions";
     String BUFFER_POOL = "buffer-pool";
     String SETTING = "setting";
@@ -117,4 +116,8 @@ public interface Constants {
 
     String PERSISTENT_SESSIONS = "persistent-sessions";
     String DEFAULT_BUFFER_CACHE = "default-buffer-cache";
+
+    String RELATIVE_TO = "relative-to";
+    String STACK_TRACE_ON_ERROR = "stack-trace-on-error";
+    String NONE = "none";
 }

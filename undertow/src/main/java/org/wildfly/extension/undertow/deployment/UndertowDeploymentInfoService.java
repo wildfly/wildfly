@@ -173,6 +173,7 @@ public class UndertowDeploymentInfoService implements Service<DeploymentInfo> {
     private final Set<VirtualFile> overlays;
     private final List<ExpressionFactoryWrapper> expressionFactoryWrappers;
     private final List<PredicatedHandler> predicatedHandlers;
+    private final boolean explodedDeployment;
 
     private final InjectedValue<UndertowService> undertowService = new InjectedValue<>();
     private final InjectedValue<SessionManagerFactory> sessionManagerFactory = new InjectedValue<SessionManagerFactory>();
@@ -181,7 +182,7 @@ public class UndertowDeploymentInfoService implements Service<DeploymentInfo> {
     private final InjectedValue<PathManager> pathManagerInjector = new InjectedValue<PathManager>();
     private final InjectedValue<ComponentRegistry> componentRegistryInjectedValue = new InjectedValue<>();
 
-    private UndertowDeploymentInfoService(final JBossWebMetaData mergedMetaData, final String deploymentName, final TldsMetaData tldsMetaData, final List<TldMetaData> sharedTlds, final Module module, final ScisMetaData scisMetaData, final VirtualFile deploymentRoot, final String securityContextId, final String securityDomain, final List<ServletContextAttribute> attributes, final String contextPath, final List<SetupAction> setupActions, final Set<VirtualFile> overlays, final List<ExpressionFactoryWrapper> expressionFactoryWrappers, List<PredicatedHandler> predicatedHandlers) {
+    private UndertowDeploymentInfoService(final JBossWebMetaData mergedMetaData, final String deploymentName, final TldsMetaData tldsMetaData, final List<TldMetaData> sharedTlds, final Module module, final ScisMetaData scisMetaData, final VirtualFile deploymentRoot, final String securityContextId, final String securityDomain, final List<ServletContextAttribute> attributes, final String contextPath, final List<SetupAction> setupActions, final Set<VirtualFile> overlays, final List<ExpressionFactoryWrapper> expressionFactoryWrappers, List<PredicatedHandler> predicatedHandlers, boolean explodedDeployment) {
         this.mergedMetaData = mergedMetaData;
         this.deploymentName = deploymentName;
         this.tldsMetaData = tldsMetaData;
@@ -197,6 +198,7 @@ public class UndertowDeploymentInfoService implements Service<DeploymentInfo> {
         this.overlays = overlays;
         this.expressionFactoryWrappers = expressionFactoryWrappers;
         this.predicatedHandlers = predicatedHandlers;
+        this.explodedDeployment = explodedDeployment;
     }
 
     @Override
@@ -366,9 +368,8 @@ public class UndertowDeploymentInfoService implements Service<DeploymentInfo> {
             try {
                 //TODO: make the caching limits configurable
                 ResourceManager resourceManager = new ServletResourceManager(deploymentRoot, overlays);
-                if(servletContainer.getDevelopmentMode() == null) {
-                    resourceManager = new CachingResourceManager(100, 10 * 1024 * 1024, servletContainer.getBufferCache(), resourceManager, -1);
-                }
+
+                resourceManager = new CachingResourceManager(100, 10 * 1024 * 1024, servletContainer.getBufferCache(), resourceManager, explodedDeployment ? 2000 : -1);
                 d.setResourceManager(resourceManager);
             } catch (IOException e) {
                 throw new StartException(e);
@@ -389,9 +390,10 @@ public class UndertowDeploymentInfoService implements Service<DeploymentInfo> {
             }
 
             d.setAllowNonStandardWrappers(servletContainer.isAllowNonStandardWrappers());
+            d.setServletStackTraces(servletContainer.getStackTraces());
 
-            if(servletContainer.getDevelopmentMode() != null) {
-                d.setDevelopmentMode(servletContainer.getDevelopmentMode());
+            if (servletContainer.getSessionPersistenceManager() != null) {
+                d.setSessionPersistenceManager(servletContainer.getSessionPersistenceManager());
             }
 
             //for 2.2 apps we do not require a leading / in path mappings
@@ -596,13 +598,6 @@ public class UndertowDeploymentInfoService implements Service<DeploymentInfo> {
             if (mergedMetaData.getContextParams() != null) {
                 for (ParamValueMetaData param : mergedMetaData.getContextParams()) {
                     d.addInitParameter(param.getParamName(), param.getParamValue());
-                }
-            }
-
-            //set the JSF project stage in development mode
-            if(servletContainer.getDevelopmentMode() != null) {
-                if(!d.getInitParameters().containsKey(JAVAX_FACES_PROJECT_STAGE)) {
-                    d.addInitParameter(JAVAX_FACES_PROJECT_STAGE, "Development");
                 }
             }
 
@@ -1089,6 +1084,7 @@ public class UndertowDeploymentInfoService implements Service<DeploymentInfo> {
         private Set<VirtualFile> overlays;
         private List<ExpressionFactoryWrapper> expressionFactoryWrappers;
         private List<PredicatedHandler> predicatedHandlers;
+        private boolean explodedDeployment;
 
         Builder setMergedMetaData(final JBossWebMetaData mergedMetaData) {
             this.mergedMetaData = mergedMetaData;
@@ -1165,8 +1161,13 @@ public class UndertowDeploymentInfoService implements Service<DeploymentInfo> {
             return this;
         }
 
+        public Builder setExplodedDeployment(boolean explodedDeployment) {
+            this.explodedDeployment = explodedDeployment;
+            return this;
+        }
+
         public UndertowDeploymentInfoService createUndertowDeploymentInfoService() {
-            return new UndertowDeploymentInfoService(mergedMetaData, deploymentName, tldsMetaData, sharedTlds, module, scisMetaData, deploymentRoot, securityContextId, securityDomain, attributes, contextPath, setupActions, overlays, expressionFactoryWrappers, predicatedHandlers);
+            return new UndertowDeploymentInfoService(mergedMetaData, deploymentName, tldsMetaData, sharedTlds, module, scisMetaData, deploymentRoot, securityContextId, securityDomain, attributes, contextPath, setupActions, overlays, expressionFactoryWrappers, predicatedHandlers, explodedDeployment);
         }
     }
 }

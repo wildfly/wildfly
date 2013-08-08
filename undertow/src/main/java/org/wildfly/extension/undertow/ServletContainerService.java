@@ -24,8 +24,9 @@ package org.wildfly.extension.undertow;
 
 import io.undertow.server.handlers.cache.DirectBufferCache;
 import io.undertow.servlet.api.DeploymentInfo;
-import io.undertow.servlet.api.DevelopmentModeInfo;
 import io.undertow.servlet.api.ServletContainer;
+import io.undertow.servlet.api.ServletStackTraces;
+import io.undertow.servlet.api.SessionPersistenceManager;
 import org.jboss.msc.service.Service;
 import org.jboss.msc.service.StartContext;
 import org.jboss.msc.service.StartException;
@@ -44,18 +45,19 @@ import java.util.concurrent.ConcurrentHashMap;
 public class ServletContainerService implements Service<ServletContainerService> {
 
     private final boolean allowNonStandardWrappers;
+    private final ServletStackTraces stackTraces;
     private final SessionCookieConfig sessionCookieConfig;
     private final JSPConfig jspConfig;
-    private final DevelopmentModeInfo developmentMode;
     private volatile ServletContainer servletContainer;
     @Deprecated
     private final Map<String, Integer> secureListeners = new ConcurrentHashMap<>(1);
 
     private final InjectedValue<DirectBufferCache> bufferCacheInjectedValue = new InjectedValue<>();
+    private final InjectedValue<SessionPersistenceManager> sessionPersistenceManagerInjectedValue = new InjectedValue<>();
 
-    public ServletContainerService(DevelopmentModeInfo developmentMode, boolean allowNonStandardWrappers, SessionCookieConfig sessionCookieConfig, JSPConfig jspConfig) {
-        this.developmentMode = developmentMode;
+    public ServletContainerService(boolean allowNonStandardWrappers, ServletStackTraces stackTraces, SessionCookieConfig sessionCookieConfig, JSPConfig jspConfig) {
         this.allowNonStandardWrappers = allowNonStandardWrappers;
+        this.stackTraces = stackTraces;
         this.sessionCookieConfig = sessionCookieConfig;
         this.jspConfig = jspConfig;
     }
@@ -81,16 +83,16 @@ public class ServletContainerService implements Service<ServletContainerService>
         return servletContainer;
     }
 
-    public DevelopmentModeInfo getDevelopmentMode() {
-        return developmentMode;
-    }
-
     public boolean isAllowNonStandardWrappers() {
         return allowNonStandardWrappers;
     }
 
     public JSPConfig getJspConfig() {
         return jspConfig;
+    }
+
+    public ServletStackTraces getStackTraces() {
+        return stackTraces;
     }
 
     public Integer lookupSecurePort(final String listenerName) {
@@ -135,4 +137,13 @@ public class ServletContainerService implements Service<ServletContainerService>
     public DirectBufferCache getBufferCache() {
         return bufferCacheInjectedValue.getOptionalValue();
     }
+
+    InjectedValue<SessionPersistenceManager> getSessionPersistenceManagerInjectedValue() {
+        return sessionPersistenceManagerInjectedValue;
+    }
+
+    public SessionPersistenceManager getSessionPersistenceManager() {
+        return sessionPersistenceManagerInjectedValue.getOptionalValue();
+    }
+
 }

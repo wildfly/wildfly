@@ -27,11 +27,13 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 
+import io.undertow.servlet.api.ServletStackTraces;
 import org.jboss.as.controller.AttributeDefinition;
 import org.jboss.as.controller.PersistentResourceDefinition;
 import org.jboss.as.controller.ReloadRequiredRemoveStepHandler;
 import org.jboss.as.controller.SimpleAttributeDefinition;
 import org.jboss.as.controller.SimpleAttributeDefinitionBuilder;
+import org.jboss.as.controller.operations.validation.EnumValidator;
 import org.jboss.as.controller.registry.AttributeAccess;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.ModelType;
@@ -56,13 +58,22 @@ public class ServletContainerDefinition extends PersistentResourceDefinition {
                     .setAllowExpression(true)
                     .build();
 
+    protected static final SimpleAttributeDefinition STACK_TRACE_ON_ERROR =
+            new SimpleAttributeDefinitionBuilder(Constants.STACK_TRACE_ON_ERROR, ModelType.STRING, true)
+                    .setFlags(AttributeAccess.Flag.RESTART_ALL_SERVICES)
+                    .setDefaultValue(new ModelNode(Constants.NONE))
+                    .setValidator(new EnumValidator<>(ServletStackTraces.class, true, true))
+                    .setAllowExpression(true)
+                    .build();
+
+
     private static final List<? extends PersistentResourceDefinition> CHILDREN;
 
     static {
         List<PersistentResourceDefinition>  children = new ArrayList<>();
         children.add(JspDefinition.INSTANCE);
         children.add(SessionCookieDefinition.INSTANCE);
-        children.add(DevelopmentModeDefinition.INSTANCE);
+        children.add(PersistentSessionsDefinition.INSTANCE);
         CHILDREN = Collections.unmodifiableList(children);
     }
 
@@ -78,6 +89,7 @@ public class ServletContainerDefinition extends PersistentResourceDefinition {
         final List<AttributeDefinition> attributes = new ArrayList<>();
         attributes.add(ALLOW_NON_STANDARD_WRAPPERS);
         attributes.add(DEFAULT_BUFFER_CACHE);
+        attributes.add(STACK_TRACE_ON_ERROR);
         return attributes;
     }
 

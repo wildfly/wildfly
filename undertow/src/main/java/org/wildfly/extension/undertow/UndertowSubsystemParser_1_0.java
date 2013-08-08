@@ -94,11 +94,13 @@ public class UndertowSubsystemParser_1_0 implements XMLStreamConstants, XMLEleme
                         builder(ServletContainerDefinition.INSTANCE)
                                 .addAttribute(ServletContainerDefinition.ALLOW_NON_STANDARD_WRAPPERS)
                                 .addAttribute(ServletContainerDefinition.DEFAULT_BUFFER_CACHE)
+                                .addAttribute(ServletContainerDefinition.STACK_TRACE_ON_ERROR)
                                 .addChild(
                                         builder(JspDefinition.INSTANCE)
                                                 .setXmlElementName(Constants.JSP_CONFIG)
                                                 .addAttributes(
                                                         JspDefinition.DISABLED,
+                                                        JspDefinition.DEVELOPMENT,
                                                         JspDefinition.KEEP_GENERATED,
                                                         JspDefinition.TRIM_SPACES,
                                                         JspDefinition.TAG_POOLING,
@@ -128,18 +130,18 @@ public class UndertowSubsystemParser_1_0 implements XMLStreamConstants, XMLEleme
                                                         SessionCookieDefinition.MAX_AGE
                                                 )
                                 )
-                        .       addChild(
-                                builder(DevelopmentModeDefinition.INSTANCE)
-                                        .addAttributes(
-                                                DevelopmentModeDefinition.ENABLED,
-                                                DevelopmentModeDefinition.PERSISTENT_SESSIONS
-                                        )
-                        )
+                                .addChild(
+                                        builder(PersistentSessionsDefinition.INSTANCE)
+                                                .addAttributes(
+                                                        PersistentSessionsDefinition.PATH,
+                                                        PersistentSessionsDefinition.RELATIVE_TO
+                                                )
+                                )
                 )
                 .addChild(
                         builder(ErrorPageDefinition.INSTANCE)
-                                                .addAttributes(ErrorPageDefinition.CODE, ErrorPageDefinition.PATH)
-                                                .setXmlWrapperElement(Constants.ERROR_PAGES))
+                                .addAttributes(ErrorPageDefinition.CODE, ErrorPageDefinition.PATH)
+                                .setXmlWrapperElement(Constants.ERROR_PAGES))
                 .addChild(
                         builder(HandlerDefinitions.INSTANCE)
                                 .setXmlElementName(Constants.HANDLERS)
@@ -165,7 +167,7 @@ public class UndertowSubsystemParser_1_0 implements XMLStreamConstants, XMLEleme
                                 )
                                 .addChild(
                                         builder(ConnectionLimitHandler.INSTANCE)
-                                        .addAttributes(ConnectionLimitHandler.MAX_CONCURRENT_REQUESTS)
+                                                .addAttributes(ConnectionLimitHandler.MAX_CONCURRENT_REQUESTS)
                                 )
 
                 )
