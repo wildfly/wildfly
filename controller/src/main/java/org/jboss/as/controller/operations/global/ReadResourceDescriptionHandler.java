@@ -102,8 +102,13 @@ public class ReadResourceDescriptionHandler implements OperationStepHandler {
             .setDefaultValue(new ModelNode(false))
             .build();
 
+    private static final SimpleAttributeDefinition ATTRIBUTES_PARAM = new SimpleAttributeDefinitionBuilder(ModelDescriptionConstants.ATTRIBUTES, ModelType.BOOLEAN)
+        .setAllowNull(true)
+        .setDefaultValue(new ModelNode(true))
+        .build();
+
     static final OperationDefinition DEFINITION = new SimpleOperationDefinitionBuilder(READ_RESOURCE_DESCRIPTION_OPERATION, ControllerResolver.getResolver("global"))
-            .setParameters(OPERATIONS, INHERITED, RECURSIVE, RECURSIVE_DEPTH, PROXIES, INCLUDE_ALIASES, ACCESS_CONTROL, LOCALE)
+            .setParameters(ATTRIBUTES_PARAM, OPERATIONS, INHERITED, RECURSIVE, RECURSIVE_DEPTH, PROXIES, INCLUDE_ALIASES, ACCESS_CONTROL, LOCALE)
             .setReadOnly()
             .setRuntimeOnly()
             .setReplyType(ModelType.OBJECT)
@@ -160,6 +165,7 @@ public class ReadResourceDescriptionHandler implements OperationStepHandler {
         final boolean aliases = INCLUDE_ALIASES.resolveModelAttribute(context, operation).asBoolean();
         final boolean inheritedOps = INHERITED.resolveModelAttribute(context, operation).asBoolean();
         final boolean includeAccess = ACCESS_CONTROL.resolveModelAttribute(context, operation).asBoolean();
+        final boolean includeAttrs = ATTRIBUTES_PARAM.resolveModelAttribute(context, operation).asBoolean();
 
         final ImmutableManagementResourceRegistration registry = getResourceRegistrationCheckForAlias(context, accessControlContext.opAddress, accessControlContext);
 
@@ -178,7 +184,7 @@ public class ReadResourceDescriptionHandler implements OperationStepHandler {
         // We're going to add a bunch of steps that should immediately follow this one. We are going to add them
         // in reverse order of how they should execute, as that is the way adding a Stage.IMMEDIATE step works
         // Last to execute is the handler that assembles the overall response from the pieces created by all the other steps
-        final ReadResourceDescriptionAssemblyHandler assemblyHandler = new ReadResourceDescriptionAssemblyHandler(nodeDescription, operations, childResources, accessControlContext);
+        final ReadResourceDescriptionAssemblyHandler assemblyHandler = new ReadResourceDescriptionAssemblyHandler(nodeDescription, operations, childResources, accessControlContext, includeAttrs);
         context.addStep(assemblyHandler, OperationContext.Stage.MODEL, true);
 
         if (ops) {
@@ -455,6 +461,7 @@ public class ReadResourceDescriptionHandler implements OperationStepHandler {
         private final Map<String, ModelNode> operations;
         private final Map<PathElement, ModelNode> childResources;
         private final ReadResourceDescriptionAccessControlContext accessControlContext;
+        private final boolean includeAttrs;
 
         /**
          * Creates a ReadResourceAssemblyHandler that will assemble the response using the contents
@@ -465,13 +472,15 @@ public class ReadResourceDescriptionHandler implements OperationStepHandler {
          * @param childResources  read-resource-description response from child resources, where the key is the PathAddress
          *                        relative to the address of the operation this handler is handling and the
          *                        value is the full read-resource response. Will not be {@code null}
+         * @param includeAttrs whether or not the description should include the attributes or not
          */
         private ReadResourceDescriptionAssemblyHandler(final ModelNode nodeDescription, final Map<String, ModelNode> operations,
-                final Map<PathElement, ModelNode> childResources, ReadResourceDescriptionAccessControlContext accessControlContext) {
+                final Map<PathElement, ModelNode> childResources, ReadResourceDescriptionAccessControlContext accessControlContext, boolean includeAttrs) {
             this.nodeDescription = nodeDescription;
             this.operations = operations;
             this.childResources = childResources;
             this.accessControlContext = accessControlContext;
+            this.includeAttrs = includeAttrs;
         }
 
         @Override
@@ -524,6 +533,9 @@ public class ReadResourceDescriptionHandler implements OperationStepHandler {
                 nodeDescription.get(ACCESS_CONTROL.getName()).set(accessControl);
             }
 
+            if (!includeAttrs && nodeDescription.hasDefined(ATTRIBUTES)) {
+                nodeDescription.get(ATTRIBUTES).set(new ModelNode());
+            }
             context.getResult().set(nodeDescription);
             context.stepCompleted();
         }
