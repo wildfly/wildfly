@@ -737,11 +737,9 @@ public interface OperationContext extends ExpressionResolver {
      * Check for authorization to execute an operation.
      *
      * @param operation the operation. Cannot be {@code null}
-     * @param addressabilityOnly {@code true} if only {@link Action.ActionEffect#ADDRESS} should be authorized;
-     *                           {@code false} if all relevant effects should be authorized
      * @return  the authorization result
      */
-    AuthorizationResult authorizeOperation(ModelNode operation, boolean addressabilityOnly);
+    AuthorizationResult authorizeOperation(ModelNode operation);
 
     /**
      * Obtain the {@link Caller} for the current request.

@@ -909,7 +909,7 @@ final class OperationContextImpl extends AbstractOperationContext {
     }
 
     @Override
-    public AuthorizationResult authorizeOperation(ModelNode operation, boolean addressabilityOnly) {
+    public AuthorizationResult authorizeOperation(ModelNode operation) {
         OperationId opId = new OperationId(operation);
         AuthorizationResult resourceResult = authorize(opId, operation, false, EnumSet.of(ActionEffect.ADDRESS));
         if (resourceResult.getDecision() == AuthorizationResult.Decision.DENY) {
@@ -923,34 +923,28 @@ final class OperationContextImpl extends AbstractOperationContext {
             AuthorizationResponseImpl authResp = authorizations.get(opId);
             assert authResp != null : "perform resource authorization before operation authorization";
 
-            AuthorizationResult authResult = authResp.getOperationResult(operationName, addressabilityOnly);
+            AuthorizationResult authResult = authResp.getOperationResult(operationName);
             if (authResult == null) {
                 OperationEntry operationEntry = authResp.targetResource.getResourceRegistration().getOperationEntry(PathAddress.EMPTY_ADDRESS, operationName);
 
                 operation.get(OPERATION_HEADERS).set(activeStep.operation.get(OPERATION_HEADERS));
                 Action targetAction = new Action(operation, operationEntry);
 
-                if (addressabilityOnly) {
-                    Action action = targetAction.limitAction(ActionEffect.ADDRESS);
-                    authResult = modelController.getAuthorizer().authorize(getCaller(), callEnvironment, action, authResp.targetResource);
-                    authResp.addOperationResult(operationName, addressabilityOnly, authResult);
-                } else {
-                    authResult = modelController.getAuthorizer().authorize(getCaller(), callEnvironment, targetAction, authResp.targetResource);
-                    authResp.addOperationResult(operationName, addressabilityOnly, authResult);
+                authResult = modelController.getAuthorizer().authorize(getCaller(), callEnvironment, targetAction, authResp.targetResource);
+                authResp.addOperationResult(operationName, authResult);
 
-                    //When authorizing the remove operation, make sure that all the attributes are accessible
-                    if (authResult.getDecision() == AuthorizationResult.Decision.PERMIT && !addressabilityOnly && operationName.equals(ModelDescriptionConstants.REMOVE)) {
-                        if (!authResp.attributesComplete) {
-                            authResp = authorizeResource(true, false);
-                        }
-                        out:
-                        for (ActionEffect actionEffect : targetAction.getActionEffects()) {
-                            for (Map<Action.ActionEffect, AuthorizationResult> attributeResults : authResp.attributeResults.values()) {
-                                authResult = attributeResults.get(actionEffect);
-                                if (authResult.getDecision() == AuthorizationResult.Decision.DENY) {
-                                    authResp.addOperationResult(operationName, addressabilityOnly, authResult);
-                                    break out;
-                                }
+                //When authorizing the remove operation, make sure that all the attributes are accessible
+                if (authResult.getDecision() == AuthorizationResult.Decision.PERMIT && operationName.equals(ModelDescriptionConstants.REMOVE)) {
+                    if (!authResp.attributesComplete) {
+                        authResp = authorizeResource(true, false);
+                    }
+                    out:
+                    for (ActionEffect actionEffect : targetAction.getActionEffects()) {
+                        for (Map<Action.ActionEffect, AuthorizationResult> attributeResults : authResp.attributeResults.values()) {
+                            authResult = attributeResults.get(actionEffect);
+                            if (authResult.getDecision() == AuthorizationResult.Decision.DENY) {
+                                authResp.addOperationResult(operationName, authResult);
+                                break out;
                             }
                         }
                     }
@@ -1542,7 +1536,7 @@ final class OperationContextImpl extends AbstractOperationContext {
 
         private Map<Action.ActionEffect, AuthorizationResult> resourceResults = new HashMap<Action.ActionEffect, AuthorizationResult>();
         private Map<String, Map<Action.ActionEffect, AuthorizationResult>> attributeResults = new HashMap<String, Map<Action.ActionEffect, AuthorizationResult>>();
-        private Map<String, Map<Boolean, AuthorizationResult>> operationResults = new HashMap<String, Map<Boolean, AuthorizationResult>>();
+        private Map<String, AuthorizationResult> operationResults = new HashMap<String, AuthorizationResult>();
         private final TargetResource targetResource;
         private final Action standardAction;
         private volatile boolean attributesComplete = false;
@@ -1561,9 +1555,8 @@ final class OperationContextImpl extends AbstractOperationContext {
             return attrResults == null ? null : attrResults.get(actionEffect);
         }
 
-        public AuthorizationResult getOperationResult(String operationName, boolean addressabilityOnly) {
-            Map<Boolean, AuthorizationResult> opResults = operationResults.get(operationName);
-            return opResults == null ? null : opResults.get(addressabilityOnly);
+        public AuthorizationResult getOperationResult(String operationName) {
+            return operationResults.get(operationName);
         }
 
         private void addResourceResult(Action.ActionEffect actionEffect, AuthorizationResult result) {
@@ -1579,13 +1572,8 @@ final class OperationContextImpl extends AbstractOperationContext {
             attrResults.put(actionEffect, result);
         }
 
-        private void addOperationResult(String operationName, Boolean addressabilityOnly, AuthorizationResult result) {
-            Map<Boolean, AuthorizationResult> opResults = operationResults.get(operationName);
-            if (opResults == null) {
-                opResults = new HashMap<Boolean, AuthorizationResult>();
-                operationResults.put(operationName, opResults);
-            }
-            opResults.put(addressabilityOnly, result);
+        private void addOperationResult(String operationName, AuthorizationResult result) {
+            operationResults.put(operationName, result);
         }
 
     }

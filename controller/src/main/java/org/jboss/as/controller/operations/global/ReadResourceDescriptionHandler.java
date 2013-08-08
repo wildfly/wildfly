@@ -441,7 +441,7 @@ public class ReadResourceDescriptionHandler implements OperationStepHandler {
         }
 
         private void addOperationAuthorizationResult(OperationContext context, ModelNode result, ModelNode operation, String operationName) {
-            AuthorizationResult authorizationResult = context.authorizeOperation(operation, false);
+            AuthorizationResult authorizationResult = context.authorizeOperation(operation);
             result.get(EXECUTE).set(authorizationResult.getDecision() == Decision.PERMIT);
         }
     }
