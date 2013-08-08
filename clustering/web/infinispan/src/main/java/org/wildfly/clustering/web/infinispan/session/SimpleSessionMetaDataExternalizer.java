@@ -48,7 +48,7 @@ public class SimpleSessionMetaDataExternalizer extends AbstractSimpleExternalize
     }
 
     @Override
-    public SimpleSessionMetaData readObject(ObjectInput input) throws IOException, ClassNotFoundException {
+    public SimpleSessionMetaData readObject(ObjectInput input) throws IOException {
         Date creationTime = new Date(input.readLong());
         Date lastAccessedTime = new Date(input.readLong());
         Time maxInactiveInterval = new Time(input.readInt(), TimeUnit.SECONDS);

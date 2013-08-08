@@ -59,7 +59,7 @@ public class CoarseSSOCacheEntryExternalizer extends AbstractSimpleExternalizer<
     }
 
     @Override
-    public CoarseSSOCacheEntry<?> readObject(ObjectInput input) throws IOException, ClassNotFoundException {
+    public CoarseSSOCacheEntry<?> readObject(ObjectInput input) throws IOException {
         CoarseSSOCacheEntry<?> entry = new CoarseSSOCacheEntry<>();
         entry.setAuthenticationType(AuthenticationType.values()[input.readByte()]);
         entry.setUser(input.readUTF());

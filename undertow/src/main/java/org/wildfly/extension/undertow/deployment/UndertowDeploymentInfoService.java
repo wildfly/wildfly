@@ -113,7 +113,7 @@ import org.jboss.msc.value.InjectedValue;
 import org.jboss.security.audit.AuditManager;
 import org.jboss.vfs.VirtualFile;
 import org.wildfly.clustering.web.session.SessionManagerFactory;
-import org.wildfly.clustering.web.undertow.session.SessionManagerFacadeFactory;
+import org.wildfly.clustering.web.undertow.session.SessionManagerAdapterFactory;
 import org.wildfly.extension.undertow.JSPConfig;
 import org.wildfly.extension.undertow.ServletContainerService;
 import org.wildfly.extension.undertow.SessionCookieConfig;
@@ -346,7 +346,7 @@ public class UndertowDeploymentInfoService implements Service<DeploymentInfo> {
         if (this.mergedMetaData.getDistributable() != null) {
             SessionManagerFactory factory = this.sessionManagerFactory.getOptionalValue();
             if (factory != null) {
-                deploymentInfo.setSessionManagerFactory(new SessionManagerFacadeFactory(factory, this.mergedMetaData));
+                deploymentInfo.setSessionManagerFactory(new SessionManagerAdapterFactory(factory));
             }
         }
     }

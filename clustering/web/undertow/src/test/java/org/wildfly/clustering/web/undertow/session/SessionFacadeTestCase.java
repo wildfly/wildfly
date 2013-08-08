@@ -41,7 +41,7 @@ import org.wildfly.clustering.web.session.Session;
 import org.wildfly.clustering.web.session.SessionAttributes;
 import org.wildfly.clustering.web.session.SessionManager;
 import org.wildfly.clustering.web.session.SessionMetaData;
-import org.wildfly.clustering.web.undertow.session.SessionFacade;
+import org.wildfly.clustering.web.undertow.session.SessionAdapter;
 import org.wildfly.clustering.web.undertow.session.UndertowSessionManager;
 
 public class SessionFacadeTestCase {
@@ -49,14 +49,14 @@ public class SessionFacadeTestCase {
     private final SessionConfig config = mock(SessionConfig.class);
     private final Session<Void> session = mock(Session.class);
     
-    private final io.undertow.server.session.Session facade = new SessionFacade(this.manager, this.session, this.config);
+    private final io.undertow.server.session.Session adapter = new SessionAdapter(this.manager, this.session, this.config);
     
     @Test
     public void getId() {
         String id = "id";
         when(this.session.getId()).thenReturn(id);
         
-        String result = this.facade.getId();
+        String result = this.adapter.getId();
         
         assertSame(id, result);
     }
@@ -70,7 +70,7 @@ public class SessionFacadeTestCase {
         when(this.manager.getSessionManager()).thenReturn(manager);
         when(manager.getBatcher()).thenReturn(batcher);
 
-        this.facade.requestDone(exchange);
+        this.adapter.requestDone(exchange);
         
         verify(this.session).close();
         verify(batcher).endBatch(true);
@@ -84,7 +84,7 @@ public class SessionFacadeTestCase {
         when(this.session.getMetaData()).thenReturn(metaData);
         when(metaData.getCreationTime()).thenReturn(date);
         
-        long result = this.facade.getCreationTime();
+        long result = this.adapter.getCreationTime();
         
         assertEquals(date.getTime(), result);
     }
@@ -97,7 +97,7 @@ public class SessionFacadeTestCase {
         when(this.session.getMetaData()).thenReturn(metaData);
         when(metaData.getLastAccessedTime()).thenReturn(date);
         
-        long result = this.facade.getLastAccessedTime();
+        long result = this.adapter.getLastAccessedTime();
         
         assertEquals(date.getTime(), result);
     }
@@ -110,7 +110,7 @@ public class SessionFacadeTestCase {
         when(this.session.getMetaData()).thenReturn(metaData);
         when(metaData.getMaxInactiveInterval(TimeUnit.SECONDS)).thenReturn(expected);
         
-        long result = this.facade.getMaxInactiveInterval();
+        long result = this.adapter.getMaxInactiveInterval();
         
         assertEquals(expected, result);
     }
@@ -122,7 +122,7 @@ public class SessionFacadeTestCase {
         
         when(this.session.getMetaData()).thenReturn(metaData);
         
-        this.facade.setMaxInactiveInterval(interval);
+        this.adapter.setMaxInactiveInterval(interval);
         
         verify(metaData).setMaxInactiveInterval(interval, TimeUnit.SECONDS);
     }
@@ -136,7 +136,7 @@ public class SessionFacadeTestCase {
         when(this.session.getAttributes()).thenReturn(attributes);
         when(attributes.getAttribute(name)).thenReturn(expected);
         
-        Object result = this.facade.getAttribute(name);
+        Object result = this.adapter.getAttribute(name);
         
         assertSame(expected, result);
     }
@@ -156,13 +156,13 @@ public class SessionFacadeTestCase {
         when(attributes.setAttribute(name, value)).thenReturn(expected);
         when(this.manager.getSessionListeners()).thenReturn(listeners);
         
-        Object result = this.facade.setAttribute(name, value);
+        Object result = this.adapter.setAttribute(name, value);
         
         assertSame(expected, result);
         
-        verify(listener, never()).attributeAdded(this.facade, name, value);
-        verify(listener).attributeUpdated(this.facade, name, value, expected);
-        verify(listener, never()).attributeRemoved(same(this.facade), same(name), any());
+        verify(listener, never()).attributeAdded(this.adapter, name, value);
+        verify(listener).attributeUpdated(this.adapter, name, value, expected);
+        verify(listener, never()).attributeRemoved(same(this.adapter), same(name), any());
     }
     
     @Test
@@ -179,13 +179,13 @@ public class SessionFacadeTestCase {
         when(attributes.setAttribute(name, value)).thenReturn(expected);
         when(this.manager.getSessionListeners()).thenReturn(listeners);
         
-        Object result = this.facade.setAttribute(name, value);
+        Object result = this.adapter.setAttribute(name, value);
         
         assertSame(expected, result);
         
-        verify(listener).attributeAdded(this.facade, name, value);
-        verify(listener, never()).attributeUpdated(same(this.facade), same(name), same(value), any());
-        verify(listener, never()).attributeRemoved(same(this.facade), same(name), any());
+        verify(listener).attributeAdded(this.adapter, name, value);
+        verify(listener, never()).attributeUpdated(same(this.adapter), same(name), same(value), any());
+        verify(listener, never()).attributeRemoved(same(this.adapter), same(name), any());
     }
     
     @Test
@@ -202,13 +202,13 @@ public class SessionFacadeTestCase {
         when(attributes.removeAttribute(name)).thenReturn(expected);
         when(this.manager.getSessionListeners()).thenReturn(listeners);
         
-        Object result = this.facade.setAttribute(name, value);
+        Object result = this.adapter.setAttribute(name, value);
         
         assertSame(expected, result);
         
-        verify(listener, never()).attributeAdded(this.facade, name, value);
-        verify(listener, never()).attributeUpdated(same(this.facade), same(name), same(value), any());
-        verify(listener).attributeRemoved(this.facade, name, expected);
+        verify(listener, never()).attributeAdded(this.adapter, name, value);
+        verify(listener, never()).attributeUpdated(same(this.adapter), same(name), same(value), any());
+        verify(listener).attributeRemoved(this.adapter, name, expected);
     }
     
     @Test
@@ -225,13 +225,13 @@ public class SessionFacadeTestCase {
         when(attributes.setAttribute(name, value)).thenReturn(expected);
         when(this.manager.getSessionListeners()).thenReturn(listeners);
         
-        Object result = this.facade.setAttribute(name, value);
+        Object result = this.adapter.setAttribute(name, value);
         
         assertSame(expected, result);
         
-        verify(listener, never()).attributeAdded(this.facade, name, value);
-        verify(listener, never()).attributeUpdated(same(this.facade), same(name), same(value), any());
-        verify(listener, never()).attributeRemoved(same(this.facade), same(name), any());
+        verify(listener, never()).attributeAdded(this.adapter, name, value);
+        verify(listener, never()).attributeUpdated(same(this.adapter), same(name), same(value), any());
+        verify(listener, never()).attributeRemoved(same(this.adapter), same(name), any());
     }
     
     @Test
@@ -247,11 +247,11 @@ public class SessionFacadeTestCase {
         when(attributes.removeAttribute(name)).thenReturn(expected);
         when(this.manager.getSessionListeners()).thenReturn(listeners);
         
-        Object result = this.facade.removeAttribute(name);
+        Object result = this.adapter.removeAttribute(name);
         
         assertSame(expected, result);
         
-        verify(listener).attributeRemoved(this.facade, name, expected);
+        verify(listener).attributeRemoved(this.adapter, name, expected);
     }
     
     @Test
@@ -266,11 +266,11 @@ public class SessionFacadeTestCase {
         when(attributes.removeAttribute(name)).thenReturn(null);
         when(this.manager.getSessionListeners()).thenReturn(listeners);
         
-        Object result = this.facade.removeAttribute(name);
+        Object result = this.adapter.removeAttribute(name);
         
         assertNull(result);
         
-        verify(listener, never()).attributeRemoved(same(this.facade), same(name), any());
+        verify(listener, never()).attributeRemoved(same(this.adapter), same(name), any());
     }
     
     @Test
@@ -288,17 +288,17 @@ public class SessionFacadeTestCase {
         when(this.manager.getSessionManager()).thenReturn(manager);
         when(manager.getBatcher()).thenReturn(batcher);
         
-        this.facade.invalidate(exchange);
+        this.adapter.invalidate(exchange);
         
         verify(this.session).invalidate();
         verify(this.config).clearSession(exchange, sessionId);
-        verify(listener).sessionDestroyed(this.facade, exchange, SessionDestroyedReason.INVALIDATED);
+        verify(listener).sessionDestroyed(this.adapter, exchange, SessionDestroyedReason.INVALIDATED);
         verify(batcher).endBatch(true);
     }
     
     @Test
     public void getSessionManager() {
-        assertSame(this.manager, this.facade.getSessionManager());
+        assertSame(this.manager, this.adapter.getSessionManager());
     }
     
     @Test
@@ -336,7 +336,7 @@ public class SessionFacadeTestCase {
         when(manager.locate(sessionId)).thenReturn(route);
         when(this.manager.format(sessionId, route)).thenReturn(routedSessionid);
         
-        String result = this.facade.changeSessionId(exchange, config);
+        String result = this.adapter.changeSessionId(exchange, config);
         
         assertSame(sessionId, result);
         

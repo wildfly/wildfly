@@ -21,7 +21,6 @@
  */
 package org.wildfly.clustering.web.undertow.session;
 
-import org.jboss.metadata.web.jboss.JBossWebMetaData;
 import org.wildfly.clustering.web.session.SessionContext;
 import org.wildfly.clustering.web.session.SessionIdentifierFactory;
 import org.wildfly.clustering.web.session.SessionManager;
@@ -34,14 +33,12 @@ import io.undertow.servlet.api.Deployment;
  * Factory for creating a distributable session manager.
  * @author Paul Ferraro
  */
-public class SessionManagerFacadeFactory implements io.undertow.servlet.api.SessionManagerFactory {
+public class SessionManagerAdapterFactory implements io.undertow.servlet.api.SessionManagerFactory {
 
     private final SessionManagerFactory factory;
-    private final JBossWebMetaData metaData;
 
-    public SessionManagerFacadeFactory(SessionManagerFactory factory, JBossWebMetaData metaData) {
+    public SessionManagerAdapterFactory(SessionManagerFactory factory) {
         this.factory = factory;
-        this.metaData = metaData;
     }
 
     @Override
@@ -49,6 +46,6 @@ public class SessionManagerFacadeFactory implements io.undertow.servlet.api.Sess
         SessionContext context = new SessionContextAdapter(deployment);
         SessionIdentifierFactory factory = new SessionIdentifierFactoryAdapter(new SecureRandomSessionIdGenerator());
         SessionManager<Void> manager = this.factory.createSessionManager(context, factory, null);
-        return new SessionManagerFacade(manager, this.metaData.getReplicationConfig());
+        return new SessionManagerAdapter(manager);
     }
 }

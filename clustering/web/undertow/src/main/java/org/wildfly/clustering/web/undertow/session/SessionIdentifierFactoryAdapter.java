@@ -27,8 +27,7 @@ import org.wildfly.clustering.web.session.SessionIdentifierFactory;
 
 /**
  * Adapts a {@link SessionIdGenerator} to a {@link SessionIdentifierFactory}.
- * @author paul
- *
+ * @author Paul Ferraro
  */
 public class SessionIdentifierFactoryAdapter implements SessionIdentifierFactory {
 

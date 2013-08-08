@@ -87,12 +87,12 @@ public class UndertowContext implements Context {
 
     @Override
     public int getActiveSessionCount() {
-        return this.deployment.getSessionManager().activeSessions();
+        return this.deployment.getSessionManager().getActiveSessions().size();
     }
 
     @Override
     public boolean isDistributable() {
-        return this.deployment.getDeploymentInfo().getSessionManagerFactory() instanceof org.wildfly.clustering.web.undertow.session.SessionManagerFacadeFactory;
+        return this.deployment.getDeploymentInfo().getSessionManagerFactory() instanceof org.wildfly.clustering.web.undertow.session.SessionManagerAdapterFactory;
     }
 
     @Override

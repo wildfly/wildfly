@@ -21,6 +21,7 @@
  */
 package org.wildfly.clustering.web.infinispan.session;
 
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -37,6 +38,7 @@ import javax.servlet.http.HttpSessionListener;
 import org.infinispan.Cache;
 import org.infinispan.affinity.KeyAffinityService;
 import org.infinispan.affinity.KeyGenerator;
+import org.infinispan.context.Flag;
 import org.infinispan.distribution.DistributionManager;
 import org.infinispan.notifications.Listener;
 import org.infinispan.notifications.cachelistener.annotation.CacheEntryActivated;
@@ -46,7 +48,6 @@ import org.infinispan.notifications.cachelistener.event.CacheEntryActivatedEvent
 import org.infinispan.notifications.cachelistener.event.CacheEntryPassivatedEvent;
 import org.infinispan.notifications.cachelistener.event.CacheEntryRemovedEvent;
 import org.infinispan.remoting.transport.Address;
-import org.infinispan.util.concurrent.ConcurrentHashSet;
 import org.jboss.as.clustering.infinispan.affinity.KeyAffinityServiceFactory;
 import org.jboss.as.clustering.registry.Registry;
 import org.jboss.metadata.web.jboss.JBossWebMetaData;
@@ -77,7 +78,6 @@ public class InfinispanSessionManager<V, L> implements SessionManager<L>, KeyGen
     private final Registry<String, Void> registry;
     private final List<Scheduler<Session<L>>> schedulers = new CopyOnWriteArrayList<>();
     private volatile Time defaultMaxInactiveInterval = new Time(30, TimeUnit.MINUTES);
-    private final Set<String> activeSessions = new ConcurrentHashSet<>();
     private final int maxActiveSessions;
 
     public InfinispanSessionManager(SessionContext context, SessionIdentifierFactory idFactory, Cache<String, V> cache, SessionFactory<V, L> factory, KeyAffinityServiceFactory affinityFactory, Registry<String, Void> registry, JBossWebMetaData metaData) {
@@ -189,7 +189,6 @@ public class InfinispanSessionManager<V, L> implements SessionManager<L>, KeyGen
         for (Scheduler<Session<L>> scheduler: this.schedulers) {
             scheduler.cancel(session);
         }
-        this.activeSessions.add(id);
         return new SchedulableSession<>(session, this.schedulers);
     }
 
@@ -198,15 +197,38 @@ public class InfinispanSessionManager<V, L> implements SessionManager<L>, KeyGen
         Session<L> session = this.factory.createSession(id, this.factory.createValue(id));
         final Time time = this.defaultMaxInactiveInterval;
         session.getMetaData().setMaxInactiveInterval(time.getValue(), time.getUnit());
-        this.activeSessions.add(id);
         return new SchedulableSession<>(session, this.schedulers);
     }
 
     @Override
-    public int size() {
-        return this.activeSessions.size();
+    public ImmutableSession viewSession(String id) {
+        V value = this.factory.findValue(id);
+        return (value != null) ? new SimpleImmutableSession(this.factory.createImmutableSession(id, value)) : null;
     }
 
+    @Override
+    public Set<String> getActiveSessions() {
+        // Omit remote (i.e. when using DIST mode) and passivated sessions
+        return this.getSessions(Flag.CACHE_MODE_LOCAL, Flag.SKIP_CACHE_LOAD);
+    }
+
+    @Override
+    public Set<String> getLocalSessions() {
+        // Omit remote sessions (i.e. when using DIST mode)
+        return this.getSessions(Flag.CACHE_MODE_LOCAL);
+    }
+
+    private Set<String> getSessions(Flag... flags) {
+        Set<String> result = new HashSet<>();
+        for (Object key: this.cache.getAdvancedCache().withFlags(flags).keySet()) {
+            if (key instanceof String) {
+                result.add((String) key);
+            }
+        }
+        return result;
+    }
+
+    @SuppressWarnings("cast")
     @CacheEntryActivated
     public void activated(CacheEntryActivatedEvent<String, ?> event) {
         // Cache may contain non-string keys, so ignore any others
@@ -227,12 +249,12 @@ public class InfinispanSessionManager<V, L> implements SessionManager<L>, KeyGen
         }
     }
 
+    @SuppressWarnings("cast")
     @CacheEntryPassivated
     public void passivated(CacheEntryPassivatedEvent<String, ?> event) {
         // Cache may contain non-string keys, so ignore any others
         if (event.isPre() && (event.getKey() instanceof String)) {
             String id = event.getKey();
-            this.activeSessions.remove(id);
             if (event.isOriginLocal()) {
                 InfinispanWebLogger.ROOT_LOGGER.tracef("Session %s will be passivated", id);
                 ImmutableSession session = this.factory.createSession(id, this.factory.findValue(id));
@@ -250,12 +272,12 @@ public class InfinispanSessionManager<V, L> implements SessionManager<L>, KeyGen
         }
     }
 
+    @SuppressWarnings("cast")
     @CacheEntryRemoved
     public void removed(CacheEntryRemovedEvent<String, ?> event) {
         // Cache may contain non-string keys, so ignore any others
         if (event.isPre() && event.isOriginLocal() && (event.getKey() instanceof String)) {
             String id = event.getKey();
-            this.activeSessions.remove(id);
             if (event.isOriginLocal()) {
                 InfinispanWebLogger.ROOT_LOGGER.tracef("Session %s will be removed", id);
                 ImmutableSession session = this.factory.createImmutableSession(id, this.factory.findValue(id));

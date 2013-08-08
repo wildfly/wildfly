@@ -19,42 +19,38 @@
  * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
-package org.wildfly.clustering.web.session;
+package org.wildfly.clustering.web.infinispan.session;
+
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.Set;
+
+import org.wildfly.clustering.web.session.ImmutableSessionAttributes;
 
 /**
- * Represents a web session.
+ * An immutable "snapshot" of a session's attributes which can be accessed outside the scope of a transaction.
  * @author Paul Ferraro
  */
-public interface Session<L> extends ImmutableSession, AutoCloseable {
-    /**
-     * {@inheritDoc}
-     */
+public class SimpleImmutableSessionAttributes implements ImmutableSessionAttributes {
+
+    private final Map<String, Object> attributes;
+
+    public SimpleImmutableSessionAttributes(ImmutableSessionAttributes attributes) {
+        Map<String, Object> map = new HashMap<>();
+        for (String name: attributes.getAttributeNames()) {
+            this.attributes.put(name, attributes.getAttribute(name));
+        }
+        this.attributes = Collections.unmodifiableMap(map);
+    }
+
     @Override
-    SessionMetaData getMetaData();
+    public Set<String> getAttributeNames() {
+        return this.attributes.keySet();
+    }
 
-    /**
-     * Invalidates this session.
-     * @throws IllegalStateException if this session was already invalidated.
-     */
-    void invalidate();
-
-    /**
-     * {@inheritDoc}
-     */
     @Override
-    SessionAttributes getAttributes();
-
-    /**
-     * Indicates that the application thread is finished with this session.
-     * This method is intended to be invoked within the context of a batch.
-     */
-    @Override
-    void close();
-
-    /**
-     * Returns the local context of this session.
-     * The local context is *not* replicated to other nodes in the cluster.
-     * @return a local context
-     */
-    L getLocalContext();
+    public Object getAttribute(String name) {
+        return this.attributes.get(name);
+    }
 }
