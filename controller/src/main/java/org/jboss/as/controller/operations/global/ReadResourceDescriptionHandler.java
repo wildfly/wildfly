@@ -66,9 +66,9 @@ import org.jboss.as.controller.SimpleAttributeDefinitionBuilder;
 import org.jboss.as.controller.SimpleOperationDefinitionBuilder;
 import org.jboss.as.controller.UnauthorizedException;
 import org.jboss.as.controller.access.Action.ActionEffect;
-import org.jboss.as.controller.access.ResourceAuthorization;
 import org.jboss.as.controller.access.AuthorizationResult;
 import org.jboss.as.controller.access.AuthorizationResult.Decision;
+import org.jboss.as.controller.access.ResourceAuthorization;
 import org.jboss.as.controller.descriptions.DescriptionProvider;
 import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
 import org.jboss.as.controller.descriptions.NonResolvingResourceDescriptionResolver;
@@ -385,12 +385,10 @@ public class ReadResourceDescriptionHandler implements OperationStepHandler {
 
                 if (result.get(ActionEffect.READ_CONFIG.toString()).asBoolean()) {
                     for (Property attrProp : nodeDescription.require(ATTRIBUTES).asPropertyList()) {
-                        if (authResp.getAttributeResult(attrProp.getName(), ActionEffect.ADDRESS).getDecision() == Decision.PERMIT) {
-                            ModelNode attributeResult = new ModelNode();
-                            Storage storage = Storage.valueOf(attrProp.getValue().get(STORAGE).asString().toUpperCase());
-                            addAttributeAuthorizationResults(attributeResult, attrProp.getName(), authResp, storage == Storage.RUNTIME);
-                            attributes.get(attrProp.getName()).set(attributeResult);
-                        }
+                        ModelNode attributeResult = new ModelNode();
+                        Storage storage = Storage.valueOf(attrProp.getValue().get(STORAGE).asString().toUpperCase());
+                        addAttributeAuthorizationResults(attributeResult, attrProp.getName(), authResp, storage == Storage.RUNTIME);
+                        attributes.get(attrProp.getName()).set(attributeResult);
                     }
                     result.get(ATTRIBUTES).set(attributes);
 
