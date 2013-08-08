@@ -1359,6 +1359,17 @@ public abstract class ClusteredSession<O extends OutgoingDistributableSessionDat
                 if (requireOwnershipLock) {
                     this.relinquishSessionOwnership(true);
                 }
+
+                // BZ 994070 Clustered SSO failover scenario fails with org.jboss.as.clustering.lock.TimeoutException
+                // the endBatch() is not called from ClusteredSingleSignOn.deregister() manual expiration
+                BatchingManager bm = this.distributedCacheManager.getBatchingManager();
+                try {
+                    if (bm.isBatchInProgress()) {
+                        bm.endBatch();
+                    }
+                } catch (Exception e) {
+                    throw new RuntimeException(e);
+                }
             }
         }
     }
