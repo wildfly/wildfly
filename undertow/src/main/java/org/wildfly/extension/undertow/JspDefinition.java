@@ -48,6 +48,12 @@ import java.util.Map;
  * @created 23.2.12 18:47
  */
 class JspDefinition extends PersistentResourceDefinition {
+    protected static final SimpleAttributeDefinition DEVELOPMENT =
+            new SimpleAttributeDefinitionBuilder(Constants.DEVELOPMENT, ModelType.BOOLEAN, true)
+                    .setFlags(AttributeAccess.Flag.RESTART_ALL_SERVICES)
+                    .setDefaultValue(new ModelNode(false))
+                    .setAllowExpression(true)
+                    .build();
     protected static final SimpleAttributeDefinition DISABLED =
             new SimpleAttributeDefinitionBuilder(Constants.DISABLED, ModelType.BOOLEAN, true)
                     .setFlags(AttributeAccess.Flag.RESTART_ALL_SERVICES)
@@ -203,11 +209,12 @@ class JspDefinition extends PersistentResourceDefinition {
         return ATTRIBUTES_MAP.values();
     }
 
-    public JSPConfig getConfig(final OperationContext context, final ModelNode model, final boolean developmentMode) throws OperationFailedException {
+    public JSPConfig getConfig(final OperationContext context, final ModelNode model) throws OperationFailedException {
         if (!model.isDefined()) {
             return null;
         }
         boolean disabled = DISABLED.resolveModelAttribute(context, model).asBoolean();
+        boolean development = DEVELOPMENT.resolveModelAttribute(context, model).asBoolean();
         boolean keepGenerated = KEEP_GENERATED.resolveModelAttribute(context, model).asBoolean();
         boolean trimSpaces = TRIM_SPACES.resolveModelAttribute(context, model).asBoolean();
         boolean tagPooling = TAG_POOLING.resolveModelAttribute(context, model).asBoolean();
@@ -227,7 +234,7 @@ class JspDefinition extends PersistentResourceDefinition {
         boolean xPoweredBy = X_POWERED_BY.resolveModelAttribute(context, model).asBoolean();
         boolean displaySourceFragment = DISPLAY_SOURCE_FRAGMENT.resolveModelAttribute(context, model).asBoolean();
 
-        return new JSPConfig(developmentMode, disabled, keepGenerated, trimSpaces, tagPooling, mappedFile, checkInterval, modificationTestInterval,
+        return new JSPConfig(development, disabled, keepGenerated, trimSpaces, tagPooling, mappedFile, checkInterval, modificationTestInterval,
                 recompileOnFile, snap, dumpSnap, generateStringsAsCharArrays, errorOnUseBeanInvalidClassAttribute, scratchDir,
                 sourceVm, targetVm, javaEncoding, xPoweredBy, displaySourceFragment);
     }

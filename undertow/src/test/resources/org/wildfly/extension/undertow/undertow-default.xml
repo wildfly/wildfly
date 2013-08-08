@@ -46,6 +46,7 @@
     <servlet-container name="default" >
         <jsp-config
                     disabled="${prop.disabled:false}"
+                    development="${prop.development:false}"
                     keep-generated="${prop.keep-generated:true}"
                     trim-spaces="${prop.trim-spaces:true}"
                     tag-pooling="${prop.tag-pooling:true}"

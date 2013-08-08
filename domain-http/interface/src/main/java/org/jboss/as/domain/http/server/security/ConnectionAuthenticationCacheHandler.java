@@ -28,8 +28,8 @@ import io.undertow.security.api.SecurityContext;
 import io.undertow.security.api.SecurityNotification;
 import io.undertow.security.api.SecurityNotification.EventType;
 import io.undertow.server.HttpHandler;
-import io.undertow.server.HttpServerConnection;
 import io.undertow.server.HttpServerExchange;
+import io.undertow.server.ServerConnection;
 import io.undertow.util.AttachmentKey;
 
 /**
@@ -69,13 +69,13 @@ public class ConnectionAuthenticationCacheHandler implements HttpHandler {
             EventType eventType = notification.getEventType();
             switch (eventType) {
                 case AUTHENTICATED: {
-                    HttpServerConnection connection = notification.getExchange().getConnection();
+                    ServerConnection connection = notification.getExchange().getConnection();
                     connection.putAttachment(SESSION_KEY,
                             new AuthenticatedSession(notification.getAccount(), notification.getMechanism()));
                     break;
                 }
                 case LOGGED_OUT: {
-                    HttpServerConnection connection = notification.getExchange().getConnection();
+                    ServerConnection connection = notification.getExchange().getConnection();
                     connection.removeAttachment(SESSION_KEY);
                     break;
                 }
@@ -87,7 +87,7 @@ public class ConnectionAuthenticationCacheHandler implements HttpHandler {
 
         @Override
         public AuthenticatedSession lookupSession(HttpServerExchange exchange) {
-            HttpServerConnection connection = exchange.getConnection();
+            ServerConnection connection = exchange.getConnection();
 
             return connection.getAttachment(SESSION_KEY);
         }

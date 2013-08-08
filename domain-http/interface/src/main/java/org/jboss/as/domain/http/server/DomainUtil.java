@@ -130,7 +130,7 @@ public class DomainUtil {
     public static String constructUrl(final HttpServerExchange exchange, final String path) {
         final HeaderMap headers = exchange.getRequestHeaders();
         String host = headers.getFirst(HOST);
-        String protocol = exchange.getConnection().getSslSession() != null ? "https" : "http";
+        String protocol = exchange.getConnection().getSslSessionInfo() != null ? "https" : "http";
 
         return protocol + "://" + host + path;
     }

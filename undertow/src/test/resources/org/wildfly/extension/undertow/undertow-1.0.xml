@@ -69,7 +69,7 @@
                         secure="true"
                         http-only="true"
                         max-age="1000"/>
-        <development-mode persistent-sessions="false" />
+        <persistent-sessions relative-to="server.data.dir" path="web-sessions"/>
     </servlet-container>
 
     <error-pages>

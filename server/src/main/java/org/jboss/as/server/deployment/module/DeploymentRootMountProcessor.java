@@ -32,6 +32,7 @@ import org.jboss.as.server.deployment.DeploymentPhaseContext;
 import org.jboss.as.server.deployment.DeploymentUnit;
 import org.jboss.as.server.deployment.DeploymentUnitProcessingException;
 import org.jboss.as.server.deployment.DeploymentUnitProcessor;
+import org.jboss.as.server.deployment.ExplodedDeploymentMarker;
 import org.jboss.as.server.deployment.MountExplodedMarker;
 import org.jboss.as.server.deployment.MountType;
 import org.jboss.vfs.VFS;
@@ -69,6 +70,10 @@ public class DeploymentRootMountProcessor implements DeploymentUnitProcessor {
             deploymentRoot = deploymentContents;
             // nothing was mounted
             mountHandle = null;
+            if(deploymentUnit.getParent() == null ||
+                    ExplodedDeploymentMarker.isExplodedDeployment(deploymentUnit.getParent())) {
+                ExplodedDeploymentMarker.markAsExplodedDeployment(deploymentUnit);
+            }
         } else {
             // The mount point we will use for the repository file
             deploymentRoot = VFS.getChild("content/" + deploymentName);
