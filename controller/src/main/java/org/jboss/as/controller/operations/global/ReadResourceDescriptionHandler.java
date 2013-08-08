@@ -399,11 +399,6 @@ public class ReadResourceDescriptionHandler implements OperationStepHandler {
 
                             ModelNode operationToCheck = Util.createOperation(entry.getKey(), PathAddress.pathAddress(operation.require(OP_ADDR)));
 
-                            AuthorizationResult authorization = context.authorizeOperation(operationToCheck, true);
-                            if (authorization.getDecision() != Decision.PERMIT) {
-                                continue;
-                            }
-
                             ModelNode operationResult = new ModelNode();
 
                             addOperationAuthorizationResult(context, operationResult, operationToCheck, entry.getKey());
