@@ -32,6 +32,7 @@ import org.jboss.as.controller.DeprecationData;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.SimpleListAttributeDefinition;
+import org.jboss.as.controller.access.constraint.management.AccessConstraintDefinition;
 import org.jboss.as.controller.registry.AttributeAccess;
 import org.jboss.as.logging.resolvers.HandlerResolver;
 import org.jboss.as.logging.resolvers.ModelNodeResolver;
@@ -51,8 +52,8 @@ public class LogHandlerListAttributeDefinition extends SimpleListAttributeDefini
     LogHandlerListAttributeDefinition(final String name, final String xmlName, final String propertyName, final AttributeDefinition valueType,
                                       final boolean allowNull, final int minSize, final int maxSize, final String[] alternatives, final String[] requires,
                                       final AttributeMarshaller attributeMarshaller, final boolean resourceOnly,final DeprecationData deprecationData,
-                                      final AttributeAccess.Flag... flags) {
-        super(name, xmlName, valueType,allowNull, minSize, maxSize,  alternatives, requires, attributeMarshaller, resourceOnly, deprecationData, flags);
+                                      final AccessConstraintDefinition[] accessConstraints, final AttributeAccess.Flag... flags) {
+        super(name, xmlName, valueType,allowNull, minSize, maxSize,  alternatives, requires, attributeMarshaller, resourceOnly, deprecationData, accessConstraints, flags);
         this.propertyName = propertyName;
     }
 
@@ -106,7 +107,8 @@ public class LogHandlerListAttributeDefinition extends SimpleListAttributeDefini
             if (maxSize < 1) maxSize = Integer.MAX_VALUE;
             if (propertyName == null) propertyName = name;
             if (attributeMarshaller == null) attributeMarshaller = HandlersAttributeMarshaller.INSTANCE;
-            return new LogHandlerListAttributeDefinition(name, xmlName, propertyName, CommonAttributes.HANDLER, allowNull, minSize, maxSize, alternatives, requires, attributeMarshaller, resourceOnly, deprecated, flags);
+            return new LogHandlerListAttributeDefinition(name, xmlName, propertyName, CommonAttributes.HANDLER, allowNull, minSize, maxSize, alternatives, requires,
+                    attributeMarshaller, resourceOnly, deprecated, accessConstraints, flags);
         }
 
         public Builder setPropertyName(final String propertyName) {

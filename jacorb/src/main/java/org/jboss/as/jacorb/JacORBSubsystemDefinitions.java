@@ -32,6 +32,8 @@ import org.jboss.as.controller.AttributeDefinition;
 import org.jboss.as.controller.PropertiesAttributeDefinition;
 import org.jboss.as.controller.SimpleAttributeDefinition;
 import org.jboss.as.controller.SimpleAttributeDefinitionBuilder;
+import org.jboss.as.controller.access.constraint.SensitivityClassification;
+import org.jboss.as.controller.access.constraint.management.SensitiveTargetAccessConstraintDefinition;
 import org.jboss.as.controller.operations.validation.EnumValidator;
 import org.jboss.as.controller.operations.validation.IntRangeValidator;
 import org.jboss.as.controller.operations.validation.ParameterValidator;
@@ -57,6 +59,11 @@ class JacORBSubsystemDefinitions {
 
     private static final ParameterValidator ON_OFF_VALIDATOR = new EnumValidator<TransactionsAllowedValues>(
             TransactionsAllowedValues.class, true, false, TransactionsAllowedValues.ON, TransactionsAllowedValues.OFF);
+
+    static final SensitivityClassification JACORB_SECURITY =
+            new SensitivityClassification(JacORBExtension.SUBSYSTEM_NAME, "jacorb-security", false, false, true);
+
+    static final SensitiveTargetAccessConstraintDefinition JACORB_SECURITY_DEF = new SensitiveTargetAccessConstraintDefinition(JACORB_SECURITY);
 
     // orb attribute definitions.
     public static final SimpleAttributeDefinition ORB_NAME = new SimpleAttributeDefinitionBuilder(
@@ -118,12 +125,14 @@ class JacORBSubsystemDefinitions {
             JacORBSubsystemConstants.ORB_SOCKET_BINDING, ModelType.STRING, true)
             .setDefaultValue(new ModelNode().set("jacorb"))
             .setFlags(AttributeAccess.Flag.RESTART_ALL_SERVICES)
+            .addAccessConstraint(SensitiveTargetAccessConstraintDefinition.SOCKET_BINDING_REF)
             .build();
 
     public static final SimpleAttributeDefinition ORB_SSL_SOCKET_BINDING = new SimpleAttributeDefinitionBuilder(
             JacORBSubsystemConstants.ORB_SSL_SOCKET_BINDING, ModelType.STRING, true)
             .setDefaultValue(new ModelNode().set("jacorb-ssl"))
             .setFlags(AttributeAccess.Flag.RESTART_ALL_SERVICES)
+            .addAccessConstraint(SensitiveTargetAccessConstraintDefinition.SOCKET_BINDING_REF)
             .build();
 
     // connection attribute definitions.
@@ -198,6 +207,7 @@ class JacORBSubsystemDefinitions {
             .setValidator(new EnumValidator<SecurityAllowedValues>(SecurityAllowedValues.class, true, false))
             .setFlags(AttributeAccess.Flag.RESTART_ALL_SERVICES)
             .setAllowExpression(true)
+            .addAccessConstraint(JACORB_SECURITY_DEF)
             .build();
 
     public static final SimpleAttributeDefinition ORB_INIT_TX = new SimpleAttributeDefinitionBuilder(
@@ -338,11 +348,14 @@ class JacORBSubsystemDefinitions {
             .setValidator(ON_OFF_VALIDATOR)
             .setFlags(AttributeAccess.Flag.RESTART_ALL_SERVICES)
             .setAllowExpression(true)
+            .addAccessConstraint(JACORB_SECURITY_DEF)
             .build();
 
     public static final SimpleAttributeDefinition SECURITY_SECURITY_DOMAIN = new SimpleAttributeDefinitionBuilder(
             JacORBSubsystemConstants.SECURITY_SECURITY_DOMAIN, ModelType.STRING, true)
             .setFlags(AttributeAccess.Flag.RESTART_ALL_SERVICES)
+            .addAccessConstraint(SensitiveTargetAccessConstraintDefinition.SOCKET_BINDING_REF)
+            .addAccessConstraint(JACORB_SECURITY_DEF)
             .build();
 
     public static final SimpleAttributeDefinition SECURITY_ADD_COMPONENT_INTERCEPTOR = new SimpleAttributeDefinitionBuilder(
@@ -351,6 +364,7 @@ class JacORBSubsystemDefinitions {
             .setValidator(ON_OFF_VALIDATOR)
             .setFlags(AttributeAccess.Flag.RESTART_ALL_SERVICES)
             .setAllowExpression(true)
+            .addAccessConstraint(JACORB_SECURITY_DEF)
             .build();
 
     public static final SimpleAttributeDefinition SECURITY_CLIENT_SUPPORTS = new SimpleAttributeDefinitionBuilder(
@@ -359,6 +373,7 @@ class JacORBSubsystemDefinitions {
             .setValidator(SSL_CONFIG_VALIDATOR)
             .setFlags(AttributeAccess.Flag.RESTART_ALL_SERVICES)
             .setAllowExpression(true)
+            .addAccessConstraint(JACORB_SECURITY_DEF)
             .build();
 
     public static final SimpleAttributeDefinition SECURITY_CLIENT_REQUIRES = new SimpleAttributeDefinitionBuilder(
@@ -367,6 +382,7 @@ class JacORBSubsystemDefinitions {
             .setValidator(SSL_CONFIG_VALIDATOR)
             .setFlags(AttributeAccess.Flag.RESTART_ALL_SERVICES)
             .setAllowExpression(true)
+            .addAccessConstraint(JACORB_SECURITY_DEF)
             .build();
 
     public static final SimpleAttributeDefinition SECURITY_SERVER_SUPPORTS = new SimpleAttributeDefinitionBuilder(
@@ -375,6 +391,7 @@ class JacORBSubsystemDefinitions {
             .setValidator(SSL_CONFIG_VALIDATOR)
             .setFlags(AttributeAccess.Flag.RESTART_ALL_SERVICES)
             .setAllowExpression(true)
+            .addAccessConstraint(JACORB_SECURITY_DEF)
             .build();
 
     public static final SimpleAttributeDefinition SECURITY_SERVER_REQUIRES = new SimpleAttributeDefinitionBuilder(
@@ -383,6 +400,7 @@ class JacORBSubsystemDefinitions {
             .setValidator(SSL_CONFIG_VALIDATOR)
             .setFlags(AttributeAccess.Flag.RESTART_ALL_SERVICES)
             .setAllowExpression(true)
+            .addAccessConstraint(JACORB_SECURITY_DEF)
             .build();
 
     public static final PropertiesAttributeDefinition PROPERTIES =

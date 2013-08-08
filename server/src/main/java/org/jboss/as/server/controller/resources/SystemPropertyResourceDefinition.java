@@ -23,6 +23,8 @@ package org.jboss.as.server.controller.resources;
 
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SYSTEM_PROPERTY;
 
+import java.util.Collections;
+import java.util.List;
 import java.util.Locale;
 import java.util.ResourceBundle;
 
@@ -32,6 +34,9 @@ import org.jboss.as.controller.PathElement;
 import org.jboss.as.controller.SimpleAttributeDefinition;
 import org.jboss.as.controller.SimpleAttributeDefinitionBuilder;
 import org.jboss.as.controller.SimpleResourceDefinition;
+import org.jboss.as.controller.access.constraint.SensitivityClassification;
+import org.jboss.as.controller.access.constraint.management.AccessConstraintDefinition;
+import org.jboss.as.controller.access.constraint.management.SensitiveTargetAccessConstraintDefinition;
 import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
 import org.jboss.as.controller.descriptions.StandardResourceDescriptionResolver;
 import org.jboss.as.controller.operations.common.ProcessEnvironmentSystemPropertyUpdater;
@@ -73,6 +78,8 @@ public class SystemPropertyResourceDefinition extends SimpleResourceDefinition {
     final ProcessEnvironmentSystemPropertyUpdater systemPropertyUpdater;
     final boolean useBoottime;
 
+    private final List<AccessConstraintDefinition> sensitivity;
+
     private SystemPropertyResourceDefinition(Location location, ProcessEnvironmentSystemPropertyUpdater systemPropertyUpdater, boolean useBoottime) {
         super(PATH,
                 new ReplaceResourceNameResourceDescriptionResolver(location, SYSTEM_PROPERTY),
@@ -80,6 +87,8 @@ public class SystemPropertyResourceDefinition extends SimpleResourceDefinition {
                 new SystemPropertyRemoveHandler(systemPropertyUpdater));
         this.systemPropertyUpdater = systemPropertyUpdater;
         this.useBoottime = useBoottime;
+        AccessConstraintDefinition acd = new SensitiveTargetAccessConstraintDefinition(SensitivityClassification.SYSTEM_PROPERTY);
+        sensitivity = Collections.singletonList(acd);
     }
 
     public static SystemPropertyResourceDefinition createForStandaloneServer(ServerEnvironment processEnvironment) {
@@ -127,6 +136,11 @@ public class SystemPropertyResourceDefinition extends SimpleResourceDefinition {
         String getSuffix() {
             return suffix;
         }
+    }
+
+    @Override
+    public List<AccessConstraintDefinition> getAccessConstraints() {
+        return sensitivity;
     }
 
 }

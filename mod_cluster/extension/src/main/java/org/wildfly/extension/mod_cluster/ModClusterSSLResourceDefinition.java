@@ -28,6 +28,8 @@ import org.jboss.as.controller.ReloadRequiredWriteAttributeHandler;
 import org.jboss.as.controller.SimpleAttributeDefinition;
 import org.jboss.as.controller.SimpleAttributeDefinitionBuilder;
 import org.jboss.as.controller.SimpleResourceDefinition;
+import org.jboss.as.controller.access.constraint.management.AccessConstraintDefinition;
+import org.jboss.as.controller.access.constraint.management.SensitiveTargetAccessConstraintDefinition;
 import org.jboss.as.controller.registry.ManagementResourceRegistration;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.ModelType;
@@ -35,6 +37,7 @@ import org.jboss.dmr.ValueExpression;
 
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 /**
@@ -48,12 +51,14 @@ public class ModClusterSSLResourceDefinition extends SimpleResourceDefinition {
     public static final SimpleAttributeDefinition KEY_ALIAS = SimpleAttributeDefinitionBuilder.create(CommonAttributes.KEY_ALIAS, ModelType.STRING, true)
             .setAllowExpression(true)
             .setRestartAllServices()
+            .addAccessConstraint(SensitiveTargetAccessConstraintDefinition.CREDENTIAL)
             .build();
 
     public static final SimpleAttributeDefinition PASSWORD = SimpleAttributeDefinitionBuilder.create(CommonAttributes.PASSWORD, ModelType.STRING, true)
             .setAllowExpression(true)
             .setDefaultValue(new ModelNode("changeit"))
             .setRestartAllServices()
+            .addAccessConstraint(SensitiveTargetAccessConstraintDefinition.CREDENTIAL)
             .build();
 
     public static final SimpleAttributeDefinition CERTIFICATE_KEY_FILE = SimpleAttributeDefinitionBuilder.create(CommonAttributes.CERTIFICATE_KEY_FILE, ModelType.STRING, true)
@@ -97,12 +102,15 @@ public class ModClusterSSLResourceDefinition extends SimpleResourceDefinition {
         ATTRIBUTES_BY_NAME = Collections.unmodifiableMap(attrs);
     }
 
+    private final List<AccessConstraintDefinition> accessConstraints;
+
     public ModClusterSSLResourceDefinition() {
         super(ModClusterExtension.SSL_CONFIGURATION_PATH,
                 ModClusterExtension.getResourceDescriptionResolver(CommonAttributes.CONFIGURATION, CommonAttributes.SSL),
                 ModClusterAddSSL.INSTANCE,
                 new ReloadRequiredRemoveStepHandler()
         );
+        this.accessConstraints = ModClusterExtension.MOD_CLUSTER_SECURITY_DEF.wrapAsList();
     }
 
 
@@ -111,5 +119,10 @@ public class ModClusterSSLResourceDefinition extends SimpleResourceDefinition {
         for (AttributeDefinition attr : ATTRIBUTES) {
             resourceRegistration.registerReadWriteAttribute(attr, null, new ReloadRequiredWriteAttributeHandler(attr));
         }
+    }
+
+    @Override
+    public List<AccessConstraintDefinition> getAccessConstraints() {
+        return accessConstraints;
     }
 }

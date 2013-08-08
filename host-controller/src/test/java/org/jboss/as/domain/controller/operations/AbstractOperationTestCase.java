@@ -28,7 +28,6 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.EXT
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.GROUP;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.HOST;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.INTERFACE;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.NAME;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.PATH;
@@ -42,6 +41,7 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SYS
 import static org.junit.Assert.fail;
 
 import java.io.InputStream;
+import java.util.Collections;
 import java.util.EnumSet;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -61,6 +61,12 @@ import org.jboss.as.controller.ProcessType;
 import org.jboss.as.controller.ProxyController;
 import org.jboss.as.controller.ResourceDefinition;
 import org.jboss.as.controller.RunningMode;
+import org.jboss.as.controller.access.Action;
+import org.jboss.as.controller.access.Action.ActionEffect;
+import org.jboss.as.controller.access.ResourceAuthorization;
+import org.jboss.as.controller.access.AuthorizationResult;
+import org.jboss.as.controller.access.Caller;
+import org.jboss.as.controller.access.constraint.management.AccessConstraintDefinition;
 import org.jboss.as.controller.client.MessageSeverity;
 import org.jboss.as.controller.client.OperationAttachments;
 import org.jboss.as.controller.client.OperationMessageHandler;
@@ -479,8 +485,60 @@ public abstract class AbstractOperationTestCase {
         }
 
         @Override
+        public AuthorizationResult authorize(ModelNode operation) {
+            return AuthorizationResult.PERMITTED;
+        }
+
+        @Override
+        public AuthorizationResult authorize(ModelNode operation, Set<Action.ActionEffect> effects) {
+            return AuthorizationResult.PERMITTED;
+        }
+
+        @Override
+        public AuthorizationResult authorize(ModelNode operation, String attribute, ModelNode currentValue) {
+            return AuthorizationResult.PERMITTED;
+        }
+
+        @Override
+        public AuthorizationResult authorize(ModelNode operation, String attribute, ModelNode currentValue, Set<Action.ActionEffect> effects) {
+            return AuthorizationResult.PERMITTED;
+        }
+
+        @Override
         public boolean isNormalServer() {
             return false;
+        }
+
+        @Override
+        public AuthorizationResult authorizeOperation(ModelNode operation, boolean addressabilityOnly) {
+            return AuthorizationResult.PERMITTED;
+        }
+
+        @Override
+        public ResourceAuthorization authorizeResource(boolean attributes, boolean isDefaultResource) {
+            return new ResourceAuthorization() {
+
+                @Override
+                public AuthorizationResult getResourceResult(ActionEffect actionEffect) {
+                    return AuthorizationResult.PERMITTED;
+                }
+
+                @Override
+                public AuthorizationResult getOperationResult(String operationName, boolean addressabilityOnly) {
+                    return AuthorizationResult.PERMITTED;
+                }
+
+                @Override
+                public AuthorizationResult getAttributeResult(String attribute, ActionEffect actionEffect) {
+                    return AuthorizationResult.PERMITTED;
+                }
+            };
+        }
+
+        @Override
+        public Caller getCaller() {
+            // TODO Auto-generated method stub
+            return null;
         }
     }
 
@@ -556,6 +614,11 @@ public abstract class AbstractOperationTestCase {
 
         public ManagementResourceRegistration getSubModel(PathAddress address) {
             return this;
+        }
+
+        @Override
+        public List<AccessConstraintDefinition> getAccessConstraints() {
+            return Collections.emptyList();
         }
 
         public ManagementResourceRegistration registerSubModel(PathElement address, DescriptionProvider descriptionProvider) {

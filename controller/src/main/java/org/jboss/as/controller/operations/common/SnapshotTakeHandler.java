@@ -18,11 +18,18 @@
  */
 package org.jboss.as.controller.operations.common;
 
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
+
+import org.jboss.as.controller.ControllerMessages;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationDefinition;
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.OperationStepHandler;
+import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.SimpleOperationDefinitionBuilder;
+import org.jboss.as.controller.access.AuthorizationResult;
+import org.jboss.as.controller.access.constraint.management.SensitiveTargetAccessConstraintDefinition;
 import org.jboss.as.controller.descriptions.common.ControllerResolver;
 import org.jboss.as.controller.persistence.ConfigurationPersistenceException;
 import org.jboss.as.controller.persistence.ConfigurationPersister;
@@ -42,7 +49,9 @@ public class SnapshotTakeHandler implements OperationStepHandler {
 
     public static final OperationDefinition DEFINITION = new SimpleOperationDefinitionBuilder(OPERATION_NAME, ControllerResolver.getResolver("snapshot"))
             .setReplyType(ModelType.STRING)
+            .setRuntimeOnly()
             .withFlag(OperationEntry.Flag.MASTER_HOST_CONTROLLER_ONLY)
+            .addAccessConstraint(SensitiveTargetAccessConstraintDefinition.SNAPSHOTS)
             .build();
 
     private final ConfigurationPersister persister;
@@ -53,13 +62,19 @@ public class SnapshotTakeHandler implements OperationStepHandler {
 
     @Override
     public void execute(OperationContext context, ModelNode operation) throws OperationFailedException {
+        AuthorizationResult authorizationResult = context.authorize(operation);
+        if (authorizationResult.getDecision() == AuthorizationResult.Decision.DENY) {
+            throw ControllerMessages.MESSAGES.unauthorized(operation.get(OP).asString(),
+                    PathAddress.pathAddress(operation.get(OP_ADDR)), authorizationResult.getExplanation());
+        }
+
         try {
             String name = persister.snapshot();
             context.getResult().set(name);
-            context.completeStep(OperationContext.RollbackHandler.NOOP_ROLLBACK_HANDLER);
         } catch (ConfigurationPersistenceException e) {
-            throw new OperationFailedException(e.getMessage(), new ModelNode().set(e.getMessage()));
+            throw new OperationFailedException(e);
         }
+        context.completeStep(OperationContext.RollbackHandler.NOOP_ROLLBACK_HANDLER);
     }
 
 

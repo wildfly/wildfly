@@ -35,6 +35,7 @@ public enum Element {
     UNKNOWN(null),
 
     // Domain elements in alpha order
+    ACCESS_CONTROL("access-control"),
     ADVANCED_FILTER("advanced-filter"),
     AGENT_LIB("agent-lib"),
     AGENT_PATH("agent-path"),
@@ -42,10 +43,13 @@ public enum Element {
     ANY_ADDRESS("any-address"),
     ANY_IPV4_ADDRESS("any-ipv4-address"),
     ANY_IPV6_ADDRESS("any-ipv6-address"),
+    APPLICATION_CLASSIFICATION("application-classification"),
+    APPLICATION_CLASSIFICATIONS("application-classifications"),
     AUTHENTICATION("authentication"),
     AUTHORIZATION("authorization"),
 
     CLIENT_MAPPING("client-mapping"),
+    CONSTRAINTS("constraints"),
     CONTENT("content"),
 
     DISCOVERY_OPTION("discovery-option"),
@@ -58,14 +62,19 @@ public enum Element {
     DEPLOYMENT_OVERLAYS("deployment-overlays"),
 
     ENVIRONMENT_VARIABLES("environment-variables"),
+    EXCLUDE("exclude"),
     EXTENSION("extension"),
     EXTENSIONS("extensions"),
 
     FS_ARCHIVE("fs-archive"),
     FS_EXPLODED("fs-exploded"),
 
+    GROUP("group"),
+
     HEAP("heap"),
     HOST("host"),
+    HOSTS("hosts"),
+    HOST_SCOPED_ROLES("host-scoped-roles"),
     HTTP_INTERFACE("http-interface"),
 
     IGNORED_RESOURCE("ignored-resources"),
@@ -122,12 +131,17 @@ public enum Element {
 
     REMOTE("remote"),
     REMOTE_DESTINATION("remote-destination"),
+    ROLE("role"),
+    ROLE_MAPPING("role-mapping"),
     ROLLOUT_PLANS("rollout-plans"),
 
     SECRET("secret"),
     SECURITY_REALM("security-realm"),
     SECURITY_REALMS("security-realms"),
+    SENSITIVE_CLASSIFICATION("sensitive-classification"),
+    SENSITIVE_CLASSIFICATIONS("sensitive-classifications"),
     SERVER("server"),
+    SERVER_GROUP_SCOPED_ROLES("server-group-scoped-roles"),
     SERVER_IDENTITIES("server-identities"),
     SERVERS("servers"),
     SERVER_GROUP("server-group"),
@@ -146,6 +160,7 @@ public enum Element {
     SYSTEM_PROPERTIES("system-properties"),
 
     TRUSTSTORE("truststore"),
+    TYPE("type"),
 
     UP("up"),
     USER("user"),
@@ -155,8 +170,8 @@ public enum Element {
     VARIABLE("variable"),
     VIRTUAL("virtual"),
     VAULT("vault"),
-    VAULT_OPTION("vault-option")
-    ;
+    VAULT_EXPRESSION_SENSITIVITY("vault-expression-sensitivity"),
+    VAULT_OPTION("vault-option");
 
     private final String name;
 

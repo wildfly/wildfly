@@ -34,7 +34,7 @@ import io.undertow.util.Methods;
 import org.jboss.as.controller.ControlledProcessState;
 import org.jboss.as.controller.ControlledProcessStateService;
 import org.jboss.as.controller.ModelController;
-import org.jboss.as.domain.http.server.security.SubjectAssociationHandler;
+import org.jboss.as.domain.http.server.security.SubjectDoAsHandler;
 
 /**
  *
@@ -52,8 +52,8 @@ class DomainApiCheckHandler implements HttpHandler {
 
     DomainApiCheckHandler(final ModelController modelController, final ControlledProcessStateService controlledProcessStateService) {
         this.controlledProcessStateService = controlledProcessStateService;
-        domainApiHandler = new BlockingHandler(new SubjectAssociationHandler(new DomainApiHandler(modelController)));
-        uploadHandler = new BlockingHandler(new SubjectAssociationHandler(new DomainApiUploadHandler(modelController)));
+        domainApiHandler = new BlockingHandler(new SubjectDoAsHandler(new DomainApiHandler(modelController)));
+        uploadHandler = new BlockingHandler(new SubjectDoAsHandler(new DomainApiUploadHandler(modelController)));
     }
 
     @Override

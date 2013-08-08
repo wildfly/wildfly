@@ -1,0 +1,194 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<!--
+  Set these VM properties in your IDE debugger
+
+  -Djava.util.logging.manager=org.jboss.logmanager.LogManager
+  -Djboss.home=${workspace_loc:jboss-as-build}/target/jboss-as-8.0.0.Alpha4-SNAPSHOT
+  -DallowConnectingToRunningServer=true
+-->
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+    <modelVersion>4.0.0</modelVersion>
+
+    <parent>
+        <groupId>org.wildfly</groupId>
+        <artifactId>wildfly-ts-integ</artifactId>
+        <version>8.0.0.Alpha4-SNAPSHOT</version>
+    </parent>
+
+    <!-- ********************************************************************************** -->
+    <!-- ********************** Role Based Access Control Integration ********************* -->
+    <!-- ********************************************************************************** -->
+    <groupId>org.wildfly</groupId>
+    <artifactId>wildfly-ts-integ-rbac</artifactId>
+    <version>8.0.0.Alpha4-SNAPSHOT</version>
+
+    <name>WildFly Test Suite: Integration - Role Based Access Control</name>
+
+    <properties>
+        <jbossas.ts.integ.dir>${basedir}/..</jbossas.ts.integ.dir>
+        <jbossas.ts.dir>${jbossas.ts.integ.dir}/..</jbossas.ts.dir>
+        <jbossas.project.dir>${jbossas.ts.dir}/..</jbossas.project.dir>
+    </properties>
+
+    <profiles>
+
+        <profile>
+            <id>basic.integration.tests.profile</id>
+            <activation>
+                <property>
+                    <name>!no.access.integration.tests</name>
+                </property>
+            </activation>
+
+            <!--
+                Server configuration executions.
+            -->
+            <build>
+                <plugins>
+                    <plugin>
+                        <groupId>org.codehaus.mojo</groupId>
+                        <artifactId>xml-maven-plugin</artifactId>
+                        <executions>
+                            <execution>
+                                <id>adjust-default-server-configuration-for-basic-tests</id>
+                                <phase>process-test-resources</phase>
+                                <goals>
+                                    <goal>transform</goal>
+                                </goals>
+                            </execution>
+                        </executions>
+                        <configuration>
+                            <transformationSets>
+                                <transformationSet>
+                                    <dir>${basedir}/target/jbossas/standalone/configuration</dir>
+                                    <skipDefaultExcludes>true</skipDefaultExcludes>
+                                    <includes>
+                                        <include>standalone*.xml</include>
+                                    </includes>
+                                    <stylesheet>${basedir}/src/test/xslt/passwdMaskConfig.xsl</stylesheet>
+                                    <stylesheet>${basedir}/src/test/xslt/enableRbac.xsl</stylesheet>
+                                    <outputDir>${basedir}/target/jbossas/standalone/configuration</outputDir>
+                                    <parameters>
+                                        <parameter>
+                                            <name>keystore</name>
+                                            <value>${basedir}/src/test/resources/security/vault.keystore</value>
+                                        </parameter>
+                                        <parameter>
+                                            <name>encFileDir</name>
+                                            <value>${basedir}/src/test/resources/security/</value>
+                                        </parameter>
+                                    </parameters>
+                                </transformationSet>
+                            </transformationSets>
+                        </configuration>
+                    </plugin>
+
+                    <!-- Resources plugin. -->
+                    <plugin>
+                        <groupId>org.apache.maven.plugins</groupId>
+                        <artifactId>maven-resources-plugin</artifactId>
+                        <executions combine.children="append">
+                            <!-- Copy users and roles config from resources. -->
+                            <execution>
+                                <id>ts.config-as.copy-rbac-users</id>
+                                <phase>generate-test-resources</phase>
+                                <goals><goal>copy-resources</goal></goals>
+                                <inherited>true</inherited>
+                                <configuration>
+                                    <outputDirectory>${basedir}/target/jbossas/standalone/configuration</outputDirectory>
+                                    <overwrite>true</overwrite>
+                                    <resources>
+                                        <resource>
+                                            <directory>src/test/resources</directory>
+                                            <includes><include>*.properties</include></includes>
+                                        </resource>
+                                    </resources>
+                                </configuration>
+                            </execution>
+                        </executions>
+                    </plugin>
+
+                    <plugin>
+                        <groupId>org.codehaus.mojo</groupId>
+                        <artifactId>keytool-maven-plugin</artifactId>
+                        <version>1.2</version>
+                        <executions>
+                            <execution>
+                                <phase>generate-test-resources</phase>
+                                <id>clean-jcetest-keystore</id>
+                                <goals>
+                                    <goal>clean</goal>
+                                </goals>
+                            </execution>
+                            <execution>
+                                <phase>generate-test-resources</phase>
+                                <id>genkey-jcetest-keystore</id>
+                                <goals>
+                                    <goal>genkey</goal>
+                                </goals>
+                            </execution>
+                        </executions>
+                        <configuration>
+                            <keystore>${basedir}/target/jcetest.keystore</keystore>
+                            <dname>cn=commonName, ou=organizationUnit, o=organizationName, c=countryCode</dname>
+                            <keypass>password</keypass>
+                            <storepass>password</storepass>
+                            <alias>test</alias>
+                            <keyalg>RSA</keyalg>
+                            <keysize>2048</keysize>
+                            <validity>365</validity>
+                        </configuration>
+                    </plugin>
+
+                    <plugin>
+                        <groupId>org.apache.maven.plugins</groupId>
+                        <artifactId>maven-surefire-plugin</artifactId>
+                        <executions combine.children="append">
+
+                            <!-- Disable default-test execution. -->
+                            <execution><id>default-test</id><goals><goal>test</goal></goals><phase>none</phase></execution>
+
+                            <execution>
+                                <id>access-integration-default-full.surefire</id>
+                                <phase>test</phase>
+                                <goals><goal>test</goal></goals>
+                                <configuration>
+                                    <!-- Tests to execute. Overriden in webProfileExclusion.profile . -->
+                                    <includes>
+                                        <include>org/jboss/as/test/integration/mgmt/access/**/*TestCase*.java</include>
+                                    </includes>
+
+                                    <!-- Parameters to test cases. -->
+                                    <systemPropertyVariables>
+                                        <jboss.server.config.file.name>standalone-full.xml</jboss.server.config.file.name>
+                                        <jboss.inst>${basedir}/target/jbossas</jboss.inst>
+                                    </systemPropertyVariables>
+
+                                    <additionalClasspathElements>
+                                        <additionalClasspathElement>${project.basedir}/../src/test/resources</additionalClasspathElement>
+                                    </additionalClasspathElements>
+
+                                    <!--<reportNameSuffix>tests-basic-integration-default</reportNameSuffix>-->
+                                </configuration>
+                            </execution>
+                        </executions>
+
+                    </plugin>
+
+                    <plugin>
+                        <groupId>org.apache.felix</groupId>
+                        <artifactId>maven-bundle-plugin</artifactId>
+                        <inherited>true</inherited>
+                        <extensions>true</extensions>
+                    </plugin>
+
+                </plugins>
+            </build>
+        </profile>
+
+    </profiles>
+
+</project>

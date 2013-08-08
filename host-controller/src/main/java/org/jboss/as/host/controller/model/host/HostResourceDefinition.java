@@ -28,9 +28,12 @@ import org.jboss.as.controller.ControlledProcessState;
 import org.jboss.as.controller.ObjectTypeAttributeDefinition;
 import org.jboss.as.controller.PathElement;
 import org.jboss.as.controller.ReloadRequiredWriteAttributeHandler;
+import org.jboss.as.controller.ResourceDefinition;
 import org.jboss.as.controller.SimpleAttributeDefinition;
 import org.jboss.as.controller.SimpleAttributeDefinitionBuilder;
 import org.jboss.as.controller.SimpleResourceDefinition;
+import org.jboss.as.controller.access.DelegatingConfigurableAuthorizer;
+import org.jboss.as.controller.access.constraint.management.SensitiveTargetAccessConstraintDefinition;
 import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
 import org.jboss.as.controller.extension.ExtensionRegistry;
 import org.jboss.as.controller.operations.common.NamespaceAddHandler;
@@ -55,8 +58,7 @@ import org.jboss.as.domain.controller.DomainController;
 import org.jboss.as.domain.controller.operations.DomainServerLifecycleHandlers;
 import org.jboss.as.domain.controller.operations.DomainSocketBindingGroupRemoveHandler;
 import org.jboss.as.domain.controller.operations.deployment.HostProcessReloadHandler;
-import org.jboss.as.domain.management.connections.ldap.LdapConnectionResourceDefinition;
-import org.jboss.as.domain.management.security.SecurityRealmResourceDefinition;
+import org.jboss.as.domain.management.CoreManagementResourceDefinition;
 import org.jboss.as.host.controller.DirectoryGrouping;
 import org.jboss.as.host.controller.HostControllerConfigurationPersister;
 import org.jboss.as.host.controller.HostControllerEnvironment;
@@ -105,6 +107,7 @@ public class HostResourceDefinition extends SimpleResourceDefinition {
     public static final SimpleAttributeDefinition NAME = new SimpleAttributeDefinitionBuilder(ModelDescriptionConstants.NAME, ModelType.STRING)
             .setAllowNull(true)
             .setMinSize(1)
+            .addAccessConstraint(SensitiveTargetAccessConstraintDefinition.DOMAIN_NAMES)
             .build();
 
     static final SimpleAttributeDefinition PRODUCT_NAME = new SimpleAttributeDefinitionBuilder(ModelDescriptionConstants.PRODUCT_NAME, ModelType.STRING)
@@ -172,6 +175,7 @@ public class HostResourceDefinition extends SimpleResourceDefinition {
 
     public static final ObjectTypeAttributeDefinition DOMAIN_CONTROLLER = new ObjectTypeAttributeDefinition.Builder(ModelDescriptionConstants.DOMAIN_CONTROLLER, DC_LOCAL, DC_REMOTE)
             .setAllowNull(false)
+            .addAccessConstraint(SensitiveTargetAccessConstraintDefinition.DOMAIN_CONTROLLER)
             .build();
 
     private final HostControllerConfigurationPersister configurationPersister;
@@ -188,6 +192,7 @@ public class HostResourceDefinition extends SimpleResourceDefinition {
     private final IgnoredDomainResourceRegistry ignoredRegistry;
     private final ControlledProcessState processState;
     private final PathManagerService pathManager;
+    private final DelegatingConfigurableAuthorizer authorizer;
 
     public HostResourceDefinition(final String hostName,
                                   final HostControllerConfigurationPersister configurationPersister,
@@ -203,7 +208,8 @@ public class HostResourceDefinition extends SimpleResourceDefinition {
                                   final AbstractVaultReader vaultReader,
                                   final IgnoredDomainResourceRegistry ignoredRegistry,
                                   final ControlledProcessState processState,
-                                  final PathManagerService pathManager) {
+                                  final PathManagerService pathManager,
+                                  final DelegatingConfigurableAuthorizer authorizer) {
         super(PathElement.pathElement(HOST, hostName), HostModelUtil.getResourceDescriptionResolver());
         this.configurationPersister = configurationPersister;
         this.environment = environment;
@@ -219,6 +225,7 @@ public class HostResourceDefinition extends SimpleResourceDefinition {
         this.ignoredRegistry = ignoredRegistry;
         this.processState = processState;
         this.pathManager = pathManager;
+        this.authorizer = authorizer;
     }
 
     @Override
@@ -309,11 +316,9 @@ public class HostResourceDefinition extends SimpleResourceDefinition {
         hostRegistration.registerSubModel(new VaultResourceDefinition(vaultReader));
 
         // Central Management
-        ManagementResourceRegistration management = hostRegistration.registerSubModel(CoreServiceResourceDefinition.INSTANCE);
-        management.registerSubModel(SecurityRealmResourceDefinition.INSTANCE);
-        management.registerSubModel(LdapConnectionResourceDefinition.INSTANCE);
-        management.registerSubModel(new NativeManagementResourceDefinition(hostControllerInfo));
-        management.registerSubModel(new HttpManagementResourceDefinition(hostControllerInfo, environment));
+        ResourceDefinition nativeManagement = new NativeManagementResourceDefinition(hostControllerInfo);
+        ResourceDefinition httpManagement = new HttpManagementResourceDefinition(hostControllerInfo, environment);
+        hostRegistration.registerSubModel(CoreManagementResourceDefinition.forHost(authorizer, nativeManagement, httpManagement));
 
         // Other core services
         // TODO get a DumpServicesHandler that works on the domain

@@ -25,9 +25,11 @@ package org.jboss.as.controller.registry;
 import static org.jboss.as.controller.ControllerMessages.MESSAGES;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ATTRIBUTES;
 
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.EnumSet;
 import java.util.HashSet;
+import java.util.List;
 import java.util.ListIterator;
 import java.util.Map;
 import java.util.Set;
@@ -35,12 +37,14 @@ import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicReferenceFieldUpdater;
 
 import org.jboss.as.controller.AttributeDefinition;
+import org.jboss.as.controller.access.constraint.management.ConstrainedResourceDefinition;
 import org.jboss.as.controller.OperationDefinition;
 import org.jboss.as.controller.OperationStepHandler;
 import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.PathElement;
 import org.jboss.as.controller.ProxyController;
 import org.jboss.as.controller.ResourceDefinition;
+import org.jboss.as.controller.access.constraint.management.AccessConstraintDefinition;
 import org.jboss.as.controller.descriptions.DescriptionProvider;
 import org.jboss.as.controller.registry.AttributeAccess.AccessType;
 import org.jboss.as.controller.registry.AttributeAccess.Storage;
@@ -97,6 +101,26 @@ final class ConcreteResourceRegistration extends AbstractResourceRegistration {
     }
 
     @Override
+    public List<AccessConstraintDefinition> getAccessConstraints() {
+        checkPermission();
+        AbstractResourceRegistration reg = this;
+        List<AccessConstraintDefinition> list = new ArrayList<AccessConstraintDefinition>();
+        while (reg != null) {
+            reg.addAccessConstraints(list);
+            NodeSubregistry parent = reg.getParent();
+            reg = parent == null ? null : parent.getParent();
+        }
+        return Collections.unmodifiableList(list);
+    }
+
+    @Override
+    void addAccessConstraints(List<AccessConstraintDefinition> list) {
+        if (resourceDefinition instanceof ConstrainedResourceDefinition) {
+            list.addAll(((ConstrainedResourceDefinition) resourceDefinition).getAccessConstraints());
+        }
+    }
+
+    @Override
     public ManagementResourceRegistration registerSubModel(final ResourceDefinition resourceDefinition) {
         if (resourceDefinition == null) {
             throw MESSAGES.nullVar("resourceDefinition");
@@ -123,7 +147,11 @@ final class ConcreteResourceRegistration extends AbstractResourceRegistration {
 
     @Override
     public void registerOperationHandler(OperationDefinition definition, OperationStepHandler handler, boolean inherited) {
-        registerOperationHandler(definition.getName(), handler, definition.getDescriptionProvider(), inherited, definition.getEntryType(), definition.getFlags());
+        checkPermission();
+        if (operationsUpdater.putIfAbsent(this, definition.getName(), new OperationEntry(handler, definition.getDescriptionProvider(), inherited, definition.getEntryType(),
+                definition.getFlags(), definition.getAccessConstraints())) != null) {
+            throw alreadyRegistered("operation handler", definition.getName());
+        }
     }
 
     public void unregisterSubModel(final PathElement address) throws IllegalArgumentException {
@@ -207,7 +235,7 @@ final class ConcreteResourceRegistration extends AbstractResourceRegistration {
     @Override
     public void registerOperationHandler(final String operationName, final OperationStepHandler handler, final DescriptionProvider descriptionProvider, final boolean inherited, EntryType entryType, EnumSet<OperationEntry.Flag> flags) {
         checkPermission();
-        if (operationsUpdater.putIfAbsent(this, operationName, new OperationEntry(handler, descriptionProvider, inherited, entryType, flags)) != null) {
+        if (operationsUpdater.putIfAbsent(this, operationName, new OperationEntry(handler, descriptionProvider, inherited, entryType, flags, null)) != null) {
             throw alreadyRegistered("operation handler", operationName);
         }
     }

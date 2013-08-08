@@ -25,6 +25,7 @@ package org.jboss.as.server.operations;
 import org.jboss.as.controller.AbstractRemoveStepHandler;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
+import org.jboss.as.domain.management.access.RbacSanityCheckOperation;
 import org.jboss.as.remoting.RemotingServices;
 import org.jboss.as.remoting.management.ManagementRemotingServices;
 import org.jboss.dmr.ModelNode;
@@ -42,6 +43,15 @@ public class NativeRemotingManagementRemoveHandler extends AbstractRemoveStepHan
 
     private NativeRemotingManagementRemoveHandler() {
     }
+
+
+    @Override
+    protected void performRemove(OperationContext context, ModelNode operation, ModelNode model)
+            throws OperationFailedException {
+        RbacSanityCheckOperation.registerOperation(context);
+        super.performRemove(context, operation, model);
+    }
+
 
     @Override
     protected boolean requiresRuntime(OperationContext context) {

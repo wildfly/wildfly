@@ -70,6 +70,7 @@ public class HostProcessReloadHandler extends ProcessReloadHandler<HostRunningMo
         return new DeferredParametersOperationDefinitionBuilder(hostControllerInfo, OPERATION_NAME, HostModelUtil.getResourceDescriptionResolver())
             .setParameters(hostControllerInfo.isMasterDomainController() ? MASTER_ATTRIBUTES : SLAVE_ATTRIBUTES)
             .withFlag(OperationEntry.Flag.HOST_CONTROLLER_ONLY)
+            .setRuntimeOnly()
             .build();
     }
 
@@ -121,7 +122,7 @@ public class HostProcessReloadHandler extends ProcessReloadHandler<HostRunningMo
                         @Override
                         public ModelNode getModelDescription(Locale locale) {
                             AttributeDefinition[] params = hostControllerInfo.isMasterDomainController() ? MASTER_ATTRIBUTES : SLAVE_ATTRIBUTES;
-                            return new DefaultOperationDescriptionProvider(getName(), resolver, attributeResolver, replyType, replyValueType, deprecationData, replyParameters, params).getModelDescription(locale);
+                            return new DefaultOperationDescriptionProvider(getName(), resolver, attributeResolver, replyType, replyValueType, replyAllowNull, deprecationData, replyParameters, params, accessConstraints).getModelDescription(locale);
                         }
                     };
                 }

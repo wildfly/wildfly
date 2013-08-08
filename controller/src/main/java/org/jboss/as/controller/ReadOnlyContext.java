@@ -22,6 +22,14 @@
 
 package org.jboss.as.controller;
 
+import static org.jboss.as.controller.ControllerMessages.MESSAGES;
+
+import java.io.InputStream;
+import java.util.Set;
+
+import org.jboss.as.controller.access.Action;
+import org.jboss.as.controller.access.ResourceAuthorization;
+import org.jboss.as.controller.access.AuthorizationResult;
 import org.jboss.as.controller.client.MessageSeverity;
 import org.jboss.as.controller.persistence.ConfigurationPersistenceException;
 import org.jboss.as.controller.persistence.ConfigurationPersister;
@@ -33,10 +41,6 @@ import org.jboss.msc.service.ServiceController;
 import org.jboss.msc.service.ServiceName;
 import org.jboss.msc.service.ServiceRegistry;
 import org.jboss.msc.service.ServiceTarget;
-
-import java.io.InputStream;
-
-import static org.jboss.as.controller.ControllerMessages.MESSAGES;
 
 /**
  * A read-only {@linkplain OperationContext}, allowing read-only access to the current write model from a different
@@ -280,8 +284,37 @@ class ReadOnlyContext extends AbstractOperationContext {
         throw readOnlyContext();
     }
 
+    @Override
+    public AuthorizationResult authorize(ModelNode operation) {
+        return primaryContext.authorize(operation);
+    }
+
+    @Override
+    public AuthorizationResult authorize(ModelNode operation, Set<Action.ActionEffect> effects) {
+        return primaryContext.authorize(operation, effects);
+    }
+
+    @Override
+    public AuthorizationResult authorize(ModelNode operation, String attribute, ModelNode currentValue) {
+        return primaryContext.authorize(operation, attribute, currentValue);
+    }
+
+    @Override
+    public AuthorizationResult authorize(ModelNode operation, String attribute, ModelNode currentValue, Set<Action.ActionEffect> effects) {
+        return primaryContext.authorize(operation, attribute, currentValue, effects);
+    }
+
     IllegalStateException readOnlyContext() {
         return ControllerMessages.MESSAGES.readOnlyContext();
     }
 
+    @Override
+    public AuthorizationResult authorizeOperation(ModelNode operation, boolean addressabilityOnly) {
+        return primaryContext.authorizeOperation(operation, addressabilityOnly);
+    }
+
+    @Override
+    public ResourceAuthorization authorizeResource(boolean attributes, boolean isDefaultResource) {
+        return primaryContext.authorizeResource(attributes, isDefaultResource);
+    }
 }

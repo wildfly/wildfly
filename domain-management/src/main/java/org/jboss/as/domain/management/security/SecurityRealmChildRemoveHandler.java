@@ -25,6 +25,7 @@ package org.jboss.as.domain.management.security;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.PathAddress;
+import org.jboss.as.domain.management.access.RbacSanityCheckOperation;
 import org.jboss.dmr.ModelNode;
 
 /**
@@ -35,9 +36,11 @@ import org.jboss.dmr.ModelNode;
 public class SecurityRealmChildRemoveHandler extends SecurityRealmParentRestartHandler {
 
     private final boolean validateAuthentication;
+    private final boolean validateRbac;
 
-    public SecurityRealmChildRemoveHandler(boolean validateAuthentication) {
+    public SecurityRealmChildRemoveHandler(boolean validateAuthentication, boolean validateRbac) {
         this.validateAuthentication = validateAuthentication;
+        this.validateRbac = validateRbac;
     }
 
     @Override
@@ -48,5 +51,8 @@ public class SecurityRealmChildRemoveHandler extends SecurityRealmParentRestartH
             ModelNode validationOp = AuthenticationValidatingHandler.createOperation(operation);
             context.addStep(validationOp, AuthenticationValidatingHandler.INSTANCE, OperationContext.Stage.MODEL);
         } // else we know the SecurityRealmAddHandler is part of this overall set of ops and it added AuthenticationValidatingHandler
+        if (validateRbac) {
+            RbacSanityCheckOperation.registerOperation(context);
+        }
     }
 }

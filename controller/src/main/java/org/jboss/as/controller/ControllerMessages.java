@@ -2050,7 +2050,7 @@ public interface ControllerMessages {
      * @return an {@link OperationFailedRuntimeException} for the error.
      */
     @Message(id = 14807, value = "Management resource '%s' not found")
-    OperationFailedRuntimeException managementResourceNotFound(PathAddress pathAddress);
+    NoSuchResourceException managementResourceNotFound(PathAddress pathAddress);
 
     /**
      * Creates an exception message indicating a child resource cannot be found.
@@ -2641,6 +2641,8 @@ public interface ControllerMessages {
     @Message(id = 14899, value = "read only context")
     IllegalStateException readOnlyContext();
 
+    // END OF 148xx SERIES USABLE FOR NON-LOGGER MESSAGES
+
     @Message(id = 13450, value = "We are trying to read data from the master host controller, which is currently busy executing another set of operations. This is a temporary situation, please retry")
     String cannotGetControllerLock();
 
@@ -2659,4 +2661,18 @@ public interface ControllerMessages {
 
     @Message(id = 13455, value = "no context to delegate with id: %s")
     IllegalStateException noContextToDelegateTo(int operationId);
+
+    @Message(id = 13456, value = "Unauthorized to execute operation '%s' for resource '%s' -- %s")
+    UnauthorizedException unauthorized(String name, PathAddress address, ModelNode explanation);
+
+    @Message(id = 13457, value = "Users with multiple roles are not allowed")
+    SecurityException illegalMultipleRoles();
+
+    @Message(id = 13458, value = "An unexpected number of AccountPrincipals %d have been found in the current Subject.")
+    IllegalStateException unexpectedAccountPrincipalCount(int count);
+
+    @Message(id = 13459, value = "Different realms '%s' '%s' found in single Subject")
+    IllegalStateException differentRealmsInSubject(String realmOne, String realmTwo);
+
+    // 13499 IS END OF 134xx SERIES USABLE FOR NON-LOGGER MESSAGES
 }

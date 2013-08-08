@@ -43,6 +43,7 @@ import org.jboss.as.controller.SimpleAttributeDefinition;
 import org.jboss.as.controller.SimpleAttributeDefinitionBuilder;
 import org.jboss.as.controller.SimpleOperationDefinition;
 import org.jboss.as.controller.SimpleOperationDefinitionBuilder;
+import org.jboss.as.controller.access.constraint.management.ApplicationTypeAccessConstraintDefinition;
 import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
 import org.jboss.as.controller.descriptions.ResourceDescriptionResolver;
 import org.jboss.as.controller.operations.validation.EnumValidator;
@@ -231,11 +232,15 @@ public class DeploymentAttributes {
     public static final OperationDefinition UPLOAD_BYTES_DEFINITION = new SimpleOperationDefinitionBuilder(ModelDescriptionConstants.UPLOAD_DEPLOYMENT_BYTES, DEPLOYMENT_RESOLVER)
             .setParameters(BYTES_NOT_NULL)
             .setReplyParameters(UPLOAD_HASH_REPLY)
+            .setRuntimeOnly()
+            .addAccessConstraint(ApplicationTypeAccessConstraintDefinition.DEPLOYMENT)
             .build();
     public static final OperationDefinition DOMAIN_UPLOAD_BYTES_DEFINITION = new SimpleOperationDefinitionBuilder(ModelDescriptionConstants.UPLOAD_DEPLOYMENT_BYTES, DEPLOYMENT_RESOLVER)
             .setParameters(BYTES_NOT_NULL)
             .setReplyParameters(UPLOAD_HASH_REPLY)
             .withFlag(Flag.MASTER_HOST_CONTROLLER_ONLY)
+            .setRuntimeOnly()
+            .addAccessConstraint(ApplicationTypeAccessConstraintDefinition.DEPLOYMENT)
             .build();
 
     //Upload deployment url definitions
@@ -245,11 +250,15 @@ public class DeploymentAttributes {
     public static final OperationDefinition UPLOAD_URL_DEFINITION = new SimpleOperationDefinitionBuilder(ModelDescriptionConstants.UPLOAD_DEPLOYMENT_URL, DEPLOYMENT_RESOLVER)
             .setParameters(URL_NOT_NULL)
             .setReplyParameters(UPLOAD_HASH_REPLY)
+            .setRuntimeOnly()
+            .addAccessConstraint(ApplicationTypeAccessConstraintDefinition.DEPLOYMENT)
             .build();
     public static final OperationDefinition DOMAIN_UPLOAD_URL_DEFINITION = new SimpleOperationDefinitionBuilder(ModelDescriptionConstants.UPLOAD_DEPLOYMENT_URL, DEPLOYMENT_RESOLVER)
             .setParameters(URL_NOT_NULL)
             .setReplyParameters(UPLOAD_HASH_REPLY)
             .withFlag(Flag.MASTER_HOST_CONTROLLER_ONLY)
+            .setRuntimeOnly()
+            .addAccessConstraint(ApplicationTypeAccessConstraintDefinition.DEPLOYMENT)
             .build();
 
     //Upload deployment stream definition
@@ -260,11 +269,15 @@ public class DeploymentAttributes {
     public static final OperationDefinition UPLOAD_STREAM_ATTACHMENT_DEFINITION = new SimpleOperationDefinitionBuilder(ModelDescriptionConstants.UPLOAD_DEPLOYMENT_STREAM, DEPLOYMENT_RESOLVER)
             .setParameters(INPUT_STREAM_INDEX_NOT_NULL)
             .setReplyParameters(UPLOAD_HASH_REPLY)
+            .setRuntimeOnly()
+            .addAccessConstraint(ApplicationTypeAccessConstraintDefinition.DEPLOYMENT)
             .build();
     public static final OperationDefinition DOMAIN_UPLOAD_STREAM_ATTACHMENT_DEFINITION = new SimpleOperationDefinitionBuilder(ModelDescriptionConstants.UPLOAD_DEPLOYMENT_STREAM, DEPLOYMENT_RESOLVER)
             .setParameters(INPUT_STREAM_INDEX_NOT_NULL)
             .setReplyParameters(UPLOAD_HASH_REPLY)
             .withFlag(Flag.MASTER_HOST_CONTROLLER_ONLY)
+            .setRuntimeOnly()
+            .addAccessConstraint(ApplicationTypeAccessConstraintDefinition.DEPLOYMENT)
             .build();
 
     //Replace deployment definition
@@ -282,7 +295,8 @@ public class DeploymentAttributes {
     public static final Map<String, AttributeDefinition> FULL_REPLACE_DEPLOYMENT_ATTRIBUTES = createAttributeMap(NAME, RUNTIME_NAME_NILLABLE, CONTENT_ALL);
     public static final OperationDefinition FULL_REPLACE_DEPLOYMENT_DEFINITION = new SimpleOperationDefinitionBuilder(ModelDescriptionConstants.FULL_REPLACE_DEPLOYMENT, DEPLOYMENT_RESOLVER)
             .setParameters(FULL_REPLACE_DEPLOYMENT_ATTRIBUTES.values().toArray(new AttributeDefinition[FULL_REPLACE_DEPLOYMENT_ATTRIBUTES.size()]))
-             .build();
+            .addAccessConstraint(ApplicationTypeAccessConstraintDefinition.DEPLOYMENT)
+            .build();
 
     private static SimpleAttributeDefinition createContentValueTypeAttribute(String name, ModelType type, ParameterValidator validator, boolean allowExpression) {
         SimpleAttributeDefinitionBuilder builder = SimpleAttributeDefinitionBuilder.create(name, type, true);

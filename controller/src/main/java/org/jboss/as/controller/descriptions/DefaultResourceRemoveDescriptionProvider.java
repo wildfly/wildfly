@@ -38,4 +38,10 @@ public class DefaultResourceRemoveDescriptionProvider extends DefaultOperationDe
     public DefaultResourceRemoveDescriptionProvider(ResourceDescriptionResolver resolver, DeprecationData deprecationData) {
         super(ModelDescriptionConstants.REMOVE, resolver, deprecationData);
     }
+
+    @Override
+    protected boolean isAddAccessConstraints() {
+        //This is auto-generated so don't add any access constraints
+        return false;
+    }
 }

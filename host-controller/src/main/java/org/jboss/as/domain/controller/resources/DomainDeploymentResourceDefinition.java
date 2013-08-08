@@ -66,7 +66,7 @@ import org.jboss.as.server.controller.resources.DeploymentResourceDefinition;
         }
     }
 
-    @Override
+     @Override
     protected void registerAddOperation(ManagementResourceRegistration registration, OperationStepHandler handler, Flag... flags) {
         registration.registerOperationHandler(addDefinition, handler);
     }

@@ -28,6 +28,7 @@ import static org.jboss.dmr.ModelType.STRING;
 import org.jboss.as.controller.AttributeDefinition;
 import org.jboss.as.controller.SimpleAttributeDefinition;
 import org.jboss.as.controller.SimpleResourceDefinition;
+import org.jboss.as.controller.access.constraint.management.SensitiveTargetAccessConstraintDefinition;
 
 /**
  * Generic transport resource definition
@@ -39,6 +40,7 @@ public class GenericTransportDefinition extends AbstractTransportDefinition {
     public static final SimpleAttributeDefinition SOCKET_BINDING = create("socket-binding", STRING)
             .setAllowNull(true)
             .setRestartAllServices()
+            .addAccessConstraint(SensitiveTargetAccessConstraintDefinition.SOCKET_BINDING_REF)
             .build();
 
     static AttributeDefinition[] ATTRIBUTES = { CommonAttributes.FACTORY_CLASS, SOCKET_BINDING };

@@ -46,6 +46,8 @@ import org.jboss.as.controller.SimpleAttributeDefinitionBuilder;
 import org.jboss.as.controller.SimpleListAttributeDefinition;
 import org.jboss.as.controller.SimpleOperationDefinitionBuilder;
 import org.jboss.as.controller.SimpleResourceDefinition;
+import org.jboss.as.controller.access.constraint.management.AccessConstraintDefinition;
+import org.jboss.as.controller.access.constraint.management.SensitiveTargetAccessConstraintDefinition;
 import org.jboss.as.controller.registry.ManagementResourceRegistration;
 import org.jboss.as.server.controller.descriptions.ServerDescriptions;
 import org.jboss.dmr.ModelNode;
@@ -70,9 +72,12 @@ public class ModuleLoadingResourceDefinition extends SimpleResourceDefinition {
 
     private static final AttributeDefinition MODULE_NAME = new SimpleAttributeDefinitionBuilder(MODULE, ModelType.STRING).build();
 
+    private final List<AccessConstraintDefinition> accessConstraints;
+
     public ModuleLoadingResourceDefinition() {
         super(PathElement.pathElement(CORE_SERVICE, MODULE_LOADING),
                 ServerDescriptions.getResourceDescriptionResolver("core", MODULE_LOADING));
+        this.accessConstraints = SensitiveTargetAccessConstraintDefinition.MODULE_LOADING.wrapAsList();
     }
 
     @Override
@@ -100,6 +105,11 @@ public class ModuleLoadingResourceDefinition extends SimpleResourceDefinition {
                 .build();
 
          resourceRegistration.registerOperationHandler(definition, new ModuleLocationHandler());
+    }
+
+    @Override
+    public List<AccessConstraintDefinition> getAccessConstraints() {
+        return accessConstraints;
     }
 
     /** Read attribute handler for "module-roots" */

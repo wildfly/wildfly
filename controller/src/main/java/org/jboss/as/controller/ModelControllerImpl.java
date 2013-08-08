@@ -22,6 +22,7 @@
 
 package org.jboss.as.controller;
 
+import static java.security.AccessController.doPrivileged;
 import static org.jboss.as.controller.ControllerLogger.MGMT_OP_LOGGER;
 import static org.jboss.as.controller.ControllerLogger.ROOT_LOGGER;
 import static org.jboss.as.controller.ControllerMessages.MESSAGES;
@@ -38,6 +39,8 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.RES
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ROLLBACK_ON_RUNTIME_FAILURE;
 
 import java.io.IOException;
+import java.security.AccessControlContext;
+import java.security.PrivilegedAction;
 import java.security.SecureRandom;
 import java.util.ArrayList;
 import java.util.EnumSet;
@@ -51,6 +54,7 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicReference;
 
+import org.jboss.as.controller.access.Authorizer;
 import org.jboss.as.controller.client.ModelControllerClient;
 import org.jboss.as.controller.client.Operation;
 import org.jboss.as.controller.client.OperationAttachments;
@@ -68,6 +72,7 @@ import org.jboss.msc.service.ServiceRegistry;
 import org.jboss.msc.service.ServiceTarget;
 import org.jboss.threads.AsyncFuture;
 import org.jboss.threads.AsyncFutureTask;
+import org.wildfly.security.manager.GetAccessControlContextAction;
 
 /**
  * Default {@link ModelController} implementation.
@@ -90,6 +95,7 @@ class ModelControllerImpl implements ModelController {
     private final ControlledProcessState processState;
     private final ExecutorService executorService;
     private final ExpressionResolver expressionResolver;
+    private final Authorizer authorizer;
 
     private final ConcurrentMap<Integer, OperationContext> activeOperations = new ConcurrentHashMap<>();
 
@@ -97,7 +103,7 @@ class ModelControllerImpl implements ModelController {
                         final ContainerStateMonitor stateMonitor, final ConfigurationPersister persister,
                         final ProcessType processType, final RunningModeControl runningModeControl,
                         final OperationStepHandler prepareStep, final ControlledProcessState processState, final ExecutorService executorService,
-                        final ExpressionResolver expressionResolver) {
+                        final ExpressionResolver expressionResolver, final Authorizer authorizer) {
         this.serviceRegistry = serviceRegistry;
         this.serviceTarget = serviceTarget;
         this.rootRegistration = rootRegistration;
@@ -110,6 +116,7 @@ class ModelControllerImpl implements ModelController {
         this.serviceTarget.addListener(stateMonitor);
         this.executorService = executorService;
         this.expressionResolver = expressionResolver;
+        this.authorizer = authorizer;
     }
 
     /**
@@ -497,11 +504,19 @@ class ModelControllerImpl implements ModelController {
                     }
                 }
                 final OpTask opTask = new OpTask();
+                final AccessControlContext acc = doPrivileged(GetAccessControlContextAction.getInstance());
                 executor.execute(new Runnable() {
                     public void run() {
                         try {
                             if (opThread.compareAndSet(null, Thread.currentThread())) {
-                                ModelNode response = ModelControllerImpl.this.execute(operation, messageHandler, OperationTransactionControl.COMMIT, attachments);
+                                ModelNode response = doPrivileged(new PrivilegedAction<ModelNode>() {
+
+                                    @Override
+                                    public ModelNode run() {
+                                        return ModelControllerImpl.this.execute(operation, messageHandler,
+                                                OperationTransactionControl.COMMIT, attachments);
+                                    }
+                                }, acc);
                                 opTask.handleResult(response);
                             }
                         } finally {
@@ -580,6 +595,10 @@ class ModelControllerImpl implements ModelController {
 
     ModelNode resolveExpressions(ModelNode node) throws OperationFailedException {
         return expressionResolver.resolveExpressions(node);
+    }
+
+    Authorizer getAuthorizer() {
+        return authorizer;
     }
 
     private void logNoHandler(ParsedBootOp parsedOp) {

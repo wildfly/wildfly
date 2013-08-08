@@ -31,6 +31,7 @@ import org.jboss.as.controller.PrimitiveListAttributeDefinition;
 import org.jboss.as.controller.PropertiesAttributeDefinition;
 import org.jboss.as.controller.SimpleAttributeDefinition;
 import org.jboss.as.controller.SimpleAttributeDefinitionBuilder;
+import org.jboss.as.controller.access.constraint.management.SensitiveTargetAccessConstraintDefinition;
 import org.jboss.as.controller.client.helpers.MeasurementUnit;
 import org.jboss.as.controller.operations.validation.EnumValidator;
 import org.jboss.as.controller.operations.validation.StringLengthValidator;
@@ -225,6 +226,8 @@ public class Constants {
             .setAllowExpression(true)
             .setAllowNull(true)
             .setAlternatives(SECURITY_DOMAIN_AND_APPLICATION_NAME, APPLICATION_NAME)
+            .addAccessConstraint(SensitiveTargetAccessConstraintDefinition.SECURITY_DOMAIN_REF)
+            .addAccessConstraint(ResourceAdaptersExtension.RA_SECURITY_DEF)
             .build();
 
 
@@ -233,6 +236,8 @@ public class Constants {
             .setAllowExpression(true)
             .setAllowNull(true)
             .setAlternatives(SECURITY_DOMAIN_NAME, APPLICATION_NAME)
+            .addAccessConstraint(SensitiveTargetAccessConstraintDefinition.SECURITY_DOMAIN_REF)
+            .addAccessConstraint(ResourceAdaptersExtension.RA_SECURITY_DEF)
             .build();
 
     static final SimpleAttributeDefinition APPLICATION = new SimpleAttributeDefinitionBuilder(APPLICATION_NAME,ModelType.BOOLEAN)
@@ -242,6 +247,8 @@ public class Constants {
             .setAllowNull(true)
             .setMeasurementUnit(MeasurementUnit.NONE)
             .setAlternatives(SECURITY_DOMAIN_NAME,SECURITY_DOMAIN_AND_APPLICATION_NAME)
+            .addAccessConstraint(SensitiveTargetAccessConstraintDefinition.SECURITY_DOMAIN_REF)
+            .addAccessConstraint(ResourceAdaptersExtension.RA_SECURITY_DEF)
             .build();
 
 
@@ -270,11 +277,32 @@ public class Constants {
 
     static SimpleAttributeDefinition XA_RESOURCE_TIMEOUT = new SimpleAttributeDefinition(XA_RESOURCE_TIMEOUT_NAME, TimeOut.Tag.XA_RESOURCE_TIMEOUT.getLocalName(),  new ModelNode(), ModelType.INT, true, true, MeasurementUnit.NONE);
 
-    static SimpleAttributeDefinition RECOVERY_USERNAME = new SimpleAttributeDefinition(RECOVERY_USERNAME_NAME, Credential.Tag.USER_NAME.getLocalName(),  new ModelNode(), ModelType.STRING, true, true, MeasurementUnit.NONE);
+    static SimpleAttributeDefinition RECOVERY_USERNAME = new SimpleAttributeDefinitionBuilder(RECOVERY_USERNAME_NAME, ModelType.STRING, true)
+            .setXmlName(Credential.Tag.USER_NAME.getLocalName())
+            .setDefaultValue(new ModelNode())
+            .setAllowExpression(true)
+            .setMeasurementUnit(MeasurementUnit.NONE)
+            .addAccessConstraint(SensitiveTargetAccessConstraintDefinition.CREDENTIAL)
+            .addAccessConstraint(ResourceAdaptersExtension.RA_SECURITY_DEF)
+            .build();
 
-    static SimpleAttributeDefinition RECOVERY_PASSWORD = new SimpleAttributeDefinition(RECOVERY_PASSWORD_NAME, Credential.Tag.PASSWORD.getLocalName(),  new ModelNode(), ModelType.STRING, true, true, MeasurementUnit.NONE);
+    static SimpleAttributeDefinition RECOVERY_PASSWORD = new SimpleAttributeDefinitionBuilder(RECOVERY_PASSWORD_NAME, ModelType.STRING, true)
+            .setXmlName(Credential.Tag.PASSWORD.getLocalName())
+            .setDefaultValue(new ModelNode())
+            .setAllowExpression(true)
+            .setMeasurementUnit(MeasurementUnit.NONE)
+            .addAccessConstraint(SensitiveTargetAccessConstraintDefinition.CREDENTIAL)
+            .addAccessConstraint(ResourceAdaptersExtension.RA_SECURITY_DEF)
+            .build();
 
-    static SimpleAttributeDefinition RECOVERY_SECURITY_DOMAIN = new SimpleAttributeDefinition(RECOVERY_SECURITY_DOMAIN_NAME, Credential.Tag.SECURITY_DOMAIN.getLocalName(),  new ModelNode(), ModelType.STRING, true, true, MeasurementUnit.NONE);
+    static SimpleAttributeDefinition RECOVERY_SECURITY_DOMAIN = new SimpleAttributeDefinitionBuilder(RECOVERY_SECURITY_DOMAIN_NAME, ModelType.STRING, true)
+            .setXmlName(Credential.Tag.SECURITY_DOMAIN.getLocalName())
+            .setAllowExpression(true)
+            .setMeasurementUnit(MeasurementUnit.NONE)
+            .setDefaultValue(new ModelNode())
+            .addAccessConstraint(SensitiveTargetAccessConstraintDefinition.SECURITY_DOMAIN_REF)
+            .addAccessConstraint(ResourceAdaptersExtension.RA_SECURITY_DEF)
+            .build();
 
     static SimpleAttributeDefinition NO_RECOVERY = new SimpleAttributeDefinition(NO_RECOVERY_NAME, Recovery.Attribute.NO_RECOVERY.getLocalName(),  new ModelNode(false), ModelType.BOOLEAN, true, true, MeasurementUnit.NONE);
 

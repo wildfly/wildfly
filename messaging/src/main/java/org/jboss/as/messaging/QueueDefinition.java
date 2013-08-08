@@ -27,6 +27,9 @@ import static org.jboss.as.messaging.CommonAttributes.QUEUE;
 import static org.jboss.as.messaging.CommonAttributes.RUNTIME_QUEUE;
 import static org.jboss.dmr.ModelType.LONG;
 
+import java.util.Collections;
+import java.util.List;
+
 import org.jboss.as.controller.AbstractAddStepHandler;
 import org.jboss.as.controller.AttributeDefinition;
 import org.jboss.as.controller.OperationContext;
@@ -35,6 +38,9 @@ import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.PathElement;
 import org.jboss.as.controller.SimpleAttributeDefinition;
 import org.jboss.as.controller.SimpleResourceDefinition;
+import org.jboss.as.controller.access.constraint.ApplicationTypeConfig;
+import org.jboss.as.controller.access.constraint.management.AccessConstraintDefinition;
+import org.jboss.as.controller.access.constraint.management.ApplicationTypeAccessConstraintDefinition;
 import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
 import org.jboss.as.controller.registry.AttributeAccess;
 import org.jboss.as.controller.registry.ManagementResourceRegistration;
@@ -90,6 +96,8 @@ public class QueueDefinition extends SimpleResourceDefinition {
     private final boolean registerRuntimeOnly;
     private final boolean runtimeOnly;
 
+    private final List<AccessConstraintDefinition> accessConstraints;
+
     private QueueDefinition(final boolean registerRuntimeOnly, final boolean runtimeOnly,
             final String path,
             final AbstractAddStepHandler addHandler,
@@ -100,6 +108,12 @@ public class QueueDefinition extends SimpleResourceDefinition {
                 removeHandler);
         this.registerRuntimeOnly = registerRuntimeOnly;
         this.runtimeOnly = runtimeOnly;
+        if (runtimeOnly) {
+            ApplicationTypeConfig atc = new ApplicationTypeConfig(MessagingExtension.SUBSYSTEM_NAME, path);
+            accessConstraints = new ApplicationTypeAccessConstraintDefinition(atc).wrapAsList();
+        } else {
+            accessConstraints = Collections.emptyList();
+        }
     }
 
     @Override
@@ -137,6 +151,11 @@ public class QueueDefinition extends SimpleResourceDefinition {
         if (registerRuntimeOnly) {
             QueueControlHandler.INSTANCE.registerOperations(registry);
         }
+    }
+
+    @Override
+    public List<AccessConstraintDefinition> getAccessConstraints() {
+        return accessConstraints;
     }
 
     /**

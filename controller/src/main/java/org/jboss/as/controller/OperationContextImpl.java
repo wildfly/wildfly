@@ -44,15 +44,28 @@ import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
 
+import org.jboss.as.controller.access.Action;
+import org.jboss.as.controller.access.Action.ActionEffect;
+import org.jboss.as.controller.access.ResourceAuthorization;
+import org.jboss.as.controller.access.AuthorizationResult;
+import org.jboss.as.controller.access.AuthorizationResult.Decision;
+import org.jboss.as.controller.access.Caller;
+import org.jboss.as.controller.access.Environment;
+import org.jboss.as.controller.access.TargetAttribute;
+import org.jboss.as.controller.access.TargetResource;
 import org.jboss.as.controller.client.MessageSeverity;
 import org.jboss.as.controller.client.OperationAttachments;
 import org.jboss.as.controller.client.OperationMessageHandler;
 import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
+import org.jboss.as.controller.operations.global.GlobalOperationHandlers;
+import org.jboss.as.controller.operations.global.ReadResourceHandler;
 import org.jboss.as.controller.persistence.ConfigurationPersistenceException;
 import org.jboss.as.controller.persistence.ConfigurationPersister;
+import org.jboss.as.controller.registry.AttributeAccess;
 import org.jboss.as.controller.registry.DelegatingImmutableManagementResourceRegistration;
 import org.jboss.as.controller.registry.ImmutableManagementResourceRegistration;
 import org.jboss.as.controller.registry.ManagementResourceRegistration;
+import org.jboss.as.controller.registry.OperationEntry;
 import org.jboss.as.controller.registry.PlaceholderResource;
 import org.jboss.as.controller.registry.Resource;
 import org.jboss.dmr.ModelNode;
@@ -83,6 +96,15 @@ final class OperationContextImpl extends AbstractOperationContext {
 
     private static final Object NULL = new Object();
 
+    private static final Set<Action.ActionEffect> ACCESS = EnumSet.of(Action.ActionEffect.ADDRESS);
+    private static final Set<Action.ActionEffect> READ_CONFIG = EnumSet.of(Action.ActionEffect.READ_CONFIG);
+    private static final Set<Action.ActionEffect> READ_RUNTIME = EnumSet.of(Action.ActionEffect.READ_RUNTIME);
+    private static final Set<Action.ActionEffect> READ_WRITE_CONFIG = EnumSet.of(Action.ActionEffect.READ_CONFIG, Action.ActionEffect.WRITE_CONFIG);
+    private static final Set<Action.ActionEffect> READ_WRITE_RUNTIME = EnumSet.of(Action.ActionEffect.READ_RUNTIME, Action.ActionEffect.WRITE_RUNTIME);
+    private static final Set<Action.ActionEffect> WRITE_CONFIG = EnumSet.of(Action.ActionEffect.WRITE_CONFIG);
+    private static final Set<Action.ActionEffect> WRITE_RUNTIME = EnumSet.of(Action.ActionEffect.WRITE_RUNTIME);
+    private static final Set<Action.ActionEffect> ALL = EnumSet.of(Action.ActionEffect.READ_CONFIG, Action.ActionEffect.READ_RUNTIME, Action.ActionEffect.WRITE_CONFIG, Action.ActionEffect.WRITE_RUNTIME);
+
     private final ModelControllerImpl modelController;
     private final EnumSet<ContextFlag> contextFlags;
     private final OperationMessageHandler messageHandler;
@@ -97,6 +119,9 @@ final class OperationContextImpl extends AbstractOperationContext {
     private Map<PathAddress, Object> restartedResources = Collections.emptyMap();
     /** A concurrent map for the attachments. **/
     private final ConcurrentMap<AttachmentKey<?>, Object> valueAttachments = new ConcurrentHashMap<AttachmentKey<?>, Object>();
+    private final Map<OperationId, AuthorizationResponseImpl> authorizations =
+            new ConcurrentHashMap<OperationId, AuthorizationResponseImpl>();
+    private final Environment callEnvironment;
     /** Tracks whether any steps have gotten write access to the management resource registration*/
     private volatile boolean affectsResourceRegistration;
 
@@ -128,7 +153,7 @@ final class OperationContextImpl extends AbstractOperationContext {
         this.affectsModel = booting ? new ConcurrentHashMap<PathAddress, Object>(16 * 16) : new HashMap<PathAddress, Object>(1);
         this.contextFlags = contextFlags;
         this.serviceTarget = new ContextServiceTarget(modelController);
-
+        this.callEnvironment = new Environment(processState, processType);
         this.operationId = operationId;
     }
 
@@ -197,6 +222,7 @@ final class OperationContextImpl extends AbstractOperationContext {
         //if (currentStage != Stage.MODEL) {
         //    throw MESSAGES.stageAlreadyComplete(Stage.MODEL);
         //}
+        authorize(false, READ_WRITE_CONFIG);
         if (!affectsResourceRegistration) {
             takeWriteLock();
             affectsResourceRegistration = true;
@@ -213,6 +239,7 @@ final class OperationContextImpl extends AbstractOperationContext {
         if (currentStage == null || currentStage == Stage.DONE) {
             throw MESSAGES.operationAlreadyComplete();
         }
+        authorize(false, Collections.<ActionEffect>emptySet());
         ImmutableManagementResourceRegistration delegate = modelController.getRootRegistration().getSubModel(address);
         return delegate == null ? null : new DelegatingImmutableManagementResourceRegistration(delegate);
     }
@@ -232,6 +259,7 @@ final class OperationContextImpl extends AbstractOperationContext {
         if (! (!modify || currentStage == Stage.RUNTIME || currentStage == Stage.MODEL || currentStage == Stage.VERIFY || isRollingBack())) {
             throw MESSAGES.serviceRegistryRuntimeOperationsOnly();
         }
+        authorize(false, modify ? READ_WRITE_RUNTIME : READ_RUNTIME);
         if (modify && !affectsRuntime) {
             takeWriteLock();
             affectsRuntime = true;
@@ -250,6 +278,7 @@ final class OperationContextImpl extends AbstractOperationContext {
         if (currentStage != Stage.RUNTIME && currentStage != Stage.VERIFY && !isRollingBack()) {
             throw MESSAGES.serviceRemovalRuntimeOperationsOnly();
         }
+        authorize(false, WRITE_RUNTIME);
         if (!affectsRuntime) {
             takeWriteLock();
             affectsRuntime = true;
@@ -297,6 +326,7 @@ final class OperationContextImpl extends AbstractOperationContext {
         if (currentStage != Stage.RUNTIME && currentStage != Stage.VERIFY && !isRollingBack()) {
             throw MESSAGES.serviceRemovalRuntimeOperationsOnly();
         }
+        authorize(false, WRITE_RUNTIME);
         if (!affectsRuntime) {
             takeWriteLock();
             affectsRuntime = true;
@@ -397,6 +427,7 @@ final class OperationContextImpl extends AbstractOperationContext {
     }
 
     public ModelNode readModel(final PathAddress requestAddress) {
+        authorize(false, READ_CONFIG);
         final PathAddress address = activeStep.address.append(requestAddress);
         assert isControllingThread();
         Stage currentStage = this.currentStage;
@@ -421,7 +452,8 @@ final class OperationContextImpl extends AbstractOperationContext {
         if (currentStage != Stage.MODEL) {
             throw MESSAGES.stageAlreadyComplete(Stage.MODEL);
         }
-        authorizeModelUpdate();
+        rejectUserDomainServerUpdates();
+        authorize(false, READ_WRITE_CONFIG);
         if (!isModelAffected()) {
             takeWriteLock();
             model = model.clone();
@@ -477,6 +509,15 @@ final class OperationContextImpl extends AbstractOperationContext {
         if (currentStage == null) {
             throw MESSAGES.operationAlreadyComplete();
         }
+        //Clone the operation to preserve all the headers
+        ModelNode operation = activeStep.operation.clone();
+        operation.get(OP).set(ReadResourceHandler.DEFINITION.getName());
+        operation.get(OP_ADDR).set(address.toModelNode());
+        OperationId opId = new OperationId(operation);
+        AuthorizationResult authResult = authorize(opId, operation, false, READ_CONFIG);
+        if (authResult.getDecision() == AuthorizationResult.Decision.DENY) {
+            throw ControllerMessages.MESSAGES.unauthorized(activeStep.operationId.name, activeStep.address, authResult.getExplanation());
+        }
         Resource model = this.model;
         final Iterator<PathElement> iterator = address.iterator();
         while(iterator.hasNext()) {
@@ -525,7 +566,8 @@ final class OperationContextImpl extends AbstractOperationContext {
         if (currentStage != Stage.MODEL) {
             throw MESSAGES.stageAlreadyComplete(Stage.MODEL);
         }
-        authorizeModelUpdate();
+        rejectUserDomainServerUpdates();
+        authorize(false, READ_WRITE_CONFIG);
         if (!isModelAffected()) {
             takeWriteLock();
             model = model.clone();
@@ -543,6 +585,7 @@ final class OperationContextImpl extends AbstractOperationContext {
 
     @Override
     public Resource getOriginalRootResource() {
+        // TODO restrict
         return originalModel.clone();
     }
 
@@ -565,7 +608,9 @@ final class OperationContextImpl extends AbstractOperationContext {
         if (absoluteAddress.size() == 0) {
             throw MESSAGES.duplicateResourceAddress(absoluteAddress);
         }
-        authorizeModelUpdate();
+        // Check for user updates to a domain server model
+        rejectUserDomainServerUpdates();
+        authorize(true, WRITE_CONFIG);
         if (!isModelAffected()) {
             takeWriteLock();
             model = model.clone();
@@ -617,7 +662,8 @@ final class OperationContextImpl extends AbstractOperationContext {
         if (currentStage != Stage.MODEL) {
             throw MESSAGES.stageAlreadyComplete(Stage.MODEL);
         }
-        authorizeModelUpdate();
+        rejectUserDomainServerUpdates();
+        authorize(true, READ_WRITE_CONFIG);
         if (!isModelAffected()) {
             takeWriteLock();
             model = model.clone();
@@ -644,6 +690,8 @@ final class OperationContextImpl extends AbstractOperationContext {
     }
 
     public Resource getRootResource() {
+        // TODO limit children
+        authorize(false, READ_CONFIG);
         final Resource readOnlyModel = this.model;
         return readOnlyModel.clone();
     }
@@ -757,8 +805,169 @@ final class OperationContextImpl extends AbstractOperationContext {
         return key.cast(valueAttachments.remove(key));
     }
 
-    private void authorizeModelUpdate() {
-        if (isModelUpdateAuthorizationRequired()) {
+    @Override
+    public AuthorizationResult authorize(ModelNode operation) {
+        return authorize(operation, EnumSet.noneOf(Action.ActionEffect.class));
+    }
+
+    @Override
+    public AuthorizationResult authorize(ModelNode operation, Set<Action.ActionEffect> effects) {
+        OperationId opId = new OperationId(operation);
+        return authorize(opId, operation, false, effects);
+    }
+
+    @Override
+    public AuthorizationResult authorize(ModelNode operation, String attribute, ModelNode currentValue) {
+        return authorize(operation, attribute, currentValue, EnumSet.noneOf(Action.ActionEffect.class));
+    }
+
+    @Override
+    public AuthorizationResult authorize(ModelNode operation, String attribute, ModelNode currentValue, Set<Action.ActionEffect> effects) {
+        OperationId opId = new OperationId(operation);
+        AuthorizationResult resourceResult = authorize(opId, operation, false, effects);
+        if (resourceResult.getDecision() == AuthorizationResult.Decision.DENY) {
+            return resourceResult;
+        }
+        return authorize(opId, attribute, currentValue, effects);
+    }
+
+    @Override
+    public AuthorizationResponseImpl authorizeResource(boolean attributes, boolean isDefaultResponse) {
+        ModelNode op = new ModelNode();
+        op.get(OP).set(isDefaultResponse ? GlobalOperationHandlers.CHECK_DEFAULT_RESOURCE_ACCESS : GlobalOperationHandlers.CHECK_RESOURCE_ACCESS);
+        op.get(OP_ADDR).set(activeStep.operation.get(OP_ADDR));
+        if (activeStep.operation.hasDefined(OPERATION_HEADERS)) {
+            op.get(OPERATION_HEADERS).set(activeStep.operation.get(OPERATION_HEADERS));
+        }
+        OperationId opId = new OperationId(op);
+        AuthorizationResponseImpl authResp = authorizations.get(opId);
+        if (authResp == null) {
+            authResp = getBasicAuthorizationResponse(opId, op);
+        }
+        if (authResp == null) {
+            // Non-existent resource type or operation. This is permitted but will fail
+            // later for reasons unrelated to authz
+            return authResp;
+        }
+        if (authResp.getResourceResult(ActionEffect.ADDRESS) == null) {
+            Action action = authResp.standardAction.limitAction(ActionEffect.ADDRESS);
+            authResp.addResourceResult(ActionEffect.ADDRESS, modelController.getAuthorizer().authorize(getCaller(), callEnvironment, action, authResp.targetResource));
+        }
+
+        if (authResp.getResourceResult(ActionEffect.ADDRESS).getDecision() == Decision.PERMIT) {
+            for (Action.ActionEffect requiredEffect : ALL) {
+                AuthorizationResult effectResult = authResp.getResourceResult(requiredEffect);
+                if (effectResult == null) {
+                    Action action = authResp.standardAction.limitAction(requiredEffect);
+                    effectResult = modelController.getAuthorizer().authorize(getCaller(), callEnvironment, action, authResp.targetResource);
+                    authResp.addResourceResult(requiredEffect, effectResult);
+                }
+            }
+        }
+        if (attributes) {
+            ImmutableManagementResourceRegistration mrr = authResp.targetResource.getResourceRegistration();
+            if (!authResp.attributesComplete) {
+                for (String attr : mrr.getAttributeNames(PathAddress.EMPTY_ADDRESS)) {
+                    TargetAttribute targetAttribute = null;
+                    if (authResp.getAttributeResult(attr, ActionEffect.ADDRESS) == null) {
+                        if (targetAttribute == null) {
+                            targetAttribute = createTargetAttribute(authResp, attr, isDefaultResponse);
+                        }
+                        Action action = authResp.standardAction.limitAction(ActionEffect.ADDRESS);
+                        authResp.addAttributeResult(attr, ActionEffect.ADDRESS, modelController.getAuthorizer().authorize(getCaller(), callEnvironment, action, targetAttribute));
+                    }
+                    for (Action.ActionEffect actionEffect : ALL) {
+                        AuthorizationResult authResult = authResp.getAttributeResult(attr, actionEffect);
+                        if (authResult == null) {
+                            Action action = authResp.standardAction.limitAction(actionEffect);
+                            if (targetAttribute == null) {
+                                targetAttribute = createTargetAttribute(authResp, attr, isDefaultResponse);
+                            }
+                            authResult = modelController.getAuthorizer().authorize(getCaller(), callEnvironment, action, targetAttribute);
+                            authResp.addAttributeResult(attr, actionEffect, authResult);
+                        }
+                    }
+                }
+                authResp.attributesComplete = true;
+            }
+        }
+
+        return authResp;
+    }
+
+    private TargetAttribute createTargetAttribute(AuthorizationResponseImpl authResp, String attributeName, boolean isDefaultResponse) {
+        ModelNode model = authResp.targetResource.getResource().getModel();
+        ModelNode currentValue;
+        if (isDefaultResponse) {
+            //Just use an empty model node to avoid using vault expressions
+            currentValue = new ModelNode();
+        } else {
+            currentValue = model.has(attributeName) ? model.get(attributeName) : new ModelNode();
+        }
+        AttributeAccess attributeAccess = authResp.targetResource.getResourceRegistration().getAttributeAccess(PathAddress.EMPTY_ADDRESS, attributeName);
+        return new TargetAttribute(attributeAccess, currentValue, authResp.targetResource);
+
+    }
+
+    @Override
+    public AuthorizationResult authorizeOperation(ModelNode operation, boolean addressabilityOnly) {
+        OperationId opId = new OperationId(operation);
+        AuthorizationResult resourceResult = authorize(opId, operation, false, EnumSet.of(ActionEffect.ADDRESS));
+        if (resourceResult.getDecision() == AuthorizationResult.Decision.DENY) {
+            return resourceResult;
+        }
+
+        if (isBooting()) {
+            return AuthorizationResult.PERMITTED;
+        } else {
+            final String operationName = operation.require(OP).asString();
+            AuthorizationResponseImpl authResp = authorizations.get(opId);
+            assert authResp != null : "perform resource authorization before operation authorization";
+
+            AuthorizationResult authResult = authResp.getOperationResult(operationName, addressabilityOnly);
+            if (authResult == null) {
+                OperationEntry operationEntry = authResp.targetResource.getResourceRegistration().getOperationEntry(PathAddress.EMPTY_ADDRESS, operationName);
+
+                operation.get(OPERATION_HEADERS).set(activeStep.operation.get(OPERATION_HEADERS));
+                Action targetAction = new Action(operation, operationEntry);
+
+                if (addressabilityOnly) {
+                    Action action = targetAction.limitAction(ActionEffect.ADDRESS);
+                    authResult = modelController.getAuthorizer().authorize(getCaller(), callEnvironment, action, authResp.targetResource);
+                    authResp.addOperationResult(operationName, addressabilityOnly, authResult);
+                } else {
+                    authResult = modelController.getAuthorizer().authorize(getCaller(), callEnvironment, targetAction, authResp.targetResource);
+                    authResp.addOperationResult(operationName, addressabilityOnly, authResult);
+
+                    //When authorizing the remove operation, make sure that all the attributes are accessible
+                    if (authResult.getDecision() == AuthorizationResult.Decision.PERMIT && !addressabilityOnly && operationName.equals(ModelDescriptionConstants.REMOVE)) {
+                        if (!authResp.attributesComplete) {
+                            authResp = authorizeResource(true, false);
+                        }
+                        out:
+                        for (ActionEffect actionEffect : targetAction.getActionEffects()) {
+                            for (Map<Action.ActionEffect, AuthorizationResult> attributeResults : authResp.attributeResults.values()) {
+                                authResult = attributeResults.get(actionEffect);
+                                if (authResult.getDecision() == AuthorizationResult.Decision.DENY) {
+                                    authResp.addOperationResult(operationName, addressabilityOnly, authResult);
+                                    break out;
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+
+            if (authResult.getDecision() == AuthorizationResult.Decision.DENY) {
+                return authResult;
+            }
+
+            return AuthorizationResult.PERMITTED;
+        }
+    }
+
+    private void rejectUserDomainServerUpdates() {
+        if (isModelUpdateRejectionRequired()) {
             ModelNode op = activeStep.operation;
             if (op.hasDefined(OPERATION_HEADERS) && op.get(OPERATION_HEADERS).hasDefined(CALLER_TYPE) && USER.equals(op.get(OPERATION_HEADERS, CALLER_TYPE).asString())) {
                 throw ControllerMessages.MESSAGES.modelUpdateNotAuthorized(op.require(OP).asString(), PathAddress.pathAddress(op.get(OP_ADDR)));
@@ -766,11 +975,169 @@ final class OperationContextImpl extends AbstractOperationContext {
         }
     }
 
-    private boolean isModelUpdateAuthorizationRequired() {
+    private boolean isModelUpdateRejectionRequired() {
         if (requiresModelUpdateAuthorization == null) {
             requiresModelUpdateAuthorization = !isBooting() && getProcessType() == ProcessType.DOMAIN_SERVER;
         }
         return requiresModelUpdateAuthorization.booleanValue();
+    }
+
+    private void authorize(boolean allAttributes, Set<Action.ActionEffect> actionEffects) {
+        AuthorizationResult accessResult = authorize(activeStep, false, ACCESS);
+        if (accessResult.getDecision() == AuthorizationResult.Decision.DENY) {
+            throw ControllerMessages.MESSAGES.managementResourceNotFound(activeStep.address);
+        }
+        AuthorizationResult authResult = authorize(activeStep, allAttributes, actionEffects);
+        if (authResult.getDecision() == AuthorizationResult.Decision.DENY) {
+            throw ControllerMessages.MESSAGES.unauthorized(activeStep.operationId.name, activeStep.address, authResult.getExplanation());
+        }
+    }
+
+    private AuthorizationResult authorize(Step step, boolean allAttributes, Set<Action.ActionEffect> actionEffects) {
+        return authorize(step.operationId, step.operation, allAttributes, actionEffects);
+    }
+
+    private AuthorizationResult authorize(OperationId opId, ModelNode operation, boolean allAttributes, Set<Action.ActionEffect> actionEffects) {
+        if (isBooting()) {
+            return AuthorizationResult.PERMITTED;
+        } else {
+            AuthorizationResponseImpl authResp = authorizations.get(opId);
+            if (authResp == null) {
+                authResp = getBasicAuthorizationResponse(opId, operation);
+            }
+            if (authResp == null) {
+                // Non-existent resource type or operation. This is permitted but will fail
+                // later for reasons unrelated to authz
+                return AuthorizationResult.PERMITTED;
+            }
+            for (Action.ActionEffect requiredEffect : actionEffects) {
+                AuthorizationResult effectResult = authResp.getResourceResult(requiredEffect);
+                if (effectResult == null) {
+                    Action action = authResp.standardAction.limitAction(requiredEffect);
+                    effectResult = modelController.getAuthorizer().authorize(getCaller(), callEnvironment, action, authResp.targetResource);
+                    authResp.addResourceResult(requiredEffect, effectResult);
+                }
+                if (effectResult.getDecision() == AuthorizationResult.Decision.DENY) {
+                    return effectResult;
+                }
+            }
+            if (allAttributes) {
+                ImmutableManagementResourceRegistration mrr = authResp.targetResource.getResourceRegistration();
+                ModelNode model = authResp.targetResource.getResource().getModel();
+                Set<Action.ActionEffect> attributeEffects = actionEffects.isEmpty() ? authResp.standardAction.getActionEffects() : actionEffects;
+                for (String attr : mrr.getAttributeNames(PathAddress.EMPTY_ADDRESS)) {
+                    ModelNode currentValue = model.has(attr) ? model.get(attr) : new ModelNode();
+                    AuthorizationResult attrResult = authorize(opId, attr, currentValue, attributeEffects);
+                    if (attrResult.getDecision() == AuthorizationResult.Decision.DENY) {
+                        return attrResult;
+                    }
+                }
+                authResp.attributesComplete = true;
+            }
+
+            return AuthorizationResult.PERMITTED;
+        }
+    }
+
+    private AuthorizationResult authorize(OperationId operationId, String attribute,
+                                          ModelNode currentValue, Set<Action.ActionEffect> actionEffects) {
+        if (isBooting()) {
+            return AuthorizationResult.PERMITTED;
+        } else {
+            AuthorizationResponseImpl authResp = authorizations.get(operationId);
+            assert authResp != null : "perform resource authorization before attribute authorization";
+
+            TargetAttribute targetAttribute = null;
+            Set<Action.ActionEffect> attributeEffects = actionEffects.isEmpty() ? authResp.standardAction.getActionEffects() : actionEffects;
+            for (Action.ActionEffect actionEffect : attributeEffects) {
+                AuthorizationResult authResult = authResp.getAttributeResult(attribute, actionEffect);
+                if (authResult == null) {
+                    Action action = authResp.standardAction.limitAction(actionEffect);
+                    if (targetAttribute == null) {
+                        AttributeAccess attributeAccess = authResp.targetResource.getResourceRegistration().getAttributeAccess(PathAddress.EMPTY_ADDRESS, attribute);
+                        targetAttribute = new TargetAttribute(attributeAccess, currentValue, authResp.targetResource);
+                    }
+                    authResult = modelController.getAuthorizer().authorize(getCaller(), callEnvironment, action, targetAttribute);
+                    authResp.addAttributeResult(attribute, actionEffect, authResult);
+                }
+                if (authResult.getDecision() == AuthorizationResult.Decision.DENY) {
+                    return authResult;
+                }
+            }
+
+            return AuthorizationResult.PERMITTED;
+        }
+    }
+
+    private AuthorizationResponseImpl getBasicAuthorizationResponse(OperationId opId, ModelNode operation) {
+        Caller caller = getCaller();
+        ImmutableManagementResourceRegistration mrr = modelController.getRootRegistration().getSubModel(opId.address);
+        if (mrr == null) {
+            return null;
+        }
+        Action action = getAuthorizationAction(mrr, opId.name, operation);
+        if (action == null) {
+            return null;
+        }
+
+        Resource resource = getAuthorizationResource(opId.address);
+        ProcessType processType = getProcessType();
+        TargetResource targetResource = (processType == ProcessType.STANDALONE_SERVER || processType == ProcessType.EMBEDDED_SERVER)
+                ? TargetResource.forStandalone(mrr, resource)
+                : TargetResource.forDomain(mrr, resource, getServerGroups(opId.address, resource), getHosts(opId.address, resource));
+
+        AuthorizationResponseImpl result = new AuthorizationResponseImpl(action, targetResource);
+        AuthorizationResult simple = modelController.getAuthorizer().authorize(caller, callEnvironment, action, targetResource);
+        if (simple.getDecision() == AuthorizationResult.Decision.PERMIT) {
+            for (Action.ActionEffect actionEffect : action.getActionEffects()) {
+                result.addResourceResult(actionEffect, simple);
+            }
+        }
+        // else something was denied. Find out exactly what was denied when needed
+        authorizations.put(opId, result);
+        return result;
+    }
+
+    private Set<String> getServerGroups(PathAddress address, Resource resource) {
+        //TODO implement getServerGroups
+//        throw new UnsupportedOperationException();
+        return Collections.emptySet();
+    }
+
+    private Set<String> getHosts(PathAddress address, Resource resource) {
+        //TODO implement getHosts
+//        throw new UnsupportedOperationException();
+        return Collections.emptySet();
+    }
+
+    private Resource getAuthorizationResource(PathAddress address) {
+        Resource model = this.model;
+        final Iterator<PathElement> iterator = address.iterator();
+        while (iterator.hasNext()) {
+            final PathElement element = iterator.next();
+            // Allow wildcard navigation for the last element
+            if(element.isWildcard()) {
+                model = Resource.Factory.create();
+                final Set<Resource.ResourceEntry> children = model.getChildren(element.getKey());
+                for (final Resource.ResourceEntry entry : children) {
+                    model.registerChild(entry.getPathElement(), entry);
+                }
+            } else if (model.hasChild(element)) {
+                model = model.getChild(element);
+            } else {
+                return Resource.Factory.create();
+            }
+
+        }
+        return model;
+    }
+
+    private Action getAuthorizationAction(ImmutableManagementResourceRegistration mrr, String operationName, ModelNode operation) {
+        OperationEntry entry = mrr.getOperationEntry(PathAddress.EMPTY_ADDRESS, operationName);
+        if (entry == null) {
+            return null;
+        }
+        return new Action(operation, entry);
     }
 
     class ContextServiceTarget implements ServiceTarget {
@@ -1171,5 +1538,57 @@ final class OperationContextImpl extends AbstractOperationContext {
         public S awaitValue(long time, TimeUnit unit) throws IllegalStateException, InterruptedException, TimeoutException {
             return controller.awaitValue(time, unit);
         }
+    }
+
+    private static class AuthorizationResponseImpl implements ResourceAuthorization {
+
+        private Map<Action.ActionEffect, AuthorizationResult> resourceResults = new HashMap<Action.ActionEffect, AuthorizationResult>();
+        private Map<String, Map<Action.ActionEffect, AuthorizationResult>> attributeResults = new HashMap<String, Map<Action.ActionEffect, AuthorizationResult>>();
+        private Map<String, Map<Boolean, AuthorizationResult>> operationResults = new HashMap<String, Map<Boolean, AuthorizationResult>>();
+        private final TargetResource targetResource;
+        private final Action standardAction;
+        private volatile boolean attributesComplete = false;
+
+        AuthorizationResponseImpl(Action standardAction, TargetResource targetResource) {
+            this.standardAction = standardAction;
+            this.targetResource = targetResource;
+        }
+
+        public AuthorizationResult getResourceResult(Action.ActionEffect actionEffect) {
+            return resourceResults.get(actionEffect);
+        }
+
+        public AuthorizationResult getAttributeResult(String attribute, Action.ActionEffect actionEffect) {
+            Map<Action.ActionEffect, AuthorizationResult> attrResults = attributeResults.get(attribute);
+            return attrResults == null ? null : attrResults.get(actionEffect);
+        }
+
+        public AuthorizationResult getOperationResult(String operationName, boolean addressabilityOnly) {
+            Map<Boolean, AuthorizationResult> opResults = operationResults.get(operationName);
+            return opResults == null ? null : opResults.get(addressabilityOnly);
+        }
+
+        private void addResourceResult(Action.ActionEffect actionEffect, AuthorizationResult result) {
+            resourceResults.put(actionEffect, result);
+        }
+
+        private void addAttributeResult(String attribute, Action.ActionEffect actionEffect, AuthorizationResult result) {
+            Map<Action.ActionEffect, AuthorizationResult> attrResults = attributeResults.get(attribute);
+            if (attrResults == null) {
+                attrResults = new HashMap<Action.ActionEffect, AuthorizationResult>();
+                attributeResults.put(attribute, attrResults);
+            }
+            attrResults.put(actionEffect, result);
+        }
+
+        private void addOperationResult(String operationName, Boolean addressabilityOnly, AuthorizationResult result) {
+            Map<Boolean, AuthorizationResult> opResults = operationResults.get(operationName);
+            if (opResults == null) {
+                opResults = new HashMap<Boolean, AuthorizationResult>();
+                operationResults.put(operationName, opResults);
+            }
+            opResults.put(addressabilityOnly, result);
+        }
+
     }
 }

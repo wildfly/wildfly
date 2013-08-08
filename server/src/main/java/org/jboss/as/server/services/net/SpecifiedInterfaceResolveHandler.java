@@ -31,6 +31,7 @@ import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.OperationStepHandler;
 import org.jboss.as.controller.SimpleOperationDefinition;
 import org.jboss.as.controller.SimpleOperationDefinitionBuilder;
+import org.jboss.as.controller.access.constraint.management.SensitiveTargetAccessConstraintDefinition;
 import org.jboss.as.controller.descriptions.common.ControllerResolver;
 import org.jboss.as.controller.interfaces.ParsedInterfaceCriteria;
 import org.jboss.as.controller.registry.OperationEntry;
@@ -58,6 +59,7 @@ public class SpecifiedInterfaceResolveHandler implements OperationStepHandler {
             .setReplyType(ModelType.STRING)
             .setAttributeResolver(ControllerResolver.getResolver(INTERFACE))
             .withFlags(EnumSet.of(OperationEntry.Flag.RUNTIME_ONLY))
+            .addAccessConstraint(SensitiveTargetAccessConstraintDefinition.SOCKET_CONFIG)
             .build();
 
     public static final SpecifiedInterfaceResolveHandler INSTANCE = new SpecifiedInterfaceResolveHandler();

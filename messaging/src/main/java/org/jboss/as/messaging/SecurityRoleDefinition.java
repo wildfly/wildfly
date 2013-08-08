@@ -73,7 +73,11 @@ public class SecurityRoleDefinition extends SimpleResourceDefinition {
     static final SimpleAttributeDefinition DELETE_DURABLE_QUEUE = create("delete-durable-queue", "deleteDurableQueue");
     static final SimpleAttributeDefinition CREATE_NON_DURABLE_QUEUE = create("create-non-durable-queue", "createNonDurableQueue");
     static final SimpleAttributeDefinition DELETE_NON_DURABLE_QUEUE = create("delete-non-durable-queue", "deleteNonDurableQueue");
-    static final SimpleAttributeDefinition MANAGE = create("manage", "manage");
+    static final SimpleAttributeDefinition MANAGE = SimpleAttributeDefinitionBuilder.create("manage", BOOLEAN)
+            .setDefaultValue(new ModelNode(false))
+            .setFlags(RESTART_NONE)
+            .addAccessConstraint(CommonAttributes.MESSAGING_MANAGEMENT_DEF)
+            .build();
 
     static final SimpleAttributeDefinition[] ATTRIBUTES = {
         SEND,

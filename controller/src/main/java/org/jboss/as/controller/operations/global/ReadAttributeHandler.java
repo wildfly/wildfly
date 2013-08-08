@@ -25,18 +25,23 @@ package org.jboss.as.controller.operations.global;
 import static org.jboss.as.controller.ControllerMessages.MESSAGES;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ATTRIBUTES;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.DEFAULT;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.NAME;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.READ_ATTRIBUTE_OPERATION;
 
 import java.util.Locale;
 import java.util.Set;
 
+import org.jboss.as.controller.ControllerMessages;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationDefinition;
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.OperationStepHandler;
 import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.SimpleOperationDefinitionBuilder;
+import org.jboss.as.controller.UnauthorizedException;
+import org.jboss.as.controller.access.AuthorizationResult;
 import org.jboss.as.controller.descriptions.DescriptionProvider;
 import org.jboss.as.controller.descriptions.common.ControllerResolver;
 import org.jboss.as.controller.operations.validation.ModelTypeValidator;
@@ -66,15 +71,48 @@ public class ReadAttributeHandler extends GlobalOperationHandlers.AbstractMultiT
 
     public static final OperationStepHandler INSTANCE = new ReadAttributeHandler();
 
-    private ParametersValidator validator = new ParametersValidator();
+    private final ParametersValidator validator = new ParametersValidator();
+    private final FilteredData filteredData;
+    private final OperationStepHandler overrideHandler;
 
     public ReadAttributeHandler() {
+        this(null, null);
+    }
+
+    ReadAttributeHandler(FilteredData filteredData, OperationStepHandler overrideHandler) {
         validator.registerValidator(GlobalOperationHandlers.NAME.getName(), new StringLengthValidator(1));
         validator.registerValidator(GlobalOperationHandlers.INCLUDE_DEFAULTS.getName(), new ModelTypeValidator(ModelType.BOOLEAN, true));
+        assert overrideHandler == null || filteredData != null : "overrideHandler only supported with filteredData";
+        this.filteredData = filteredData;
+        this.overrideHandler = overrideHandler;
     }
 
     @Override
     void doExecute(OperationContext context, ModelNode operation) throws OperationFailedException {
+
+        // Add a step to authorize the attribute read once we determine the value below
+        context.addStep(operation, new AuthorizeAttributeReadHandler(filteredData), OperationContext.Stage.MODEL, true);
+
+        if (filteredData == null) {
+            doExecuteInternal(context, operation);
+        } else {
+            try {
+                if (overrideHandler == null) {
+                    doExecuteInternal(context, operation);
+                } else {
+                    overrideHandler.execute(context, operation);
+                }
+            } catch (UnauthorizedException ue) {
+                // Just report the failure to the filter and complete normally
+                PathAddress pa = PathAddress.pathAddress(operation.get(OP_ADDR));
+                filteredData.addReadRestrictedAttribute(pa, operation.get(NAME).asString());
+                context.getResult().set(new ModelNode());
+                context.stepCompleted();
+            }
+        }
+    }
+
+    private void doExecuteInternal(OperationContext context, ModelNode operation) throws OperationFailedException {
         validator.validate(operation);
         final String attributeName = operation.require(GlobalOperationHandlers.NAME.getName()).asString();
         final boolean defaults = operation.get(GlobalOperationHandlers.INCLUDE_DEFAULTS.getName()).asBoolean(true);
@@ -150,4 +188,44 @@ public class ReadAttributeHandler extends GlobalOperationHandlers.AbstractMultiT
         return descriptionProvider.getModelDescription(locale);
     }
 
+    private static class AuthorizeAttributeReadHandler implements OperationStepHandler {
+
+        private final FilteredData filteredData;
+
+        private AuthorizeAttributeReadHandler(FilteredData filteredData) {
+            this.filteredData = filteredData;
+        }
+
+        @Override
+        public void execute(OperationContext context, ModelNode operation) throws OperationFailedException {
+            if (filteredData == null) {
+                doExecuteInternal(context, operation);
+            } else {
+                try {
+                    doExecuteInternal(context, operation);
+                } catch (UnauthorizedException ue) {
+                    if (context.hasResult()) {
+                        context.getResult().set(new ModelNode());
+                    }
+                    // Report the failure to the filter and complete normally
+                    PathAddress pa = PathAddress.pathAddress(operation.get(OP_ADDR));
+                    filteredData.addReadRestrictedAttribute(pa, operation.get(NAME).asString());
+                    context.getResult().set(new ModelNode());
+                    context.stepCompleted();
+                }
+            }
+        }
+
+        private void doExecuteInternal(OperationContext context, ModelNode operation) throws OperationFailedException {
+            ModelNode value = context.hasResult() ? context.getResult().clone() : new ModelNode();
+            AuthorizationResult authorizationResult = context.authorize(operation, operation.require(NAME).asString(), value);
+            if (authorizationResult.getDecision() == AuthorizationResult.Decision.DENY) {
+                throw ControllerMessages.MESSAGES.unauthorized(operation.require(OP).asString(),
+                        PathAddress.pathAddress(operation.get(OP_ADDR)),
+                        authorizationResult.getExplanation());
+            }
+
+            context.stepCompleted();
+        }
+    }
 }

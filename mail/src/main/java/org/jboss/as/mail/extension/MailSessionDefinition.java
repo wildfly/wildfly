@@ -22,6 +22,8 @@
 
 package org.jboss.as.mail.extension;
 
+import java.util.List;
+
 import org.jboss.as.controller.AbstractWriteAttributeHandler;
 import org.jboss.as.controller.AttributeDefinition;
 import org.jboss.as.controller.OperationContext;
@@ -32,6 +34,9 @@ import org.jboss.as.controller.ReloadRequiredWriteAttributeHandler;
 import org.jboss.as.controller.SimpleAttributeDefinition;
 import org.jboss.as.controller.SimpleAttributeDefinitionBuilder;
 import org.jboss.as.controller.SimpleResourceDefinition;
+import org.jboss.as.controller.access.constraint.ApplicationTypeConfig;
+import org.jboss.as.controller.access.constraint.management.AccessConstraintDefinition;
+import org.jboss.as.controller.access.constraint.management.ApplicationTypeAccessConstraintDefinition;
 import org.jboss.as.controller.registry.ManagementResourceRegistration;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.ModelType;
@@ -46,10 +51,14 @@ class MailSessionDefinition extends SimpleResourceDefinition {
 
     static final MailSessionDefinition INSTANCE = new MailSessionDefinition();
 
+    private final List<AccessConstraintDefinition> accessConstraints;
+
     private MailSessionDefinition() {
         super(MailExtension.MAIL_SESSION_PATH,
                 MailExtension.getResourceDescriptionResolver(MailSubsystemModel.MAIL_SESSION),
                 MailSessionAdd.INSTANCE, ReloadRequiredRemoveStepHandler.INSTANCE);
+        ApplicationTypeConfig atc = new ApplicationTypeConfig(MailExtension.SUBSYSTEM_NAME, MailSubsystemModel.MAIL_SESSION);
+        accessConstraints = new ApplicationTypeAccessConstraintDefinition(atc).wrapAsList();
     }
 
     protected static final SimpleAttributeDefinition JNDI_NAME =
@@ -78,6 +87,11 @@ class MailSessionDefinition extends SimpleResourceDefinition {
         for (AttributeDefinition attr : ATTRIBUTES) {
             rootResourceRegistration.registerReadWriteAttribute(attr, null, handler);
         }
+    }
+
+    @Override
+    public List<AccessConstraintDefinition> getAccessConstraints() {
+        return accessConstraints;
     }
 
     private static class SessionAttributeWriteHandler extends AbstractWriteAttributeHandler {

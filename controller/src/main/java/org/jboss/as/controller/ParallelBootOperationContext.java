@@ -26,7 +26,11 @@ import static org.jboss.as.controller.ControllerMessages.MESSAGES;
 
 import java.io.InputStream;
 import java.util.List;
+import java.util.Set;
 
+import org.jboss.as.controller.access.Action;
+import org.jboss.as.controller.access.ResourceAuthorization;
+import org.jboss.as.controller.access.AuthorizationResult;
 import org.jboss.as.controller.client.MessageSeverity;
 import org.jboss.as.controller.persistence.ConfigurationPersistenceException;
 import org.jboss.as.controller.persistence.ConfigurationPersister;
@@ -354,4 +358,33 @@ class ParallelBootOperationContext extends AbstractOperationContext {
         return primaryContext.detach(key);
     }
 
+    @Override
+    public AuthorizationResult authorize(ModelNode operation) {
+        return primaryContext.authorize(operation);
+    }
+
+    @Override
+    public AuthorizationResult authorize(ModelNode operation, Set<Action.ActionEffect> effects) {
+        return primaryContext.authorize(operation, effects);
+    }
+
+    @Override
+    public AuthorizationResult authorize(ModelNode operation, String attribute, ModelNode currentValue) {
+        return primaryContext.authorize(operation, attribute, currentValue);
+    }
+
+    @Override
+    public AuthorizationResult authorize(ModelNode operation, String attribute, ModelNode currentValue, Set<Action.ActionEffect> effects) {
+        return primaryContext.authorize(operation, attribute, currentValue, effects);
+    }
+
+    @Override
+    public AuthorizationResult authorizeOperation(ModelNode operation, boolean addressabilityOnly) {
+        return primaryContext.authorizeOperation(operation, addressabilityOnly);
+    }
+
+    @Override
+    public ResourceAuthorization authorizeResource(boolean attributes, boolean isDefaultResource) {
+        return primaryContext.authorizeResource(attributes, isDefaultResource);
+    }
 }

@@ -48,6 +48,7 @@ public class ModClusterListProxies implements OperationStepHandler {
             .setRuntimeOnly()
             .setReplyType(ModelType.LIST)
             .setReplyValueType(ModelType.STRING)
+            .addAccessConstraint(ModClusterExtension.MOD_CLUSTER_PROXIES_DEF)
             .build();
     }
 

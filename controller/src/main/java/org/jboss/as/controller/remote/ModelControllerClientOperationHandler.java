@@ -38,6 +38,8 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.USE
 import javax.security.auth.Subject;
 import java.io.DataInput;
 import java.io.IOException;
+import java.security.PrivilegedActionException;
+import java.security.PrivilegedExceptionAction;
 
 import org.jboss.as.controller.ModelController;
 import org.jboss.as.controller.PathAddress;
@@ -108,12 +110,18 @@ public class ModelControllerClientOperationHandler implements ManagementRequestH
                 @Override
                 public void execute(final ManagementRequestContext<Void> context) throws Exception {
                     final ManagementResponseHeader response = ManagementResponseHeader.create(context.getRequestHeader());
-                    SecurityActions.setSecurityContextSubject(subject);
                     try {
-                        final CompletedCallback callback = new CompletedCallback(response, context, resultHandler);
-                        doExecute(operation, attachmentsLength, context, callback);
-                    } finally {
-                        SecurityActions.clearSubjectSecurityContext();
+                        Subject.doAs(subject, new PrivilegedExceptionAction<Void>() {
+
+                            @Override
+                            public Void run() throws Exception {
+                                final CompletedCallback callback = new CompletedCallback(response, context, resultHandler);
+                                doExecute(operation, attachmentsLength, context, callback);
+                                return null;
+                            }
+                        });
+                    } catch (PrivilegedActionException e) {
+                        throw e.getException();
                     }
                 }
             });

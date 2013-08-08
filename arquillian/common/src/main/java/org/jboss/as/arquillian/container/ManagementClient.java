@@ -371,6 +371,10 @@ public class ManagementClient implements AutoCloseable, Closeable {
         return NetworkUtils.formatPossibleIpv6Address(mgmtAddress);
     }
 
+    public String getMgmtProtocol() {
+        return mgmtProtocol;
+    }
+
     public URI getRemoteEjbURL() {
         if (ejbUri == null) {
             URI webUri = getWebUri();

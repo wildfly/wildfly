@@ -42,6 +42,7 @@ import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.PathElement;
 import org.jboss.as.controller.ProcessType;
 import org.jboss.as.controller.ResourceBuilder;
+import org.jboss.as.controller.ResourceDefinition;
 import org.jboss.as.controller.TestModelControllerService;
 import org.jboss.as.controller.descriptions.NonResolvingResourceDescriptionResolver;
 import org.jboss.as.controller.operations.common.Util;
@@ -105,11 +106,7 @@ public abstract class AbstractControllerTestBase {
     }
 
     public ModelNode executeForResult(ModelNode operation) throws OperationFailedException {
-        ModelNode rsp = getController().execute(operation, null, null, null);
-        if (FAILED.equals(rsp.get(OUTCOME).asString())) {
-            throw new OperationFailedException(rsp.get(FAILURE_DESCRIPTION));
-        }
-        return rsp.get(RESULT);
+        return executeCheckNoFailure(operation).get(RESULT);
     }
 
     public void executeForFailure(ModelNode operation) throws OperationFailedException {
@@ -121,11 +118,19 @@ public abstract class AbstractControllerTestBase {
         }
     }
 
+    public ModelNode executeCheckNoFailure(ModelNode operation) throws OperationFailedException {
+        ModelNode rsp = getController().execute(operation, null, null, null);
+        if (FAILED.equals(rsp.get(OUTCOME).asString())) {
+            throw new OperationFailedException(rsp.get(FAILURE_DESCRIPTION));
+        }
+        return rsp;
+    }
+
     @Before
     public void setupController() throws InterruptedException {
         container = ServiceContainer.Factory.create("test");
         ServiceTarget target = container.subTarget();
-        ModelControllerService svc = new ModelControllerService(processType);
+        ModelControllerService svc = createModelControllerService(processType);
         ServiceBuilder<ModelController> builder = target.addService(ServiceName.of("ModelController"), svc);
         builder.install();
         svc.awaitStartup(30, TimeUnit.SECONDS);
@@ -148,16 +153,24 @@ public abstract class AbstractControllerTestBase {
         }
     }
 
+    protected ModelControllerService createModelControllerService(ProcessType processType) {
+        return new ModelControllerService(processType);
+    }
+
     protected void addBootOperations(List<ModelNode> bootOperations) {
 
     }
 
-    class ModelControllerService extends TestModelControllerService {
+    public class ModelControllerService extends TestModelControllerService {
 
-        ModelControllerService(final ProcessType processType) {
+        public ModelControllerService(final ProcessType processType) {
             super(processType, new EmptyConfigurationPersister(), new ControlledProcessState(true),
                     ResourceBuilder.Factory.create(PathElement.pathElement("root"), new NonResolvingResourceDescriptionResolver()).build()
             );
+        }
+
+        public ModelControllerService(final ProcessType processType, ResourceDefinition resourceDefinition){
+            super(processType, new EmptyConfigurationPersister(), new ControlledProcessState(true), resourceDefinition);
         }
 
         @Override

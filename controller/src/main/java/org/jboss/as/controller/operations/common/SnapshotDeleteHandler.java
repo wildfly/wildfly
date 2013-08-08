@@ -18,13 +18,20 @@
  */
 package org.jboss.as.controller.operations.common;
 
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
+
+import org.jboss.as.controller.ControllerMessages;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationDefinition;
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.OperationStepHandler;
+import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.SimpleAttributeDefinition;
 import org.jboss.as.controller.SimpleAttributeDefinitionBuilder;
 import org.jboss.as.controller.SimpleOperationDefinitionBuilder;
+import org.jboss.as.controller.access.AuthorizationResult;
+import org.jboss.as.controller.access.constraint.management.SensitiveTargetAccessConstraintDefinition;
 import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
 import org.jboss.as.controller.descriptions.common.ControllerResolver;
 import org.jboss.as.controller.persistence.ConfigurationPersister;
@@ -36,7 +43,6 @@ import org.jboss.dmr.ModelType;
  * An operation that deletes a snapshot of the current configuration
  *
  * @author <a href="kabir.khan@jboss.com">Kabir Khan</a>
- * @version $Revision: 1.1 $
  */
 public class SnapshotDeleteHandler implements OperationStepHandler {
 
@@ -45,9 +51,12 @@ public class SnapshotDeleteHandler implements OperationStepHandler {
     private static final SimpleAttributeDefinition NAME = new SimpleAttributeDefinitionBuilder(ModelDescriptionConstants.NAME, ModelType.STRING)
             .setAllowNull(false)
             .build();
+
     public static final OperationDefinition DEFINITION = new SimpleOperationDefinitionBuilder(OPERATION_NAME, ControllerResolver.getResolver("snapshot"))
             .setParameters(NAME)
+            .setRuntimeOnly()
             .withFlag(OperationEntry.Flag.MASTER_HOST_CONTROLLER_ONLY)
+            .addAccessConstraint(SensitiveTargetAccessConstraintDefinition.SNAPSHOTS)
             .build();
 
 
@@ -59,13 +68,20 @@ public class SnapshotDeleteHandler implements OperationStepHandler {
 
     @Override
     public void execute(OperationContext context, ModelNode operation) throws OperationFailedException {
+
+        AuthorizationResult authorizationResult = context.authorize(operation);
+        if (authorizationResult.getDecision() == AuthorizationResult.Decision.DENY) {
+            throw ControllerMessages.MESSAGES.unauthorized(operation.get(OP).asString(),
+                    PathAddress.pathAddress(operation.get(OP_ADDR)), authorizationResult.getExplanation());
+        }
+
         String name = operation.require(ModelDescriptionConstants.NAME).asString();
         try {
             persister.deleteSnapshot(name);
-            context.completeStep(OperationContext.RollbackHandler.NOOP_ROLLBACK_HANDLER);
         } catch (Exception e) {
-            throw new OperationFailedException(e.getMessage(), new ModelNode().set(e.getMessage()));
+            throw new OperationFailedException(e);
         }
+        context.completeStep(OperationContext.RollbackHandler.NOOP_ROLLBACK_HANDLER);
     }
 
 }

@@ -28,6 +28,7 @@ import static org.jboss.as.controller.ControllerMessages.MESSAGES;
 import java.util.List;
 import java.util.concurrent.ExecutorService;
 
+import org.jboss.as.controller.access.DelegatingConfigurableAuthorizer;
 import org.jboss.as.controller.client.OperationAttachments;
 import org.jboss.as.controller.client.OperationMessageHandler;
 import org.jboss.as.controller.descriptions.DescriptionProvider;
@@ -97,6 +98,7 @@ public abstract class AbstractControllerService implements Service<ModelControll
     }
 
     protected final ProcessType processType;
+    protected final DelegatingConfigurableAuthorizer authorizer = new DelegatingConfigurableAuthorizer();
     private final RunningModeControl runningModeControl;
     private final DescriptionProvider rootDescriptionProvider;
     private final ResourceDefinition rootResourceDefinition;
@@ -177,7 +179,7 @@ public abstract class AbstractControllerService implements Service<ModelControll
                 rootResourceRegistration,
                 new ContainerStateMonitor(container),
                 configurationPersister, processType, runningModeControl, prepareStep,
-                processState, executorService, expressionResolver);
+                processState, executorService, expressionResolver, authorizer);
         initModel(controller.getRootResource(), controller.getRootRegistration());
         this.controller = controller;
 

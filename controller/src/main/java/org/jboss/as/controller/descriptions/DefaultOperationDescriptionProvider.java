@@ -30,11 +30,15 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.REQ
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.TYPE;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.VALUE_TYPE;
 
+import java.util.Collections;
+import java.util.List;
 import java.util.Locale;
 import java.util.ResourceBundle;
 
 import org.jboss.as.controller.AttributeDefinition;
 import org.jboss.as.controller.DeprecationData;
+import org.jboss.as.controller.access.constraint.management.AccessConstraintDefinition;
+import org.jboss.as.controller.access.constraint.management.AccessConstraintDescriptionProviderUtil;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.ModelType;
 
@@ -55,6 +59,7 @@ public class DefaultOperationDescriptionProvider implements DescriptionProvider 
     private final DeprecationData deprecationData;
     private final AttributeDefinition[] replyParameters;
     private final AttributeDefinition[] parameters;
+    final List<AccessConstraintDefinition> accessConstraints;
 
     public DefaultOperationDescriptionProvider(final String operationName,
                                                final ResourceDescriptionResolver descriptionResolver,
@@ -104,6 +109,8 @@ public class DefaultOperationDescriptionProvider implements DescriptionProvider 
         this(operationName, descriptionResolver, attributeDescriptionResolver, replyType, replyValueType, false, deprecationData, replyParameters, parameters);
     }
 
+
+
     public DefaultOperationDescriptionProvider(final String operationName,
             final ResourceDescriptionResolver descriptionResolver,
             final ResourceDescriptionResolver attributeDescriptionResolver,
@@ -113,6 +120,19 @@ public class DefaultOperationDescriptionProvider implements DescriptionProvider 
             final DeprecationData deprecationData,
             final AttributeDefinition[] replyParameters,
             final AttributeDefinition... parameters) {
+        this(operationName, descriptionResolver, attributeDescriptionResolver, replyType, replyValueType, replyAllowNull, deprecationData, replyParameters, parameters, null);
+    }
+
+    public DefaultOperationDescriptionProvider(final String operationName,
+            final ResourceDescriptionResolver descriptionResolver,
+            final ResourceDescriptionResolver attributeDescriptionResolver,
+            final ModelType replyType,
+            final ModelType replyValueType,
+            final boolean replyAllowNull,
+            final DeprecationData deprecationData,
+            final AttributeDefinition[] replyParameters,
+            final AttributeDefinition[] parameters,
+            final List<AccessConstraintDefinition> accessConstraints) {
         this.operationName = operationName;
         this.descriptionResolver = descriptionResolver;
         this.attributeDescriptionResolver = attributeDescriptionResolver;
@@ -122,6 +142,7 @@ public class DefaultOperationDescriptionProvider implements DescriptionProvider 
         this.parameters = parameters;
         this.deprecationData = deprecationData;
         this.replyParameters = replyParameters;
+        this.accessConstraints = accessConstraints != null ? accessConstraints : Collections.<AccessConstraintDefinition>emptyList();
     }
 
 
@@ -189,8 +210,19 @@ public class DefaultOperationDescriptionProvider implements DescriptionProvider 
             deprecated.get(ModelDescriptionConstants.SINCE).set(deprecationData.getSince().toString());
             deprecated.get(ModelDescriptionConstants.REASON).set(descriptionResolver.getOperationDeprecatedDescription(operationName, locale, bundle));
         }
-
+        if (isAddAccessConstraints()) {
+            AccessConstraintDescriptionProviderUtil.addAccessConstraints(result, accessConstraints, locale);
+        }
         return result;
+    }
+
+    /**
+     * Hook for subclasses like DefaultResourceRemoveDescriptionProvider to not add the access constraints
+     *
+     * @return whether to add the access constraints
+     */
+    protected boolean isAddAccessConstraints() {
+        return true;
     }
 
     /**

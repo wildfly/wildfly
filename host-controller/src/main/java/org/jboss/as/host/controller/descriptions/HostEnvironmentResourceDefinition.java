@@ -36,6 +36,8 @@ import org.jboss.as.controller.OperationStepHandler;
 import org.jboss.as.controller.PathElement;
 import org.jboss.as.controller.SimpleAttributeDefinitionBuilder;
 import org.jboss.as.controller.SimpleResourceDefinition;
+import org.jboss.as.controller.access.constraint.management.AccessConstraintDefinition;
+import org.jboss.as.controller.access.constraint.management.SensitiveTargetAccessConstraintDefinition;
 import org.jboss.as.controller.persistence.ConfigurationFile;
 import org.jboss.as.controller.registry.AttributeAccess;
 import org.jboss.as.controller.registry.ManagementResourceRegistration;
@@ -52,10 +54,14 @@ import org.jboss.dmr.ModelType;
 public class HostEnvironmentResourceDefinition extends SimpleResourceDefinition {
     public static final PathElement RESOURCE_PATH = PathElement.pathElement(CORE_SERVICE, HOST_ENVIRONMENT);
 
-    private static final AttributeDefinition PROCESS_CONTROLLER_ADDRESS = createAttributeDefinition("process-controller-address");
-    private static final AttributeDefinition PROCESS_CONTROLLER_PORT = createAttributeDefinition("process-controller-port", ModelType.INT);
-    private static final AttributeDefinition HOST_CONTROLLER_ADDRESS = createAttributeDefinition("host-controller-address");
-    private static final AttributeDefinition HOST_CONTROLLER_PORT = createAttributeDefinition("host-controller-port", ModelType.INT);
+    private static final AttributeDefinition PROCESS_CONTROLLER_ADDRESS =
+            createAttributeDefinition("process-controller-address", ModelType.STRING, SensitiveTargetAccessConstraintDefinition.SOCKET_CONFIG);
+    private static final AttributeDefinition PROCESS_CONTROLLER_PORT =
+            createAttributeDefinition("process-controller-port", ModelType.INT, SensitiveTargetAccessConstraintDefinition.SOCKET_CONFIG);
+    private static final AttributeDefinition HOST_CONTROLLER_ADDRESS =
+            createAttributeDefinition("host-controller-address", ModelType.STRING, SensitiveTargetAccessConstraintDefinition.SOCKET_CONFIG);
+    private static final AttributeDefinition HOST_CONTROLLER_PORT =
+            createAttributeDefinition("host-controller-port", ModelType.INT, SensitiveTargetAccessConstraintDefinition.SOCKET_CONFIG);
     private static final AttributeDefinition HOME_DIR = createAttributeDefinition("home-dir");
     private static final AttributeDefinition MODULES_DIR = createAttributeDefinition("modules-dir");
     private static final AttributeDefinition DOMAIN_BASE_DIR = createAttributeDefinition("domain-base-dir");
@@ -129,6 +135,16 @@ public class HostEnvironmentResourceDefinition extends SimpleResourceDefinition 
 
     private static AttributeDefinition createAttributeDefinition(String name, ModelType type) {
         return SimpleAttributeDefinitionBuilder.create(name, type).setFlags(AttributeAccess.Flag.STORAGE_RUNTIME).build();
+    }
+
+    private static AttributeDefinition createAttributeDefinition(String name, ModelType type, AccessConstraintDefinition... accessConstraints) {
+        SimpleAttributeDefinitionBuilder builder = SimpleAttributeDefinitionBuilder.create(name, type).setFlags(AttributeAccess.Flag.STORAGE_RUNTIME);
+        if (accessConstraints != null) {
+            for (AccessConstraintDefinition acd : accessConstraints) {
+                builder = builder.addAccessConstraint(acd);
+            }
+        }
+        return builder.build();
     }
 
     @Override

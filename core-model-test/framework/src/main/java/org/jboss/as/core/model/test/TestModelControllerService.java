@@ -52,6 +52,7 @@ import org.jboss.as.domain.controller.DomainController;
 import org.jboss.as.domain.controller.LocalHostControllerInfo;
 import org.jboss.as.domain.controller.SlaveRegistrationException;
 import org.jboss.as.domain.controller.resources.DomainRootDefinition;
+import org.jboss.as.domain.management.access.AccessAuthorizationResourceDefinition;
 import org.jboss.as.host.controller.HostControllerConfigurationPersister;
 import org.jboss.as.host.controller.HostControllerEnvironment;
 import org.jboss.as.host.controller.HostModelUtil;
@@ -404,14 +405,17 @@ class TestModelControllerService extends ModelTestModelControllerService {
                     extensionRegistry,
                     parallelBoot,
                     pathManagerService,
-                    null));
+                    null,
+                    authorizer));
         }
 
         @Override
         public void initCoreModel(Resource rootResource, ManagementResourceRegistration rootRegistration) {
             VersionModelInitializer.registerRootResource(rootResource, null);
-            rootResource.registerChild(PathElement.pathElement(ModelDescriptionConstants.CORE_SERVICE, ModelDescriptionConstants.MANAGEMENT), Resource.Factory.create());
+            Resource managementResource = Resource.Factory.create();
+            rootResource.registerChild(PathElement.pathElement(ModelDescriptionConstants.CORE_SERVICE, ModelDescriptionConstants.MANAGEMENT), managementResource);
             rootResource.registerChild(PathElement.pathElement(ModelDescriptionConstants.CORE_SERVICE, ModelDescriptionConstants.SERVICE_CONTAINER), Resource.Factory.create());
+            managementResource.registerChild(PathElement.pathElement(ModelDescriptionConstants.ACCESS, ModelDescriptionConstants.AUTHORIZATION), AccessAuthorizationResourceDefinition.RESOURCE);
             rootResource.registerChild(ServerEnvironmentResourceDescription.RESOURCE_PATH, Resource.Factory.create());
             pathManagerService.addPathManagerResources(rootResource);
         }
@@ -444,7 +448,8 @@ class TestModelControllerService extends ModelTestModelControllerService {
                             null /*vaultReader*/,
                             ignoredRegistry,
                             processState,
-                            pathManagerService));
+                            pathManagerService,
+                            authorizer));
         }
 
         @Override
@@ -475,7 +480,8 @@ class TestModelControllerService extends ModelTestModelControllerService {
                     null /*vaultReader*/,
                     ignoredRegistry,
                     processState,
-                    pathManagerService);
+                    pathManagerService,
+                    authorizer);
         }
     }
 
@@ -496,7 +502,7 @@ class TestModelControllerService extends ModelTestModelControllerService {
             final DomainController domainController = new MockDomainController();
 
             DomainRootDefinition domainDefinition = new DomainRootDefinition(domainController, env, persister, injectedContentRepository.getValue(),
-                    hostFIleRepository, true, info, extensionRegistry, null, pathManagerService, null);
+                    hostFIleRepository, true, info, extensionRegistry, null, pathManagerService, null, authorizer);
             domainDefinition.initialize(rootRegistration);
             rootResourceDefinition.setDelegate(domainDefinition);
 

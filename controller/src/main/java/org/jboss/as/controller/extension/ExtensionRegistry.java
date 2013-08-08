@@ -36,6 +36,7 @@ import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
+
 import javax.xml.namespace.QName;
 
 import org.jboss.as.controller.AttributeDefinition;
@@ -54,6 +55,7 @@ import org.jboss.as.controller.RunningMode;
 import org.jboss.as.controller.RunningModeControl;
 import org.jboss.as.controller.SimpleResourceDefinition;
 import org.jboss.as.controller.SubsystemRegistration;
+import org.jboss.as.controller.access.constraint.management.AccessConstraintDefinition;
 import org.jboss.as.controller.descriptions.DescriptionProvider;
 import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
 import org.jboss.as.controller.descriptions.OverrideDescriptionProvider;
@@ -793,6 +795,11 @@ public class ExtensionRegistry {
         @Override
         public ManagementResourceRegistration getSubModel(PathAddress address) {
             return deployments.getSubModel(address);
+        }
+
+        @Override
+        public List<AccessConstraintDefinition> getAccessConstraints() {
+            return deployments.getAccessConstraints();
         }
 
         @SuppressWarnings("deprecation")

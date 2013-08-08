@@ -204,7 +204,14 @@ class DomainApiHandler implements HttpHandler {
         for (Entry<String, Deque<String>> entry : queryParameters.entrySet()) {
             String key = entry.getKey();
             String value = entry.getValue().getFirst();
-            dmr.get(key).set(!value.equals("") ? value : "true");
+            ModelNode valueNode;
+            if (key.startsWith("operation-header-")) {
+                String header = key.substring("operation-header-".length());
+                valueNode = dmr.get(OPERATION_HEADERS, header);
+            } else {
+                valueNode = dmr.get(key);
+            }
+            valueNode.set(!value.equals("") ? value : "true");
         }
         dmr.get(OP).set(operation.realOperation);
 

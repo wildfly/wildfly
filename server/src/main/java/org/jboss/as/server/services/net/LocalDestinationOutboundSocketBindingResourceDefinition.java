@@ -25,6 +25,7 @@ package org.jboss.as.server.services.net;
 import org.jboss.as.controller.PathElement;
 import org.jboss.as.controller.SimpleAttributeDefinition;
 import org.jboss.as.controller.SimpleAttributeDefinitionBuilder;
+import org.jboss.as.controller.access.constraint.management.SensitiveTargetAccessConstraintDefinition;
 import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
 import org.jboss.as.controller.descriptions.common.ControllerResolver;
 import org.jboss.as.controller.operations.validation.StringLengthValidator;
@@ -44,7 +45,10 @@ public class LocalDestinationOutboundSocketBindingResourceDefinition extends Out
     public static final SimpleAttributeDefinition SOCKET_BINDING_REF = new SimpleAttributeDefinitionBuilder(ModelDescriptionConstants.SOCKET_BINDING_REF, ModelType.STRING, false)
             .setAllowExpression(true)
             .setValidator(new StringLengthValidator(1, Integer.MAX_VALUE, false, true))
-            .setFlags(AttributeAccess.Flag.RESTART_ALL_SERVICES).build();
+            .setFlags(AttributeAccess.Flag.RESTART_ALL_SERVICES)
+            .addAccessConstraint(SensitiveTargetAccessConstraintDefinition.SOCKET_BINDING_REF)
+            .build();
+
     public static final SimpleAttributeDefinition[] ATTRIBUTES = {SOURCE_PORT, SOURCE_INTERFACE, FIXED_SOURCE_PORT, SOCKET_BINDING_REF};
 
     private LocalDestinationOutboundSocketBindingResourceDefinition() {

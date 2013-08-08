@@ -22,6 +22,7 @@
 
 package org.jboss.as.controller.registry;
 
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
@@ -29,6 +30,7 @@ import org.jboss.as.controller.OperationStepHandler;
 import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.PathElement;
 import org.jboss.as.controller.ProxyController;
+import org.jboss.as.controller.access.constraint.management.AccessConstraintDefinition;
 import org.jboss.as.controller.descriptions.DescriptionProvider;
 
 /**
@@ -212,4 +214,6 @@ public interface ImmutableManagementResourceRegistration {
      * @throws SecurityException if the caller does not have {@link #ACCESS_PERMISSION}
      */
     ImmutableManagementResourceRegistration getSubModel(PathAddress address);
+
+    List<AccessConstraintDefinition> getAccessConstraints();
 }

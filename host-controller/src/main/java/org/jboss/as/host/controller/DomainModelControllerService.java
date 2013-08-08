@@ -37,7 +37,6 @@ import static org.jboss.as.host.controller.HostControllerLogger.DOMAIN_LOGGER;
 import static org.jboss.as.host.controller.HostControllerLogger.ROOT_LOGGER;
 import static org.jboss.as.host.controller.HostControllerMessages.MESSAGES;
 
-import javax.security.auth.callback.CallbackHandler;
 import java.io.File;
 import java.io.IOException;
 import java.util.Collection;
@@ -54,6 +53,8 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.ThreadFactory;
+
+import javax.security.auth.callback.CallbackHandler;
 
 import org.jboss.as.controller.AbstractControllerService;
 import org.jboss.as.controller.BootContext;
@@ -118,7 +119,6 @@ import org.jboss.as.server.RuntimeExpressionResolver;
 import org.jboss.as.server.controller.resources.VersionModelInitializer;
 import org.jboss.as.server.mgmt.UndertowHttpManagementService;
 import org.jboss.as.server.services.security.AbstractVaultReader;
-import org.wildfly.security.manager.GetAccessControlContextAction;
 import org.jboss.dmr.ModelNode;
 import org.jboss.msc.service.Service;
 import org.jboss.msc.service.ServiceBuilder;
@@ -130,6 +130,7 @@ import org.jboss.msc.service.StartException;
 import org.jboss.msc.service.StopContext;
 import org.jboss.msc.value.InjectedValue;
 import org.jboss.threads.JBossThreadFactory;
+import org.wildfly.security.manager.GetAccessControlContextAction;
 import org.wildfly.security.manager.WildFlySecurityManager;
 
 /**
@@ -401,6 +402,8 @@ public class DomainModelControllerService extends AbstractControllerService impl
     protected void initModel(Resource rootResource, ManagementResourceRegistration rootRegistration) {
         HostModelUtil.createRootRegistry(rootRegistration, environment, ignoredRegistry, this, processType);
         VersionModelInitializer.registerRootResource(rootResource, environment != null ? environment.getProductConfig() : null);
+        // TODO wire in once we get master-slave propagation sorted
+//        rootResource.registerChild(PathElement.pathElement(ModelDescriptionConstants.CORE_SERVICE, ModelDescriptionConstants.ACCESS_CONTROL), AccessControlResourceDefinition.RESOURCE);
         this.modelNodeRegistration = rootRegistration;
     }
 
@@ -613,7 +616,7 @@ public class DomainModelControllerService extends AbstractControllerService impl
     public void registerHostModel(String hostName, ManagementResourceRegistration root) {
         HostModelUtil.createHostRegistry(hostName, root, hostControllerConfigurationPersister, environment, runningModeControl,
                 localFileRepository, hostControllerInfo, new DelegatingServerInventory(), remoteFileRepository, contentRepository,
-                this, extensionRegistry,vaultReader, ignoredRegistry, processState, pathManager);
+                this, extensionRegistry,vaultReader, ignoredRegistry, processState, pathManager, authorizer);
     }
 
 
@@ -641,7 +644,7 @@ public class DomainModelControllerService extends AbstractControllerService impl
             final PathManagerService pathManager) {
 
         DomainRootDefinition domainRootDefinition = new DomainRootDefinition(this, environment, configurationPersister, contentRepo, fileRepository, isMaster, hostControllerInfo,
-                extensionRegistry, ignoredDomainResourceRegistry, pathManager, isMaster ? runtimeIgnoreTransformationRegistry : null);
+                extensionRegistry, ignoredDomainResourceRegistry, pathManager, isMaster ? runtimeIgnoreTransformationRegistry : null, authorizer);
         rootResourceDefinition.setDelegate(domainRootDefinition, root);
     }
 

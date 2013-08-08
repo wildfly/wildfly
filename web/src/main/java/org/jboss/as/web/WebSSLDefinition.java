@@ -22,6 +22,8 @@
 
 package org.jboss.as.web;
 
+import java.util.List;
+
 import org.jboss.as.controller.AttributeDefinition;
 import org.jboss.as.controller.ReadResourceNameOperationStepHandler;
 import org.jboss.as.controller.ReloadRequiredRemoveStepHandler;
@@ -29,6 +31,9 @@ import org.jboss.as.controller.ReloadRequiredWriteAttributeHandler;
 import org.jboss.as.controller.SimpleAttributeDefinition;
 import org.jboss.as.controller.SimpleAttributeDefinitionBuilder;
 import org.jboss.as.controller.SimpleResourceDefinition;
+import org.jboss.as.controller.access.constraint.SensitivityClassification;
+import org.jboss.as.controller.access.constraint.management.AccessConstraintDefinition;
+import org.jboss.as.controller.access.constraint.management.SensitiveTargetAccessConstraintDefinition;
 import org.jboss.as.controller.operations.validation.IntRangeValidator;
 import org.jboss.as.controller.operations.validation.StringLengthValidator;
 import org.jboss.as.controller.registry.AttributeAccess;
@@ -55,6 +60,7 @@ public class WebSSLDefinition extends SimpleResourceDefinition {
                     .setValidator(new StringLengthValidator(1, true))
                     .setFlags(AttributeAccess.Flag.RESTART_ALL_SERVICES)
                     .setAllowExpression(true)
+                    .addAccessConstraint(SensitiveTargetAccessConstraintDefinition.CREDENTIAL)
                     .build();
 
     protected static final SimpleAttributeDefinition PASSWORD =
@@ -63,6 +69,7 @@ public class WebSSLDefinition extends SimpleResourceDefinition {
                     .setAllowExpression(true)
                     .setValidator(new StringLengthValidator(1, true, true))
                     .setFlags(AttributeAccess.Flag.RESTART_ALL_SERVICES)
+                    .addAccessConstraint(SensitiveTargetAccessConstraintDefinition.CREDENTIAL)
                     .build();
 
     protected static final SimpleAttributeDefinition CERTIFICATE_KEY_FILE =
@@ -198,11 +205,16 @@ public class WebSSLDefinition extends SimpleResourceDefinition {
         };
 
 
+
+    private List<AccessConstraintDefinition> accessConstraints;
+
     private WebSSLDefinition() {
         super(WebExtension.SSL_PATH,
                 WebExtension.getResourceDescriptionResolver("connector.ssl"),
                 WebSSLAdd.INSTANCE,
                 new ReloadRequiredRemoveStepHandler());
+        SensitivityClassification sc = new SensitivityClassification(WebExtension.SUBSYSTEM_NAME, "web-ssl", false, true, true);
+        this.accessConstraints = new SensitiveTargetAccessConstraintDefinition(sc).wrapAsList();
     }
 
 
@@ -212,5 +224,10 @@ public class WebSSLDefinition extends SimpleResourceDefinition {
         for (AttributeDefinition attr : SSL_ATTRIBUTES) {
             ssl.registerReadWriteAttribute(attr, null, new ReloadRequiredWriteAttributeHandler(attr));
         }
+    }
+
+    @Override
+    public List<AccessConstraintDefinition> getAccessConstraints() {
+        return accessConstraints;
     }
 }

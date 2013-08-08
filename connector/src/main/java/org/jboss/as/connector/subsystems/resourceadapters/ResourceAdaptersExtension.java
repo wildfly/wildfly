@@ -29,6 +29,8 @@ import org.jboss.as.controller.Extension;
 import org.jboss.as.controller.ExtensionContext;
 import org.jboss.as.controller.PathElement;
 import org.jboss.as.controller.SubsystemRegistration;
+import org.jboss.as.controller.access.constraint.SensitivityClassification;
+import org.jboss.as.controller.access.constraint.management.SensitiveTargetAccessConstraintDefinition;
 import org.jboss.as.controller.descriptions.ResourceDescriptionResolver;
 import org.jboss.as.controller.descriptions.StandardResourceDescriptionResolver;
 import org.jboss.as.controller.parsing.ExtensionParsingContext;
@@ -48,6 +50,11 @@ public class ResourceAdaptersExtension implements Extension {
     private static final int MANAGEMENT_API_MICRO_VERSION = 0;
 
     private static final String RESOURCE_NAME = ResourceAdaptersExtension.class.getPackage().getName() + ".LocalDescriptions";
+
+    static final SensitivityClassification RA_SECURITY =
+            new SensitivityClassification(SUBSYSTEM_NAME, "resource-adapter-security", false, true, true);
+
+    static final SensitiveTargetAccessConstraintDefinition RA_SECURITY_DEF = new SensitiveTargetAccessConstraintDefinition(RA_SECURITY);
 
     public static ResourceDescriptionResolver getResourceDescriptionResolver(final String keyPrefix) {
         return new StandardResourceDescriptionResolver(keyPrefix, RESOURCE_NAME, ResourceAdaptersExtension.class.getClassLoader(), true, false);

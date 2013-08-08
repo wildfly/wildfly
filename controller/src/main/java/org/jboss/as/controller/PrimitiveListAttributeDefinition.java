@@ -25,6 +25,7 @@ package org.jboss.as.controller;
 import java.util.Locale;
 import java.util.ResourceBundle;
 
+import org.jboss.as.controller.access.constraint.management.AccessConstraintDefinition;
 import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
 import org.jboss.as.controller.descriptions.ResourceDescriptionResolver;
 import org.jboss.as.controller.operations.validation.ModelTypeValidator;
@@ -44,11 +45,12 @@ public class PrimitiveListAttributeDefinition extends ListAttributeDefinition {
     private final ModelType valueType;
 
     protected PrimitiveListAttributeDefinition(final String name, final String xmlName, final boolean allowNull, final boolean allowExpressions, final ModelType valueType, final int minSize, final int maxSize,
-                                               final String[] alternatives, final String[] requires, ParameterValidator elementValidator, final AttributeMarshaller attributeMarshaller,
-                                               final boolean resourceOnly, final DeprecationData deprecated, final AttributeAccess.Flag... flags) {
-        super(name, xmlName, allowNull, allowExpressions, minSize, maxSize, elementValidator, alternatives, requires, attributeMarshaller, resourceOnly, deprecated, flags);
+            final String[] alternatives, final String[] requires, ParameterValidator elementValidator, final AttributeMarshaller attributeMarshaller,
+            final boolean resourceOnly, final DeprecationData deprecated, final AccessConstraintDefinition[] accessConstraints, final AttributeAccess.Flag... flags) {
+        super(name, xmlName, allowNull, allowExpressions, minSize, maxSize, elementValidator, alternatives, requires, attributeMarshaller, resourceOnly, deprecated, accessConstraints, flags);
         this.valueType = valueType;
     }
+
 
     public ModelType getValueType() {
         return valueType;
@@ -117,7 +119,8 @@ public class PrimitiveListAttributeDefinition extends ListAttributeDefinition {
             if (validator == null) {
                 validator = new ModelTypeValidator(valueType, allowNull, allowExpression);
             }
-            return new PrimitiveListAttributeDefinition(name, xmlName, allowNull, allowExpression, valueType, minSize, maxSize, alternatives, requires, validator, attributeMarshaller, resourceOnly, deprecated, flags);
+            return new PrimitiveListAttributeDefinition(name, xmlName, allowNull, allowExpression, valueType, minSize, maxSize, alternatives, requires, validator,
+                    attributeMarshaller, resourceOnly, deprecated, accessConstraints, flags);
         }
     }
 }

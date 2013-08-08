@@ -22,12 +22,14 @@
 
 package org.jboss.as.domain.management.security;
 
+import org.jboss.as.controller.security.RolePrincipal;
+
 /**
  * A {@link Principal} used to represent an authenticated identities role assignment.
  *
  * @author <a href="mailto:darran.lofthouse@jboss.com">Darran Lofthouse</a>
  */
-public class RealmRole extends SecurityRealmPrincipal {
+public class RealmRole extends SecurityRealmPrincipal implements RolePrincipal {
 
     public RealmRole(final String name) {
         super(name);

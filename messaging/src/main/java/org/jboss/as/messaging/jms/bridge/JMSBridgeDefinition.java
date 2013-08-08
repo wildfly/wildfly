@@ -24,6 +24,7 @@ package org.jboss.as.messaging.jms.bridge;
 
 import static org.jboss.as.controller.SimpleAttributeDefinitionBuilder.create;
 import static org.jboss.as.controller.client.helpers.MeasurementUnit.MILLISECONDS;
+import static org.jboss.as.messaging.CommonAttributes.MESSAGING_SECURITY_DEF;
 import static org.jboss.dmr.ModelType.BOOLEAN;
 import static org.jboss.dmr.ModelType.INT;
 import static org.jboss.dmr.ModelType.LONG;
@@ -36,6 +37,7 @@ import org.jboss.as.controller.PropertiesAttributeDefinition;
 import org.jboss.as.controller.SimpleAttributeDefinition;
 import org.jboss.as.controller.SimpleOperationDefinition;
 import org.jboss.as.controller.SimpleResourceDefinition;
+import org.jboss.as.controller.access.constraint.management.SensitiveTargetAccessConstraintDefinition;
 import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
 import org.jboss.as.controller.operations.validation.EnumValidator;
 import org.jboss.as.controller.operations.validation.IntRangeValidator;
@@ -80,11 +82,15 @@ public class JMSBridgeDefinition extends SimpleResourceDefinition {
             .setAllowNull(true)
             .setAllowExpression(true)
             .setXmlName("user")
+            .addAccessConstraint(SensitiveTargetAccessConstraintDefinition.CREDENTIAL)
+            .addAccessConstraint(MESSAGING_SECURITY_DEF)
             .build();
     public static final SimpleAttributeDefinition SOURCE_PASSWORD = create("source-password", STRING)
             .setAllowNull(true)
             .setAllowExpression(true)
             .setXmlName("password")
+            .addAccessConstraint(SensitiveTargetAccessConstraintDefinition.CREDENTIAL)
+            .addAccessConstraint(MESSAGING_SECURITY_DEF)
             .build();
 
     public static final PropertiesAttributeDefinition SOURCE_CONTEXT = new PropertiesAttributeDefinition.Builder("source-context", true)
@@ -107,11 +113,16 @@ public class JMSBridgeDefinition extends SimpleResourceDefinition {
             .setAllowNull(true)
             .setAllowExpression(true)
             .setXmlName("user")
+            .addAccessConstraint(SensitiveTargetAccessConstraintDefinition.CREDENTIAL)
+            .addAccessConstraint(MESSAGING_SECURITY_DEF)
             .build();
+
     public static final SimpleAttributeDefinition TARGET_PASSWORD = create("target-password", STRING)
             .setAllowNull(true)
             .setAllowExpression(true)
             .setXmlName("password")
+            .addAccessConstraint(SensitiveTargetAccessConstraintDefinition.CREDENTIAL)
+            .addAccessConstraint(MESSAGING_SECURITY_DEF)
             .build();
 
     public static final PropertiesAttributeDefinition TARGET_CONTEXT = new PropertiesAttributeDefinition.Builder("target-context", true)

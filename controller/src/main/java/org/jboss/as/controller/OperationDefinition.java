@@ -24,8 +24,12 @@
 
 package org.jboss.as.controller;
 
+import java.util.Arrays;
+import java.util.Collections;
 import java.util.EnumSet;
+import java.util.List;
 
+import org.jboss.as.controller.access.constraint.management.AccessConstraintDefinition;
 import org.jboss.as.controller.descriptions.DescriptionProvider;
 import org.jboss.as.controller.registry.OperationEntry;
 import org.jboss.dmr.ModelType;
@@ -45,6 +49,7 @@ public abstract class OperationDefinition {
     protected final boolean replyAllowNull;
     protected final DeprecationData deprecationData;
     protected final AttributeDefinition[] replyParameters;
+    protected final List<AccessConstraintDefinition> accessConstraints;
 
 
     protected OperationDefinition(String name,
@@ -55,7 +60,8 @@ public abstract class OperationDefinition {
                                final boolean replyAllowNull,
                                final DeprecationData deprecationData,
                                AttributeDefinition[] replyParameters,
-                               AttributeDefinition[] parameters
+                               AttributeDefinition[] parameters,
+                               AccessConstraintDefinition... accessConstraints
     ) {
         this.name = name;
         this.entryType = entryType;
@@ -66,6 +72,11 @@ public abstract class OperationDefinition {
         this.replyAllowNull = replyAllowNull;
         this.deprecationData = deprecationData;
         this.replyParameters = replyParameters;
+        if (accessConstraints == null) {
+            this.accessConstraints = Collections.<AccessConstraintDefinition>emptyList();
+        } else {
+            this.accessConstraints = Collections.unmodifiableList(Arrays.asList(accessConstraints));
+        }
     }
 
     public String getName() {
@@ -90,6 +101,10 @@ public abstract class OperationDefinition {
 
     public ModelType getReplyValueType() {
         return replyValueType;
+    }
+
+    public List<AccessConstraintDefinition> getAccessConstraints() {
+        return accessConstraints;
     }
 
     public abstract DescriptionProvider getDescriptionProvider();

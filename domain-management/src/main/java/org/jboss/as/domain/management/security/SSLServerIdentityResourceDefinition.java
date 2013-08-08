@@ -56,7 +56,7 @@ public class SSLServerIdentityResourceDefinition extends SimpleResourceDefinitio
         super(PathElement.pathElement(ModelDescriptionConstants.SERVER_IDENTITY, ModelDescriptionConstants.SSL),
                 ControllerResolver.getResolver("core.management.security-realm.server-identity.ssl"),
                 new SecurityRealmChildAddHandler(false, ATTRIBUTE_DEFINITIONS),
-                new SecurityRealmChildRemoveHandler(false),
+                new SecurityRealmChildRemoveHandler(false, false),
                 OperationEntry.Flag.RESTART_RESOURCE_SERVICES,
                 OperationEntry.Flag.RESTART_RESOURCE_SERVICES);
     }

@@ -22,11 +22,16 @@
 
 package org.jboss.as.web;
 
+import java.util.List;
+
 import org.jboss.as.controller.ReloadRequiredRemoveStepHandler;
 import org.jboss.as.controller.ReloadRequiredWriteAttributeHandler;
 import org.jboss.as.controller.SimpleAttributeDefinition;
 import org.jboss.as.controller.SimpleAttributeDefinitionBuilder;
 import org.jboss.as.controller.SimpleResourceDefinition;
+import org.jboss.as.controller.access.constraint.SensitivityClassification;
+import org.jboss.as.controller.access.constraint.management.AccessConstraintDefinition;
+import org.jboss.as.controller.access.constraint.management.SensitiveTargetAccessConstraintDefinition;
 import org.jboss.as.controller.operations.validation.StringLengthValidator;
 import org.jboss.as.controller.registry.AttributeAccess;
 import org.jboss.as.controller.registry.ManagementResourceRegistration;
@@ -69,11 +74,15 @@ public class WebSSODefinition extends SimpleResourceDefinition {
             CACHE_CONTAINER, CACHE_NAME, DOMAIN, REAUTHENTICATE
     };
 
+    private final List<AccessConstraintDefinition> accessConstraints;
+
     private WebSSODefinition() {
         super(WebExtension.SSO_PATH,
                 WebExtension.getResourceDescriptionResolver("virtual-server.sso"),
                 WebSSOAdd.INSTANCE,
                 new ReloadRequiredRemoveStepHandler());
+        SensitivityClassification sc = new SensitivityClassification(WebExtension.SUBSYSTEM_NAME, "web-sso", false, true, true);
+        this.accessConstraints = new SensitiveTargetAccessConstraintDefinition(sc).wrapAsList();
     }
 
     @Override
@@ -81,5 +90,10 @@ public class WebSSODefinition extends SimpleResourceDefinition {
         for (SimpleAttributeDefinition def : SSO_ATTRIBUTES) {
             sso.registerReadWriteAttribute(def, null, new ReloadRequiredWriteAttributeHandler(def));
         }
+    }
+
+    @Override
+    public List<AccessConstraintDefinition> getAccessConstraints() {
+        return accessConstraints;
     }
 }

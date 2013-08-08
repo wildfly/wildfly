@@ -51,6 +51,8 @@ import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.PathElement;
 import org.jboss.as.controller.SubsystemRegistration;
+import org.jboss.as.controller.access.constraint.SensitivityClassification;
+import org.jboss.as.controller.access.constraint.management.SensitiveTargetAccessConstraintDefinition;
 import org.jboss.as.controller.descriptions.ResourceDescriptionResolver;
 import org.jboss.as.controller.descriptions.StandardResourceDescriptionResolver;
 import org.jboss.as.controller.operations.common.Util;
@@ -90,6 +92,11 @@ public class JMXExtension implements Extension {
     static ResourceDescriptionResolver getResourceDescriptionResolver(final String keyPrefix) {
         return new StandardResourceDescriptionResolver(keyPrefix, RESOURCE_NAME, JMXExtension.class.getClassLoader(), true, false);
     }
+
+    static final SensitivityClassification JMX_SENSITIVITY =
+            new SensitivityClassification(SUBSYSTEM_NAME, "jmx", false, false, true);
+
+    static final SensitiveTargetAccessConstraintDefinition JMX_SENSITIVITY_DEF = new SensitiveTargetAccessConstraintDefinition(JMX_SENSITIVITY);
 
     static final JMXSubsystemParser_1_2 parserCurrent = new JMXSubsystemParser_1_2();
     static final JMXSubsystemParser_1_1 parser11 = new JMXSubsystemParser_1_1();

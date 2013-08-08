@@ -49,6 +49,7 @@ public class ServerShutdownHandler implements OperationStepHandler {
             .build();
     public static final SimpleOperationDefinition DEFINITION = new SimpleOperationDefinitionBuilder("shutdown", ServerDescriptions.getResourceDescriptionResolver())
             .setParameters(RESTART)
+            .setRuntimeOnly()
             .build();
 
 
@@ -67,6 +68,9 @@ public class ServerShutdownHandler implements OperationStepHandler {
         context.addStep(new OperationStepHandler() {
             @Override
             public void execute(OperationContext context, ModelNode operation) throws OperationFailedException {
+                // Even though we don't read from the service registry, we have a reference to a
+                // service-fronted 'processState' so tell the controller we are modifying a service
+                context.getServiceRegistry(true);
                 processState.setStopping();
                 final Thread thread = new Thread(new Runnable() {
                     public void run() {

@@ -56,6 +56,7 @@
                 <module>iiop</module>
                 <module>xts</module>
                 <module>rts</module>
+                <module>rbac</module>
                 <module>clust</module>
                 <module>multinode</module>
                 <module>manualmode</module>
@@ -72,6 +73,7 @@
                 <module>iiop</module>
                 <module>xts</module>
                 <module>rts</module>
+                <module>rbac</module>
                 <module>multinode</module>
                 <module>manualmode</module>
             </modules>
@@ -146,6 +148,15 @@
             <activation><property><name>ts.manualmode</name></property></activation>
             <modules>
                 <module>manualmode</module>
+            </modules>
+        </profile>
+
+        <!-- -Dts.rbac -->
+        <profile>
+            <id>ts.integ.group.rbac</id>
+            <activation><property><name>ts.rbac</name></property></activation>
+            <modules>
+                <module>rbac</module>
             </modules>
         </profile>
 

@@ -28,6 +28,7 @@ import static org.jboss.as.controller.client.helpers.MeasurementUnit.BYTES;
 import static org.jboss.as.controller.client.helpers.MeasurementUnit.MILLISECONDS;
 import static org.jboss.as.controller.client.helpers.MeasurementUnit.PER_SECOND;
 import static org.jboss.as.messaging.AttributeMarshallers.NOOP_MARSHALLER;
+import static org.jboss.as.messaging.CommonAttributes.MESSAGING_SECURITY_DEF;
 import static org.jboss.as.messaging.MessagingExtension.VERSION_1_1_0;
 import static org.jboss.as.messaging.jms.ConnectionFactoryAttribute.create;
 import static org.jboss.dmr.ModelType.BIG_DECIMAL;
@@ -49,6 +50,7 @@ import org.jboss.as.controller.PrimitiveListAttributeDefinition;
 import org.jboss.as.controller.SimpleAttributeDefinition;
 import org.jboss.as.controller.SimpleAttributeDefinitionBuilder;
 import org.jboss.as.controller.SimpleMapAttributeDefinition;
+import org.jboss.as.controller.access.constraint.management.SensitiveTargetAccessConstraintDefinition;
 import org.jboss.as.controller.operations.validation.StringLengthValidator;
 import org.jboss.as.messaging.AttributeMarshallers;
 import org.jboss.as.messaging.CommonAttributes;
@@ -398,6 +400,8 @@ public interface ConnectionFactoryAttributes {
                 .setAllowNull(true)
                 .setAllowExpression(true)
                 .setRestartAllServices()
+                .addAccessConstraint(SensitiveTargetAccessConstraintDefinition.CREDENTIAL)
+                .addAccessConstraint(MESSAGING_SECURITY_DEF)
                 .build();
 
         /**
@@ -461,6 +465,8 @@ public interface ConnectionFactoryAttributes {
         SimpleAttributeDefinition USER = SimpleAttributeDefinitionBuilder.create("user", STRING)
                 .setAllowNull(true)
                 .setAllowExpression(true)
+                .addAccessConstraint(SensitiveTargetAccessConstraintDefinition.CREDENTIAL)
+                .addAccessConstraint(MESSAGING_SECURITY_DEF)
                 .build();
 
         /**

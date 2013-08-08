@@ -21,14 +21,7 @@
 */
 package org.jboss.as.server.controller.resources;
 
-import org.jboss.as.controller.NoopOperationStepHandler;
-import org.jboss.as.controller.OperationDefinition;
-import org.jboss.as.controller.OperationStepHandler;
-import org.jboss.as.controller.SimpleOperationDefinitionBuilder;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.CORE_SERVICE;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.RUNNING_SERVER;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SERVER;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SERVICE_CONTAINER;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SUBDEPLOYMENT;
 
 import org.jboss.as.controller.AttributeDefinition;
@@ -38,14 +31,15 @@ import org.jboss.as.controller.ModelOnlyWriteAttributeHandler;
 import org.jboss.as.controller.PathElement;
 import org.jboss.as.controller.ProcessType;
 import org.jboss.as.controller.PropertiesAttributeDefinition;
+import org.jboss.as.controller.ResourceDefinition;
 import org.jboss.as.controller.RunningMode;
 import org.jboss.as.controller.RunningModeControl;
 import org.jboss.as.controller.SimpleAttributeDefinition;
 import org.jboss.as.controller.SimpleAttributeDefinitionBuilder;
 import org.jboss.as.controller.SimpleMapAttributeDefinition;
 import org.jboss.as.controller.SimpleResourceDefinition;
+import org.jboss.as.controller.access.DelegatingConfigurableAuthorizer;
 import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
-import org.jboss.as.controller.descriptions.common.CoreManagementDefinition;
 import org.jboss.as.controller.extension.ExtensionRegistry;
 import org.jboss.as.controller.extension.ExtensionResourceDefinition;
 import org.jboss.as.controller.operations.common.NamespaceAddHandler;
@@ -68,13 +62,11 @@ import org.jboss.as.controller.operations.validation.ParameterValidator;
 import org.jboss.as.controller.operations.validation.StringLengthValidator;
 import org.jboss.as.controller.persistence.ExtensibleConfigurationPersister;
 import org.jboss.as.controller.registry.ManagementResourceRegistration;
-import org.jboss.as.controller.registry.OperationEntry;
 import org.jboss.as.controller.resource.InterfaceDefinition;
 import org.jboss.as.controller.resource.SocketBindingGroupResourceDefinition;
 import org.jboss.as.controller.services.path.PathManagerService;
 import org.jboss.as.controller.services.path.PathResourceDefinition;
-import org.jboss.as.domain.management.connections.ldap.LdapConnectionResourceDefinition;
-import org.jboss.as.domain.management.security.SecurityRealmResourceDefinition;
+import org.jboss.as.domain.management.CoreManagementResourceDefinition;
 import org.jboss.as.domain.management.security.WhoAmIOperation;
 import org.jboss.as.platform.mbean.PlatformMBeanResourceRegistrar;
 import org.jboss.as.repository.ContentRepository;
@@ -96,7 +88,6 @@ import org.jboss.as.server.deploymentoverlay.service.DeploymentOverlayPriority;
 import org.jboss.as.server.mgmt.HttpManagementResourceDefinition;
 import org.jboss.as.server.mgmt.NativeManagementResourceDefinition;
 import org.jboss.as.server.mgmt.NativeRemotingManagementResourceDefinition;
-import org.jboss.as.server.operations.DumpServicesHandler;
 import org.jboss.as.server.operations.LaunchTypeHandler;
 import org.jboss.as.server.operations.ProcessTypeHandler;
 import org.jboss.as.server.operations.RootResourceHack;
@@ -193,6 +184,7 @@ public class ServerRootResourceDefinition extends SimpleResourceDefinition {
     private final boolean parallelBoot;
     private final PathManagerService pathManager;
     private final DomainServerCommunicationServices.OperationIDUpdater operationIDUpdater;
+    private final DelegatingConfigurableAuthorizer authorizer;
 
     public ServerRootResourceDefinition(
             final ContentRepository contentRepository,
@@ -204,8 +196,9 @@ public class ServerRootResourceDefinition extends SimpleResourceDefinition {
             final ExtensionRegistry extensionRegistry,
             final boolean parallelBoot,
             final PathManagerService pathManager,
-            final DomainServerCommunicationServices.OperationIDUpdater operationIDUpdater) {
-        super(PathElement.pathElement("this-will-be-ignored-since-we-are-root"), ServerDescriptions.getResourceDescriptionResolver(SERVER, false));
+            final DomainServerCommunicationServices.OperationIDUpdater operationIDUpdater,
+            final DelegatingConfigurableAuthorizer authorizer) {
+        super(null, ServerDescriptions.getResourceDescriptionResolver(SERVER, false));
         this.contentRepository = contentRepository;
         this.extensibleConfigurationPersister = extensibleConfigurationPersister;
         this.serverEnvironment = serverEnvironment;
@@ -217,7 +210,8 @@ public class ServerRootResourceDefinition extends SimpleResourceDefinition {
         this.pathManager = pathManager;
         this.operationIDUpdater = operationIDUpdater;
 
-        isDomain = serverEnvironment == null || serverEnvironment.getLaunchType() == LaunchType.DOMAIN;
+        this.isDomain = serverEnvironment == null || serverEnvironment.getLaunchType() == LaunchType.DOMAIN;
+        this.authorizer = authorizer;
     }
 
     @Override
@@ -339,18 +333,18 @@ public class ServerRootResourceDefinition extends SimpleResourceDefinition {
 
         // Central Management
         // Start with the base /core-service=management MNR. The Resource for this is added by ServerService itself, so there is no add/remove op handlers
-        ManagementResourceRegistration management = resourceRegistration.registerSubModel(CoreManagementDefinition.INSTANCE);
-
-        management.registerSubModel(SecurityRealmResourceDefinition.INSTANCE);
-        management.registerSubModel(LdapConnectionResourceDefinition.INSTANCE);
-        management.registerSubModel(NativeManagementResourceDefinition.INSTANCE);
-        management.registerSubModel(NativeRemotingManagementResourceDefinition.INSTANCE);
-        management.registerSubModel(HttpManagementResourceDefinition.INSTANCE);
+        final ResourceDefinition managementDefinition;
+        if (isDomain) {
+            managementDefinition = CoreManagementResourceDefinition.forDomainServer(authorizer);
+        } else {
+            managementDefinition = CoreManagementResourceDefinition.forStandaloneServer(authorizer,
+                    NativeManagementResourceDefinition.INSTANCE, NativeRemotingManagementResourceDefinition.INSTANCE,
+                    HttpManagementResourceDefinition.INSTANCE);
+        }
+        resourceRegistration.registerSubModel(managementDefinition);
 
         // Other core services
-        ManagementResourceRegistration serviceContainer = resourceRegistration.registerSubModel(
-                new SimpleResourceDefinition(PathElement.pathElement(CORE_SERVICE, SERVICE_CONTAINER), ServerDescriptions.getResourceDescriptionResolver("core", SERVICE_CONTAINER)));
-        serviceContainer.registerOperationHandler(DumpServicesHandler.DEFINITION, DumpServicesHandler.INSTANCE);
+        resourceRegistration.registerSubModel(new ServiceContainerResourceDefinition());
 
         resourceRegistration.registerSubModel(new ModuleLoadingResourceDefinition());
 
@@ -396,19 +390,6 @@ public class ServerRootResourceDefinition extends SimpleResourceDefinition {
 
         // Util
         resourceRegistration.registerOperationHandler(DeployerChainAddHandler.DEFINITION, DeployerChainAddHandler.INSTANCE, false);
-    }
-
-    private static final OperationStepHandler NOOP = NoopOperationStepHandler.WITH_RESULT;
-
-    private static final AttributeDefinition BLOCKING = new SimpleAttributeDefinitionBuilder(ModelDescriptionConstants.BLOCKING, ModelType.BOOLEAN, true)
-        .build();
-
-    static final OperationDefinition getOperationDefinition(String name) {
-        return new SimpleOperationDefinitionBuilder(name, ServerDescriptions.getResourceDescriptionResolver(RUNNING_SERVER))
-            .setParameters(BLOCKING)
-            .setReplyType(ModelType.STRING)
-            .withFlags(OperationEntry.Flag.HOST_CONTROLLER_ONLY, OperationEntry.Flag.RUNTIME_ONLY)
-            .build();
     }
 
 }

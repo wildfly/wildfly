@@ -21,8 +21,6 @@
  */
 package org.jboss.as.controller.descriptions;
 
-
-
 /**
  * String constants frequently used in model descriptions.
  *
@@ -32,6 +30,9 @@ public class ModelDescriptionConstants {
 
     // KEEP THESE IN ALPHABETICAL ORDER!
 
+    public static final String ACCESS = "access";
+    public static final String ACCESS_CONSTRAINTS = "access-constraints";
+    public static final String ACCESS_CONTROL = "access-control";
     /** The key for {@link org.jboss.as.controller.registry.AttributeAccess.AccessType} fields. */
     public static final String ACCESS_TYPE = "access-type";
     public static final String ADD = "add";
@@ -47,13 +48,17 @@ public class ModelDescriptionConstants {
     public static final String ANY_IPV4_ADDRESS = "any-ipv4-address";
     public static final String ANY_IPV6_ADDRESS = "any-ipv6-address";
     public static final String APPCLIENT = "appclient";
+    public static final String APPLICATION = "application";
+    public static final String APPLICATION_CLASSIFICATION = "application-classification";
     public static final String ARCHIVE = "archive";
     public static final String ATTRIBUTES = "attributes";
     public static final String ATTRIBUTES_ONLY = "attributes-only";
+    public static final String AUDIT = "audit";
     public static final String AUTHENTICATION = "authentication";
     public static final String AUTHORIZATION = "authorization";
     public static final String AUTO_START = "auto-start";
     public static final String BASE_DN = "base-dn";
+    public static final String BASE_ROLE = "base-role";
     public static final String BLOCKING = "blocking";
     public static final String BOOT_TIME = "boot-time";
     public static final String BYTES = "bytes";
@@ -61,19 +66,30 @@ public class ModelDescriptionConstants {
     public static final String CANCELLED = "cancelled";
     public static final String CHILD_TYPE = "child-type";
     public static final String CHILDREN = "children";
+    public static final String CLASSIFICATION = "classification";
     public static final String CLIENT_MAPPINGS = "client-mappings";
     public static final String CODE = "code";
     public static final String COMPOSITE = "composite";
+    public static final String CONSTRAINT = "constraint";
     public static final String CONCURRENT_GROUPS = "concurrent-groups";
+    public static final String CONFIGURED_APPLICATION = "configured-application";
+    public static final String CONFIGURED_REQUIRES_ADDRESSABLE = "configured-requires-addressable";
+    public static final String CONFIGURED_REQUIRES_READ = "configured-requires-read";
+    public static final String CONFIGURED_REQUIRES_WRITE = "configured-requires-write";
     public static final String CONNECTION = "connection";
     public static final String CONNECTIONS = "connections";
     public static final String CONSOLE_ENABLED = "console-enabled";
     public static final String CONTENT = "content";
+    public static final String CORE = "core";
     public static final String CORE_SERVICE = "core-service";
     public static final String CPU_AFFINITY = "cpu-affinity";
     public static final String CRITERIA = "criteria";
     public static final String DEFAULT = "default";
+    public static final String DEFAULT_APPLICATION = "default-application";
     public static final String DEFAULT_INTERFACE = "default-interface";
+    public static final String DEFAULT_REQUIRES_WRITE = "default-requires-write";
+    public static final String DEFAULT_REQUIRES_READ = "default-requires-read";
+    public static final String DEFAULT_REQUIRES_ADDRESSABLE = "default-requires-addressable";
     public static final String DEPLOY = "deploy";
     public static final String DEPLOYMENT = "deployment";
     public static final String DEPLOYMENT_OVERLAY = "deployment-overlay";
@@ -95,6 +111,9 @@ public class ModelDescriptionConstants {
     public static final String DUMP_SERVICES = "dump-services";
     public static final String ENABLE = "enable";
     public static final String ENABLED = "enabled";
+    public static final String EXECUTE = "execute";
+    public static final String EXCEPTIONS = "exceptions";
+    public static final String EXCLUDE = "exclude";
     public static final String EXPRESSIONS_ALLOWED = "expressions-allowed";
     public static final String EXTENSION = "extension";
     public static final String FAILED = "failed";
@@ -108,10 +127,13 @@ public class ModelDescriptionConstants {
     public static final String HASH = "hash";
     public static final String HEAD_COMMENT_ALLOWED = "head-comment-allowed";
     public static final String HOST = "host";
+    public static final String HOSTS = "hosts";
     public static final String HOST_CONTROLLER = "host-controller";
     public static final String HOST_ENVIRONMENT = "host-environment";
     public static final String HOST_FAILURE_DESCRIPTION = "host-failure-description";
     public static final String HOST_FAILURE_DESCRIPTIONS = "host-failure-descriptions";
+    public static final String HOST_SCOPED_ROLE = "host-scoped-role";
+    public static final String HOST_SCOPED_ROLES = "host-scoped-roles";
     public static final String HOST_STATE = "host-state";
     public static final String HTTP_UPGRADE_ENABLED = "http-upgrade-enabled";
     public static final String HTTP_INTERFACE = "http-interface";
@@ -215,6 +237,7 @@ public class ModelDescriptionConstants {
     public static final String READ_RESOURCE_METRICS = "read-resource-metrics";
     public static final String READ_RESOURCE_OPERATION = "read-resource";
     public static final String READ_TRANSFORMED_RESOURCE_OPERATION = "read-transformed-resource";
+    public static final String REALM = "realm";
     public static final String RECURSIVE = "recursive";
     public static final String RECURSIVE_DEPTH = "recursive-depth";
     public static final String REDEPLOY = "redeploy";
@@ -235,6 +258,9 @@ public class ModelDescriptionConstants {
     public static final String RESTART_REQUIRED = "restart-required";
     public static final String RESULT = "result";
     public static final String REASON = "reason";
+    public static final String ROLE = "role";
+    public static final String ROLES = "roles";
+    public static final String ROLE_MAPPING = "role-mapping";
     public static final String ROLLBACK_ACROSS_GROUPS = "rollback-across-groups";
     public static final String ROLLBACK_FAILURE_DESCRIPTION = "rollback-failure-description";
     public static final String ROLLBACK_ON_RUNTIME_FAILURE = "rollback-on-runtime-failure";
@@ -255,11 +281,14 @@ public class ModelDescriptionConstants {
     public static final String SECURE_SOCKET_BINDING = "secure-socket-binding";
     public static final String SECURITY_REALM = "security-realm";
     public static final String SECURITY_REALMS = "security-realms";
+    public static final String SENSITIVE = "sensitive";
+    public static final String SENSITIVITY_CLASSIFICATION = "sensitivity-classification";
     public static final String SERVER = "server";
     public static final String SERVERS = "servers";
     public static final String SERVER_CONFIG = "server-config";
     public static final String SERVER_GROUP = "server-group";
     public static final String SERVER_GROUPS = "server-groups";
+    public static final String SERVER_GROUP_SCOPED_ROLE = "server-group-scoped-role";
     public static final String SERVER_IDENTITIES = "server-identities";
     public static final String SERVER_IDENTITY = "server-identity";
     public static final String SERVER_OPERATIONS = "server-operations";
@@ -308,6 +337,7 @@ public class ModelDescriptionConstants {
     public static final String USE_CURRENT_DOMAIN_CONFIG = "use-current-domain-config";
     public static final String USE_CURRENT_HOST_CONFIG = "use-current-host-config";
     public static final String USE_CURRENT_SERVER_CONFIG = "use-current-server-config";
+    public static final String USE_REALM_ROLES = "use-realm-roles";
     public static final String USER = "user";
     public static final String USER_DN = "user-dn";
     public static final String USERNAME = "username";
@@ -318,6 +348,7 @@ public class ModelDescriptionConstants {
     public static final String VALUE = "value";
     public static final String VALUE_TYPE = "value-type";
     public static final String VAULT = "vault";
+    public static final String VAULT_EXPRESSION = "vault-expression";
     public static final String VAULT_OPTION = "vault-option";
     public static final String VAULT_OPTIONS = "vault-options";
     public static final String WILDCARD = "wildcard";

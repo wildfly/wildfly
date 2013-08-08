@@ -21,6 +21,7 @@
 */
 package org.jboss.as.model.test;
 
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ACCESS_CONSTRAINTS;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ACCESS_TYPE;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ALLOWED;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ALTERNATIVES;
@@ -92,6 +93,7 @@ public class ModelTestModelDescriptionValidator {
         validResourceKeys.put(OPERATIONS, NullDescriptorValidator.INSTANCE);
         validResourceKeys.put(CHILDREN, NullDescriptorValidator.INSTANCE);
         validResourceKeys.put(DEPRECATED, DeprecatedDescriptorValidator.INSTANCE);
+        validResourceKeys.put(ACCESS_CONSTRAINTS, AccessConstraintValidator.INSTANCE);
         VALID_RESOURCE_KEYS = Collections.unmodifiableMap(validResourceKeys);
 
         Map<String, ArbitraryDescriptorValidator> validChildTypeKeys = new HashMap<String, ModelTestModelDescriptionValidator.ArbitraryDescriptorValidator>();
@@ -131,6 +133,7 @@ public class ModelTestModelDescriptionValidator {
         validAttributeKeys.put(STORAGE, StorageDescriptorValidator.INSTANCE);
         validAttributeKeys.put(RESTART_REQUIRED, NullDescriptorValidator.INSTANCE); //TODO some more validation here
         validAttributeKeys.put(DEPRECATED, DeprecatedDescriptorValidator.INSTANCE);
+        validAttributeKeys.put(ACCESS_CONSTRAINTS, AccessConstraintValidator.INSTANCE);
         VALID_ATTRIBUTE_KEYS = Collections.unmodifiableMap(validAttributeKeys);
 
         Map<String, ArbitraryDescriptorValidator> validOperationKeys = new HashMap<String, ArbitraryDescriptorValidator>();
@@ -139,6 +142,7 @@ public class ModelTestModelDescriptionValidator {
         validOperationKeys.put(REQUEST_PROPERTIES, NullDescriptorValidator.INSTANCE);
         validOperationKeys.put(REPLY_PROPERTIES, NullDescriptorValidator.INSTANCE);
         validOperationKeys.put(DEPRECATED, DeprecatedDescriptorValidator.INSTANCE);
+        validOperationKeys.put(ACCESS_CONSTRAINTS, AccessConstraintValidator.INSTANCE);
         VALID_OPERATION_KEYS = Collections.unmodifiableMap(validOperationKeys);
 
         Map<String, AttributeOrParameterArbitraryDescriptorValidator> validParameterKeys = new HashMap<String, AttributeOrParameterArbitraryDescriptorValidator>();
@@ -530,6 +534,18 @@ public class ModelTestModelDescriptionValidator {
         @Override
         public String validate(ModelType currentType, ModelNode currentNode, String descriptor) {
             return validate(currentNode,descriptor);
+        }
+    }
+
+    private static class AccessConstraintValidator implements ArbitraryDescriptorValidator, AttributeOrParameterArbitraryDescriptorValidator {
+        static final AccessConstraintValidator INSTANCE = new AccessConstraintValidator();
+        @Override
+        public String validate(ModelNode currentNode, String descriptor) {
+            return null;
+        }
+        @Override
+        public String validate(ModelType currentType, ModelNode currentNode, String descriptor) {
+            return null;
         }
     }
 

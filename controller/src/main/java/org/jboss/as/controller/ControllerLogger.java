@@ -88,6 +88,11 @@ public interface ControllerLogger extends BasicLogger {
     ControllerLogger TRANSFORMER_LOGGER = Logger.getMessageLogger(ControllerLogger.class, ControllerLogger.class.getPackage().getName() + ".transformer");
 
     /**
+     * A logger for access control related messages.
+     */
+    ControllerLogger ACCESS_LOGGER = Logger.getMessageLogger(ControllerLogger.class, ControllerLogger.class.getPackage().getName() + ".access-control");
+
+    /**
      * Logs a warning message indicating the address, represented by the {@code address} parameter, could not be
      * resolved, so cannot match it to any InetAddress.
      *
@@ -452,4 +457,6 @@ public interface ControllerLogger extends BasicLogger {
             "subsystem resources on this server will result in failure.")
     @LogMessage(level = INFO)
     void ignoringUnsupportedLegacyExtension(List<String> subsystemNames, String extensionName);
+
+    // 13449 IS END OF 134xx SERIES USABLE FOR LOGGER MESSAGES
 }

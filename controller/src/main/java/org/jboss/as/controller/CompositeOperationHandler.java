@@ -153,7 +153,7 @@ public final class CompositeOperationHandler implements OperationStepHandler {
                     return new DescriptionProvider() {
                         @Override
                         public ModelNode getModelDescription(Locale locale) {
-                            return new DefaultOperationDescriptionProvider(getName(), resolver, attributeResolver, replyType, replyValueType, deprecationData, replyParameters, parameters).getModelDescription(locale);
+                            return new DefaultOperationDescriptionProvider(getName(), resolver, attributeResolver, replyType, replyValueType, replyAllowNull, deprecationData, replyParameters, parameters, accessConstraints).getModelDescription(locale);
                         }
                     };
                 }

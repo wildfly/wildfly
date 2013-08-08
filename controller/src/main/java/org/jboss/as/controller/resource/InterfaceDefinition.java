@@ -29,6 +29,7 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.VAL
 
 import java.util.Arrays;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Locale;
 import java.util.ResourceBundle;
 import java.util.Set;
@@ -43,6 +44,8 @@ import org.jboss.as.controller.PathElement;
 import org.jboss.as.controller.ReadResourceNameOperationStepHandler;
 import org.jboss.as.controller.SimpleAttributeDefinitionBuilder;
 import org.jboss.as.controller.SimpleResourceDefinition;
+import org.jboss.as.controller.access.constraint.management.AccessConstraintDefinition;
+import org.jboss.as.controller.access.constraint.management.SensitiveTargetAccessConstraintDefinition;
 import org.jboss.as.controller.client.helpers.MeasurementUnit;
 import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
 import org.jboss.as.controller.descriptions.ResourceDescriptionResolver;
@@ -179,6 +182,7 @@ public class InterfaceDefinition extends SimpleResourceDefinition {
             MULTICAST, POINT_TO_POINT, PUBLIC_ADDRESS, SITE_LOCAL_ADDRESS, UP, VIRTUAL};*/
 
     private final boolean updateRuntime;
+    private final List<AccessConstraintDefinition> sensitivity;
 
     public InterfaceDefinition(InterfaceAddHandler addHandler, InterfaceRemoveHandler removeHandler, boolean updateRuntime) {
         super(PathElement.pathElement(INTERFACE),
@@ -186,6 +190,7 @@ public class InterfaceDefinition extends SimpleResourceDefinition {
                 addHandler,
                 removeHandler);
         this.updateRuntime = updateRuntime;
+        this.sensitivity = SensitiveTargetAccessConstraintDefinition.SOCKET_CONFIG.wrapAsList();
     }
 
     public static String localName(final Element element) {
@@ -220,6 +225,11 @@ public class InterfaceDefinition extends SimpleResourceDefinition {
             registration.registerReadWriteAttribute(def, null, handler);
         }
         registration.registerReadOnlyAttribute(InterfaceDefinition.NAME, ReadResourceNameOperationStepHandler.INSTANCE);
+    }
+
+    @Override
+    public List<AccessConstraintDefinition> getAccessConstraints() {
+        return sensitivity;
     }
 
     @Deprecated

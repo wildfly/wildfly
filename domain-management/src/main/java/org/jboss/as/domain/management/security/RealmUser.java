@@ -22,56 +22,21 @@
 
 package org.jboss.as.domain.management.security;
 
-import static org.jboss.as.domain.management.DomainManagementMessages.MESSAGES;
+import org.jboss.as.controller.security.AccountPrincipal;
 
 /**
  * The Principal used to represent the name of an authenticated user.
  *
  * @author <a href="mailto:darran.lofthouse@jboss.com">Darran Lofthouse</a>
  */
-public class RealmUser extends SecurityRealmPrincipal {
+public class RealmUser extends AbstractRealmPrincipal implements AccountPrincipal {
 
-    private final String realm;
+    public RealmUser(String realm, String name) {
+        super(realm, name);
+    }
 
-    public RealmUser(final String name) {
+    public RealmUser(String name) {
         super(name);
-        this.realm = null;
-    }
-
-    public RealmUser(final String realm, final String name) {
-        super(name);
-        if (name == null) {
-            throw MESSAGES.canNotBeNull("realm");
-        }
-        this.realm = realm;
-    }
-
-    public String getRealm() {
-        return realm;
-    }
-
-    public String getFullName() {
-        return realm == null ? getName() : getName() + "@" + realm;
-    }
-
-    @Override
-    public String toString() {
-        return getFullName();
-    }
-
-    @Override
-    public int hashCode() {
-        return (super.hashCode() + 31) * (realm == null ? 101 : realm.hashCode());
-    }
-
-    @Override
-    public boolean equals(Object obj) {
-        return obj instanceof RealmUser ? equals((RealmUser) obj) : false;
-
-    }
-
-    private boolean equals(RealmUser user) {
-        return this == user ? true : super.equals(user) && realm.equals(user.realm);
     }
 
 }

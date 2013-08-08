@@ -35,6 +35,7 @@ import org.jboss.as.controller.SimpleAttributeDefinitionBuilder;
 import org.jboss.as.controller.SimpleListAttributeDefinition;
 import org.jboss.as.controller.SimpleOperationDefinitionBuilder;
 import org.jboss.as.controller.SimpleResourceDefinition;
+import org.jboss.as.controller.access.constraint.management.SensitiveTargetAccessConstraintDefinition;
 import org.jboss.as.controller.registry.AttributeAccess;
 import org.jboss.as.controller.registry.ManagementResourceRegistration;
 import org.jboss.dmr.ModelNode;
@@ -71,6 +72,7 @@ public class TransportResourceDefinition extends SimpleResourceDefinition {
                     .setXmlName(Attribute.SOCKET_BINDING.getLocalName())
                     .setAllowExpression(false)
                     .setFlags(AttributeAccess.Flag.RESTART_ALL_SERVICES)
+                    .addAccessConstraint(SensitiveTargetAccessConstraintDefinition.SOCKET_BINDING_REF)
                     .build();
 
     static SimpleAttributeDefinition DIAGNOSTICS_SOCKET_BINDING =
@@ -78,6 +80,7 @@ public class TransportResourceDefinition extends SimpleResourceDefinition {
                     .setXmlName(Attribute.DIAGNOSTICS_SOCKET_BINDING.getLocalName())
                     .setAllowExpression(false)
                     .setFlags(AttributeAccess.Flag.RESTART_ALL_SERVICES)
+                    .addAccessConstraint(SensitiveTargetAccessConstraintDefinition.SOCKET_BINDING_REF)
                     .build();
 
     static SimpleAttributeDefinition DEFAULT_EXECUTOR =

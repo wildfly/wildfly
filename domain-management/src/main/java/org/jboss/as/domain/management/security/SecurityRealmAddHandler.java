@@ -155,7 +155,7 @@ public class SecurityRealmAddHandler implements OperationStepHandler {
         if (authorization != null) {
             if (authorization.hasDefined(PROPERTIES)) {
                 authorizationName = addPropertiesAuthorizationService(context, authorization.require(PROPERTIES), realmServiceName,
-                        serviceTarget, newControllers);
+                        realmName, serviceTarget, newControllers);
             } else if (authorization.hasDefined(PLUG_IN)) {
                 authorizationName = addPlugInAuthorizationService(context, authorization.require(PLUG_IN), realmServiceName,
                         plugInLoaderName, realmName, serviceTarget, newControllers);
@@ -340,12 +340,12 @@ public class SecurityRealmAddHandler implements OperationStepHandler {
     }
 
     private ServiceName addPropertiesAuthorizationService(OperationContext context, ModelNode properties, ServiceName realmServiceName,
-            ServiceTarget serviceTarget, List<ServiceController<?>> newControllers) throws OperationFailedException {
+            String realmName, ServiceTarget serviceTarget, List<ServiceController<?>> newControllers) throws OperationFailedException {
         ServiceName propsServiceName = realmServiceName.append(PropertiesSubjectSupplemental.SERVICE_SUFFIX);
 
         final String path = PropertiesAuthorizationResourceDefinition.PATH.resolveModelAttribute(context, properties).asString();
         final ModelNode relativeTo = PropertiesAuthorizationResourceDefinition.RELATIVE_TO.resolveModelAttribute(context, properties);
-        PropertiesSubjectSupplemental propsSubjectSupplemental = new PropertiesSubjectSupplemental(path);
+        PropertiesSubjectSupplemental propsSubjectSupplemental = new PropertiesSubjectSupplemental(realmName, path);
 
         ServiceBuilder<?> propsBuilder = serviceTarget.addService(propsServiceName, propsSubjectSupplemental);
         if (relativeTo.isDefined()) {

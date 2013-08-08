@@ -27,6 +27,7 @@ import static org.jboss.as.controller.ControllerMessages.MESSAGES;
 
 import java.util.EnumSet;
 import java.util.HashMap;
+import java.util.List;
 import java.util.ListIterator;
 import java.util.Locale;
 import java.util.Map;
@@ -38,6 +39,7 @@ import org.jboss.as.controller.OperationStepHandler;
 import org.jboss.as.controller.PathElement;
 import org.jboss.as.controller.ProxyController;
 import org.jboss.as.controller.ResourceDefinition;
+import org.jboss.as.controller.access.constraint.management.AccessConstraintDefinition;
 import org.jboss.as.controller.descriptions.DescriptionProvider;
 import org.jboss.as.controller.descriptions.OverrideDescriptionProvider;
 import org.jboss.as.controller.registry.OperationEntry.EntryType;
@@ -68,7 +70,8 @@ final class AliasResourceRegistration extends AbstractResourceRegistration imple
         if (targetOp == null) {
             return null;
         }
-        return new OperationEntry(handler, targetOp.getDescriptionProvider(), targetOp.isInherited(), targetOp.getType(), targetOp.getFlags());
+        return new OperationEntry(handler, targetOp.getDescriptionProvider(), targetOp.isInherited(), targetOp.getType(),
+                                    targetOp.getFlags(), null);
     }
 
     @Override
@@ -95,6 +98,11 @@ final class AliasResourceRegistration extends AbstractResourceRegistration imple
     @Override
     public boolean isAlias() {
         return true;
+    }
+
+    @Override
+    public List<AccessConstraintDefinition> getAccessConstraints() {
+        return target.getAccessConstraints();
     }
 
     @Override
@@ -129,6 +137,7 @@ final class AliasResourceRegistration extends AbstractResourceRegistration imple
 
     @Override
     public void registerOperationHandler(OperationDefinition definition, OperationStepHandler handler, boolean inherited) {
+        throw alreadyRegistered();
     }
 
     @Override
@@ -211,8 +220,10 @@ final class AliasResourceRegistration extends AbstractResourceRegistration imple
         Map<String, OperationEntry> temp = new HashMap<String, OperationEntry>();
         target.getOperationDescriptions(iterator, temp, inherited);
         for (Map.Entry<String, OperationEntry> entry : providers.entrySet()) {
+            OperationEntry value = entry.getValue();
             providers.put(entry.getKey(),
-                    new OperationEntry(handler, entry.getValue().getDescriptionProvider(), entry.getValue().isInherited(), entry.getValue().getType(), entry.getValue().getFlags()));
+                    new OperationEntry(handler, value.getDescriptionProvider(), value.isInherited(),
+                            value.getType(), value.getFlags(), value.getAccessConstraints()));
         }
     }
 

@@ -26,6 +26,7 @@ import static org.jboss.as.controller.ControllerMessages.MESSAGES;
 
 import java.util.Collections;
 import java.util.EnumSet;
+import java.util.List;
 import java.util.ListIterator;
 import java.util.Locale;
 import java.util.Map;
@@ -40,6 +41,7 @@ import org.jboss.as.controller.PathElement;
 import org.jboss.as.controller.ProxyController;
 import org.jboss.as.controller.ProxyStepHandler;
 import org.jboss.as.controller.ResourceDefinition;
+import org.jboss.as.controller.access.constraint.management.AccessConstraintDefinition;
 import org.jboss.as.controller.descriptions.DescriptionProvider;
 import org.jboss.as.controller.descriptions.OverrideDescriptionProvider;
 import org.jboss.dmr.ModelNode;
@@ -106,6 +108,12 @@ final class ProxyControllerRegistration extends AbstractResourceRegistration imp
     }
 
     @Override
+    public List<AccessConstraintDefinition> getAccessConstraints() {
+        checkPermission();
+        return Collections.emptyList();
+    }
+
+    @Override
     public ManagementResourceRegistration registerSubModel(final ResourceDefinition resourceDefinition) {
         throw alreadyRegistered();
     }
@@ -134,14 +142,17 @@ final class ProxyControllerRegistration extends AbstractResourceRegistration imp
 
     @Override
     public void registerOperationHandler(final String operationName, final OperationStepHandler handler, final DescriptionProvider descriptionProvider, final boolean inherited, OperationEntry.EntryType entryType, EnumSet<OperationEntry.Flag> flags) {
-        if (operationsUpdater.putIfAbsent(this, operationName, new OperationEntry(handler, descriptionProvider, inherited, entryType, flags)) != null) {
+        if (operationsUpdater.putIfAbsent(this, operationName, new OperationEntry(handler, descriptionProvider, inherited, entryType, flags, null)) != null) {
             throw alreadyRegistered("operation handler", operationName);
         }
     }
 
     @Override
     public void registerOperationHandler(OperationDefinition definition, OperationStepHandler handler, boolean inherited) {
-        registerOperationHandler(definition.getName(), handler, definition.getDescriptionProvider(), inherited, definition.getEntryType(), definition.getFlags());
+        if (operationsUpdater.putIfAbsent(this, definition.getName(), new OperationEntry(handler, definition.getDescriptionProvider(),
+                inherited, definition.getEntryType(), definition.getFlags(), definition.getAccessConstraints())) != null) {
+            throw alreadyRegistered("operation handler", definition.getName());
+        }
     }
 
     @Override
