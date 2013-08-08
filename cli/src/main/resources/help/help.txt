@@ -97,7 +97,7 @@ Operation requests start with './' or '/' and follow the format:
 
 [node-type=node-name (/node-type=node-name)*] : operation-name ['('[name=value [, name=value]*]')'] [{header (;header)*}]
 
-e.g. /subsystem=web/connector=http:read-attribute(name=protocol)
+e.g. /subsystem=undertow/listener=http:read-attribute(name=enabled)
 
 If the operation request doesn't require a node path then the request can start
 with ':' followed by an operation name and the property list if necessary ('/:'

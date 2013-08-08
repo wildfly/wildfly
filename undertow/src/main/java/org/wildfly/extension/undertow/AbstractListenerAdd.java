@@ -70,20 +70,22 @@ abstract class AbstractListenerAdd extends AbstractAddStepHandler {
         boolean enabled = AbstractListenerResourceDefinition.ENABLED.resolveModelAttribute(context, model).asBoolean();
         long maxUploadSize = AbstractListenerResourceDefinition.MAX_POST_SIZE.resolveModelAttribute(context, model).asLong();
         String serverName = parent.getLastElement().getValue();
-        if (enabled) {
-            final AbstractListenerService<? extends AbstractListenerService> service = createService(name, serverName, context, model, maxUploadSize);
-            final ServiceBuilder<? extends AbstractListenerService> serviceBuilder = context.getServiceTarget().addService(constructServiceName(name), service);
-            serviceBuilder.addDependency(IOServices.WORKER.append(workerName), XnioWorker.class, service.getWorker())
-                    .addDependency(SocketBinding.JBOSS_BINDING_NAME.append(bindingRef), SocketBinding.class, service.getBinding())
-                    .addDependency(IOServices.BUFFER_POOL.append(bufferPoolName), Pool.class, service.getBufferPool())
-                    .addDependency(UndertowService.SERVER.append(serverName), Server.class, service.getServerService());
 
-            configureAdditionalDependencies(context, serviceBuilder, model, service);
+        final AbstractListenerService<? extends AbstractListenerService> service = createService(name, serverName, context, model, maxUploadSize);
+        final ServiceBuilder<? extends AbstractListenerService> serviceBuilder = context.getServiceTarget().addService(constructServiceName(name), service);
+        serviceBuilder.addDependency(IOServices.WORKER.append(workerName), XnioWorker.class, service.getWorker())
+                .addDependency(SocketBinding.JBOSS_BINDING_NAME.append(bindingRef), SocketBinding.class, service.getBinding())
+                .addDependency(IOServices.BUFFER_POOL.append(bufferPoolName), Pool.class, service.getBufferPool())
+                .addDependency(UndertowService.SERVER.append(serverName), Server.class, service.getServerService());
 
-            final ServiceController<? extends AbstractListenerService> serviceController = serviceBuilder.install();
-            if (newControllers != null) {
-                newControllers.add(serviceController);
-            }
+
+        configureAdditionalDependencies(context, serviceBuilder, model, service);
+        serviceBuilder.setInitialMode(enabled ? ServiceController.Mode.ACTIVE : ServiceController.Mode.NEVER);
+
+        serviceBuilder.addListener(verificationHandler);
+        final ServiceController<? extends AbstractListenerService> serviceController = serviceBuilder.install();
+        if (newControllers != null) {
+            newControllers.add(serviceController);
         }
     }
 

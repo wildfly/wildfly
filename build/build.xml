@@ -857,10 +857,6 @@
             <maven-resource group="org.wildfly" artifact="wildfly-clustering-singleton"/>
         </module-def>
 
-        <module-def name="org.wildfly.clustering.web.catalina">
-            <maven-resource group="org.wildfly" artifact="wildfly-clustering-web-catalina"/>
-        </module-def>
-
         <module-def name="org.jboss.as.clustering.web.infinispan">
             <!-- Dummy module that just depends on org.wildfly.clustering.web.infinispan -->
             <!-- For configuration backwards compatability reasons -->
@@ -991,10 +987,6 @@
             <maven-resource group="org.wildfly" artifact="wildfly-mod_cluster-undertow"/>
         </module-def>
 
-        <module-def name="org.wildfly.mod_cluster.web">
-            <maven-resource group="org.wildfly" artifact="wildfly-mod_cluster-web"/>
-        </module-def>
-
         <module-def name="org.jboss.as.pojo">
             <maven-resource group="org.wildfly" artifact="wildfly-pojo"/>
         </module-def>
@@ -1027,9 +1019,6 @@
 
         <module-def name="org.jboss.as.web">
             <maven-resource group="org.wildfly" artifact="wildfly-web"/>
-            <maven-resource group="org.eclipse.jdt.core.compiler" artifact="ecj"/>
-            <maven-resource group="org.jboss.web" artifact="jbossweb"/>
-            <extract-native-jar group="org.jboss.as" artifact="jbossweb-native"/>
         </module-def>
 
         <module-def name="org.jboss.as.web-common">
@@ -1121,11 +1110,6 @@
 
         <module-def name="org.jboss.mod_cluster.container.spi">
             <maven-resource group="org.jboss.mod_cluster" artifact="mod_cluster-container-spi"/>
-        </module-def>
-
-        <module-def name="org.jboss.mod_cluster.container.jbossweb">
-            <maven-resource group="org.jboss.mod_cluster" artifact="mod_cluster-container-catalina"/>
-            <maven-resource group="org.jboss.mod_cluster" artifact="mod_cluster-container-jbossweb"/>
         </module-def>
 
         <module-def name="org.jboss.mod_cluster.core">
