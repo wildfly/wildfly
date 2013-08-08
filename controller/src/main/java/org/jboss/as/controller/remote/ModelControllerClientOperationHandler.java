@@ -116,6 +116,7 @@ public class ModelControllerClientOperationHandler implements ManagementRequestH
                         //TODO find a better place for this https://issues.jboss.org/browse/WFLY-1852
                     Subject useSubject = subject;
                     if (subject != null) {
+                        //TODO find a better place for this https://issues.jboss.org/browse/WFLY-1852
                         PrivilegedAction<Subject> copyAction = new PrivilegedAction<Subject>() {
                             @Override
                             public Subject run() {

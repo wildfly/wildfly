@@ -1,10 +1,8 @@
 /*
  * JBoss, Home of Professional Open Source.
-<<<<<<< HEAD
  * Copyright 2013, Red Hat, Inc., and individual contributors
-=======
  * Copyright 2012, Red Hat, Inc., and individual contributors
->>>>>>> d94ab03... [WFLY-456] Audit Logging - squashed the below commits since master has changed so much
+ * Copyright 2013, Red Hat, Inc., and individual contributors
  * as indicated by the @author tags. See the copyright.txt file in the
  * distribution for a full listing of individual contributors.
  *

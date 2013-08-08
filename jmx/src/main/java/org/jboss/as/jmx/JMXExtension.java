@@ -54,7 +54,7 @@ import org.jboss.as.controller.PathElement;
 import org.jboss.as.controller.SubsystemRegistration;
 import org.jboss.as.controller.access.constraint.SensitivityClassification;
 import org.jboss.as.controller.access.constraint.management.SensitiveTargetAccessConstraintDefinition;
-import org.jboss.as.controller.audit.AuditLogger;
+import org.jboss.as.controller.audit.ManagedAuditLogger;
 import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
 import org.jboss.as.controller.descriptions.ResourceDescriptionResolver;
 import org.jboss.as.controller.descriptions.StandardResourceDescriptionResolver;
@@ -121,7 +121,7 @@ public class JMXExtension implements Extension {
                 MANAGEMENT_API_MINOR_VERSION, MANAGEMENT_API_MICRO_VERSION);
 
         //This is ugly but for now we don't want to make the audit logger easily available to all extensions
-        AuditLogger auditLogger = ((ExtensionContextImpl)context).getAuditLogger(false, true);
+        ManagedAuditLogger auditLogger = (ManagedAuditLogger)((ExtensionContextImpl)context).getAuditLogger(false, true);
 
         registration.registerSubsystemModel(JMXSubsystemRootResource.create(auditLogger));
         registration.registerXMLElementWriter(writer);

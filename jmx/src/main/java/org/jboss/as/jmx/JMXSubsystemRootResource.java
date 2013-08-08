@@ -38,7 +38,6 @@ import org.jboss.as.controller.SimpleAttributeDefinition;
 import org.jboss.as.controller.SimpleAttributeDefinitionBuilder;
 import org.jboss.as.controller.SimpleResourceDefinition;
 import org.jboss.as.controller.access.constraint.management.AccessConstraintDefinition;
-import org.jboss.as.controller.audit.AuditLogger;
 import org.jboss.as.controller.audit.ManagedAuditLogger;
 import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
 import org.jboss.as.controller.operations.common.GenericSubsystemDescribeHandler;
@@ -75,7 +74,7 @@ public class JMXSubsystemRootResource extends SimpleResourceDefinition {
         this.auditLoggerInfo = auditLoggerInfo;
     }
 
-    public static JMXSubsystemRootResource create(AuditLogger auditLogger) {
+    public static JMXSubsystemRootResource create(ManagedAuditLogger auditLogger) {
         return new JMXSubsystemRootResource(new AuditLoggerInfo(auditLogger));
     }
 
@@ -95,8 +94,7 @@ public class JMXSubsystemRootResource extends SimpleResourceDefinition {
         resourceRegistration.registerSubModel(new ExposeModelResourceResolved(auditLoggerInfo));
         resourceRegistration.registerSubModel(new ExposeModelResourceExpression(auditLoggerInfo));
         resourceRegistration.registerSubModel(RemotingConnectorResource.INSTANCE);
-        //TODO This cast is not very nice
-        resourceRegistration.registerSubModel(new JmxAuditLoggerResourceDefinition((ManagedAuditLogger)auditLoggerInfo.getAuditLogger()));
+        resourceRegistration.registerSubModel(new JmxAuditLoggerResourceDefinition(auditLoggerInfo.getAuditLogger()));
     }
 
     @Override
