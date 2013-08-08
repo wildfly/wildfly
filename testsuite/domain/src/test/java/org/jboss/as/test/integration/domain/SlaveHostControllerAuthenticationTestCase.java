@@ -75,6 +75,7 @@ public class SlaveHostControllerAuthenticationTestCase {
     private static final String RIGHT_PASSWORD = DomainLifecycleUtil.SLAVE_HOST_PASSWORD;
     private static final String ENC_DAT_FILE = "ENC.dat";
     private static final String SHARED_DAT_FILE = "Shared.dat";
+    private static final String VAULT_DAT_FILE = "VAULT.dat";
     private static final File keyStoreFile = new File(System.getProperty("java.io.tmpdir"), KEYSTORE_FILENAME);
     private static final int TIMEOUT = 60000;
 
@@ -197,12 +198,15 @@ public class SlaveHostControllerAuthenticationTestCase {
     }
 
     private static void cleanTempDir() {
-        File datFile1 = new File(System.getProperty("java.io.tmpdir"), ENC_DAT_FILE);
-        if (datFile1.exists())
-            datFile1.delete();
-        File datFile2 = new File(System.getProperty("java.io.tmpdir"), SHARED_DAT_FILE);
-        if (datFile2.exists())
-            datFile2.delete();
+        deleteInTmp(ENC_DAT_FILE);
+        deleteInTmp(SHARED_DAT_FILE);
+        deleteInTmp(VAULT_DAT_FILE);
+    }
+
+    private static void deleteInTmp(final String name) {
+        File file = new File(System.getProperty("java.io.tmpdir"), name);
+        if (file.exists())
+            file.delete();
     }
 
     private static void reloadSlave() throws Exception {
