@@ -21,73 +21,80 @@
  */
 package org.wildfly.clustering.web.undertow.session;
 
-import static org.junit.Assert.*;
-import static org.mockito.Mockito.*;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertNull;
+import static org.junit.Assert.assertSame;
+import static org.junit.Assert.assertTrue;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
 import io.undertow.server.HttpServerExchange;
 import io.undertow.server.session.SessionConfig;
 import io.undertow.server.session.SessionListener;
 
+import java.util.Collections;
 import java.util.Map;
+import java.util.Set;
 import java.util.concurrent.TimeUnit;
 
-import org.jboss.metadata.web.jboss.ReplicationConfig;
 import org.junit.Before;
 import org.junit.Test;
 import org.wildfly.clustering.web.Batcher;
+import org.wildfly.clustering.web.session.ImmutableSession;
 import org.wildfly.clustering.web.session.Session;
 import org.wildfly.clustering.web.session.SessionManager;
 
 public class SessionManagerFacadeTestCase {
     private final SessionManager<Void> manager = mock(SessionManager.class);
-    private final ReplicationConfig config = new ReplicationConfig();
     private final SessionListener listener = mock(SessionListener.class);
 
-    private SessionManagerFacade facade = new SessionManagerFacade(this.manager, this.config);
+    private SessionManagerAdapter adapter = new SessionManagerAdapter(this.manager);
 
     @Before
     public void init() {
-        this.facade.registerSessionListener(this.listener);
+        this.adapter.registerSessionListener(this.listener);
     }
 
     @Test
     public void parse() {
-        Map.Entry<String, String> result = this.facade.parse("session1.route1");
+        Map.Entry<String, String> result = this.adapter.parse("session1.route1");
         assertEquals("session1", result.getKey());
         assertEquals("route1", result.getValue());
 
-        result = this.facade.parse("session2");
+        result = this.adapter.parse("session2");
         assertEquals("session2", result.getKey());
         assertNull(result.getValue());
 
-        result = this.facade.parse(null);
+        result = this.adapter.parse(null);
         assertNull(result.getKey());
         assertNull(result.getValue());
     }
 
     @Test
     public void format() {
-        assertEquals("session1.route1", this.facade.format("session1", "route1"));
-        assertEquals("session2", this.facade.format("session2", null));
-        assertNull(this.facade.format(null, null));
+        assertEquals("session1.route1", this.adapter.format("session1", "route1"));
+        assertEquals("session2", this.adapter.format("session2", null));
+        assertNull(this.adapter.format(null, null));
     }
 
     @Test
     public void start() {
-        this.facade.start();
+        this.adapter.start();
         
         verify(this.manager).start();
     }
 
     @Test
     public void stop() {
-        this.facade.stop();
+        this.adapter.stop();
         
         verify(this.manager).stop();
     }
 
     @Test
     public void setDefaultSessionTimeout() {
-        this.facade.setDefaultSessionTimeout(10);
+        this.adapter.setDefaultSessionTimeout(10);
         
         verify(this.manager).setDefaultMaxInactiveInterval(10L, TimeUnit.SECONDS);
     }
@@ -110,17 +117,17 @@ public class SessionManagerFacadeTestCase {
         when(batcher.startBatch()).thenReturn(true);
         when(session.getId()).thenReturn(sessionId);
         
-        io.undertow.server.session.Session sessionFacade = this.facade.createSession(exchange, config);
+        io.undertow.server.session.Session sessionAdapter = this.adapter.createSession(exchange, config);
         
-        assertNotNull(sessionFacade);
+        assertNotNull(sessionAdapter);
         
-        verify(this.listener).sessionCreated(sessionFacade, exchange);
+        verify(this.listener).sessionCreated(sessionAdapter, exchange);
         verify(config).setSessionId(exchange, routingSessionId);
         
         String expected = "expected";
         when(session.getId()).thenReturn(expected);
         
-        String result = sessionFacade.getId();
+        String result = sessionAdapter.getId();
         assertSame(expected, result);
     }
 
@@ -143,17 +150,17 @@ public class SessionManagerFacadeTestCase {
         when(batcher.startBatch()).thenReturn(true);
         when(session.getId()).thenReturn(sessionId);
         
-        io.undertow.server.session.Session sessionFacade = this.facade.createSession(exchange, config);
+        io.undertow.server.session.Session sessionAdapter = this.adapter.createSession(exchange, config);
         
-        assertNotNull(sessionFacade);
+        assertNotNull(sessionAdapter);
         
-        verify(this.listener).sessionCreated(sessionFacade, exchange);
+        verify(this.listener).sessionCreated(sessionAdapter, exchange);
         verify(config).setSessionId(exchange, routingSessionId);
         
         String expected = "expected";
         when(session.getId()).thenReturn(expected);
         
-        String result = sessionFacade.getId();
+        String result = sessionAdapter.getId();
         assertSame(expected, result);
     }
 
@@ -169,7 +176,7 @@ public class SessionManagerFacadeTestCase {
         
         IllegalStateException exception = null;
         try {
-            this.facade.createSession(exchange, config);
+            this.adapter.createSession(exchange, config);
         } catch (IllegalStateException e) {
             exception = e;
         }
@@ -194,16 +201,16 @@ public class SessionManagerFacadeTestCase {
         when(batcher.startBatch()).thenReturn(true);
         when(session.getId()).thenReturn(sessionId);
 
-        io.undertow.server.session.Session sessionFacade = this.facade.getSession(exchange, config);
+        io.undertow.server.session.Session sessionAdapter = this.adapter.getSession(exchange, config);
         
-        assertNotNull(sessionFacade);
+        assertNotNull(sessionAdapter);
         
         verify(config).setSessionId(exchange, routingSessionId);
         
         String expected = "expected";
         when(session.getId()).thenReturn(expected);
         
-        String result = sessionFacade.getId();
+        String result = sessionAdapter.getId();
         assertSame(expected, result);
     }
 
@@ -214,9 +221,9 @@ public class SessionManagerFacadeTestCase {
         
         when(config.findSessionId(exchange)).thenReturn(null);
 
-        io.undertow.server.session.Session sessionFacade = this.facade.getSession(exchange, config);
+        io.undertow.server.session.Session sessionAdapter = this.adapter.getSession(exchange, config);
         
-        assertNull(sessionFacade);
+        assertNull(sessionAdapter);
     }
 
     @Test
@@ -232,10 +239,83 @@ public class SessionManagerFacadeTestCase {
         when(this.manager.getBatcher()).thenReturn(batcher);
         when(batcher.startBatch()).thenReturn(true);
 
-        io.undertow.server.session.Session sessionFacade = this.facade.getSession(exchange, config);
+        io.undertow.server.session.Session sessionAdapter = this.adapter.getSession(exchange, config);
         
-        assertNull(sessionFacade);
+        assertNull(sessionAdapter);
         
+        verify(batcher).endBatch(false);
+    }
+
+    @Test
+    public void activeSessions() {
+        when(this.manager.getActiveSessions()).thenReturn(Collections.singleton("expected"));
+        
+        int result = this.adapter.activeSessions();
+        
+        assertEquals(1, result);
+    }
+
+    @Test
+    public void getTransientSessions() {
+        Set<String> result = this.adapter.getTransientSessions();
+        
+        assertTrue(result.isEmpty());
+    }
+
+    @Test
+    public void getActiveSessions() {
+        String expected = "expected";
+        when(this.manager.getActiveSessions()).thenReturn(Collections.singleton(expected));
+
+        Set<String> result = this.adapter.getActiveSessions();
+        
+        assertEquals(1, result.size());
+        assertSame(expected, result.iterator().next());
+    }
+
+    @Test
+    public void getAllSessions() {
+        String expected = "expected";
+        when(this.manager.getLocalSessions()).thenReturn(Collections.singleton(expected));
+
+        Set<String> result = this.adapter.getAllSessions();
+        
+        assertEquals(1, result.size());
+        assertSame(expected, result.iterator().next());
+    }
+
+    @Test
+    public void getSessionByIdentifier() {
+        ImmutableSession session = mock(ImmutableSession.class);
+        String id = "session";
+        Batcher batcher = mock(Batcher.class);
+        
+        when(this.manager.getBatcher()).thenReturn(batcher);
+        when(this.manager.viewSession(id)).thenReturn(session);
+        when(session.getId()).thenReturn(id);
+        when(batcher.startBatch()).thenReturn(true);
+        
+        io.undertow.server.session.Session result = this.adapter.getSession(id);
+        
+        assertSame(this.adapter, result.getSessionManager());
+        assertSame(id, result.getId());
+        
+        verify(batcher).endBatch(false);
+    }
+
+    @Test
+    public void getSessionByIdentifierNotExists() {
+        String id = "session";
+        Batcher batcher = mock(Batcher.class);
+        
+        when(this.manager.getBatcher()).thenReturn(batcher);
+        when(this.manager.viewSession(id)).thenReturn(null);
+        when(batcher.startBatch()).thenReturn(true);
+        
+        io.undertow.server.session.Session result = this.adapter.getSession(id);
+        
+        assertNull(result);
+
         verify(batcher).endBatch(false);
     }
 }

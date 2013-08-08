@@ -33,26 +33,21 @@ import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.TimeUnit;
 
-import org.jboss.metadata.web.jboss.ReplicationConfig;
 import org.wildfly.clustering.web.Batcher;
+import org.wildfly.clustering.web.session.ImmutableSession;
 import org.wildfly.clustering.web.session.Session;
 import org.wildfly.clustering.web.session.SessionManager;
 
 /**
- * Undertow facade for a {@link SessionManager}.
+ * Undertow adapter for a {@link SessionManager}.
  * @author Paul Ferraro
  */
-public class SessionManagerFacade implements UndertowSessionManager {
-    private final ReplicationConfig config;
+public class SessionManagerAdapter implements UndertowSessionManager {
     private final SessionListeners sessionListeners = new SessionListeners();
     private final SessionManager<Void> manager;
 
-    public SessionManagerFacade(SessionManager<Void> manager, ReplicationConfig config) {
+    public SessionManagerAdapter(SessionManager<Void> manager) {
         this.manager = manager;
-        this.config = config;
-        if (this.config.getUseJK() == null) {
-            this.config.setUseJK(true);
-        }
     }
 
     @Override
@@ -110,9 +105,9 @@ public class SessionManagerFacade implements UndertowSessionManager {
         boolean started = batcher.startBatch();
         try {
             Session<Void> session = this.manager.createSession(id);
-            io.undertow.server.session.Session facade = this.getSession(session, exchange, config);
-            this.sessionListeners.sessionCreated(facade, exchange);
-            return facade;
+            io.undertow.server.session.Session adapter = this.getSession(session, exchange, config);
+            this.sessionListeners.sessionCreated(adapter, exchange);
+            return adapter;
         } catch (RuntimeException | Error e) {
             if (started) {
                 batcher.endBatch(false);
@@ -144,19 +139,20 @@ public class SessionManagerFacade implements UndertowSessionManager {
      */
     private String findSessionId(HttpServerExchange exchange, SessionConfig config) {
         String id = config.findSessionId(exchange);
-        return this.config.getUseJK().booleanValue() ? this.parse(id).getKey() : id;
+        return this.parse(id).getKey();
     }
 
     /**
      * Appends routing information to session identifier.
      */
     private io.undertow.server.session.Session getSession(Session<Void> session, HttpServerExchange exchange, SessionConfig config) {
-        SessionFacade facade = new SessionFacade(this, session, config);
-        if (this.config.getUseJK().booleanValue()) {
+        SessionAdapter adapter = new SessionAdapter(this, session, config);
+        if (config != null) {
             String id = session.getId();
-            config.setSessionId(exchange, this.format(id, this.locate(id)));
+            String route = this.locate(id);
+            config.setSessionId(exchange, (route != null) ? this.format(id, route) : id);
         }
-        return facade;
+        return adapter;
     }
 
     @Override
@@ -176,29 +172,36 @@ public class SessionManagerFacade implements UndertowSessionManager {
 
     @Override
     public int activeSessions() {
-        return this.manager.size();
+        return this.manager.getActiveSessions().size();
     }
 
     @Override
     public Set<String> getTransientSessions() {
+        // We are a distributed session manager, so none of our sessions are transient
         return Collections.emptySet();
     }
 
     @Override
     public Set<String> getActiveSessions() {
-        return Collections.emptySet();
+        return this.manager.getActiveSessions();
     }
 
     @Override
     public Set<String> getAllSessions() {
-        //TODO: real implementation
-        return Collections.emptySet();
+        return this.manager.getLocalSessions();
     }
 
     @Override
     public io.undertow.server.session.Session getSession(String sessionId) {
-        Session<Void> session = this.manager.findSession(sessionId);
-        if (session == null) { return null; }
-        return new SessionFacade(this, session, null);
+        Batcher batcher = this.manager.getBatcher();
+        boolean started = batcher.startBatch();
+        try {
+            ImmutableSession session = this.manager.viewSession(sessionId);
+            return (session != null) ? new ImmutableSessionAdapter(this, session) : null;
+        } finally {
+            if (started) {
+                batcher.endBatch(false);
+            }
+        }
     }
 }

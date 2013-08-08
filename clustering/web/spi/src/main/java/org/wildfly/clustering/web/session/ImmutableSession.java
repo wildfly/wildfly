@@ -33,7 +33,7 @@ public interface ImmutableSession {
     String getId();
 
     /**
-     * Abstraction for session meta information.
+     * Returns this session's meta data.
      * @return this session's meta data
      * @throws IllegalStateException if this session is invalid
      */
@@ -46,14 +46,14 @@ public interface ImmutableSession {
     boolean isValid();
 
     /**
-     * Abstraction for accessing and manipulating session attributes.
+     * Returns this session's attributes.
      * @return this session's attributes
      * @throws IllegalStateException if this session is invalid
      */
     ImmutableSessionAttributes getAttributes();
 
     /**
-     * The application context of this session.
+     * Returns the application context of this session.
      * @return the session's context
      */
     SessionContext getContext();

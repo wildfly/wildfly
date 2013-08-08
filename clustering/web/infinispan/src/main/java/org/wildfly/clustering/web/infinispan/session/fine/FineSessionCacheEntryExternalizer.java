@@ -59,7 +59,7 @@ public class FineSessionCacheEntryExternalizer extends AbstractSimpleExternalize
     }
 
     @Override
-    public FineSessionCacheEntry<Object> readObject(ObjectInput input) throws IOException, ClassNotFoundException {
+    public FineSessionCacheEntry<Object> readObject(ObjectInput input) throws IOException {
         FineSessionCacheEntry<Object> entry = new FineSessionCacheEntry<>(this.externalizer.readObject(input));
         Set<String> attributes = entry.getAttributes();
         int size = input.readInt();

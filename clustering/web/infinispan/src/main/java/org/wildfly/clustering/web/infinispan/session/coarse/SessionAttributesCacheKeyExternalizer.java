@@ -44,7 +44,7 @@ public class SessionAttributesCacheKeyExternalizer extends AbstractSimpleExterna
     }
 
     @Override
-    public SessionAttributesCacheKey readObject(ObjectInput input) throws IOException, ClassNotFoundException {
+    public SessionAttributesCacheKey readObject(ObjectInput input) throws IOException {
         return new SessionAttributesCacheKey(input.readUTF());
     }
 }
