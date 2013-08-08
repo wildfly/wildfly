@@ -123,6 +123,7 @@ public class ModelControllerClientOperationHandler implements ManagementRequestH
                     final ManagementResponseHeader response = ManagementResponseHeader.create(context.getRequestHeader());
                     Subject useSubject = subject;
                     if (subject != null) {
+                        //TODO find a better place for this https://issues.jboss.org/browse/WFLY-1852
                         PrivilegedAction<Subject> copyAction = new PrivilegedAction<Subject>() {
                             @Override
                             public Subject run() {
@@ -135,6 +136,7 @@ public class ModelControllerClientOperationHandler implements ManagementRequestH
                                 Collection<Principal> principals = context.getChannel().getConnection().getPrincipals();
                                 for (Principal principal : principals) {
                                     if (principal instanceof InetAddressPrincipal) {
+                                        //TODO decide if we should use the remoting principal or not
                                         copySubject.getPrincipals().add(new org.jboss.as.controller.security.InetAddressPrincipal((InetAddressPrincipal)principal));
                                         break;
                                     }

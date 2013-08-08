@@ -68,6 +68,7 @@ class ServerInterceptorFactory implements ServerMessageInterceptorFactory {
             if (userInfo instanceof SubjectUserInfo) {
                 final Subject subject = ((SubjectUserInfo) userInfo).getSubject();
                 Subject useSubject = subject;
+                //TODO find a better place for this https://issues.jboss.org/browse/WFLY-1852
                 PrivilegedAction<Subject> copyAction = new PrivilegedAction<Subject>() {
                     @Override
                     public Subject run() {
@@ -79,6 +80,7 @@ class ServerInterceptorFactory implements ServerMessageInterceptorFactory {
                         Collection<Principal> principals = channel.getConnection().getPrincipals();
                         for (Principal principal : principals) {
                             if (principal instanceof InetAddressPrincipal) {
+                                //TODO decide if we should use the remoting principal or not
                                 copySubject.getPrincipals().add(new org.jboss.as.controller.security.InetAddressPrincipal((InetAddressPrincipal)principal));
                                 break;
                             }

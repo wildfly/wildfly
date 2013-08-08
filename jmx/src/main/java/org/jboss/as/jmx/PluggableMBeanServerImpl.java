@@ -85,6 +85,10 @@ class PluggableMBeanServerImpl implements PluggableMBeanServer {
         return auditLoggerInfo.isBooting();
     }
 
+    boolean shouldLog(boolean readOnly) {
+        return auditLoggerInfo.shouldLog(readOnly);
+    }
+
     public void addPlugin(MBeanServerPlugin delegate) {
         delegates.add(delegate);
     }

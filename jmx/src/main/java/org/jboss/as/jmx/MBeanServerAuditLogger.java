@@ -473,8 +473,7 @@ public class MBeanServerAuditLogger implements MBeanServer {
     }
 
     private boolean shouldLog(boolean readOnly) {
-        //TODO
-        return true;
+        return pluggableMBeanServerImpl.shouldLog(readOnly);
     }
 
     private boolean isOperationReadOnly(ObjectName name, String operationName, String[] signature) {

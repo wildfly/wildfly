@@ -21,21 +21,21 @@
  */
 package org.jboss.as.jmx;
 
-import org.jboss.as.controller.audit.AuditLogger;
+import org.jboss.as.controller.audit.ManagedAuditLogger;
 
 /**
  *
  * @author <a href="kabir.khan@jboss.com">Kabir Khan</a>
  */
 class AuditLoggerInfo {
-    private final AuditLogger auditLogger;
+    private final ManagedAuditLogger auditLogger;
     private volatile boolean booting = true;
 
-    public AuditLoggerInfo(AuditLogger auditLogger) {
+    public AuditLoggerInfo(ManagedAuditLogger auditLogger) {
         this.auditLogger = auditLogger;
     }
 
-    AuditLogger getAuditLogger() {
+    ManagedAuditLogger getAuditLogger() {
         return auditLogger;
     }
 
@@ -45,5 +45,15 @@ class AuditLoggerInfo {
 
     void setBooting(boolean booting) {
         this.booting = booting;
+    }
+
+    public boolean shouldLog(boolean readOnly) {
+        if (booting && !auditLogger.isLogBoot()) {
+            return false;
+        }
+        if (readOnly && !auditLogger.isLogReadOnly()) {
+            return false;
+        }
+        return true;
     }
 }
