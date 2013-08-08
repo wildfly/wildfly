@@ -81,7 +81,7 @@ class ServerInterceptorFactory implements ServerMessageInterceptorFactory {
                         for (Principal principal : principals) {
                             if (principal instanceof InetAddressPrincipal) {
                                 //TODO decide if we should use the remoting principal or not
-                                copySubject.getPrincipals().add(new org.jboss.as.controller.security.InetAddressPrincipal((InetAddressPrincipal)principal));
+                                copySubject.getPrincipals().add(new org.jboss.as.controller.security.InetAddressPrincipal(((InetAddressPrincipal)principal).getInetAddress()));
                                 break;
                             }
                         }
