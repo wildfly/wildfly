@@ -133,6 +133,8 @@ public class BridgeAdd extends AbstractAddStepHandler {
             return new BridgeConfiguration(name, queueName, forwardingAddress, filterString, transformerClassName,
                               minLargeMessageSize, clientFailureCheckPeriod, connectionTTL,
                               retryInterval, maxRetryInterval, retryIntervalMultiplier, reconnectAttempts,
+                              -1, // reconnect attemps on same node is -1 on EAP 6.1 as we don't have a config option,
+                                  // we will keep trying forever
                               useDuplicateDetection, confirmationWindowSize,
                               discoveryGroupName,
                               ha,
@@ -141,6 +143,8 @@ public class BridgeAdd extends AbstractAddStepHandler {
             return new BridgeConfiguration(name, queueName, forwardingAddress, filterString, transformerClassName,
                               minLargeMessageSize, clientFailureCheckPeriod, connectionTTL,
                               retryInterval, maxRetryInterval, retryIntervalMultiplier, reconnectAttempts,
+                              -1, // reconnect attemps on same node is -1 on EAP 6.1 as we don't have a config option,
+                                  // we will keep trying forever
                               useDuplicateDetection, confirmationWindowSize,
                               staticConnectors,
                               ha,
