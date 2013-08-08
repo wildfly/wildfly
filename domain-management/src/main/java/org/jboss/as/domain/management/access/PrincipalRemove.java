@@ -22,7 +22,10 @@
 
 package org.jboss.as.domain.management.access;
 
+import static org.jboss.as.domain.management.DomainManagementMessages.MESSAGES;
+
 import org.jboss.as.controller.OperationContext;
+import org.jboss.as.controller.OperationContext.RollbackHandler;
 import org.jboss.as.controller.OperationContext.Stage;
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.OperationStepHandler;
@@ -70,6 +73,13 @@ public class PrincipalRemove implements OperationStepHandler {
             RbacSanityCheckOperation.registerOperation(context);
         }
 
+        registerRuntimeRemove(context, roleName, principalType, name, realm);
+
+        context.stepCompleted();
+    }
+
+    private void registerRuntimeRemove(final OperationContext context, final String roleName,
+            final PrincipalType principalType, final String name, final String realm) {
         /*
          * The address of the resource whilst hopefully being related to the attributes of the Principal resource is not
          * guaranteed, a unique name is needed but not one attribute can be regarded as being suitable as a unique key.
@@ -78,12 +88,27 @@ public class PrincipalRemove implements OperationStepHandler {
 
             @Override
             public void execute(OperationContext context, ModelNode operation) throws OperationFailedException {
-                roleMapper.removePrincipal(roleName, principalType, matchType, name, realm);
-                context.stepCompleted();
+                if (roleMapper.removePrincipal(roleName, principalType, matchType, name, realm)) {
+                    registerRollbackHandler(context, roleName, principalType, name, realm);
+                } else {
+                    context.restartRequired();
+                    throw MESSAGES.inconsistentRbacRuntimeState();
+                }
             }
         }, Stage.RUNTIME);
+    }
 
-        context.stepCompleted();
+    private void registerRollbackHandler(final OperationContext context, final String roleName,
+            final PrincipalType principalType, final String name, final String realm) {
+        context.completeStep(new RollbackHandler() {
+
+            @Override
+            public void handleRollback(OperationContext context, ModelNode operation) {
+                if (roleMapper.addPrincipal(roleName, principalType, matchType, name, realm, false) == false) {
+                    context.restartRequired();
+                }
+            }
+        });
     }
 
 }

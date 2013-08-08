@@ -28,7 +28,9 @@ import java.security.Permission;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.Map;
 import java.util.Set;
+import java.util.WeakHashMap;
 
 import org.jboss.as.controller.access.Action;
 import org.jboss.as.controller.access.Caller;
@@ -47,6 +49,8 @@ public class ConfigurableRoleMapper implements RoleMapper {
     private static final RunAsRolePermission RUN_AS_IN_VM_ROLE = new RunAsRolePermission(IN_VM_ROLE);
 
     private volatile HashMap<String, Role> roles = new HashMap<String, Role>();
+    private final Map<Object, Role> removedRoles = new WeakHashMap<Object, Role>();
+
     private volatile boolean useRealmRoles;
 
     public enum PrincipalType {
@@ -81,32 +85,63 @@ public class ConfigurableRoleMapper implements RoleMapper {
      * Remove a role from the list of defined roles.
      *
      * @param roleName - The name of the role to be removed.
+     * @return A key that can be used to undo the removal.
      */
-    public synchronized void removeRole(final String roleName) {
+    public synchronized Object removeRole(final String roleName) {
         /*
          * Would not expect this to happen during boot so don't offer the 'immediate' optimisation.
          */
         HashMap<String, Role> newRoles = new HashMap<String, Role>(roles);
         if (newRoles.containsKey(roleName)) {
-            newRoles.remove(roleName);
+            Role removed = newRoles.remove(roleName);
+            Object removalKey = new Object();
+            removedRoles.put(removalKey, removed);
             roles = newRoles;
+
+            return removalKey;
         }
+
+        return null;
     }
 
-    public void addPrincipal(final String roleName, final PrincipalType principalType, final MatchType matchType,
+    /**
+     * Undo a prior removal using the supplied undo key.
+     *
+     * @param removalKey - The key returned from the call to removeRole.
+     * @return true if the undo was successfull, false otherwise.
+     */
+    public synchronized boolean undoRemove(final Object removalKey) {
+        HashMap<String, Role> newRoles = new HashMap<String, Role>(roles);
+        Role toRestore = removedRoles.remove(removalKey);
+        if (toRestore != null && newRoles.containsKey(toRestore.getName()) == false) {
+            newRoles.put(toRestore.getName(), toRestore);
+            roles = newRoles;
+            return true;
+        }
+
+        return false;
+    }
+
+    public boolean addPrincipal(final String roleName, final PrincipalType principalType, final MatchType matchType,
             final String name, final String realm, final boolean immediate) {
         Role role = roles.get(roleName);
-        if (immediate) {
-            role.addPrincipalImmediate(createPrincipal(principalType, name, realm), matchType);
-        } else {
-            role.addPrincipal(createPrincipal(principalType, name, realm), matchType);
+        if (role != null) {
+            if (immediate) {
+                return role.addPrincipalImmediate(createPrincipal(principalType, name, realm), matchType);
+            } else {
+                return role.addPrincipal(createPrincipal(principalType, name, realm), matchType);
+            }
         }
+        return false;
     }
 
-    public void removePrincipal(final String roleName, final PrincipalType principalType, final MatchType matchType,
+    public boolean removePrincipal(final String roleName, final PrincipalType principalType, final MatchType matchType,
             final String name, final String realm) {
         Role role = roles.get(roleName);
-        role.removePrincipal(createPrincipal(principalType, name, realm), matchType);
+        if (role != null) {
+            return role.removePrincipal(createPrincipal(principalType, name, realm), matchType);
+        }
+        return false;
     }
 
     private Principal createPrincipal(final PrincipalType principalType, final String name, final String realm) {
@@ -260,24 +295,31 @@ public class ConfigurableRoleMapper implements RoleMapper {
             return sb.toString();
         }
 
-        private void addPrincipalImmediate(final Principal principal, final MatchType matchType) {
+        private boolean addPrincipalImmediate(final Principal principal, final MatchType matchType) {
             HashSet<Principal> set = getSet(matchType, true);
-            set.add(principal); // TODO - Work out how to handle duplicates.
-            setSet(set, matchType, true);
+            try {
+                return set.add(principal);
+            } finally {
+                setSet(set, matchType, true);
+            }
         }
 
-        private synchronized void addPrincipal(final Principal principal, final MatchType matchType) {
+        private synchronized boolean addPrincipal(final Principal principal, final MatchType matchType) {
             HashSet<Principal> set = getSet(matchType, false);
-            set.add(principal); // TODO - Work out how to handle duplicates.
-
-            setSet(set, matchType, false);
+            try {
+                return set.add(principal);
+            } finally {
+                setSet(set, matchType, false);
+            }
         }
 
-        private synchronized void removePrincipal(final Principal principal, final MatchType matchType) {
+        private synchronized boolean removePrincipal(final Principal principal, final MatchType matchType) {
             HashSet<Principal> set = getSet(matchType, false);
-            set.remove(principal); // TODO - Work out how to handle missing entries.
-
-            setSet(set, matchType, false);
+            try {
+                return set.remove(principal);
+            } finally {
+                setSet(set, matchType, false);
+            }
         }
 
         private Principal isIncluded(Caller caller) {
