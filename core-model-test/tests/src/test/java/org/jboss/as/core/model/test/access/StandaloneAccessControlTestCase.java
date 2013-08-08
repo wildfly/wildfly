@@ -21,14 +21,34 @@
 */
 package org.jboss.as.core.model.test.access;
 
+import static org.jboss.as.controller.PathElement.pathElement;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ACCESS;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.APPLICATION_CLASSIFICATION;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.AUTHORIZATION;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.CLASSIFICATION;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.CONSTRAINT;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.CORE;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.CORE_SERVICE;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.MANAGEMENT;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.RESULT;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SECURITY_REALM;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SENSITIVITY_CLASSIFICATION;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.TYPE;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.VAULT_EXPRESSION;
+
+import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.access.constraint.ApplicationTypeConfig;
 import org.jboss.as.controller.access.constraint.SensitivityClassification;
 import org.jboss.as.controller.access.constraint.management.ApplicationTypeAccessConstraintDefinition;
 import org.jboss.as.controller.access.constraint.management.SensitiveTargetAccessConstraintDefinition;
+import org.jboss.as.controller.operations.common.Util;
 import org.jboss.as.core.model.test.AbstractCoreModelTest;
 import org.jboss.as.core.model.test.KernelServices;
 import org.jboss.as.core.model.test.TestModelType;
+import org.jboss.as.domain.management.access.ApplicationClassificationConfigResourceDefinition;
+import org.jboss.as.domain.management.access.SensitivityResourceDefinition;
 import org.jboss.as.model.test.ModelTestUtils;
+import org.jboss.dmr.ModelNode;
 import org.junit.Assert;
 import org.junit.Test;
 
@@ -39,6 +59,7 @@ import org.junit.Test;
  * @author <a href="kabir.khan@jboss.com">Kabir Khan</a>
  */
 public class StandaloneAccessControlTestCase extends AbstractCoreModelTest {
+    private static final String SOCKET_CONFIG = SensitivityClassification.SOCKET_CONFIG.getName();
 
     @Test
     public void testConfiguration() throws Exception {
@@ -55,5 +76,77 @@ public class StandaloneAccessControlTestCase extends AbstractCoreModelTest {
 
         String marshalled = kernelServices.getPersistedSubsystemXml();
         ModelTestUtils.compareXml(ModelTestUtils.readResource(this.getClass(), "standalone.xml"), marshalled);
+
+        //////////////////////////////////////////////////////////////////////////////////
+        //Check that both set and undefined configured constraint settings get returned
+
+        System.out.println(kernelServices.readWholeModel());
+        //Sensitivity classification
+        //This one is undefined
+        ModelNode result = ModelTestUtils.checkOutcome(
+                kernelServices.executeOperation(
+                    Util.getReadAttributeOperation(PathAddress.pathAddress(
+                        pathElement(CORE_SERVICE, MANAGEMENT),
+                        pathElement(ACCESS, AUTHORIZATION),
+                        pathElement(CONSTRAINT, SENSITIVITY_CLASSIFICATION),
+                        pathElement(TYPE, CORE),
+                        pathElement(CLASSIFICATION, SOCKET_CONFIG)), SensitivityResourceDefinition.CONFIGURED_REQUIRES_ADDRESSABLE.getName())));
+        checkResultExists(result, new ModelNode());
+        //This one is undefined
+        result = ModelTestUtils.checkOutcome(
+                kernelServices.executeOperation(
+                    Util.getReadAttributeOperation(PathAddress.pathAddress(
+                        pathElement(CORE_SERVICE, MANAGEMENT),
+                        pathElement(ACCESS, AUTHORIZATION),
+                        pathElement(CONSTRAINT, SENSITIVITY_CLASSIFICATION),
+                        pathElement(TYPE, "play"),
+                        pathElement(CLASSIFICATION, SECURITY_REALM)), SensitivityResourceDefinition.CONFIGURED_REQUIRES_ADDRESSABLE.getName())));
+        checkResultExists(result, new ModelNode(false));
+
+        //VaultExpression
+        //It is defined
+        PathAddress vaultAddress = PathAddress.pathAddress(
+                pathElement(CORE_SERVICE, MANAGEMENT),
+                pathElement(ACCESS, AUTHORIZATION),
+                pathElement(CONSTRAINT, VAULT_EXPRESSION));
+        result = ModelTestUtils.checkOutcome(
+                kernelServices.executeOperation(
+                        Util.getReadAttributeOperation(vaultAddress, SensitivityResourceDefinition.CONFIGURED_REQUIRES_ADDRESSABLE.getName())));
+        checkResultExists(result, new ModelNode(false));
+        //Now undefine it and check again
+        ModelTestUtils.checkOutcome(
+                kernelServices.executeOperation(
+                        Util.getUndefineAttributeOperation(vaultAddress, SensitivityResourceDefinition.CONFIGURED_REQUIRES_ADDRESSABLE.getName())));
+        result = ModelTestUtils.checkOutcome(
+                kernelServices.executeOperation(
+                        Util.getReadAttributeOperation(vaultAddress, SensitivityResourceDefinition.CONFIGURED_REQUIRES_ADDRESSABLE.getName())));
+        checkResultExists(result, new ModelNode());
+
+        //Application classification
+        //It is defined
+        PathAddress applicationAddress = PathAddress.pathAddress(
+                pathElement(CORE_SERVICE, MANAGEMENT),
+                pathElement(ACCESS, AUTHORIZATION),
+                pathElement(CONSTRAINT, APPLICATION_CLASSIFICATION),
+                pathElement(TYPE, "play"),
+                pathElement(CLASSIFICATION, "deployment"));
+        result = ModelTestUtils.checkOutcome(
+                kernelServices.executeOperation(
+                        Util.getReadAttributeOperation(applicationAddress, ApplicationClassificationConfigResourceDefinition.CONFIGURED_APPLICATION.getName())));
+        checkResultExists(result, new ModelNode(false));
+        //Now undefine it and check again
+        ModelTestUtils.checkOutcome(
+                kernelServices.executeOperation(
+                        Util.getUndefineAttributeOperation(applicationAddress, ApplicationClassificationConfigResourceDefinition.CONFIGURED_APPLICATION.getName())));
+        result = ModelTestUtils.checkOutcome(
+                kernelServices.executeOperation(
+                        Util.getReadAttributeOperation(applicationAddress, ApplicationClassificationConfigResourceDefinition.CONFIGURED_APPLICATION.getName())));
+        checkResultExists(result, new ModelNode());
+
+    }
+
+    private void checkResultExists(ModelNode result, ModelNode expected) {
+        Assert.assertTrue(result.has(RESULT));
+        Assert.assertEquals(expected, result.get(RESULT));
     }
 }
