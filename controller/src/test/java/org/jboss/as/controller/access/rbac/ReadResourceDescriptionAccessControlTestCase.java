@@ -788,25 +788,29 @@ public class ReadResourceDescriptionAccessControlTestCase extends AbstractContro
         //TODO check root resource ops
         ResourceAccessControl accessControl = getResourceAccessControl(getChildDescription(result, ONE));
         Map<String, Boolean> operations = checkOperationAccessControlNames(accessControl.defaultControl, ADD, REMOVE,
-                OP_CONFIG_RW_READ_WRITE, OP_CONFIG_RW_WRITE, OP_CONFIG_RW_READ, OP_CONFIG_RW_NONE,
-                OP_RUNTIME_RW_READ_WRITE, OP_RUNTIME_RW_WRITE, OP_RUNTIME_RW_READ, OP_RUNTIME_RW_NONE,
-                OP_CONFIG_RO_READ_WRITE, OP_CONFIG_RO_WRITE, OP_CONFIG_RO_READ, OP_CONFIG_RO_NONE,
-                OP_RUNTIME_RO_READ_WRITE, OP_RUNTIME_RO_WRITE, OP_RUNTIME_RO_READ, OP_RUNTIME_RO_NONE);
+                OP_CONFIG_RW_ACCESS_READ_WRITE, OP_CONFIG_RW_READ_WRITE, OP_CONFIG_RW_WRITE, OP_CONFIG_RW_READ, OP_CONFIG_RW_NONE,
+                OP_RUNTIME_RW_ACCESS_READ_WRITE, OP_RUNTIME_RW_READ_WRITE, OP_RUNTIME_RW_WRITE, OP_RUNTIME_RW_READ, OP_RUNTIME_RW_NONE,
+                OP_CONFIG_RO_ACCESS_READ_WRITE, OP_CONFIG_RO_READ_WRITE, OP_CONFIG_RO_WRITE, OP_CONFIG_RO_READ, OP_CONFIG_RO_NONE,
+                OP_RUNTIME_RO_ACCESS_READ_WRITE, OP_RUNTIME_RO_READ_WRITE, OP_RUNTIME_RO_WRITE, OP_RUNTIME_RO_READ, OP_RUNTIME_RO_NONE);
         Assert.assertEquals(false, operations.get(ADD));
         Assert.assertEquals(false, operations.get(REMOVE));
+        Assert.assertEquals(false, operations.get(OP_CONFIG_RW_ACCESS_READ_WRITE));
         Assert.assertEquals(false, operations.get(OP_CONFIG_RW_READ_WRITE));
         Assert.assertEquals(false, operations.get(OP_CONFIG_RW_WRITE));
         Assert.assertEquals(false, operations.get(OP_CONFIG_RW_READ));
         Assert.assertEquals(false, operations.get(OP_CONFIG_RW_NONE));
+        Assert.assertEquals(false, operations.get(OP_RUNTIME_RW_ACCESS_READ_WRITE));
         Assert.assertEquals(false, operations.get(OP_RUNTIME_RW_READ_WRITE));
         Assert.assertEquals(false, operations.get(OP_RUNTIME_RW_WRITE));
         Assert.assertEquals(false, operations.get(OP_RUNTIME_RW_READ));
         Assert.assertEquals(false, operations.get(OP_RUNTIME_RW_NONE));
+        Assert.assertEquals(false, operations.get(OP_CONFIG_RO_ACCESS_READ_WRITE));
         Assert.assertEquals(false, operations.get(OP_CONFIG_RO_READ_WRITE));
         //Although this has a write sensitivity, the operation is read-only so the sensitivity should not be relevant
         Assert.assertEquals(true, operations.get(OP_CONFIG_RO_WRITE));
         Assert.assertEquals(false, operations.get(OP_CONFIG_RO_READ));
         Assert.assertEquals(true, operations.get(OP_CONFIG_RO_NONE));
+        Assert.assertEquals(false, operations.get(OP_RUNTIME_RO_ACCESS_READ_WRITE));
         Assert.assertEquals(false, operations.get(OP_RUNTIME_RO_READ_WRITE));
         //Although this has a write sensitivity, the operation is read-only so the sensitivity should not be relevant
         Assert.assertEquals(true, operations.get(OP_RUNTIME_RO_WRITE));
@@ -822,25 +826,29 @@ public class ReadResourceDescriptionAccessControlTestCase extends AbstractContro
         //TODO check root resource ops
         ResourceAccessControl accessControl = getResourceAccessControl(getChildDescription(result, ONE));
         Map<String, Boolean> operations = checkOperationAccessControlNames(accessControl.defaultControl, ADD, REMOVE,
-                OP_CONFIG_RW_READ_WRITE, OP_CONFIG_RW_WRITE, OP_CONFIG_RW_READ, OP_CONFIG_RW_NONE,
-                OP_RUNTIME_RW_READ_WRITE, OP_RUNTIME_RW_WRITE, OP_RUNTIME_RW_READ, OP_RUNTIME_RW_NONE,
-                OP_CONFIG_RO_READ_WRITE, OP_CONFIG_RO_WRITE, OP_CONFIG_RO_READ, OP_CONFIG_RO_NONE,
-                OP_RUNTIME_RO_READ_WRITE, OP_RUNTIME_RO_WRITE, OP_RUNTIME_RO_READ, OP_RUNTIME_RO_NONE);
+                OP_CONFIG_RW_ACCESS_READ_WRITE, OP_CONFIG_RW_READ_WRITE, OP_CONFIG_RW_WRITE, OP_CONFIG_RW_READ, OP_CONFIG_RW_NONE,
+                OP_RUNTIME_RW_ACCESS_READ_WRITE, OP_RUNTIME_RW_READ_WRITE, OP_RUNTIME_RW_WRITE, OP_RUNTIME_RW_READ, OP_RUNTIME_RW_NONE,
+                OP_CONFIG_RO_ACCESS_READ_WRITE, OP_CONFIG_RO_READ_WRITE, OP_CONFIG_RO_WRITE, OP_CONFIG_RO_READ, OP_CONFIG_RO_NONE,
+                OP_RUNTIME_RO_ACCESS_READ_WRITE, OP_RUNTIME_RO_READ_WRITE, OP_RUNTIME_RO_WRITE, OP_RUNTIME_RO_READ, OP_RUNTIME_RO_NONE);
         Assert.assertEquals(true, operations.get(ADD));
         Assert.assertEquals(true, operations.get(REMOVE));
+        Assert.assertEquals(false, operations.get(OP_CONFIG_RW_ACCESS_READ_WRITE));
         Assert.assertEquals(false, operations.get(OP_CONFIG_RW_READ_WRITE));
         Assert.assertEquals(false, operations.get(OP_CONFIG_RW_WRITE));
         Assert.assertEquals(false, operations.get(OP_CONFIG_RW_READ));
         Assert.assertEquals(true, operations.get(OP_CONFIG_RW_NONE));
+        Assert.assertEquals(false, operations.get(OP_RUNTIME_RW_ACCESS_READ_WRITE));
         Assert.assertEquals(false, operations.get(OP_RUNTIME_RW_READ_WRITE));
         Assert.assertEquals(false, operations.get(OP_RUNTIME_RW_WRITE));
         Assert.assertEquals(false, operations.get(OP_RUNTIME_RW_READ));
         Assert.assertEquals(true, operations.get(OP_RUNTIME_RW_NONE));
+        Assert.assertEquals(false, operations.get(OP_CONFIG_RO_ACCESS_READ_WRITE));
         Assert.assertEquals(false, operations.get(OP_CONFIG_RO_READ_WRITE));
         //Although this has a write sensitivity, the operation is read-only so the sensitivity should not be relevant
         Assert.assertEquals(true, operations.get(OP_CONFIG_RO_WRITE));
         Assert.assertEquals(false, operations.get(OP_CONFIG_RO_READ));
         Assert.assertEquals(true, operations.get(OP_CONFIG_RO_NONE));
+        Assert.assertEquals(false, operations.get(OP_RUNTIME_RO_ACCESS_READ_WRITE));
         Assert.assertEquals(false, operations.get(OP_RUNTIME_RO_READ_WRITE));
         //Although this has a write sensitivity, the operation is read-only so the sensitivity should not be relevant
         Assert.assertEquals(true, operations.get(OP_RUNTIME_RO_WRITE));
