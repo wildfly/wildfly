@@ -146,6 +146,8 @@ public class SensitivityResourceDefinition extends SimpleResourceDefinition {
                 //TODO i18n
                 throw new IllegalStateException();
             }
+
+            context.getResult();
             if (result != null) {
                 context.getResult().set(result);
             }
