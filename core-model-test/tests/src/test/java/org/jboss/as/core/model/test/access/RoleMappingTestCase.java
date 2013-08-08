@@ -248,8 +248,6 @@ public class RoleMappingTestCase extends AbstractCoreModelTest {
 
         assertIsCallerInRole(roleName, true, userName, TEST_REALM, true);
         assertIsCallerInRole(roleName, false, userName, TEST_REALM, false);
-
-        removeRole(roleName);
     }
 
     /**
