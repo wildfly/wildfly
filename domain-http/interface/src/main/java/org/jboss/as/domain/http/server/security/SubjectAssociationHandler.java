@@ -23,11 +23,17 @@
 package org.jboss.as.domain.http.server.security;
 
 import java.io.IOException;
+import java.net.InetSocketAddress;
+import java.security.AccessController;
+import java.security.PrivilegedAction;
 import java.security.PrivilegedActionException;
 import java.security.PrivilegedExceptionAction;
 
 import javax.security.auth.Subject;
 
+import org.jboss.as.controller.security.AccessMechanism;
+import org.jboss.as.controller.security.AccessMechanismPrincipal;
+import org.jboss.as.controller.security.InetAddressPrincipal;
 import org.jboss.com.sun.net.httpserver.HttpExchange;
 import org.jboss.com.sun.net.httpserver.HttpExchange.AttributeScope;
 import org.jboss.com.sun.net.httpserver.HttpHandler;
@@ -46,9 +52,33 @@ public class SubjectAssociationHandler implements HttpHandler {
     }
 
     @Override
-    public void handle(HttpExchange exchange) throws IOException {
-        Subject subject = (Subject) exchange.getAttribute(Subject.class.getName(), AttributeScope.CONNECTION);
-        handleRequest(exchange, subject);
+    public void handle(final HttpExchange exchange) throws IOException {
+        final Subject subject = (Subject) exchange.getAttribute(Subject.class.getName(), AttributeScope.CONNECTION);
+        Subject useSubject = null;
+        if (subject != null) {
+
+            //TODO find a better place for this https://issues.jboss.org/browse/WFLY-1852
+            PrivilegedAction<Subject> copyAction = new PrivilegedAction<Subject>() {
+                @Override
+                public Subject run() {
+                    final Subject copySubject = new Subject();
+                    copySubject.getPrincipals().addAll(subject.getPrincipals());
+                    copySubject.getPrivateCredentials().addAll(subject.getPrivateCredentials());
+                    copySubject.getPublicCredentials().addAll(subject.getPublicCredentials());
+                    //Add the remote address and the access mechanism
+                    InetSocketAddress address = exchange.getRemoteAddress();
+                    if (address != null) {
+                        //TODO decide if we should use the remoting principal or not
+                        copySubject.getPrincipals().add(new InetAddressPrincipal(address.getAddress()));
+                    }
+                    copySubject.getPrincipals().add(new AccessMechanismPrincipal(AccessMechanism.HTTP));
+                    copySubject.setReadOnly();
+                    return copySubject;                            }
+            };
+
+                useSubject = System.getSecurityManager() != null ? AccessController.doPrivileged(copyAction) : copyAction.run();
+        }
+        handleRequest(exchange, useSubject);
     }
 
     void handleRequest(final HttpExchange exchange, final Subject subject) throws IOException {

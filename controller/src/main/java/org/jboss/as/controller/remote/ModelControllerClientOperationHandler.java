@@ -31,13 +31,20 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.USE
 
 import java.io.DataInput;
 import java.io.IOException;
+import java.security.AccessController;
+import java.security.Principal;
+import java.security.PrivilegedAction;
 import java.security.PrivilegedActionException;
 import java.security.PrivilegedExceptionAction;
+import java.util.Collection;
 
 import javax.security.auth.Subject;
 
 import org.jboss.as.controller.ModelController;
 import org.jboss.as.controller.client.impl.ModelControllerProtocol;
+import org.jboss.as.controller.security.AccessMechanism;
+import org.jboss.as.controller.security.AccessMechanismPrincipal;
+import org.jboss.as.controller.security.InetAddressPrincipal;
 import org.jboss.as.protocol.StreamUtils;
 import org.jboss.as.protocol.mgmt.ActiveOperation;
 import org.jboss.as.protocol.mgmt.FlushableDataOutput;
@@ -105,8 +112,36 @@ public class ModelControllerClientOperationHandler implements ManagementRequestH
                 public void execute(final ManagementRequestContext<Void> context) throws Exception {
                     final ManagementResponseHeader response = ManagementResponseHeader.create(context.getRequestHeader());
                     final ModelNode result;
+                    Subject useSubject = subject;
+                    if (subject != null) {
+                        //TODO find a better place for this https://issues.jboss.org/browse/WFLY-1852
+                        PrivilegedAction<Subject> copyAction = new PrivilegedAction<Subject>() {
+                            @Override
+                            public Subject run() {
+                                final Subject subject = ModelControllerClientOperationHandler.this.subject;
+                                final Subject copySubject = new Subject();
+                                copySubject.getPrincipals().addAll(subject.getPrincipals());
+                                copySubject.getPrivateCredentials().addAll(subject.getPrivateCredentials());
+                                copySubject.getPublicCredentials().addAll(subject.getPublicCredentials());
+                                //Add the remote address and the access mechanism
+                                Collection<Principal> principals = context.getChannel().getConnection().getPrincipals();
+                                for (Principal principal : principals) {
+                                    if (principal instanceof InetAddressPrincipal) {
+                                        //TODO decide if we should use the remoting principal or not
+                                        copySubject.getPrincipals().add(new InetAddressPrincipal(((InetAddressPrincipal)principal).getInetAddress()));
+                                        break;
+                                    }
+                                }
+                                copySubject.getPrincipals().add(new AccessMechanismPrincipal(AccessMechanism.JMX));
+                                copySubject.setReadOnly();
+                                return copySubject;                            }
+                        };
+
+                        useSubject = System.getSecurityManager() != null ? AccessController.doPrivileged(copyAction) : copyAction.run();
+                    }
+
                     try {
-                        result = Subject.doAs(subject, new PrivilegedExceptionAction<ModelNode>() {
+                        result = Subject.doAs(useSubject, new PrivilegedExceptionAction<ModelNode>() {
 
                             @Override
                             public ModelNode run() throws Exception {
