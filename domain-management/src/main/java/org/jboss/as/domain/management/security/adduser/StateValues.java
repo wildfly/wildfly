@@ -23,6 +23,7 @@
 package org.jboss.as.domain.management.security.adduser;
 
 import java.io.File;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -42,13 +43,14 @@ public class StateValues {
     private AddUser.RealmMode realmMode = RealmMode.DEFAULT;
     private String realm;
     private String userName;
-    private char[] password;
+    private String password;
     private AddUser.FileMode fileMode = FileMode.UNDEFINED;
     private String groups;
     private boolean existingUser = false;
     private List<File> userFiles;
     private List<File> groupFiles;
-    private Set<String> knownUsers;
+    private Set<String> enabledKnownUsers = new HashSet<String>();
+    private Set<String> disabledKnownUsers = new HashSet<String>();
     private Map<String, String> knownGroups;
 
     public StateValues() {
@@ -108,11 +110,11 @@ public class StateValues {
         this.userName = userName;
     }
 
-    public char[] getPassword() {
+    public String getPassword() {
         return password;
     }
 
-    public void setPassword(char[] password) {
+    public void setPassword(String password) {
         this.password = password;
     }
 
@@ -152,12 +154,28 @@ public class StateValues {
         return groupFiles != null && groupFiles.size() > 0;
     }
 
-    public Set<String> getKnownUsers() {
-        return knownUsers;
+    public Set<String> getEnabledKnownUsers() {
+        return enabledKnownUsers;
     }
 
-    public void setKnownUsers(Set<String> knownUsers) {
-        this.knownUsers = knownUsers;
+    public void setEnabledKnownUsers(Set<String> enabledKnownUsers) {
+        this.enabledKnownUsers = enabledKnownUsers;
+    }
+
+    public Set<String> getDisabledKnownUsers() {
+        return disabledKnownUsers;
+    }
+
+    public void setDisabledKnownUsers(Set<String> disabledKnownUsers) {
+        this.disabledKnownUsers = disabledKnownUsers;
+    }
+
+    public boolean isExistingEnabledUser() {
+        return getEnabledKnownUsers().contains(getUserName());
+    }
+
+    public boolean isExistingDisabledUser() {
+        return getDisabledKnownUsers().contains(getUserName());
     }
 
     public Map<String, String> getKnownGroups() {

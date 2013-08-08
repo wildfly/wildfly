@@ -34,6 +34,7 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Properties;
+import java.util.regex.Matcher;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
@@ -70,7 +71,7 @@ public class PropertyTestHelper {
         values.setUserFiles(usersPropertyFileList);
         values.setGroupFiles(rolesPropertyFileList);
         values.setUserName(USER_NAME);
-        values.setPassword("1sT%l<[pzD".toCharArray());
+        values.setPassword("1sT%l<[pzD");
         values.setRealm("Management");
         consoleMock = new ConsoleMock();
     }
@@ -84,38 +85,70 @@ public class PropertyTestHelper {
     }
 
     protected void assertUserPropertyFile(String userName) throws StartException, IOException {
-        assertUserPropertyFile(userName, false);
+        assertUserPropertyFile(userName, null);
     }
 
-    protected void assertUserPropertyFile(String userName, boolean disable) throws StartException, IOException {
+    protected void assertUserPropertyFile(String userName, String expectedPassword) throws StartException, IOException {
+        assertUserPropertyFile(userName, expectedPassword, values.getOptions().isDisable());
+    }
+
+    private void assertUserPropertyFile(String userName, String expectedPassword, boolean disable) throws StartException, IOException {
         final String password;
+        password = getPassword(userName, disable);
+        assertNotNull(password);
+        if (expectedPassword != null) {
+            assertEquals(expectedPassword, password);
+        }
+    }
+
+    protected String getPassword(String userName) throws IOException, StartException {
+        return getValueFromFile(userName, values.getUserFiles().get(0).getAbsolutePath(), false);
+    }
+
+    private String getPassword(String userName, boolean disable) throws IOException, StartException {
+        String password;
         if (disable) {
             // Read the file line by line and return the password of the user
-            password = getPasswordFromUserFile(userName);
+            password = getDisabledUserPassword(userName);
         } else {
             // Load the properties and return the password of the user
-            password = getPasswordFromUserProperty(userName);
+            password = getEnabledUserPassword(userName);
         }
-        assertNotNull(password);
+        return password;
     }
 
     protected void assertRolePropertyFile(String userName) throws StartException, IOException {
-        assertRolePropertyFile(userName, false);
+        assertRolePropertyFile(userName, values.getGroups());
     }
 
-    protected void assertRolePropertyFile(String userName, boolean disable) throws StartException, IOException {
+    protected void assertRolePropertyFile(String userName, String expectedRoles) throws StartException, IOException {
+        assertRolePropertyFile(userName, expectedRoles, values.getOptions().isDisable());
+    }
+
+    private void assertRolePropertyFile(String userName, String expectedRoles, boolean disable) throws StartException, IOException {
         final String roles;
+        roles = getRoles(userName, disable);
+        assertEquals(expectedRoles, roles);
+    }
+
+    protected String getRoles(String userName) throws IOException, StartException {
+        return getValueFromFile(userName, values.getGroupFiles().get(0).getAbsolutePath(), false);
+    }
+
+    private String getRoles(String userName, boolean disable) throws IOException, StartException {
+        String roles;
         if (disable) {
             // Read the file line by line and return the roles of the user
-            roles = getRolesFromRoleFile(userName);
+            roles = getDisabledUserRoles(userName);
         } else {
             // Load the properties and return the roles of the user
-            roles = getRolesFromRoleProperty(userName);
+            roles = getEnabledUserRoles(userName);
         }
-        assertEquals(ROLES, roles);
+        return roles;
     }
 
     /**
+     * Get the password of the enabled user.<br/>
      * Read the properties users file and return the password of the user
      *
      * @param userName The name of the user
@@ -123,11 +156,12 @@ public class PropertyTestHelper {
      * @throws StartException
      * @throws IOException
      */
-    protected String getPasswordFromUserProperty(String userName) throws StartException, IOException {
+    protected String getEnabledUserPassword(String userName) throws StartException, IOException {
         return getValueFromProperty(userName, values.getUserFiles().get(0).getAbsolutePath());
     }
 
     /**
+     * Get the roles of the enabled user.<br/>
      * Read the properties roles file and return the roles of the user
      *
      * @param userName The name of the user
@@ -135,7 +169,7 @@ public class PropertyTestHelper {
      * @throws StartException
      * @throws IOException
      */
-    protected String getRolesFromRoleProperty(String userName) throws StartException, IOException {
+    protected String getEnabledUserRoles(String userName) throws StartException, IOException {
         return getValueFromProperty(userName, values.getGroupFiles().get(0).getAbsolutePath());
     }
 
@@ -154,26 +188,28 @@ public class PropertyTestHelper {
     }
 
     /**
+     * Get the password of the disabled user.<br/>
      * Read the users file line by line and return the password of the user.
      *
      * @param userName The name of the user
      * @return The password of the user
      * @throws IOException
-     * @see #getValueFromFile(String, String)
+     * @see #getDisabledValueFromFile(String, String)
      */
-    private String getPasswordFromUserFile(String userName) throws IOException {
-        return getValueFromFile(userName, values.getUserFiles().get(0).getAbsolutePath());
+    private String getDisabledUserPassword(String userName) throws IOException {
+        return getDisabledValueFromFile(userName, values.getUserFiles().get(0).getAbsolutePath());
     }
 
     /**
+     * Get the roles of the disabled user.<br/>
      * Read the roles file line by line and return the roles of the user.
      *
      * @param userName The name of the user
      * @return The roles of the user
      * @throws IOException
      */
-    private String getRolesFromRoleFile(String userName) throws IOException {
-        return getValueFromFile(userName, values.getGroupFiles().get(0).getAbsolutePath());
+    private String getDisabledUserRoles(String userName) throws IOException {
+        return getDisabledValueFromFile(userName, values.getGroupFiles().get(0).getAbsolutePath());
     }
 
     /**
@@ -197,23 +233,41 @@ public class PropertyTestHelper {
     }
 
     /**
+     * Get the value of the disabled username line.<br/>
+     * Read the file line by line and return the disabled value of the username line.
+     *
+     * @param userName The name of the user
+     * @param filePath The file path
+     * @return The disabled value of the username line
+     * @throws IOException
+     */
+    private String getDisabledValueFromFile(String userName, String filePath) throws IOException {
+        return getValueFromFile(userName, filePath, true);
+    }
+
+    /**
+     * Get the value of the username line.<br/>
      * Read the file line by line and return the value of the username line.
      *
      * @param userName The name of the user
      * @param filePath The file path
+     * @param onlyDisabledLine return only disabled line
      * @return The value of the username line
      * @throws IOException
      */
-    private String getValueFromFile(String userName, String filePath) throws IOException {
+    private String getValueFromFile(String userName, String filePath, boolean onlyDisabledLine) throws IOException {
         List<String> content = readContent(filePath);
         boolean found = false;
         String value = null;
         for (String line : content) {
             String trimmed = line.trim();
-            if (trimmed.contains("#" + userName)) {
-                found = true;
-                value = trimmed.substring(trimmed.indexOf('=') + 1, trimmed.length());
-                break;
+            Matcher matcher = PropertiesFileLoader.PROPERTY_PATTERN.matcher(trimmed);
+            if (!onlyDisabledLine || trimmed.startsWith("#")) {
+                if (matcher.matches() && userName.equals(matcher.group(1))) {
+                    found = true;
+                    value = matcher.group(2);
+                    break;
+                }
             }
         }
         assertTrue(found);

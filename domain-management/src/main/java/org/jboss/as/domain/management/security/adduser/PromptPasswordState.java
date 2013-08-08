@@ -59,7 +59,7 @@ public class PromptPasswordState implements State {
                 if (tempChar == null || tempChar.length == 0) {
                     return new ErrorState(theConsole, MESSAGES.noPasswordExiting());
                 }
-                stateValues.setPassword(tempChar);
+                stateValues.setPassword(new String(tempChar));
 
                 return new ValidatePasswordState(theConsole, stateValues);
             } else {
@@ -70,7 +70,7 @@ public class PromptPasswordState implements State {
                     secondTempChar = new char[0]; // If re-entry missed allow fall through to comparison.
                 }
 
-                if (Arrays.equals(stateValues.getPassword(), secondTempChar) == false) {
+                if (Arrays.equals(stateValues.getPassword().toCharArray(), secondTempChar) == false) {
                     // Start again at the first password.
                     return new ErrorState(theConsole, MESSAGES.passwordMisMatch(), new PromptPasswordState(theConsole, stateValues, false));
                 }

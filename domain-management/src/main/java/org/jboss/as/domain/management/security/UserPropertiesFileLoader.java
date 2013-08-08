@@ -42,6 +42,8 @@ public class UserPropertiesFileLoader extends PropertiesFileLoader {
     private static final String REALM_COMMENT_COMMENT = " This line is used by the add-user utility to identify the realm name already used in this file.";
 
     private String realmName;
+    private List<String> enabledUserNames = new ArrayList<String>();
+    private List<String> disabledUserNames = new ArrayList<String>();
 
     /*
      * State maintained during persistence.
@@ -67,15 +69,24 @@ public class UserPropertiesFileLoader extends PropertiesFileLoader {
     }
 
     public List<String> getUserNames() throws IOException {
+        loadAsRequired();
+
         List<String> userNames = new ArrayList<String>();
-        List<String> content = readFile(propertiesFile);
-        for (String line : content) {
-            Matcher matcher = PROPERTY_PATTERN.matcher(line.trim());
-            if (matcher.matches()) {
-                userNames.add(matcher.group(1));
-            }
-        }
+        userNames.addAll(enabledUserNames);
+        userNames.addAll(disabledUserNames);
         return userNames;
+    }
+
+    public List<String> getEnabledUserNames() throws IOException {
+        loadAsRequired();
+
+        return enabledUserNames;
+    }
+
+    public List<String> getDisabledUserNames() throws IOException {
+        loadAsRequired();
+
+        return disabledUserNames;
     }
 
     @Override
@@ -84,10 +95,21 @@ public class UserPropertiesFileLoader extends PropertiesFileLoader {
 
         String realmName = null;
         BufferedReader br = new BufferedReader(new FileReader(propertiesFile));
+        disabledUserNames.clear();
+        enabledUserNames.clear();
         try {
-            String currentLine = null;
+            String currentLine;
             while (realmName == null && (currentLine = br.readLine()) != null) {
-                String trimmed = currentLine.trim();
+                final String trimmed = currentLine.trim();
+                final Matcher matcher = PROPERTY_PATTERN.matcher(currentLine.trim());
+                if (matcher.matches()) {
+                    final String username = matcher.group(1);
+                    if (trimmed.startsWith(COMMENT_PREFIX)) {
+                        disabledUserNames.add(username);
+                    } else {
+                        enabledUserNames.add(username);
+                    }
+                }
                 if (trimmed.startsWith(COMMENT_PREFIX) && trimmed.contains(REALM_COMMENT_PREFIX)) {
                     int start = trimmed.indexOf(REALM_COMMENT_PREFIX) + REALM_COMMENT_PREFIX.length();
                     int end = trimmed.indexOf(REALM_COMMENT_SUFFIX, start);

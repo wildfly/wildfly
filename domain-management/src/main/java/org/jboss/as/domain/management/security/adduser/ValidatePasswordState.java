@@ -24,7 +24,6 @@ package org.jboss.as.domain.management.security.adduser;
 import static org.jboss.as.domain.management.DomainManagementMessages.MESSAGES;
 
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Collection;
 import java.util.List;
 
@@ -66,7 +65,7 @@ public class ValidatePasswordState extends AbstractValidationState {
 
             @Override
             public State execute() {
-                if (Arrays.equals(stateValues.getUserName().toCharArray(), stateValues.getPassword())) {
+                if (stateValues.getUserName().equals(stateValues.getPassword())) {
                     return new ErrorState(theConsole, MESSAGES.usernamePasswordMatch(), getRetryState(), stateValues);
                 }
 
@@ -81,8 +80,7 @@ public class ValidatePasswordState extends AbstractValidationState {
 
             @Override
             public State execute() {
-                PasswordCheckResult result = PasswordCheckUtil.INSTANCE.check(false, stateValues.getUserName(), new String(
-                        stateValues.getPassword()));
+                PasswordCheckResult result = PasswordCheckUtil.INSTANCE.check(false, stateValues.getUserName(), stateValues.getPassword());
                 if (result.getResult() == PasswordCheckResult.Result.WARN && stateValues.isSilentOrNonInteractive() == false) {
                     String message = result.getMessage();
                     String prompt = MESSAGES.sureToSetPassword(new String(stateValues.getPassword()));

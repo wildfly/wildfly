@@ -109,11 +109,7 @@ public class AddUser {
             nextState = new ErrorState(theConsole, MESSAGES.noPasswordExiting(), null, stateValues);
             return;
         }
-        if (password == null) {
-            stateValues.setPassword(new char[0]);
-        } else {
-            stateValues.setPassword(password.toCharArray());
-        }
+        stateValues.setPassword(password);
         stateValues.setRealm(realm);
         stateValues.setRealmMode(realmMode);
         stateValues.setFileMode(fileMode);

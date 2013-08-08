@@ -70,6 +70,7 @@ public class PropertiesFileLoader {
      * {@code group(2)} returns the value of the property.
      */
     public static final Pattern PROPERTY_PATTERN = Pattern.compile("#??([^#]*)=([^=]*)");
+    public static final String DISABLE_SUFFIX_KEY = "!disable";
 
     private final String path;
     private final InjectedValue<String> relativeTo = new InjectedValue<String>();
@@ -179,10 +180,10 @@ public class PropertiesFileLoader {
                     Matcher matcher = PROPERTY_PATTERN.matcher(trimmed);
                     if (matcher.matches()) {
                         final String key = matcher.group(1);
-                        if (toSave.containsKey(key)) {
-                            writeProperty(bw, key);
+                        if (toSave.containsKey(key) || toSave.containsKey(key + DISABLE_SUFFIX_KEY)) {
+                            writeProperty(bw, key, matcher.group(2));
                             toSave.remove(key);
-                            toSave.remove(key + "!disable");
+                            toSave.remove(key + DISABLE_SUFFIX_KEY);
                         }
                     } else {
                         write(bw, line, true);
@@ -249,24 +250,44 @@ public class PropertiesFileLoader {
         // Append any additional users to the end of the file.
         for (Object currentKey : toSave.keySet()) {
             String key = (String) currentKey;
-            if (!key.contains("!disable")) {
-                writeProperty(writer, key);
+            if (!key.contains(DISABLE_SUFFIX_KEY)) {
+                writeProperty(writer, key, null);
             }
         }
 
         toSave = null;
     }
 
-    private void writeProperty(BufferedWriter writer, String key) throws IOException {
+    private void writeProperty(BufferedWriter writer, String key, String currentValue) throws IOException {
         String escapedKey = escapeString(key, ESCAPE_ARRAY);
+        final String value = getValue(key, currentValue);
         final String newLine;
-        if (Boolean.valueOf(toSave.getProperty(key + "!disable"))) {
+        if (Boolean.valueOf(toSave.getProperty(key + DISABLE_SUFFIX_KEY))) {
             // Commented property
-            newLine = "#" + escapedKey + "=" + toSave.getProperty(key);
+            newLine = "#" + escapedKey + "=" + value;
         } else {
-            newLine = escapedKey + "=" + toSave.getProperty(key);
+            newLine = escapedKey + "=" + value;
         }
         write(writer, newLine, true);
+    }
+
+    /**
+     * Get the value of the property.<br/>
+     * If the value to save is null, return the previous value (enable/disable mode).
+     *
+     * @param key The key of the property
+     * @param previousValue The previous value
+     * @return The value of the property
+     */
+    private String getValue(String key, String previousValue) {
+        final String value;
+        final String valueUpdated = toSave.getProperty(key);
+        if (valueUpdated == null) {
+            value = previousValue;
+        } else {
+            value = valueUpdated;
+        }
+        return value;
     }
 
     public static String escapeString(String name, char[] escapeArray) {
