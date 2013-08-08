@@ -60,6 +60,7 @@ public class SubjectDoAsHandler implements HttpHandler {
         if (securityContext != null) {
             final Account account = securityContext.getAuthenticatedAccount();
             if (account instanceof SubjectAccount) {
+                //TODO find a better place for this https://issues.jboss.org/browse/WFLY-1852
                 PrivilegedAction<Subject> copyAction = new PrivilegedAction<Subject>() {
                     @Override
                     public Subject run() {
@@ -71,6 +72,7 @@ public class SubjectDoAsHandler implements HttpHandler {
                         //Add the remote address and the access mechanism
                         SocketAddress address = exchange.getConnection().getPeerAddress();
                         if (address instanceof InetSocketAddress) {
+                            //TODO decide if we should use the remoting principal or not
                             InetAddressPrincipal principal = new InetAddressPrincipal(((InetSocketAddress)address).getAddress());
                             copySubject.getPrincipals().add(new org.jboss.as.controller.security.InetAddressPrincipal(principal));
                         }

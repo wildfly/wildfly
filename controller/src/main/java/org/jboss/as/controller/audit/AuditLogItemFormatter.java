@@ -118,7 +118,6 @@ public abstract class AuditLogItemFormatter {
     }
 
     String cacheString(String recordText) {
-        byte[] bytes = recordText.getBytes();
         this.formattedString = recordText;
         return formattedString;
     }
