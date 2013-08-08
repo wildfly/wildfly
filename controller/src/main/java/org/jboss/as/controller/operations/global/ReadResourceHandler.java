@@ -265,7 +265,7 @@ public class ReadResourceHandler extends GlobalOperationHandlers.AbstractMultiTa
                         // But filter inaccessible children
                         AuthorizationResult ar = context.authorize(rrOp, EnumSet.of(Action.ActionEffect.ADDRESS));
                         if (ar.getDecision() == AuthorizationResult.Decision.DENY) {
-                            filteredData.addAccessRestrictedResource(absoluteChildAddr);
+                            localFilteredData.addAccessRestrictedResource(absoluteChildAddr);
                         } else {
                             ModelNode childMap = directChildren.get(childType);
                             if (childMap == null) {
