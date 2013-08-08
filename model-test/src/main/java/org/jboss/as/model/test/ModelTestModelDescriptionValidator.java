@@ -40,6 +40,7 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.MIN
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.MODEL_DESCRIPTION;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.NAMESPACE;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.NILLABLE;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.NOTIFICATIONS;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OPERATIONS;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OPERATION_NAME;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.REASON;
@@ -71,7 +72,7 @@ import org.jboss.dmr.ModelType;
 
 /**
  * Validates the types and entries of the of the description providers in the model, as read by
- * {@code /some/path:read-resource-description(recursive=true,inherited=false,operations=true)}
+ * {@code /some/path:read-resource-description(recursive=true,inherited=false,operations=true,notifications=true)}
  *
  * @author <a href="kabir.khan@jboss.com">Kabir Khan</a>
  */
@@ -81,6 +82,7 @@ public class ModelTestModelDescriptionValidator {
     private static final Map<String, ArbitraryDescriptorValidator> VALID_CHILD_TYPE_KEYS;
     private static final Map<String, AttributeOrParameterArbitraryDescriptorValidator> VALID_ATTRIBUTE_KEYS;
     private static final Map<String, ArbitraryDescriptorValidator> VALID_OPERATION_KEYS;
+    private static final Map<String, ArbitraryDescriptorValidator> VALID_NOTIFICATION_KEYS;
     private static final Map<String, AttributeOrParameterArbitraryDescriptorValidator> VALID_PARAMETER_KEYS;
     static {
         Map<String, ArbitraryDescriptorValidator> validResourceKeys = new HashMap<String, ArbitraryDescriptorValidator>();
@@ -90,6 +92,7 @@ public class ModelTestModelDescriptionValidator {
         validResourceKeys.put(NAMESPACE, NullDescriptorValidator.INSTANCE);
         validResourceKeys.put(ATTRIBUTES, NullDescriptorValidator.INSTANCE);
         validResourceKeys.put(OPERATIONS, NullDescriptorValidator.INSTANCE);
+        validResourceKeys.put(NOTIFICATIONS, NullDescriptorValidator.INSTANCE);
         validResourceKeys.put(CHILDREN, NullDescriptorValidator.INSTANCE);
         validResourceKeys.put(DEPRECATED, DeprecatedDescriptorValidator.INSTANCE);
         VALID_RESOURCE_KEYS = Collections.unmodifiableMap(validResourceKeys);
@@ -144,6 +147,12 @@ public class ModelTestModelDescriptionValidator {
         Map<String, AttributeOrParameterArbitraryDescriptorValidator> validParameterKeys = new HashMap<String, AttributeOrParameterArbitraryDescriptorValidator>();
         validParameterKeys.putAll(paramAndAttributeKeys);
         VALID_PARAMETER_KEYS = Collections.unmodifiableMap(validParameterKeys);
+
+        Map<String, ArbitraryDescriptorValidator> validNotificationKeys = new HashMap<String, ArbitraryDescriptorValidator>();
+        validNotificationKeys.put("notification-type", NullDescriptorValidator.INSTANCE);
+        validNotificationKeys.put(DESCRIPTION, NullDescriptorValidator.INSTANCE);
+        validNotificationKeys.put("data-type", NullDescriptorValidator.INSTANCE);
+        VALID_NOTIFICATION_KEYS = Collections.unmodifiableMap(validNotificationKeys);
     }
 
     private final List<ValidationFailure> errors;
@@ -191,7 +200,7 @@ public class ModelTestModelDescriptionValidator {
                         errors.add(new MessageValidationFailure(error, address));
                     }
                 } else {
-                    if (!key.equals(OPERATIONS) && !key.equals(CHILDREN)) {
+                    if (!key.equals(OPERATIONS) && !key.equals(CHILDREN) && !key.equals(NOTIFICATIONS)) {
                         errors.add(new MessageValidationFailure("Empty key '" + key + "'", address));
                     }
                 }
@@ -207,6 +216,9 @@ public class ModelTestModelDescriptionValidator {
         if (description.hasDefined("operations")) {
             validateOperations(description.get("operations"));
         }
+        if (description.hasDefined("notifications")) {
+            validateNotifications(description.get("notifications"));
+        }
         if (description.hasDefined("children")) {
             validateChildren(description.get("children"));
         }
@@ -219,6 +231,22 @@ public class ModelTestModelDescriptionValidator {
             ModelNode attribute = attributes.get(key);
             AttributeValidationElement attributeValidationElement = new AttributeValidationElement(key);
             validateAttributeOrParameter(attributeValidationElement, attribute);
+        }
+    }
+
+    private void validateNotifications(ModelNode notifications) {
+        for (String key : notifications.keys()) {
+            ModelNode notification = notifications.get(key);
+            NotificationValidationElement notificationValidationElement = new NotificationValidationElement(key);
+
+            if (!notification.hasDefined(DESCRIPTION)) {
+                errors.add(notificationValidationElement.createValidationFailure("Missing description"));
+            }
+            if (!notification.hasDefined("notification-type")) {
+                errors.add(notificationValidationElement.createValidationFailure("Missing notification-type"));
+            }
+
+            notificationValidationElement.validateKeys(notification);
         }
     }
 
@@ -1042,6 +1070,57 @@ public class ModelTestModelDescriptionValidator {
 
         boolean allowNullValueTypeForObject() {
             return validationConfiguration.isAllowNullValueTypeForOperationParameter(address, operation.getName(), name);
+        }
+    }
+
+    private static class NotificationValidationFailure extends MessageValidationFailure {
+        private final String notificationType;
+        private NotificationValidationFailure(String message, ModelNode address, String notificationType) {
+            super(message, address);
+            this.notificationType = notificationType;
+        }
+
+        public String toString() {
+            return message + " for notification '" + notificationType +
+                    "'" + address;
+        }
+    }
+
+    private class NotificationValidationElement extends ValidationElement {
+        NotificationValidationElement(String name) {
+            super(name);
+        }
+
+        @Override
+        public String toString() {
+            return "Notification '" + name + "' @" + address;
+        }
+
+        ValidationFailure createValidationFailure(String message) {
+            return new NotificationValidationFailure(message, address, name);
+        }
+
+        void validateKeys(ModelNode description) {
+            if (!description.isDefined()) {
+                errors.add(createValidationFailure("Missing description for operation"));
+                return;
+            }
+            for (String opKey : description.keys()) {
+                ArbitraryDescriptorValidator validator = VALID_NOTIFICATION_KEYS.get(opKey);
+                if (validator == null) {
+                    errors.add(createValidationFailure("Invalid key '" + opKey + "'"));
+                } else {
+                    if (description.hasDefined(opKey)) {
+                        String error = validator.validate(description, opKey);
+                        if (error != null) {
+                            errors.add(createValidationFailure(error));
+
+                        }
+                    } else {
+                        errors.add(createValidationFailure("Empty key '" + opKey + "'"));
+                    }
+                }
+            }
         }
     }
 }
