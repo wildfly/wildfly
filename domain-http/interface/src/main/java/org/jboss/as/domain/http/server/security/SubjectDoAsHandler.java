@@ -36,8 +36,8 @@ import java.security.PrivilegedExceptionAction;
 import javax.security.auth.Subject;
 
 import org.jboss.as.controller.security.AccessMechanismPrincipal;
+import org.jboss.as.controller.security.InetAddressPrincipal;
 import org.jboss.as.core.security.AccessMechanism;
-import org.jboss.remoting3.security.InetAddressPrincipal;
 import org.wildfly.security.manager.WildFlySecurityManager;
 
 /**
@@ -73,8 +73,7 @@ public class SubjectDoAsHandler implements HttpHandler {
                         SocketAddress address = exchange.getConnection().getPeerAddress();
                         if (address instanceof InetSocketAddress) {
                             //TODO decide if we should use the remoting principal or not
-                            InetAddressPrincipal principal = new InetAddressPrincipal(((InetSocketAddress)address).getAddress());
-                            copySubject.getPrincipals().add(new org.jboss.as.controller.security.InetAddressPrincipal(principal));
+                            copySubject.getPrincipals().add(new InetAddressPrincipal(((InetSocketAddress)address).getAddress()));
                         }
                         copySubject.getPrincipals().add(new AccessMechanismPrincipal(AccessMechanism.HTTP));
                         copySubject.setReadOnly();

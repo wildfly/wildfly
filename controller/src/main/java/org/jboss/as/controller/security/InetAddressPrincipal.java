@@ -22,6 +22,7 @@
 package org.jboss.as.controller.security;
 
 import java.net.InetAddress;
+import java.net.UnknownHostException;
 import java.security.Principal;
 
 
@@ -29,11 +30,23 @@ import java.security.Principal;
  *
  * @author <a href="kabir.khan@jboss.com">Kabir Khan</a>
  */
-public class InetAddressPrincipal implements Principal {
-    private final org.jboss.remoting3.security.InetAddressPrincipal delegate;
+public final class InetAddressPrincipal implements Principal, Cloneable {
+    private final InetAddress inetAddress;
 
-    public InetAddressPrincipal(org.jboss.remoting3.security.InetAddressPrincipal delegate) {
-        this.delegate = delegate;
+    /**
+     * Create a new instance.
+     *
+     * @param inetAddress the address
+     */
+    public InetAddressPrincipal(final InetAddress inetAddress) {
+        if (inetAddress == null) {
+            throw new IllegalArgumentException("inetAddress is null");
+        }
+        try {
+            this.inetAddress = InetAddress.getByAddress(inetAddress.getHostAddress(), inetAddress.getAddress());
+        } catch (UnknownHostException e) {
+            throw new IllegalStateException(e);
+        }
     }
 
     /**
@@ -41,9 +54,8 @@ public class InetAddressPrincipal implements Principal {
      *
      * @return the name of this principal
      */
-    @Override
     public String getName() {
-        return delegate.getName();
+        return inetAddress.getHostAddress();
     }
 
     /**
@@ -52,7 +64,7 @@ public class InetAddressPrincipal implements Principal {
      * @return the address
      */
     public InetAddress getInetAddress() {
-        return delegate.getInetAddress();
+        return inetAddress;
     }
 
     /**
@@ -62,9 +74,18 @@ public class InetAddressPrincipal implements Principal {
      * @return {@code true} if they are equal, {@code false} otherwise
      */
     public boolean equals(final Object other) {
-        return delegate.equals(other);
+        return other instanceof InetAddressPrincipal && equals((InetAddressPrincipal) other);
     }
 
+    /**
+     * Determine whether this instance is equal to another.
+     *
+     * @param other the other instance
+     * @return {@code true} if they are equal, {@code false} otherwise
+     */
+    public boolean equals(final InetAddressPrincipal other) {
+        return other != null && inetAddress.equals(other.inetAddress);
+    }
 
     /**
      * Get the hash code for this instance.  It will be equal to the hash code of the {@code InetAddress} object herein.
@@ -72,7 +93,7 @@ public class InetAddressPrincipal implements Principal {
      * @return the hash code
      */
     public int hashCode() {
-        return delegate.hashCode();
+        return inetAddress.hashCode();
     }
 
     /**
@@ -81,7 +102,19 @@ public class InetAddressPrincipal implements Principal {
      * @return the string
      */
     public String toString() {
-        return delegate.toString();
+        return "InetAddressPrincipal <" + inetAddress.toString() + ">";
     }
 
+    /**
+     * Create a clone of this instance.
+     *
+     * @return the clone
+     */
+    public InetAddressPrincipal clone() {
+        try {
+            return (InetAddressPrincipal) super.clone();
+        } catch (CloneNotSupportedException e) {
+            throw new IllegalStateException(e);
+        }
+    }
 }
