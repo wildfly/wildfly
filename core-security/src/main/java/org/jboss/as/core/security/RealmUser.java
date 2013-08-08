@@ -29,6 +29,8 @@ package org.jboss.as.core.security;
  */
 public class RealmUser extends AbstractRealmPrincipal implements AccountPrincipal {
 
+    private static final long serialVersionUID = 5391073820551736954L;
+
     public RealmUser(String realm, String name) {
         super(realm, name);
     }

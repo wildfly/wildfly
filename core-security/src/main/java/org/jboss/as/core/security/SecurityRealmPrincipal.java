@@ -24,6 +24,7 @@ package org.jboss.as.core.security;
 
 import static org.jboss.as.core.security.CoreSecurityMessages.MESSAGES;
 
+import java.io.Serializable;
 import java.security.Principal;
 
 /**
@@ -31,7 +32,9 @@ import java.security.Principal;
  *
  * @author <a href="mailto:darran.lofthouse@jboss.com">Darran Lofthouse</a>
  */
-public abstract class SecurityRealmPrincipal implements Principal {
+public abstract class SecurityRealmPrincipal implements Principal, Serializable {
+
+    private static final long serialVersionUID = 3616079359863450698L;
 
     private final String name;
 
