@@ -308,8 +308,8 @@ class ReadOnlyContext extends AbstractOperationContext {
     }
 
     @Override
-    public AuthorizationResult authorizeOperation(ModelNode operation, boolean addressabilityOnly) {
-        return primaryContext.authorizeOperation(operation, addressabilityOnly);
+    public AuthorizationResult authorizeOperation(ModelNode operation) {
+        return primaryContext.authorizeOperation(operation);
     }
 
     @Override

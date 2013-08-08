@@ -44,8 +44,7 @@ public interface ResourceAuthorization {
     /**
      * Get the authorization result for an individual operation.
      * @param operationName the operation name
-     * @param addressabilityOnly  whether only resource addressibility is relevant
      * @return the authorization result
      */
-    AuthorizationResult getOperationResult(String operationName, boolean addressabilityOnly);
+    AuthorizationResult getOperationResult(String operationName);
 }

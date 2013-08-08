@@ -510,7 +510,7 @@ public abstract class AbstractOperationTestCase {
         }
 
         @Override
-        public AuthorizationResult authorizeOperation(ModelNode operation, boolean addressabilityOnly) {
+        public AuthorizationResult authorizeOperation(ModelNode operation) {
             return AuthorizationResult.PERMITTED;
         }
 
@@ -524,7 +524,7 @@ public abstract class AbstractOperationTestCase {
                 }
 
                 @Override
-                public AuthorizationResult getOperationResult(String operationName, boolean addressabilityOnly) {
+                public AuthorizationResult getOperationResult(String operationName) {
                     return AuthorizationResult.PERMITTED;
                 }
 
