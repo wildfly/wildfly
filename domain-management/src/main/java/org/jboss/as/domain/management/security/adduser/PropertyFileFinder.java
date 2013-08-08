@@ -109,12 +109,14 @@ public class PropertyFileFinder implements State {
         stateValues.setUserFiles(foundFiles);
 
         String realmName = null;
-        Set<String> foundUsers = new HashSet<String>();
+        Set<String> enabledFoundUsers = new HashSet<String>();
+        Set<String> disabledFoundUsers = new HashSet<String>();
         for (File current : stateValues.getUserFiles()) {
             UserPropertiesFileLoader pfl = null;
             try {
                 pfl = loadUsersFile(current);
-                foundUsers.addAll(pfl.getUserNames());
+                enabledFoundUsers.addAll(pfl.getEnabledUserNames());
+                disabledFoundUsers.addAll(pfl.getDisabledUserNames());
                 if (realmName == null) {
                     realmName = pfl.getRealmName();
                 } else {
@@ -143,7 +145,8 @@ public class PropertyFileFinder implements State {
             stateValues.setRealm(realmName);
             stateValues.setRealmMode(RealmMode.DISCOVERED);
         }
-        stateValues.setKnownUsers(foundUsers);
+        stateValues.setEnabledKnownUsers(enabledFoundUsers);
+        stateValues.setDisabledKnownUsers(disabledFoundUsers);
 
         // TODO - Should we go straight to user validation instead of prompting?
         return stateValues.isInteractive() ? new PromptRealmState(theConsole, stateValues) : new PromptNewUserState(theConsole,

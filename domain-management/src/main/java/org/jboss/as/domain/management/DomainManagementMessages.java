@@ -498,14 +498,24 @@ public interface DomainManagementMessages {
     String invalidChoiceResponse();
 
     /**
-     * Confirmation if the current user password and roles is about to be updated.
+     * Confirmation if the current user (enabled) is about to be updated.
      *
      * @param user - The name of the user.
      *
      * @return a {@link String} for the message.
      */
-    @Message(id = Message.NONE, value = "User '%s' already exits, would you like to update the existing user password and roles")
-    String aboutToUpdateUser(String user);
+    @Message(id = Message.NONE, value = "User '%s' already exits and is enabled, would you like to... %n a) Update the existing user password and roles %n b) Disable the existing user %n c) Type a new username")
+    String aboutToUpdateEnabledUser(String user);
+
+    /**
+     * Confirmation if the current user (disabled) is about to be updated.
+     *
+     * @param user - The name of the user.
+     *
+     * @return a {@link String} for the message.
+     */
+    @Message(id = Message.NONE, value = "User '%s' already exits and is disabled, would you like to... %n a) Update the existing user password and roles %n b) Enable the existing user %n c) Type a new username")
+    String aboutToUpdateDisabledUser(String user);
 
     /**
      * Message to inform user that the user has been updated to the file identified.
@@ -729,6 +739,14 @@ public interface DomainManagementMessages {
      */
     @Message(id = 15285, value = "The runtime role mapping configuration is inconsistent, the server must be restarted.")
     OperationFailedException inconsistentRbacRuntimeState();
+
+    /**
+     * The error message if the choice response is invalid to the update user state.
+     *
+     * @return a {@link String} for the message.
+     */
+    @Message(id = 15286, value = "Invalid response. (Valid responses are A, a, B, b, C or c)")
+    String invalidChoiceUpdateUserResponse();
 
     /*
      * Logging IDs 15200 to 15299 are reserved for domain management, the file DomainManagementLogger also contains messages in

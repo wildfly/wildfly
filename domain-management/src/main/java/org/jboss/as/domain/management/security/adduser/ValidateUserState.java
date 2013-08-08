@@ -101,21 +101,48 @@ public class ValidateUserState extends AbstractValidationState {
 
             @Override
             public State execute() {
-                if (stateValues.getKnownUsers().contains(stateValues.getUserName())) {
-                    State duplicateContinuing = stateValues.isSilentOrNonInteractive() ? null : new PromptNewUserState(
-                            theConsole, stateValues);
+                if (stateValues.isExistingDisabledUser() || stateValues.isExistingEnabledUser()) {
+                    State duplicateContinuing = stateValues.isSilentOrNonInteractive() ? null :
+                            new PromptNewUserState(theConsole, stateValues);
                     stateValues.setExistingUser(true);
                     if (stateValues.isSilentOrNonInteractive()) {
                         return ValidateUserState.this;
                     } else {
-                        String message = MESSAGES.aboutToUpdateUser(stateValues.getUserName());
-                        String prompt = MESSAGES.isCorrectPrompt() + " " + MESSAGES.yes() + "/" + MESSAGES.no() + "?";
-
-                        return new ConfirmationChoice(theConsole, message, prompt, ValidateUserState.this, duplicateContinuing);
+                        final boolean existingDisabledUser = stateValues.isExistingDisabledUser();
+                        if (existingDisabledUser) {
+                            theConsole.printf(MESSAGES.aboutToUpdateDisabledUser(stateValues.getUserName()));
+                        } else {
+                            theConsole.printf(MESSAGES.aboutToUpdateEnabledUser(stateValues.getUserName()));
+                        }
+                        theConsole.printf(AddUser.NEW_LINE);
+                        String response = theConsole.readLine("(a): ");
+                        if (response == null) {
+                            // This will return user to the command prompt so add a new line to ensure
+                            // the command prompt is on the next line.
+                            theConsole.printf(AddUser.NEW_LINE);
+                            return null;
+                        }
+                        Option option = convertResponse(response, existingDisabledUser);
+                        switch (option) {
+                            case NEW:
+                                return duplicateContinuing;
+                            case UPDATE:
+                                break;
+                            case ENABLE:
+                                stateValues.getOptions().setEnableDisableMode(true);
+                                stateValues.getOptions().setDisable(false);
+                                return new PreModificationState(theConsole, stateValues);
+                            case DISABLE:
+                                stateValues.getOptions().setEnableDisableMode(true);
+                                stateValues.getOptions().setDisable(true);
+                                return new PreModificationState(theConsole, stateValues);
+                            default:
+                                return new ErrorState(theConsole, MESSAGES.invalidChoiceUpdateUserResponse(), this);
+                        }
+                        return ValidateUserState.this;
                     }
                 } else {
                     stateValues.setExistingUser(false);
-
                     return ValidateUserState.this;
                 }
             }
@@ -144,4 +171,30 @@ public class ValidateUserState extends AbstractValidationState {
         };
     }
 
+    private Option convertResponse(final String response, final boolean existingDisabledUser) {
+        String responseLowerCase = response.toLowerCase(Locale.ENGLISH);
+        if ("".equals(responseLowerCase) || "a".equals(responseLowerCase)) {
+            return Option.UPDATE;
+        } else if ("b".equals(responseLowerCase)) {
+            // Opposite option...
+            if (existingDisabledUser) {
+                // ... when the existing user is disabled, enable!
+                return Option.ENABLE;
+            } else {
+                // ... when the existing user is enabled, disable!
+                return Option.DISABLE;
+            }
+        } else if ("c".equals(responseLowerCase)) {
+            return Option.NEW;
+        }
+        return Option.INVALID;
+    }
+
+    private enum Option {
+        UPDATE,
+        DISABLE,
+        ENABLE,
+        NEW,
+        INVALID
+    }
 }

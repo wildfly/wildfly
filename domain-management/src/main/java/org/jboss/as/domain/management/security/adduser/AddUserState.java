@@ -24,14 +24,6 @@ package org.jboss.as.domain.management.security.adduser;
 
 import static org.jboss.as.domain.management.DomainManagementMessages.MESSAGES;
 
-import java.io.File;
-import java.io.IOException;
-import java.util.Properties;
-
-import org.jboss.as.domain.management.security.PropertiesFileLoader;
-import org.jboss.as.domain.management.security.UserPropertiesFileLoader;
-import org.jboss.msc.service.StartException;
-
 /**
  * State to perform the actual addition to the discovered properties files.
  * <p/>
@@ -51,10 +43,10 @@ public class AddUserState extends UpdatePropertiesHandler implements State {
 
     @Override
     public State execute() {
-        char[] password = stateValues.getPassword();
+        final String password = stateValues.getPassword();
         State nextState;
-        if (password.length == 0) {
-            // The user doesn't exist and the password is empty !
+        if (password == null) {
+            // The user doesn't exist and the password is not provided !
             nextState = new ErrorState(theConsole, MESSAGES.noPasswordExiting(), null, stateValues);
         } else {
             nextState = update(stateValues);
@@ -70,33 +62,6 @@ public class AddUserState extends UpdatePropertiesHandler implements State {
 
         }
         return nextState;
-    }
-
-    @Override
-    void persist(String[] entry, File file) throws IOException {
-        persist(entry, file, null);
-    }
-
-    @Override
-    void persist(String[] entry, File file, final String realm) throws IOException {
-        final PropertiesFileLoader propertiesHandler = realm == null ? new PropertiesFileLoader(file.getAbsolutePath())
-                : new UserPropertiesFileLoader(file.getAbsolutePath());
-        try {
-            propertiesHandler.start(null);
-            if (realm != null) {
-                ((UserPropertiesFileLoader) propertiesHandler).setRealmName(realm);
-            }
-            Properties prob = propertiesHandler.getProperties();
-            prob.setProperty(entry[0], entry[1]);
-            if (entry.length > 2) {
-                prob.setProperty(entry[0] + "!disable", entry[2]);
-            }
-            propertiesHandler.persistProperties();
-        } catch (StartException e) {
-            throw new IllegalStateException(MESSAGES.unableToAddUser(file.getAbsolutePath(), e.getMessage()));
-        } finally {
-            propertiesHandler.stop(null);
-        }
     }
 
     @Override

@@ -24,14 +24,6 @@ package org.jboss.as.domain.management.security.adduser;
 
 import static org.jboss.as.domain.management.DomainManagementMessages.MESSAGES;
 
-import java.io.File;
-import java.io.IOException;
-import java.util.Properties;
-
-import org.jboss.as.domain.management.security.PropertiesFileLoader;
-import org.jboss.as.domain.management.security.UserPropertiesFileLoader;
-import org.jboss.msc.service.StartException;
-
 /**
  * Describe the purpose
  *
@@ -53,42 +45,15 @@ public class UpdateUser extends UpdatePropertiesHandler implements State {
         State nextState = update(stateValues);
 
         /*
-         * If this is interactive mode and no error occurred offer to display the
-         * Base64 password of the user - otherwise the util can end.
+         * If this is interactive mode, the password is not null (enable/disable mode) and no error occurred
+         * offer to display the Base64 password of the user - otherwise the util can end.
          */
-        if (nextState == null && stateValues.isInteractive()) {
-            nextState = new ConfirmationChoice(theConsole, MESSAGES.serverUser(), MESSAGES.yesNo(), new DisplaySecret(
-                    theConsole, stateValues), null);
+        if (nextState == null && stateValues.isInteractive() && stateValues.getPassword() != null) {
+            nextState = new ConfirmationChoice(theConsole, MESSAGES.serverUser(), MESSAGES.yesNo(),
+                    new DisplaySecret(theConsole, stateValues), null);
 
         }
         return nextState;
-    }
-
-    @Override
-    void persist(String[] entry, File file) throws IOException {
-        persist(entry, file, null);
-    }
-
-    @Override
-    void persist(String[] entry, File file, String realm) throws IOException {
-        final PropertiesFileLoader propertiesHandler = realm == null ? new PropertiesFileLoader(file.getAbsolutePath())
-                : new UserPropertiesFileLoader(file.getAbsolutePath());
-        try {
-            propertiesHandler.start(null);
-            if (realm != null) {
-                ((UserPropertiesFileLoader) propertiesHandler).setRealmName(realm);
-            }
-            Properties prob = propertiesHandler.getProperties();
-            prob.setProperty(entry[0], entry[1]);
-            if (entry.length > 2) {
-                prob.setProperty(entry[0] + "!disable", entry[2]);
-            }
-            propertiesHandler.persistProperties();
-        } catch (StartException e) {
-            throw new IllegalStateException(MESSAGES.unableToUpdateUser(file.getAbsolutePath(), e.getMessage()));
-        } finally {
-            propertiesHandler.stop(null);
-        }
     }
 
     @Override
@@ -106,5 +71,3 @@ public class UpdateUser extends UpdatePropertiesHandler implements State {
         return MESSAGES.unableToUpdateUser(fileName, e.getMessage());
     }
 }
-
-

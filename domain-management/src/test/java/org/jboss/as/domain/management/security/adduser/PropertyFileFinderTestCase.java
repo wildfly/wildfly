@@ -81,7 +81,7 @@ public class PropertyFileFinderTestCase extends PropertyTestHelper {
         State propertyFileFinder = new PropertyFileFinder(consoleMock, values);
         State nextState = propertyFileFinder.execute();
         assertTrue(nextState instanceof PromptRealmState);
-        assertTrue("Expected to find the "+USER_NAME+" in the list of known users",values.getKnownUsers().contains(USER_NAME));
+        assertTrue("Expected to find the "+USER_NAME+" in the list of known enabled users",values.getEnabledKnownUsers().contains(USER_NAME));
         assertTrue("Expected the values.getPropertiesFiles() contained the "+standaloneMgmtUserFile,values.getUserFiles().contains(standaloneMgmtUserFile));
         assertTrue("Expected the values.getPropertiesFiles() contained the "+domainMgmtUserFile,values.getUserFiles().contains(domainMgmtUserFile));
     }

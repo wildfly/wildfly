@@ -1,9 +1,13 @@
 package org.jboss.as.domain.management.security.adduser;
 
 import org.jboss.as.domain.management.security.PropertiesFileLoader;
+import org.jboss.as.domain.management.security.UserPropertiesFileLoader;
+import org.jboss.msc.service.StartException;
 import org.junit.Test;
 
+import java.io.File;
 import java.io.IOException;
+import java.io.PrintWriter;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -11,6 +15,7 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
 
 public class PropertyPatternTestCase {
 
@@ -45,14 +50,33 @@ public class PropertyPatternTestCase {
         assertEquals("soldier", values.get(2));
     }
 
-    protected String getUserName(String line) {
-        final String userName;
-        int separatorIndex = line.indexOf('=');
-        if (line.startsWith("#")) {
-            userName = line.substring(1, separatorIndex);
-        } else {
-            userName = line.substring(0, separatorIndex);
+    @Test
+    public void testLoadEnabledDisabledUsers() throws IOException, StartException {
+        File usersPropertyFile = File.createTempFile("User", null);
+        usersPropertyFile.deleteOnExit();
+        List<String> content = Arrays.asList(
+                "#Guillaume.Grossetie=abc123",
+                "Aldo.Raine@Inglorious-Basterds.com=def456",
+                "# Comment",
+                "",
+                "#",
+                "#Omar.Ulmer=ghi789"
+        );
+        PrintWriter writer = new PrintWriter(usersPropertyFile, "UTF-8");
+        try {
+            for (String line : content) {
+                writer.println(line);
+            }
+        } finally {
+            writer.close();
         }
-        return userName;
+        UserPropertiesFileLoader propertiesLoad = new UserPropertiesFileLoader(usersPropertyFile.getAbsolutePath());
+        propertiesLoad.start(null);
+        assertEquals(1, propertiesLoad.getEnabledUserNames().size());
+        assertEquals(2, propertiesLoad.getDisabledUserNames().size());
+        assertEquals(3, propertiesLoad.getUserNames().size());
+        assertTrue(propertiesLoad.getEnabledUserNames().contains("Aldo.Raine@Inglorious-Basterds.com"));
+        assertTrue(propertiesLoad.getDisabledUserNames().contains("Guillaume.Grossetie"));
+        propertiesLoad.stop(null);
     }
 }

@@ -22,10 +22,10 @@
 
 package org.jboss.as.domain.management.security.adduser;
 
+import org.jboss.util.Base64;
+
 import static org.jboss.as.domain.management.DomainManagementMessages.MESSAGES;
 import static org.jboss.as.domain.management.security.adduser.AddUser.NEW_LINE;
-
-import org.jboss.util.Base64;
 
 /**
  * A state to display the secret element needed for server to server password defintion.
@@ -43,7 +43,7 @@ public class DisplaySecret implements State {
     }
 
     public State execute() {
-        String pwdBase64 = Base64.encodeBytes(new String(stateValues.getPassword()).getBytes());
+        String pwdBase64 = Base64.encodeBytes(stateValues.getPassword().getBytes());
         theConsole.printf(MESSAGES.secretElement(pwdBase64));
         theConsole.printf(NEW_LINE);
 

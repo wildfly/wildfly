@@ -23,13 +23,17 @@
 
 package org.jboss.as.domain.management.security.adduser;
 
-import static org.jboss.as.domain.management.security.adduser.AddUser.NEW_LINE;
+import org.jboss.as.domain.management.security.PropertiesFileLoader;
+import org.jboss.as.domain.management.security.UserPropertiesFileLoader;
+import org.jboss.msc.service.StartException;
+import org.jboss.sasl.util.UsernamePasswordHashUtil;
 
 import java.io.File;
 import java.io.IOException;
 import java.security.NoSuchAlgorithmException;
+import java.util.Properties;
 
-import org.jboss.sasl.util.UsernamePasswordHashUtil;
+import static org.jboss.as.domain.management.security.adduser.AddUser.NEW_LINE;
 
 public abstract class UpdatePropertiesHandler {
 
@@ -40,14 +44,35 @@ public abstract class UpdatePropertiesHandler {
     }
 
     /**
-     *  Implement the persistence handler for storing the group properties.
+     * Implement the persistence handler for storing the group properties.
      */
-    abstract void persist(String[] entry, File file) throws IOException;
+    void persist(final String key, final String value, final boolean enableDisableMode, final boolean disable, final File file) throws IOException, StartException {
+        persist(key, value, enableDisableMode, disable, file, null);
+    }
 
     /**
      * Implement the persistence handler for storing the user properties.
      */
-    abstract void persist(String[] entry, File file, final String realm) throws IOException;
+    void persist(final String key, final String value, final boolean enableDisableMode, final boolean disable, final File file, final String realm) throws IOException, StartException {
+        final PropertiesFileLoader propertiesHandler = realm == null ? new PropertiesFileLoader(file.getAbsolutePath()) :
+                new UserPropertiesFileLoader(file.getAbsolutePath());
+        try {
+            propertiesHandler.start(null);
+            if (realm != null) {
+                ((UserPropertiesFileLoader) propertiesHandler).setRealmName(realm);
+            }
+            Properties prob = propertiesHandler.getProperties();
+            if (value != null) {
+                prob.setProperty(key, value);
+            }
+            if (enableDisableMode) {
+                prob.setProperty(key + "!disable", String.valueOf(disable));
+            }
+            propertiesHandler.persistProperties();
+        } finally {
+            propertiesHandler.stop(null);
+        }
+    }
 
     /**
      * Customize message for update or add users
@@ -71,21 +96,27 @@ public abstract class UpdatePropertiesHandler {
     abstract String errorMessage(String fileName, Throwable e);
 
     State update(StateValues stateValues) {
-        String[] entry = new String[3];
-
-        try {
-            String hash = new UsernamePasswordHashUtil().generateHashedHexURP(stateValues.getUserName(), stateValues.getRealm(),
-                    stateValues.getPassword());
-            entry[0] = stateValues.getUserName();
-            entry[1] = hash;
-            entry[2] = String.valueOf(stateValues.getOptions().isDisable());
-        } catch (NoSuchAlgorithmException e) {
-            return new ErrorState(theConsole, e.getMessage(), null, stateValues);
+        final String userName = stateValues.getUserName();
+        final boolean enableDisableMode = stateValues.getOptions().isEnableDisableMode();
+        final boolean disable = stateValues.getOptions().isDisable();
+        final String groups = stateValues.getGroups();
+        final String password;
+        if (stateValues.getPassword() != null) {
+            try {
+                password = new UsernamePasswordHashUtil().generateHashedHexURP(
+                        stateValues.getUserName(),
+                        stateValues.getRealm(),
+                        stateValues.getPassword().toCharArray());
+            } catch (NoSuchAlgorithmException e) {
+                return new ErrorState(theConsole, e.getMessage(), null, stateValues);
+            }
+        } else {
+            password = null;
         }
-
+        // Persist username=password
         for (File current : stateValues.getUserFiles()) {
             try {
-                persist(entry, current, stateValues.getRealm());
+                persist(userName, password, enableDisableMode, disable, current, stateValues.getRealm());
                 if (stateValues.isSilent() == false) {
                     theConsole.printf(consoleUserMessage(current.getCanonicalPath()));
                     theConsole.printf(NEW_LINE);
@@ -94,17 +125,16 @@ public abstract class UpdatePropertiesHandler {
                 return new ErrorState(theConsole, errorMessage(current.getAbsolutePath(), e), null, stateValues);
             }
         }
-
-        if (stateValues.groupPropertiesFound() && stateValues.getGroups() != null) {
+        // Persist username=groups
+        if (stateValues.groupPropertiesFound() && (groups != null || enableDisableMode)) {
             for (final File current : stateValues.getGroupFiles()) {
-                String[] groups = {stateValues.getUserName(), stateValues.getGroups(), String.valueOf(stateValues.getOptions().isDisable())};
                 try {
-                    persist(groups, current);
+                    persist(userName, groups, enableDisableMode, disable, current);
                     if (stateValues.isSilent() == false) {
                         theConsole.printf(consoleGroupsMessage(current.getCanonicalPath()));
                         theConsole.printf(NEW_LINE);
                     }
-                } catch (IOException e) {
+                } catch (Exception e) {
                     return new ErrorState(theConsole, errorMessage(current.getAbsolutePath(), e), null, stateValues);
                 }
             }
