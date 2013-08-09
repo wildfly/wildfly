@@ -20,8 +20,8 @@
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
 package org.jboss.as.domain.management.access;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.NAME;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.CLASSIFICATION;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.NAME;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.VALUE;
 import static org.jboss.as.controller.parsing.Attribute.APPLICATION;
 
@@ -98,6 +98,8 @@ public class ApplicationClassificationConfigResourceDefinition extends SimpleRes
                 //TODO i18n
                 throw new IllegalStateException();
             }
+
+            context.getResult();
             if (result != null) {
                 context.getResult().set(result);
             }
@@ -116,7 +118,8 @@ public class ApplicationClassificationConfigResourceDefinition extends SimpleRes
             final ApplicationTypeConfigResource resource = (ApplicationTypeConfigResource)context.readResourceForUpdate(PathAddress.EMPTY_ADDRESS);
             final ApplicationTypeConfig classification = resource.applicationType;
             if (attribute.equals(CONFIGURED_APPLICATION.getName())) {
-                classification.setConfiguredApplication(readValue(context, value, CONFIGURED_APPLICATION));
+                Boolean confValue = readValue(context, value, CONFIGURED_APPLICATION);
+                classification.setConfiguredApplication(confValue);
             } else {
                 //TODO i18n
                 throw new IllegalStateException();

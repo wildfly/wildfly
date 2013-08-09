@@ -858,6 +858,14 @@ public interface DomainManagementMessages {
     @Message(id = 15277, value = "The current operation(s) would result in role based access control being enabled but leave it impossible for authenticated users to be assigned roles.")
     OperationFailedException inconsistentRbacConfiguration();
 
+    /**
+     * Creates an exception indicating that the runtime role mapping state is inconsistent.
+     *
+     * @return an {@link OperationFailedException} for the error.
+     */
+    @Message(id = 15278, value = "The runtime role mapping configuration is inconsistent, the server must be restarted.")
+    OperationFailedException inconsistentRbacRuntimeState();
+
     /*
      * Logging IDs 15200 to 15299 are reserved for domain management, the file DomainManagementLogger also contains messages in
      * this range commencing 15200.
