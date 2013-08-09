@@ -13,7 +13,7 @@ import org.jboss.as.cli.impl.DefaultCompleter.CandidatesProvider;
 import org.jboss.as.controller.client.ModelControllerClient;
 import org.jboss.dmr.ModelNode;
 
-public class CandidatesProviders {
+class CandidatesProviders {
 
     private static Collection<String> getChildrenNames(ModelControllerClient client, ModelNode address, String childType) {
         if(client == null) {

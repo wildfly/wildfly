@@ -25,7 +25,6 @@ package org.jboss.as.patching.generator;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.LinkedHashSet;
 import java.util.Map;
 import java.util.Set;
@@ -41,8 +40,6 @@ import org.jboss.as.patching.metadata.PatchElementBuilder;
  * @author Emanuel Muckenhuber
  */
 abstract class PatchBuilderWrapper extends PatchBuilder {
-
-    private final Set<DistributionContentItem> visited = new HashSet<DistributionContentItem>();
 
     protected PatchBuilderWrapper() {
         //

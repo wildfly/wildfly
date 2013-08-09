@@ -119,7 +119,8 @@ public class NativeApiPatchingTestCase extends AbstractPatchingTestCase {
         logger.info(o.getOperation().toJSONString(false));
         ret = client.execute(o);
         logger.info(ret.toJSONString(false));
-        Assert.assertTrue(ret.get("outcome").asString().equalsIgnoreCase("success"));
+        //
+        Assert.assertEquals(ret.get("outcome").asString(), "success");
 
         controller.stop(CONTAINER);
 

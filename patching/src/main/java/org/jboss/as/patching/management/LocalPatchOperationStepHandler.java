@@ -82,28 +82,27 @@ public final class LocalPatchOperationStepHandler implements OperationStepHandle
                 }
 
             });
+        } catch (ContentConflictsException e) {
+            installationManager.clearRestartRequired();
+            final ModelNode failureDescription = context.getFailureDescription();
+            for(final ContentItem item : e.getConflicts()) {
+                final ContentType type = item.getContentType();
+                switch (type) {
+                    case BUNDLE:
+                        failureDescription.get(Constants.BUNDLES).add(item.getRelativePath());
+                        break;
+                    case MODULE:
+                        failureDescription.get(Constants.MODULES).add(item.getRelativePath());
+                        break;
+                    case MISC:
+                        failureDescription.get(Constants.MISC).add(item.getRelativePath());
+                        break;
+                }
+            }
+            context.stepCompleted();
         } catch (PatchingException e) {
             installationManager.clearRestartRequired();
-            if(e instanceof ContentConflictsException) {
-                final ModelNode failureDescription = context.getFailureDescription();
-                for(final ContentItem item : ((ContentConflictsException)e).getConflicts()) {
-                    final ContentType type = item.getContentType();
-                    switch (type) {
-                        case BUNDLE:
-                            failureDescription.get(Constants.BUNDLES).add(item.getRelativePath());
-                            break;
-                        case MODULE:
-                            failureDescription.get(Constants.MODULES).add(item.getRelativePath());
-                            break;
-                        case MISC:
-                            failureDescription.get(Constants.MISC).add(item.getRelativePath());
-                            break;
-                    }
-                }
-                context.stepCompleted();
-            } else {
-                throw new OperationFailedException(e.getMessage(), e);
-            }
+            throw new OperationFailedException(e.getMessage(), e);
         }
     }
 

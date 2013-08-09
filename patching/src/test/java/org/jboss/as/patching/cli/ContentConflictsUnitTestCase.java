@@ -280,7 +280,7 @@ public class ContentConflictsUnitTestCase extends AbstractTaskTestCase {
         buf.append("Conflicts detected: ");
         int i = 0;
         while(i < conflicts.length) {
-            buf.append(conflicts[i++]);
+            buf.append(conflicts[i++].replace('\\', '/')); // fix paths on windows
             if(i < conflicts.length) {
                 buf.append(", ");
             }

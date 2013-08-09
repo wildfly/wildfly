@@ -46,7 +46,7 @@ import org.jboss.dmr.ModelType;
 /**
  * @author Emanuel Muckenhuber
  */
-public class PatchResourceDefinition extends SimpleResourceDefinition {
+class PatchResourceDefinition extends SimpleResourceDefinition {
 
     public static final String NAME = "patching";
     static final String RESOURCE_NAME = PatchResourceDefinition.class.getPackage().getName() + ".LocalDescriptions";
@@ -97,9 +97,8 @@ public class PatchResourceDefinition extends SimpleResourceDefinition {
     static final AttributeDefinition PATCH_ID = SimpleAttributeDefinitionBuilder.create(Constants.PATCH_ID, ModelType.STRING)
             .build();
 
-    static final AttributeDefinition RESTORE_CONFIGURATION = SimpleAttributeDefinitionBuilder.create(Constants.RESTORE_CONFIGURATION, ModelType.BOOLEAN)
-            .setDefaultValue(new ModelNode(true))
-            .setAllowNull(true)
+    static final AttributeDefinition RESET_CONFIGURATION = SimpleAttributeDefinitionBuilder.create(Constants.RESET_CONFIGURATION, ModelType.BOOLEAN)
+            .setAllowNull(false)
             .build();
 
     static final AttributeDefinition ROLLBACK_TO = SimpleAttributeDefinitionBuilder.create(Constants.ROLLBACK_TO, ModelType.BOOLEAN)
@@ -110,7 +109,7 @@ public class PatchResourceDefinition extends SimpleResourceDefinition {
     static final OperationDefinition ROLLBACK = new SimpleOperationDefinitionBuilder(Constants.ROLLBACK, getResourceDescriptionResolver(PatchResourceDefinition.NAME))
             .addParameter(PATCH_ID)
             .addParameter(ROLLBACK_TO)
-            .addParameter(RESTORE_CONFIGURATION)
+            .addParameter(RESET_CONFIGURATION)
             .addParameter(OVERRIDE_ALL)
             .addParameter(OVERRIDE_MODULES)
             .addParameter(OVERRIDE)
@@ -118,7 +117,7 @@ public class PatchResourceDefinition extends SimpleResourceDefinition {
             .build();
 
     static final OperationDefinition ROLLBACK_LAST = new SimpleOperationDefinitionBuilder(Constants.ROLLBACK_LAST, getResourceDescriptionResolver(PatchResourceDefinition.NAME))
-            .addParameter(RESTORE_CONFIGURATION)
+            .addParameter(RESET_CONFIGURATION)
             .addParameter(OVERRIDE_ALL)
             .addParameter(OVERRIDE_MODULES)
             .addParameter(OVERRIDE)

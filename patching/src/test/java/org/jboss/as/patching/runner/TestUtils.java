@@ -136,13 +136,12 @@ public class TestUtils {
         final ContentTask task = new ContentTask() {
             @Override
             public String[] writeContent(File mainDir) throws IOException {
-                String resourceFilePrefix = randomString();
                 String[] resourceFileNames = new String[resourcesContents.length];
                 for (int i = 0; i < resourcesContents.length; i++) {
                     String content = resourcesContents[i];
-                    String fileName = resourceFilePrefix + "-" + i;
+                    File f = File.createTempFile("test", i + ".tmp", mainDir);
+                    String fileName = f.getName();
                     resourceFileNames[i] = fileName;
-                    File f = touch(mainDir, fileName);
                     dump(f, content);
                 }
                 return resourceFileNames;
@@ -166,7 +165,9 @@ public class TestUtils {
 
     public static File createModuleRoot(File baseDir, String moduleSpec) throws IOException {
         final File dir = getModuleRoot(baseDir, moduleSpec);
-        dir.mkdirs();
+        if (!dir.mkdirs() && !dir.exists()) {
+            throw new IOException("failed to create " + dir.getAbsolutePath());
+        }
         return dir;
     }
 

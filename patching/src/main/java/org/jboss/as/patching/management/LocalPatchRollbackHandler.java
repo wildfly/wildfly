@@ -50,7 +50,7 @@ public class LocalPatchRollbackHandler implements OperationStepHandler {
     public void execute(final OperationContext context, final ModelNode operation) throws OperationFailedException {
         final String patchId = PatchResourceDefinition.PATCH_ID.resolveModelAttribute(context, operation).asString();
         final boolean rollbackTo = PatchResourceDefinition.ROLLBACK_TO.resolveModelAttribute(context, operation).asBoolean();
-        final boolean restoreConfiguration = PatchResourceDefinition.RESTORE_CONFIGURATION.resolveModelAttribute(context, operation).asBoolean();
+        final boolean restoreConfiguration = PatchResourceDefinition.RESET_CONFIGURATION.resolveModelAttribute(context, operation).asBoolean();
 
         context.acquireControllerLock();
         final InstallationManager installationManager = (InstallationManager) context.getServiceRegistry(false).getRequiredService(InstallationManagerService.NAME).getValue();

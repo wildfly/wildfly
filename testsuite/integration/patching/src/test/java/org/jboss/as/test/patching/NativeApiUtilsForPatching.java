@@ -60,6 +60,7 @@ public class NativeApiUtilsForPatching {
         patchOperation.get(ModelDescriptionConstants.OP_ADDR).add("core-service", "patching");
         patchOperation.get(ModelDescriptionConstants.OP).set("rollback");
         patchOperation.get("patch-id").set(patchId);
+        patchOperation.get("reset-configuration").set(true);
         return OperationBuilder.create(patchOperation).build();
     }
 

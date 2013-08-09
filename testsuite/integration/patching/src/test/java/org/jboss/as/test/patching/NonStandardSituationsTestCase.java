@@ -66,7 +66,6 @@ public class NonStandardSituationsTestCase extends AbstractPatchingTestCase {
      * Check that the patch rolls back completely and doesn't leave itself half-applied.
      */
     @Test
-    @Ignore("WFLY-1803")
     public void testWritePermissionDenied() throws Exception {
         // prepare the patch
         String patchID = randomString();
