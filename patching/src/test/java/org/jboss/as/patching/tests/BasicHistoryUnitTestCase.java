@@ -62,7 +62,7 @@ public class BasicHistoryUnitTestCase extends AbstractPatchingTest {
         final PatchingTestStepBuilder cp1 = builder.createStepBuilder();
         cp1.setPatchId("CP1")
                 .upgradeIdentity(PRODUCT_VERSION, PRODUCT_VERSION)
-                .upgradeElement("base:CP1", "base", false)
+                .upgradeElement("base-CP1", "base", false)
                 .addModuleWithRandomContent("org.jboss.test", moduleHash)
                 .getParent()
                 .addFileWithRandomContent(standaloneHash, FILE_ONE)
@@ -78,7 +78,7 @@ public class BasicHistoryUnitTestCase extends AbstractPatchingTest {
         final PatchingTestStepBuilder oneOff1 = builder.createStepBuilder();
         oneOff1.setPatchId("oneOff1")
                 .oneOffPatchIdentity(PRODUCT_VERSION)
-                .oneOffPatchElement("base:oneOff1", "base", false)
+                .oneOffPatchElement("base-oneOff1", "base", false)
                 .updateModuleWithRandomContent("org.jboss.test", moduleHash, null)
                 .getParent()
                 .updateFileWithRandomContent(standaloneHash, null, FILE_ONE)
@@ -94,7 +94,7 @@ public class BasicHistoryUnitTestCase extends AbstractPatchingTest {
         final PatchingTestStepBuilder cp2 = builder.createStepBuilder();
         cp2.setPatchId("CP2")
                 .upgradeIdentity(PRODUCT_VERSION, PRODUCT_VERSION)
-                .upgradeElement("base:CP2", "base", false)
+                .upgradeElement("base-CP2", "base", false)
                 .addModuleWithRandomContent("org.jboss.test", moduleHash)
                 .getParent()
                 .addFileWithRandomContent(standaloneHash, FILE_TWO)
@@ -132,7 +132,7 @@ public class BasicHistoryUnitTestCase extends AbstractPatchingTest {
         oo1.setPatchId("one-off-one")
                 .oneOffPatchIdentity(PRODUCT_VERSION)
                 .updateFileWithRandomContent(initialHash, existingHash, FILE_EXISTING)
-                .oneOffPatchElement("base:one-off", "base", false)
+                .oneOffPatchElement("base-one-off", "base", false)
                 .addModuleWithRandomContent("test.module", moduleHash)
         ;
         // Apply OO1
@@ -142,7 +142,7 @@ public class BasicHistoryUnitTestCase extends AbstractPatchingTest {
         cp1.setPatchId("CP1")
                 .upgradeIdentity(PRODUCT_VERSION, PRODUCT_VERSION)
                 .updateFileWithRandomContent(initialHash, existingHash, FILE_EXISTING)
-                .upgradeElement("base:cp1", "base", false)
+                .upgradeElement("base-cp1", "base", false)
                 .addModuleWithRandomContent("test.module", moduleHash)
         ;
         // Apply CP1
@@ -162,7 +162,7 @@ public class BasicHistoryUnitTestCase extends AbstractPatchingTest {
         final PatchingTestStepBuilder cp1 = builder.createStepBuilder();
         cp1.setPatchId("CP1")
                 .upgradeIdentity(PRODUCT_VERSION, PRODUCT_VERSION)
-                .upgradeElement("base:CP1", "base", false)
+                .upgradeElement("base-CP1", "base", false)
                 .addModuleWithRandomContent("org.jboss.test", moduleHash)
                 .getParent()
                 .addFileWithRandomContent(standaloneHash, FILE_ONE)
@@ -175,10 +175,10 @@ public class BasicHistoryUnitTestCase extends AbstractPatchingTest {
         final PatchingTestStepBuilder cp2 = builder.createStepBuilder();
         cp2.setPatchId("CP2")
                 .upgradeIdentity(PRODUCT_VERSION, PRODUCT_VERSION)
-                .upgradeElement("layer2:CP2", "layer2", false)
+                .upgradeElement("layer2-CP2", "layer2", false)
                     .addModuleWithRandomContent("org.jboss.test", null)
                     .getParent()
-                .upgradeElement("layer1:CP2", "layer1", false)
+                .upgradeElement("layer1-CP2", "layer1", false)
                     .addModuleWithRandomContent("org.jboss.test", null)
                     .getParent()
                 .updateFileWithRandomContent(Arrays.copyOf(standaloneHash, standaloneHash.length), standaloneHash, FILE_ONE)
@@ -223,7 +223,7 @@ public class BasicHistoryUnitTestCase extends AbstractPatchingTest {
         final PatchingTestStepBuilder step1 = testBuilder.createStepBuilder();
         step1.setPatchId("step1")
                 .oneOffPatchIdentity(PRODUCT_VERSION)
-                .oneOffPatchElement("base:1", "base", false)
+                .oneOffPatchElement("base-1", "base", false)
                 .removeModule("test.module", "main", existing)
                 ;
 

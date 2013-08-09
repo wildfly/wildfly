@@ -25,7 +25,9 @@ package org.jboss.as.patching.metadata.impl;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.jboss.as.patching.PatchMessages;
 import org.jboss.as.patching.metadata.ContentModification;
+import org.jboss.as.patching.metadata.Patch;
 import org.jboss.as.patching.metadata.PatchElement;
 import org.jboss.as.patching.metadata.PatchElementProvider;
 
@@ -43,6 +45,9 @@ public class PatchElementImpl implements PatchElement {
     public PatchElementImpl(String id) {
         if(id == null) {
             throw new IllegalArgumentException("id is null");
+        }
+        if (!Patch.PATCH_NAME_PATTERN.matcher(id).matches()) {
+            throw PatchMessages.MESSAGES.illegalPatchName(id);
         }
         this.id = id;
     }
