@@ -50,13 +50,11 @@ abstract class AbstractModuleTask extends AbstractPatchingTask<ModuleItem> {
 
     @Override
     byte[] backup(PatchingTaskContext context) throws IOException {
-        // Check the module.xml hash
         final File[] repoRoots = context.getTargetModulePath();
-        //
         final String moduleName = contentItem.getName();
         final String slot = contentItem.getSlot();
         for(final File path : repoRoots) {
-
+            // Find the first module and calculate the hash
             final File modulePath = PatchContentLoader.getModulePath(path, moduleName, slot);
             final File moduleXml = new File(modulePath, MODULE_XML);
             if(moduleXml.exists()) {

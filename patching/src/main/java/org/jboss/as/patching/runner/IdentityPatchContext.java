@@ -50,17 +50,16 @@ import org.jboss.as.patching.tool.ContentVerificationPolicy;
  */
 class IdentityPatchContext implements PatchContentProvider {
 
-    private final File miscTargetRoot;
 
-    private final File configBackup;
     private final File miscBackup;
+    private final File configBackup;
+    private final File miscTargetRoot;
 
     private final PatchEntry identityEntry;
     private final InstalledImage installedImage;
     private final PatchContentProvider contentProvider;
     private final ContentVerificationPolicy contentPolicy;
     private final InstallationManager.InstallationModification modification;
-
     private final Map<String, PatchContentLoader> contentLoaders = new HashMap<String, PatchContentLoader>();
 
     // TODO initialize layers in the correct order
@@ -70,6 +69,7 @@ class IdentityPatchContext implements PatchContentProvider {
     private PatchingTaskContext.Mode mode;
     private volatile State state = State.NEW;
     private static final AtomicReferenceFieldUpdater<IdentityPatchContext, State> stateUpdater = AtomicReferenceFieldUpdater.newUpdater(IdentityPatchContext.class, State.class, "state");
+    // The modules we need to invalidate
     private final List<File> moduleInvalidations = new ArrayList<File>();
 
     static enum State {
@@ -99,7 +99,7 @@ class IdentityPatchContext implements PatchContentProvider {
             this.miscBackup = new File(backup, PatchContentLoader.MISC);
             this.configBackup = new File(backup, Constants.CONFIGURATION);
         } else {
-            this.miscBackup = null;
+            this.miscBackup = null;     // This will trigger a failure when the root is actually needed
             this.configBackup = null;
         }
         this.identityEntry = new PatchEntry(modification, null);
@@ -172,7 +172,7 @@ class IdentityPatchContext implements PatchContentProvider {
 
     @Override
     public void cleanup() {
-        // If cleanup gets called before we return, something went wrong
+        // If cleanup gets called before finalizePatch, something went wrong
         if (state != State.PREPARED) {
             undoChanges();
         }
@@ -201,7 +201,7 @@ class IdentityPatchContext implements PatchContentProvider {
         if (entry == null) {
             final InstallationManager.MutablePatchingTarget target = modification.resolve(layerName, layerType);
             if (target == null) {
-                throw new PatchingException("no such layer " + layerName);
+                throw PatchMessages.MESSAGES.noSuchLayer(layerName);
             }
             entry = new PatchEntry(target, element);
             map.put(layerName, entry);
@@ -292,6 +292,19 @@ class IdentityPatchContext implements PatchContentProvider {
     }
 
     /**
+     * Cancel the current patch and undo the changes.
+     *
+     * @param callback the finalize callback
+     */
+    protected void cancel(final FinalizeCallback callback) {
+        try {
+            undoChanges();
+        } finally {
+            callback.operationCancelled(this);
+        }
+    }
+
+    /**
      * Complete the current operation and persist the current state to the disk. This will also trigger the invalidation
      * of outdated modules.
      *
@@ -321,9 +334,15 @@ class IdentityPatchContext implements PatchContentProvider {
             }
         } finally {
             if (state != State.COMPLETED) {
-                modification.cancel();
-                callback.operationCancelled(this);
-                undoChanges();
+                try {
+                    modification.cancel();
+                } finally {
+                    try {
+                        undoChanges();
+                    } finally {
+                        callback.operationCancelled(this);
+                    }
+                }
             }
         }
     }
@@ -451,7 +470,6 @@ class IdentityPatchContext implements PatchContentProvider {
         } else {
             throw new IllegalStateException();
         }
-
     }
 
     /**
@@ -611,6 +629,7 @@ class IdentityPatchContext implements PatchContentProvider {
             if (state == State.NEW) {
                 return IdentityPatchContext.getTargetFile(miscBackup, item);
             } else if (state == State.ROLLBACK_ONLY) {
+                // No backup when we undo the changes
                 return null;
             } else {
                 throw new IllegalStateException();
@@ -784,6 +803,11 @@ class IdentityPatchContext implements PatchContentProvider {
         return element;
     }
 
+    /**
+     * Backup the current configuration as part of the patch history.
+     *
+     * @throws IOException for any error
+     */
     void backupConfiguration() throws IOException {
 
         final String configuration = Constants.CONFIGURATION;
@@ -815,6 +839,13 @@ class IdentityPatchContext implements PatchContentProvider {
         }
     };
 
+    /**
+     * Backup all xml files in a given directory.
+     *
+     * @param source the source directory
+     * @param target the target directory
+     * @throws IOException for any error
+     */
     static void backupDirectory(final File source, final File target) throws IOException {
         if (!target.exists()) {
             if (!target.mkdirs()) {
@@ -828,11 +859,21 @@ class IdentityPatchContext implements PatchContentProvider {
         }
     }
 
-    // TODO log a warning if the restored configuration files are different from the current one?
-    // or should we check that before rolling back the patch to give the user a chance to save the changes
+
+    /**
+     * Restore the configuration. Depending on reset-configuration this is going to replace the original files with the
+     * backup, otherwise it will create a restored-configuration folder the configuration directories.
+     * <p/>
+     * TODO log a warning if the restored configuration files are different from the current one?
+     * or should we check that before rolling back the patch to give the user a chance to save the changes
+     *
+     * @param rollingBackPatchID the patch id
+     * @param resetConfiguration whether to override the configuration files or not
+     * @throws IOException for any error
+     */
     void restoreConfiguration(final String rollingBackPatchID, final boolean resetConfiguration) throws IOException {
 
-        File backupConfigurationDir = new File(installedImage.getPatchHistoryDir(rollingBackPatchID), Constants.CONFIGURATION);
+        final File backupConfigurationDir = new File(installedImage.getPatchHistoryDir(rollingBackPatchID), Constants.CONFIGURATION);
         final File ba = new File(backupConfigurationDir, Constants.APP_CLIENT);
         final File bd = new File(backupConfigurationDir, Constants.DOMAIN);
         final File bs = new File(backupConfigurationDir, Constants.STANDALONE);
@@ -858,6 +899,13 @@ class IdentityPatchContext implements PatchContentProvider {
         }
     }
 
+    /**
+     * Write the patch.xml
+     *
+     * @param rollbackPatch the patch
+     * @param file          the target file
+     * @throws IOException
+     */
     static void writePatch(final Patch rollbackPatch, final File file) throws IOException {
         final File parent = file.getParentFile();
         if (!parent.isDirectory()) {

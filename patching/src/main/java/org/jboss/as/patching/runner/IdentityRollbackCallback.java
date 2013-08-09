@@ -15,6 +15,8 @@ import org.jboss.as.patching.metadata.RollbackPatch;
 import org.jboss.as.patching.metadata.impl.IdentityImpl;
 
 /**
+ * Callback when rolling back a patch. This will cleanup the patch directories and history if completed successfully.
+ *
  * @author Emanuel Muckenhuber
  */
 class IdentityRollbackCallback implements IdentityPatchContext.FinalizeCallback {

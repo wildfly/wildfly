@@ -177,7 +177,7 @@ public class PatchingTestUtil {
             throws IOException {
         StringBuilder content = new StringBuilder("<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n");
         content.append(
-                format("<module xmlns=\"urn:jboss:module:1.2\" name=\"%s\" slot=\"main\" />\n", moduleName));
+                format("<module xmlns=\"urn:jboss:module:1.2\" name=\"%s\" slot=\"main\">\n", moduleName));
         content.append("  <resources>\n");
         content.append("    <resource-root path=\".\"/>\n");
         for (String resource : resources) {

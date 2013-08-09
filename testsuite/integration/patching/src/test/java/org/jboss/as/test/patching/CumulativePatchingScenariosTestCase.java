@@ -105,7 +105,7 @@ public class CumulativePatchingScenariosTestCase extends AbstractPatchingTestCas
         Asset newManifest = new Asset() {
             @Override
             public InputStream openStream() {
-                String line = "JBossAS-Release-Version: " + targetAsVersion;
+                String line = "JBossAS-Release-Version: " + targetAsVersion + "\n";
                 return new ByteArrayInputStream(line.getBytes());
             }
         };
@@ -143,7 +143,7 @@ public class CumulativePatchingScenariosTestCase extends AbstractPatchingTestCas
         Asset newManifest = new Asset() {
             @Override
             public InputStream openStream() {
-                String line = "JBossAS-Release-Version: " + targetAsVersion;
+                String line = "JBossAS-Release-Version: " + targetAsVersion + "\n";
                 return new ByteArrayInputStream(line.getBytes());
             }
         };
@@ -183,7 +183,6 @@ public class CumulativePatchingScenariosTestCase extends AbstractPatchingTestCas
      * @throws Exception
      */
     @Test
-    @Ignore
     public void testTwoOneOffsInvalidatedByCumulativePatch() throws Exception {
         String oneOffPatchID1 = randomString();
         String oneOffPatchID2 = randomString();
@@ -269,7 +268,6 @@ public class CumulativePatchingScenariosTestCase extends AbstractPatchingTestCas
      * @throws Exception
      */
     @Test
-    @Ignore("WFLY-1823")
     public void testOneOffInvalidCumulativePatch() throws Exception {
         String oneOffPatchID1 = randomString();
         String oneOffPatchID2 = randomString();
@@ -324,7 +322,6 @@ public class CumulativePatchingScenariosTestCase extends AbstractPatchingTestCas
      * @throws Exception
      */
     @Test
-    @Ignore("waiting for new version of jboss-modules")
     public void testApplyOneOffToWrongTargetVersion() throws Exception {
         final String cpAsVersion = "EAP with cp patch";
         String oneOffPatchForOldVersionWithoutCPID = randomString();
@@ -360,9 +357,6 @@ public class CumulativePatchingScenariosTestCase extends AbstractPatchingTestCas
         Assert.assertTrue("The patch " + oneOffPatchForNewVersionWithCPID + " should be listed as installed",
                 CliUtilsForPatching.getInstalledPatches().contains(oneOffPatchForNewVersionWithCPID));
 
-        // try to rollback one-off
-        Assert.assertFalse("Rollback shouldn't be accepted", CliUtilsForPatching.rollbackCumulativePatch(true));
-
         // rollback one-off for new version
         Assert.assertTrue("Rollback should be accepted", CliUtilsForPatching.rollbackPatch(oneOffPatchForNewVersionWithCPID));
         Assert.assertTrue("server should be in restart-required mode",
@@ -393,7 +387,7 @@ public class CumulativePatchingScenariosTestCase extends AbstractPatchingTestCas
 
         controller.start(CONTAINER);
         Assert.assertTrue("The patch " + oneOffPatchForOldVersionWithoutCPZip + " should be listed as installed",
-                CliUtilsForPatching.getInstalledPatches().contains(oneOffPatchForNewVersionWithCPID));
+                CliUtilsForPatching.getInstalledPatches().contains(oneOffPatchForOldVersionWithoutCPID));
         controller.stop(CONTAINER);
     }
 
@@ -411,7 +405,6 @@ public class CumulativePatchingScenariosTestCase extends AbstractPatchingTestCas
      * @throws Exception
      */
     @Test
-    @Ignore("WFLY-1822")
     public void testCumulativePatchRollbackRestoreConfiguration() throws Exception {
         final String cpAsVersion = "EAP with cp patch";
         String cpPatchID = randomString();

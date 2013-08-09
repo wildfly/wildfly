@@ -110,4 +110,43 @@ public class PatchUndoTestCase extends AbstractPatchingTest {
         }
     }
 
+
+    @Test
+    public void testInvalidPatch() throws Exception {
+        final PatchingTestBuilder builder = createDefaultBuilder();
+
+
+        ContentModificationUtils.addMisc(builder.getRoot(), "oo2", "test-content", "wrong-content");
+        final MiscContentItem item = new MiscContentItem("wrong-content", new String[0], WRONG_HASH);
+        final ContentModification wrongModification = new ContentModification(item, IoUtils.NO_CONTENT, ModificationType.ADD);
+
+        final PatchingTestStepBuilder step1 = builder.createStepBuilder();
+        step1.oneOffPatchIdentity(PRODUCT_VERSION)
+                .setPatchId("oo2")
+                .oneOffPatchElement("base:patch:002", "base", false)
+                .addModuleWithRandomContent("other.test", null)
+                .getParent()
+                .addFileWithRandomContent(null, "test", "content")
+        ;
+        apply(step1);
+        Assert.assertTrue(builder.hasFile("test", "content"));
+
+        //
+        final PatchingTestStepBuilder step2 = builder.createStepBuilder();
+        step2.upgradeIdentity(PRODUCT_VERSION, PRODUCT_VERSION)
+                .setPatchId("cp2")
+                .upgradeElement("base:patch:cp2", "base", false)
+                .getParent()
+                .addContentModification(wrongModification)
+        ;
+
+        try {
+            apply(step2);
+            Assert.fail("should have failed");
+        } catch (PatchingException e) {
+            Assert.assertTrue(builder.hasFile("test", "content"));
+        }
+
+    }
+
 }

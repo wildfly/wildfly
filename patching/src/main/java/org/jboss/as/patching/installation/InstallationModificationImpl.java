@@ -13,13 +13,15 @@ import org.jboss.as.patching.metadata.LayerType;
  */
 abstract class InstallationModificationImpl extends MutableTargetImpl implements InstallationManager.InstallationModification {
 
+    private final String name;
     private final String version;
     private final InstallationState installationState;
     private final AtomicBoolean done = new AtomicBoolean();
 
-    protected InstallationModificationImpl(final PatchableTarget.TargetInfo identity,
+    protected InstallationModificationImpl(final PatchableTarget.TargetInfo identity, final String name,
                                            final String version, final InstallationState installationState) {
         super(identity);
+        this.name = name;
         this.version = version;
         this.installationState = installationState;
     }
@@ -31,6 +33,11 @@ abstract class InstallationModificationImpl extends MutableTargetImpl implements
         } else {
             return installationState.addOns.get(name);
         }
+    }
+
+    @Override
+    public String getName() {
+        return name;
     }
 
     @Override

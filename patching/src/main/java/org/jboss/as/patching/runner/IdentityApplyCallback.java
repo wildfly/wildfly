@@ -14,6 +14,9 @@ import org.jboss.as.patching.metadata.PatchXml;
 import org.jboss.as.patching.metadata.RollbackPatch;
 
 /**
+ * Callback when applying a patch. This will write the patch history and in case of a failure trigger a cleanup
+ * of the processed patch.
+ *
  * @author Emanuel Muckenhuber
  */
 class IdentityApplyCallback implements IdentityPatchContext.FinalizeCallback {

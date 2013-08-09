@@ -18,6 +18,11 @@ public abstract class InstallationManager extends InstalledIdentity {
      */
     public abstract InstallationModification modifyInstallation(ModificationCompletion callback);
 
+    /**
+     * Check whether the instance requires a restart.
+     *
+     * @return {@code true} if a restart is required, {@code false} otherwise
+     */
     public abstract boolean requiresRestart();
 
     /**
@@ -32,6 +37,9 @@ public abstract class InstallationManager extends InstalledIdentity {
      */
     public abstract boolean restartRequired();
 
+    /**
+     * Clear the the restart required state.
+     */
     public abstract void clearRestartRequired();
 
     public interface InstallationModification extends MutablePatchingTarget {
@@ -42,6 +50,13 @@ public abstract class InstallationManager extends InstalledIdentity {
          * @return the originals tate
          */
         InstalledIdentity getUnmodifiedInstallationState();
+
+        /**
+         * Get the identity name.
+         *
+         * @return the identity name
+         */
+        String getName();
 
         /**
          * Get the current version of the identity.

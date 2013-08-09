@@ -140,11 +140,11 @@ public abstract class PatchOperationTarget {
         }
 
         @Override
-        protected ModelNode rollback(final String patchId, final ContentPolicyBuilderImpl builder, boolean rollbackTo, boolean restoreConfiguration) {
+        protected ModelNode rollback(final String patchId, final ContentPolicyBuilderImpl builder, boolean rollbackTo, boolean resetConfiguration) {
             final ContentVerificationPolicy policy = builder.createPolicy();
             ModelNode result = new ModelNode();
             try {
-                PatchingResult rollback = tool.rollback(patchId, policy, rollbackTo, restoreConfiguration);
+                PatchingResult rollback = tool.rollback(patchId, policy, rollbackTo, resetConfiguration);
                 rollback.commit();
                 result.get(OUTCOME).set(SUCCESS);
                 result.get(RESULT).setEmptyObject();
@@ -200,16 +200,17 @@ public abstract class PatchOperationTarget {
         }
 
         @Override
-        protected ModelNode rollback(String patchId, ContentPolicyBuilderImpl builder, boolean rollbackTo, boolean restoreConfiguration) throws IOException {
+        protected ModelNode rollback(String patchId, ContentPolicyBuilderImpl builder, boolean rollbackTo, boolean resetConfiguration) throws IOException {
             final ModelNode operation = createOperation(Constants.ROLLBACK, address.toModelNode(), builder);
             operation.get(Constants.PATCH_ID).set(patchId);
+            operation.get(Constants.RESET_CONFIGURATION).set(resetConfiguration);
             return client.execute(operation);
         }
 
         @Override
         protected ModelNode rollbackLast(ContentPolicyBuilderImpl builder, boolean restoreConfiguration) throws IOException {
             final ModelNode operation = createOperation(Constants.ROLLBACK_LAST, address.toModelNode(), builder);
-            operation.get(Constants.RESTORE_CONFIGURATION).set(restoreConfiguration);
+            operation.get(Constants.RESET_CONFIGURATION).set(restoreConfiguration);
             return client.execute(operation);
         }
     }

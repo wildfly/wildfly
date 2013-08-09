@@ -40,7 +40,7 @@ public class Constants {
 
     public static final String PATCH = "patch";
     public static final String PATCH_ID = "patch-id";
-    public static final String RESTORE_CONFIGURATION = "restore-configuration";
+    public static final String RESET_CONFIGURATION = "reset-configuration";
     public static final String ROLLBACK = "rollback";
     public static final String ROLLBACK_LAST = "rollback-last";
     public static final String ROLLBACK_TO = "rollback-to";
