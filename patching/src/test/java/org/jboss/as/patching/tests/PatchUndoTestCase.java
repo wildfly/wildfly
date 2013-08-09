@@ -52,7 +52,7 @@ public class PatchUndoTestCase extends AbstractPatchingTest {
         final PatchingTestBuilder builder = createDefaultBuilder();
 
         // Add some random content
-        ContentModificationUtils.addModule(builder.getRoot(), "base:patch:001", "test.module", randomString());
+        ContentModificationUtils.addModule(builder.getRoot(), "base-patch-001", "test.module", randomString());
         // Override the hash with a wrong one
         final ModuleItem item = new ModuleItem("test.module", "main", WRONG_HASH);
         final ContentModification wrongModification = new ContentModification(item, IoUtils.NO_CONTENT, ModificationType.ADD);
@@ -60,7 +60,7 @@ public class PatchUndoTestCase extends AbstractPatchingTest {
         final PatchingTestStepBuilder step1 = builder.createStepBuilder();
         step1.oneOffPatchIdentity(PRODUCT_VERSION)
                 .setPatchId("oo1")
-                .oneOffPatchElement("base:patch:001", "base", false)
+                .oneOffPatchElement("base-patch-001", "base", false)
                 .addContentModification(wrongModification)
                 .getParent()
                 .addFileWithRandomContent(null, "test", "content");
@@ -72,7 +72,7 @@ public class PatchUndoTestCase extends AbstractPatchingTest {
             Assert.assertFalse(builder.hasFile("test", "content"));
             final InstalledIdentity identity = loadInstallationManager();
             final PatchableTarget base = identity.getLayer("base");
-            Assert.assertFalse(base.getDirectoryStructure().getModulePatchDirectory("base:patch:001").exists());
+            Assert.assertFalse(base.getDirectoryStructure().getModulePatchDirectory("base-patch-001").exists());
             Assert.assertFalse(identity.getInstalledImage().getPatchHistoryDir("oo1").exists());
         }
 
@@ -90,7 +90,7 @@ public class PatchUndoTestCase extends AbstractPatchingTest {
         final PatchingTestStepBuilder step1 = builder.createStepBuilder();
         step1.oneOffPatchIdentity(PRODUCT_VERSION)
                 .setPatchId("oo2")
-                .oneOffPatchElement("base:patch:002", "base", false)
+                .oneOffPatchElement("base-patch-002", "base", false)
                 .addModuleWithRandomContent("other.test", null)
                 .getParent()
                 .addFileWithRandomContent(null, "test", "content")
@@ -105,7 +105,7 @@ public class PatchUndoTestCase extends AbstractPatchingTest {
             Assert.assertFalse(builder.hasFile("wrong-content"));
             final InstalledIdentity identity = loadInstallationManager();
             final PatchableTarget base = identity.getLayer("base");
-            Assert.assertFalse(base.getDirectoryStructure().getModulePatchDirectory("base:patch:002").exists());
+            Assert.assertFalse(base.getDirectoryStructure().getModulePatchDirectory("base-patch-002").exists());
             Assert.assertFalse(identity.getInstalledImage().getPatchHistoryDir("oo2").exists());
         }
     }
@@ -123,7 +123,7 @@ public class PatchUndoTestCase extends AbstractPatchingTest {
         final PatchingTestStepBuilder step1 = builder.createStepBuilder();
         step1.oneOffPatchIdentity(PRODUCT_VERSION)
                 .setPatchId("oo2")
-                .oneOffPatchElement("base:patch:002", "base", false)
+                .oneOffPatchElement("base-patch-002", "base", false)
                 .addModuleWithRandomContent("other.test", null)
                 .getParent()
                 .addFileWithRandomContent(null, "test", "content")
@@ -135,7 +135,7 @@ public class PatchUndoTestCase extends AbstractPatchingTest {
         final PatchingTestStepBuilder step2 = builder.createStepBuilder();
         step2.upgradeIdentity(PRODUCT_VERSION, PRODUCT_VERSION)
                 .setPatchId("cp2")
-                .upgradeElement("base:patch:cp2", "base", false)
+                .upgradeElement("base-patch-cp2", "base", false)
                 .getParent()
                 .addContentModification(wrongModification)
         ;

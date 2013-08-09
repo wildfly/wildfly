@@ -23,6 +23,7 @@
 package org.jboss.as.patching.metadata;
 
 import java.util.List;
+import java.util.regex.Pattern;
 
 /**
  * The patch metadata.
@@ -31,6 +32,8 @@ import java.util.List;
  * @author Alexey Loubyansky
  */
 public interface Patch {
+
+    Pattern PATCH_NAME_PATTERN = Pattern.compile("[-a-zA-Z0-9_+*.]+");
 
     public enum PatchType {
         CUMULATIVE("cumulative"),

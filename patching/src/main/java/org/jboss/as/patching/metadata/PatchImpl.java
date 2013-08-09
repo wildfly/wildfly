@@ -24,6 +24,7 @@ package org.jboss.as.patching.metadata;
 
 import java.util.List;
 
+import org.jboss.as.patching.PatchMessages;
 import org.jboss.as.patching.installation.InstalledIdentity;
 
 /**
@@ -39,6 +40,11 @@ public class PatchImpl implements Patch {
 
     public PatchImpl(String patchID, String description, Identity identity,
                      List<PatchElement> elements, List<ContentModification> modifications) {
+
+        if (!Patch.PATCH_NAME_PATTERN.matcher(patchID).matches()) {
+            throw PatchMessages.MESSAGES.illegalPatchName(patchID);
+        }
+
         this.patchID = patchID;
         this.description = description;
         this.identity = identity;

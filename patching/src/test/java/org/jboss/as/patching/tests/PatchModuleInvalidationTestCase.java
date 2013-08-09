@@ -82,7 +82,7 @@ public class PatchModuleInvalidationTestCase extends AbstractPatchingTest {
         final PatchingTestStepBuilder oop1 = test.createStepBuilder();
         oop1.setPatchId("oop1")
                 .oneOffPatchIdentity(PRODUCT_VERSION)
-                .oneOffPatchElement("base:oop1", "base", false)
+                .oneOffPatchElement("base-oop1", "base", false)
                 .updateModule(MODULE_NAME, existingHash, resultingHash, CONTENT_TASK)
                 ;
 
@@ -90,20 +90,20 @@ public class PatchModuleInvalidationTestCase extends AbstractPatchingTest {
         assertNotLoadable(resource);
 
         // Module in patch oop1
-        final File resource1 = getModuleResource("base:oop1", MODULE_NAME);
+        final File resource1 = getModuleResource("base-oop1", MODULE_NAME);
         assertLoadable(resource1);
 
         final PatchingTestStepBuilder oop2 = test.createStepBuilder();
         oop2.setPatchId("oop2")
                 .oneOffPatchIdentity(PRODUCT_VERSION)
-                .oneOffPatchElement("base:oop2", "base", false)
+                .oneOffPatchElement("base-oop2", "base", false)
                 .updateModule(MODULE_NAME, resultingHash, null, CONTENT_TASK)
                 ;
 
         apply(oop2);
 
         // Module in patch oop2
-        final File resource2 = getModuleResource("base:oop2", MODULE_NAME);
+        final File resource2 = getModuleResource("base-oop2", MODULE_NAME);
 
         assertNotLoadable(resource);
         assertNotLoadable(resource1);
@@ -112,14 +112,14 @@ public class PatchModuleInvalidationTestCase extends AbstractPatchingTest {
         final PatchingTestStepBuilder cp1 = test.createStepBuilder();
         cp1.setPatchId("cp1")
                 .upgradeIdentity(PRODUCT_VERSION, PRODUCT_VERSION)
-                .upgradeElement("base:cp1", "base", false)
+                .upgradeElement("base-cp1", "base", false)
                 .updateModule(MODULE_NAME, existingHash, resultingHash, CONTENT_TASK)
                 ;
 
         apply(cp1);
 
         // Module in patch cp1
-        final File resource3 = getModuleResource("base:cp1", MODULE_NAME);
+        final File resource3 = getModuleResource("base-cp1", MODULE_NAME);
 
         assertNotLoadable(resource);
         assertNotLoadable(resource1);
@@ -129,14 +129,14 @@ public class PatchModuleInvalidationTestCase extends AbstractPatchingTest {
         final PatchingTestStepBuilder cp2 = test.createStepBuilder();
         cp2.setPatchId("cp2")
                 .upgradeIdentity(PRODUCT_VERSION, PRODUCT_VERSION)
-                .upgradeElement("base:cp2", "base", false)
+                .upgradeElement("base-cp2", "base", false)
                 .updateModule(MODULE_NAME, resultingHash, null, CONTENT_TASK)
                 ;
 
         apply(cp2);
 
         // Module in patch cp2
-        final File resource4 = getModuleResource("base:cp2", MODULE_NAME);
+        final File resource4 = getModuleResource("base-cp2", MODULE_NAME);
 
         assertNotLoadable(resource);
         assertNotLoadable(resource1);
