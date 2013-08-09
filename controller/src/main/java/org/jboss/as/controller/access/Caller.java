@@ -32,10 +32,10 @@ import java.util.Set;
 
 import javax.security.auth.Subject;
 
-import org.jboss.as.controller.security.AccountPrincipal;
-import org.jboss.as.controller.security.GroupPrincipal;
-import org.jboss.as.controller.security.RealmPrincipal;
-import org.jboss.as.controller.security.RolePrincipal;
+import org.jboss.as.core.security.AccountPrincipal;
+import org.jboss.as.core.security.GroupPrincipal;
+import org.jboss.as.core.security.RealmPrincipal;
+import org.jboss.as.core.security.RolePrincipal;
 
 /**
  * Represents the caller in an access control decision.

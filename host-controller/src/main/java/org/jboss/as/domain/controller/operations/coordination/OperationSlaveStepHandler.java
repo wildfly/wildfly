@@ -23,6 +23,7 @@
 package org.jboss.as.domain.controller.operations.coordination;
 
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.EXECUTE_FOR_COORDINATOR;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OPERATION_HEADERS;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
 
@@ -70,7 +71,7 @@ public class OperationSlaveStepHandler {
 
     void execute(OperationContext context, ModelNode operation) throws OperationFailedException {
 
-        operation.get(OPERATION_HEADERS).remove(PrepareStepHandler.EXECUTE_FOR_COORDINATOR);
+        operation.get(OPERATION_HEADERS).remove(EXECUTE_FOR_COORDINATOR);
         final ModelNode missingResources = operation.get(OPERATION_HEADERS).remove(DomainControllerRuntimeIgnoreTransformationRegistry.MISSING_DOMAIN_RESOURCES);
 
         if (operation.hasDefined(DomainControllerLockIdUtils.DOMAIN_CONTROLLER_LOCK_ID)) {

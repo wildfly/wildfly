@@ -25,7 +25,9 @@
  */
 package org.jboss.as.domain.controller.operations.coordination;
 
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ACCESS;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ADD;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.AUDIT;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.CONTENT;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.DEPLOYMENT;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.DEPLOYMENT_OVERLAY;
@@ -33,6 +35,8 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.GRO
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.HOST;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.INTERFACE;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.JVM;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.LOGGER;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.MANAGEMENT;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.NAME;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OPERATION_HEADERS;
@@ -44,6 +48,7 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.REP
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.RUNTIME_NAME;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SERVER_CONFIG;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SERVER_GROUP;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SERVER_LOGGER;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SOCKET_BINDING_GROUP;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SOCKET_BINDING_PORT_OFFSET;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SYSTEM_PROPERTY;
@@ -67,6 +72,7 @@ import java.util.Set;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationContext.AttachmentKey;
 import org.jboss.as.controller.PathAddress;
+import org.jboss.as.controller.PathElement;
 import org.jboss.as.controller.ProxyController;
 import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
 import org.jboss.as.controller.operations.DomainOperationTransformer;
@@ -557,7 +563,7 @@ public class ServerOperationResolver {
                 }
                 case CORE_SERVICE: {
                     // TODO does server need to know about change?
-                    return Collections.emptyMap();
+                    return resolveCoreServiceOperations(operation, address, domain, host);
                 }
                 case INTERFACE: {
                     return getServerInterfaceOperations(operation, address, host, false);
@@ -807,6 +813,31 @@ public class ServerOperationResolver {
         op.get(OP_ADDR).setEmptyList();
         return Collections.singletonMap(servers, op);
     }
+
+    private Map<Set<ServerIdentity>, ModelNode> resolveCoreServiceOperations(ModelNode operation, PathAddress address, ModelNode domain, ModelNode host) {
+        if (address.getElement(0).getValue().equals(MANAGEMENT)){
+            ModelNode op = operation.clone();
+            if (address.size() == 3) {
+                if (address.getElement(1).getKey().equals(ACCESS) && address.getElement(1).getValue().equals(AUDIT)) {
+                    String key = address.getElement(2).getKey();
+                    if (key.equals(LOGGER)) {
+                        //logger=>audit-log is only for the HC
+                        return Collections.emptyMap();
+                    } else if (key.equals(SERVER_LOGGER)) {
+                        //server-logger=audit-log gets sent to the servers as logger=>audit-log
+                        PathAddress newAddr = address.subAddress(0, 2);
+                        newAddr = newAddr.append(PathElement.pathElement(LOGGER, address.getElement(2).getValue()));
+                        op.get(OP_ADDR).set(newAddr.toModelNode());
+                    }
+                }
+                return Collections.singletonMap(getAllRunningServers(host, localHostName, serverProxies), op);
+            }
+        }
+        return Collections.emptyMap();
+    }
+
+
+
 
 
     private ServerIdentity getServerIdentity(String serverName, ModelNode host) {

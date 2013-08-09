@@ -24,6 +24,8 @@ package org.jboss.as.controller.remote;
 import static org.jboss.as.controller.ControllerLogger.ROOT_LOGGER;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.CALLER_TYPE;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.COMPOSITE;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.DOMAIN_UUID;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.EXECUTE_FOR_COORDINATOR;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.FAILED;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.FAILURE_DESCRIPTION;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.HOST;
@@ -35,15 +37,22 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.RES
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SUCCESS;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.USER;
 
-import javax.security.auth.Subject;
 import java.io.DataInput;
 import java.io.IOException;
+import java.security.AccessController;
+import java.security.Principal;
+import java.security.PrivilegedAction;
 import java.security.PrivilegedActionException;
 import java.security.PrivilegedExceptionAction;
+import java.util.Collection;
+
+import javax.security.auth.Subject;
 
 import org.jboss.as.controller.ModelController;
 import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.client.impl.ModelControllerProtocol;
+import org.jboss.as.controller.security.AccessMechanismPrincipal;
+import org.jboss.as.core.security.AccessMechanism;
 import org.jboss.as.protocol.StreamUtils;
 import org.jboss.as.protocol.mgmt.ActiveOperation;
 import org.jboss.as.protocol.mgmt.FlushableDataOutput;
@@ -56,6 +65,8 @@ import org.jboss.as.protocol.mgmt.ManagementRequestHeader;
 import org.jboss.as.protocol.mgmt.ManagementResponseHeader;
 import org.jboss.as.protocol.mgmt.ProtocolUtils;
 import org.jboss.dmr.ModelNode;
+import org.jboss.remoting3.security.InetAddressPrincipal;
+import org.wildfly.security.manager.WildFlySecurityManager;
 
 /**
  * Operation handlers for the remote implementation of {@link org.jboss.as.controller.client.ModelControllerClient}
@@ -110,9 +121,36 @@ public class ModelControllerClientOperationHandler implements ManagementRequestH
                 @Override
                 public void execute(final ManagementRequestContext<Void> context) throws Exception {
                     final ManagementResponseHeader response = ManagementResponseHeader.create(context.getRequestHeader());
-                    try {
-                        Subject.doAs(subject, new PrivilegedExceptionAction<Void>() {
+                    Subject useSubject = subject;
+                    if (subject != null) {
+                        //TODO find a better place for this https://issues.jboss.org/browse/WFLY-1852
+                        PrivilegedAction<Subject> copyAction = new PrivilegedAction<Subject>() {
+                            @Override
+                            public Subject run() {
+                                final Subject subject = ModelControllerClientOperationHandler.this.subject;
+                                final Subject copySubject = new Subject();
+                                copySubject.getPrincipals().addAll(subject.getPrincipals());
+                                copySubject.getPrivateCredentials().addAll(subject.getPrivateCredentials());
+                                copySubject.getPublicCredentials().addAll(subject.getPublicCredentials());
+                                //Add the remote address and the access mechanism
+                                Collection<Principal> principals = context.getChannel().getConnection().getPrincipals();
+                                for (Principal principal : principals) {
+                                    if (principal instanceof InetAddressPrincipal) {
+                                        //TODO decide if we should use the remoting principal or not
+                                        copySubject.getPrincipals().add(new org.jboss.as.controller.security.InetAddressPrincipal(((InetAddressPrincipal)principal).getInetAddress()));
+                                        break;
+                                    }
+                                }
+                                copySubject.getPrincipals().add(new AccessMechanismPrincipal(AccessMechanism.JMX));
+                                copySubject.setReadOnly();
+                                return copySubject;                            }
+                        };
 
+                        useSubject = WildFlySecurityManager.isChecking() ? AccessController.doPrivileged(copyAction) : copyAction.run();
+                    }
+
+                    try {
+                        Subject.doAs(useSubject, new PrivilegedExceptionAction<Void>() {
                             @Override
                             public Void run() throws Exception {
                                 final CompletedCallback callback = new CompletedCallback(response, context, resultHandler);
@@ -128,9 +166,20 @@ public class ModelControllerClientOperationHandler implements ManagementRequestH
         }
 
         private void doExecute(final ModelNode operation, final int attachmentsLength, final ManagementRequestContext<Void> context, final CompletedCallback callback) {
+
+            // Header manipulation
+            final ModelNode headers = operation.get(OPERATION_HEADERS);
             //Add a header to show that this operation comes from a user. If this is a host controller and the operation needs propagating to the
             //servers it will be removed by the domain ops responsible for propagation to the servers.
-            operation.get(OPERATION_HEADERS, CALLER_TYPE).set(USER);
+            headers.get(CALLER_TYPE).set(USER);
+            // Don't allow a domain-uuid operation header from a user call
+            if (headers.hasDefined(DOMAIN_UUID)) {
+                headers.remove(DOMAIN_UUID);
+            }
+            // Don't allow a execute-for-coordinator operation header from a user call
+            if (headers.hasDefined(EXECUTE_FOR_COORDINATOR)) {
+                headers.remove(EXECUTE_FOR_COORDINATOR);
+            }
 
             final ManagementRequestHeader header = ManagementRequestHeader.class.cast(context.getRequestHeader());
             final int batchId = header.getBatchId();

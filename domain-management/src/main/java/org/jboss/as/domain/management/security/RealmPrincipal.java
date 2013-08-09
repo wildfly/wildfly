@@ -27,6 +27,6 @@ package org.jboss.as.domain.management.security;
  *
  * @author <a href="mailto:darran.lofthouse@jboss.com">Darran Lofthouse</a>
  */
-public interface RealmPrincipal extends org.jboss.as.controller.security.RealmPrincipal {
+public interface RealmPrincipal extends org.jboss.as.core.security.RealmPrincipal {
 
 }

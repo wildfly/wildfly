@@ -38,10 +38,13 @@ import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.ProcessType;
 import org.jboss.as.controller.RunningMode;
 import org.jboss.as.controller.RunningModeControl;
+import org.jboss.as.controller.audit.ManagedAuditLogger;
+import org.jboss.as.controller.audit.ManagedAuditLoggerImpl;
 import org.jboss.as.controller.interfaces.InetAddressUtil;
 import org.jboss.as.controller.operations.common.ProcessEnvironment;
 import org.jboss.as.controller.persistence.ConfigurationFile;
 import org.jboss.as.version.ProductConfig;
+import org.jboss.as.version.Version;
 import org.jboss.modules.Module;
 import org.jboss.modules.ModuleIdentifier;
 import org.jboss.modules.ModuleLoader;
@@ -1051,5 +1054,9 @@ public class ServerEnvironment extends ProcessEnvironment implements Serializabl
             return files;
         }
         return NO_FILES;
+    }
+
+    ManagedAuditLogger createAuditLogger() {
+        return new ManagedAuditLoggerImpl(Version.AS_VERSION, true);
     }
 }

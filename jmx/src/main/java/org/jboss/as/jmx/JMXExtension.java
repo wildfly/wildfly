@@ -23,6 +23,7 @@
 package org.jboss.as.jmx;
 
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ADD;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.HANDLER;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.NAME;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
@@ -53,14 +54,18 @@ import org.jboss.as.controller.PathElement;
 import org.jboss.as.controller.SubsystemRegistration;
 import org.jboss.as.controller.access.constraint.SensitivityClassification;
 import org.jboss.as.controller.access.constraint.management.SensitiveTargetAccessConstraintDefinition;
+import org.jboss.as.controller.audit.ManagedAuditLogger;
+import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
 import org.jboss.as.controller.descriptions.ResourceDescriptionResolver;
 import org.jboss.as.controller.descriptions.StandardResourceDescriptionResolver;
+import org.jboss.as.controller.extension.ExtensionRegistry.ExtensionContextImpl;
 import org.jboss.as.controller.operations.common.Util;
 import org.jboss.as.controller.parsing.ExtensionParsingContext;
 import org.jboss.as.controller.parsing.ParseUtils;
 import org.jboss.as.controller.persistence.SubsystemMarshallingContext;
 import org.jboss.as.controller.registry.Resource;
 import org.jboss.as.controller.registry.Resource.ResourceEntry;
+import org.jboss.as.controller.transform.OperationRejectionPolicy;
 import org.jboss.as.controller.transform.OperationResultTransformer;
 import org.jboss.as.controller.transform.OperationTransformer;
 import org.jboss.as.controller.transform.ResourceTransformationContext;
@@ -97,14 +102,14 @@ public class JMXExtension implements Extension {
             new SensitivityClassification(SUBSYSTEM_NAME, "jmx", false, false, true);
 
     static final SensitiveTargetAccessConstraintDefinition JMX_SENSITIVITY_DEF = new SensitiveTargetAccessConstraintDefinition(JMX_SENSITIVITY);
-
-    static final JMXSubsystemParser_1_2 parserCurrent = new JMXSubsystemParser_1_2();
+    static final JMXSubsystemParser_2_0 parserCurrent = new JMXSubsystemParser_2_0();
+    static final JMXSubsystemParser_1_2 parser12 = new JMXSubsystemParser_1_2();
     static final JMXSubsystemParser_1_1 parser11 = new JMXSubsystemParser_1_1();
     static final JMXSubsystemParser_1_0 parser10 = new JMXSubsystemParser_1_0();
     static final JMXSubsystemWriter writer = new JMXSubsystemWriter();
 
-    private static final int MANAGEMENT_API_MAJOR_VERSION = 1;
-    private static final int MANAGEMENT_API_MINOR_VERSION = 1;
+    private static final int MANAGEMENT_API_MAJOR_VERSION = 2;
+    private static final int MANAGEMENT_API_MINOR_VERSION = 0;
     private static final int MANAGEMENT_API_MICRO_VERSION = 0;
 
     /**
@@ -114,11 +119,16 @@ public class JMXExtension implements Extension {
     public void initialize(ExtensionContext context) {
         final SubsystemRegistration registration = context.registerSubsystem(SUBSYSTEM_NAME, MANAGEMENT_API_MAJOR_VERSION,
                 MANAGEMENT_API_MINOR_VERSION, MANAGEMENT_API_MICRO_VERSION);
-        registration.registerSubsystemModel(new JMXSubsystemRootResource());
+
+        //This is ugly but for now we don't want to make the audit logger easily available to all extensions
+        ManagedAuditLogger auditLogger = (ManagedAuditLogger)((ExtensionContextImpl)context).getAuditLogger(false, true);
+
+        registration.registerSubsystemModel(JMXSubsystemRootResource.create(auditLogger));
         registration.registerXMLElementWriter(writer);
 
         if (context.isRegisterTransformers()) {
             registerTransformers1_0_0(registration);
+            registerTransformers1_1_0(registration);
         }
     }
 
@@ -129,7 +139,8 @@ public class JMXExtension implements Extension {
     public void initializeParsers(ExtensionParsingContext context) {
         context.setSubsystemXmlMapping(SUBSYSTEM_NAME, Namespace.JMX_1_0.getUriString(), parser10);
         context.setSubsystemXmlMapping(SUBSYSTEM_NAME, Namespace.JMX_1_1.getUriString(), parser11);
-        context.setSubsystemXmlMapping(SUBSYSTEM_NAME, Namespace.JMX_1_2.getUriString(), parserCurrent);
+        context.setSubsystemXmlMapping(SUBSYSTEM_NAME, Namespace.JMX_1_2.getUriString(), parser12);
+        context.setSubsystemXmlMapping(SUBSYSTEM_NAME, Namespace.JMX_2_0.getUriString(), parserCurrent);
     }
 
     private static ModelNode createAddOperation() {
@@ -241,9 +252,67 @@ public class JMXExtension implements Extension {
             .getAttributeBuilder()
                 .addRejectCheck(RejectAttributeChecker.SIMPLE_EXPRESSIONS, RemotingConnectorResource.USE_MANAGEMENT_ENDPOINT);
 
+        registerRejectAuditLogTransformers(builder);
+
         TransformationDescription.Tools.register(builder.build(), registration, ModelVersion.create(1, 0, 0));
     }
 
+    private void registerTransformers1_1_0(SubsystemRegistration registration) {
+        ResourceTransformationDescriptionBuilder builder = TransformationDescriptionBuilder.Factory.createSubsystemInstance();
+        registerRejectAuditLogTransformers(builder);
+        TransformationDescription.Tools.register(builder.build(), registration, ModelVersion.create(1, 1, 0));
+    }
+
+
+    /**
+     * Discards the audit log child as long as enabled==false. If enabled==true or enabled is undefined it rejects it.
+     */
+    private void registerRejectAuditLogTransformers(ResourceTransformationDescriptionBuilder builder) {
+        ResourceTransformationDescriptionBuilder loggerBuilder = builder.addChildResource(JmxAuditLoggerResourceDefinition.PATH_ELEMENT);
+        loggerBuilder.getAttributeBuilder()
+            .addRejectCheck(RejectAttributeChecker.SIMPLE_EXPRESSIONS, JmxAuditLoggerResourceDefinition.ENABLED)
+            .addRejectCheck(new RejectAttributeChecker.DefaultRejectAttributeChecker() {
+                public String getRejectionLogMessage(Map<String, ModelNode> attributes) {
+                    return JmxMessages.MESSAGES.auditLogEnabledMustBeFalse();
+                }
+
+                protected boolean rejectAttribute(PathAddress address, String attributeName, ModelNode attributeValue,
+                        TransformationContext context) {
+                    //undefined defaults to true
+                    return !attributeValue.isDefined() || attributeValue.asString().equals("true");
+                }
+            }, JmxAuditLoggerResourceDefinition.ENABLED);
+        loggerBuilder.setCustomResourceTransformer(ResourceTransformer.DISCARD);
+        builder.rejectChildResource(JmxAuditLoggerResourceDefinition.PATH_ELEMENT);
+        loggerBuilder.setCustomResourceTransformer(ResourceTransformer.DISCARD);
+        loggerBuilder.addOperationTransformationOverride(ADD).inheritResourceAttributeDefinitions().setCustomOperationTransformer(OperationTransformer.DISCARD);
+        loggerBuilder.addOperationTransformationOverride(REMOVE).inheritResourceAttributeDefinitions().setCustomOperationTransformer(OperationTransformer.DISCARD);
+        loggerBuilder.addOperationTransformationOverride(UNDEFINE_ATTRIBUTE_OPERATION).inheritResourceAttributeDefinitions().setCustomOperationTransformer(new OperationTransformer() {
+            public TransformedOperation transformOperation(TransformationContext context, PathAddress address, ModelNode operation)
+                    throws OperationFailedException {
+                if (operation.require(ModelDescriptionConstants.NAME).asString().equals(JmxAuditLoggerResourceDefinition.ENABLED.getName())){
+                    OperationRejectionPolicy rejectPolicy = new OperationRejectionPolicy() {
+                        @Override
+                        public boolean rejectOperation(ModelNode preparedResult) {
+                            // Reject successful operations
+                            return true;
+                        }
+
+                        @Override
+                        public String getFailureDescription() {
+                            return JmxMessages.MESSAGES.auditLogEnabledMustBeFalse();
+                        }
+                    };
+                    return new TransformedOperation(null, rejectPolicy, OperationResultTransformer.ORIGINAL_RESULT);
+                }
+                return OperationTransformer.DISCARD.transformOperation(context, address, operation);
+            }
+        });
+        loggerBuilder.addOperationTransformationOverride(WRITE_ATTRIBUTE_OPERATION).inheritResourceAttributeDefinitions().setCustomOperationTransformer(OperationTransformer.DISCARD);
+        loggerBuilder.addOperationTransformationOverride(READ_ATTRIBUTE_OPERATION).inheritResourceAttributeDefinitions().setCustomOperationTransformer(OperationTransformer.DISCARD);
+
+        loggerBuilder.discardChildResource(JmxAuditLogHandlerReferenceResourceDefinition.PATH_ELEMENT);
+    }
 
     private static class ResolvedOperationTransformer implements OperationTransformer {
         private final boolean showModel;
@@ -407,6 +476,7 @@ public class JMXExtension implements Extension {
             boolean showResolvedModel = false;
             boolean showExpressionModel = false;
             boolean connectorAdd = false;
+            boolean auditLog = false;
 
             ParseUtils.requireNoAttributes(reader);
 
@@ -429,14 +499,13 @@ public class JMXExtension implements Extension {
                         showExpressionModel = true;
                         list.add(parseShowModelElement(reader, CommonAttributes.EXPRESSION));
                         break;
-                    case REMOTING_CONNECTOR: {
+                    case REMOTING_CONNECTOR:
                         if (connectorAdd) {
                             throw ParseUtils.duplicateNamedElement(reader, Element.REMOTING_CONNECTOR.getLocalName());
                         }
                         connectorAdd = true;
                         list.add(parseRemoteConnector(reader));
                         break;
-                    }
                     default: {
                         throw ParseUtils.unexpectedElement(reader);
                     }
@@ -444,7 +513,7 @@ public class JMXExtension implements Extension {
             }
         }
 
-        private ModelNode parseShowModelElement(XMLExtendedStreamReader reader, String showModelChild) throws XMLStreamException {
+        protected ModelNode parseShowModelElement(XMLExtendedStreamReader reader, String showModelChild) throws XMLStreamException {
 
             ModelNode op = createOperation(ADD, CommonAttributes.EXPOSE_MODEL, showModelChild);
 
@@ -477,6 +546,142 @@ public class JMXExtension implements Extension {
         }
     }
 
+    private static class JMXSubsystemParser_2_0 extends JMXSubsystemParser_1_2 {
+        @Override
+        public void readElement(XMLExtendedStreamReader reader, List<ModelNode> list) throws XMLStreamException {
+            boolean showResolvedModel = false;
+            boolean showExpressionModel = false;
+            boolean connectorAdd = false;
+            boolean auditLog = false;
+
+            ParseUtils.requireNoAttributes(reader);
+
+            list.add(createAddOperation());
+
+            while (reader.hasNext() && reader.nextTag() != END_ELEMENT) {
+                final Element element = Element.forName(reader.getLocalName());
+                switch (element) {
+                    case EXPOSE_RESOLVED_MODEL:
+                        if (showResolvedModel) {
+                            throw ParseUtils.duplicateNamedElement(reader, Element.EXPOSE_RESOLVED_MODEL.getLocalName());
+                        }
+                        showResolvedModel = true;
+                        list.add(parseShowModelElement(reader, CommonAttributes.RESOLVED));
+                        break;
+                    case EXPOSE_EXPRESSION_MODEL:
+                        if (showExpressionModel) {
+                            throw ParseUtils.duplicateNamedElement(reader, Element.EXPOSE_EXPRESSION_MODEL.getLocalName());
+                        }
+                        showExpressionModel = true;
+                        list.add(parseShowModelElement(reader, CommonAttributes.EXPRESSION));
+                        break;
+                    case REMOTING_CONNECTOR:
+                        if (connectorAdd) {
+                            throw ParseUtils.duplicateNamedElement(reader, Element.REMOTING_CONNECTOR.getLocalName());
+                        }
+                        connectorAdd = true;
+                        list.add(parseRemoteConnector(reader));
+                        break;
+                    case AUDIT_LOG:
+                        if (auditLog) {
+                            throw ParseUtils.duplicateNamedElement(reader, Element.AUDIT_LOG.getLocalName());
+                        }
+                        auditLog = true;
+                        parseAuditLogElement(reader, list);
+                        break;
+                    default: {
+                        throw ParseUtils.unexpectedElement(reader);
+                    }
+                }
+            }
+        }
+
+        private void parseAuditLogElement(XMLExtendedStreamReader reader, List<ModelNode> list) throws XMLStreamException {
+
+            ModelNode op = createOperation(ADD, JmxAuditLoggerResourceDefinition.PATH_ELEMENT.getKey(), JmxAuditLoggerResourceDefinition.PATH_ELEMENT.getValue());
+
+            final int count = reader.getAttributeCount();
+            for (int i = 0; i < count; i++) {
+                final String value = reader.getAttributeValue(i);
+                final Attribute attribute = Attribute.forName(reader.getAttributeLocalName(i));
+                switch (attribute) {
+                    case LOG_BOOT: {
+                        JmxAuditLoggerResourceDefinition.LOG_BOOT.parseAndSetParameter(value, op, reader);
+                    }
+                    case LOG_READ_ONLY: {
+                        JmxAuditLoggerResourceDefinition.LOG_READ_ONLY.parseAndSetParameter(value, op, reader);
+                        break;
+                    }
+                    case ENABLED: {
+                        JmxAuditLoggerResourceDefinition.ENABLED.parseAndSetParameter(value, op, reader);
+                        break;
+                    }
+                    default: {
+                        throw ParseUtils.unexpectedAttribute(reader, i);
+                    }
+                }
+            }
+            list.add(op);
+
+            while (reader.hasNext() && reader.nextTag() != END_ELEMENT) {
+                final Element element = Element.forName(reader.getLocalName());
+                switch (element) {
+                    case HANDLERS:
+                        parseAuditLogHandlers(reader, list);
+                        break;
+                    default: {
+                        throw ParseUtils.unexpectedElement(reader);
+                    }
+                }
+            }
+        }
+
+        private void parseAuditLogHandlers(XMLExtendedStreamReader reader, List<ModelNode> list) throws XMLStreamException {
+            ParseUtils.requireNoAttributes(reader);
+
+            while (reader.hasNext() && reader.nextTag() != END_ELEMENT) {
+                final Element element = Element.forName(reader.getLocalName());
+                switch (element) {
+                    case HANDLER:
+                        parseAuditLogHandler(reader, list);
+                        break;
+                    default: {
+                        throw ParseUtils.unexpectedElement(reader);
+                    }
+                }
+            }
+        }
+
+        private void parseAuditLogHandler(XMLExtendedStreamReader reader, List<ModelNode> list) throws XMLStreamException {
+
+            String name = null;
+            final int count = reader.getAttributeCount();
+            for (int i = 0; i < count; i++) {
+                final String value = reader.getAttributeValue(i);
+                final Attribute attribute = Attribute.forName(reader.getAttributeLocalName(i));
+                switch (attribute) {
+                    case NAME:
+                        name = value;
+                        break;
+                    default:
+                        throw ParseUtils.unexpectedAttribute(reader, i);
+                }
+            }
+
+            if (name == null) {
+                throw ParseUtils.missingRequired(reader, Collections.singleton(NAME));
+            }
+            ModelNode op = createOperation(ADD,
+                    JmxAuditLoggerResourceDefinition.PATH_ELEMENT.getKey(),
+                    JmxAuditLoggerResourceDefinition.PATH_ELEMENT.getValue(),
+                    JmxAuditLogHandlerReferenceResourceDefinition.PATH_ELEMENT.getKey(), name);
+            list.add(op);
+
+            ParseUtils.requireNoContent(reader);
+        }
+    }
+
+
     private static class JMXSubsystemWriter implements XMLStreamConstants, XMLElementWriter<SubsystemMarshallingContext> {
         /**
          * {@inheritDoc}
@@ -505,6 +710,27 @@ public class JMXExtension implements Extension {
                 RemotingConnectorResource.USE_MANAGEMENT_ENDPOINT.marshallAsAttribute(resourceModel, writer);
                 writer.writeEndElement();
             }
+
+            if (node.hasDefined(JmxAuditLoggerResourceDefinition.PATH_ELEMENT.getKey()) &&
+                    node.get(JmxAuditLoggerResourceDefinition.PATH_ELEMENT.getKey()).hasDefined(JmxAuditLoggerResourceDefinition.PATH_ELEMENT.getValue())) {
+                ModelNode auditLog = node.get(JmxAuditLoggerResourceDefinition.PATH_ELEMENT.getKey(), JmxAuditLoggerResourceDefinition.PATH_ELEMENT.getValue());
+                writer.writeStartElement(Element.AUDIT_LOG.getLocalName());
+                JmxAuditLoggerResourceDefinition.LOG_BOOT.marshallAsAttribute(auditLog, writer);
+                JmxAuditLoggerResourceDefinition.LOG_READ_ONLY.marshallAsAttribute(auditLog, writer);
+                JmxAuditLoggerResourceDefinition.ENABLED.marshallAsAttribute(auditLog, writer);
+
+                if (auditLog.hasDefined(HANDLER) && auditLog.get(HANDLER).keys().size() > 0) {
+                    writer.writeStartElement(CommonAttributes.HANDLERS);
+                    for (String key : auditLog.get(HANDLER).keys()) {
+                        writer.writeEmptyElement(CommonAttributes.HANDLER);
+                        writer.writeAttribute(CommonAttributes.NAME, key);
+                    }
+                    writer.writeEndElement();
+                }
+
+                writer.writeEndElement();
+            }
+
             writer.writeEndElement();
         }
     }

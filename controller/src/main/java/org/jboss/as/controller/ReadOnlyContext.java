@@ -28,8 +28,8 @@ import java.io.InputStream;
 import java.util.Set;
 
 import org.jboss.as.controller.access.Action;
-import org.jboss.as.controller.access.ResourceAuthorization;
 import org.jboss.as.controller.access.AuthorizationResult;
+import org.jboss.as.controller.access.ResourceAuthorization;
 import org.jboss.as.controller.client.MessageSeverity;
 import org.jboss.as.controller.persistence.ConfigurationPersistenceException;
 import org.jboss.as.controller.persistence.ConfigurationPersister;
@@ -53,14 +53,13 @@ class ReadOnlyContext extends AbstractOperationContext {
 
     private final int operationId;
     private final ModelControllerImpl controller;
-    private final OperationContext primaryContext;
-
+    private final AbstractOperationContext primaryContext;
     private Step lockStep;
 
     ReadOnlyContext(final ProcessType processType, final RunningMode runningMode, final ModelController.OperationTransactionControl transactionControl,
                     final ControlledProcessState processState, final boolean booting,
-                    final OperationContext primaryContext, final ModelControllerImpl controller, final int operationId) {
-        super(processType, runningMode, transactionControl, processState, booting);
+                    final AbstractOperationContext primaryContext, final ModelControllerImpl controller, final int operationId) {
+        super(processType, runningMode, transactionControl, processState, booting, controller.getAuditLogger());
         this.primaryContext = primaryContext;
         this.controller = controller;
         this.operationId = operationId;
@@ -309,12 +308,21 @@ class ReadOnlyContext extends AbstractOperationContext {
     }
 
     @Override
-    public AuthorizationResult authorizeOperation(ModelNode operation, boolean addressabilityOnly) {
-        return primaryContext.authorizeOperation(operation, addressabilityOnly);
+    public AuthorizationResult authorizeOperation(ModelNode operation) {
+        return primaryContext.authorizeOperation(operation);
     }
 
     @Override
     public ResourceAuthorization authorizeResource(boolean attributes, boolean isDefaultResource) {
         return primaryContext.authorizeResource(attributes, isDefaultResource);
+    }
+
+    Resource getModel() {
+        return primaryContext.getModel();
+    }
+
+    @Override
+    String getDomainUUID() {
+        return primaryContext.getDomainUUID();
     }
 }

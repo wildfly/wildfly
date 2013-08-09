@@ -38,6 +38,7 @@ import org.jboss.as.controller.SimpleAttributeDefinition;
 import org.jboss.as.controller.SimpleAttributeDefinitionBuilder;
 import org.jboss.as.controller.SimpleResourceDefinition;
 import org.jboss.as.controller.access.constraint.management.AccessConstraintDefinition;
+import org.jboss.as.controller.audit.ManagedAuditLogger;
 import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
 import org.jboss.as.controller.operations.common.GenericSubsystemDescribeHandler;
 import org.jboss.as.controller.registry.AttributeAccess;
@@ -52,20 +53,27 @@ import org.jboss.dmr.ModelType;
  */
 public class JMXSubsystemRootResource extends SimpleResourceDefinition {
 
-    private static final PathElement RESOLVED_PATH = PathElement.pathElement(CommonAttributes.EXPOSE_MODEL, CommonAttributes.RESOLVED);
+    public static final PathElement PATH_ELEMENT = PathElement.pathElement(ModelDescriptionConstants.SUBSYSTEM, JMXExtension.SUBSYSTEM_NAME);
 
-    SimpleAttributeDefinition SHOW_MODEL_ALIAS = SimpleAttributeDefinitionBuilder.create(CommonAttributes.SHOW_MODEL, ModelType.BOOLEAN, true)
+    private static final SimpleAttributeDefinition SHOW_MODEL_ALIAS = SimpleAttributeDefinitionBuilder.create(CommonAttributes.SHOW_MODEL, ModelType.BOOLEAN, true)
             .addFlag(AttributeAccess.Flag.ALIAS)
             .build();
 
     private final List<AccessConstraintDefinition> accessConstraints;
 
-    JMXSubsystemRootResource() {
-        super(PathElement.pathElement(ModelDescriptionConstants.SUBSYSTEM, JMXExtension.SUBSYSTEM_NAME),
+    private final AuditLoggerInfo auditLoggerInfo;
+
+    private JMXSubsystemRootResource(AuditLoggerInfo auditLoggerInfo) {
+        super(PATH_ELEMENT,
                 JMXExtension.getResourceDescriptionResolver(JMXExtension.SUBSYSTEM_NAME),
-                JMXSubsystemAdd.INSTANCE,
+                new JMXSubsystemAdd(auditLoggerInfo),
                 JMXSubsystemRemove.INSTANCE);
         this.accessConstraints = JMXExtension.JMX_SENSITIVITY_DEF.wrapAsList();
+        this.auditLoggerInfo = auditLoggerInfo;
+    }
+
+    public static JMXSubsystemRootResource create(ManagedAuditLogger auditLogger) {
+        return new JMXSubsystemRootResource(new AuditLoggerInfo(auditLogger));
     }
 
     @Override
@@ -81,9 +89,10 @@ public class JMXSubsystemRootResource extends SimpleResourceDefinition {
 
     @Override
     public void registerChildren(ManagementResourceRegistration resourceRegistration) {
-        resourceRegistration.registerSubModel(ExposeModelResourceResolved.INSTANCE);
-        resourceRegistration.registerSubModel(ExposeModelResourceExpression.INSTANCE);
+        resourceRegistration.registerSubModel(new ExposeModelResourceResolved(auditLoggerInfo));
+        resourceRegistration.registerSubModel(new ExposeModelResourceExpression(auditLoggerInfo));
         resourceRegistration.registerSubModel(RemotingConnectorResource.INSTANCE);
+        resourceRegistration.registerSubModel(new JmxAuditLoggerResourceDefinition(auditLoggerInfo.getAuditLogger()));
     }
 
     @Override
@@ -97,21 +106,21 @@ public class JMXSubsystemRootResource extends SimpleResourceDefinition {
         @Override
         public void execute(OperationContext context, ModelNode operation) throws OperationFailedException {
             final boolean value = operation.get(ModelDescriptionConstants.VALUE).asBoolean(false);
-            boolean hasResource = context.readResource(PathAddress.EMPTY_ADDRESS).hasChild(RESOLVED_PATH);
+            boolean hasResource = context.readResource(PathAddress.EMPTY_ADDRESS).hasChild(ExposeModelResourceResolved.PATH_ELEMENT);
             if (value) {
                 if (!hasResource) {
-                    OperationStepHandler handler = context.getResourceRegistration().getOperationEntry(PathAddress.pathAddress(RESOLVED_PATH), ADD).getOperationHandler();
+                    OperationStepHandler handler = context.getResourceRegistration().getOperationEntry(PathAddress.pathAddress(ExposeModelResourceResolved.PATH_ELEMENT), ADD).getOperationHandler();
                     ModelNode addOp = new ModelNode();
                     addOp.get(OP).set(ADD);
-                    addOp.get(OP_ADDR).set(PathAddress.pathAddress(operation.get(OP_ADDR)).append(RESOLVED_PATH).toModelNode());
+                    addOp.get(OP_ADDR).set(PathAddress.pathAddress(operation.get(OP_ADDR)).append(ExposeModelResourceResolved.PATH_ELEMENT).toModelNode());
                     context.addStep(addOp, handler, Stage.MODEL, true);
                 }
             } else {
                 if (hasResource) {
-                    OperationStepHandler handler = context.getResourceRegistration().getOperationEntry(PathAddress.pathAddress(RESOLVED_PATH), REMOVE).getOperationHandler();
+                    OperationStepHandler handler = context.getResourceRegistration().getOperationEntry(PathAddress.pathAddress(ExposeModelResourceResolved.PATH_ELEMENT), REMOVE).getOperationHandler();
                     ModelNode addOp = new ModelNode();
                     addOp.get(OP).set(REMOVE);
-                    addOp.get(OP_ADDR).set(PathAddress.pathAddress(operation.get(OP_ADDR)).append(RESOLVED_PATH).toModelNode());
+                    addOp.get(OP_ADDR).set(PathAddress.pathAddress(operation.get(OP_ADDR)).append(ExposeModelResourceResolved.PATH_ELEMENT).toModelNode());
                     context.addStep(addOp, handler, Stage.MODEL, true);
                 }
             }

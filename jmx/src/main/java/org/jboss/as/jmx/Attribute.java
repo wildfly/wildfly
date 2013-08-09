@@ -32,13 +32,16 @@ enum Attribute {
 
     UNKNOWN(null),
     DOMAIN_NAME(CommonAttributes.DOMAIN_NAME),
+    ENABLED(CommonAttributes.ENABLED),
+    LOG_BOOT(CommonAttributes.LOG_BOOT),
+    LOG_READ_ONLY(CommonAttributes.LOG_READ_ONLY),
     NAME(CommonAttributes.NAME),
     PROPER_PROPETY_FORMAT(CommonAttributes.PROPER_PROPERTY_FORMAT),
     SHOW_MODEL(CommonAttributes.SHOW_MODEL),
     SERVER_BINDING(CommonAttributes.SERVER_BINDING),
     REGISTRY_BINDING(CommonAttributes.REGISTRY_BINDING),
     USE_MANAGEMENT_ENDPOINT(CommonAttributes.USE_MANAGEMENT_ENDPOINT),
-    VALUE(CommonAttributes.VALUE)
+    VALUE(CommonAttributes.VALUE),
     ;
     private final String name;
 

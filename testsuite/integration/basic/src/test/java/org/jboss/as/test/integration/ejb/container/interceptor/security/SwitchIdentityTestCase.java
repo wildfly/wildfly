@@ -141,7 +141,7 @@ public class SwitchIdentityTestCase {
                 "services/org.jboss.ejb.client.EJBClientInterceptor");
         jar.addAsManifestResource(SwitchIdentityTestCase.class.getPackage(), "jboss-ejb-client.xml", "jboss-ejb-client.xml");
         jar.addAsManifestResource(Utils.getJBossDeploymentStructure("org.jboss.remoting3", "org.jboss.as.domain-management",
-                "org.jboss.as.controller"), "jboss-deployment-structure.xml");
+                "org.jboss.as.controller", "org.jboss.as.core-security"), "jboss-deployment-structure.xml");
         final Properties props = EJBUtil.createEjbClientConfiguration(StringUtils.strip(
                 TestSuiteEnvironment.getServerAddress(), "[]"));
         final ByteArrayOutputStream baos = new ByteArrayOutputStream();

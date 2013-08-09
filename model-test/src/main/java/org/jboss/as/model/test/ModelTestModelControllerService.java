@@ -44,6 +44,7 @@ import org.jboss.as.controller.RunningMode;
 import org.jboss.as.controller.RunningModeControl;
 import org.jboss.as.controller.client.OperationAttachments;
 import org.jboss.as.controller.client.OperationMessageHandler;
+import org.jboss.as.controller.audit.AuditLogger;
 import org.jboss.as.controller.descriptions.DescriptionProvider;
 import org.jboss.as.controller.operations.global.GlobalOperationHandlers;
 import org.jboss.as.controller.operations.validation.OperationValidator;
@@ -89,7 +90,7 @@ public abstract class ModelTestModelControllerService extends AbstractController
             final StringConfigurationPersister persister, final ModelTestOperationValidatorFilter validateOpsFilter, final DelegatingResourceDefinition rootResourceDefinition, ControlledProcessState processState) {
         super(processType, runningModeControl, persister,
                 processState == null ? new ControlledProcessState(true) : processState, rootResourceDefinition, null,
-                ExpressionResolver.TEST_RESOLVER);
+                ExpressionResolver.TEST_RESOLVER, AuditLogger.NO_OP_LOGGER);
         this.persister = persister;
         this.transformerRegistry = transformerRegistry;
         this.validateOpsFilter = validateOpsFilter;

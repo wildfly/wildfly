@@ -22,6 +22,7 @@
 package org.jboss.as.core.model.test;
 
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.CHILDREN;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.CORE_SERVICE;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.DEPLOYMENT;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.DEPLOYMENT_OVERLAY;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.FAILURE_DESCRIPTION;
@@ -44,6 +45,7 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OPERATIONS;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.PATH;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.PLATFORM_MBEAN;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.PROFILE;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.READ_ATTRIBUTE_OPERATION;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.READ_ONLY;
@@ -58,6 +60,8 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SCH
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SERVER_GROUP;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SOCKET_BINDING;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SOCKET_BINDING_GROUP;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SYSTEM_PROPERTIES;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.TYPE;
 
 import java.io.IOException;
 import java.io.StringReader;
@@ -395,7 +399,7 @@ public class CoreModelTestDelegate {
         private XMLMapper xmlMapper = XMLMapper.Factory.create();
         private Map<ModelVersion, LegacyKernelServicesInitializerImpl> legacyControllerInitializers = new HashMap<ModelVersion, LegacyKernelServicesInitializerImpl>();
         private List<String> contentRepositoryContents = new ArrayList<String>();
-        RunningModeControl runningModeControl;
+        private final RunningModeControl runningModeControl;
         ExtensionRegistry extensionRegistry;
 
 
@@ -473,7 +477,9 @@ public class CoreModelTestDelegate {
 
 
             ModelTestUtils.validateModelDescriptions(PathAddress.EMPTY_ADDRESS, kernelServices.getRootRegistration());
-            ModelTestUtils.scanForExpressionFormattedStrings(kernelServices.readWholeModel());
+            ModelNode model = kernelServices.readWholeModel();
+            model = removeForIntellij(model);
+            ModelTestUtils.scanForExpressionFormattedStrings(model);
 
             for (Map.Entry<ModelVersion, LegacyKernelServicesInitializerImpl> entry : legacyControllerInitializers.entrySet()) {
                 LegacyKernelServicesInitializerImpl legacyInitializer = entry.getValue();
@@ -499,6 +505,38 @@ public class CoreModelTestDelegate {
 
             return kernelServices;
         }
+
+        private ModelNode removeForIntellij(ModelNode model){
+            //When running in intellij it includes
+            // "-Dorg.jboss.model.test.maven.repository.urls=${org.jboss.model.test.maven.repository.urls}"
+            //in the runtime platform-mbeans's arguments for the host controller so it fails the scan for expression
+            //formatted strings. Simply remove it.
+            //Also do the same for the following system property in the runtime platform mbean system properties:
+            //"org.jboss.model.test.maven.repository.urls" => "${org.jboss.model.test.maven.repository.urls}"
+            ModelNode runtime = findModelNode(model, HOST, "master", CORE_SERVICE, PLATFORM_MBEAN, TYPE, "runtime");
+            if (runtime.isDefined()){
+                runtime.remove("input-arguments");
+                if (runtime.hasDefined(SYSTEM_PROPERTIES)) {
+                    ModelNode properties = runtime.get(SYSTEM_PROPERTIES);
+                    properties.remove("org.jboss.model.test.maven.repository.urls");
+                }
+
+            }
+            return model;
+        }
+
+        private ModelNode findModelNode(ModelNode model, String...name){
+            ModelNode currentModel = model;
+            for (String part : name){
+                if (!currentModel.hasDefined(part)){
+                    return new ModelNode();
+                } else {
+                    currentModel = currentModel.get(part);
+                }
+            }
+            return currentModel;
+        }
+
         @Override
         public List<ModelNode> parse(String xml) throws XMLStreamException {
             final XMLStreamReader reader = XMLInputFactory.newInstance().createXMLStreamReader(new StringReader(xml));

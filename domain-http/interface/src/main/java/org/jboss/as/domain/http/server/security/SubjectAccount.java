@@ -29,6 +29,7 @@ import io.undertow.security.idm.Account;
  * An extension to the Undertow {@link Account} interface to also make available a Subject.
  *
  * @author <a href="mailto:darran.lofthouse@jboss.com">Darran Lofthouse</a>
+ * @author kabir
  */
 public interface SubjectAccount extends Account {
 

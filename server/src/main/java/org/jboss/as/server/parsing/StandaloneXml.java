@@ -86,6 +86,7 @@ import org.jboss.as.controller.persistence.ModelMarshallingContext;
 import org.jboss.as.controller.persistence.SubsystemMarshallingContext;
 import org.jboss.as.controller.resource.SocketBindingGroupResourceDefinition;
 import org.jboss.as.domain.management.access.AccessAuthorizationResourceDefinition;
+import org.jboss.as.domain.management.parsing.AuditLogXml;
 import org.jboss.as.domain.management.parsing.ManagementXml;
 import org.jboss.as.server.controller.resources.DeploymentAttributes;
 import org.jboss.as.server.controller.resources.ServerRootResourceDefinition;
@@ -1295,6 +1296,7 @@ public class StandaloneXml extends CommonXml {
     }
 
     private class ManagementXmlDelegate extends ManagementXml.Delegate {
+        AuditLogXml auditLogDelegate = new AuditLogXml(false);
 
         @Override
         public void parseManagementInterfaces(final XMLExtendedStreamReader reader, final ModelNode address, final Namespace expectedNs,
@@ -1361,6 +1363,13 @@ public class StandaloneXml extends CommonXml {
             }
         }
 
+
+        @Override
+        protected void parseAuditLog(XMLExtendedStreamReader reader, ModelNode address, Namespace expectedNs, List<ModelNode> list)
+                throws XMLStreamException {
+            auditLogDelegate.parseAuditLog(reader, address, expectedNs, list);
+        }
+
         @Override
         public void writeNativeManagementProtocol(final XMLExtendedStreamWriter writer, final ModelNode protocol)
                 throws XMLStreamException {
@@ -1405,6 +1414,11 @@ public class StandaloneXml extends CommonXml {
             }
 
             writer.writeEndElement();
+        }
+
+        @Override
+        protected void writeAuditLog(XMLExtendedStreamWriter writer, ModelNode auditLog) throws XMLStreamException {
+            auditLogDelegate.writeAuditLog(writer, auditLog);
         }
     }
 

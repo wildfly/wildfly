@@ -26,6 +26,7 @@ import static javax.xml.stream.XMLStreamConstants.END_ELEMENT;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ACCESS;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ADD;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.APPLICATION_CLASSIFICATION;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.AUDIT;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.AUTHENTICATION;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.AUTHORIZATION;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.CLASSIFICATION;
@@ -194,6 +195,10 @@ public class ManagementXml {
             throw new UnsupportedOperationException();
         }
 
+        protected void parseAuditLog(final XMLExtendedStreamReader reader, final ModelNode address, final Namespace expectedNs, final List<ModelNode> list) throws XMLStreamException {
+            //Must override if supported
+            throw new UnsupportedOperationException();
+        }
         /**
          * Write the {@link Element#NATIVE_INTERFACE} element.
          * <p>This default implementation does standard writing</p>
@@ -228,6 +233,11 @@ public class ManagementXml {
          * @throws XMLStreamException
          */
         protected void writeHttpManagementProtocol(XMLExtendedStreamWriter writer, ModelNode protocol) throws XMLStreamException {
+            // Must override if supported
+            throw new UnsupportedOperationException();
+        }
+
+        protected void writeAuditLog(XMLExtendedStreamWriter writer, ModelNode auditLog) throws XMLStreamException {
             // Must override if supported
             throw new UnsupportedOperationException();
         }
@@ -332,6 +342,10 @@ public class ManagementXml {
                     }
 
                     delegate.parseManagementInterfaces(reader, managementAddress, expectedNs, list);
+                    break;
+                }
+                case AUDIT_LOG: {
+                    delegate.parseAuditLog(reader, managementAddress, expectedNs, list);
                     break;
                 }
                 case ACCESS_CONTROL: {
@@ -1779,7 +1793,6 @@ public class ManagementXml {
             final List<ModelNode> list) throws XMLStreamException {
         ParseUtils.requireSingleAttribute(reader, NAME);
         String name = reader.getAttributeValue(0);
-
         ModelNode addr = address.clone().add(ROLE_MAPPING, name);
         final ModelNode add = new ModelNode();
         add.get(OP_ADDR).set(addr);
@@ -2235,9 +2248,10 @@ public class ManagementXml {
         Map<String, Map<String, Set<String>>> configuredAccessConstraints = getConfiguredAccessConstraints(accessAuthorization);
         boolean hasUseRealmRoles = accessAuthorizationDefined && accessAuthorization.hasDefined(AccessAuthorizationResourceDefinition.USE_REALM_ROLES.getName());
         boolean hasProvider = accessAuthorizationDefined && accessAuthorization.hasDefined(AccessAuthorizationResourceDefinition.PROVIDER.getName());
+        ModelNode auditLog = management.hasDefined(ACCESS) ? management.get(ACCESS, AUDIT) : new ModelNode();
 
         if (!hasSecurityRealm && !hasConnection && !hasInterface && !hasServerGroupRoles
-              && !hasHostRoles && !hasRoleMapping && configuredAccessConstraints.size() == 0 && !hasProvider && !hasUseRealmRoles) {
+              && !hasHostRoles && !hasRoleMapping && configuredAccessConstraints.size() == 0 && !hasProvider && !hasUseRealmRoles && !auditLog.isDefined()) {
             return;
         }
 
@@ -2248,6 +2262,10 @@ public class ManagementXml {
 
         if (hasConnection) {
             writeOutboundConnections(writer, management);
+        }
+
+        if (auditLog.isDefined()) {
+            delegate.writeAuditLog(writer, auditLog);
         }
 
         if (allowInterfaces && hasInterface) {

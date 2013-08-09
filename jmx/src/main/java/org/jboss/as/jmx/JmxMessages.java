@@ -375,5 +375,10 @@ public interface JmxMessages {
     @Message(id = 11357, value = "'false' is the only acceptable value for 'proper-property-format'")
     String properPropertyFormatMustBeFalse();
 
+    @Message(id = 11358, value = "The 'enabled' attribute of audit-log must be false")
+    String auditLogEnabledMustBeFalse();
+
+    @Message(id = 11359, value = "There is no handler called '%s'")
+    IllegalStateException noHandlerCalled(String name);
 }
 

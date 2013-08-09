@@ -23,6 +23,7 @@ package org.jboss.as.controller.persistence;
 
 import static org.jboss.as.controller.ControllerMessages.MESSAGES;
 
+import java.io.BufferedInputStream;
 import java.io.BufferedOutputStream;
 import java.io.File;
 import java.io.FileInputStream;
@@ -62,19 +63,20 @@ class FilePersistenceUtils {
     }
 
     static void copyFile(final File file, final File backup) throws IOException {
-        final FileInputStream fis = new FileInputStream(file);
+        final InputStream in = new BufferedInputStream(new FileInputStream(file));
         try {
             final FileOutputStream fos = new FileOutputStream(backup);
+            final BufferedOutputStream output = new BufferedOutputStream(fos);
             try {
-                StreamUtils.copyStream(fis, fos);
-                fos.flush();
+                StreamUtils.copyStream(in, output);
+                output.flush();
                 fos.getFD().sync();
                 fos.close();
             } finally {
-                StreamUtils.safeClose(fos);
+                StreamUtils.safeClose(output);
             }
         } finally {
-            StreamUtils.safeClose(fis);
+            StreamUtils.safeClose(in);
         }
     }
 

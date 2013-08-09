@@ -90,7 +90,7 @@ public class ApplicationTypeConfig {
         return app == null ? application : app;
     }
 
-    public void setConfiguredApplication(boolean configuredApplication) {
+    public void setConfiguredApplication(Boolean configuredApplication) {
         this.configuredApplication = configuredApplication;
     }
 
