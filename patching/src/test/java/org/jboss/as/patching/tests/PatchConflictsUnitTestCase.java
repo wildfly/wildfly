@@ -69,7 +69,7 @@ public class PatchConflictsUnitTestCase extends AbstractPatchingTest {
         final PatchingTestStepBuilder oneOff1 = builder.createStepBuilder();
         oneOff1.setPatchId("one-off-1")
                 .oneOffPatchIdentity(PRODUCT_VERSION)
-                .oneOffPatchElement("base:oo1", BASE, false)
+                .oneOffPatchElement("base-oo1", BASE, false)
                 .updateModuleWithRandomContent("org.jboss.test", NO_CONTENT, moduleHash)
         ;
         try {

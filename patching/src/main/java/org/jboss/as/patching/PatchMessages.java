@@ -140,4 +140,7 @@ public interface PatchMessages {
     @Message(id = 16855, value = "copied content does not match expected hash for item: %s")
     SyncFailedException wrongCopiedContent(ContentItem item);
 
+    @Message(id = 16856, value = "invalid patch name '%s'")
+    IllegalArgumentException illegalPatchName(String name);
+
 }
