@@ -1110,7 +1110,7 @@ public class AuditLogHandlerTestCase extends AbstractControllerTestBase {
         }
 
         registration.registerSubModel(PathResourceDefinition.createSpecified(pathManagerService));
-        registration.registerSubModel(CoreManagementResourceDefinition.forStandaloneServer(new DelegatingConfigurableAuthorizer(), auditLogger, pathManagerService, new EnvironmentNameReader() {
+        registration.registerSubModel(CoreManagementResourceDefinition.forStandaloneServer(new DelegatingConfigurableAuthorizer(), getAuditLogger(), pathManagerService, new EnvironmentNameReader() {
             public boolean isServer() {
                 return true;
             }
