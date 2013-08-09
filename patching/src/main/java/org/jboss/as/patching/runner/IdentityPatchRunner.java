@@ -62,7 +62,10 @@ class IdentityPatchRunner implements InstallationManager.ModificationCompletion 
     public PatchingResult applyPatch(final PatchMetadataResolver patchResolver, final PatchContentProvider contentProvider, final ContentVerificationPolicy contentPolicy, final InstallationManager.InstallationModification modification) throws PatchingException {
         try {
             // Check if we can apply this patch
-            final Patch patch = patchResolver.resolvePatch(null, modification.getVersion());
+            final Patch patch = patchResolver.resolvePatch(modification.getName(), modification.getVersion());
+            if (patch == null) {
+                throw PatchMessages.MESSAGES.failedToResolvePatch(modification.getName(), modification.getVersion());
+            }
             final String patchId = patch.getPatchId();
             final Identity identity = patch.getIdentity();
             final String appliesTo = identity.getVersion();
@@ -165,7 +168,7 @@ class IdentityPatchRunner implements InstallationManager.ModificationCompletion 
         try {
             return executeTasks(context, callback);
         } catch (Exception e) {
-            callback.operationCancelled(context);
+            context.cancel(callback);
             throw rethrowException(e);
         }
     }
@@ -236,9 +239,9 @@ class IdentityPatchRunner implements InstallationManager.ModificationCompletion 
             try {
                 return executeTasks(context, callback);
             } catch (Exception e) {
+                context.cancel(callback);
                 throw rethrowException(e);
             }
-
         } finally {
             context.cleanup();
         }
@@ -258,9 +261,9 @@ class IdentityPatchRunner implements InstallationManager.ModificationCompletion 
         // Determine the patch id to rollback
         String patchId = null;
         final List<String> oneOffs = modification.getPatchIDs();
-        if(oneOffs.isEmpty()) {
+        if (oneOffs.isEmpty()) {
             patchId = modification.getCumulativePatchID();
-            if(patchId == null) {
+            if (patchId == null) {
                 // TODO should it check the release patch id?
                 throw new PatchingException("There are not patches applied."); // TODO add to messages
             }
@@ -408,10 +411,11 @@ class IdentityPatchRunner implements InstallationManager.ModificationCompletion 
             identity.rollback(patchID);
 
             // Restore previous state
-            final PatchableTarget.TargetInfo identityHistory = history.getIdentity().loadTargetInfo();
             if (mode == ROLLBACK) {
+                final PatchableTarget.TargetInfo identityHistory = history.getIdentity().loadTargetInfo();
                 restoreFromHistory(identity, rollbackPatch.getPatchId(), patchType, identityHistory);
             }
+
             if (patchType == Patch.PatchType.CUMULATIVE) {
                 final Identity.IdentityUpgrade upgrade = rollbackPatch.getIdentity().forType(Patch.PatchType.CUMULATIVE, Identity.IdentityUpgrade.class);
                 identity.setResultingVersion(upgrade.getResultingVersion());
@@ -421,6 +425,15 @@ class IdentityPatchRunner implements InstallationManager.ModificationCompletion 
         }
     }
 
+    /**
+     * Restore the recorded state from the rollback xml.
+     *
+     * @param target          the patchable target
+     * @param rollbackPatchId the rollback patch id
+     * @param patchType       the the current patch type
+     * @param history         the recorded history
+     * @throws PatchingException
+     */
     static void restoreFromHistory(final InstallationManager.MutablePatchingTarget target, final String rollbackPatchId,
                                    final Patch.PatchType patchType, final PatchableTarget.TargetInfo history) throws PatchingException {
         if (patchType == Patch.PatchType.CUMULATIVE) {
@@ -573,6 +586,13 @@ class IdentityPatchRunner implements InstallationManager.ModificationCompletion 
         }
     }
 
+    /**
+     * Check whether the patch can be applied to a given target.
+     *
+     * @param condition the conditions
+     * @param target    the target
+     * @throws PatchingException
+     */
     static void checkUpgradeConditions(final UpgradeCondition condition, final InstallationManager.MutablePatchingTarget target) throws PatchingException {
         // See if the prerequisites are met
         for (final String required : condition.getRequires()) {

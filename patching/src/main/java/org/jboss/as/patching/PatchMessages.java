@@ -22,9 +22,8 @@
 
 package org.jboss.as.patching;
 
-import javax.xml.stream.Location;
-import javax.xml.stream.XMLStreamException;
 import java.io.IOException;
+import java.io.SyncFailedException;
 import java.util.Collection;
 import java.util.Set;
 
@@ -123,8 +122,11 @@ public interface PatchMessages {
     @Message(id = 16849, value = "Patch '%s' already applied")
     PatchingException alreadyApplied(String patchId);
 
-    @Message(id = 16850, value = "Illegal value %s for attribute affects-type")
-    XMLStreamException illegalAffectsType(String value, @Param Location location);
+    @Message(id = 16850, value = "There is no layer called %s installed")
+    PatchingException noSuchLayer(String name);
+
+    @Message(id = 16851, value = "Failed to resolve a valid patch descriptor for %s %s")
+    PatchingException failedToResolvePatch(String product, String version);
 
     @Message(id = 16852, value = "Requires patch '%s'")
     PatchingException requiresPatch(String patchId);
@@ -134,4 +136,8 @@ public interface PatchMessages {
 
     @Message(id = 16854, value = "Conflicts detected")
     ContentConflictsException conflictsDetected(@Param Collection<ContentItem> conflicts);
+
+    @Message(id = 16855, value = "copied content does not match expected hash for item: %s")
+    SyncFailedException wrongCopiedContent(ContentItem item);
+
 }

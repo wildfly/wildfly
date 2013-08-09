@@ -134,7 +134,7 @@ public class ProductConfig implements Serializable {
     }
 
     public String resolveName() {
-        return name != null ? name : Version.AS_RELEASE_CODENAME;
+        return name != null ? name : "WildFly";
     }
 
     public static String getPrettyVersionString(final String name, String version1, String version2) {

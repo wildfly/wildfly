@@ -88,7 +88,7 @@ public class InstallationManagerImpl extends InstallationManager {
             final PatchableTarget.TargetInfo identityInfo = identity.loadTargetInfo();
             final InstallationModificationImpl.InstallationState state = load(installedIdentity);
 
-            return new InstallationModificationImpl(identityInfo, identity.getVersion(), state) {
+            return new InstallationModificationImpl(identityInfo, identity.getName(), identity.getVersion(), state) {
 
                 @Override
                 public InstalledIdentity getUnmodifiedInstallationState() {
@@ -127,6 +127,13 @@ public class InstallationManagerImpl extends InstallationManager {
         }
     }
 
+    /**
+     * Load the installation state based on the identity
+     *
+     * @param installedIdentity the installed identity
+     * @return the installation state
+     * @throws IOException
+     */
     protected static InstallationModificationImpl.InstallationState load(final InstalledIdentity installedIdentity) throws IOException {
         final InstallationModificationImpl.InstallationState state = new InstallationModificationImpl.InstallationState();
         for (final Layer layer : installedIdentity.getLayers()) {
@@ -139,12 +146,12 @@ public class InstallationManagerImpl extends InstallationManager {
     }
 
     /**
-     * Update the installed identity using the modified state from the modfication.
+     * Update the installed identity using the modified state from the modification.
      *
      * @param name the identity name
      * @param modification the modification
      * @param state the installation state
-     * @return
+     * @return the installed identity
      */
     protected InstalledIdentity updateState(final String name, final InstallationModificationImpl modification, final InstallationModificationImpl.InstallationState state) {
         final PatchableTarget.TargetInfo identityInfo = modification.getModifiedState();
@@ -189,16 +196,6 @@ public class InstallationManagerImpl extends InstallationManager {
         return restartRequired.get();
     }
 
-    /**
-     * Require a restart. This will set the patching service to read-only
-     * and the server has to be restarted in order to execute the next
-     * patch operation.
-     *
-     * In case the patch operation does not succeed it needs to clear the
-     * reload required state using {@link #clearRestartRequired()}.
-     *
-     * @return this will return {@code true}
-     */
     public boolean restartRequired() {
         return restartRequired.compareAndSet(false, true);
     }

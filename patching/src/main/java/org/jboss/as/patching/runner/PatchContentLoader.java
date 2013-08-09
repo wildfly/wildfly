@@ -35,6 +35,9 @@ import org.jboss.as.patching.metadata.MiscContentItem;
 import org.jboss.as.patching.metadata.ModuleItem;
 
 /**
+ * Content loader for patch contents. When applying a patch the content is loaded from the patch itself; for rollbacks
+ * the content will be loaded from the patch history.
+ *
  * @author Emanuel Muckenhuber
  */
 public abstract class PatchContentLoader {

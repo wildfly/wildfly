@@ -68,14 +68,14 @@ public interface PatchOperationBuilder extends PatchTool.ContentPolicyBuilder {
          *
          * @param patchId the patch-id to rollback
          * @param rollbackTo rollback all one off patches until the given patch-id
-         * @param restoreConfiguration whether to restore the configuration
+         * @param resetConfiguration whether to reset the configuration to the previous state
          * @return the operation builder
          */
-        public static PatchOperationBuilder rollback(final String patchId, final boolean rollbackTo, final boolean restoreConfiguration) {
+        public static PatchOperationBuilder rollback(final String patchId, final boolean rollbackTo, final boolean resetConfiguration) {
             return new AbstractOperationBuilder() {
                 @Override
                 public ModelNode execute(PatchOperationTarget target) throws IOException {
-                    return target.rollback(patchId, this, rollbackTo, restoreConfiguration);
+                    return target.rollback(patchId, this, rollbackTo, resetConfiguration);
                 }
             };
         }
@@ -83,14 +83,14 @@ public interface PatchOperationBuilder extends PatchTool.ContentPolicyBuilder {
         /**
          * Create a builder to rollback the last applied patch.
          *
-         * @param restoreConfiguration whether to restore the configuration
+         * @param resetConfiguration whether to reset the configuration to the previous state
          * @return the operation builder
          */
-        public static PatchOperationBuilder rollbackLast(final boolean restoreConfiguration) {
+        public static PatchOperationBuilder rollbackLast(final boolean resetConfiguration) {
             return new AbstractOperationBuilder() {
                 @Override
                 public ModelNode execute(PatchOperationTarget target) throws IOException {
-                    return target.rollbackLast(this, restoreConfiguration);
+                    return target.rollbackLast(this, resetConfiguration);
                 }
             };
         }

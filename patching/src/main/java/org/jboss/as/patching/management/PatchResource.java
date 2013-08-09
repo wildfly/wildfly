@@ -40,7 +40,7 @@ import org.jboss.msc.service.ServiceController;
 /**
  * @author Alexey Loubyansky
  */
-public class PatchResource extends AbstractModelResource {
+class PatchResource extends AbstractModelResource {
 
 
     /**

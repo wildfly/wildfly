@@ -48,7 +48,7 @@ public class LocalPatchRollbackLastHandler implements OperationStepHandler {
 
     @Override
     public void execute(final OperationContext context, final ModelNode operation) throws OperationFailedException {
-        final boolean restoreConfiguration = PatchResourceDefinition.RESTORE_CONFIGURATION.resolveModelAttribute(context, operation).asBoolean();
+        final boolean resetConfiguration = PatchResourceDefinition.RESET_CONFIGURATION.resolveModelAttribute(context, operation).asBoolean();
 
         context.acquireControllerLock();
         final InstallationManager installationManager = (InstallationManager) context.getServiceRegistry(false).getRequiredService(InstallationManagerService.NAME).getValue();
@@ -62,7 +62,7 @@ public class LocalPatchRollbackLastHandler implements OperationStepHandler {
         final ContentVerificationPolicy policy = PatchTool.Factory.create(operation);
         try {
             // Rollback
-            final PatchingResult result = runner.rollbackLast(policy, restoreConfiguration);
+            final PatchingResult result = runner.rollbackLast(policy, resetConfiguration);
             installationManager.restartRequired();
             context.restartRequired();
             context.completeStep(new OperationContext.ResultHandler() {
