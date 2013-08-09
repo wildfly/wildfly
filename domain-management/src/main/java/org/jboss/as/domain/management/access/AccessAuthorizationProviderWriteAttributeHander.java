@@ -62,7 +62,7 @@ class AccessAuthorizationProviderWriteAttributeHander extends AbstractWriteAttri
     @Override
     protected void finishModelStage(OperationContext context, ModelNode operation, String attributeName, ModelNode newValue,
             ModelNode oldValue, Resource model) throws OperationFailedException {
-         Provider provider = Provider.valueOf(newValue.asString());
+         Provider provider = Provider.valueOf(newValue.asString().toUpperCase(Locale.ENGLISH));
          if (provider == Provider.RBAC) {
              /*
               * As the provider is being set to RBAC we need to be sure roles can be assigned.

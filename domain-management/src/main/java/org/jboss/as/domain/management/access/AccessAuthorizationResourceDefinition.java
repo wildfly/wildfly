@@ -26,8 +26,6 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ACC
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.AUTHORIZATION;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ROLE;
 
-import java.util.Locale;
-
 import javax.xml.stream.XMLStreamException;
 import javax.xml.stream.XMLStreamWriter;
 
@@ -66,8 +64,19 @@ public class AccessAuthorizationResourceDefinition extends SimpleResourceDefinit
     public static final Resource RESOURCE = createResource();
 
     public enum Provider {
-        SIMPLE,
-        RBAC
+        SIMPLE("simple"),
+        RBAC("rbac");
+
+        private final String toString;
+
+        private Provider(String toString) {
+            this.toString = toString;
+        }
+
+        @Override
+        public String toString() {
+            return toString;
+        }
     }
 
     public static final ListAttributeDefinition HOST_SCOPED_ROLES = SimpleListAttributeDefinition.Builder.of(ModelDescriptionConstants.HOST_SCOPED_ROLES,
@@ -85,7 +94,7 @@ public class AccessAuthorizationResourceDefinition extends SimpleResourceDefinit
             .build();
 
     public static final SimpleAttributeDefinition PROVIDER = new SimpleAttributeDefinitionBuilder("provider", ModelType.STRING, true)
-            .setDefaultValue(new ModelNode(Provider.SIMPLE.name().toLowerCase(Locale.ENGLISH)))
+            .setDefaultValue(new ModelNode(Provider.SIMPLE.toString()))
             .setValidator(new EnumValidator<Provider>(Provider.class, true, false))
             .build();
 

@@ -37,6 +37,7 @@ import java.security.PrivilegedExceptionAction;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Locale;
 import java.util.Set;
 
 import org.jboss.as.controller.OperationContext;
@@ -170,7 +171,7 @@ public class RbacSanityCheckOperation implements OperationStepHandler {
         boolean isRbacEnabled() throws OperationFailedException {
             ModelNode accessAuthorization = getAccessAuthorization();
             String value = AccessAuthorizationResourceDefinition.PROVIDER.resolveModelAttribute(context, accessAuthorization)
-                    .asString();
+                    .asString().toUpperCase(Locale.ENGLISH);
             return Provider.valueOf(value) == Provider.RBAC;
         }
 
