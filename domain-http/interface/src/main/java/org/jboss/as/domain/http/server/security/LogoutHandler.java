@@ -51,6 +51,9 @@ import io.undertow.util.StatusCodes;
 public class LogoutHandler implements HttpHandler {
 
     public static final String PATH = "/logout";
+    public static final String CONTEXT = "org.jboss.as.console.logout.context";
+    public static final String REDIRECT = "org.jboss.as.console.logout.redirect";
+    private static final String EXIT = "org.jboss.as.console.logout.exit";
 
     private final DigestAuthenticationMechanism digestMechanism;
     private final DigestAuthenticationMechanism fakeRealmdigestMechanism;
@@ -69,17 +72,7 @@ public class LogoutHandler implements HttpHandler {
         final HeaderMap requestHeaders = exchange.getRequestHeaders();
         final HeaderMap responseHeaders = exchange.getResponseHeaders();
 
-        String authorization = requestHeaders.getFirst(AUTHORIZATION);
-        String rawQuery = exchange.getQueryString();
-        boolean query = rawQuery != null && rawQuery.contains("logout");
-
-        String userAgent = requestHeaders.getFirst(USER_AGENT);
-        boolean opera = userAgent != null && userAgent.contains("Opera");
-        boolean win = !opera && userAgent != null && userAgent.contains("MSIE");
-
         String referrer = responseHeaders.getFirst(REFERER);
-
-        // Calculate location URL
         String protocol = "http";
         String host = null;
         if (referrer != null) {
@@ -90,50 +83,73 @@ public class LogoutHandler implements HttpHandler {
             } catch (URISyntaxException e) {
             }
         }
-
-        // Last resort
         if (host == null) {
             host = requestHeaders.getFirst(HOST);
             if (host == null) {
                 exchange.setResponseCode(StatusCodes.INTERNAL_SERVER_ERROR);
-
                 return;
             }
         }
+
         /*
          * Main sequence of events:
          *
-         * 1. Redirect to self using user:pass@host form of authority. This forces Safari to overwrite its cache. (Also forces
-         * FF and Chrome, but not absolutely necessary) Set the logout query param as a state signal for step 2 2. Send 401
-         * digest without a nonce stale marker, this will force FF and Chrome and likely other browsers to assume an invalid
-         * (old) password. In the case of Opera, which doesn't invalidate under such a circumstance, send an invalid realm. This
-         * will overwrite its auth cache, since it indexes it by host and not realm. 3. The credentials in 307 redirect wlll be
-         * transparently accepted and a final redirect to the console is performed. Opera ignores these, so the user must hit
-         * escape which will use javascript to perform the redirect
+         * 1. Redirect to DomainApiCheckHandler to logout from the securioty context. Then redirect back to this
+         * handler.
+         *
+         * 2. Redirect to self using user:pass@host form of authority. This forces Safari to overwrite its cache. (Also
+         * forces FF and Chrome, but not absolutely necessary) Set the exit flag as a state signal for step 3
+         *
+         * 3. Send 401 digest without a nonce stale marker, this will force FF and Chrome and likely other browsers to
+         * assume an invalid (old) password. In the case of Opera, which doesn't invalidate under such a circumstance,
+         * send an invalid realm. This will overwrite its auth cache, since it indexes it by host and not realm.
+         *
+         * 4. The credentials in 307 redirect wlll be transparently accepted and a final redirect to the console is
+         * performed. Opera ignores these, so the user must hit escape which will use javascript to perform the redirect
          *
          * In the case of Internet Explorer, all of this will be bypassed and will simply redirect to the console. The console
          * MUST use a special javascript call before redirecting to logout.
          */
-        if (!win && (authorization == null || !authorization.contains("enter-login-here"))) {
-            if (!query) {
-                responseHeaders.add(LOCATION, protocol + "://enter-login-here:blah@" + host + "/logout?logout");
+        String userAgent = requestHeaders.getFirst(USER_AGENT);
+        boolean opera = userAgent != null && userAgent.contains("Opera");
+        boolean win = !opera && userAgent != null && userAgent.contains("MSIE");
+
+        String rawQuery = exchange.getQueryString();
+        boolean exit = rawQuery != null && rawQuery.contains(EXIT);
+        boolean redirect = rawQuery != null && rawQuery.contains(REDIRECT);
+
+        if (win) {
+            responseHeaders.add(LOCATION, protocol + "://" + host + "/");
+            exchange.setResponseCode(StatusCodes.TEMPORARY_REDIRECT);
+        } else {
+            if (!redirect && !exit) {
+                // Hand over to DomainApiCheckHandler
+                responseHeaders.add(LOCATION, protocol + "://" + host + "/management?" + CONTEXT);
                 exchange.setResponseCode(StatusCodes.TEMPORARY_REDIRECT);
+            } else {
+                // Do the redirects to finish the logout
+                String authorization = requestHeaders.getFirst(AUTHORIZATION);
 
-                return;
+                if (authorization == null || !authorization.contains("enter-login-here")) {
+                    if (!exit) {
+                        responseHeaders.add(LOCATION, protocol + "://enter-login-here:blah@" + host + "/logout?" + EXIT);
+                        exchange.setResponseCode(StatusCodes.TEMPORARY_REDIRECT);
+                        return;
+                    }
+
+                    DigestAuthenticationMechanism mech = opera ? fakeRealmdigestMechanism : digestMechanism;
+                    mech.sendChallenge(exchange, null);
+                    String reply = "<html><script type='text/javascript'>window.location=\"" + protocol + "://" + host
+                            + "/\";</script></html>";
+                    exchange.setResponseCode(StatusCodes.UNAUTHORIZED);
+                    exchange.getResponseSender().send(reply, IoCallback.END_EXCHANGE);
+                    return;
+                }
+
+                // Success, now back to the login screen
+                responseHeaders.add(LOCATION, protocol + "://" + host + "/");
+                exchange.setResponseCode(StatusCodes.TEMPORARY_REDIRECT);
             }
-
-            DigestAuthenticationMechanism mech = opera ? fakeRealmdigestMechanism : digestMechanism;
-            mech.sendChallenge(exchange, null);
-            String reply = "<html><script type='text/javascript'>window.location=\"" + protocol + "://" + host
-                    + "/\";</script></html>";
-            exchange.setResponseCode(StatusCodes.UNAUTHORIZED);
-            exchange.getResponseSender().send(reply, IoCallback.END_EXCHANGE);
-
-            return;
         }
-
-        // Success, now back to the login screen
-        responseHeaders.add(LOCATION, protocol + "://" + host + "/");
-        exchange.setResponseCode(StatusCodes.TEMPORARY_REDIRECT);
     }
 }
