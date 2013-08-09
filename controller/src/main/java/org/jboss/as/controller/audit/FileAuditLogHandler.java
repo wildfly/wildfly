@@ -166,6 +166,7 @@ public class FileAuditLogHandler extends AuditLogHandler {
     private void rename(File file, File to) throws IOException {
         if (!file.renameTo(to) && file.exists()) {
             copyFile(file, to);
+            file.delete();
         }
     }
 }
