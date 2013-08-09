@@ -22,7 +22,9 @@
 
 package org.jboss.as.host.controller;
 
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ACCESS;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ADD;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.AUDIT;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.AUDIT_LOG;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.AUTHENTICATION;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.AUTHORIZATION;
@@ -394,9 +396,9 @@ public final class ManagedServerOperationsFactory {
     }
 
     private void addAuditLog(ModelNodeList updates) {
-        final ModelNode auditLogModel = hostModel.get(CORE_SERVICE, AUDIT_LOG);
+        final ModelNode auditLogModel = hostModel.get(CORE_SERVICE, MANAGEMENT, ACCESS, AUDIT);
         if (auditLogModel.isDefined()){
-            final PathAddress auditLogAddr = PathAddress.pathAddress(CORE_SERVICE, AUDIT_LOG);
+            final PathAddress auditLogAddr = PathAddress.pathAddress(PathElement.pathElement(CORE_SERVICE, MANAGEMENT), PathElement.pathElement(ACCESS, AUDIT));
             updates.add(Util.createAddOperation(auditLogAddr));
             if (auditLogModel.get(JSON_FORMATTER).isDefined()) {
                 for (Property formatterProp : auditLogModel.get(JSON_FORMATTER).asPropertyList()) {
