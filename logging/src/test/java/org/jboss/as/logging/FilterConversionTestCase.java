@@ -56,7 +56,7 @@ public class FilterConversionTestCase {
 
         final ModelNode replaceFilter = new ModelNode().setEmptyObject();
         replaceFilter.get(CommonAttributes.REPLACE.getName(), CommonAttributes.REPLACE_ALL.getName()).set(true);
-        replaceFilter.get(CommonAttributes.REPLACE.getName(), CommonAttributes.PATTERN.getName()).set("JBAS");
+        replaceFilter.get(CommonAttributes.REPLACE.getName(), CommonAttributes.FILTER_PATTERN.getName()).set("JBAS");
         replaceFilter.get(CommonAttributes.REPLACE.getName(), CommonAttributes.REPLACEMENT.getName()).set("EAP");
         replaceFilter.protect();
         MAP.put("substituteAll(\"JBAS\",\"EAP\")", replaceFilter);

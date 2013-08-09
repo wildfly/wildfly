@@ -2,16 +2,16 @@
 <!--  See src/resources/configuration/ReadMe.txt for how the configuration assembly works -->
 <config default-supplement="default">
    <extension-module>org.jboss.as.logging</extension-module>
-   <subsystem xmlns="urn:jboss:domain:logging:1.2">
+   <subsystem xmlns="urn:jboss:domain:logging:2.0">
        <console-handler name="CONSOLE">
            <level name="INFO"/>
            <formatter>
-               <pattern-formatter pattern="%K{level}%d{HH:mm:ss,SSS} %-5p [%c] (%t) %s%E%n"/>
+               <named-formatter name="COLOR-PATTERN"/>
            </formatter>
        </console-handler>
        <periodic-rotating-file-handler name="FILE" autoflush="true">
            <formatter>
-               <pattern-formatter pattern="%d{HH:mm:ss,SSS} %-5p [%c] (%t) %s%E%n"/>
+               <named-formatter name="PATTERN"/>
            </formatter>
            <file relative-to="jboss.server.log.dir" path="server.log"/>
            <suffix value=".yyyy-MM-dd"/>
@@ -25,6 +25,12 @@
                <handler name="FILE"/>
            </handlers>
        </root-logger>
+       <formatter name="PATTERN">
+           <pattern-formatter pattern="%d{HH:mm:ss,SSS} %-5p [%c] (%t) %s%E%n"/>
+       </formatter>
+       <formatter name="COLOR-PATTERN">
+           <pattern-formatter pattern="%K{level}%d{HH:mm:ss,SSS} %-5p [%c] (%t) %s%E%n"/>
+       </formatter>
    </subsystem>
    <supplement name="default">
       <replacement placeholder="@@append@@" attributeValue="true"/>

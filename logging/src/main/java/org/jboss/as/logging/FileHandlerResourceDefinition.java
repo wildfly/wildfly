@@ -42,7 +42,7 @@ class FileHandlerResourceDefinition extends AbstractFileHandlerDefinition {
     public static final String FILE_HANDLER = "file-handler";
     static final PathElement FILE_HANDLER_PATH = PathElement.pathElement(FILE_HANDLER);
 
-    static final AttributeDefinition[] ATTRIBUTES = Logging.join(DEFAULT_ATTRIBUTES, AUTOFLUSH, APPEND, FILE);
+    static final AttributeDefinition[] ATTRIBUTES = Logging.join(DEFAULT_ATTRIBUTES, AUTOFLUSH, APPEND, FILE, NAMED_FORMATTER);
 
     public FileHandlerResourceDefinition(final ResolvePathHandler resolvePathHandler, final boolean includeLegacyAttributes) {
         super(FILE_HANDLER_PATH, FileHandler.class, resolvePathHandler, (
