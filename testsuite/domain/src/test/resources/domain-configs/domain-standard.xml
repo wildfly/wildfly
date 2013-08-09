@@ -258,8 +258,8 @@
                 <recovery-environment socket-binding="txn-recovery-environment" status-socket-binding="txn-status-manager"/>
                 <coordinator-environment default-timeout="300"/>
             </subsystem>
-            <subsystem xmlns="urn:jboss:domain:remoting:1.1">
-                <connector name="remoting-connector" socket-binding="remoting" security-realm="ApplicationRealm"/>
+            <subsystem xmlns="urn:jboss:domain:remoting:2.0">
+                   <http-connector name="http-remoting-connector" connector-ref="default" security-realm="ApplicationRealm"/>
             </subsystem>
             <subsystem xmlns="urn:jboss:domain:jdr:1.0"/>
             <subsystem xmlns="urn:jboss:domain:jmx:1.0">
@@ -579,8 +579,8 @@
                 <recovery-environment socket-binding="txn-recovery-environment" status-socket-binding="txn-status-manager"/>
                 <coordinator-environment default-timeout="300"/>
             </subsystem>
-            <subsystem xmlns="urn:jboss:domain:remoting:1.1">
-                <connector name="remoting-connector" socket-binding="remoting"/>
+            <subsystem xmlns="urn:jboss:domain:remoting:2.0">
+                <http-connector name="http-remoting-connector" connector-ref="default" security-realm="ApplicationRealm"/>
             </subsystem>
             <subsystem xmlns="urn:jboss:domain:jdr:1.0"/>
             <subsystem xmlns="urn:jboss:domain:jmx:1.0">
