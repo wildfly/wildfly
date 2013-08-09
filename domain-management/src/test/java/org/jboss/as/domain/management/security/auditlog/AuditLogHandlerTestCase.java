@@ -40,6 +40,7 @@ import java.io.File;
 import java.io.FileReader;
 import java.io.IOException;
 import java.io.StringWriter;
+import java.io.UnsupportedEncodingException;
 import java.net.InetAddress;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -839,14 +840,14 @@ public class AuditLogHandlerTestCase extends AbstractControllerTestBase {
         Assert.assertEquals(disabled, handler.get(AuditLogHandlerResourceDefinition.DISABLED_DUE_TO_FAILURE.getName()).asBoolean());
     }
 
-    private String stripSyslogHeader(byte[] bytes) {
-        String s = new String(bytes);
+    private String stripSyslogHeader(byte[] bytes) throws UnsupportedEncodingException {
+        String s = new String(bytes, "utf-8");
         int i = s.indexOf(" - - ");
         return s.substring(i + 6);
     }
 
-    private ModelNode getSyslogRecord(byte[] bytes) {
-        String msg = new String(bytes);
+    private ModelNode getSyslogRecord(byte[] bytes) throws UnsupportedEncodingException {
+        String msg = new String(bytes, "utf-8");
         return getSyslogRecord(msg);
     }
 
@@ -1109,7 +1110,7 @@ public class AuditLogHandlerTestCase extends AbstractControllerTestBase {
         }
 
         registration.registerSubModel(PathResourceDefinition.createSpecified(pathManagerService));
-        registration.registerSubModel(CoreManagementResourceDefinition.forStandaloneServer(new DelegatingConfigurableAuthorizer(), auditLogger, pathManagerService, new EnvironmentNameReader() {
+        registration.registerSubModel(CoreManagementResourceDefinition.forStandaloneServer(new DelegatingConfigurableAuthorizer(), getAuditLogger(), pathManagerService, new EnvironmentNameReader() {
             public boolean isServer() {
                 return true;
             }
