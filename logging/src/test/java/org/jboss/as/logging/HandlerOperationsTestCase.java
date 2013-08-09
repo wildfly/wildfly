@@ -40,6 +40,7 @@ import org.jboss.as.subsystem.test.SubsystemOperations;
 import org.jboss.dmr.ModelNode;
 import org.jboss.logmanager.LogContext;
 import org.jboss.logmanager.Logger;
+import org.junit.Ignore;
 import org.junit.Test;
 
 /**
@@ -80,6 +81,7 @@ public class HandlerOperationsTestCase extends AbstractOperationsTestCase {
     }
 
     @Test
+    @Ignore("WFLY-1860 - reenable after JIRA is resolved")
     public void testFormats() throws Exception {
         final KernelServices kernelServices = boot();
 
@@ -171,6 +173,83 @@ public class HandlerOperationsTestCase extends AbstractOperationsTestCase {
         // following  clear code prepended to each line after.
         assertTrue("Line logged does not match expected: 5", Arrays.equals("\033[0m\033[0m[changed-formatter] Test message 5".getBytes(ENCODING), lines.get(4).getBytes(ENCODING)));
         assertTrue("Line logged does not match expected: 6", Arrays.equals("\033[0m\033[0m[changed-formatter] Test message 6".getBytes(ENCODING), lines.get(5).getBytes(ENCODING)));
+
+        // Finally clean everything up
+        op = SubsystemOperations.CompositeOperationBuilder.create()
+                .addStep(SubsystemOperations.createRemoveOperation(handlerAddress))
+                .addStep(SubsystemOperations.createRemoveOperation(patternFormatterAddress))
+                .addStep(SubsystemOperations.createRemoveOperation(loggerAddress))
+                .build().getOperation();
+        executeOperation(kernelServices, op);
+
+    }
+
+    @Test
+    public void testFormatsNoColor() throws Exception {
+        final KernelServices kernelServices = boot();
+
+        final File logFile = new File(LoggingTestEnvironment.get().getLogDir(), "formatter.log");
+        // Delete the file if it exists
+        if (logFile.exists()) logFile.delete();
+
+        // Create a file handler
+        final String fileHandlerName = "formatter-handler";
+        final ModelNode handlerAddress = createFileHandlerAddress(fileHandlerName).toModelNode();
+        ModelNode op = SubsystemOperations.createAddOperation(handlerAddress);
+        op.get(CommonAttributes.LEVEL.getName()).set("INFO");
+        op.get(CommonAttributes.ENCODING.getName()).set(ENCODING);
+        op.get(CommonAttributes.FILE.getName()).get(PathResourceDefinition.PATH.getName()).set(logFile.getAbsolutePath());
+        op.get(CommonAttributes.AUTOFLUSH.getName()).set(true);
+        op.get(FileHandlerResourceDefinition.FORMATTER.getName()).set("%s%n");
+        executeOperation(kernelServices, op);
+
+        // Create a logger
+        final Logger logger = LogContext.getSystemLogContext().getLogger(HandlerOperationsTestCase.class.getName());
+        final ModelNode loggerAddress = createLoggerAddress(logger.getName()).toModelNode();
+        op = SubsystemOperations.createAddOperation(loggerAddress);
+        op.get(LoggerResourceDefinition.USE_PARENT_HANDLERS.getName()).set(false);
+        op.get(CommonAttributes.HANDLERS.getName()).setEmptyList().add(fileHandlerName);
+        executeOperation(kernelServices, op);
+
+        // Log a few records
+        logger.log(Level.INFO, "Test message 1");
+        logger.log(Level.INFO, "Test message 2");
+
+        // Read the file
+        List<String> lines = FileUtils.readLines(logFile, ENCODING);
+        assertEquals("Number of lines logged and found in the file do not match", 2, lines.size());
+
+        // Check the lines
+        assertEquals("Test message 1", lines.get(0));
+        assertEquals("Test message 2", lines.get(1));
+
+        // Create a pattern formatter
+        final ModelNode patternFormatterAddress = createPatternFormatterAddress("PATTERN").toModelNode();
+        op = SubsystemOperations.createAddOperation(patternFormatterAddress);
+        op.get(PatternFormatterResourceDefinition.PATTERN.getName()).set("[changed-pattern] %s%n");
+        executeOperation(kernelServices, op);
+
+        // Assign the pattern to the handler
+        executeOperation(kernelServices, SubsystemOperations.createWriteAttributeOperation(handlerAddress, FileHandlerResourceDefinition.NAMED_FORMATTER, "PATTERN"));
+
+        // Check that the formatter attribute was undefined
+        op = SubsystemOperations.createReadAttributeOperation(handlerAddress, FileHandlerResourceDefinition.FORMATTER);
+        op.get("include-defaults").set(false);
+        ModelNode result = executeOperation(kernelServices, op);
+        assertFalse("formatter attribute was not undefined after the change to a named-formatter", SubsystemOperations.readResult(result).isDefined());
+
+        // Log some more records
+        logger.log(Level.INFO, "Test message 3");
+        logger.log(Level.INFO, "Test message 4");
+
+        // Read the file
+        lines = FileUtils.readLines(logFile, ENCODING);
+        assertEquals("Number of lines logged and found in the file do not match", 4, lines.size());
+
+        // Check the lines
+        assertTrue("Line logged does not match expected: 3", Arrays.equals("[changed-pattern] Test message 3".getBytes(ENCODING), lines.get(2).getBytes(ENCODING)));
+        // Second line will start with the clear string, followed by the color string
+        assertTrue("Line logged does not match expected: 4", Arrays.equals("[changed-pattern] Test message 4".getBytes(ENCODING), lines.get(3).getBytes(ENCODING)));
 
         // Finally clean everything up
         op = SubsystemOperations.CompositeOperationBuilder.create()
