@@ -44,7 +44,7 @@ import org.xnio.IoUtils;
 public class FileAuditLogHandler extends AuditLogHandler {
     //SimpleDateFormat is not good to store among threads, since it stores intermediate results in its fields
     //Methods on this class will only ever be called from one thread (see class javadoc) so although it looks shared here it is not
-    private static final SimpleDateFormat OLD_FILE_FORMATTER = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+    private static final SimpleDateFormat OLD_FILE_FORMATTER = new SimpleDateFormat("yyyy-MM-dd_HHmmss");
 
     private static final byte[] LINE_TERMINATOR = String.format("%n").getBytes();
     private final PathManagerService pathManager;
