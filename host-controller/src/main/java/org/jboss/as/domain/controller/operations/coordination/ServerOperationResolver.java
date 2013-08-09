@@ -25,8 +25,9 @@
  */
 package org.jboss.as.domain.controller.operations.coordination;
 
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ACCESS;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ADD;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.AUDIT_LOG;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.AUDIT;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.CONTENT;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.DEPLOYMENT;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.DEPLOYMENT_OVERLAY;
@@ -35,6 +36,7 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.HOS
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.INTERFACE;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.JVM;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.LOGGER;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.MANAGEMENT;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.NAME;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OPERATION_HEADERS;
@@ -813,23 +815,23 @@ public class ServerOperationResolver {
     }
 
     private Map<Set<ServerIdentity>, ModelNode> resolveCoreServiceOperations(ModelNode operation, PathAddress address, ModelNode domain, ModelNode host) {
-        if (address.getElement(0).getValue().equals(AUDIT_LOG)){
+        if (address.getElement(0).getValue().equals(MANAGEMENT)){
             ModelNode op = operation.clone();
-            if (address.size() > 1) {
-                PathAddress newAddr = PathAddress.EMPTY_ADDRESS;
-                for (PathElement element : address){
-                    if (element.getKey().equals(LOGGER)){
+            if (address.size() == 3) {
+                if (address.getElement(1).getKey().equals(ACCESS) && address.getElement(1).getValue().equals(AUDIT)) {
+                    String key = address.getElement(2).getKey();
+                    if (key.equals(LOGGER)) {
                         //logger=>audit-log is only for the HC
                         return Collections.emptyMap();
-                    } else if (element.getKey().equals(SERVER_LOGGER)){
+                    } else if (key.equals(SERVER_LOGGER)) {
                         //server-logger=audit-log gets sent to the servers as logger=>audit-log
-                        element = PathElement.pathElement(LOGGER, element.getValue());
+                        PathAddress newAddr = address.subAddress(0, 2);
+                        newAddr = newAddr.append(PathElement.pathElement(LOGGER, address.getElement(2).getValue()));
+                        op.get(OP_ADDR).set(newAddr.toModelNode());
                     }
-                    newAddr = newAddr.append(element);
                 }
-                op.get(OP_ADDR).set(newAddr.toModelNode());
+                return Collections.singletonMap(getAllRunningServers(host, localHostName, serverProxies), op);
             }
-            return Collections.singletonMap(getAllRunningServers(host, localHostName, serverProxies), op);
         }
         return Collections.emptyMap();
     }
