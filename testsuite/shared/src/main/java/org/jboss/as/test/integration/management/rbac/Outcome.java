@@ -20,7 +20,7 @@
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
 
-package org.jboss.as.test.integration.mgmt.access.util;
+package org.jboss.as.test.integration.management.rbac;
 
 /**
 * Expected outcome of a management request.

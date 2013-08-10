@@ -57,6 +57,18 @@
         <path name="domainTestPath"/>
     </paths>
 
+    <management>
+        <access-control provider="simple">
+            <role-mapping>
+                <role name="SuperUser">
+                    <include>
+                        <user name="$local"/>
+                    </include>
+                </role>
+            </role-mapping>
+        </access-control>
+    </management>
+
     <profiles>
 
         <profile name="web-only">

@@ -43,6 +43,8 @@ public class JBossAsManagedConfiguration extends CommonContainerConfiguration {
 
     private boolean outputToConsole = true;
 
+    private String hostControllerManagementProtocol = "remote";
+
     private String hostControllerManagementAddress = System.getProperty("jboss.test.host.master.address", "localhost");
 
     private int hostControllerManagementPort = 9999;
@@ -168,6 +170,14 @@ public class JBossAsManagedConfiguration extends CommonContainerConfiguration {
      */
     public boolean isOutputToConsole() {
         return outputToConsole;
+    }
+
+    public String getHostControllerManagementProtocol() {
+        return hostControllerManagementProtocol;
+    }
+
+    public void setHostControllerManagementProtocol(String hostControllerManagementProtocol) {
+        this.hostControllerManagementProtocol = hostControllerManagementProtocol;
     }
 
     public String getHostControllerManagementAddress() {

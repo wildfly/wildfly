@@ -88,6 +88,23 @@ public class DomainTestSupport {
         }
     }
 
+    /**
+     * Create and start a configuration for the domain tests
+     * @param testName the name of the test
+     * @param configuration the configuration specification
+     * @return a started domain test support
+     */
+    public static DomainTestSupport createAndStartSupport(final String testName, Configuration configuration) {
+        try {
+            final DomainTestSupport testSupport = DomainTestSupport.create(testName, configuration);
+            // Start!
+            testSupport.start();
+            return testSupport;
+        } catch (Exception e) {
+            throw new RuntimeException(e);
+        }
+    }
+
     public static JBossAsManagedConfiguration getMasterConfiguration(String domainConfigPath, String hostConfigPath, String testName, JBossAsManagedConfigurationParameters params, boolean readOnlyDomain, boolean readOnlyHost) throws URISyntaxException {
         final String hostName = "master";
         File domains = getBaseDir(testName);

@@ -20,20 +20,21 @@
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
 
-package org.jboss.as.test.integration.mgmt.access.util;
+package org.jboss.as.test.integration.management.rbac;
 
-import static org.jboss.as.test.integration.mgmt.access.util.RbacUtil.ADMINISTRATOR_USER;
-import static org.jboss.as.test.integration.mgmt.access.util.RbacUtil.AUDITOR_USER;
-import static org.jboss.as.test.integration.mgmt.access.util.RbacUtil.DEPLOYER_USER;
-import static org.jboss.as.test.integration.mgmt.access.util.RbacUtil.MAINTAINER_USER;
-import static org.jboss.as.test.integration.mgmt.access.util.RbacUtil.MONITOR_USER;
-import static org.jboss.as.test.integration.mgmt.access.util.RbacUtil.OPERATOR_USER;
-import static org.jboss.as.test.integration.mgmt.access.util.RbacUtil.SUPERUSER_USER;
-import static org.jboss.as.test.integration.mgmt.access.util.RbacUtil.addRoleMapping;
-import static org.jboss.as.test.integration.mgmt.access.util.RbacUtil.addRoleUser;
-import static org.jboss.as.test.integration.mgmt.access.util.RbacUtil.removeRoleMapping;
-import static org.jboss.as.test.integration.mgmt.access.util.RbacUtil.removeRoleUser;
+import static org.jboss.as.test.integration.management.rbac.RbacUtil.ADMINISTRATOR_USER;
+import static org.jboss.as.test.integration.management.rbac.RbacUtil.AUDITOR_USER;
+import static org.jboss.as.test.integration.management.rbac.RbacUtil.DEPLOYER_USER;
+import static org.jboss.as.test.integration.management.rbac.RbacUtil.MAINTAINER_USER;
+import static org.jboss.as.test.integration.management.rbac.RbacUtil.MONITOR_USER;
+import static org.jboss.as.test.integration.management.rbac.RbacUtil.OPERATOR_USER;
+import static org.jboss.as.test.integration.management.rbac.RbacUtil.SUPERUSER_USER;
+import static org.jboss.as.test.integration.management.rbac.RbacUtil.addRoleMapping;
+import static org.jboss.as.test.integration.management.rbac.RbacUtil.addRoleUser;
+import static org.jboss.as.test.integration.management.rbac.RbacUtil.removeRoleMapping;
+import static org.jboss.as.test.integration.management.rbac.RbacUtil.removeRoleUser;
 
+import java.io.IOException;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
@@ -58,7 +59,10 @@ public class UserRolesMappingServerSetupTask implements ServerSetupTask {
 
     @Override
     public void setup(ManagementClient managementClient, String containerId) throws Exception {
-        ModelControllerClient client = managementClient.getControllerClient();
+        setup(managementClient.getControllerClient());
+    }
+
+    public void setup(ModelControllerClient client) throws IOException {
         for (Map.Entry<String, Set<String>> roleEntry : rolesToUsers.entrySet()) {
             String role = roleEntry.getKey();
             addRoleMapping(role, client);
@@ -70,7 +74,10 @@ public class UserRolesMappingServerSetupTask implements ServerSetupTask {
 
     @Override
     public void tearDown(ManagementClient managementClient, String containerId) throws Exception {
-        ModelControllerClient client = managementClient.getControllerClient();
+        tearDown(managementClient.getControllerClient());
+    }
+
+    public void tearDown(ModelControllerClient client) throws IOException {
         for (Map.Entry<String, Set<String>> roleEntry : rolesToUsers.entrySet()) {
             String role = roleEntry.getKey();
             for (String user : roleEntry.getValue()) {
@@ -101,6 +108,8 @@ public class UserRolesMappingServerSetupTask implements ServerSetupTask {
             rolesToUsers.put(SUPERUSER_USER, Collections.singleton(SUPERUSER_USER));
             STANDARD_USERS = rolesToUsers;
         }
+
+        public static final StandardUsersSetup INSTANCE = new StandardUsersSetup();
 
         public StandardUsersSetup() {
             super(STANDARD_USERS);
