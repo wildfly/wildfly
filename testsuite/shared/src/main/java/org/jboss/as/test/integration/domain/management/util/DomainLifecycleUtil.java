@@ -116,7 +116,8 @@ public class DomainLifecycleUtil {
 
             final String address = NetworkUtils.formatPossibleIpv6Address(configuration.getHostControllerManagementAddress());
             final int port = configuration.getHostControllerManagementPort();
-            final URI connectionURI = new URI("remote://" + address + ":" + port);
+            final URI connectionURI = new URI(configuration.getHostControllerManagementProtocol() + "://"
+                    + address + ":" + port);
             // Create the connection - this will try to connect on the first request
             connection = clientConfiguration.createConnection(connectionURI, configuration.getCallbackHandler());
 

@@ -20,7 +20,7 @@
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
 
-package org.jboss.as.test.integration.mgmt.access;
+package org.jboss.as.test.integration.domain.rbac;
 
 import java.io.IOException;
 import java.net.UnknownHostException;
@@ -28,9 +28,8 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 
-import org.jboss.as.arquillian.api.ContainerResource;
-import org.jboss.as.arquillian.container.ManagementClient;
 import org.jboss.as.controller.client.ModelControllerClient;
+import org.jboss.as.test.integration.domain.management.util.JBossAsManagedConfiguration;
 import org.jboss.as.test.integration.management.rbac.RbacAdminCallbackHandler;
 import org.junit.AfterClass;
 
@@ -39,14 +38,25 @@ import org.junit.AfterClass;
  *
  * @author Brian Stansberry (c) 2013 Red Hat Inc.
  */
-public class AbstractRbacTestCase {
+public abstract class AbstractRbacTestCase {
 
-    private static final Map<String, ModelControllerClient> clients = new HashMap<String, ModelControllerClient>();
+    private static final Map<String, ModelControllerClient> nonLocalAuthclients = new HashMap<String, ModelControllerClient>();
+    private static final Map<String, ModelControllerClient> localAuthClients = new HashMap<String, ModelControllerClient>();
 
     private static final Map<String, String> SASL_OPTIONS = Collections.singletonMap("SASL_DISALLOWED_MECHANISMS", "JBOSS-LOCAL-USER");
 
     @AfterClass
     public static void cleanUpClients() {
+
+        try {
+            cleanUpClients(nonLocalAuthclients);
+        } finally {
+            cleanUpClients(localAuthClients);
+        }
+
+    }
+
+    private static void cleanUpClients(Map<String, ModelControllerClient> clients) {
 
         for (ModelControllerClient client : clients.values()) {
             try {
@@ -55,38 +65,37 @@ public class AbstractRbacTestCase {
                 e.printStackTrace(System.out);
             }
         }
+
     }
 
 
-    @ContainerResource
-    private ManagementClient managementClient;
-
-    public ModelControllerClient getClientForUser(String userName) throws UnknownHostException {
+    public ModelControllerClient getClientForUser(String userName, boolean allowLocalAuth,
+                                                  JBossAsManagedConfiguration clientConfig) throws UnknownHostException {
+        Map<String, ModelControllerClient> clients = allowLocalAuth ? localAuthClients : nonLocalAuthclients;
         ModelControllerClient result = clients.get(userName);
         if (result == null) {
-            result = createClient(userName);
+            result = createClient(userName, allowLocalAuth, clientConfig);
             clients.put(userName, result);
         }
         return result;
     }
 
-    private ModelControllerClient createClient(String userName) throws UnknownHostException {
-        return ModelControllerClient.Factory.create(managementClient.getMgmtProtocol(),
-                managementClient.getMgmtAddress(),
-                managementClient.getMgmtPort(),
+    private ModelControllerClient createClient(String userName, boolean allowLocalAuth,
+                                               JBossAsManagedConfiguration clientConfig) throws UnknownHostException {
+
+        return ModelControllerClient.Factory.create(clientConfig.getHostControllerManagementProtocol(),
+                clientConfig.getHostControllerManagementAddress(),
+                clientConfig.getHostControllerManagementPort(),
                 new RbacAdminCallbackHandler(userName),
-                SASL_OPTIONS);
+                allowLocalAuth ? Collections.<String, String>emptyMap() : SASL_OPTIONS);
     }
 
-    public static void removeClientForUser(String userName) throws IOException {
+    public static void removeClientForUser(String userName, boolean allowLocalAuth) throws IOException {
+        Map<String, ModelControllerClient> clients = allowLocalAuth ? localAuthClients : nonLocalAuthclients;
         ModelControllerClient client = clients.remove(userName);
         if (client != null) {
             client.close();
         }
-    }
-
-    protected ManagementClient getManagementClient() {
-        return managementClient;
     }
 
 }
