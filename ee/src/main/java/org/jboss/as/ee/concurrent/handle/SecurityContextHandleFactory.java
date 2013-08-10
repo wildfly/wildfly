@@ -59,23 +59,40 @@ public class SecurityContextHandleFactory implements ContextHandleFactory {
         private SecurityContext previous;
 
         private SecurityContextHandle() {
-            this.securityContext = SecurityContextAssociation.getSecurityContext();
+            if (WildFlySecurityManager.isChecking()) {
+                this.securityContext = AccessController.doPrivileged(new PrivilegedAction<SecurityContext>() {
+                    @Override
+                    public SecurityContext run() {
+                        return saveSecurityContext();
+                    }
+                });
+            } else {
+                this.securityContext = saveSecurityContext();
+            }
+        }
+
+        private SecurityContext saveSecurityContext() {
+            return SecurityContextAssociation.getSecurityContext();
         }
 
         @Override
         public void setup() throws IllegalStateException {
-            previous = SecurityContextAssociation.getSecurityContext();
             if (WildFlySecurityManager.isChecking()) {
-                AccessController.doPrivileged(new PrivilegedAction<Void>() {
+                this.previous = AccessController.doPrivileged(new PrivilegedAction<SecurityContext>() {
                     @Override
-                    public Void run() {
-                        SecurityContextAssociation.setSecurityContext(securityContext);
-                        return null;
+                    public SecurityContext run() {
+                        return setupSecurityContext();
                     }
                 });
             } else {
-                SecurityContextAssociation.setSecurityContext(securityContext);
+                this.previous = setupSecurityContext();
             }
+        }
+
+        private SecurityContext setupSecurityContext() {
+            final SecurityContext previous = SecurityContextAssociation.getSecurityContext();
+            SecurityContextAssociation.setSecurityContext(securityContext);
+            return previous;
         }
 
         @Override
@@ -84,13 +101,17 @@ public class SecurityContextHandleFactory implements ContextHandleFactory {
                 AccessController.doPrivileged(new PrivilegedAction<Void>() {
                     @Override
                     public Void run() {
-                        SecurityContextAssociation.setSecurityContext(previous);
+                        resetSecurityContext();
                         return null;
                     }
                 });
             } else {
-                SecurityContextAssociation.setSecurityContext(previous);
+                resetSecurityContext();
             }
+        }
+
+        private void resetSecurityContext() {
+            SecurityContextAssociation.setSecurityContext(previous);
         }
     }
 }
