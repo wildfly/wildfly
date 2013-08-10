@@ -58,6 +58,37 @@
     <build>
         <plugins>
             <plugin>
+                <groupId>org.codehaus.mojo</groupId>
+                <artifactId>xml-maven-plugin</artifactId>
+                <executions>
+                    <execution>
+                        <id>adjust-default-server-configuration-for-basic-tests</id>
+                        <phase>process-test-resources</phase>
+                        <goals>
+                            <goal>transform</goal>
+                        </goals>
+                    </execution>
+                </executions>
+                <configuration>
+                    <transformationSets>
+                        <transformationSet>
+                            <dir>${basedir}/target/test-classes/domain-configs</dir>
+                            <skipDefaultExcludes>true</skipDefaultExcludes>
+                            <includes>
+                                <include>domain*.xml</include>
+                            </includes>
+                            <stylesheet>${basedir}/../integration/src/test/xslt/enableRbac.xsl</stylesheet>
+                            <outputDir>${basedir}/target/test-classes/domain-configs</outputDir>
+                            <fileMappers>
+                                <fileMapper implementation="org.codehaus.plexus.components.io.filemappers.FileExtensionMapper">
+                                    <targetExtension>.rbac</targetExtension>
+                                </fileMapper>
+                            </fileMappers>
+                        </transformationSet>
+                    </transformationSets>
+                </configuration>
+            </plugin>
+            <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-surefire-plugin</artifactId>
                 <configuration>

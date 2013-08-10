@@ -1,10 +1,10 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
-<!-- 
-  Set these VM properties in your IDE debugger  
+<!--
+  Set these VM properties in your IDE debugger
 
   -Djava.util.logging.manager=org.jboss.logmanager.LogManager
-  -Djboss.home=${workspace_loc:jboss-as-build}/target/jboss-as-7.3.0-redhat-SNAPSHOT 
+  -Djboss.home=${workspace_loc:jboss-as-build}/target/jboss-as-7.3.0-redhat-SNAPSHOT
   -DallowConnectingToRunningServer=true
 -->
 <project xmlns="http://maven.apache.org/POM/4.0.0"
@@ -91,7 +91,7 @@
             <artifactId>apacheds-core-jndi</artifactId>
             <version>${version.apacheds}</version>
             <scope>test</scope>
-        </dependency> 
+        </dependency>
 -->
     </dependencies>
 
@@ -130,7 +130,7 @@
                                     <includes>
                                         <include>standalone*.xml</include>
                                     </includes>
-                                    <stylesheet>${basedir}/src/test/xslt/passwdMaskConfig.xsl</stylesheet>
+                                    <stylesheet>${basedir}/../src/test/xslt/passwdMaskConfig.xsl</stylesheet>
                                     <outputDir>${basedir}/target/jbossas/standalone/configuration</outputDir>
                                     <parameters>
                                         <parameter>
@@ -302,7 +302,7 @@
                                     <includes>
                                         <include>org/jboss/as/test/integration/security/loginmodules/Ldap*TestCase.java</include>
                                     </includes>
-                                    
+
                                     <systemPropertyVariables combine.children="append">
                                         <jboss.server.config.file.name>standalone.xml</jboss.server.config.file.name>
                                         <jboss.inst>${basedir}/target/jbossas</jboss.inst>
@@ -310,7 +310,7 @@
 
                                     <additionalClasspathElements>
                                         <additionalClasspathElement>${project.basedir}/../src/test/resources</additionalClasspathElement>
-                                    </additionalClasspathElements>                                    
+                                    </additionalClasspathElements>
                                 </configuration>
                             </execution>
                         </executions>
@@ -369,8 +369,8 @@
                 </plugins>
             </build>
         </profile>
-        
-        <!-- IIOP/CORBA stub generation - manual stub generation for IBM JDK with rmic tool -->                    
+
+        <!-- IIOP/CORBA stub generation - manual stub generation for IBM JDK with rmic tool -->
         <profile>
             <id>ibmjdk.profile</id>
             <activation>
@@ -411,7 +411,7 @@
                 </plugins>
             </build>
         </profile>
-        
+
 
         <!-- When -Dtest=... is set, only the default surefire execution with standalone-full.xml will run. -->
         <profile>
