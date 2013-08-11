@@ -35,7 +35,7 @@ import org.wildfly.clustering.web.Batcher;
 import org.wildfly.clustering.web.infinispan.InfinispanWebLogger;
 import org.wildfly.clustering.web.infinispan.Remover;
 import org.wildfly.clustering.web.infinispan.Scheduler;
-import org.wildfly.clustering.web.session.Session;
+import org.wildfly.clustering.web.session.ImmutableSession;
 import org.wildfly.security.manager.GetAccessControlContextAction;
 
 /**
@@ -43,7 +43,7 @@ import org.wildfly.security.manager.GetAccessControlContextAction;
  * If/When Infinispan implements expiration notifications (ISPN-694), this will be obsolete.
  * @author Paul Ferraro
  */
-public class SessionExpirationScheduler<L> implements Scheduler<Session<L>> {
+public class SessionExpirationScheduler implements Scheduler<ImmutableSession> {
 
     final Map<String, Future<?>> expirationFutures = new ConcurrentHashMap<>();
     final Batcher batcher;
@@ -65,7 +65,7 @@ public class SessionExpirationScheduler<L> implements Scheduler<Session<L>> {
     }
 
     @Override
-    public void cancel(Session<L> session) {
+    public void cancel(ImmutableSession session) {
         Future<?> future = this.expirationFutures.remove(session.getId());
         if (future != null) {
             future.cancel(false);
@@ -73,7 +73,7 @@ public class SessionExpirationScheduler<L> implements Scheduler<Session<L>> {
     }
 
     @Override
-    public void schedule(Session<L> session) {
+    public void schedule(ImmutableSession session) {
         long timeout = session.getMetaData().getMaxInactiveInterval(TimeUnit.MILLISECONDS);
         if (timeout > 0) {
             String id = session.getId();

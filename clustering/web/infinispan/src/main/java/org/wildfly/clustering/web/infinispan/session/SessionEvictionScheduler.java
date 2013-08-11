@@ -32,7 +32,7 @@ import org.jboss.threads.JBossThreadFactory;
 import org.wildfly.clustering.web.Batcher;
 import org.wildfly.clustering.web.infinispan.Evictor;
 import org.wildfly.clustering.web.infinispan.Scheduler;
-import org.wildfly.clustering.web.session.Session;
+import org.wildfly.clustering.web.session.ImmutableSession;
 import org.wildfly.security.manager.GetAccessControlContextAction;
 
 /**
@@ -40,7 +40,7 @@ import org.wildfly.security.manager.GetAccessControlContextAction;
  * the number of active sessions exceeds the configured maximum.
  * @author Paul Ferraro
  */
-public class SessionEvictionScheduler<L> implements Scheduler<Session<L>> {
+public class SessionEvictionScheduler implements Scheduler<ImmutableSession> {
 
     final Queue<String> evictionQueue = new ConcurrentLinkedQueue<>();
     final Batcher batcher;
@@ -64,12 +64,12 @@ public class SessionEvictionScheduler<L> implements Scheduler<Session<L>> {
     }
 
     @Override
-    public void cancel(Session<L> session) {
+    public void cancel(ImmutableSession session) {
         this.evictionQueue.remove(session.getId());
     }
 
     @Override
-    public void schedule(Session<L> session) {
+    public void schedule(ImmutableSession session) {
         this.evictionQueue.add(session.getId());
         // Trigger eviction of oldest sessions if necessary
         while (this.evictionQueue.size() > this.maxSize) {
