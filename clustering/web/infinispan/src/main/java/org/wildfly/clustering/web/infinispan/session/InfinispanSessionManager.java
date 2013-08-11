@@ -40,13 +40,16 @@ import org.infinispan.affinity.KeyAffinityService;
 import org.infinispan.affinity.KeyGenerator;
 import org.infinispan.context.Flag;
 import org.infinispan.distribution.DistributionManager;
+import org.infinispan.distribution.ch.ConsistentHash;
 import org.infinispan.notifications.Listener;
 import org.infinispan.notifications.cachelistener.annotation.CacheEntryActivated;
 import org.infinispan.notifications.cachelistener.annotation.CacheEntryPassivated;
 import org.infinispan.notifications.cachelistener.annotation.CacheEntryRemoved;
+import org.infinispan.notifications.cachelistener.annotation.TopologyChanged;
 import org.infinispan.notifications.cachelistener.event.CacheEntryActivatedEvent;
 import org.infinispan.notifications.cachelistener.event.CacheEntryPassivatedEvent;
 import org.infinispan.notifications.cachelistener.event.CacheEntryRemovedEvent;
+import org.infinispan.notifications.cachelistener.event.TopologyChangedEvent;
 import org.infinispan.remoting.transport.Address;
 import org.jboss.as.clustering.infinispan.affinity.KeyAffinityServiceFactory;
 import org.jboss.as.clustering.registry.Registry;
@@ -76,7 +79,7 @@ public class InfinispanSessionManager<V, L> implements SessionManager<L>, KeyGen
     private final SessionIdentifierFactory idFactory;
     private final KeyAffinityService<String> affinity;
     private final Registry<String, Void> registry;
-    private final List<Scheduler<Session<L>>> schedulers = new CopyOnWriteArrayList<>();
+    private final List<Scheduler<ImmutableSession>> schedulers = new CopyOnWriteArrayList<>();
     private volatile Time defaultMaxInactiveInterval = new Time(30, TimeUnit.MINUTES);
     private final int maxActiveSessions;
 
@@ -94,9 +97,9 @@ public class InfinispanSessionManager<V, L> implements SessionManager<L>, KeyGen
     public void start() {
         this.cache.addListener(this);
         this.affinity.start();
-        this.schedulers.add(new SessionExpirationScheduler<L>(this, new ExpiredSessionRemover<>(this.factory)));
+        this.schedulers.add(new SessionExpirationScheduler(this, new ExpiredSessionRemover<>(this.factory)));
         if (this.maxActiveSessions > 0) {
-            this.schedulers.add(new SessionEvictionScheduler<L>(this, this.factory, this.maxActiveSessions));
+            this.schedulers.add(new SessionEvictionScheduler(this, this.factory, this.maxActiveSessions));
         }
     }
 
@@ -124,7 +127,7 @@ public class InfinispanSessionManager<V, L> implements SessionManager<L>, KeyGen
     public String locate(String sessionId) {
         Address location = this.locatePrimaryOwner(sessionId);
         if ((location != null) && !location.equals(this.cache.getCacheManager().getAddress())) {
-            // Lookup jvm route for address
+            // Lookup route for address
             Map.Entry<String, Void> entry = this.registry.getRemoteEntry(location);
             if (entry != null) {
                 return entry.getKey();
@@ -132,7 +135,7 @@ public class InfinispanSessionManager<V, L> implements SessionManager<L>, KeyGen
         }
         Map.Entry<String, Void> entry = this.registry.getLocalEntry();
         if (entry == null) {
-            // Accommodate mod_cluster's lazy jvm route auto-generation
+            // Accommodate mod_cluster's lazy route auto-generation
             entry = this.registry.refreshLocalEntry();
         }
         return (entry != null) ? entry.getKey() : null;
@@ -186,7 +189,7 @@ public class InfinispanSessionManager<V, L> implements SessionManager<L>, KeyGen
             session.invalidate();
             return null;
         }
-        for (Scheduler<Session<L>> scheduler: this.schedulers) {
+        for (Scheduler<ImmutableSession> scheduler: this.schedulers) {
             scheduler.cancel(session);
         }
         return new SchedulableSession<>(session, this.schedulers);
@@ -208,14 +211,14 @@ public class InfinispanSessionManager<V, L> implements SessionManager<L>, KeyGen
 
     @Override
     public Set<String> getActiveSessions() {
-        // Omit remote (i.e. when using DIST mode) and passivated sessions
-        return this.getSessions(Flag.CACHE_MODE_LOCAL, Flag.SKIP_CACHE_LOAD);
+        // Omit remote sessions (i.e. when using DIST mode) as well as passivated sessions
+        return this.getSessions(Flag.CACHE_MODE_LOCAL, Flag.SKIP_CACHE_LOAD, Flag.SKIP_LOCKING);
     }
 
     @Override
     public Set<String> getLocalSessions() {
         // Omit remote sessions (i.e. when using DIST mode)
-        return this.getSessions(Flag.CACHE_MODE_LOCAL);
+        return this.getSessions(Flag.CACHE_MODE_LOCAL, Flag.SKIP_LOCKING);
     }
 
     private Set<String> getSessions(Flag... flags) {
@@ -300,12 +303,61 @@ public class InfinispanSessionManager<V, L> implements SessionManager<L>, KeyGen
         }
     }
 
+    @TopologyChanged
+    public void topologyChanged(TopologyChangedEvent<String, ?> event) {
+        if (!event.isPre()) {
+            Cache<String, ?> cache = event.getCache();
+            Address localAddress = cache.getCacheManager().getAddress();
+            ConsistentHash oldHash = event.getConsistentHashAtStart();
+            ConsistentHash newHash = event.getConsistentHashAtEnd();
+            Set<Address> oldAddresses = new HashSet<>(oldHash.getMembers());
+            // Find members that left this cache view
+            oldAddresses.removeAll(newHash.getMembers());
+            if (!oldAddresses.isEmpty()) {
+                // Iterate over sessions in memory
+                for (Object key: cache.getAdvancedCache().withFlags(Flag.CACHE_MODE_LOCAL, Flag.SKIP_CACHE_LOAD, Flag.SKIP_LOCKING).keySet()) {
+                    // Cache may contain non-string keys, so ignore any others
+                    if (key instanceof String) {
+                        String sessionId = (String) key;
+                        Address oldOwner = oldHash.locatePrimaryOwner(sessionId);
+                        // If the old owner of this session has left the cache view...
+                        if (oldAddresses.contains(oldOwner)) {
+                            Address newOwner = newHash.locatePrimaryOwner(sessionId);
+                            // And if we are the new primary owner of this session...
+                            if (localAddress.equals(newOwner)) {
+                                // Then schedule expiration of this session locally
+                                boolean started = cache.startBatch();
+                                try {
+                                    V value = this.factory.findValue(sessionId);
+                                    if (value != null) {
+                                        InfinispanWebLogger.ROOT_LOGGER.debugf("Scheduling expiration of session %s on behalf of previous owner: %s", sessionId, oldOwner);
+                                        ImmutableSession session = this.factory.createImmutableSession(sessionId, value);
+                                        for (Scheduler<ImmutableSession> scheduler: this.schedulers) {
+                                            scheduler.cancel(session);
+                                            scheduler.schedule(session);
+                                        }
+                                    }
+                                } finally {
+                                    if (started) {
+                                        cache.endBatch(false);
+                                    }
+                                }
+                            } else {
+                                InfinispanWebLogger.ROOT_LOGGER.tracef("Expiration of session %s will be scheduled by node %s on behalf of previous owner: %s", sessionId, newOwner, oldOwner);
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    }
+
     // Session decorator that performs scheduling on close().
     private static class SchedulableSession<L> implements Session<L> {
         private final Session<L> session;
-        private final List<Scheduler<Session<L>>> schedulers;
+        private final List<Scheduler<ImmutableSession>> schedulers;
 
-        SchedulableSession(Session<L> session, List<Scheduler<Session<L>>> schedulers) {
+        SchedulableSession(Session<L> session, List<Scheduler<ImmutableSession>> schedulers) {
             this.session = session;
             this.schedulers = schedulers;
         }
@@ -343,7 +395,7 @@ public class InfinispanSessionManager<V, L> implements SessionManager<L>, KeyGen
         @Override
         public void close() {
             this.session.close();
-            for (Scheduler<Session<L>> scheduler: this.schedulers) {
+            for (Scheduler<ImmutableSession> scheduler: this.schedulers) {
                 scheduler.schedule(this.session);
             }
         }
