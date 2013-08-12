@@ -79,7 +79,13 @@ public class AuditLogTestCase {
                 AccessAuditResourceDefinition.PATH_ELEMENT,
                 AuditLogLoggerResourceDefinition.PATH_ELEMENT);
 
-        //Enable audit logging
+        //Enable audit logging and read only operations
+        op = Util.getWriteAttributeOperation(
+                auditLogConfigAddress,
+                AuditLogLoggerResourceDefinition.LOG_READ_ONLY.getName(),
+                new ModelNode(true));
+        result = client.execute(op);
+        Assert.assertEquals(SUCCESS, result.get(OUTCOME).asString());
         op = Util.getWriteAttributeOperation(
                 auditLogConfigAddress,
                 AuditLogLoggerResourceDefinition.ENABLED.getName(),
