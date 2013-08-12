@@ -40,7 +40,7 @@ public class TransactionSynchronizationRegistryProvider implements TransactionSy
     }
 
     @Override
-    public TransactionSynchronizationRegistry getTransactionSynchronizationRegistry() throws Exception {
-        return tsr;
+    public TransactionSynchronizationRegistry getTransactionSynchronizationRegistry() {
+        return this.tsr;
     }
 }

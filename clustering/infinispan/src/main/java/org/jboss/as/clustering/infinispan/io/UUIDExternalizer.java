@@ -43,7 +43,7 @@ public class UUIDExternalizer extends AbstractSimpleExternalizer<UUID> {
     }
 
     @Override
-    public UUID readObject(ObjectInput input) throws IOException, ClassNotFoundException {
+    public UUID readObject(ObjectInput input) throws IOException {
         return new UUID(input.readLong(), input.readLong());
     }
 }

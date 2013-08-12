@@ -40,7 +40,7 @@ public class ServiceNameExternalizer extends AbstractSimpleExternalizer<ServiceN
     }
 
     @Override
-    public ServiceName readObject(ObjectInput input) throws IOException, ClassNotFoundException {
+    public ServiceName readObject(ObjectInput input) throws IOException {
         return ServiceName.parse(input.readUTF());
     }
 }
