@@ -38,6 +38,7 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SUC
 
 import java.io.File;
 import java.io.IOException;
+import java.util.List;
 
 import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.PathElement;
@@ -64,12 +65,14 @@ public abstract class PatchOperationTarget {
     /**
      * Create a local target.
      *
-     * @param jbossHome the jboss home
-     * @return the local target
+     * @param jbossHome    the jboss home
+     * @param moduleRoots  the module roots
+     * @param bundlesRoots the bundle roots
+     * @return             the local target
      * @throws IOException
      */
-    public static final PatchOperationTarget createLocal(final File jbossHome) throws IOException {
-        final PatchTool tool = PatchTool.Factory.loadFromRoot(jbossHome);
+    public static final PatchOperationTarget createLocal(final File jbossHome, List<File> moduleRoots, List<File> bundlesRoots) throws IOException {
+        final PatchTool tool = PatchTool.Factory.createLocalTool(jbossHome, moduleRoots, bundlesRoots);
         return new LocalPatchOperationTarget(tool);
     }
 

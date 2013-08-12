@@ -26,20 +26,23 @@ import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.URL;
+import java.util.ArrayList;
 import java.util.Collections;
+import java.util.List;
 
 import org.jboss.as.patching.Constants;
 import org.jboss.as.patching.PatchInfo;
 import org.jboss.as.patching.PatchingException;
 import org.jboss.as.patching.installation.InstallationManager;
 import org.jboss.as.patching.installation.InstallationManagerService;
+import org.jboss.as.patching.installation.LayersConfig;
 import org.jboss.as.patching.metadata.MiscContentItem;
 import org.jboss.as.patching.runner.PatchToolImpl;
+import org.jboss.as.patching.runner.PatchUtils;
 import org.jboss.as.patching.runner.PatchingResult;
 import org.jboss.as.version.ProductConfig;
 import org.jboss.dmr.ModelNode;
-import org.jboss.modules.LocalModuleFinder;
-import org.jboss.modules.ModuleFinder;
+import org.jboss.modules.LocalModuleLoader;
 import org.jboss.modules.ModuleLoader;
 
 /**
@@ -159,27 +162,17 @@ public interface PatchTool {
         /**
          * Create an offline local patch tool.
          *
+         * @param jbossHome   the distribution root
+         * @param moduleRoots the module roots
+         * @param bundleRoots the bundle roots
          * @return the patch tool
          * @throws IOException
          */
-        public static PatchTool loadFromRoot(final File jbossHome) throws IOException {
-            ModuleLoader loader = ModuleLoader.forClass(PatchTool.class);
-            if(loader == null) {
-                // not running with the module class loader, so try creating a local one
-                String[] path = new String[]{"modules", "system", "layers", "base"};
-                File modulesRoot = jbossHome;
-                for(String step : path) {
-                    modulesRoot = new File(modulesRoot, step);
-                }
-
-                if(!modulesRoot.exists()) {
-                    throw new IllegalStateException("Failed to determine the modules directory.");
-                }
-
-                loader = new ModuleLoader(new ModuleFinder[]{new LocalModuleFinder(new File[]{modulesRoot})}){};
-            }
+        public static PatchTool createLocalTool(final File jbossHome, final List<File> moduleRoots, final List<File> bundleRoots) throws IOException {
+            final File[] resolvedPath = resolveLayeredModulePath(moduleRoots); // Resolve the patched module root for the module loader
+            final ModuleLoader loader = new LocalModuleLoader(resolvedPath);
             final ProductConfig config = new ProductConfig(loader, jbossHome.getAbsolutePath(), Collections.emptyMap());
-            final InstallationManager manager = InstallationManagerService.load(jbossHome, config);
+            final InstallationManager manager = InstallationManagerService.load(jbossHome, moduleRoots, bundleRoots, config);
             return create(manager);
         }
 
@@ -192,6 +185,87 @@ public interface PatchTool {
         public static PatchTool create(final InstallationManager manager) {
             return new PatchToolImpl(manager);
         }
+
+        private static File[] resolveLayeredModulePath(List<File> modulePath) {
+
+            boolean foundLayers = false;
+            List<File> layeredPath = new ArrayList<File>();
+            for (File file : modulePath) {
+
+                // Always add the root, as the user may place modules directly in it
+                layeredPath.add(file);
+
+                LayersConfig layersConfig = getLayersConfig(file);
+
+                File layersDir = new File(file, layersConfig.getLayersPath());
+                if (!layersDir.exists())  {
+                    if (layersConfig.isConfigured()) {
+                        // Bad config from user
+                        throw new IllegalStateException("No layers directory found at " + layersDir);
+                    }
+                    // else this isn't a root that has layers and add-ons
+                    continue;
+                }
+
+                boolean validLayers = true;
+                List<File> layerFiles = new ArrayList<File>();
+                for (String layerName : layersConfig.getLayers()) {
+                    File layer = new File(layersDir, layerName);
+                    if (!layer.exists()) {
+                        if (layersConfig.isConfigured()) {
+                            // Bad config from user
+                            throw new IllegalStateException(String.format("Cannot find layer %s under directory %s", layerName, layersDir));
+                        }
+                        // else this isn't a standard layers and add-ons structure
+                        validLayers = false;
+                        break;
+                    }
+                    loadOverlays(layer, layerFiles);
+                }
+                if (validLayers) {
+                    foundLayers = true;
+                    layeredPath.addAll(layerFiles);
+                    // Now add-ons
+                    File[] addOns = new File(file, layersConfig.getAddOnsPath()).listFiles();
+                    if (addOns != null) {
+                        for (File addOn : addOns) {
+                            if (addOn.isDirectory()) {
+                                loadOverlays(addOn, layeredPath);
+                            }
+                        }
+                    }
+                }
+            }
+
+            return foundLayers ? layeredPath.toArray(new File[layeredPath.size()]) : modulePath.toArray(new File[modulePath.size()]);
+        }
+
+        private static LayersConfig getLayersConfig(File repoRoot) {
+            try {
+                return LayersConfig.getLayersConfig(repoRoot);
+            } catch (IOException e) {
+                throw new RuntimeException(e);
+            }
+        }
+
+        static void loadOverlays(final File layeringRoot, final List<File> path) {
+            final File overlays = new File(layeringRoot, Constants.OVERLAYS);
+            if (overlays.exists()) {
+                final File refs = new File(overlays, Constants.OVERLAYS);
+                if (refs.exists()) {
+                    try {
+                        for (final String overlay : PatchUtils.readRefs(refs)) {
+                            final File root = new File(overlays, overlay);
+                            path.add(root);
+                        }
+                    } catch (IOException e) {
+                        throw new RuntimeException(e);
+                    }
+                }
+            }
+            path.add(layeringRoot);
+        }
+
     }
 
     public interface ContentPolicyBuilder {

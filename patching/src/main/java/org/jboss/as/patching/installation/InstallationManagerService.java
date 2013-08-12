@@ -76,13 +76,20 @@ public class InstallationManagerService implements Service<InstallationManager> 
         return manager;
     }
 
-    public static InstallationManager load(final File jbossHome, final ProductConfig productConfig) throws IOException {
+    protected static InstallationManager load(final File jbossHome, final ProductConfig productConfig) throws IOException {
         final InstalledImage installedImage = InstalledIdentity.installedImage(jbossHome);
         final List<File> moduleRoots = getModulePath(installedImage);
         final List<File> bundlesRoots = getBundlePath(installedImage);
         final InstalledIdentity identity = LayersFactory.load(installedImage, productConfig, moduleRoots, bundlesRoots);
         return new InstallationManagerImpl(identity);
     }
+
+    public static InstallationManager load(final File jbossHome, final List<File> moduleRoots, final List<File> bundlesRoots, final ProductConfig productConfig) throws IOException {
+        final InstalledImage installedImage = InstalledIdentity.installedImage(jbossHome);
+        final InstalledIdentity identity = LayersFactory.load(installedImage, productConfig, moduleRoots, bundlesRoots);
+        return new InstallationManagerImpl(identity);
+    }
+
 
     private static List<File> getModulePath(final InstalledImage image) {
         final List<File> path = new ArrayList<File>();

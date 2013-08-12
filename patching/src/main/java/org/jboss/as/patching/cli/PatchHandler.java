@@ -26,6 +26,7 @@ import java.io.File;
 import java.security.AccessController;
 import java.security.PrivilegedAction;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
 
 import org.jboss.as.cli.CommandContext;
@@ -324,7 +325,11 @@ public class PatchHandler extends CommandHandlerWithHelp {
         } else {
             final String jbossHome = getJBossHome(ctx.getParsedCommandLine());
             try {
-                target = PatchOperationTarget.createLocal(new File(jbossHome));
+                // TODO add separate params for modules and bundle directories
+                final File root = new File(jbossHome);
+                final File modules = new File(root, "modules");
+                final File bundles = new File(root, "bundles");
+                target = PatchOperationTarget.createLocal(root, Collections.singletonList(modules), Collections.singletonList(bundles));
             } catch (Exception e) {
                 throw new CommandLineException("Unable to apply patch to local JBOSS_HOME=" + jbossHome, e);
             }
