@@ -24,6 +24,7 @@ public class AroundConstructInterceptorFactory implements InterceptorFactory {
             @Override
             public Object processInvocation(final InterceptorContext context) throws Exception {
                 aroundConstruct.processInvocation(context);
+                context.setParameters(null);
                 return context.proceed();
             }
         };
