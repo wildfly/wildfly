@@ -64,6 +64,7 @@ import org.jboss.as.controller.access.constraint.VaultExpressionSensitivityConfi
 import org.jboss.as.controller.access.constraint.management.AccessConstraintDefinition;
 import org.jboss.as.controller.access.constraint.management.ConstrainedResourceDefinition;
 import org.jboss.as.controller.access.constraint.management.SensitiveTargetAccessConstraintDefinition;
+import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
 import org.jboss.as.controller.descriptions.NonResolvingResourceDescriptionResolver;
 import org.jboss.as.controller.operations.common.Util;
 import org.jboss.as.controller.operations.global.GlobalOperationHandlers;
@@ -722,11 +723,11 @@ public class ReadResourceDescriptionAccessControlTestCase extends AbstractContro
         ModelNode result = executeForResult(op);
         ResourceAccessControl accessControl = getResourceAccessControl(getChildDescription(result, ONE));
         Map<String, ModelNode> attributes = checkAttributeAccessControlNames(accessControl.defaultControl, ATTR_ACCESS_READ_WRITE, ATTR_READ_WRITE, ATTR_WRITE, ATTR_READ, ATTR_NONE);
-        checkAttributePermissions(attributes, ATTR_ACCESS_READ_WRITE, false, false, null, null);
-        checkAttributePermissions(attributes, ATTR_READ_WRITE, false, false, null, null);
-        checkAttributePermissions(attributes, ATTR_WRITE, true, false, null, null);
-        checkAttributePermissions(attributes, ATTR_READ, false, false, null, null);
-        checkAttributePermissions(attributes, ATTR_NONE, true, false, null, null);
+        checkAttributePermissions(attributes, ATTR_ACCESS_READ_WRITE, false, false);
+        checkAttributePermissions(attributes, ATTR_READ_WRITE, false, false);
+        checkAttributePermissions(attributes, ATTR_WRITE, true, false);
+        checkAttributePermissions(attributes, ATTR_READ, false, false);
+        checkAttributePermissions(attributes, ATTR_NONE, true, false);
     }
 
     @Test
@@ -737,11 +738,11 @@ public class ReadResourceDescriptionAccessControlTestCase extends AbstractContro
         ModelNode result = executeForResult(op);
         ResourceAccessControl accessControl = getResourceAccessControl(getChildDescription(result, ONE));
         Map<String, ModelNode> attributes = checkAttributeAccessControlNames(accessControl.defaultControl, ATTR_ACCESS_READ_WRITE, ATTR_READ_WRITE, ATTR_WRITE, ATTR_READ, ATTR_NONE);
-        checkAttributePermissions(attributes, ATTR_ACCESS_READ_WRITE, false, false, null, null);
-        checkAttributePermissions(attributes, ATTR_READ_WRITE, false, false, null, null);
-        checkAttributePermissions(attributes, ATTR_WRITE, true, false, null, null);
-        checkAttributePermissions(attributes, ATTR_READ, false, true, null, null);
-        checkAttributePermissions(attributes, ATTR_NONE, true, true, null, null);
+        checkAttributePermissions(attributes, ATTR_ACCESS_READ_WRITE, false, false);
+        checkAttributePermissions(attributes, ATTR_READ_WRITE, false, false);
+        checkAttributePermissions(attributes, ATTR_WRITE, true, false);
+        checkAttributePermissions(attributes, ATTR_READ, false, true);
+        checkAttributePermissions(attributes, ATTR_NONE, true, true);
     }
 
     @Test
@@ -752,11 +753,11 @@ public class ReadResourceDescriptionAccessControlTestCase extends AbstractContro
         ModelNode result = executeForResult(op);
         ResourceAccessControl accessControl = getResourceAccessControl(getChildDescription(result, ONE));
         Map<String, ModelNode> attributes = checkAttributeAccessControlNames(accessControl.defaultControl, ATTR_ACCESS_READ_WRITE, ATTR_READ_WRITE, ATTR_WRITE, ATTR_READ, ATTR_NONE);
-        checkAttributePermissions(attributes, ATTR_ACCESS_READ_WRITE, true, true, null, null);
-        checkAttributePermissions(attributes, ATTR_READ_WRITE, true, true, null, null);
-        checkAttributePermissions(attributes, ATTR_WRITE, true, true, null, null);
-        checkAttributePermissions(attributes, ATTR_READ, true, true, null, null);
-        checkAttributePermissions(attributes, ATTR_NONE, true, true, null, null);
+        checkAttributePermissions(attributes, ATTR_ACCESS_READ_WRITE, true, true);
+        checkAttributePermissions(attributes, ATTR_READ_WRITE, true, true);
+        checkAttributePermissions(attributes, ATTR_WRITE, true, true);
+        checkAttributePermissions(attributes, ATTR_READ, true, true);
+        checkAttributePermissions(attributes, ATTR_NONE, true, true);
     }
 
     private void registerAttributeResource(String testName) {
@@ -1341,10 +1342,10 @@ public class ReadResourceDescriptionAccessControlTestCase extends AbstractContro
 
             ResourceAccessControl accessControl = getResourceAccessControl(getChildDescription(result, ONE), ONE_A_ADDR);
             Map<String, ModelNode> defaultAttributes = checkAttributeAccessControlNames(accessControl.defaultControl, ATTR_NONE, ATTR_VAULT);
-            checkAttributePermissions(defaultAttributes, ATTR_NONE, true, false, null, null);
-            checkAttributePermissions(defaultAttributes, ATTR_VAULT, true, false, null, null);
+            checkAttributePermissions(defaultAttributes, ATTR_NONE, true, false);
+            checkAttributePermissions(defaultAttributes, ATTR_VAULT, true, false);
             Map<String, ModelNode> exceptionAttributes = checkAttributeAccessControlNames(accessControl.exceptions.get(ONE_A_ADDR), ATTR_NONE, ATTR_VAULT);
-            checkAttributePermissions(exceptionAttributes, ATTR_NONE, true, false, null, null);
+            checkAttributePermissions(exceptionAttributes, ATTR_NONE, true, false);
 
             Map<String, Boolean> defaultOps = checkOperationAccessControlNames(accessControl.defaultControl, ADD, REMOVE);
             Assert.assertEquals(false, defaultOps.get(ADD));
@@ -1372,10 +1373,10 @@ public class ReadResourceDescriptionAccessControlTestCase extends AbstractContro
 
             ResourceAccessControl accessControl = getResourceAccessControl(getChildDescription(result, ONE), ONE_A_ADDR);
             Map<String, ModelNode> defaultAttributes = checkAttributeAccessControlNames(accessControl.defaultControl, ATTR_NONE, ATTR_VAULT);
-            checkAttributePermissions(defaultAttributes, ATTR_NONE, true, true, null, null);
-            checkAttributePermissions(defaultAttributes, ATTR_VAULT, true, true, null, null);
+            checkAttributePermissions(defaultAttributes, ATTR_NONE, true, true);
+            checkAttributePermissions(defaultAttributes, ATTR_VAULT, true, true);
             Map<String, ModelNode> exceptionAttributes = checkAttributeAccessControlNames(accessControl.exceptions.get(ONE_A_ADDR), ATTR_NONE, ATTR_VAULT);
-            checkAttributePermissions(exceptionAttributes, ATTR_NONE, true, true, null, null);
+            checkAttributePermissions(exceptionAttributes, ATTR_NONE, true, true);
 
             Map<String, Boolean> defaultOps = checkOperationAccessControlNames(accessControl.defaultControl, ADD, REMOVE);
             Assert.assertEquals(true, defaultOps.get(ADD));
@@ -1405,8 +1406,8 @@ public class ReadResourceDescriptionAccessControlTestCase extends AbstractContro
 
             ResourceAccessControl accessControl = getResourceAccessControl(getChildDescription(result, ONE));
             Map<String, ModelNode> defaultAttributes = checkAttributeAccessControlNames(accessControl.defaultControl, ATTR_NONE, ATTR_VAULT);
-            checkAttributePermissions(defaultAttributes, ATTR_NONE, true, true, null, null);
-            checkAttributePermissions(defaultAttributes, ATTR_VAULT, true, true, null, null);
+            checkAttributePermissions(defaultAttributes, ATTR_NONE, true, true);
+            checkAttributePermissions(defaultAttributes, ATTR_VAULT, true, true);
 
             Map<String, Boolean> defaultOps = checkOperationAccessControlNames(accessControl.defaultControl, ADD, REMOVE);
             Assert.assertEquals(true, defaultOps.get(ADD));
@@ -1433,11 +1434,11 @@ public class ReadResourceDescriptionAccessControlTestCase extends AbstractContro
 
             ResourceAccessControl accessControl = getResourceAccessControl(getChildDescription(result, ONE), ONE_A_ADDR);
             Map<String, ModelNode> defaultAttributes = checkAttributeAccessControlNames(accessControl.defaultControl, ATTR_NONE, ATTR_VAULT);
-            checkAttributePermissions(defaultAttributes, ATTR_NONE, true, false, null, null);
-            checkAttributePermissions(defaultAttributes, ATTR_VAULT, true, false, null, null);
+            checkAttributePermissions(defaultAttributes, ATTR_NONE, true, false);
+            checkAttributePermissions(defaultAttributes, ATTR_VAULT, true, false);
             Map<String, ModelNode> exceptionAttributes = checkAttributeAccessControlNames(accessControl.exceptions.get(ONE_A_ADDR), ATTR_NONE, ATTR_VAULT);
-            checkAttributePermissions(exceptionAttributes, ATTR_NONE, true, false, null, null);
-            checkAttributePermissions(exceptionAttributes, ATTR_VAULT, false, false, null, null);
+            checkAttributePermissions(exceptionAttributes, ATTR_NONE, true, false);
+            checkAttributePermissions(exceptionAttributes, ATTR_VAULT, false, false);
 
             Map<String, Boolean> defaultOps = checkOperationAccessControlNames(accessControl.defaultControl, ADD, REMOVE);
             Assert.assertEquals(false, defaultOps.get(ADD));
@@ -1466,11 +1467,11 @@ public class ReadResourceDescriptionAccessControlTestCase extends AbstractContro
 
             ResourceAccessControl accessControl = getResourceAccessControl(getChildDescription(result, ONE), ONE_A_ADDR);
             Map<String, ModelNode> defaultAttributes = checkAttributeAccessControlNames(accessControl.defaultControl, ATTR_NONE, ATTR_VAULT);
-            checkAttributePermissions(defaultAttributes, ATTR_NONE, true, true, null, null);
-            checkAttributePermissions(defaultAttributes, ATTR_VAULT, true, true, null, null);
+            checkAttributePermissions(defaultAttributes, ATTR_NONE, true, true);
+            checkAttributePermissions(defaultAttributes, ATTR_VAULT, true, true);
             Map<String, ModelNode> exceptionAttributes = checkAttributeAccessControlNames(accessControl.exceptions.get(ONE_A_ADDR), ATTR_NONE, ATTR_VAULT);
-            checkAttributePermissions(exceptionAttributes, ATTR_NONE, true, true, null, null);
-            checkAttributePermissions(exceptionAttributes, ATTR_VAULT, false, true, null, null);
+            checkAttributePermissions(exceptionAttributes, ATTR_NONE, true, true);
+            checkAttributePermissions(exceptionAttributes, ATTR_VAULT, false, true);
 
             Map<String, Boolean> defaultOps = checkOperationAccessControlNames(accessControl.defaultControl, ADD, REMOVE);
             Assert.assertEquals(true, defaultOps.get(ADD));
@@ -1500,8 +1501,8 @@ public class ReadResourceDescriptionAccessControlTestCase extends AbstractContro
 
             ResourceAccessControl accessControl = getResourceAccessControl(getChildDescription(result, ONE));
             Map<String, ModelNode> defaultAttributes = checkAttributeAccessControlNames(accessControl.defaultControl, ATTR_NONE, ATTR_VAULT);
-            checkAttributePermissions(defaultAttributes, ATTR_NONE, true, true, null, null);
-            checkAttributePermissions(defaultAttributes, ATTR_VAULT, true, true, null, null);
+            checkAttributePermissions(defaultAttributes, ATTR_NONE, true, true);
+            checkAttributePermissions(defaultAttributes, ATTR_VAULT, true, true);
 
             Map<String, Boolean> defaultOps = checkOperationAccessControlNames(accessControl.defaultControl, ADD, REMOVE);
             Assert.assertEquals(true, defaultOps.get(ADD));
@@ -1528,8 +1529,8 @@ public class ReadResourceDescriptionAccessControlTestCase extends AbstractContro
 
             ResourceAccessControl accessControl = getResourceAccessControl(getChildDescription(result, ONE));
             Map<String, ModelNode> defaultAttributes = checkAttributeAccessControlNames(accessControl.defaultControl, ATTR_NONE, ATTR_VAULT);
-            checkAttributePermissions(defaultAttributes, ATTR_NONE, true, false, null, null);
-            checkAttributePermissions(defaultAttributes, ATTR_VAULT, true, false, null, null);
+            checkAttributePermissions(defaultAttributes, ATTR_NONE, true, false);
+            checkAttributePermissions(defaultAttributes, ATTR_VAULT, true, false);
 
             Map<String, Boolean> defaultOps = checkOperationAccessControlNames(accessControl.defaultControl, ADD, REMOVE);
             Assert.assertEquals(false, defaultOps.get(ADD));
@@ -1554,11 +1555,11 @@ public class ReadResourceDescriptionAccessControlTestCase extends AbstractContro
 
             ResourceAccessControl accessControl = getResourceAccessControl(getChildDescription(result, ONE), ONE_A_ADDR);
             Map<String, ModelNode> defaultAttributes = checkAttributeAccessControlNames(accessControl.defaultControl, ATTR_NONE, ATTR_VAULT);
-            checkAttributePermissions(defaultAttributes, ATTR_NONE, true, true, null, null);
-            checkAttributePermissions(defaultAttributes, ATTR_VAULT, true, true, null, null);
+            checkAttributePermissions(defaultAttributes, ATTR_NONE, true, true);
+            checkAttributePermissions(defaultAttributes, ATTR_VAULT, true, true);
             Map<String, ModelNode> exceptionAttributes = checkAttributeAccessControlNames(accessControl.exceptions.get(ONE_A_ADDR), ATTR_NONE, ATTR_VAULT);
-            checkAttributePermissions(exceptionAttributes, ATTR_NONE, true, true, null, null);
-            checkAttributePermissions(exceptionAttributes, ATTR_VAULT, true, false, null, null);
+            checkAttributePermissions(exceptionAttributes, ATTR_NONE, true, true);
+            checkAttributePermissions(exceptionAttributes, ATTR_VAULT, true, false);
 
             Map<String, Boolean> defaultOps = checkOperationAccessControlNames(accessControl.defaultControl, ADD, REMOVE);
             Assert.assertEquals(true, defaultOps.get(ADD));
@@ -1588,8 +1589,8 @@ public class ReadResourceDescriptionAccessControlTestCase extends AbstractContro
 
             ResourceAccessControl accessControl = getResourceAccessControl(getChildDescription(result, ONE));
             Map<String, ModelNode> defaultAttributes = checkAttributeAccessControlNames(accessControl.defaultControl, ATTR_NONE, ATTR_VAULT);
-            checkAttributePermissions(defaultAttributes, ATTR_NONE, true, true, null, null);
-            checkAttributePermissions(defaultAttributes, ATTR_VAULT, true, true, null, null);
+            checkAttributePermissions(defaultAttributes, ATTR_NONE, true, true);
+            checkAttributePermissions(defaultAttributes, ATTR_VAULT, true, true);
 
             Map<String, Boolean> defaultOps = checkOperationAccessControlNames(accessControl.defaultControl, ADD, REMOVE);
             Assert.assertEquals(true, defaultOps.get(ADD));
@@ -1627,8 +1628,8 @@ public class ReadResourceDescriptionAccessControlTestCase extends AbstractContro
 
             ResourceAccessControl accessControl = getResourceAccessControl(getChildDescription(result, ONE_A));
             Map<String, ModelNode> defaultAttributes = checkAttributeAccessControlNames(accessControl.defaultControl, ATTR_NONE, ATTR_VAULT);
-            checkAttributePermissions(defaultAttributes, ATTR_NONE, true, true, null, null);
-            checkAttributePermissions(defaultAttributes, ATTR_VAULT, true, true, null, null);
+            checkAttributePermissions(defaultAttributes, ATTR_NONE, true, true);
+            checkAttributePermissions(defaultAttributes, ATTR_VAULT, true, true);
 
             Map<String, Boolean> defaultOps = checkOperationAccessControlNames(accessControl.defaultControl, ADD, REMOVE);
             Assert.assertEquals(true, defaultOps.get(ADD));
@@ -1653,11 +1654,11 @@ public class ReadResourceDescriptionAccessControlTestCase extends AbstractContro
 
             ResourceAccessControl accessControl = getResourceAccessControl(getChildDescription(result, ONE_A), ONE_A_ADDR);
             Map<String, ModelNode> defaultAttributes = checkAttributeAccessControlNames(accessControl.defaultControl, ATTR_NONE, ATTR_VAULT);
-            checkAttributePermissions(defaultAttributes, ATTR_NONE, true, true, null, null);
-            checkAttributePermissions(defaultAttributes, ATTR_VAULT, true, true, null, null);
+            checkAttributePermissions(defaultAttributes, ATTR_NONE, true, true);
+            checkAttributePermissions(defaultAttributes, ATTR_VAULT, true, true);
             Map<String, ModelNode> exceptionAttributes = checkAttributeAccessControlNames(accessControl.exceptions.get(ONE_A_ADDR), ATTR_NONE, ATTR_VAULT);
-            checkAttributePermissions(exceptionAttributes, ATTR_NONE, true, true, null, null);
-            checkAttributePermissions(exceptionAttributes, ATTR_VAULT, true, false, null, null);
+            checkAttributePermissions(exceptionAttributes, ATTR_NONE, true, true);
+            checkAttributePermissions(exceptionAttributes, ATTR_VAULT, true, false);
 
 
             Map<String, Boolean> defaultOps = checkOperationAccessControlNames(accessControl.defaultControl, ADD, REMOVE);
@@ -1748,13 +1749,11 @@ public class ReadResourceDescriptionAccessControlTestCase extends AbstractContro
         return map;
     }
 
-    private void checkAttributePermissions(Map<String, ModelNode> map, String attrName, Boolean readConfig, Boolean writeConfig, Boolean readRuntime, Boolean writeRuntime) {
+    private void checkAttributePermissions(Map<String, ModelNode> map, String attrName, Boolean read, Boolean write) {
         ModelNode attr = map.get(attrName);
         Assert.assertNotNull(attr);
-        assertEqualsOrNotDefined(attr, ActionEffect.READ_CONFIG.toString(), readConfig);
-        assertEqualsOrNotDefined(attr, ActionEffect.WRITE_CONFIG.toString(), writeConfig);
-        assertEqualsOrNotDefined(attr, ActionEffect.READ_RUNTIME.toString(), readRuntime);
-        assertEqualsOrNotDefined(attr, ActionEffect.WRITE_RUNTIME.toString(), writeRuntime);
+        assertEqualsOrNotDefined(attr, ModelDescriptionConstants.READ, read);
+        assertEqualsOrNotDefined(attr, ModelDescriptionConstants.WRITE.toString(), write);
     }
 
     private Map<String, Boolean> checkOperationAccessControlNames(Map<PathAddress, ModelNode> map, String...operationNames) {
