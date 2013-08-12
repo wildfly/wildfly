@@ -725,8 +725,12 @@ class IdentityPatchContext implements PatchContentProvider {
         protected void cleanupRollbackPatchHistory() {
             final DirectoryStructure structure = getDirectoryStructure();
             for (final String rollback : rollbacks) {
-                IoUtils.recursiveDelete(structure.getBundlesPatchDirectory(rollback));
-                IoUtils.recursiveDelete(structure.getModulePatchDirectory(rollback));
+                if (!IoUtils.recursiveDelete(structure.getBundlesPatchDirectory(rollback))) {
+                    PatchLogger.ROOT_LOGGER.cannotDeleteFile(structure.getBundlesPatchDirectory(rollback).getAbsolutePath());
+                }
+                if (!IoUtils.recursiveDelete(structure.getModulePatchDirectory(rollback))) {
+                    PatchLogger.ROOT_LOGGER.cannotDeleteFile(structure.getModulePatchDirectory(rollback).getAbsolutePath());
+                }
             }
         }
     }

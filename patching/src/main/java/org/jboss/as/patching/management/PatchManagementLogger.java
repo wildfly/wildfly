@@ -22,22 +22,14 @@
 
 package org.jboss.as.patching.management;
 
-import static org.jboss.logging.Logger.Level.INFO;
-import static org.jboss.logging.Logger.Level.WARN;
-
-import java.io.File;
-import java.util.List;
-
 import org.jboss.logging.BasicLogger;
 import org.jboss.logging.Logger;
-import org.jboss.logging.annotations.LogMessage;
-import org.jboss.logging.annotations.Message;
 import org.jboss.logging.annotations.MessageLogger;
 
 /**
  * This module is using message IDs in the range 16800-16899.
  * <p/>
- * This file is using the subset 16800-16839 for logger messages.
+ * This file is using the subset 16830-16839 for logger messages.
  * <p/>
  * See <a href="http://community.jboss.org/docs/DOC-16810">http://community.jboss.org/docs/DOC-16810</a> for the full
  * list of currently reserved JBAS message id blocks.
@@ -49,13 +41,5 @@ import org.jboss.logging.annotations.MessageLogger;
 public interface PatchManagementLogger extends BasicLogger {
 
     PatchManagementLogger ROOT_LOGGER = Logger.getMessageLogger(PatchManagementLogger.class, PatchManagementLogger.class.getPackage().getName());
-
-    @LogMessage(level = WARN)
-    @Message(id = 16800, value = "detected modification to module '%s' (%s)")
-    void moduleContentChanged(String moduleIdentifier, String hash);
-
-    @LogMessage(level = INFO)
-    @Message(id = 16801, value = "using module path: %s")
-    void usingModulePath(List<File> modulePath);
 
 }
