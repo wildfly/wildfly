@@ -22,14 +22,18 @@
 
 package org.jboss.as.patching;
 
+import static org.jboss.logging.Logger.Level.WARN;
+
 import org.jboss.logging.BasicLogger;
 import org.jboss.logging.Logger;
+import org.jboss.logging.annotations.LogMessage;
+import org.jboss.logging.annotations.Message;
 import org.jboss.logging.annotations.MessageLogger;
 
 /**
  * This module is using message IDs in the range 16800-16899.
  * <p/>
- * This file is using the subset 16800-16839 for logger messages.
+ * This file is using the subset 16800-16829 for logger messages.
  * <p/>
  * See <a href="http://community.jboss.org/docs/DOC-16810">http://community.jboss.org/docs/DOC-16810</a> for the full
  * list of currently reserved JBAS message id blocks.
@@ -41,5 +45,9 @@ import org.jboss.logging.annotations.MessageLogger;
 public interface PatchLogger extends BasicLogger {
 
     PatchLogger ROOT_LOGGER = Logger.getMessageLogger(PatchLogger.class, PatchLogger.class.getPackage().getName());
+
+    @LogMessage(level = WARN)
+    @Message(id = 16800, value = "Cannot delete file %s")
+    void cannotDeleteFile(String name);
 
 }
