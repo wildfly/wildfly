@@ -60,7 +60,7 @@ public enum Attribute {
 
     JGROUPS_STACK("jgroups-stack"),
 
-    JGROUPS_CHANNEL("jgroups-channel"),
+    JGROUPS_CLUSTER("jgroups-cluster"),
 
     REQUEST_TIMEOUT("request-timeout");
 

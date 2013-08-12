@@ -152,7 +152,7 @@ public class RaOperationUtil {
         TransactionSupportEnum transactionSupport = operation.hasDefined(TRANSACTION_SUPPORT.getName()) ? TransactionSupportEnum
                 .valueOf(operation.get(TRANSACTION_SUPPORT.getName()).asString()) : null;
         String bootstrapContext = ModelNodeUtil.getResolvedStringIfSetOrGetDefault(context, operation, BOOTSTRAP_CONTEXT);
-        List<String> beanValidationGroups = ModelNodeUtil.extractListOfStrings(operation, BEANVALIDATION_GROUPS);
+        List<String> beanValidationGroups = BEANVALIDATION_GROUPS.unwrap(context, operation);
         boolean wmSecurity = ModelNodeUtil.getBooleanIfSetOrGetDefault(context, operation, WM_SECURITY);
         WorkManager workManager = null;
 
@@ -160,7 +160,7 @@ public class RaOperationUtil {
             final boolean mappingRequired = ModelNodeUtil.getBooleanIfSetOrGetDefault(context, operation, WM_SECURITY_MAPPING_REQUIRED);
             final String domain = ModelNodeUtil.getResolvedStringIfSetOrGetDefault(context, operation, WM_SECURITY_DOMAIN);
             final String defaultPrincipal = ModelNodeUtil.getResolvedStringIfSetOrGetDefault(context, operation, WM_SECURITY_DEFAULT_PRINCIPAL);
-            final List<String> defaultGroups = ModelNodeUtil.extractListOfStrings(operation, WM_SECURITY_DEFAULT_GROUPS);
+            final List<String> defaultGroups = WM_SECURITY_DEFAULT_GROUPS.unwrap(context, operation);
             final Map<String, String> groups = ModelNodeUtil.extractMap(operation, WM_SECURITY_MAPPING_GROUPS, WM_SECURITY_MAPPING_FROM, WM_SECURITY_MAPPING_TO);
             final Map<String, String> users = ModelNodeUtil.extractMap(operation, WM_SECURITY_MAPPING_USERS, WM_SECURITY_MAPPING_FROM, WM_SECURITY_MAPPING_TO);
             workManager = new WorkManagerImpl(new WorkManagerSecurityImpl(mappingRequired, domain, defaultPrincipal, defaultGroups, users, groups));

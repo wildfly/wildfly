@@ -141,6 +141,15 @@
           </xs:documentation>
         </xs:annotation>
       </xs:element>
+      <xs:element name="url-property" type="xs:token" minOccurs="0">
+        <xs:annotation>
+          <xs:documentation>
+            <![CDATA[[
+                     Specifies the property for the URL property in the xa-datasource-property values
+                    ]]>
+          </xs:documentation>
+        </xs:annotation>
+      </xs:element>
       <xs:element name="url-selector-strategy-class-name" type="xs:token" minOccurs="0">
         <xs:annotation>
           <xs:documentation>
@@ -668,6 +677,16 @@
           </xs:documentation>
         </xs:annotation>
       </xs:element>
+      <xs:element name="initial-pool-size" type="xs:nonNegativeInteger" minOccurs="0">
+        <xs:annotation>
+          <xs:documentation>
+            <![CDATA[[
+                    The initial-pool-size element indicates the initial number of connections
+                    a pool should hold. This default to 0. Ex: <initial-pool-size>1</initial-pool-size>
+                   ]]>
+          </xs:documentation>
+        </xs:annotation>
+      </xs:element>
       <xs:element name="max-pool-size" type="xs:nonNegativeInteger" minOccurs="0">
         <xs:annotation>
           <xs:documentation>
@@ -705,7 +724,8 @@
           <xs:documentation>
             <![CDATA[[
               Specifies how the pool should be flush in case of an error.
-              Valid values are: FailingConnectionOnly (default), IdleConnections, EntirePool
+              Valid values are: FailingConnectionOnly (default), InvalidIdleConnections, IdleConnections, Gracefully, EntirePool,
+              AllInvalidIdleConnections, AllIdleConnections, AllGracefully, AllConnections
              ]]>
           </xs:documentation>
         </xs:annotation>
@@ -717,6 +737,28 @@
               Specifies if multiple users will access the datasource through the getConnection(user, password)
               method and hence if the internal pool type should account for that
              ]]>
+          </xs:documentation>
+        </xs:annotation>
+      </xs:element>
+      <xs:element name="capacity" type="capacityType" minOccurs="0" maxOccurs="1">
+        <xs:annotation>
+          <xs:documentation>
+            <![CDATA[[
+                    Specifies the capacity policies for the pool
+                   ]]>
+          </xs:documentation>
+        </xs:annotation>
+      </xs:element>
+      <xs:element name="connection-listener" type="extensionType" minOccurs="0">
+        <xs:annotation>
+          <xs:documentation>
+            <![CDATA[[
+                    An org.jboss.jca.adapters.jdbc.spi.listener.ConnectionListener that provides
+                    a possible to listen for connection activation and passivation in order to
+                    perform actions before the connection is returned to the application or returned
+                    to the pool. Ex:
+                    <connection-listener class-name="com.acme.jdbc.OracleConnectionListener"/>
+                   ]]>
           </xs:documentation>
         </xs:annotation>
       </xs:element>
@@ -769,7 +811,7 @@
               </xs:documentation>
             </xs:annotation>
           </xs:element>
-          <xs:element name="wrap-xa-resource" type="xs:boolean" default="false" minOccurs="0">
+          <xs:element name="wrap-xa-resource" type="xs:boolean" default="true" minOccurs="0">
             <xs:annotation>
               <xs:documentation>
                 <![CDATA[[
@@ -966,6 +1008,28 @@
   <xs:complexType name="driversType">
     <xs:sequence>
       <xs:element name="driver" type="driverType" maxOccurs="unbounded" minOccurs="1"></xs:element>
+    </xs:sequence>
+  </xs:complexType>
+  <xs:complexType name="capacityType">
+    <xs:sequence>
+      <xs:element name="incrementer" type="extensionType" minOccurs="0">
+        <xs:annotation>
+          <xs:documentation>
+            <![CDATA[[
+                Defines the policy for incrementing connections in the pool
+               ]]>
+          </xs:documentation>
+        </xs:annotation>
+      </xs:element>
+      <xs:element name="decrementer" type="extensionType" minOccurs="0">
+        <xs:annotation>
+          <xs:documentation>
+            <![CDATA[[
+                Defines the policy for decrementing connections in the pool
+               ]]>
+          </xs:documentation>
+        </xs:annotation>
+      </xs:element>
     </xs:sequence>
   </xs:complexType>
 </xs:schema>

@@ -128,11 +128,11 @@ public class JcaDistributedWorkManagerDefinition extends SimpleResourceDefinitio
                 .setRestartAllServices()
                 .setXmlName(Attribute.JGROUPS_STACK.getLocalName())
                 .build()),
-        TRANSPORT_JGROPUS_CHANNEL(SimpleAttributeDefinitionBuilder.create("transport-jgroups-channel", ModelType.STRING).setAllowExpression(true)
+        TRANSPORT_JGROPUS_CLUSTER(SimpleAttributeDefinitionBuilder.create("transport-jgroups-cluster", ModelType.STRING).setAllowExpression(true)
                 .setAllowNull(true)
                 .setMeasurementUnit(MeasurementUnit.NONE)
                 .setRestartAllServices()
-                .setXmlName(Attribute.JGROUPS_CHANNEL.getLocalName())
+                .setXmlName(Attribute.JGROUPS_CLUSTER.getLocalName())
                 .setDefaultValue(new ModelNode("jca"))
                 .build()),
         TRANSPORT_REQUEST_TIMEOUT(SimpleAttributeDefinitionBuilder.create("transport-request-timeout", ModelType.LONG).setAllowExpression(true)
@@ -165,7 +165,7 @@ public class JcaDistributedWorkManagerDefinition extends SimpleResourceDefinitio
 
         public static AttributeDefinition[] getReloadRequiredAttributeDefinitions() {
             return new AttributeDefinition[]{
-                    TRANSPORT_JGROPUS_CHANNEL.getAttribute(),
+                    TRANSPORT_JGROPUS_CLUSTER.getAttribute(),
                     TRANSPORT_JGROPUS_STACK.getAttribute(),
                     TRANSPORT_REQUEST_TIMEOUT.getAttribute()
             };

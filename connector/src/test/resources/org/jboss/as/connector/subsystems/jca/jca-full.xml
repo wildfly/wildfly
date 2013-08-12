@@ -64,7 +64,7 @@
       <max-threads count="50"/>
       <keepalive-time time="10" unit="seconds"/>
     </short-running-threads>
-    <transport jgroups-stack="udp" jgroups-channel="myChannel" request-timeout="100000"/>
+    <transport jgroups-stack="udp" jgroups-cluster="myChannel" request-timeout="100000"/>
   </distributed-workmanager>
   <bootstrap-contexts>
     <!--1 or more repetitions:-->

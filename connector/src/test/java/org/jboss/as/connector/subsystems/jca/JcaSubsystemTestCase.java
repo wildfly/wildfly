@@ -92,7 +92,7 @@ public class JcaSubsystemTestCase extends AbstractSubsystemBaseTest {
                 builder.createLegacyKernelServicesBuilder(null, controllerVersion, version_1_1_0)
                         .addMavenResourceURL("org.jboss.as:jboss-as-connector:" + controllerVersion.getMavenGavVersion())
                         .addMavenResourceURL("org.jboss.as:jboss-as-threads:" + controllerVersion.getMavenGavVersion())
-                        .setExtensionClassName("org.jboss.as.connector.subsystems.jca.JcaExtension").skipReverseControllerCheck();
+                        .setExtensionClassName("org.jboss.as.connector.subsystems.jca.JcaExtension");
 
                 KernelServices mainServices = builder.build();
                 KernelServices legacyServices = mainServices.getLegacyServices(version_1_1_0);
@@ -130,7 +130,7 @@ public class JcaSubsystemTestCase extends AbstractSubsystemBaseTest {
         builder.createLegacyKernelServicesBuilder(null, controllerVersion, version_1_1_0)
                 .addMavenResourceURL("org.jboss.as:jboss-as-connector:" + controllerVersion.getMavenGavVersion())
                 .addMavenResourceURL("org.jboss.as:jboss-as-threads:" + controllerVersion.getMavenGavVersion())
-                .setExtensionClassName("org.jboss.as.connector.subsystems.jca.JcaExtension").skipReverseControllerCheck();
+                .setExtensionClassName("org.jboss.as.connector.subsystems.jca.JcaExtension");
 
         KernelServices mainServices = builder.build();
         KernelServices legacyServices = mainServices.getLegacyServices(version_1_1_0);

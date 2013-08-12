@@ -159,14 +159,6 @@ public class DataSourceDefinition extends SimpleResourceDefinition {
                 .end();
     }
 
-    static void registerTransformers200(ResourceTransformationDescriptionBuilder parentBuilder) {
-
-        parentBuilder.addChildResource(PATH_DATASOURCE)
-                .getAttributeBuilder().setDiscard(DiscardAttributeChecker.UNDEFINED, org.jboss.as.connector.subsystems.common.pool.Constants.INITIAL_POOL_SIZE,
-                CONNECTION_LISTENER_CLASS, CONNECTION_LISTENER_PROPERTIES, URL_DELIMITER,
-                org.jboss.as.connector.subsystems.common.pool.Constants.CAPACITY_INCREMENTER_CLASS, org.jboss.as.connector.subsystems.common.pool.Constants.CAPACITY_DECREMENTER_CLASS,
-                org.jboss.as.connector.subsystems.common.pool.Constants.CAPACITY_INCREMENTER_PROPERTIES, org.jboss.as.connector.subsystems.common.pool.Constants.CAPACITY_DECREMENTER_PROPERTIES);
-    }
 
 
 }

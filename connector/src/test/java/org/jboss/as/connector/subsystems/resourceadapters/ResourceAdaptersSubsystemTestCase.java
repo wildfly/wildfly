@@ -156,7 +156,7 @@ public class ResourceAdaptersSubsystemTestCase extends AbstractSubsystemBaseTest
                 .addOperationValidationResolve("add", PathAddress.pathAddress(
                         PathElement.pathElement(SUBSYSTEM, mainSubsystemName),
                         PathElement.pathElement("resource-adapter", "*"),
-                        PathElement.pathElement("connection-definitions", "*"))).skipReverseControllerCheck();
+                        PathElement.pathElement("connection-definitions", "*")));
 
         KernelServices mainServices = builder.build();
         org.junit.Assert.assertTrue(mainServices.isSuccessfulBoot());
