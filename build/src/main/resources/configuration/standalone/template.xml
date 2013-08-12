@@ -34,7 +34,7 @@
             <handlers>
                <file-handler name="file" formatter="json-formatter" relative-to="jboss.server.data.dir" path="audit-log.log"/>
             </handlers>
-            <logger log-boot="true" log-read-only="true" enabled="false">
+            <logger log-boot="true" log-read-only="false" enabled="false">
                <handlers>
                   <handler name="file"/>
                </handlers>

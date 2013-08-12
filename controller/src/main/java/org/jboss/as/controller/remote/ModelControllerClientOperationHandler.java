@@ -141,7 +141,7 @@ public class ModelControllerClientOperationHandler implements ManagementRequestH
                                         break;
                                     }
                                 }
-                                copySubject.getPrincipals().add(new AccessMechanismPrincipal(AccessMechanism.JMX));
+                                copySubject.getPrincipals().add(new AccessMechanismPrincipal(AccessMechanism.NATIVE));
                                 copySubject.setReadOnly();
                                 return copySubject;                            }
                         };
