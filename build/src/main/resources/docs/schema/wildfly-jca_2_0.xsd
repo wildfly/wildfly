@@ -278,7 +278,7 @@
                       </xs:documentation>
                   </xs:annotation>
               </xs:attribute>
-              <xs:attribute name="jgroups-channel" type="xs:token" use="optional">
+              <xs:attribute name="jgroups-cluster" type="xs:token" use="optional">
                 <xs:annotation>
                   <xs:documentation>
                     Define the JGroups channel name that will be used to distribute Work instances in the cluster.

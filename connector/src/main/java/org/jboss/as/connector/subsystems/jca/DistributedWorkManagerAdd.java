@@ -143,7 +143,7 @@ public class DistributedWorkManagerAdd extends AbstractAddStepHandler {
         String jgroupsStack = model.hasDefined(JcaDistributedWorkManagerDefinition.DWmParameters.TRANSPORT_JGROPUS_STACK.getAttribute().getName()) ?
                 JcaDistributedWorkManagerDefinition.DWmParameters.TRANSPORT_JGROPUS_STACK.getAttribute().resolveModelAttribute(context, model).asString() :
                 "udp";
-        String channelName = JcaDistributedWorkManagerDefinition.DWmParameters.TRANSPORT_JGROPUS_CHANNEL.getAttribute().resolveModelAttribute(context, model).asString();
+        String channelName = JcaDistributedWorkManagerDefinition.DWmParameters.TRANSPORT_JGROPUS_CLUSTER.getAttribute().resolveModelAttribute(context, model).asString();
         Long requestTimeout = JcaDistributedWorkManagerDefinition.DWmParameters.TRANSPORT_REQUEST_TIMEOUT.getAttribute().resolveModelAttribute(context, model).asLong();
 
         DistributedWorkManagerService wmService = new DistributedWorkManagerService(namedDistributedWorkManager, channelName, requestTimeout);

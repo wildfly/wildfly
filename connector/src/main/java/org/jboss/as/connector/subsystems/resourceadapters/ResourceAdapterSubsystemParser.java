@@ -322,36 +322,16 @@ public final class ResourceAdapterSubsystemParser implements XMLStreamConstants,
                 streamWriter.writeStartElement(DsPool.Tag.CAPACITY.getLocalName());
                 if (conDef.hasDefined(CAPACITY_INCREMENTER_CLASS.getName())) {
                     streamWriter.writeStartElement(Capacity.Tag.INCREMENTER.getLocalName());
-                    streamWriter.writeAttribute(org.jboss.jca.common.api.metadata.common.Extension.Attribute.CLASS_NAME.getLocalName(),
-                            conDef.get(CAPACITY_INCREMENTER_CLASS.getName()).asString());
+                    CAPACITY_INCREMENTER_CLASS.marshallAsAttribute(conDef, streamWriter);
+                    CAPACITY_INCREMENTER_PROPERTIES.marshallAsElement(conDef, streamWriter);
 
-                    if (conDef.hasDefined(CAPACITY_INCREMENTER_PROPERTIES.getName())) {
-
-                        for (Property connectionProperty : conDef.get(CAPACITY_INCREMENTER_PROPERTIES.getName())
-                                .asPropertyList()) {
-                            writeProperty(streamWriter, conDef, connectionProperty.getName(), connectionProperty
-                                    .getValue().asString(),
-                                    org.jboss.jca.common.api.metadata.common.Extension.Tag.CONFIG_PROPERTY
-                                            .getLocalName());
-                        }
-                    }
                     streamWriter.writeEndElement();
                 }
                 if (conDef.hasDefined(CAPACITY_DECREMENTER_CLASS.getName())) {
                     streamWriter.writeStartElement(Capacity.Tag.DECREMENTER.getLocalName());
-                    streamWriter.writeAttribute(org.jboss.jca.common.api.metadata.common.Extension.Attribute.CLASS_NAME.getLocalName(),
-                            conDef.get(CAPACITY_DECREMENTER_CLASS.getName()).asString());
+                    CAPACITY_DECREMENTER_CLASS.marshallAsAttribute(conDef, streamWriter);
+                    CAPACITY_DECREMENTER_PROPERTIES.marshallAsElement(conDef, streamWriter);
 
-                    if (conDef.hasDefined(CAPACITY_DECREMENTER_PROPERTIES.getName())) {
-
-                        for (Property connectionProperty : conDef.get(CAPACITY_DECREMENTER_PROPERTIES.getName())
-                                .asPropertyList()) {
-                            writeProperty(streamWriter, conDef, connectionProperty.getName(), connectionProperty
-                                    .getValue().asString(),
-                                    org.jboss.jca.common.api.metadata.common.Extension.Tag.CONFIG_PROPERTY
-                                            .getLocalName());
-                        }
-                    }
                     streamWriter.writeEndElement();
                 }
                 streamWriter.writeEndElement();

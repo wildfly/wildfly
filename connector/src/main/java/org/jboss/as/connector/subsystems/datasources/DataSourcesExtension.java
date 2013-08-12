@@ -146,7 +146,7 @@ public class DataSourcesExtension implements Extension {
     public static final String SUBSYSTEM_NAME = Constants.DATASOURCES;
     private static final String RESOURCE_NAME = DataSourcesExtension.class.getPackage().getName() + ".LocalDescriptions";
 
-    private static final int MANAGEMENT_API_MAJOR_VERSION = 3;
+    private static final int MANAGEMENT_API_MAJOR_VERSION = 2;
     private static final int MANAGEMENT_API_MINOR_VERSION = 0;
     private static final int MANAGEMENT_API_MICRO_VERSION = 0;
 
@@ -188,7 +188,6 @@ public class DataSourcesExtension implements Extension {
         context.setSubsystemXmlMapping(SUBSYSTEM_NAME, Namespace.DATASOURCES_1_0.getUriString(), DataSourceSubsystemParser.INSTANCE);
         context.setSubsystemXmlMapping(SUBSYSTEM_NAME, Namespace.DATASOURCES_1_1.getUriString(), DataSourceSubsystemParser.INSTANCE);
         context.setSubsystemXmlMapping(SUBSYSTEM_NAME, Namespace.DATASOURCES_2_0.getUriString(), DataSourceSubsystemParser.INSTANCE);
-        context.setSubsystemXmlMapping(SUBSYSTEM_NAME, Namespace.DATASOURCES_3_0.getUriString(), DataSourceSubsystemParser.INSTANCE);
     }
 
     public static final class DataSourceSubsystemParser implements XMLStreamConstants, XMLElementReader<List<ModelNode>>,
@@ -345,36 +344,16 @@ public class DataSourcesExtension implements Extension {
                         writer.writeStartElement(DsPool.Tag.CAPACITY.getLocalName());
                         if (dataSourceNode.hasDefined(CAPACITY_INCREMENTER_CLASS.getName())) {
                             writer.writeStartElement(Capacity.Tag.INCREMENTER.getLocalName());
-                            writer.writeAttribute(org.jboss.jca.common.api.metadata.common.Extension.Attribute.CLASS_NAME.getLocalName(),
-                                    dataSourceNode.get(CAPACITY_INCREMENTER_CLASS.getName()).asString());
+                            CAPACITY_INCREMENTER_CLASS.marshallAsAttribute(dataSourceNode, writer);
+                            CAPACITY_INCREMENTER_PROPERTIES.marshallAsElement(dataSourceNode,writer);
 
-                            if (dataSourceNode.hasDefined(CAPACITY_INCREMENTER_PROPERTIES.getName())) {
-
-                                for (Property connectionProperty : dataSourceNode.get(CAPACITY_INCREMENTER_PROPERTIES.getName())
-                                        .asPropertyList()) {
-                                    writeProperty(writer, dataSourceNode, connectionProperty.getName(), connectionProperty
-                                            .getValue().asString(),
-                                            org.jboss.jca.common.api.metadata.common.Extension.Tag.CONFIG_PROPERTY
-                                                    .getLocalName());
-                                }
-                            }
                             writer.writeEndElement();
                         }
                         if (dataSourceNode.hasDefined(CAPACITY_DECREMENTER_CLASS.getName())) {
                             writer.writeStartElement(Capacity.Tag.DECREMENTER.getLocalName());
-                            writer.writeAttribute(org.jboss.jca.common.api.metadata.common.Extension.Attribute.CLASS_NAME.getLocalName(),
-                                    dataSourceNode.get(CAPACITY_DECREMENTER_CLASS.getName()).asString());
+                            CAPACITY_DECREMENTER_CLASS.marshallAsAttribute(dataSourceNode, writer);
+                            CAPACITY_DECREMENTER_PROPERTIES.marshallAsElement(dataSourceNode,writer);
 
-                            if (dataSourceNode.hasDefined(CAPACITY_DECREMENTER_PROPERTIES.getName())) {
-
-                                for (Property connectionProperty : dataSourceNode.get(CAPACITY_DECREMENTER_PROPERTIES.getName())
-                                        .asPropertyList()) {
-                                    writeProperty(writer, dataSourceNode, connectionProperty.getName(), connectionProperty
-                                            .getValue().asString(),
-                                            org.jboss.jca.common.api.metadata.common.Extension.Tag.CONFIG_PROPERTY
-                                                    .getLocalName());
-                                }
-                            }
                             writer.writeEndElement();
                         }
                         writer.writeEndElement();
@@ -638,8 +617,7 @@ public class DataSourcesExtension implements Extension {
                         break;
                     }
                     case DATASOURCES_1_1:
-                    case DATASOURCES_2_0:
-                    case DATASOURCES_3_0:{
+                    case DATASOURCES_2_0:{
                         localName = reader.getLocalName();
                         Element element = Element.forName(reader.getLocalName());
                         SUBSYSTEM_DATASOURCES_LOGGER.tracef("%s -> %s", localName, element);

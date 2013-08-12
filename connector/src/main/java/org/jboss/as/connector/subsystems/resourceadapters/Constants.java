@@ -26,10 +26,10 @@ import org.jboss.as.controller.AttributeDefinition;
 import org.jboss.as.controller.AttributeMarshaller;
 import org.jboss.as.controller.ObjectListAttributeDefinition;
 import org.jboss.as.controller.ObjectTypeAttributeDefinition;
-import org.jboss.as.controller.PrimitiveListAttributeDefinition;
 import org.jboss.as.controller.PropertiesAttributeDefinition;
 import org.jboss.as.controller.SimpleAttributeDefinition;
 import org.jboss.as.controller.SimpleAttributeDefinitionBuilder;
+import org.jboss.as.controller.StringListAttributeDefinition;
 import org.jboss.as.controller.access.constraint.management.SensitiveTargetAccessConstraintDefinition;
 import org.jboss.as.controller.client.helpers.MeasurementUnit;
 import org.jboss.as.controller.operations.validation.EnumValidator;
@@ -275,7 +275,7 @@ public class Constants {
             .setXmlName(WorkManagerSecurity.Tag.DEFAULT_PRINCIPAL.getLocalName())
             .build();
 
-    static final PrimitiveListAttributeDefinition WM_SECURITY_DEFAULT_GROUPS = PrimitiveListAttributeDefinition.Builder.of(WM_SECURITY_DEFAULT_GROUPS_NAME, ModelType.STRING)
+    static final StringListAttributeDefinition WM_SECURITY_DEFAULT_GROUPS = (new StringListAttributeDefinition.Builder(WM_SECURITY_DEFAULT_GROUPS_NAME))
             .setXmlName(WorkManagerSecurity.Tag.DEFAULT_GROUPS.getLocalName())
             .setAllowNull(true)
             .setAllowExpression(true)
@@ -306,7 +306,7 @@ public class Constants {
             .setAllowNull(true)
             .build();
 
-    static final PrimitiveListAttributeDefinition BEANVALIDATION_GROUPS = PrimitiveListAttributeDefinition.Builder.of(BEANVALIDATIONGROUPS_NAME, ModelType.STRING)
+    static final StringListAttributeDefinition BEANVALIDATION_GROUPS = (new StringListAttributeDefinition.Builder(BEANVALIDATIONGROUPS_NAME))
             .setXmlName(ResourceAdapter.Tag.BEAN_VALIDATION_GROUP.getLocalName())
             .setAllowNull(true)
             .setAllowExpression(true)

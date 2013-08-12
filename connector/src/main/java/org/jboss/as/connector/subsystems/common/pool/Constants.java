@@ -23,6 +23,7 @@
 package org.jboss.as.connector.subsystems.common.pool;
 
 import org.jboss.as.controller.AttributeDefinition;
+import org.jboss.as.controller.AttributeMarshaller;
 import org.jboss.as.controller.PropertiesAttributeDefinition;
 import org.jboss.as.controller.SimpleAttributeDefinition;
 import org.jboss.as.controller.SimpleAttributeDefinitionBuilder;
@@ -37,6 +38,9 @@ import org.jboss.jca.common.api.metadata.common.FlushStrategy;
 import org.jboss.jca.common.api.metadata.common.v11.ConnDefPool;
 import org.jboss.jca.common.api.metadata.ds.TimeOut;
 import org.jboss.jca.common.api.metadata.ds.Validation;
+
+import javax.xml.stream.XMLStreamException;
+import javax.xml.stream.XMLStreamWriter;
 
 /**
  * @author @author <a href="mailto:stefano.maestri@redhat.com">Stefano
@@ -101,6 +105,19 @@ public class Constants {
             .setXmlName(org.jboss.jca.common.api.metadata.common.Extension.Tag.CONFIG_PROPERTY.getLocalName())
             .setAllowNull(true)
             .setAllowExpression(true)
+            .setAttributeMarshaller(new AttributeMarshaller() {
+                @Override
+                public void marshallAsElement(final AttributeDefinition attribute, final ModelNode resourceModel, final boolean marshallDefault, final XMLStreamWriter writer) throws XMLStreamException {
+                    for (ModelNode property : resourceModel.get(attribute.getName()).asList()) {
+                        writer.writeStartElement(attribute.getXmlName());
+                        writer.writeAttribute(org.jboss.as.controller.parsing.Attribute.NAME.getLocalName(), property.asProperty().getName());
+                        writer.writeCharacters(property.asProperty().getValue().asString());
+                        writer.writeEndElement();
+                    }
+
+                }
+
+            })
             .build();
 
     public static SimpleAttributeDefinition CAPACITY_DECREMENTER_CLASS = new SimpleAttributeDefinition(CAPACITY_DECREMENTER_CLASS_NAME, org.jboss.jca.common.api.metadata.common.Extension.Attribute.CLASS_NAME.getLocalName(), new ModelNode(), ModelType.STRING, true, true, MeasurementUnit.NONE);
@@ -109,6 +126,19 @@ public class Constants {
             .setXmlName(org.jboss.jca.common.api.metadata.common.Extension.Tag.CONFIG_PROPERTY.getLocalName())
             .setAllowNull(true)
             .setAllowExpression(true)
+            .setAttributeMarshaller(new AttributeMarshaller() {
+                @Override
+                public void marshallAsElement(final AttributeDefinition attribute, final ModelNode resourceModel, final boolean marshallDefault, final XMLStreamWriter writer) throws XMLStreamException {
+                    for (ModelNode property : resourceModel.get(attribute.getName()).asList()) {
+                        writer.writeStartElement(attribute.getXmlName());
+                        writer.writeAttribute(org.jboss.as.controller.parsing.Attribute.NAME.getLocalName(), property.asProperty().getName());
+                        writer.writeCharacters(property.asProperty().getValue().asString());
+                        writer.writeEndElement();
+                    }
+
+                }
+
+            })
             .build();
 
 
@@ -125,13 +155,12 @@ public class Constants {
             .build();
 
 
-
     public static final SimpleAttributeDefinition[] POOL_ATTRIBUTES_1 = {BLOCKING_TIMEOUT_WAIT_MILLIS, IDLETIMEOUTMINUTES, BACKGROUNDVALIDATIONMILLIS,
             BACKGROUNDVALIDATION, USE_FAST_FAIL, MAX_POOL_SIZE, MIN_POOL_SIZE, POOL_PREFILL, POOL_USE_STRICT_MIN, POOL_FLUSH_STRATEGY};
 
-    public static final AttributeDefinition[] POOL_ATTRIBUTES_2 =  {INITIAL_POOL_SIZE, CAPACITY_INCREMENTER_CLASS, CAPACITY_DECREMENTER_CLASS, CAPACITY_INCREMENTER_PROPERTIES, CAPACITY_DECREMENTER_PROPERTIES};
+    public static final AttributeDefinition[] POOL_ATTRIBUTES_2 = {INITIAL_POOL_SIZE, CAPACITY_INCREMENTER_CLASS, CAPACITY_DECREMENTER_CLASS, CAPACITY_INCREMENTER_PROPERTIES, CAPACITY_DECREMENTER_PROPERTIES};
 
     public static final AttributeDefinition[] POOL_ATTRIBUTES = {BLOCKING_TIMEOUT_WAIT_MILLIS, IDLETIMEOUTMINUTES, BACKGROUNDVALIDATIONMILLIS,
-                BACKGROUNDVALIDATION, USE_FAST_FAIL, MAX_POOL_SIZE, MIN_POOL_SIZE, INITIAL_POOL_SIZE, POOL_PREFILL, POOL_USE_STRICT_MIN, POOL_FLUSH_STRATEGY,
-                CAPACITY_INCREMENTER_CLASS, CAPACITY_DECREMENTER_CLASS, CAPACITY_INCREMENTER_PROPERTIES, CAPACITY_DECREMENTER_PROPERTIES};
+            BACKGROUNDVALIDATION, USE_FAST_FAIL, MAX_POOL_SIZE, MIN_POOL_SIZE, INITIAL_POOL_SIZE, POOL_PREFILL, POOL_USE_STRICT_MIN, POOL_FLUSH_STRATEGY,
+            CAPACITY_INCREMENTER_CLASS, CAPACITY_DECREMENTER_CLASS, CAPACITY_INCREMENTER_PROPERTIES, CAPACITY_DECREMENTER_PROPERTIES};
 }

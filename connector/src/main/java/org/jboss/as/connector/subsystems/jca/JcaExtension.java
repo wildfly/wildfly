@@ -225,7 +225,7 @@ public class JcaExtension implements Extension {
 
                     writer.writeStartElement(Element.TRANSPORT.getLocalName());
                         ((SimpleAttributeDefinition) JcaDistributedWorkManagerDefinition.DWmParameters.TRANSPORT_JGROPUS_STACK.getAttribute()).marshallAsAttribute(property.getValue(), writer);
-                        ((SimpleAttributeDefinition) JcaDistributedWorkManagerDefinition.DWmParameters.TRANSPORT_JGROPUS_CHANNEL.getAttribute()).marshallAsAttribute(property.getValue(), writer);
+                        ((SimpleAttributeDefinition) JcaDistributedWorkManagerDefinition.DWmParameters.TRANSPORT_JGROPUS_CLUSTER.getAttribute()).marshallAsAttribute(property.getValue(), writer);
                         ((SimpleAttributeDefinition) JcaDistributedWorkManagerDefinition.DWmParameters.TRANSPORT_REQUEST_TIMEOUT.getAttribute()).marshallAsAttribute(property.getValue(), writer);
                     writer.writeEndElement();
 
@@ -721,9 +721,9 @@ public class JcaExtension implements Extension {
                                 ((SimpleAttributeDefinition) JcaDistributedWorkManagerDefinition.DWmParameters.TRANSPORT_JGROPUS_STACK.getAttribute()).parseAndSetParameter(value, operation, reader);
                                 break;
                             }
-                            case JGROUPS_CHANNEL: {
-                                String value = rawAttributeText(reader, JcaDistributedWorkManagerDefinition.DWmParameters.TRANSPORT_JGROPUS_CHANNEL.getAttribute().getXmlName());
-                                ((SimpleAttributeDefinition) JcaDistributedWorkManagerDefinition.DWmParameters.TRANSPORT_JGROPUS_CHANNEL.getAttribute()).parseAndSetParameter(value, operation, reader);
+                            case JGROUPS_CLUSTER: {
+                                String value = rawAttributeText(reader, JcaDistributedWorkManagerDefinition.DWmParameters.TRANSPORT_JGROPUS_CLUSTER.getAttribute().getXmlName());
+                                ((SimpleAttributeDefinition) JcaDistributedWorkManagerDefinition.DWmParameters.TRANSPORT_JGROPUS_CLUSTER.getAttribute()).parseAndSetParameter(value, operation, reader);
                                 break;
                             }
                             case REQUEST_TIMEOUT: {
