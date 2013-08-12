@@ -32,10 +32,12 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.FAI
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.MODEL_DESCRIPTION;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.READ;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.READ_RESOURCE_DESCRIPTION_OPERATION;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.RESTART_REQUIRED;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.RESULT;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.STORAGE;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.WRITE;
 import static org.jboss.as.controller.operations.global.GlobalOperationHandlers.ACCESS_CONTROL;
 import static org.jboss.as.controller.operations.global.GlobalOperationHandlers.INCLUDE_ALIASES;
 import static org.jboss.as.controller.operations.global.GlobalOperationHandlers.LOCALE;
@@ -443,7 +445,7 @@ public class ReadResourceDescriptionHandler implements OperationStepHandler {
 
         private void addAttributeAuthorizationResult(ModelNode result, String attributeName, ResourceAuthorization authResp, ActionEffect actionEffect) {
             AuthorizationResult authorizationResult = authResp.getAttributeResult(attributeName, actionEffect);
-            result.get(actionEffect.toString()).set(authorizationResult.getDecision() == Decision.PERMIT);
+            result.get(actionEffect == ActionEffect.READ_CONFIG || actionEffect == ActionEffect.READ_RUNTIME ? READ : WRITE).set(authorizationResult.getDecision() == Decision.PERMIT);
         }
 
         private void addOperationAuthorizationResult(OperationContext context, ModelNode result, ModelNode operation, String operationName) {

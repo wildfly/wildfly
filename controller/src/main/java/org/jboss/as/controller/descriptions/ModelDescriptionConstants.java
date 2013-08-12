@@ -219,6 +219,7 @@ public class ModelDescriptionConstants {
     public static final String PROPERTIES = "properties";
     public static final String PROTOCOL = "protocol";
     public static final String PROXIES = "proxies";
+    public static final String READ = "read";
     public static final String READ_ATTRIBUTE_OPERATION = "read-attribute";
     public static final String READ_CHILDREN_NAMES_OPERATION = "read-children-names";
     public static final String READ_CHILDREN_TYPES_OPERATION = "read-children-types";
@@ -345,6 +346,7 @@ public class ModelDescriptionConstants {
     public static final String VAULT_OPTION = "vault-option";
     public static final String VAULT_OPTIONS = "vault-options";
     public static final String WILDCARD = "wildcard";
+    public static final String WRITE = "write";
     public static final String WRITE_ATTRIBUTE_OPERATION = "write-attribute";
     public static final String XML_NAMESPACES = "xml-namespaces";
 
