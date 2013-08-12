@@ -21,6 +21,7 @@
  */
 package org.jboss.as.controller.security;
 
+import java.io.Serializable;
 import java.net.InetAddress;
 import java.net.UnknownHostException;
 import java.security.Principal;
@@ -30,7 +31,10 @@ import java.security.Principal;
  *
  * @author <a href="kabir.khan@jboss.com">Kabir Khan</a>
  */
-public final class InetAddressPrincipal implements Principal, Cloneable {
+public final class InetAddressPrincipal implements Principal, Cloneable, Serializable {
+
+    private static final long serialVersionUID = -4933833947550618331L;
+
     private final InetAddress inetAddress;
 
     /**

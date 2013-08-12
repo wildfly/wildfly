@@ -1,6 +1,10 @@
 /*
  * JBoss, Home of Professional Open Source.
+<<<<<<< HEAD
  * Copyright 2012, Red Hat, Inc., and individual contributors
+=======
+ * Copyright 2013, Red Hat, Inc., and individual contributors
+>>>>>>> eaff432... [WFLY-490] / [WFLY-1864] Update the protocol so that servers receiving management requests from a trusted master can request a Subject to use when executing the operation.
  * as indicated by the @author tags. See the copyright.txt file in the
  * distribution for a full listing of individual contributors.
  *
@@ -25,10 +29,10 @@ package org.jboss.as.controller.remote;
 import java.security.AccessController;
 import java.security.PrivilegedAction;
 
+import javax.security.auth.Subject;
+
 /**
- * Security Actions for classes in the org.jboss.as.controller.remote package.
- *
- * No methods in this class are to be made public under any circumstances!
+ * Security actions for the 'org.jboss.as.controller.remote' package.
  *
  * @author <a href="mailto:darran.lofthouse@jboss.com">Darran Lofthouse</a>
  */
@@ -46,6 +50,41 @@ class SecurityActions {
                 return System.getProperty(key, defaultValue);
             }
         });
+    }
+
+    static Subject getSubject() {
+        return getSubjectAction().getSubject();
+    }
+
+    private static GetSubjectAction getSubjectAction() {
+        return System.getSecurityManager() != null ? GetSubjectAction.PRIVILEGED : GetSubjectAction.NON_PRIVILEGED;
+    }
+
+    private interface GetSubjectAction {
+        Subject getSubject();
+
+        GetSubjectAction NON_PRIVILEGED = new GetSubjectAction() {
+
+            @Override
+            public Subject getSubject() {
+                return Subject.getSubject(AccessController.getContext());
+            }
+        };
+
+        GetSubjectAction PRIVILEGED = new GetSubjectAction() {
+
+            @Override
+            public Subject getSubject() {
+                return AccessController.doPrivileged(new PrivilegedAction<Subject>() {
+
+                    @Override
+                    public Subject run() {
+                        return NON_PRIVILEGED.getSubject();
+                    }
+                });
+            }
+        };
+
     }
 
 }
