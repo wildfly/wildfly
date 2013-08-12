@@ -36,7 +36,6 @@ import org.wildfly.security.manager.GetAccessControlContextAction;
 import org.jboss.msc.service.Service;
 import org.jboss.msc.service.ServiceName;
 import org.jboss.msc.service.StartContext;
-import org.jboss.msc.service.StartException;
 import org.jboss.msc.service.StopContext;
 import org.jboss.threads.JBossThreadFactory;
 
@@ -68,7 +67,7 @@ public class KeyAffinityServiceFactoryService implements Service<KeyAffinityServ
     }
 
     @Override
-    public void start(StartContext context) throws StartException {
+    public void start(StartContext context) {
         final ThreadGroup threadGroup = new ThreadGroup("KeyAffinityService ThreadGroup");
         final String namePattern = "KeyAffinityService Thread Pool -- %t";
         final ThreadFactory threadFactory = new JBossThreadFactory(threadGroup, Boolean.FALSE, null, namePattern, null, null, doPrivileged(GetAccessControlContextAction.getInstance()));
@@ -83,8 +82,8 @@ public class KeyAffinityServiceFactoryService implements Service<KeyAffinityServ
 
     @Override
     public <K> KeyAffinityService<K> createService(Cache<K, ?> cache, KeyGenerator<K> generator) {
-        boolean distributed = cache.getCacheConfiguration().clustering().cacheMode().isDistributed();
-        return distributed ? new KeyAffinityServiceImpl<K>(this.executor, cache, generator, this.bufferSize, Collections.singleton(cache.getCacheManager().getAddress()), false) : new SimpleKeyAffinityService<K>(generator);
+        boolean clustered = cache.getCacheConfiguration().clustering().cacheMode().isClustered();
+        return clustered ? new KeyAffinityServiceImpl<>(this.executor, cache, generator, this.bufferSize, Collections.singleton(cache.getCacheManager().getAddress()), false) : new SimpleKeyAffinityService<>(generator);
     }
 
     private static class SimpleKeyAffinityService<K> implements KeyAffinityService<K> {

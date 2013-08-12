@@ -42,7 +42,7 @@ public class TransactionManagerProvider implements TransactionManagerLookup {
      * @see org.infinispan.transaction.lookup.TransactionManagerLookup#getTransactionManager()
      */
     @Override
-    public TransactionManager getTransactionManager() throws Exception {
+    public TransactionManager getTransactionManager() {
         return this.tm;
     }
 }
