@@ -64,6 +64,8 @@ public class InterceptorOrder {
          */
         public static final int CDI_INTERCEPTORS = 0xB00;
         public static final int COMPONENT_USER_INTERCEPTORS = 0xC00; //interceptors defined on the component class, these have to run after CDI interceptors
+        public static final int CONCURRENT_CONTEXT = 0xC80;
+
         public static final int TERMINAL_INTERCEPTOR = 0xD00;
 
         private Component() {
@@ -109,6 +111,7 @@ public class InterceptorOrder {
         public static final int COMPONENT_USER_INTERCEPTORS = 0x1100;
         public static final int SFSB_INIT_METHOD = 0x1200;
         public static final int SETUP_CONTEXT = 0x1300;
+        public static final int CONCURRENT_CONTEXT = 0x1380;
         public static final int TERMINAL_INTERCEPTOR = 0x1400;
 
         private ComponentPostConstruct() {
@@ -131,6 +134,7 @@ public class InterceptorOrder {
         public static final int INTERCEPTOR_USER_INTERCEPTORS = 0xA00;
         public static final int CDI_INTERCEPTORS = 0xB00;
         public static final int COMPONENT_USER_INTERCEPTORS = 0xC00;
+        public static final int CONCURRENT_CONTEXT = 0xC80;
         public static final int TERMINAL_INTERCEPTOR = 0xD00;
 
         private ComponentPreDestroy() {
@@ -148,6 +152,7 @@ public class InterceptorOrder {
         public static final int INTERCEPTOR_USER_INTERCEPTORS = 0x500;
         public static final int CDI_INTERCEPTORS = 0x600;
         public static final int COMPONENT_USER_INTERCEPTORS = 0x700;
+        public static final int CONCURRENT_CONTEXT = 0x780;
         public static final int TERMINAL_INTERCEPTOR = 0x800;
 
         private ComponentPassivation() {

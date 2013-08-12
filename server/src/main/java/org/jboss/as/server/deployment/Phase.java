@@ -313,6 +313,7 @@ public enum Phase {
     public static final int PARSE_DSXML_DEPLOYMENT                      = 0x4500;
     public static final int PARSE_MESSAGING_XML_RESOURCES               = 0x4600;
     public static final int PARSE_DESCRIPTOR_LIFECYCLE_METHOD_RESOLUTION = 0x4700;
+    public static final int PARSE_EE_CONCURRENT_DEFAULT_MANAGED_OBJECTS = 0x4800;
 
     // REGISTER
     public static final int REGISTER_BUNDLE_INSTALL                     = 0x0100;

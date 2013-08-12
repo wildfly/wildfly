@@ -23,6 +23,7 @@
 package org.jboss.as.ee.component;
 
 import org.jboss.as.naming.ManagedReferenceFactory;
+import org.jboss.as.naming.ManagedReferenceInjector;
 import org.jboss.as.server.deployment.DeploymentPhaseContext;
 import org.jboss.msc.inject.Injector;
 import org.jboss.msc.service.ServiceBuilder;
@@ -32,17 +33,24 @@ import org.jboss.msc.service.ServiceName;
  * @author <a href="mailto:david.lloyd@redhat.com">David M. Lloyd</a>
  */
 public final class ServiceInjectionSource extends InjectionSource {
+
     private final ServiceName serviceName;
+    private final Class<?> serviceValueType;
 
     public ServiceInjectionSource(final ServiceName serviceName) {
+        this(serviceName, ManagedReferenceFactory.class);
+    }
+
+    public ServiceInjectionSource(final ServiceName serviceName, final Class<?> serviceValueType) {
         this.serviceName = serviceName;
+        this.serviceValueType = serviceValueType;
     }
 
     /**
      * {@inheritDoc}
      */
     public void getResourceValue(final ResolutionContext context, final ServiceBuilder<?> serviceBuilder, final DeploymentPhaseContext phaseContext, final Injector<ManagedReferenceFactory> injector) {
-        serviceBuilder.addDependency(serviceName, ManagedReferenceFactory.class, injector);
+        serviceBuilder.addDependency(serviceName, serviceValueType, ManagedReferenceFactory.class.isAssignableFrom(serviceValueType) ? injector : new ManagedReferenceInjector(injector));
     }
 
     public boolean equals(final Object other) {

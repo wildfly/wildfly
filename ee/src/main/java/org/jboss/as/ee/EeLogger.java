@@ -190,7 +190,7 @@ public interface EeLogger extends BasicLogger {
     /**
      * Logs a debug message indicating the skipping of injection for a static member.
      *
-     * @param member the member, which will not be injected.
+     * @param injectionTarget the injection target.
      */
     @LogMessage(level = DEBUG)
     @Message(id = 11012, value = "Injection for a member with static modifier is only acceptable on application clients, ignoring injection for target %s")
