@@ -2,10 +2,12 @@ package org.jboss.as.patching.runner;
 
 import static org.jboss.as.patching.IoUtils.recursiveDelete;
 
+import java.io.File;
 import java.util.Collection;
 import java.util.Collections;
 
 import org.jboss.as.patching.DirectoryStructure;
+import org.jboss.as.patching.PatchLogger;
 import org.jboss.as.patching.installation.InstalledImage;
 import org.jboss.as.patching.metadata.ContentModification;
 import org.jboss.as.patching.metadata.Patch;
@@ -49,7 +51,10 @@ class IdentityRollbackCallback implements IdentityPatchContext.FinalizeCallback 
     @Override
     public void completed(IdentityPatchContext context) {
         final InstalledImage installedImage = directoryStructure.getInstalledImage();
-        recursiveDelete(installedImage.getPatchHistoryDir(patch.getPatchId()));
+        final File history = installedImage.getPatchHistoryDir(patch.getPatchId());
+        if (!recursiveDelete(history)) {
+            PatchLogger.ROOT_LOGGER.cannotDeleteFile(history.getAbsolutePath());
+        }
         // Cleanup all the recorded rollbacks
         cleanupEntry(context.getLayers());
         cleanupEntry(context.getAddOns());
