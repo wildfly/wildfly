@@ -62,7 +62,7 @@ public class JmxAuditLoggerResourceDefinition extends SimpleResourceDefinition {
             .setDefaultValue(new ModelNode(true)).build();
 
     public static final SimpleAttributeDefinition LOG_READ_ONLY = new SimpleAttributeDefinitionBuilder(ModelDescriptionConstants.LOG_READ_ONLY, ModelType.BOOLEAN, true)
-    .setAllowExpression(true)
+        .setAllowExpression(true)
             .setDefaultValue(new ModelNode(false)).build();
 
     public static final SimpleAttributeDefinition ENABLED = new SimpleAttributeDefinitionBuilder(ModelDescriptionConstants.ENABLED, ModelType.BOOLEAN, true)

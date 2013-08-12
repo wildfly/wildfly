@@ -41,6 +41,7 @@ import org.jboss.as.domain.management.audit.AuditLogLoggerResourceDefinition;
 import org.jboss.as.test.shared.TestSuiteEnvironment;
 import org.jboss.dmr.ModelNode;
 import org.junit.After;
+import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -102,21 +103,27 @@ public class AdminOnlyAuditLogTestCase {
                     AccessAuditResourceDefinition.PATH_ELEMENT,
                     AuditLogLoggerResourceDefinition.PATH_ELEMENT);
 
-            //Enable audit logging
+            //Enable audit logging and read only operations
+            op = Util.getWriteAttributeOperation(
+                    auditLogConfigAddress,
+                    AuditLogLoggerResourceDefinition.LOG_READ_ONLY.getName(),
+                    new ModelNode(true));
+            result = client.execute(op);
+            Assert.assertEquals(SUCCESS, result.get(OUTCOME).asString());
             op = Util.getWriteAttributeOperation(
                     auditLogConfigAddress,
                     AuditLogLoggerResourceDefinition.ENABLED.getName(),
                     new ModelNode(true));
             result = client.execute(op);
-            junit.framework.Assert.assertEquals(SUCCESS, result.get(OUTCOME).asString());
-            junit.framework.Assert.assertTrue(file.exists());
+            Assert.assertEquals(SUCCESS, result.get(OUTCOME).asString());
+            Assert.assertTrue(file.exists());
 
             try {
                 file.delete();
                 op = Util.createOperation(READ_RESOURCE_OPERATION, PathAddress.EMPTY_ADDRESS);
                 result = client.execute(op);
-                junit.framework.Assert.assertEquals(SUCCESS, result.get(OUTCOME).asString());
-                junit.framework.Assert.assertTrue(file.exists());
+                Assert.assertEquals(SUCCESS, result.get(OUTCOME).asString());
+                Assert.assertTrue(file.exists());
 
             } finally {
                 file.delete();
@@ -126,14 +133,14 @@ public class AdminOnlyAuditLogTestCase {
                         AuditLogLoggerResourceDefinition.ENABLED.getName(),
                         new ModelNode(false));
                 result = client.execute(op);
-                junit.framework.Assert.assertEquals(SUCCESS, result.get(OUTCOME).asString());
-                junit.framework.Assert.assertTrue(file.exists());
+                Assert.assertEquals(SUCCESS, result.get(OUTCOME).asString());
+                Assert.assertTrue(file.exists());
 
                 file.delete();
                 op = Util.createOperation(READ_RESOURCE_OPERATION, PathAddress.EMPTY_ADDRESS);
                 result = client.execute(op);
-                junit.framework.Assert.assertEquals(SUCCESS, result.get(OUTCOME).asString());
-                junit.framework.Assert.assertFalse(file.exists());
+                Assert.assertEquals(SUCCESS, result.get(OUTCOME).asString());
+                Assert.assertFalse(file.exists());
             }
         } finally {
             IoUtils.safeClose(client);
