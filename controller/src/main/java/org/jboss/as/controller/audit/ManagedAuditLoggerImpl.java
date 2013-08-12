@@ -206,19 +206,27 @@ public class ManagedAuditLoggerImpl implements ManagedAuditLogger, ManagedAuditL
 
     /** protected by config's audit lock */
     private void storeLogItem(AuditLogItem item) throws IOException {
-        switch (getLoggerStatus()) {
-            case QUEUEING:
-                queuedItems.add(item);
-                break;
-            case LOGGING:
-                writeLogItem(item);
-                break;
-            case DISABLE_NEXT:
-                writeLogItem(item);
-                config.setLoggerStatus(Status.DISABLED);
-            case DISABLED:
-                // ignore
-                break;
+        try {
+            switch (getLoggerStatus()) {
+                case QUEUEING:
+                    queuedItems.add(item);
+                    break;
+                case LOGGING:
+                    writeLogItem(item);
+                    break;
+                case DISABLE_NEXT:
+                    writeLogItem(item);
+                    config.setLoggerStatus(Status.DISABLED);
+                case DISABLED:
+                    // ignore
+                    break;
+            }
+        } finally {
+            //Now that we have possibly written out the message, replace the handlers with any ones that have been replaced
+            if (handlerUpdateTask != null && !config.isManualCommit()){
+                handlerUpdateTask.applyChanges();
+                handlerUpdateTask = null;
+            }
         }
     }
 
@@ -233,11 +241,6 @@ public class ManagedAuditLoggerImpl implements ManagedAuditLogger, ManagedAuditL
         } finally {
             for (String formatterName : formatterNames) {
                 config.getFormatter(formatterName).clear();
-            }
-            //Now that we have written out the message, replace the handlers with any ones that have been replaced
-            if (handlerUpdateTask != null && !config.isManualCommit()){
-                handlerUpdateTask.applyChanges();
-                handlerUpdateTask = null;
             }
         }
     }
