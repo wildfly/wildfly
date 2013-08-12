@@ -60,7 +60,7 @@ public class DefaultOperationCandidatesProvider implements OperationCandidatesPr
             try {
                 ParserUtil.parseHeaders(buffer, parsedOp);
             } catch (CommandFormatException e) {
-                e.printStackTrace();
+                //e.printStackTrace();
                 return -1;
             }
             if(parsedOp.endsOnSeparator()) {
