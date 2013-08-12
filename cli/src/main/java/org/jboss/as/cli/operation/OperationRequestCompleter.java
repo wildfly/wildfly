@@ -138,7 +138,9 @@ public class OperationRequestCompleter implements CommandLineCompleter {
         }
 
         if (parsedCmd.hasProperties() || parsedCmd.endsOnPropertyListStart()) {
-
+            if(!parsedCmd.hasOperationName()) {
+                return -1;
+            }
             final Collection<CommandArgument> allArgs = candidatesProvider.getProperties(ctx, parsedCmd.getOperationName(), parsedCmd.getAddress());
             if (allArgs.isEmpty()) {
                 final CommandLineFormat format = parsedCmd.getFormat();
