@@ -35,6 +35,7 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OUT
 import org.jboss.as.protocol.StreamUtils;
 import org.jboss.as.protocol.mgmt.AbstractManagementRequest;
 import org.jboss.as.protocol.mgmt.ActiveOperation;
+import org.jboss.as.protocol.mgmt.ActiveOperation.ResultHandler;
 import org.jboss.as.protocol.mgmt.FlushableDataOutput;
 import org.jboss.as.protocol.mgmt.ManagementChannelAssociation;
 import org.jboss.as.protocol.mgmt.ManagementProtocol;
@@ -45,20 +46,27 @@ import org.jboss.as.protocol.mgmt.ManagementRequestHeader;
 import org.jboss.as.protocol.mgmt.ManagementResponseHeader;
 import static org.jboss.as.protocol.mgmt.ProtocolUtils.expectHeader;
 import org.jboss.dmr.ModelNode;
+import org.jboss.marshalling.Marshaller;
 import org.jboss.threads.AsyncFuture;
 
 import java.io.ByteArrayOutputStream;
 import java.io.DataInput;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.Serializable;
+import java.security.Principal;
 import java.util.Collections;
 import java.util.List;
+import java.util.Set;
 import java.util.concurrent.atomic.AtomicBoolean;
+
+import javax.security.auth.Subject;
 
 /**
  * Base implementation for the transactional protocol.
  *
  * @author Emanuel Muckenhuber
+ * @author <a href="mailto:darran.lofthouse@jboss.com">Darran Lofthouse</a>
  */
 class TransactionalProtocolClientImpl implements ManagementRequestHandlerFactory, TransactionalProtocolClient {
 
@@ -76,6 +84,8 @@ class TransactionalProtocolClientImpl implements ManagementRequestHandlerFactory
             return new HandleReportRequestHandler();
         } else if (operationType == ModelControllerProtocol.GET_INPUTSTREAM_REQUEST) {
             return ReadAttachmentInputStreamRequestHandler.INSTANCE;
+        } else if (operationType == ModelControllerProtocol.GET_SUBJECT_REQUEST) {
+            return GetSubjectRequestHandler.INSTANCE;
         }
         return handlers.resolveNext();
     }
@@ -88,7 +98,8 @@ class TransactionalProtocolClientImpl implements ManagementRequestHandlerFactory
 
     @Override
     public <T extends Operation> AsyncFuture<ModelNode> execute(TransactionalOperationListener<T> listener, T operation) throws IOException {
-        final ExecuteRequestContext context = new ExecuteRequestContext(new OperationWrapper<T>(listener, operation));
+        final Subject subject = SecurityActions.getSubject();
+        final ExecuteRequestContext context = new ExecuteRequestContext(new OperationWrapper<T>(listener, operation), subject);
         final ActiveOperation<ModelNode, ExecuteRequestContext> op = channelAssociation.initializeOperation(context, context);
         final AsyncFuture<ModelNode> result = new AbstractDelegatingAsyncFuture<ModelNode>(op.getResult()) {
             @Override
@@ -285,12 +296,53 @@ class TransactionalProtocolClientImpl implements ManagementRequestHandlerFactory
 
     }
 
+    private static class GetSubjectRequestHandler implements ManagementRequestHandler<Subject, ExecuteRequestContext> {
+
+        static final GetSubjectRequestHandler INSTANCE = new GetSubjectRequestHandler();
+
+        @Override
+        public void handleRequest(DataInput input, ResultHandler<Subject> resultHandler,
+                ManagementRequestContext<ExecuteRequestContext> context) throws IOException {
+            final Subject subject = context.getAttachment().getSerializableSubject();
+
+            final ManagementRequestHeader header = ManagementRequestHeader.class.cast(context.getRequestHeader());
+            final ManagementResponseHeader response = new ManagementResponseHeader(header.getVersion(), header.getRequestId(), null);
+
+            context.executeAsync(new ManagementRequestContext.AsyncTask<ExecuteRequestContext>() {
+
+                @Override
+                public void execute(ManagementRequestContext<ExecuteRequestContext> context) throws Exception {
+                    final FlushableDataOutput output = context.writeMessage(response);
+                    try {
+                        output.writeByte(ModelControllerProtocol.PARAM_SUBJECT_LENGTH);
+                        if (subject != null) {
+                            output.writeInt(1);
+                            Marshaller marshaller = MarshallingUtil.getMarshaller();
+                            marshaller.start(MarshallingUtil.createByteOutput(output));
+                            marshaller.writeObject(subject);
+                            marshaller.finish();
+                        } else {
+                            output.writeInt(0);
+                        }
+                        output.writeByte(ManagementProtocol.RESPONSE_END);
+                        output.close();
+                    } finally {
+                        StreamUtils.safeClose(output);
+                    }
+                }
+            });
+        }
+
+    }
+
     static class ExecuteRequestContext implements ActiveOperation.CompletedCallback<ModelNode> {
         final OperationWrapper<?> wrapper;
         final AtomicBoolean completed = new AtomicBoolean(false);
+        final Subject subject;
 
-        ExecuteRequestContext(OperationWrapper<?> operationWrapper) {
+        ExecuteRequestContext(OperationWrapper<?> operationWrapper, Subject subject) {
             this.wrapper = operationWrapper;
+            this.subject = subject;
         }
 
         void initialize(final AsyncFuture<ModelNode> result) {
@@ -315,6 +367,21 @@ class TransactionalProtocolClientImpl implements ManagementRequestHandlerFactory
                 return Collections.emptyList();
             }
             return attachments.getInputStreams();
+        }
+
+        Subject getSerializableSubject() {
+            if (subject != null) {
+                Subject toSend = new Subject();
+                Set<Principal> principals = toSend.getPrincipals();
+                for (Principal current : subject.getPrincipals()) {
+                    if (current instanceof Serializable) {
+                        principals.add(current);
+                    }
+                }
+                toSend.setReadOnly();
+                return toSend;
+            }
+            return null;
         }
 
         @Override

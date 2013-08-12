@@ -2698,5 +2698,9 @@ public interface ControllerMessages {
 
     @Message(id = 13468, value = "Attempt was made to both remove and add a handler reference from a composite operation")
     IllegalStateException attemptToBothRemoveAndAddHandlerReferenceFromCompositeOperation();
+
+    @Message(id = 13469, value = "Unable to unmarshall Subject received for request.")
+    IOException unableToUnmarshallSubject(@Cause ClassNotFoundException e);
+
     // 13499 IS END OF 134xx SERIES USABLE FOR NON-LOGGER MESSAGES
 }

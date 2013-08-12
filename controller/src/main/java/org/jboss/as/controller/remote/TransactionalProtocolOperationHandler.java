@@ -22,13 +22,18 @@
 
 package org.jboss.as.controller.remote;
 
+import static org.jboss.as.controller.ControllerMessages.MESSAGES;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.FAILED;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.FAILURE_DESCRIPTION;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OUTCOME;
 
 import java.io.DataInput;
 import java.io.IOException;
+import java.security.AccessController;
+import java.security.PrivilegedAction;
 import java.util.concurrent.CountDownLatch;
+
+import javax.security.auth.Subject;
 
 import org.jboss.as.controller.ModelController;
 import org.jboss.as.controller.ProxyController;
@@ -37,23 +42,29 @@ import org.jboss.as.controller.client.OperationMessageHandler;
 import org.jboss.as.controller.client.impl.ModelControllerProtocol;
 import org.jboss.as.protocol.ProtocolLogger;
 import org.jboss.as.protocol.StreamUtils;
+import org.jboss.as.protocol.mgmt.AbstractManagementRequest;
 import org.jboss.as.protocol.mgmt.ActiveOperation;
+import org.jboss.as.protocol.mgmt.ActiveOperation.ResultHandler;
 import org.jboss.as.protocol.mgmt.FlushableDataOutput;
 import org.jboss.as.protocol.mgmt.ManagementChannelAssociation;
 import org.jboss.as.protocol.mgmt.ManagementProtocol;
 import org.jboss.as.protocol.mgmt.ManagementRequestContext;
+import org.jboss.as.protocol.mgmt.ManagementRequestContext.AsyncTask;
 import org.jboss.as.protocol.mgmt.ManagementRequestHandler;
 import org.jboss.as.protocol.mgmt.ManagementRequestHandlerFactory;
 import org.jboss.as.protocol.mgmt.ManagementRequestHeader;
 import org.jboss.as.protocol.mgmt.ManagementResponseHeader;
 import org.jboss.as.protocol.mgmt.ProtocolUtils;
 import org.jboss.dmr.ModelNode;
+import org.jboss.marshalling.ByteInput;
+import org.jboss.marshalling.Unmarshaller;
 
 /**
  * The transactional request handler for a remote {@link TransactionalProtocolClient}.
  *
  * @author <a href="kabir.khan@jboss.com">Kabir Khan</a>
  * @author Emanuel Muckenhuber
+ * @author <a href="mailto:darran.lofthouse@jboss.com">Darran Lofthouse</a>
  */
 public class TransactionalProtocolOperationHandler implements ManagementRequestHandlerFactory {
 
@@ -90,14 +101,19 @@ public class TransactionalProtocolOperationHandler implements ManagementRequestH
             operation.readExternal(input);
             ProtocolUtils.expectHeader(input, ModelControllerProtocol.PARAM_INPUTSTREAMS_LENGTH);
             final int attachmentsLength = input.readInt();
-            context.executeAsync(new ManagementRequestContext.AsyncTask<ExecuteRequestContext>() {
+
+            PrivilegedAction<Void> action = new PrivilegedAction<Void>() {
 
                 @Override
-                public void execute(ManagementRequestContext<ExecuteRequestContext> context) throws Exception {
+                public Void run() {
                     doExecute(operation, attachmentsLength, context);
+                    return null;
                 }
+            };
 
-            });
+            // The task has been created but before we can execute it we need a Subject so save it and send the request for the Subject.
+            context.getAttachment().setAction(action);
+            channelAssociation.executeRequest(context.getAttachment().getOperationId(), new GetSubjectResponseHandler());
         }
 
         protected void doExecute(final ModelNode operation, final int attachmentsLength, final ManagementRequestContext<ExecuteRequestContext> context) {
@@ -128,6 +144,64 @@ public class TransactionalProtocolOperationHandler implements ManagementRequestH
                 control.operationCompleted(result);
             }
         }
+    }
+
+    private class GetSubjectResponseHandler extends AbstractManagementRequest<Object, ExecuteRequestContext> {
+
+        @Override
+        public byte getOperationType() {
+            return ModelControllerProtocol.GET_SUBJECT_REQUEST;
+        }
+
+        @Override
+        protected void sendRequest(ResultHandler<Object> resultHandler,
+                ManagementRequestContext<ExecuteRequestContext> context, FlushableDataOutput output) throws IOException {
+            // Requesting the Subject for this call so no additional parameters required.
+
+        }
+
+        @Override
+        public void handleRequest(DataInput input, ResultHandler<Object> resultHandler,
+                final ManagementRequestContext<ExecuteRequestContext> context) throws IOException {
+            /*
+             * Not the best name for this method as it is actually handling the response received to the request sent by the
+             * call to sendRequest!!
+             */
+            ProtocolUtils.expectHeader(input, ModelControllerProtocol.PARAM_SUBJECT_LENGTH);
+            final int size = input.readInt();
+            Subject subject = null;
+            if (size == 1) {
+                Unmarshaller unmarshaller = MarshallingUtil.getUnmarshaller();
+                ByteInput byteInput = MarshallingUtil.createByteInput(input);
+                unmarshaller.start(byteInput);
+                try {
+                    subject = unmarshaller.readObject(Subject.class);
+                } catch (ClassNotFoundException e) {
+                    throw MESSAGES.unableToUnmarshallSubject(e);
+                }
+                unmarshaller.finish();
+            } else {
+                subject = null;
+            }
+
+            final Subject finalSubject = subject;
+            context.executeAsync(new AsyncTask<TransactionalProtocolOperationHandler.ExecuteRequestContext>() {
+
+                @Override
+                public void execute(final ManagementRequestContext<ExecuteRequestContext> context) throws Exception {
+                    AccessController.doPrivileged(new PrivilegedAction<Void>() {
+
+                        @Override
+                        public Void run() {
+                            Subject.doAs(finalSubject, context.getAttachment().getAction());
+                            return null;
+                        }
+                    });
+
+                }
+            });
+        }
+
     }
 
     /**
@@ -202,6 +276,7 @@ public class TransactionalProtocolOperationHandler implements ManagementRequestH
         private ActiveOperation<Void, ExecuteRequestContext> operation;
         private ManagementRequestContext<ExecuteRequestContext> responseChannel;
         private final CountDownLatch txCompletedLatch = new CountDownLatch(1);
+        private PrivilegedAction<Void> action;
 
         Integer getOperationId() {
             return operation.getOperationId();
@@ -209,6 +284,14 @@ public class TransactionalProtocolOperationHandler implements ManagementRequestH
 
         ActiveOperation.ResultHandler<Void> getResultHandler() {
             return operation.getResultHandler();
+        }
+
+        public PrivilegedAction<Void> getAction() {
+            return action;
+        }
+
+        public void setAction(PrivilegedAction<Void> action) {
+            this.action = action;
         }
 
         @Override
