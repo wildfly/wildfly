@@ -140,7 +140,7 @@ public class ReadResourceDescriptionAccessControlTestCase extends AbstractContro
         op.get(RECURSIVE).set(false);
         ModelNode result = executeForResult(op);
         ResourceAccessControl accessControl = getResourceAccessControl(result);
-        checkResourcePermissions(accessControl.defaultControl, true, false, true, false);
+        checkResourcePermissions(accessControl.defaultControl, true, false);
     }
 
     @Test
@@ -150,7 +150,7 @@ public class ReadResourceDescriptionAccessControlTestCase extends AbstractContro
         op.get(RECURSIVE).set(false);
         ModelNode result = executeForResult(op);
         ResourceAccessControl accessControl = getResourceAccessControl(result);
-        checkResourcePermissions(accessControl.defaultControl, true, true, true, true);
+        checkResourcePermissions(accessControl.defaultControl, true, true);
     }
 
     @Test
@@ -160,7 +160,7 @@ public class ReadResourceDescriptionAccessControlTestCase extends AbstractContro
         op.get(RECURSIVE).set(false);
         ModelNode result = executeForResult(op);
         ResourceAccessControl accessControl = getResourceAccessControl(result);
-        checkResourcePermissions(accessControl.defaultControl, true, true, true, true);
+        checkResourcePermissions(accessControl.defaultControl, true, true);
     }
 
     // These three are the same for different roles
@@ -173,7 +173,7 @@ public class ReadResourceDescriptionAccessControlTestCase extends AbstractContro
         ModelNode op = createReadResourceDescriptionOperation(ONE_ADDR, StandardRole.MONITOR, false);
         ModelNode result = getWildcardResourceRegistrationResult(executeForResult(op));
         ResourceAccessControl accessControl = getResourceAccessControl(result);
-        checkResourcePermissions(accessControl.defaultControl, true, false, true, false);
+        checkResourcePermissions(accessControl.defaultControl, true, false);
     }
 
     @Test
@@ -186,7 +186,7 @@ public class ReadResourceDescriptionAccessControlTestCase extends AbstractContro
         ModelNode result = getWildcardResourceRegistrationResult(executeForResult(op));
         System.out.println(result);
         ResourceAccessControl accessControl = getResourceAccessControl(result);
-        checkResourcePermissions(accessControl.defaultControl, true, true, true, true);
+        checkResourcePermissions(accessControl.defaultControl, true, true);
     }
 
     @Test
@@ -198,7 +198,7 @@ public class ReadResourceDescriptionAccessControlTestCase extends AbstractContro
         ModelNode op = createReadResourceDescriptionOperation(ONE_ADDR, StandardRole.ADMINISTRATOR, false);
         ModelNode result = getWildcardResourceRegistrationResult(executeForResult(op));
         ResourceAccessControl accessControl = getResourceAccessControl(result);
-        checkResourcePermissions(accessControl.defaultControl, true, true, true, true);
+        checkResourcePermissions(accessControl.defaultControl, true, true);
     }
 
     // These three are the same for different roles
@@ -208,10 +208,10 @@ public class ReadResourceDescriptionAccessControlTestCase extends AbstractContro
         ModelNode op = createReadResourceDescriptionOperation(PathAddress.EMPTY_ADDRESS, StandardRole.MONITOR, false);
         ModelNode result = executeForResult(op);
         ResourceAccessControl accessControl = getResourceAccessControl(result);
-        checkResourcePermissions(accessControl.defaultControl, true, false, true, false);
+        checkResourcePermissions(accessControl.defaultControl, true, false);
         ModelNode childDesc = getChildDescription(result, ONE);
         accessControl = getResourceAccessControl(childDesc);
-        checkResourcePermissions(accessControl.defaultControl, true, false, true, false);
+        checkResourcePermissions(accessControl.defaultControl, true, false);
     }
 
     @Test
@@ -220,10 +220,10 @@ public class ReadResourceDescriptionAccessControlTestCase extends AbstractContro
         ModelNode op = createReadResourceDescriptionOperation(PathAddress.EMPTY_ADDRESS, StandardRole.MAINTAINER, false);
         ModelNode result = executeForResult(op);
         ResourceAccessControl accessControl = getResourceAccessControl(result);
-        checkResourcePermissions(accessControl.defaultControl, true, true, true, true);
+        checkResourcePermissions(accessControl.defaultControl, true, true);
         ModelNode childDesc = getChildDescription(result, ONE);
         accessControl = getResourceAccessControl(childDesc);
-        checkResourcePermissions(accessControl.defaultControl, true, true, true, true);
+        checkResourcePermissions(accessControl.defaultControl, true, true);
     }
     @Test
     public void testRecursiveReadResourceDefinitionNoSensitivityAsAdministrator() throws Exception {
@@ -231,10 +231,10 @@ public class ReadResourceDescriptionAccessControlTestCase extends AbstractContro
         ModelNode op = createReadResourceDescriptionOperation(PathAddress.EMPTY_ADDRESS, StandardRole.ADMINISTRATOR, false);
         ModelNode result = executeForResult(op);
         ResourceAccessControl accessControl = getResourceAccessControl(result);
-        checkResourcePermissions(accessControl.defaultControl, true, true, true, true);
+        checkResourcePermissions(accessControl.defaultControl, true, true);
         ModelNode childDesc = getChildDescription(result, ONE);
         accessControl = getResourceAccessControl(childDesc);
-        checkResourcePermissions(accessControl.defaultControl, true, true, true, true);
+        checkResourcePermissions(accessControl.defaultControl, true, true);
     }
 
     // These three are the same for different roles
@@ -246,7 +246,7 @@ public class ReadResourceDescriptionAccessControlTestCase extends AbstractContro
         System.out.println(op);
         System.out.println(result);
         ResourceAccessControl accessControl = getResourceAccessControl(result);
-        checkResourcePermissions(accessControl.defaultControl, true, false, true, false);
+        checkResourcePermissions(accessControl.defaultControl, true, false);
     }
 
     @Test
@@ -255,7 +255,7 @@ public class ReadResourceDescriptionAccessControlTestCase extends AbstractContro
         ModelNode op = createReadResourceDescriptionOperation(ONE_ADDR, StandardRole.MAINTAINER, false);
         ModelNode result = getWildcardResourceRegistrationResult(executeForResult(op));
         ResourceAccessControl accessControl = getResourceAccessControl(result);
-        checkResourcePermissions(accessControl.defaultControl, true, true, true, true);
+        checkResourcePermissions(accessControl.defaultControl, true, true);
     }
 
     @Test
@@ -264,7 +264,7 @@ public class ReadResourceDescriptionAccessControlTestCase extends AbstractContro
         ModelNode op = createReadResourceDescriptionOperation(ONE_ADDR, StandardRole.ADMINISTRATOR, false);
         ModelNode result = getWildcardResourceRegistrationResult(executeForResult(op));
         ResourceAccessControl accessControl = getResourceAccessControl(result);
-        checkResourcePermissions(accessControl.defaultControl, true, true, true, true);
+        checkResourcePermissions(accessControl.defaultControl, true, true);
     }
 
     // These three are the same for different roles - similar to the testDirectWildcardReadResourceDefinitionNoSensitivityXXX() ones but for a fixed resource
@@ -275,7 +275,7 @@ public class ReadResourceDescriptionAccessControlTestCase extends AbstractContro
         ModelNode op = createReadResourceDescriptionOperation(ONE_A_ADDR, StandardRole.MONITOR, false);
         ModelNode result = executeForResult(op);
         ResourceAccessControl accessControl = getResourceAccessControl(result);
-        checkResourcePermissions(accessControl.defaultControl, true, false, true, false);
+        checkResourcePermissions(accessControl.defaultControl, true, false);
     }
 
     @Test
@@ -284,7 +284,7 @@ public class ReadResourceDescriptionAccessControlTestCase extends AbstractContro
         ModelNode op = createReadResourceDescriptionOperation(ONE_A_ADDR, StandardRole.MAINTAINER, false);
         ModelNode result = executeForResult(op);
         ResourceAccessControl accessControl = getResourceAccessControl(result);
-        checkResourcePermissions(accessControl.defaultControl, true, true, true, true);
+        checkResourcePermissions(accessControl.defaultControl, true, true);
     }
 
     @Test
@@ -293,7 +293,7 @@ public class ReadResourceDescriptionAccessControlTestCase extends AbstractContro
         ModelNode op = createReadResourceDescriptionOperation(ONE_A_ADDR, StandardRole.ADMINISTRATOR, false);
         ModelNode result = executeForResult(op);
         ResourceAccessControl accessControl = getResourceAccessControl(result);
-        checkResourcePermissions(accessControl.defaultControl, true, true, true, true);
+        checkResourcePermissions(accessControl.defaultControl, true, true);
     }
 
     // These three are the same for different roles
@@ -304,7 +304,7 @@ public class ReadResourceDescriptionAccessControlTestCase extends AbstractContro
         ModelNode op = createReadResourceDescriptionOperation(PathAddress.EMPTY_ADDRESS, StandardRole.MONITOR, false);
         ModelNode result = executeForResult(op);
         ResourceAccessControl accessControl = getResourceAccessControl(result);
-        checkResourcePermissions(accessControl.defaultControl, true, false, true, false);
+        checkResourcePermissions(accessControl.defaultControl, true, false);
         ModelNode childDesc = getChildDescription(result, ONE);
         assertNonAccessibleDefaultAccessControl(childDesc); //Since access is restricted, the maintainer role cannot access the resources
     }
@@ -315,7 +315,7 @@ public class ReadResourceDescriptionAccessControlTestCase extends AbstractContro
         ModelNode op = createReadResourceDescriptionOperation(PathAddress.EMPTY_ADDRESS, StandardRole.MAINTAINER, false);
         ModelNode result = executeForResult(op);
         ResourceAccessControl accessControl = getResourceAccessControl(result);
-        checkResourcePermissions(accessControl.defaultControl, true, true, true, true);
+        checkResourcePermissions(accessControl.defaultControl, true, true);
         ModelNode childDesc = getChildDescription(result, ONE);
         assertNonAccessibleDefaultAccessControl(childDesc); //Since access is restricted, the maintainer role cannot access the resources
     }
@@ -326,10 +326,10 @@ public class ReadResourceDescriptionAccessControlTestCase extends AbstractContro
         ModelNode op = createReadResourceDescriptionOperation(PathAddress.EMPTY_ADDRESS, StandardRole.ADMINISTRATOR, false);
         ModelNode result = executeForResult(op);
         ResourceAccessControl accessControl = getResourceAccessControl(result);
-        checkResourcePermissions(accessControl.defaultControl, true, true, true, true);
+        checkResourcePermissions(accessControl.defaultControl, true, true);
         ModelNode childDesc = getChildDescription(result, ONE);
         accessControl = getResourceAccessControl(childDesc);
-        checkResourcePermissions(accessControl.defaultControl, true, true, true, true);
+        checkResourcePermissions(accessControl.defaultControl, true, true);
     }
 
     // These three are the same for different roles
@@ -356,7 +356,7 @@ public class ReadResourceDescriptionAccessControlTestCase extends AbstractContro
         ModelNode op = createReadResourceDescriptionOperation(ONE_ADDR, StandardRole.ADMINISTRATOR, false);
         ModelNode result = getWildcardResourceRegistrationResult(executeForResult(op));
         ResourceAccessControl accessControl = getResourceAccessControl(result);
-        checkResourcePermissions(accessControl.defaultControl, true, true, true, true);
+        checkResourcePermissions(accessControl.defaultControl, true, true);
     }
 
     // These three are the same for different roles - similar to the testDirectWildcardReadResourceDefinitionAccessReadWriteSensitivityAsXXXX() ones but for a fixed resource
@@ -383,7 +383,7 @@ public class ReadResourceDescriptionAccessControlTestCase extends AbstractContro
         ModelNode op = createReadResourceDescriptionOperation(ONE_A_ADDR, StandardRole.ADMINISTRATOR, false);
         ModelNode result = executeForResult(op);
         ResourceAccessControl accessControl = getResourceAccessControl(result);
-        checkResourcePermissions(accessControl.defaultControl, true, true, true, true);
+        checkResourcePermissions(accessControl.defaultControl, true, true);
     }
 
     // These three are the same for different roles
@@ -394,11 +394,11 @@ public class ReadResourceDescriptionAccessControlTestCase extends AbstractContro
         ModelNode op = createReadResourceDescriptionOperation(PathAddress.EMPTY_ADDRESS, StandardRole.MONITOR, false);
         ModelNode result = executeForResult(op);
         ResourceAccessControl accessControl = getResourceAccessControl(result);
-        checkResourcePermissions(accessControl.defaultControl, true, false, true, false);
+        checkResourcePermissions(accessControl.defaultControl, true, false);
         ModelNode childDesc = getChildDescription(result, ONE);
         accessControl = getResourceAccessControl(childDesc);
         //Reads are sensitive so we cannot read them as the default says we can
-        checkResourcePermissions(accessControl.defaultControl, false, false, false, false);
+        checkResourcePermissions(accessControl.defaultControl, false, false);
     }
 
     @Test
@@ -407,11 +407,11 @@ public class ReadResourceDescriptionAccessControlTestCase extends AbstractContro
         ModelNode op = createReadResourceDescriptionOperation(PathAddress.EMPTY_ADDRESS, StandardRole.MAINTAINER, false);
         ModelNode result = executeForResult(op);
         ResourceAccessControl accessControl = getResourceAccessControl(result);
-        checkResourcePermissions(accessControl.defaultControl, true, true, true, true);
+        checkResourcePermissions(accessControl.defaultControl, true, true);
         ModelNode childDesc = getChildDescription(result, ONE);
         accessControl = getResourceAccessControl(childDesc);
         //Reads and writes are sensitive so we cannot read or write them as the default says we can
-        checkResourcePermissions(accessControl.defaultControl, false, false, false, false);
+        checkResourcePermissions(accessControl.defaultControl, false, false);
     }
 
     @Test
@@ -420,10 +420,10 @@ public class ReadResourceDescriptionAccessControlTestCase extends AbstractContro
         ModelNode op = createReadResourceDescriptionOperation(PathAddress.EMPTY_ADDRESS, StandardRole.ADMINISTRATOR, false);
         ModelNode result = executeForResult(op);
         ResourceAccessControl accessControl = getResourceAccessControl(result);
-        checkResourcePermissions(accessControl.defaultControl, true, true, true, true);
+        checkResourcePermissions(accessControl.defaultControl, true, true);
         ModelNode childDesc = getChildDescription(result, ONE);
         accessControl = getResourceAccessControl(childDesc);
-        checkResourcePermissions(accessControl.defaultControl, true, true, true, true);
+        checkResourcePermissions(accessControl.defaultControl, true, true);
     }
 
     // These three are the same for different roles
@@ -435,7 +435,7 @@ public class ReadResourceDescriptionAccessControlTestCase extends AbstractContro
         ModelNode result = getWildcardResourceRegistrationResult(executeForResult(op));
         ResourceAccessControl accessControl = getResourceAccessControl(result);
         //Reads are sensitive so we cannot read them as the default says we can
-        checkResourcePermissions(accessControl.defaultControl, false, false, false, false);
+        checkResourcePermissions(accessControl.defaultControl, false, false);
     }
 
     @Test
@@ -445,7 +445,7 @@ public class ReadResourceDescriptionAccessControlTestCase extends AbstractContro
         ModelNode result = getWildcardResourceRegistrationResult(executeForResult(op));
         ResourceAccessControl accessControl = getResourceAccessControl(result);
         //Reads and writes are sensitive so we cannot read or write them as the default says we can
-        checkResourcePermissions(accessControl.defaultControl, false, false, false, false);
+        checkResourcePermissions(accessControl.defaultControl, false, false);
     }
 
     @Test
@@ -454,7 +454,7 @@ public class ReadResourceDescriptionAccessControlTestCase extends AbstractContro
         ModelNode op = createReadResourceDescriptionOperation(ONE_ADDR, StandardRole.ADMINISTRATOR, false);
         ModelNode result = getWildcardResourceRegistrationResult(executeForResult(op));
         ResourceAccessControl accessControl = getResourceAccessControl(result);
-        checkResourcePermissions(accessControl.defaultControl, true, true, true, true);
+        checkResourcePermissions(accessControl.defaultControl, true, true);
     }
 
     // These three are the same for different roles  - similar to the testDirectWildcardReadResourceDefinitionReadWriteSensitivityAsXXX() ones but for a fixed resource
@@ -465,7 +465,7 @@ public class ReadResourceDescriptionAccessControlTestCase extends AbstractContro
         ModelNode result = executeForResult(op);
         ResourceAccessControl accessControl = getResourceAccessControl(result);
         //Reads are sensitive so we cannot read them as the default says we can
-        checkResourcePermissions(accessControl.defaultControl, false, false, false, false);
+        checkResourcePermissions(accessControl.defaultControl, false, false);
     }
 
     @Test
@@ -475,7 +475,7 @@ public class ReadResourceDescriptionAccessControlTestCase extends AbstractContro
         ModelNode result = executeForResult(op);
         ResourceAccessControl accessControl = getResourceAccessControl(result);
         //Reads and writes are sensitive so we cannot read or write them as the default says we can
-        checkResourcePermissions(accessControl.defaultControl, false, false, false, false);
+        checkResourcePermissions(accessControl.defaultControl, false, false);
     }
 
     @Test
@@ -484,7 +484,7 @@ public class ReadResourceDescriptionAccessControlTestCase extends AbstractContro
         ModelNode op = createReadResourceDescriptionOperation(ONE_A_ADDR, StandardRole.ADMINISTRATOR, false);
         ModelNode result = executeForResult(op);
         ResourceAccessControl accessControl = getResourceAccessControl(result);
-        checkResourcePermissions(accessControl.defaultControl, true, true, true, true);
+        checkResourcePermissions(accessControl.defaultControl, true, true);
     }
 
     // These three are the same for different roles
@@ -495,10 +495,10 @@ public class ReadResourceDescriptionAccessControlTestCase extends AbstractContro
         ModelNode op = createReadResourceDescriptionOperation(PathAddress.EMPTY_ADDRESS, StandardRole.MONITOR, false);
         ModelNode result = executeForResult(op);
         ResourceAccessControl accessControl = getResourceAccessControl(result);
-        checkResourcePermissions(accessControl.defaultControl, true, false, true, false);
+        checkResourcePermissions(accessControl.defaultControl, true, false);
         ModelNode childDesc = getChildDescription(result, ONE);
         accessControl = getResourceAccessControl(childDesc);
-        checkResourcePermissions(accessControl.defaultControl, true, false, true, false);
+        checkResourcePermissions(accessControl.defaultControl, true, false);
 
     }
 
@@ -508,11 +508,11 @@ public class ReadResourceDescriptionAccessControlTestCase extends AbstractContro
         ModelNode op = createReadResourceDescriptionOperation(PathAddress.EMPTY_ADDRESS, StandardRole.MAINTAINER, false);
         ModelNode result = executeForResult(op);
         ResourceAccessControl accessControl = getResourceAccessControl(result);
-        checkResourcePermissions(accessControl.defaultControl, true, true, true, true);
+        checkResourcePermissions(accessControl.defaultControl, true, true);
         ModelNode childDesc = getChildDescription(result, ONE);
         accessControl = getResourceAccessControl(childDesc);
         //Writes are sensitive so we cannot write them as the default says we can
-        checkResourcePermissions(accessControl.defaultControl, true, false, true, false);
+        checkResourcePermissions(accessControl.defaultControl, true, false);
 
     }
 
@@ -522,10 +522,10 @@ public class ReadResourceDescriptionAccessControlTestCase extends AbstractContro
         ModelNode op = createReadResourceDescriptionOperation(PathAddress.EMPTY_ADDRESS, StandardRole.ADMINISTRATOR, false);
         ModelNode result = executeForResult(op);
         ResourceAccessControl accessControl = getResourceAccessControl(result);
-        checkResourcePermissions(accessControl.defaultControl, true, true, true, true);
+        checkResourcePermissions(accessControl.defaultControl, true, true);
         ModelNode childDesc = getChildDescription(result, ONE);
         accessControl = getResourceAccessControl(childDesc);
-        checkResourcePermissions(accessControl.defaultControl, true, true, true, true);
+        checkResourcePermissions(accessControl.defaultControl, true, true);
     }
 
     // These three are the same for different roles
@@ -537,7 +537,7 @@ public class ReadResourceDescriptionAccessControlTestCase extends AbstractContro
         ModelNode result = getWildcardResourceRegistrationResult(executeForResult(op));
         ResourceAccessControl accessControl = getResourceAccessControl(result);
         //Reads are sensitive so we cannot read them as the default says we can
-        checkResourcePermissions(accessControl.defaultControl, true, false, true, false);
+        checkResourcePermissions(accessControl.defaultControl, true, false);
     }
 
     @Test
@@ -547,7 +547,7 @@ public class ReadResourceDescriptionAccessControlTestCase extends AbstractContro
         ModelNode result = getWildcardResourceRegistrationResult(executeForResult(op));
         ResourceAccessControl accessControl = getResourceAccessControl(result);
         //Writes are sensitive so we cannot write them as the default says we can
-        checkResourcePermissions(accessControl.defaultControl, true, false, true, false);
+        checkResourcePermissions(accessControl.defaultControl, true, false);
     }
 
     @Test
@@ -556,7 +556,7 @@ public class ReadResourceDescriptionAccessControlTestCase extends AbstractContro
         ModelNode op = createReadResourceDescriptionOperation(ONE_ADDR, StandardRole.ADMINISTRATOR, false);
         ModelNode result = getWildcardResourceRegistrationResult(executeForResult(op));
         ResourceAccessControl accessControl = getResourceAccessControl(result);
-        checkResourcePermissions(accessControl.defaultControl, true, true, true, true);
+        checkResourcePermissions(accessControl.defaultControl, true, true);
     }
 
     // These three are the same for different roles  - similar to the testDirectWildcardReadResourceDefinitionWriteSensitivityAsXXX() ones but for a fixed resource
@@ -568,7 +568,7 @@ public class ReadResourceDescriptionAccessControlTestCase extends AbstractContro
         ModelNode result = executeForResult(op);
         ResourceAccessControl accessControl = getResourceAccessControl(result);
         //Reads are sensitive so we cannot read them as the default says we can
-        checkResourcePermissions(accessControl.defaultControl, true, false, true, false);
+        checkResourcePermissions(accessControl.defaultControl, true, false);
     }
 
     @Test
@@ -578,7 +578,7 @@ public class ReadResourceDescriptionAccessControlTestCase extends AbstractContro
         ModelNode result = executeForResult(op);
         ResourceAccessControl accessControl = getResourceAccessControl(result);
         //Writes are sensitive so we cannot write them as the default says we can
-        checkResourcePermissions(accessControl.defaultControl, true, false, true, false);
+        checkResourcePermissions(accessControl.defaultControl, true, false);
     }
 
     @Test
@@ -587,7 +587,7 @@ public class ReadResourceDescriptionAccessControlTestCase extends AbstractContro
         ModelNode op = createReadResourceDescriptionOperation(ONE_A_ADDR, StandardRole.ADMINISTRATOR, false);
         ModelNode result = executeForResult(op);
         ResourceAccessControl accessControl = getResourceAccessControl(result);
-        checkResourcePermissions(accessControl.defaultControl, true, true, true, true);
+        checkResourcePermissions(accessControl.defaultControl, true, true);
     }
 
     // These three are the same for different roles
@@ -599,11 +599,11 @@ public class ReadResourceDescriptionAccessControlTestCase extends AbstractContro
         ModelNode op = createReadResourceDescriptionOperation(PathAddress.EMPTY_ADDRESS, StandardRole.MONITOR, false);
         ModelNode result = executeForResult(op);
         ResourceAccessControl accessControl = getResourceAccessControl(result);
-        checkResourcePermissions(accessControl.defaultControl, true, false, true, false);
+        checkResourcePermissions(accessControl.defaultControl, true, false);
         ModelNode childDesc = getChildDescription(result, ONE);
         accessControl = getResourceAccessControl(childDesc);
         //Reads are sensitive so we cannot read them as the default says we can
-        checkResourcePermissions(accessControl.defaultControl, false, false, false, false);
+        checkResourcePermissions(accessControl.defaultControl, false, false);
     }
 
     @Test
@@ -613,11 +613,11 @@ public class ReadResourceDescriptionAccessControlTestCase extends AbstractContro
         ModelNode op = createReadResourceDescriptionOperation(PathAddress.EMPTY_ADDRESS, StandardRole.MAINTAINER, false);
         ModelNode result = executeForResult(op);
         ResourceAccessControl accessControl = getResourceAccessControl(result);
-        checkResourcePermissions(accessControl.defaultControl, true, true, true, true);
+        checkResourcePermissions(accessControl.defaultControl, true, true);
         ModelNode childDesc = getChildDescription(result, ONE);
         accessControl = getResourceAccessControl(childDesc);
         //Reads are sensitive so we cannot read them as the default says we can
-        checkResourcePermissions(accessControl.defaultControl, false, true, false, true);
+        checkResourcePermissions(accessControl.defaultControl, false, true);
     }
 
     @Test
@@ -627,10 +627,10 @@ public class ReadResourceDescriptionAccessControlTestCase extends AbstractContro
         ModelNode op = createReadResourceDescriptionOperation(PathAddress.EMPTY_ADDRESS, StandardRole.ADMINISTRATOR, false);
         ModelNode result = executeForResult(op);
         ResourceAccessControl accessControl = getResourceAccessControl(result);
-        checkResourcePermissions(accessControl.defaultControl, true, true, true, true);
+        checkResourcePermissions(accessControl.defaultControl, true, true);
         ModelNode childDesc = getChildDescription(result, ONE);
         accessControl = getResourceAccessControl(childDesc);
-        checkResourcePermissions(accessControl.defaultControl, true, true, true, true);
+        checkResourcePermissions(accessControl.defaultControl, true, true);
     }
 
     // These three are the same for different roles
@@ -643,7 +643,7 @@ public class ReadResourceDescriptionAccessControlTestCase extends AbstractContro
         ModelNode result = getWildcardResourceRegistrationResult(executeForResult(op));
         ResourceAccessControl accessControl = getResourceAccessControl(result);
         //Reads are sensitive so we cannot read them as the default says we can
-        checkResourcePermissions(accessControl.defaultControl, false, false, false, false);
+        checkResourcePermissions(accessControl.defaultControl, false, false);
     }
 
     @Test
@@ -654,7 +654,7 @@ public class ReadResourceDescriptionAccessControlTestCase extends AbstractContro
         ModelNode result = getWildcardResourceRegistrationResult(executeForResult(op));
         ResourceAccessControl accessControl = getResourceAccessControl(result);
         //Reads are sensitive so we cannot read them as the default says we can
-        checkResourcePermissions(accessControl.defaultControl, false, true, false, true);
+        checkResourcePermissions(accessControl.defaultControl, false, true);
     }
 
     @Test
@@ -664,7 +664,7 @@ public class ReadResourceDescriptionAccessControlTestCase extends AbstractContro
         ModelNode op = createReadResourceDescriptionOperation(ONE_ADDR, StandardRole.ADMINISTRATOR, false);
         ModelNode result = getWildcardResourceRegistrationResult(executeForResult(op));
         ResourceAccessControl accessControl = getResourceAccessControl(result);
-        checkResourcePermissions(accessControl.defaultControl, true, true, true, true);
+        checkResourcePermissions(accessControl.defaultControl, true, true);
     }
 
     // These three are the same for different roles  - similar to the testDirectWildcardReadResourceDefinitionReadSensitivityAsXXX() ones but for a fixed resource
@@ -677,7 +677,7 @@ public class ReadResourceDescriptionAccessControlTestCase extends AbstractContro
         ModelNode result = executeForResult(op);
         ResourceAccessControl accessControl = getResourceAccessControl(result);
         //Reads are sensitive so we cannot read them as the default says we can
-        checkResourcePermissions(accessControl.defaultControl, false, false, false, false);
+        checkResourcePermissions(accessControl.defaultControl, false, false);
     }
 
     @Test
@@ -688,7 +688,7 @@ public class ReadResourceDescriptionAccessControlTestCase extends AbstractContro
         ModelNode result = executeForResult(op);
         ResourceAccessControl accessControl = getResourceAccessControl(result);
         //Reads are sensitive so we cannot read them as the default says we can
-        checkResourcePermissions(accessControl.defaultControl, false, true, false, true);
+        checkResourcePermissions(accessControl.defaultControl, false, true);
     }
 
     @Test
@@ -698,7 +698,7 @@ public class ReadResourceDescriptionAccessControlTestCase extends AbstractContro
         ModelNode op = createReadResourceDescriptionOperation(ONE_A_ADDR, StandardRole.ADMINISTRATOR, false);
         ModelNode result = executeForResult(op);
         ResourceAccessControl accessControl = getResourceAccessControl(result);
-        checkResourcePermissions(accessControl.defaultControl, true, true, true, true);
+        checkResourcePermissions(accessControl.defaultControl, true, true);
     }
 
     private void registerOneChildRootResource(SensitiveTargetAccessConstraintDefinition...sensitivityConstraints) {
@@ -949,7 +949,7 @@ public class ReadResourceDescriptionAccessControlTestCase extends AbstractContro
         ModelNode op = createReadResourceDescriptionOperation(PathAddress.EMPTY_ADDRESS, StandardRole.MONITOR, false);
         ModelNode result = executeForResult(op);
         ResourceAccessControl accessControl = getResourceAccessControl(result);
-        checkResourcePermissions(accessControl.defaultControl, true, false, true, false);
+        checkResourcePermissions(accessControl.defaultControl, true, false);
         ModelNode childDesc = getChildDescription(result, ONE);
         assertNonAccessibleDefaultAccessControl(childDesc);//Since access is restricted, the monitor role access any of the resources
         childDesc = getChildDescription(childDesc, TWO);
@@ -964,7 +964,7 @@ public class ReadResourceDescriptionAccessControlTestCase extends AbstractContro
         ModelNode op = createReadResourceDescriptionOperation(PathAddress.EMPTY_ADDRESS, StandardRole.MAINTAINER, false);
         ModelNode result = executeForResult(op);
         ResourceAccessControl accessControl = getResourceAccessControl(result);
-        checkResourcePermissions(accessControl.defaultControl, true, true, true, true);
+        checkResourcePermissions(accessControl.defaultControl, true, true);
         ModelNode childDesc = getChildDescription(result, ONE);
         assertNonAccessibleDefaultAccessControl(childDesc); //Since access is restricted, the maintainer role cannot access the resources
         childDesc = getChildDescription(childDesc, TWO);
@@ -979,13 +979,13 @@ public class ReadResourceDescriptionAccessControlTestCase extends AbstractContro
         ModelNode op = createReadResourceDescriptionOperation(PathAddress.EMPTY_ADDRESS, StandardRole.ADMINISTRATOR, false);
         ModelNode result = executeForResult(op);
         ResourceAccessControl accessControl = getResourceAccessControl(result);
-        checkResourcePermissions(accessControl.defaultControl, true, true, true, true);
+        checkResourcePermissions(accessControl.defaultControl, true, true);
         ModelNode childDesc = getChildDescription(result, ONE);
         accessControl = getResourceAccessControl(childDesc);
-        checkResourcePermissions(accessControl.defaultControl, true, true, true, true);
+        checkResourcePermissions(accessControl.defaultControl, true, true);
         childDesc = getChildDescription(childDesc, TWO);
         accessControl = getResourceAccessControl(childDesc);
-        checkResourcePermissions(accessControl.defaultControl, true, true, true, true);
+        checkResourcePermissions(accessControl.defaultControl, true, true);
     }
 
     // These three are the same for different roles
@@ -1022,10 +1022,10 @@ public class ReadResourceDescriptionAccessControlTestCase extends AbstractContro
         ModelNode op = createReadResourceDescriptionOperation(ONE_ADDR, StandardRole.ADMINISTRATOR, false);
         ModelNode result = getWildcardResourceRegistrationResult(executeForResult(op));
         ResourceAccessControl accessControl = getResourceAccessControl(result);
-        checkResourcePermissions(accessControl.defaultControl, true, true, true, true);
+        checkResourcePermissions(accessControl.defaultControl, true, true);
         ModelNode childDesc = getChildDescription(result, TWO);
         accessControl = getResourceAccessControl(childDesc);
-        checkResourcePermissions(accessControl.defaultControl, true, true, true, true);
+        checkResourcePermissions(accessControl.defaultControl, true, true);
     }
 
     // These three are the same for different roles  - similar to the testDeepDirectWildcardLevelOneReadResourceDefinitionAccessReadWriteSensitivityAsXXXX() ones but for a fixed resource
@@ -1062,10 +1062,10 @@ public class ReadResourceDescriptionAccessControlTestCase extends AbstractContro
         ModelNode op = createReadResourceDescriptionOperation(ONE_A_ADDR, StandardRole.ADMINISTRATOR, false);
         ModelNode result = executeForResult(op);
         ResourceAccessControl accessControl = getResourceAccessControl(result);
-        checkResourcePermissions(accessControl.defaultControl, true, true, true, true);
+        checkResourcePermissions(accessControl.defaultControl, true, true);
         ModelNode childDesc = getChildDescription(result, TWO);
         accessControl = getResourceAccessControl(childDesc);
-        checkResourcePermissions(accessControl.defaultControl, true, true, true, true);
+        checkResourcePermissions(accessControl.defaultControl, true, true);
     }
 
     // These three are the same for different roles
@@ -1097,7 +1097,7 @@ public class ReadResourceDescriptionAccessControlTestCase extends AbstractContro
         ModelNode op = createReadResourceDescriptionOperation(TWO_ADDR, StandardRole.ADMINISTRATOR, false);
         ModelNode result = getWildcardResourceRegistrationResult(executeForResult(op));
         ResourceAccessControl accessControl = getResourceAccessControl(result);
-        checkResourcePermissions(accessControl.defaultControl, true, true, true, true);
+        checkResourcePermissions(accessControl.defaultControl, true, true);
     }
 
     // These three are the same for different roles  - similar to the testDeepDirectWildcardLevelTwoReadResourceDefinitionAccessReadWriteSensitivityAsXXXX() ones but for a fixed resource
@@ -1130,7 +1130,7 @@ public class ReadResourceDescriptionAccessControlTestCase extends AbstractContro
         ModelNode op = createReadResourceDescriptionOperation(ONE_A_TWO_A_ADDR, StandardRole.ADMINISTRATOR, false);
         ModelNode result = executeForResult(op);
         ResourceAccessControl accessControl = getResourceAccessControl(result);
-        checkResourcePermissions(accessControl.defaultControl, true, true, true, true);
+        checkResourcePermissions(accessControl.defaultControl, true, true);
     }
 
     // These three are the same for different roles
@@ -1142,13 +1142,13 @@ public class ReadResourceDescriptionAccessControlTestCase extends AbstractContro
         ModelNode op = createReadResourceDescriptionOperation(PathAddress.EMPTY_ADDRESS, StandardRole.MONITOR, false);
         ModelNode result = executeForResult(op);
         ResourceAccessControl accessControl = getResourceAccessControl(result);
-        checkResourcePermissions(accessControl.defaultControl, true, false, true, false);
+        checkResourcePermissions(accessControl.defaultControl, true, false);
         ModelNode childDesc = getChildDescription(result, ONE);
         accessControl = getResourceAccessControl(childDesc);
-        checkResourcePermissions(accessControl.defaultControl, false, false, false, false);
+        checkResourcePermissions(accessControl.defaultControl, false, false);
         childDesc = getChildDescription(childDesc, TWO);
         accessControl = getResourceAccessControl(childDesc);
-        checkResourcePermissions(accessControl.defaultControl, false, false, false, false);
+        checkResourcePermissions(accessControl.defaultControl, false, false);
     }
 
     @Test
@@ -1159,13 +1159,13 @@ public class ReadResourceDescriptionAccessControlTestCase extends AbstractContro
         ModelNode op = createReadResourceDescriptionOperation(PathAddress.EMPTY_ADDRESS, StandardRole.MAINTAINER, false);
         ModelNode result = executeForResult(op);
         ResourceAccessControl accessControl = getResourceAccessControl(result);
-        checkResourcePermissions(accessControl.defaultControl, true, true, true, true);
+        checkResourcePermissions(accessControl.defaultControl, true, true);
         ModelNode childDesc = getChildDescription(result, ONE);
         accessControl = getResourceAccessControl(childDesc);
-        checkResourcePermissions(accessControl.defaultControl, false, false, false, false);
+        checkResourcePermissions(accessControl.defaultControl, false, false);
         childDesc = getChildDescription(childDesc, TWO);
         accessControl = getResourceAccessControl(childDesc);
-        checkResourcePermissions(accessControl.defaultControl, false, false, false, false);
+        checkResourcePermissions(accessControl.defaultControl, false, false);
     }
 
     @Test
@@ -1176,13 +1176,13 @@ public class ReadResourceDescriptionAccessControlTestCase extends AbstractContro
         ModelNode op = createReadResourceDescriptionOperation(PathAddress.EMPTY_ADDRESS, StandardRole.ADMINISTRATOR, false);
         ModelNode result = executeForResult(op);
         ResourceAccessControl accessControl = getResourceAccessControl(result);
-        checkResourcePermissions(accessControl.defaultControl, true, true, true, true);
+        checkResourcePermissions(accessControl.defaultControl, true, true);
         ModelNode childDesc = getChildDescription(result, ONE);
         accessControl = getResourceAccessControl(childDesc);
-        checkResourcePermissions(accessControl.defaultControl, true, true, true, true);
+        checkResourcePermissions(accessControl.defaultControl, true, true);
         childDesc = getChildDescription(childDesc, TWO);
         accessControl = getResourceAccessControl(childDesc);
-        checkResourcePermissions(accessControl.defaultControl, true, true, true, true);
+        checkResourcePermissions(accessControl.defaultControl, true, true);
     }
 
     // These three are the same for different roles
@@ -1193,10 +1193,10 @@ public class ReadResourceDescriptionAccessControlTestCase extends AbstractContro
         ModelNode op = createReadResourceDescriptionOperation(ONE_ADDR, StandardRole.MONITOR, false);
         ModelNode result = getWildcardResourceRegistrationResult(executeForResult(op));
         ResourceAccessControl accessControl = getResourceAccessControl(result);
-        checkResourcePermissions(accessControl.defaultControl, false, false, false, false);
+        checkResourcePermissions(accessControl.defaultControl, false, false);
         ModelNode childDesc = getChildDescription(result, TWO);
         accessControl = getResourceAccessControl(childDesc);
-        checkResourcePermissions(accessControl.defaultControl, false, false, false, false);
+        checkResourcePermissions(accessControl.defaultControl, false, false);
     }
 
     @Test
@@ -1206,10 +1206,10 @@ public class ReadResourceDescriptionAccessControlTestCase extends AbstractContro
         ModelNode op = createReadResourceDescriptionOperation(ONE_ADDR, StandardRole.MAINTAINER, false);
         ModelNode result = getWildcardResourceRegistrationResult(executeForResult(op));
         ResourceAccessControl accessControl = getResourceAccessControl(result);
-        checkResourcePermissions(accessControl.defaultControl, false, false, false, false);
+        checkResourcePermissions(accessControl.defaultControl, false, false);
         ModelNode childDesc = getChildDescription(result, TWO);
         accessControl = getResourceAccessControl(childDesc);
-        checkResourcePermissions(accessControl.defaultControl, false, false, false, false);
+        checkResourcePermissions(accessControl.defaultControl, false, false);
     }
 
     @Test
@@ -1219,10 +1219,10 @@ public class ReadResourceDescriptionAccessControlTestCase extends AbstractContro
         ModelNode op = createReadResourceDescriptionOperation(ONE_ADDR, StandardRole.ADMINISTRATOR, false);
         ModelNode result = getWildcardResourceRegistrationResult(executeForResult(op));
         ResourceAccessControl accessControl = getResourceAccessControl(result);
-        checkResourcePermissions(accessControl.defaultControl, true, true, true, true);
+        checkResourcePermissions(accessControl.defaultControl, true, true);
         ModelNode childDesc = getChildDescription(result, TWO);
         accessControl = getResourceAccessControl(childDesc);
-        checkResourcePermissions(accessControl.defaultControl, true, true, true, true);
+        checkResourcePermissions(accessControl.defaultControl, true, true);
     }
 
     // These three are the same for different roles  - similar to the testDeepDirectWildcardLevelOneReadResourceDefinitionReadWriteSensitivityAsXXXX() ones but for a fixed resource
@@ -1233,10 +1233,10 @@ public class ReadResourceDescriptionAccessControlTestCase extends AbstractContro
         ModelNode op = createReadResourceDescriptionOperation(ONE_A_ADDR, StandardRole.MONITOR, false);
         ModelNode result = executeForResult(op);
         ResourceAccessControl accessControl = getResourceAccessControl(result);
-        checkResourcePermissions(accessControl.defaultControl, false, false, false, false);
+        checkResourcePermissions(accessControl.defaultControl, false, false);
         ModelNode childDesc = getChildDescription(result, TWO);
         accessControl = getResourceAccessControl(childDesc);
-        checkResourcePermissions(accessControl.defaultControl, false, false, false, false);
+        checkResourcePermissions(accessControl.defaultControl, false, false);
     }
 
     @Test
@@ -1246,10 +1246,10 @@ public class ReadResourceDescriptionAccessControlTestCase extends AbstractContro
         ModelNode op = createReadResourceDescriptionOperation(ONE_A_ADDR, StandardRole.MAINTAINER, false);
         ModelNode result = executeForResult(op);
         ResourceAccessControl accessControl = getResourceAccessControl(result);
-        checkResourcePermissions(accessControl.defaultControl, false, false, false, false);
+        checkResourcePermissions(accessControl.defaultControl, false, false);
         ModelNode childDesc = getChildDescription(result, TWO);
         accessControl = getResourceAccessControl(childDesc);
-        checkResourcePermissions(accessControl.defaultControl, false, false, false, false);
+        checkResourcePermissions(accessControl.defaultControl, false, false);
     }
 
     @Test
@@ -1259,10 +1259,10 @@ public class ReadResourceDescriptionAccessControlTestCase extends AbstractContro
         ModelNode op = createReadResourceDescriptionOperation(ONE_A_ADDR, StandardRole.ADMINISTRATOR, false);
         ModelNode result = executeForResult(op);
         ResourceAccessControl accessControl = getResourceAccessControl(result);
-        checkResourcePermissions(accessControl.defaultControl, true, true, true, true);
+        checkResourcePermissions(accessControl.defaultControl, true, true);
         ModelNode childDesc = getChildDescription(result, TWO);
         accessControl = getResourceAccessControl(childDesc);
-        checkResourcePermissions(accessControl.defaultControl, true, true, true, true);
+        checkResourcePermissions(accessControl.defaultControl, true, true);
     }
 
     // These three are the same for different roles
@@ -1273,7 +1273,7 @@ public class ReadResourceDescriptionAccessControlTestCase extends AbstractContro
         ModelNode op = createReadResourceDescriptionOperation(TWO_ADDR, StandardRole.MONITOR, false);
         ModelNode result = getWildcardResourceRegistrationResult(executeForResult(op));
         ResourceAccessControl accessControl = getResourceAccessControl(result);
-        checkResourcePermissions(accessControl.defaultControl, false, false, false, false);
+        checkResourcePermissions(accessControl.defaultControl, false, false);
     }
 
     @Test
@@ -1283,7 +1283,7 @@ public class ReadResourceDescriptionAccessControlTestCase extends AbstractContro
         ModelNode op = createReadResourceDescriptionOperation(TWO_ADDR, StandardRole.MAINTAINER, false);
         ModelNode result = getWildcardResourceRegistrationResult(executeForResult(op));
         ResourceAccessControl accessControl = getResourceAccessControl(result);
-        checkResourcePermissions(accessControl.defaultControl, false, false, false, false);
+        checkResourcePermissions(accessControl.defaultControl, false, false);
     }
 
     @Test
@@ -1293,7 +1293,7 @@ public class ReadResourceDescriptionAccessControlTestCase extends AbstractContro
         ModelNode op = createReadResourceDescriptionOperation(TWO_ADDR, StandardRole.ADMINISTRATOR, false);
         ModelNode result = getWildcardResourceRegistrationResult(executeForResult(op));
         ResourceAccessControl accessControl = getResourceAccessControl(result);
-        checkResourcePermissions(accessControl.defaultControl, true, true, true, true);
+        checkResourcePermissions(accessControl.defaultControl, true, true);
     }
 
     // These three are the same for different roles  - similar to the testDeepDirectWildcardLevelTwoReadResourceDefinitionReadWriteSensitivityAsXXXX() ones but for a fixed resource
@@ -1304,7 +1304,7 @@ public class ReadResourceDescriptionAccessControlTestCase extends AbstractContro
         ModelNode op = createReadResourceDescriptionOperation(ONE_A_TWO_A_ADDR, StandardRole.MONITOR, false);
         ModelNode result = executeForResult(op);
         ResourceAccessControl accessControl = getResourceAccessControl(result);
-        checkResourcePermissions(accessControl.defaultControl, false, false, false, false);
+        checkResourcePermissions(accessControl.defaultControl, false, false);
     }
 
     @Test
@@ -1314,7 +1314,7 @@ public class ReadResourceDescriptionAccessControlTestCase extends AbstractContro
         ModelNode op = createReadResourceDescriptionOperation(ONE_A_TWO_A_ADDR, StandardRole.MAINTAINER, false);
         ModelNode result = executeForResult(op);
         ResourceAccessControl accessControl = getResourceAccessControl(result);
-        checkResourcePermissions(accessControl.defaultControl, false, false, false, false);
+        checkResourcePermissions(accessControl.defaultControl, false, false);
     }
 
     @Test
@@ -1324,7 +1324,7 @@ public class ReadResourceDescriptionAccessControlTestCase extends AbstractContro
         ModelNode op = createReadResourceDescriptionOperation(ONE_A_TWO_A_ADDR, StandardRole.ADMINISTRATOR, false);
         ModelNode result = executeForResult(op);
         ResourceAccessControl accessControl = getResourceAccessControl(result);
-        checkResourcePermissions(accessControl.defaultControl, true, true, true, true);
+        checkResourcePermissions(accessControl.defaultControl, true, true);
     }
 
     // These three are the same for different roles
@@ -1802,17 +1802,9 @@ public class ReadResourceDescriptionAccessControlTestCase extends AbstractContro
         return realResult.get(RESULT);
     }
 
-    private void checkResourcePermissions(Map<PathAddress, ModelNode> map, boolean readConfig, boolean writeConfig, boolean readRuntime, boolean writeRuntime) {
-        for (ModelNode accessControl : map.values()) {
-            checkResourcePermissions(accessControl, readConfig, writeConfig, readRuntime, writeRuntime);
-        }
-    }
-
-    private void checkResourcePermissions(ModelNode accessControl, boolean readConfig, boolean writeConfig, boolean readRuntime, boolean writeRuntime) {
-        Assert.assertEquals(readConfig, accessControl.get(ActionEffect.READ_CONFIG.toString()).asBoolean());
-        Assert.assertEquals(writeConfig, accessControl.get(ActionEffect.WRITE_CONFIG.toString()).asBoolean());
-        Assert.assertEquals(readRuntime, accessControl.get(ActionEffect.READ_RUNTIME.toString()).asBoolean());
-        Assert.assertEquals(writeRuntime, accessControl.get(ActionEffect.WRITE_RUNTIME.toString()).asBoolean());
+    private void checkResourcePermissions(ModelNode accessControl, boolean read, boolean write) {
+        Assert.assertEquals(read, accessControl.get(ModelDescriptionConstants.READ).asBoolean());
+        Assert.assertEquals(write, accessControl.get(ModelDescriptionConstants.WRITE).asBoolean());
     }
 
     @Override
