@@ -36,7 +36,7 @@
                   <handler name="host-file"/>
                </handlers>
             </logger>
-            <server-logger log-boot="true" log-read-only="true" enabled="false">
+            <server-logger log-boot="true" log-read-only="false" enabled="false">
                 <handlers>
                     <handler name="server-file"/>
                 </handlers>
