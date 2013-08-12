@@ -233,7 +233,7 @@ public class ReadResourceDescriptionHandler implements OperationStepHandler {
         }
 
         if (includeAccess) {
-            accessControlContext.checkResourceAccess(context, nodeDescription, operations);
+            accessControlContext.checkResourceAccess(context, registry, nodeDescription, operations);
         }
 
         if (recursive) {
@@ -362,12 +362,14 @@ public class ReadResourceDescriptionHandler implements OperationStepHandler {
             .setPrivateEntry()
             .build();
 
+        private final boolean runtimeResource;
         private final boolean defaultSetting;
         private final ModelNode accessControlResult;
         private final ModelNode nodeDescription;
         private final Map<String, ModelNode> operations;
 
-        CheckResourceAccessHandler(boolean defaultSetting, ModelNode accessControlResult, ModelNode nodeDescription, Map<String, ModelNode> operations) {
+        CheckResourceAccessHandler(boolean runtimeResource, boolean defaultSetting, ModelNode accessControlResult, ModelNode nodeDescription, Map<String, ModelNode> operations) {
+            this.runtimeResource = runtimeResource;
             this.defaultSetting = defaultSetting;
             this.accessControlResult = accessControlResult;
             this.nodeDescription = nodeDescription;
@@ -391,7 +393,7 @@ public class ReadResourceDescriptionHandler implements OperationStepHandler {
                 ModelNode attributes = new ModelNode();
                 attributes.setEmptyObject();
 
-                if (result.get(ActionEffect.READ_CONFIG.toString()).asBoolean()) {
+                if (result.get(READ.toString()).asBoolean()) {
                     for (Property attrProp : nodeDescription.require(ATTRIBUTES).asPropertyList()) {
                         ModelNode attributeResult = new ModelNode();
                         Storage storage = Storage.valueOf(attrProp.getValue().get(STORAGE).asString().toUpperCase());
@@ -422,15 +424,18 @@ public class ReadResourceDescriptionHandler implements OperationStepHandler {
         }
 
         private void addResourceAuthorizationResults(ModelNode result, ResourceAuthorization authResp) {
-            addResourceAuthorizationResult(result, authResp, ActionEffect.READ_CONFIG);
-            addResourceAuthorizationResult(result, authResp, ActionEffect.WRITE_CONFIG);
-            addResourceAuthorizationResult(result, authResp, ActionEffect.READ_RUNTIME);
-            addResourceAuthorizationResult(result, authResp, ActionEffect.WRITE_RUNTIME);
+            if (runtimeResource) {
+                addResourceAuthorizationResult(result, authResp, ActionEffect.READ_RUNTIME);
+                addResourceAuthorizationResult(result, authResp, ActionEffect.WRITE_RUNTIME);
+            } else {
+                addResourceAuthorizationResult(result, authResp, ActionEffect.READ_CONFIG);
+                addResourceAuthorizationResult(result, authResp, ActionEffect.WRITE_CONFIG);
+            }
         }
 
         private void addResourceAuthorizationResult(ModelNode result, ResourceAuthorization authResp, ActionEffect actionEffect) {
             AuthorizationResult authResult = authResp.getResourceResult(actionEffect);
-            result.get(actionEffect.toString()).set(authResult.getDecision() == Decision.PERMIT);
+            result.get(actionEffect == ActionEffect.READ_CONFIG || actionEffect == ActionEffect.READ_RUNTIME ? READ : WRITE).set(authResult.getDecision() == Decision.PERMIT);
         }
 
         private void addAttributeAuthorizationResults(ModelNode result, String attributeName, ResourceAuthorization authResp, boolean runtime) {
@@ -650,19 +655,19 @@ public class ReadResourceDescriptionHandler implements OperationStepHandler {
             return true;
         }
 
-        void checkResourceAccess(final OperationContext context, final ModelNode nodeDescription, Map<String, ModelNode> operations) {
+        void checkResourceAccess(final OperationContext context, final ImmutableManagementResourceRegistration registration, final ModelNode nodeDescription, Map<String, ModelNode> operations) {
             final ModelNode defaultAccess = Util.createOperation(
                     opAddress.size() > 0 && !opAddress.getLastElement().isWildcard() ?
                             GlobalOperationHandlers.CHECK_DEFAULT_RESOURCE_ACCESS : GlobalOperationHandlers.CHECK_RESOURCE_ACCESS,
                     opAddress);
             defaultWildcardAccessControl = new ModelNode();
-            context.addStep(defaultAccess, new CheckResourceAccessHandler(true, defaultWildcardAccessControl, nodeDescription, operations), OperationContext.Stage.MODEL, true);
+            context.addStep(defaultAccess, new CheckResourceAccessHandler(registration.isRuntimeOnly(), true, defaultWildcardAccessControl, nodeDescription, operations), OperationContext.Stage.MODEL, true);
 
             for (final PathAddress address : localResourceAddresses) {
                 final ModelNode op = Util.createOperation(GlobalOperationHandlers.CHECK_RESOURCE_ACCESS, address);
                 final ModelNode resultHolder = new ModelNode();
                 localResourceAccessControlResults.put(address, resultHolder);
-                context.addStep(op, new CheckResourceAccessHandler(false, resultHolder, nodeDescription, operations), OperationContext.Stage.MODEL, true);
+                context.addStep(op, new CheckResourceAccessHandler(registration.isRuntimeOnly(), false, resultHolder, nodeDescription, operations), OperationContext.Stage.MODEL, true);
             }
         }
     }
