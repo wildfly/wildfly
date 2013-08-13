@@ -33,6 +33,7 @@ import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.container.test.api.RunAsClient;
 import org.jboss.arquillian.junit.Arquillian;
 import org.jboss.arquillian.test.api.ArquillianResource;
+import org.jboss.as.controller.ControllerMessages;
 import org.jboss.as.test.integration.common.HttpRequest;
 import org.jboss.as.test.integration.management.util.SimpleServlet;
 import org.jboss.shrinkwrap.api.Archive;
@@ -159,7 +160,9 @@ public class BatchTestCase extends AbstractCliTestBase {
         cli.sendLine("run-batch", true);
 
         String line = cli.readOutput();
-        assertTrue("Batch did not fail.", line.contains("Composite operation failed and was rolled back"));
+        String expectedErrorCode = ControllerMessages.MESSAGES.compositeOperationFailed();
+        expectedErrorCode = expectedErrorCode.substring(0, expectedErrorCode.indexOf(':'));
+        assertTrue("Batch did not fail.", line.contains(expectedErrorCode));
 
         // check that still none of the archives are deployed
         assertTrue(checkUndeployed(getBaseURL(url) + "deployment0/SimpleServlet"));

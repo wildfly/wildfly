@@ -32,6 +32,7 @@ import org.jboss.arquillian.container.test.api.RunAsClient;
 import org.jboss.arquillian.junit.Arquillian;
 import org.jboss.arquillian.test.api.ArquillianResource;
 import org.jboss.as.arquillian.api.ServerSetup;
+import org.jboss.as.ejb3.EjbMessages;
 import org.jboss.as.test.integration.ejb.security.EjbSecurityDomainSetup;
 import org.jboss.shrinkwrap.api.Archive;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
@@ -121,7 +122,7 @@ public class EJBEndpointAuthenticationTestCase {
             Assert.fail("Test should fail, user shouldn't be allowed to invoke that method");
         } catch (WebServiceException e) {
             // failure is expected
-            Assert.assertTrue("String 'not allowed' was expected in " + e.getCause().getMessage(), e.getCause().getMessage().contains("not allowed"));
+            Assert.assertEquals(e.getCause().getMessage(), getNotAllowedExceptionMessage("hello"));
         }
     }
     
@@ -162,7 +163,7 @@ public class EJBEndpointAuthenticationTestCase {
             Assert.fail("Test should fail, user shouldn't be allowed to invoke that method");
         } catch (WebServiceException e) {
             // failure is expected
-            Assert.assertTrue("String 'not allowed' was expected in " + e.getCause().getMessage(), e.getCause().getMessage().contains("not allowed"));
+            Assert.assertEquals(e.getCause().getMessage(), getNotAllowedExceptionMessage("helloForRole"));
         }
     }
     
@@ -233,7 +234,7 @@ public class EJBEndpointAuthenticationTestCase {
             Assert.fail("Test should fail, user shouldn't be allowed to invoke that method");
         } catch (WebServiceException e) {
             // failure is expected
-            Assert.assertTrue("String 'not allowed' was expected in " + e.getCause().getMessage(), e.getCause().getMessage().contains("not allowed"));
+            Assert.assertEquals(e.getCause().getMessage(), getNotAllowedExceptionMessage("helloForRoles"));
         }
     }
     
@@ -309,7 +310,7 @@ public class EJBEndpointAuthenticationTestCase {
             Assert.fail("Test should fail, user shouldn't be allowed to invoke that method");
         } catch (WebServiceException e) {
             // failure is expected
-            Assert.assertTrue("String 'not allowed' was expected in " + e.getCause().getMessage(), e.getCause().getMessage().contains("not allowed"));
+            Assert.assertEquals(e.getCause().getMessage(), getNotAllowedExceptionMessage("helloForNone"));
         }
     }
     
@@ -329,7 +330,7 @@ public class EJBEndpointAuthenticationTestCase {
             Assert.fail("Test should fail, user shouldn't be allowed to invoke that method");
         } catch (WebServiceException e) {
             // failure is expected
-            Assert.assertTrue("String 'not allowed' was expected in " + e.getCause().getMessage(), e.getCause().getMessage().contains("not allowed"));
+            Assert.assertEquals(e.getCause().getMessage(), getNotAllowedExceptionMessage("helloForNone"));
         }
     }
     
@@ -349,7 +350,11 @@ public class EJBEndpointAuthenticationTestCase {
             Assert.fail("Test should fail, user shouldn't be allowed to invoke that method");
         } catch (WebServiceException e) {
             // failure is expected
-            Assert.assertTrue("String 'not allowed' was expected in " + e.getCause().getMessage(), e.getCause().getMessage().contains("not allowed"));
+            Assert.assertEquals(e.getCause().getMessage(), getNotAllowedExceptionMessage("helloForNone"));
         }
+    }
+
+    private String getNotAllowedExceptionMessage(String methodName) throws NoSuchMethodException {
+        return EjbMessages.MESSAGES.invocationOfMethodNotAllowed(EJBEndpoint.class.getMethod(methodName, String.class), "EJBEndpoint").getMessage();
     }
 }
