@@ -23,14 +23,24 @@ package org.jboss.as.web;
 
 import static org.jboss.as.web.WebMessages.MESSAGES;
 
+import java.beans.PropertyChangeEvent;
+import java.beans.PropertyChangeListener;
 import java.io.IOException;
 import java.lang.reflect.Method;
 import java.net.InetAddress;
 import java.net.InetSocketAddress;
+import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
 import java.util.concurrent.Executor;
 
+import org.apache.catalina.Container;
+import org.apache.catalina.ContainerEvent;
+import org.apache.catalina.ContainerListener;
+import org.apache.catalina.Context;
+import org.apache.catalina.Engine;
+import org.apache.catalina.Host;
+import org.apache.catalina.LifecycleException;
 import org.apache.catalina.connector.Connector;
 import org.apache.coyote.ajp.AjpAprProtocol;
 import org.apache.coyote.ajp.AjpProtocol;
@@ -65,6 +75,7 @@ class WebConnectorService implements Service<Connector> {
     private Integer maxConnections = null;
     private ModelNode ssl;
     private List<String> virtualServers;
+    private static List<WaitedHostContext> waited = null;
 
     private Connector connector;
 
@@ -75,6 +86,21 @@ class WebConnectorService implements Service<Connector> {
     public WebConnectorService(String protocol, String scheme) {
         if(protocol != null) this.protocol = protocol;
         if(scheme != null) this.scheme = scheme;
+        if (waited == null) {
+            String list = System.getProperty("org.apache.catalina.connector.WAIT_FOR_BEFORE_START");
+            if (list != null) {
+                  waited = new ArrayList<WaitedHostContext>();
+                  String [] results = list.split(",");
+                  for (int i=0; i<results.length; i++) {
+                      int index = results[i].indexOf("/");
+                      if (index>0) {
+                          waited.add(new WaitedHostContext(results[i].substring(0, index), results[i].substring(index)));
+                      } else if (index == 0) {
+                          waited.add(new WaitedHostContext(null, results[i].substring(index)));
+                      }
+                  }
+            }
+        }
     }
 
     /**
@@ -87,6 +113,7 @@ class WebConnectorService implements Service<Connector> {
         final SocketBinding binding = this.binding.getValue();
         final InetSocketAddress address = binding.getSocketAddress();
         final Executor executor = this.executor.getOptionalValue();
+
         try {
             // Create connector
             final Connector connector = new Connector(protocol);
@@ -271,13 +298,95 @@ class WebConnectorService implements Service<Connector> {
             }
             getWebServer().addConnector(connector);
             connector.init();
-            connector.start();
+            WebServer webServer = this.getWebServer();
+
+            ContainerListener listener = new ContainerListener() {
+                @Override
+                public void containerEvent(ContainerEvent event) {
+                    Object child = event.getData();
+                    if (event.getContainer() instanceof Host) {
+                        PropertyChangeListener listener = new PropertyChangeListener() {
+                            @Override
+                            public void propertyChange(PropertyChangeEvent event) {
+                                if (event.getSource() instanceof Context && "available".equals(event.getPropertyName())
+                                        && Boolean.FALSE.equals(event.getOldValue()) && Boolean.TRUE.equals(event.getNewValue())) {
+                                    Context context = (Context) event.getSource();
+                                    addStarted(context.getParent().getName(), context.getPath());
+                                    if (areAllStarted()) {
+                                        try {
+                                            connector.start();
+                                        } catch (LifecycleException e) {
+                                            // Ignored.
+                                        }
+                                    }
+                                }
+                            }
+                        };
+                        ((Container) child).addPropertyChangeListener(listener);
+                    }
+                }
+            };
+
+            // webServer.getServer().addLifecycleListener(listener);
+            // Check that all the context are started.
+            boolean allstarted  = true;
+            if (waited != null) {
+
+                Engine engine = (Engine) webServer.getService().getContainer();
+                engine.addContainerListener(listener);
+                Container[] containers = engine.findChildren();
+                for (int j = 0; j < containers.length; j++) {
+                    if (containers[j] instanceof Host) {
+                        Host host = (Host) containers[j];
+                        containers[j].addContainerListener(listener);
+                        Container[] contexts =  host.findChildren();
+                        for (int i = 0; i < contexts.length; i++) {
+                            if (contexts[i].isStarted()) {
+                                // Mark it as started.
+                                Context cont= (Context) contexts[i];
+                                addStarted(host.getName(), cont.getPath());
+                            }
+                        }
+                    }
+                }
+                allstarted = areAllStarted();
+            }
+            if (allstarted)
+                connector.start();
             this.connector = connector;
         } catch (Exception e) {
             throw new StartException(MESSAGES.connectorStartError(), e);
         }
         // Register the binding after the connector is started
         binding.getSocketBindings().getNamedRegistry().registerBinding(new ConnectorBinding(binding));
+    }
+
+    private boolean areAllStarted() {
+        boolean allstarted  = true;
+        for (WaitedHostContext wait : waited) {
+            if (!wait.isSeen()) {
+                allstarted = false;
+                break;
+            }
+        }
+        return allstarted;
+    }
+
+    private void addStarted(String host, String context) {
+        for (WaitedHostContext wait : waited) {
+            // context without host means any virtual-host will work.
+            if (wait.host == null) {
+                if (context.equals(wait.context)) {
+                    wait.seen = true;
+                    break;
+                }
+            } else {
+                if (context.equals(wait.context) && host.equals(wait.host)) {
+                    wait.seen = true;
+                    break;
+                }
+            }
+        }
     }
 
 
@@ -417,6 +526,19 @@ class WebConnectorService implements Service<Connector> {
         @Override
         public void close() throws IOException {
             // TODO should this do something?
+        }
+    }
+    private class WaitedHostContext {
+        String host;
+        String context;
+        boolean seen;
+        private boolean isSeen() {
+            return seen;
+        }
+        public WaitedHostContext(String host, String context) {
+            this.host = host;
+            this.context = context;
+            this.seen = false;
         }
     }
 
