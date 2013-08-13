@@ -92,12 +92,6 @@ public class GlobalOperationHandlers {
             .setDefaultValue(new ModelNode(false))
             .build();
 
-    static final SimpleAttributeDefinition ACCESS_CONTROL = new SimpleAttributeDefinitionBuilder(ModelDescriptionConstants.ACCESS_CONTROL, ModelType.BOOLEAN)
-            .setAllowNull(true)
-            .setDefaultValue(new ModelNode(false))
-            .build();
-
-
     static final SimpleAttributeDefinition NAME = new SimpleAttributeDefinitionBuilder(ModelDescriptionConstants.NAME, ModelType.STRING)
             .setValidator(new StringLengthValidator(1))
             .setAllowNull(false)
