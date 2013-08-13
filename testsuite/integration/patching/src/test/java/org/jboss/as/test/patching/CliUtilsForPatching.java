@@ -21,14 +21,15 @@
 
 package org.jboss.as.test.patching;
 
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collection;
+import java.util.List;
+
 import org.jboss.as.controller.client.helpers.ClientConstants;
 import org.jboss.as.test.integration.management.util.CLIWrapper;
 import org.jboss.dmr.ModelNode;
 import org.jboss.logging.Logger;
-
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.List;
 
 import static org.jboss.as.patching.Constants.BASE;
 
@@ -319,5 +320,23 @@ public class CliUtilsForPatching {
             }
         }
     }
+
+    public static List<String> getResourceLoaderPathsForModule(String module, boolean throwExceptionOnError)
+            throws Exception {
+        CLIWrapper cli = new CLIWrapper(true);
+        String command = "/core-service=module-loading:list-resource-loader-paths(module=" + module + ")";
+        if (!cli.sendLine(command, throwExceptionOnError)) {
+            throw new RuntimeException(cli.readOutput());
+        }
+        ModelNode response = ModelNode.fromString(cli.readOutput());
+        List<ModelNode> pathList = response.get("result").asList();
+        List<String> patchesListString = new ArrayList<String>();
+        for (ModelNode n : pathList) {
+            patchesListString.add(n.asString());
+        }
+        System.out.println(Arrays.toString(patchesListString.toArray()));
+        return patchesListString;
+    }
+
 
 }
