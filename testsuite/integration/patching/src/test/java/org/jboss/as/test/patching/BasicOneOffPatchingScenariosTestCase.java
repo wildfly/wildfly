@@ -22,6 +22,7 @@
 package org.jboss.as.test.patching;
 
 import java.io.File;
+import java.util.Arrays;
 import java.util.List;
 
 import com.google.common.base.Joiner;
@@ -34,6 +35,7 @@ import org.jboss.as.patching.metadata.Patch;
 import org.jboss.as.patching.metadata.PatchBuilder;
 import org.jboss.as.test.patching.util.module.Module;
 import org.jboss.as.version.ProductConfig;
+import org.jboss.dmr.ModelNode;
 import org.jboss.logging.Logger;
 import org.junit.Assert;
 import org.junit.Test;
@@ -868,6 +870,11 @@ public class BasicOneOffPatchingScenariosTestCase extends AbstractPatchingTestCa
                 CliUtilsForPatching.getInstalledPatches().contains(patchID));
         Assert.assertTrue("The file " + resourceItem1.getItemName() + " should exist", new File(modulePath + FILE_SEPARATOR + resourceItem1.getItemName()).exists());
         Assert.assertTrue("The file " + resourceItem2.getItemName() + " should exist", new File(modulePath + FILE_SEPARATOR + resourceItem2.getItemName()).exists());
+
+        // look into patch history
+        List<ModelNode> history = CliUtilsForPatching.getPatchingHistory();
+        Assert.assertTrue("Patch " + patchID + " should be visible in history: " + Arrays.deepToString(history.toArray()),
+                PatchingTestUtil.isOneOffPatchContainedInHistory(history, patchID));
 
         // rollback the patch and check if server is in restart-required mode
         Assert.assertTrue("Rollback should be accepted", CliUtilsForPatching.rollbackPatch(patchID));
