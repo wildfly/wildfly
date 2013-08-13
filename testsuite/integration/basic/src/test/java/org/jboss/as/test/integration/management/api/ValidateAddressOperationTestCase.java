@@ -25,6 +25,8 @@ import java.io.IOException;
 
 import org.jboss.arquillian.container.test.api.RunAsClient;
 import org.jboss.arquillian.junit.Arquillian;
+import org.jboss.as.controller.ControllerMessages;
+import org.jboss.as.controller.PathElement;
 import org.jboss.as.controller.operations.common.ValidateAddressOperationHandler;
 import org.jboss.as.test.integration.management.base.ContainerResourceMgmtTestBase;
 import org.jboss.as.test.integration.management.util.MgmtOperationException;
@@ -84,6 +86,6 @@ public class ValidateAddressOperationTestCase extends ContainerResourceMgmtTestB
         assertFalse(value.asBoolean());
         assertTrue(result.hasDefined(PROBLEM));
         final ModelNode problem = result.get(PROBLEM);
-        assertTrue(problem.asString().contains("JBAS014808: Child resource '\"wrong\" => \"illegal\"' not found"));
+        assertTrue(problem.asString().contains(ControllerMessages.MESSAGES.childResourceNotFound(PathElement.pathElement("wrong", "illegal"))));
     }
 }

@@ -19,9 +19,9 @@
  * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
-
 package org.jboss.as.core.model.test.access;
 
+import org.jboss.as.controller.ControllerMessages;
 import static org.jboss.as.controller.PathAddress.pathAddress;
 import static org.jboss.as.controller.PathElement.pathElement;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ACCESS;
@@ -51,6 +51,7 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 
 import org.jboss.as.controller.PathAddress;
+import org.jboss.as.controller.PathElement;
 import org.jboss.as.controller.access.constraint.SensitivityClassification;
 import org.jboss.as.controller.access.rbac.StandardRole;
 import org.jboss.as.controller.operations.common.Util;
@@ -65,6 +66,7 @@ import org.junit.Test;
  * @author Ladislav Thon <lthon@redhat.com>
  */
 public class RuntimeSensitivityReconfigurationTestCase extends AbstractCoreModelTest {
+
     private static final String SOCKET_CONFIG = SensitivityClassification.SOCKET_CONFIG.getName();
     private static final String FOO = "foo";
 
@@ -194,7 +196,6 @@ public class RuntimeSensitivityReconfigurationTestCase extends AbstractCoreModel
     }
 
     // test utils
-
     private void reconfigureSensitivity(String sensitivity, Boolean requiresAccess, Boolean requiresRead, Boolean requiresWrite) {
         PathAddress address = pathAddress(
                 pathElement(CORE_SERVICE, MANAGEMENT),
@@ -255,6 +256,8 @@ public class RuntimeSensitivityReconfigurationTestCase extends AbstractCoreModel
 
     protected static void assertNoAccess(ModelNode operationResult) {
         assertEquals(FAILED, operationResult.get(OUTCOME).asString());
-        assertTrue(operationResult.get(FAILURE_DESCRIPTION).asString().contains("not found"));
+        String expected = ControllerMessages.MESSAGES.managementResourceNotFound(PathAddress.pathAddress(PathAddress.EMPTY_ADDRESS, PathElement.pathElement("interface", "foo"))).getMessage();
+        expected = expected.substring(expected.lastIndexOf(')'));
+        assertTrue(operationResult.get(FAILURE_DESCRIPTION).asString().contains(expected));
     }
 }
