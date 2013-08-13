@@ -50,6 +50,7 @@ import org.jboss.as.cli.handlers.WindowsFilenameTabCompleter;
 import org.jboss.as.cli.impl.ArgumentWithValue;
 import org.jboss.as.cli.impl.DefaultCompleter;
 import org.jboss.as.cli.impl.DefaultCompleter.CandidatesProvider;
+import org.jboss.as.cli.impl.FileSystemPathArgument;
 import org.jboss.as.cli.operation.ParsedCommandLine;
 import org.jboss.staxmapper.XMLExtendedStreamWriter;
 import org.wildfly.security.manager.WildFlySecurityManager;
@@ -163,7 +164,13 @@ public class ASModuleHandler extends CommandHandlerWithHelp {
             }});
         props = new AddModuleArgument("--properties");
 
-        moduleArg = new AddModuleArgument("--module-xml", pathCompleter);
+        moduleArg = new FileSystemPathArgument(this, pathCompleter, "--module-xml") {
+            @Override
+            public boolean canAppearNext(CommandContext ctx) throws CommandFormatException {
+                final String actionValue = action.getValue(ctx.getParsedCommandLine());
+                return ACTION_ADD.equals(actionValue) && name.isPresent(ctx.getParsedCommandLine()) && super.canAppearNext(ctx);
+            }
+        };
 
         slot = new ArgumentWithValue(this, new DefaultCompleter(new CandidatesProvider() {
             @Override
@@ -248,7 +255,7 @@ public class ASModuleHandler extends CommandHandlerWithHelp {
         final String moduleXml = moduleArg.getValue(parsedCmd);
         if(moduleXml != null) {
             config = null;
-            final File source = new File(ctx.getCurrentDir(), moduleXml);
+            final File source = new File(moduleXml);
             if(!source.exists()) {
                 throw new CommandLineException("Failed to locate the file on the filesystem: " + source.getAbsolutePath());
             }
