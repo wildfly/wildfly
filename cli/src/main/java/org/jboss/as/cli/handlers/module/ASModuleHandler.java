@@ -97,6 +97,7 @@ public class ASModuleHandler extends CommandHandlerWithHelp {
     private final ArgumentWithValue props;
     private final ArgumentWithValue moduleArg;
     private final ArgumentWithValue slot;
+    private final ArgumentWithValue resourceDelimiter;
 
     private File modulesDir;
 
@@ -151,6 +152,8 @@ public class ASModuleHandler extends CommandHandlerWithHelp {
                 return value;
             }
         };
+
+        resourceDelimiter = new AddModuleArgument("--resourceDelimiter");
 
         dependencies = new AddModuleArgument("--dependencies", new CommandLineCompleter(){
             @Override
@@ -225,7 +228,12 @@ public class ASModuleHandler extends CommandHandlerWithHelp {
         // resources required only if we are generating module.xml
         final String resourcePaths = resources.getValue(parsedCmd, !moduleArg.isPresent(parsedCmd));
 
-        final String[] resourceArr = (resourcePaths == null) ? new String[0] : resourcePaths.split(PATH_SEPARATOR);
+        String pathDelimiter = PATH_SEPARATOR;
+        if (resourceDelimiter.isPresent(parsedCmd)) {
+            pathDelimiter = resourceDelimiter.getValue(parsedCmd);
+        }
+
+        final String[] resourceArr = (resourcePaths == null) ? new String[0] : resourcePaths.split(pathDelimiter);
         File[] resourceFiles = new File[resourceArr.length];
         for(int i = 0; i < resourceArr.length; ++i) {
             final File f = new File(ctx.getCurrentDir(), resourceArr[i]);
