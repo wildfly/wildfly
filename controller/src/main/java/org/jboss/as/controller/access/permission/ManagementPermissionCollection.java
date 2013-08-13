@@ -66,7 +66,10 @@ public class ManagementPermissionCollection extends PermissionCollection {
     public boolean implies(Permission permission) {
         if (permission instanceof ManagementPermission) {
             ManagementPermission mperm = (ManagementPermission) permission;
-            ManagementPermission provided = permissions.get(mperm.getActionEffect());
+            ManagementPermission provided;
+            synchronized (permissions) {
+                provided = permissions.get(mperm.getActionEffect());
+            }
             return provided != null && provided.implies(mperm);
         }
         return false;
