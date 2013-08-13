@@ -21,10 +21,13 @@
 
 package org.jboss.as.test.patching;
 
+import java.io.File;
+import java.util.List;
+
 import com.google.common.base.Joiner;
+
 import org.jboss.arquillian.container.test.api.RunAsClient;
 import org.jboss.arquillian.junit.Arquillian;
-
 import org.jboss.as.patching.metadata.ContentModification;
 import org.jboss.as.patching.metadata.Patch;
 import org.jboss.as.patching.metadata.PatchBuilder;
@@ -33,8 +36,6 @@ import org.jboss.logging.Logger;
 import org.junit.Assert;
 import org.junit.Test;
 import org.junit.runner.RunWith;
-
-import java.io.File;
 
 import static org.jboss.as.patching.Constants.BASE;
 import static org.jboss.as.patching.Constants.LAYERS;
@@ -855,7 +856,11 @@ public class BasicOneOffPatchingScenariosTestCase extends AbstractPatchingTestCa
 
         // check if patch is listed as installed, files exists on correct place
         controller.start(CONTAINER);
-        // TODO more checks that the module exists
+
+        List<String> paths = CliUtilsForPatching.getResourceLoaderPathsForModule(moduleName, false);
+        Assert.assertTrue("Module should be loaded from the .overlays directory but was: " + paths.get(0),
+                paths.get(0).contains(".overlays"+File.separator+layerPatchID));
+
         Assert.assertTrue("The patch " + patchID + " should be listed as installed",
                 CliUtilsForPatching.getInstalledPatches().contains(patchID));
         Assert.assertTrue("The file " + resourceItem1.getItemName() + " should exist", new File(modulePath + FILE_SEPARATOR + resourceItem1.getItemName()).exists());
@@ -869,21 +874,32 @@ public class BasicOneOffPatchingScenariosTestCase extends AbstractPatchingTestCa
 
         // check if patch is not listed
         controller.start(CONTAINER);
-        // TODO mode checks that the module does not exist anymore
+
+        // check that module is not active
+        try {
+            CliUtilsForPatching.getResourceLoaderPathsForModule(moduleName, true);
+            Assert.fail("Module " + moduleName + " should have been removed");
+        } catch(RuntimeException expected) {
+        }
+
         Assert.assertFalse("The patch " + patchID + " NOT should be listed as installed",
                 CliUtilsForPatching.getInstalledPatches().contains(patchID));
         Assert.assertFalse("The file " + resourceItem1.getItemName() + "should have been deleted", new File(modulePath + FILE_SEPARATOR + resourceItem1.getItemName()).exists());
-        Assert.assertFalse("The file " + resourceItem2.getItemName() + "should have been deleted", new File(modulePath + FILE_SEPARATOR + resourceItem2.getItemName()).exists());
+        Assert.assertFalse("The file " + resourceItem2.getItemName() + "should have been deleted",
+                new File(modulePath + FILE_SEPARATOR + resourceItem2.getItemName()).exists());
 
         // reapply patch and check if server is in restart-required mode
-        Assert.assertTrue("Patch should be accepted", CliUtilsForPatching.applyPatch(zippedPatch.getAbsolutePath()));
+        Assert.assertTrue("Patch should be accepted",
+                CliUtilsForPatching.applyPatch(zippedPatch.getAbsolutePath()));
         Assert.assertTrue("server should be in restart-required mode",
                 CliUtilsForPatching.doesServerRequireRestart());
         controller.stop(CONTAINER);
 
         // check if patch is listed as installed, files exists on correct place
         controller.start(CONTAINER);
-        // TODO more checks that the module exists
+        paths = CliUtilsForPatching.getResourceLoaderPathsForModule(moduleName, false);
+        Assert.assertTrue("Module should be loaded from the .overlays directory but was: " + paths.get(0),
+                paths.get(0).contains(".overlays"+File.separator+layerPatchID));
         Assert.assertTrue("The patch " + patchID + " should be listed as installed",
                 CliUtilsForPatching.getInstalledPatches().contains(patchID));
         Assert.assertTrue("The file " + resourceItem1.getItemName() + " should exist", new File(modulePath + FILE_SEPARATOR + resourceItem1.getItemName()).exists());
@@ -938,7 +954,11 @@ public class BasicOneOffPatchingScenariosTestCase extends AbstractPatchingTestCa
 
         // check if patch is listed as installed, files exists on correct place
         controller.start(CONTAINER);
-        // TODO more checks that the module exists
+
+        List<String> paths = CliUtilsForPatching.getResourceLoaderPathsForModule(moduleName1, false);
+        Assert.assertTrue("Module should be loaded from the .overlays directory but was: " + paths.get(0),
+                paths.get(0).contains(".overlays"+File.separator+layerPatchID));
+
         Assert.assertTrue("The patch " + patchID + " should be listed as installed",
                 CliUtilsForPatching.getInstalledPatches().contains(patchID));
         Assert.assertTrue("The file " + resourceItem1.getItemName() + " should exist", new File(modulePath1 + FILE_SEPARATOR + resourceItem1.getItemName()).exists());
@@ -955,7 +975,14 @@ public class BasicOneOffPatchingScenariosTestCase extends AbstractPatchingTestCa
 
         // check if patch is not listed
         controller.start(CONTAINER);
-        // TODO mode checks that the module does not exist anymore
+
+        // check that module1 is not active
+        try {
+            CliUtilsForPatching.getResourceLoaderPathsForModule(moduleName1, true);
+            Assert.fail("Module " + moduleName1 + " should have been removed by the patch");
+        } catch(RuntimeException expected) {
+        }
+
         Assert.assertFalse("The patch " + patchID + " NOT should be listed as installed",
                 CliUtilsForPatching.getInstalledPatches().contains(patchID));
         Assert.assertFalse("The file " + resourceItem1.getItemName() + "should have been deleted", new File(modulePath1 + FILE_SEPARATOR + resourceItem1.getItemName()).exists());
@@ -963,19 +990,23 @@ public class BasicOneOffPatchingScenariosTestCase extends AbstractPatchingTestCa
         Assert.assertFalse("The file " + resourceItem1.getItemName() + "should have been deleted", new File(modulePath2 + FILE_SEPARATOR + resourceItem1.getItemName()).exists());
         Assert.assertFalse("The file " + resourceItem2.getItemName() + "should have been deleted", new File(modulePath2 + FILE_SEPARATOR + resourceItem2.getItemName()).exists());
         Assert.assertFalse("The directory " + modulePath1 + "should have been deleted", new File(modulePath1).exists());
-        Assert.assertFalse("The directory " + modulePath2 + "should have been deleted", new File(modulePath2).exists());
+        Assert.assertFalse("The directory " + modulePath2 + "should have been deleted",
+                new File(modulePath2).exists());
 
         // reapply patch and check if server is in restart-required mode
-        Assert.assertTrue("Patch should be accepted", CliUtilsForPatching.applyPatch(zippedPatch.getAbsolutePath()));
+        Assert.assertTrue("Patch should be accepted",
+                CliUtilsForPatching.applyPatch(zippedPatch.getAbsolutePath()));
         Assert.assertTrue("server should be in restart-required mode",
                 CliUtilsForPatching.doesServerRequireRestart());
         controller.stop(CONTAINER);
 
-
-        controller.start(CONTAINER);
         // check if patch is listed as installed, files exists on correct place
         controller.start(CONTAINER);
-        // TODO more checks that the module exists
+
+        paths = CliUtilsForPatching.getResourceLoaderPathsForModule(moduleName1, false);
+        Assert.assertTrue("Module should be loaded from the .overlays directory but was: " + paths.get(0),
+                paths.get(0).contains(".overlays"+File.separator+layerPatchID));
+
         Assert.assertTrue("The patch " + patchID + " should be listed as installed",
                 CliUtilsForPatching.getInstalledPatches().contains(patchID));
         Assert.assertTrue("The file " + resourceItem1.getItemName() + " should exist", new File(modulePath1 + FILE_SEPARATOR + resourceItem1.getItemName()).exists());
@@ -1037,6 +1068,11 @@ public class BasicOneOffPatchingScenariosTestCase extends AbstractPatchingTestCa
                 new String[]{PATCHES_PATH, baseLayerPatchID, moduleName, "main", "res1"});
         Assert.assertTrue("File " + newFilePath + " should exist", new File(newFilePath).exists());
 
+        // check that JBoss Modules picks up the module from the right path
+        List<String> paths = CliUtilsForPatching.getResourceLoaderPathsForModule(moduleName, false);
+        Assert.assertTrue("Module should be loaded from the .overlays directory but was: " + paths.get(0),
+                paths.get(0).contains(".overlays"+File.separator+baseLayerPatchID));
+
         // rollback the patch and check if server is in restart-required mode
         Assert.assertTrue("Rollback should be accepted", CliUtilsForPatching.rollbackPatch(patchID));
         Assert.assertTrue("server should be in restart-required mode",
@@ -1058,6 +1094,11 @@ public class BasicOneOffPatchingScenariosTestCase extends AbstractPatchingTestCa
         Assert.assertTrue("The patch " + patchID + " should be listed as installed",
                 CliUtilsForPatching.getInstalledPatches().contains(patchID));
         Assert.assertTrue("File " + newFilePath + " should exist", new File(newFilePath).exists());
+
+        // check that JBoss Modules picks up the module from the right path
+        paths = CliUtilsForPatching.getResourceLoaderPathsForModule(moduleName, false);
+        Assert.assertTrue("Module should be loaded from the .overlays directory but was: " + paths.get(0),
+                paths.get(0).contains(".overlays"+File.separator+baseLayerPatchID));
         controller.stop(CONTAINER);
     }
 
@@ -1105,10 +1146,15 @@ public class BasicOneOffPatchingScenariosTestCase extends AbstractPatchingTestCa
 
         // check if patch is listed as installed, files exists on correct place
         controller.start(CONTAINER);
-        // TODO more checks that the module exists
         Assert.assertTrue("The patch " + patchID + " should be listed as installed",
                 CliUtilsForPatching.getInstalledPatches().contains(patchID));
         Assert.assertTrue("The file " + moduleXml.getName() + " should exist", moduleXml.exists());
+        // check that the module is not active
+        try {
+            List<String> paths = CliUtilsForPatching.getResourceLoaderPathsForModule(moduleName, true);
+            Assert.fail("Module " + moduleName + " should have been removed by the patch");
+        } catch(RuntimeException expected) {
+        }
 
         // rollback the patch and check if server is in restart-required mode
         Assert.assertTrue("Rollback should be accepted", CliUtilsForPatching.rollbackPatch(patchID));
@@ -1118,20 +1164,21 @@ public class BasicOneOffPatchingScenariosTestCase extends AbstractPatchingTestCa
 
         // check if patch is not listed
         controller.start(CONTAINER);
-        // TODO mode checks that the module does not exist anymore
+        // check that the module exists
+        CliUtilsForPatching.getResourceLoaderPathsForModule(moduleName, true);
         Assert.assertFalse("The patch " + patchID + " NOT should be listed as installed",
                 CliUtilsForPatching.getInstalledPatches().contains(patchID));
         Assert.assertFalse("The file " + patchModuleDir + "should have been deleted", patchModuleDir.exists());
 
         // reapply patch and check if server is in restart-required mode
-        Assert.assertTrue("Patch should be accepted", CliUtilsForPatching.applyPatch(zippedPatch.getAbsolutePath()));
+        Assert.assertTrue("Patch should be accepted",
+                CliUtilsForPatching.applyPatch(zippedPatch.getAbsolutePath()));
         Assert.assertTrue("server should be in restart-required mode",
                 CliUtilsForPatching.doesServerRequireRestart());
         controller.stop(CONTAINER);
 
         // check if patch is listed as installed, files exists on correct place
         controller.start(CONTAINER);
-        // TODO more checks that the module exists
         Assert.assertTrue("The patch " + patchID + " should be listed as installed",
                 CliUtilsForPatching.getInstalledPatches().contains(patchID));
         Assert.assertTrue("The file " + moduleXml.getName() + " should exist", moduleXml.exists());
