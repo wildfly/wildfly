@@ -28,9 +28,11 @@ import com.google.common.base.Joiner;
 
 import org.jboss.arquillian.container.test.api.RunAsClient;
 import org.jboss.arquillian.junit.Arquillian;
+import org.jboss.as.patching.HashUtils;
 import org.jboss.as.patching.metadata.ContentModification;
 import org.jboss.as.patching.metadata.Patch;
 import org.jboss.as.patching.metadata.PatchBuilder;
+import org.jboss.as.test.patching.util.module.Module;
 import org.jboss.as.version.ProductConfig;
 import org.jboss.logging.Logger;
 import org.junit.Assert;
@@ -38,18 +40,15 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 
 import static org.jboss.as.patching.Constants.BASE;
-import static org.jboss.as.patching.Constants.LAYERS;
-import static org.jboss.as.patching.Constants.MODULES;
-import static org.jboss.as.patching.Constants.SYSTEM;
 import static org.jboss.as.patching.IoUtils.mkdir;
 import static org.jboss.as.patching.IoUtils.newFile;
 import static org.jboss.as.test.patching.PatchingTestUtil.AS_DISTRIBUTION;
 import static org.jboss.as.test.patching.PatchingTestUtil.AS_VERSION;
 import static org.jboss.as.test.patching.PatchingTestUtil.CONTAINER;
 import static org.jboss.as.test.patching.PatchingTestUtil.FILE_SEPARATOR;
+import static org.jboss.as.test.patching.PatchingTestUtil.MODULES_PATH;
 import static org.jboss.as.test.patching.PatchingTestUtil.PATCHES_PATH;
 import static org.jboss.as.test.patching.PatchingTestUtil.PRODUCT;
-import static org.jboss.as.test.patching.PatchingTestUtil.createModule0;
 import static org.jboss.as.test.patching.PatchingTestUtil.createPatchXMLFile;
 import static org.jboss.as.test.patching.PatchingTestUtil.createZippedPatchFile;
 import static org.jboss.as.test.patching.PatchingTestUtil.randomString;
@@ -826,13 +825,17 @@ public class BasicOneOffPatchingScenariosTestCase extends AbstractPatchingTestCa
         String layerPatchID = randomString();
         File oneOffPatchDir = mkdir(tempDir, patchID);
 
-        final String moduleName = "org.wildfly.awesomemodule";
+        final String moduleName = "org.wildfly.test." + randomString();
         final String modulePath = PATCHES_PATH + FILE_SEPARATOR + layerPatchID + FILE_SEPARATOR + moduleName.replace(".", FILE_SEPARATOR) + FILE_SEPARATOR + "main";
 
         final ResourceItem resourceItem1 = new ResourceItem("testFile1", "content1".getBytes());
         final ResourceItem resourceItem2 = new ResourceItem("testFile2", "content2".getBytes());
 
-        ContentModification moduleAdded = ContentModificationUtils.addModule(oneOffPatchDir, layerPatchID, moduleName, resourceItem1, resourceItem2);
+        Module newModule = new Module.Builder(moduleName)
+                .miscFile(resourceItem1)
+                .miscFile(resourceItem2)
+                .build();
+        ContentModification moduleAdded = ContentModificationUtils.addModule(oneOffPatchDir, layerPatchID, newModule);
         ProductConfig productConfig = new ProductConfig(PRODUCT, AS_VERSION, "main");
         Patch oneOffPatch = PatchBuilder.create()
                 .setPatchId(patchID)
@@ -920,16 +923,25 @@ public class BasicOneOffPatchingScenariosTestCase extends AbstractPatchingTestCa
         String layerPatchID = randomString();
         File oneOffPatchDir = mkdir(tempDir, patchID);
 
-        final String moduleName1 = "org.wildfly.awesomemodule1";
+        final String moduleName1 = "org.wildfly.test." + randomString();
         final String modulePath1 = PATCHES_PATH + FILE_SEPARATOR + layerPatchID + FILE_SEPARATOR + moduleName1.replace(".", FILE_SEPARATOR) + FILE_SEPARATOR + "main";
-        final String moduleName2 = "org.wildfly.awesomemodul2";
+        final String moduleName2 = "org.wildfly.test." + randomString();
         final String modulePath2 = PATCHES_PATH + FILE_SEPARATOR + layerPatchID + FILE_SEPARATOR + moduleName2.replace(".", FILE_SEPARATOR) + FILE_SEPARATOR + "main";
 
         final ResourceItem resourceItem1 = new ResourceItem("testFile1", "content1".getBytes());
         final ResourceItem resourceItem2 = new ResourceItem("testFile2", "content2".getBytes());
 
-        ContentModification moduleAdded1 = ContentModificationUtils.addModule(oneOffPatchDir, layerPatchID, moduleName1, resourceItem1, resourceItem2);
-        ContentModification moduleAdded2 = ContentModificationUtils.addModule(oneOffPatchDir, layerPatchID, moduleName2, resourceItem1, resourceItem2);
+        Module newModule1 = new Module.Builder(moduleName1)
+                .resourceRoot(resourceItem1)
+                .resourceRoot(resourceItem2)
+                .build();
+        Module newModule2 = new Module.Builder(moduleName2)
+                .resourceRoot(resourceItem1)
+                .resourceRoot(resourceItem2)
+                .build();
+
+        ContentModification moduleAdded1 = ContentModificationUtils.addModule(oneOffPatchDir, layerPatchID, newModule1);
+        ContentModification moduleAdded2 = ContentModificationUtils.addModule(oneOffPatchDir, layerPatchID, newModule2);
         ProductConfig productConfig = new ProductConfig(PRODUCT, AS_VERSION, "main");
         Patch oneOffPatch = PatchBuilder.create()
                 .setPatchId(patchID)
@@ -1023,12 +1035,11 @@ public class BasicOneOffPatchingScenariosTestCase extends AbstractPatchingTestCa
     @Test
     public void testModifyAModule() throws Exception {
         ProductConfig productConfig = new ProductConfig(PRODUCT, AS_VERSION, "main");
-        String moduleName = randomString();
+        final String moduleName = "org.wildfly.test." + randomString();
 
-        // creates an empty module
-        File baseModuleDir = newFile(new File(PatchingTestUtil.AS_DISTRIBUTION), "modules", SYSTEM, LAYERS, BASE);
-
-        File moduleDir = createModule0(baseModuleDir, moduleName);
+        // add a new empty module to eap dist
+        Module module = new Module.Builder(moduleName).build();
+        File moduleDir = module.writeToDisk(new File(MODULES_PATH));
 
         logger.info("moduleDir = " + moduleDir.getAbsolutePath());
 
@@ -1037,9 +1048,12 @@ public class BasicOneOffPatchingScenariosTestCase extends AbstractPatchingTestCa
         String baseLayerPatchID = randomString();
         File patchDir = mkdir(tempDir, patchID);
 
+        Module updatedModule = new Module.Builder(moduleName)
+                .miscFile(new ResourceItem("res1", "new resource in the module".getBytes()))
+                .build();
+
         // create the patch with the updated module
-        ContentModification moduleModified = ContentModificationUtils.modifyModule(patchDir, baseLayerPatchID, moduleDir,
-                new ResourceItem("res1", "new resource in the module".getBytes()));
+        ContentModification moduleModified = ContentModificationUtils.modifyModule(patchDir, baseLayerPatchID, HashUtils.hashFile(moduleDir), updatedModule);
 
         Patch patch = PatchBuilder.create()
                 .setPatchId(patchID)
@@ -1064,9 +1078,10 @@ public class BasicOneOffPatchingScenariosTestCase extends AbstractPatchingTestCa
         controller.start(CONTAINER);
         Assert.assertTrue("The patch " + patchID + " should be listed as installed",
                 CliUtilsForPatching.getInstalledPatches().contains(patchID));
-        String newFilePath = Joiner.on(FILE_SEPARATOR).join(
-                new String[]{PATCHES_PATH, baseLayerPatchID, moduleName, "main", "res1"});
-        Assert.assertTrue("File " + newFilePath + " should exist", new File(newFilePath).exists());
+        File newFile = newFile(new File(PATCHES_PATH), baseLayerPatchID);
+        newFile = newFile(newFile, moduleName.split("\\."));
+        newFile = newFile(newFile, "main", "res1");
+        Assert.assertTrue("File " + newFile.getAbsolutePath() + " should exist", newFile.exists());
 
         // check that JBoss Modules picks up the module from the right path
         List<String> paths = CliUtilsForPatching.getResourceLoaderPathsForModule(moduleName, false);
@@ -1082,7 +1097,7 @@ public class BasicOneOffPatchingScenariosTestCase extends AbstractPatchingTestCa
         controller.start(CONTAINER);
         Assert.assertFalse("The patch " + patchID + " NOT should be listed as installed",
                 CliUtilsForPatching.getInstalledPatches().contains(patchID));
-        Assert.assertFalse("File " + newFilePath + " should not exist", new File(newFilePath).exists());
+        Assert.assertFalse("File " + newFile.getAbsolutePath() + " should not exist", newFile.exists());
 
         // reapply patch and check if server is in restart-required mode
         Assert.assertTrue("Patch should be accepted", CliUtilsForPatching.applyPatch(zippedPatch.getAbsolutePath()));
@@ -1093,12 +1108,12 @@ public class BasicOneOffPatchingScenariosTestCase extends AbstractPatchingTestCa
         controller.start(CONTAINER);
         Assert.assertTrue("The patch " + patchID + " should be listed as installed",
                 CliUtilsForPatching.getInstalledPatches().contains(patchID));
-        Assert.assertTrue("File " + newFilePath + " should exist", new File(newFilePath).exists());
 
         // check that JBoss Modules picks up the module from the right path
         paths = CliUtilsForPatching.getResourceLoaderPathsForModule(moduleName, false);
         Assert.assertTrue("Module should be loaded from the .overlays directory but was: " + paths.get(0),
                 paths.get(0).contains(".overlays"+File.separator+baseLayerPatchID));
+        Assert.assertTrue("File " + newFile.getAbsolutePath() + " should exist", newFile.exists());
         controller.stop(CONTAINER);
     }
 
@@ -1116,13 +1131,15 @@ public class BasicOneOffPatchingScenariosTestCase extends AbstractPatchingTestCa
         File oneOffPatchDir = mkdir(tempDir, patchID);
 
         // creates an empty module
-        final String moduleName = randomString();
-        File baseModuleDir = newFile(new File(PatchingTestUtil.AS_DISTRIBUTION), MODULES, SYSTEM, LAYERS, BASE);
-        File moduleDir = createModule0(baseModuleDir, moduleName);
-        File patchModuleDir = new File(PATCHES_PATH + FILE_SEPARATOR + layerPatchID + FILE_SEPARATOR + moduleName);
-        File moduleXml = new File(patchModuleDir, "main" + FILE_SEPARATOR + "module.xml");
+        final String moduleName = "org.wildfly.test." + randomString();
+        Module module = new Module.Builder(moduleName).build();
+        File moduleDir = module.writeToDisk(new File(MODULES_PATH));
 
-        ContentModification moduleRemoved = ContentModificationUtils.removeModule(moduleDir);
+        File patchModuleDir = newFile(new File(PATCHES_PATH), layerPatchID);
+        patchModuleDir = newFile(patchModuleDir, moduleName.split("\\."));
+        File moduleXml = newFile(patchModuleDir, "main", "module.xml");
+
+        ContentModification moduleRemoved = ContentModificationUtils.removeModule(moduleName, moduleDir);
         ProductConfig productConfig = new ProductConfig(PRODUCT, AS_VERSION, "main");
         Patch oneOffPatch = PatchBuilder.create()
                 .setPatchId(patchID)
@@ -1199,20 +1216,24 @@ public class BasicOneOffPatchingScenariosTestCase extends AbstractPatchingTestCa
         File oneOffPatchDir = mkdir(tempDir, patchID);
 
         // creates an empty module
-        final String moduleName1 = randomString();
-        File baseModuleDir1 = newFile(new File(PatchingTestUtil.AS_DISTRIBUTION), MODULES, SYSTEM, LAYERS, BASE);
-        File moduleDir1 = createModule0(baseModuleDir1, moduleName1);
-        File patchModuleDir1 = new File(PATCHES_PATH + FILE_SEPARATOR + layerPatchID + FILE_SEPARATOR + moduleName1);
-        File moduleXml1 = new File(patchModuleDir1, "main" + FILE_SEPARATOR + "module.xml");
+        final String moduleName1 = "org.wildfly.test." + randomString();
+        Module module1 = new Module.Builder(moduleName1).build();
+        File moduleDir1 = module1.writeToDisk(new File(MODULES_PATH));
 
-        final String moduleName2 = randomString();
-        File baseModuleDir2 = newFile(new File(PatchingTestUtil.AS_DISTRIBUTION), MODULES, SYSTEM, LAYERS, BASE);
-        File moduleDir2 = createModule0(baseModuleDir2, moduleName2);
-        File patchModuleDir2 = new File(PATCHES_PATH + FILE_SEPARATOR + layerPatchID + FILE_SEPARATOR + moduleName2);
-        File moduleXml2 = new File(patchModuleDir2, "main" + FILE_SEPARATOR + "module.xml");
+        File patchModuleDir1 = newFile(new File(PATCHES_PATH), layerPatchID);
+        patchModuleDir1 = newFile(patchModuleDir1, moduleName1.split("\\."));
+        File moduleXml1 = newFile(patchModuleDir1, "main", "module.xml");
 
-        ContentModification moduleRemoved1 = ContentModificationUtils.removeModule(moduleDir1);
-        ContentModification moduleRemoved2 = ContentModificationUtils.removeModule(moduleDir2);
+        final String moduleName2 = "org.wildfly.test." + randomString();
+        Module module2 = new Module.Builder(moduleName2).build();
+        File moduleDir2 = module2.writeToDisk(new File(MODULES_PATH));
+
+        File patchModuleDir2 = newFile(new File(PATCHES_PATH), layerPatchID);
+        patchModuleDir2 = newFile(patchModuleDir2, moduleName2.split("\\."));
+        File moduleXml2 = newFile(patchModuleDir2, "main", "module.xml");
+
+        ContentModification moduleRemoved1 = ContentModificationUtils.removeModule(moduleName1, moduleDir1);
+        ContentModification moduleRemoved2 = ContentModificationUtils.removeModule(moduleName2, moduleDir2);
         ProductConfig productConfig = new ProductConfig(PRODUCT, AS_VERSION, "main");
         Patch oneOffPatch = PatchBuilder.create()
                 .setPatchId(patchID)

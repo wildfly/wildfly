@@ -21,13 +21,14 @@
 
 package org.jboss.as.test.patching;
 
-import java.io.File;
-import java.io.IOException;
-
 import org.jboss.as.patching.metadata.BundleItem;
 import org.jboss.as.patching.metadata.ContentModification;
 import org.jboss.as.patching.metadata.MiscContentItem;
 import org.jboss.as.patching.metadata.ModuleItem;
+import org.jboss.as.test.patching.util.module.Module;
+
+import java.io.File;
+import java.io.IOException;
 
 import static org.jboss.as.patching.Constants.BUNDLES;
 import static org.jboss.as.patching.Constants.MISC;
@@ -49,6 +50,7 @@ import static org.jboss.as.test.patching.PatchingTestUtil.touch;
  */
 public class ContentModificationUtils {
 
+    @Deprecated
     public static ContentModification addModule(File patchDir, String patchElementID, String moduleName, ResourceItem... resourceItems) throws IOException {
         File modulesDir = newFile(patchDir, patchElementID, MODULES);
         File moduleDir = createModule0(modulesDir, moduleName, resourceItems);
@@ -57,6 +59,7 @@ public class ContentModificationUtils {
         return moduleAdded;
     }
 
+    @Deprecated
     public static ContentModification addModule(File patchDir, String patchElementID, String moduleName) throws IOException {
         File modulesDir = newFile(patchDir, patchElementID, MODULES);
         File moduleDir = createModule0(modulesDir, moduleName);
@@ -65,21 +68,39 @@ public class ContentModificationUtils {
         return moduleAdded;
     }
 
-    public static ContentModification removeModule(File existingModule) throws IOException {
-        byte[] existingHash = hashFile(existingModule);
-        return new ContentModification(new ModuleItem(existingModule.getName(), ModuleItem.MAIN_SLOT, NO_CONTENT), existingHash, REMOVE);
+    public static  ContentModification addModule(File patchDir, String patchElementID, Module newModule) throws IOException {
+        File baseDir = newFile(patchDir, patchElementID, MODULES);
+        File mainDir = newModule.writeToDisk(baseDir);
+        byte[] newHash = hashFile(mainDir);
+        ContentModification moduleAdded = new ContentModification(new ModuleItem(newModule.getName(), ModuleItem.MAIN_SLOT, newHash), NO_CONTENT, ADD);
+        return moduleAdded;
     }
 
+    public static ContentModification removeModule(String moduleName, File existingModule) throws IOException {
+        byte[] existingHash = hashFile(existingModule);
+        return new ContentModification(new ModuleItem(moduleName, ModuleItem.MAIN_SLOT, NO_CONTENT), existingHash, REMOVE);
+    }
+
+    @Deprecated
     public static ContentModification modifyModule(File patchDir, String patchElementID, File existingModule, ResourceItem resourceItem) throws IOException {
         byte[] existingHash = hashFile(existingModule);
         return modifyModule(patchDir, patchElementID, existingModule.getName(), existingHash, resourceItem);
     }
 
+    @Deprecated
     public static ContentModification modifyModule(File patchDir, String patchElementID, String moduleName, byte[] existingHash, ResourceItem resourceItem) throws IOException {
         File modulesDir = newFile(patchDir, patchElementID, MODULES);
         File modifiedModule = createModule0(modulesDir, moduleName, resourceItem);
         byte[] updatedHash = hashFile(modifiedModule);
         ContentModification moduleUpdated = new ContentModification(new ModuleItem(moduleName, ModuleItem.MAIN_SLOT, updatedHash), existingHash, MODIFY);
+        return moduleUpdated;
+    }
+
+    public static ContentModification modifyModule(File patchDir, String patchElementID, byte[] existingHash, Module newModule) throws IOException {
+        File baseDir = newFile(patchDir, patchElementID, MODULES);
+        File mainDir = newModule.writeToDisk(baseDir);
+        byte[] newHash = hashFile(mainDir);
+        ContentModification moduleUpdated = new ContentModification(new ModuleItem(newModule.getName(), ModuleItem.MAIN_SLOT, newHash), existingHash, MODIFY);
         return moduleUpdated;
     }
 
