@@ -38,7 +38,6 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.RES
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.RESULT;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.STORAGE;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.WRITE;
-import static org.jboss.as.controller.operations.global.GlobalOperationHandlers.ACCESS_CONTROL;
 import static org.jboss.as.controller.operations.global.GlobalOperationHandlers.INCLUDE_ALIASES;
 import static org.jboss.as.controller.operations.global.GlobalOperationHandlers.LOCALE;
 import static org.jboss.as.controller.operations.global.GlobalOperationHandlers.PROXIES;
@@ -76,6 +75,7 @@ import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
 import org.jboss.as.controller.descriptions.NonResolvingResourceDescriptionResolver;
 import org.jboss.as.controller.descriptions.common.ControllerResolver;
 import org.jboss.as.controller.operations.common.Util;
+import org.jboss.as.controller.operations.validation.EnumValidator;
 import org.jboss.as.controller.registry.AliasEntry;
 import org.jboss.as.controller.registry.AttributeAccess;
 import org.jboss.as.controller.registry.AttributeAccess.Storage;
@@ -104,13 +104,16 @@ public class ReadResourceDescriptionHandler implements OperationStepHandler {
             .setDefaultValue(new ModelNode(false))
             .build();
 
-    private static final SimpleAttributeDefinition ATTRIBUTES_PARAM = new SimpleAttributeDefinitionBuilder(ModelDescriptionConstants.ATTRIBUTES, ModelType.BOOLEAN)
-        .setAllowNull(true)
-        .setDefaultValue(new ModelNode(true))
-        .build();
+
+    private static final SimpleAttributeDefinition ACCESS_CONTROL = new SimpleAttributeDefinitionBuilder(ModelDescriptionConstants.ACCESS_CONTROL, ModelType.STRING)
+            .setAllowNull(true)
+            .setDefaultValue(new ModelNode(AccessControl.NONE.toString()))
+            .setValidator(EnumValidator.create(AccessControl.class, true, AccessControl.NONE, AccessControl.COMBINED_DESCRIPTIONS, AccessControl.TRIM_DESCRIPTONS))
+            .build();
+
 
     static final OperationDefinition DEFINITION = new SimpleOperationDefinitionBuilder(READ_RESOURCE_DESCRIPTION_OPERATION, ControllerResolver.getResolver("global"))
-            .setParameters(ATTRIBUTES_PARAM, OPERATIONS, INHERITED, RECURSIVE, RECURSIVE_DEPTH, PROXIES, INCLUDE_ALIASES, ACCESS_CONTROL, LOCALE)
+            .setParameters(OPERATIONS, INHERITED, RECURSIVE, RECURSIVE_DEPTH, PROXIES, INCLUDE_ALIASES, ACCESS_CONTROL, LOCALE)
             .setReadOnly()
             .setRuntimeOnly()
             .setReplyType(ModelType.OBJECT)
@@ -166,8 +169,8 @@ public class ReadResourceDescriptionHandler implements OperationStepHandler {
         final boolean ops = OPERATIONS.resolveModelAttribute(context, operation).asBoolean();
         final boolean aliases = INCLUDE_ALIASES.resolveModelAttribute(context, operation).asBoolean();
         final boolean inheritedOps = INHERITED.resolveModelAttribute(context, operation).asBoolean();
-        final boolean includeAccess = ACCESS_CONTROL.resolveModelAttribute(context, operation).asBoolean();
-        final boolean includeAttrs = ATTRIBUTES_PARAM.resolveModelAttribute(context, operation).asBoolean();
+        final AccessControl accessControl = AccessControl.forName(ACCESS_CONTROL.resolveModelAttribute(context, operation).asString());
+
 
         final ImmutableManagementResourceRegistration registry = getResourceRegistrationCheckForAlias(context, accessControlContext.opAddress, accessControlContext);
 
@@ -178,7 +181,7 @@ public class ReadResourceDescriptionHandler implements OperationStepHandler {
         final Map<String, ModelNode> operations = ops ? new HashMap<String, ModelNode>() : null;
         final Map<PathElement, ModelNode> childResources = recursive ? new HashMap<PathElement, ModelNode>() : Collections.<PathElement, ModelNode>emptyMap();
 
-        if (includeAccess) {
+        if (accessControl != AccessControl.NONE) {
             accessControlContext.initLocalResourceAddresses(context, operation);
         }
 
@@ -186,7 +189,7 @@ public class ReadResourceDescriptionHandler implements OperationStepHandler {
         // We're going to add a bunch of steps that should immediately follow this one. We are going to add them
         // in reverse order of how they should execute, as that is the way adding a Stage.IMMEDIATE step works
         // Last to execute is the handler that assembles the overall response from the pieces created by all the other steps
-        final ReadResourceDescriptionAssemblyHandler assemblyHandler = new ReadResourceDescriptionAssemblyHandler(nodeDescription, operations, childResources, accessControlContext, includeAttrs);
+        final ReadResourceDescriptionAssemblyHandler assemblyHandler = new ReadResourceDescriptionAssemblyHandler(nodeDescription, operations, childResources, accessControlContext, accessControl);
         context.addStep(assemblyHandler, OperationContext.Stage.MODEL, true);
 
         if (ops) {
@@ -232,7 +235,7 @@ public class ReadResourceDescriptionHandler implements OperationStepHandler {
             }
         }
 
-        if (includeAccess) {
+        if (accessControl != AccessControl.NONE) {
             accessControlContext.checkResourceAccess(context, registry, nodeDescription, operations);
         }
 
@@ -468,7 +471,7 @@ public class ReadResourceDescriptionHandler implements OperationStepHandler {
         private final Map<String, ModelNode> operations;
         private final Map<PathElement, ModelNode> childResources;
         private final ReadResourceDescriptionAccessControlContext accessControlContext;
-        private final boolean includeAttrs;
+        private final AccessControl accessControl;
 
         /**
          * Creates a ReadResourceAssemblyHandler that will assemble the response using the contents
@@ -482,12 +485,12 @@ public class ReadResourceDescriptionHandler implements OperationStepHandler {
          * @param includeAttrs whether or not the description should include the attributes or not
          */
         private ReadResourceDescriptionAssemblyHandler(final ModelNode nodeDescription, final Map<String, ModelNode> operations,
-                final Map<PathElement, ModelNode> childResources, ReadResourceDescriptionAccessControlContext accessControlContext, boolean includeAttrs) {
+                final Map<PathElement, ModelNode> childResources, final ReadResourceDescriptionAccessControlContext accessControlContext, final AccessControl accessControl) {
             this.nodeDescription = nodeDescription;
             this.operations = operations;
             this.childResources = childResources;
             this.accessControlContext = accessControlContext;
-            this.includeAttrs = includeAttrs;
+            this.accessControl = accessControl;
         }
 
         @Override
@@ -540,8 +543,15 @@ public class ReadResourceDescriptionHandler implements OperationStepHandler {
                 nodeDescription.get(ACCESS_CONTROL.getName()).set(accessControl);
             }
 
-            if (!includeAttrs && nodeDescription.hasDefined(ATTRIBUTES)) {
-                nodeDescription.get(ATTRIBUTES).set(new ModelNode());
+            if (accessControl == AccessControl.TRIM_DESCRIPTONS) {
+                //Trim unwanted data
+                nodeDescription.get(ModelDescriptionConstants.DESCRIPTION).clear();
+                if (nodeDescription.hasDefined(ModelDescriptionConstants.ATTRIBUTES)) {
+                    nodeDescription.get(ModelDescriptionConstants.ATTRIBUTES).clear();
+                }
+                if (nodeDescription.hasDefined(ModelDescriptionConstants.OPERATIONS)) {
+                    nodeDescription.get(ModelDescriptionConstants.OPERATIONS).clear();
+                }
             }
             context.getResult().set(nodeDescription);
             context.stepCompleted();
@@ -679,4 +689,49 @@ public class ReadResourceDescriptionHandler implements OperationStepHandler {
             this.accessControlContext = accessControlContext;
         }
     }
+
+    /**
+     * For use with the access-control parameter
+     */
+    public enum AccessControl {
+        /** No access control information should be included */
+        NONE("none"),
+        /** Access control information should be included alongside the resource descriptions */
+        COMBINED_DESCRIPTIONS("combined-descriptions"),
+        /** Access control information should be inclueded alongside the minimal resource descriptions */
+        TRIM_DESCRIPTONS("trim-descriptions")
+        ;
+
+
+        private static final Map<String, AccessControl> MAP;
+
+        static {
+            final Map<String, AccessControl> map = new HashMap<String, AccessControl>();
+            for (AccessControl directoryGrouping : values()) {
+                map.put(directoryGrouping.localName, directoryGrouping);
+            }
+            MAP = map;
+        }
+
+        public static AccessControl forName(String localName) {
+            final AccessControl value = localName != null ? MAP.get(localName.toLowerCase()) : null;
+            return value == null ? AccessControl.valueOf(localName.toUpperCase()) : value;
+        }
+
+        private final String localName;
+
+        AccessControl(final String localName) {
+            this.localName = localName;
+        }
+
+        @Override
+        public String toString() {
+            return localName;
+        }
+
+        public ModelNode toModelNode() {
+            return new ModelNode().set(toString());
+        }
+    }
+
 }
