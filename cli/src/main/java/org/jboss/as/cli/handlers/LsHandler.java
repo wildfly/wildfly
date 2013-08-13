@@ -272,6 +272,7 @@ public class LsHandler extends CommandHandlerWithHelp {
                                 SimpleTable childrenTable = childDescriptions == null ? null : new SimpleTable(new String[] { "CHILD", "MIN-OCCURS", "MAX-OCCURS" });
                                 if (typeNames == null && attrTable == null && childrenTable == null) {
                                     typeNames = new ArrayList<String>();
+                                    names = typeNames;
                                 }
 
                                 for (Property prop : props) {
