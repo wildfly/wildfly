@@ -22,13 +22,14 @@
 package org.jboss.as.test.integration.domain.suites;
 
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.PROBLEM;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.RESULT;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.VALID;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.VALUE;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 
 import java.io.IOException;
+import org.jboss.as.controller.ControllerMessages;
+import org.jboss.as.controller.PathElement;
 
 import org.jboss.as.controller.operations.common.ValidateAddressOperationHandler;
 import org.jboss.as.test.integration.domain.management.util.DomainTestSupport;
@@ -96,7 +97,7 @@ public class ValidateAddressOperationTestCase  {
         assertFalse(value.asBoolean());
         assertTrue(result.hasDefined(PROBLEM));
         final ModelNode problem = result.get(PROBLEM);
-        assertTrue(problem.asString().contains("JBAS014808: Child resource '\"wrong\" => \"illegal\"' not found"));
+        assertTrue(problem.asString().contains(ControllerMessages.MESSAGES.childResourceNotFound(PathElement.pathElement("wrong", "illegal"))));
     }
 
     @Test

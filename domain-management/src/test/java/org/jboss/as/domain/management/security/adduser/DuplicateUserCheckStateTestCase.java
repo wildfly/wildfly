@@ -49,7 +49,7 @@ public class DuplicateUserCheckStateTestCase extends PropertyTestHelper {
                 expectedDisplayText(AddUser.NEW_LINE).
                 expectedDisplayText(MESSAGES.isCorrectPrompt() + " " + MESSAGES.yes() + "/" + MESSAGES.no() + "?").
                 expectedDisplayText(" ").
-                expectedInput("yes").
+                expectedInput(MESSAGES.yes()).
                 expectedDisplayText(MESSAGES.addedUser(values.getUserName(), values.getUserFiles().get(0).getCanonicalPath())).
                 expectedDisplayText(AddUser.NEW_LINE).
                 expectedDisplayText(MESSAGES.addedGroups(values.getUserName(), values.getGroups(),values.getGroupFiles().get(0).getCanonicalPath())).
