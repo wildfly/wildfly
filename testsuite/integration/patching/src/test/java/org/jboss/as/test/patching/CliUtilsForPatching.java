@@ -325,6 +325,7 @@ public class CliUtilsForPatching {
             throws Exception {
         CLIWrapper cli = new CLIWrapper(true);
         String command = "/core-service=module-loading:list-resource-loader-paths(module=" + module + ")";
+        logger.info("CLI command: " + command);
         if (!cli.sendLine(command, throwExceptionOnError)) {
             throw new RuntimeException(cli.readOutput());
         }

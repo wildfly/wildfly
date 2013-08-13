@@ -932,12 +932,12 @@ public class BasicOneOffPatchingScenariosTestCase extends AbstractPatchingTestCa
         final ResourceItem resourceItem2 = new ResourceItem("testFile2", "content2".getBytes());
 
         Module newModule1 = new Module.Builder(moduleName1)
-                .resourceRoot(resourceItem1)
-                .resourceRoot(resourceItem2)
+                .miscFile(resourceItem1)
+                .miscFile(resourceItem2)
                 .build();
         Module newModule2 = new Module.Builder(moduleName2)
-                .resourceRoot(resourceItem1)
-                .resourceRoot(resourceItem2)
+                .miscFile(resourceItem1)
+                .miscFile(resourceItem2)
                 .build();
 
         ContentModification moduleAdded1 = ContentModificationUtils.addModule(oneOffPatchDir, layerPatchID, newModule1);
