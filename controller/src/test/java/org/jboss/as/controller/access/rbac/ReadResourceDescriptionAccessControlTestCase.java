@@ -186,7 +186,6 @@ public class ReadResourceDescriptionAccessControlTestCase extends AbstractContro
         rootResource.removeChild(ONE_B);
         ModelNode op = createReadResourceDescriptionOperation(ONE_ADDR, StandardRole.MAINTAINER, false);
         ModelNode result = getWildcardResourceRegistrationResult(executeForResult(op));
-        System.out.println(result);
         ResourceAccessControl accessControl = getResourceAccessControl(result);
         checkResourcePermissions(accessControl.defaultControl, true, true);
     }
@@ -245,8 +244,6 @@ public class ReadResourceDescriptionAccessControlTestCase extends AbstractContro
         registerOneChildRootResource();
         ModelNode op = createReadResourceDescriptionOperation(ONE_ADDR, StandardRole.MONITOR, false);
         ModelNode result = getWildcardResourceRegistrationResult(executeForResult(op));
-        System.out.println(op);
-        System.out.println(result);
         ResourceAccessControl accessControl = getResourceAccessControl(result);
         checkResourcePermissions(accessControl.defaultControl, true, false);
     }
@@ -1697,6 +1694,7 @@ public class ReadResourceDescriptionAccessControlTestCase extends AbstractContro
         Assert.assertFalse(desc.has(ACCESS_CONTROL));
 
         Assert.assertEquals("description", desc.get(ModelDescriptionConstants.DESCRIPTION).asString());
+        Assert.assertTrue(desc.get(CHILDREN, TWO.getKey(), ModelDescriptionConstants.DESCRIPTION).isDefined());
 
         Assert.assertTrue(desc.hasDefined(ModelDescriptionConstants.ATTRIBUTES));
         Set<String> attributes = desc.get(ModelDescriptionConstants.ATTRIBUTES).keys();
@@ -1741,6 +1739,7 @@ public class ReadResourceDescriptionAccessControlTestCase extends AbstractContro
         Assert.assertEquals(true, defaultOperations.get(OP_CONFIG_RW_NONE));
 
         Assert.assertEquals("description", desc.get(ModelDescriptionConstants.DESCRIPTION).asString());
+        Assert.assertTrue(desc.get(CHILDREN, TWO.getKey(), ModelDescriptionConstants.DESCRIPTION).isDefined());
 
         Assert.assertTrue(desc.hasDefined(ModelDescriptionConstants.ATTRIBUTES));
         Set<String> attributes = desc.get(ModelDescriptionConstants.ATTRIBUTES).keys();
@@ -1793,6 +1792,8 @@ public class ReadResourceDescriptionAccessControlTestCase extends AbstractContro
         Assert.assertFalse(desc.hasDefined(ModelDescriptionConstants.DESCRIPTION));
         Assert.assertFalse(desc.hasDefined(ModelDescriptionConstants.ATTRIBUTES));
         Assert.assertFalse(desc.hasDefined(ModelDescriptionConstants.OPERATIONS));
+        Assert.assertFalse(desc.get(CHILDREN, TWO.getKey(), ModelDescriptionConstants.DESCRIPTION).isDefined());
+
 
         desc = getChildDescription(desc, TWO);
         accessControl = getResourceAccessControl(desc);
@@ -1830,7 +1831,6 @@ public class ReadResourceDescriptionAccessControlTestCase extends AbstractContro
         ModelNode op = createReadResourceDescriptionOperation(PathAddress.EMPTY_ADDRESS, StandardRole.ADMINISTRATOR, true);
         op.get(ACCESS_CONTROL).set(accessControl.toString());
         ModelNode desc = executeForResult(op);
-        System.out.println(desc);
         return getChildDescription(desc, ONE);
     }
 

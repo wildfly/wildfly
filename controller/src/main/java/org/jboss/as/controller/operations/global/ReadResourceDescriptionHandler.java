@@ -552,6 +552,14 @@ public class ReadResourceDescriptionHandler implements OperationStepHandler {
                 if (nodeDescription.hasDefined(ModelDescriptionConstants.OPERATIONS)) {
                     nodeDescription.get(ModelDescriptionConstants.OPERATIONS).clear();
                 }
+                if (nodeDescription.hasDefined(CHILDREN)) {
+                    for (String child: nodeDescription.get(CHILDREN).keys()) {
+                        ModelNode childNode = nodeDescription.get(CHILDREN, child);
+                        if (childNode.isDefined()) {
+                            childNode.remove(ModelDescriptionConstants.DESCRIPTION);
+                        }
+                    }
+                }
             }
             context.getResult().set(nodeDescription);
             context.stepCompleted();
