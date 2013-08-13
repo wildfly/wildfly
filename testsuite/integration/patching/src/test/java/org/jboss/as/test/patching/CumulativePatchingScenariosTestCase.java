@@ -31,6 +31,7 @@ import java.io.File;
 import java.io.InputStream;
 
 import static org.jboss.as.patching.Constants.BASE;
+import static org.jboss.as.patching.Constants.INSTALLATION;
 import static org.jboss.as.patching.IoUtils.mkdir;
 import static org.jboss.as.patching.IoUtils.newFile;
 import static org.jboss.as.test.patching.PatchingTestUtil.AS_DISTRIBUTION;
@@ -119,6 +120,11 @@ public class CumulativePatchingScenariosTestCase extends AbstractPatchingTestCas
         final String versionModuleName = "org.jboss.as.version";
         final String originalVersionModulePath = MODULES_PATH + FILE_SEPARATOR + versionModuleName.replace(".", FILE_SEPARATOR) + FILE_SEPARATOR + "main";
 
+        // Also see if we can update jboss-modules
+        final File installation = new File(AS_DISTRIBUTION);
+        final File patchDir = new File(cpPatchDir, patchID);
+        final ContentModification jbossModulesModification = PatchingTestUtil.updateModulesJar(installation, patchDir);
+
         ContentModification moduleAdded = ContentModificationUtils.addModule(cpPatchDir, layerPatchID, moduleName, resourceItem1, resourceItem2);
         ContentModification versionModuleModified = ContentModificationUtils.modifyModule(cpPatchDir, layerPatchID, versionModuleName, HashUtils.hashFile(new File(originalVersionModulePath)), versionModuleResourceItem);
         ProductConfig productConfig = new ProductConfig(PRODUCT, asVersion, "main");
@@ -131,6 +137,7 @@ public class CumulativePatchingScenariosTestCase extends AbstractPatchingTestCas
                 .addContentModification(moduleAdded)
                 .addContentModification(versionModuleModified)
                 .getParent()
+                .addContentModification(jbossModulesModification)
                 .build();
         createPatchXMLFile(cpPatchDir, cpPatch);
         return createZippedPatchFile(cpPatchDir, patchID);
