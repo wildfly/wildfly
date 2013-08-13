@@ -21,49 +21,6 @@
 
 package org.jboss.as.test.patching;
 
-import com.google.common.base.Joiner;
-
-import org.jboss.as.patching.Constants;
-import org.jboss.as.patching.DirectoryStructure;
-import org.jboss.as.patching.HashUtils;
-import org.jboss.as.patching.IoUtils;
-import org.jboss.as.patching.ZipUtils;
-import org.jboss.as.patching.metadata.ContentModification;
-import org.jboss.as.patching.metadata.MiscContentItem;
-import org.jboss.as.patching.metadata.ModificationType;
-import org.jboss.as.patching.metadata.Patch;
-import org.jboss.as.patching.metadata.PatchXml;
-import org.jboss.as.process.protocol.StreamUtils;
-import org.jboss.logging.Logger;
-import org.jboss.shrinkwrap.api.ShrinkWrap;
-import org.jboss.shrinkwrap.api.asset.NamedAsset;
-import org.jboss.shrinkwrap.api.asset.StringAsset;
-import org.jboss.shrinkwrap.api.exporter.ZipExporter;
-import org.jboss.shrinkwrap.api.spec.JavaArchive;
-import org.junit.Assert;
-
-import java.io.File;
-import java.io.FileFilter;
-import java.io.FileNotFoundException;
-import java.io.FileOutputStream;
-import java.io.FileWriter;
-import java.io.IOException;
-import java.io.OutputStream;
-import java.nio.charset.Charset;
-import java.util.Arrays;
-import java.util.Enumeration;
-import java.util.List;
-import java.util.Properties;
-import java.util.Scanner;
-import java.util.UUID;
-import java.util.jar.Attributes;
-import java.util.jar.Attributes.Name;
-import java.util.jar.JarEntry;
-import java.util.jar.JarFile;
-import java.util.jar.JarOutputStream;
-import java.util.jar.Manifest;
-import java.util.zip.ZipEntry;
-
 import static java.lang.String.format;
 import static org.jboss.as.patching.Constants.BASE;
 import static org.jboss.as.patching.Constants.LAYERS;
@@ -77,6 +34,43 @@ import static org.jboss.as.patching.PatchLogger.ROOT_LOGGER;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
+
+import java.io.File;
+import java.io.FileFilter;
+import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
+import java.io.FileWriter;
+import java.io.IOException;
+import java.io.OutputStream;
+import java.nio.charset.Charset;
+import java.util.Arrays;
+import java.util.List;
+import java.util.Properties;
+import java.util.Scanner;
+import java.util.UUID;
+import java.util.jar.Attributes.Name;
+import java.util.jar.JarOutputStream;
+import java.util.jar.Manifest;
+
+import com.google.common.base.Joiner;
+import org.jboss.as.patching.Constants;
+import org.jboss.as.patching.DirectoryStructure;
+import org.jboss.as.patching.HashUtils;
+import org.jboss.as.patching.IoUtils;
+import org.jboss.as.patching.ZipUtils;
+import org.jboss.as.patching.metadata.ContentModification;
+import org.jboss.as.patching.metadata.MiscContentItem;
+import org.jboss.as.patching.metadata.ModificationType;
+import org.jboss.as.patching.metadata.Patch;
+import org.jboss.as.patching.metadata.PatchXml;
+import org.jboss.as.process.protocol.StreamUtils;
+import org.jboss.dmr.ModelNode;
+import org.jboss.logging.Logger;
+import org.jboss.shrinkwrap.api.ShrinkWrap;
+import org.jboss.shrinkwrap.api.asset.StringAsset;
+import org.jboss.shrinkwrap.api.exporter.ZipExporter;
+import org.jboss.shrinkwrap.api.spec.JavaArchive;
+import org.junit.Assert;
 
 /**
  * @author Jan Martiska, Jeff Mesnil
@@ -404,4 +398,12 @@ public class PatchingTestUtil {
         archive.as(ZipExporter.class).exportTo(target);
     }
 
+    public static boolean isOneOffPatchContainedInHistory(List<ModelNode> patchingHistory, String patchID) {
+        boolean found = false;
+        for(ModelNode node : patchingHistory) {
+            if(node.get("one-off").asString().equals(patchID))
+                found = true;
+        }
+        return found;
+    }
 }
