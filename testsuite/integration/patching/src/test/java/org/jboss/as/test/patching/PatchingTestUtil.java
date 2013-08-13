@@ -25,12 +25,21 @@ import com.google.common.base.Joiner;
 
 import org.jboss.as.patching.Constants;
 import org.jboss.as.patching.DirectoryStructure;
+import org.jboss.as.patching.HashUtils;
 import org.jboss.as.patching.IoUtils;
 import org.jboss.as.patching.ZipUtils;
+import org.jboss.as.patching.metadata.ContentModification;
+import org.jboss.as.patching.metadata.MiscContentItem;
+import org.jboss.as.patching.metadata.ModificationType;
 import org.jboss.as.patching.metadata.Patch;
 import org.jboss.as.patching.metadata.PatchXml;
 import org.jboss.as.process.protocol.StreamUtils;
 import org.jboss.logging.Logger;
+import org.jboss.shrinkwrap.api.ShrinkWrap;
+import org.jboss.shrinkwrap.api.asset.NamedAsset;
+import org.jboss.shrinkwrap.api.asset.StringAsset;
+import org.jboss.shrinkwrap.api.exporter.ZipExporter;
+import org.jboss.shrinkwrap.api.spec.JavaArchive;
 import org.junit.Assert;
 
 import java.io.File;
@@ -42,13 +51,18 @@ import java.io.IOException;
 import java.io.OutputStream;
 import java.nio.charset.Charset;
 import java.util.Arrays;
+import java.util.Enumeration;
 import java.util.List;
 import java.util.Properties;
 import java.util.Scanner;
 import java.util.UUID;
+import java.util.jar.Attributes;
 import java.util.jar.Attributes.Name;
+import java.util.jar.JarEntry;
+import java.util.jar.JarFile;
 import java.util.jar.JarOutputStream;
 import java.util.jar.Manifest;
+import java.util.zip.ZipEntry;
 
 import static java.lang.String.format;
 import static org.jboss.as.patching.Constants.BASE;
@@ -71,6 +85,7 @@ public class PatchingTestUtil {
 
     private static final Logger logger = Logger.getLogger(PatchingTestUtil.class);
 
+    private static final boolean isWindows = File.separatorChar == '\\';
 
     public static final String CONTAINER = "jboss";
     public static final String AS_DISTRIBUTION = System.getProperty("jbossas.dist");
@@ -329,6 +344,10 @@ public class PatchingTestUtil {
 
     public static void assertPatchElements(File baseModuleDir, String[] patchElements) {
 
+        if (isWindows) {
+            return; // Skip this on windows for now
+        }
+
         File modulesPatchesDir = new File(baseModuleDir, ".overlays");
         if(!modulesPatchesDir.exists()) {
             assertNull(patchElements);
@@ -359,6 +378,30 @@ public class PatchingTestUtil {
             final File overlays = new File(root, Constants.OVERLAYS);
             IoUtils.recursiveDelete(overlays);
         }
+    }
+
+    static ContentModification updateModulesJar(final File installation, final File patchDir) throws IOException {
+        final String fileName = "jboss-modules.jar";
+        final File source = new File(installation, fileName);
+        final File misc = new File(patchDir, "misc");
+        misc.mkdirs();
+        final File target = new File(misc, fileName);
+
+        updateJar(source, target);
+
+        final byte[] sourceHash = HashUtils.hashFile(source);
+        final byte[] targetHash = HashUtils.hashFile(target);
+        assert ! Arrays.equals(sourceHash, targetHash);
+
+        final MiscContentItem item = new MiscContentItem(fileName, new String[0], targetHash, false, false);
+        return new ContentModification(item, sourceHash, ModificationType.MODIFY);
+
+    }
+
+    static void updateJar(final File source, final File target) throws IOException {
+        final JavaArchive archive = ShrinkWrap.createFromZipFile(JavaArchive.class, source);
+        archive.add(new StringAsset("test " + randomString()), "testFile");
+        archive.as(ZipExporter.class).exportTo(target);
     }
 
 }
