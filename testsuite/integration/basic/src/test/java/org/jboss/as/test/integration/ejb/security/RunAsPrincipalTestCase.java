@@ -30,6 +30,7 @@ import org.jboss.as.arquillian.api.ServerSetup;
 import org.jboss.as.test.categories.CommonCriteria;
 import org.jboss.as.test.integration.ejb.security.runasprincipal.Caller;
 import org.jboss.as.test.integration.ejb.security.runasprincipal.CallerWithIdentity;
+import org.jboss.as.test.integration.ejb.security.runasprincipal.SingletonCallerBean;
 import org.jboss.as.test.integration.ejb.security.runasprincipal.WhoAmI;
 import org.jboss.as.test.integration.security.common.AbstractSecurityDomainSetup;
 import org.jboss.as.test.shared.integration.ejb.security.Util;
@@ -80,6 +81,10 @@ public class RunAsPrincipalTestCase  {
         return (WhoAmI)new InitialContext().lookup("java:module/" + CallerWithIdentity.class.getSimpleName() + "!" + WhoAmI.class.getName());
     }
 
+    private WhoAmI lookupSingleCallerWithIdentity() throws Exception {
+        return (WhoAmI)new InitialContext().lookup("java:module/" + SingletonCallerBean.class.getSimpleName() + "!" + WhoAmI.class.getName());
+    }
+
     private WhoAmI lookupCaller() throws Exception {
         return (WhoAmI)new InitialContext().lookup("java:module/" + Caller.class.getSimpleName() + "!" + WhoAmI.class.getName());
     }
@@ -93,6 +98,20 @@ public class RunAsPrincipalTestCase  {
             WhoAmI bean =  lookupCallerWithIdentity();
             String actual = bean.getCallerPrincipal();
             Assert.assertEquals("jackinabox", actual);
+        } finally {
+            client.logout();
+        }
+    }
+
+    @Test
+    public void testSingletonSecurity() throws Exception {
+        SecurityClient client = SecurityClientFactory.getSecurityClient();
+        client.setSimple("user1", "password1");
+        client.login();
+        try {
+            WhoAmI bean =  lookupSingleCallerWithIdentity();
+            String actual = bean.getCallerPrincipal();
+            Assert.assertEquals("Helloween", actual);
         } finally {
             client.logout();
         }
