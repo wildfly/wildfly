@@ -23,9 +23,11 @@ package org.jboss.as.test.patching;
 
 import org.jboss.arquillian.container.test.api.RunAsClient;
 import org.jboss.arquillian.junit.Arquillian;
+import org.jboss.as.patching.HashUtils;
 import org.jboss.as.patching.metadata.ContentModification;
 import org.jboss.as.patching.metadata.Patch;
 import org.jboss.as.patching.metadata.PatchBuilder;
+import org.jboss.as.test.patching.util.module.Module;
 import org.jboss.as.version.ProductConfig;
 import org.jboss.logging.Logger;
 import org.junit.After;
@@ -37,15 +39,13 @@ import org.junit.runner.RunWith;
 import java.io.File;
 
 import static org.jboss.as.patching.Constants.BASE;
-import static org.jboss.as.patching.Constants.LAYERS;
-import static org.jboss.as.patching.Constants.SYSTEM;
 import static org.jboss.as.patching.IoUtils.mkdir;
 import static org.jboss.as.patching.IoUtils.newFile;
 import static org.jboss.as.test.patching.PatchingTestUtil.AS_VERSION;
 import static org.jboss.as.test.patching.PatchingTestUtil.CONTAINER;
 import static org.jboss.as.test.patching.PatchingTestUtil.FILE_SEPARATOR;
+import static org.jboss.as.test.patching.PatchingTestUtil.MODULES_PATH;
 import static org.jboss.as.test.patching.PatchingTestUtil.PRODUCT;
-import static org.jboss.as.test.patching.PatchingTestUtil.createModule0;
 import static org.jboss.as.test.patching.PatchingTestUtil.createPatchXMLFile;
 import static org.jboss.as.test.patching.PatchingTestUtil.createZippedPatchFile;
 import static org.jboss.as.test.patching.PatchingTestUtil.dump;
@@ -354,11 +354,11 @@ public class OverridePreserveTestCase extends AbstractPatchingTestCase {
     @Test
     public void testOverrideModules() throws Exception {
         ProductConfig productConfig = new ProductConfig(PRODUCT, AS_VERSION, "main");
-        String moduleName = randomString();
+        String moduleName = "org.wildfly.test." + randomString();
 
-        // creates an empty module
-        File baseModuleDir = newFile(new File(PatchingTestUtil.AS_DISTRIBUTION), "modules", SYSTEM, LAYERS, BASE);
-        File moduleDir = createModule0(baseModuleDir, moduleName);
+        // add a new empty module to eap dist
+        Module module = new Module.Builder(moduleName).build();
+        File moduleDir = module.writeToDisk(new File(MODULES_PATH));
 
         logger.info("moduleDir = " + moduleDir.getAbsolutePath());
 
@@ -367,9 +367,12 @@ public class OverridePreserveTestCase extends AbstractPatchingTestCase {
         String baseLayerPatchID = randomString();
         File patchDir = mkdir(tempDir, patchID);
 
+        Module updatedModule = new Module.Builder(moduleName)
+                .miscFile(new ResourceItem("res1", "new resource in the module".getBytes()))
+                .build();
+
         // create the patch with the updated module
-        ContentModification moduleModified = ContentModificationUtils.modifyModule(patchDir, baseLayerPatchID, moduleDir,
-                new ResourceItem("res1", "new resource in the module".getBytes()));
+        ContentModification moduleModified = ContentModificationUtils.modifyModule(patchDir, baseLayerPatchID, HashUtils.hashFile(moduleDir), updatedModule);
 
         Patch patch = PatchBuilder.create()
                 .setPatchId(patchID)
@@ -385,7 +388,7 @@ public class OverridePreserveTestCase extends AbstractPatchingTestCase {
         logger.info(zippedPatch.getAbsolutePath());
 
         // modify module
-        File fileModifyModule = new File(moduleDir.getAbsolutePath() + FILE_SEPARATOR + "main", "newFile");
+        File fileModifyModule = newFile(moduleDir, "newFile");
         dump(fileModifyModule, "test content");
 
         // apply patch without --override-modules

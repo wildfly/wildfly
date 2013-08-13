@@ -30,6 +30,7 @@ import org.jboss.as.patching.metadata.ContentModification;
 import org.jboss.as.patching.metadata.Patch;
 import org.jboss.as.patching.metadata.PatchBuilder;
 import org.jboss.as.test.integration.management.util.CLITestUtil;
+import org.jboss.as.test.patching.util.module.Module;
 import org.jboss.as.version.ProductConfig;
 import org.junit.Before;
 import org.junit.Test;
@@ -45,9 +46,9 @@ import static org.jboss.as.patching.Constants.SYSTEM;
 import static org.jboss.as.patching.IoUtils.mkdir;
 import static org.jboss.as.patching.IoUtils.newFile;
 import static org.jboss.as.test.patching.PatchingTestUtil.CONTAINER;
+import static org.jboss.as.test.patching.PatchingTestUtil.MODULES_PATH;
 import static org.jboss.as.test.patching.PatchingTestUtil.assertPatchElements;
 import static org.jboss.as.test.patching.PatchingTestUtil.createBundle0;
-import static org.jboss.as.test.patching.PatchingTestUtil.createModule0;
 import static org.jboss.as.test.patching.PatchingTestUtil.createPatchXMLFile;
 import static org.jboss.as.test.patching.PatchingTestUtil.createZippedPatchFile;
 import static org.jboss.as.test.patching.PatchingTestUtil.dump;
@@ -83,9 +84,13 @@ public class RollbackLastUnitTestCase extends AbstractPatchingTestCase {
         // create a module to be updated w/o a conflict
         File baseModuleDir = newFile(new File(PatchingTestUtil.AS_DISTRIBUTION), MODULES, SYSTEM, LAYERS, BASE);
         String moduleName = "module-test";
-        File moduleDir = createModule0(baseModuleDir, moduleName);
+        Module module = new Module.Builder(moduleName)
+                .miscFile(new ResourceItem("resource-test", "new resource in the module".getBytes()))
+                .build();
+        File moduleDir = module.writeToDisk(new File(MODULES_PATH));
+
         // create the patch with the updated module
-        ContentModification moduleModified = ContentModificationUtils.modifyModule(patchDir, patchElementId, moduleDir, new ResourceItem("resource-test", "new resource in the module".getBytes()));
+        ContentModification moduleModified = ContentModificationUtils.modifyModule(patchDir, patchElementId, HashUtils.hashFile(moduleDir), module);
 
         // create a file for the conflict
         String fileName = "file-test.txt";
@@ -151,8 +156,12 @@ public class RollbackLastUnitTestCase extends AbstractPatchingTestCase {
         final File patchedModule = newFile(baseModuleDir, ".overlays", patchElementId, moduleName);
         final File patchedBundle = newFile(baseBundleDir, ".overlays", patchElementId, bundleName);
 
+        Module modifiedModule = new Module.Builder(moduleName)
+                .miscFile(new ResourceItem("resource-test", "another module update".getBytes()))
+                .build();
+
         ContentModification fileModified2 = ContentModificationUtils.modifyMisc(patchDir, patchID2, "another file update", miscFile, "bin", fileName);
-        ContentModification moduleModified2 = ContentModificationUtils.modifyModule(patchDir, patchElementId2, patchedModule, new ResourceItem("resource-test", "another module update".getBytes()));
+        ContentModification moduleModified2 = ContentModificationUtils.modifyModule(patchDir, patchElementId2, HashUtils.hashFile(patchedModule), modifiedModule);
         ContentModification bundleModified2 = ContentModificationUtils.modifyBundle(patchDir, patchElementId2, patchedBundle, "another bundle update");
 
         Patch patch2 = PatchBuilder.create()
