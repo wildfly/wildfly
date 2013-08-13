@@ -201,6 +201,9 @@ class PatchConfigBuilder implements ContentItemFilter {
                         throw new IllegalStateException("does not support add-ons: " + name); // TODO
                     }
                     final PatchElementConfigBuilder config = PatchConfigBuilder.this.elements.get(name);
+                    if (config == null) {
+                        throw new IllegalStateException("no patch configuration found for layer " + name);
+                    }
                     final PatchElementBuilder builder;
                     if (config.getPatchType() == null) {
                         config.setPatchType(patchType);

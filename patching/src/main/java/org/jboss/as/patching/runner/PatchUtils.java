@@ -52,13 +52,6 @@ import org.jboss.as.patching.installation.PatchableTarget;
  */
 public final class PatchUtils {
 
-    static final int DEFAULT_BUFFER_SIZE = 65536;
-    public static final OutputStream NULL_OUTPUT_STREAM = new OutputStream() {
-        public void write(int b) throws IOException {
-            //
-        }
-    };
-
     public static String readRef(final Properties properties, final String name) {
         final String ref = (String) properties.get(name);
         if(ref == null) {

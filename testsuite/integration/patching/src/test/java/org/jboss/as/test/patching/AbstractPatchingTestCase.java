@@ -31,7 +31,6 @@ public class AbstractPatchingTestCase {
     @Before
     public void prepareForAll() throws IOException {
         tempDir = mkdir(new File(System.getProperty("java.io.tmpdir")), randomString());
-            assertPatchElements(new File(MODULES_PATH), null);
     }
 
     @After
@@ -48,11 +47,19 @@ public class AbstractPatchingTestCase {
 
         // rollback all installed patches
         final boolean success = CliUtilsForPatching.rollbackAll();
-        if (!success) {
-            // Reset installation state
-            final File home = new File(PatchingTestUtil.AS_DISTRIBUTION);
-            PatchingTestUtil.resetInstallationState(home, BASE_MODULE_DIRECTORY);
-            Assert.fail("failed to rollback all patches " + CliUtilsForPatching.info(false));
+        boolean ok = false;
+        try {
+            if (!success) {
+                Assert.fail("failed to rollback all patches " + CliUtilsForPatching.info(false));
+            }
+            assertPatchElements(new File(MODULES_PATH), null);
+            ok = true;
+        } finally {
+            if (!ok) {
+                // Reset installation state
+                final File home = new File(PatchingTestUtil.AS_DISTRIBUTION);
+                PatchingTestUtil.resetInstallationState(home, BASE_MODULE_DIRECTORY);
+            }
         }
     }
 }
