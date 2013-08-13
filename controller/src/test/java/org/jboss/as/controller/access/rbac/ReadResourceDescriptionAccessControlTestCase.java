@@ -43,6 +43,7 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 import org.jboss.as.controller.AbstractAddStepHandler;
 import org.jboss.as.controller.AbstractRemoveStepHandler;
@@ -68,6 +69,7 @@ import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
 import org.jboss.as.controller.descriptions.NonResolvingResourceDescriptionResolver;
 import org.jboss.as.controller.operations.common.Util;
 import org.jboss.as.controller.operations.global.GlobalOperationHandlers;
+import org.jboss.as.controller.operations.global.ReadResourceDescriptionHandler;
 import org.jboss.as.controller.registry.ManagementResourceRegistration;
 import org.jboss.as.controller.registry.Resource;
 import org.jboss.as.controller.test.AbstractControllerTestBase;
@@ -1687,6 +1689,151 @@ public class ReadResourceDescriptionAccessControlTestCase extends AbstractContro
         rootResource.registerChild(ONE_A, resourceA);
     }
 
+    //These three test the impact of the access-control parameter
+    @Test
+    public void testAccessControlNone() throws Exception  {
+        //These should have no access-control element but the normal descriptions
+        ModelNode desc = readModelDescriptionWithAccessControlParameter(ReadResourceDescriptionHandler.AccessControl.NONE);
+        Assert.assertFalse(desc.has(ACCESS_CONTROL));
+
+        Assert.assertEquals("description", desc.get(ModelDescriptionConstants.DESCRIPTION).asString());
+
+        Assert.assertTrue(desc.hasDefined(ModelDescriptionConstants.ATTRIBUTES));
+        Set<String> attributes = desc.get(ModelDescriptionConstants.ATTRIBUTES).keys();
+        Assert.assertEquals(1, attributes.size());
+        Assert.assertTrue(attributes.contains(ATTR_NONE));
+
+        Assert.assertTrue(desc.hasDefined(ModelDescriptionConstants.OPERATIONS));
+        Set<String> ops = desc.get(ModelDescriptionConstants.OPERATIONS).keys();
+        Assert.assertEquals(3, ops.size());
+        Assert.assertTrue(ops.contains(ModelDescriptionConstants.ADD));
+        Assert.assertTrue(ops.contains(ModelDescriptionConstants.REMOVE));
+        Assert.assertTrue(ops.contains(OP_CONFIG_RW_NONE));
+
+        desc = getChildDescription(desc, TWO);
+        Assert.assertFalse(desc.has(ACCESS_CONTROL));
+
+        Assert.assertEquals("description", desc.get(ModelDescriptionConstants.DESCRIPTION).asString());
+
+        Assert.assertTrue(desc.hasDefined(ModelDescriptionConstants.ATTRIBUTES));
+        attributes = desc.get(ModelDescriptionConstants.ATTRIBUTES).keys();
+        Assert.assertEquals(1, attributes.size());
+        Assert.assertTrue(attributes.contains(ATTR_NONE));
+
+        Assert.assertTrue(desc.hasDefined(ModelDescriptionConstants.OPERATIONS));
+        ops = desc.get(ModelDescriptionConstants.OPERATIONS).keys();
+        Assert.assertEquals(3, ops.size());
+        Assert.assertTrue(ops.contains(ModelDescriptionConstants.ADD));
+        Assert.assertTrue(ops.contains(ModelDescriptionConstants.REMOVE));
+        Assert.assertTrue(ops.contains(OP_CONFIG_RW_NONE));
+    }
+
+    @Test
+    public void testAccessControlCombinedDescriptions() throws Exception  {
+        //These should have the access-control element and the normal descriptions
+        ModelNode desc = readModelDescriptionWithAccessControlParameter(ReadResourceDescriptionHandler.AccessControl.COMBINED_DESCRIPTIONS);
+        ResourceAccessControl accessControl = getResourceAccessControl(desc);
+        Map<String, ModelNode> defaultAttributes = checkAttributeAccessControlNames(accessControl.defaultControl, ATTR_NONE);
+        checkAttributePermissions(defaultAttributes, ATTR_NONE, true, true);
+        Map<String, Boolean> defaultOperations = checkOperationAccessControlNames(accessControl.defaultControl, ModelDescriptionConstants.ADD, ModelDescriptionConstants.REMOVE, OP_CONFIG_RW_NONE);
+        Assert.assertEquals(true, defaultOperations.get(ADD));
+        Assert.assertEquals(true, defaultOperations.get(REMOVE));
+        Assert.assertEquals(true, defaultOperations.get(OP_CONFIG_RW_NONE));
+
+        Assert.assertEquals("description", desc.get(ModelDescriptionConstants.DESCRIPTION).asString());
+
+        Assert.assertTrue(desc.hasDefined(ModelDescriptionConstants.ATTRIBUTES));
+        Set<String> attributes = desc.get(ModelDescriptionConstants.ATTRIBUTES).keys();
+        Assert.assertEquals(1, attributes.size());
+        Assert.assertTrue(attributes.contains(ATTR_NONE));
+
+        Assert.assertTrue(desc.hasDefined(ModelDescriptionConstants.OPERATIONS));
+        Set<String> ops = desc.get(ModelDescriptionConstants.OPERATIONS).keys();
+        Assert.assertEquals(3, ops.size());
+        Assert.assertTrue(ops.contains(ModelDescriptionConstants.ADD));
+        Assert.assertTrue(ops.contains(ModelDescriptionConstants.REMOVE));
+        Assert.assertTrue(ops.contains(OP_CONFIG_RW_NONE));
+
+        desc = getChildDescription(desc, TWO);
+        accessControl = getResourceAccessControl(desc);
+        defaultAttributes = checkAttributeAccessControlNames(accessControl.defaultControl, ATTR_NONE);
+        checkAttributePermissions(defaultAttributes, ATTR_NONE, true, true);
+        defaultOperations = checkOperationAccessControlNames(accessControl.defaultControl, ModelDescriptionConstants.ADD, ModelDescriptionConstants.REMOVE, OP_CONFIG_RW_NONE);
+        Assert.assertEquals(true, defaultOperations.get(ADD));
+        Assert.assertEquals(true, defaultOperations.get(REMOVE));
+        Assert.assertEquals(true, defaultOperations.get(OP_CONFIG_RW_NONE));
+
+        Assert.assertEquals("description", desc.get(ModelDescriptionConstants.DESCRIPTION).asString());
+
+        Assert.assertTrue(desc.hasDefined(ModelDescriptionConstants.ATTRIBUTES));
+        attributes = desc.get(ModelDescriptionConstants.ATTRIBUTES).keys();
+        Assert.assertEquals(1, attributes.size());
+        Assert.assertTrue(attributes.contains(ATTR_NONE));
+
+        Assert.assertTrue(desc.hasDefined(ModelDescriptionConstants.OPERATIONS));
+        ops = desc.get(ModelDescriptionConstants.OPERATIONS).keys();
+        Assert.assertEquals(3, ops.size());
+        Assert.assertTrue(ops.contains(ModelDescriptionConstants.ADD));
+        Assert.assertTrue(ops.contains(ModelDescriptionConstants.REMOVE));
+        Assert.assertTrue(ops.contains(OP_CONFIG_RW_NONE));
+    }
+
+    @Test
+    public void testAccessControlTrimDescriptions() throws Exception  {
+        //These should have the access-control element but trim the normal descriptions
+        ModelNode desc = readModelDescriptionWithAccessControlParameter(ReadResourceDescriptionHandler.AccessControl.TRIM_DESCRIPTONS);
+        ResourceAccessControl accessControl = getResourceAccessControl(desc);
+        Map<String, ModelNode> defaultAttributes = checkAttributeAccessControlNames(accessControl.defaultControl, ATTR_NONE);
+        checkAttributePermissions(defaultAttributes, ATTR_NONE, true, true);
+        Map<String, Boolean> defaultOperations = checkOperationAccessControlNames(accessControl.defaultControl, ModelDescriptionConstants.ADD, ModelDescriptionConstants.REMOVE, OP_CONFIG_RW_NONE);
+        Assert.assertEquals(true, defaultOperations.get(ADD));
+        Assert.assertEquals(true, defaultOperations.get(REMOVE));
+        Assert.assertEquals(true, defaultOperations.get(OP_CONFIG_RW_NONE));
+
+        Assert.assertFalse(desc.hasDefined(ModelDescriptionConstants.DESCRIPTION));
+        Assert.assertFalse(desc.hasDefined(ModelDescriptionConstants.ATTRIBUTES));
+        Assert.assertFalse(desc.hasDefined(ModelDescriptionConstants.OPERATIONS));
+
+        desc = getChildDescription(desc, TWO);
+        accessControl = getResourceAccessControl(desc);
+        defaultAttributes = checkAttributeAccessControlNames(accessControl.defaultControl, ATTR_NONE);
+        checkAttributePermissions(defaultAttributes, ATTR_NONE, true, true);
+        defaultOperations = checkOperationAccessControlNames(accessControl.defaultControl, ModelDescriptionConstants.ADD, ModelDescriptionConstants.REMOVE, OP_CONFIG_RW_NONE);
+        Assert.assertEquals(true, defaultOperations.get(ADD));
+        Assert.assertEquals(true, defaultOperations.get(REMOVE));
+        Assert.assertEquals(true, defaultOperations.get(OP_CONFIG_RW_NONE));
+
+        Assert.assertFalse(desc.hasDefined(ModelDescriptionConstants.DESCRIPTION));
+        Assert.assertFalse(desc.hasDefined(ModelDescriptionConstants.ATTRIBUTES));
+        Assert.assertFalse(desc.hasDefined(ModelDescriptionConstants.OPERATIONS));
+    }
+
+    private ModelNode readModelDescriptionWithAccessControlParameter(ReadResourceDescriptionHandler.AccessControl accessControl) throws Exception {
+        ChildResourceDefinition oneChild = new ChildResourceDefinition(ONE);
+        oneChild.addAttribute(ATTR_NONE);
+        oneChild.addOperation(OP_CONFIG_RW_NONE, false, false);
+        ManagementResourceRegistration oneReg = rootRegistration.registerSubModel(oneChild);
+        Resource resourceOneA = Resource.Factory.create();
+        ModelNode modelOneA = resourceOneA.getModel();
+        modelOneA.get(ATTR_NONE).set("uno");
+        rootResource.registerChild(ONE_A, resourceOneA);
+
+        ChildResourceDefinition twoChild = new ChildResourceDefinition(TWO);
+        twoChild.addAttribute(ATTR_NONE);
+        twoChild.addOperation(OP_CONFIG_RW_NONE, false, false);
+        oneReg.registerSubModel(twoChild);
+        Resource resourceTwoA = Resource.Factory.create();
+        ModelNode modelTwoA = resourceOneA.getModel();
+        modelTwoA.get(ATTR_NONE).set("dos");
+        resourceOneA.registerChild(TWO_A, resourceTwoA);
+
+        ModelNode op = createReadResourceDescriptionOperation(PathAddress.EMPTY_ADDRESS, StandardRole.ADMINISTRATOR, true);
+        op.get(ACCESS_CONTROL).set(accessControl.toString());
+        ModelNode desc = executeForResult(op);
+        System.out.println(desc);
+        return getChildDescription(desc, ONE);
+    }
+
     private SensitiveTargetAccessConstraintDefinition createSensitivityConstraint(String name, boolean access, boolean read, boolean write) {
         SensitivityClassification classification = new SensitivityClassification("test", name, access, read, write);
         return new SensitiveTargetAccessConstraintDefinition(classification);
@@ -1821,7 +1968,7 @@ public class ReadResourceDescriptionAccessControlTestCase extends AbstractContro
     private ModelNode createReadResourceDescriptionOperation(PathAddress address, StandardRole role, boolean operations) {
         ModelNode op = Util.createOperation(READ_RESOURCE_DESCRIPTION_OPERATION, address);
         op.get(RECURSIVE).set(true);
-        op.get(ACCESS_CONTROL).set(true);
+        op.get(ACCESS_CONTROL).set(ReadResourceDescriptionHandler.AccessControl.COMBINED_DESCRIPTIONS.toString());
         if (operations) {
             op.get(OPERATIONS).set(true);
             op.get(INHERITED).set(false);
