@@ -321,12 +321,12 @@ public class CliUtilsForPatching {
         }
     }
 
-    public static List<String> getResourceLoaderPathsForModule(String module, boolean throwExceptionOnError)
+    public static List<String> getResourceLoaderPathsForModule(String module, boolean ignoreError)
             throws Exception {
         CLIWrapper cli = new CLIWrapper(true);
         String command = "/core-service=module-loading:list-resource-loader-paths(module=" + module + ")";
         logger.info("CLI command: " + command);
-        if (!cli.sendLine(command, throwExceptionOnError)) {
+        if (!cli.sendLine(command, ignoreError)) {
             throw new RuntimeException(cli.readOutput());
         }
         ModelNode response = ModelNode.fromString(cli.readOutput());
@@ -339,5 +339,13 @@ public class CliUtilsForPatching {
         return patchesListString;
     }
 
+    public static List<ModelNode> getPatchingHistory() throws Exception {
+        CLIWrapper cli = new CLIWrapper(true);
+        String command = "/core-service=patching:show-history";
+        logger.info("CLI command: " + command);
+        cli.sendLine(command, false);
+        ModelNode response = ModelNode.fromString(cli.readOutput());
+        return response.get("result").asList();
+    }
 
 }
