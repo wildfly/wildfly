@@ -811,7 +811,15 @@ public class ClusteredSingleSignOn extends org.apache.catalina.authenticator.Sin
         // Only update if the entry is missing information
         if (sso != null) {
             if (credentials.getAuthType() == null && credentials.getUsername() == null && credentials.getPassword() == null) {
-                WebLogger.WEB_SSO_LOGGER.tracef("Uppdating local SSO cache after SSO id %s was logged out on other cluster member", ssoId);
+                WebLogger.WEB_SSO_LOGGER.tracef("Uppdating local SSO cache and associated sessions after SSO id %s was logged out on other cluster member", ssoId);
+
+                // Remove all authentication information from all associated sessions
+                for (Session session : sso.findSessions()) {
+                    session.setAuthType(null);
+                    session.setPrincipal(null);
+                    session.removeNote(Constants.SESS_USERNAME_NOTE);
+                    session.removeNote(Constants.SESS_PASSWORD_NOTE);
+                }
 
                 synchronized (sso) {
                     sso.updateCredentials(null, credentials.getAuthType(), credentials.getUsername(), credentials.getPassword());

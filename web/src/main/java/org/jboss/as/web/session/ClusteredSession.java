@@ -480,10 +480,6 @@ public abstract class ClusteredSession<O extends OutgoingDistributableSessionDat
         Principal oldPrincipal = this.principal;
         this.principal = principal;
         support.firePropertyChange("principal", oldPrincipal, this.principal);
-
-        if ((oldPrincipal != null && !oldPrincipal.equals(principal)) || (oldPrincipal == null && principal != null)) {
-            sessionMetadataDirty();
-        }
     }
 
     @Override
