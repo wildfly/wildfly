@@ -21,12 +21,7 @@
 
 package org.jboss.as.test.patching;
 
-import java.io.File;
-import java.util.Arrays;
-import java.util.List;
-
 import com.google.common.base.Joiner;
-
 import org.jboss.arquillian.container.test.api.RunAsClient;
 import org.jboss.arquillian.junit.Arquillian;
 import org.jboss.as.patching.HashUtils;
@@ -40,6 +35,10 @@ import org.jboss.logging.Logger;
 import org.junit.Assert;
 import org.junit.Test;
 import org.junit.runner.RunWith;
+
+import java.io.File;
+import java.util.Arrays;
+import java.util.List;
 
 import static org.jboss.as.patching.Constants.BASE;
 import static org.jboss.as.patching.IoUtils.mkdir;
@@ -824,8 +823,10 @@ public class BasicOneOffPatchingScenariosTestCase extends AbstractPatchingTestCa
     public void testOneOffPatchAddingAModule() throws Exception {
         // prepare the patch
         String patchID = randomString();
+        String invalidPatchId = randomString();
         String layerPatchID = randomString();
         File oneOffPatchDir = mkdir(tempDir, patchID);
+        File invalidOneOffPatchDir = mkdir(tempDir, invalidPatchId);
 
         final String moduleName = "org.wildfly.test." + randomString();
         final String modulePath = PATCHES_PATH + FILE_SEPARATOR + layerPatchID + FILE_SEPARATOR + moduleName.replace(".", FILE_SEPARATOR) + FILE_SEPARATOR + "main";
@@ -837,6 +838,8 @@ public class BasicOneOffPatchingScenariosTestCase extends AbstractPatchingTestCa
                 .miscFile(resourceItem1)
                 .miscFile(resourceItem2)
                 .build();
+
+        // create valid patch
         ContentModification moduleAdded = ContentModificationUtils.addModule(oneOffPatchDir, layerPatchID, newModule);
         ProductConfig productConfig = new ProductConfig(PRODUCT, AS_VERSION, "main");
         Patch oneOffPatch = PatchBuilder.create()
@@ -852,8 +855,24 @@ public class BasicOneOffPatchingScenariosTestCase extends AbstractPatchingTestCa
         createPatchXMLFile(oneOffPatchDir, oneOffPatch);
         File zippedPatch = createZippedPatchFile(oneOffPatchDir, patchID);
 
-        // apply the patch and check if server is in restart-required mode
+        // create invalid patch - replaced layerPatchId with patchID
+        ContentModification invalidContentModification = ContentModificationUtils.addModule(invalidOneOffPatchDir, invalidPatchId, newModule);
+        Patch invalidOneOffPatch = PatchBuilder.create()
+                .setPatchId(invalidPatchId)
+                .setDescription("A invalid one-off patch adding a new module.")
+                .oneOffPatchIdentity(productConfig.getProductName(), productConfig.getProductVersion())
+                .getParent()
+                .oneOffPatchElement(layerPatchID, "base", false)
+                .setDescription("New module for the base layer")
+                .addContentModification(invalidContentModification)
+                .getParent()
+                .build();
+        createPatchXMLFile(invalidOneOffPatchDir, invalidOneOffPatch);
+        File zippedInvalidPatch = createZippedPatchFile(invalidOneOffPatchDir, invalidPatchId);
+
+        // try to apply invalid one off patch and apply valid patch and check if server is in restart-required mode
         controller.start(CONTAINER);
+        Assert.assertFalse("Patch shouldn't be accepted", CliUtilsForPatching.applyPatch(zippedInvalidPatch.getAbsolutePath()));
         Assert.assertTrue("Patch should be accepted", CliUtilsForPatching.applyPatch(zippedPatch.getAbsolutePath()));
         Assert.assertTrue("server should be in restart-required mode",
                 CliUtilsForPatching.doesServerRequireRestart());
