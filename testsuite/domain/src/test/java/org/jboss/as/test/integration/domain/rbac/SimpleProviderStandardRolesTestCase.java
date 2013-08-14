@@ -25,7 +25,6 @@ package org.jboss.as.test.integration.domain.rbac;
 import org.jboss.as.controller.client.helpers.domain.DomainClient;
 import org.jboss.as.test.integration.domain.management.util.DomainTestSupport;
 import org.jboss.as.test.integration.management.rbac.RbacUtil;
-import org.jboss.as.test.integration.management.rbac.UserRolesMappingServerSetupTask;
 import org.jboss.dmr.ModelNode;
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
@@ -49,8 +48,6 @@ public class SimpleProviderStandardRolesTestCase extends AbstractStandardRolesTe
         testSupport = DomainTestSupport.createAndStartSupport(config);
         masterClientConfig = testSupport.getDomainMasterConfiguration();
         DomainClient domainClient = testSupport.getDomainMasterLifecycleUtil().getDomainClient();
-        UserRolesMappingServerSetupTask.StandardUsersSetup.INSTANCE.setup(domainClient);
-
 
         deployDeployment1(domainClient);
     }
@@ -59,7 +56,7 @@ public class SimpleProviderStandardRolesTestCase extends AbstractStandardRolesTe
     public static void tearDownDomain() throws Exception {
 
         try {
-            UserRolesMappingServerSetupTask.StandardUsersSetup.INSTANCE.tearDown(testSupport.getDomainMasterLifecycleUtil().getDomainClient());
+            removeDeployment1(testSupport.getDomainMasterLifecycleUtil().getDomainClient());
         } finally {
             // TODO use DomainTestSuite once config propagation to slaves is sorted
 //            testSupport = null;

@@ -97,6 +97,7 @@ import org.jboss.as.server.operations.ServerProcessReloadHandler;
 import org.jboss.as.server.operations.ServerRestartRequiredHandler;
 import org.jboss.as.server.operations.ServerShutdownHandler;
 import org.jboss.as.server.operations.ServerVersionOperations.DefaultEmptyListAttributeHandler;
+import org.jboss.as.server.operations.SetServerGroupHostHandler;
 import org.jboss.as.server.services.net.BindingGroupAddHandler;
 import org.jboss.as.server.services.net.LocalDestinationOutboundSocketBindingResourceDefinition;
 import org.jboss.as.server.services.net.NetworkInterfaceRuntimeHandler;
@@ -129,6 +130,13 @@ public class ServerRootResourceDefinition extends SimpleResourceDefinition {
     public static final SimpleAttributeDefinition NAME = SimpleAttributeDefinitionBuilder.create(ModelDescriptionConstants.NAME, ModelType.STRING, true)
             .setValidator(new StringLengthValidator(1, true))
             .build();
+
+    public static final SimpleAttributeDefinition SERVER_GROUP = SimpleAttributeDefinitionBuilder.create(ModelDescriptionConstants.SERVER_GROUP, ModelType.STRING)
+            .build();
+
+    public static final SimpleAttributeDefinition HOST = SimpleAttributeDefinitionBuilder.create(ModelDescriptionConstants.HOST, ModelType.STRING)
+            .build();
+
     public static final SimpleAttributeDefinition RELEASE_VERSION = SimpleAttributeDefinitionBuilder.create(ModelDescriptionConstants.RELEASE_VERSION, ModelType.STRING, false)
             .setValidator(NOT_NULL_STRING_LENGTH_ONE_VALIDATOR)
             .build();
@@ -258,6 +266,10 @@ public class ServerRootResourceDefinition extends SimpleResourceDefinition {
         //Hack to be able to access the registry for the jmx facade
         resourceRegistration.registerOperationHandler(RootResourceHack.DEFINITION, RootResourceHack.INSTANCE);
 
+        if (isDomain) {
+            resourceRegistration.registerOperationHandler(SetServerGroupHostHandler.DEFINITION, SetServerGroupHostHandler.INSTANCE);
+        }
+
         // Runtime operations
         if (serverEnvironment != null) {
             // Reload op -- does not work on a domain mode server
@@ -307,6 +319,11 @@ public class ServerRootResourceDefinition extends SimpleResourceDefinition {
 
         resourceRegistration.registerReadOnlyAttribute(NAMESPACES, DefaultEmptyListAttributeHandler.INSTANCE);
         resourceRegistration.registerReadOnlyAttribute(SCHEMA_LOCATIONS, DefaultEmptyListAttributeHandler.INSTANCE);
+
+        if (isDomain) {
+            resourceRegistration.registerReadOnlyAttribute(HOST, null);
+            resourceRegistration.registerReadOnlyAttribute(SERVER_GROUP, null);
+        }
     }
 
     @Override

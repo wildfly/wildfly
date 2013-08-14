@@ -30,6 +30,7 @@ import java.util.EnumSet;
 import java.util.Set;
 
 import org.jboss.as.controller.ControlledProcessState;
+import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.ProcessType;
 import org.jboss.as.controller.access.Action;
 import org.jboss.as.controller.access.AuthorizationResult;
@@ -37,7 +38,7 @@ import org.jboss.as.controller.access.Caller;
 import org.jboss.as.controller.access.Environment;
 import org.jboss.as.controller.access.TargetAttribute;
 import org.jboss.as.controller.access.TargetResource;
-import org.jboss.as.controller.access.constraint.ScopingConstraint;
+import org.jboss.as.controller.access.constraint.Constraint;
 import org.jboss.dmr.ModelNode;
 import org.junit.Before;
 import org.junit.Test;
@@ -64,7 +65,7 @@ public class ManagementPermissionAuthorizerTestCase {
     public void testAuthorizerResourcePermit() {
         Action action = new Action(null, null, EnumSet.of(Action.ActionEffect.ADDRESS,
                 Action.ActionEffect.READ_CONFIG));
-        TargetResource targetResource = TargetResource.forStandalone(null, null);
+        TargetResource targetResource = TargetResource.forStandalone(PathAddress.EMPTY_ADDRESS, null, null);
         AuthorizationResult result = authorizer.authorize(caller, environment, action, targetResource);
 
         assertEquals(AuthorizationResult.Decision.PERMIT, result.getDecision());
@@ -74,7 +75,7 @@ public class ManagementPermissionAuthorizerTestCase {
     public void testAuthorizerResourceDeny() {
         Action action = new Action(null, null, EnumSet.of(Action.ActionEffect.ADDRESS,
                 Action.ActionEffect.READ_CONFIG, Action.ActionEffect.WRITE_CONFIG));
-        TargetResource targetResource = TargetResource.forStandalone(null, null);
+        TargetResource targetResource = TargetResource.forStandalone(PathAddress.EMPTY_ADDRESS, null, null);
         AuthorizationResult result = authorizer.authorize(caller, environment, action, targetResource);
 
         assertEquals(AuthorizationResult.Decision.DENY, result.getDecision());
@@ -84,7 +85,7 @@ public class ManagementPermissionAuthorizerTestCase {
     public void testAuthorizerAttributePermit() {
         Action action = new Action(null, null, EnumSet.of(Action.ActionEffect.ADDRESS,
                 Action.ActionEffect.READ_CONFIG));
-        TargetResource targetResource = TargetResource.forStandalone(null, null);
+        TargetResource targetResource = TargetResource.forStandalone(PathAddress.EMPTY_ADDRESS, null, null);
         TargetAttribute targetAttribute = new TargetAttribute(null, new ModelNode(), targetResource);
         AuthorizationResult result = authorizer.authorize(caller, environment, action, targetAttribute);
 
@@ -95,7 +96,7 @@ public class ManagementPermissionAuthorizerTestCase {
     public void testAuthorizerAttributeDeny() {
         Action action = new Action(null, null, EnumSet.of(Action.ActionEffect.ADDRESS,
                 Action.ActionEffect.READ_CONFIG, Action.ActionEffect.WRITE_CONFIG));
-        TargetResource targetResource = TargetResource.forStandalone(null, null);
+        TargetResource targetResource = TargetResource.forStandalone(PathAddress.EMPTY_ADDRESS, null, null);
         TargetAttribute targetAttribute = new TargetAttribute(null, new ModelNode(), targetResource);
         AuthorizationResult result = authorizer.authorize(caller, environment, action, targetAttribute);
 
@@ -158,7 +159,7 @@ public class ManagementPermissionAuthorizerTestCase {
         }
 
         @Override
-        public ManagementPermission createScopedPermission(ScopingConstraint constraint) {
+        public ManagementPermission createScopedPermission(Constraint constraint) {
             return null;
         }
 

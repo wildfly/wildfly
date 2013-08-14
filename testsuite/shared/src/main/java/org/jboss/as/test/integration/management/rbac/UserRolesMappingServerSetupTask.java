@@ -95,8 +95,6 @@ public class UserRolesMappingServerSetupTask implements ServerSetupTask {
      */
     public static class StandardUsersSetup extends UserRolesMappingServerSetupTask {
 
-        private static final Map<String, Set<String>> STANDARD_USERS;
-
         static {
             Map<String, Set<String>> rolesToUsers = new HashMap<String, Set<String>>();
             rolesToUsers.put(MONITOR_USER, Collections.singleton(MONITOR_USER));
@@ -108,6 +106,8 @@ public class UserRolesMappingServerSetupTask implements ServerSetupTask {
             rolesToUsers.put(SUPERUSER_USER, Collections.singleton(SUPERUSER_USER));
             STANDARD_USERS = rolesToUsers;
         }
+
+        private static final Map<String, Set<String>> STANDARD_USERS;
 
         public static final StandardUsersSetup INSTANCE = new StandardUsersSetup();
 

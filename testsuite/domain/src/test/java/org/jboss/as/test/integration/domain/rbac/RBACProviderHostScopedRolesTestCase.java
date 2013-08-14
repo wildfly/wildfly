@@ -22,6 +22,11 @@
 
 package org.jboss.as.test.integration.domain.rbac;
 
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.Set;
+
 import org.jboss.as.controller.client.helpers.domain.DomainClient;
 import org.jboss.as.test.integration.domain.suites.DomainRbacTestSuite;
 import org.jboss.as.test.integration.management.rbac.UserRolesMappingServerSetupTask;
@@ -30,32 +35,37 @@ import org.junit.AfterClass;
 import org.junit.BeforeClass;
 
 /**
- * Tests of the standard roles using the "rbac" access control provider.
+ * Tests of host scoped roles using the "rbac" access control provider.
  *
  * @author Brian Stansberry (c) 2013 Red Hat Inc.
  */
-public class RBACProviderStandardRolesTestCase extends AbstractStandardRolesTestCase {
+public class RBACProviderHostScopedRolesTestCase extends AbstractHostScopedRolesTestCase {
 
     @BeforeClass
     public static void setupDomain() throws Exception {
-        testSupport = DomainRbacTestSuite.createSupport(RBACProviderStandardRolesTestCase.class.getSimpleName());
+        testSupport = DomainRbacTestSuite.createSupport(RBACProviderHostScopedRolesTestCase.class.getSimpleName());
         masterClientConfig = testSupport.getDomainMasterConfiguration();
         DomainClient domainClient = testSupport.getDomainMasterLifecycleUtil().getDomainClient();
-        UserRolesMappingServerSetupTask.StandardUsersSetup.INSTANCE.setup(domainClient);
+        setupRoles(domainClient);
+        HostRolesMappingSetup.INSTANCE.setup(domainClient);
         deployDeployment1(domainClient);
     }
 
     @AfterClass
     public static void tearDownDomain() throws Exception {
-
+        DomainClient domainClient = testSupport.getDomainMasterLifecycleUtil().getDomainClient();
         try {
-            UserRolesMappingServerSetupTask.StandardUsersSetup.INSTANCE.tearDown(testSupport.getDomainMasterLifecycleUtil().getDomainClient());
+            HostRolesMappingSetup.INSTANCE.tearDown(domainClient);
         } finally {
             try {
-                removeDeployment1(testSupport.getDomainMasterLifecycleUtil().getDomainClient());
+                tearDownRoles(domainClient);
             } finally {
-                DomainRbacTestSuite.stopSupport();
-                testSupport = null;
+                try {
+                    removeDeployment1(domainClient);
+                } finally {
+                    DomainRbacTestSuite.stopSupport();
+                    testSupport = null;
+                }
             }
         }
     }
@@ -68,5 +78,28 @@ public class RBACProviderStandardRolesTestCase extends AbstractStandardRolesTest
     @Override
     protected void configureRoles(ModelNode op, String[] roles) {
         // no-op. Role mapping is done based on the client's authenticated Subject
+    }
+
+    private static class HostRolesMappingSetup extends UserRolesMappingServerSetupTask {
+
+        private static final Map<String, Set<String>> STANDARD_USERS;
+
+        static {
+            Map<String, Set<String>> rolesToUsers = new HashMap<String, Set<String>>();
+            rolesToUsers.put(MONITOR_USER, Collections.singleton(MONITOR_USER));
+            rolesToUsers.put(OPERATOR_USER, Collections.singleton(OPERATOR_USER));
+            rolesToUsers.put(MAINTAINER_USER, Collections.singleton(MAINTAINER_USER));
+            rolesToUsers.put(DEPLOYER_USER, Collections.singleton(DEPLOYER_USER));
+            rolesToUsers.put(ADMINISTRATOR_USER, Collections.singleton(ADMINISTRATOR_USER));
+            rolesToUsers.put(AUDITOR_USER, Collections.singleton(AUDITOR_USER));
+            rolesToUsers.put(SUPERUSER_USER, Collections.singleton(SUPERUSER_USER));
+            STANDARD_USERS = rolesToUsers;
+        }
+
+        private static final HostRolesMappingSetup INSTANCE = new HostRolesMappingSetup();
+
+        protected HostRolesMappingSetup() {
+            super(STANDARD_USERS);
+        }
     }
 }

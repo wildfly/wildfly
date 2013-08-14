@@ -50,6 +50,20 @@ public abstract class AbstractConstraint implements Constraint {
     }
 
     /**
+     * {@inheritDoc}
+     *
+     * <p>
+     * This default implementation always returns {@code false}.
+     * </p>
+     *
+     * @return {@code false}, always
+     */
+    @Override
+    public boolean replaces(Constraint other) {
+        return false;
+    }
+
+    /**
      * Compare this {@link AbstractConstraint} to another. Similar contract to {@link Comparable#compareTo(Object)}
      * except that a return value of {@code 0} does not imply equality; rather it implies indifference with respect
      * to order. The intended use for this method is in {@link Comparable#compareTo(Object)} implementations where

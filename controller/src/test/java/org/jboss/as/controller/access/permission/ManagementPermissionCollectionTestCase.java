@@ -30,7 +30,7 @@ import java.security.Permission;
 import java.util.Enumeration;
 
 import org.jboss.as.controller.access.Action;
-import org.jboss.as.controller.access.constraint.ScopingConstraint;
+import org.jboss.as.controller.access.constraint.Constraint;
 import org.junit.Before;
 import org.junit.Test;
 
@@ -119,7 +119,7 @@ public class ManagementPermissionCollectionTestCase {
         }
 
         @Override
-        public ManagementPermission createScopedPermission(ScopingConstraint constraint) {
+        public ManagementPermission createScopedPermission(Constraint constraint) {
             return null;
         }
 
@@ -135,7 +135,7 @@ public class ManagementPermissionCollectionTestCase {
         }
 
         @Override
-        public ManagementPermission createScopedPermission(ScopingConstraint constraint) {
+        public ManagementPermission createScopedPermission(Constraint constraint) {
             return null;
         }
 

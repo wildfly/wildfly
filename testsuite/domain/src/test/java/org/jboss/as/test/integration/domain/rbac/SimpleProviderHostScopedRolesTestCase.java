@@ -23,38 +23,51 @@
 package org.jboss.as.test.integration.domain.rbac;
 
 import org.jboss.as.controller.client.helpers.domain.DomainClient;
-import org.jboss.as.test.integration.domain.suites.DomainRbacTestSuite;
+import org.jboss.as.test.integration.domain.management.util.DomainTestSupport;
+import org.jboss.as.test.integration.management.rbac.RbacUtil;
 import org.jboss.as.test.integration.management.rbac.UserRolesMappingServerSetupTask;
 import org.jboss.dmr.ModelNode;
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
 
 /**
- * Tests of the standard roles using the "rbac" access control provider.
+ * Tests of host scoped roles using the "simple" access control provider.
  *
  * @author Brian Stansberry (c) 2013 Red Hat Inc.
  */
-public class RBACProviderStandardRolesTestCase extends AbstractStandardRolesTestCase {
+public class SimpleProviderHostScopedRolesTestCase extends AbstractHostScopedRolesTestCase {
 
     @BeforeClass
     public static void setupDomain() throws Exception {
-        testSupport = DomainRbacTestSuite.createSupport(RBACProviderStandardRolesTestCase.class.getSimpleName());
+
+        // Launch the domain
+
+        // TODO use DomainTestSuite once config propagation to slaves is sorted
+//        testSupport = DomainTestSuite.createSupport(SimpleRbacProviderTestCase.class.getSimpleName());
+        final DomainTestSupport.Configuration config =
+                DomainTestSupport.Configuration.create(SimpleProviderHostScopedRolesTestCase.class.getSimpleName(),
+                        "domain-configs/domain-standard.xml", "host-configs/host-master.xml", null);
+        testSupport = DomainTestSupport.createAndStartSupport(config);
         masterClientConfig = testSupport.getDomainMasterConfiguration();
         DomainClient domainClient = testSupport.getDomainMasterLifecycleUtil().getDomainClient();
-        UserRolesMappingServerSetupTask.StandardUsersSetup.INSTANCE.setup(domainClient);
+        setupRoles(domainClient);
         deployDeployment1(domainClient);
     }
 
     @AfterClass
     public static void tearDownDomain() throws Exception {
+        DomainClient domainClient = testSupport.getDomainMasterLifecycleUtil().getDomainClient();
 
         try {
-            UserRolesMappingServerSetupTask.StandardUsersSetup.INSTANCE.tearDown(testSupport.getDomainMasterLifecycleUtil().getDomainClient());
+            tearDownRoles(domainClient);
         } finally {
             try {
-                removeDeployment1(testSupport.getDomainMasterLifecycleUtil().getDomainClient());
+                removeDeployment1(domainClient);
             } finally {
-                DomainRbacTestSuite.stopSupport();
+                // TODO use DomainTestSuite once config propagation to slaves is sorted
+//                testSupport = null;
+//                DomainTestSuite.stopSupport();
+                testSupport.stop();
                 testSupport = null;
             }
         }
@@ -62,11 +75,11 @@ public class RBACProviderStandardRolesTestCase extends AbstractStandardRolesTest
 
     @Override
     protected boolean isAllowLocalAuth() {
-        return false;
+        return true;
     }
 
     @Override
     protected void configureRoles(ModelNode op, String[] roles) {
-        // no-op. Role mapping is done based on the client's authenticated Subject
+        RbacUtil.addRoleHeader(op, roles);
     }
 }

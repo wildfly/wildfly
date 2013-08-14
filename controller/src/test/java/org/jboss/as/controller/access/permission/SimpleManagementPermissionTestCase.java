@@ -70,10 +70,15 @@ public class SimpleManagementPermissionTestCase {
         }
 
         @Override
-        public boolean violates(Constraint other) {
+        public boolean violates(Constraint other, Action.ActionEffect actionEffect) {
             if (other instanceof TestConstraint) {
                 return this.allowed != ((TestConstraint) other).allowed;
             }
+            return false;
+        }
+
+        @Override
+        public boolean replaces(Constraint other) {
             return false;
         }
 

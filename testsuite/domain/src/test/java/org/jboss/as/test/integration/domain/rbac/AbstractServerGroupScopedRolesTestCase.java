@@ -22,6 +22,16 @@
 
 package org.jboss.as.test.integration.domain.rbac;
 
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ADD;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.BASE_ROLE;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.BYTES;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.CONTENT;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ENABLED;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OUTCOME;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.READ_RESOURCE_OPERATION;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.REMOVE;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SERVER_GROUPS;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SUCCESS;
 import static org.jboss.as.test.integration.management.rbac.RbacUtil.ADMINISTRATOR_USER;
 import static org.jboss.as.test.integration.management.rbac.RbacUtil.AUDITOR_USER;
 import static org.jboss.as.test.integration.management.rbac.RbacUtil.DEPLOYER_USER;
@@ -29,22 +39,60 @@ import static org.jboss.as.test.integration.management.rbac.RbacUtil.MAINTAINER_
 import static org.jboss.as.test.integration.management.rbac.RbacUtil.MONITOR_USER;
 import static org.jboss.as.test.integration.management.rbac.RbacUtil.OPERATOR_USER;
 import static org.jboss.as.test.integration.management.rbac.RbacUtil.SUPERUSER_USER;
+import static org.jboss.as.test.integration.management.util.ModelUtil.createOpNode;
 import static org.junit.Assert.assertEquals;
 
 import java.io.IOException;
+import java.nio.charset.Charset;
 
 import org.jboss.as.controller.client.ModelControllerClient;
+import org.jboss.as.controller.client.helpers.domain.DomainClient;
+import org.jboss.as.test.integration.domain.management.util.DomainTestSupport;
+import org.jboss.as.test.integration.domain.management.util.JBossAsManagedConfiguration;
 import org.jboss.as.test.integration.management.rbac.Outcome;
+import org.jboss.as.test.integration.management.rbac.RbacUtil;
+import org.jboss.dmr.ModelNode;
 import org.junit.After;
 import org.junit.Test;
 
 /**
- * Abstract superclass of access control provider test cases covering the standard roles.
+ * Abstract superclass of access control provider test cases covering server group scoped roles.
  *
  * @author Brian Stansberry (c) 2013 Red Hat Inc.
  */
-public abstract class AbstractStandardRolesTestCase extends AbstractRbacTestCase {
+public abstract class AbstractServerGroupScopedRolesTestCase extends AbstractRbacTestCase {
 
+    public static final String MONITOR_USER = "MainGroupMonitor";
+    public static final String OPERATOR_USER = "MainGroupOperator";
+    public static final String MAINTAINER_USER = "MainGroupMaintainer";
+    public static final String DEPLOYER_USER = "MainGroupDeployer";
+    public static final String ADMINISTRATOR_USER = "MainGroupAdministrator";
+    public static final String AUDITOR_USER = "MainGroupAuditor";
+    public static final String SUPERUSER_USER = "MainGroupSuperUser";
+
+    private static final String[] USERS = { MONITOR_USER, OPERATOR_USER, MAINTAINER_USER, DEPLOYER_USER,
+                                            ADMINISTRATOR_USER, AUDITOR_USER, SUPERUSER_USER };
+    private static final String[] BASES = { RbacUtil.MONITOR_USER, RbacUtil.OPERATOR_USER, RbacUtil.MAINTAINER_USER,
+                                            RbacUtil.DEPLOYER_USER, RbacUtil.ADMINISTRATOR_USER, RbacUtil.AUDITOR_USER,
+                                            RbacUtil.SUPERUSER_USER };
+
+    private static final String SCOPED_ROLE = "core-service=management/access=authorization/server-group-scoped-role=";
+
+    protected static void setupRoles(DomainClient domainClient) throws IOException {
+        for (int i = 0; i < USERS.length; i++) {
+            ModelNode op = createOpNode(SCOPED_ROLE + USERS[i], ADD);
+            op.get(BASE_ROLE).set(BASES[i]);
+            op.get(SERVER_GROUPS).add(MAIN_SERVER_GROUP);
+            RbacUtil.executeOperation(domainClient, op, Outcome.SUCCESS);
+        }
+    }
+
+    protected static void tearDownRoles(DomainClient domainClient) throws IOException {
+        for (String role : USERS) {
+            ModelNode op = createOpNode(SCOPED_ROLE + role, REMOVE);
+            RbacUtil.executeOperation(domainClient, op, Outcome.SUCCESS);
+        }
+    }
 
     @After
     public void tearDown() throws IOException {
@@ -57,13 +105,14 @@ public abstract class AbstractStandardRolesTestCase extends AbstractRbacTestCase
             removeResource(TEST_PATH);
         }
 
-
         if (assertionError != null) {
             throw assertionError;
         }
     }
 
     protected abstract boolean isAllowLocalAuth();
+
+    protected abstract void configureRoles(ModelNode op, String[] roles);
 
     @Test
     public void testMonitor() throws Exception {
@@ -72,12 +121,15 @@ public abstract class AbstractStandardRolesTestCase extends AbstractRbacTestCase
         checkRootRead(client, null, null, Outcome.SUCCESS, MONITOR_USER);
         checkRootRead(client, MASTER, null, Outcome.SUCCESS, MONITOR_USER);
         checkRootRead(client, MASTER, MAIN_ONE, Outcome.SUCCESS, MONITOR_USER);
+        checkRootRead(client, MASTER, OTHER_ONE, Outcome.HIDDEN, MONITOR_USER);
         checkSecurityDomainRead(client, null, null, Outcome.HIDDEN, MONITOR_USER);
         checkSecurityDomainRead(client, MASTER, MAIN_ONE, Outcome.HIDDEN, MONITOR_USER);
+        checkSecurityDomainRead(client, MASTER, OTHER_ONE, Outcome.HIDDEN, MONITOR_USER);
         checkSensitiveAttribute(client, null, null, false, MONITOR_USER);
         checkSensitiveAttribute(client, MASTER, MAIN_ONE, false, MONITOR_USER);
         runGC(client, MASTER, null, Outcome.UNAUTHORIZED, MONITOR_USER);
         runGC(client, MASTER, MAIN_ONE, Outcome.UNAUTHORIZED, MONITOR_USER);
+        runGC(client, MASTER, OTHER_ONE, Outcome.HIDDEN, MONITOR_USER);
         addDeployment2(client, Outcome.UNAUTHORIZED, MONITOR_USER);
         addPath(client, Outcome.UNAUTHORIZED, MONITOR_USER);
     }
@@ -89,12 +141,15 @@ public abstract class AbstractStandardRolesTestCase extends AbstractRbacTestCase
         checkRootRead(client, null, null, Outcome.SUCCESS, OPERATOR_USER);
         checkRootRead(client, MASTER, null, Outcome.SUCCESS, OPERATOR_USER);
         checkRootRead(client, MASTER, MAIN_ONE, Outcome.SUCCESS, OPERATOR_USER);
+        checkRootRead(client, MASTER, OTHER_ONE, Outcome.HIDDEN, OPERATOR_USER);
         checkSecurityDomainRead(client, null, null, Outcome.HIDDEN, OPERATOR_USER);
         checkSecurityDomainRead(client, MASTER, MAIN_ONE, Outcome.HIDDEN, OPERATOR_USER);
+        checkSecurityDomainRead(client, MASTER, OTHER_ONE, Outcome.HIDDEN, OPERATOR_USER);
         checkSensitiveAttribute(client, null, null, false, OPERATOR_USER);
         checkSensitiveAttribute(client, MASTER, MAIN_ONE, false, OPERATOR_USER);
-        runGC(client, MASTER, null, Outcome.SUCCESS, OPERATOR_USER);
+        runGC(client, MASTER, null, Outcome.UNAUTHORIZED, OPERATOR_USER);
         runGC(client, MASTER, MAIN_ONE, Outcome.SUCCESS, OPERATOR_USER);
+        runGC(client, MASTER, OTHER_ONE, Outcome.HIDDEN, OPERATOR_USER);
         addDeployment2(client, Outcome.UNAUTHORIZED, OPERATOR_USER);
         addPath(client, Outcome.UNAUTHORIZED, OPERATOR_USER);
     }
@@ -106,14 +161,17 @@ public abstract class AbstractStandardRolesTestCase extends AbstractRbacTestCase
         checkRootRead(client, null, null, Outcome.SUCCESS, MAINTAINER_USER);
         checkRootRead(client, MASTER, null, Outcome.SUCCESS, MAINTAINER_USER);
         checkRootRead(client, MASTER, MAIN_ONE, Outcome.SUCCESS, MAINTAINER_USER);
+        checkRootRead(client, MASTER, OTHER_ONE, Outcome.HIDDEN, MAINTAINER_USER);
         checkSecurityDomainRead(client, null, null, Outcome.HIDDEN, MAINTAINER_USER);
         checkSecurityDomainRead(client, MASTER, MAIN_ONE, Outcome.HIDDEN, MAINTAINER_USER);
+        checkSecurityDomainRead(client, MASTER, OTHER_ONE, Outcome.HIDDEN, MAINTAINER_USER);
         checkSensitiveAttribute(client, null, null, false, MAINTAINER_USER);
         checkSensitiveAttribute(client, MASTER, MAIN_ONE, false, MAINTAINER_USER);
-        runGC(client, MASTER, null, Outcome.SUCCESS, MAINTAINER_USER);
+        runGC(client, MASTER, null, Outcome.UNAUTHORIZED, MAINTAINER_USER);
         runGC(client, MASTER, MAIN_ONE, Outcome.SUCCESS, MAINTAINER_USER);
+        runGC(client, MASTER, OTHER_ONE, Outcome.HIDDEN, MAINTAINER_USER);
         addDeployment2(client, Outcome.SUCCESS, MAINTAINER_USER);
-        addPath(client, Outcome.SUCCESS, MAINTAINER_USER);
+        addPath(client, Outcome.UNAUTHORIZED, MAINTAINER_USER);
     }
 
     @Test
@@ -123,12 +181,15 @@ public abstract class AbstractStandardRolesTestCase extends AbstractRbacTestCase
         checkRootRead(client, null, null, Outcome.SUCCESS, DEPLOYER_USER);
         checkRootRead(client, MASTER, null, Outcome.SUCCESS, DEPLOYER_USER);
         checkRootRead(client, MASTER, MAIN_ONE, Outcome.SUCCESS, DEPLOYER_USER);
+        checkRootRead(client, MASTER, OTHER_ONE, Outcome.HIDDEN, DEPLOYER_USER);
         checkSecurityDomainRead(client, null, null, Outcome.HIDDEN, DEPLOYER_USER);
         checkSecurityDomainRead(client, MASTER, MAIN_ONE, Outcome.HIDDEN, DEPLOYER_USER);
+        checkSecurityDomainRead(client, MASTER, OTHER_ONE, Outcome.HIDDEN, DEPLOYER_USER);
         checkSensitiveAttribute(client, null, null, false, DEPLOYER_USER);
         checkSensitiveAttribute(client, MASTER, MAIN_ONE, false, DEPLOYER_USER);
         runGC(client, MASTER, null, Outcome.UNAUTHORIZED, DEPLOYER_USER);
         runGC(client, MASTER, MAIN_ONE, Outcome.UNAUTHORIZED, DEPLOYER_USER);
+        runGC(client, MASTER, OTHER_ONE, Outcome.HIDDEN, DEPLOYER_USER);
         addDeployment2(client, Outcome.SUCCESS, DEPLOYER_USER);
         addPath(client, Outcome.UNAUTHORIZED, DEPLOYER_USER);
     }
@@ -140,14 +201,17 @@ public abstract class AbstractStandardRolesTestCase extends AbstractRbacTestCase
         checkRootRead(client, null, null, Outcome.SUCCESS, ADMINISTRATOR_USER);
         checkRootRead(client, MASTER, null, Outcome.SUCCESS, ADMINISTRATOR_USER);
         checkRootRead(client, MASTER, MAIN_ONE, Outcome.SUCCESS, ADMINISTRATOR_USER);
+        checkRootRead(client, MASTER, OTHER_ONE, Outcome.HIDDEN, ADMINISTRATOR_USER);
         checkSecurityDomainRead(client, null, null, Outcome.SUCCESS, ADMINISTRATOR_USER);
         checkSecurityDomainRead(client, MASTER, MAIN_ONE, Outcome.SUCCESS, ADMINISTRATOR_USER);
+        checkSecurityDomainRead(client, MASTER, OTHER_ONE, Outcome.HIDDEN, ADMINISTRATOR_USER);
         checkSensitiveAttribute(client, null, null, true, ADMINISTRATOR_USER);
         checkSensitiveAttribute(client, MASTER, MAIN_ONE, true, ADMINISTRATOR_USER);
-        runGC(client, MASTER, null, Outcome.SUCCESS, ADMINISTRATOR_USER);
+        runGC(client, MASTER, null, Outcome.UNAUTHORIZED, ADMINISTRATOR_USER);
         runGC(client, MASTER, MAIN_ONE, Outcome.SUCCESS, ADMINISTRATOR_USER);
+        runGC(client, MASTER, OTHER_ONE, Outcome.HIDDEN, ADMINISTRATOR_USER);
         addDeployment2(client, Outcome.SUCCESS, ADMINISTRATOR_USER);
-        addPath(client, Outcome.SUCCESS, ADMINISTRATOR_USER);
+        addPath(client, Outcome.UNAUTHORIZED, ADMINISTRATOR_USER);
     }
 
     @Test
@@ -157,12 +221,15 @@ public abstract class AbstractStandardRolesTestCase extends AbstractRbacTestCase
         checkRootRead(client, null, null, Outcome.SUCCESS, AUDITOR_USER);
         checkRootRead(client, MASTER, null, Outcome.SUCCESS, AUDITOR_USER);
         checkRootRead(client, MASTER, MAIN_ONE, Outcome.SUCCESS, AUDITOR_USER);
+        checkRootRead(client, MASTER, OTHER_ONE, Outcome.HIDDEN, AUDITOR_USER);
         checkSecurityDomainRead(client, null, null, Outcome.SUCCESS, AUDITOR_USER);
         checkSecurityDomainRead(client, MASTER, MAIN_ONE, Outcome.SUCCESS, AUDITOR_USER);
+        checkSecurityDomainRead(client, MASTER, OTHER_ONE, Outcome.HIDDEN, AUDITOR_USER);
         checkSensitiveAttribute(client, null, null, true, AUDITOR_USER);
         checkSensitiveAttribute(client, MASTER, MAIN_ONE, true, AUDITOR_USER);
         runGC(client, MASTER, null, Outcome.UNAUTHORIZED, AUDITOR_USER);
         runGC(client, MASTER, MAIN_ONE, Outcome.UNAUTHORIZED, AUDITOR_USER);
+        runGC(client, MASTER, OTHER_ONE, Outcome.HIDDEN, AUDITOR_USER);
         addDeployment2(client, Outcome.UNAUTHORIZED, AUDITOR_USER);
         addPath(client, Outcome.UNAUTHORIZED, AUDITOR_USER);
     }
@@ -174,14 +241,16 @@ public abstract class AbstractStandardRolesTestCase extends AbstractRbacTestCase
         checkRootRead(client, null, null, Outcome.SUCCESS, SUPERUSER_USER);
         checkRootRead(client, MASTER, null, Outcome.SUCCESS, SUPERUSER_USER);
         checkRootRead(client, MASTER, MAIN_ONE, Outcome.SUCCESS, SUPERUSER_USER);
+        checkRootRead(client, MASTER, OTHER_ONE, Outcome.HIDDEN, SUPERUSER_USER);
         checkSecurityDomainRead(client, null, null, Outcome.SUCCESS, SUPERUSER_USER);
         checkSecurityDomainRead(client, MASTER, MAIN_ONE, Outcome.SUCCESS, SUPERUSER_USER);
+        checkSecurityDomainRead(client, MASTER, OTHER_ONE, Outcome.HIDDEN, SUPERUSER_USER);
         checkSensitiveAttribute(client, null, null, true, SUPERUSER_USER);
         checkSensitiveAttribute(client, MASTER, MAIN_ONE, true, SUPERUSER_USER);
-        runGC(client, MASTER, null, Outcome.SUCCESS, SUPERUSER_USER);
+        runGC(client, MASTER, null, Outcome.UNAUTHORIZED, SUPERUSER_USER);
         runGC(client, MASTER, MAIN_ONE, Outcome.SUCCESS, SUPERUSER_USER);
+        runGC(client, MASTER, OTHER_ONE, Outcome.HIDDEN, SUPERUSER_USER);
         addDeployment2(client, Outcome.SUCCESS, SUPERUSER_USER);
-        addPath(client, Outcome.SUCCESS, SUPERUSER_USER);
+        addPath(client, Outcome.UNAUTHORIZED, SUPERUSER_USER);
     }
-
 }

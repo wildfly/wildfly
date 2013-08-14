@@ -22,6 +22,8 @@
 
 package org.jboss.as.controller.access.constraint;
 
+import org.jboss.as.controller.access.Action;
+
 /**
  * A constraint meant for use in situations where the Action or Target "is" or "is not" something
  * and the user "allows" or "allowsNot".
@@ -48,7 +50,7 @@ public abstract class AllowAllowNotConstraint extends AbstractConstraint {
     }
 
     @Override
-    public boolean violates(Constraint other) {
+    public boolean violates(Constraint other, Action.ActionEffect actionEffect) {
         if (other.getClass() == getClass()) {
             AllowAllowNotConstraint aanc = (AllowAllowNotConstraint) other;
             if (is == null) {
