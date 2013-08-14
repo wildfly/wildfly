@@ -42,6 +42,7 @@ import org.jboss.as.patching.installation.InstallationManagerImpl;
 import org.jboss.as.patching.installation.InstalledIdentity;
 import org.jboss.as.patching.tool.ContentVerificationPolicy;
 import org.jboss.as.patching.tool.PatchTool;
+import org.jboss.as.patching.tool.PatchingResult;
 import org.jboss.as.version.ProductConfig;
 import org.junit.After;
 import org.junit.Before;

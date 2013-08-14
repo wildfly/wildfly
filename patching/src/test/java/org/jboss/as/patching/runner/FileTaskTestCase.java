@@ -40,11 +40,11 @@ import static org.junit.Assert.assertTrue;
 
 import java.io.File;
 
-import org.jboss.as.patching.Constants;
 import org.jboss.as.patching.installation.Identity;
 import org.jboss.as.patching.metadata.ContentModification;
 import org.jboss.as.patching.metadata.Patch;
 import org.jboss.as.patching.metadata.PatchBuilder;
+import org.jboss.as.patching.tool.PatchingResult;
 import org.junit.Test;
 
 /**

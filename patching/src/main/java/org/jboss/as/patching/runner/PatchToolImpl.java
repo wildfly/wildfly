@@ -44,6 +44,7 @@ import org.jboss.as.patching.metadata.PatchMetadataResolver;
 import org.jboss.as.patching.metadata.PatchXml;
 import org.jboss.as.patching.tool.ContentVerificationPolicy;
 import org.jboss.as.patching.tool.PatchTool;
+import org.jboss.as.patching.tool.PatchingResult;
 
 /**
  * The default patch tool implementation.
@@ -53,7 +54,7 @@ import org.jboss.as.patching.tool.PatchTool;
 public class PatchToolImpl implements PatchTool {
 
     private final InstallationManager manager;
-    private final InstallationManager.ModificationCompletion callback;
+    private final InstallationManager.ModificationCompletionCallback callback;
     private final IdentityPatchRunner runner;
 
     public PatchToolImpl(final InstallationManager manager) {
@@ -62,7 +63,7 @@ public class PatchToolImpl implements PatchTool {
         this.callback = runner;
     }
 
-    public PatchToolImpl(final InstallationManager manager, final InstallationManager.ModificationCompletion callback) {
+    public PatchToolImpl(final InstallationManager manager, final InstallationManager.ModificationCompletionCallback callback) {
         this.manager = manager;
         this.runner = new IdentityPatchRunner(manager.getInstalledImage());
         this.callback = callback;

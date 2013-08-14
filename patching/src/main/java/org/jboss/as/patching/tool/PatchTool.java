@@ -39,7 +39,6 @@ import org.jboss.as.patching.installation.LayersConfig;
 import org.jboss.as.patching.metadata.MiscContentItem;
 import org.jboss.as.patching.runner.PatchToolImpl;
 import org.jboss.as.patching.runner.PatchUtils;
-import org.jboss.as.patching.runner.PatchingResult;
 import org.jboss.as.version.ProductConfig;
 import org.jboss.dmr.ModelNode;
 import org.jboss.modules.LocalModuleLoader;

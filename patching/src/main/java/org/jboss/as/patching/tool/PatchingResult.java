@@ -20,7 +20,7 @@
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
 
-package org.jboss.as.patching.runner;
+package org.jboss.as.patching.tool;
 
 import org.jboss.as.patching.PatchInfo;
 

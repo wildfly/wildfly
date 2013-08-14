@@ -52,7 +52,7 @@ import org.jboss.as.patching.metadata.Patch;
 import org.jboss.as.patching.metadata.PatchBuilder;
 import org.jboss.as.patching.runner.AbstractTaskTestCase;
 import org.jboss.as.patching.runner.ContentModificationUtils;
-import org.jboss.as.patching.runner.PatchingResult;
+import org.jboss.as.patching.tool.PatchingResult;
 import org.jboss.as.patching.runner.TestUtils;
 import org.junit.Test;
 

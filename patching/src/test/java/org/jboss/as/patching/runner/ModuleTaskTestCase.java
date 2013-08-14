@@ -23,7 +23,6 @@
 package org.jboss.as.patching.runner;
 
 import static org.jboss.as.patching.Constants.LAYERS;
-import static org.jboss.as.patching.Constants.NOT_PATCHED;
 import static org.jboss.as.patching.Constants.SYSTEM;
 import static org.jboss.as.patching.IoUtils.mkdir;
 import static org.jboss.as.patching.IoUtils.newFile;
@@ -44,8 +43,7 @@ import org.jboss.as.patching.installation.InstalledIdentity;
 import org.jboss.as.patching.metadata.ContentModification;
 import org.jboss.as.patching.metadata.Patch;
 import org.jboss.as.patching.metadata.PatchBuilder;
-import org.jboss.as.patching.metadata.impl.PatchElementImpl;
-import org.jboss.as.patching.metadata.impl.PatchElementProviderImpl;
+import org.jboss.as.patching.tool.PatchingResult;
 import org.junit.Test;
 
 /**
