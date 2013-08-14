@@ -153,18 +153,6 @@ public class HostModelRegistrationHandler implements OperationStepHandler {
             }
         }
 
-//        root.get(NAME);
-//        root.get(NAMESPACES).setEmptyList();
-//        root.get(SCHEMA_LOCATIONS).setEmptyList();
-//        root.get(EXTENSION);
-//        root.get(SYSTEM_PROPERTY);
-//        root.get(PATH);
-//        root.get(CORE_SERVICE);
-//        root.get(SERVER_CONFIG);
-//        root.get(DOMAIN_CONTROLLER);
-//        root.get(INTERFACE);
-//        root.get(JVM);
-//        root.get(RUNNING_SERVER);
     }
 
 }

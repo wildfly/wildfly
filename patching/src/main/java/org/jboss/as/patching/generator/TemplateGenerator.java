@@ -32,6 +32,8 @@ import org.jboss.as.patching.IoUtils;
 import org.jboss.as.patching.PatchMessages;
 
 /**
+ * Generate a simple template for a give patch type.
+ *
  * @author Emanuel Muckenhuber
  */
 class TemplateGenerator {

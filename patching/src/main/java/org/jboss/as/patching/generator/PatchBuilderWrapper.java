@@ -22,6 +22,8 @@
 
 package org.jboss.as.patching.generator;
 
+import static org.jboss.as.patching.generator.PatchGenerator.processingError;
+
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.HashMap;
@@ -59,28 +61,64 @@ abstract class PatchBuilderWrapper extends PatchBuilder {
         return build();
     }
 
+    /**
+     * Callback when the diff determines that a layer was added.
+     *
+     * @param layer the layer name
+     * @return the element builder
+     */
     protected PatchElementBuilder addLayer(final String layer) {
-        throw new IllegalStateException(layer);
+        throw processingError("invalid layer configuration for %s", layer);
     }
 
+    /**
+     * Callback when there were changes in a layer.
+     *
+     * @param layer the layer name
+     * @return the element builder
+     */
     protected PatchElementBuilder modifyLayer(final String layer) {
         return modifyLayer(layer, false);
     }
 
+    /**
+     * Callback when the diff determines that a layer was removed.
+     *
+     * @param layer the layer name
+     * @return the element builder
+     */
     protected PatchElementBuilder removeLayer(final String layer) {
-        throw new IllegalStateException(layer);
+        throw processingError("invalid layer configuration for %s", layer);
     }
 
+    /**
+     * Callback when the diff determines that an add-on was added.
+     *
+     * @param layer the add-on name
+     * @return the element builder
+     */
     protected PatchElementBuilder addAddOn(final String layer) {
-        throw new IllegalStateException(layer);
+        throw processingError("invalid add-on configuration for %s", layer);
     }
 
+    /**
+     * Callback when there were changes in an add-on.
+     *
+     * @param layer the layer name
+     * @return the element builder
+     */
     protected PatchElementBuilder modifyAddOn(final String layer) {
         return modifyLayer(layer, true);
     }
 
+    /**
+     * Callback when the diff determines that an add-on was removed.
+     *
+     * @param layer the add-on name
+     * @return the element builder
+     */
     protected PatchElementBuilder removeAddOn(final String layer) {
-        throw new IllegalStateException(layer);
+        throw processingError("invalid add-on configuration for %s", layer);
     }
 
     /**
@@ -225,10 +263,10 @@ abstract class PatchBuilderWrapper extends PatchBuilder {
             }
         } else {
             if (!n.equals(o)) {
-                throw new IllegalStateException(); // TODO
+                throw processingError("TODO");
             }
             if (n.isLeaf() != o.isLeaf()) {
-                throw new IllegalStateException(); // TODO
+                throw processingError("TODO");
             }
             if (n.isLeaf() && !Arrays.equals(o.getComparisonHash(), n.getComparisonHash())) {
                 builder.modifyFile(n.getName(), n.getParent().getPathAsList(), o.getMetadataHash(), n.getMetadataHash(), !n.isLeaf());

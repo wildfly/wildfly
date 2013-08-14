@@ -41,7 +41,7 @@ import org.jboss.as.patching.IoUtils;
 class Distribution {
 
     // The distribution root
-    // Node to self: this cannot be static, because of the children!
+    // Node to self: this cannot be static, because of the associated children
     protected final DistributionContentItem ROOT = new DistributionItemImpl(null, null, IoUtils.NO_CONTENT, IoUtils.NO_CONTENT, false);
 
     private final DistributionStructure structure;
@@ -77,6 +77,11 @@ class Distribution {
         return ROOT;
     }
 
+    /**
+     * Get the distribution name.
+     *
+     * @return the distribution name
+     */
     String getName() {
         return name;
     }
@@ -85,6 +90,11 @@ class Distribution {
         this.name = name;
     }
 
+    /**
+     * Get the distribution version.
+     *
+     * @return the version
+     */
     String getVersion() {
         return version;
     }
@@ -176,7 +186,6 @@ class Distribution {
     static class ProcessedLayer {
 
         private final String name;
-
         ProcessedLayer(String name) {
             this.name = name;
         }

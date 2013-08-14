@@ -53,4 +53,7 @@ public interface PatchManagementMessages {
     @Message(id = 16942, value = "Unable to apply or rollback a patch when the server is in a restart-required state.")
     OperationFailedException serverRequiresRestart();
 
+    @Message(id = 16943, value = "failed to load identity info")
+    String failedToLoadIdentity();
+
 }

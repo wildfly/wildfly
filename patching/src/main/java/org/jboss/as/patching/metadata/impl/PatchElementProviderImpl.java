@@ -26,6 +26,7 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 
+import org.jboss.as.patching.PatchMessages;
 import org.jboss.as.patching.metadata.LayerType;
 import org.jboss.as.patching.metadata.Patch;
 import org.jboss.as.patching.metadata.PatchElementProvider;
@@ -44,9 +45,7 @@ public class PatchElementProviderImpl implements PatchElementProvider, RequiresC
     private Collection<String> requires = Collections.emptyList();
 
     public PatchElementProviderImpl(String name, boolean isAddOn) {
-        if(name == null) {
-            throw new IllegalArgumentException("name is null");
-        }
+        assert name != null;
         this.name = name;
         this.isAddOn = isAddOn;
     }
@@ -91,9 +90,7 @@ public class PatchElementProviderImpl implements PatchElementProvider, RequiresC
 
     @Override
     public PatchElementProviderImpl incompatibleWith(final String patchID) {
-        if (patchID == null) {
-            throw new IllegalArgumentException("patchId is null");
-        }
+        assert patchID != null;
         if (incompatibleWith.isEmpty()) {
             incompatibleWith = new ArrayList<String>();
         }
@@ -113,7 +110,7 @@ public class PatchElementProviderImpl implements PatchElementProvider, RequiresC
     @Override
     public <T extends PatchElementProvider> T forType(Patch.PatchType patchType, Class<T> clazz) {
         if (patchType != this.patchType) {
-            throw new IllegalStateException(this.patchType + " was: " + patchType);
+            throw PatchMessages.MESSAGES.patchTypesDontMatch();
         }
         return clazz.cast(this);
     }

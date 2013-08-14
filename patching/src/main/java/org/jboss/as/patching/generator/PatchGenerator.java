@@ -22,6 +22,10 @@
 
 package org.jboss.as.patching.generator;
 
+import static java.lang.System.getProperty;
+import static java.lang.System.getSecurityManager;
+import static java.security.AccessController.doPrivileged;
+
 import javax.xml.stream.XMLStreamException;
 import java.io.BufferedInputStream;
 import java.io.File;
@@ -39,6 +43,7 @@ import org.jboss.as.patching.metadata.Patch;
 import org.jboss.as.version.ProductConfig;
 import org.jboss.as.version.Usage;
 import org.jboss.modules.Module;
+import org.wildfly.security.manager.ReadPropertyAction;
 
 /**
  * Generates a patch archive.
@@ -106,15 +111,15 @@ public class PatchGenerator {
             final Distribution base = Distribution.create(oldRoot);
             final Distribution updated = Distribution.create(newRoot);
             if (!base.getName().equals(updated.getName())) {
-                throw new RuntimeException("distribution names don't match");
+                throw processingError("distribution names don't match, expected: %s, but was %s ", base.getName(), updated.getName());
             }
             //
             if (patchConfig.getAppliesToProduct() != null && ! patchConfig.getAppliesToProduct().equals(base.getName())) {
-                throw new RuntimeException("patch target does not match: " + patchConfig.getAppliesToProduct());
+                throw processingError("patch target does not match, expected: %s, but was %s", patchConfig.getAppliesToProduct(), base.getName());
             }
             //
             if (patchConfig.getAppliesToVersion() != null && ! patchConfig.getAppliesToVersion().equals(base.getVersion())) {
-                throw new RuntimeException("patch target version does not match: " + patchConfig.getAppliesToProduct());
+                throw processingError("patch target version does not match, expected: %s, but was %s", patchConfig.getAppliesToVersion(), base.getVersion());
             }
 
             // Build the patch metadata
@@ -162,7 +167,7 @@ public class PatchGenerator {
             tmp = new File(tmpDir, "jboss-as-patch-" + patchId + "-" + count);
         }
         if (!tmp.mkdirs()) {
-            throw new RuntimeException("Cannot create tmp dir for patch creation at " + tmp);
+            throw processingError("Cannot create tmp dir for patch create at %s", tmp.getAbsolutePath());
         }
         tmp.deleteOnExit();
         File metaInf = new File(tmp, "META-INF");
@@ -186,7 +191,8 @@ public class PatchGenerator {
             try {
                 if ("--version".equals(arg) || "-v".equals(arg)
                         || "-version".equals(arg) || "-V".equals(arg)) {
-                    ProductConfig productConfig = new ProductConfig(Module.getBootModuleLoader(), SecurityActions.getSystemProperty("jboss.home.dir"), Collections.emptyMap());
+                    final String homeDir = getSecurityManager() == null ? getProperty("jboss.home.dir") : doPrivileged(new ReadPropertyAction("jboss.home.dir"));
+                    ProductConfig productConfig = new ProductConfig(Module.getBootModuleLoader(), homeDir, Collections.emptyMap());
                     System.out.println(productConfig.getPrettyVersionString());
                     return null;
                 } else if ("--help".equals(arg) || "-h".equals(arg) || "-H".equals(arg)) {
@@ -282,4 +288,13 @@ public class PatchGenerator {
         System.out.print(usage.usage(headline));
 
     }
+
+    static RuntimeException processingError(String message, Object... arguments) {
+        return new RuntimeException(String.format(message, arguments)); // no 18n for the generation
+    }
+
+    static RuntimeException processingError(Exception e, String message, Object... arguments) {
+        return new RuntimeException(String.format(message, arguments), e); // no 18n for the generation
+    }
+
 }

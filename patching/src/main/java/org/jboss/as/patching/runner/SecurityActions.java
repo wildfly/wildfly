@@ -20,7 +20,7 @@
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
 
-package org.jboss.as.patching.generator;
+package org.jboss.as.patching.runner;
 
 import static java.lang.System.getProperty;
 import static java.lang.System.getSecurityManager;
@@ -29,11 +29,7 @@ import static java.security.AccessController.doPrivileged;
 import org.wildfly.security.manager.ReadPropertyAction;
 
 /**
- * Security actions to access system environment information.  No methods in
- * this class are to be made public under any circumstances!
- *
- * @author <a href="kabir.khan@jboss.com">Kabir Khan</a>
- * @author <a href="mailto:david.lloyd@redhat.com">David M. Lloyd</a>
+ * @author Emanuel Muckenhuber
  */
 class SecurityActions {
 

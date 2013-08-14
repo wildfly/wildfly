@@ -54,7 +54,7 @@ public class InstallationManagerService implements Service<InstallationManager> 
     @Override
     public synchronized void start(StartContext startContext) throws StartException {
         try {
-            final File jbossHome = new File(System.getProperty("jboss.home.dir"));
+            final File jbossHome = new File(SecurityActions.getSystemProperty("jboss.home.dir"));
             final ProductConfig productConfig = this.productConfig.getValue();
             this.manager = load(jbossHome, productConfig);
         } catch (Exception e) {
@@ -84,16 +84,9 @@ public class InstallationManagerService implements Service<InstallationManager> 
         return new InstallationManagerImpl(identity);
     }
 
-    public static InstallationManager load(final File jbossHome, final List<File> moduleRoots, final List<File> bundlesRoots, final ProductConfig productConfig) throws IOException {
-        final InstalledImage installedImage = InstalledIdentity.installedImage(jbossHome);
-        final InstalledIdentity identity = LayersFactory.load(installedImage, productConfig, moduleRoots, bundlesRoots);
-        return new InstallationManagerImpl(identity);
-    }
-
-
     private static List<File> getModulePath(final InstalledImage image) {
         final List<File> path = new ArrayList<File>();
-        final String modulePath = System.getProperty(MODULE_PATH, System.getenv("JAVA_MODULEPATH"));
+        final String modulePath = SecurityActions.getSystemProperty(MODULE_PATH, SecurityActions.getEnv("JAVA_MODULEPATH"));
         if (modulePath != null) {
             final String[] paths = modulePath.split(Pattern.quote(File.pathSeparator));
             for (final String s : paths) {
@@ -107,7 +100,7 @@ public class InstallationManagerService implements Service<InstallationManager> 
     }
 
     private static List<File> getBundlePath(final InstalledImage image) {
-        final String prop = System.getProperty(BUNDLES_DIR);
+        final String prop = SecurityActions.getSystemProperty(BUNDLES_DIR);
         final File bundleRoots = prop != null ? new File(prop) : image.getBundlesDir();
         return Collections.singletonList(bundleRoots);
     }

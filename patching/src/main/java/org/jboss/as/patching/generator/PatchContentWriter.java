@@ -22,6 +22,8 @@
 
 package org.jboss.as.patching.generator;
 
+import static org.jboss.as.patching.generator.PatchGenerator.processingError;
+
 import javax.xml.stream.XMLStreamException;
 import java.io.File;
 import java.io.FileOutputStream;
@@ -79,7 +81,7 @@ abstract class PatchContentWriter {
             final File source = getSourceFile(item);
             final File target = getTargetFile(item);
             if (!source.exists()) {
-                throw new IllegalStateException(source.getAbsolutePath());
+                throw processingError("source item does not exist %s", source.getAbsolutePath());
             }
             IoUtils.copyFile(source, target);
         }
@@ -138,7 +140,7 @@ abstract class PatchContentWriter {
                         final File layer = new File(root, element.getProvider().getName());
                         return PatchContentLoader.getModulePath(layer, (ModuleItem) item);
                     }
-                    throw new IllegalStateException();
+                    throw processingError("invalid content item for patch-element %s", item);
                 }
 
                 @Override
@@ -159,7 +161,7 @@ abstract class PatchContentWriter {
                 if (item.getContentType() == ContentType.MISC) {
                     return PatchContentLoader.getMiscPath(distributionRoot, (MiscContentItem) item);
                 }
-                throw new IllegalStateException();
+                throw processingError("invalid content item for identity %s", item);
             }
 
             @Override

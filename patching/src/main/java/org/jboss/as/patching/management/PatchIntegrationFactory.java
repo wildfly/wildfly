@@ -32,6 +32,8 @@ import org.jboss.msc.service.ServiceController;
 import org.jboss.msc.service.ServiceTarget;
 
 /**
+ * {@code ServiceLoader} based controller integration factory.
+ *
  * @author Emanuel Muckenhuber
  */
 public final class PatchIntegrationFactory implements ModelControllerServiceInitialization {

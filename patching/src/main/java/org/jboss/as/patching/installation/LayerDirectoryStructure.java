@@ -28,19 +28,22 @@ import java.io.File;
 
 import org.jboss.as.patching.Constants;
 import org.jboss.as.patching.DirectoryStructure;
+import org.jboss.as.patching.PatchMessages;
 
 /**
  * @author Emanuel Muckenhuber
  */
 abstract class LayerDirectoryStructure extends DirectoryStructure {
 
-    protected File getPatchesMetadata() {
+    abstract File getPatchesMetadata();
+
+    protected File getPatchesMetadata(String name) {
         File root = getModuleRoot();
         if (root == null) {
             root = getBundleRepositoryRoot();
         }
         if (root == null) {
-            throw new IllegalStateException("no associated module or bundle repository with this layer");
+            throw PatchMessages.MESSAGES.installationInvalidLayerConfiguration(name);
         }
         return root;
     }

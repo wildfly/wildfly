@@ -1,7 +1,12 @@
 package org.jboss.as.patching.installation;
 
+import java.io.File;
+import java.io.IOException;
+import java.util.List;
+
 import org.jboss.as.patching.metadata.LayerType;
 import org.jboss.as.patching.metadata.Patch;
+import org.jboss.as.version.ProductConfig;
 
 /**
  * The installation manager, basically represents a mutable {@code InstalledIdentity}.
@@ -29,7 +34,7 @@ public abstract class InstallationManager extends InstalledIdentity {
      * Require a restart. This will set the patching service to read-only
      * and the server has to be restarted in order to execute the next
      * patch operation.
-     *
+     * <p/>
      * In case the patch operation does not succeed it needs to clear the
      * reload required state using {@link #clearRestartRequired()}.
      *
@@ -98,7 +103,7 @@ public abstract class InstallationManager extends InstalledIdentity {
         /**
          * Apply a patch.
          *
-         * @param patchId the patch id
+         * @param patchId   the patch id
          * @param patchType the patch type
          */
         void apply(String patchId, Patch.PatchType patchType);
@@ -132,6 +137,22 @@ public abstract class InstallationManager extends InstalledIdentity {
          */
         void canceled();
 
+    }
+
+    /**
+     * Load the default installation manager implementation.
+     *
+     * @param jbossHome     the jboss home directory
+     * @param moduleRoots   the module roots
+     * @param bundlesRoots  the bundle roots
+     * @param productConfig the product config
+     * @return the installation manager implementation
+     * @throws IOException
+     */
+    public static InstallationManager load(final File jbossHome, final List<File> moduleRoots, final List<File> bundlesRoots, final ProductConfig productConfig) throws IOException {
+        final InstalledImage installedImage = installedImage(jbossHome);
+        final InstalledIdentity identity = LayersFactory.load(installedImage, productConfig, moduleRoots, bundlesRoots);
+        return new InstallationManagerImpl(identity);
     }
 
 }

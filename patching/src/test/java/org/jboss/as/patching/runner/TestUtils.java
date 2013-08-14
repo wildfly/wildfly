@@ -24,8 +24,16 @@ package org.jboss.as.patching.runner;
 
 import static java.lang.String.format;
 import static java.util.UUID.randomUUID;
+import static org.jboss.as.patching.Constants.APP_CLIENT;
 import static org.jboss.as.patching.Constants.BASE;
+import static org.jboss.as.patching.Constants.BUNDLES;
+import static org.jboss.as.patching.Constants.DOMAIN;
+import static org.jboss.as.patching.Constants.INSTALLATION_METADATA;
 import static org.jboss.as.patching.Constants.LAYERS;
+import static org.jboss.as.patching.Constants.METADATA;
+import static org.jboss.as.patching.Constants.MODULES;
+import static org.jboss.as.patching.Constants.PATCHES;
+import static org.jboss.as.patching.Constants.STANDALONE;
 import static org.jboss.as.patching.Constants.SYSTEM;
 import static org.jboss.as.patching.IoUtils.mkdir;
 import static org.jboss.as.patching.IoUtils.newFile;
@@ -44,9 +52,11 @@ import java.util.jar.JarOutputStream;
 import java.util.jar.Manifest;
 import java.util.jar.Attributes.Name;
 
+import org.jboss.as.patching.Constants;
 import org.jboss.as.patching.DirectoryStructure;
 import org.jboss.as.patching.IoUtils;
 import org.jboss.as.patching.ZipUtils;
+import org.jboss.as.patching.installation.InstalledImage;
 import org.jboss.as.patching.installation.PatchableTarget;
 import org.jboss.as.patching.metadata.ModuleItem;
 import org.jboss.as.patching.metadata.Patch;
@@ -295,6 +305,76 @@ public class TestUtils {
         }
     }
 
+    /**
+     * Create the legacy patch environment based on the default layout.
+     *
+     * @param jbossHome the $JBOSS_HOME
+     * @return the patch environment
+     * @deprecated see {@linkplain org.jboss.as.patching.installation.InstallationManager}
+     */
+    @Deprecated
+    public static DirectoryStructure createLegacyTestStructure(final File jbossHome) {
+        final File appClient = new File(jbossHome, APP_CLIENT);
+        final File bundles = new File(jbossHome, BUNDLES);
+        final File domain = new File(jbossHome, DOMAIN);
+        final File modules = new File(jbossHome, MODULES);
+        final File installation = new File(jbossHome, Constants.INSTALLATION);
+        final File patches = new File(modules, PATCHES);
+        final File standalone = new File(jbossHome, STANDALONE);
+        return new LegacyDirectoryStructure(new InstalledImage() {
+
+            @Override
+            public File getJbossHome() {
+                return jbossHome;
+            }
+
+            @Override
+            public File getBundlesDir() {
+                return bundles;
+            }
+
+            @Override
+            public File getModulesDir() {
+                return modules;
+            }
+
+            @Override
+            public File getInstallationMetadata() {
+                return installation;
+            }
+
+            @Override
+            public File getLayersConf() {
+                return new File(getModulesDir(), Constants.LAYERS_CONF);
+            }
+
+            @Override
+            public File getPatchesDir() {
+                return patches;
+            }
+
+            @Override
+            public File getPatchHistoryDir(String patchId) {
+                return newFile(getInstallationMetadata(), PATCHES, patchId);
+            }
+
+            @Override
+            public File getAppClientDir() {
+                return appClient;
+            }
+
+            @Override
+            public File getDomainDir() {
+                return domain;
+            }
+
+            @Override
+            public File getStandaloneDir() {
+                return standalone;
+            }
+        });
+    }
+
     public interface ContentTask {
 
         /**
@@ -308,4 +388,48 @@ public class TestUtils {
 
     }
 
+    static class LegacyDirectoryStructure extends DirectoryStructure {
+        private final InstalledImage image;
+        LegacyDirectoryStructure(final InstalledImage image) {
+            this.image = image;
+        }
+
+        @Override
+        public InstalledImage getInstalledImage() {
+            return image;
+        }
+
+        public File getPatchesMetadata() {
+            return new File(getInstalledImage().getPatchesDir(), METADATA);
+        }
+
+        @Override
+        public File getInstallationInfo() {
+            return new File(getPatchesMetadata(), INSTALLATION_METADATA);
+        }
+
+        public File getPatchDirectory(final String patchId) {
+            return new File(getInstalledImage().getPatchesDir(), patchId);
+        }
+
+        @Override
+        public File getBundlesPatchDirectory(final String patchId) {
+            return new File(getPatchDirectory(patchId), BUNDLES);
+        }
+
+        @Override
+        public File getModulePatchDirectory(final String patchId) {
+            return new File(getPatchDirectory(patchId), MODULES);
+        }
+
+        @Override
+        public File getBundleRepositoryRoot() {
+            return getInstalledImage().getBundlesDir();
+        }
+
+        @Override
+        public File getModuleRoot() {
+            return getInstalledImage().getModulesDir();
+        }
+    }
 }

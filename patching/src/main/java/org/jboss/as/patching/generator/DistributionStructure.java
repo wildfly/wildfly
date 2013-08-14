@@ -28,21 +28,6 @@ package org.jboss.as.patching.generator;
  * @author Brian Stansberry (c) 2012 Red Hat Inc.
  */
 public interface DistributionStructure {
-
-    /**
-     * Factory for a {@link DistributionStructure
-     */
-    public static class Factory {
-        /**
-         * Create a {@link DistributionStructure} for the given version.
-         *
-         * @param version the
-         */
-        public static DistributionStructure create(String version) {
-            throw new UnsupportedOperationException(); // TODO fix together with patch-config
-        }
-    }
-
     /**
      * See if this content path is ignored.
      *
