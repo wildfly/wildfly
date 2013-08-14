@@ -368,30 +368,28 @@ abstract class AbstractOperationContext implements OperationContext {
      */
     void logAuditRecord() {
         if (!auditLogged) {
-            if (auditLogger.getLoggerStatus() != AuditLogger.Status.DISABLED) {
-                try {
-                    PrivilegedAction<Subject> getCurrentAction = new PrivilegedAction<Subject>() {
-                        @Override
-                        public Subject run() {
-                            return Subject.getSubject(AccessController.getContext());
-                        }
-                    };
-                    Subject subject = System.getSecurityManager() == null ?
-                            getCurrentAction.run() : AccessController.doPrivileged(getCurrentAction);
-                    auditLogger.log(
-                            !isModelAffected(),
-                            isBooting(),
-                            resultAction,
-                            getCallerUserId(subject),
-                            getDomainUUID(),
-                            getSubjectAccessMechanism(subject),
-                            getSubjectInetAddress(subject),
-                            getModel(),
-                            controllerOperations);
-                    auditLogged = true;
-                } catch (Exception e) {
-                    ControllerLogger.MGMT_OP_LOGGER.failedToUpdateAuditLog(e);
-                }
+            try {
+                PrivilegedAction<Subject> getCurrentAction = new PrivilegedAction<Subject>() {
+                    @Override
+                    public Subject run() {
+                        return Subject.getSubject(AccessController.getContext());
+                    }
+                };
+                Subject subject = System.getSecurityManager() == null ?
+                        getCurrentAction.run() : AccessController.doPrivileged(getCurrentAction);
+                auditLogger.log(
+                        !isModelAffected(),
+                        isBooting(),
+                        resultAction,
+                        getCallerUserId(subject),
+                        getDomainUUID(),
+                        getSubjectAccessMechanism(subject),
+                        getSubjectInetAddress(subject),
+                        getModel(),
+                        controllerOperations);
+                auditLogged = true;
+            } catch (Exception e) {
+                ControllerLogger.MGMT_OP_LOGGER.failedToUpdateAuditLog(e);
             }
         }
     }

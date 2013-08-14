@@ -91,6 +91,7 @@ public class ManagedAuditLoggerImpl implements ManagedAuditLogger, ManagedAuditL
         } catch (Exception e) {
             handleLoggingException(e);
         } finally {
+            applyHandlerUpdates();
             config.unlock();
         }
 
@@ -113,6 +114,7 @@ public class ManagedAuditLoggerImpl implements ManagedAuditLogger, ManagedAuditL
         } catch (Exception e) {
             handleLoggingException(e);
         } finally {
+            applyHandlerUpdates();
             config.unlock();
         }
     }
@@ -206,27 +208,19 @@ public class ManagedAuditLoggerImpl implements ManagedAuditLogger, ManagedAuditL
 
     /** protected by config's audit lock */
     private void storeLogItem(AuditLogItem item) throws IOException {
-        try {
-            switch (getLoggerStatus()) {
-                case QUEUEING:
-                    queuedItems.add(item);
-                    break;
-                case LOGGING:
-                    writeLogItem(item);
-                    break;
-                case DISABLE_NEXT:
-                    writeLogItem(item);
-                    config.setLoggerStatus(Status.DISABLED);
-                case DISABLED:
-                    // ignore
-                    break;
-            }
-        } finally {
-            //Now that we have possibly written out the message, replace the handlers with any ones that have been replaced
-            if (handlerUpdateTask != null && !config.isManualCommit()){
-                handlerUpdateTask.applyChanges();
-                handlerUpdateTask = null;
-            }
+        switch (getLoggerStatus()) {
+            case QUEUEING:
+                queuedItems.add(item);
+                break;
+            case LOGGING:
+                writeLogItem(item);
+                break;
+            case DISABLE_NEXT:
+                writeLogItem(item);
+                config.setLoggerStatus(Status.DISABLED);
+            case DISABLED:
+                // ignore
+                break;
         }
     }
 
@@ -349,12 +343,17 @@ public class ManagedAuditLoggerImpl implements ManagedAuditLogger, ManagedAuditL
                 //i18n not needed, normal users will never end up here
                 throw new IllegalStateException("Attempt was made to manually apply changes when manual commit was not configured");
             }
-            if (handlerUpdateTask != null) {
-                handlerUpdateTask.applyChanges();
-                handlerUpdateTask = null;
-            }
+            applyHandlerUpdates();
         } finally {
             config.unlock();
+        }
+    }
+
+    /** Call with lock taken */
+    private void applyHandlerUpdates() {
+        if (handlerUpdateTask != null) {
+            handlerUpdateTask.applyChanges();
+            handlerUpdateTask = null;
         }
     }
 
