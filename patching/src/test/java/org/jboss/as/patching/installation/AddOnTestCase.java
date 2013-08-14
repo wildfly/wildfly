@@ -31,6 +31,7 @@ import static org.jboss.as.patching.IoUtils.newFile;
 import static org.jboss.as.patching.Constants.BASE;
 import static org.jboss.as.patching.runner.PatchingAssert.assertDefinedModule;
 import static org.jboss.as.patching.runner.PatchingAssert.assertDirExists;
+import static org.jboss.as.patching.runner.PatchingAssert.assertFileDoesNotExist;
 import static org.jboss.as.patching.runner.PatchingAssert.assertFileExists;
 import static org.jboss.as.patching.runner.PatchingAssert.assertInstallationIsPatched;
 import static org.jboss.as.patching.runner.PatchingAssert.assertPatchHasBeenApplied;
@@ -90,9 +91,6 @@ public class AddOnTestCase extends AbstractTaskTestCase {
 
         InstalledIdentity installedIdentity = loadInstalledIdentity();
 
-        System.out.println("installation =>>");
-        tree(env.getInstalledImage().getJbossHome());
-
         // build a one-off patch for the add-on with 1 added module
         // and 1 add file
         String patchID = randomString();
@@ -113,7 +111,6 @@ public class AddOnTestCase extends AbstractTaskTestCase {
                 .build();
 
         createPatchXMLFile(patchDir, patch);
-        System.out.println("patch =>>");
         File zippedPatch = createZippedPatchFile(patchDir, patchID);
 
         // apply patch
@@ -122,9 +119,6 @@ public class AddOnTestCase extends AbstractTaskTestCase {
         InstalledIdentity patchedInstalledIdentity = InstalledIdentity.load(env.getInstalledImage().getJbossHome(), productConfig, env.getInstalledImage().getModulesDir());
         assertInstallationIsPatched(patch, patchedInstalledIdentity.getIdentity().loadTargetInfo());
         assertFileExists(env.getInstalledImage().getJbossHome(), "bin", fileAdded.getItem().getName());
-
-        System.out.println("installation =>>");
-        tree(env.getInstalledImage().getJbossHome());
 
         DirectoryStructure addOnStructure = installedIdentity.getAddOns().iterator().next().loadTargetInfo().getDirectoryStructure();
         File modulesPatchDir = addOnStructure.getModulePatchDirectory(addOnPatchID);
@@ -144,9 +138,6 @@ public class AddOnTestCase extends AbstractTaskTestCase {
         PatchableTarget.TargetInfo identityInfo = installedIdentity.getIdentity().loadTargetInfo();
         assertEquals(BASE, identityInfo.getCumulativePatchID());
         assertTrue(identityInfo.getPatchIDs().isEmpty());
-
-        System.out.println("installation =>>");
-        tree(env.getInstalledImage().getJbossHome());
 
         // build a one-off patch for the add-on with 1 added module
         // and 1 added file
@@ -168,7 +159,6 @@ public class AddOnTestCase extends AbstractTaskTestCase {
                 .build();
 
         createPatchXMLFile(patchDir, patch);
-        System.out.println("patch =>>");
         File zippedPatch = createZippedPatchFile(patchDir, patchID);
 
         // apply patch
@@ -179,9 +169,6 @@ public class AddOnTestCase extends AbstractTaskTestCase {
         assertInstallationIsPatched(patch, patchedInstalledIdentity.getIdentity().loadTargetInfo());
         assertFileExists(env.getInstalledImage().getJbossHome(), "bin", fileAdded.getItem().getName());
 
-        System.out.println("installation =>>");
-        tree(env.getInstalledImage().getJbossHome());
-
         DirectoryStructure layerDirStructure = patchedInstalledIdentity.getAddOns().iterator().next().loadTargetInfo().getDirectoryStructure();
         File modulesPatchDir = layerDirStructure.getModulePatchDirectory(addOnPatchID);
         assertDirExists(modulesPatchDir);
@@ -190,11 +177,7 @@ public class AddOnTestCase extends AbstractTaskTestCase {
         // rollback the patch
         PatchingResult rollbackResult = rollback(patchID);
         assertPatchHasBeenRolledBack(rollbackResult, patch, identityInfo);
-
-        tree(env.getInstalledImage().getJbossHome());
-
-        //FIXME added file should be removed...
-        // assertFileDoesNotExist(env.getInstalledImage().getJbossHome(), "bin", fileName);
+        assertFileDoesNotExist(env.getInstalledImage().getJbossHome(), "bin", "my-new-standalone.sh");
 
     }
 

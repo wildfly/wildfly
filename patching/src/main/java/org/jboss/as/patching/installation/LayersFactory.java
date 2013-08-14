@@ -34,6 +34,7 @@ import java.util.Map;
 import java.util.Set;
 
 import org.jboss.as.patching.DirectoryStructure;
+import org.jboss.as.patching.PatchMessages;
 import org.jboss.as.version.ProductConfig;
 
 /**
@@ -157,7 +158,7 @@ class LayersFactory {
         if (!layersDir.exists()) {
             if (layersConfig.isConfigured()) {
                 // Bad config from user
-                throw processingError("No layers directory found at " + layersDir);
+                throw PatchMessages.MESSAGES.installationNoLayersConfigFound(layersDir.getAbsolutePath());
             }
             // else this isn't a root that has layers and add-ons
         } else {
@@ -167,7 +168,7 @@ class LayersFactory {
                 if (!layerDir.exists()) {
                     if (layersConfig.isConfigured()) {
                         // Bad config from user
-                        throw processingError("Cannot find layer '%s' under directory %s", layer, layersDir);
+                        throw PatchMessages.MESSAGES.installationMissingLayer(layer, layersDir.getAbsolutePath());
                     }
                     // else this isn't a standard layers and add-ons structure
                     return;
@@ -295,7 +296,7 @@ class LayersFactory {
             }
             if (!setter.setPath(pending, root)) {
                 // Already set means duplicate
-                throw processingError("duplicate layer " + name);
+                throw PatchMessages.MESSAGES.installationDuplicateLayer("layer", name);
             }
         }
 
@@ -310,7 +311,7 @@ class LayersFactory {
             }
             if (!setter.setPath(pending, root)) {
                 // Already set means duplicate
-                throw processingError("duplicate add-on " + name);
+                throw PatchMessages.MESSAGES.installationDuplicateLayer("add-on", name);
             }
         }
 
@@ -353,14 +354,15 @@ class LayersFactory {
         }
     }
 
-    static IllegalStateException processingError(final String message, final Object... params) {
-        return new IllegalStateException(String.format(message, params));
-    }
-
     /**
      * @author Emanuel Muckenhuber
      */
     abstract static class AbstractLazyPatchableTarget extends LayerDirectoryStructure implements Layer, AddOn {
+
+        @Override
+        File getPatchesMetadata() {
+            return getPatchesMetadata(getName());
+        }
 
         @Override
         public DirectoryStructure getDirectoryStructure() {

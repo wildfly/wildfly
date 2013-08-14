@@ -22,6 +22,8 @@
 
 package org.jboss.as.patching.generator;
 
+import static org.jboss.as.patching.generator.PatchGenerator.processingError;
+
 import java.io.BufferedInputStream;
 import java.io.File;
 import java.io.FileInputStream;
@@ -73,7 +75,7 @@ class DistributionItemFileImpl extends DistributionContentItem {
             }
             return cachedMetadataHash;
         } catch (IOException e) {
-            throw new RuntimeException(e);
+            throw processingError(e, "failed to generate hash");
         }
     }
 
@@ -87,7 +89,7 @@ class DistributionItemFileImpl extends DistributionContentItem {
                 return getMetadataHash();
             }
         } catch (Exception e) {
-            throw new RuntimeException(e);
+            throw processingError(e, "failed to generate hash");
         }
     }
 

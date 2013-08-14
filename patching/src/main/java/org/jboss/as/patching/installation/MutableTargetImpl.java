@@ -47,7 +47,7 @@ class MutableTargetImpl implements InstallationManager.MutablePatchingTarget {
             if (patchId.equals(cumulativeID)) {
                 cumulativeID = Constants.NOT_PATCHED;
             } else {
-                throw new IllegalStateException("cannot rollback not-applied patch " + patchId);
+                throw new IllegalStateException("cannot rollback not-applied patch " + patchId); // internal wrong usage, no i18n
             }
         }
         modified = true;
@@ -57,7 +57,7 @@ class MutableTargetImpl implements InstallationManager.MutablePatchingTarget {
     public void apply(String patchId, Patch.PatchType patchType) {
         if (patchType == Patch.PatchType.CUMULATIVE) {
             if (!patchIds.isEmpty()) {
-                throw new IllegalStateException("cannot apply cumulative patch if there are other patches applied " +patchIds);
+                throw new IllegalStateException("cannot apply cumulative patch if there are other patches applied " +patchIds); // internal wrong usage, no i18n
             }
             cumulativeID = patchId;
         } else {
@@ -101,9 +101,8 @@ class MutableTargetImpl implements InstallationManager.MutablePatchingTarget {
     }
 
     private void persist(final String cumulativeID, final List<String> patches) throws IOException {
-        if (cumulativeID == null) {
-            throw new IllegalStateException();
-        }
+        assert cumulativeID != null;
+
         // Create the parent
         IoUtils.mkdir(structure.getInstallationInfo().getParentFile());
 

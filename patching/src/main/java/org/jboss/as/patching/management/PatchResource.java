@@ -111,7 +111,7 @@ class PatchResource extends AbstractModelResource {
 
         ElementProviderResourceProvider(ServiceController<InstallationManager> imController) {
             if (imController == null) {
-                throw new IllegalArgumentException("Installation manager service controller is null");
+                throw new IllegalArgumentException("Installation manager service controller is null"); // internal wrong usage, no i18n
             }
             this.imController = imController;
         }

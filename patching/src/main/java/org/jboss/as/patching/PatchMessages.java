@@ -85,6 +85,38 @@ public interface PatchMessages {
     @Message(id = Message.NONE, value = "Conflicts detected")
     String detectedConflicts();
 
+    @Message(id = Message.NONE, value = "failed to resolve a jboss.home.dir use the --distribution attribute to point to a valid installation")
+    IllegalStateException cliFailedToResolveDistribution();
+
+    @Message(id = Message.NONE, value ="No layers directory found at %s")
+    IllegalStateException installationNoLayersConfigFound(String path);
+
+    @Message(id = Message.NONE, value = "Cannot find layer '%s' under directory %s")
+    IllegalStateException installationMissingLayer(String layer, String path);
+
+    @Message(id = Message.NONE, value = "no associated module or bundle repository with layer '%s'")
+    IllegalStateException installationInvalidLayerConfiguration(String layerName);
+
+    @Message(id = Message.NONE, value = "Duplicate %s '%s'")
+    IllegalStateException installationDuplicateLayer(String type, String layer);
+
+    @Message(id = Message.NONE, value = "null input stream")
+    IllegalArgumentException nullInputStream();
+
+    @Message(id = Message.NONE, value = "null output stream")
+    IllegalArgumentException nullOutputStream();
+
+    @Message(id = Message.NONE, value = "Not a directory %s")
+    IllegalStateException notADirectory(String path);
+
+    @Message(id = Message.NONE, value = "patch types don't match")
+    IllegalStateException patchTypesDontMatch();
+
+    @Message(id = Message.NONE, value = "invalid rollback information")
+    PatchingException invalidRollbackInformation();
+
+    // User related errors
+
     @Message(id = 16840, value = "Patch does not apply - expected (%s), but was (%s)")
     PatchingException doesNotApply(String appliesTo, String version);
 
@@ -132,7 +164,7 @@ public interface PatchMessages {
     PatchingException requiresPatch(String patchId);
 
     @Message(id = 16853, value = "Patch is incompatible with patch '%s'")
-    PatchingException incompatibePatch(String patchId);
+    PatchingException incompatiblePatch(String patchId);
 
     @Message(id = 16854, value = "Conflicts detected")
     ContentConflictsException conflictsDetected(@Param Collection<ContentItem> conflicts);
@@ -142,5 +174,8 @@ public interface PatchMessages {
 
     @Message(id = 16856, value = "invalid patch name '%s'")
     IllegalArgumentException illegalPatchName(String name);
+
+    @Message(id = 16857, value = "Cannot rollback. No patches applied.")
+    IllegalArgumentException noPatchesApplied();
 
 }

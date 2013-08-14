@@ -63,7 +63,7 @@ public abstract class AbstractTaskTestCase {
         File jbossHome = mkdir(tempDir, "jboss-installation");
         mkdir(jbossHome, MODULES, "system", LAYERS, BASE);
         mkdir(jbossHome, BUNDLES, "system", LAYERS, BASE);
-        env = DirectoryStructure.createLegacy(jbossHome);
+        env = TestUtils.createLegacyTestStructure(jbossHome);
         productConfig = new ProductConfig("product", "version", "consoleSlot");
     }
 

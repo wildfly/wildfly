@@ -45,7 +45,7 @@ abstract class PatchAttributeReadHandler implements OperationStepHandler {
         try {
             handle(result, info);
         } catch (IOException e) {
-            throw new OperationFailedException("failed to load identity info");
+            throw new OperationFailedException(PatchManagementMessages.MESSAGES.failedToLoadIdentity(), e);
         }
         context.completeStep(OperationContext.RollbackHandler.NOOP_ROLLBACK_HANDLER);
     }

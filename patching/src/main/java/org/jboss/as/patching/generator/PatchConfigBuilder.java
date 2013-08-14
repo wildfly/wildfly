@@ -22,6 +22,8 @@
 
 package org.jboss.as.patching.generator;
 
+import static org.jboss.as.patching.generator.PatchGenerator.processingError;
+
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashSet;
@@ -125,7 +127,7 @@ class PatchConfigBuilder implements ContentItemFilter {
     PatchElementConfigBuilder addElement(final String name) {
         final PatchElementConfigBuilder builder = new PatchElementConfigBuilder(name, this);
         if (elements.put(name, builder) != null) {
-            throw new IllegalStateException("duplicate layer " + name);
+            throw processingError("duplicate layer %s", name);
         }
         return builder;
     }
@@ -198,11 +200,11 @@ class PatchConfigBuilder implements ContentItemFilter {
                 @Override
                 PatchElementBuilder modifyLayer(String name, boolean addOn) {
                     if (addOn) {
-                        throw new IllegalStateException("does not support add-ons: " + name); // TODO
+                        throw processingError("does not support add-ons %s", name);
                     }
                     final PatchElementConfigBuilder config = PatchConfigBuilder.this.elements.get(name);
                     if (config == null) {
-                        throw new IllegalStateException("no patch configuration found for layer " + name);
+                        throw processingError("missing patch-config for layer %s", name);
                     }
                     final PatchElementBuilder builder;
                     if (config.getPatchType() == null) {

@@ -32,9 +32,9 @@ import java.util.List;
 
 import org.jboss.as.patching.Constants;
 import org.jboss.as.patching.PatchInfo;
+import org.jboss.as.patching.PatchMessages;
 import org.jboss.as.patching.PatchingException;
 import org.jboss.as.patching.installation.InstallationManager;
-import org.jboss.as.patching.installation.InstallationManagerService;
 import org.jboss.as.patching.installation.LayersConfig;
 import org.jboss.as.patching.metadata.MiscContentItem;
 import org.jboss.as.patching.runner.PatchToolImpl;
@@ -171,7 +171,7 @@ public interface PatchTool {
             final File[] resolvedPath = resolveLayeredModulePath(moduleRoots); // Resolve the patched module root for the module loader
             final ModuleLoader loader = new LocalModuleLoader(resolvedPath);
             final ProductConfig config = new ProductConfig(loader, jbossHome.getAbsolutePath(), Collections.emptyMap());
-            final InstallationManager manager = InstallationManagerService.load(jbossHome, moduleRoots, bundleRoots, config);
+            final InstallationManager manager = InstallationManager.load(jbossHome, moduleRoots, bundleRoots, config);
             return create(manager);
         }
 
@@ -200,7 +200,7 @@ public interface PatchTool {
                 if (!layersDir.exists())  {
                     if (layersConfig.isConfigured()) {
                         // Bad config from user
-                        throw new IllegalStateException("No layers directory found at " + layersDir);
+                        throw PatchMessages.MESSAGES.installationNoLayersConfigFound(layersDir.getAbsolutePath());
                     }
                     // else this isn't a root that has layers and add-ons
                     continue;
@@ -213,7 +213,7 @@ public interface PatchTool {
                     if (!layer.exists()) {
                         if (layersConfig.isConfigured()) {
                             // Bad config from user
-                            throw new IllegalStateException(String.format("Cannot find layer %s under directory %s", layerName, layersDir));
+                            throw PatchMessages.MESSAGES.installationMissingLayer(layerName, layersDir.getAbsolutePath());
                         }
                         // else this isn't a standard layers and add-ons structure
                         validLayers = false;

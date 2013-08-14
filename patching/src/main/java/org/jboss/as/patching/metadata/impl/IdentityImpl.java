@@ -44,12 +44,8 @@ public class IdentityImpl implements Identity, RequiresCallback, IncompatibleWit
     private Collection<String> requires = Collections.emptyList();
 
     public IdentityImpl(String name, String version) {
-        if(name == null) {
-            throw new IllegalArgumentException("name is null");
-        }
-        if(version == null) {
-            throw new IllegalArgumentException("version is null");
-        }
+        assert name != null;
+        assert version != null;
         this.name = name;
         this.version = version;
     }
@@ -86,9 +82,7 @@ public class IdentityImpl implements Identity, RequiresCallback, IncompatibleWit
 
     @Override
     public IdentityImpl require(String patchId) {
-        if(patchId == null) {
-            throw new IllegalArgumentException("patchId is null");
-        }
+        assert patchId != null;
         if(requires.isEmpty()) {
             requires = new ArrayList<String>();
         }
@@ -98,9 +92,7 @@ public class IdentityImpl implements Identity, RequiresCallback, IncompatibleWit
 
     @Override
     public IncompatibleWithCallback incompatibleWith(String patchID) {
-        if (patchID == null) {
-            throw new IllegalArgumentException("patchId is null");
-        }
+        assert patchID != null;
         if (incompatibleWith.isEmpty()) {
             incompatibleWith = new ArrayList<String>();
         }
@@ -118,13 +110,9 @@ public class IdentityImpl implements Identity, RequiresCallback, IncompatibleWit
 
     @Override
     public <T extends Identity> T forType(Patch.PatchType patchType, Class<T> clazz) {
-        if (patchType != this.patchType) {
-            throw new IllegalStateException();
-        }
+        assert patchType == this.patchType;
         if (patchType == Patch.PatchType.CUMULATIVE) {
-            if (resultingVersion == null) {
-                throw new IllegalStateException();
-            }
+            assert resultingVersion != null;
         }
         return clazz.cast(this);
     }

@@ -130,7 +130,7 @@ public class PatchBuilder extends ModificationBuilderTarget<PatchBuilder> implem
                         ((PatchElementProviderImpl)element.getProvider()).oneOffPatch();
                     }
                 } else if (patchType != PatchBuilder.this.patchType) {
-                    throw new RuntimeException("patch types don't match");
+                    throw PatchMessages.MESSAGES.patchTypesDontMatch();
                 }
                 return element;
             }

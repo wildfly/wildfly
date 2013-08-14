@@ -169,7 +169,7 @@ class PatchResourceDefinition extends SimpleResourceDefinition {
                         try {
                             result.set(layer.loadTargetInfo().getCumulativePatchID());
                         } catch (IOException e) {
-                            throw new OperationFailedException("Failed to load layer info", e);
+                            throw new OperationFailedException(PatchManagementMessages.MESSAGES.failedToLoadIdentity(), e);
                         }
                     }
                 });
@@ -182,7 +182,7 @@ class PatchResourceDefinition extends SimpleResourceDefinition {
                                 result.add(id);
                             }
                         } catch (IOException e) {
-                            throw new OperationFailedException("Failed to load layer info", e);
+                            throw new OperationFailedException(PatchManagementMessages.MESSAGES.failedToLoadIdentity(), e);
                         }
                     }
                 });
@@ -199,7 +199,7 @@ class PatchResourceDefinition extends SimpleResourceDefinition {
                         try {
                             result.set(addon.loadTargetInfo().getCumulativePatchID());
                         } catch (IOException e) {
-                            throw new OperationFailedException("Failed to load add-on info", e);
+                            throw new OperationFailedException(PatchManagementMessages.MESSAGES.failedToLoadIdentity(), e);
                         }
                     }
                 });
@@ -212,7 +212,7 @@ class PatchResourceDefinition extends SimpleResourceDefinition {
                                 result.add(id);
                             }
                         } catch (IOException e) {
-                            throw new OperationFailedException("Failed to load add-on info", e);
+                            throw new OperationFailedException(PatchManagementMessages.MESSAGES.failedToLoadIdentity(), e);
                         }
                     }
                 });

@@ -35,7 +35,7 @@
     <groupId>org.wildfly</groupId>
     <artifactId>wildfly-patching</artifactId>
 
-    <name>JBoss Application Server: Patching Core</name>
+    <name>WildFly: Patching Core</name>
 
     <build>
         <plugins>

@@ -43,9 +43,7 @@ public class PatchElementImpl implements PatchElement {
     private final List<ContentModification> modifications = new ArrayList<ContentModification>();
 
     public PatchElementImpl(String id) {
-        if(id == null) {
-            throw new IllegalArgumentException("id is null");
-        }
+        assert id != null;
         if (!Patch.PATCH_NAME_PATTERN.matcher(id).matches()) {
             throw PatchMessages.MESSAGES.illegalPatchName(id);
         }
@@ -82,9 +80,7 @@ public class PatchElementImpl implements PatchElement {
     }
 
     public PatchElementImpl setProvider(PatchElementProvider provider) {
-        if(provider == null) {
-            throw new IllegalArgumentException("provider is null");
-        }
+        assert provider != null;
         this.provider = provider;
         return this;
     }

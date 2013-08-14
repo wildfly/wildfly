@@ -72,7 +72,7 @@ public final class LocalShowHistoryHandler implements OperationStepHandler {
             context.getResult().set(result);
             context.stepCompleted();
         } catch (Throwable t) {
-            t.printStackTrace();
+            PatchManagementLogger.ROOT_LOGGER.debugf(t, "failed to get history");
             throw PatchManagementMessages.MESSAGES.failedToShowHistory(t);
         }
     }

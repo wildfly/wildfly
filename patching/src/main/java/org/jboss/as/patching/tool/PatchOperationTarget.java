@@ -220,8 +220,12 @@ public abstract class PatchOperationTarget {
     static ModelNode formatFailedResponse(final PatchingException e) {
         final ModelNode result = new ModelNode();
         result.get(OUTCOME).set(FAILED);
+        formatFailedResponse(e, result.get(FAILURE_DESCRIPTION));
+        return result;
+    }
+
+    public static void formatFailedResponse(final PatchingException e, final ModelNode failureDescription) {
         if(e instanceof ContentConflictsException) {
-            final ModelNode failureDescription = result.get(FAILURE_DESCRIPTION);
             failureDescription.get(Constants.MESSAGE).set(PatchMessages.MESSAGES.detectedConflicts());
             final ModelNode conflicts = failureDescription.get(Constants.CONFLICTS);
             for(final ContentItem item : ((ContentConflictsException)e).getConflicts()) {
@@ -239,9 +243,8 @@ public abstract class PatchOperationTarget {
                 }
             }
         } else {
-            result.get(FAILURE_DESCRIPTION).set(e.getLocalizedMessage());
+            failureDescription.set(e.getLocalizedMessage());
         }
-        return result;
     }
 
     static ModelNode createOperation(final String operationName, final ModelNode addr, final ContentPolicyBuilderImpl builder) {

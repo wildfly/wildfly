@@ -22,9 +22,12 @@
 
 package org.jboss.as.patching.cli;
 
+import static java.lang.System.getProperty;
+import static java.lang.System.getSecurityManager;
+import static java.lang.System.getenv;
+import static java.security.AccessController.doPrivileged;
+
 import java.io.File;
-import java.security.AccessController;
-import java.security.PrivilegedAction;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
@@ -45,9 +48,12 @@ import org.jboss.as.cli.impl.FileSystemPathArgument;
 import org.jboss.as.cli.operation.ParsedCommandLine;
 import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
 import org.jboss.as.patching.Constants;
+import org.jboss.as.patching.PatchMessages;
 import org.jboss.as.patching.tool.PatchOperationBuilder;
 import org.jboss.as.patching.tool.PatchOperationTarget;
 import org.jboss.dmr.ModelNode;
+import org.wildfly.security.manager.ReadEnvironmentPropertyAction;
+import org.wildfly.security.manager.ReadPropertyAction;
 
 /**
  * @author <a href="http://jmesnil.net/">Jeff Mesnil</a> (c) 2012 Red Hat Inc.
@@ -263,7 +269,7 @@ public class PatchHandler extends CommandHandlerWithHelp {
 
             final File f = new File(path);
             if(!f.exists()) {
-                // i18n?
+                // i18n is never used for CLI exceptions
                 throw new CommandFormatException("Path " + f.getAbsolutePath() + " doesn't exist.");
             }
             if(f.isDirectory()) {
@@ -337,41 +343,26 @@ public class PatchHandler extends CommandHandlerWithHelp {
         return target;
     }
 
+    private static final String HOME = "JBOSS_HOME";
+    private static final String HOME_DIR = "jboss.home.dir";
+
     private String getJBossHome(ParsedCommandLine args) {
         final String targetDistro = distribution.getValue(args);
         if(targetDistro != null) {
             return targetDistro;
         }
-        final String env = "JBOSS_HOME";
-        String resolved;
-        if (System.getSecurityManager() == null) {
-            resolved = System.getenv(env);
-        } else {
-            resolved = (String) AccessController.doPrivileged(new PrivilegedAction<Object>() {
-                public Object run() {
-                    return System.getenv(env);
-                }
-            });
+
+        String resolved = getSecurityManager() == null ? getenv(HOME) : doPrivileged(new ReadEnvironmentPropertyAction(HOME));
+        if (resolved == null) {
+            resolved = getSecurityManager() == null ? getProperty(HOME_DIR) : doPrivileged(new ReadPropertyAction(HOME_DIR));
         }
         if (resolved == null) {
-            if (System.getSecurityManager() == null) {
-                resolved = System.getProperty("jboss.home.dir");
-            } else {
-                resolved = (String) AccessController.doPrivileged(new PrivilegedAction<Object>() {
-                    public Object run() {
-                        return System.getProperty("jboss.home.dir");
-                    }
-                });
-            }
+            throw PatchMessages.MESSAGES.cliFailedToResolveDistribution();
         }
-        if (resolved == null) {
-            throw new RuntimeException("failed to resolve the home.dir use the --distribution attribute to point to the home.dir");
-        }
-        // TODO proper check
         final File home = new File(resolved);
         final File modules = new File(home, "modules");
-        if (! modules.isDirectory()) {
-            throw new RuntimeException("failed to resolve the home.dir use the --distribution attribute to point to the home.dir: " + resolved);
+        if (! modules.isDirectory()) {         // TODO proper check
+            throw PatchMessages.MESSAGES.cliFailedToResolveDistribution();
         }
         return resolved;
     }
