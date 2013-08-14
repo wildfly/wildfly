@@ -38,7 +38,6 @@ import static org.junit.Assert.assertArrayEquals;
 
 import java.io.File;
 
-import org.jboss.as.patching.Constants;
 import org.jboss.as.patching.ContentConflictsException;
 import org.jboss.as.patching.installation.InstallationManager;
 import org.jboss.as.patching.installation.InstallationManagerImpl;
@@ -49,6 +48,7 @@ import org.jboss.as.patching.metadata.Patch;
 import org.jboss.as.patching.metadata.PatchBuilder;
 import org.jboss.as.patching.tool.ContentVerificationPolicy;
 import org.jboss.as.patching.tool.PatchTool;
+import org.jboss.as.patching.tool.PatchingResult;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;

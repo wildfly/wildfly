@@ -102,11 +102,6 @@ class PatchElementConfigBuilder implements PatchElementConfig, ContentItemFilter
         return false;
     }
 
-    PatchElementConfig toPatchElementConfig() {
-
-        return null;
-    }
-
     static boolean accepts(ModuleItem one, ModuleItem two) {
         return one.getName().equals(two.getName())
                 && one.getSlot().equals(two.getSlot());

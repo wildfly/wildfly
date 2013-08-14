@@ -4,7 +4,7 @@ import org.jboss.as.patching.metadata.LayerType;
 import org.jboss.as.patching.metadata.Patch;
 
 /**
- * The installation manager. It basically represents a mutable {@code InstalledIdentity}.
+ * The installation manager, basically represents a mutable {@code InstalledIdentity}.
  *
  * @author Emanuel Muckenhuber
  */
@@ -16,7 +16,7 @@ public abstract class InstallationManager extends InstalledIdentity {
      * @param callback a completed callback
      * @return the modification
      */
-    public abstract InstallationModification modifyInstallation(ModificationCompletion callback);
+    public abstract InstallationModification modifyInstallation(ModificationCompletionCallback callback);
 
     /**
      * Check whether the instance requires a restart.
@@ -45,13 +45,6 @@ public abstract class InstallationManager extends InstalledIdentity {
     public interface InstallationModification extends MutablePatchingTarget {
 
         /**
-         * Get the unmodified state.
-         *
-         * @return the originals tate
-         */
-        InstalledIdentity getUnmodifiedInstallationState();
-
-        /**
          * Get the identity name.
          *
          * @return the identity name
@@ -64,6 +57,13 @@ public abstract class InstallationManager extends InstalledIdentity {
          * @return the identity version
          */
         String getVersion();
+
+        /**
+         * Get the unmodified state.
+         *
+         * @return the originals tate
+         */
+        InstalledIdentity getUnmodifiedInstallationState();
 
         /**
          * Resolve a target for patching.
@@ -120,7 +120,7 @@ public abstract class InstallationManager extends InstalledIdentity {
 
     }
 
-    public interface ModificationCompletion {
+    public interface ModificationCompletionCallback {
 
         /**
          * The modification has been successfully completed.

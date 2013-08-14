@@ -17,6 +17,7 @@ import java.util.Map;
 
 import org.jboss.as.patching.Constants;
 import org.jboss.as.patching.DirectoryStructure;
+import org.jboss.as.patching.PatchLogger;
 import org.jboss.as.patching.PatchMessages;
 import org.jboss.as.patching.PatchingException;
 import org.jboss.as.patching.installation.InstallationManager;
@@ -35,11 +36,12 @@ import org.jboss.as.patching.metadata.PatchXml;
 import org.jboss.as.patching.metadata.RollbackPatch;
 import org.jboss.as.patching.metadata.UpgradeCondition;
 import org.jboss.as.patching.tool.ContentVerificationPolicy;
+import org.jboss.as.patching.tool.PatchingResult;
 
 /**
  * @author Emanuel Muckenhuber
  */
-class IdentityPatchRunner implements InstallationManager.ModificationCompletion {
+class IdentityPatchRunner implements InstallationManager.ModificationCompletionCallback {
 
     private static final String DIRECTORY_SUFFIX = "jboss-as-patch-";
     private static final File TEMP_DIR = new File(System.getProperty("java.io.tmpdir"));
@@ -84,6 +86,7 @@ class IdentityPatchRunner implements InstallationManager.ModificationCompletion 
             try {
                 return applyPatch(patchId, patch, context);
             } catch (Exception e) {
+                PatchLogger.ROOT_LOGGER.debugf(e, "failed to apply patch %s", patchId);
                 throw rethrowException(e);
             } finally {
                 context.cleanup();
@@ -240,6 +243,7 @@ class IdentityPatchRunner implements InstallationManager.ModificationCompletion 
                 return executeTasks(context, callback);
             } catch (Exception e) {
                 context.cancel(callback);
+                PatchLogger.ROOT_LOGGER.debugf(e, "failed to rollback patch %s", patchId);
                 throw rethrowException(e);
             }
         } finally {
