@@ -56,6 +56,7 @@ import org.jboss.as.controller.registry.AttributeAccess;
 import org.jboss.as.controller.registry.ManagementResourceRegistration;
 import org.jboss.as.controller.registry.Resource;
 import org.jboss.as.controller.transform.OperationTransformer.TransformedOperation;
+import org.jboss.as.domain.management.CoreManagementResourceDefinition;
 import org.jboss.as.domain.management.audit.AccessAuditResourceDefinition;
 import org.jboss.as.model.test.FailedOperationTransformationConfig;
 import org.jboss.as.model.test.FailedOperationTransformationConfig.AttributesPathAddressConfig;
@@ -517,20 +518,7 @@ public class JMXSubsystemTestCase extends AbstractSubsystemTest {
                 "   </audit-log>" +
                 "</subsystem>";
 
-        AdditionalInitialization additionalInit = new BaseAdditionalInitalization() {
-
-            @Override
-            protected void initializeExtraSubystemsAndModel(ExtensionRegistry extensionRegistry, Resource rootResource,
-                    ManagementResourceRegistration rootRegistration) {
-                super.initializeExtraSubystemsAndModel(extensionRegistry, rootResource, rootRegistration);
-
-                Resource auditLog = Resource.Factory.create();
-                rootResource.registerChild(AccessAuditResourceDefinition.PATH_ELEMENT, auditLog);
-                Resource testHandler = Resource.Factory.create();
-                testHandler.getModel().setEmptyObject();
-                auditLog.registerChild(PathElement.pathElement(FILE_HANDLER, "test"), testHandler);
-            }
-        };
+        AdditionalInitialization additionalInit = new AuditLogInitialization();
 
         KernelServices servicesA = createKernelServicesBuilder(additionalInit).setSubsystemXml(subsystemXml).build();
         Assert.assertTrue(servicesA.isSuccessfulBoot());
@@ -937,28 +925,34 @@ public class JMXSubsystemTestCase extends AbstractSubsystemTest {
                                         ManagementResourceRegistration rootRegistration) {
             super.initializeExtraSubystemsAndModel(extensionRegistry, rootResource, rootRegistration);
 
-            Resource auditLogResource = Resource.Factory.create();
-            rootResource.registerChild(AccessAuditResourceDefinition.PATH_ELEMENT, auditLogResource);
+            Resource coreManagement = Resource.Factory.create();
+            rootResource.registerChild(CoreManagementResourceDefinition.PATH_ELEMENT, coreManagement);
+            Resource auditLog = Resource.Factory.create();
+            coreManagement.registerChild(AccessAuditResourceDefinition.PATH_ELEMENT, auditLog);
 
             Resource testFileHandler = Resource.Factory.create();
             testFileHandler.getModel().setEmptyObject();
-            auditLogResource.registerChild(PathElement.pathElement(FILE_HANDLER, "test"), testFileHandler);
+            auditLog.registerChild(PathElement.pathElement(FILE_HANDLER, "test"), testFileHandler);
         }
     }
 
     private static class ManagementAuditLogInitialization extends AdditionalInitialization.ManagementAdditionalInitialization {
+
+        private static final long serialVersionUID = 1L;
 
         @Override
         protected void initializeExtraSubystemsAndModel(ExtensionRegistry extensionRegistry, Resource rootResource,
                                         ManagementResourceRegistration rootRegistration) {
             super.initializeExtraSubystemsAndModel(extensionRegistry, rootResource, rootRegistration);
 
-            Resource auditLogResource = Resource.Factory.create();
-            rootResource.registerChild(AccessAuditResourceDefinition.PATH_ELEMENT, auditLogResource);
+            Resource coreManagement = Resource.Factory.create();
+            rootResource.registerChild(CoreManagementResourceDefinition.PATH_ELEMENT, coreManagement);
+            Resource auditLog = Resource.Factory.create();
+            coreManagement.registerChild(AccessAuditResourceDefinition.PATH_ELEMENT, auditLog);
 
             Resource testFileHandler = Resource.Factory.create();
             testFileHandler.getModel().setEmptyObject();
-            auditLogResource.registerChild(PathElement.pathElement(FILE_HANDLER, "test"), testFileHandler);
+            auditLog.registerChild(PathElement.pathElement(FILE_HANDLER, "test"), testFileHandler);
         }
     }
 

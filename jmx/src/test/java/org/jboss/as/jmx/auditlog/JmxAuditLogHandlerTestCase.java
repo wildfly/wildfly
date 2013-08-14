@@ -49,6 +49,7 @@ import org.jboss.as.controller.PathElement;
 import org.jboss.as.controller.ProcessType;
 import org.jboss.as.controller.RunningMode;
 import org.jboss.as.controller.RunningModeControl;
+import org.jboss.as.controller.access.DelegatingConfigurableAuthorizer;
 import org.jboss.as.controller.audit.ManagedAuditLogger;
 import org.jboss.as.controller.audit.ManagedAuditLoggerImpl;
 import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
@@ -60,8 +61,9 @@ import org.jboss.as.controller.registry.ManagementResourceRegistration;
 import org.jboss.as.controller.registry.Resource;
 import org.jboss.as.controller.services.path.PathManagerService;
 import org.jboss.as.controller.services.path.PathResourceDefinition;
-import org.jboss.as.domain.management.audit.AuditLogLoggerResourceDefinition;
+import org.jboss.as.domain.management.CoreManagementResourceDefinition;
 import org.jboss.as.domain.management.audit.AccessAuditResourceDefinition;
+import org.jboss.as.domain.management.audit.AuditLogLoggerResourceDefinition;
 import org.jboss.as.domain.management.audit.EnvironmentNameReader;
 import org.jboss.as.jmx.ExposeModelResourceResolved;
 import org.jboss.as.jmx.JMXExtension;
@@ -103,9 +105,10 @@ public class JmxAuditLogHandlerTestCase extends AbstractControllerTestBase {
     private final List<ModelNode> bootOperations = new ArrayList<ModelNode>();
 
     public JmxAuditLogHandlerTestCase() {
-        bootOperations.add(Util.createAddOperation(PathAddress.pathAddress(AccessAuditResourceDefinition.PATH_ELEMENT)));
+        bootOperations.add(Util.createAddOperation(PathAddress.pathAddress(CoreManagementResourceDefinition.PATH_ELEMENT, AccessAuditResourceDefinition.PATH_ELEMENT)));
         ModelNode add = Util.createAddOperation(
                 PathAddress.pathAddress(
+                        CoreManagementResourceDefinition.PATH_ELEMENT,
                         AccessAuditResourceDefinition.PATH_ELEMENT,
                         PathElement.pathElement(ModelDescriptionConstants.JSON_FORMATTER, "test-formatter")));
         bootOperations.add(add);
@@ -114,6 +117,7 @@ public class JmxAuditLogHandlerTestCase extends AbstractControllerTestBase {
 
         add = Util.createAddOperation(
                 PathAddress.pathAddress(
+                        CoreManagementResourceDefinition.PATH_ELEMENT,
                         AccessAuditResourceDefinition.PATH_ELEMENT,
                         AuditLogLoggerResourceDefinition.PATH_ELEMENT));
         add.get(ModelDescriptionConstants.LOG_READ_ONLY).set(true);
@@ -618,6 +622,7 @@ public class JmxAuditLogHandlerTestCase extends AbstractControllerTestBase {
 
     private PathAddress createFileHandlerAddress(String handlerName){
         return PathAddress.pathAddress(
+                CoreManagementResourceDefinition.PATH_ELEMENT,
                 AccessAuditResourceDefinition.PATH_ELEMENT,
                 PathElement.pathElement(ModelDescriptionConstants.FILE_HANDLER, handlerName));
     }
@@ -632,6 +637,7 @@ public class JmxAuditLogHandlerTestCase extends AbstractControllerTestBase {
 
     private PathAddress createCoreHandlerReferenceAddress(String name){
         return PathAddress.pathAddress(
+                CoreManagementResourceDefinition.PATH_ELEMENT,
                         AccessAuditResourceDefinition.PATH_ELEMENT,
                         AuditLogLoggerResourceDefinition.PATH_ELEMENT,
                         PathElement.pathElement(ModelDescriptionConstants.HANDLER, name));
@@ -653,7 +659,10 @@ public class JmxAuditLogHandlerTestCase extends AbstractControllerTestBase {
     }
 
     private ModelNode createCoreAuditLogWriteAttributeOperation(String attr, boolean value) {
-        return Util.getWriteAttributeOperation(PathAddress.pathAddress(AccessAuditResourceDefinition.PATH_ELEMENT, AuditLogLoggerResourceDefinition.PATH_ELEMENT), attr, new ModelNode(value));
+        return Util.getWriteAttributeOperation(PathAddress.pathAddress(
+                CoreManagementResourceDefinition.PATH_ELEMENT,
+                AccessAuditResourceDefinition.PATH_ELEMENT,
+                AuditLogLoggerResourceDefinition.PATH_ELEMENT), attr, new ModelNode(value));
     }
 
     private ModelNode createJMXAuditLogWriteAttributeOperation(String attr, boolean value) {
@@ -745,7 +754,7 @@ public class JmxAuditLogHandlerTestCase extends AbstractControllerTestBase {
         }
 
         registration.registerSubModel(PathResourceDefinition.createSpecified(pathManagerService));
-        registration.registerSubModel(new AccessAuditResourceDefinition(auditLogger, pathManagerService, new EnvironmentNameReader() {
+        registration.registerSubModel(CoreManagementResourceDefinition.forStandaloneServer(new DelegatingConfigurableAuthorizer(), getAuditLogger(), pathManagerService, new EnvironmentNameReader() {
             public boolean isServer() {
                 return true;
             }
@@ -763,6 +772,7 @@ public class JmxAuditLogHandlerTestCase extends AbstractControllerTestBase {
             }
         }));
 
+
         pathManagerService.addPathManagerResources(rootResource);
 
 
@@ -771,6 +781,8 @@ public class JmxAuditLogHandlerTestCase extends AbstractControllerTestBase {
         extensionRegistry.setSubsystemParentResourceRegistrations(registration, null);
         JMXExtension extension = new JMXExtension();
         extension.initialize(extensionRegistry.getExtensionContext("xxxx", false));
+
+        rootResource.registerChild(CoreManagementResourceDefinition.PATH_ELEMENT, Resource.Factory.create());
 
         //registration.registerSubModel(JMXSubsystemRootResource.create(auditLogger));
     }
