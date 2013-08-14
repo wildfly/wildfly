@@ -41,6 +41,7 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.EXT
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.FILE_HANDLER;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.GROUP;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.HASH;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.HOST;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.HOST_SCOPED_ROLE;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.INCLUDE;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.INCLUDES;
@@ -105,6 +106,7 @@ import org.jboss.as.controller.parsing.Attribute;
 import org.jboss.as.controller.resource.InterfaceDefinition;
 import org.jboss.as.controller.services.path.PathAddHandler;
 import org.jboss.as.domain.controller.DomainController;
+import org.jboss.as.domain.controller.LocalHostControllerInfo;
 import org.jboss.as.domain.management.audit.AuditLogLoggerResourceDefinition;
 import org.jboss.as.domain.management.audit.FileAuditLogHandlerResourceDefinition;
 import org.jboss.as.domain.management.audit.JsonAuditLogFormatterResourceDefinition;
@@ -112,6 +114,7 @@ import org.jboss.as.domain.management.audit.SyslogAuditLogHandlerResourceDefinit
 import org.jboss.as.domain.management.access.SensitivityResourceDefinition;
 import org.jboss.as.repository.HostFileRepository;
 import org.jboss.as.server.controller.resources.SystemPropertyResourceDefinition;
+import org.jboss.as.server.operations.SetServerGroupHostHandler;
 import org.jboss.as.server.operations.SystemPropertyAddHandler;
 import org.jboss.as.server.services.net.BindingGroupAddHandler;
 import org.jboss.as.server.services.net.LocalDestinationOutboundSocketBindingResourceDefinition;
@@ -158,6 +161,7 @@ public final class ManagedServerOperationsFactory {
     private final ModelNode hostModel;
     private final ModelNode serverModel;
     private final ModelNode serverGroup;
+    private final String serverGroupName;
     private final String profileName;
     private final DomainController domainController;
     private final ExpressionResolver expressionResolver;
@@ -171,7 +175,7 @@ public final class ManagedServerOperationsFactory {
         this.expressionResolver = expressionResolver;
         this.serverModel = resolveExpressions(hostModel.require(SERVER_CONFIG).require(serverName));
 
-        final String serverGroupName = serverModel.require(GROUP).asString();
+        this.serverGroupName = serverModel.require(GROUP).asString();
         this.serverGroup = resolveExpressions(domainModel.require(SERVER_GROUP).require(serverGroupName));
         this.profileName = serverGroup.require(PROFILE).asString();
     }
@@ -214,6 +218,7 @@ public final class ManagedServerOperationsFactory {
 
         final ModelNodeList updates = new ModelNodeList();
 
+        setServerGroupHost(updates);
         addNamespaces(updates);
         addProfileName(updates);
         addSchemaLocations(updates);
@@ -232,6 +237,15 @@ public final class ManagedServerOperationsFactory {
         addDeploymentOverlays(updates);
 
         return updates.model;
+    }
+
+    private void setServerGroupHost(ModelNodeList updates) {
+        ModelNode op = Util.createEmptyOperation(SetServerGroupHostHandler.OPERATION_NAME, null);
+        op.get(SERVER_GROUP).set(serverGroupName);
+        LocalHostControllerInfo lhci = domainController.getLocalHostInfo();
+        op.get(HOST).set(lhci.getLocalHostName());
+
+        updates.add(op);
     }
 
     private void addNamespaces(List<ModelNode> updates) {

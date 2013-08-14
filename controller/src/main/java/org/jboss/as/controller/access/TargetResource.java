@@ -22,10 +22,9 @@
 
 package org.jboss.as.controller.access;
 
-import java.util.Collections;
 import java.util.List;
-import java.util.Set;
 
+import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.access.constraint.management.AccessConstraintDefinition;
 import org.jboss.as.controller.registry.ImmutableManagementResourceRegistration;
 import org.jboss.as.controller.registry.Resource;
@@ -37,34 +36,41 @@ import org.jboss.as.controller.registry.Resource;
  */
 public final class TargetResource {
 
+    private final PathAddress address;
     private final ImmutableManagementResourceRegistration resourceRegistration;
-
     private final Resource resource;
+    private final ServerGroupEffect serverGroupEffect;
+    private final HostEffect hostEffect;
 
-    public static TargetResource forStandalone(ImmutableManagementResourceRegistration resourceRegistration, Resource resource) {
-        return new TargetResource(resourceRegistration, resource);
+
+    public static TargetResource forStandalone(PathAddress address, ImmutableManagementResourceRegistration resourceRegistration, Resource resource) {
+        return new TargetResource(address, resourceRegistration, resource, null, null);
     }
 
-    public static TargetResource forDomain(ImmutableManagementResourceRegistration resourceRegistration, Resource resource,
-                                           Set<String> serverGroups, Set<String> hosts) {
-        return new TargetResource(resourceRegistration, resource);
+    public static TargetResource forDomain(PathAddress address, ImmutableManagementResourceRegistration resourceRegistration, Resource resource,
+                                           ServerGroupEffect serverGroupEffect, HostEffect hostEffect) {
+        return new TargetResource(address, resourceRegistration, resource, serverGroupEffect, hostEffect);
     }
 
-    private TargetResource(ImmutableManagementResourceRegistration resourceRegistration, Resource resource) {
+    private TargetResource(PathAddress address, ImmutableManagementResourceRegistration resourceRegistration,
+                           Resource resource, ServerGroupEffect serverGroupEffect, HostEffect hostEffect) {
+        this.address = address;
         this.resourceRegistration = resourceRegistration;
         this.resource = resource;
+        this.serverGroupEffect = serverGroupEffect;
+        this.hostEffect = hostEffect;
     }
 
-    public Set<String> getServerGroups() {
-        //TODO implement getServerGroups
-//        throw new UnsupportedOperationException();
-        return Collections.emptySet();
+    public PathAddress getResourceAddress() {
+        return address;
     }
 
-    public Set<String> getHosts() {
-        //TODO implement getHosts
-//        throw new UnsupportedOperationException();
-        return Collections.emptySet();
+    public ServerGroupEffect getServerGroupEffect() {
+        return serverGroupEffect;
+    }
+
+    public HostEffect getHostEffect() {
+        return hostEffect;
     }
 
     public List<AccessConstraintDefinition> getAccessConstraints() {
@@ -78,4 +84,5 @@ public final class TargetResource {
     public ImmutableManagementResourceRegistration getResourceRegistration() {
         return resourceRegistration;
     }
+
 }

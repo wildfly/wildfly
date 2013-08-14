@@ -112,8 +112,10 @@
                          <include>org/jboss/as/test/integration/respawn/*TestCase.java</include>
                          <include>org/jboss/as/test/integration/domain/*TestCase.java</include>
                          <include>org/jboss/as/test/integration/domain/suites/*TestSuite.java</include>
-                        <!-- TODO remove once this is integrated into DomainTestSuite -->
+                        <!-- TODO remove once these are integrated into DomainTestSuite -->
                         <include>org/jboss/as/test/integration/domain/rbac/SimpleProviderStandardRolesTestCase.java</include>
+                        <include>org/jboss/as/test/integration/domain/rbac/SimpleProviderHostScopedRolesTestCase.java</include>
+                        <include>org/jboss/as/test/integration/domain/rbac/SimpleProviderServerGroupScopedRolesTestCase.java</include>
                     </includes>
                 </configuration>
             </plugin>

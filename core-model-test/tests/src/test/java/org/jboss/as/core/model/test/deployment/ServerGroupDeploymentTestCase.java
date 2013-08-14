@@ -27,8 +27,10 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.DEP
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ENABLED;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.NAME;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.PERSISTENT;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.PROFILE;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.RUNTIME_NAME;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SERVER_GROUP;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SOCKET_BINDING_GROUP;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SUBDEPLOYMENT;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.VALUE;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.WRITE_ATTRIBUTE_OPERATION;
@@ -277,7 +279,11 @@ public class ServerGroupDeploymentTestCase extends AbstractCoreModelTest {
                 .setModelInitializer(new ModelInitializer() {
                     @Override
                     public void populateModel(Resource rootResource) {
-                        rootResource.registerChild(PathElement.pathElement(SERVER_GROUP, "Test"), Resource.Factory.create());
+                        Resource serverGroupRes = Resource.Factory.create();
+                        ModelNode model = serverGroupRes.getModel();
+                        model.get(PROFILE).set("Test");
+                        model.get(SOCKET_BINDING_GROUP).set("Test");
+                        rootResource.registerChild(PathElement.pathElement(SERVER_GROUP, "Test"), serverGroupRes);
                     }
                 }, new ModelWriteSanitizer() {
 

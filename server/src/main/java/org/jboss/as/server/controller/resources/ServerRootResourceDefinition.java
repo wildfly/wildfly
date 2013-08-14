@@ -21,7 +21,9 @@
 */
 package org.jboss.as.server.controller.resources;
 
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.HOST;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SERVER;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SERVER_GROUP;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SUBDEPLOYMENT;
 
 import org.jboss.as.controller.AttributeDefinition;
@@ -99,6 +101,7 @@ import org.jboss.as.server.operations.ServerProcessReloadHandler;
 import org.jboss.as.server.operations.ServerRestartRequiredHandler;
 import org.jboss.as.server.operations.ServerShutdownHandler;
 import org.jboss.as.server.operations.ServerVersionOperations.DefaultEmptyListAttributeHandler;
+import org.jboss.as.server.operations.SetServerGroupHostHandler;
 import org.jboss.as.server.services.net.BindingGroupAddHandler;
 import org.jboss.as.server.services.net.LocalDestinationOutboundSocketBindingResourceDefinition;
 import org.jboss.as.server.services.net.NetworkInterfaceRuntimeHandler;
@@ -131,6 +134,13 @@ public class ServerRootResourceDefinition extends SimpleResourceDefinition {
     public static final SimpleAttributeDefinition NAME = SimpleAttributeDefinitionBuilder.create(ModelDescriptionConstants.NAME, ModelType.STRING, true)
             .setValidator(new StringLengthValidator(1, true))
             .build();
+
+    public static final SimpleAttributeDefinition SERVER_GROUP = SimpleAttributeDefinitionBuilder.create(ModelDescriptionConstants.SERVER_GROUP, ModelType.STRING)
+            .build();
+
+    public static final SimpleAttributeDefinition HOST = SimpleAttributeDefinitionBuilder.create(ModelDescriptionConstants.HOST, ModelType.STRING)
+            .build();
+
     public static final SimpleAttributeDefinition RELEASE_VERSION = SimpleAttributeDefinitionBuilder.create(ModelDescriptionConstants.RELEASE_VERSION, ModelType.STRING, false)
             .setValidator(NOT_NULL_STRING_LENGTH_ONE_VALIDATOR)
             .build();
@@ -271,6 +281,7 @@ public class ServerRootResourceDefinition extends SimpleResourceDefinition {
             final ServerDomainProcessReloadHandler reloadHandler = new ServerDomainProcessReloadHandler(Services.JBOSS_AS, runningModeControl, processState, operationIDUpdater);
             resourceRegistration.registerOperationHandler(ServerDomainProcessReloadHandler.DOMAIN_DEFINITION, reloadHandler, false);
 
+            resourceRegistration.registerOperationHandler(SetServerGroupHostHandler.DEFINITION, SetServerGroupHostHandler.INSTANCE);
 //            // Trick the resource-description for domain servers to be included in the server-resource
 //            resourceRegistration.registerOperationHandler(getOperationDefinition("start"), NOOP);
 //            resourceRegistration.registerOperationHandler(getOperationDefinition("stop"), NOOP);
@@ -325,6 +336,11 @@ public class ServerRootResourceDefinition extends SimpleResourceDefinition {
 
         resourceRegistration.registerReadOnlyAttribute(NAMESPACES, DefaultEmptyListAttributeHandler.INSTANCE);
         resourceRegistration.registerReadOnlyAttribute(SCHEMA_LOCATIONS, DefaultEmptyListAttributeHandler.INSTANCE);
+
+        if (isDomain) {
+            resourceRegistration.registerReadOnlyAttribute(HOST, null);
+            resourceRegistration.registerReadOnlyAttribute(SERVER_GROUP, null);
+        }
     }
 
     @Override
