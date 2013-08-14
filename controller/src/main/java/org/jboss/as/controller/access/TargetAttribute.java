@@ -92,12 +92,12 @@ public final class TargetAttribute {
         return currentValue;
     }
 
-    public Set<String> getServerGroups() {
-        return targetResource.getServerGroups();
+    public ServerGroupEffect getServerGroupEffect() {
+        return targetResource.getServerGroupEffect();
     }
 
-    public Set<String> getHosts() {
-        return targetResource.getHosts();
+    public HostEffect getHostEffect() {
+        return targetResource.getHostEffect();
     }
 
     public List<AccessConstraintDefinition> getAccessConstraints() {

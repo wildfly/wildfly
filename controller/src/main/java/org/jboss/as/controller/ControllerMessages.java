@@ -2702,5 +2702,17 @@ public interface ControllerMessages {
     @Message(id = 13469, value = "Unable to unmarshall Subject received for request.")
     IOException unableToUnmarshallSubject(@Cause ClassNotFoundException e);
 
+    @Message(id = 13470, value = "Unknown role '%s'")
+    IllegalArgumentException unknownRole(String roleName);
+
+    @Message(id = 13471, value = "Cannot remove standard role '%s'")
+    IllegalStateException cannotRemoveStandardRole(String roleName);
+
+    @Message(id = 13472, value = "Unknown base role '%s'")
+    IllegalArgumentException unknownBaseRole(String roleName);
+
+    @Message(id = 13473, value = "Role '%s' is already registered")
+    IllegalStateException roleIsAlreadyRegistered(String roleName);
+
     // 13499 IS END OF 134xx SERIES USABLE FOR NON-LOGGER MESSAGES
 }

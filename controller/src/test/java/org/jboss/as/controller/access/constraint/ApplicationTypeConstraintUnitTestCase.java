@@ -88,15 +88,16 @@ public class ApplicationTypeConstraintUnitTestCase {
         };
         ManagementResourceRegistration root = ManagementResourceRegistration.Factory.create(rootRd);
         root.registerOperationHandler(WRITE_CONFIG_DEF, NoopOperationStepHandler.WITHOUT_RESULT, true);
-        rootTarget = TargetResource.forStandalone(root, Resource.Factory.create());
-        ResourceDefinition childRd = new SimpleResourceDefinition(PathElement.pathElement("child"), new NonResolvingResourceDescriptionResolver()) {
+        rootTarget = TargetResource.forStandalone(PathAddress.EMPTY_ADDRESS, root, Resource.Factory.create());
+        PathElement childPE = PathElement.pathElement("child");
+        ResourceDefinition childRd = new SimpleResourceDefinition(childPE, new NonResolvingResourceDescriptionResolver()) {
             @Override
             public List<AccessConstraintDefinition> getAccessConstraints() {
                 return childResourceConstraints;
             }
         };
         ManagementResourceRegistration child = root.registerSubModel(childRd);
-        childTarget = TargetResource.forStandalone(child, Resource.Factory.create());
+        childTarget = TargetResource.forStandalone(PathAddress.pathAddress(childPE), child, Resource.Factory.create());
     }
 
     @Before
@@ -146,19 +147,19 @@ public class ApplicationTypeConstraintUnitTestCase {
     private void multipleConsistentTest() {
 
         Constraint testee = ApplicationTypeConstraint.FACTORY.getRequiredConstraint(Action.ActionEffect.WRITE_CONFIG, getWriteConfigAction(), childTarget);
-        assertTrue(DEPLOYER_WRITE_CONFIG.violates(testee));
-        assertTrue(testee.violates(DEPLOYER_WRITE_CONFIG));
-        assertFalse(ADMIN_WRITE_CONFIG.violates(testee));
-        assertFalse(testee.violates(ADMIN_WRITE_CONFIG));
+        assertTrue(DEPLOYER_WRITE_CONFIG.violates(testee, Action.ActionEffect.WRITE_CONFIG));
+        assertTrue(testee.violates(DEPLOYER_WRITE_CONFIG, Action.ActionEffect.WRITE_CONFIG));
+        assertFalse(ADMIN_WRITE_CONFIG.violates(testee, Action.ActionEffect.WRITE_CONFIG));
+        assertFalse(testee.violates(ADMIN_WRITE_CONFIG, Action.ActionEffect.WRITE_CONFIG));
 
         a.setConfiguredApplication(true);
         b.setConfiguredApplication(true);
 
         testee = ApplicationTypeConstraint.FACTORY.getRequiredConstraint(Action.ActionEffect.WRITE_CONFIG, getWriteConfigAction(), childTarget);
-        assertFalse(DEPLOYER_WRITE_CONFIG.violates(testee));
-        assertFalse(testee.violates(DEPLOYER_WRITE_CONFIG));
-        assertFalse(ADMIN_WRITE_CONFIG.violates(testee));
-        assertFalse(testee.violates(ADMIN_WRITE_CONFIG));
+        assertFalse(DEPLOYER_WRITE_CONFIG.violates(testee, Action.ActionEffect.WRITE_CONFIG));
+        assertFalse(testee.violates(DEPLOYER_WRITE_CONFIG, Action.ActionEffect.WRITE_CONFIG));
+        assertFalse(ADMIN_WRITE_CONFIG.violates(testee, Action.ActionEffect.WRITE_CONFIG));
+        assertFalse(testee.violates(ADMIN_WRITE_CONFIG, Action.ActionEffect.WRITE_CONFIG));
     }
 
     private void multipleInconsistentTest() {
@@ -166,19 +167,19 @@ public class ApplicationTypeConstraintUnitTestCase {
         b.setConfiguredApplication(true);
 
         Constraint testee = ApplicationTypeConstraint.FACTORY.getRequiredConstraint(Action.ActionEffect.WRITE_CONFIG, getWriteConfigAction(), childTarget);
-        assertFalse(DEPLOYER_WRITE_CONFIG.violates(testee));
-        assertFalse(testee.violates(DEPLOYER_WRITE_CONFIG));
-        assertFalse(ADMIN_WRITE_CONFIG.violates(testee));
-        assertFalse(testee.violates(ADMIN_WRITE_CONFIG));
+        assertFalse(DEPLOYER_WRITE_CONFIG.violates(testee, Action.ActionEffect.WRITE_CONFIG));
+        assertFalse(testee.violates(DEPLOYER_WRITE_CONFIG, Action.ActionEffect.WRITE_CONFIG));
+        assertFalse(ADMIN_WRITE_CONFIG.violates(testee, Action.ActionEffect.WRITE_CONFIG));
+        assertFalse(testee.violates(ADMIN_WRITE_CONFIG, Action.ActionEffect.WRITE_CONFIG));
 
         a.setConfiguredApplication(true);
         b.setConfiguredApplication(false);
 
         testee = ApplicationTypeConstraint.FACTORY.getRequiredConstraint(Action.ActionEffect.WRITE_CONFIG, getWriteConfigAction(), childTarget);
-        assertFalse(DEPLOYER_WRITE_CONFIG.violates(testee));
-        assertFalse(testee.violates(DEPLOYER_WRITE_CONFIG));
-        assertFalse(ADMIN_WRITE_CONFIG.violates(testee));
-        assertFalse(testee.violates(ADMIN_WRITE_CONFIG));
+        assertFalse(DEPLOYER_WRITE_CONFIG.violates(testee, Action.ActionEffect.WRITE_CONFIG));
+        assertFalse(testee.violates(DEPLOYER_WRITE_CONFIG, Action.ActionEffect.WRITE_CONFIG));
+        assertFalse(ADMIN_WRITE_CONFIG.violates(testee, Action.ActionEffect.WRITE_CONFIG));
+        assertFalse(testee.violates(ADMIN_WRITE_CONFIG, Action.ActionEffect.WRITE_CONFIG));
 
     }
 

@@ -30,7 +30,7 @@ import static org.junit.Assert.fail;
 import java.security.Permission;
 
 import org.jboss.as.controller.access.Action;
-import org.jboss.as.controller.access.constraint.ScopingConstraint;
+import org.jboss.as.controller.access.constraint.Constraint;
 import org.junit.Test;
 
 /**
@@ -85,7 +85,7 @@ public class CombinationManagementPermissionTestCase {
         }
 
         @Override
-        public ManagementPermission createScopedPermission(ScopingConstraint constraint) {
+        public ManagementPermission createScopedPermission(Constraint constraint) {
             return null;
         }
 

@@ -97,19 +97,19 @@ public class DefaultPermissionFactory implements PermissionFactory {
     }
 
     private PermissionCollection getUserPermissions(Set<String> roles) {
-        configureRolePermissions();
+        configureRolePermissions(false);
         ManagementPermissionCollection simple = null;
         Map<Action.ActionEffect, CombinationManagementPermission> combined = null;
         for (String roleName : roles) {
             if (combinationPolicy == CombinationPolicy.REJECTING && simple != null) {
                 throw ControllerMessages.MESSAGES.illegalMultipleRoles();
             }
-            ManagementPermissionCollection role = null;
+            ManagementPermissionCollection role;
             synchronized (this) {
-                role = permissionsByRole.get(roleName);
+                role = permissionsByRole.get(getOfficialForm(roleName));
             }
             if (role == null) {
-                throw new IllegalArgumentException("unknown role " + role);
+                throw ControllerMessages.MESSAGES.unknownRole(roleName);
             }
             if (simple == null) {
                 simple = role;
@@ -198,26 +198,28 @@ public class DefaultPermissionFactory implements PermissionFactory {
     /** Hook for the access control management layer to add a new role */
     public void addScopedRole(String roleName, String baseName, ScopingConstraint constraint) {
         StandardRole base = StandardRole.valueOf(baseName.toUpperCase(Locale.ENGLISH));
-        configureRolePermissions();
-        addScopedRoleInternal(roleName, base,constraint);
+        addConstraintFactory(constraint.getFactory());
+        configureRolePermissions(true);
+        addScopedRoleInternal(roleName, base, constraint);
     }
 
     public void removeScopedRole(String roleName) {
+        String officialForm = getOfficialForm(roleName);
         try {
-            StandardRole standard = StandardRole.valueOf(roleName.toUpperCase(Locale.ENGLISH));
+            StandardRole standard = StandardRole.valueOf(officialForm);
             if (standard != null) {
-                throw new IllegalStateException("cannot remove standard role " + roleName);
+                throw ControllerMessages.MESSAGES.cannotRemoveStandardRole(standard.toString());
             }
         } catch (RuntimeException ignored) {
             // wasn't a standard role
         }
         synchronized (this) {
-            permissionsByRole.remove(roleName);
+            permissionsByRole.remove(officialForm);
         }
     }
 
-    private synchronized void configureRolePermissions() {
-        if (!rolePermissionsConfigured) {
+    private synchronized void configureRolePermissions(boolean force) {
+        if (!rolePermissionsConfigured || force) {
             this.permissionsByRole.clear();
             this.permissionsByRole.putAll(configureDefaultPermissions());
             for (Map.Entry<String, ScopedBase> entry : scopedBaseMap.entrySet()) {
@@ -241,31 +243,50 @@ public class DefaultPermissionFactory implements PermissionFactory {
                     rolePerms.add(new SimpleManagementPermission(actionEffect, constraints.toArray(new Constraint[constraints.size()])));
                 }
             }
-            result.put(standardRole.toString(), rolePerms);
+            result.put(getOfficialForm(standardRole), rolePerms);
         }
         return result;
     }
 
-    private synchronized void addScopedRoleInternal(String roleName, StandardRole base, ScopingConstraint constraint) {
-        if (permissionsByRole.containsKey(roleName)) {
-            throw new IllegalStateException(String.format("role %s is already registered", roleName));
+    private synchronized void addScopedRoleInternal(String roleName, StandardRole base, ScopingConstraint scopingConstraint) {
+        String officialForm = getOfficialForm(roleName);
+        if (permissionsByRole.containsKey(officialForm)) {
+            throw ControllerMessages.MESSAGES.roleIsAlreadyRegistered(roleName);
         }
-        ManagementPermissionCollection baseCollection = permissionsByRole.get(base.toString());
+        ManagementPermissionCollection baseCollection = permissionsByRole.get(getOfficialForm(base));
         if (baseCollection == null) {
-            throw new IllegalArgumentException(String.format("Unknown base role %s", base));
+            throw ControllerMessages.MESSAGES.unknownBaseRole(base.toString());
         }
+
+        Map<Action.ActionEffect, ManagementPermission> monitorPermissions = new HashMap<Action.ActionEffect, ManagementPermission>();
+        ManagementPermissionCollection monitorCollection = permissionsByRole.get(getOfficialForm(StandardRole.MONITOR));
+        Enumeration<Permission> monitorEnumeration = monitorCollection.elements();
+        while (monitorEnumeration.hasMoreElements()) {
+            ManagementPermission monitorPerm = (ManagementPermission) monitorEnumeration.nextElement();
+            monitorPermissions.put(monitorPerm.getActionEffect(), monitorPerm);
+        }
+
         ManagementPermissionCollection scopedPermissions = null;
         Enumeration<Permission> permissionEnumeration = baseCollection.elements();
         while (permissionEnumeration.hasMoreElements()) {
             ManagementPermission basePerm = (ManagementPermission) permissionEnumeration.nextElement();
-            ManagementPermission scopedPerm = basePerm.createScopedPermission(constraint);
+            Action.ActionEffect actionEffect = basePerm.getActionEffect();
+            CombinationManagementPermission combinedPermission = new CombinationManagementPermission(CombinationPolicy.PERMISSIVE, actionEffect);
             if (scopedPermissions == null) {
-                scopedPermissions = (ManagementPermissionCollection) scopedPerm.newPermissionCollection();
+                scopedPermissions = (ManagementPermissionCollection) combinedPermission.newPermissionCollection();
             }
-            scopedPermissions.add(scopedPerm);
+            ManagementPermission scopedPerm = basePerm.createScopedPermission(scopingConstraint.getStandardConstraint());
+            combinedPermission.addUnderlyingPermission(scopedPerm);
+
+            ManagementPermission monitorPerm = monitorPermissions.get(actionEffect);
+            if (monitorPerm != null) {
+                combinedPermission.addUnderlyingPermission(monitorPerm.createScopedPermission(scopingConstraint.getOutofScopeReadConstraint()));
+            }
+            scopedPermissions.add(combinedPermission);
         }
-        permissionsByRole.put(roleName, scopedPermissions);
-        scopedBaseMap.put(roleName, new ScopedBase(base, constraint));
+
+        permissionsByRole.put(officialForm, scopedPermissions);
+        scopedBaseMap.put(officialForm, new ScopedBase(base, scopingConstraint));
     }
 
     private static Set<ConstraintFactory> getStandardConstraintFactories() {
@@ -278,6 +299,14 @@ public class DefaultPermissionFactory implements PermissionFactory {
         result.add(SensitiveVaultExpressionConstraint.FACTORY);
         result.add(ServerGroupEffectConstraint.FACTORY);
         return result;
+    }
+
+    private static String getOfficialForm(StandardRole role) {
+        return role.toString().toLowerCase(Locale.ENGLISH);
+    }
+
+    private static String getOfficialForm(String role) {
+        return role.toLowerCase(Locale.ENGLISH);
     }
 
     /** Data holder class */

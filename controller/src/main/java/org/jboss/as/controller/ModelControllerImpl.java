@@ -104,6 +104,9 @@ class ModelControllerImpl implements ModelController {
     private final ConcurrentMap<Integer, AbstractOperationContext> activeOperations = new ConcurrentHashMap<>();
     private final ManagedAuditLogger auditLogger;
 
+    /** Tracks the relationship between domain resources and hosts and server groups */
+    private final HostServerGroupTracker hostServerGroupTracker;
+
     ModelControllerImpl(final ServiceRegistry serviceRegistry, final ServiceTarget serviceTarget, final ManagementResourceRegistration rootRegistration,
                         final ContainerStateMonitor stateMonitor, final ConfigurationPersister persister,
                         final ProcessType processType, final RunningModeControl runningModeControl,
@@ -124,6 +127,7 @@ class ModelControllerImpl implements ModelController {
         this.expressionResolver = expressionResolver;
         this.authorizer = authorizer;
         this.auditLogger = auditLogger;
+        this.hostServerGroupTracker = processType.isManagedDomain() ? new HostServerGroupTracker() : null;
     }
 
     /**
@@ -232,7 +236,9 @@ class ModelControllerImpl implements ModelController {
             if (operation.hasDefined(OPERATION_HEADERS) && operation.get(OPERATION_HEADERS).hasDefined(DOMAIN_UUID)) {
                 domainUUID = operation.get(OPERATION_HEADERS, DOMAIN_UUID).asString();
             }
-            final OperationContextImpl context = new OperationContextImpl(this, processType, runningModeControl.getRunningMode(), contextFlags, handler, attachments, model, originalResultTxControl, processState, auditLogger, bootingFlag.get(), operationID, domainUUID);
+            final OperationContextImpl context = new OperationContextImpl(this, processType, runningModeControl.getRunningMode(),
+                    contextFlags, handler, attachments, model, originalResultTxControl, processState, auditLogger,
+                    bootingFlag.get(), operationID, domainUUID, hostServerGroupTracker);
             // Try again if the operation-id is already taken
             if(activeOperations.putIfAbsent(operationID, context) == null) {
                 CurrentOperationIdHolder.setCurrentOperationID(operationID);
@@ -283,7 +289,8 @@ class ModelControllerImpl implements ModelController {
                 ? EnumSet.of(OperationContextImpl.ContextFlag.ROLLBACK_ON_FAIL)
                 : EnumSet.noneOf(OperationContextImpl.ContextFlag.class);
         final OperationContextImpl context = new OperationContextImpl(this, processType, runningModeControl.getRunningMode(),
-                contextFlags, handler, null, model, control, processState, auditLogger, bootingFlag.get(), operationID, null);
+                contextFlags, handler, null, model, control, processState, auditLogger, bootingFlag.get(), operationID,
+                null, hostServerGroupTracker);
 
         // Add to the context all ops prior to the first ExtensionAddHandler as well as all ExtensionAddHandlers; save the rest.
         // This gets extensions registered before proceeding to other ops that count on these registrations
@@ -295,7 +302,8 @@ class ModelControllerImpl implements ModelController {
 
             // Success. Now any extension handlers are registered. Continue with remaining ops
             final OperationContextImpl postExtContext = new OperationContextImpl(this, processType, runningModeControl.getRunningMode(),
-                    contextFlags, handler, null, model, control, processState, auditLogger, bootingFlag.get(), operationID, null);
+                    contextFlags, handler, null, model, control, processState, auditLogger, bootingFlag.get(), operationID,
+                    null, hostServerGroupTracker);
 
             for (ParsedBootOp parsedOp : postExtensionOps) {
                 final OperationStepHandler stepHandler = parsedOp.handler == null ? rootRegistration.getOperationHandler(parsedOp.address, parsedOp.operationName) : parsedOp.handler;
@@ -552,6 +560,11 @@ class ModelControllerImpl implements ModelController {
 
             @Override
             public void commit() {
+                // Discard the tracker first, so if there's any race the new OperationContextImpl
+                // gets a cleared tracker
+                if (hostServerGroupTracker != null) {
+                    hostServerGroupTracker.invalidate();
+                }
                 model.set(resource);
                 delegate.commit();
             }

@@ -25,9 +25,11 @@ package org.jboss.as.controller;
 import static org.jboss.as.controller.ControllerLogger.MGMT_OP_LOGGER;
 import static org.jboss.as.controller.ControllerMessages.MESSAGES;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.CALLER_TYPE;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.HOST;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OPERATION_HEADERS;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SERVER_GROUP;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.USER;
 
 import java.io.InputStream;
@@ -131,6 +133,9 @@ final class OperationContextImpl extends AbstractOperationContext {
 
     private volatile Resource originalModel;
 
+    /** Tracks the relationship between domain resources and hosts and server groups */
+    private volatile HostServerGroupTracker hostServerGroupTracker;
+
     /** Tracks whether any steps have gotten write access to the runtime */
     private volatile boolean affectsRuntime;
     /** The step that acquired the write lock */
@@ -147,7 +152,8 @@ final class OperationContextImpl extends AbstractOperationContext {
                             final OperationMessageHandler messageHandler, final OperationAttachments attachments,
                             final Resource model, final ModelController.OperationTransactionControl transactionControl,
                             final ControlledProcessState processState, final AuditLogger auditLogger, final boolean booting,
-                            final Integer operationId, final String domainUUID) {
+                            final Integer operationId, final String domainUUID,
+                            final HostServerGroupTracker hostServerGroupTracker) {
         super(processType, runningMode, transactionControl, processState, booting, auditLogger);
         this.model = model;
         this.originalModel = model;
@@ -160,6 +166,7 @@ final class OperationContextImpl extends AbstractOperationContext {
         this.callEnvironment = new Environment(processState, processType);
         this.operationId = operationId;
         this.domainUUID = domainUUID;
+        this.hostServerGroupTracker = hostServerGroupTracker;
     }
 
     public InputStream getAttachmentStream(final int index) {
@@ -192,10 +199,9 @@ final class OperationContextImpl extends AbstractOperationContext {
     @Override
     protected void waitForRemovals() throws InterruptedException {
         if (affectsRuntime && !cancelled) {
-            final Map<ServiceName, ServiceController<?>> map = realRemovingControllers;
-            synchronized (map) {
-                while (!map.isEmpty() && !cancelled) {
-                    map.wait();
+            synchronized (realRemovingControllers) {
+                while (!realRemovingControllers.isEmpty() && !cancelled) {
+                    realRemovingControllers.wait();
                 }
             }
         }
@@ -347,9 +353,8 @@ final class OperationContextImpl extends AbstractOperationContext {
         final Step removalStep = activeStep;
         controller.addListener(new AbstractServiceListener<Object>() {
             public void listenerAdded(final ServiceController<?> controller) {
-                final Map<ServiceName, ServiceController<?>> map = realRemovingControllers;
-                synchronized (map) {
-                    map.put(controller.getName(), controller);
+                synchronized (realRemovingControllers) {
+                    realRemovingControllers.put(controller.getName(), controller);
                     controller.setMode(ServiceController.Mode.REMOVE);
                 }
             }
@@ -358,13 +363,12 @@ final class OperationContextImpl extends AbstractOperationContext {
                 switch (transition) {
                     case REMOVING_to_REMOVED:
                     case REMOVING_to_DOWN: {
-                        final Map<ServiceName, ServiceController<?>> map = realRemovingControllers;
-                        synchronized (map) {
+                        synchronized (realRemovingControllers) {
                             ServiceName name = controller.getName();
-                            if (map.get(name) == controller) {
-                                map.remove(name);
+                            if (realRemovingControllers.get(name) == controller) {
+                                realRemovingControllers.remove(name);
                                 removalSteps.put(name, removalStep);
-                                map.notifyAll();
+                                realRemovingControllers.notifyAll();
                             }
                         }
                         break;
@@ -458,6 +462,7 @@ final class OperationContextImpl extends AbstractOperationContext {
             throw MESSAGES.stageAlreadyComplete(Stage.MODEL);
         }
         rejectUserDomainServerUpdates();
+        checkHostServerGroupTracker(address);
         authorize(false, READ_WRITE_CONFIG);
         if (!isModelAffected()) {
             takeWriteLock();
@@ -572,6 +577,7 @@ final class OperationContextImpl extends AbstractOperationContext {
             throw MESSAGES.stageAlreadyComplete(Stage.MODEL);
         }
         rejectUserDomainServerUpdates();
+        checkHostServerGroupTracker(address);
         authorize(false, READ_WRITE_CONFIG);
         if (!isModelAffected()) {
             takeWriteLock();
@@ -615,6 +621,7 @@ final class OperationContextImpl extends AbstractOperationContext {
         }
         // Check for user updates to a domain server model
         rejectUserDomainServerUpdates();
+        checkHostServerGroupTracker(absoluteAddress);
         authorize(true, WRITE_CONFIG);
         if (!isModelAffected()) {
             takeWriteLock();
@@ -668,6 +675,7 @@ final class OperationContextImpl extends AbstractOperationContext {
             throw MESSAGES.stageAlreadyComplete(Stage.MODEL);
         }
         rejectUserDomainServerUpdates();
+        checkHostServerGroupTracker(address);
         authorize(true, READ_WRITE_CONFIG);
         if (!isModelAffected()) {
             takeWriteLock();
@@ -1097,9 +1105,23 @@ final class OperationContextImpl extends AbstractOperationContext {
 
         Resource resource = getAuthorizationResource(opId.address);
         ProcessType processType = getProcessType();
-        TargetResource targetResource = (processType == ProcessType.STANDALONE_SERVER || processType == ProcessType.EMBEDDED_SERVER)
-                ? TargetResource.forStandalone(mrr, resource)
-                : TargetResource.forDomain(mrr, resource, getServerGroups(opId.address, resource), getHosts(opId.address, resource));
+        TargetResource targetResource;
+        if (processType.isManagedDomain()) {
+            HostServerGroupTracker.HostServerGroupEffect hostServerGroupEffect;
+            if (processType.isServer()) {
+                ModelNode rootModel = model.getModel();
+                String serverGroup = rootModel.get(SERVER_GROUP).asString();
+                String host = rootModel.get(HOST).asString();
+                hostServerGroupEffect = HostServerGroupTracker.HostServerGroupEffect.forServer(opId.address, serverGroup, host);
+            } else {
+                hostServerGroupEffect =
+                    hostServerGroupTracker.getHostServerGroupEffects(opId.address, operation, model);
+            }
+            targetResource = TargetResource.forDomain(opId.address, mrr, resource, hostServerGroupEffect, hostServerGroupEffect);
+        } else {
+            targetResource = TargetResource.forStandalone(opId.address, mrr, resource);
+        }
+
 
         AuthorizationResponseImpl result = new AuthorizationResponseImpl(action, targetResource);
         AuthorizationResult simple = modelController.getAuthorizer().authorize(caller, callEnvironment, action, targetResource);
@@ -1113,25 +1135,11 @@ final class OperationContextImpl extends AbstractOperationContext {
         return result;
     }
 
-    private Set<String> getServerGroups(PathAddress address, Resource resource) {
-        //TODO implement getServerGroups
-//        throw new UnsupportedOperationException();
-        return Collections.emptySet();
-    }
-
-    private Set<String> getHosts(PathAddress address, Resource resource) {
-        //TODO implement getHosts
-//        throw new UnsupportedOperationException();
-        return Collections.emptySet();
-    }
-
     private Resource getAuthorizationResource(PathAddress address) {
         Resource model = this.model;
-        final Iterator<PathElement> iterator = address.iterator();
-        while (iterator.hasNext()) {
-            final PathElement element = iterator.next();
+        for (PathElement element : address) {
             // Allow wildcard navigation for the last element
-            if(element.isWildcard()) {
+            if (element.isWildcard()) {
                 model = Resource.Factory.create();
                 final Set<Resource.ResourceEntry> children = model.getChildren(element.getKey());
                 for (final Resource.ResourceEntry entry : children) {
@@ -1153,6 +1161,14 @@ final class OperationContextImpl extends AbstractOperationContext {
             return null;
         }
         return new Action(operation, entry);
+    }
+
+    private void checkHostServerGroupTracker(PathAddress pathAddress) {
+        if (hostServerGroupTracker != null && !isBooting()) {
+            if (pathAddress.size() > 0 && SERVER_GROUP.equals(pathAddress.getElement(0).getKey())) {
+                hostServerGroupTracker = new HostServerGroupTracker();
+            }
+        }
     }
 
     class ContextServiceTarget implements ServiceTarget {
@@ -1393,8 +1409,7 @@ final class OperationContextImpl extends AbstractOperationContext {
 
             final Map<Step, Map<ServiceName, Set<ServiceName>>> missingByStep = new HashMap<Step, Map<ServiceName, Set<ServiceName>>>();
             // The realRemovingControllers map acts as the guard for the removalSteps map
-            Object mutex = realRemovingControllers;
-            synchronized (mutex) {
+            synchronized (realRemovingControllers) {
                 for (Map.Entry<ServiceName, ContainerStateMonitor.MissingDependencyInfo> entry : containerStateChangeReport.getMissingServices().entrySet()) {
                     ContainerStateMonitor.MissingDependencyInfo missingDependencyInfo = entry.getValue();
                     Step removalStep = removalSteps.get(entry.getKey());

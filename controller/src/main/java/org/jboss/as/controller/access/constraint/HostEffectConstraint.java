@@ -27,6 +27,7 @@ import java.util.List;
 import java.util.Set;
 
 import org.jboss.as.controller.access.Action;
+import org.jboss.as.controller.access.HostEffect;
 import org.jboss.as.controller.access.TargetAttribute;
 import org.jboss.as.controller.access.TargetResource;
 import org.jboss.as.controller.access.rbac.StandardRole;
@@ -36,45 +37,135 @@ import org.jboss.as.controller.access.rbac.StandardRole;
  *
  * @author Brian Stansberry (c) 2013 Red Hat Inc.
  */
-public class HostEffectConstraint extends AbstractConstraint implements ScopingConstraint {
+public class HostEffectConstraint extends AbstractConstraint implements Constraint, ScopingConstraint {
 
 
     public static final ConstraintFactory FACTORY = new Factory();
 
-    public static final HostEffectConstraint GLOBAL = new HostEffectConstraint();
+    private static final HostEffectConstraint GLOBAL_USER = new HostEffectConstraint(true);
+    private static final HostEffectConstraint GLOBAL_REQUIRED = new HostEffectConstraint(false);
 
+    private final boolean user;
     private final boolean global;
     private volatile Set<String> specific = new LinkedHashSet<String>();
+    private final boolean readOnly;
+    private final HostEffectConstraint readOnlyConstraint;
 
-    private HostEffectConstraint() {
+    private HostEffectConstraint(final boolean user) {
         super();
+        this.user = user;
         this.global = true;
+        this.readOnly = false;
+        this.readOnlyConstraint = null;
     }
 
     private HostEffectConstraint(Set<String> allowed) {
         super();
+        this.user = false;
         this.global = false;
         specific.addAll(allowed);
+        this.readOnly = false;
+        this.readOnlyConstraint = null;
     }
 
     public HostEffectConstraint(List<String> allowed) {
         super();
+        this.user = true;
         this.global = false;
         specific.addAll(allowed);
+        this.readOnly = false;
+        this.readOnlyConstraint = new HostEffectConstraint(allowed, true);
+    }
+
+    /**
+     * Creates the constraint the standard constraint will return from {@link #getOutofScopeReadConstraint()}
+     * Only call from {@link HostEffectConstraint#HostEffectConstraint(java.util.List)}
+     */
+    private HostEffectConstraint(List<String> allowed, boolean readOnly) {
+        super();
+        this.user = true;
+        this.global = false;
+        specific.addAll(allowed);
+        this.readOnly = readOnly;
+        this.readOnlyConstraint = null;
     }
 
     public void setAllowedHosts(List<String> allowed) {
         assert !global : "constraint is global";
+        assert readOnlyConstraint != null : "invalid cast";
         this.specific = new LinkedHashSet<String>(allowed);
+        this.readOnlyConstraint.setAllowedHosts(allowed);
     }
 
     @Override
-    public boolean violates(Constraint other) {
+    public boolean violates(Constraint other, Action.ActionEffect actionEffect) {
         if (other instanceof HostEffectConstraint) {
             HostEffectConstraint hec = (HostEffectConstraint) other;
-            return (global && !hec.global) || !hec.specific.containsAll(specific);
+            if (user) {
+                assert !hec.user : "illegal comparison";
+                if (readOnly) {
+                    // Allow global or any matching server group
+                    if (!hec.global) {
+                        return !anyMatch(hec);
+                    }
+                } else if (!global) {
+                    if (hec.global) {
+                        // Only the readOnlyConstraint gets global
+                        return true;
+                    } else {
+                        if (actionEffect == Action.ActionEffect.WRITE_RUNTIME || actionEffect == Action.ActionEffect.WRITE_CONFIG) {
+                            //  Writes must not effect other groups
+                            return !specific.containsAll(hec.specific);
+                        } else {
+                            // Reads ok as long as one of our groups match
+                            return !anyMatch(hec);
+                        }
+                    } // else fall through
+                }
+            } else {
+                assert hec.user : "illegal comparison";
+                return other.violates(this, actionEffect);
+            }
         }
         return false;
+    }
+
+    private boolean anyMatch(HostEffectConstraint hec) {
+
+        boolean matched = false;
+        for (String ourGroup : specific) {
+            if (hec.specific.contains(ourGroup)) {
+                matched = true;
+                break;
+            }
+        }
+        return matched;
+    }
+
+
+    @Override
+    public boolean replaces(Constraint other) {
+        return other instanceof HostEffectConstraint && (readOnly || readOnlyConstraint != null);
+    }
+
+    // Scoping Constraint
+
+    @Override
+    public ConstraintFactory getFactory() {
+        assert readOnlyConstraint != null : "invalid cast";
+        return FACTORY;
+    }
+
+    @Override
+    public Constraint getStandardConstraint() {
+        assert readOnlyConstraint != null : "invalid cast";
+        return this;
+    }
+
+    @Override
+    public Constraint getOutofScopeReadConstraint() {
+        assert readOnlyConstraint != null : "invalid cast";
+        return readOnlyConstraint;
     }
 
     @Override
@@ -87,24 +178,24 @@ public class HostEffectConstraint extends AbstractConstraint implements ScopingC
 
         @Override
         public Constraint getStandardUserConstraint(StandardRole role, Action.ActionEffect actionEffect) {
-            return GLOBAL;
+            return GLOBAL_USER;
         }
 
         @Override
         public Constraint getRequiredConstraint(Action.ActionEffect actionEffect, Action action, TargetAttribute target) {
-            return getRequiredConstraint(target.getHosts());
+            return getRequiredConstraint(target.getHostEffect());
         }
 
         @Override
         public Constraint getRequiredConstraint(Action.ActionEffect actionEffect, Action action, TargetResource target) {
-            return getRequiredConstraint(target.getHosts());
+            return getRequiredConstraint(target.getHostEffect());
         }
 
-        private Constraint getRequiredConstraint(Set<String> hosts) {
-            if (hosts == null || hosts.isEmpty()) {
-                return GLOBAL;
+        private Constraint getRequiredConstraint(HostEffect hostEffect) {
+            if (hostEffect == null || hostEffect.isHostEffectGlobal()) {
+                return GLOBAL_REQUIRED;
             }
-            return new HostEffectConstraint(hosts);
+            return new HostEffectConstraint(hostEffect.getAffectedHosts());
         }
     }
 }

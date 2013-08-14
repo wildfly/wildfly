@@ -31,7 +31,7 @@ import java.util.TreeSet;
 
 import org.jboss.as.controller.ControllerMessages;
 import org.jboss.as.controller.access.Action;
-import org.jboss.as.controller.access.constraint.ScopingConstraint;
+import org.jboss.as.controller.access.constraint.Constraint;
 
 /**
  * A {@link ManagementPermission} that combines multiple underlying permissions according
@@ -119,7 +119,7 @@ public class CombinationManagementPermission extends ManagementPermission {
     }
 
     @Override
-    public ManagementPermission createScopedPermission(ScopingConstraint constraint) {
+    public ManagementPermission createScopedPermission(Constraint constraint) {
         CombinationManagementPermission result = new CombinationManagementPermission(combinationPolicy, getActionEffect());
         synchronized (underlyingPermissions) {
             for (ManagementPermission underlying : underlyingPermissions) {
