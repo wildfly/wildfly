@@ -359,8 +359,10 @@ public class VersionOneProtocolChannelReceiver implements Channel.Receiver, Depl
      */
     private void cleanupOnChannelDown() {
         // we no longer are interested in cluster topology updates, so unregister the update listener
-        for (final ClusterTopologyUpdateListener clusterTopologyUpdateListener : this.clusterTopologyUpdateListeners) {
-            clusterTopologyUpdateListener.unregisterListener();
+        synchronized (this.clusterTopologyUpdateListeners) {
+            for (final ClusterTopologyUpdateListener clusterTopologyUpdateListener : this.clusterTopologyUpdateListeners) {
+                clusterTopologyUpdateListener.unregisterListener();
+            }
         }
         this.deploymentRepository.removeListener(this);
         this.clientMappingRegistryCollector.removeListener(this);
