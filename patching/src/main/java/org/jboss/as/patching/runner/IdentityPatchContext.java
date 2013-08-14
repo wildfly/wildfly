@@ -44,6 +44,7 @@ import org.jboss.as.patching.metadata.RollbackPatch;
 import org.jboss.as.patching.metadata.impl.IdentityImpl;
 import org.jboss.as.patching.metadata.impl.PatchElementImpl;
 import org.jboss.as.patching.tool.ContentVerificationPolicy;
+import org.jboss.as.patching.tool.PatchingResult;
 
 /**
  * @author Emanuel Muckenhuber
@@ -494,7 +495,7 @@ class IdentityPatchContext implements PatchContentProvider {
             elements.add(element);
         }
 
-        // Swap the patch element modifications, keep the identity ones since we don't need to track misc items
+        // Swap the patch element modifications, keep the identity ones since we don't need to fix the misc modifications
         return new PatchImpl(original.getPatchId(), original.getDescription(), original.getIdentity(), elements, original.getModifications());
     }
 
@@ -593,9 +594,6 @@ class IdentityPatchContext implements PatchContentProvider {
 
         @Override
         public void apply(String patchId, Patch.PatchType patchType) {
-//            if (applyPatchId != null) {
-//                throw new IllegalStateException("can only apply a single patch to a layer");
-//            }
             delegate.apply(patchId, patchType);
             applyPatchId = patchId;
         }
@@ -669,7 +667,7 @@ class IdentityPatchContext implements PatchContentProvider {
         @Override
         public File[] getTargetBundlePath() {
             // We need the updated state for invalidating one-off patches
-            // When applying the overlay directory should not exist yet (in theory)
+            // When applying the overlay directory should not exist yet
             final PatchableTarget.TargetInfo updated = mode == Mode.APPLY ? delegate : delegate.getModifiedState();
             return PatchUtils.getBundlePath(delegate.getDirectoryStructure(), updated);
         }
@@ -677,7 +675,7 @@ class IdentityPatchContext implements PatchContentProvider {
         @Override
         public File[] getTargetModulePath() {
             // We need the updated state for invalidating one-off patches
-            // When applying the overlay directory should not exist yet (in theory)
+            // When applying the overlay directory should not exist yet
             final PatchableTarget.TargetInfo updated = mode == Mode.APPLY ? delegate : delegate.getModifiedState();
             return PatchUtils.getModulePath(delegate.getDirectoryStructure(), updated);
         }

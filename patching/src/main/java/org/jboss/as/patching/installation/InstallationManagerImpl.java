@@ -76,7 +76,7 @@ public class InstallationManagerImpl extends InstallationManager {
     }
 
     @Override
-    public InstallationModification modifyInstallation(final ModificationCompletion callback) {
+    public InstallationModification modifyInstallation(final ModificationCompletionCallback callback) {
         if (! writable.compareAndSet(true, false)) {
             // This should be guarded by the OperationContext.lock
             throw new IllegalStateException();

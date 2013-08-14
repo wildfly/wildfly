@@ -52,7 +52,6 @@ import org.jboss.as.patching.PatchMessages;
 import org.jboss.as.patching.PatchingException;
 import org.jboss.as.patching.metadata.ContentItem;
 import org.jboss.as.patching.metadata.ContentType;
-import org.jboss.as.patching.runner.PatchingResult;
 import org.jboss.dmr.ModelNode;
 
 /**

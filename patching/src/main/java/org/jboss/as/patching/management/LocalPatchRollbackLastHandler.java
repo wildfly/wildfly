@@ -35,7 +35,7 @@ import org.jboss.as.patching.installation.InstallationManagerService;
 import org.jboss.as.patching.metadata.ContentItem;
 import org.jboss.as.patching.metadata.ContentType;
 import org.jboss.as.patching.tool.ContentVerificationPolicy;
-import org.jboss.as.patching.runner.PatchingResult;
+import org.jboss.as.patching.tool.PatchingResult;
 import org.jboss.as.patching.tool.PatchTool;
 import org.jboss.dmr.ModelNode;
 

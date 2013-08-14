@@ -48,6 +48,7 @@ import org.jboss.as.patching.installation.Identity;
 import org.jboss.as.patching.installation.PatchableTarget;
 import org.jboss.as.patching.metadata.ContentItem;
 import org.jboss.as.patching.metadata.Patch;
+import org.jboss.as.patching.tool.PatchingResult;
 
 /**
  * @author <a href="http://jmesnil.net/">Jeff Mesnil</a> (c) 2012, Red Hat Inc

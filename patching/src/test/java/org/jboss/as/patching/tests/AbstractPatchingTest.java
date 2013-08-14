@@ -44,7 +44,7 @@ import org.jboss.as.patching.installation.PatchableTarget;
 import org.jboss.as.patching.metadata.Patch;
 import org.jboss.as.patching.metadata.PatchXml;
 import org.jboss.as.patching.tool.ContentVerificationPolicy;
-import org.jboss.as.patching.runner.PatchingResult;
+import org.jboss.as.patching.tool.PatchingResult;
 import org.jboss.as.patching.tool.PatchTool;
 import org.jboss.as.version.ProductConfig;
 import org.junit.After;
