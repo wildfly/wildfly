@@ -22,6 +22,8 @@
 
 package org.jboss.as.webservices.webserviceref;
 
+import java.util.Collection;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -51,6 +53,10 @@ public final class WSReferences {
 
     public UnifiedServiceRefMetaData get(final String refName) {
         return references.get(refName);
+    }
+
+    public Collection<UnifiedServiceRefMetaData> getUnifiedServiceRefMetaDatas() {
+       return Collections.unmodifiableCollection(references.values());
     }
 
     public void clear() {

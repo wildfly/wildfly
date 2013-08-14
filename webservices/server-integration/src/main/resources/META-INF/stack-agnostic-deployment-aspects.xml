@@ -38,6 +38,11 @@
     <property name="provides" class="java.lang.String">EndpointAddress</property>
   </deploymentAspect>
 
+  <deploymentAspect class="org.jboss.as.webservices.deployers.UnifiedServiceRefDeploymentAspect">
+    <property name="requires" class="java.lang.String">StackDescriptor</property>
+    <property name="provides" class="java.lang.String">UndifedServiceRefMetaData</property>
+  </deploymentAspect>
+
   <deploymentAspect class="org.jboss.as.webservices.deployers.EndpointServiceDeploymentAspect">
     <property name="provides" class="java.lang.String">LifecycleHandler</property>
     <property name="last" class="boolean">true</property>
