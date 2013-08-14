@@ -28,8 +28,8 @@
     </properties>
 
     <resources>
-        <resource-root path="../../../../../system/layers/base/org/jboss/as/jsf-injection/main/wildfly-jsf-injection-${version.jboss.as}.jar"/>
-        <resource-root path="../../../../../system/layers/base/org/jboss/as/jsf-injection/main/weld-core-jsf-${version.weld.core}.jar"/>
+        <resource-root path="wildfly-jsf-injection-${version.jboss.as}.jar"/>
+        <resource-root path="weld-core-jsf-${version.weld.core}.jar"/>
         <!-- Insert resources here -->
     </resources>
 

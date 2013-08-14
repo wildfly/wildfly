@@ -45,6 +45,19 @@
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
     </properties>
 
+    <dependencies>
+        <dependency>
+            <groupId>org.wildfly</groupId>
+            <artifactId>wildfly-jsf-injection</artifactId>
+            <version>${version.jboss.as}</version>
+        </dependency>
+        <dependency>
+            <groupId>org.jboss.weld</groupId>
+            <artifactId>weld-core-jsf</artifactId>
+            <version>${version.weld.core}</version>
+        </dependency>
+    </dependencies>
+
     <profiles>
         <profile>
             <id>mojarra-2.x</id>
@@ -121,7 +134,6 @@
         <plugins>
             <plugin>
                 <artifactId>maven-assembly-plugin</artifactId>
-                <version>2.3</version>
                 <executions>
                     <execution>
                         <id>make-jsf-instller</id>
