@@ -57,7 +57,7 @@ public class ZipUtils {
             zos.close();
 
         } catch (IOException e) {
-            throw new RuntimeException("Failed creating patch file " + zipFile, e);
+            throw new RuntimeException("Failed creating patch file " + zipFile, e); // Only used for generation and tests
         }
 
         System.out.println("\nPrepared " + zipFile.getName() + " at " + zipFile.getAbsolutePath());

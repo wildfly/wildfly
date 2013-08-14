@@ -2,6 +2,7 @@ package org.jboss.as.patching.installation;
 
 import java.io.IOException;
 import java.util.Collection;
+import java.util.ConcurrentModificationException;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.atomic.AtomicBoolean;
@@ -78,8 +79,8 @@ public class InstallationManagerImpl extends InstallationManager {
     @Override
     public InstallationModification modifyInstallation(final ModificationCompletionCallback callback) {
         if (! writable.compareAndSet(true, false)) {
-            // This should be guarded by the OperationContext.lock
-            throw new IllegalStateException();
+            // This has to be guarded by the OperationContext.lock
+            throw new ConcurrentModificationException();
         }
         try {
             // Load the state

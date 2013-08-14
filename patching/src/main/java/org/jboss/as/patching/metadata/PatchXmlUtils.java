@@ -191,9 +191,7 @@ class PatchXmlUtils implements XMLStreamConstants {
 
             // layer / add-on
             final PatchElementProvider provider = element.getProvider();
-            if(provider == null) {
-                throw new XMLStreamException("Provider is missing for patch element " + element.getId());
-            }
+            assert provider != null;
 
             // identity
             final Patch.PatchType elementPatchType =  provider.getPatchType();

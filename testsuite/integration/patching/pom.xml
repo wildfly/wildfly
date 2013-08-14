@@ -5,9 +5,9 @@
     <modelVersion>4.0.0</modelVersion>
 
     <parent>
-        <artifactId>wildfly-ts-integ</artifactId>
-        <groupId>org.wildfly</groupId>
-        <version>8.0.0.Beta1-SNAPSHOT</version>
+        <groupId>org.jboss.as</groupId>
+        <artifactId>jboss-as-ts-integ</artifactId>
+        <version>7.3.0-internal-SNAPSHOT</version>
     </parent>
 
     <artifactId>wildfly-ts-integ-patching</artifactId>
@@ -26,7 +26,7 @@
 
     <dependencies>
         <dependency>
-            <groupId>${project.groupId}</groupId>
+            <groupId>org.wildfly</groupId>
             <artifactId>wildfly-patching</artifactId>
         </dependency>
     </dependencies>

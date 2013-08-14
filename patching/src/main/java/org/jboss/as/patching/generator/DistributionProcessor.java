@@ -22,6 +22,8 @@
 
 package org.jboss.as.patching.generator;
 
+import static org.jboss.as.patching.generator.PatchGenerator.processingError;
+
 import java.io.File;
 import java.io.FileFilter;
 import java.io.IOException;
@@ -143,7 +145,7 @@ class DistributionProcessor {
                     return pathName.isDirectory();
                 }
             }).length) {
-                throw new IllegalStateException("configured layers does not match actual ones " + layers);
+                throw processingError("configured layers does not match actual ones %s", layers);
             }
         } else {
             // At least we need to have base, right?
@@ -335,10 +337,6 @@ class DistributionProcessor {
                 }
             });
         }
-    }
-
-    static IllegalStateException processingError(final String message, final Object... params) {
-        return new IllegalStateException(String.format(message, params));
     }
 
 }

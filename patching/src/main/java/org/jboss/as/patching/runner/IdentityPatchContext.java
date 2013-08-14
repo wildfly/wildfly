@@ -433,7 +433,7 @@ class IdentityPatchContext implements PatchContentProvider {
      */
     protected void recordContentLoader(final String patchID, final PatchContentLoader contentLoader) {
         if (contentLoaders.containsKey(patchID)) {
-            throw new IllegalStateException("Content loader already registered for patch " + patchID);
+            throw new IllegalStateException("Content loader already registered for patch " + patchID); // internal wrong usage, no i18n
         }
         contentLoaders.put(patchID, contentLoader);
     }
@@ -469,7 +469,7 @@ class IdentityPatchContext implements PatchContentProvider {
         if (state == State.NEW || state == State.ROLLBACK_ONLY) {
             return getTargetFile(miscTargetRoot, item);
         } else {
-            throw new IllegalStateException();
+            throw new IllegalStateException(); // internal wrong usage, no i18n
         }
     }
 
@@ -630,7 +630,7 @@ class IdentityPatchContext implements PatchContentProvider {
                 // No backup when we undo the changes
                 return null;
             } else {
-                throw new IllegalStateException();
+                throw new IllegalStateException(); // internal wrong usage, no i18n
             }
         }
 
@@ -686,7 +686,7 @@ class IdentityPatchContext implements PatchContentProvider {
                 return IdentityPatchContext.this.getTargetFile((MiscContentItem) item);
             }
             if (applyPatchId == null || state == State.ROLLBACK_ONLY) {
-                throw new IllegalStateException("cannot process rollback tasks for modules/bundles");
+                throw new IllegalStateException("cannot process rollback tasks for modules/bundles"); // internal wrong usage, no i18n
             }
             final File root;
             final DirectoryStructure structure = delegate.getDirectoryStructure();

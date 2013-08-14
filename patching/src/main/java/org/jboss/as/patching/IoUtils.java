@@ -88,10 +88,10 @@ public class IoUtils {
     private static void copyStream(InputStream is, OutputStream os, int bufferSize)
             throws IOException {
         if (is == null) {
-            throw new IllegalArgumentException("input stream is null");
+            throw PatchMessages.MESSAGES.nullInputStream();
         }
         if (os == null) {
-            throw new IllegalArgumentException("output stream is null");
+            throw PatchMessages.MESSAGES.nullOutputStream();
         }
         byte[] buff = new byte[bufferSize];
         int rc;
@@ -106,7 +106,7 @@ public class IoUtils {
             File parent = targetFile.getParentFile();
             if (!parent.exists()) {
                 if (!parent.mkdirs()) {
-                    throw new IllegalStateException("Cannot create directory " + parent);
+                    throw PatchMessages.MESSAGES.cannotCreateDirectory(parent.getAbsolutePath());
                 }
             }
             final InputStream is = new FileInputStream(sourceFile);
@@ -118,10 +118,10 @@ public class IoUtils {
     private static void copyDir(File sourceDir, File targetDir) throws IOException {
         if (targetDir.exists()) {
             if (!targetDir.isDirectory()) {
-                throw new IllegalStateException(targetDir + " is not a directory");
+                throw PatchMessages.MESSAGES.notADirectory(targetDir.getAbsolutePath());
             }
         } else if (!targetDir.mkdirs()) {
-            throw new IllegalStateException("Cannot create directory " + targetDir);
+            throw PatchMessages.MESSAGES.cannotCreateDirectory(targetDir.getAbsolutePath());
         }
 
         File[] children = sourceDir.listFiles();

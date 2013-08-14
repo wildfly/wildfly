@@ -9,14 +9,12 @@ import javax.xml.stream.XMLStreamException;
 import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.Collections;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 
 import org.jboss.as.patching.Constants;
-import org.jboss.as.patching.DirectoryStructure;
 import org.jboss.as.patching.PatchLogger;
 import org.jboss.as.patching.PatchMessages;
 import org.jboss.as.patching.PatchingException;
@@ -25,7 +23,6 @@ import org.jboss.as.patching.installation.InstalledIdentity;
 import org.jboss.as.patching.installation.InstalledImage;
 import org.jboss.as.patching.installation.PatchableTarget;
 import org.jboss.as.patching.metadata.ContentItem;
-import org.jboss.as.patching.metadata.ContentModification;
 import org.jboss.as.patching.metadata.Identity;
 import org.jboss.as.patching.metadata.LayerType;
 import org.jboss.as.patching.metadata.Patch;
@@ -44,7 +41,7 @@ import org.jboss.as.patching.tool.PatchingResult;
 class IdentityPatchRunner implements InstallationManager.ModificationCompletionCallback {
 
     private static final String DIRECTORY_SUFFIX = "jboss-as-patch-";
-    private static final File TEMP_DIR = new File(System.getProperty("java.io.tmpdir"));
+    private static final File TEMP_DIR = new File(SecurityActions.getSystemProperty("java.io.tmpdir"));
 
     private final InstalledImage installedImage;
 
@@ -123,19 +120,6 @@ class IdentityPatchRunner implements InstallationManager.ModificationCompletionC
         for (final String rollback : invalidation) {
             rollback(rollback, context);
         }
-
-//        if (patchType == Patch.PatchType.UPGRADE) {
-//            // NOTE: there are no patch types needing this for now...
-//            // In case of a release upgrade we only get the diffs from the next upgrade. This means if we just create an
-//            // overlay directory with those changes, we might miss things from the current release. So we need to take the
-//            // changes made by the current release patch and include them when creating the new overlay directory. Those
-//            // additional modification need to be recorded as part of the history (patch.xml), so that the next release
-//            // can leverage this as well.
-//            final String releasePatchID = modification.getCumulativePatchID();
-//            if (!Constants.BASE.equals(releasePatchID)) {
-//                portForward(modification.getCumulativePatchID(), context);
-//            }
-//        }
 
         // Then apply the current patch
         for (final PatchElement element : patch.getElements()) {
@@ -263,18 +247,16 @@ class IdentityPatchRunner implements InstallationManager.ModificationCompletionC
     public PatchingResult rollbackLast(final ContentVerificationPolicy contentPolicy, final boolean resetConfiguration, InstallationManager.InstallationModification modification) throws PatchingException {
 
         // Determine the patch id to rollback
-        String patchId = null;
+        String patchId;
         final List<String> oneOffs = modification.getPatchIDs();
         if (oneOffs.isEmpty()) {
             patchId = modification.getCumulativePatchID();
-            if (patchId == null) {
-                // TODO should it check the release patch id?
-                throw new PatchingException("There are not patches applied."); // TODO add to messages
+            if (patchId == null || Constants.NOT_PATCHED.equals(patchId)) {
+                throw PatchMessages.MESSAGES.noPatchesApplied();
             }
         } else {
             patchId = oneOffs.get(oneOffs.size() - 1);
         }
-
         return rollbackPatch(patchId, contentPolicy, false, resetConfiguration, modification);
     }
 
@@ -286,43 +268,6 @@ class IdentityPatchRunner implements InstallationManager.ModificationCompletionC
     @Override
     public void canceled() {
         // nothing here
-    }
-
-    /**
-     * When applying a release patch we don't invalidate the changes. Since the patch (diff) is based on the version we need
-     * to port forward the current modules and bundles in the release and create a new overlay including all those changes.
-     *
-     * @param patchID the release patch id
-     * @param context the patch context
-     * @throws PatchingException
-     */
-    private void portForward(final String patchID, final IdentityPatchContext context) throws PatchingException {
-        try {
-
-            final Patch patch = loadPatchInformation(patchID, installedImage);
-            for (final PatchElement patchElement : patch.getElements()) {
-                final IdentityPatchContext.PatchEntry entry = context.resolveForElement(patchElement);
-                final Map<Location, ContentTaskDefinition> definitions = entry.getDefinitions();
-                final Collection<ContentModification> modifications = patchElement.getModifications();
-                // Create the taskDefs for the modifications (only bundles and modules)
-                apply(patchElement.getId(), modifications, definitions, ContentItemFilter.ALL_BUT_MISC);
-                // Record a loader to have access to the current modules
-                final DirectoryStructure structure = entry.getDirectoryStructure();
-                final File modulesRoot = structure.getModulePatchDirectory(patchElement.getId());
-                final File bundlesRoot = structure.getBundlesPatchDirectory(patchElement.getId());
-                final PatchContentLoader loader = PatchContentLoader.create(null, bundlesRoot, modulesRoot);
-                context.recordContentLoader(patchElement.getId(), loader);
-            }
-
-            final IdentityPatchContext.PatchEntry identity = context.getIdentityEntry();
-            final Map<Location, ContentTaskDefinition> definitions = identity.getDefinitions();
-            final Collection<ContentModification> modifications = patch.getModifications();
-            apply(patchID, modifications, definitions, ContentItemFilter.ALL_BUT_MISC);
-            // context.recordRollbackLoader(patchID, identity);
-
-        } catch (Exception e) {
-            throw rethrowException(e);
-        }
     }
 
     /**
@@ -363,7 +308,7 @@ class IdentityPatchRunner implements InstallationManager.ModificationCompletionC
                 if (!originals.containsKey(layerName)) {
                     originals.put(layerName, patchElement);
                 } else {
-                    throw new PatchingException("duplicate layer " + layerName);
+                    throw PatchMessages.MESSAGES.installationDuplicateLayer(layerType.toString(), layerName);
                 }
             }
             // Process the rollback xml
@@ -385,7 +330,7 @@ class IdentityPatchRunner implements InstallationManager.ModificationCompletionC
                 }
                 final PatchElement original = originals.remove(layerName);
                 if (original == null) {
-                    throw new PatchingException("did not exist in original " + layerName);
+                    throw PatchMessages.MESSAGES.noSuchLayer(layerName);
                 }
                 final IdentityPatchContext.PatchEntry entry = context.resolveForElement(patchElement);
                 final Map<Location, ContentTaskDefinition> modifications = entry.getDefinitions();
@@ -406,7 +351,7 @@ class IdentityPatchRunner implements InstallationManager.ModificationCompletionC
                 }
             }
             if (!originalLayers.isEmpty() || !originalAddOns.isEmpty()) {
-                throw new PatchingException("rollback did not contain all layers");
+                throw PatchMessages.MESSAGES.invalidRollbackInformation();
             }
 
             // Rollback the patch
@@ -450,7 +395,7 @@ class IdentityPatchRunner implements InstallationManager.ModificationCompletionC
                 target.apply(oneOff, Patch.PatchType.ONE_OFF);
             }
         }
-        checkState(history, history); // The rollback should restore the old state
+        checkState(history, history); // Just check for tests, that rollback should restore the old state
     }
 
     static void checkState(final PatchableTarget.TargetInfo o, final PatchableTarget.TargetInfo n) {
@@ -607,7 +552,7 @@ class IdentityPatchRunner implements InstallationManager.ModificationCompletionC
         // Check for incompatibilities
         for (final String incompatible : condition.getIncompatibleWith()) {
             if (target.isApplied(incompatible)) {
-                throw PatchMessages.MESSAGES.incompatibePatch(incompatible);
+                throw PatchMessages.MESSAGES.incompatiblePatch(incompatible);
             }
         }
     }

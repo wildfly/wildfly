@@ -29,6 +29,7 @@ import static org.jboss.as.patching.IoUtils.mkdir;
 import static org.jboss.as.patching.IoUtils.newFile;
 import static org.jboss.as.patching.Constants.BASE;
 import static org.jboss.as.patching.runner.PatchingAssert.assertDefinedModule;
+import static org.jboss.as.patching.runner.PatchingAssert.assertDirDoesNotExist;
 import static org.jboss.as.patching.runner.PatchingAssert.assertDirExists;
 import static org.jboss.as.patching.runner.PatchingAssert.assertFileExists;
 import static org.jboss.as.patching.runner.PatchingAssert.assertInstallationIsPatched;
@@ -52,6 +53,7 @@ import org.jboss.as.patching.metadata.Patch;
 import org.jboss.as.patching.metadata.PatchBuilder;
 import org.jboss.as.patching.runner.AbstractTaskTestCase;
 import org.jboss.as.patching.runner.ContentModificationUtils;
+import org.jboss.as.patching.runner.PatchingAssert;
 import org.jboss.as.patching.tool.PatchingResult;
 import org.jboss.as.patching.runner.TestUtils;
 import org.junit.Test;
@@ -108,9 +110,6 @@ public class LayerTestCase extends AbstractTaskTestCase {
 
         InstalledIdentity installedIdentity = loadInstalledIdentity();
 
-        System.out.println("installation =>>");
-        tree(env.getInstalledImage().getJbossHome());
-
         // build a one-off patch for the layer with 1 added module
         // and 1 add file
         String patchID = randomString();
@@ -131,7 +130,6 @@ public class LayerTestCase extends AbstractTaskTestCase {
                 .build();
 
         createPatchXMLFile(patchDir, patch);
-        System.out.println("patch =>>");
         File zippedPatch = createZippedPatchFile(patchDir, patchID);
 
         // apply patch
@@ -140,9 +138,6 @@ public class LayerTestCase extends AbstractTaskTestCase {
         InstalledIdentity patchedInstalledIdentity = loadInstalledIdentity();
         assertInstallationIsPatched(patch, patchedInstalledIdentity.getIdentity().loadTargetInfo());
         assertFileExists(env.getInstalledImage().getJbossHome(), "bin", fileAdded.getItem().getName());
-
-        System.out.println("installation =>>");
-        tree(env.getInstalledImage().getJbossHome());
 
         DirectoryStructure layerDirStructure = installedIdentity.getLayers().get(0).loadTargetInfo().getDirectoryStructure();
         File modulesPatchDir = layerDirStructure.getModulePatchDirectory(layerPatchId);
@@ -161,9 +156,6 @@ public class LayerTestCase extends AbstractTaskTestCase {
         PatchableTarget.TargetInfo identityInfo = installedIdentity.getIdentity().loadTargetInfo();
         assertEquals(BASE, identityInfo.getCumulativePatchID());
         assertTrue(identityInfo.getPatchIDs().isEmpty());
-
-        System.out.println("installation =>>");
-        tree(env.getInstalledImage().getJbossHome());
 
         // build a one-off patch for the layer with 1 added module
         // and 1 added file
@@ -185,7 +177,6 @@ public class LayerTestCase extends AbstractTaskTestCase {
                 .build();
 
         createPatchXMLFile(patchDir, patch);
-        System.out.println("patch =>>");
         File zippedPatch = createZippedPatchFile(patchDir, patchID);
 
         Identity identityBeforePatch = loadInstalledIdentity().getIdentity();
@@ -198,9 +189,6 @@ public class LayerTestCase extends AbstractTaskTestCase {
         assertInstallationIsPatched(patch, patchedInstalledIdentity.getIdentity().loadTargetInfo());
         assertFileExists(env.getInstalledImage().getJbossHome(), "bin", fileAdded.getItem().getName());
 
-        System.out.println("installation =>>");
-        tree(env.getInstalledImage().getJbossHome());
-
         DirectoryStructure layerDirStructure = patchedInstalledIdentity.getLayers().get(0).loadTargetInfo().getDirectoryStructure();
         File modulesPatchDir = layerDirStructure.getModulePatchDirectory(layerPatchId);
         assertDirExists(modulesPatchDir);
@@ -211,10 +199,10 @@ public class LayerTestCase extends AbstractTaskTestCase {
         assertPatchHasBeenRolledBack(rollbackResult, identityBeforePatch);
         // reload the rolled back installed identity
         InstalledIdentity rolledBackInstalledIdentity = InstalledIdentity.load(env.getInstalledImage().getJbossHome(), productConfig, env.getInstalledImage().getModulesDir());
-        // why do we keep the patched module dir? bug or feature
-        //assertDirDoesNotExist(rolledBackInstalledIdentity.getLayers().get(0).loadTargetInfo().getDirectoryStructure().getModulePatchDirectory(layerPatchId));
-        //PatchingAssert.assertFileDoesNotExist(env.getInstalledImage().getJbossHome(), "bin", fileAdded.getItem().getName());
-
+        PatchingAssert.assertFileDoesNotExist(env.getInstalledImage().getJbossHome(), "bin", fileAdded.getItem().getName());
+        if (File.separatorChar != '\\') {
+            assertDirDoesNotExist(rolledBackInstalledIdentity.getLayers().get(0).loadTargetInfo().getDirectoryStructure().getModulePatchDirectory(layerPatchId));
+        }
     }
 
     private static void installLayer(File baseDir, File layerConf, String... layers) throws Exception {
