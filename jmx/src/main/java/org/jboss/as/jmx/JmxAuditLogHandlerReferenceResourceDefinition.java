@@ -44,6 +44,7 @@ import org.jboss.as.controller.SimpleResourceDefinition;
 import org.jboss.as.controller.audit.ManagedAuditLogger;
 import org.jboss.as.controller.registry.ManagementResourceRegistration;
 import org.jboss.as.controller.registry.Resource;
+import org.jboss.as.domain.management.CoreManagementResourceDefinition;
 import org.jboss.as.domain.management.audit.AccessAuditResourceDefinition;
 import org.jboss.dmr.ModelNode;
 import org.jboss.msc.service.ServiceController;
@@ -121,6 +122,7 @@ public class JmxAuditLogHandlerReferenceResourceDefinition extends SimpleResourc
 
         private boolean lookForHandler(OperationContext context, String name) {
             PathAddress addr = PathAddress.pathAddress(
+                                    CoreManagementResourceDefinition.PATH_ELEMENT,
                                     AccessAuditResourceDefinition.PATH_ELEMENT);
             PathAddress referenceAddress = addr.append(FILE_HANDLER, name);
             final Resource root = context.readResourceFromRoot(PathAddress.EMPTY_ADDRESS);
