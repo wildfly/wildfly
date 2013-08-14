@@ -26,6 +26,8 @@ import static org.junit.Assert.assertNotNull;
 
 import javax.annotation.Resource;
 import javax.ejb.Stateless;
+import javax.jms.JMSDestinationDefinition;
+import javax.jms.JMSDestinationDefinitions;
 import javax.jms.Queue;
 import javax.jms.Topic;
 
@@ -33,33 +35,66 @@ import javax.jms.Topic;
 /**
  * @author <a href="http://jmesnil.net/">Jeff Mesnil</a> (c) 2013 Red Hat inc.
  */
+@JMSDestinationDefinition(
+        name="java:comp/env/myQueue4",
+        interfaceName="javax.jms.Queue",
+        destinationName="myQueue4"
+)
+@JMSDestinationDefinitions(
+        value =  {
+                @JMSDestinationDefinition(
+                        name="java:module/env/myQueue1",
+                        interfaceName="javax.jms.Queue",
+                        destinationName="myQueue1"
+                ),
+                @JMSDestinationDefinition(
+                        name="java:module/env/myTopic1",
+                        interfaceName="javax.jms.Topic",
+                        destinationName="myTopic1"
+                ),
+                @JMSDestinationDefinition(
+                        name="java:global/env/myQueue2",
+                        interfaceName="javax.jms.Queue",
+                        destinationName="myQueue2",
+                        properties = {
+                                "durable=false",
+                                "selector=color = 'red'"
+                        }
+                )
+        }
+)
 @Stateless
 public class MessagingBean {
 
     // Use a @JMSDestinationDefinition inside a @JMSDestinationDefinitions
-    @Resource(lookup = "java:module/env/injectedQueue1")
+    @Resource(lookup = "java:module/env/myQueue1")
     private Queue queue1;
 
     // Use a @JMSDestinationDefinition
-    @Resource(lookup = "java:global/injectedQueue2")
+    @Resource(lookup = "java:global/env/myQueue2")
     private Queue queue2;
 
     // Use a jms-destination from the deployment descriptor
-    @Resource(lookup = "java:app/injectedQueue3")
+    @Resource(lookup = "java:app/env/myQueue3")
     private Queue queue3;
 
+    // Use a @JMSDestinationDefinition inside the bean
+    @Resource(lookup = "java:comp/env/myQueue4")
+    private Queue queue4;
+
     // Use a @JMSDestinationDefinition inside a @JMSDestinationDefinitions
-    @Resource(lookup = "java:module/env/injectedTopic1")
+    @Resource(lookup = "java:module/env/myTopic1")
     private Topic topic1;
 
     // Use a jms-destination from the deployment descriptor
-    @Resource(lookup = "java:app/injectedTopic2")
+    @Resource(lookup = "java:app/env/myTopic2")
     private Topic topic2;
 
     public void checkInjectedResources() {
         assertNotNull(queue1);
         assertNotNull(queue2);
         assertNotNull(queue3);
+        assertNotNull(queue4);
         assertNotNull(topic1);
         assertNotNull(topic2);
     }

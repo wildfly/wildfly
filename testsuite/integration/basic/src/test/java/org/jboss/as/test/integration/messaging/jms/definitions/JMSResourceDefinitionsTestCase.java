@@ -47,9 +47,9 @@ public class JMSResourceDefinitionsTestCase {
     @Deployment
     public static JavaArchive createArchive() {
         JavaArchive archive = ShrinkWrap.create(JavaArchive.class, "JMSResourceDefinitionsTestCase.jar")
-                .addPackage(MessagingDefiner.class.getPackage())
+                .addPackage(MessagingBean.class.getPackage())
                 .addAsManifestResource(
-                        MessagingDefiner.class.getPackage(), "ejb-jar.xml", "ejb-jar.xml")
+                        MessagingBean.class.getPackage(), "ejb-jar.xml", "ejb-jar.xml")
                 .addAsManifestResource(
                         EmptyAsset.INSTANCE,
                         create("beans.xml"));
