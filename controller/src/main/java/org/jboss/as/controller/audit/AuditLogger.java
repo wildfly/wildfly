@@ -52,8 +52,6 @@ public interface AuditLogger {
         DISABLED
     }
 
-    Status getLoggerStatus();
-
     void log(boolean readOnly, boolean booting, OperationContext.ResultAction resultAction, String userId,
              String domainUUID, AccessMechanism accessMechanism, InetAddress remoteAddress, final Resource resultantModel, List<ModelNode> operations);
 
@@ -81,7 +79,6 @@ public interface AuditLogger {
         public void setLogBoot(boolean logBoot) {
         }
 
-        @Override
         public Status getLoggerStatus() {
             return Status.DISABLED;
         }

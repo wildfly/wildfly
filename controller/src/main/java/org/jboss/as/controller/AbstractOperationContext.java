@@ -360,23 +360,21 @@ abstract class AbstractOperationContext implements OperationContext {
      */
     void logAuditRecord() {
         if (!auditLogged) {
-            if (auditLogger.getLoggerStatus() != AuditLogger.Status.DISABLED) {
-                try {
-                    Subject subject = SubjectUtils.getCurrent();
-                    auditLogger.log(
-                            !isModelAffected(),
-                            isBooting(),
-                            resultAction,
-                            getCallerUserId(subject),
-                            getDomainUUID(),
-                            getSubjectAccessMechanism(subject),
-                            getSubjectInetAddress(subject),
-                            getModel(),
-                            controllerOperations);
-                    auditLogged = true;
-                } catch (Exception e) {
-                    ControllerLogger.MGMT_OP_LOGGER.failedToUpdateAuditLog(e);
-                }
+            try {
+                Subject subject = SubjectUtils.getCurrent();
+                auditLogger.log(
+                        !isModelAffected(),
+                        isBooting(),
+                        resultAction,
+                        getCallerUserId(subject),
+                        getDomainUUID(),
+                        getSubjectAccessMechanism(subject),
+                        getSubjectInetAddress(subject),
+                        getModel(),
+                        controllerOperations);
+                auditLogged = true;
+            } catch (Exception e) {
+                ControllerLogger.MGMT_OP_LOGGER.failedToUpdateAuditLog(e);
             }
         }
     }
