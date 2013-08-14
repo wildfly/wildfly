@@ -40,7 +40,7 @@
 
   <deploymentAspect class="org.jboss.as.webservices.deployers.UnifiedServiceRefDeploymentAspect">
     <property name="requires" class="java.lang.String">StackDescriptor</property>
-    <property name="provides" class="java.lang.String">UndifedServiceRefMetaData</property>
+    <property name="provides" class="java.lang.String">UnifiedServiceRefMetaData</property>
   </deploymentAspect>
 
   <deploymentAspect class="org.jboss.as.webservices.deployers.EndpointServiceDeploymentAspect">
