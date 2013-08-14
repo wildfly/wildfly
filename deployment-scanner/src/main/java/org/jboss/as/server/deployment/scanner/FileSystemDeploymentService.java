@@ -683,7 +683,7 @@ class FileSystemDeploymentService implements DeploymentScanner {
 
     private boolean isZipComplete(File file) throws NonScannableZipException {
         if (file.isDirectory()) {
-            for (File child : file.listFiles()) {
+            for (File child : listDirectoryChildren(file)) {
                 if (!isZipComplete(child)) {
                     return false;
                 }
@@ -712,7 +712,7 @@ class FileSystemDeploymentService implements DeploymentScanner {
         if (deploymentFile.isDirectory()) {
             // Scan for most recent file
             long latest = deploymentFile.lastModified();
-            for (File child : deploymentFile.listFiles()) {
+            for (File child : listDirectoryChildren(deploymentFile)) {
                 long childTimestamp = getDeploymentTimestamp(child);
                 if (childTimestamp > latest) {
                     latest = childTimestamp;
@@ -933,6 +933,14 @@ class FileSystemDeploymentService implements DeploymentScanner {
         } finally {
             safeClose(fos);
         }
+    }
+
+    private static File[] listDirectoryChildren(File directory) {
+        File[] result = directory.listFiles();
+        if (result == null) {
+            throw MESSAGES.cannotListDirectoryFiles(directory);
+        }
+        return result;
     }
 
     private abstract class ScannerTask {

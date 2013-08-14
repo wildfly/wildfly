@@ -167,4 +167,7 @@ public interface DeploymentScannerMessages {
 
     @Message(id = 15061, value = "Extension with module 'org.jboss.as.deployment-scanner' cannot be installed in a managed domain. Please remove it and any subsystem referencing it")
     IllegalStateException deploymentScannerNotForDomainMode();
+
+    @Message(id = 15062, value = "Failed to list files in directory %s. Check that the contents of the directory are readable.")
+    RuntimeException cannotListDirectoryFiles(File directory);
 }
