@@ -73,9 +73,7 @@ public class DefaultJMSConnectionFactoryTest {
     @Resource(mappedName = "/queue/myAwesomeQueue")
     private Queue queue;
 
-    // the tested ConnectionFactory resources are in the SimplifiedMessageProducer EJB.
-    // this one is only to check that messages have been effectively sent
-    @Resource(mappedName = "/ConnectionFactory")
+    @Resource(lookup = "java:comp/DefaultJMSConnectionFactory")
     private ConnectionFactory factory;
 
     @Deployment

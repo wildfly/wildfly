@@ -462,6 +462,7 @@ public enum Phase {
     public static final int INSTALL_POJO_DEPLOYMENT                     = 0x0A00;
     public static final int INSTALL_RA_XML_DEPLOYMENT                   = 0x0B00;
     public static final int INSTALL_EE_MODULE_CONFIG                    = 0x1101;
+    public static final int INSTALL_JMS_BINDINGS                        = 0x1150;
     public static final int INSTALL_MODULE_JNDI_BINDINGS                = 0x1200;
     public static final int INSTALL_DEPENDS_ON_ANNOTATION               = 0x1210;
 
@@ -472,7 +473,6 @@ public enum Phase {
     public static final int INSTALL_JSF_ANNOTATIONS                     = 0x1600;
     public static final int INSTALL_JDBC_DRIVER                         = 0x1800;
     public static final int INSTALL_TRANSACTION_BINDINGS                = 0x1900;
-    public static final int INSTALL_JMS_BINDINGS                        = 0x1A00;
     public static final int INSTALL_WELD_DEPLOYMENT                     = 0x1B00;
     public static final int INSTALL_WELD_BEAN_MANAGER                   = 0x1C00;
     public static final int INSTALL_JNDI_DEPENDENCIES                   = 0x1C01;
