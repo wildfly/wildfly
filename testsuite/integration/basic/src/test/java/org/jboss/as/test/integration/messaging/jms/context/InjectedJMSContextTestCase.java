@@ -46,7 +46,7 @@ import javax.jms.TemporaryQueue;
 
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.junit.Arquillian;
-import org.jboss.as.test.integration.messaging.jms.context.auxiliary.Definitions;
+import org.jboss.as.test.integration.messaging.jms.context.auxiliary.TransactedMDB;
 import org.jboss.as.test.integration.messaging.jms.context.auxiliary.TransactedMessageProducer;
 import org.jboss.as.test.shared.TimeoutUtil;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
@@ -83,7 +83,7 @@ public class InjectedJMSContextTestCase {
     public static JavaArchive createTestArchive() {
         return ShrinkWrap.create(JavaArchive.class, "InjectedJMSContextTestCase.jar")
                 .addClass(TimeoutUtil.class)
-                .addPackage(Definitions.class.getPackage())
+                .addPackage(TransactedMDB.class.getPackage())
                 .addAsManifestResource(EmptyAsset.INSTANCE,
                         "beans.xml");
     }

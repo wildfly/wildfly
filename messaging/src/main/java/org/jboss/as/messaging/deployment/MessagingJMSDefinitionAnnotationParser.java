@@ -35,6 +35,7 @@ import javax.jms.JMSDestinationDefinitions;
 import org.jboss.as.ee.component.Attachments;
 import org.jboss.as.ee.component.BindingConfiguration;
 import org.jboss.as.ee.component.EEApplicationClasses;
+import org.jboss.as.ee.component.EEModuleClassDescription;
 import org.jboss.as.ee.component.EEModuleDescription;
 import org.jboss.as.server.deployment.DeploymentPhaseContext;
 import org.jboss.as.server.deployment.DeploymentUnit;
@@ -109,7 +110,8 @@ public class MessagingJMSDefinitionAnnotationParser implements DeploymentUnitPro
         }
 
         final BindingConfiguration config = new BindingConfiguration(nameValue.asString(), source);
-        eeModuleDescription.getBindingConfigurations().add(config);
+        EEModuleClassDescription classDescription = eeModuleDescription.addOrGetLocalClassDescription(target.name().toString());
+        classDescription.getBindingConfigurations().add(config);
     }
 
     /**

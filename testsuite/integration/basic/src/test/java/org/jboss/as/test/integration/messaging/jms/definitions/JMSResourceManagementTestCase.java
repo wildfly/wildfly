@@ -55,9 +55,9 @@ public class JMSResourceManagementTestCase {
     @Deployment
     public static JavaArchive createArchive() {
         JavaArchive archive = ShrinkWrap.create(JavaArchive.class, "JMSResourceDefinitionsTestCase.jar")
-                .addPackage(MessagingDefiner.class.getPackage())
+                .addPackage(MessagingBean.class.getPackage())
                 .addAsManifestResource(
-                        MessagingDefiner.class.getPackage(), "ejb-jar.xml", "ejb-jar.xml")
+                        MessagingBean.class.getPackage(), "ejb-jar.xml", "ejb-jar.xml")
                 .addAsManifestResource(
                         EmptyAsset.INSTANCE,
                         create("beans.xml"));
@@ -68,7 +68,7 @@ public class JMSResourceManagementTestCase {
 
     @Test
     public void testManagementOfInjectedResource() throws Exception {
-        ModelNode readResourceWithRuntime = getOperation("jms-queue", "injectedQueue1", "read-resource");
+        ModelNode readResourceWithRuntime = getOperation("jms-queue", "myQueue1", "read-resource");
         readResourceWithRuntime.get("include-runtime").set(true);
         ModelNode result = execute(readResourceWithRuntime, true);
         assertEquals(true, result.get("durable").asBoolean());
@@ -76,7 +76,7 @@ public class JMSResourceManagementTestCase {
 
         // injectedQueue3 has been declared in the annotation with selector => color = 'red'
         // and durable = false
-        readResourceWithRuntime = getOperation("jms-queue", "injectedQueue2", "read-resource");
+        readResourceWithRuntime = getOperation("jms-queue", "myQueue2", "read-resource");
         readResourceWithRuntime.get("include-runtime").set(true);
         result = execute(readResourceWithRuntime, true);
         assertEquals(false, result.get("durable").asBoolean());
@@ -84,19 +84,19 @@ public class JMSResourceManagementTestCase {
 
         // injectedQueue3 has been declared in the ejb-jar.xml with selector => color = 'blue'
         // and durable => false
-        readResourceWithRuntime = getOperation("jms-queue", "injectedQueue3", "read-resource");
+        readResourceWithRuntime = getOperation("jms-queue", "myQueue3", "read-resource");
         readResourceWithRuntime.get("include-runtime").set(true);
         result = execute(readResourceWithRuntime, true);
         assertEquals(false, result.get("durable").asBoolean());
         assertEquals("color = 'blue'", result.get("selector").asString());
 
         // injectedTopic1 has been declared in the annotation
-        readResourceWithRuntime = getOperation("jms-topic", "injectedTopic1", "read-resource");
+        readResourceWithRuntime = getOperation("jms-topic", "myTopic1", "read-resource");
         readResourceWithRuntime.get("include-runtime").set(true);
         execute(readResourceWithRuntime, true);
 
         // injectedTopic2 has been declared in the ejb-jar.xml
-        readResourceWithRuntime = getOperation("jms-topic", "injectedTopic2", "read-resource");
+        readResourceWithRuntime = getOperation("jms-topic", "myTopic2", "read-resource");
         readResourceWithRuntime.get("include-runtime").set(true);
         execute(readResourceWithRuntime, true);
     }

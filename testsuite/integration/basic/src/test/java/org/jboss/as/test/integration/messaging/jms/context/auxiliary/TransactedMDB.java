@@ -35,13 +35,21 @@ import javax.ejb.TransactionManagement;
 import javax.inject.Inject;
 import javax.jms.Destination;
 import javax.jms.JMSContext;
+import javax.jms.JMSDestinationDefinition;
 import javax.jms.Message;
 import javax.jms.MessageListener;
 import javax.jms.TextMessage;
 
+import org.jboss.as.test.integration.messaging.jms.context.InjectedJMSContextTestCase;
+
 /**
  * @author <a href="http://jmesnil.net/">Jeff Mesnil</a> (c) 2013 Red Hat inc.
  */
+@JMSDestinationDefinition(
+        name = QUEUE_NAME,
+        interfaceName = "javax.jms.Queue",
+        destinationName = "InjectedJMSContextTestCaseQueue"
+)
 @MessageDriven(
         name = "TransactedMDB",
         activationConfig = {

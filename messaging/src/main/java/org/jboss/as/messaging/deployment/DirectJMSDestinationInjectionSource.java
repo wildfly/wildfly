@@ -30,7 +30,6 @@ import static org.jboss.as.messaging.CommonAttributes.JMS_QUEUE;
 import static org.jboss.as.messaging.CommonAttributes.JMS_TOPIC;
 import static org.jboss.as.messaging.CommonAttributes.NAME;
 import static org.jboss.as.messaging.CommonAttributes.SELECTOR;
-import static org.jboss.as.messaging.MessagingLogger.ROOT_LOGGER;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -50,18 +49,13 @@ import org.jboss.as.messaging.jms.JMSTopicConfigurationRuntimeHandler;
 import org.jboss.as.messaging.jms.JMSTopicService;
 import org.jboss.as.naming.ContextListAndJndiViewManagedReferenceFactory;
 import org.jboss.as.naming.ManagedReferenceFactory;
-import org.jboss.as.naming.ServiceBasedNamingStore;
-import org.jboss.as.naming.deployment.ContextNames;
-import org.jboss.as.naming.service.BinderService;
 import org.jboss.as.server.deployment.DeploymentPhaseContext;
 import org.jboss.as.server.deployment.DeploymentUnit;
 import org.jboss.as.server.deployment.DeploymentUnitProcessingException;
 import org.jboss.dmr.ModelNode;
 import org.jboss.msc.inject.Injector;
-import org.jboss.msc.service.AbstractServiceListener;
 import org.jboss.msc.service.Service;
 import org.jboss.msc.service.ServiceBuilder;
-import org.jboss.msc.service.ServiceController;
 import org.jboss.msc.service.ServiceName;
 import org.jboss.msc.service.ServiceTarget;
 
@@ -167,7 +161,7 @@ public class DirectJMSDestinationInjectionSource extends InjectionSource {
         destination.get(ENTRIES).add(name);
 
         Service<Queue> queueService = JMSQueueService.installService(null, null, queueName, serviceTarget, hqServiceName, selector, durable, new String[0]);
-        bindDestination(context, serviceTarget, serviceBuilder, injector, queueService);
+        inject(serviceBuilder, injector, queueService);
 
         //create the management registration
         final PathElement serverElement = PathElement.pathElement(HORNETQ_SERVER, getHornetQServerName());
@@ -184,7 +178,7 @@ public class DirectJMSDestinationInjectionSource extends InjectionSource {
         destination.get(ENTRIES).add(name);
 
         Service<Topic> topicService = JMSTopicService.installService(null, null, topicName, hqServiceName, serviceTarget, new String[0]);
-        bindDestination(context, serviceTarget, serviceBuilder, injector, topicService);
+        inject(serviceBuilder, injector, topicService);
 
         //create the management registration
         final PathElement serverElement = PathElement.pathElement(HORNETQ_SERVER, getHornetQServerName());
@@ -195,36 +189,9 @@ public class DirectJMSDestinationInjectionSource extends InjectionSource {
         JMSTopicConfigurationRuntimeHandler.INSTANCE.registerDestination(getHornetQServerName(), topicName, destination);
     }
 
-    private <D extends Destination> void bindDestination(ResolutionContext context, ServiceTarget serviceTarget, ServiceBuilder<?> serviceBuilder, Injector<ManagedReferenceFactory> injector, Service<D> destinationService) {
+    private <D extends Destination> void inject(ServiceBuilder<?> serviceBuilder, Injector<ManagedReferenceFactory> injector, Service<D> destinationService) {
         final ContextListAndJndiViewManagedReferenceFactory referenceFactoryService = new MessagingJMSDestinationManagedReferenceFactory(destinationService);
-        final ContextNames.BindInfo bindInfo = ContextNames.bindInfoForEnvEntry(context.getApplicationName(), context.getModuleName(), context.getComponentName(), !context.isCompUsesModule(), name);
-
-        final BinderService binderService = new BinderService(bindInfo.getBindName(), this);
-        final ServiceBuilder<?> binderBuilder = serviceTarget
-                .addService(bindInfo.getBinderServiceName(), binderService)
-                .addInjection(binderService.getManagedObjectInjector(), referenceFactoryService)
-                .addDependency(bindInfo.getParentContextServiceName(), ServiceBasedNamingStore.class, binderService.getNamingStoreInjector())
-                .addListener(new AbstractServiceListener<Object>() {
-                    public void transition(final ServiceController<? extends Object> controller, final ServiceController.Transition transition) {
-                        switch (transition) {
-                            case STARTING_to_UP: {
-                                ROOT_LOGGER.boundJndiName(name);
-                                break;
-                            }
-                            case START_REQUESTED_to_DOWN: {
-                                ROOT_LOGGER.unboundJndiName(name);
-                                break;
-                            }
-                            case REMOVING_to_REMOVED: {
-                                ROOT_LOGGER.debugf("Removed messaging object [%s]", name);
-                                break;
-                            }
-                        }
-                    }
-                });
-        binderBuilder.setInitialMode(ServiceController.Mode.ACTIVE).install();
-
-        serviceBuilder.addDependency(bindInfo.getBinderServiceName(), ManagedReferenceFactory.class, injector);
+        serviceBuilder.addInjection(injector, referenceFactoryService);
     }
 
     /**
