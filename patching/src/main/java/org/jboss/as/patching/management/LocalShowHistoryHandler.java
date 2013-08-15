@@ -40,6 +40,7 @@ import org.jboss.as.patching.installation.PatchableTarget;
 import org.jboss.as.patching.metadata.Patch.PatchType;
 import org.jboss.as.patching.runner.PatchUtils;
 import org.jboss.dmr.ModelNode;
+import org.jboss.msc.service.ServiceRegistry;
 
 /**
  * @author <a href="http://jmesnil.net/">Jeff Mesnil</a> (c) 2012, Red Hat Inc
@@ -49,9 +50,10 @@ public final class LocalShowHistoryHandler implements OperationStepHandler {
 
     @Override
     public void execute(final OperationContext context, final ModelNode operation) throws OperationFailedException {
-        context.acquireControllerLock();
-        // Setup
-        final InstallationManager installationManager = (InstallationManager) context.getServiceRegistry(false).getRequiredService(InstallationManagerService.NAME).getValue();
+
+        // Acquire the lock and check the write permissions for this operation
+        final ServiceRegistry registry = context.getServiceRegistry(true);
+        final InstallationManager installationManager = (InstallationManager) registry.getRequiredService(InstallationManagerService.NAME).getValue();
         try {
             final PatchableTarget.TargetInfo info = installationManager.getIdentity().loadTargetInfo();
             final InstalledImage installedImage = info.getDirectoryStructure().getInstalledImage();
