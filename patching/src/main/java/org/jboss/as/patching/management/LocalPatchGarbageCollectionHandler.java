@@ -34,6 +34,7 @@ import org.jboss.as.patching.installation.InstalledImage;
 import org.jboss.as.patching.installation.PatchableTarget;
 import org.jboss.dmr.ModelNode;
 import org.jboss.msc.service.ServiceController;
+import org.jboss.msc.service.ServiceRegistry;
 
 /**
  * @author Emanuel Muckenhuber
@@ -47,9 +48,10 @@ public class LocalPatchGarbageCollectionHandler implements OperationStepHandler 
     @Override
     public void execute(final OperationContext context, final ModelNode operation) throws OperationFailedException {
         final String patchId = operation.require(PATCH_ID).asString();
-        //
-        context.acquireControllerLock();
-        final ServiceController<?> mgrService = context.getServiceRegistry(false).getRequiredService(InstallationManagerService.NAME);
+
+        // Acquire the lock and check the write permissions for this operation
+        final ServiceRegistry registry = context.getServiceRegistry(true);
+        final ServiceController<?> mgrService = registry.getRequiredService(InstallationManagerService.NAME);
         final InstallationManager mgr = (InstallationManager) mgrService.getValue();
         final PatchableTarget.TargetInfo info;
         try {

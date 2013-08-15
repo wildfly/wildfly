@@ -35,6 +35,7 @@ import org.jboss.as.patching.tool.PatchOperationTarget;
 import org.jboss.as.patching.tool.PatchTool;
 import org.jboss.as.patching.tool.PatchingResult;
 import org.jboss.dmr.ModelNode;
+import org.jboss.msc.service.ServiceRegistry;
 
 /**
  * @author Alexey Loubyansky
@@ -47,8 +48,9 @@ public class LocalPatchRollbackLastHandler implements OperationStepHandler {
     public void execute(final OperationContext context, final ModelNode operation) throws OperationFailedException {
         final boolean resetConfiguration = PatchResourceDefinition.RESET_CONFIGURATION.resolveModelAttribute(context, operation).asBoolean();
 
-        context.acquireControllerLock();
-        final InstallationManager installationManager = (InstallationManager) context.getServiceRegistry(false).getRequiredService(InstallationManagerService.NAME).getValue();
+        // Acquire the lock and check the write permissions for this operation
+        final ServiceRegistry registry = context.getServiceRegistry(true);
+        final InstallationManager installationManager = (InstallationManager) registry.getRequiredService(InstallationManagerService.NAME).getValue();
 
         if (installationManager.requiresRestart()) {
             throw MESSAGES.serverRequiresRestart();

@@ -23,6 +23,7 @@
 package org.jboss.as.patching.management;
 
 import java.io.IOException;
+import java.util.List;
 
 import org.jboss.as.controller.AttributeDefinition;
 import org.jboss.as.controller.OperationDefinition;
@@ -33,6 +34,8 @@ import org.jboss.as.controller.ResourceDefinition;
 import org.jboss.as.controller.SimpleAttributeDefinitionBuilder;
 import org.jboss.as.controller.SimpleOperationDefinitionBuilder;
 import org.jboss.as.controller.SimpleResourceDefinition;
+import org.jboss.as.controller.access.constraint.management.AccessConstraintDefinition;
+import org.jboss.as.controller.access.constraint.management.SensitiveTargetAccessConstraintDefinition;
 import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
 import org.jboss.as.controller.descriptions.ResourceDescriptionResolver;
 import org.jboss.as.controller.descriptions.StandardResourceDescriptionResolver;
@@ -129,8 +132,11 @@ class PatchResourceDefinition extends SimpleResourceDefinition {
 
     static final ResourceDefinition INSTANCE = new PatchResourceDefinition();
 
+    private final List<AccessConstraintDefinition> sensitivity;
+
     private PatchResourceDefinition() {
         super(PATH, getResourceDescriptionResolver(NAME));
+        sensitivity = SensitiveTargetAccessConstraintDefinition.PATCHING.wrapAsList();
     }
 
     @Override
@@ -161,6 +167,7 @@ class PatchResourceDefinition extends SimpleResourceDefinition {
 
         StandardResourceDescriptionResolver resolver = new StandardResourceDescriptionResolver("patching.layer", "org.jboss.as.patching.management.LocalDescriptions", PatchResourceDefinition.class.getClassLoader());
         registry.registerSubModel(new SimpleResourceDefinition(PathElement.pathElement("layer"), resolver) {
+
             @Override
             public void registerAttributes(final ManagementResourceRegistration resource) {
                 resource.registerReadOnlyAttribute(CUMULATIVE_PATCH_ID, new ElementProviderAttributeReadHandler.LayerAttributeReadHandler() {
@@ -186,7 +193,14 @@ class PatchResourceDefinition extends SimpleResourceDefinition {
                         }
                     }
                 });
+
             }
+
+            @Override
+            public List<AccessConstraintDefinition> getAccessConstraints() {
+                return sensitivity;
+            }
+
         });
 
         resolver = new StandardResourceDescriptionResolver("patching.addon", "org.jboss.as.patching.management.LocalDescriptions", PatchResourceDefinition.class.getClassLoader());
@@ -217,6 +231,12 @@ class PatchResourceDefinition extends SimpleResourceDefinition {
                     }
                 });
             }
+
+            @Override
+            public List<AccessConstraintDefinition> getAccessConstraints() {
+                return sensitivity;
+            }
+
         });
     }
 
@@ -228,6 +248,11 @@ class PatchResourceDefinition extends SimpleResourceDefinition {
         registry.registerOperationHandler(ROLLBACK_LAST, LocalPatchRollbackLastHandler.INSTANCE);
         registry.registerOperationHandler(PATCH, LocalPatchOperationStepHandler.INSTANCE);
         registry.registerOperationHandler(SHOW_HISTORY, LocalShowHistoryHandler.INSTANCE);
+    }
+
+    @Override
+    public List<AccessConstraintDefinition> getAccessConstraints() {
+        return sensitivity;
     }
 }
 
