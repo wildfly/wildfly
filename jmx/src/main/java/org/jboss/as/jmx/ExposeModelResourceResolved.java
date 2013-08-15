@@ -48,7 +48,7 @@ public class ExposeModelResourceResolved extends ExposeModelResource {
             .setDefaultValue(new ModelNode(true))
             .build();
 
-    ExposeModelResourceResolved(AuditLoggerInfo auditLoggerInfo) {
+    ExposeModelResourceResolved(JmxManagedAuditLogger auditLoggerInfo) {
         super(PATH_ELEMENT, auditLoggerInfo, DOMAIN_NAME, PROPER_PROPERTY_FORMAT);
     }
 

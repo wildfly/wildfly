@@ -55,20 +55,20 @@ public class MBeanServerService implements Service<PluggableMBeanServer> {
     private final String resolvedDomainName;
     private final String expressionsDomainName;
     private final boolean legacyWithProperPropertyFormat;
-    private final AuditLoggerInfo auditLoggerInfo;
+    private final JmxManagedAuditLogger auditLoggerInfo;
     private final InjectedValue<ModelController> modelControllerValue = new InjectedValue<ModelController>();
 
     private PluggableMBeanServer mBeanServer;
     private MBeanServerPlugin showModelPlugin;
 
-    private MBeanServerService(final String resolvedDomainName, final String expressionsDomainName, final boolean legacyWithProperPropertyFormat, final AuditLoggerInfo auditLoggerInfo) {
+    private MBeanServerService(final String resolvedDomainName, final String expressionsDomainName, final boolean legacyWithProperPropertyFormat, final JmxManagedAuditLogger auditLoggerInfo) {
         this.resolvedDomainName = resolvedDomainName;
         this.expressionsDomainName = expressionsDomainName;
         this.legacyWithProperPropertyFormat = legacyWithProperPropertyFormat;
         this.auditLoggerInfo = auditLoggerInfo;
     }
 
-    public static ServiceController<?> addService(final ServiceTarget batchBuilder, final String resolvedDomainName, final String expressionsDomainName, final boolean legacyWithProperPropertyFormat, final AuditLoggerInfo auditLoggerInfo, final ServiceListener<Object>... listeners) {
+    public static ServiceController<?> addService(final ServiceTarget batchBuilder, final String resolvedDomainName, final String expressionsDomainName, final boolean legacyWithProperPropertyFormat, final JmxManagedAuditLogger auditLoggerInfo, final ServiceListener<Object>... listeners) {
         MBeanServerService service = new MBeanServerService(resolvedDomainName, expressionsDomainName, legacyWithProperPropertyFormat, auditLoggerInfo);
         return batchBuilder.addService(MBeanServerService.SERVICE_NAME, service)
             .addListener(listeners)

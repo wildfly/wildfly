@@ -40,7 +40,7 @@ public class ExposeModelResourceExpression extends ExposeModelResource{
             .setDefaultValue(new ModelNode(CommonAttributes.DEFAULT_EXPRESSION_DOMAIN))
             .build();
 
-    ExposeModelResourceExpression(AuditLoggerInfo auditLoggerInfo) {
+    ExposeModelResourceExpression(JmxManagedAuditLogger auditLoggerInfo) {
         super(PATH_ELEMENT, auditLoggerInfo, DOMAIN_NAME);
     }
 }

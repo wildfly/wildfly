@@ -45,10 +45,10 @@ import org.jboss.msc.service.ServiceName;
  */
 abstract class ExposeModelResource extends SimpleResourceDefinition {
 
-    private final AuditLoggerInfo auditLoggerInfo;
+    private final JmxManagedAuditLogger auditLoggerInfo;
     private final SimpleAttributeDefinition domainName;
 
-    ExposeModelResource(PathElement pathElement, AuditLoggerInfo auditLoggerInfo, SimpleAttributeDefinition domainName, SimpleAttributeDefinition...otherAttributes) {
+    ExposeModelResource(PathElement pathElement, JmxManagedAuditLogger auditLoggerInfo, SimpleAttributeDefinition domainName, SimpleAttributeDefinition...otherAttributes) {
         super(pathElement,
                 JMXExtension.getResourceDescriptionResolver(CommonAttributes.EXPOSE_MODEL + "." + pathElement.getValue()),
                 new ShowModelAdd(auditLoggerInfo, domainName, otherAttributes),
@@ -91,11 +91,11 @@ abstract class ExposeModelResource extends SimpleResourceDefinition {
 
     private static class ShowModelAdd extends RestartParentResourceAddHandler {
 
-        private final AuditLoggerInfo auditLoggerInfo;
+        private final JmxManagedAuditLogger auditLoggerInfo;
         private final SimpleAttributeDefinition domainName;
         private final SimpleAttributeDefinition[] otherAttributes;
 
-        private ShowModelAdd(AuditLoggerInfo auditLoggerInfo, SimpleAttributeDefinition domainName, SimpleAttributeDefinition...otherAttributes) {
+        private ShowModelAdd(JmxManagedAuditLogger auditLoggerInfo, SimpleAttributeDefinition domainName, SimpleAttributeDefinition...otherAttributes) {
             super(ModelDescriptionConstants.SUBSYSTEM);
             this.auditLoggerInfo = auditLoggerInfo;
             this.domainName = domainName;
@@ -126,9 +126,9 @@ abstract class ExposeModelResource extends SimpleResourceDefinition {
 
     private static class ShowModelRemove extends RestartParentResourceRemoveHandler {
 
-        private final AuditLoggerInfo auditLoggerInfo;
+        private final JmxManagedAuditLogger auditLoggerInfo;
 
-        private ShowModelRemove(AuditLoggerInfo auditLoggerInfo) {
+        private ShowModelRemove(JmxManagedAuditLogger auditLoggerInfo) {
             super(ModelDescriptionConstants.SUBSYSTEM);
             this.auditLoggerInfo = auditLoggerInfo;
         }

@@ -43,9 +43,9 @@ import org.jboss.msc.service.ServiceController;
  */
 class JMXSubsystemAdd extends AbstractAddStepHandler {
 
-    private final AuditLoggerInfo auditLoggerInfo;
+    private final JmxManagedAuditLogger auditLoggerInfo;
 
-    JMXSubsystemAdd(AuditLoggerInfo auditLoggerInfo) {
+    JMXSubsystemAdd(JmxManagedAuditLogger auditLoggerInfo) {
         this.auditLoggerInfo = auditLoggerInfo;
     }
 
@@ -78,7 +78,7 @@ class JMXSubsystemAdd extends AbstractAddStepHandler {
         launchServices(context, model, verificationHandler, auditLoggerInfo, newControllers);
     }
 
-    static void launchServices(OperationContext context, ModelNode model, ServiceVerificationHandler verificationHandler, AuditLoggerInfo auditLoggerInfo, List<ServiceController<?>> newControllers) throws OperationFailedException {
+    static void launchServices(OperationContext context, ModelNode model, ServiceVerificationHandler verificationHandler, JmxManagedAuditLogger auditLoggerInfo, List<ServiceController<?>> newControllers) throws OperationFailedException {
         ModelNode recursiveModel = Resource.Tools.readModel(context.readResource(PathAddress.EMPTY_ADDRESS));
         // Add the MBean service
         String resolvedDomain = getDomainName(context, recursiveModel, CommonAttributes.RESOLVED);
