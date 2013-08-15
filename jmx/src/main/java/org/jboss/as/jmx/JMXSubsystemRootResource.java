@@ -63,19 +63,19 @@ public class JMXSubsystemRootResource extends SimpleResourceDefinition {
 
     private final List<AccessConstraintDefinition> accessConstraints;
 
-    private final AuditLoggerInfo auditLoggerInfo;
+    private final JmxManagedAuditLogger auditLogger;
 
-    private JMXSubsystemRootResource(AuditLoggerInfo auditLoggerInfo) {
+    private JMXSubsystemRootResource(JmxManagedAuditLogger auditLogger) {
         super(PATH_ELEMENT,
                 JMXExtension.getResourceDescriptionResolver(JMXExtension.SUBSYSTEM_NAME),
-                new JMXSubsystemAdd(auditLoggerInfo),
+                new JMXSubsystemAdd(auditLogger),
                 JMXSubsystemRemove.INSTANCE);
         this.accessConstraints = JMXExtension.JMX_SENSITIVITY_DEF.wrapAsList();
-        this.auditLoggerInfo = auditLoggerInfo;
+        this.auditLogger = auditLogger;
     }
 
     public static JMXSubsystemRootResource create(ManagedAuditLogger auditLogger) {
-        return new JMXSubsystemRootResource(new AuditLoggerInfo(auditLogger));
+        return new JMXSubsystemRootResource(new JmxManagedAuditLogger(auditLogger));
     }
 
     @Override
@@ -91,10 +91,10 @@ public class JMXSubsystemRootResource extends SimpleResourceDefinition {
 
     @Override
     public void registerChildren(ManagementResourceRegistration resourceRegistration) {
-        resourceRegistration.registerSubModel(new ExposeModelResourceResolved(auditLoggerInfo));
-        resourceRegistration.registerSubModel(new ExposeModelResourceExpression(auditLoggerInfo));
+        resourceRegistration.registerSubModel(new ExposeModelResourceResolved(auditLogger));
+        resourceRegistration.registerSubModel(new ExposeModelResourceExpression(auditLogger));
         resourceRegistration.registerSubModel(RemotingConnectorResource.INSTANCE);
-        resourceRegistration.registerSubModel(new JmxAuditLoggerResourceDefinition(auditLoggerInfo.getAuditLogger()));
+        resourceRegistration.registerSubModel(new JmxAuditLoggerResourceDefinition(auditLogger));
     }
 
     @Override

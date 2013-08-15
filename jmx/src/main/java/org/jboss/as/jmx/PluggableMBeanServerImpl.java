@@ -21,13 +21,6 @@
 */
 package org.jboss.as.jmx;
 
-import java.io.ObjectInputStream;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.HashSet;
-import java.util.Set;
-import java.util.concurrent.CopyOnWriteArraySet;
-
 import javax.management.Attribute;
 import javax.management.AttributeList;
 import javax.management.AttributeNotFoundException;
@@ -38,6 +31,8 @@ import javax.management.InvalidAttributeValueException;
 import javax.management.ListenerNotFoundException;
 import javax.management.MBeanException;
 import javax.management.MBeanInfo;
+import javax.management.MBeanOperationInfo;
+import javax.management.MBeanParameterInfo;
 import javax.management.MBeanRegistrationException;
 import javax.management.MBeanServer;
 import javax.management.NotCompliantMBeanException;
@@ -49,8 +44,23 @@ import javax.management.OperationsException;
 import javax.management.QueryExp;
 import javax.management.ReflectionException;
 import javax.management.loading.ClassLoaderRepository;
+import javax.security.auth.Subject;
+import java.io.ObjectInputStream;
+import java.net.InetAddress;
+import java.security.AccessController;
+import java.security.Principal;
+import java.security.PrivilegedAction;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.HashSet;
+import java.util.Set;
+import java.util.concurrent.CopyOnWriteArraySet;
 
 import org.jboss.as.controller.audit.AuditLogger;
+import org.jboss.as.controller.security.AccessMechanismPrincipal;
+import org.jboss.as.controller.security.InetAddressPrincipal;
+import org.jboss.as.core.security.AccessMechanism;
+import org.jboss.as.core.security.RealmUser;
 import org.jboss.as.server.jmx.MBeanServerPlugin;
 import org.jboss.as.server.jmx.PluggableMBeanServer;
 
@@ -63,7 +73,7 @@ import org.jboss.as.server.jmx.PluggableMBeanServer;
 class PluggableMBeanServerImpl implements PluggableMBeanServer {
 
     private final MBeanServerPlugin rootMBeanServer;
-    private volatile AuditLoggerInfo auditLoggerInfo = NOOP_INFO;
+    private volatile JmxManagedAuditLogger auditLogger;
 
     private final Set<MBeanServerPlugin> delegates = new CopyOnWriteArraySet<MBeanServerPlugin>();
 
@@ -71,20 +81,8 @@ class PluggableMBeanServerImpl implements PluggableMBeanServer {
         this.rootMBeanServer = new TcclMBeanServer(rootMBeanServer);
     }
 
-    void setAuditLogger(AuditLoggerInfo auditLoggerInfo) {
-        this.auditLoggerInfo = auditLoggerInfo != null ? auditLoggerInfo : NOOP_INFO;
-    }
-
-    AuditLogger getAuditLogger() {
-        return auditLoggerInfo.getAuditLogger();
-    }
-
-    boolean isBooting() {
-        return auditLoggerInfo.isBooting();
-    }
-
-    boolean shouldLog(boolean readOnly) {
-        return auditLoggerInfo.shouldLog(readOnly);
+    void setAuditLogger(JmxManagedAuditLogger auditLoggerInfo) {
+        this.auditLogger = auditLoggerInfo != null ? auditLoggerInfo : NOOP_INFO;
     }
 
     public void addPlugin(MBeanServerPlugin delegate) {
@@ -100,6 +98,7 @@ class PluggableMBeanServerImpl implements PluggableMBeanServer {
             throws InstanceNotFoundException {
         Throwable error = null;
         MBeanServerPlugin delegate = null;
+        final boolean readOnly = false;
         try {
             delegate = findDelegate(name);
             delegate.addNotificationListener(name, listener, filter, handback);
@@ -109,8 +108,8 @@ class PluggableMBeanServerImpl implements PluggableMBeanServer {
             if (e instanceof RuntimeException) throw (RuntimeException)e;
             throw makeRuntimeException(e);
         } finally {
-            if (shouldAuditLog(delegate)) {
-                new MBeanServerAuditLogger(this, error).addNotificationListener(name, listener, filter, handback);
+            if (shouldAuditLog(delegate, readOnly)) {
+                new MBeanServerAuditLogRecordFormatter(this, error, readOnly).addNotificationListener(name, listener, filter, handback);
             }
         }
     }
@@ -120,6 +119,7 @@ class PluggableMBeanServerImpl implements PluggableMBeanServer {
             throws InstanceNotFoundException {
         Throwable error = null;
         MBeanServerPlugin delegate = null;
+        final boolean readOnly = false;
         try {
             delegate = findDelegate(name);
             delegate.addNotificationListener(name, listener, filter, handback);
@@ -129,8 +129,8 @@ class PluggableMBeanServerImpl implements PluggableMBeanServer {
             if (e instanceof RuntimeException) throw (RuntimeException)e;
             throw makeRuntimeException(e);
         } finally {
-            if (shouldAuditLog(delegate)) {
-                new MBeanServerAuditLogger(this, error).addNotificationListener(name, listener, filter, handback);
+            if (shouldAuditLog(delegate, readOnly)) {
+                new MBeanServerAuditLogRecordFormatter(this, error, readOnly).addNotificationListener(name, listener, filter, handback);
             }
         }
     }
@@ -141,6 +141,7 @@ class PluggableMBeanServerImpl implements PluggableMBeanServer {
             NotCompliantMBeanException {
         Throwable error = null;
         MBeanServerPlugin delegate = null;
+        final boolean readOnly = false;
         try {
             delegate = findDelegateForNewObject(name);
             return delegate.createMBean(className, name, params, signature);
@@ -152,8 +153,8 @@ class PluggableMBeanServerImpl implements PluggableMBeanServer {
             if (e instanceof NotCompliantMBeanException) throw (NotCompliantMBeanException)e;
             throw makeRuntimeException(e);
         } finally {
-            if (shouldAuditLog(delegate)) {
-                new MBeanServerAuditLogger(this, error).createMBean(className, name, params, signature);
+            if (shouldAuditLog(delegate, readOnly)) {
+                new MBeanServerAuditLogRecordFormatter(this, error, readOnly).createMBean(className, name, params, signature);
             }
         }
     }
@@ -164,6 +165,7 @@ class PluggableMBeanServerImpl implements PluggableMBeanServer {
             MBeanException, NotCompliantMBeanException, InstanceNotFoundException {
         Throwable error = null;
         MBeanServerPlugin delegate = null;
+        final boolean readOnly = false;
         try {
             delegate = findDelegate(name);
             return delegate.createMBean(className, name, loaderName, params, signature);
@@ -176,8 +178,8 @@ class PluggableMBeanServerImpl implements PluggableMBeanServer {
             if (e instanceof InstanceNotFoundException) throw (InstanceNotFoundException)e;
             throw makeRuntimeException(e);
         } finally {
-            if (shouldAuditLog(delegate)) {
-                new MBeanServerAuditLogger(this, error).createMBean(className, name, params, signature);
+            if (shouldAuditLog(delegate, readOnly)) {
+                new MBeanServerAuditLogRecordFormatter(this, error, readOnly).createMBean(className, name, params, signature);
             }
         }
     }
@@ -188,6 +190,7 @@ class PluggableMBeanServerImpl implements PluggableMBeanServer {
             InstanceNotFoundException {
         Throwable error = null;
         MBeanServerPlugin delegate = null;
+        final boolean readOnly = false;
         try {
             delegate = findDelegate(name);
             return delegate.createMBean(className, name, loaderName);
@@ -200,8 +203,8 @@ class PluggableMBeanServerImpl implements PluggableMBeanServer {
             if (e instanceof InstanceNotFoundException) throw (InstanceNotFoundException)e;
             throw makeRuntimeException(e);
         } finally {
-            if (shouldAuditLog(delegate)) {
-                new MBeanServerAuditLogger(this, error).createMBean(className, name, loaderName);
+            if (shouldAuditLog(delegate, readOnly)) {
+                new MBeanServerAuditLogRecordFormatter(this, error, readOnly).createMBean(className, name, loaderName);
             }
         }
     }
@@ -211,6 +214,7 @@ class PluggableMBeanServerImpl implements PluggableMBeanServer {
             InstanceAlreadyExistsException, MBeanException, NotCompliantMBeanException {
         Throwable error = null;
         MBeanServerPlugin delegate = null;
+        final boolean readOnly = false;
         try {
             delegate = findDelegateForNewObject(name);
             return delegate.createMBean(className, name);
@@ -222,8 +226,8 @@ class PluggableMBeanServerImpl implements PluggableMBeanServer {
             if (e instanceof NotCompliantMBeanException) throw (NotCompliantMBeanException)e;
             throw makeRuntimeException(e);
         } finally {
-            if (shouldAuditLog(delegate)) {
-                new MBeanServerAuditLogger(this, error).createMBean(className, name);
+            if (shouldAuditLog(delegate, readOnly)) {
+                new MBeanServerAuditLogRecordFormatter(this, error, readOnly).createMBean(className, name);
             }
         }
     }
@@ -233,6 +237,7 @@ class PluggableMBeanServerImpl implements PluggableMBeanServer {
     public ObjectInputStream deserialize(ObjectName name, byte[] data) throws OperationsException {
         Throwable error = null;
         MBeanServerPlugin delegate = null;
+        final boolean readOnly = true;
         try {
             delegate = findDelegate(name);
             return delegate.deserialize(name, data);
@@ -241,8 +246,8 @@ class PluggableMBeanServerImpl implements PluggableMBeanServer {
             if (e instanceof OperationsException) throw (OperationsException)e;
             throw makeRuntimeException(e);
         } finally {
-            if (shouldAuditLog(delegate)) {
-                new MBeanServerAuditLogger(this, error).deserialize(name, data);
+            if (shouldAuditLog(delegate, readOnly)) {
+                new MBeanServerAuditLogRecordFormatter(this, error, readOnly).deserialize(name, data);
             }
         }
     }
@@ -252,6 +257,7 @@ class PluggableMBeanServerImpl implements PluggableMBeanServer {
     public ObjectInputStream deserialize(String className, byte[] data) throws OperationsException, ReflectionException {
         Throwable error = null;
         MBeanServerPlugin delegate = rootMBeanServer;
+        final boolean readOnly = true;
         try {
             return delegate.deserialize(className, data);
         } catch (Exception e) {
@@ -260,8 +266,8 @@ class PluggableMBeanServerImpl implements PluggableMBeanServer {
             if (e instanceof ReflectionException) throw (ReflectionException)e;
             throw makeRuntimeException(e);
         } finally {
-            if (shouldAuditLog(delegate)) {
-                new MBeanServerAuditLogger(this, error).deserialize(className, data);
+            if (shouldAuditLog(delegate, readOnly)) {
+                new MBeanServerAuditLogRecordFormatter(this, error, readOnly).deserialize(className, data);
             }
         }
     }
@@ -271,6 +277,7 @@ class PluggableMBeanServerImpl implements PluggableMBeanServer {
     public ObjectInputStream deserialize(String className, ObjectName loaderName, byte[] data) throws OperationsException, ReflectionException {
         Throwable error = null;
         MBeanServerPlugin delegate = rootMBeanServer;
+        final boolean readOnly = true;
         try {
             return delegate.deserialize(className, loaderName, data);
         } catch (Exception e) {
@@ -279,8 +286,8 @@ class PluggableMBeanServerImpl implements PluggableMBeanServer {
             if (e instanceof ReflectionException) throw (ReflectionException)e;
             throw makeRuntimeException(e);
         } finally {
-            if (shouldAuditLog(delegate)) {
-                new MBeanServerAuditLogger(this, error).deserialize(className, loaderName, data);
+            if (shouldAuditLog(delegate, readOnly)) {
+                new MBeanServerAuditLogRecordFormatter(this, error, readOnly).deserialize(className, loaderName, data);
             }
         }
     }
@@ -290,6 +297,7 @@ class PluggableMBeanServerImpl implements PluggableMBeanServer {
             InstanceNotFoundException, ReflectionException {
         Throwable error = null;
         MBeanServerPlugin delegate = null;
+        final boolean readOnly = true;
         try {
             delegate = findDelegate(name);
             return delegate.getAttribute(name, attribute);
@@ -301,8 +309,8 @@ class PluggableMBeanServerImpl implements PluggableMBeanServer {
             if (e instanceof ReflectionException) throw (ReflectionException)e;
             throw makeRuntimeException(e);
         } finally {
-            if (shouldAuditLog(delegate)) {
-                new MBeanServerAuditLogger(this, error).getAttribute(name, attribute);
+            if (shouldAuditLog(delegate, readOnly)) {
+                new MBeanServerAuditLogRecordFormatter(this, error, readOnly).getAttribute(name, attribute);
             }
         }
     }
@@ -312,6 +320,7 @@ class PluggableMBeanServerImpl implements PluggableMBeanServer {
             ReflectionException {
         Throwable error = null;
         MBeanServerPlugin delegate = null;
+        final boolean readOnly = true;
         try {
             delegate = findDelegate(name);
             return delegate.getAttributes(name, attributes);
@@ -321,8 +330,8 @@ class PluggableMBeanServerImpl implements PluggableMBeanServer {
             if (e instanceof ReflectionException) throw (ReflectionException)e;
             throw makeRuntimeException(e);
         } finally {
-            if (shouldAuditLog(delegate)) {
-                new MBeanServerAuditLogger(this, error).getAttributes(name, attributes);
+            if (shouldAuditLog(delegate, readOnly)) {
+                new MBeanServerAuditLogRecordFormatter(this, error, readOnly).getAttributes(name, attributes);
             }
         }
     }
@@ -331,6 +340,7 @@ class PluggableMBeanServerImpl implements PluggableMBeanServer {
     public ClassLoader getClassLoader(ObjectName loaderName) throws InstanceNotFoundException {
         Throwable error = null;
         MBeanServerPlugin delegate = null;
+        final boolean readOnly = true;
         try {
             delegate = findDelegate(loaderName);
             return delegate.getClassLoader(loaderName);
@@ -339,8 +349,8 @@ class PluggableMBeanServerImpl implements PluggableMBeanServer {
             if (e instanceof InstanceNotFoundException) throw (InstanceNotFoundException)e;
             throw makeRuntimeException(e);
         } finally {
-            if (shouldAuditLog(delegate)) {
-                new MBeanServerAuditLogger(this, error).getClassLoader(loaderName);
+            if (shouldAuditLog(delegate, readOnly)) {
+                new MBeanServerAuditLogRecordFormatter(this, error, readOnly).getClassLoader(loaderName);
             }
         }
     }
@@ -349,6 +359,7 @@ class PluggableMBeanServerImpl implements PluggableMBeanServer {
     public ClassLoader getClassLoaderFor(ObjectName mbeanName) throws InstanceNotFoundException {
         Throwable error = null;
         MBeanServerPlugin delegate = null;
+        final boolean readOnly = true;
         try {
             delegate = findDelegate(mbeanName);
             return delegate.getClassLoaderFor(mbeanName);
@@ -357,8 +368,8 @@ class PluggableMBeanServerImpl implements PluggableMBeanServer {
             if (e instanceof InstanceNotFoundException) throw (InstanceNotFoundException)e;
             throw makeRuntimeException(e);
         } finally {
-            if (shouldAuditLog(delegate)) {
-                new MBeanServerAuditLogger(this, error).getClassLoaderFor(mbeanName);
+            if (shouldAuditLog(delegate, readOnly)) {
+                new MBeanServerAuditLogRecordFormatter(this, error, readOnly).getClassLoaderFor(mbeanName);
             }
         }
     }
@@ -367,14 +378,15 @@ class PluggableMBeanServerImpl implements PluggableMBeanServer {
     public ClassLoaderRepository getClassLoaderRepository() {
         Throwable error = null;
         MBeanServerPlugin delegate = rootMBeanServer;
+        final boolean readOnly = true;
         try {
             return delegate.getClassLoaderRepository();
         } catch (Exception e) {
             error = e;
             throw makeRuntimeException(e);
         } finally {
-            if (shouldAuditLog(delegate)) {
-                new MBeanServerAuditLogger(this, error).getClassLoaderRepository();
+            if (shouldAuditLog(delegate, readOnly)) {
+                new MBeanServerAuditLogRecordFormatter(this, error, readOnly).getClassLoaderRepository();
             }
         }
     }
@@ -383,14 +395,15 @@ class PluggableMBeanServerImpl implements PluggableMBeanServer {
     public String getDefaultDomain() {
         Throwable error = null;
         MBeanServerPlugin delegate = rootMBeanServer;
+        final boolean readOnly = true;
         try {
             return delegate.getDefaultDomain();
         } catch (Exception e) {
             error = e;
             throw makeRuntimeException(e);
         } finally {
-            if (shouldAuditLog(delegate)) {
-                new MBeanServerAuditLogger(this, error).getDefaultDomain();
+            if (shouldAuditLog(delegate, readOnly)) {
+                new MBeanServerAuditLogRecordFormatter(this, error, readOnly).getDefaultDomain();
             }
         }
     }
@@ -398,6 +411,7 @@ class PluggableMBeanServerImpl implements PluggableMBeanServer {
     @Override
     public String[] getDomains() {
         Throwable error = null;
+        final boolean readOnly = true;
         try {
             ArrayList<String> result = new ArrayList<String>();
             if (delegates.size() > 0) {
@@ -415,13 +429,14 @@ class PluggableMBeanServerImpl implements PluggableMBeanServer {
             throw makeRuntimeException(e);
         } finally {
             //This should always audit log
-            new MBeanServerAuditLogger(this, error).getDomains();
+            new MBeanServerAuditLogRecordFormatter(this, error, readOnly).getDomains();
         }
     }
 
     @Override
     public Integer getMBeanCount() {
         Throwable error = null;
+        final boolean readOnly = true;
         try {
             int i = 0;
             if (delegates.size() > 0) {
@@ -436,7 +451,7 @@ class PluggableMBeanServerImpl implements PluggableMBeanServer {
             throw makeRuntimeException(e);
         } finally {
             //always audit log this
-            new MBeanServerAuditLogger(this, error).getMBeanCount();
+            new MBeanServerAuditLogRecordFormatter(this, error, readOnly).getMBeanCount();
         }
     }
 
@@ -445,9 +460,10 @@ class PluggableMBeanServerImpl implements PluggableMBeanServer {
         return getMBeanInfo(name, true, false);
     }
 
-    MBeanInfo getMBeanInfo(ObjectName name, boolean log, boolean nullIfNotFound) throws InstanceNotFoundException, IntrospectionException, ReflectionException {
+    private MBeanInfo getMBeanInfo(ObjectName name, boolean log, boolean nullIfNotFound) throws InstanceNotFoundException, IntrospectionException, ReflectionException {
         Throwable error = null;
         MBeanServerPlugin delegate = null;
+        final boolean readOnly = true;
         try {
             delegate = findDelegate(name);
             return delegate.getMBeanInfo(name);
@@ -461,8 +477,8 @@ class PluggableMBeanServerImpl implements PluggableMBeanServer {
             if (e instanceof ReflectionException) throw (ReflectionException)e;
             throw makeRuntimeException(e);
         } finally {
-            if (log && shouldAuditLog(delegate)) {
-                new MBeanServerAuditLogger(this, error).getMBeanInfo(name);
+            if (log && shouldAuditLog(delegate, readOnly)) {
+                new MBeanServerAuditLogRecordFormatter(this, error, readOnly).getMBeanInfo(name);
             }
         }
     }
@@ -471,6 +487,7 @@ class PluggableMBeanServerImpl implements PluggableMBeanServer {
     public ObjectInstance getObjectInstance(ObjectName name) throws InstanceNotFoundException {
         Throwable error = null;
         MBeanServerPlugin delegate = null;
+        final boolean readOnly = true;
         try {
             delegate = findDelegate(name);
             return delegate.getObjectInstance(name);
@@ -479,8 +496,8 @@ class PluggableMBeanServerImpl implements PluggableMBeanServer {
             if (e instanceof InstanceNotFoundException) throw (InstanceNotFoundException)e;
             throw makeRuntimeException(e);
         } finally {
-            if (shouldAuditLog(delegate)) {
-                new MBeanServerAuditLogger(this, error).getObjectInstance(name);
+            if (shouldAuditLog(delegate, readOnly)) {
+                new MBeanServerAuditLogRecordFormatter(this, error, readOnly).getObjectInstance(name);
             }
         }
     }
@@ -489,6 +506,7 @@ class PluggableMBeanServerImpl implements PluggableMBeanServer {
     public Object instantiate(String className, Object[] params, String[] signature) throws ReflectionException, MBeanException {
         Throwable error = null;
         MBeanServerPlugin delegate = rootMBeanServer;
+        final boolean readOnly = false;
         try {
             return delegate.instantiate(className, params, signature);
         } catch (Exception e) {
@@ -497,8 +515,8 @@ class PluggableMBeanServerImpl implements PluggableMBeanServer {
             if (e instanceof MBeanException) throw (MBeanException)e;
             throw makeRuntimeException(e);
         } finally {
-            if (shouldAuditLog(delegate)) {
-                new MBeanServerAuditLogger(this, error).instantiate(className, params, signature);
+            if (shouldAuditLog(delegate, readOnly)) {
+                new MBeanServerAuditLogRecordFormatter(this, error, readOnly).instantiate(className, params, signature);
             }
         }
     }
@@ -508,6 +526,7 @@ class PluggableMBeanServerImpl implements PluggableMBeanServer {
             throws ReflectionException, MBeanException, InstanceNotFoundException {
         Throwable error = null;
         MBeanServerPlugin delegate = rootMBeanServer;
+        final boolean readOnly = false;
         try {
             return delegate.instantiate(className, loaderName, params, signature);
         } catch (Exception e) {
@@ -517,8 +536,8 @@ class PluggableMBeanServerImpl implements PluggableMBeanServer {
             if (e instanceof InstanceNotFoundException) throw (InstanceNotFoundException)e;
             throw makeRuntimeException(e);
         } finally {
-            if (shouldAuditLog(delegate)) {
-                new MBeanServerAuditLogger(this, error).instantiate(className, loaderName, params, signature);
+            if (shouldAuditLog(delegate, readOnly)) {
+                new MBeanServerAuditLogRecordFormatter(this, error, readOnly).instantiate(className, loaderName, params, signature);
             }
         }
     }
@@ -528,6 +547,7 @@ class PluggableMBeanServerImpl implements PluggableMBeanServer {
             InstanceNotFoundException {
         Throwable error = null;
         MBeanServerPlugin delegate = rootMBeanServer;
+        final boolean readOnly = false;
         try {
             return delegate.instantiate(className, loaderName);
         } catch (Exception e) {
@@ -537,8 +557,8 @@ class PluggableMBeanServerImpl implements PluggableMBeanServer {
             if (e instanceof InstanceNotFoundException) throw (InstanceNotFoundException)e;
             throw makeRuntimeException(e);
         } finally {
-            if (shouldAuditLog(delegate)) {
-                new MBeanServerAuditLogger(this, error).instantiate(className, loaderName);
+            if (shouldAuditLog(delegate, readOnly)) {
+                new MBeanServerAuditLogRecordFormatter(this, error, readOnly).instantiate(className, loaderName);
             }
         }
     }
@@ -547,6 +567,7 @@ class PluggableMBeanServerImpl implements PluggableMBeanServer {
     public Object instantiate(String className) throws ReflectionException, MBeanException {
         Throwable error = null;
         MBeanServerPlugin delegate = rootMBeanServer;
+        final boolean readOnly = false;
         try {
             return delegate.instantiate(className);
         } catch (Exception e) {
@@ -555,8 +576,8 @@ class PluggableMBeanServerImpl implements PluggableMBeanServer {
             if (e instanceof MBeanException) throw (MBeanException)e;
             throw makeRuntimeException(e);
         } finally {
-            if (shouldAuditLog(delegate)) {
-                new MBeanServerAuditLogger(this, error).instantiate(className);
+            if (shouldAuditLog(delegate, readOnly)) {
+                new MBeanServerAuditLogRecordFormatter(this, error, readOnly).instantiate(className);
             }
         }
     }
@@ -566,8 +587,10 @@ class PluggableMBeanServerImpl implements PluggableMBeanServer {
             throws InstanceNotFoundException, MBeanException, ReflectionException {
         Throwable error = null;
         MBeanServerPlugin delegate = findDelegate(name);
+        boolean readOnly = false;
         try {
-            //TODO need to determine impact for authorization
+            //Need to determine impact of the operation
+            readOnly = isOperationReadOnly(name, operationName, signature);
             delegate = findDelegate(name);
             return delegate.invoke(name, operationName, params, signature);
         } catch (Exception e) {
@@ -577,8 +600,8 @@ class PluggableMBeanServerImpl implements PluggableMBeanServer {
             if (e instanceof InstanceNotFoundException) throw (InstanceNotFoundException)e;
             throw makeRuntimeException(e);
         } finally {
-            if (shouldAuditLog(delegate)) {
-                new MBeanServerAuditLogger(this, error).invoke(name, operationName, params, signature);
+            if (shouldAuditLog(delegate, readOnly)) {
+                new MBeanServerAuditLogRecordFormatter(this, error, readOnly).invoke(name, operationName, params, signature);
             }
         }
     }
@@ -587,6 +610,7 @@ class PluggableMBeanServerImpl implements PluggableMBeanServer {
     public boolean isInstanceOf(ObjectName name, String className) throws InstanceNotFoundException {
         Throwable error = null;
         MBeanServerPlugin delegate = null;
+        final boolean readOnly = true;
         try {
             delegate = findDelegate(name);
             return delegate.isInstanceOf(name, className);
@@ -595,8 +619,8 @@ class PluggableMBeanServerImpl implements PluggableMBeanServer {
             if (e instanceof InstanceNotFoundException) throw (InstanceNotFoundException)e;
             throw makeRuntimeException(e);
         } finally {
-            if (shouldAuditLog(delegate)) {
-                new MBeanServerAuditLogger(this, error).isInstanceOf(name, className);
+            if (shouldAuditLog(delegate, readOnly)) {
+                new MBeanServerAuditLogRecordFormatter(this, error, readOnly).isInstanceOf(name, className);
             }
         }
     }
@@ -605,6 +629,7 @@ class PluggableMBeanServerImpl implements PluggableMBeanServer {
     public boolean isRegistered(ObjectName name) {
         Throwable error = null;
         Boolean shouldAuditLog = null;
+        final boolean readOnly = true;
         try {
             if (delegates.size() > 0) {
                 for (MBeanServerPlugin delegate : delegates) {
@@ -624,7 +649,7 @@ class PluggableMBeanServerImpl implements PluggableMBeanServer {
             throw makeRuntimeException(e);
         } finally {
             if (shouldAuditLog == null || shouldAuditLog) {
-                new MBeanServerAuditLogger(this, error).isRegistered(name);
+                new MBeanServerAuditLogRecordFormatter(this, error, readOnly).isRegistered(name);
             }
         }
 
@@ -633,6 +658,7 @@ class PluggableMBeanServerImpl implements PluggableMBeanServer {
     @Override
     public Set<ObjectInstance> queryMBeans(ObjectName name, QueryExp query) {
         Throwable error = null;
+        final boolean readOnly = true;
         try {
             Set<ObjectInstance> result = new HashSet<ObjectInstance>();
             if (delegates.size() > 0) {
@@ -648,14 +674,17 @@ class PluggableMBeanServerImpl implements PluggableMBeanServer {
             error = e;
             throw makeRuntimeException(e);
         } finally {
-            //This should always audit log
-            new MBeanServerAuditLogger(this, error).queryMBeans(name, query);
+            //The delegates here should not matter for audit logging
+            if (shouldAuditLog(null, readOnly)) {
+                new MBeanServerAuditLogRecordFormatter(this, error, readOnly).queryMBeans(name, query);
+            }
         }
     }
 
     @Override
     public Set<ObjectName> queryNames(ObjectName name, QueryExp query) {
         Throwable error = null;
+        final boolean readOnly = true;
         try {
             Set<ObjectName> result = new HashSet<ObjectName>();
             if (delegates.size() > 0) {
@@ -671,8 +700,10 @@ class PluggableMBeanServerImpl implements PluggableMBeanServer {
             error = e;
             throw makeRuntimeException(e);
         } finally {
-            //This should always audit log
-            new MBeanServerAuditLogger(this, error).queryNames(name, query);
+            //The delegates here should not matter for audit logging
+            if (shouldAuditLog(null, readOnly)) {
+                new MBeanServerAuditLogRecordFormatter(this, error, readOnly).queryNames(name, query);
+            }
         }
     }
 
@@ -681,6 +712,7 @@ class PluggableMBeanServerImpl implements PluggableMBeanServer {
             MBeanRegistrationException, NotCompliantMBeanException {
         Throwable error = null;
         MBeanServerPlugin delegate = null;
+        final boolean readOnly = false;
         try {
             delegate = findDelegateForNewObject(name);
             return delegate.registerMBean(object, name);
@@ -691,8 +723,8 @@ class PluggableMBeanServerImpl implements PluggableMBeanServer {
             if (e instanceof NotCompliantMBeanException) throw (NotCompliantMBeanException)e;
             throw makeRuntimeException(e);
         } finally {
-            if (shouldAuditLog(delegate)) {
-                new MBeanServerAuditLogger(this, error).registerMBean(object, name);
+            if (shouldAuditLog(delegate, readOnly)) {
+                new MBeanServerAuditLogRecordFormatter(this, error, readOnly).registerMBean(object, name);
             }
         }
     }
@@ -702,6 +734,7 @@ class PluggableMBeanServerImpl implements PluggableMBeanServer {
             Object handback) throws InstanceNotFoundException, ListenerNotFoundException {
         Throwable error = null;
         MBeanServerPlugin delegate = null;
+        final boolean readOnly = false;
         try {
             delegate = findDelegate(name);
             delegate.removeNotificationListener(name, listener, filter, handback);
@@ -711,8 +744,8 @@ class PluggableMBeanServerImpl implements PluggableMBeanServer {
             if (e instanceof ListenerNotFoundException) throw (ListenerNotFoundException)e;
             throw makeRuntimeException(e);
         } finally {
-            if (shouldAuditLog(delegate)) {
-                new MBeanServerAuditLogger(this, error).removeNotificationListener(name, listener, filter, handback);
+            if (shouldAuditLog(delegate, readOnly)) {
+                new MBeanServerAuditLogRecordFormatter(this, error, readOnly).removeNotificationListener(name, listener, filter, handback);
             }
         }
     }
@@ -722,6 +755,7 @@ class PluggableMBeanServerImpl implements PluggableMBeanServer {
             ListenerNotFoundException {
         Throwable error = null;
         MBeanServerPlugin delegate = null;
+        final boolean readOnly = false;
         try {
             delegate = findDelegate(name);
             delegate.removeNotificationListener(name, listener);
@@ -731,8 +765,8 @@ class PluggableMBeanServerImpl implements PluggableMBeanServer {
             if (e instanceof ListenerNotFoundException) throw (ListenerNotFoundException)e;
             throw makeRuntimeException(e);
         } finally {
-            if (shouldAuditLog(delegate)) {
-                new MBeanServerAuditLogger(this, error).removeNotificationListener(name, listener);
+            if (shouldAuditLog(delegate, readOnly)) {
+                new MBeanServerAuditLogRecordFormatter(this, error, readOnly).removeNotificationListener(name, listener);
             }
         }
     }
@@ -742,6 +776,7 @@ class PluggableMBeanServerImpl implements PluggableMBeanServer {
             throws InstanceNotFoundException, ListenerNotFoundException {
         Throwable error = null;
         MBeanServerPlugin delegate = null;
+        final boolean readOnly = false;
         try {
             delegate = findDelegate(name);
             delegate.removeNotificationListener(name, listener, filter, handback);
@@ -751,8 +786,8 @@ class PluggableMBeanServerImpl implements PluggableMBeanServer {
             if (e instanceof ListenerNotFoundException) throw (ListenerNotFoundException)e;
             throw makeRuntimeException(e);
         } finally {
-            if (shouldAuditLog(delegate)) {
-                new MBeanServerAuditLogger(this, error).removeNotificationListener(name, listener, filter, handback);
+            if (shouldAuditLog(delegate, readOnly)) {
+                new MBeanServerAuditLogRecordFormatter(this, error, readOnly).removeNotificationListener(name, listener, filter, handback);
             }
         }
     }
@@ -762,6 +797,7 @@ class PluggableMBeanServerImpl implements PluggableMBeanServer {
             ListenerNotFoundException {
         Throwable error = null;
         MBeanServerPlugin delegate = null;
+        final boolean readOnly = false;
         try {
             delegate = findDelegate(name);
             delegate.removeNotificationListener(name, listener);
@@ -771,8 +807,8 @@ class PluggableMBeanServerImpl implements PluggableMBeanServer {
             if (e instanceof ListenerNotFoundException) throw (ListenerNotFoundException)e;
             throw makeRuntimeException(e);
         } finally {
-            if (shouldAuditLog(delegate)) {
-                new MBeanServerAuditLogger(this, error).removeNotificationListener(name, listener);
+            if (shouldAuditLog(delegate, readOnly)) {
+                new MBeanServerAuditLogRecordFormatter(this, error, readOnly).removeNotificationListener(name, listener);
             }
         }
     }
@@ -782,6 +818,7 @@ class PluggableMBeanServerImpl implements PluggableMBeanServer {
             InvalidAttributeValueException, MBeanException, ReflectionException {
         Throwable error = null;
         MBeanServerPlugin delegate = null;
+        final boolean readOnly = false;
         try {
             delegate = findDelegate(name);
             delegate.setAttribute(name, attribute);
@@ -794,8 +831,8 @@ class PluggableMBeanServerImpl implements PluggableMBeanServer {
             if (e instanceof ReflectionException) throw (ReflectionException)e;
             throw makeRuntimeException(e);
         } finally {
-            if (shouldAuditLog(delegate)) {
-                new MBeanServerAuditLogger(this, error).setAttribute(name, attribute);
+            if (shouldAuditLog(delegate, readOnly)) {
+                new MBeanServerAuditLogRecordFormatter(this, error, readOnly).setAttribute(name, attribute);
             }
         }
     }
@@ -805,6 +842,7 @@ class PluggableMBeanServerImpl implements PluggableMBeanServer {
             ReflectionException {
         Throwable error = null;
         MBeanServerPlugin delegate = null;
+        final boolean readOnly = false;
         try {
             delegate = findDelegate(name);
             return delegate.setAttributes(name, attributes);
@@ -814,8 +852,8 @@ class PluggableMBeanServerImpl implements PluggableMBeanServer {
             if (e instanceof ReflectionException) throw (ReflectionException)e;
             throw makeRuntimeException(e);
         } finally {
-            if (shouldAuditLog(delegate)) {
-                new MBeanServerAuditLogger(this, error).setAttributes(name, attributes);
+            if (shouldAuditLog(delegate, readOnly)) {
+                new MBeanServerAuditLogRecordFormatter(this, error, readOnly).setAttributes(name, attributes);
             }
         }
     }
@@ -824,6 +862,7 @@ class PluggableMBeanServerImpl implements PluggableMBeanServer {
     public void unregisterMBean(ObjectName name) throws InstanceNotFoundException, MBeanRegistrationException {
         Throwable error = null;
         MBeanServerPlugin delegate = null;
+        final boolean readOnly = false;
         try {
             delegate = findDelegate(name);
             delegate.unregisterMBean(name);
@@ -833,8 +872,8 @@ class PluggableMBeanServerImpl implements PluggableMBeanServer {
             if (e instanceof MBeanRegistrationException) throw (MBeanRegistrationException)e;
             throw makeRuntimeException(e);
         } finally {
-            if (shouldAuditLog(delegate)) {
-                new MBeanServerAuditLogger(this, error).unregisterMBean(name);
+            if (shouldAuditLog(delegate, readOnly)) {
+                new MBeanServerAuditLogRecordFormatter(this, error, readOnly).unregisterMBean(name);
             }
         }
     }
@@ -870,11 +909,14 @@ class PluggableMBeanServerImpl implements PluggableMBeanServer {
         return rootMBeanServer;
     }
 
-    private boolean shouldAuditLog(MBeanServerPlugin delegate) {
-        if (delegate == null) {
-            return true;
+    private boolean shouldAuditLog(MBeanServerPlugin delegate, boolean readOnly) {
+        if (auditLogger.shouldLog(readOnly)) {
+            if (delegate == null) {
+                return true;
+            }
+            return delegate.shouldAuditLog();
         }
-        return delegate.shouldAuditLog();
+        return false;
     }
 
     private RuntimeException makeRuntimeException(Exception e) {
@@ -882,6 +924,96 @@ class PluggableMBeanServerImpl implements PluggableMBeanServer {
             return (RuntimeException)e;
         }
         return new RuntimeException(e);
+    }
+
+    private boolean isOperationReadOnly(ObjectName name, String operationName, String[] signature) {
+        MBeanInfo info;
+        try {
+            info = getMBeanInfo(name, false, true);
+        } catch (Exception e) {
+            //This should not happen, just in case say it is not RO
+            return false;
+        }
+        if (info == null) {
+            //Default to not RO
+            return false;
+        }
+        for (MBeanOperationInfo op : info.getOperations()) {
+            if (op.getName().equals(operationName)) {
+                MBeanParameterInfo[] params = op.getSignature();
+                if (params.length != signature.length) {
+                    continue;
+                }
+                boolean same = true;
+                for (int i = 0 ; i < params.length ; i++) {
+                    if (!params[i].getType().equals(signature[i])) {
+                        same = false;
+                        break;
+                    }
+                }
+                if (same) {
+                    return op.getImpact() == MBeanOperationInfo.INFO;
+                }
+            }
+        }
+        //Default to not RO
+        return false;
+    }
+
+    private String getCallerUserId(Subject subject) {
+        String userId = null;
+        if (subject != null) {
+            Set<RealmUser> realmUsers = subject.getPrincipals(RealmUser.class);
+            RealmUser user = realmUsers.iterator().next();
+            userId = user.getName();
+        }
+        return userId;
+    }
+
+    private InetAddress getSubjectInetAddress(Subject subject) {
+        InetAddressPrincipal principal = getPrincipal(subject, InetAddressPrincipal.class);
+        return principal != null ? principal.getInetAddress() : null;
+    }
+
+    private AccessMechanism getSubjectAccessMechanism(Subject subject) {
+        AccessMechanismPrincipal principal = getPrincipal(subject, AccessMechanismPrincipal.class);
+        return principal != null ? principal.getAccessMechanism() : null;
+    }
+
+    void log(boolean readOnly, Throwable error, String methodName, String[] methodSignature, Object...methodParams) {
+        String domainUUID = null; //TODO
+
+        PrivilegedAction<Subject> getCurrentAction = new PrivilegedAction<Subject>() {
+            @Override
+            public Subject run() {
+                return Subject.getSubject(AccessController.getContext());
+            }
+        };
+        Subject subject = System.getSecurityManager() == null ?
+                getCurrentAction.run() : AccessController.doPrivileged(getCurrentAction);
+
+        auditLogger.logMethodAccess(
+                readOnly,
+                getCallerUserId(subject),
+                domainUUID,
+                getSubjectAccessMechanism(subject),
+                getSubjectInetAddress(subject),
+                methodName,
+                methodSignature,
+                methodParams,
+                error);
+    }
+
+    private <T extends Principal> T getPrincipal(Subject subject, Class<T> clazz) {
+        if (subject == null) {
+            return null;
+        }
+        Set<T> principals = subject.getPrincipals(clazz);
+        assert principals.size() <= 1;
+        if (principals.size() == 0) {
+            return null;
+        }
+        return principals.iterator().next();
     }
 
     private class TcclMBeanServer implements MBeanServerPlugin {
@@ -1168,5 +1300,5 @@ class PluggableMBeanServerImpl implements PluggableMBeanServer {
         }
     }
 
-    private static final AuditLoggerInfo NOOP_INFO = new AuditLoggerInfo(AuditLogger.NO_OP_LOGGER);
+    private static final JmxManagedAuditLogger NOOP_INFO = new JmxManagedAuditLogger(AuditLogger.NO_OP_LOGGER);
 }
