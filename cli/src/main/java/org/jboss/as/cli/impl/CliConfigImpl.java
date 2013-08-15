@@ -354,7 +354,15 @@ class CliConfigImpl implements CliConfig {
                 if(tag == XMLStreamConstants.START_ELEMENT) {
                     final String localName = reader.getLocalName();
                     if(localName.equals(DEFAULT_CONTROLLER)) {
-                        readDefaultController(reader, expectedNs, config);
+                        switch (expectedNs) {
+                            case CLI_1_0:
+                            case CLI_1_1:
+                            case CLI_1_2:
+                                readDefaultController_1_0(reader, expectedNs, config);
+                                break;
+                            default:
+                                readDefaultController_2_0(reader, expectedNs, config);
+                        }
                     } else if(localName.equals(HISTORY)) {
                         readHistory(reader, expectedNs, config);
                     } else if (localName.equals("ssl")) {
@@ -392,7 +400,26 @@ class CliConfigImpl implements CliConfig {
             }
         }
 
-        private void readDefaultController(XMLExtendedStreamReader reader, Namespace expectedNs, CliConfigImpl config) throws XMLStreamException {
+        private void readDefaultController_1_0(XMLExtendedStreamReader reader, Namespace expectedNs, CliConfigImpl config) throws XMLStreamException {
+            while (reader.hasNext() && reader.nextTag() != END_ELEMENT) {
+                assertExpectedNamespace(reader, expectedNs);
+                final String localName = reader.getLocalName();
+                final String resolved = resolveString(reader.getElementText());
+                if (HOST.equals(localName)) {
+                    config.defaultControllerHost = resolved;
+                } else if (PORT.equals(localName)) {
+                    try {
+                        config.defaultControllerPort = Integer.parseInt(resolved);
+                    } catch(NumberFormatException e) {
+                        throw new XMLStreamException("Failed to parse " + DEFAULT_CONTROLLER + " " + PORT + " value '" + resolved + "'", e);
+                    }
+                } else {
+                    throw new XMLStreamException("Unexpected child of " + DEFAULT_CONTROLLER + ": " + localName);
+                }
+            }
+        }
+
+        private void readDefaultController_2_0(XMLExtendedStreamReader reader, Namespace expectedNs, CliConfigImpl config) throws XMLStreamException {
             while (reader.hasNext() && reader.nextTag() != END_ELEMENT) {
                 assertExpectedNamespace(reader, expectedNs);
                 final String localName = reader.getLocalName();
