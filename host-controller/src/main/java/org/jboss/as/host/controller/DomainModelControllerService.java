@@ -72,6 +72,7 @@ import org.jboss.as.controller.ProxyOperationAddressTranslator;
 import org.jboss.as.controller.ResourceDefinition;
 import org.jboss.as.controller.RunningMode;
 import org.jboss.as.controller.TransformingProxyController;
+import org.jboss.as.controller.access.DelegatingConfigurableAuthorizer;
 import org.jboss.as.controller.audit.ManagedAuditLogger;
 import org.jboss.as.controller.audit.ManagedAuditLoggerImpl;
 import org.jboss.as.controller.client.OperationMessageHandler;
@@ -202,14 +203,15 @@ public class DomainModelControllerService extends AbstractControllerService impl
         final ContentRepository contentRepository = ContentRepository.Factory.create(environment.getDomainContentDir());
         final IgnoredDomainResourceRegistry ignoredRegistry = new IgnoredDomainResourceRegistry(hostControllerInfo);
         final ManagedAuditLogger auditLogger = createAuditLogger(environment);
-        final ExtensionRegistry extensionRegistry = new ExtensionRegistry(ProcessType.HOST_CONTROLLER, runningModeControl, auditLogger);
+        final DelegatingConfigurableAuthorizer authorizer = new DelegatingConfigurableAuthorizer();
+        final ExtensionRegistry extensionRegistry = new ExtensionRegistry(ProcessType.HOST_CONTROLLER, runningModeControl, auditLogger, authorizer);
         final DomainControllerRuntimeIgnoreTransformationRegistry runtimeIgnoreTransformationRegistry = new DomainControllerRuntimeIgnoreTransformationRegistry();
         final PrepareStepHandler prepareStepHandler = new PrepareStepHandler(hostControllerInfo, contentRepository,
                 hostProxies, serverProxies, ignoredRegistry, extensionRegistry, runtimeIgnoreTransformationRegistry);
         final ExpressionResolver expressionResolver = new RuntimeExpressionResolver(vaultReader);
         final DomainModelControllerService service = new DomainModelControllerService(environment, runningModeControl, processState,
                 hostControllerInfo, contentRepository, hostProxies, serverProxies, prepareStepHandler, vaultReader,
-                ignoredRegistry, bootstrapListener, pathManager, expressionResolver, new DelegatingResourceDefinition(), extensionRegistry, runtimeIgnoreTransformationRegistry, auditLogger);
+                ignoredRegistry, bootstrapListener, pathManager, expressionResolver, new DelegatingResourceDefinition(), extensionRegistry, runtimeIgnoreTransformationRegistry, auditLogger, authorizer);
         ApplyMissingDomainModelResourcesHandler applyMissingDomainModelResourcesHandler = new ApplyMissingDomainModelResourcesHandler(service, environment, hostControllerInfo, ignoredRegistry);
         prepareStepHandler.initialize(applyMissingDomainModelResourcesHandler);
         return serviceTarget.addService(SERVICE_NAME, service)
@@ -236,9 +238,10 @@ public class DomainModelControllerService extends AbstractControllerService impl
                                          final DelegatingResourceDefinition rootResourceDefinition,
                                          final ExtensionRegistry extensionRegistry,
                                          final DomainControllerRuntimeIgnoreTransformationRegistry runtimeIgnoreTransformationRegistry,
-                                         final ManagedAuditLogger auditLogger) {
+                                         final ManagedAuditLogger auditLogger,
+                                         final DelegatingConfigurableAuthorizer authorizer) {
         super(ProcessType.HOST_CONTROLLER, runningModeControl, null, processState,
-                rootResourceDefinition, prepareStepHandler, new RuntimeExpressionResolver(vaultReader), auditLogger);
+                rootResourceDefinition, prepareStepHandler, new RuntimeExpressionResolver(vaultReader), auditLogger, authorizer);
         this.environment = environment;
         this.runningModeControl = runningModeControl;
         this.processState = processState;

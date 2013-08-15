@@ -47,6 +47,7 @@ import org.jboss.as.controller.ProcessType;
 import org.jboss.as.controller.ResourceDefinition;
 import org.jboss.as.controller.RunningMode;
 import org.jboss.as.controller.RunningModeControl;
+import org.jboss.as.controller.access.DelegatingConfigurableAuthorizer;
 import org.jboss.as.controller.audit.AuditLogger;
 import org.jboss.as.controller.client.ModelControllerClient;
 import org.jboss.as.controller.descriptions.DescriptionProvider;
@@ -95,7 +96,7 @@ public class ServerControllerUnitTestCase {
     @Before
     public void beforeClass() throws Exception {
         final ServiceTarget target = container.subTarget();
-        final ExtensionRegistry extensionRegistry = new ExtensionRegistry(ProcessType.STANDALONE_SERVER, new RunningModeControl(RunningMode.NORMAL), null);
+        final ExtensionRegistry extensionRegistry = new ExtensionRegistry(ProcessType.STANDALONE_SERVER, new RunningModeControl(RunningMode.NORMAL), null, null);
         final StringConfigurationPersister persister = new StringConfigurationPersister(Collections.<ModelNode>emptyList(), new StandaloneXml(null, null, extensionRegistry));
         extensionRegistry.setWriterRegistry(persister);
         final ControlledProcessState processState = new ControlledProcessState(true);
@@ -278,7 +279,8 @@ public class ServerControllerUnitTestCase {
 
 
         ModelControllerService(final ControlledProcessState processState, final StringConfigurationPersister persister, final DelegatingResourceDefinition rootResourceDefinition) {
-            super(ProcessType.EMBEDDED_SERVER, new RunningModeControl(RunningMode.ADMIN_ONLY), persister, processState, rootResourceDefinition, null, ExpressionResolver.TEST_RESOLVER, AuditLogger.NO_OP_LOGGER);
+            super(ProcessType.EMBEDDED_SERVER, new RunningModeControl(RunningMode.ADMIN_ONLY), persister, processState, rootResourceDefinition, null, ExpressionResolver.TEST_RESOLVER,
+                    AuditLogger.NO_OP_LOGGER, new DelegatingConfigurableAuthorizer());
             this.persister = persister;
             this.processState = processState;
             this.rootResourceDefinition = rootResourceDefinition;
@@ -288,7 +290,7 @@ public class ServerControllerUnitTestCase {
 
             final String hostControllerName = "hostControllerName"; // Host Controller name may not be null when in a managed domain
             environment = new ServerEnvironment(hostControllerName, properties, new HashMap<String, String>(), null, null, ServerEnvironment.LaunchType.DOMAIN, null, new ProductConfig(Module.getBootModuleLoader(), ".", properties));
-            extensionRegistry = new ExtensionRegistry(ProcessType.STANDALONE_SERVER, new RunningModeControl(RunningMode.NORMAL), null);
+            extensionRegistry = new ExtensionRegistry(ProcessType.STANDALONE_SERVER, new RunningModeControl(RunningMode.NORMAL), null, null);
         }
 
         @Override

@@ -26,6 +26,8 @@ import java.util.HashSet;
 import java.util.LinkedHashSet;
 import java.util.Set;
 
+import org.jboss.as.controller.PathAddress;
+import org.jboss.as.controller.access.AuthorizationResult.Decision;
 import org.jboss.as.controller.access.constraint.ScopingConstraint;
 import org.jboss.as.controller.access.permission.CombinationPolicy;
 import org.jboss.as.controller.access.permission.ManagementPermissionAuthorizer;
@@ -33,6 +35,7 @@ import org.jboss.as.controller.access.rbac.DefaultPermissionFactory;
 import org.jboss.as.controller.access.rbac.MockRoleMapper;
 import org.jboss.as.controller.access.rbac.RoleMapper;
 import org.jboss.as.controller.access.rbac.StandardRole;
+import org.jboss.as.controller.operations.common.Util;
 
 /**
  * Simple {@link ConfigurableAuthorizer} implementation that gives all permissions to any authenticated
@@ -114,5 +117,31 @@ public class SimpleConfigurableAuthorizer implements ConfigurableAuthorizer {
     @Override
     public AuthorizationResult authorize(Caller caller, Environment callEnvironment, Action action, TargetResource target) {
         return authorizer.authorize(caller, callEnvironment, action, target);
+    }
+
+    @Override
+    public AuthorizationResult authorizeJmxOperation(Caller caller, Environment callEnvironment, JmxTarget target) {
+        Action fakeAction = new Action(Util.createOperation("test", PathAddress.EMPTY_ADDRESS), null);
+        Set<String> roles = roleMapper.mapRoles(caller, null, fakeAction, (TargetAttribute) null);
+        if (target.isNonFacadeMBeansSensitive()) {
+            return authorize(roles, StandardRole.SUPERUSER, StandardRole.ADMINISTRATOR);
+        } else {
+            if (target.isReadOnly()) {
+                //Everybody can read mbeans when not sensitive
+                return AuthorizationResult.PERMITTED;
+                //authorize(exception, roles, StandardRole.SUPERUSER, StandardRole.ADMINISTRATOR, StandardRole.OPERATOR, StandardRole.MAINTAINER, StandardRole.AUDITOR, StandardRole.MONITOR, StandardRole.DEPLOYER);
+            } else {
+                return authorize(roles, StandardRole.SUPERUSER, StandardRole.ADMINISTRATOR, StandardRole.OPERATOR, StandardRole.MAINTAINER);
+            }
+        }
+    }
+
+    private AuthorizationResult authorize(Set<String> callerRoles, StandardRole...roles) {
+        for (StandardRole role : roles) {
+            if (callerRoles.contains(role.toString())) {
+                return AuthorizationResult.PERMITTED;
+            }
+        }
+        return new AuthorizationResult(Decision.DENY);
     }
 }

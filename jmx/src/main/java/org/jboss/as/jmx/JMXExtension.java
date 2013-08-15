@@ -52,6 +52,7 @@ import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.PathElement;
 import org.jboss.as.controller.SubsystemRegistration;
+import org.jboss.as.controller.access.Authorizer;
 import org.jboss.as.controller.access.constraint.SensitivityClassification;
 import org.jboss.as.controller.access.constraint.management.SensitiveTargetAccessConstraintDefinition;
 import org.jboss.as.controller.audit.ManagedAuditLogger;
@@ -122,8 +123,10 @@ public class JMXExtension implements Extension {
 
         //This is ugly but for now we don't want to make the audit logger easily available to all extensions
         ManagedAuditLogger auditLogger = (ManagedAuditLogger)((ExtensionContextImpl)context).getAuditLogger(false, true);
+        //This is ugly but for now we don't want to make the authorizer easily available to all extensions
+        Authorizer authorizer = ((ExtensionContextImpl)context).getAuthorizer();
 
-        registration.registerSubsystemModel(JMXSubsystemRootResource.create(auditLogger));
+        registration.registerSubsystemModel(JMXSubsystemRootResource.create(auditLogger, authorizer));
         registration.registerXMLElementWriter(writer);
 
         if (context.isRegisterTransformers()) {

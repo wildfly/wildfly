@@ -28,6 +28,7 @@ import java.util.concurrent.ExecutorService;
 import javax.xml.namespace.QName;
 
 import org.jboss.as.controller.RunningModeControl;
+import org.jboss.as.controller.access.DelegatingConfigurableAuthorizer;
 import org.jboss.as.controller.audit.ManagedAuditLogger;
 import org.jboss.as.controller.extension.ExtensionRegistry;
 import org.jboss.as.controller.parsing.Namespace;
@@ -80,6 +81,7 @@ public interface Bootstrap {
         private final RunningModeControl runningModeControl;
         private final ExtensionRegistry extensionRegistry;
         private final ManagedAuditLogger auditLogger;
+        private final DelegatingConfigurableAuthorizer authorizer;
         private ModuleLoader moduleLoader = Module.getBootModuleLoader();
         private ConfigurationPersisterFactory configurationPersisterFactory;
         private long startTime = Module.getStartTime();
@@ -89,7 +91,8 @@ public interface Bootstrap {
             this.serverEnvironment = serverEnvironment;
             this.runningModeControl = serverEnvironment.getRunningModeControl();
             this.auditLogger = serverEnvironment.createAuditLogger();
-            this.extensionRegistry = new ExtensionRegistry(serverEnvironment.getLaunchType().getProcessType(), runningModeControl, this.auditLogger);
+            this.authorizer = new DelegatingConfigurableAuthorizer();
+            this.extensionRegistry = new ExtensionRegistry(serverEnvironment.getLaunchType().getProcessType(), runningModeControl, this.auditLogger, authorizer);
         }
 
         /**
@@ -125,6 +128,15 @@ public interface Bootstrap {
          */
         public ManagedAuditLogger getAuditLogger() {
             return auditLogger;
+        }
+
+        /**
+         * Get the authorizer
+         *
+         * @return the authorizer
+         */
+        public DelegatingConfigurableAuthorizer getAuthorizer() {
+            return authorizer;
         }
 
         /**

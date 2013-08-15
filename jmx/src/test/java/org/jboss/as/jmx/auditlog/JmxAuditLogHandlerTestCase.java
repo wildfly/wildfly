@@ -776,7 +776,7 @@ public class JmxAuditLogHandlerTestCase extends AbstractControllerTestBase {
         pathManagerService.addPathManagerResources(rootResource);
 
 
-        ExtensionRegistry extensionRegistry = new ExtensionRegistry(ProcessType.STANDALONE_SERVER, new RunningModeControl(RunningMode.NORMAL), auditLogger);
+        ExtensionRegistry extensionRegistry = new ExtensionRegistry(ProcessType.STANDALONE_SERVER, new RunningModeControl(RunningMode.NORMAL), auditLogger, null);
         extensionRegistry.setWriterRegistry(new NullConfigurationPersister());
         extensionRegistry.setSubsystemParentResourceRegistrations(registration, null);
         JMXExtension extension = new JMXExtension();
