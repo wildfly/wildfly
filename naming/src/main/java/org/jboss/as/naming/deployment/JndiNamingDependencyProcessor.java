@@ -60,6 +60,7 @@ public class JndiNamingDependencyProcessor implements DeploymentUnitProcessor {
         if(deploymentUnit.getParent() != null) {
             serviceBuilder.addDependencies(deploymentUnit.getParent().getAttachment(Attachments.JNDI_DEPENDENCIES));
         }
+        serviceBuilder.addDependency(NamingService.SERVICE_NAME);
         serviceBuilder.install();
     }
 
