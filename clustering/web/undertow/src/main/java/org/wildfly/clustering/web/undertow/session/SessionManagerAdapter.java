@@ -171,11 +171,6 @@ public class SessionManagerAdapter implements UndertowSessionManager {
     }
 
     @Override
-    public int activeSessions() {
-        return this.manager.getActiveSessions().size();
-    }
-
-    @Override
     public Set<String> getTransientSessions() {
         // We are a distributed session manager, so none of our sessions are transient
         return Collections.emptySet();
