@@ -28,6 +28,10 @@ import org.jboss.com.sun.corba.se.impl.presentation.rmi.StubFactoryFactoryBase;
 import org.jboss.com.sun.corba.se.impl.presentation.rmi.StubFactoryFactoryProxyImpl;
 import org.jboss.com.sun.corba.se.impl.presentation.rmi.StubFactoryFactoryStaticImpl;
 import org.jboss.com.sun.corba.se.spi.presentation.rmi.PresentationManager;
+import org.wildfly.security.manager.WildFlySecurityManager;
+
+import java.security.AccessController;
+import java.security.PrivilegedAction;
 
 /**
  * Stub factory
@@ -47,6 +51,19 @@ public class DelegatingStubFactoryFactory extends StubFactoryFactoryBase {
     }
 
     public PresentationManager.StubFactory createStubFactory(final String className, final boolean isIDLStub, final String remoteCodeBase, final Class<?> expectedClass, final ClassLoader classLoader) {
+        if(WildFlySecurityManager.isChecking()) {
+            return AccessController.doPrivileged(new PrivilegedAction<PresentationManager.StubFactory>() {
+                @Override
+                public PresentationManager.StubFactory run() {
+                    return getStubFactoryImpl(className, isIDLStub, remoteCodeBase, expectedClass, classLoader);
+                }
+            });
+        } else {
+            return getStubFactoryImpl(className, isIDLStub, remoteCodeBase, expectedClass, classLoader);
+        }
+    }
+
+    private PresentationManager.StubFactory getStubFactoryImpl(String className, boolean isIDLStub, String remoteCodeBase, Class<?> expectedClass, ClassLoader classLoader) {
         try {
             PresentationManager.StubFactory stubFactory = staticFactory.createStubFactory(className, isIDLStub, remoteCodeBase, expectedClass, classLoader);
             if (stubFactory != null) {
@@ -64,6 +81,19 @@ public class DelegatingStubFactoryFactory extends StubFactoryFactoryBase {
     }
 
     public Tie getTie(final Class<?> cls) {
+        if (WildFlySecurityManager.isChecking()) {
+            return AccessController.doPrivileged(new PrivilegedAction<Tie>() {
+                @Override
+                public Tie run() {
+                    return getTieImpl(cls);
+                }
+            });
+        } else {
+            return getTieImpl(cls);
+        }
+    }
+
+    private Tie getTieImpl(Class<?> cls) {
         try {
             Tie tie = staticFactory.getTie(cls);
             if (tie != null) {
