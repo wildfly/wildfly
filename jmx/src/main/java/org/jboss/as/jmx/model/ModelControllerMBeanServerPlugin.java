@@ -76,8 +76,18 @@ public class ModelControllerMBeanServerPlugin extends BaseMBeanServerPlugin {
 
         Pattern p = Pattern.compile(objectName.getDomain().replace("*", ".*"));
         return p.matcher(configuredDomains.getLegacyDomain()).matches() || p.matcher(configuredDomains.getExprDomain()).matches();
-
     }
+
+    @Override
+    public boolean shouldAuditLog() {
+        return false;
+    }
+
+    @Override
+    public boolean shouldAuthorize() {
+        return false;
+    }
+
 
     public Object getAttribute(ObjectName name, String attribute) throws MBeanException, AttributeNotFoundException, InstanceNotFoundException,
             ReflectionException {

@@ -71,6 +71,16 @@ class JSR77ManagementMBeanServer implements MBeanServerPlugin {
     }
 
     @Override
+    public boolean shouldAuditLog() {
+        return true;
+    }
+
+    @Override
+    public boolean shouldAuthorize() {
+        return true;
+    }
+
+    @Override
     public void addNotificationListener(ObjectName name, NotificationListener listener, NotificationFilter filter, Object handback)
             throws InstanceNotFoundException {
     }

@@ -31,4 +31,6 @@ import javax.management.ObjectName;
  */
 public interface MBeanServerPlugin extends MBeanServer {
     boolean accepts(ObjectName objectName);
+    boolean shouldAuditLog();
+    boolean shouldAuthorize();
 }

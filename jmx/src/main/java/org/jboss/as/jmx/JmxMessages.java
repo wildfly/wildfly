@@ -380,5 +380,8 @@ public interface JmxMessages {
 
     @Message(id = 11359, value = "There is no handler called '%s'")
     IllegalStateException noHandlerCalled(String name);
+
+    @Message(id = 11360, value = "Unauthorized access")
+    MBeanException unauthorized();
 }
 
