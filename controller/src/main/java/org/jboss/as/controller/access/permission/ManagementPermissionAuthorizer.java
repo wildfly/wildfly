@@ -32,6 +32,7 @@ import org.jboss.as.controller.access.AuthorizationResult;
 import org.jboss.as.controller.access.Authorizer;
 import org.jboss.as.controller.access.Caller;
 import org.jboss.as.controller.access.Environment;
+import org.jboss.as.controller.access.JmxTarget;
 import org.jboss.as.controller.access.TargetAttribute;
 import org.jboss.as.controller.access.TargetResource;
 import org.jboss.dmr.ModelNode;
@@ -82,5 +83,11 @@ public class ManagementPermissionAuthorizer implements Authorizer {
             }
         }
         return AuthorizationResult.PERMITTED;
+    }
+
+    @Override
+    public AuthorizationResult authorizeJmxOperation(Caller caller, Environment callEnvironment, JmxTarget target) {
+        //We should never end up here?
+        throw new IllegalStateException();
     }
 }

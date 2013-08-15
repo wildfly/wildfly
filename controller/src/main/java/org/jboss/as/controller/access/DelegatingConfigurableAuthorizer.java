@@ -78,4 +78,8 @@ public class DelegatingConfigurableAuthorizer implements ConfigurableAuthorizer 
         return delegate.authorize(caller, callEnvironment, action, target);
     }
 
+    public AuthorizationResult authorizeJmxOperation(Caller caller, Environment callEnvironment, JmxTarget target) {
+        return delegate.authorizeJmxOperation(caller, callEnvironment, target);
+    }
+
 }

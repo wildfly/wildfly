@@ -61,6 +61,10 @@ public class ConfigurableRoleMapper implements RoleMapper {
         EXCLUDE, INCLUDE
     }
 
+    public ConfigurableRoleMapper() {
+
+    }
+
     // TODO - May want to consider COMPOSITE operations so all updates are applied simultaneously.
 
     public void addRoleImmediate(final String roleName) {

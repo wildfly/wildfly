@@ -24,6 +24,7 @@ package org.jboss.as.jmx;
 import org.jboss.as.controller.PathElement;
 import org.jboss.as.controller.SimpleAttributeDefinition;
 import org.jboss.as.controller.SimpleAttributeDefinitionBuilder;
+import org.jboss.as.controller.access.Authorizer;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.ModelType;
 
@@ -40,7 +41,7 @@ public class ExposeModelResourceExpression extends ExposeModelResource{
             .setDefaultValue(new ModelNode(CommonAttributes.DEFAULT_EXPRESSION_DOMAIN))
             .build();
 
-    ExposeModelResourceExpression(JmxManagedAuditLogger auditLoggerInfo) {
-        super(PATH_ELEMENT, auditLoggerInfo, DOMAIN_NAME);
+    ExposeModelResourceExpression(JmxManagedAuditLogger auditLoggerInfo, Authorizer authorizer) {
+        super(PATH_ELEMENT, auditLoggerInfo, authorizer, DOMAIN_NAME);
     }
 }

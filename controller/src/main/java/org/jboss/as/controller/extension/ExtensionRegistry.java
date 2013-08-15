@@ -55,6 +55,14 @@ import org.jboss.as.controller.RunningMode;
 import org.jboss.as.controller.RunningModeControl;
 import org.jboss.as.controller.SimpleResourceDefinition;
 import org.jboss.as.controller.SubsystemRegistration;
+import org.jboss.as.controller.access.Action;
+import org.jboss.as.controller.access.AuthorizationResult;
+import org.jboss.as.controller.access.Authorizer;
+import org.jboss.as.controller.access.Caller;
+import org.jboss.as.controller.access.Environment;
+import org.jboss.as.controller.access.JmxTarget;
+import org.jboss.as.controller.access.TargetAttribute;
+import org.jboss.as.controller.access.TargetResource;
 import org.jboss.as.controller.access.constraint.management.AccessConstraintDefinition;
 import org.jboss.as.controller.audit.AuditLogger;
 import org.jboss.as.controller.audit.ManagedAuditLogger;
@@ -101,15 +109,17 @@ public class ExtensionRegistry {
     private final ConcurrentMap<String, String> reverseMap = new ConcurrentHashMap<String, String>();
     private final RunningModeControl runningModeControl;
     private final ManagedAuditLogger auditLogger;
+    private final Authorizer authorizer;
     // protected by extensions
     private boolean unnamedMerged;
     private final ConcurrentHashMap<String, SubsystemInformation> subsystemsInfo = new ConcurrentHashMap<String, SubsystemInformation>();
     private volatile TransformerRegistry transformerRegistry = TransformerRegistry.Factory.create(this);
 
-    public ExtensionRegistry(ProcessType processType, RunningModeControl runningModeControl, ManagedAuditLogger auditLogger) {
+    public ExtensionRegistry(ProcessType processType, RunningModeControl runningModeControl, ManagedAuditLogger auditLogger, Authorizer authorizer) {
         this.processType = processType;
         this.runningModeControl = runningModeControl;
         this.auditLogger = auditLogger != null ? auditLogger : AuditLogger.NO_OP_LOGGER;
+        this.authorizer = authorizer != null ? authorizer : NOOP_AUTHORIZER;
     }
 
     /**
@@ -121,7 +131,7 @@ public class ExtensionRegistry {
      */
     @Deprecated
     public ExtensionRegistry(ProcessType processType, RunningModeControl runningModeControl) {
-        this(processType, runningModeControl, null);
+        this(processType, runningModeControl, null, null);
     }
 
 
@@ -567,6 +577,13 @@ public class ExtensionRegistry {
                 return auditLogger;
             }
             return auditLogger.createNewConfiguration(manualCommit);
+        }
+
+        /**
+         * This method is only for internal use. We do NOT currently want to expose it on the ExtenstionContext interface.
+         */
+        public Authorizer getAuthorizer() {
+            return authorizer;
         }
     }
 
@@ -1028,4 +1045,22 @@ public class ExtensionRegistry {
             return deployments.isAlias();
         }
     }
+
+    private static final Authorizer NOOP_AUTHORIZER = new Authorizer() {
+
+        @Override
+        public AuthorizationResult authorize(Caller caller, Environment callEnvironment, Action action, TargetResource target) {
+            return AuthorizationResult.PERMITTED;
+        }
+
+        @Override
+        public AuthorizationResult authorize(Caller caller, Environment callEnvironment, Action action, TargetAttribute target) {
+            return AuthorizationResult.PERMITTED;
+        }
+
+        @Override
+        public AuthorizationResult authorizeJmxOperation(Caller caller, Environment callEnvironment, JmxTarget target) {
+            return AuthorizationResult.PERMITTED;
+        }
+    };
 }

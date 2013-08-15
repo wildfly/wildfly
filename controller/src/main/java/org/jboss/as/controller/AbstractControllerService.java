@@ -100,7 +100,7 @@ public abstract class AbstractControllerService implements Service<ModelControll
     }
 
     protected final ProcessType processType;
-    protected final DelegatingConfigurableAuthorizer authorizer = new DelegatingConfigurableAuthorizer();
+    protected final DelegatingConfigurableAuthorizer authorizer;
     private final RunningModeControl runningModeControl;
     private final DescriptionProvider rootDescriptionProvider;
     private final ResourceDefinition rootResourceDefinition;
@@ -129,9 +129,9 @@ public abstract class AbstractControllerService implements Service<ModelControll
                                         final ConfigurationPersister configurationPersister,
                                         final ControlledProcessState processState, final DescriptionProvider rootDescriptionProvider,
                                         final OperationStepHandler prepareStep, final ExpressionResolver expressionResolver,
-                                        final ManagedAuditLogger auditLogger) {
+                                        final ManagedAuditLogger auditLogger, DelegatingConfigurableAuthorizer authorizer) {
         this(processType, runningModeControl, configurationPersister, processState, null, rootDescriptionProvider,
-                prepareStep, expressionResolver, auditLogger);
+                prepareStep, expressionResolver, auditLogger, authorizer);
 
     }
 
@@ -151,9 +151,9 @@ public abstract class AbstractControllerService implements Service<ModelControll
                                         final ConfigurationPersister configurationPersister,
                                         final ControlledProcessState processState, final ResourceDefinition rootResourceDefinition,
                                         final OperationStepHandler prepareStep, final ExpressionResolver expressionResolver,
-                                        final ManagedAuditLogger auditLogger) {
+                                        final ManagedAuditLogger auditLogger, final DelegatingConfigurableAuthorizer authorizer) {
         this(processType, runningModeControl, configurationPersister, processState, rootResourceDefinition, null,
-                prepareStep, expressionResolver, auditLogger);
+                prepareStep, expressionResolver, auditLogger, authorizer);
     }
 
     /**
@@ -176,7 +176,7 @@ public abstract class AbstractControllerService implements Service<ModelControll
                                         final ControlledProcessState processState, final DescriptionProvider rootDescriptionProvider,
                                         final OperationStepHandler prepareStep, final ExpressionResolver expressionResolver) {
         this(processType, runningModeControl, configurationPersister, processState, null, rootDescriptionProvider,
-                prepareStep, expressionResolver, AuditLogger.NO_OP_LOGGER);
+                prepareStep, expressionResolver, AuditLogger.NO_OP_LOGGER, new DelegatingConfigurableAuthorizer());
 
     }
 
@@ -198,13 +198,14 @@ public abstract class AbstractControllerService implements Service<ModelControll
                                         final ControlledProcessState processState, final ResourceDefinition rootResourceDefinition,
                                         final OperationStepHandler prepareStep, final ExpressionResolver expressionResolver) {
         this(processType, runningModeControl, configurationPersister, processState, rootResourceDefinition, null,
-                prepareStep, expressionResolver, AuditLogger.NO_OP_LOGGER);
+                prepareStep, expressionResolver, AuditLogger.NO_OP_LOGGER, new DelegatingConfigurableAuthorizer());
     }
 
     private AbstractControllerService(final ProcessType processType, final RunningModeControl runningModeControl,
                                       final ConfigurationPersister configurationPersister, final ControlledProcessState processState,
                                       final ResourceDefinition rootResourceDefinition, final DescriptionProvider rootDescriptionProvider,
-                                      final OperationStepHandler prepareStep, final ExpressionResolver expressionResolver, final ManagedAuditLogger auditLogger) {
+                                      final OperationStepHandler prepareStep, final ExpressionResolver expressionResolver, final ManagedAuditLogger auditLogger,
+                                      final DelegatingConfigurableAuthorizer authorizer) {
         assert rootDescriptionProvider != null || rootResourceDefinition != null: rootDescriptionProvider == null ? "Null root description provider" : "Null root resource definition";
         assert expressionResolver != null : "Null expressionResolver";
         assert auditLogger != null : "Null auditLogger";
@@ -217,6 +218,7 @@ public abstract class AbstractControllerService implements Service<ModelControll
         this.prepareStep = prepareStep;
         this.expressionResolver = expressionResolver;
         this.auditLogger = auditLogger;
+        this.authorizer = authorizer;
     }
 
     public void start(final StartContext context) throws StartException {

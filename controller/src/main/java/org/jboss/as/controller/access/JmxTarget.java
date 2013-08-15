@@ -1,6 +1,6 @@
 /*
  * JBoss, Home of Professional Open Source.
- * Copyright 2013, Red Hat, Inc., and individual contributors
+ * Copyright 2012, Red Hat, Inc., and individual contributors
  * as indicated by the @author tags. See the copyright.txt file in the
  * distribution for a full listing of individual contributors.
  *
@@ -19,18 +19,33 @@
  * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
-
 package org.jboss.as.controller.access;
 
 
 /**
- * Interface exposed by the enforcement point in a WildFly access control system.
  *
- * @author Brian Stansberry (c) 2013 Red Hat Inc.
+ * @author <a href="kabir.khan@jboss.com">Kabir Khan</a>
  */
-public interface Authorizer {
+public class JmxTarget {
+    final boolean superUserOrAdminOnly;
+    final boolean nonFacadeMBeansSensitive;
+    final boolean readOnly;
 
-    AuthorizationResult authorize(Caller caller, Environment callEnvironment, Action action, TargetAttribute target);
-    AuthorizationResult authorize(Caller caller, Environment callEnvironment, Action action, TargetResource target);
-    AuthorizationResult authorizeJmxOperation(Caller caller, Environment callEnvironment, JmxTarget target);
+    public JmxTarget(boolean superUserOrAdminOnly, boolean nonFacadeMBeansSensitive, boolean readOnly) {
+        this.superUserOrAdminOnly = superUserOrAdminOnly;
+        this.nonFacadeMBeansSensitive = nonFacadeMBeansSensitive;
+        this.readOnly = readOnly;
+    }
+
+    boolean isSuperUserOrAdminOnly() {
+        return superUserOrAdminOnly;
+    }
+
+    boolean isNonFacadeMBeansSensitive() {
+        return nonFacadeMBeansSensitive;
+    }
+
+    public boolean isReadOnly() {
+        return readOnly;
+    }
 }
