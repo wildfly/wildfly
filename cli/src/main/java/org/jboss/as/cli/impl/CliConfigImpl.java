@@ -334,16 +334,16 @@ class CliConfigImpl implements CliConfig {
             }
 
             Namespace readerNS = Namespace.forUri(reader.getNamespaceURI());
-            switch (readerNS) {
-                case CLI_1_0:
-                case CLI_1_1:
-                case CLI_1_2:
-                case CLI_1_3:
+            for (Namespace current : Namespace.cliValues()) {
+                if (readerNS.equals(current)) {
+                    // Convert to a switch statement if the top level element changes - for now all supported
+                    // namespaces are equal at this point.
                     readCLIElement_1_0(reader, readerNS, config);
-                    break;
-                default:
-                    throw new XMLStreamException("Unexpected element: " + localName);
+                    return;
+                }
+
             }
+            throw new XMLStreamException("Unexpected element: " + localName);
         }
 
         public void readCLIElement_1_0(XMLExtendedStreamReader reader, Namespace expectedNs, CliConfigImpl config) throws XMLStreamException {
