@@ -22,17 +22,6 @@
 
 package org.wildfly.extension.undertow.security;
 
-import java.security.Principal;
-import java.security.acl.Group;
-import java.security.cert.X509Certificate;
-import java.util.Arrays;
-import java.util.Enumeration;
-import java.util.HashSet;
-import java.util.Map;
-import java.util.Set;
-
-import javax.security.auth.Subject;
-
 import io.undertow.security.idm.Account;
 import io.undertow.security.idm.Credential;
 import io.undertow.security.idm.DigestCredential;
@@ -44,14 +33,19 @@ import org.jboss.security.AuthenticationManager;
 import org.jboss.security.AuthorizationManager;
 import org.jboss.security.SecurityConstants;
 import org.jboss.security.SecurityContext;
-import org.jboss.security.SecurityRolesAssociation;
 import org.jboss.security.callbacks.SecurityContextCallbackHandler;
 import org.jboss.security.identity.Role;
 import org.jboss.security.identity.RoleGroup;
-import org.jboss.security.mapping.MappingContext;
-import org.jboss.security.mapping.MappingManager;
-import org.jboss.security.mapping.MappingType;
 import org.wildfly.extension.undertow.UndertowLogger;
+
+import javax.security.auth.Subject;
+import java.security.Principal;
+import java.security.acl.Group;
+import java.security.cert.X509Certificate;
+import java.util.Arrays;
+import java.util.Enumeration;
+import java.util.HashSet;
+import java.util.Set;
 
 /**
  * @author Stuart Douglas
@@ -60,11 +54,9 @@ import org.wildfly.extension.undertow.UndertowLogger;
 public class JAASIdentityManagerImpl implements IdentityManager {
 
     private final SecurityDomainContext securityDomainContext;
-    private final Map<String, Set<String>> principalVersusRolesMap;
 
-    public JAASIdentityManagerImpl(final SecurityDomainContext securityDomainContext, final Map<String, Set<String>> principalVersusRolesMap) {
+    public JAASIdentityManagerImpl(final SecurityDomainContext securityDomainContext) {
         this.securityDomainContext = securityDomainContext;
-        this.principalVersusRolesMap = principalVersusRolesMap;
     }
 
     @Override
@@ -108,7 +100,6 @@ public class JAASIdentityManagerImpl implements IdentityManager {
 
     private Account verifyCredential(final Account account, final Object credential) {
         final AuthenticationManager authenticationManager = securityDomainContext.getAuthenticationManager();
-        final MappingManager mappingManager = securityDomainContext.getMappingManager();
         final AuthorizationManager authorizationManager = securityDomainContext.getAuthorizationManager();
         final SecurityContext sc = SecurityActions.getSecurityContext();
         Principal incomingPrincipal = account.getPrincipal();
@@ -122,25 +113,11 @@ public class JAASIdentityManagerImpl implements IdentityManager {
                 Principal userPrincipal = getPrincipal(subject);
                 sc.getUtil().createSubjectInfo(incomingPrincipal, credential, subject);
                 SecurityContextCallbackHandler scb = new SecurityContextCallbackHandler(sc);
-                if (mappingManager != null) {
-                    // if there are mapping modules let them handle the role mapping
-                    MappingContext<RoleGroup> mc = mappingManager.getMappingContext(MappingType.ROLE.name());
-                    if (mc != null && mc.hasModules()) {
-                        SecurityRolesAssociation.setSecurityRoles(principalVersusRolesMap);
-                    }
-                }
                 RoleGroup roles = authorizationManager.getSubjectRoles(subject, scb);
                 Set<String> roleSet = new HashSet<>();
                 for (Role role : roles.getRoles()) {
                     roleSet.add(role.getRoleName());
 
-                }
-                //TODO: is this correct? How should we actually be mapping these
-                if(principalVersusRolesMap != null) {
-                    Set<String> extra = principalVersusRolesMap.get(incomingPrincipal.getName());
-                    if (extra != null) {
-                        roleSet.addAll(extra);
-                    }
                 }
                 return new AccountImpl(userPrincipal, roleSet, credential);
             }

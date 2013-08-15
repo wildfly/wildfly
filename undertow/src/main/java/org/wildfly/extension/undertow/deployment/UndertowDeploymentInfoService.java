@@ -324,7 +324,7 @@ public class UndertowDeploymentInfoService implements Service<DeploymentInfo> {
     private void handleIdentityManager(final DeploymentInfo deploymentInfo) {
 
         SecurityDomainContext sdc = securityDomainContextValue.getValue();
-        deploymentInfo.setIdentityManager(new JAASIdentityManagerImpl(sdc, mergedMetaData.getPrincipalVersusRolesMap()));
+        deploymentInfo.setIdentityManager(new JAASIdentityManagerImpl(sdc));
         AuditManager auditManager = sdc.getAuditManager();
         if (auditManager != null && !mergedMetaData.isDisableAudit()) {
             deploymentInfo.addNotificationReceiver(new AuditNotificationReceiver(auditManager));
@@ -680,7 +680,14 @@ public class UndertowDeploymentInfoService implements Service<DeploymentInfo> {
 
 
             d.addOuterHandlerChainWrapper(SecurityContextCreationHandler.wrapper(securityDomain));
-            d.addInnerHandlerChainWrapper(SecurityContextAssociationHandler.wrapper(mergedMetaData.getPrincipalVersusRolesMap(), mergedMetaData.getRunAsIdentity(), securityContextId));
+            d.addInnerHandlerChainWrapper(SecurityContextAssociationHandler.wrapper(securityDomainContextValue.getValue(), mergedMetaData.getPrincipalVersusRolesMap(), mergedMetaData.getRunAsIdentity(), securityContextId));
+
+            Map<String, Set<String>> principalVersusRolesMap = mergedMetaData.getPrincipalVersusRolesMap();
+            if (principalVersusRolesMap != null) {
+                for (Map.Entry<String, Set<String>> entry : principalVersusRolesMap.entrySet()) {
+                    d.addPrincipalVsRoleMappings(entry.getKey(), entry.getValue());
+                }
+            }
 
             // Setup an deployer configured ServletContext attributes
             for (ServletContextAttribute attribute : attributes) {
