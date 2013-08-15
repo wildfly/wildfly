@@ -71,6 +71,7 @@ import org.jboss.as.controller.ProxyOperationAddressTranslator;
 import org.jboss.as.controller.ResourceDefinition;
 import org.jboss.as.controller.RunningMode;
 import org.jboss.as.controller.TransformingProxyController;
+import org.jboss.as.controller.access.DelegatingConfigurableAuthorizer;
 import org.jboss.as.controller.audit.ManagedAuditLogger;
 import org.jboss.as.controller.audit.ManagedAuditLoggerImpl;
 import org.jboss.as.controller.client.OperationAttachments;
@@ -194,14 +195,14 @@ public class DomainModelControllerService extends AbstractControllerService impl
         final ContentRepository contentRepository = ContentRepository.Factory.create(environment.getDomainContentDir());
         final IgnoredDomainResourceRegistry ignoredRegistry = new IgnoredDomainResourceRegistry(hostControllerInfo);
         final ManagedAuditLogger auditLogger = createAuditLogger(environment);
-        final ExtensionRegistry extensionRegistry = new ExtensionRegistry(ProcessType.HOST_CONTROLLER, runningModeControl, auditLogger);
+        final DelegatingConfigurableAuthorizer authorizer = new DelegatingConfigurableAuthorizer();
+        final ExtensionRegistry extensionRegistry = new ExtensionRegistry(ProcessType.HOST_CONTROLLER, runningModeControl, auditLogger, authorizer);
         final PrepareStepHandler prepareStepHandler = new PrepareStepHandler(hostControllerInfo, contentRepository,
                 hostProxies, serverProxies, ignoredRegistry);
         final ExpressionResolver expressionResolver = new RuntimeExpressionResolver(vaultReader);
         final DomainModelControllerService service = new DomainModelControllerService(environment, runningModeControl, processState,
                 hostControllerInfo, contentRepository, hostProxies, serverProxies, prepareStepHandler, vaultReader,
-                ignoredRegistry, bootstrapListener, pathManager, expressionResolver, new DelegatingResourceDefinition(),
-                auditLogger);
+                ignoredRegistry, bootstrapListener, pathManager, expressionResolver, new DelegatingResourceDefinition(), extensionRegistry, auditLogger, authorizer);
         return serviceTarget.addService(SERVICE_NAME, service)
                 .addDependency(HostControllerService.HC_EXECUTOR_SERVICE_NAME, ExecutorService.class, service.getExecutorServiceInjector())
                 .addDependency(ProcessControllerConnectionService.SERVICE_NAME, ProcessControllerConnectionService.class, service.injectedProcessControllerConnection)
@@ -224,9 +225,11 @@ public class DomainModelControllerService extends AbstractControllerService impl
                                          final PathManagerService pathManager,
                                          final ExpressionResolver expressionResolver,
                                          final DelegatingResourceDefinition rootResourceDefinition,
-                                         final ManagedAuditLogger auditLogger) {
+                                         final ExtensionRegistry extensionRegistry,
+                                         final ManagedAuditLogger auditLogger,
+                                         final DelegatingConfigurableAuthorizer authorizer) {
         super(ProcessType.HOST_CONTROLLER, runningModeControl, null, processState,
-                rootResourceDefinition, prepareStepHandler, new RuntimeExpressionResolver(vaultReader), auditLogger);
+                rootResourceDefinition, prepareStepHandler, new RuntimeExpressionResolver(vaultReader), auditLogger, authorizer);
         this.environment = environment;
         this.runningModeControl = runningModeControl;
         this.processState = processState;

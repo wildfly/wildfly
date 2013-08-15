@@ -37,6 +37,7 @@ import org.jboss.as.controller.PathElement;
 import org.jboss.as.controller.SimpleAttributeDefinition;
 import org.jboss.as.controller.SimpleAttributeDefinitionBuilder;
 import org.jboss.as.controller.SimpleResourceDefinition;
+import org.jboss.as.controller.access.Authorizer;
 import org.jboss.as.controller.access.constraint.management.AccessConstraintDefinition;
 import org.jboss.as.controller.audit.ManagedAuditLogger;
 import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
@@ -64,18 +65,20 @@ public class JMXSubsystemRootResource extends SimpleResourceDefinition {
     private final List<AccessConstraintDefinition> accessConstraints;
 
     private final JmxManagedAuditLogger auditLogger;
+    private final Authorizer authorizer;
 
-    private JMXSubsystemRootResource(JmxManagedAuditLogger auditLogger) {
+    private JMXSubsystemRootResource(JmxManagedAuditLogger auditLogger, Authorizer authorizer) {
         super(PATH_ELEMENT,
                 JMXExtension.getResourceDescriptionResolver(JMXExtension.SUBSYSTEM_NAME),
-                new JMXSubsystemAdd(auditLogger),
+                new JMXSubsystemAdd(auditLogger, authorizer),
                 JMXSubsystemRemove.INSTANCE);
         this.accessConstraints = JMXExtension.JMX_SENSITIVITY_DEF.wrapAsList();
         this.auditLogger = auditLogger;
+        this.authorizer = authorizer;
     }
 
-    public static JMXSubsystemRootResource create(ManagedAuditLogger auditLogger) {
-        return new JMXSubsystemRootResource(new JmxManagedAuditLogger(auditLogger));
+    public static JMXSubsystemRootResource create(ManagedAuditLogger auditLogger, Authorizer authorizer) {
+        return new JMXSubsystemRootResource(new JmxManagedAuditLogger(auditLogger), authorizer);
     }
 
     @Override
@@ -91,8 +94,8 @@ public class JMXSubsystemRootResource extends SimpleResourceDefinition {
 
     @Override
     public void registerChildren(ManagementResourceRegistration resourceRegistration) {
-        resourceRegistration.registerSubModel(new ExposeModelResourceResolved(auditLogger));
-        resourceRegistration.registerSubModel(new ExposeModelResourceExpression(auditLogger));
+        resourceRegistration.registerSubModel(new ExposeModelResourceResolved(auditLogger, authorizer));
+        resourceRegistration.registerSubModel(new ExposeModelResourceExpression(auditLogger, authorizer));
         resourceRegistration.registerSubModel(RemotingConnectorResource.INSTANCE);
         resourceRegistration.registerSubModel(new JmxAuditLoggerResourceDefinition(auditLogger));
     }

@@ -749,7 +749,7 @@ public class ParseAndMarshalModelsTestCase {
     }
 
     private ModelNode loadServerModel(final File file) throws Exception {
-        final ExtensionRegistry extensionRegistry = new ExtensionRegistry(ProcessType.STANDALONE_SERVER, new RunningModeControl(RunningMode.ADMIN_ONLY), null);
+        final ExtensionRegistry extensionRegistry = new ExtensionRegistry(ProcessType.STANDALONE_SERVER, new RunningModeControl(RunningMode.ADMIN_ONLY), null, null);
         final QName rootElement = new QName(Namespace.CURRENT.getUriString(), "server");
         final StandaloneXml parser = new StandaloneXml(Module.getBootModuleLoader(), null, extensionRegistry);
         final XmlConfigurationPersister persister = new XmlConfigurationPersister(file, rootElement, parser, parser);
@@ -900,7 +900,7 @@ public class ParseAndMarshalModelsTestCase {
     }
 
     private ModelNode loadDomainModel(File file) throws Exception {
-        final ExtensionRegistry extensionRegistry = new ExtensionRegistry(ProcessType.HOST_CONTROLLER, new RunningModeControl(RunningMode.NORMAL), null);
+        final ExtensionRegistry extensionRegistry = new ExtensionRegistry(ProcessType.HOST_CONTROLLER, new RunningModeControl(RunningMode.NORMAL), null, null);
         final QName rootElement = new QName(Namespace.CURRENT.getUriString(), "domain");
         final DomainXml parser = new DomainXml(Module.getBootModuleLoader(), null, extensionRegistry);
         final XmlConfigurationPersister persister = new XmlConfigurationPersister(file, rootElement, parser, parser);
@@ -1054,7 +1054,7 @@ public class ParseAndMarshalModelsTestCase {
 
         ModelControllerService(final ProcessType processType, final Setup registration, final ModelNode model) {
             super(processType, new RunningModeControl(RunningMode.ADMIN_ONLY), new NullConfigurationPersister(), new ControlledProcessState(true),
-                    ResourceBuilder.Factory.create(PathElement.pathElement("root"), new NonResolvingResourceDescriptionResolver()).build(), null, ExpressionResolver.TEST_RESOLVER, AuditLogger.NO_OP_LOGGER);
+                    ResourceBuilder.Factory.create(PathElement.pathElement("root"), new NonResolvingResourceDescriptionResolver()).build(), null, ExpressionResolver.TEST_RESOLVER, AuditLogger.NO_OP_LOGGER, new DelegatingConfigurableAuthorizer());
             this.model = model;
             this.registration = registration;
         }

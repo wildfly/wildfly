@@ -45,6 +45,7 @@ import org.jboss.as.controller.PathElement;
 import org.jboss.as.controller.ProcessType;
 import org.jboss.as.controller.ResourceDefinition;
 import org.jboss.as.controller.RunningModeControl;
+import org.jboss.as.controller.access.DelegatingConfigurableAuthorizer;
 import org.jboss.as.controller.audit.ManagedAuditLogger;
 import org.jboss.as.controller.descriptions.DescriptionProvider;
 import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
@@ -150,9 +151,10 @@ public final class ServerService extends AbstractControllerService {
      */
     private ServerService(final Bootstrap.Configuration configuration, final ControlledProcessState processState,
                   final OperationStepHandler prepareStep, final BootstrapListener bootstrapListener, final DelegatingResourceDefinition rootResourceDefinition,
-                  final RunningModeControl runningModeControl, final AbstractVaultReader vaultReader, final ManagedAuditLogger auditLogger) {
+                  final RunningModeControl runningModeControl, final AbstractVaultReader vaultReader, final ManagedAuditLogger auditLogger,
+                  final DelegatingConfigurableAuthorizer authorizer) {
         super(getProcessType(configuration.getServerEnvironment()), runningModeControl, null, processState,
-                rootResourceDefinition, prepareStep, new RuntimeExpressionResolver(vaultReader), auditLogger);
+                rootResourceDefinition, prepareStep, new RuntimeExpressionResolver(vaultReader), auditLogger, authorizer);
         this.configuration = configuration;
         this.bootstrapListener = bootstrapListener;
         this.processState = processState;
@@ -186,7 +188,8 @@ public final class ServerService extends AbstractControllerService {
      */
     public static void addService(final ServiceTarget serviceTarget, final Bootstrap.Configuration configuration,
                                   final ControlledProcessState processState, final BootstrapListener bootstrapListener,
-                                  final RunningModeControl runningModeControl, final AbstractVaultReader vaultReader, final ManagedAuditLogger auditLogger) {
+                                  final RunningModeControl runningModeControl, final AbstractVaultReader vaultReader, final ManagedAuditLogger auditLogger,
+                                  final DelegatingConfigurableAuthorizer authorizer) {
 
         final ThreadGroup threadGroup = new ThreadGroup("ServerService ThreadGroup");
         final String namePattern = "ServerService Thread Pool -- %t";
@@ -199,7 +202,7 @@ public final class ServerService extends AbstractControllerService {
         serviceTarget.addService(Services.JBOSS_SERVER_EXECUTOR, serverExecutorService).install();
 
         DelegatingResourceDefinition rootResourceDefinition = new DelegatingResourceDefinition();
-        ServerService service = new ServerService(configuration, processState, null, bootstrapListener, rootResourceDefinition, runningModeControl, vaultReader, auditLogger);
+        ServerService service = new ServerService(configuration, processState, null, bootstrapListener, rootResourceDefinition, runningModeControl, vaultReader, auditLogger, authorizer);
         ServiceBuilder<?> serviceBuilder = serviceTarget.addService(Services.JBOSS_SERVER_CONTROLLER, service);
         serviceBuilder.addDependency(DeploymentMountProvider.SERVICE_NAME,DeploymentMountProvider.class, service.injectedDeploymentRepository);
         serviceBuilder.addDependency(ContentRepository.SERVICE_NAME, ContentRepository.class, service.injectedContentRepository);

@@ -34,6 +34,7 @@ import org.jboss.as.controller.RestartParentWriteAttributeHandler;
 import org.jboss.as.controller.ServiceVerificationHandler;
 import org.jboss.as.controller.SimpleAttributeDefinition;
 import org.jboss.as.controller.SimpleResourceDefinition;
+import org.jboss.as.controller.access.Authorizer;
 import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
 import org.jboss.as.controller.registry.ManagementResourceRegistration;
 import org.jboss.dmr.ModelNode;
@@ -46,14 +47,16 @@ import org.jboss.msc.service.ServiceName;
 abstract class ExposeModelResource extends SimpleResourceDefinition {
 
     private final JmxManagedAuditLogger auditLoggerInfo;
+    private final Authorizer authorizer;
     private final SimpleAttributeDefinition domainName;
 
-    ExposeModelResource(PathElement pathElement, JmxManagedAuditLogger auditLoggerInfo, SimpleAttributeDefinition domainName, SimpleAttributeDefinition...otherAttributes) {
+    ExposeModelResource(PathElement pathElement, JmxManagedAuditLogger auditLoggerInfo, Authorizer authorizer, SimpleAttributeDefinition domainName, SimpleAttributeDefinition...otherAttributes) {
         super(pathElement,
                 JMXExtension.getResourceDescriptionResolver(CommonAttributes.EXPOSE_MODEL + "." + pathElement.getValue()),
-                new ShowModelAdd(auditLoggerInfo, domainName, otherAttributes),
-                new ShowModelRemove(auditLoggerInfo));
+                new ShowModelAdd(auditLoggerInfo, authorizer, domainName, otherAttributes),
+                new ShowModelRemove(auditLoggerInfo, authorizer));
         this.auditLoggerInfo = auditLoggerInfo;
+        this.authorizer = authorizer;
         this.domainName = domainName;
     }
 
@@ -80,7 +83,7 @@ abstract class ExposeModelResource extends SimpleResourceDefinition {
         @Override
         protected void recreateParentService(OperationContext context, PathAddress parentAddress, ModelNode parentModel,
                 ServiceVerificationHandler verificationHandler) throws OperationFailedException {
-            JMXSubsystemAdd.launchServices(context, parentModel, verificationHandler, auditLoggerInfo, null);
+            JMXSubsystemAdd.launchServices(context, parentModel, verificationHandler, auditLoggerInfo, authorizer, null);
         }
 
         @Override
@@ -92,12 +95,14 @@ abstract class ExposeModelResource extends SimpleResourceDefinition {
     private static class ShowModelAdd extends RestartParentResourceAddHandler {
 
         private final JmxManagedAuditLogger auditLoggerInfo;
+        private final Authorizer authorizer;
         private final SimpleAttributeDefinition domainName;
         private final SimpleAttributeDefinition[] otherAttributes;
 
-        private ShowModelAdd(JmxManagedAuditLogger auditLoggerInfo, SimpleAttributeDefinition domainName, SimpleAttributeDefinition...otherAttributes) {
+        private ShowModelAdd(JmxManagedAuditLogger auditLoggerInfo, Authorizer authorizer, SimpleAttributeDefinition domainName, SimpleAttributeDefinition...otherAttributes) {
             super(ModelDescriptionConstants.SUBSYSTEM);
             this.auditLoggerInfo = auditLoggerInfo;
+            this.authorizer = authorizer;
             this.domainName = domainName;
             this.otherAttributes = otherAttributes;
         }
@@ -115,7 +120,7 @@ abstract class ExposeModelResource extends SimpleResourceDefinition {
         @Override
         protected void recreateParentService(OperationContext context, PathAddress parentAddress, ModelNode parentModel,
                 ServiceVerificationHandler verificationHandler) throws OperationFailedException {
-            JMXSubsystemAdd.launchServices(context, parentModel, verificationHandler, auditLoggerInfo, null);
+            JMXSubsystemAdd.launchServices(context, parentModel, verificationHandler, auditLoggerInfo, authorizer, null);
         }
 
         @Override
@@ -127,16 +132,18 @@ abstract class ExposeModelResource extends SimpleResourceDefinition {
     private static class ShowModelRemove extends RestartParentResourceRemoveHandler {
 
         private final JmxManagedAuditLogger auditLoggerInfo;
+        private final Authorizer authorizer;
 
-        private ShowModelRemove(JmxManagedAuditLogger auditLoggerInfo) {
+        private ShowModelRemove(JmxManagedAuditLogger auditLoggerInfo, Authorizer authorizer) {
             super(ModelDescriptionConstants.SUBSYSTEM);
             this.auditLoggerInfo = auditLoggerInfo;
+            this.authorizer = authorizer;
         }
 
         @Override
         protected void recreateParentService(OperationContext context, PathAddress parentAddress, ModelNode parentModel,
                 ServiceVerificationHandler verificationHandler) throws OperationFailedException {
-            JMXSubsystemAdd.launchServices(context, parentModel, verificationHandler, auditLoggerInfo, null);
+            JMXSubsystemAdd.launchServices(context, parentModel, verificationHandler, auditLoggerInfo, authorizer, null);
         }
 
         @Override
