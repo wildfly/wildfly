@@ -22,8 +22,6 @@
 package org.jboss.as.jmx;
 
 import java.io.ObjectInputStream;
-import java.net.InetAddress;
-import java.security.Principal;
 import java.util.Set;
 
 import javax.management.Attribute;
@@ -31,8 +29,6 @@ import javax.management.AttributeList;
 import javax.management.InstanceAlreadyExistsException;
 import javax.management.MBeanException;
 import javax.management.MBeanInfo;
-import javax.management.MBeanOperationInfo;
-import javax.management.MBeanParameterInfo;
 import javax.management.MBeanServer;
 import javax.management.NotCompliantMBeanException;
 import javax.management.NotificationFilter;
@@ -42,19 +38,12 @@ import javax.management.ObjectName;
 import javax.management.QueryExp;
 import javax.management.ReflectionException;
 import javax.management.loading.ClassLoaderRepository;
-import javax.security.auth.Subject;
-
-import org.jboss.as.controller.security.AccessMechanismPrincipal;
-import org.jboss.as.controller.security.InetAddressPrincipal;
-import org.jboss.as.core.security.AccessMechanism;
-import org.jboss.as.core.security.RealmUser;
-import org.wildfly.security.manager.SubjectUtils;
 
 /**
  *
  * @author <a href="kabir.khan@jboss.com">Kabir Khan</a>
  */
-public class MBeanServerAuditLogger implements MBeanServer {
+public class MBeanServerAuditLogRecordFormatter implements MBeanServer {
 
     private static final String[] NO_ARGS_SIG = new String[] {ObjectName.class.getName()};
     private static final String[] OBJECT_NAME_ONLY_SIG = new String[] {ObjectName.class.getName()};
@@ -144,421 +133,228 @@ public class MBeanServerAuditLogger implements MBeanServer {
     private static final String GET_CLASSLOADER_REPOSITORY = "getClassLoaderRepository";
     private static final String[] GET_CLASSLOADER_REPOSITORY_SIG = NO_ARGS_SIG;
 
-
     private final PluggableMBeanServerImpl pluggableMBeanServerImpl;
     private final Throwable error;
+    private final boolean readOnly;
 
-    public MBeanServerAuditLogger(PluggableMBeanServerImpl pluggableMBeanServerImpl, Throwable error) {
+    public MBeanServerAuditLogRecordFormatter(PluggableMBeanServerImpl pluggableMBeanServerImpl, Throwable error, boolean readOnly) {
         this.pluggableMBeanServerImpl = pluggableMBeanServerImpl;
         this.error = error;
+        this.readOnly = readOnly;
     }
 
     @Override
     public ObjectInstance createMBean(String className, ObjectName name) throws ReflectionException,
             InstanceAlreadyExistsException, MBeanException, NotCompliantMBeanException {
-        final boolean readOnly = false;
-        if (shouldLog(readOnly)) {
-            log(readOnly, CREATE_MBEAN, CREATE_MBEAN_SIG_1, className, name);
-        }
+        log(readOnly, CREATE_MBEAN, CREATE_MBEAN_SIG_1, className, name);
         return null;
     }
 
     @Override
     public ObjectInstance createMBean(String className, ObjectName name, ObjectName loaderName) {
-        final boolean readOnly = false;
-        if (shouldLog(readOnly)) {
-            log(readOnly, CREATE_MBEAN, CREATE_MBEAN_SIG_2, className, name, loaderName);
-        }
+        log(readOnly, CREATE_MBEAN, CREATE_MBEAN_SIG_2, className, name, loaderName);
         return null;
     }
 
     @Override
     public ObjectInstance createMBean(String className, ObjectName name, Object[] params, String[] signature) {
-        final boolean readOnly = false;
-        if (shouldLog(readOnly)) {
-            log(readOnly, CREATE_MBEAN, CREATE_MBEAN_SIG_3, className, name, params, signature);
-        }
+        log(readOnly, CREATE_MBEAN, CREATE_MBEAN_SIG_3, className, name, params, signature);
         return null;
     }
 
     @Override
     public ObjectInstance createMBean(String className, ObjectName name, ObjectName loaderName, Object[] params,
             String[] signature) {
-        final boolean readOnly = false;
-        if (shouldLog(readOnly)) {
-            log(readOnly, CREATE_MBEAN, CREATE_MBEAN_SIG_4, className, name, loaderName, params, signature);
-        }
+        log(readOnly, CREATE_MBEAN, CREATE_MBEAN_SIG_4, className, name, loaderName, params, signature);
         return null;
     }
 
     @Override
     public ObjectInstance registerMBean(Object object, ObjectName name) {
-        final boolean readOnly = false;
-        if (shouldLog(readOnly)) {
-            log(readOnly, REGISTER_MBEAN, REGISTER_MBEAN_SIG, object, name);
-        }
+        log(readOnly, REGISTER_MBEAN, REGISTER_MBEAN_SIG, object, name);
         return null;
     }
 
     @Override
     public void unregisterMBean(ObjectName name) {
-        final boolean readOnly = false;
-        if (shouldLog(readOnly)) {
-            log(readOnly, UNREGISTER_MBEAN, UNREGISTER_MBEAN_SIG, name);
-        }
+        log(readOnly, UNREGISTER_MBEAN, UNREGISTER_MBEAN_SIG, name);
     }
 
     @Override
     public ObjectInstance getObjectInstance(ObjectName name) {
-        final boolean readOnly = true;
-        if (shouldLog(readOnly)) {
-            log(readOnly, GET_OBJECT_INSTANCE, GET_OBJECT_INSTANCE_SIG, name);
-        }
+        log(readOnly, GET_OBJECT_INSTANCE, GET_OBJECT_INSTANCE_SIG, name);
         return null;
     }
 
     @Override
     public Set<ObjectInstance> queryMBeans(ObjectName name, QueryExp query) {
-        final boolean readOnly = true;
-        if (shouldLog(readOnly)) {
-            log(readOnly, QUERY_MBEANS, QUERY_MBEANS_SIG, name, query);
-        }
+        log(readOnly, QUERY_MBEANS, QUERY_MBEANS_SIG, name, query);
         return null;
     }
 
     @Override
     public Set<ObjectName> queryNames(ObjectName name, QueryExp query) {
-        final boolean readOnly = true;
-        if (shouldLog(readOnly)) {
-            log(readOnly, QUERY_NAMES, QUERY_NAMES_SIG, name, query);
-        }
+        log(readOnly, QUERY_NAMES, QUERY_NAMES_SIG, name, query);
         return null;
     }
 
     @Override
     public boolean isRegistered(ObjectName name) {
-        final boolean readOnly = true;
-        if (shouldLog(readOnly)) {
-            log(readOnly, IS_REGISTERED, IS_REGISTERED_SIG, name);
-        }
+        log(readOnly, IS_REGISTERED, IS_REGISTERED_SIG, name);
         return false;
     }
 
     @Override
     public Integer getMBeanCount() {
-        final boolean readOnly = true;
-        if (shouldLog(readOnly)) {
-            log(readOnly, GET_MBEAN_COUNT, GET_MBEAN_COUNT_SIG);
-        }
+        log(readOnly, GET_MBEAN_COUNT, GET_MBEAN_COUNT_SIG);
         return null;
     }
 
     @Override
     public Object getAttribute(ObjectName name, String attribute) {
-        final boolean readOnly = true;
-        if (shouldLog(readOnly)) {
-            log(readOnly, GET_ATTRIBUTE, GET_ATTRIBUTE_SIG, name, attribute);
-        }
+        log(readOnly, GET_ATTRIBUTE, GET_ATTRIBUTE_SIG, name, attribute);
         return null;
     }
 
     @Override
     public AttributeList getAttributes(ObjectName name, String[] attributes) {
-        final boolean readOnly = true;
-        if (shouldLog(readOnly)) {
-            log(readOnly, GET_ATTRIBUTES, GET_ATTRIBUTES_SIG, name, attributes);
-        }
+        log(readOnly, GET_ATTRIBUTES, GET_ATTRIBUTES_SIG, name, attributes);
         return null;
     }
 
     @Override
     public void setAttribute(ObjectName name, Attribute attribute) {
-        final boolean readOnly = false;
-        if (shouldLog(readOnly)) {
-            log(readOnly, SET_ATTRIBUTE, SET_ATTRIBUTE_SIG, name, attribute);
-        }
+        log(readOnly, SET_ATTRIBUTE, SET_ATTRIBUTE_SIG, name, attribute);
     }
 
     @Override
     public AttributeList setAttributes(ObjectName name, AttributeList attributes) {
-        final boolean readOnly = false;
-        if (shouldLog(readOnly)) {
-            log(readOnly, SET_ATTRIBUTES, SET_ATTRIBUTES_SIG, name, attributes);
-        }
+        log(readOnly, SET_ATTRIBUTES, SET_ATTRIBUTES_SIG, name, attributes);
         return null;
     }
 
     @Override
     public Object invoke(ObjectName name, String operationName, Object[] params, String[] signature) {
-        final boolean readOnly = isOperationReadOnly(name, operationName, signature);
-        if (shouldLog(readOnly)) {
-            log(readOnly, INVOKE, INVOKE_SIG, name, operationName, params, signature);
-        }
+        log(readOnly, INVOKE, INVOKE_SIG, name, operationName, params, signature);
         return null;
     }
 
     @Override
     public String getDefaultDomain() {
-        final boolean readOnly = true;
-        if (shouldLog(readOnly)) {
-            log(readOnly, GET_DEFAULT_DOMAIN, GET_DEFAULT_DOMAIN_SIG);
-        }
+        log(readOnly, GET_DEFAULT_DOMAIN, GET_DEFAULT_DOMAIN_SIG);
         return null;
     }
 
     @Override
     public String[] getDomains() {
-        final boolean readOnly = true;
-        if (shouldLog(readOnly)) {
-            log(readOnly, GET_DOMAINS, GET_DOMAINS_SIG);
-        }
+        log(readOnly, GET_DOMAINS, GET_DOMAINS_SIG);
         return null;
     }
 
     @Override
     public void addNotificationListener(ObjectName name, NotificationListener listener, NotificationFilter filter, Object handback) {
-        final boolean readOnly = false;
-        if (shouldLog(readOnly)) {
-            log(readOnly, ADD_NOTIFICATION_LISTENER, ADD_NOTIFICATION_LISTENER_SIG_1, name, listener, filter, handback);
-        }
+        log(readOnly, ADD_NOTIFICATION_LISTENER, ADD_NOTIFICATION_LISTENER_SIG_1, name, listener, filter, handback);
     }
 
     @Override
     public void addNotificationListener(ObjectName name, ObjectName listener, NotificationFilter filter, Object handback) {
-        final boolean readOnly = false;
-        if (shouldLog(readOnly)) {
-            log(readOnly, ADD_NOTIFICATION_LISTENER, ADD_NOTIFICATION_LISTENER_SIG_2, name, listener, filter, handback);
-        }
+        log(readOnly, ADD_NOTIFICATION_LISTENER, ADD_NOTIFICATION_LISTENER_SIG_2, name, listener, filter, handback);
     }
 
     @Override
     public void removeNotificationListener(ObjectName name, ObjectName listener) {
-        final boolean readOnly = false;
-        if (shouldLog(readOnly)) {
-            log(readOnly, REMOVE_NOTIFICATION_LISTENER, REMOVE_NOTIFICATION_LISTENER_SIG_1, name, listener);
-        }
+        log(readOnly, REMOVE_NOTIFICATION_LISTENER, REMOVE_NOTIFICATION_LISTENER_SIG_1, name, listener);
     }
 
     @Override
     public void removeNotificationListener(ObjectName name, ObjectName listener, NotificationFilter filter, Object handback) {
-        final boolean readOnly = false;
-        if (shouldLog(readOnly)) {
-            log(readOnly, REMOVE_NOTIFICATION_LISTENER, REMOVE_NOTIFICATION_LISTENER_SIG_2, name, listener, filter, handback);
-        }
+        log(readOnly, REMOVE_NOTIFICATION_LISTENER, REMOVE_NOTIFICATION_LISTENER_SIG_2, name, listener, filter, handback);
     }
 
     @Override
     public void removeNotificationListener(ObjectName name, NotificationListener listener) {
-        final boolean readOnly = false;
-        if (shouldLog(readOnly)) {
-            log(readOnly, REMOVE_NOTIFICATION_LISTENER, REMOVE_NOTIFICATION_LISTENER_SIG_3, name, listener);
-        }
+        log(readOnly, REMOVE_NOTIFICATION_LISTENER, REMOVE_NOTIFICATION_LISTENER_SIG_3, name, listener);
     }
 
     @Override
     public void removeNotificationListener(ObjectName name, NotificationListener listener, NotificationFilter filter,
             Object handback) {
-        final boolean readOnly = false;
-        if (shouldLog(readOnly)) {
-            log(readOnly, REMOVE_NOTIFICATION_LISTENER, REMOVE_NOTIFICATION_LISTENER_SIG_4, name, listener, filter, handback);
-        }
+        log(readOnly, REMOVE_NOTIFICATION_LISTENER, REMOVE_NOTIFICATION_LISTENER_SIG_4, name, listener, filter, handback);
     }
 
     @Override
     public MBeanInfo getMBeanInfo(ObjectName name) {
-        final boolean readOnly = true;
-        if (shouldLog(readOnly)) {
-            log(readOnly, GET_MBEAN_INFO, GET_MBEAN_INFO_SIG, name);
-        }
+        log(readOnly, GET_MBEAN_INFO, GET_MBEAN_INFO_SIG, name);
         return null;
     }
 
     @Override
     public boolean isInstanceOf(ObjectName name, String className) {
-        final boolean readOnly = true;
-        if (shouldLog(readOnly)) {
-            log(readOnly, IS_INSTANCE_OF, IS_INSTANCE_OF_SIG, name, className);
-        }
+        log(readOnly, IS_INSTANCE_OF, IS_INSTANCE_OF_SIG, name, className);
         return false;
     }
 
     @Override
     public Object instantiate(String className) {
-        final boolean readOnly = true;
-        if (shouldLog(readOnly)) {
-            log(readOnly, INSTANTIATE, INSTANTIATE_SIG1, className);
-        }
+        log(readOnly, INSTANTIATE, INSTANTIATE_SIG1, className);
         return null;
     }
 
     @Override
     public Object instantiate(String className, ObjectName loaderName) {
-        final boolean readOnly = true;
-        if (shouldLog(readOnly)) {
-            log(true, INSTANTIATE, INSTANTIATE_SIG2, className, loaderName);
-        }
+        log(true, INSTANTIATE, INSTANTIATE_SIG2, className, loaderName);
         return null;
     }
 
     @Override
     public Object instantiate(String className, Object[] params, String[] signature) {
-        final boolean readOnly = true;
-        if (shouldLog(readOnly)) {
-            log(readOnly, INSTANTIATE, INSTANTIATE_SIG3, className, params, signature);
-        }
+        log(readOnly, INSTANTIATE, INSTANTIATE_SIG3, className, params, signature);
         return null;
     }
 
     @Override
     public Object instantiate(String className, ObjectName loaderName, Object[] params, String[] signature) {
-        final boolean readOnly = true;
-        if (shouldLog(readOnly)) {
-            log(readOnly, INSTANTIATE, INSTANTIATE_SIG4, className, loaderName, params, signature);
-        }
+        log(readOnly, INSTANTIATE, INSTANTIATE_SIG4, className, loaderName, params, signature);
         return null;
     }
 
     @Override
     public ObjectInputStream deserialize(ObjectName name, byte[] data) {
-        final boolean readOnly = true;
-        if (shouldLog(readOnly)) {
-            log(readOnly, DESERIALIZE, DESERIALIZE_SIG1, name, data);
-        }
+        log(readOnly, DESERIALIZE, DESERIALIZE_SIG1, name, data);
         return null;
     }
 
     @Override
     public ObjectInputStream deserialize(String className, byte[] data) {
-        final boolean readOnly = true;
-        if (shouldLog(readOnly)) {
-            log(readOnly, DESERIALIZE, DESERIALIZE_SIG2, className, data);
-        }
+        log(readOnly, DESERIALIZE, DESERIALIZE_SIG2, className, data);
         return null;
     }
 
     @Override
     public ObjectInputStream deserialize(String className, ObjectName loaderName, byte[] data) {
-        final boolean readOnly = true;
-        if (shouldLog(readOnly)) {
-            log(readOnly, DESERIALIZE, DESERIALIZE_SIG3, className, loaderName, data);
-        }
+        log(readOnly, DESERIALIZE, DESERIALIZE_SIG3, className, loaderName, data);
         return null;
     }
 
     @Override
     public ClassLoader getClassLoaderFor(ObjectName mbeanName) {
-        final boolean readOnly = true;
-        if (shouldLog(readOnly)) {
-            log(readOnly, GET_CLASSLOADER_FOR, GET_CLASSLOADER_FOR_SIG, mbeanName);
-        }
+        log(readOnly, GET_CLASSLOADER_FOR, GET_CLASSLOADER_FOR_SIG, mbeanName);
         return null;
     }
 
     @Override
     public ClassLoader getClassLoader(ObjectName loaderName) {
-        final boolean readOnly = true;
-        if (shouldLog(readOnly)) {
-            log(readOnly, GET_CLASSLOADER, GET_CLASSLOADER_SIG, loaderName);
-        }
+        log(readOnly, GET_CLASSLOADER, GET_CLASSLOADER_SIG, loaderName);
         return null;
     }
 
     @Override
     public ClassLoaderRepository getClassLoaderRepository() {
-        final boolean readOnly = true;
-        if (shouldLog(readOnly)) {
-            log(readOnly, GET_CLASSLOADER_REPOSITORY, GET_CLASSLOADER_REPOSITORY_SIG);
-        }
+        log(readOnly, GET_CLASSLOADER_REPOSITORY, GET_CLASSLOADER_REPOSITORY_SIG);
         return null;
     }
 
-    private boolean shouldLog(boolean readOnly) {
-        return pluggableMBeanServerImpl.shouldLog(readOnly);
-    }
-
-    private boolean isOperationReadOnly(ObjectName name, String operationName, String[] signature) {
-        MBeanInfo info;
-        try {
-            info = pluggableMBeanServerImpl.getMBeanInfo(name, false, true);
-        } catch (Exception e) {
-            //This should not happen, just in case say it is not RO
-            return false;
-        }
-        if (info == null) {
-            //Default to not RO
-            return false;
-        }
-        for (MBeanOperationInfo op : info.getOperations()) {
-            if (op.getName().equals(operationName)) {
-                MBeanParameterInfo[] params = op.getSignature();
-                if (params.length != signature.length) {
-                    continue;
-                }
-                boolean same = true;
-                for (int i = 0 ; i < params.length ; i++) {
-                    if (!params[i].getType().equals(signature[i])) {
-                        same = false;
-                        break;
-                    }
-                }
-                if (same) {
-                    return op.getImpact() == MBeanOperationInfo.INFO;
-                }
-            }
-        }
-        //Default to not RO
-        return false;
-    }
-
     private void log(boolean readOnly, String methodName, String[] methodSignature, Object...methodParams) {
-        String domainUUID = null; //TODO
-
-        Subject subject = SubjectUtils.getCurrent();
-
-        pluggableMBeanServerImpl.getAuditLogger().logMethodAccess(
-                readOnly,
-                pluggableMBeanServerImpl.isBooting(),
-                getCallerUserId(subject),
-                domainUUID,
-                getSubjectAccessMechanism(subject),
-                getSubjectInetAddress(subject),
-                methodName,
-                methodSignature,
-                methodParams,
-                error);
+        pluggableMBeanServerImpl.log(readOnly, error, methodName, methodSignature, methodParams);
     }
-
-    private String getCallerUserId(Subject subject) {
-        String userId = null;
-        if (subject != null) {
-            Set<RealmUser> realmUsers = subject.getPrincipals(RealmUser.class);
-            RealmUser user = realmUsers.iterator().next();
-            userId = user.getName();
-        }
-        return userId;
-    }
-
-    private InetAddress getSubjectInetAddress(Subject subject) {
-        InetAddressPrincipal principal = getPrincipal(subject, InetAddressPrincipal.class);
-        return principal != null ? principal.getInetAddress() : null;
-    }
-
-    private AccessMechanism getSubjectAccessMechanism(Subject subject) {
-        AccessMechanismPrincipal principal = getPrincipal(subject, AccessMechanismPrincipal.class);
-        return principal != null ? principal.getAccessMechanism() : null;
-    }
-
-    private <T extends Principal> T getPrincipal(Subject subject, Class<T> clazz) {
-        if (subject == null) {
-            return null;
-        }
-        Set<T> principals = subject.getPrincipals(clazz);
-        assert principals.size() <= 1;
-        if (principals.size() == 0) {
-            return null;
-        }
-        return principals.iterator().next();
-    }
-
-
 }

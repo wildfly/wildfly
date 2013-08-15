@@ -71,9 +71,9 @@ public class JmxAuditLoggerResourceDefinition extends SimpleResourceDefinition {
 
     static final List<SimpleAttributeDefinition> ATTRIBUTE_DEFINITIONS = Arrays.asList(LOG_BOOT, LOG_READ_ONLY, ENABLED);
 
-    private final ManagedAuditLogger auditLogger;
+    private final JmxManagedAuditLogger auditLogger;
 
-    public JmxAuditLoggerResourceDefinition(final ManagedAuditLogger auditLogger) {
+    public JmxAuditLoggerResourceDefinition(final JmxManagedAuditLogger auditLogger) {
         super(PATH_ELEMENT, JMXExtension.getResourceDescriptionResolver("audit-log"),
                 new AuditLoggerAddHandler(auditLogger), new AuditLoggerRemoveHandler(auditLogger));
         this.auditLogger = auditLogger;
