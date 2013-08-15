@@ -140,7 +140,6 @@ public class CLIModelControllerClient extends AbstractModelControllerClient {
             channelConfig.setConnectionTimeout(connectionTimeout);
         }
         channelConfig.setEndpoint(endpoint);
-
     }
 
     @Override
