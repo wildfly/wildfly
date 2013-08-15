@@ -71,7 +71,7 @@ public class AuditLogHandlerBootEnabledTestCase extends AbstractAuditLogHandlerT
     }
 
     @Test
-    public void testCannotRemoveReferencedLogger() throws Exception {
+    public void testCannotRemoveReferencedHandler() throws Exception {
         File file = new File(logDir, "test-file.log");
 
         ModelNode op = createRemoveFileHandlerOperation("file");
@@ -79,6 +79,17 @@ public class AuditLogHandlerBootEnabledTestCase extends AbstractAuditLogHandlerT
         List<ModelNode> records = readFile(file, 2);
         //TODO This gets picked up as read-only since it did not actually get around to modifying the model
         List<ModelNode> ops = checkBootRecordHeader(records.get(1), 1, "core", true, false, false);
+        checkOpsEqual(op, ops.get(0));
+    }
+
+    @Test
+    public void testCanRemoveLoggerReference() throws Exception {
+        File file = new File(logDir, "test-file.log");
+
+        ModelNode op = createRemoveHandlerReferenceOperation("test-file");
+        executeForResult(op);
+        List<ModelNode> records = readFile(file, 2);
+        List<ModelNode> ops = checkBootRecordHeader(records.get(1), 1, "core", false, false, true);
         checkOpsEqual(op, ops.get(0));
     }
 
