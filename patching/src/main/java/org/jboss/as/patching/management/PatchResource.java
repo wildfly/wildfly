@@ -51,6 +51,7 @@ class PatchResource extends AbstractModelResource {
     protected PatchResource(ServiceController<InstallationManager> imController) {
         super.registerResourceProvider("layer", new LayerResourceProvider(imController));
         super.registerResourceProvider("addon", new AddOnResourceProvider(imController));
+        model.protect();
     }
 
     @Override

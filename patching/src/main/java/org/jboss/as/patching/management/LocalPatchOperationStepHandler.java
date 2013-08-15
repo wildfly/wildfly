@@ -38,6 +38,7 @@ import org.jboss.as.patching.tool.PatchOperationTarget;
 import org.jboss.as.patching.tool.PatchTool;
 import org.jboss.as.patching.tool.PatchingResult;
 import org.jboss.dmr.ModelNode;
+import org.jboss.msc.service.ServiceRegistry;
 
 /**
  * @author Emanuel Muckenhuber
@@ -47,9 +48,10 @@ public final class LocalPatchOperationStepHandler implements OperationStepHandle
 
     @Override
     public void execute(final OperationContext context, final ModelNode operation) throws OperationFailedException {
-        context.acquireControllerLock();
-        // Setup
-        final InstallationManager installationManager = (InstallationManager) context.getServiceRegistry(false).getRequiredService(InstallationManagerService.NAME).getValue();
+
+        // Acquire the lock and check the write permissions for this operation
+        final ServiceRegistry registry = context.getServiceRegistry(true);
+        final InstallationManager installationManager = (InstallationManager) registry.getRequiredService(InstallationManagerService.NAME).getValue();
 
         if (installationManager.requiresRestart()) {
             throw MESSAGES.serverRequiresRestart();
