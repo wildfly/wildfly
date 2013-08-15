@@ -23,8 +23,8 @@
   -->
 
 <xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema"
-           xmlns="urn:jboss:cli:1.3"
-           targetNamespace="urn:jboss:cli:1.3"
+           xmlns="urn:jboss:cli:2.0"
+           targetNamespace="urn:jboss:cli:2.0"
            elementFormDefault="qualified"
            attributeFormDefault="unqualified"
         >
