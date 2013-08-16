@@ -153,6 +153,10 @@ public class ClientConfigurationImpl implements ModelControllerClientConfigurati
         return new ClientConfigurationImpl(hostName, port, handler, null, sslContext, createDefaultExecutor(), true, connectionTimeout);
     }
 
+    public static ModelControllerClientConfiguration create(final String hostName, final int port, final CallbackHandler handler, final SSLContext sslContext, final int connectionTimeout, final Map<String, String> saslOptions) throws UnknownHostException {
+        return new ClientConfigurationImpl(hostName, port, handler, saslOptions, sslContext, createDefaultExecutor(), true, connectionTimeout);
+    }
+
     public static ModelControllerClientConfiguration create(final String hostName, final int port, final CallbackHandler handler, final Map<String, String> saslOptions) throws UnknownHostException {
         return new ClientConfigurationImpl(hostName, port, handler, saslOptions, null, createDefaultExecutor(), true);
     }

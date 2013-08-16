@@ -183,9 +183,11 @@ class CommandContextImpl implements CommandContext, ModelControllerClientFactory
     /** the port of the controller */
     private int controllerPort = -1;
     /** the command line specified username */
-    private String username;
+    private final String username;
     /** the command line specified password */
-    private char[] password;
+    private final char[] password;
+    /** flag to disable the local authentication mechanism */
+    private final boolean disableLocalAuth;
     /** the time to connect to a controller */
     private final int connectionTimeout;
     /** The SSLContext when managed by the CLI */
@@ -240,18 +242,21 @@ class CommandContextImpl implements CommandContext, ModelControllerClientFactory
         resolveParameterValues = config.isResolveParameterValues();
         this.connectionTimeout = config.getConnectionTimeout();
         silent = config.isSilent();
+        username = null;
+        password = null;
+        disableLocalAuth = false;
         initSSLContext();
     }
 
-    CommandContextImpl(String username, char[] password) throws CliInitializationException {
-        this(null, -1, username, password, false, -1);
+    CommandContextImpl(String username, char[] password, boolean disableLocalAuth) throws CliInitializationException {
+        this(null, -1, username, password, disableLocalAuth, false, -1);
     }
 
     /**
      * Default constructor used for both interactive and non-interactive mode.
      *
      */
-    CommandContextImpl(String defaultControllerHost, int defaultControllerPort, String username, char[] password, boolean initConsole, final int connectionTimeout)
+    CommandContextImpl(String defaultControllerHost, int defaultControllerPort, String username, char[] password, boolean disableLocalAuth, boolean initConsole, final int connectionTimeout)
             throws CliInitializationException {
 
         config = CliConfigImpl.load(this);
@@ -260,6 +265,7 @@ class CommandContextImpl implements CommandContext, ModelControllerClientFactory
 
         this.username = username;
         this.password = password;
+        this.disableLocalAuth = disableLocalAuth;
         this.connectionTimeout = connectionTimeout != -1 ? connectionTimeout : config.getConnectionTimeout();
 
         if (defaultControllerHost != null) {
@@ -290,7 +296,7 @@ class CommandContextImpl implements CommandContext, ModelControllerClientFactory
     }
 
     CommandContextImpl(String defaultControllerHost, int defaultControllerPort,
-            String username, char[] password,
+            String username, char[] password, boolean disableLocalAuth,
             InputStream consoleInput, OutputStream consoleOutput)
             throws CliInitializationException {
 
@@ -300,6 +306,7 @@ class CommandContextImpl implements CommandContext, ModelControllerClientFactory
 
         this.username = username;
         this.password = password;
+        this.disableLocalAuth = disableLocalAuth;
         this.connectionTimeout = config.getConnectionTimeout();
 
         if (defaultControllerHost != null) {
@@ -786,7 +793,7 @@ class CommandContextImpl implements CommandContext, ModelControllerClientFactory
                     log.debug("connecting to " + host + ':' + port + " as " + username);
                 }
                 ModelControllerClient tempClient = ModelControllerClientFactory.CUSTOM.
-                        getClient(host, port, cbh, sslContext, connectionTimeout, this);
+                        getClient(host, port, cbh, disableLocalAuth, sslContext, connectionTimeout, this);
                 retry = tryConnection(tempClient, host, port);
                 if(!retry) {
                     newClient = tempClient;

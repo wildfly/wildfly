@@ -207,6 +207,24 @@ public interface ModelControllerClient extends Closeable {
          * @param hostName the remote host
          * @param port     the port
          * @param handler  CallbackHandler to obtain authentication information for the call.
+         * @param hostName   the remote host
+         * @param port       the port
+         * @param handler    CallbackHandler to obtain authentication information for the call.
+         * @param sslContext a pre-initialised SSLContext
+         * @param saslOptions Additional options to be passed to the SASL mechanism.
+         * @return A model controller client
+         * @throws UnknownHostException if the host cannot be found
+         */
+        public static ModelControllerClient create(final String hostName, final int port, final CallbackHandler handler, final SSLContext sslContext, final int connectionTimeout, final Map<String, String> saslOptions) throws UnknownHostException {
+            return create(ClientConfigurationImpl.create(hostName, port, handler, sslContext, connectionTimeout));
+        }
+
+        /**
+         * Create a client instance for a remote address and port and CallbackHandler.
+         *
+         * @param hostName    the remote host
+         * @param port        the port
+         * @param handler     CallbackHandler to obtain authentication information for the call.
          * @param saslOptions Additional options to be passed to the SASL mechanism.
          * @return A model controller client
          * @throws UnknownHostException if the host cannot be found
