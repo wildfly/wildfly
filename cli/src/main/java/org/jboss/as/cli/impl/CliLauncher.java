@@ -61,6 +61,7 @@ public class CliLauncher {
             boolean version = false;
             String username = null;
             char[] password = null;
+            boolean noLocalAuth = false;
             int connectionTimeout = -1;
 
             for(String arg : args) {
@@ -174,8 +175,11 @@ public class CliLauncher {
                     commands = Collections.singletonList(value);
                 } else if (arg.startsWith("--user=")) {
                     username = arg.startsWith("--") ? arg.substring(7) : arg.substring(5);
+                    noLocalAuth = true;
                 } else if (arg.startsWith("--password=")) {
                     password = (arg.startsWith("--") ? arg.substring(11) : arg.substring(9)).toCharArray();
+                } else if (arg.equals("--no-local-auth")) {
+                    noLocalAuth = true;
                 } else if (arg.startsWith("--timeout=")) {
                     if (connectionTimeout > 0) {
                         argError = "Duplicate argument '--timeout'";
@@ -242,31 +246,31 @@ public class CliLauncher {
             }
 
             if(version) {
-                cmdCtx = initCommandContext(defaultControllerProtocol, defaultControllerHost, defaultControllerPort, username, password, false, connect, connectionTimeout);
+                cmdCtx = initCommandContext(defaultControllerProtocol, defaultControllerHost, defaultControllerPort, username, password, noLocalAuth, false, connect, connectionTimeout);
                 VersionHandler.INSTANCE.handle(cmdCtx);
                 return;
             }
 
             if(file != null) {
-                cmdCtx = initCommandContext(defaultControllerProtocol, defaultControllerHost, defaultControllerPort, username, password, false, connect, connectionTimeout);
+                cmdCtx = initCommandContext(defaultControllerProtocol, defaultControllerHost, defaultControllerPort, username, password, noLocalAuth, false, connect, connectionTimeout);
                 processFile(file, cmdCtx);
                 return;
             }
 
             if(commands != null) {
-                cmdCtx = initCommandContext(defaultControllerProtocol, defaultControllerHost, defaultControllerPort, username, password, false, connect, connectionTimeout);
+                cmdCtx = initCommandContext(defaultControllerProtocol, defaultControllerHost, defaultControllerPort, username, password, noLocalAuth, false, connect, connectionTimeout);
                 processCommands(commands, cmdCtx);
                 return;
             }
 
             if (gui) {
-                cmdCtx = initCommandContext(defaultControllerProtocol, defaultControllerHost, defaultControllerPort, username, password, false, true, connectionTimeout);
+                cmdCtx = initCommandContext(defaultControllerProtocol, defaultControllerHost, defaultControllerPort, username, password, noLocalAuth, false, true, connectionTimeout);
                 processGui(cmdCtx);
                 return;
             }
 
             // Interactive mode
-            cmdCtx = initCommandContext(defaultControllerProtocol, defaultControllerHost, defaultControllerPort, username, password, true, connect, connectionTimeout);
+            cmdCtx = initCommandContext(defaultControllerProtocol, defaultControllerHost, defaultControllerPort, username, password, noLocalAuth, true, connect, connectionTimeout);
             cmdCtx.interact();
         } catch(Throwable t) {
             t.printStackTrace();
@@ -282,8 +286,8 @@ public class CliLauncher {
         System.exit(exitCode);
     }
 
-    private static CommandContext initCommandContext(String defaultProtocol, String defaultHost, int defaultPort, String username, char[] password, boolean initConsole, boolean connect, final int connectionTimeout) throws CliInitializationException {
-        final CommandContext cmdCtx = CommandContextFactory.getInstance().newCommandContext(defaultProtocol, defaultHost, defaultPort, username, password, initConsole, connectionTimeout);
+    private static CommandContext initCommandContext(String defaultProtocol, String defaultHost, int defaultPort, String username, char[] password, boolean disableLocalAuth, boolean initConsole, boolean connect, final int connectionTimeout) throws CliInitializationException {
+        final CommandContext cmdCtx = CommandContextFactory.getInstance().newCommandContext(defaultProtocol, defaultHost, defaultPort, username, password, disableLocalAuth, initConsole, connectionTimeout);
         if(connect) {
             try {
                 cmdCtx.connectController();

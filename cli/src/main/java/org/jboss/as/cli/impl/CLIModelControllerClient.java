@@ -24,6 +24,7 @@ package org.jboss.as.cli.impl;
 import java.io.IOException;
 import java.net.URI;
 import java.net.URISyntaxException;
+import java.util.Map;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.ThreadFactory;
@@ -104,6 +105,7 @@ public class CLIModelControllerClient extends AbstractModelControllerClient {
     private final Object lock = new Object();
 
     private final CallbackHandler handler;
+    private final Map<String, String> saslOptions;
     private final SSLContext sslContext;
     private final ConnectionCloseHandler closeHandler;
 
@@ -113,7 +115,7 @@ public class CLIModelControllerClient extends AbstractModelControllerClient {
     private boolean closed;
 
     CLIModelControllerClient(final String protocol, CallbackHandler handler, String hostName, int connectionTimeout,
-            final ConnectionCloseHandler closeHandler, int port, SSLContext sslContext) throws IOException {
+            final ConnectionCloseHandler closeHandler, int port, Map<String, String> saslOptions, SSLContext sslContext) throws IOException {
         this.handler = handler;
         this.sslContext = sslContext;
         this.closeHandler = closeHandler;
@@ -130,6 +132,8 @@ public class CLIModelControllerClient extends AbstractModelControllerClient {
         }, executorService, this);
 
         channelConfig = new ProtocolChannelClient.Configuration();
+        this.saslOptions = saslOptions;
+        channelConfig.setSaslOptions(saslOptions);
         try {
             channelConfig.setUri(new URI(protocol +"://" + formatPossibleIpv6Address(hostName) +  ":" + port));
         } catch (URISyntaxException e) {
@@ -153,7 +157,7 @@ public class CLIModelControllerClient extends AbstractModelControllerClient {
 
                 final ProtocolChannelClient setup = ProtocolChannelClient.create(channelConfig);
                 final ChannelCloseHandler channelCloseHandler = new ChannelCloseHandler();
-                strategy = ManagementClientChannelStrategy.create(setup, channelAssociation, handler, null, sslContext,
+                strategy = ManagementClientChannelStrategy.create(setup, channelAssociation, handler, saslOptions, sslContext,
                         channelCloseHandler);
                 channelCloseHandler.setOriginalStrategy(strategy);
             }

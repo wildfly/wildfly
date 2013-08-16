@@ -5,6 +5,7 @@ Usage:
                      [--commands=command_or_operation1,command_or_operation2...]
                      [--command=command_or_operation]
                      [--user=username --password=password]
+                     [--no-local-auth]
                      [--timeout=timeout]
 
  --help (-h)     - prints (this) basic description of the command line utility.
@@ -51,13 +52,19 @@ Usage:
                    can be used to specify the user name as a command line
                    argument. If the argument isn't specified and the
                    authentication is required the user will be prompted to enter
-                   the user name when the connect command is issued.
+                   the user name when the connect command is issued.  Local 
+                   authentication is automatically disabled if a user is specified.
+                   
 
  --password      - specifies the password for authentication while connecting to
                    the controller as a command line argument. If the argument
                    isn't specified and the authentication is required the user
                    will be prompted to enter the password when the connect
                    command is issued.
+                   
+ --no-local-auth - disable the local authentication mechanism which allows the CLI
+                   to demonstrate that it is being executed locally to the server 
+                   being managed through an exchange of tokens using the filesystem.                   
 
  --timeout       - specifies home many milliseconds to wait for a given command
                    to return. The value provided must be a positive integer.
