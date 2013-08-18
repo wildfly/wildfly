@@ -345,15 +345,10 @@ public class ASModuleHandler extends CommandHandlerWithHelp {
             throw new CommandLineException("Failed to locate module " + moduleName + " at " + modulePath.getAbsolutePath());
         }
 
-        final File[] moduleFiles = modulePath.listFiles();
-        if(moduleFiles != null) {
-            for(File f : moduleFiles) {
-                if(!f.delete()) {
-                    throw new CommandLineException("Failed to delete " + f.getAbsolutePath());
-                }
-            }
-        }
+        // delete the whole slot directory
+        deleteRecursively(modulePath);
 
+        modulePath = modulePath.getParentFile();
         while(!modulesDir.equals(modulePath)) {
             if(modulePath.list().length > 0) {
                 break;
@@ -362,6 +357,20 @@ public class ASModuleHandler extends CommandHandlerWithHelp {
                 throw new CommandLineException("Failed to delete " + modulePath.getAbsolutePath());
             }
             modulePath = modulePath.getParentFile();
+        }
+    }
+
+    protected void deleteRecursively(final File file) throws CommandLineException {
+        if (file.isDirectory()) {
+            final File[] files = file.listFiles();
+            if (files != null) {
+                for (File f : files) {
+                    deleteRecursively(f);
+                }
+            }
+        }
+        if (!file.delete()) {
+            throw new CommandLineException("Failed to delete " + file.getAbsolutePath());
         }
     }
 
