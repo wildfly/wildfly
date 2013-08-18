@@ -34,7 +34,6 @@ import java.util.ArrayList;
 import java.util.List;
 
 import org.jboss.as.test.integration.domain.management.util.JBossAsManagedConfiguration;
-import org.jboss.as.test.integration.domain.management.util.JBossAsManagedConfigurationParameters;
 import org.jboss.as.test.shared.TestSuiteEnvironment;
 
 /**
@@ -56,7 +55,7 @@ public abstract class BuildConfigurationTestBase {
     static JBossAsManagedConfiguration createConfiguration(final String domainXmlName, final String hostXmlName,
                                                            final String testConfiguration, final String hostName,
                                                            final String hostAddress, final int hostPort) {
-        final JBossAsManagedConfiguration configuration = new JBossAsManagedConfiguration(JBossAsManagedConfigurationParameters.STANDARD);
+        final JBossAsManagedConfiguration configuration = new JBossAsManagedConfiguration();
 
         configuration.setHostControllerManagementAddress(hostAddress);
         configuration.setHostControllerManagementPort(hostPort);

@@ -13,8 +13,18 @@
     <xsl:param name="rbac-user-props" select="'rbac-users.properties'"/>
     <xsl:param name="rbac-groups-props" select="'rbac-groups.properties'"/>
 
-    <!-- Change the access-control provider to rbac -->
+    <!-- Change the standalone access-control provider to rbac -->
     <xsl:template match="/do:server/do:management/do:access-control" priority="100">
+        <xsl:copy>
+            <xsl:attribute name="provider">
+                <xsl:value-of select="$rbac"/>
+            </xsl:attribute>
+            <xsl:apply-templates select="node()"/>
+        </xsl:copy>
+    </xsl:template>
+
+    <!-- Change the domain access-control provider to rbac -->
+    <xsl:template match="/do:domain/do:management/do:access-control" priority="100">
         <xsl:copy>
             <xsl:attribute name="provider">
                 <xsl:value-of select="$rbac"/>

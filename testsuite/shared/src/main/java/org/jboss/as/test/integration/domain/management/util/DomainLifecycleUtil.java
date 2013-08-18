@@ -153,25 +153,32 @@ public class DomainLifecycleUtil {
                 modulePath = jbossHomeDir + File.separatorChar + "modules";
             }
 
-            // No point backing up the file in a test scenario, just write what we need.
-            File usersFile = new File(domainPath + "/configuration/mgmt-users.properties");
-            FileOutputStream fos = new FileOutputStream(usersFile);
-            PrintWriter pw = new PrintWriter(fos, true);
-            pw.println("slave=" + new UsernamePasswordHashUtil().generateHashedHexURP("slave", "ManagementRealm", SLAVE_HOST_PASSWORD.toCharArray()));
-            pw.close();
-            fos.close();
-            // Put out empty mgmt-groups.properties.
-            File mgmtGroupsProps = new File(domainPath + "/configuration/mgmt-groups.properties");
-            fos = new FileOutputStream(mgmtGroupsProps);
-            pw = new PrintWriter(fos, true);
-            pw.println("# Management groups");
-            pw.close();
-            fos.close();
-
+            if (configuration.getMgmtUsersFile() != null) {
+                copyConfigFile(new File(configuration.getMgmtUsersFile()), new File(configuration.getDomainDirectory(), "configuration"), null);
+            } else {
+                // No point backing up the file in a test scenario, just write what we need.
+                File usersFile = new File(domainPath + "/configuration/mgmt-users.properties");
+                FileOutputStream fos = new FileOutputStream(usersFile);
+                PrintWriter pw = new PrintWriter(fos, true);
+                pw.println("slave=" + new UsernamePasswordHashUtil().generateHashedHexURP("slave", "ManagementRealm", SLAVE_HOST_PASSWORD.toCharArray()));
+                pw.close();
+                fos.close();
+            }
+            if (configuration.getMgmtGroupsFile() != null) {
+                copyConfigFile(new File(configuration.getMgmtGroupsFile()), new File(configuration.getDomainDirectory(), "configuration"), null);
+            } else {
+                // Put out empty mgmt-groups.properties.
+                File mgmtGroupsProps = new File(domainPath + "/configuration/mgmt-groups.properties");
+                FileOutputStream fos = new FileOutputStream(mgmtGroupsProps);
+                PrintWriter pw = new PrintWriter(fos, true);
+                pw.println("# Management groups");
+                pw.close();
+                fos.close();
+            }
             // Put out empty application realm properties files so servers don't complain
             File appUsersProps = new File(domainPath + "/configuration/application-users.properties");
-            fos = new FileOutputStream(appUsersProps);
-            pw = new PrintWriter(fos, true);
+            FileOutputStream fos = new FileOutputStream(appUsersProps);
+            PrintWriter pw = new PrintWriter(fos, true);
             pw.println("# Application users");
             pw.close();
             fos.close();
@@ -601,7 +608,12 @@ public class DomainLifecycleUtil {
     }
 
     private String copyConfigFile(File file, File dir) {
-        File newFile = new File(dir, "testing-" + file.getName());
+        return copyConfigFile(file, dir, "testing-");
+    }
+
+    private String copyConfigFile(File file, File dir, String prefix) {
+        prefix = prefix == null ? "" : prefix;
+        File newFile = new File(dir, prefix + file.getName());
         if (newFile.exists()) {
             newFile.delete();
         }

@@ -54,7 +54,6 @@ import org.jboss.as.controller.client.helpers.domain.DomainClient;
 import org.jboss.as.controller.operations.common.Util;
 import org.jboss.as.test.integration.domain.management.util.DomainLifecycleUtil;
 import org.jboss.as.test.integration.domain.management.util.DomainTestSupport;
-import org.jboss.as.test.integration.domain.management.util.JBossAsManagedConfigurationParameters;
 import org.jboss.as.test.shared.TimeoutUtil;
 import org.jboss.dmr.ModelNode;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
@@ -114,8 +113,10 @@ public class AutoIgnoredResourcesDomainTestCase {
     @BeforeClass
     public static void setupDomain() throws Exception {
         //Make all the configs read-only so we can stop and start when we like to reset
-        DomainTestSupport.Configuration config = DomainTestSupport.Configuration.create("domain-configs/domain-auto-ignore.xml", "host-configs/host-auto-ignore-master.xml", "host-configs/host-auto-ignore-slave.xml", JBossAsManagedConfigurationParameters.STANDARD, JBossAsManagedConfigurationParameters.STANDARD, true, true, true);
-        testSupport = DomainTestSupport.create(AutoIgnoredResourcesDomainTestCase.class.getSimpleName(), config);
+        DomainTestSupport.Configuration config = DomainTestSupport.Configuration.create(AutoIgnoredResourcesDomainTestCase.class.getSimpleName(),
+                "domain-configs/domain-auto-ignore.xml", "host-configs/host-auto-ignore-master.xml", "host-configs/host-auto-ignore-slave.xml",
+                true, true, true);
+        testSupport = DomainTestSupport.create(config);
         // Start!
         testSupport.start();
         domainMasterLifecycleUtil = testSupport.getDomainMasterLifecycleUtil();
