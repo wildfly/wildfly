@@ -26,9 +26,11 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ADD
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.FAILED;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.FAILURE_DESCRIPTION;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.NAME;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OPERATION_HEADERS;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OUTCOME;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.READ_RESOURCE_OPERATION;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.REMOVE;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ROLES;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SUCCESS;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.TYPE;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.USER;
@@ -121,5 +123,12 @@ public class RbacUtil {
     public static void removeRoleMapping(String role, ModelControllerClient client) throws IOException {
         ModelNode op = createOpNode(ROLE_MAPPING_ADDRESS_BASE + role, REMOVE);
         executeOperation(client, op, Outcome.SUCCESS);
+    }
+
+    public static void addRoleHeader(ModelNode operation, String... roles) {
+        ModelNode header = operation.get(OPERATION_HEADERS, ROLES);
+        for (String role : roles) {
+            header.add(role);
+        }
     }
 }

@@ -86,8 +86,9 @@ public class SlaveHostControllerAuthenticationTestCase {
     public static void setupDomain() throws Exception {
 
         // Set up a domain with a master that doesn't support local auth so slaves have to use configured credentials
-        testSupport = DomainTestSupport.create(SlaveHostControllerAuthenticationTestCase.class.getSimpleName(),
-                DomainTestSupport.Configuration.create("domain-configs/domain-standard.xml",
+        testSupport = DomainTestSupport.create(
+                DomainTestSupport.Configuration.create(SlaveHostControllerAuthenticationTestCase.class.getSimpleName(),
+                        "domain-configs/domain-standard.xml",
                         "host-configs/host-master-no-local.xml", "host-configs/host-secrets.xml"));
 
         // Tweak the callback handler so the master test driver client can authenticate

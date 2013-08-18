@@ -23,8 +23,8 @@
 package org.jboss.as.test.integration.domain.suites;
 
 import org.jboss.as.test.integration.domain.management.util.DomainTestSupport;
-import org.jboss.as.test.integration.domain.management.util.JBossAsManagedConfigurationParameters;
-import org.jboss.as.test.integration.domain.rbac.StandardRolesTestCase;
+import org.jboss.as.test.integration.domain.management.util.JBossAsManagedConfiguration;
+import org.jboss.as.test.integration.domain.rbac.RBACProviderStandardRolesTestCase;
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
 import org.junit.runner.RunWith;
@@ -38,14 +38,9 @@ import org.junit.runners.Suite;
  */
 @RunWith(Suite.class)
 @Suite.SuiteClasses ({
-        StandardRolesTestCase.class
+        RBACProviderStandardRolesTestCase.class
 })
 public class DomainRbacTestSuite {
-
-    private static final DomainTestSupport.Configuration DEFAULT_RBAC_CONFIG;
-    static {
-        DEFAULT_RBAC_CONFIG = DomainTestSupport.Configuration.create("domain-configs/domain-standard.rbac", "host-configs/host-master.xml", "host-configs/host-slave.xml", JBossAsManagedConfigurationParameters.STANDARD, JBossAsManagedConfigurationParameters.STANDARD);
-    }
 
     private static boolean initializedLocally = false;
     private static volatile DomainTestSupport support;
@@ -99,7 +94,14 @@ public class DomainRbacTestSuite {
      */
     public static DomainTestSupport createAndStartDefaultSupport(final String testName) {
         try {
-            final DomainTestSupport testSupport = DomainTestSupport.create(testName, DEFAULT_RBAC_CONFIG);
+            // TODO enable slaves once propagation is working
+            final DomainTestSupport.Configuration configuration = DomainTestSupport.Configuration.create(testName,
+                    "domain-configs/domain-standard.rbac", "host-configs/host-master.xml", null);
+            String mgmtUserProperties = JBossAsManagedConfiguration.loadConfigFileFromContextClassLoader("mgmt-users/mgmt-users.properties");
+            configuration.getMasterConfiguration().setMgmtUsersFile(mgmtUserProperties);
+            // TODO enable slaves once propagation is working
+            //configuration.getSlaveConfiguration().setMgmtUsersFile(mgmtUserProperties);
+            final DomainTestSupport testSupport = DomainTestSupport.create(configuration);
             // Start!
             testSupport.start();
             return testSupport;
