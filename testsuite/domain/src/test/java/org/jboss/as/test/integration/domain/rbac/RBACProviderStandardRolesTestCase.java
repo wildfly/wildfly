@@ -22,42 +22,47 @@
 
 package org.jboss.as.test.integration.domain.rbac;
 
-import org.jboss.as.test.integration.domain.management.util.DomainLifecycleUtil;
-import org.jboss.as.test.integration.domain.management.util.DomainTestSupport;
+import org.jboss.as.controller.client.helpers.domain.DomainClient;
 import org.jboss.as.test.integration.domain.suites.DomainRbacTestSuite;
+import org.jboss.as.test.integration.management.rbac.UserRolesMappingServerSetupTask;
+import org.jboss.dmr.ModelNode;
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
-import org.junit.Test;
 
 /**
- * TODO class javadoc.
+ * Tests of the standard roles using the "rbac" access control provider.
  *
  * @author Brian Stansberry (c) 2013 Red Hat Inc.
  */
-public class StandardRolesTestCase {
-
-    private static DomainTestSupport testSupport;
-    private static DomainLifecycleUtil domainMasterLifecycleUtil;
-    private static DomainLifecycleUtil domainSlaveLifecycleUtil;
+public class RBACProviderStandardRolesTestCase extends AbstractStandardRolesTestCase {
 
     @BeforeClass
     public static void setupDomain() throws Exception {
-        testSupport = DomainRbacTestSuite.createSupport(StandardRolesTestCase.class.getSimpleName());
-
-        domainMasterLifecycleUtil = testSupport.getDomainMasterLifecycleUtil();
-        domainSlaveLifecycleUtil = testSupport.getDomainSlaveLifecycleUtil();
+        testSupport = DomainRbacTestSuite.createSupport(RBACProviderStandardRolesTestCase.class.getSimpleName());
+        masterClientConfig = testSupport.getDomainMasterConfiguration();
+        DomainClient domainClient = testSupport.getDomainMasterLifecycleUtil().getDomainClient();
+        UserRolesMappingServerSetupTask.StandardUsersSetup.INSTANCE.setup(domainClient);
+        deployDeployment1(domainClient);
     }
 
     @AfterClass
     public static void tearDownDomain() throws Exception {
-        DomainRbacTestSuite.stopSupport();
-        testSupport = null;
-        domainMasterLifecycleUtil = null;
-        domainSlaveLifecycleUtil = null;
+
+        try {
+            UserRolesMappingServerSetupTask.StandardUsersSetup.INSTANCE.tearDown(testSupport.getDomainMasterLifecycleUtil().getDomainClient());
+        } finally {
+            DomainRbacTestSuite.stopSupport();
+            testSupport = null;
+        }
     }
 
-    @Test
-    public void test() throws Exception {
-        // TODO test something -- currently just a placeholder
+    @Override
+    protected boolean isAllowLocalAuth() {
+        return false;
+    }
+
+    @Override
+    protected void configureRoles(ModelNode op, String[] roles) {
+        // no-op. Role mapping is done based on the client's authenticated Subject
     }
 }
