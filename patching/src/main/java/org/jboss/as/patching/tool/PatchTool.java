@@ -61,6 +61,13 @@ public interface PatchTool {
     PatchInfo getPatchInfo();
 
     /**
+     * Get patching history
+     *
+     * @return  patching history
+     */
+    PatchingHistory getPatchingHistory();
+
+    /**
      * Apply a patch.
      *
      * @param file the patch file

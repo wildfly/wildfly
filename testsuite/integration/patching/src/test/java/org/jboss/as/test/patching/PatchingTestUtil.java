@@ -372,7 +372,7 @@ public class PatchingTestUtil {
     }
 
     public static void resetInstallationState(final File home, final File... layerDirs) {
-        final File installation = new File(home, Constants.INSTALLATION_METADATA);
+        final File installation = new File(home, Constants.INSTALLATION);
         IoUtils.recursiveDelete(installation);
         for (final File root : layerDirs) {
             final File overlays = new File(root, Constants.OVERLAYS);
@@ -407,7 +407,7 @@ public class PatchingTestUtil {
     public static boolean isOneOffPatchContainedInHistory(List<ModelNode> patchingHistory, String patchID) {
         boolean found = false;
         for(ModelNode node : patchingHistory) {
-            if(node.get("one-off").asString().equals(patchID))
+            if(node.get("patch-id").asString().equals(patchID))
                 found = true;
         }
         return found;

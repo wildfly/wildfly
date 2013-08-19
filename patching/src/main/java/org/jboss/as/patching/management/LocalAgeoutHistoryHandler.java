@@ -24,6 +24,7 @@ package org.jboss.as.patching.management;
 
 import java.io.File;
 import java.io.IOException;
+import java.util.Map;
 
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
@@ -31,55 +32,61 @@ import org.jboss.as.controller.OperationStepHandler;
 import org.jboss.as.patching.installation.InstallationManager;
 import org.jboss.as.patching.installation.InstallationManagerService;
 import org.jboss.as.patching.installation.InstalledImage;
+import org.jboss.as.patching.installation.Layer;
 import org.jboss.as.patching.installation.PatchableTarget;
+import org.jboss.as.patching.tool.PatchingHistory;
 import org.jboss.dmr.ModelNode;
 import org.jboss.msc.service.ServiceController;
-import org.jboss.msc.service.ServiceRegistry;
 
 /**
- * @author Emanuel Muckenhuber
+ * This handler removes the part of the history which is inactive.
+ *
+ * @author Alexey Loubyansky
  */
-public class LocalPatchGarbageCollectionHandler implements OperationStepHandler {
+public class LocalAgeoutHistoryHandler implements OperationStepHandler {
 
-    public static final LocalPatchGarbageCollectionHandler INSTANCE = new LocalPatchGarbageCollectionHandler();
+    public static final LocalAgeoutHistoryHandler INSTANCE = new LocalAgeoutHistoryHandler();
 
-    private final String PATCH_ID = PatchResourceDefinition.PATCH_ID.getName();
 
     @Override
     public void execute(final OperationContext context, final ModelNode operation) throws OperationFailedException {
-        final String patchId = operation.require(PATCH_ID).asString();
 
-        // Acquire the lock and check the write permissions for this operation
-        final ServiceRegistry registry = context.getServiceRegistry(true);
-        final ServiceController<?> mgrService = registry.getRequiredService(InstallationManagerService.NAME);
+        context.acquireControllerLock();
+        final ServiceController<?> mgrService = context.getServiceRegistry(true).getRequiredService(InstallationManagerService.NAME);
         final InstallationManager mgr = (InstallationManager) mgrService.getValue();
+        InstalledImage installedImage = mgr.getInstalledImage();
         final PatchableTarget.TargetInfo info;
         try {
             info = mgr.getIdentity().loadTargetInfo();
         } catch (IOException e) {
             throw new OperationFailedException(PatchManagementMessages.MESSAGES.failedToLoadIdentity(), e);
         }
-        if(info.getCumulativePatchID().equals(patchId)) {
-            throw PatchManagementMessages.MESSAGES.patchActive(patchId);
-        }
-        if(info.getPatchIDs().contains(patchId)) {
-            throw PatchManagementMessages.MESSAGES.patchActive(patchId);
-        }
-        final InstalledImage installedImage = info.getDirectoryStructure().getInstalledImage();
 
-        // Remove directories
-        final File history = installedImage.getPatchHistoryDir(patchId);
-        if(history.exists()) {
-            recursiveDelete(history);
+        final PatchingHistory.Iterator i = PatchingHistory.Factory.iterator(mgr, info);
+        if(i.hasNextCP()) {
+            i.nextCP();
+            // everything else down to the base is inactive
+            while(i.hasNext()) {
+                final PatchingHistory.Entry entry = i.next();
+                final Map<String, String> layerPatches = entry.getLayerPatches();
+                if(!layerPatches.isEmpty()) {
+                    for(String layerName : layerPatches.keySet()) {
+                        final Layer layer = mgr.getLayer(layerName);
+                        if(layer == null) {
+                            throw new OperationFailedException(PatchManagementMessages.MESSAGES.layerNotFound(layerName));
+                        }
+                        final File patchDir = layer.getDirectoryStructure().getModulePatchDirectory(layerPatches.get(layerName));
+                        if(patchDir.exists()) {
+                            recursiveDelete(patchDir);
+                        }
+                    }
+                }
+                final File patchHistoryDir = installedImage.getPatchHistoryDir(entry.getPatchId());
+                if(patchHistoryDir.exists()) {
+                    recursiveDelete(patchHistoryDir);
+                }
+            }
         }
-        // Remove patch contents
-        final File patchRoot = installedImage.getPatchHistoryDir(patchId);
-        if(patchRoot.exists()) {
-            recursiveDelete(patchRoot);
-        }
-
-        // TODO perhaps recursively remove one-off patches in case this targets a CP
-
         context.completeStep(OperationContext.RollbackHandler.NOOP_ROLLBACK_HANDLER);
     }
 

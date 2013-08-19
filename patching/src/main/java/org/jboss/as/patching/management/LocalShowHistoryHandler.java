@@ -22,28 +22,21 @@
 
 package org.jboss.as.patching.management;
 
-import static org.jboss.as.patching.Constants.BASE;
-import static org.jboss.as.patching.metadata.Patch.PatchType.CUMULATIVE;
-import static org.jboss.as.patching.metadata.Patch.PatchType.ONE_OFF;
-
-import java.io.File;
-import java.util.List;
 
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.OperationStepHandler;
-import org.jboss.as.patching.Constants;
 import org.jboss.as.patching.installation.InstallationManager;
 import org.jboss.as.patching.installation.InstallationManagerService;
-import org.jboss.as.patching.installation.InstalledImage;
 import org.jboss.as.patching.installation.PatchableTarget;
-import org.jboss.as.patching.metadata.Patch.PatchType;
-import org.jboss.as.patching.runner.PatchUtils;
+import org.jboss.as.patching.tool.PatchingHistory;
 import org.jboss.dmr.ModelNode;
 import org.jboss.msc.service.ServiceRegistry;
 
+
 /**
  * @author <a href="http://jmesnil.net/">Jeff Mesnil</a> (c) 2012, Red Hat Inc
+ * @author Alexey Loubyansky
  */
 public final class LocalShowHistoryHandler implements OperationStepHandler {
     public static final OperationStepHandler INSTANCE = new LocalShowHistoryHandler();
@@ -56,21 +49,7 @@ public final class LocalShowHistoryHandler implements OperationStepHandler {
         final InstallationManager installationManager = (InstallationManager) registry.getRequiredService(InstallationManagerService.NAME).getValue();
         try {
             final PatchableTarget.TargetInfo info = installationManager.getIdentity().loadTargetInfo();
-            final InstalledImage installedImage = info.getDirectoryStructure().getInstalledImage();
-
-            final ModelNode result = new ModelNode();
-            result.setEmptyList();
-
-            final String releaseID = info.getCumulativePatchID();
-            if (!BASE.equals(releaseID)) {
-                fillHistory(result, CUMULATIVE, releaseID, installedImage.getPatchHistoryDir(releaseID));
-            }
-
-            final List<String> oneOffPatchIDs = info.getPatchIDs();
-            for (String oneOffPatchID : oneOffPatchIDs) {
-                File historyDir = installedImage.getPatchHistoryDir(oneOffPatchID);
-                fillHistory(result, ONE_OFF, oneOffPatchID, historyDir);
-            }
+            final ModelNode result =  PatchingHistory.Factory.getHistory(installationManager, info);
             context.getResult().set(result);
             context.stepCompleted();
         } catch (Throwable t) {
@@ -78,15 +57,4 @@ public final class LocalShowHistoryHandler implements OperationStepHandler {
             throw PatchManagementMessages.MESSAGES.failedToShowHistory(t);
         }
     }
-
-    private void fillHistory(ModelNode result, PatchType type, String oneOffPatchID, File historyDir) throws Exception {
-        ModelNode history = new ModelNode();
-        history.get(type.getName()).set(oneOffPatchID);
-
-        File timestampFile = new File(historyDir, Constants.TIMESTAMP);
-        String timestamp = PatchUtils.readRef(timestampFile);
-        history.get(Constants.APPLIED_AT).set(timestamp);
-        result.add(history);
-    }
-
 }
