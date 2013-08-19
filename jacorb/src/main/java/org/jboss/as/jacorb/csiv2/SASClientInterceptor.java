@@ -27,7 +27,6 @@ import java.security.Principal;
 import org.jacorb.orb.MinorCodes;
 import org.jboss.as.jacorb.JacORBLogger;
 import org.jboss.as.jacorb.JacORBMessages;
-import org.jboss.security.SecurityContextAssociation;
 import org.omg.CORBA.Any;
 import org.omg.CORBA.BAD_PARAM;
 import org.omg.CORBA.CompletionStatus;
@@ -105,7 +104,7 @@ public class SASClientInterceptor extends LocalObject implements ClientRequestIn
             }
 
             if ((secMech.as_context_mech.target_supports & EstablishTrustInClient.value) != 0) {
-                Principal p = SecurityContextAssociation.getPrincipal();
+                Principal p = SecurityActions.getPrincipal();
                 if (p != null) {
                     byte[] encodedTargetName = secMech.as_context_mech.target_name;
 
@@ -119,7 +118,7 @@ public class SASClientInterceptor extends LocalObject implements ClientRequestIn
                     byte[] username = name.getBytes("UTF-8");
                     // I don't know why there is not a better way to go from char[] -> byte[].
 
-                    Object credential = SecurityContextAssociation.getCredential();
+                    Object credential = SecurityActions.getCredential();
                     byte[] password = {};
                     if (credential instanceof char[]) {
                         String tmp = new String((char[]) credential);
