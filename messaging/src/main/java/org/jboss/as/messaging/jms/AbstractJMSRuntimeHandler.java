@@ -37,19 +37,19 @@ import org.jboss.dmr.ModelNode;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.INCLUDE_DEFAULTS;
 
 /**
- * Base type for runtime operations on XML deployed message destinations
+ * Base type for runtime operations on XML deployed message resources
  *
  * @author Stuart Douglas
  */
 public abstract class AbstractJMSRuntimeHandler<T> extends AbstractRuntimeOnlyHandler {
 
-    private final Map<DestinationConfig, T> destinations = Collections.synchronizedMap(new HashMap<DestinationConfig, T>());
+    private final Map<ResourceConfig, T> resources = Collections.synchronizedMap(new HashMap<ResourceConfig, T>());
 
     @Override
     protected void executeRuntimeStep(OperationContext context, ModelNode operation) throws OperationFailedException {
         String opName = operation.require(ModelDescriptionConstants.OP).asString();
         PathAddress address = PathAddress.pathAddress(operation.require(ModelDescriptionConstants.OP_ADDR));
-        final T dataSource = getDestinationConfig(address);
+        final T dataSource = getResourceConfig(address);
 
         boolean includeDefault = operation.hasDefined(INCLUDE_DEFAULTS) ? operation.get(INCLUDE_DEFAULTS).asBoolean() : false;
 
@@ -62,12 +62,12 @@ public abstract class AbstractJMSRuntimeHandler<T> extends AbstractRuntimeOnlyHa
         }
     }
 
-    public void registerDestination(final String server, final String name, final T destination) {
-        destinations.put(new DestinationConfig(server, name), destination);
+    public void registerResource(final String server, final String name, final T resource) {
+        resources.put(new ResourceConfig(server, name), resource);
     }
 
-    public void unregisterDestination(final String server, final String name) {
-        destinations.remove(new DestinationConfig(server, name));
+    public void unregisterResource(final String server, final String name) {
+        resources.remove(new ResourceConfig(server, name));
     }
 
     protected abstract void executeReadAttribute(final String attributeName, final OperationContext context, final T destination, final PathAddress address, final boolean includeDefault);
@@ -76,12 +76,12 @@ public abstract class AbstractJMSRuntimeHandler<T> extends AbstractRuntimeOnlyHa
         throw MessagingMessages.MESSAGES.operationNotValid(opName);
     }
 
-    private T getDestinationConfig(final PathAddress operationAddress) throws OperationFailedException {
+    private T getResourceConfig(final PathAddress operationAddress) throws OperationFailedException {
 
         final String name = operationAddress.getLastElement().getValue();
         final String server = operationAddress.getElement(operationAddress.size() - 2).getValue();
 
-        T config = destinations.get(new DestinationConfig(server, name));
+        T config = resources.get(new ResourceConfig(server, name));
 
         if (config == null) {
             String exceptionMessage = MessagingMessages.MESSAGES.noDestinationRegisteredForAddress(operationAddress);
@@ -91,11 +91,11 @@ public abstract class AbstractJMSRuntimeHandler<T> extends AbstractRuntimeOnlyHa
         return config;
     }
 
-    private static final class DestinationConfig {
+    private static final class ResourceConfig {
         private final String server;
         private final String name;
 
-        private DestinationConfig( final String server, final String name) {
+        private ResourceConfig(final String server, final String name) {
             this.name = name;
             this.server = server;
         }
@@ -105,7 +105,7 @@ public abstract class AbstractJMSRuntimeHandler<T> extends AbstractRuntimeOnlyHa
             if (this == o) return true;
             if (o == null || getClass() != o.getClass()) return false;
 
-            final DestinationConfig that = (DestinationConfig) o;
+            final ResourceConfig that = (ResourceConfig) o;
 
             if (!name.equals(that.name)) return false;
             if (!server.equals(that.server)) return false;

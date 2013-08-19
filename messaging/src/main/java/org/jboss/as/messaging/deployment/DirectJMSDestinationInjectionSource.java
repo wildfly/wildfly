@@ -30,6 +30,7 @@ import static org.jboss.as.messaging.CommonAttributes.JMS_QUEUE;
 import static org.jboss.as.messaging.CommonAttributes.JMS_TOPIC;
 import static org.jboss.as.messaging.CommonAttributes.NAME;
 import static org.jboss.as.messaging.CommonAttributes.SELECTOR;
+import static org.jboss.as.messaging.MessagingLogger.ROOT_LOGGER;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -54,8 +55,10 @@ import org.jboss.as.server.deployment.DeploymentUnit;
 import org.jboss.as.server.deployment.DeploymentUnitProcessingException;
 import org.jboss.dmr.ModelNode;
 import org.jboss.msc.inject.Injector;
+import org.jboss.msc.service.AbstractServiceListener;
 import org.jboss.msc.service.Service;
 import org.jboss.msc.service.ServiceBuilder;
+import org.jboss.msc.service.ServiceController;
 import org.jboss.msc.service.ServiceName;
 import org.jboss.msc.service.ServiceTarget;
 
@@ -88,23 +91,23 @@ public class DirectJMSDestinationInjectionSource extends InjectionSource {
         this.interfaceName = interfaceName;
     }
 
-    public void setDescription(String description) {
+    void setDescription(String description) {
         this.description = description;
     }
 
-    public void setClassName(String className) {
+    void setClassName(String className) {
         this.className = className;
     }
 
-    public void setResourceAdapter(String resourceAdapter) {
+    void setResourceAdapter(String resourceAdapter) {
         this.resourceAdapter = resourceAdapter;
     }
 
-    public void addProperty(String key, String value) {
+    void addProperty(String key, String value) {
         properties.put(key, value);
     }
 
-    public void setDestinationName(String destinationName) {
+    void setDestinationName(String destinationName) {
         this.destinationName = destinationName;
     }
 
@@ -169,7 +172,7 @@ public class DirectJMSDestinationInjectionSource extends InjectionSource {
         deploymentUnit.createDeploymentSubModel(MessagingExtension.SUBSYSTEM_NAME, serverElement);
         PathAddress registration = PathAddress.pathAddress(serverElement, dest);
         MessagingXmlInstallDeploymentUnitProcessor.createDeploymentSubModel(registration, deploymentUnit);
-        JMSQueueConfigurationRuntimeHandler.INSTANCE.registerDestination(getHornetQServerName(), queueName, destination);
+        JMSQueueConfigurationRuntimeHandler.INSTANCE.registerResource(getHornetQServerName(), queueName, destination);
     }
 
     private void startTopic(ResolutionContext context, String topicName, ServiceTarget serviceTarget, ServiceName hqServiceName, ServiceBuilder<?> serviceBuilder, DeploymentUnit deploymentUnit, Injector<ManagedReferenceFactory> injector) {
@@ -186,12 +189,30 @@ public class DirectJMSDestinationInjectionSource extends InjectionSource {
         deploymentUnit.createDeploymentSubModel(MessagingExtension.SUBSYSTEM_NAME, serverElement);
         PathAddress registration = PathAddress.pathAddress(serverElement, dest);
         MessagingXmlInstallDeploymentUnitProcessor.createDeploymentSubModel(registration, deploymentUnit);
-        JMSTopicConfigurationRuntimeHandler.INSTANCE.registerDestination(getHornetQServerName(), topicName, destination);
+        JMSTopicConfigurationRuntimeHandler.INSTANCE.registerResource(getHornetQServerName(), topicName, destination);
     }
 
     private <D extends Destination> void inject(ServiceBuilder<?> serviceBuilder, Injector<ManagedReferenceFactory> injector, Service<D> destinationService) {
         final ContextListAndJndiViewManagedReferenceFactory referenceFactoryService = new MessagingJMSDestinationManagedReferenceFactory(destinationService);
-        serviceBuilder.addInjection(injector, referenceFactoryService);
+        serviceBuilder.addInjection(injector, referenceFactoryService)
+                .addListener(new AbstractServiceListener<Object>() {
+                    public void transition(final ServiceController<? extends Object> controller, final ServiceController.Transition transition) {
+                        switch (transition) {
+                            case STARTING_to_UP: {
+                                ROOT_LOGGER.boundJndiName(name);
+                                break;
+                            }
+                            case START_REQUESTED_to_DOWN: {
+                                ROOT_LOGGER.unboundJndiName(name);
+                                break;
+                            }
+                            case REMOVING_to_REMOVED: {
+                                ROOT_LOGGER.debugf("Removed messaging object [%s]", name);
+                                break;
+                            }
+                        }
+                    }
+                });
     }
 
     /**

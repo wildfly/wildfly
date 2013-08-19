@@ -38,11 +38,11 @@ import org.jboss.as.controller.registry.Resource;
 import org.jboss.as.messaging.CommonAttributes;
 import org.jboss.as.messaging.MessagingExtension;
 import org.jboss.as.messaging.MessagingServices;
-import org.jboss.as.messaging.jms.JMSQueueAdd;
 import org.jboss.as.messaging.jms.JMSQueueConfigurationRuntimeHandler;
+import org.jboss.as.messaging.jms.JMSQueueService;
 import org.jboss.as.messaging.jms.JMSServices;
-import org.jboss.as.messaging.jms.JMSTopicAdd;
 import org.jboss.as.messaging.jms.JMSTopicConfigurationRuntimeHandler;
+import org.jboss.as.messaging.jms.JMSTopicService;
 import org.jboss.as.server.deployment.DeploymentModelUtils;
 import org.jboss.as.server.deployment.DeploymentPhaseContext;
 import org.jboss.as.server.deployment.DeploymentUnit;
@@ -72,7 +72,7 @@ public class MessagingXmlInstallDeploymentUnitProcessor implements DeploymentUni
                     final ModelNode entries = topic.getDestination().resolve().get(CommonAttributes.DESTINATION_ENTRIES.getName());
                     jndiBindings = JMSServices.getJndiBindings(entries);
                 }
-                JMSTopicAdd.INSTANCE.installServices(null, null, topic.getName(), hqServiceName, phaseContext.getServiceTarget(), jndiBindings);
+                JMSTopicService.installService(null, null, topic.getName(), hqServiceName, phaseContext.getServiceTarget(), jndiBindings);
 
                 //create the management registration
                 final PathElement serverElement = PathElement.pathElement(HORNETQ_SERVER, topic.getServer());
@@ -81,7 +81,7 @@ public class MessagingXmlInstallDeploymentUnitProcessor implements DeploymentUni
                 PathAddress registration = PathAddress.pathAddress(serverElement, destination);
                 createDeploymentSubModel(registration, deploymentUnit);
 
-                JMSTopicConfigurationRuntimeHandler.INSTANCE.registerDestination(topic.getServer(), topic.getName(), topic.getDestination());
+                JMSTopicConfigurationRuntimeHandler.INSTANCE.registerResource(topic.getServer(), topic.getName(), topic.getDestination());
             }
 
             for (final JmsDestination queue : parseResult.getQueues()) {
@@ -96,7 +96,7 @@ public class MessagingXmlInstallDeploymentUnitProcessor implements DeploymentUni
                 final String selector = destination.hasDefined(SELECTOR.getName()) ? destination.get(SELECTOR.getName()).resolve().asString() : null;
                 final boolean durable = destination.hasDefined(DURABLE.getName()) ? destination.get(DURABLE.getName()).resolve().asBoolean() : false;
 
-                JMSQueueAdd.INSTANCE.installServices(null, null, queue.getName(), phaseContext.getServiceTarget(), hqServiceName, selector, durable, jndiBindings);
+                JMSQueueService.installService(null, null, queue.getName(), phaseContext.getServiceTarget(), hqServiceName, selector, durable, jndiBindings);
 
                 //create the management registration
                 final PathElement serverElement = PathElement.pathElement(HORNETQ_SERVER, queue.getServer());
@@ -104,7 +104,7 @@ public class MessagingXmlInstallDeploymentUnitProcessor implements DeploymentUni
                 deploymentUnit.createDeploymentSubModel(MessagingExtension.SUBSYSTEM_NAME, serverElement);
                 PathAddress registration = PathAddress.pathAddress(serverElement, dest);
                 createDeploymentSubModel(registration, deploymentUnit);
-                JMSQueueConfigurationRuntimeHandler.INSTANCE.registerDestination(queue.getServer(), queue.getName(), destination);
+                JMSQueueConfigurationRuntimeHandler.INSTANCE.registerResource(queue.getServer(), queue.getName(), destination);
             }
         }
     }
@@ -115,11 +115,11 @@ public class MessagingXmlInstallDeploymentUnitProcessor implements DeploymentUni
         final List<ParseResult> parseResults = context.getAttachmentList(MessagingAttachments.PARSE_RESULT);
         for (ParseResult parseResult : parseResults) {
             for (final JmsDestination topic : parseResult.getTopics()) {
-                JMSTopicConfigurationRuntimeHandler.INSTANCE.unregisterDestination(topic.getServer(), topic.getName());
+                JMSTopicConfigurationRuntimeHandler.INSTANCE.unregisterResource(topic.getServer(), topic.getName());
             }
 
             for (final JmsDestination queue : parseResult.getQueues()) {
-                JMSQueueConfigurationRuntimeHandler.INSTANCE.unregisterDestination(queue.getServer(), queue.getName());
+                JMSQueueConfigurationRuntimeHandler.INSTANCE.unregisterResource(queue.getServer(), queue.getName());
             }
         }
     }
