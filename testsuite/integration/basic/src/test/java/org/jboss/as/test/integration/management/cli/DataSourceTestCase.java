@@ -92,7 +92,7 @@ public class DataSourceTestCase extends AbstractCliTestBase {
     private void testAddDataSource() throws Exception {
 
         // add data source
-        cli.sendLine("data-source add --name=TestDS --jndi-name=java:jboss/datasources/TestDS --driver-name=h2 --connection-url=jdbc:h2:mem:test;DB_CLOSE_DELAY=-1");
+        cli.sendLine("data-source add --name=TestDS --jndi-name=java:jboss/datasources/TestDS --driver-name=h2 --connection-url=jdbc:h2:mem:test;DB_CLOSE_DELAY=-1 --enabled=false");
 
         // check the data source is listed
         cli.sendLine("cd /subsystem=datasources/data-source");
@@ -153,7 +153,7 @@ public class DataSourceTestCase extends AbstractCliTestBase {
     private void testAddXaDataSource() throws Exception {
 
         // add data source
-        cli.sendLine("xa-data-source add --name=TestXADS --jndi-name=java:jboss/datasources/TestXADS --driver-name=h2 --xa-datasource-properties=ServerName=localhost,PortNumber=50011");
+        cli.sendLine("xa-data-source add --name=TestXADS --jndi-name=java:jboss/datasources/TestXADS --driver-name=h2 --xa-datasource-properties=ServerName=localhost,PortNumber=50011 --enabled=false");
 
         //check the data source is listed
         cli.sendLine("cd /subsystem=datasources/xa-data-source");

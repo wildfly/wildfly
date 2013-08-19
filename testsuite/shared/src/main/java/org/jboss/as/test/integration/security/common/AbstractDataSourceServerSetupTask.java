@@ -80,6 +80,7 @@ public abstract class AbstractDataSourceServerSetupTask implements ServerSetupTa
             dsNode.get("connection-url").set(config.getConnectionUrl());
             dsNode.get("jndi-name").set(config.getJndiName());
             dsNode.get("driver-name").set(config.getDriver());
+            dsNode.get("enabled").set("false");
             if (StringUtils.isNotEmpty(config.getUsername())) {
                 dsNode.get("user-name").set(config.getUsername());
             }

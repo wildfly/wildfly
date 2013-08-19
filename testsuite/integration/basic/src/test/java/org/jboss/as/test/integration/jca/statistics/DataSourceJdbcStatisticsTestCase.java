@@ -49,7 +49,7 @@ import static org.junit.Assert.*;
 
 /**
  * JBQA-6456 Test jdbc statistics of data sources
- * 
+ *
  * @author <a href="vrastsel@redhat.com">Vladimir Rastseluev</a>
  */
 
@@ -109,7 +109,7 @@ public class DataSourceJdbcStatisticsTestCase {
 
         /**
          * Creates data source and return its node address
-         * 
+         *
          * @param xa - should be data source XA?
          * @param jndiName of data source
          * @return ModelNode - address of data source node
@@ -126,6 +126,7 @@ public class DataSourceJdbcStatisticsTestCase {
             operation.get(OP_ADDR).set(address);
             operation.get("jndi-name").set(jndiName);
             operation.get("driver-name").set("h2");
+            operation.get("enabled").set("false");
             if (!xa)
                 operation.get("connection-url").set("jdbc:h2:mem:test;DB_CLOSE_DELAY=-1");
             operation.get("prepared-statements-cache-size").set(3);
@@ -157,7 +158,7 @@ public class DataSourceJdbcStatisticsTestCase {
 
         /**
          * Cleans jdbc statistics of data source node
-         * 
+         *
          * @param ModelNode address of data source node
          * @return StringBuffer, contains error message, if operation fails
          * @throws Exception
@@ -171,7 +172,7 @@ public class DataSourceJdbcStatisticsTestCase {
 
         /**
          * Checks, if some parameters are set on data source statistics node
-         * 
+         *
          * @param yes - should be parameters set?
          * @param statisticNode - address, where to check
          * @return StringBuffer, contains error message, if operation fails
@@ -199,7 +200,7 @@ public class DataSourceJdbcStatisticsTestCase {
 
         /**
          * Creates address of statistics jdbc node from address of data source node
-         * 
+         *
          * @param address of data source node
          * @return address of jdbc statistics node
          */
@@ -216,7 +217,7 @@ public class DataSourceJdbcStatisticsTestCase {
 
     /**
      * Define the deployment
-     * 
+     *
      * @return The deployment archive
      */
     @Deployment
@@ -234,7 +235,7 @@ public class DataSourceJdbcStatisticsTestCase {
 
     /**
      * Helps to test statistics of data source, tries to get prepared statement from cache
-     * 
+     *
      * @param d - DataSource to test
      * @throws Exception
      */

@@ -29,7 +29,6 @@ import static org.jboss.as.connector.subsystems.datasources.DataSourceModelNodeU
 import static org.jboss.as.connector.subsystems.datasources.DataSourceModelNodeUtil.xaFrom;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ENABLED;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.PERSISTENT;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -75,23 +74,13 @@ public class DataSourceEnable implements OperationStepHandler {
 
         final ModelNode model = context.readResourceForUpdate(PathAddress.EMPTY_ADDRESS).getModel();
 
-        // On boot we invoke this op but we may not want to store a default value the model
-        boolean persist = operation.get(PERSISTENT).asBoolean(true);
-        if (persist) {
-            model.get(ENABLED).set(true);
-        } else if (model.hasDefined(ENABLED) && !model.get(ENABLED).asBoolean()) {
-            // Just clear the "false" value that gets stored by default
-            model.get(ENABLED).set(new ModelNode());
-        } else {
-            model.get(ENABLED).set(true);
-        }
-
         if (context.isNormalServer()) {
 
             context.addStep(new OperationStepHandler() {
                 public void execute(OperationContext context, ModelNode operation) throws OperationFailedException {
                     ServiceVerificationHandler verificationHandler = new ServiceVerificationHandler();
                     final List<ServiceController<?>> controllers = new ArrayList<ServiceController<?>>();
+                    model.get(ENABLED).set(true);
                     addServices(context, operation, verificationHandler, model, isXa(), controllers);
                     context.addStep(verificationHandler, Stage.VERIFY);
                     context.completeStep(new OperationContext.RollbackHandler() {

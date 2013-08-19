@@ -44,12 +44,12 @@ public class DataSourceStatisticsListener extends AbstractServiceListener<Object
     private static final PathElement JDBC_STATISTICS = PathElement.pathElement("statistics", "jdbc");
     private static final PathElement POOL_STATISTICS = PathElement.pathElement("statistics", "pool");
 
-    private final ManagementResourceRegistration registration;
+    private final ManagementResourceRegistration overrideRegistration;
     private final Resource resource;
     private final String dsName;
 
-    public DataSourceStatisticsListener(final ManagementResourceRegistration registration, Resource resource, final String dsName) {
-        this.registration = registration;
+    public DataSourceStatisticsListener(final ManagementResourceRegistration overrideRegistration, Resource resource, final String dsName) {
+        this.overrideRegistration = overrideRegistration;
         this.resource = resource;
         this.dsName = dsName;
     }
@@ -67,30 +67,30 @@ public class DataSourceStatisticsListener extends AbstractServiceListener<Object
                 int jdbcStatsSize = jdbcStats.getNames().size();
                 int poolStatsSize = poolStats.getNames().size();
                 if (jdbcStatsSize > 0 || poolStatsSize > 0) {
-                    ManagementResourceRegistration subRegistration = registration.isAllowsOverride() ? registration.registerOverrideModel(dsName, DataSourcesSubsystemProviders.OVERRIDE_DS_DESC) : registration;
+                    if (overrideRegistration != null) {
+                        if (jdbcStatsSize > 0) {
+                            ManagementResourceRegistration jdbcRegistration = overrideRegistration.registerSubModel(JDBC_STATISTICS, new StatisticsDescriptionProvider(DataSourcesSubsystemProviders.RESOURCE_NAME, "statistics", jdbcStats));
+                            jdbcRegistration.setRuntimeOnly(true);
+                            jdbcRegistration.registerOperationHandler(Constants.CLEAR_STATISTICS, new ClearStatisticsHandler(jdbcStats));
 
-                    if (jdbcStatsSize > 0) {
-                        ManagementResourceRegistration jdbcRegistration = subRegistration.registerSubModel(JDBC_STATISTICS, new StatisticsDescriptionProvider(DataSourcesSubsystemProviders.RESOURCE_NAME, "statistics", jdbcStats));
-                        jdbcRegistration.setRuntimeOnly(true);
-                        jdbcRegistration.registerOperationHandler(Constants.CLEAR_STATISTICS, new ClearStatisticsHandler(jdbcStats));
+                            for (String statName : jdbcStats.getNames()) {
+                                jdbcRegistration.registerMetric(statName, new PoolMetrics.ParametrizedPoolMetricsHandler(jdbcStats));
+                            }
 
-                        for (String statName : jdbcStats.getNames()) {
-                            jdbcRegistration.registerMetric(statName, new PoolMetrics.ParametrizedPoolMetricsHandler(jdbcStats));
+                            resource.registerChild(JDBC_STATISTICS, new PlaceholderResource.PlaceholderResourceEntry(JDBC_STATISTICS));
                         }
 
-                        resource.registerChild(JDBC_STATISTICS, new PlaceholderResource.PlaceholderResourceEntry(JDBC_STATISTICS));
-                    }
+                        if (poolStatsSize > 0) {
+                            ManagementResourceRegistration poolRegistration = overrideRegistration.registerSubModel(POOL_STATISTICS, new StatisticsDescriptionProvider(DataSourcesSubsystemProviders.RESOURCE_NAME, "statistics", poolStats));
+                            poolRegistration.setRuntimeOnly(true);
+                            poolRegistration.registerOperationHandler(Constants.CLEAR_STATISTICS, new ClearStatisticsHandler(poolStats));
 
-                    if (poolStatsSize > 0) {
-                        ManagementResourceRegistration poolRegistration = subRegistration.registerSubModel(POOL_STATISTICS, new StatisticsDescriptionProvider(DataSourcesSubsystemProviders.RESOURCE_NAME, "statistics", poolStats));
-                        poolRegistration.setRuntimeOnly(true);
-                        poolRegistration.registerOperationHandler(Constants.CLEAR_STATISTICS, new ClearStatisticsHandler(poolStats));
+                            for (String statName : poolStats.getNames()) {
+                                poolRegistration.registerMetric(statName, new PoolMetrics.ParametrizedPoolMetricsHandler(poolStats));
+                            }
 
-                        for (String statName : poolStats.getNames()) {
-                            poolRegistration.registerMetric(statName, new PoolMetrics.ParametrizedPoolMetricsHandler(poolStats));
+                            resource.registerChild(POOL_STATISTICS, new PlaceholderResource.PlaceholderResourceEntry(JDBC_STATISTICS));
                         }
-
-                        resource.registerChild(POOL_STATISTICS, new PlaceholderResource.PlaceholderResourceEntry(JDBC_STATISTICS));
                     }
                 }
                 break;
@@ -99,11 +99,9 @@ public class DataSourceStatisticsListener extends AbstractServiceListener<Object
             }
             case UP_to_STOP_REQUESTED: {
 
-                ManagementResourceRegistration subRegistration = registration.getOverrideModel(dsName);
-                if (subRegistration != null) {
-                    subRegistration.unregisterSubModel(JDBC_STATISTICS);
-                    subRegistration.unregisterSubModel(POOL_STATISTICS);
-                    registration.unregisterOverrideModel(dsName);
+                if (overrideRegistration != null) {
+                    overrideRegistration.unregisterSubModel(JDBC_STATISTICS);
+                    overrideRegistration.unregisterSubModel(POOL_STATISTICS);
                 }
 
                 if (resource.hasChild(JDBC_STATISTICS)) {

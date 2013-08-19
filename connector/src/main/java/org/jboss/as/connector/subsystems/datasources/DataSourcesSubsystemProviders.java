@@ -39,13 +39,13 @@ import org.jboss.dmr.ModelNode;
  *         Maestri</a>
  * @author John Bailey
  */
-class DataSourcesSubsystemProviders {
+public class DataSourcesSubsystemProviders {
 
 
     static final String RESOURCE_NAME = DataSourcesSubsystemProviders.class.getPackage().getName() + ".LocalDescriptions";
 
 
-    static OverrideDescriptionProvider OVERRIDE_DS_DESC = new OverrideDescriptionProvider() {
+    public static OverrideDescriptionProvider OVERRIDE_DS_DESC = new OverrideDescriptionProvider() {
 
         @Override
         public Map<String, ModelNode> getAttributeOverrideDescriptions(Locale locale) {

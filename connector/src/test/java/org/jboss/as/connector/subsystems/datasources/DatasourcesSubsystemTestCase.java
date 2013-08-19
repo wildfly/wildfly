@@ -26,8 +26,8 @@ import static org.junit.Assert.assertTrue;
 
 import java.io.IOException;
 import java.util.List;
-import org.jboss.as.connector.logging.ConnectorLogger;
 
+import org.jboss.as.connector.logging.ConnectorLogger;
 import org.jboss.as.controller.ModelVersion;
 import org.jboss.as.controller.PathAddress;
 import org.jboss.as.model.test.FailedOperationTransformationConfig;
@@ -132,6 +132,11 @@ public class DatasourcesSubsystemTestCase extends AbstractSubsystemBaseTest {
                             Assert.assertTrue( modelNode.get(Constants.XA_DATASOURCE).get("complexXaDs_Pool").get(Constants.JTA.getName()).asBoolean());
                             //Replace the value used in the xml
                             modelNode.get(Constants.XA_DATASOURCE).get("complexXaDs_Pool").remove(Constants.JTA.getName());
+
+                            modelNode.get(Constants.DATA_SOURCE).get("complexDs_Pool").remove(Constants.ENABLED.getName());
+
+                            modelNode.get(Constants.XA_DATASOURCE).get("complexXaDs_Pool").remove(Constants.ENABLED.getName());
+
                             return modelNode;
                         }
                     });
