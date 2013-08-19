@@ -20,7 +20,6 @@ package org.jboss.as.controller.services.path;
 
 
 import static org.jboss.as.controller.ControllerLogger.MGMT_OP_LOGGER;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.REMOVE;
 import static org.jboss.as.controller.services.path.PathResourceDefinition.PATH_SPECIFIED;
@@ -51,13 +50,6 @@ public class PathRemoveHandler implements OperationStepHandler {
     private final boolean services;
 
     private final PathManagerService pathManager;
-
-    public static ModelNode getRemovePathOperation(ModelNode address) {
-        ModelNode op = new ModelNode();
-        op.get(OP).set(OPERATION_NAME);
-        op.get(OP_ADDR).set(address);
-        return op;
-    }
 
     /**
      * Create the PathRemoveHandler

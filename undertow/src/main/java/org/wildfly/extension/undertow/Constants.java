@@ -27,6 +27,7 @@ package org.wildfly.extension.undertow;
  */
 
 public interface Constants {
+    String ACCESS_LOG = "access-log";
     String AJP_LISTENER = "ajp-listener";
     String BUFFER_CACHE = "buffer-cache";
     String BUFFER_CACHES = "buffer-caches";
@@ -53,8 +54,10 @@ public interface Constants {
     String HANDLERS = "handlers";
     String SERVER = "server";
     String HOST = "host";
-    String PROPERTIES = "properties";
-    String CLASS = "class";
+    String PATTERN = "pattern";
+    String PREFIX = "prefix";
+    String ROTATE = "rotate";
+    //String CLASS = "class";
     String DEFAULT_HOST = "default-host";
     String DEFAULT_VIRTUAL_HOST = "default-virtual-host";
     String DEFAULT_SERVLET_CONTAINER = "default-servlet-container";
@@ -118,6 +121,7 @@ public interface Constants {
     String DEFAULT_BUFFER_CACHE = "default-buffer-cache";
 
     String RELATIVE_TO = "relative-to";
+    String DIRECTORY = "directory";
     String STACK_TRACE_ON_ERROR = "stack-trace-on-error";
     String NONE = "none";
 }

@@ -87,55 +87,28 @@ public class UndertowSubsystemParser_1_0 implements XMLStreamConstants, XMLEleme
                                                         .addChild(
                                                                 builder(FilterRefDefinition.INSTANCE)
                                                         )
+                                        ).addChild(
+                                                builder(AccessLogDefinition.INSTANCE)
+                                                        .addAttributes(AccessLogDefinition.ATTRIBUTES)
+
                                         )
                         )
                 )
                 .addChild(
                         builder(ServletContainerDefinition.INSTANCE)
-                                .addAttribute(ServletContainerDefinition.ALLOW_NON_STANDARD_WRAPPERS)
-                                .addAttribute(ServletContainerDefinition.DEFAULT_BUFFER_CACHE)
-                                .addAttribute(ServletContainerDefinition.STACK_TRACE_ON_ERROR)
+                                .addAttributes(ServletContainerDefinition.INSTANCE.getAttributes())
                                 .addChild(
                                         builder(JspDefinition.INSTANCE)
                                                 .setXmlElementName(Constants.JSP_CONFIG)
-                                                .addAttributes(
-                                                        JspDefinition.DISABLED,
-                                                        JspDefinition.DEVELOPMENT,
-                                                        JspDefinition.KEEP_GENERATED,
-                                                        JspDefinition.TRIM_SPACES,
-                                                        JspDefinition.TAG_POOLING,
-                                                        JspDefinition.MAPPED_FILE,
-                                                        JspDefinition.CHECK_INTERVAL,
-                                                        JspDefinition.MODIFICATION_TEST_INTERVAL,
-                                                        JspDefinition.RECOMPILE_ON_FAIL,
-                                                        JspDefinition.SMAP,
-                                                        JspDefinition.DUMP_SMAP,
-                                                        JspDefinition.GENERATE_STRINGS_AS_CHAR_ARRAYS,
-                                                        JspDefinition.ERROR_ON_USE_BEAN_INVALID_CLASS_ATTRIBUTE,
-                                                        JspDefinition.SCRATCH_DIR,
-                                                        JspDefinition.SOURCE_VM,
-                                                        JspDefinition.TARGET_VM,
-                                                        JspDefinition.JAVA_ENCODING,
-                                                        JspDefinition.X_POWERED_BY,
-                                                        JspDefinition.DISPLAY_SOURCE_FRAGMENT)
+                                                .addAttributes(JspDefinition.ATTRIBUTES)
                                 )
                                 .addChild(
                                         builder(SessionCookieDefinition.INSTANCE)
-                                                .addAttributes(
-                                                        SessionCookieDefinition.NAME,
-                                                        SessionCookieDefinition.DOMAIN,
-                                                        SessionCookieDefinition.COMMENT,
-                                                        SessionCookieDefinition.HTTP_ONLY,
-                                                        SessionCookieDefinition.SECURE,
-                                                        SessionCookieDefinition.MAX_AGE
-                                                )
+                                                .addAttributes(SessionCookieDefinition.ATTRIBUTES)
                                 )
                                 .addChild(
                                         builder(PersistentSessionsDefinition.INSTANCE)
-                                                .addAttributes(
-                                                        PersistentSessionsDefinition.PATH,
-                                                        PersistentSessionsDefinition.RELATIVE_TO
-                                                )
+                                                .addAttributes(PersistentSessionsDefinition.ATTRIBUTES)
                                 )
                 )
                 .addChild(
@@ -148,14 +121,8 @@ public class UndertowSubsystemParser_1_0 implements XMLStreamConstants, XMLEleme
                                 .setNoAddOperation(true)
                                 .addChild(
                                         builder(FileHandler.INSTANCE)
-                                                .addAttributes(
-                                                        FileHandler.PATH,
-                                                        FileHandler.CACHE_BUFFER_SIZE,
-                                                        FileHandler.CACHE_BUFFERS,
-                                                        FileHandler.DIRECTORY_LISTING)
+                                                .addAttributes(FileHandler.INSTANCE.getAttributes())
                                 )
-
-
                 )
                 .addChild(
                         builder(FilterDefinitions.INSTANCE)

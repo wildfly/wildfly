@@ -56,10 +56,12 @@ import org.jboss.msc.value.InjectedValue;
  */
 public class Host implements Service<Host>, WebHost {
     private final PathHandler pathHandler = new PathHandler();
+    private volatile HttpHandler rootHandler = pathHandler;
     private final Set<String> allAliases;
     private final String name;
     private final InjectedValue<Server> server = new InjectedValue<>();
     private final InjectedValue<UndertowService> undertowService = new InjectedValue<>();
+    private final InjectedValue<AccessLogService> accessLogService = new InjectedValue<>();
     private final Set<Deployment> deployments = new CopyOnWriteArraySet<>();
 
     protected Host(String name, List<String> aliases) {
@@ -72,6 +74,10 @@ public class Host implements Service<Host>, WebHost {
 
     @Override
     public void start(StartContext context) throws StartException {
+        AccessLogService logService = accessLogService.getOptionalValue();
+        if (logService!=null){
+            rootHandler = logService.configureAccessLogHandler(pathHandler);
+        }
         server.getValue().registerHost(this);
         UndertowLogger.ROOT_LOGGER.infof("Starting host %s", name);
     }
@@ -92,6 +98,10 @@ public class Host implements Service<Host>, WebHost {
         return server;
     }
 
+    protected InjectedValue<AccessLogService> getAccessLogService() {
+        return accessLogService;
+    }
+
     public Server getServer() {
         return server.getValue();
     }
@@ -109,7 +119,7 @@ public class Host implements Service<Host>, WebHost {
     }
 
     protected HttpHandler getRootHandler() {
-        return pathHandler;
+        return rootHandler;
     }
 
     public void registerDeployment(final Deployment deployment, HttpHandler handler) {

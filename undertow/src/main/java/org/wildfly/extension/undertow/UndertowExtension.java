@@ -55,8 +55,9 @@ public class UndertowExtension implements Extension {
     protected static final PathElement PATH_BUFFER_CACHE = PathElement.pathElement(Constants.BUFFER_CACHE);
     protected static final PathElement PATH_LOCATION = PathElement.pathElement(Constants.LOCATION);
     protected static final PathElement SERVER_PATH = PathElement.pathElement(Constants.SERVER);
-    private static final String RESOURCE_NAME = UndertowExtension.class.getPackage().getName() + ".LocalDescriptions";
+    protected static final PathElement PATH_ACCESS_LOG = PathElement.pathElement(Constants.SETTING, Constants.ACCESS_LOG);
     public static final PathElement PATH_FILTER_REF = PathElement.pathElement(Constants.FILTER_REF);
+    private static final String RESOURCE_NAME = UndertowExtension.class.getPackage().getName() + ".LocalDescriptions";
 
     public static StandardResourceDescriptionResolver getResolver(final String... keyPrefix) {
         StringBuilder prefix = new StringBuilder(SUBSYSTEM_NAME);
@@ -76,11 +77,6 @@ public class UndertowExtension implements Extension {
         final SubsystemRegistration subsystem = context.registerSubsystem(SUBSYSTEM_NAME, 1, 0, 0);
         final ManagementResourceRegistration registration = subsystem.registerSubsystemModel(UndertowRootDefinition.INSTANCE);
         registration.registerOperationHandler(GenericSubsystemDescribeHandler.DEFINITION, GenericSubsystemDescribeHandler.INSTANCE, false);
-     /*   registration.registerSubModel(BufferCacheDefinition.INSTANCE);
-        registration.registerSubModel(ServerDefinition.INSTANCE);
-        registration.registerSubModel(ServletContainerDefinition.INSTANCE);
-        registration.registerSubModel(ErrorHandlerDefinition.INSTANCE);*/
-
 
         final ManagementResourceRegistration deployments = subsystem.registerDeploymentModel(DeploymentDefinition.INSTANCE);
         deployments.registerSubModel(DeploymentServletDefinition.INSTANCE);

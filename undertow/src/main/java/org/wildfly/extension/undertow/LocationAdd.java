@@ -68,7 +68,6 @@ class LocationAdd extends AbstractAddStepHandler {
         final String handler = LocationDefinition.HANDLER.resolveModelAttribute(context, model).asString();
         final ModelNode fullModel = Resource.Tools.readModel(context.readResource(PathAddress.EMPTY_ADDRESS));
 
-
         final LocationService service = new LocationService(name);
         final String serverName = serverAddress.getLastElement().getValue();
         final String hostName = hostAddress.getLastElement().getValue();
@@ -81,12 +80,11 @@ class LocationAdd extends AbstractAddStepHandler {
         configureFilterRef(fullModel, builder, service);
 
         builder.setInitialMode(ServiceController.Mode.ACTIVE);
-
+        builder.addListener(verificationHandler);
         final ServiceController<LocationService> serviceController = builder.install();
         if (newControllers != null) {
             newControllers.add(serviceController);
         }
-
     }
 
     private void configureFilterRef(final ModelNode model, ServiceBuilder<LocationService> builder, LocationService service) {

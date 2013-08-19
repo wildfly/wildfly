@@ -165,4 +165,7 @@ public interface UndertowMessages {
 
     @Message(id = 17348, value = "Failed to create persistent sessions dir %s")
     StartException failedToCreatePersistentSessionDir(File baseDir);
+
+    @Message(id = 17349, value = "Could not create log directory: %s")
+    StartException couldNotCreateLogDirectory(File directory);
 }

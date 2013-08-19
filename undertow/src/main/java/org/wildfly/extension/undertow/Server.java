@@ -64,12 +64,7 @@ public class Server implements Service<Server> {
         root = new SimpleErrorPageHandler(root);
         root = new CanonicalPathHandler(root);
 
-/*
-        if (cacheSize > 0) {
-            root = new CacheHandler(new DirectBufferCache<CachedHttpRequest>(1024, cacheSize * 1024 * 1024), root);
-        }*/
-
-        UndertowLogger.ROOT_LOGGER.infof("Starting server server service: %s", startContext.getController().getName());
+        UndertowLogger.ROOT_LOGGER.startedServer(name);
         undertowService.getValue().registerServer(this);
     }
 
