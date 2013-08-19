@@ -33,7 +33,70 @@ import static org.jboss.as.connector.subsystems.common.pool.Constants.POOL_FLUSH
 import static org.jboss.as.connector.subsystems.common.pool.Constants.POOL_PREFILL;
 import static org.jboss.as.connector.subsystems.common.pool.Constants.POOL_USE_STRICT_MIN;
 import static org.jboss.as.connector.subsystems.common.pool.Constants.USE_FAST_FAIL;
-import static org.jboss.as.connector.subsystems.datasources.Constants.*;
+import static org.jboss.as.connector.subsystems.datasources.Constants.ALLOCATION_RETRY;
+import static org.jboss.as.connector.subsystems.datasources.Constants.ALLOCATION_RETRY_WAIT_MILLIS;
+import static org.jboss.as.connector.subsystems.datasources.Constants.ALLOW_MULTIPLE_USERS;
+import static org.jboss.as.connector.subsystems.datasources.Constants.CHECK_VALID_CONNECTION_SQL;
+import static org.jboss.as.connector.subsystems.datasources.Constants.CONNECTION_PROPERTIES;
+import static org.jboss.as.connector.subsystems.datasources.Constants.CONNECTION_PROPERTY_VALUE;
+import static org.jboss.as.connector.subsystems.datasources.Constants.CONNECTION_URL;
+import static org.jboss.as.connector.subsystems.datasources.Constants.DATASOURCE_CLASS;
+import static org.jboss.as.connector.subsystems.datasources.Constants.DATASOURCE_DRIVER;
+import static org.jboss.as.connector.subsystems.datasources.Constants.DATA_SOURCE;
+import static org.jboss.as.connector.subsystems.datasources.Constants.DRIVER_CLASS;
+import static org.jboss.as.connector.subsystems.datasources.Constants.DRIVER_CLASS_NAME;
+import static org.jboss.as.connector.subsystems.datasources.Constants.DRIVER_DATASOURCE_CLASS_NAME;
+import static org.jboss.as.connector.subsystems.datasources.Constants.DRIVER_MAJOR_VERSION;
+import static org.jboss.as.connector.subsystems.datasources.Constants.DRIVER_MINOR_VERSION;
+import static org.jboss.as.connector.subsystems.datasources.Constants.DRIVER_MODULE_NAME;
+import static org.jboss.as.connector.subsystems.datasources.Constants.DRIVER_NAME;
+import static org.jboss.as.connector.subsystems.datasources.Constants.DRIVER_XA_DATASOURCE_CLASS_NAME;
+import static org.jboss.as.connector.subsystems.datasources.Constants.ENABLED;
+import static org.jboss.as.connector.subsystems.datasources.Constants.EXCEPTION_SORTER_CLASSNAME;
+import static org.jboss.as.connector.subsystems.datasources.Constants.EXCEPTION_SORTER_PROPERTIES;
+import static org.jboss.as.connector.subsystems.datasources.Constants.INTERLEAVING;
+import static org.jboss.as.connector.subsystems.datasources.Constants.JDBC_DRIVER_NAME;
+import static org.jboss.as.connector.subsystems.datasources.Constants.JNDI_NAME;
+import static org.jboss.as.connector.subsystems.datasources.Constants.JTA;
+import static org.jboss.as.connector.subsystems.datasources.Constants.NEW_CONNECTION_SQL;
+import static org.jboss.as.connector.subsystems.datasources.Constants.NO_RECOVERY;
+import static org.jboss.as.connector.subsystems.datasources.Constants.NO_TX_SEPARATE_POOL;
+import static org.jboss.as.connector.subsystems.datasources.Constants.PAD_XID;
+import static org.jboss.as.connector.subsystems.datasources.Constants.PASSWORD;
+import static org.jboss.as.connector.subsystems.datasources.Constants.POOLNAME_NAME;
+import static org.jboss.as.connector.subsystems.datasources.Constants.PREPARED_STATEMENTS_CACHE_SIZE;
+import static org.jboss.as.connector.subsystems.datasources.Constants.QUERY_TIMEOUT;
+import static org.jboss.as.connector.subsystems.datasources.Constants.REAUTHPLUGIN_PROPERTIES;
+import static org.jboss.as.connector.subsystems.datasources.Constants.REAUTH_PLUGIN_CLASSNAME;
+import static org.jboss.as.connector.subsystems.datasources.Constants.RECOVERY_PASSWORD;
+import static org.jboss.as.connector.subsystems.datasources.Constants.RECOVERY_SECURITY_DOMAIN;
+import static org.jboss.as.connector.subsystems.datasources.Constants.RECOVERY_USERNAME;
+import static org.jboss.as.connector.subsystems.datasources.Constants.RECOVER_PLUGIN_CLASSNAME;
+import static org.jboss.as.connector.subsystems.datasources.Constants.RECOVER_PLUGIN_PROPERTIES;
+import static org.jboss.as.connector.subsystems.datasources.Constants.SAME_RM_OVERRIDE;
+import static org.jboss.as.connector.subsystems.datasources.Constants.SECURITY_DOMAIN;
+import static org.jboss.as.connector.subsystems.datasources.Constants.SET_TX_QUERY_TIMEOUT;
+import static org.jboss.as.connector.subsystems.datasources.Constants.SHARE_PREPARED_STATEMENTS;
+import static org.jboss.as.connector.subsystems.datasources.Constants.SPY;
+import static org.jboss.as.connector.subsystems.datasources.Constants.STALE_CONNECTION_CHECKER_CLASSNAME;
+import static org.jboss.as.connector.subsystems.datasources.Constants.STALE_CONNECTION_CHECKER_PROPERTIES;
+import static org.jboss.as.connector.subsystems.datasources.Constants.TRACK_STATEMENTS;
+import static org.jboss.as.connector.subsystems.datasources.Constants.TRANSACTION_ISOLATION;
+import static org.jboss.as.connector.subsystems.datasources.Constants.URL_DELIMITER;
+import static org.jboss.as.connector.subsystems.datasources.Constants.URL_SELECTOR_STRATEGY_CLASS_NAME;
+import static org.jboss.as.connector.subsystems.datasources.Constants.USERNAME;
+import static org.jboss.as.connector.subsystems.datasources.Constants.USE_CCM;
+import static org.jboss.as.connector.subsystems.datasources.Constants.USE_JAVA_CONTEXT;
+import static org.jboss.as.connector.subsystems.datasources.Constants.USE_TRY_LOCK;
+import static org.jboss.as.connector.subsystems.datasources.Constants.VALIDATE_ON_MATCH;
+import static org.jboss.as.connector.subsystems.datasources.Constants.VALID_CONNECTION_CHECKER_CLASSNAME;
+import static org.jboss.as.connector.subsystems.datasources.Constants.VALID_CONNECTION_CHECKER_PROPERTIES;
+import static org.jboss.as.connector.subsystems.datasources.Constants.WRAP_XA_RESOURCE;
+import static org.jboss.as.connector.subsystems.datasources.Constants.XADATASOURCE_PROPERTIES;
+import static org.jboss.as.connector.subsystems.datasources.Constants.XADATASOURCE_PROPERTY_VALUE;
+import static org.jboss.as.connector.subsystems.datasources.Constants.XA_DATASOURCE;
+import static org.jboss.as.connector.subsystems.datasources.Constants.XA_DATASOURCE_CLASS;
+import static org.jboss.as.connector.subsystems.datasources.Constants.XA_RESOURCE_TIMEOUT;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ADD;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ENABLE;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP;
@@ -44,6 +107,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+
 import javax.xml.stream.XMLStreamException;
 
 import org.jboss.as.connector.util.AbstractParser;
@@ -78,6 +142,10 @@ public class DsParser extends AbstractParser {
      */
     private static CommonBundle bundle = Messages.getBundle(CommonBundle.class);
 
+    private final DefaultValues defaultValues;
+    public DsParser(DefaultValues defaultValues) {
+        this.defaultValues = defaultValues;
+    }
 
     public void parse(final XMLExtendedStreamReader reader, final List<ModelNode> list, ModelNode parentAddress) throws Exception {
 
@@ -255,7 +323,7 @@ public class DsParser extends AbstractParser {
         String poolName = null;
         final ModelNode operation = new ModelNode();
         operation.get(OP).set(ADD);
-        boolean enabled = Defaults.ENABLED.booleanValue();
+        boolean enabled = defaultValues.getEnabledDefaultValue();
         // Persist the enabled flag because xml default is != from DMR default
         boolean persistEnabled = true;
         for (DataSource.Attribute attribute : DataSource.Attribute.values()) {
@@ -483,7 +551,7 @@ public class DsParser extends AbstractParser {
         String poolName = null;
         final ModelNode operation = new ModelNode();
         operation.get(OP).set(ADD);
-        boolean enabled = Defaults.ENABLED.booleanValue();
+        boolean enabled = defaultValues.getEnabledDefaultValue();
         // Persist the enabled flag because xml default is != from DMR default
         boolean persistEnabled = true;
         for (DataSource.Attribute attribute : DataSource.Attribute.values()) {
@@ -1145,5 +1213,19 @@ public class DsParser extends AbstractParser {
             return element == null ? UNKNOWN : element;
         }
 
+    }
+
+    static class DefaultValues {
+        static final DefaultValues INSTANCE_1_0 = new DefaultValues(Defaults.ENABLED.booleanValue());
+        static final DefaultValues INSTANCE_2_0 = new DefaultValues(false);
+        private final boolean enabledDefault;
+
+        private DefaultValues(boolean enabledDefault) {
+            this.enabledDefault = enabledDefault;
+        }
+
+        boolean getEnabledDefaultValue() {
+            return enabledDefault;
+        }
     }
 }
