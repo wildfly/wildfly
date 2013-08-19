@@ -22,6 +22,12 @@
 
 package org.jboss.as.connector.util;
 
+import static org.jboss.as.connector.subsystems.jca.Constants.DEFAULT_NAME;
+
+import java.util.Collections;
+import java.util.Locale;
+import java.util.Map;
+
 import org.jboss.as.connector.deployers.ra.processors.AbstractResourceAdapterDeploymentServiceListener;
 import org.jboss.as.connector.metadata.xmldescriptors.ConnectorXmlDescriptor;
 import org.jboss.as.connector.services.mdr.AS7MetadataRepository;
@@ -29,10 +35,12 @@ import org.jboss.as.connector.services.resourceadapters.deployment.ResourceAdapt
 import org.jboss.as.connector.services.resourceadapters.deployment.registry.ResourceAdapterDeploymentRegistry;
 import org.jboss.as.connector.subsystems.jca.JcaSubsystemConfiguration;
 import org.jboss.as.controller.ServiceVerificationHandler;
+import org.jboss.as.controller.descriptions.OverrideDescriptionProvider;
 import org.jboss.as.controller.registry.ManagementResourceRegistration;
 import org.jboss.as.controller.registry.Resource;
 import org.jboss.as.naming.service.NamingService;
 import org.jboss.as.security.service.SubjectFactoryService;
+import org.jboss.dmr.ModelNode;
 import org.jboss.jca.common.api.metadata.resourceadapter.v11.ResourceAdapter;
 import org.jboss.jca.core.api.connectionmanager.ccm.CachedConnectionManager;
 import org.jboss.jca.core.api.management.ManagementRepository;
@@ -45,8 +53,6 @@ import org.jboss.msc.service.ServiceController;
 import org.jboss.msc.service.ServiceName;
 import org.jboss.msc.service.ServiceTarget;
 import org.jboss.security.SubjectFactory;
-
-import static org.jboss.as.connector.subsystems.jca.Constants.DEFAULT_NAME;
 
 public class RaServicesFactory {
 
@@ -87,7 +93,19 @@ public class RaServicesFactory {
         }
         if (registration != null && deploymentResource != null) {
             String bootstrapCtxName =  raxml.getBootstrapContext() != null ? raxml.getBootstrapContext() : "default";
+            if (registration.isAllowsOverride() && registration.getOverrideModel(deploymentUnitName) == null) {
+                registration.registerOverrideModel(deploymentUnitName, new OverrideDescriptionProvider() {
+                    @Override
+                    public Map<String, ModelNode> getAttributeOverrideDescriptions(Locale locale) {
+                        return Collections.emptyMap();
+                    }
 
+                    @Override
+                    public Map<String, ModelNode> getChildTypeOverrideDescriptions(Locale locale) {
+                        return Collections.emptyMap();
+                    }
+                });
+            }
             builder.addListener(new AbstractResourceAdapterDeploymentServiceListener(registration, deploymentUnitName, deploymentResource, bootstrapCtxName, raxml.getId()) {
 
                 @Override

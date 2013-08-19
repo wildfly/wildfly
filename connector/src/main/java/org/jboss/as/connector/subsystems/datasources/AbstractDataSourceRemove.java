@@ -104,6 +104,8 @@ public abstract class AbstractDataSourceRemove extends AbstractRemoveStepHandler
             context.removeService(driverDemanderServiceName);
         }
 
+        //Unregister the override
+        context.getResourceRegistrationForUpdate().unregisterOverrideModel(dsName);
     }
 
     protected void recoverServices(OperationContext context, ModelNode operation, ModelNode model) {

@@ -21,6 +21,10 @@
  */
 package org.jboss.as.connector.subsystems.datasources;
 
+import static org.jboss.as.connector.logging.ConnectorMessages.MESSAGES;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.DISABLE;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ENABLE;
+
 import org.jboss.as.controller.ObjectListAttributeDefinition;
 import org.jboss.as.controller.ObjectTypeAttributeDefinition;
 import org.jboss.as.controller.OperationFailedException;
@@ -49,11 +53,6 @@ import org.jboss.jca.common.api.metadata.ds.Validation;
 import org.jboss.jca.common.api.metadata.ds.v12.DataSource;
 import org.jboss.jca.common.api.metadata.ds.v12.DsPool;
 import org.jboss.jca.common.api.metadata.ds.v12.XaDataSource;
-
-import static org.jboss.as.connector.logging.ConnectorMessages.MESSAGES;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.DISABLE;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ENABLE;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.PERSISTENT;
 
 /**
  * @author @author <a href="mailto:stefano.maestri@redhat.com">Stefano
@@ -272,11 +271,10 @@ public class Constants {
 
     static SimpleAttributeDefinition USE_JAVA_CONTEXT = new SimpleAttributeDefinition(USE_JAVA_CONTEXT_NAME, DataSource.Attribute.USE_JAVA_CONTEXT.getLocalName(), new ModelNode().set(Defaults.USE_JAVA_CONTEXT), ModelType.BOOLEAN, true, true, MeasurementUnit.NONE);
 
-    //Note: ENABLED default is false in AS7 (true in IJ) because of the enable/disable operation behaviour
     static SimpleAttributeDefinition ENABLED = new SimpleAttributeDefinitionBuilder(ENABLED_NAME, ModelType.BOOLEAN)
             .setXmlName(DataSource.Attribute.ENABLED.getLocalName())
             .setAllowExpression(false)
-            .setDefaultValue(new ModelNode(false))
+            .setDefaultValue(new ModelNode(Defaults.ENABLED))
             .setAllowNull(true)
             .build();
 
@@ -595,8 +593,7 @@ public class Constants {
             .setReplyParameters(DRIVER_MINOR_VERSION, DRIVER_MAJOR_VERSION, DEPLOYMENT_NAME, DRIVER_NAME, DRIVER_XA_DATASOURCE_CLASS_NAME, XA_DATASOURCE_CLASS, JDBC_COMPLIANT, MODULE_SLOT, DRIVER_CLASS_NAME, DRIVER_MODULE_NAME)
             .setAttributeResolver(DataSourcesExtension.getResourceDescriptionResolver("jdbc-driver"))
             .build();
-    static final SimpleOperationDefinition DATASOURCE_ENABLE = new SimpleOperationDefinitionBuilder(ENABLE, DataSourcesExtension.getResourceDescriptionResolver())
-            .setParameters(SimpleAttributeDefinitionBuilder.create(PERSISTENT, ModelType.BOOLEAN).setDefaultValue(new ModelNode(true)).build()).build();
+    static final SimpleOperationDefinition DATASOURCE_ENABLE = new SimpleOperationDefinitionBuilder(ENABLE, DataSourcesExtension.getResourceDescriptionResolver()).build();
     static final SimpleOperationDefinition DATASOURCE_DISABLE = new SimpleOperationDefinitionBuilder(DISABLE, DataSourcesExtension.getResourceDescriptionResolver())
             .build();
     static final SimpleOperationDefinition FLUSH_IDLE_CONNECTION = new SimpleOperationDefinitionBuilder("flush-idle-connection-in-pool", DataSourcesExtension.getResourceDescriptionResolver())

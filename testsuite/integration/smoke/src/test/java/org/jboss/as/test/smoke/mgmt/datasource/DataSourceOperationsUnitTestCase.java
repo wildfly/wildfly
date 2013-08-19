@@ -85,6 +85,7 @@ public class DataSourceOperationsUnitTestCase extends DsMgmtTestBase {
 
         operation.get("name").set("MyNewDs");
         operation.get("jndi-name").set("java:jboss/datasources/MyNewDs");
+        operation.get("enabled").set(false);
 
 
         operation.get("driver-name").set("h2");
@@ -132,6 +133,7 @@ public class DataSourceOperationsUnitTestCase extends DsMgmtTestBase {
 
         operation.get("name").set("MyNewDs");
         operation.get("jndi-name").set("java:jboss/datasources/MyNewDs");
+        operation.get("enabled").set(false);
 
         operation.get("driver-name").set("h2");
         operation.get("pool-name").set("MyNewDs_Pool");
@@ -173,6 +175,7 @@ public class DataSourceOperationsUnitTestCase extends DsMgmtTestBase {
 
         operation.get("name").set("MyNewDs");
         operation.get("jndi-name").set("java:jboss/datasources/MyNewDs");
+        operation.get("enabled").set(false);
 
 
         operation.get("driver-name").set("h2");
@@ -228,6 +231,7 @@ public class DataSourceOperationsUnitTestCase extends DsMgmtTestBase {
 
         operation.get("name").set(dsName);
         operation.get("jndi-name").set("java:jboss/datasources/" + dsName);
+        operation.get("enabled").set(false);
 
         operation.get("driver-name").set("h2");
         operation.get("pool-name").set(dsName + "_Pool");
@@ -266,6 +270,7 @@ public class DataSourceOperationsUnitTestCase extends DsMgmtTestBase {
 
         operation.get("name").set(dsName);
         operation.get("jndi-name").set("java:jboss/datasources/" + jndiDsName);
+        operation.get("enabled").set(false);
 
 
         operation.get("driver-name").set("h2");
@@ -297,6 +302,7 @@ public class DataSourceOperationsUnitTestCase extends DsMgmtTestBase {
 
         operation.get("name").set(dsName);
         operation.get("jndi-name").set("java:jboss/datasources/" + jndiDsName);
+        operation.get("enabled").set(false);
 
 
         operation.get("driver-name").set("h2");
@@ -352,6 +358,7 @@ public class DataSourceOperationsUnitTestCase extends DsMgmtTestBase {
 
         operation.get("name").set(dsName);
         operation.get("jndi-name").set("java:jboss/datasources/" + jndiDsName);
+        operation.get("enabled").set(false);
 
 
         operation.get("driver-name").set("h2");
@@ -416,6 +423,7 @@ public class DataSourceOperationsUnitTestCase extends DsMgmtTestBase {
 
         operation.get("name").set(dsName);
         operation.get("jndi-name").set("java:jboss/datasources/" + jndiDsName);
+        operation.get("enabled").set(false);
 
 
         operation.get("driver-name").set("h2");
@@ -500,6 +508,7 @@ public class DataSourceOperationsUnitTestCase extends DsMgmtTestBase {
 
         operation.get("name").set(xaDs);
         operation.get("jndi-name").set(xaDsJndi);
+        operation.get("enabled").set(false);
         operation.get("driver-name").set("h2");
         operation.get("xa-datasource-class").set("org.jboss.as.connector.subsystems.datasources.ModifiableXaDataSource");
         operation.get("pool-name").set(xaDs + "_Pool");
@@ -556,6 +565,7 @@ public class DataSourceOperationsUnitTestCase extends DsMgmtTestBase {
         final ModelNode operation = new ModelNode();
         operation.get(OP).set("add");
         operation.get(OP_ADDR).set(address);
+        operation.get("enabled").set(false);
 
         setOperationParams(operation, params);
         addExtensionProperties(operation);
@@ -610,6 +620,7 @@ public class DataSourceOperationsUnitTestCase extends DsMgmtTestBase {
         final ModelNode operation = new ModelNode();
         operation.get(OP).set("add");
         operation.get(OP_ADDR).set(address);
+        operation.get("enabled").set(false);
 
         Properties params = xaDsProperties(complexXaDsJndi);
         setOperationParams(operation, params);
@@ -677,6 +688,7 @@ public class DataSourceOperationsUnitTestCase extends DsMgmtTestBase {
 
         operation.get("name").set(dsName);
         operation.get("jndi-name").set("java:jboss/datasources/" + jndiDsName);
+        operation.get("enabled").set(false);
 
 
         operation.get("driver-name").set("h2");
@@ -738,6 +750,7 @@ public class DataSourceOperationsUnitTestCase extends DsMgmtTestBase {
 
         operation.get("name").set("MyNewDs");
         operation.get("jndi-name").set("java:jboss/datasources/MyNewDs");
+        operation.get("enabled").set(false);
 
 
         operation.get("driver-name").set("h2");

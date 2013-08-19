@@ -23,6 +23,7 @@
 package org.jboss.as.connector.subsystems.datasources;
 
 import static org.jboss.as.connector.subsystems.datasources.Constants.DATASOURCE_DRIVER;
+import static org.jboss.as.connector.subsystems.datasources.Constants.ENABLED;
 import static org.jboss.as.connector.subsystems.datasources.Constants.JNDI_NAME;
 import static org.jboss.as.connector.subsystems.datasources.Constants.JTA;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
@@ -75,6 +76,7 @@ public abstract class AbstractDataSourceAdd extends AbstractAddStepHandler {
         final Resource resource = createResource(context);
         populateModel(context, operation, resource);
         final ModelNode model = resource.getModel();
+        boolean enabled = ! operation.hasDefined(ENABLED.getName()) || operation.get(ENABLED.getName()).asBoolean();
 
         if (requiresRuntime(context)) {
             context.addStep(new OperationStepHandler() {
@@ -95,6 +97,9 @@ public abstract class AbstractDataSourceAdd extends AbstractAddStepHandler {
                     });
                 }
             }, OperationContext.Stage.RUNTIME);
+        }
+        if (enabled) {
+            context.addStep(new DataSourceEnable(this instanceof XaDataSourceAdd), OperationContext.Stage.MODEL);
         }
         context.stepCompleted();
     }
@@ -119,8 +124,6 @@ public abstract class AbstractDataSourceAdd extends AbstractAddStepHandler {
 
         final ServiceTarget serviceTarget = context.getServiceTarget();
 
-        boolean enabled = false;
-                //!operation.hasDefined(ENABLED.getName()) || operation.get(ENABLED.getName()).asBoolean();
 
         ModelNode node = DATASOURCE_DRIVER.resolveModelAttribute(context, model);
 
@@ -159,7 +162,9 @@ public abstract class AbstractDataSourceAdd extends AbstractAddStepHandler {
                     .addDependency(ConnectorServices.CCM_SERVICE, CachedConnectionManager.class, dataSourceService.getCcmInjector());
 
         }
-        dataSourceServiceBuilder.addListener(new DataSourceStatisticsListener(registration, resource, dsName));
+        //Register an empty override model regardless of we're enabled or not - the statistics listener will add the relevant childresources
+        ManagementResourceRegistration overrideRegistration = registration.isAllowsOverride() ? registration.registerOverrideModel(dsName, DataSourcesSubsystemProviders.OVERRIDE_DS_DESC) : registration;
+        dataSourceServiceBuilder.addListener(new DataSourceStatisticsListener(overrideRegistration, resource, dsName));
         dataSourceServiceBuilder.addListener(verificationHandler);
         startConfigAndAddDependency(dataSourceServiceBuilder, dataSourceService, dsName, serviceTarget, operation, verificationHandler);
 
@@ -170,7 +175,6 @@ public abstract class AbstractDataSourceAdd extends AbstractAddStepHandler {
 
         controllers.add(dataSourceServiceBuilder.install());
         controllers.add(driverDemanderBuilder.install());
-
 
     }
 

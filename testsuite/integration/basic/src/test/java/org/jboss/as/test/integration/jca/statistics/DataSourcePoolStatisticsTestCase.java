@@ -71,6 +71,7 @@ public class DataSourcePoolStatisticsTestCase extends JcaStatisticsBase {
         operation.get(OP_ADDR).set(address);
         operation.get("jndi-name").set(jndiName);
         operation.get("driver-name").set("h2");
+        operation.get("enabled").set("false");
         if (!xa)
             operation.get("connection-url").set("jdbc:h2:mem:test;DB_CLOSE_DELAY=-1");
         operation.get("min-pool-size").set(minPoolSize);
