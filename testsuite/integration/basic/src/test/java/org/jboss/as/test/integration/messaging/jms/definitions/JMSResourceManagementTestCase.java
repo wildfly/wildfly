@@ -39,6 +39,7 @@ import org.jboss.dmr.ModelNode;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.asset.EmptyAsset;
 import org.jboss.shrinkwrap.api.spec.JavaArchive;
+import org.junit.Assert;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
@@ -67,7 +68,7 @@ public class JMSResourceManagementTestCase {
     }
 
     @Test
-    public void testManagementOfInjectedResource() throws Exception {
+    public void testManagementOfDestinations() throws Exception {
         ModelNode readResourceWithRuntime = getOperation("jms-queue", "myQueue1", "read-resource");
         readResourceWithRuntime.get("include-runtime").set(true);
         ModelNode result = execute(readResourceWithRuntime, true);
@@ -99,6 +100,62 @@ public class JMSResourceManagementTestCase {
         readResourceWithRuntime = getOperation("jms-topic", "myTopic2", "read-resource");
         readResourceWithRuntime.get("include-runtime").set(true);
         execute(readResourceWithRuntime, true);
+    }
+
+    @Test
+    public void testManagementOfConnectionFactories() throws Exception {
+        ModelNode readResourceWithRuntime = getOperation("pooled-connection-factory", "*", "read-resource-description");
+        readResourceWithRuntime.get("include-runtime").set(true);
+        readResourceWithRuntime.get("operations").set(true);
+        execute(readResourceWithRuntime, true);
+
+        readResourceWithRuntime = getOperation("pooled-connection-factory", "*", "read-resource-description");
+        readResourceWithRuntime.get("include-runtime").set(true);
+        readResourceWithRuntime.get("operations").set(true);
+        ModelNode result = execute(readResourceWithRuntime, true);
+        System.out.println("result = " + result.toJSONString(false));
+
+        readResourceWithRuntime = getOperation("pooled-connection-factory", "JMSResourceDefinitionsTestCase_JMSResourceDefinitionsTestCase_java_module/myFactory1", "read-resource");
+        readResourceWithRuntime.get("include-runtime").set(true);
+        result = execute(readResourceWithRuntime, true);
+        System.out.println("result = " + result.toJSONString(false));
+        assertEquals(1, result.get("min-pool-size").asInt());
+        assertEquals(2, result.get("max-pool-size").asInt());
+        assertEquals(3, result.get("initial-connect-attempts").asInt());
+        assertEquals("guest", result.get("user").asString());
+        assertEquals("guest", result.get("password").asString());
+        assertEquals("myClientID1", result.get("client-id").asString());
+
+        readResourceWithRuntime = getOperation("pooled-connection-factory", "JMSResourceDefinitionsTestCase_MessagingBean_java_comp/env/myFactory2", "read-resource");
+        readResourceWithRuntime.get("include-runtime").set(true);
+        result = execute(readResourceWithRuntime, true);
+        System.out.println("result = " + result.toJSONString(false));
+        assertEquals(-1, result.get("min-pool-size").asInt());
+        assertEquals(-1, result.get("max-pool-size").asInt());
+        assertFalse(result.toJSONString(false), result.hasDefined("user"));
+        assertFalse(result.hasDefined("password"));
+        assertFalse(result.hasDefined("client-id"));
+
+        readResourceWithRuntime = getOperation("pooled-connection-factory", "JMSResourceDefinitionsTestCase_JMSResourceDefinitionsTestCase_java_global/myFactory3", "read-resource");
+        readResourceWithRuntime.get("include-runtime").set(true);
+        result = execute(readResourceWithRuntime, true);
+        assertEquals(3, result.get("min-pool-size").asInt());
+        assertEquals(4, result.get("max-pool-size").asInt());
+        assertEquals(5, result.get("initial-connect-attempts").asInt());
+        assertEquals("guest", result.get("user").asString());
+        assertEquals("guest", result.get("password").asString());
+        assertFalse(result.hasDefined("client-id"));
+
+        readResourceWithRuntime = getOperation("pooled-connection-factory", "JMSResourceDefinitionsTestCase_JMSResourceDefinitionsTestCase_java_app/myFactory4", "read-resource");
+        readResourceWithRuntime.get("include-runtime").set(true);
+        result = execute(readResourceWithRuntime, true);
+        System.out.println("result = " + result.toJSONString(false));
+        assertEquals(4, result.get("min-pool-size").asInt());
+        assertEquals(5, result.get("max-pool-size").asInt());
+        assertEquals(6, result.get("initial-connect-attempts").asInt());
+        assertEquals("guest", result.get("user").asString());
+        assertEquals("guest", result.get("password").asString());
+        assertEquals("myClientID4", result.get("client-id").asString());
     }
 
     private ModelNode getOperation(String resourceType, String resourceName, String operationName) {

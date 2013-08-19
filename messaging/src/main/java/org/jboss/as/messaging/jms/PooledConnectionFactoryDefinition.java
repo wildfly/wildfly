@@ -64,7 +64,9 @@ import static org.jboss.as.messaging.jms.ConnectionFactoryAttributes.Pooled.USE_
 import static org.jboss.as.messaging.jms.ConnectionFactoryAttributes.Pooled.USE_LOCAL_TX;
 
 import java.util.EnumSet;
+import java.util.HashMap;
 import java.util.Locale;
+import java.util.Map;
 
 import org.jboss.as.controller.AttributeDefinition;
 import org.jboss.as.controller.PathElement;
@@ -140,11 +142,21 @@ public class PooledConnectionFactoryDefinition extends SimpleResourceDefinition 
         }
     };
 
-    private final boolean registerRuntimeOnly;
+    public static Map<String, ConnectionFactoryAttribute> getAttributes() {
+        Map<String, ConnectionFactoryAttribute> attrs = new HashMap<String, ConnectionFactoryAttribute>(ATTRIBUTES.length);
+        for (ConnectionFactoryAttribute attribute : ATTRIBUTES) {
+            attrs.put(attribute.getDefinition().getName(), attribute);
+        }
+        return attrs;
+    }
 
-    public PooledConnectionFactoryDefinition(final boolean registerRuntimeOnly) {
+    private final boolean registerRuntimeOnly;
+    private final boolean deployed;
+
+    public PooledConnectionFactoryDefinition(final boolean registerRuntimeOnly, final boolean deployed) {
         super(PATH, DESC);
         this.registerRuntimeOnly = registerRuntimeOnly;
+        this.deployed = deployed;
     }
 
     @Override
@@ -160,7 +172,11 @@ public class PooledConnectionFactoryDefinition extends SimpleResourceDefinition 
                 registry.registerReadWriteAttribute(attr, null, new DeprecatedAttributeWriteHandler(attr.getName()));
             } else {
                 if (registerRuntimeOnly || !attr.getFlags().contains(AttributeAccess.Flag.STORAGE_RUNTIME)) {
-                    registry.registerReadWriteAttribute(attr.getName(), null, PooledConnectionFactoryWriteAttributeHandler.INSTANCE, flags);
+                    if (deployed) {
+                        registry.registerReadOnlyAttribute(attr, PooledConnectionFactoryConfigurationRuntimeHandler.INSTANCE);
+                    } else {
+                        registry.registerReadWriteAttribute(attr.getName(), null, PooledConnectionFactoryWriteAttributeHandler.INSTANCE, flags);
+                    }
                 }
             }
         }
@@ -170,8 +186,9 @@ public class PooledConnectionFactoryDefinition extends SimpleResourceDefinition 
     public void registerOperations(ManagementResourceRegistration registry) {
         super.registerOperations(registry);
 
-        super.registerAddOperation(registry, PooledConnectionFactoryAdd.INSTANCE, OperationEntry.Flag.RESTART_NONE);
-        super.registerRemoveOperation(registry, PooledConnectionFactoryRemove.INSTANCE,  OperationEntry.Flag.RESTART_RESOURCE_SERVICES);
-
+        if (!deployed) {
+            super.registerAddOperation(registry, PooledConnectionFactoryAdd.INSTANCE, OperationEntry.Flag.RESTART_NONE);
+            super.registerRemoveOperation(registry, PooledConnectionFactoryRemove.INSTANCE,  OperationEntry.Flag.RESTART_RESOURCE_SERVICES);
+        }
     }
 }

@@ -199,6 +199,7 @@ public interface MessagingLogger extends BasicLogger {
     @Message(id = 11613, value = "Can not change the clustered attribute to false: The hornetq-server resource at %s has cluster-connection children resources and will remain clustered.")
     void canNotChangeClusteredAttribute(PathAddress address);
 
-
-
+    @LogMessage(level = WARN)
+    @Message(id = 11614, value = "Ignoring %s property that is not a known property for pooled connection factory.")
+    void unknownPooledConnectionFactoryAttribute(String name);
 }

@@ -22,14 +22,22 @@
 
 package org.jboss.as.test.integration.messaging.jms.definitions;
 
+import static javax.jms.JMSContext.AUTO_ACKNOWLEDGE;
 import static org.junit.Assert.assertNotNull;
 
 import javax.annotation.Resource;
 import javax.ejb.Stateless;
+import javax.jms.ConnectionFactory;
+import javax.jms.JMSConnectionFactoryDefinition;
+import javax.jms.JMSConnectionFactoryDefinitions;
+import javax.jms.JMSConsumer;
+import javax.jms.JMSContext;
 import javax.jms.JMSDestinationDefinition;
 import javax.jms.JMSDestinationDefinitions;
 import javax.jms.Queue;
+import javax.jms.QueueConnectionFactory;
 import javax.jms.Topic;
+import javax.jms.TopicConnectionFactory;
 
 
 /**
@@ -63,6 +71,37 @@ import javax.jms.Topic;
                 )
         }
 )
+@JMSConnectionFactoryDefinitions(
+        value = {
+                @JMSConnectionFactoryDefinition(
+                        name="java:module/myFactory1",
+                        properties = {
+                                "connector=netty",
+                                "initial-connect-attempts=3"
+                        },
+                        user = "guest",
+                        password = "guest",
+                        clientId = "myClientID1",
+                        maxPoolSize = 2,
+                        minPoolSize = 1
+                ),
+                @JMSConnectionFactoryDefinition(
+                        name="java:comp/env/myFactory2"
+                )
+        }
+)
+@JMSConnectionFactoryDefinition(
+        name="java:global/myFactory3",
+        interfaceName = "javax.jms.QueueConnectionFactory",
+        properties = {
+                "connector=netty",
+                "initial-connect-attempts=5"
+        },
+        user = "guest",
+        password = "guest",
+        maxPoolSize = 4,
+        minPoolSize = 3
+)
 @Stateless
 public class MessagingBean {
 
@@ -90,6 +129,22 @@ public class MessagingBean {
     @Resource(lookup = "java:app/env/myTopic2")
     private Topic topic2;
 
+    // Use a @JMSConnectionFactoryDefinition inside a @JMSConnectionFactoryDefinitions
+    @Resource(lookup = "java:module/myFactory1")
+    private ConnectionFactory factory1;
+
+    // Use a @JMSConnectionFactoryDefinition inside a @JMSConnectionFactoryDefinitions
+    @Resource(lookup = "java:comp/env/myFactory2")
+    private ConnectionFactory factory2;
+
+    // Use a @JMSConnectionFactoryDefinition
+    @Resource(lookup = "java:global/myFactory3")
+    private QueueConnectionFactory factory3;
+
+    // Use a jms-connection-factory from the deployment descriptor
+    @Resource(lookup = "java:app/myFactory4")
+    private TopicConnectionFactory factory4;
+
     public void checkInjectedResources() {
         assertNotNull(queue1);
         assertNotNull(queue2);
@@ -97,5 +152,15 @@ public class MessagingBean {
         assertNotNull(queue4);
         assertNotNull(topic1);
         assertNotNull(topic2);
+        assertNotNull(factory1);
+        assertNotNull(factory2);
+        assertNotNull(factory3);
+        assertNotNull(factory4);
+
+
+        JMSContext context = factory3.createContext("guest", "guest", AUTO_ACKNOWLEDGE);
+        JMSConsumer consumer = context.createConsumer(queue4);
+        assertNotNull(consumer);
+        consumer.close();
     }
 }

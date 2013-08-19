@@ -35,6 +35,8 @@ import org.jboss.as.ee.component.deployers.AbstractDeploymentDescriptorBindingsP
 import org.jboss.as.server.deployment.DeploymentUnit;
 import org.jboss.as.server.deployment.DeploymentUnitProcessingException;
 import org.jboss.as.server.deployment.reflect.DeploymentReflectionIndex;
+import org.jboss.metadata.javaee.spec.JMSConnectionFactoriesMetaData;
+import org.jboss.metadata.javaee.spec.JMSConnectionFactoryMetaData;
 import org.jboss.metadata.javaee.spec.JMSDestinationMetaData;
 import org.jboss.metadata.javaee.spec.JMSDestinationsMetaData;
 import org.jboss.metadata.javaee.spec.PropertiesMetaData;
@@ -42,7 +44,7 @@ import org.jboss.metadata.javaee.spec.PropertyMetaData;
 import org.jboss.metadata.javaee.spec.RemoteEnvironment;
 
 /**
- * Process jms-destination from deployment descriptor.
+ * Process jms-destination and jms-connection-factory from deployment descriptor.
  *
  * @author <a href="http://jmesnil.net/">Jeff Mesnil</a> (c) 2013 Red Hat inc.
  */
@@ -61,6 +63,14 @@ public class MessagingJMSDefinitionDeploymentProcessor extends AbstractDeploymen
         if (destinationsMetadata != null) {
             for (JMSDestinationMetaData metadata : destinationsMetadata) {
                 BindingConfiguration bindingConfiguration = processJMSDestinationDefinition(metadata);
+                bindingConfigurations.add(bindingConfiguration);
+            }
+        }
+
+        JMSConnectionFactoriesMetaData connectionFactoriesMetadata = remoteEnvironment.getJmsConnectionFactories();
+        if (connectionFactoriesMetadata != null) {
+            for (JMSConnectionFactoryMetaData metadata : connectionFactoriesMetadata) {
+                BindingConfiguration bindingConfiguration = processJMSConnectionFactoryDefinition(metadata);
                 bindingConfigurations.add(bindingConfiguration);
             }
         }
@@ -85,6 +95,28 @@ public class MessagingJMSDefinitionDeploymentProcessor extends AbstractDeploymen
                 source.addProperty(property.getKey(), property.getValue());
             }
         }
+
+        return new BindingConfiguration(name, source);
+    }
+
+    private BindingConfiguration processJMSConnectionFactoryDefinition(JMSConnectionFactoryMetaData metadata) {
+        String name = metadata.getName();
+        DirectJMSConnectionFactoryInjectionSource source = new DirectJMSConnectionFactoryInjectionSource(name);
+        source.setInterfaceName(metadata.getInterfaceName());
+        source.setClassName(metadata.getClassName());
+        source.setResourceAdapter(metadata.getResourceAdapter());
+        source.setUser(metadata.getUser());
+        source.setPassword(metadata.getPassword());
+        source.setClientId(metadata.getClientId());
+        PropertiesMetaData properties = metadata.getProperties();
+        if (properties != null) {
+            for (PropertyMetaData property : properties) {
+                source.addProperty(property.getKey(), property.getValue());
+            }
+        }
+        source.setTransactional(metadata.isTransactional());
+        source.setMaxPoolSize(metadata.getMaxPoolSize());
+        source.setMinPoolSize(metadata.getMinPoolSize());
 
         return new BindingConfiguration(name, source);
     }

@@ -28,6 +28,23 @@
         <session>
             <ejb-name>MessagingBean</ejb-name>
             <ejb-class>org.jboss.as.test.integration.messaging.jms.definitions.MessagingBean</ejb-class>
+            <jms-connection-factory>
+                <name>java:app/myFactory4</name>
+                <interface-name>javax.jms.TopicConnectionFactory</interface-name>
+                <user>guest</user>
+                <password>guest</password>
+                <client-id>myClientID4</client-id>
+                <property>
+                    <name>connector</name>
+                    <value>netty</value>
+                </property>
+                <property>
+                    <name>initial-connect-attempts</name>
+                    <value>6</value>
+                </property>
+                <min-pool-size>4</min-pool-size>
+                <max-pool-size>5</max-pool-size>
+            </jms-connection-factory>
             <jms-destination>
                 <description></description>
                 <name>java:app/env/myQueue3</name>

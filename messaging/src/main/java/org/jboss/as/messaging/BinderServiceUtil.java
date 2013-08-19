@@ -21,18 +21,22 @@
  */
 package org.jboss.as.messaging;
 
+import static org.jboss.as.messaging.MessagingLogger.ROOT_LOGGER;
+import static org.jboss.as.naming.deployment.ContextNames.BindInfo;
+
 import javax.naming.InitialContext;
 
 import org.jboss.as.naming.ContextListAndJndiViewManagedReferenceFactory;
 import org.jboss.as.naming.ContextListManagedReferenceFactory;
 import org.jboss.as.naming.ManagedReference;
+import org.jboss.as.naming.ManagedReferenceFactory;
 import org.jboss.as.naming.ServiceBasedNamingStore;
 import org.jboss.as.naming.ValueManagedReference;
 import org.jboss.as.naming.ValueManagedReferenceFactory;
 import org.jboss.as.naming.deployment.ContextNames;
 import org.jboss.as.naming.service.BinderService;
+import org.jboss.msc.service.AbstractServiceListener;
 import org.jboss.msc.service.ServiceController;
-import org.jboss.msc.service.ServiceName;
 import org.jboss.msc.service.ServiceTarget;
 import org.jboss.msc.value.ImmediateValue;
 import org.jboss.msc.value.Values;
@@ -47,7 +51,7 @@ public class BinderServiceUtil {
     public static void installBinderService(final ServiceTarget serviceTarget,
                                                  final String name,
                                                  final Object obj) {
-        final ContextNames.BindInfo bindInfo = ContextNames.bindInfoFor(name);
+        final BindInfo bindInfo = ContextNames.bindInfoFor(name);
         final BinderService binderService = new BinderService(bindInfo.getBindName());
 
         serviceTarget.addService(bindInfo.getBinderServiceName(), binderService)
@@ -58,16 +62,35 @@ public class BinderServiceUtil {
     }
 
     public static void installAliasBinderService(final ServiceTarget serviceTarget,
-                                                 final ServiceName namingStoreServiceName,
-                                                 final String name,
-                                                 final ServiceName aliasServiceName,
+                                                 final BindInfo bindInfo,
                                                  final String alias) {
-        final BinderService aliasBinderService = new BinderService(alias);
-        aliasBinderService.getManagedObjectInjector().inject(new AliasManagedReferenceFactory(name));
+        final BindInfo aliasBindInfo = ContextNames.bindInfoFor(alias);
 
-        serviceTarget.addService(aliasServiceName, aliasBinderService)
-                .addDependency(namingStoreServiceName, ServiceBasedNamingStore.class, aliasBinderService.getNamingStoreInjector())
-                .addDependency(ContextNames.bindInfoFor(name).getBinderServiceName())
+        final BinderService aliasBinderService = new BinderService(alias);
+        aliasBinderService.getManagedObjectInjector().inject(new AliasManagedReferenceFactory(bindInfo.getAbsoluteJndiName()));
+
+        serviceTarget.addService(aliasBindInfo.getBinderServiceName(), aliasBinderService)
+                .addDependency(bindInfo.getParentContextServiceName(), ServiceBasedNamingStore.class, aliasBinderService.getNamingStoreInjector())
+                .addDependency(bindInfo.getBinderServiceName())
+                .addListener(new AbstractServiceListener<ManagedReferenceFactory>() {
+                    @Override
+                    public void transition(ServiceController<? extends ManagedReferenceFactory> controller, ServiceController.Transition transition) {
+                        switch (transition) {
+                            case STARTING_to_UP: {
+                                ROOT_LOGGER.boundJndiName("ALIAS " + alias);
+                                break;
+                            }
+                            case START_REQUESTED_to_DOWN: {
+                                ROOT_LOGGER.unboundJndiName("ALIAS " + alias);
+                                break;
+                            }
+                            case REMOVING_to_REMOVED: {
+                                ROOT_LOGGER.debugf("Removed messaging object [%s]", alias);
+                                break;
+                            }
+                        }
+                    }
+                })
                 .install();
     }
 

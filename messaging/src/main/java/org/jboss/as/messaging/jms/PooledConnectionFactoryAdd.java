@@ -36,7 +36,6 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
 
-import org.hornetq.core.server.HornetQServer;
 import org.jboss.as.controller.AbstractAddStepHandler;
 import org.jboss.as.controller.AttributeDefinition;
 import org.jboss.as.controller.OperationContext;
@@ -47,16 +46,11 @@ import org.jboss.as.controller.descriptions.DescriptionProvider;
 import org.jboss.as.controller.registry.Resource;
 import org.jboss.as.messaging.AlternativeAttributeCheckHandler;
 import org.jboss.as.messaging.CommonAttributes;
-import org.jboss.as.messaging.HornetQActivationService;
 import org.jboss.as.messaging.MessagingDescriptions;
 import org.jboss.as.messaging.MessagingServices;
 import org.jboss.as.messaging.jms.ConnectionFactoryAttributes.Common;
-import org.jboss.as.txn.service.TxnServices;
 import org.jboss.dmr.ModelNode;
-import org.jboss.msc.service.ServiceBuilder;
 import org.jboss.msc.service.ServiceController;
-import org.jboss.msc.service.ServiceController.Mode;
-import org.jboss.msc.service.ServiceName;
 import org.jboss.msc.service.ServiceTarget;
 
 /**
@@ -126,21 +120,11 @@ public class PooledConnectionFactoryAdd extends AbstractAddStepHandler implement
 
         List<PooledConnectionFactoryConfigProperties> adapterParams = getAdapterParams(resolvedModel, context);
 
-        final ServiceName hqServiceName = MessagingServices.getHornetQServiceName(address);
         final PathAddress hqServiceAddress = MessagingServices.getHornetQServerPathAddress(address);
-        ServiceName hornetQResourceAdapterService = JMSServices.getPooledConnectionFactoryBaseServiceName(hqServiceName).append(name);
 
-        PooledConnectionFactoryService resourceAdapterService = new PooledConnectionFactoryService(name, connectors, discoveryGroupName, hqServiceAddress.getLastElement().getValue(), jgroupsChannelName, adapterParams, jndiNames, txSupport, minPoolSize, maxPoolSize);
-
-        ServiceBuilder serviceBuilder = serviceTarget
-                .addService(hornetQResourceAdapterService, resourceAdapterService)
-                .addDependency(TxnServices.JBOSS_TXN_TRANSACTION_MANAGER, resourceAdapterService.getTransactionManager())
-                .addDependency(hqServiceName, HornetQServer.class, resourceAdapterService.getHornetQService())
-                .addDependency(HornetQActivationService.getHornetQActivationServiceName(hqServiceName))
-                .addDependency(JMSServices.getJmsManagerBaseServiceName(hqServiceName))
-                .setInitialMode(Mode.PASSIVE)
-                .addListener(verificationHandler);
-        newControllers.add(serviceBuilder.install());
+        PooledConnectionFactoryService.installService(verificationHandler, newControllers, serviceTarget,
+                name, hqServiceAddress.getLastElement().getValue(), connectors, discoveryGroupName, jgroupsChannelName,
+                adapterParams, jndiNames, txSupport, minPoolSize, maxPoolSize);
     }
 
     static List<String> getConnectors(final ModelNode model) {

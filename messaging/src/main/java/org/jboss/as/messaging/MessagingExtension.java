@@ -198,7 +198,7 @@ public class MessagingExtension implements Extension {
         // getJNDIBindings (no -- same as "entries")
 
         // Resource Adapter Pooled connection factories
-        serverRegistration.registerSubModel(new PooledConnectionFactoryDefinition(registerRuntimeOnly));
+        serverRegistration.registerSubModel(new PooledConnectionFactoryDefinition(registerRuntimeOnly, false));
         // TODO how do ConnectionFactoryControl things relate?
 
         // JMS Queues
@@ -220,6 +220,7 @@ public class MessagingExtension implements Extension {
 
             serverModel.registerSubModel(JMSQueueDefinition.newDeployedJMSQueueDefinition());
             serverModel.registerSubModel(JMSTopicDefinition.newDeployedJMSTopicDefinition());
+            serverModel.registerSubModel(new PooledConnectionFactoryDefinition(true, true));
         }
 
         // JMS Bridges
