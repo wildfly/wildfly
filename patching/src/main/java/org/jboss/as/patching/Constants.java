@@ -55,6 +55,7 @@ public class Constants {
 
     public static final String APPLIED_AT = "applied-at";
     public static final String TIMESTAMP = "timestamp";
+    public static final String TYPE = "type";
 
     // Directories
     public static final String APP_CLIENT = "appclient";

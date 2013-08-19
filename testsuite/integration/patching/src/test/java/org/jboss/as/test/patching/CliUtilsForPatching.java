@@ -293,25 +293,35 @@ public class CliUtilsForPatching {
         final String rollbackCommand = "patch rollback --patch-id=%s --distribution=%s --reset-configuration=true";
         try {
             cli = new CLIWrapper(false);
-            String command = String.format(infoCommand, PatchingTestUtil.AS_DISTRIBUTION);
-            logger.info("----- sending command to CLI: " + command + " -----");
-            cli.sendLine(command);
-            String response = cli.readOutput();
-            ModelNode responseNode = ModelNode.fromJSONString(response);
-            String cumulativePatchId = responseNode.get("result").get("cumulative-patch-id").asString();
-            if(!cumulativePatchId.equalsIgnoreCase(BASE)) {
-                command = String.format(rollbackCommand, cumulativePatchId, PatchingTestUtil.AS_DISTRIBUTION);
+            boolean doRollback = true;
+            while(doRollback) {
+                doRollback = false;
+                String command = String.format(infoCommand, PatchingTestUtil.AS_DISTRIBUTION);
                 logger.info("----- sending command to CLI: " + command + " -----");
-                success = success && cli.sendLine(command, true);
-            }
-            cli.sendLine(String.format(infoCommand, PatchingTestUtil.AS_DISTRIBUTION));
-            response = cli.readOutput();
-            responseNode = ModelNode.fromJSONString(response);
-            List<ModelNode> patchesList = responseNode.get("result").get("patches").asList();
-            for (ModelNode n : patchesList) {
-                command = String.format(rollbackCommand, n.asString(), PatchingTestUtil.AS_DISTRIBUTION);
-                logger.info("----- sending command to CLI: " + command + " -----");
-                success = success && cli.sendLine(command, true);
+                cli.sendLine(command);
+                String response = cli.readOutput();
+                ModelNode responseNode = ModelNode.fromJSONString(response);
+                ModelNode result = responseNode.get("result");
+                if(result.has("patches")) {
+                    final List<ModelNode> patchesList = result.get("patches").asList();
+                    if(!patchesList.isEmpty()) {
+                        doRollback = true;
+                        for (ModelNode n : patchesList) {
+                            command = String.format(rollbackCommand, n.asString(), PatchingTestUtil.AS_DISTRIBUTION);
+                            logger.info("----- sending command to CLI: " + command + " -----");
+                            success = success && cli.sendLine(command, true);
+                        }
+                    }
+                }
+                if(result.has("cumulative-patch-id")) {
+                    final String cumulativePatchId = result.get("cumulative-patch-id").asString();
+                    if(!cumulativePatchId.equalsIgnoreCase(BASE)) {
+                        doRollback = true;
+                        command = String.format(rollbackCommand, cumulativePatchId, PatchingTestUtil.AS_DISTRIBUTION);
+                        logger.info("----- sending command to CLI: " + command + " -----");
+                        success = success && cli.sendLine(command, true);
+                    }
+                }
             }
             return success;
         } finally {

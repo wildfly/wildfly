@@ -11,7 +11,8 @@ SYNOPSIS
 	where <action> can be
 
     apply           - apply a patch
-    info            - information about the installed patches
+    history         - display the patching history
+    info            - information about the active patches
     rollback        - rollback a patch that has been applied
 
 	and <action_arguments> depends on the <action>
@@ -67,6 +68,13 @@ ACTION: info
     Information about the installed patches
 
     patch info
+      [--host=<host>]
+
+ACTION: history
+
+    Patching history
+
+    patch history
       [--host=<host>]
 
 DESCRIPTION

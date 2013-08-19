@@ -45,6 +45,10 @@ public class AbstractPatchingTestCase {
             }
         }
 
+        rollbackAllPatches();
+    }
+
+    protected void rollbackAllPatches() throws Exception {
         // rollback all installed patches
         final boolean success = CliUtilsForPatching.rollbackAll();
         boolean ok = false;

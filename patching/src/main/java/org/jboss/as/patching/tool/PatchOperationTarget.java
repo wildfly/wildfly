@@ -102,6 +102,7 @@ public abstract class PatchOperationTarget {
     //
 
     protected abstract ModelNode info() throws IOException;
+    protected abstract ModelNode history() throws IOException;
     protected abstract ModelNode applyPatch(final File file, final ContentPolicyBuilderImpl builder) throws IOException;
     protected abstract ModelNode rollback(final String patchId, final ContentPolicyBuilderImpl builder, boolean rollbackTo, final boolean restoreConfiguration) throws IOException;
     protected abstract ModelNode rollbackLast(final ContentPolicyBuilderImpl builder, final boolean restoreConfiguration) throws IOException;
@@ -122,6 +123,18 @@ public abstract class PatchOperationTarget {
             result.get(RESULT, Constants.PATCHES).setEmptyList();
             for(final String patch : info.getPatchIDs()) {
                 result.get(RESULT, Constants.PATCHES).add(patch);
+            }
+            return result;
+        }
+
+        @Override
+        protected ModelNode history() {
+            final ModelNode result = new ModelNode();
+            result.get(OUTCOME).set(SUCCESS);
+            try {
+                result.get(RESULT).set(tool.getPatchingHistory().getHistory());
+            } catch (PatchingException e) {
+                return formatFailedResponse(e);
             }
             return result;
         }
@@ -189,6 +202,14 @@ public abstract class PatchOperationTarget {
             operation.get(OP_ADDR).set(address.toModelNode());
             operation.get(RECURSIVE).set(true);
             operation.get(INCLUDE_RUNTIME).set(true);
+            return client.execute(operation);
+        }
+
+        @Override
+        protected ModelNode history() throws IOException {
+            final ModelNode operation = new ModelNode();
+            operation.get(OP).set("show-history");
+            operation.get(OP_ADDR).set(address.toModelNode());
             return client.execute(operation);
         }
 

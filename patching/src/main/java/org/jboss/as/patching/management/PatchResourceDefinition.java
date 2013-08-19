@@ -130,6 +130,9 @@ class PatchResourceDefinition extends SimpleResourceDefinition {
     static final OperationDefinition SHOW_HISTORY = new SimpleOperationDefinitionBuilder("show-history", getResourceDescriptionResolver(PatchResourceDefinition.NAME))
             .build();
 
+    static final OperationDefinition AGEOUT_HISTORY = new SimpleOperationDefinitionBuilder("ageout-history", getResourceDescriptionResolver(PatchResourceDefinition.NAME))
+            .build();
+
     static final ResourceDefinition INSTANCE = new PatchResourceDefinition();
 
     private final List<AccessConstraintDefinition> sensitivity;
@@ -248,6 +251,7 @@ class PatchResourceDefinition extends SimpleResourceDefinition {
         registry.registerOperationHandler(ROLLBACK_LAST, LocalPatchRollbackLastHandler.INSTANCE);
         registry.registerOperationHandler(PATCH, LocalPatchOperationStepHandler.INSTANCE);
         registry.registerOperationHandler(SHOW_HISTORY, LocalShowHistoryHandler.INSTANCE);
+        registry.registerOperationHandler(AGEOUT_HISTORY, LocalAgeoutHistoryHandler.INSTANCE);
     }
 
     @Override

@@ -63,6 +63,7 @@ public class PatchHandler extends CommandHandlerWithHelp {
     static final String PATCH = "patch";
     static final String APPLY = "apply";
     static final String ROLLBACK = "rollback";
+    static final String HISTORY = "history";
     static final String INFO = "info";
 
     private final ArgumentWithValue host;
@@ -85,7 +86,7 @@ public class PatchHandler extends CommandHandlerWithHelp {
     public PatchHandler(final CommandContext context) {
         super(PATCH, false);
 
-        action = new ArgumentWithValue(this, new SimpleTabCompleter(new String[]{APPLY, ROLLBACK, INFO}), 0, "--action");
+        action = new ArgumentWithValue(this, new SimpleTabCompleter(new String[]{APPLY, ROLLBACK, INFO, HISTORY}), 0, "--action");
 
         host = new ArgumentWithValue(this, new DefaultCompleter(CandidatesProviders.HOSTS), "--host") {
             @Override
@@ -293,10 +294,16 @@ public class PatchHandler extends CommandHandlerWithHelp {
             } else {
                 builder = PatchOperationBuilder.Factory.rollbackLast(resetConfig);
             }
-        } else {
+        } else if (INFO.equals(action)) {
             builder = PatchOperationBuilder.Factory.info();
             return builder;
+        } else if (HISTORY.equals(action)) {
+            builder = PatchOperationBuilder.Factory.history();
+            return builder;
+        } else {
+            throw new CommandFormatException("Unrecognized action '" + action + "'");
         }
+
         if (overrideModules.isPresent(args)) {
             builder.ignoreModuleChanges();
         }
