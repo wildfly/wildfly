@@ -100,6 +100,9 @@
                 <policy-module code="Delegating" flag="required"/>
             </authorization>
         </security-domain>
+        <security-domain name="jboss-empty-jsse" >
+            <jsse server-alias="silent.planet" />
+        </security-domain>
     </security-domains>
     <vault code="${some.property:somevault}">
         <vault-option name="xyz" value="${some.property:default}"/>

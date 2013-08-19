@@ -21,7 +21,6 @@
  *  02110-1301 USA, or see the FSF site: http://www.fsf.org.
  * /
  */
-
 package org.jboss.as.security;
 
 import javax.xml.stream.XMLStreamException;
@@ -29,8 +28,10 @@ import javax.xml.stream.XMLStreamWriter;
 
 import org.jboss.as.controller.AttributeDefinition;
 import org.jboss.as.controller.DefaultAttributeMarshaller;
+import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.SimpleAttributeDefinition;
 import org.jboss.as.controller.SimpleAttributeDefinitionBuilder;
+import org.jboss.as.controller.operations.validation.ParameterValidator;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.ModelType;
 
@@ -39,8 +40,9 @@ import org.jboss.dmr.ModelType;
  * @author Tomaz Cerar
  */
 public class ComplexAttributes {
+
     static final SimpleAttributeDefinition PASSWORD = new SimpleAttributeDefinitionBuilder(Constants.PASSWORD, ModelType.STRING)
-            .setAllowNull(true)
+            .setAllowNull(false)
             .setAllowExpression(true)
             .build();
 
@@ -72,6 +74,7 @@ public class ComplexAttributes {
     static final SimpleAttributeDefinition[] KEY_MANAGER_FIELDS = {ALGORITHM, PROVIDER};
 
     protected static final class KeyStoreAttributeMarshaller extends DefaultAttributeMarshaller {
+
         @Override
         public void marshallAsAttribute(AttributeDefinition attribute, ModelNode resourceModel, boolean marshallDefault, XMLStreamWriter writer) throws XMLStreamException {
             if (attribute.isMarshallable(resourceModel, marshallDefault)) {
@@ -97,6 +100,7 @@ public class ComplexAttributes {
     }
 
     protected static final class KeyManagerAttributeMarshaller extends DefaultAttributeMarshaller {
+
         @Override
         public void marshallAsAttribute(AttributeDefinition attribute, ModelNode resourceModel, boolean marshallDefault, XMLStreamWriter writer) throws XMLStreamException {
             if (attribute.isMarshallable(resourceModel, marshallDefault)) {
@@ -110,6 +114,45 @@ public class ComplexAttributes {
                 }
             }
 
+        }
+    }
+
+    protected static final class KeyStoreAttributeValidator implements ParameterValidator {
+
+        private String name;
+
+        public KeyStoreAttributeValidator(String name) {
+            this.name = name;
+        }
+
+        @Override
+        public void validateParameter(String parameterName, ModelNode value) throws OperationFailedException {
+            if (name.equals(parameterName)) {
+                ModelNode parameters = value.clone();
+                if (isConfigured(parameters)) {
+                    for (SimpleAttributeDefinition attribute : KEY_STORE_FIELDS) {
+                        attribute.getValidator().validateParameter(attribute.getName(), parameters.get(attribute.getName()));
+                    }
+                }
+            }
+        }
+
+        @Override
+        public void validateResolvedParameter(String parameterName, ModelNode value) throws OperationFailedException {
+            if (name.equals(parameterName)) {
+                ModelNode parameters = value.clone();
+                if (isConfigured(parameters)) {
+                    for (SimpleAttributeDefinition attribute : KEY_STORE_FIELDS) {
+                        attribute.getValidator().validateParameter(attribute.getName(), parameters.get(attribute.getName()));
+                    }
+                }
+            }
+        }
+
+
+        private boolean isConfigured(ModelNode keystore) {
+            return keystore.hasDefined(Constants.TYPE) || keystore.hasDefined(Constants.URL) ||
+                    keystore.hasDefined(Constants.PROVIDER) || keystore.hasDefined(Constants.PROVIDER_ARGUMENT);
         }
     }
 }

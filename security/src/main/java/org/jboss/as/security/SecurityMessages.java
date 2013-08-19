@@ -301,4 +301,6 @@ public interface SecurityMessages {
     @Message(id = 13331, value = "Required security domain is not available '%s'")
     OperationFailedException requiredSecurityDomainServiceNotAvailable(String securityDomainName);
 
+    @Message(id = 13332, value = "At least one attribute is to be defined")
+    OperationFailedException requiredJSSEConfigurationAttribute();
 }

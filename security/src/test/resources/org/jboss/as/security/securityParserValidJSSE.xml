@@ -30,12 +30,21 @@
                     <module-option name="env.option" value="${env.value:myvalue}"/>
                 </login-module>
             </authentication>
-            <jsse keystore-password="${keystore-password:changeit}"
-                  keystore-type="${keystore-type:JKS}"
-                  keystore-url="${keystore-url:../standalone/configuration/keystores/clientcert.jks}"
-                  keystore-provider="${keystore-provider:com.misc.provider}"
-                  keystore-provider-argument="${keystore-provider-argument:true}"
-                  key-manager-factory-algorithm="${keystore-manager-factory-algorithm:xyz}"
+            <jsse server-alias="silent.planet" />
+        </security-domain>
+        <security-domain name="jboss-empty-jsse" >
+            <jsse />
+        </security-domain>
+        <security-domain name="jboss-web-policy" cache-type="default">
+            <authorization>
+                <policy-module code="Delegating" flag="${prop.flag:required}"/>
+            </authorization>
+            <authentication>
+                <login-module code="UsersRoles" flag="${prop.flag:required}">
+                    <module-option name="env.option" value="${env.value:myvalue}"/>
+                </login-module>
+            </authentication>
+            <jsse key-manager-factory-algorithm="${keystore-manager-factory-algorithm:xyz}"
                   key-manager-factory-provider="${keystore-manager-factory-provider:xyz}"
                   truststore-password="${truststore-password:rmi+ssl}"
                   truststore-type="${truststore-type:JKS}"
@@ -49,26 +58,7 @@
                   service-auth-token="${service-auth-token:service-auth-token}"
                   client-auth="${client-auth:false}"
                   cipher-suites="${cipher-suites:cipher-suites}"
-                  protocols="${protocols:protocols}"
-                    />
-        </security-domain>
-        <security-domain name="other2" cache-type="default">
-            <authentication>
-                <login-module code="Remoting" flag="${prop.flag-optional:optional}">
-                    <module-option name="password-stacking" value="useFirstPass"/>
-                </login-module>
-                <login-module code="RealmDirect" flag="${prop.flag:required}">
-                    <module-option name="password-stacking" value="useFirstPass"/>
-                </login-module>
-            </authentication>
-        </security-domain>
-        <security-domain name="jboss-empty-jsse" >
-            <jsse />
-        </security-domain>
-        <security-domain name="jboss-web-policy" cache-type="default">
-            <authorization>
-                <policy-module code="Delegating" flag="${prop.flag:required}"/>
-            </authorization>
+                  protocols="${protocols:protocols}" />
         </security-domain>
         <security-domain name="jboss-ejb-policy" cache-type="default">
             <authorization>
