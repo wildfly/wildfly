@@ -358,7 +358,7 @@
         </xs:documentation>
       </xs:annotation>
     </xs:attribute>
-    <xs:attribute name="enabled" type="xs:boolean" default="true" form="unqualified" use="optional">
+    <xs:attribute name="enabled" type="xs:boolean" default="false" form="unqualified" use="optional">
       <xs:annotation>
         <xs:documentation>
           <![CDATA[[
