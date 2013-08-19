@@ -28,7 +28,6 @@ import org.jacorb.orb.MinorCodes;
 import org.jboss.as.jacorb.JacORBLogger;
 import org.jboss.as.jacorb.JacORBMessages;
 import org.jboss.security.RunAs;
-import org.jboss.security.SecurityContextAssociation;
 import org.omg.CORBA.Any;
 import org.omg.CORBA.BAD_PARAM;
 import org.omg.CORBA.CompletionStatus;
@@ -130,8 +129,8 @@ public class SASClientIdentityInterceptor extends LocalObject implements ClientR
 
             if ((secMech.sas_context_mech.target_supports & IdentityAssertion.value) != 0) {
                 // will create identity token.
-                RunAs runAs = SecurityContextAssociation.peekRunAsIdentity();
-                Principal p = (runAs != null) ? runAs : SecurityContextAssociation.getPrincipal();
+                RunAs runAs = SecurityActions.peekRunAsIdentity();
+                Principal p = (runAs != null) ? runAs : SecurityActions.getPrincipal();
 
                 if (p != null) {
                     // The name scope needs to be externalized.
