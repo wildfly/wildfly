@@ -104,6 +104,7 @@
     <xs:complexType name="hostType">
         <xs:sequence>
             <xs:element name="location" type="locationType" maxOccurs="1" minOccurs="0"/>
+            <xs:element name="access-log" type="accessLogType" maxOccurs="1" minOccurs="0"/>
         </xs:sequence>
         <xs:attribute name="name" use="required" type="xs:string"/>
         <xs:attribute name="alias" use="optional" type="xs:string"/>
@@ -168,6 +169,13 @@
     <xs:complexType name="locationType">
         <xs:attribute name="name" use="required" type="xs:string"/>
         <xs:attribute name="handler" use="required" type="xs:string"/>
+    </xs:complexType>
+    <xs:complexType name="accessLogType">
+        <xs:attribute name="pattern" use="optional" type="xs:string" default="common"/>
+        <xs:attribute name="worker" use="optional" type="xs:string" default="default"/>
+        <xs:attribute name="directory" use="optional" type="xs:string" default="${jboss.server.log.dir}"/>
+        <xs:attribute name="prefix" use="optional" type="xs:string" default="access_log"/>
+        <xs:attribute name="rotate" use="optional" type="xs:string" default="true"/>
     </xs:complexType>
     <xs:complexType name="errorPageType">
         <xs:attribute name="name" use="required" type="xs:string"/>

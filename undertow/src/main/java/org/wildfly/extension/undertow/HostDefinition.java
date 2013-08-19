@@ -66,7 +66,7 @@ class HostDefinition extends PersistentResourceDefinition {
             .build();
     static final HostDefinition INSTANCE = new HostDefinition();
     private static final Collection ATTRIBUTES = Collections.unmodifiableCollection(Arrays.asList(ALIAS));
-    private static final List<? extends PersistentResourceDefinition> CHILDREN = Collections.unmodifiableList(Arrays.asList(LocationDefinition.INSTANCE));
+    private static final List<? extends PersistentResourceDefinition> CHILDREN = Collections.unmodifiableList(Arrays.asList(LocationDefinition.INSTANCE, AccessLogDefinition.INSTANCE));
 
     private HostDefinition() {
         super(UndertowExtension.HOST_PATH, UndertowExtension.getResolver(Constants.HOST),

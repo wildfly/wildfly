@@ -38,13 +38,13 @@ import org.jboss.msc.service.ServiceController;
  * @author John Bailey
  */
 public class AbstractAddStepHandler implements OperationStepHandler {
-    protected Collection<AttributeDefinition> attributes;
+    protected Collection<? extends AttributeDefinition> attributes;
 
     public AbstractAddStepHandler(){ //default constructor to preserve backward compatibility
 
     }
 
-    public AbstractAddStepHandler(Collection<AttributeDefinition> attributes) {
+    public AbstractAddStepHandler(Collection<? extends AttributeDefinition> attributes) {
         this.attributes = attributes;
     }
 

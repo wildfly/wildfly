@@ -79,6 +79,9 @@ public class UndertowService implements Service<UndertowService> {
     public static ServiceName locationServiceName(final String server, final String virtualHost, final String locationName) {
         return virtualHostName(server, virtualHost).append(Constants.LOCATION, locationName);
     }
+    public static ServiceName accessLogServiceName(final String server, final String virtualHost) {
+        return virtualHostName(server, virtualHost).append(Constants.ACCESS_LOG);
+    }
 
     public static ServiceName consoleRedirectServiceName(final String server, final String virtualHost) {
         return virtualHostName(server, virtualHost).append("console", "redirect");

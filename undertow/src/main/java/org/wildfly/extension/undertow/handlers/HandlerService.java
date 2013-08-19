@@ -41,7 +41,7 @@ public class HandlerService implements Service<HttpHandler> {
 
     @Override
     public void start(StartContext context) throws StartException {
-        UndertowLogger.ROOT_LOGGER.startedHttpHandler(httpHandler);
+        UndertowLogger.ROOT_LOGGER.tracef("starting handler: %s", httpHandler);
     }
 
     @Override

@@ -257,7 +257,7 @@ public class PersistentResourceXMLDescription {
             return this;
         }
 
-        public PersistentResourceXMLBuilder addAttributes(Collection<AttributeDefinition> attributes) {
+        public PersistentResourceXMLBuilder addAttributes(Collection<? extends AttributeDefinition> attributes) {
             for (final AttributeDefinition at : attributes) {
                 this.attributes.put(at.getName(), at);
             }

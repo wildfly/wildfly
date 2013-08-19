@@ -37,6 +37,7 @@ import org.jboss.logging.annotations.MessageLogger;
 
 import static org.jboss.logging.Logger.Level.ERROR;
 import static org.jboss.logging.Logger.Level.INFO;
+import static org.jboss.logging.Logger.Level.TRACE;
 import static org.jboss.logging.Logger.Level.WARN;
 
 /**
@@ -201,8 +202,8 @@ public interface UndertowLogger extends BasicLogger {
     void couldNotLoadWebSocketConfig(String s, @Cause Exception e);
 
     @LogMessage(level = INFO)
-    @Message(id = 17525, value = "Started http handler %s.")
-    void startedHttpHandler(HttpHandler handler);
+    @Message(id = 17525, value = "Started server %s.")
+    void startedServer(String name);
 
     @LogMessage(level = WARN)
     @Message(id = 17526, value = "Could not create redirect URI.")
@@ -212,7 +213,7 @@ public interface UndertowLogger extends BasicLogger {
     @Message(id = 17527, value = "Creating file handler for path %s")
     void creatingFileHandler(String path);
 
-    @LogMessage(level = INFO)
+    @LogMessage(level = TRACE)
     @Message(id = 17528, value="registering handler %s under path '%s'")
     void registeringHandler(HttpHandler value, String locationPath);
 

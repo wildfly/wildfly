@@ -22,8 +22,11 @@
 
 package org.wildfly.extension.undertow;
 
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
+
 import java.util.List;
 
+import io.undertow.server.handlers.cache.DirectBufferCache;
 import org.jboss.as.controller.AbstractAddStepHandler;
 import org.jboss.as.controller.AttributeDefinition;
 import org.jboss.as.controller.OperationContext;
@@ -31,10 +34,9 @@ import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.ServiceVerificationHandler;
 import org.jboss.dmr.ModelNode;
+import org.jboss.msc.service.ServiceBuilder;
 import org.jboss.msc.service.ServiceController;
 import org.jboss.msc.service.ServiceTarget;
-
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
 
 /**
  * @author Stuart Douglas
@@ -62,8 +64,15 @@ final class BufferCacheAdd extends AbstractAddStepHandler {
 
         final BufferCacheService service = new BufferCacheService(bufferSize, buffersPerRegions, maxRegions);
         final ServiceTarget target = context.getServiceTarget();
-        newControllers.add(target.addService(BufferCacheService.SERVICE_NAME.append(name), service)
-                .setInitialMode(ServiceController.Mode.ON_DEMAND)
-                .install());
+
+        ServiceBuilder<DirectBufferCache> builder = target.addService(BufferCacheService.SERVICE_NAME.append(name), service)
+                .setInitialMode(ServiceController.Mode.ON_DEMAND);
+
+
+        builder.addListener(verificationHandler);
+        final ServiceController<DirectBufferCache> serviceController = builder.install();
+        if (newControllers != null) {
+            newControllers.add(serviceController);
+        }
     }
 }

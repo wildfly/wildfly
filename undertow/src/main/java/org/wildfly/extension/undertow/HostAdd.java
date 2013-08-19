@@ -23,6 +23,7 @@
 package org.wildfly.extension.undertow;
 
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
+import static org.jboss.msc.service.ServiceBuilder.DependencyType.*;
 
 import java.util.LinkedList;
 import java.util.List;
@@ -33,6 +34,7 @@ import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.ProcessType;
 import org.jboss.as.controller.ServiceVerificationHandler;
+import org.jboss.as.controller.registry.Resource;
 import org.jboss.as.server.mgmt.UndertowHttpManagementService;
 import org.jboss.as.server.mgmt.domain.HttpManagement;
 import org.jboss.as.web.host.WebHost;
@@ -59,12 +61,17 @@ class HostAdd extends AbstractAddStepHandler {
         final PathAddress parent = address.subAddress(0, address.size() - 1);
         final String name = address.getLastElement().getValue();
         List<String> aliases = HostDefinition.ALIAS.unwrap(context, model);
+        Resource resource = context.readResource(PathAddress.EMPTY_ADDRESS);
+        Resource accessLog = resource.getChild(UndertowExtension.PATH_ACCESS_LOG);
+
         final String serverName = parent.getLastElement().getValue();
         final ServiceName virtualHostServiceName = UndertowService.virtualHostName(serverName, name);
+        final ServiceName accessLogServiceName = UndertowService.accessLogServiceName(serverName, name);
         Host service = new Host(name, aliases == null ? new LinkedList<String>() : aliases);
         final ServiceBuilder<Host> builder = context.getServiceTarget().addService(virtualHostServiceName, service)
                 .addDependency(UndertowService.SERVER.append(serverName), Server.class, service.getServerInjection())
                 .addDependency(UndertowService.UNDERTOW, UndertowService.class, service.getUndertowService())
+                .addDependency(accessLog!=null ? REQUIRED : OPTIONAL, accessLogServiceName, AccessLogService.class, service.getAccessLogService())
                 .addAliases(WebHost.SERVICE_NAME.append(name));
 
         if (aliases != null) {
@@ -72,8 +79,8 @@ class HostAdd extends AbstractAddStepHandler {
                 builder.addAliases(WebHost.SERVICE_NAME.append(alias));
             }
         }
-
-        builder.setInitialMode(ServiceController.Mode.ACTIVE);
+        builder.addListener(verificationHandler);
+        builder.setInitialMode(Mode.ON_DEMAND);
 
         final ServiceController<Host> serviceController = builder.install();
 
@@ -103,4 +110,5 @@ class HostAdd extends AbstractAddStepHandler {
             newControllers.add(consoleServiceServiceController);
         }
     }
+
 }
