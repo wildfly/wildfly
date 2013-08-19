@@ -25,8 +25,6 @@ package org.jboss.as.security;
 import java.io.IOException;
 import java.util.List;
 
-import org.jboss.as.security.Constants;
-import org.jboss.as.security.SecurityExtension;
 import org.jboss.as.subsystem.test.AbstractSubsystemBaseTest;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.ModelType;
@@ -98,5 +96,9 @@ public class JSSEExpressionsUnitTestCase extends AbstractSubsystemBaseTest {
         for (Property prop : loginModule.get(Constants.MODULE_OPTIONS).asPropertyList()){
             Assert.assertEquals(ModelType.EXPRESSION, prop.getValue().getType());
         }
+
+
+        ModelNode domain = model.get("subsystem", "security", "security-domain", "jboss-empty-jsse", "jsse", "classic");
+        Assert.assertEquals(ModelType.OBJECT, domain.getType());
     }
 }

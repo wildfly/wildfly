@@ -38,14 +38,11 @@ import org.jboss.dmr.ModelType;
  */
 public class JSSEResourceDefinition extends SimpleResourceDefinition {
 
-
     static final ObjectTypeAttributeDefinition KEYSTORE = new ObjectTypeAttributeDefinition.Builder(Constants.KEYSTORE, ComplexAttributes.KEY_STORE_FIELDS)
-            .setAttributeMarshaller(new ComplexAttributes.KeyStoreAttributeMarshaller())
-            .build();
+            .setValidator(new ComplexAttributes.KeyStoreAttributeValidator(Constants.KEYSTORE)).setAttributeMarshaller(new ComplexAttributes.KeyStoreAttributeMarshaller()).build();
 
     static final ObjectTypeAttributeDefinition TRUSTSTORE = new ObjectTypeAttributeDefinition.Builder(Constants.TRUSTSTORE, ComplexAttributes.KEY_STORE_FIELDS)
-            .setAttributeMarshaller(new ComplexAttributes.KeyStoreAttributeMarshaller())
-            .build();
+            .setValidator(new ComplexAttributes.KeyStoreAttributeValidator(Constants.TRUSTSTORE)).setAttributeMarshaller(new ComplexAttributes.KeyStoreAttributeMarshaller()).build();
 
     static final ObjectTypeAttributeDefinition KEYMANAGER = new ObjectTypeAttributeDefinition.Builder(Constants.KEY_MANAGER, ComplexAttributes.KEY_MANAGER_FIELDS)
             .setAttributeMarshaller(new ComplexAttributes.KeyManagerAttributeMarshaller())
@@ -79,13 +76,13 @@ public class JSSEResourceDefinition extends SimpleResourceDefinition {
             .build();
 
     private static final AttributeDefinition[] ATTRIBUTES = {KEYSTORE, TRUSTSTORE, KEYMANAGER, TRUSTMANAGER, CLIENT_ALIAS, SERVER_ALIAS, SERVICE_AUTH_TOKEN,
-            CLIENT_AUTH, PROTOCOLS, CIPHER_SUITES, ADDITIONAL_PROPERTIES};
+        CLIENT_AUTH, PROTOCOLS, CIPHER_SUITES, ADDITIONAL_PROPERTIES};
 
     public static final JSSEResourceDefinition INSTANCE = new JSSEResourceDefinition();
 
     private JSSEResourceDefinition() {
         super(SecurityExtension.JSSE_PATH,
-              SecurityExtension.getResourceDescriptionResolver(Constants.JSSE),
+                SecurityExtension.getResourceDescriptionResolver(Constants.JSSE),
                 JSSEResourceDefinitionAdd.INSTANCE,
                 new SecurityDomainReloadRemoveHandler());
     }
@@ -97,6 +94,7 @@ public class JSSEResourceDefinition extends SimpleResourceDefinition {
     }
 
     static class JSSEResourceDefinitionAdd extends SecurityDomainReloadAddHandler {
+
         static final JSSEResourceDefinitionAdd INSTANCE = new JSSEResourceDefinitionAdd();
 
         @Override
