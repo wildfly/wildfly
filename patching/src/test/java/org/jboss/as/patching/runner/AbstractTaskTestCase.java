@@ -59,7 +59,7 @@ public abstract class AbstractTaskTestCase {
 
     @Before
     public void setup() throws Exception {
-        tempDir = mkdir(new File(System.getProperty("java.io.tmpdir")), randomString());
+        tempDir = mkdir(new File(System.getProperty("java.io.tmpdir")), "patching-" + randomString());
         File jbossHome = mkdir(tempDir, "jboss-installation");
         mkdir(jbossHome, MODULES, "system", LAYERS, BASE);
         mkdir(jbossHome, BUNDLES, "system", LAYERS, BASE);
@@ -69,7 +69,7 @@ public abstract class AbstractTaskTestCase {
 
     @After
     public void tearDown() {
-        if (IoUtils.recursiveDelete(tempDir)) {
+        if (!IoUtils.recursiveDelete(tempDir)) {
             tempDir.deleteOnExit();
         }
     }

@@ -37,6 +37,7 @@ import static org.junit.Assert.assertArrayEquals;
 import java.io.File;
 
 import org.jboss.as.patching.ContentConflictsException;
+import org.jboss.as.patching.IoUtils;
 import org.jboss.as.patching.installation.InstallationManager;
 import org.jboss.as.patching.installation.InstallationManagerImpl;
 import org.jboss.as.patching.installation.InstalledIdentity;
@@ -114,13 +115,14 @@ public class UpdateModifiedFileTaskTestCase extends AbstractTaskTestCase {
 
     @After
     public void tearDown() {
+        super.tearDown();
         runner = null;
         zippedPatch = null;
         patch = null;
         fileUpdated = null;
         modifiedFile = null;
         expectedModifiedHash = null;
-         updatedHash = null;
+        updatedHash = null;
     }
 
     @Test

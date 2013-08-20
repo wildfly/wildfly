@@ -15,6 +15,7 @@ import java.util.List;
 import java.util.Map;
 
 import org.jboss.as.patching.Constants;
+import org.jboss.as.patching.IoUtils;
 import org.jboss.as.patching.PatchLogger;
 import org.jboss.as.patching.PatchMessages;
 import org.jboss.as.patching.PatchingException;
@@ -231,6 +232,9 @@ class IdentityPatchRunner implements InstallationManager.ModificationCompletionC
                 throw rethrowException(e);
             }
         } finally {
+            if (workDir != null && !IoUtils.recursiveDelete(workDir)) {
+                PatchLogger.ROOT_LOGGER.cannotDeleteFile(workDir.getAbsolutePath());
+            }
             context.cleanup();
         }
     }
