@@ -138,13 +138,15 @@ public interface JmxMessages {
     /**
      * Creates an exception indicating the {@link ObjectName} could not be created for the address.
      *
+     *
      * @param cause   the cause of the error.
      * @param address the address.
      *
+     * @param s
      * @return a {@link RuntimeException} for the error.
      */
-    @Message(id = 11332, value = "Could not create ObjectName for address %s")
-    RuntimeException cannotCreateObjectName(@Cause Throwable cause, PathAddress address);
+    @Message(id = 11332, value = "Could not create ObjectName for address %s from string %s")
+    RuntimeException cannotCreateObjectName(@Cause Throwable cause, PathAddress address, String s);
 
     /**
      * Creates an exception indicating the attribute could not be set.
