@@ -31,6 +31,7 @@ import java.util.Map;
 enum Attribute {
 
     UNKNOWN(null),
+    CORE_MBEANS(CommonAttributes.CORE_MBEANS),
     DOMAIN_NAME(CommonAttributes.DOMAIN_NAME),
     ENABLED(CommonAttributes.ENABLED),
     LOG_BOOT(CommonAttributes.LOG_BOOT),
