@@ -157,7 +157,7 @@ public class PatchToolImpl implements PatchTool {
             throw rethrowException(e);
         } finally {
             if (workDir != null && !IoUtils.recursiveDelete(workDir)) {
-                PatchLogger.ROOT_LOGGER.debugf("failed to remove work directory (%s)", workDir);
+                PatchLogger.ROOT_LOGGER.cannotDeleteFile(workDir.getAbsolutePath());
             }
         }
     }
