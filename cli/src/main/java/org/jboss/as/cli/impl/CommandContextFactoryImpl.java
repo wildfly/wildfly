@@ -63,7 +63,7 @@ public class CommandContextFactoryImpl extends CommandContextFactory {
     public CommandContext newCommandContext(String controllerProtocol, String controllerHost,
             int controllerPort, String username, char[] password,
             boolean initConsole, final int connectionTimeout) throws CliInitializationException {
-        final CommandContext ctx = new CommandContextImpl(controllerProtocol, controllerHost, controllerPort, username, password, false, initConsole, connectionTimeout);
+        final CommandContext ctx = new CommandContextImpl(controllerProtocol, controllerHost, controllerPort, username, password, username != null, initConsole, connectionTimeout);
         addShutdownHook(ctx);
         return ctx;
     }
@@ -72,7 +72,7 @@ public class CommandContextFactoryImpl extends CommandContextFactory {
     public CommandContext newCommandContext(String controllerHost, int controllerPort,
             String username, char[] password,
             InputStream consoleInput, OutputStream consoleOutput) throws CliInitializationException {
-        final CommandContext ctx = new CommandContextImpl(controllerHost, controllerPort, username, password, false, consoleInput, consoleOutput);
+        final CommandContext ctx = new CommandContextImpl(controllerHost, controllerPort, username, password, username != null, consoleInput, consoleOutput);
         addShutdownHook(ctx);
         return ctx;
     }
@@ -81,7 +81,7 @@ public class CommandContextFactoryImpl extends CommandContextFactory {
     public CommandContext newCommandContext(String controllerProtocol, String controllerHost, int controllerPort,
             String username, char[] password, boolean disableLocalAuth, boolean initConsole, int connectionTimeout)
             throws CliInitializationException {
-        final CommandContext ctx = new CommandContextImpl(controllerProtocol, controllerHost, controllerPort, username, password, disableLocalAuth, initConsole, connectionTimeout);
+        final CommandContext ctx = new CommandContextImpl(controllerProtocol, controllerHost, controllerPort, username, password, disableLocalAuth || username != null, initConsole, connectionTimeout);
         addShutdownHook(ctx);
         return ctx;
     }
