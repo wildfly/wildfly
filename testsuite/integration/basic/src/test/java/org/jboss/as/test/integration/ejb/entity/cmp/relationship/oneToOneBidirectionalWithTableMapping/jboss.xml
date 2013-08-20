@@ -1,0 +1,59 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE jboss PUBLIC "-//JBoss//DTD JBOSS 4.0//EN" "http://www.jboss.org/j2ee/dtd/jboss_4_0.dtd">
+
+<jboss>
+
+   <enterprise-beans>
+
+     <!--
+       To add beans that you have deployment descriptor info for, add
+       a file to your XDoclet merge directory called jboss-beans.xml that contains
+       the <session></session>, <entity></entity> and <message-driven></message-driven>
+       markup for those beans.
+     -->
+
+      <entity>
+         <ejb-name>Child</ejb-name>
+         <local-jndi-name>java:global/one2one-table-mapping/Child!org.jboss.as.test.integration.ejb.entity.cmp.relationship.oneToOneBidirectionalWithTableMapping.ChildLocalHome</local-jndi-name>
+
+        <method-attributes>
+        </method-attributes>
+
+      </entity>
+      <entity>
+         <ejb-name>Parent</ejb-name>
+         <local-jndi-name>java:global/one2one-table-mapping/Parent!org.jboss.as.test.integration.ejb.entity.cmp.relationship.oneToOneBidirectionalWithTableMapping.ParentLocalHome</local-jndi-name>
+
+        <method-attributes>
+        </method-attributes>
+
+      </entity>
+
+    <!--
+      write a merge file jboss-webservices.ent for webservice-description 
+    -->
+
+   </enterprise-beans>
+
+     <!--
+       To specify your own assembly descriptor info here, add a file to your
+       XDoclet merge directory called jboss-assembly-descriptor.xml that contains
+       the <assembly-descriptor></assembly-descriptor> markup.
+     -->
+   <assembly-descriptor>
+    <!-- message destinations -->
+     <!--
+       To specify additional message-destination elements, add a file in the merge
+       directory called jboss-message-destinations.ent that contains them.
+     -->
+   </assembly-descriptor>
+
+   <resource-managers>
+   </resource-managers>
+
+  <!--
+    | for container settings, you can merge in jboss-container.xml
+    | this can contain <invoker-proxy-bindings/> and <container-configurations/>
+  -->
+
+</jboss>

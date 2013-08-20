@@ -1,0 +1,92 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE jbosscmp-jdbc PUBLIC "-//JBoss//DTD JBOSSCMP-JDBC 4.0//EN" "http://www.jboss.org/j2ee/dtd/jbosscmp-jdbc_4_0.dtd">
+
+<jbosscmp-jdbc>
+   <defaults></defaults>
+
+
+   <enterprise-beans>
+
+     <!--
+       To add beans that you have deployment descriptor info for, add
+       a file to your XDoclet merge directory called jbosscmp-jdbc-beans.xml
+       that contains the <entity></entity> markup for those beans.
+     -->
+
+      <entity>
+         <ejb-name>Child</ejb-name>
+         <create-table>true</create-table>
+         <remove-table>false</remove-table>
+         <table-name>CHILD</table-name>
+
+         <cmp-field>
+            <field-name>id</field-name>
+            <column-name>ID</column-name>
+
+        </cmp-field>
+         <cmp-field>
+            <field-name>name</field-name>
+            <column-name>NAME</column-name>
+
+        </cmp-field>
+
+<!-- jboss 3.2 features -->
+<!-- optimistic locking does not express the exclusions needed -->
+      </entity>
+
+      <entity>
+         <ejb-name>Parent</ejb-name>
+         <create-table>true</create-table>
+         <remove-table>false</remove-table>
+         <table-name>PARENT</table-name>
+
+         <cmp-field>
+            <field-name>id</field-name>
+            <column-name>ID</column-name>
+
+        </cmp-field>
+         <cmp-field>
+            <field-name>name</field-name>
+            <column-name>NAME</column-name>
+
+        </cmp-field>
+
+<!-- jboss 3.2 features -->
+<!-- optimistic locking does not express the exclusions needed -->
+      </entity>
+
+   </enterprise-beans>
+
+  <relationships>
+    <ejb-relation>
+      <ejb-relation-name>Parent-to-Child</ejb-relation-name>
+
+      <ejb-relationship-role>
+          <ejb-relationship-role-name>Child-has-one-parent</ejb-relationship-role-name>
+          <key-fields>
+             <key-field>
+               <field-name>id</field-name>
+               <column-name>ID</column-name>
+             </key-field>
+          </key-fields>
+
+      </ejb-relationship-role>
+      <ejb-relationship-role>
+          <ejb-relationship-role-name>Parent-has-one-child</ejb-relationship-role-name>
+          <key-fields>
+             <key-field>
+               <field-name>id</field-name>
+               <column-name>ID</column-name>
+             </key-field>
+          </key-fields>
+
+      </ejb-relationship-role>
+    </ejb-relation>
+     <!-- 
+       To add jboss relationships for beans not managed by XDoclet, add
+       a file to your XDoclet merge directory called jbosscmp-jdbc-relationships.xml that contains
+       the <ejb-relation></ejb-relation> markups for those beans.
+     --> 
+  </relationships>
+
+</jbosscmp-jdbc>

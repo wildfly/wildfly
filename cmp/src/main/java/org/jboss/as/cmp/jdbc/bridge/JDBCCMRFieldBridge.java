@@ -43,7 +43,6 @@ import javax.ejb.NoSuchObjectLocalException;
 import javax.ejb.RemoveException;
 import javax.ejb.TransactionRolledbackLocalException;
 import javax.sql.DataSource;
-import javax.transaction.RollbackException;
 import javax.transaction.Status;
 import javax.transaction.Synchronization;
 import javax.transaction.SystemException;
@@ -913,6 +912,9 @@ public final class JDBCCMRFieldBridge extends JDBCAbstractCMRFieldBridge {
         try {
             return getManager().getComponent().invoke(CMRMessage.GET_RELATED_ID, myId, this);
         } catch (Exception e) {
+            if(getManager().getComponent().getCache().contains(myId)) {
+                getManager().getComponent().getCache().discard(getManager().getComponent().getCache().get(myId));
+            }
             throw MESSAGES.errorGetRelatedId(e);
         }
     }
