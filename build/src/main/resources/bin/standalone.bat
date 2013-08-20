@@ -145,16 +145,6 @@ if not "%PRESERVE_JAVA_OPTS%" == "true" (
   )
 )
 
-if not "%PRESERVE_JAVA_OPTS%" == "true" (
-  rem Add tiered compilation, if supported (64 bit VM), and not overriden
-  echo "%JAVA_OPTS%" | findstr /I "\-XX:\-TieredCompilation \-client" > nul
-  if errorlevel == 1 (
-    "%JAVA%" -XX:+TieredCompilation -version > nul 2>&1
-    if not errorlevel == 1 (
-      set "JAVA_OPTS=-XX:+TieredCompilation %JAVA_OPTS%"
-    )
-  )
-)
 
 rem Find jboss-modules.jar, or we can't continue
 if exist "%UNQUOTED_JBOSS_HOME%\jboss-modules.jar" (
