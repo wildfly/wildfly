@@ -29,7 +29,6 @@ import java.io.File;
 import java.io.FileReader;
 import java.io.IOException;
 import java.io.StringWriter;
-import java.lang.management.ManagementFactory;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.LinkedHashMap;
@@ -44,6 +43,9 @@ import javax.management.ObjectName;
 import javax.management.QueryExp;
 
 import org.jboss.as.controller.CompositeOperationHandler;
+import org.jboss.as.controller.OperationContext;
+import org.jboss.as.controller.OperationFailedException;
+import org.jboss.as.controller.OperationStepHandler;
 import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.PathElement;
 import org.jboss.as.controller.ProcessType;
@@ -57,6 +59,7 @@ import org.jboss.as.controller.extension.ExtensionRegistry;
 import org.jboss.as.controller.operations.common.Util;
 import org.jboss.as.controller.operations.global.GlobalOperationHandlers;
 import org.jboss.as.controller.persistence.NullConfigurationPersister;
+import org.jboss.as.controller.registry.AttributeAccess;
 import org.jboss.as.controller.registry.ManagementResourceRegistration;
 import org.jboss.as.controller.registry.Resource;
 import org.jboss.as.controller.services.path.PathManagerService;
@@ -70,6 +73,9 @@ import org.jboss.as.jmx.JMXExtension;
 import org.jboss.as.jmx.JMXSubsystemRootResource;
 import org.jboss.as.jmx.JmxAuditLogHandlerReferenceResourceDefinition;
 import org.jboss.as.jmx.JmxAuditLoggerResourceDefinition;
+import org.jboss.as.jmx.MBeanServerService;
+import org.jboss.as.jmx.test.util.AbstractControllerTestBase;
+import org.jboss.as.server.jmx.PluggableMBeanServer;
 import org.jboss.dmr.ModelNode;
 import org.jboss.msc.service.AbstractServiceListener;
 import org.jboss.msc.service.ServiceController;
@@ -77,7 +83,6 @@ import org.jboss.msc.service.ServiceName;
 import org.junit.After;
 import org.junit.Assert;
 import org.junit.Before;
-import org.junit.BeforeClass;
 import org.junit.Test;
 
 /**
@@ -92,6 +97,8 @@ public class JmxAuditLogHandlerTestCase extends AbstractControllerTestBase {
     volatile File logDir;
     volatile MBeanServer server;
 
+    private static final String LAUNCH_TYPE = "launch-type";
+    private static final String TYPE_STANDALONE = "STANDALONE";
     private final static String ANY_PLACEHOLDER = "$$$ ANY $$$ ANY $$$";
     private final static ObjectName OBJECT_NAME;
     static {
@@ -139,14 +146,9 @@ public class JmxAuditLogHandlerTestCase extends AbstractControllerTestBase {
         bootOperations.add(createAddJmxHandlerReferenceOperation("test-file"));
     }
 
-    @BeforeClass
-    public static void setPlatformMBeanServer() {
-        System.setProperty("javax.management.builder.initial", "org.jboss.as.jmx.PluggableMBeanServerBuilder");
-    }
-
     @Before
     public void installMBeans() throws Exception {
-        server = ManagementFactory.getPlatformMBeanServer();
+        server = getMBeanServer();
         server.registerMBean(new Bean(), OBJECT_NAME);
     }
 
@@ -154,11 +156,11 @@ public class JmxAuditLogHandlerTestCase extends AbstractControllerTestBase {
     public void clearDependencies() throws Exception {
         auditLogger = null;
         logDir = null;
-        server = ManagementFactory.getPlatformMBeanServer();
 
         if (server.isRegistered(OBJECT_NAME)) {
             server.unregisterMBean(OBJECT_NAME);
         }
+        server = null;
     }
 
     protected ManagedAuditLogger getAuditLogger(){
@@ -612,6 +614,11 @@ public class JmxAuditLogHandlerTestCase extends AbstractControllerTestBase {
         return list;
     }
 
+    private MBeanServer getMBeanServer() throws Exception {
+        ServiceController controller = getContainer().getRequiredService(MBeanServerService.SERVICE_NAME);
+        return (PluggableMBeanServer)controller.getValue();
+    }
+
     private ModelNode createAddFileHandlerOperation(String handlerName, String formatterName, String fileName) {
         ModelNode op = Util.createAddOperation(createFileHandlerAddress(handlerName));
         op.get(ModelDescriptionConstants.RELATIVE_TO).set("log.dir");
@@ -739,6 +746,16 @@ public class JmxAuditLogHandlerTestCase extends AbstractControllerTestBase {
         };
         GlobalOperationHandlers.registerGlobalOperations(registration, processType);
         registration.registerOperationHandler(CompositeOperationHandler.DEFINITION, CompositeOperationHandler.INSTANCE);
+
+        registration.registerReadOnlyAttribute(LAUNCH_TYPE, new OperationStepHandler() {
+
+            @Override
+            public void execute(OperationContext context, ModelNode operation) throws OperationFailedException {
+                context.getResult().set(TYPE_STANDALONE);
+                context.stepCompleted();
+            }
+        }, AttributeAccess.Storage.RUNTIME);
+
 
         TestServiceListener listener = new TestServiceListener();
         listener.reset(1);
