@@ -6093,5 +6093,47 @@
                 <com.sun.tools.path>${java.home}/bundle/Classes/classes.jar</com.sun.tools.path>
             </properties>
         </profile>
+
+        <profile>
+            <id>victims-scan</id>
+            <activation>
+                <property>
+                    <name>victims-scan</name>
+                </property>
+            </activation>
+            <build>
+                <plugins>
+                    <plugin>
+                        <groupId>org.apache.maven.plugins</groupId>
+                        <artifactId>maven-enforcer-plugin</artifactId>
+                        <version>${version.enforcer.plugin}</version>
+                        <dependencies>
+                            <dependency>
+                                <groupId>com.redhat.victims</groupId>
+                                <artifactId>enforce-victims-rule</artifactId>
+                                <version>1.3</version>
+                            </dependency>
+                        </dependencies>
+                        <executions>
+                            <execution>
+                                <id>enforce-victims-rule</id>
+                                <goals>
+                                    <goal>enforce</goal>
+                                </goals>
+                                <configuration>
+                                    <rules>
+                                        <rule implementation="com.redhat.victims.VictimsRule">
+                                            <metadata>warning</metadata>
+                                            <fingerprint>fatal</fingerprint>
+                                            <updates>daily</updates>
+                                        </rule>
+                                    </rules>
+                                </configuration>
+                            </execution>
+                        </executions>
+                    </plugin>
+                </plugins>
+            </build>
+        </profile>
     </profiles>
 </project>
