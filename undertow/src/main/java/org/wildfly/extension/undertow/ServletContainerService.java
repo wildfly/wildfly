@@ -23,7 +23,6 @@
 package org.wildfly.extension.undertow;
 
 import io.undertow.server.handlers.cache.DirectBufferCache;
-import io.undertow.servlet.api.DeploymentInfo;
 import io.undertow.servlet.api.ServletContainer;
 import io.undertow.servlet.api.ServletStackTraces;
 import io.undertow.servlet.api.SessionPersistenceManager;
@@ -51,7 +50,6 @@ public class ServletContainerService implements Service<ServletContainerService>
     private volatile ServletContainer servletContainer;
     @Deprecated
     private final Map<String, Integer> secureListeners = new ConcurrentHashMap<>(1);
-
     private final InjectedValue<DirectBufferCache> bufferCacheInjectedValue = new InjectedValue<>();
     private final InjectedValue<SessionPersistenceManager> sessionPersistenceManagerInjectedValue = new InjectedValue<>();
 
@@ -62,12 +60,7 @@ public class ServletContainerService implements Service<ServletContainerService>
         this.jspConfig = jspConfig;
     }
 
-    static String getDeployedContextPath(DeploymentInfo deploymentInfo) {
-        return "".equals(deploymentInfo.getContextPath()) ? "/" : deploymentInfo.getContextPath();
-    }
-
     public void start(StartContext context) throws StartException {
-
         servletContainer = ServletContainer.Factory.newInstance();
     }
 

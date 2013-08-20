@@ -188,7 +188,7 @@ public class UndertowDeploymentProcessor implements DeploymentUnitProcessor {
                 additionalDependencies.addAll(dependencies);
             }
         }
-
+        final ServiceName hostServiceName = UndertowService.virtualHostName(defaultServer, hostName);
         TldsMetaData tldsMetaData = deploymentUnit.getAttachment(TldsMetaData.ATTACHMENT_KEY);
         UndertowDeploymentInfoService undertowDeploymentInfoService = UndertowDeploymentInfoService.builder()
                         .setAttributes(deploymentUnit.getAttachment(ServletContextAttribute.ATTACHMENT_KEY))
@@ -216,6 +216,7 @@ public class UndertowDeploymentProcessor implements DeploymentUnitProcessor {
                 .addDependency(UndertowService.UNDERTOW, UndertowService.class, undertowDeploymentInfoService.getUndertowService())
                 .addDependencies(deploymentUnit.getAttachmentList(Attachments.WEB_DEPENDENCIES))
                 .addDependency(PathManagerService.SERVICE_NAME, PathManager.class, undertowDeploymentInfoService.getPathManagerInjector())
+                .addDependency(hostServiceName, Host.class, undertowDeploymentInfoService.getHost())
                 .addDependencies(additionalDependencies);
 
         if(componentRegistryExists) {
@@ -242,7 +243,7 @@ public class UndertowDeploymentProcessor implements DeploymentUnitProcessor {
         infoBuilder.install();
 
         final boolean isWebappBundle = deploymentUnit.hasAttachment(Attachments.OSGI_MANIFEST);
-        final ServiceName hostServiceName = UndertowService.virtualHostName(defaultServer, hostName);
+
         final UndertowDeploymentService service = new UndertowDeploymentService(injectionContainer, !isWebappBundle);
         final ServiceBuilder<UndertowDeploymentService> builder = serviceTarget.addService(deploymentServiceName, service)
                 .addDependencies(dependentComponents)

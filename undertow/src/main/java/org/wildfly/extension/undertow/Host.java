@@ -59,17 +59,23 @@ public class Host implements Service<Host>, WebHost {
     private volatile HttpHandler rootHandler = pathHandler;
     private final Set<String> allAliases;
     private final String name;
+    private final String defaultWebModule;
     private final InjectedValue<Server> server = new InjectedValue<>();
     private final InjectedValue<UndertowService> undertowService = new InjectedValue<>();
     private final InjectedValue<AccessLogService> accessLogService = new InjectedValue<>();
     private final Set<Deployment> deployments = new CopyOnWriteArraySet<>();
 
-    protected Host(String name, List<String> aliases) {
+    protected Host(String name, List<String> aliases, String defaultWebModule) {
         this.name = name;
+        this.defaultWebModule = defaultWebModule;
         Set<String> hosts = new HashSet<>(aliases.size() + 1);
         hosts.add(name);
         hosts.addAll(aliases);
         allAliases = Collections.unmodifiableSet(hosts);
+    }
+
+    private String getDeployedContextPath(DeploymentInfo deploymentInfo) {
+        return "".equals(deploymentInfo.getContextPath()) ? "/" : deploymentInfo.getContextPath();
     }
 
     @Override
@@ -122,9 +128,13 @@ public class Host implements Service<Host>, WebHost {
         return rootHandler;
     }
 
+    public String getDefaultWebModule() {
+        return defaultWebModule;
+    }
+
     public void registerDeployment(final Deployment deployment, HttpHandler handler) {
         DeploymentInfo deploymentInfo = deployment.getDeploymentInfo();
-        String path = ServletContainerService.getDeployedContextPath(deploymentInfo);
+        String path = getDeployedContextPath(deploymentInfo);
         registerHandler(path, handler);
         deployments.add(deployment);
         UndertowLogger.ROOT_LOGGER.registerWebapp(path);
@@ -138,7 +148,7 @@ public class Host implements Service<Host>, WebHost {
 
     public void unregisterDeployment(final Deployment deployment) {
         DeploymentInfo deploymentInfo = deployment.getDeploymentInfo();
-        String path = ServletContainerService.getDeployedContextPath(deploymentInfo);
+        String path = getDeployedContextPath(deploymentInfo);
         unregisterHandler(path);
         deployments.remove(deployment);
         UndertowLogger.ROOT_LOGGER.unregisterWebapp(path);

@@ -80,7 +80,7 @@ public class UndertowSubsystemParser_1_0 implements XMLStreamConstants, XMLEleme
                                         .addAttributes(HttpsListenerResourceDefinition.INSTANCE.getAttributes())
                         ).addChild(
                                 builder(HostDefinition.INSTANCE)
-                                        .addAttributes(HostDefinition.ALIAS)
+                                        .addAttributes(HostDefinition.INSTANCE.getAttributes())
                                         .addChild(
                                                 builder(LocationDefinition.INSTANCE)
                                                         .addAttributes(LocationDefinition.HANDLER)
