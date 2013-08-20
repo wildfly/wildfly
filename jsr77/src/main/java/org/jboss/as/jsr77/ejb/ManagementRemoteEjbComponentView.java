@@ -24,6 +24,9 @@ package org.jboss.as.jsr77.ejb;
 import static org.jboss.as.jsr77.JSR77Messages.MESSAGES;
 
 import java.lang.reflect.Method;
+import java.security.AccessController;
+import java.security.PrivilegedActionException;
+import java.security.PrivilegedExceptionAction;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
@@ -31,13 +34,20 @@ import java.util.Map;
 import javax.ejb.EJBObject;
 import javax.management.Attribute;
 import javax.management.AttributeList;
+import javax.management.AttributeNotFoundException;
+import javax.management.InstanceNotFoundException;
+import javax.management.IntrospectionException;
+import javax.management.InvalidAttributeValueException;
+import javax.management.MBeanException;
 import javax.management.MBeanServer;
 import javax.management.ObjectName;
 import javax.management.QueryExp;
+import javax.management.ReflectionException;
 import javax.management.j2ee.Management;
 
 import org.jboss.as.ee.utils.DescriptorUtils;
 import org.jboss.invocation.InterceptorContext;
+import org.wildfly.security.manager.WildFlySecurityManager;
 
 /**
  *
@@ -69,8 +79,33 @@ public class ManagementRemoteEjbComponentView extends BaseManagementEjbComponent
     @Override
     public Object invoke(InterceptorContext interceptorContext) throws Exception {
         final Method method = interceptorContext.getMethod();
-        Object[] params = interceptorContext.getParameters();
+        final Object[] params = interceptorContext.getParameters();
+        if(WildFlySecurityManager.isChecking()) {
+            try {
+            return AccessController.doPrivileged(new PrivilegedExceptionAction<Object>() {
+                @Override
+                public Object run() throws Exception {
+                    return invokeInternal(method, params);
+                }
+            });
+            } catch (PrivilegedActionException e) {
+                Throwable cause = e.getCause();
+                if (cause != null) {
+                    if(cause instanceof Exception) {
+                        throw (Exception)cause;
+                    } else {
+                        throw new RuntimeException(e);
+                    }
+                } else {
+                    throw e;
+                }
+            }
+        } else {
+            return invokeInternal(method, params);
+        }
+    }
 
+    private Object invokeInternal(Method method, Object[] params) throws InstanceNotFoundException, IntrospectionException, ReflectionException, MBeanException, AttributeNotFoundException, InvalidAttributeValueException {
         if (method == queryNames) {
             return server.queryNames(
                     getParameter(ObjectName.class, params, 0),
