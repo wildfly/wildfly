@@ -32,7 +32,7 @@
         <http-listener name="default" socket-binding="http"/>
         <https-listener name="https" socket-binding="https" security-realm="UndertowRealm" />
 
-        <host name="default-host" alias="localhost, some.host">
+        <host name="default-host" alias="localhost, some.host" default-web-module="something.war">
             <location name="/" handler="welcome-content">
                 <filter-ref name="security-other"/>
                 <filter-ref name="connection-limit"/>

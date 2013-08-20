@@ -39,7 +39,7 @@ public class UndertowEngineTestCase {
     private final String defaultHost = "default-host";
     private final String serverName = "name";
     private final String hostName = "host";
-    private final Host host = new Host(this.hostName, Collections.<String>emptyList()) {};
+    private final Host host = new Host(this.hostName, Collections.<String>emptyList(), "ROOT.war") {};
     private final AbstractListenerService<?> listener = mock(AbstractListenerService.class);
     private final Server server = new TestServer(this.serverName, this.defaultHost, this.host, this.listener);
     private final UndertowService service = new TestUndertowService("default-container", "default-server", "default-virtual-host", "instance-id", this.server);

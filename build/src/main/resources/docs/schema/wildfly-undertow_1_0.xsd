@@ -108,6 +108,7 @@
         </xs:sequence>
         <xs:attribute name="name" use="required" type="xs:string"/>
         <xs:attribute name="alias" use="optional" type="xs:string"/>
+        <xs:attribute name="default-web-module" use="optional" type="xs:string" default="ROOT.war"/>
     </xs:complexType>
 
     <xs:complexType name="jsp-configurationType">

@@ -23,7 +23,8 @@
 package org.wildfly.extension.undertow;
 
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
-import static org.jboss.msc.service.ServiceBuilder.DependencyType.*;
+import static org.jboss.msc.service.ServiceBuilder.DependencyType.OPTIONAL;
+import static org.jboss.msc.service.ServiceBuilder.DependencyType.REQUIRED;
 
 import java.util.LinkedList;
 import java.util.List;
@@ -52,7 +53,7 @@ class HostAdd extends AbstractAddStepHandler {
     static final HostAdd INSTANCE = new HostAdd();
 
     private HostAdd() {
-        super(HostDefinition.ALIAS);
+        super(HostDefinition.ALIAS, HostDefinition.DEFAULT_WEB_MODULE);
     }
 
     @Override
@@ -61,17 +62,18 @@ class HostAdd extends AbstractAddStepHandler {
         final PathAddress parent = address.subAddress(0, address.size() - 1);
         final String name = address.getLastElement().getValue();
         List<String> aliases = HostDefinition.ALIAS.unwrap(context, model);
+        String defaultWebModule = HostDefinition.DEFAULT_WEB_MODULE.resolveModelAttribute(context, model).asString();
         Resource resource = context.readResource(PathAddress.EMPTY_ADDRESS);
         Resource accessLog = resource.getChild(UndertowExtension.PATH_ACCESS_LOG);
 
         final String serverName = parent.getLastElement().getValue();
         final ServiceName virtualHostServiceName = UndertowService.virtualHostName(serverName, name);
         final ServiceName accessLogServiceName = UndertowService.accessLogServiceName(serverName, name);
-        Host service = new Host(name, aliases == null ? new LinkedList<String>() : aliases);
+        Host service = new Host(name, aliases == null ? new LinkedList<String>() : aliases, defaultWebModule);
         final ServiceBuilder<Host> builder = context.getServiceTarget().addService(virtualHostServiceName, service)
                 .addDependency(UndertowService.SERVER.append(serverName), Server.class, service.getServerInjection())
                 .addDependency(UndertowService.UNDERTOW, UndertowService.class, service.getUndertowService())
-                .addDependency(accessLog!=null ? REQUIRED : OPTIONAL, accessLogServiceName, AccessLogService.class, service.getAccessLogService())
+                .addDependency(accessLog != null ? REQUIRED : OPTIONAL, accessLogServiceName, AccessLogService.class, service.getAccessLogService())
                 .addAliases(WebHost.SERVICE_NAME.append(name));
 
         if (aliases != null) {

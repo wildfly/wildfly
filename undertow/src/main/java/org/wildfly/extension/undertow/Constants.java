@@ -62,6 +62,7 @@ public interface Constants {
     String DEFAULT_VIRTUAL_HOST = "default-virtual-host";
     String DEFAULT_SERVLET_CONTAINER = "default-servlet-container";
     String DEFAULT_SERVER = "default-server";
+    String DEFAULT_WEB_MODULE = "default-web-module";
     String ALIAS = "alias";
     String ERROR_PAGE = "error-page";
     String ERROR_PAGES = "error-pages";

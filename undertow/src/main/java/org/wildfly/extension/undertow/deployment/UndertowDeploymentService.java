@@ -92,9 +92,6 @@ public class UndertowDeploymentService implements Service<UndertowDeploymentServ
     @Override
     public void stop(final StopContext stopContext) {
         stopContext();
-        /*ServiceName infoServiceName = stopContext.getController().getName().append(UndertowDeploymentInfoService.SERVICE_NAME);
-        ServiceController infoServiceController = stopContext.getController().getServiceContainer().getService(infoServiceName);
-        infoServiceController.setMode(ServiceController.Mode.REMOVE);*/
     }
 
     public void stopContext() {
@@ -172,7 +169,6 @@ public class UndertowDeploymentService implements Service<UndertowDeploymentServ
 
         @Override
         public ServletContext getServletContext() {
-            //todo UndertowDeploymentService should be fully started before this method is called
             UndertowDeploymentService service = controller.getValue();
             DeploymentManager manager = service.deploymentManager;
             Deployment deployment = manager != null ? manager.getDeployment() : null;

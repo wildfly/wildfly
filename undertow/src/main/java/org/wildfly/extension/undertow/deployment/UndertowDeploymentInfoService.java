@@ -114,6 +114,7 @@ import org.jboss.security.audit.AuditManager;
 import org.jboss.vfs.VirtualFile;
 import org.wildfly.clustering.web.session.SessionManagerFactory;
 import org.wildfly.clustering.web.undertow.session.SessionManagerAdapterFactory;
+import org.wildfly.extension.undertow.Host;
 import org.wildfly.extension.undertow.JSPConfig;
 import org.wildfly.extension.undertow.ServletContainerService;
 import org.wildfly.extension.undertow.SessionCookieConfig;
@@ -181,6 +182,7 @@ public class UndertowDeploymentInfoService implements Service<DeploymentInfo> {
     private final InjectedValue<ServletContainerService> container = new InjectedValue<>();
     private final InjectedValue<PathManager> pathManagerInjector = new InjectedValue<PathManager>();
     private final InjectedValue<ComponentRegistry> componentRegistryInjectedValue = new InjectedValue<>();
+    private final InjectedValue<Host> host = new InjectedValue<>();
 
     private UndertowDeploymentInfoService(final JBossWebMetaData mergedMetaData, final String deploymentName, final TldsMetaData tldsMetaData, final List<TldMetaData> sharedTlds, final Module module, final ScisMetaData scisMetaData, final VirtualFile deploymentRoot, final String securityContextId, final String securityDomain, final List<ServletContextAttribute> attributes, final String contextPath, final List<SetupAction> setupActions, final Set<VirtualFile> overlays, final List<ExpressionFactoryWrapper> expressionFactoryWrappers, List<PredicatedHandler> predicatedHandlers, boolean explodedDeployment) {
         this.mergedMetaData = mergedMetaData;
@@ -350,7 +352,16 @@ public class UndertowDeploymentInfoService implements Service<DeploymentInfo> {
             }
         }
     }
-
+    /*
+    This is to address WFLY-1894 but should probably be moved to some other place.
+     */
+    private String resolveContextPath(){
+        if (deploymentName.equals(host.getValue().getDefaultWebModule())){
+            return "";
+        }else{
+            return contextPath;
+        }
+    }
 
     private DeploymentInfo createServletConfig() throws StartException {
         final ComponentRegistry componentRegistry = componentRegistryInjectedValue.getValue();
@@ -359,7 +370,7 @@ public class UndertowDeploymentInfoService implements Service<DeploymentInfo> {
                 mergedMetaData.resolveAnnotations();
             }
             final DeploymentInfo d = new DeploymentInfo();
-            d.setContextPath(contextPath);
+            d.setContextPath(resolveContextPath());
             if (mergedMetaData.getDescriptionGroup() != null) {
                 d.setDisplayName(mergedMetaData.getDescriptionGroup().getDisplayName());
             }
@@ -1009,6 +1020,8 @@ public class UndertowDeploymentInfoService implements Service<DeploymentInfo> {
         };
     }
 
+
+
     public InjectedValue<ServletContainerService> getContainer() {
         return container;
     }
@@ -1031,6 +1044,10 @@ public class UndertowDeploymentInfoService implements Service<DeploymentInfo> {
 
     public InjectedValue<ComponentRegistry> getComponentRegistryInjectedValue() {
         return componentRegistryInjectedValue;
+    }
+
+    public InjectedValue<Host> getHost() {
+        return host;
     }
 
     private static class ComponentClassIntrospector implements ClassIntrospecter {

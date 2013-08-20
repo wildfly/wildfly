@@ -88,8 +88,7 @@ public class VirtualServerTestCase extends ContainerResourceMgmtTestBase {
 
         // check VS
         assertTrue(result.get("alias").isDefined());
-        //todo not sure if we will support this with undertow
-        //assertTrue(result.get("default-web-module").asString().equals("ROOT.war"));
+        assertTrue(result.get("default-web-module").asString().equals("ROOT.war"));
     }
 
     @Test
