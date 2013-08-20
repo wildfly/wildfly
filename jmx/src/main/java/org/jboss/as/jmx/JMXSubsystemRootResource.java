@@ -28,6 +28,7 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.REM
 
 import java.util.List;
 
+import org.jboss.as.controller.AbstractWriteAttributeHandler;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationContext.Stage;
 import org.jboss.as.controller.OperationFailedException;
@@ -47,6 +48,7 @@ import org.jboss.as.controller.registry.ManagementResourceRegistration;
 import org.jboss.as.controller.registry.Resource;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.ModelType;
+import org.jboss.msc.service.ServiceController;
 
 /**
  *
@@ -59,6 +61,11 @@ public class JMXSubsystemRootResource extends SimpleResourceDefinition {
     private static final SimpleAttributeDefinition SHOW_MODEL_ALIAS = SimpleAttributeDefinitionBuilder.create(CommonAttributes.SHOW_MODEL, ModelType.BOOLEAN, true)
             .addFlag(AttributeAccess.Flag.ALIAS)
             .build();
+
+    public static final SimpleAttributeDefinition CORE_MBEAN_SENSITIVITY = new SimpleAttributeDefinitionBuilder(CommonAttributes.CORE_MBEAN_SENSITIVITY, ModelType.BOOLEAN, true)
+            //.setAllowExpression(true)
+            .setXmlName(CommonAttributes.CORE_MBEANS)
+            .setDefaultValue(new ModelNode(false)).build();
 
     private final List<AccessConstraintDefinition> accessConstraints;
 
@@ -88,6 +95,7 @@ public class JMXSubsystemRootResource extends SimpleResourceDefinition {
     @Override
     public void registerAttributes(ManagementResourceRegistration resourceRegistration) {
         resourceRegistration.registerReadWriteAttribute(SHOW_MODEL_ALIAS, ShowModelAliasReadHandler.INSTANCE, ShowModelAliasWriteHandler.INSTANCE);
+        resourceRegistration.registerReadWriteAttribute(CORE_MBEAN_SENSITIVITY, null, CoreMBeansSensitivityWriteHandler.INSTANCE);
     }
 
     @Override
@@ -139,6 +147,36 @@ public class JMXSubsystemRootResource extends SimpleResourceDefinition {
             final Resource resource = context.readResource(PathAddress.EMPTY_ADDRESS);
             context.getResult().set(resource.hasChild(PathElement.pathElement(CommonAttributes.EXPOSE_MODEL, CommonAttributes.RESOLVED)));
             context.stepCompleted();
+        }
+
+    }
+
+    private static class CoreMBeansSensitivityWriteHandler extends AbstractWriteAttributeHandler<Boolean> {
+        static final CoreMBeansSensitivityWriteHandler INSTANCE = new CoreMBeansSensitivityWriteHandler();
+
+        private CoreMBeansSensitivityWriteHandler() {
+            super(CORE_MBEAN_SENSITIVITY);
+
+        }
+        @Override
+        protected boolean applyUpdateToRuntime(OperationContext context, ModelNode operation, String attributeName,
+                ModelNode resolvedValue, ModelNode currentValue,
+                org.jboss.as.controller.AbstractWriteAttributeHandler.HandbackHolder<Boolean> handbackHolder)
+                throws OperationFailedException {
+            setPluggableMBeanServerCoreSensitivity(context, resolvedValue.asBoolean());
+            return false;
+        }
+
+        @Override
+        protected void revertUpdateToRuntime(OperationContext context, ModelNode operation, String attributeName,
+                ModelNode valueToRestore, ModelNode valueToRevert, Boolean handback) throws OperationFailedException {
+            setPluggableMBeanServerCoreSensitivity(context, valueToRestore.asBoolean());
+        }
+
+        private void setPluggableMBeanServerCoreSensitivity(OperationContext context, boolean sensitivity) {
+            ServiceController<?> controller = context.getServiceRegistry(false).getRequiredService(MBeanServerService.SERVICE_NAME);
+            PluggableMBeanServerImpl server = (PluggableMBeanServerImpl)controller.getValue();
+            server.setCoreMBeanSensitivity(sensitivity);
         }
 
     }

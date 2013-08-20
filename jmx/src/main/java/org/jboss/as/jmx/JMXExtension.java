@@ -72,6 +72,7 @@ import org.jboss.as.controller.transform.OperationTransformer;
 import org.jboss.as.controller.transform.ResourceTransformationContext;
 import org.jboss.as.controller.transform.ResourceTransformer;
 import org.jboss.as.controller.transform.TransformationContext;
+import org.jboss.as.controller.transform.description.DiscardAttributeChecker.DiscardAttributeValueChecker;
 import org.jboss.as.controller.transform.description.RejectAttributeChecker;
 import org.jboss.as.controller.transform.description.ResourceTransformationDescriptionBuilder;
 import org.jboss.as.controller.transform.description.TransformationDescription;
@@ -163,6 +164,7 @@ public class JMXExtension implements Extension {
     private void registerTransformers1_0_0(SubsystemRegistration registration) {
 
         ResourceTransformationDescriptionBuilder builder = TransformationDescriptionBuilder.Factory.createSubsystemInstance();
+        rejectDefinedCoreMBeansSensitivity(builder);
         builder.setCustomResourceTransformer(new ResourceTransformer() {
             @Override
             public void transformResource(ResourceTransformationContext context, PathAddress address, Resource resource)
@@ -262,10 +264,16 @@ public class JMXExtension implements Extension {
 
     private void registerTransformers1_1_0(SubsystemRegistration registration) {
         ResourceTransformationDescriptionBuilder builder = TransformationDescriptionBuilder.Factory.createSubsystemInstance();
+        rejectDefinedCoreMBeansSensitivity(builder);
         registerRejectAuditLogTransformers(builder);
         TransformationDescription.Tools.register(builder.build(), registration, ModelVersion.create(1, 1, 0));
     }
 
+    private void rejectDefinedCoreMBeansSensitivity(ResourceTransformationDescriptionBuilder builder) {
+        builder.getAttributeBuilder()
+            .setDiscard(new DiscardAttributeValueChecker(new ModelNode(false)), JMXSubsystemRootResource.CORE_MBEAN_SENSITIVITY)
+            .addRejectCheck(RejectAttributeChecker.DEFINED, JMXSubsystemRootResource.CORE_MBEAN_SENSITIVITY);
+    }
 
     /**
      * Discards the audit log child as long as enabled==false. If enabled==true or enabled is undefined it rejects it.
@@ -479,7 +487,6 @@ public class JMXExtension implements Extension {
             boolean showResolvedModel = false;
             boolean showExpressionModel = false;
             boolean connectorAdd = false;
-            boolean auditLog = false;
 
             ParseUtils.requireNoAttributes(reader);
 
@@ -556,10 +563,12 @@ public class JMXExtension implements Extension {
             boolean showExpressionModel = false;
             boolean connectorAdd = false;
             boolean auditLog = false;
+            boolean sensitivity = false;
 
             ParseUtils.requireNoAttributes(reader);
 
-            list.add(createAddOperation());
+            ModelNode add = createAddOperation();
+            list.add(add);
 
             while (reader.hasNext() && reader.nextTag() != END_ELEMENT) {
                 final Element element = Element.forName(reader.getLocalName());
@@ -592,11 +601,35 @@ public class JMXExtension implements Extension {
                         auditLog = true;
                         parseAuditLogElement(reader, list);
                         break;
+                    case SENSITIVITY:
+                        if (sensitivity) {
+                            throw ParseUtils.duplicateNamedElement(reader, Element.SENSITIVITY.getLocalName());
+                        }
+                        sensitivity = true;
+                        parseSensitivity(add, reader);
+                        break;
                     default: {
                         throw ParseUtils.unexpectedElement(reader);
                     }
                 }
             }
+        }
+
+        private void parseSensitivity(ModelNode add, XMLExtendedStreamReader reader) throws XMLStreamException {
+            final int count = reader.getAttributeCount();
+            for (int i = 0; i < count; i++) {
+                final String value = reader.getAttributeValue(i);
+                final Attribute attribute = Attribute.forName(reader.getAttributeLocalName(i));
+                switch (attribute) {
+                    case CORE_MBEANS:
+                        JMXSubsystemRootResource.CORE_MBEAN_SENSITIVITY.parseAndSetParameter(value, add, reader);
+                        break;
+                    default:
+                        throw ParseUtils.unexpectedAttribute(reader, i);
+                }
+            }
+
+            ParseUtils.requireNoContent(reader);
         }
 
         private void parseAuditLogElement(XMLExtendedStreamReader reader, List<ModelNode> list) throws XMLStreamException {
@@ -610,6 +643,7 @@ public class JMXExtension implements Extension {
                 switch (attribute) {
                     case LOG_BOOT: {
                         JmxAuditLoggerResourceDefinition.LOG_BOOT.parseAndSetParameter(value, op, reader);
+                        break;
                     }
                     case LOG_READ_ONLY: {
                         JmxAuditLoggerResourceDefinition.LOG_READ_ONLY.parseAndSetParameter(value, op, reader);
@@ -692,7 +726,7 @@ public class JMXExtension implements Extension {
         @Override
         public void writeContent(XMLExtendedStreamWriter writer, SubsystemMarshallingContext context) throws XMLStreamException {
             Namespace schemaVer = Namespace.CURRENT;
-            ModelNode node = context.getModelNode();
+            final ModelNode node = context.getModelNode();
 
             context.startSubsystemElement(schemaVer.getUriString(), false);
             if (node.hasDefined(CommonAttributes.EXPOSE_MODEL)) {
@@ -733,7 +767,11 @@ public class JMXExtension implements Extension {
 
                 writer.writeEndElement();
             }
-
+            if (node.hasDefined(JMXSubsystemRootResource.CORE_MBEAN_SENSITIVITY.getName())) {
+                writer.writeStartElement(Element.SENSITIVITY.getLocalName());
+                JMXSubsystemRootResource.CORE_MBEAN_SENSITIVITY.marshallAsAttribute(node, writer);
+                writer.writeEndElement();
+            }
             writer.writeEndElement();
         }
     }
