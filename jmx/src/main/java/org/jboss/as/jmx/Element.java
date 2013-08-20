@@ -38,6 +38,7 @@ enum Element {
     HANDLER(CommonAttributes.HANDLER),
     HANDLERS(CommonAttributes.HANDLERS),
     JMX_CONNECTOR(CommonAttributes.JMX_CONNECTOR),
+    SENSITIVITY(CommonAttributes.SENSITIVITY),
     SHOW_MODEL(CommonAttributes.SHOW_MODEL),
     REMOTING_CONNECTOR(CommonAttributes.REMOTING_CONNECTOR),
     ;

@@ -450,6 +450,7 @@ public class JMXSubsystemTestCase extends AbstractSubsystemTest {
                 "<subsystem xmlns=\"" + Namespace.JMX_1_3.getUriString() + "\">" +
                 "   <expose-resolved-model domain-name=\"jboss.RESOLVED\" proper-property-format=\"false\"/>" +
                 "   <expose-expression-model domain-name=\"jboss.EXPRESSION\"/>" +
+                "   <sensitivity core-mbeans=\"true\"/>" +
                 "</subsystem>";
 
         AdditionalInitialization additionalInit = new BaseAdditionalInitalization();
@@ -481,6 +482,7 @@ public class JMXSubsystemTestCase extends AbstractSubsystemTest {
                 "   <expose-resolved-model domain-name=\"jboss.RESOLVED\" proper-property-format=\"false\"/>" +
                 "   <expose-expression-model domain-name=\"jboss.EXPRESSION\"/>" +
                 "   <audit-log log-boot=\"true\" log-read-only=\"false\" enabled=\"false\"/>" +
+                "   <sensitivity core-mbeans=\"true\"/>" +
                 "</subsystem>";
 
         AdditionalInitialization additionalInit = new BaseAdditionalInitalization();

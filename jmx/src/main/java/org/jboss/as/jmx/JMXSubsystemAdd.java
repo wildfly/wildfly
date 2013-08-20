@@ -52,11 +52,6 @@ class JMXSubsystemAdd extends AbstractAddStepHandler {
         this.authorizer = authorizer;
     }
 
-    protected void populateModel(ModelNode operation, ModelNode model) throws OperationFailedException {
-        model.setEmptyObject();
-    }
-
-
     @Override
     public void execute(OperationContext context, ModelNode operation) throws OperationFailedException {
         if (context.isBooting()) {
@@ -70,11 +65,18 @@ class JMXSubsystemAdd extends AbstractAddStepHandler {
                         }
                     });
                 }
-            }, Stage.MODEL);
+            }, Stage.VERIFY);
         } else {
             auditLoggerInfo.setBooting(false);
         }
         super.execute(context, operation);
+    }
+
+    @Override
+    protected void populateModel(OperationContext context, ModelNode operation, Resource resource)
+            throws OperationFailedException {
+        ModelNode model = resource.getModel();
+        JMXSubsystemRootResource.CORE_MBEAN_SENSITIVITY.validateAndSet(operation, model);
     }
 
     protected void performRuntime(OperationContext context, ModelNode operation, ModelNode model, ServiceVerificationHandler verificationHandler, List<ServiceController<?>> newControllers) throws OperationFailedException {
@@ -90,10 +92,11 @@ class JMXSubsystemAdd extends AbstractAddStepHandler {
         if (model.hasDefined(CommonAttributes.PROPER_PROPERTY_FORMAT)) {
             legacyWithProperPropertyFormat = ExposeModelResourceExpression.DOMAIN_NAME.resolveModelAttribute(context, recursiveModel).asBoolean();
         }
+        boolean coreMBeanSensitivity = JMXSubsystemRootResource.CORE_MBEAN_SENSITIVITY.resolveModelAttribute(context, recursiveModel).asBoolean();
 
         ServiceController<?> controller = verificationHandler != null ?
-                MBeanServerService.addService(context.getServiceTarget(), resolvedDomain, expressionsDomain, legacyWithProperPropertyFormat, auditLoggerInfo, authorizer, verificationHandler) :
-                    MBeanServerService.addService(context.getServiceTarget(), resolvedDomain, expressionsDomain, legacyWithProperPropertyFormat, auditLoggerInfo, authorizer);
+                MBeanServerService.addService(context.getServiceTarget(), resolvedDomain, expressionsDomain, legacyWithProperPropertyFormat, coreMBeanSensitivity, auditLoggerInfo, authorizer, verificationHandler) :
+                    MBeanServerService.addService(context.getServiceTarget(), resolvedDomain, expressionsDomain, legacyWithProperPropertyFormat, coreMBeanSensitivity, auditLoggerInfo, authorizer);
         if (newControllers != null) {
             newControllers.add(controller);
         }

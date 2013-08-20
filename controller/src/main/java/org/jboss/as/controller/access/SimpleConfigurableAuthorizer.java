@@ -59,6 +59,8 @@ public class SimpleConfigurableAuthorizer implements ConfigurableAuthorizer {
     private final DefaultPermissionFactory permissionFactory;
     private final Authorizer authorizer;
     private final Set<String> addedRoles = new HashSet<String>();
+    /** A fake action for JMX, just to have an operation with superuser permissions */
+    private static final Action FAKE_JMX_ACTION = new Action(Util.createOperation("test", PathAddress.EMPTY_ADDRESS), null);
 
     public SimpleConfigurableAuthorizer() {
         this(MockRoleMapper.INSTANCE);
@@ -121,8 +123,7 @@ public class SimpleConfigurableAuthorizer implements ConfigurableAuthorizer {
 
     @Override
     public AuthorizationResult authorizeJmxOperation(Caller caller, Environment callEnvironment, JmxTarget target) {
-        Action fakeAction = new Action(Util.createOperation("test", PathAddress.EMPTY_ADDRESS), null);
-        Set<String> roles = roleMapper.mapRoles(caller, null, fakeAction, (TargetAttribute) null);
+        Set<String> roles = roleMapper.mapRoles(caller, null, FAKE_JMX_ACTION, (TargetAttribute) null);
         if (target.isNonFacadeMBeansSensitive()) {
             return authorize(roles, StandardRole.SUPERUSER, StandardRole.ADMINISTRATOR);
         } else {

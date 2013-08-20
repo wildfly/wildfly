@@ -30,6 +30,8 @@ interface CommonAttributes {
     String AUDIT_LOG = "audit-log";
     String CONNECTOR = "connector";
     String CONFIGURATION = "configuration";
+    String CORE_MBEANS = "core-mbeans";
+    String CORE_MBEAN_SENSITIVITY = "core-mbean-sensitivity";
     String DEFAULT_EXPRESSION_DOMAIN = "jboss.as.expr";
     String DEFAULT_RESOLVED_DOMAIN = "jboss.as";
     String DOMAIN_NAME = "domain-name";
@@ -49,6 +51,7 @@ interface CommonAttributes {
     String REGISTRY_BINDING = "registry-binding";
     String REMOTING_CONNECTOR = "remoting-connector";
     String RESOLVED = "resolved";
+    String SENSITIVITY = "sensitivity";
     String SHOW_MODEL = "show-model";
     String SERVER_BINDING = "server-binding";
     String USE_MANAGEMENT_ENDPOINT = "use-management-endpoint";

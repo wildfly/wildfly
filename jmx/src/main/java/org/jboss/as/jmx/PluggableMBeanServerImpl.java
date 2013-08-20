@@ -89,7 +89,7 @@ class PluggableMBeanServerImpl implements PluggableMBeanServer {
 
     private final Set<MBeanServerPlugin> delegates = new CopyOnWriteArraySet<MBeanServerPlugin>();
 
-    private volatile boolean nonManagementMbeansSensitive = false; //TODO initialize this
+    private volatile boolean coreMBeanSensitivity;
     private volatile Authorizer authorizer;
 
     PluggableMBeanServerImpl(MBeanServer rootMBeanServer) {
@@ -103,6 +103,11 @@ class PluggableMBeanServerImpl implements PluggableMBeanServer {
     void setAuthorizer(Authorizer authorizer) {
         this.authorizer = authorizer;
     }
+
+    void setCoreMBeanSensitivity(boolean coreMBeanSensitivity) {
+        this.coreMBeanSensitivity = coreMBeanSensitivity;
+    }
+
     public void addPlugin(MBeanServerPlugin delegate) {
         delegates.add(delegate);
     }
@@ -1124,7 +1129,7 @@ class PluggableMBeanServerImpl implements PluggableMBeanServer {
 
     boolean authorizeSensitiveOperation(boolean readOnly, boolean exception) throws MBeanException {
         if (authorizer != null) {
-            final JmxTarget target = new JmxTarget(false, nonManagementMbeansSensitive, readOnly);
+            final JmxTarget target = new JmxTarget(false, coreMBeanSensitivity, readOnly);
             //TODO populate the 'environment' variable
             AuthorizationResult authorizationResult = authorizer.authorizeJmxOperation(getCaller(), null, target);
             if (authorizationResult.getDecision() != Decision.PERMIT) {
@@ -1141,7 +1146,7 @@ class PluggableMBeanServerImpl implements PluggableMBeanServer {
     boolean authorizeSuperUserOrAdministrator() throws MBeanException {
         if (authorizer != null) {
             //TODO populate the 'environment' variable
-            AuthorizationResult authorizationResult = authorizer.authorizeJmxOperation(getCaller(), null, new JmxTarget(true, nonManagementMbeansSensitive, false));
+            AuthorizationResult authorizationResult = authorizer.authorizeJmxOperation(getCaller(), null, new JmxTarget(true, coreMBeanSensitivity, false));
             if (authorizationResult.getDecision() != Decision.PERMIT) {
                 throw JmxMessages.MESSAGES.unauthorized();
             }

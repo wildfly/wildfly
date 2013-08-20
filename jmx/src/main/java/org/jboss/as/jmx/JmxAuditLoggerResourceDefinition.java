@@ -69,7 +69,8 @@ public class JmxAuditLoggerResourceDefinition extends SimpleResourceDefinition {
             .setAllowExpression(true)
             .setDefaultValue(new ModelNode(true)).build();
 
-    static final List<SimpleAttributeDefinition> ATTRIBUTE_DEFINITIONS = Arrays.asList(LOG_BOOT, LOG_READ_ONLY, ENABLED);
+    static final List<SimpleAttributeDefinition> AUDIT_LOG_ATTRIBUTE_DEFINITIONS = Arrays.asList(LOG_BOOT, LOG_READ_ONLY, ENABLED);
+
 
     private final JmxManagedAuditLogger auditLogger;
 
@@ -108,7 +109,7 @@ public class JmxAuditLoggerResourceDefinition extends SimpleResourceDefinition {
         public void execute(final OperationContext context, final ModelNode operation) throws OperationFailedException {
             final Resource resource = context.createResource(PathAddress.EMPTY_ADDRESS);
             final ModelNode model = resource.getModel();
-            for (AttributeDefinition attr : JmxAuditLoggerResourceDefinition.ATTRIBUTE_DEFINITIONS) {
+            for (AttributeDefinition attr : JmxAuditLoggerResourceDefinition.AUDIT_LOG_ATTRIBUTE_DEFINITIONS) {
                 attr.validateAndSet(operation, model);
             }
 
