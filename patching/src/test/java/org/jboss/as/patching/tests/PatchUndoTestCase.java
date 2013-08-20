@@ -23,6 +23,9 @@
 package org.jboss.as.patching.tests;
 
 import static org.jboss.as.patching.runner.TestUtils.randomString;
+import static org.jboss.as.patching.runner.TestUtils.tree;
+
+import java.io.File;
 
 import org.jboss.as.patching.HashUtils;
 import org.jboss.as.patching.IoUtils;
@@ -43,6 +46,8 @@ import org.junit.Test;
  * @author Emanuel Muckenhuber
  */
 public class PatchUndoTestCase extends AbstractPatchingTest {
+
+    private static final String[] MODULES_BASE = new String[]{ "modules", "system", "layers", "base", ".overlays" };
 
     private static final byte[] WRONG_HASH = HashUtils.hexStringToByteArray("ffaf3edf942c0f6fb8754f75d60722bfb6a6a503");
 
@@ -115,7 +120,6 @@ public class PatchUndoTestCase extends AbstractPatchingTest {
     public void testInvalidPatch() throws Exception {
         final PatchingTestBuilder builder = createDefaultBuilder();
 
-
         ContentModificationUtils.addMisc(builder.getRoot(), "oo2", "test-content", "wrong-content");
         final MiscContentItem item = new MiscContentItem("wrong-content", new String[0], WRONG_HASH);
         final ContentModification wrongModification = new ContentModification(item, IoUtils.NO_CONTENT, ModificationType.ADD);
@@ -148,5 +152,38 @@ public class PatchUndoTestCase extends AbstractPatchingTest {
         }
 
     }
+
+    @Test
+    public void testModificationCompletion() throws Exception {
+
+        final PatchingTestBuilder builder = createDefaultBuilder();
+
+        final PatchingTestStepBuilder step1 = builder.createStepBuilder();
+        step1.oneOffPatchIdentity(PRODUCT_VERSION)
+                .setPatchId("patch1")
+                .oneOffPatchElement("base-patch-001", "base", false)
+                .addModuleWithRandomContent("test.module", null)
+                .getParent()
+                .addFileWithRandomContent(null, "test", "file")
+        ;
+
+        final File overlays = builder.getFile(MODULES_BASE);
+        // Make the modification.complete() fail
+        final File file = new File(overlays, ".overlays");
+        Assert.assertTrue(file.mkdirs());
+
+        try {
+            apply(step1);
+            tree(builder.getRoot());
+            Assert.fail();
+        } catch (Exception e) {
+            // Ok
+            Assert.assertFalse(builder.hasFile("test", "file"));
+            Assert.assertFalse(new File(overlays, "base-patch-001").exists());
+
+        }
+
+    }
+
 
 }

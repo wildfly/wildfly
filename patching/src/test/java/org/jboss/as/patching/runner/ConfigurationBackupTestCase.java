@@ -76,6 +76,7 @@ public class ConfigurationBackupTestCase extends AbstractTaskTestCase {
 
     @After
     public void tearDown() {
+        super.tearDown();
         originalAppClientHash = null;
         originalStandaloneHash = null;
         originalDomainHash = null;
