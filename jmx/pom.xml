@@ -50,7 +50,6 @@
                     </includes>
                     <enableAssertions>false</enableAssertions>
                     <systemPropertyVariables>
-                        <javax.management.builder.initial>org.jboss.as.jmx.PluggableMBeanServerBuilder</javax.management.builder.initial>
                         <org.jboss.model.test.cache.root>${org.jboss.model.test.cache.root}</org.jboss.model.test.cache.root>
                         <org.jboss.model.test.classpath.cache>${org.jboss.model.test.classpath.cache}</org.jboss.model.test.classpath.cache>
                         <org.jboss.model.test.maven.repository.urls>${org.jboss.model.test.maven.repository.urls}</org.jboss.model.test.maven.repository.urls>
