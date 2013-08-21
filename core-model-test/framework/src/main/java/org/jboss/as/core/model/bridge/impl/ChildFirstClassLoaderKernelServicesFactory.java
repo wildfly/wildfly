@@ -38,6 +38,7 @@ import org.jboss.as.core.model.test.TestModelType;
 import org.jboss.as.core.model.test.TestParser;
 import org.jboss.as.host.controller.HostRunningModeControl;
 import org.jboss.as.host.controller.RestartMode;
+import org.jboss.as.model.test.ModelTestOperationValidatorFilter;
 import org.jboss.dmr.ModelNode;
 import org.jboss.staxmapper.XMLMapper;
 
@@ -47,7 +48,7 @@ import org.jboss.staxmapper.XMLMapper;
  */
 public class ChildFirstClassLoaderKernelServicesFactory {
 
-    public static KernelServices create(List<ModelNode> bootOperations, boolean validateOperations, ModelVersion legacyModelVersion,
+    public static KernelServices create(List<ModelNode> bootOperations, ModelTestOperationValidatorFilter validateOpsFilter, ModelVersion legacyModelVersion,
             List<LegacyModelInitializerEntry> modelInitializerEntries) throws Exception {
 
         TestModelType type = TestModelType.DOMAIN;
@@ -60,7 +61,7 @@ public class ChildFirstClassLoaderKernelServicesFactory {
 
         RunningModeControl runningModeControl = new HostRunningModeControl(RunningMode.ADMIN_ONLY, RestartMode.HC_ONLY);
         ExtensionRegistry extensionRegistry = new ExtensionRegistry(ProcessType.HOST_CONTROLLER, runningModeControl);
-        return AbstractKernelServicesImpl.create(ProcessType.HOST_CONTROLLER, runningModeControl, validateOperations, bootOperations, testParser, legacyModelVersion, type, modelInitializer, extensionRegistry, null);
+        return AbstractKernelServicesImpl.create(ProcessType.HOST_CONTROLLER, runningModeControl, validateOpsFilter, bootOperations, testParser, legacyModelVersion, type, modelInitializer, extensionRegistry, null);
     }
 
     private static class LegacyModelInitializer implements ModelInitializer {

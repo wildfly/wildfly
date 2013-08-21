@@ -1,0 +1,4 @@
+{
+    "model-description" => {"description" => "JBoss Diagnostic Reporter (JDR) Subsystem."},
+    "address" => [("subsystem" => "jdr")]
+}

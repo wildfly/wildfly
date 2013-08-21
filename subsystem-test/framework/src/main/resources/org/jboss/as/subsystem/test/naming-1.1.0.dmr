@@ -1,0 +1,93 @@
+{
+    "model-description" => {
+        "description" => "The configuration of the naming subsystem.",
+        "attributes" => {},
+        "operations" => undefined,
+        "children" => {
+            "binding" => {
+                "description" => "JNDI bindings for primitive types",
+                "model-description" => undefined
+            },
+            "service" => {
+                "description" => "Naming based services",
+                "model-description" => undefined
+            }
+        }
+    },
+    "address" => [("subsystem" => "naming")],
+    "children" => [
+        {
+            "model-description" => {
+                "description" => "JNDI bindings for primitive types",
+                "attributes" => {
+                    "module" => {
+                        "type" => STRING,
+                        "description" => "The module to load the object factory from for object factory bindings",
+                        "expressions-allowed" => true,
+                        "nillable" => true,
+                        "min-length" => 1L,
+                        "max-length" => 2147483647L
+                    },
+                    "binding-type" => {
+                        "type" => STRING,
+                        "description" => "The type of binding to create, may be simple, lookup or object-factory",
+                        "expressions-allowed" => true,
+                        "nillable" => false,
+                        "min-length" => 1L,
+                        "max-length" => 2147483647L
+                    },
+                    "value" => {
+                        "type" => STRING,
+                        "description" => "The value to bind for simple bindings",
+                        "expressions-allowed" => true,
+                        "nillable" => true,
+                        "min-length" => 1L,
+                        "max-length" => 2147483647L
+                    },
+                    "class" => {
+                        "type" => STRING,
+                        "description" => "The object factory class name for object factory bindings",
+                        "expressions-allowed" => true,
+                        "nillable" => true,
+                        "min-length" => 1L,
+                        "max-length" => 2147483647L
+                    },
+                    "type" => {
+                        "type" => STRING,
+                        "description" => "The type of the value to bind for simple bindings, this must be a primitive type",
+                        "expressions-allowed" => true,
+                        "nillable" => true,
+                        "min-length" => 1L,
+                        "max-length" => 2147483647L
+                    },
+                    "lookup" => {
+                        "type" => STRING,
+                        "description" => "The entry to lookup in JNDI for lookup bindings",
+                        "expressions-allowed" => true,
+                        "nillable" => true,
+                        "min-length" => 1L,
+                        "max-length" => 2147483647L
+                    }
+                },
+                "operations" => undefined,
+                "children" => {}
+            },
+            "address" => [
+                ("subsystem" => "naming"),
+                ("binding" => "*")
+            ]
+        },
+        {
+            "model-description" => {
+                "description" => "The remote naming server",
+                "attributes" => {},
+                "operations" => undefined,
+                "children" => {}
+            },
+            "address" => [
+                ("subsystem" => "naming"),
+                ("service" => "remote-naming")
+            ]
+        }
+    ]
+}

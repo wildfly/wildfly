@@ -36,11 +36,13 @@ import org.jboss.as.core.model.test.KernelServices;
 import org.jboss.as.core.model.test.KernelServicesBuilder;
 import org.jboss.as.core.model.test.LegacyKernelServicesInitializer;
 import org.jboss.as.core.model.test.TestModelType;
+import org.jboss.as.core.model.test.util.ExcludeCommonOperations;
 import org.jboss.as.core.model.test.util.StandardServerGroupInitializers;
 import org.jboss.as.core.model.test.util.TransformersTestParameters;
 import org.jboss.as.domain.controller.resources.ServerGroupResourceDefinition;
 import org.jboss.as.model.test.FailedOperationTransformationConfig;
 import org.jboss.as.model.test.ModelFixer;
+import org.jboss.as.model.test.ModelTestControllerVersion;
 import org.jboss.as.model.test.ModelTestUtils;
 import org.jboss.dmr.ModelNode;
 import org.junit.Assert;
@@ -57,7 +59,7 @@ import org.junit.runners.Parameterized;
 public class DomainServerGroupTransformersTestCase extends AbstractCoreModelTest {
 
     private final ModelVersion modelVersion;
-    private final LegacyKernelServicesInitializer.TestControllerVersion testControllerVersion;
+    private final ModelTestControllerVersion testControllerVersion;
 
     @Parameterized.Parameters
     public static List<Object[]> parameters(){
@@ -82,8 +84,7 @@ public class DomainServerGroupTransformersTestCase extends AbstractCoreModelTest
         LegacyKernelServicesInitializer legacyInitializer =
                 StandardServerGroupInitializers.addServerGroupInitializers(builder.createLegacyKernelServicesBuilder(modelVersion, testControllerVersion));
         if (is71x) {
-            // The 7.1.x descriptions are inaccurate so we can't validate the add ops against them
-            legacyInitializer.setDontValidateOperations();
+            ExcludeCommonOperations.excludeBadOps_7_1_x(legacyInitializer);
         }
 
         KernelServices mainServices = builder.build();
@@ -110,11 +111,7 @@ public class DomainServerGroupTransformersTestCase extends AbstractCoreModelTest
 
         // Add legacy subsystems
         LegacyKernelServicesInitializer legacyInitializer =
-                StandardServerGroupInitializers.addServerGroupInitializers(builder.createLegacyKernelServicesBuilder(modelVersion, testControllerVersion))
-                //The reverse stuff is tested in the other test
-                .skipReverseControllerCheck();
-        // The 7.1.x descriptions are inaccurate so we can't validate the add ops against them
-        legacyInitializer.setDontValidateOperations();
+                StandardServerGroupInitializers.addServerGroupInitializers(builder.createLegacyKernelServicesBuilder(modelVersion, testControllerVersion));
 
         KernelServices mainServices = builder.build();
 

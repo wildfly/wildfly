@@ -21,8 +21,6 @@
 */
 package org.jboss.as.core.model.test;
 
-import java.util.Properties;
-
 import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.PathElement;
 import org.jboss.as.model.test.ModelFixer;
@@ -41,72 +39,28 @@ public interface LegacyKernelServicesInitializer {
     LegacyKernelServicesInitializer setDontUseBootOperations();
 
     /**
-     * The default is to validate the operations sent in to the model controller. Turn it off call this method
+     * By default all operations sent into the model controller will be validated on boot. Operations matching what is
+     * set up here will not be validated. This is mainly because the {@link org.jboss.as.controller.operations.validation.OperationValidator} used in 7.1.x did not handle expressions very well
+     * when checking ranges. If there is a problem you should try to call {@link #addOperationValidationResolve(String, PathAddress)}
+     * first.
      *
-     * @return this builder
+     * @param name the name of the operation, or {@code *} as a wildcard capturing all names
+     * @param pathAddress the address of the operation, the pathAddress may use {@code *} as a wildcard for both the key and the value of {@link PathElement}s
      */
-    LegacyKernelServicesInitializer setDontValidateOperations();
-
+    LegacyKernelServicesInitializer addOperationValidationExclude(String name, PathAddress pathAddress);
 
     /**
-     * By default the {@link KernelServicesBuilder#build()} method will use the boot operations passed into the
-     * legacy controller and try to boot up the current controller with those. This is for checking that e.g. cli scripts written
-     * against the legacy controller still work with the current one. To turn this check off call this method.
+     * By default all operations sent into the model controller will be validated on boot. Operations matching what is
+     * set up here will not be validated. This is mainly because the {@link org.jboss.as.controller.operations.validation.OperationValidator} used in 7.1.x did not handle expressions very well
+     * when checking ranges.
      *
-     * @return this initializer
+     * @param name the name of the operation, or {@code *} as a wildcard capturing all names
+     * @param pathAddress the address of the operation, the pathAddress may use {@code *} as a wildcard for both the key and the value of {@link PathElement}s
      */
+    LegacyKernelServicesInitializer addOperationValidationResolve(String name, PathAddress pathAddress);
+
     LegacyKernelServicesInitializer skipReverseControllerCheck();
 
-    /**
-     * By default the {@link KernelServicesBuilder#build()} method will use the boot operations passed into the
-     * legacy controller and try to boot up the current controller with those. This is for checking that e.g. cli scripts written
-     * against the legacy controller still work with the current one. Configure how the models are compared with this method
-     *
-     * @param mainModelFixer a model fixer to fix up the main model before comparison
-     * @param legacyModelFixer a model fixer to fix up the model created from legacy boot operations before comparison
-     * @return this initializer
-     */
     LegacyKernelServicesInitializer configureReverseControllerCheck(ModelFixer mainModelFixer, ModelFixer legacyModelFixer);
 
-    public enum TestControllerVersion {
-        MASTER("org.jboss.as:jboss-as-host-controller:" + VersionLocator.getCurrentVersion(), null),
-        V7_1_2_FINAL("org.jboss.as:jboss-as-host-controller:7.1.2.Final", "7.1.2"),
-        V7_1_3_FINAL("org.jboss.as:jboss-as-host-controller:7.1.3.Final", "7.1.2");
-
-        String mavenGav;
-        String testControllerVersion;
-
-        private TestControllerVersion(String mavenGav, String testControllerVersion) {
-            this.mavenGav = mavenGav;
-            this.testControllerVersion = testControllerVersion;
-        }
-
-        String getLegacyControllerMavenGav() {
-            return mavenGav;
-        }
-
-        String getTestControllerVersion() {
-            return testControllerVersion;
-        }
-
-    }
-
-    static final class VersionLocator {
-        private static String VERSION;
-
-        static {
-            try {
-                Properties props = new Properties();
-                props.load(LegacyKernelServicesInitializer.class.getResourceAsStream("version.properties"));
-                VERSION = props.getProperty("as.version");
-            } catch (Exception e) {
-                VERSION = "7.2.0.Final";
-                e.printStackTrace();
-            }
-        }
-
-        static String getCurrentVersion() {
-            return VERSION;
-        }
-    }
 }

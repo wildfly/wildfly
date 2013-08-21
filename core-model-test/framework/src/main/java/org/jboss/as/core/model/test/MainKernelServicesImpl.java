@@ -111,19 +111,19 @@ public class MainKernelServicesImpl extends AbstractKernelServicesImpl {
     }
 
     public ModelNode callReadMasterDomainModelHandler(ModelVersion modelVersion){
-        checkIsMainController();
+            checkIsMainController();
 
-        final TransformationTarget target = TransformationTargetImpl.create(extensionRegistry.getTransformerRegistry(), modelVersion,
-                Collections.<PathAddress, ModelVersion>emptyMap(), MOCK_IGNORED_DOMAIN_RESOURCE_REGISTRY, TransformationTarget.TransformationTargetType.DOMAIN);
-        final Transformers transformers = Transformers.Factory.create(target);
+            final TransformationTarget target = TransformationTargetImpl.create(extensionRegistry.getTransformerRegistry(), modelVersion,
+                    Collections.<PathAddress, ModelVersion>emptyMap(), MOCK_IGNORED_DOMAIN_RESOURCE_REGISTRY, TransformationTarget.TransformationTargetType.DOMAIN);
+            final Transformers transformers = Transformers.Factory.create(target);
 
-        ModelNode result = internalExecute(new ModelNode(), new ReadMasterDomainModelHandler(transformers));
-        if (FAILED.equals(result.get(OUTCOME).asString())) {
-            throw new RuntimeException(result.get(FAILURE_DESCRIPTION).asString());
+            ModelNode result = internalExecute(new ModelNode(), new ReadMasterDomainModelHandler(transformers));
+            if (FAILED.equals(result.get(OUTCOME).asString())) {
+                throw new RuntimeException(result.get(FAILURE_DESCRIPTION).asString());
+            }
+
+            return result.get(RESULT);
         }
-
-        return result.get(RESULT);
-    }
 
     @Override
     public void applyMasterDomainModel(ModelVersion modelVersion, List<IgnoreDomainResourceTypeResource> ignoredResources) {

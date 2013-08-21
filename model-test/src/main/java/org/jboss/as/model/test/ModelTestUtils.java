@@ -179,19 +179,17 @@ public class ModelTestUtils {
      *
      * @param node1 the first model
      * @param node2 the second model
-     * @throws AssertionError if the models were not the same
      */
     public static void compare(ModelNode node1, ModelNode node2) {
         compare(node1, node2, false);
     }
 
     /**
-     * Resoolve two models and compare them to make sure that they have same
+     * Resolve two models and compare them to make sure that they have same
        content after expression resolution
      *
      * @param node1 the first model
      * @param node2 the second model
-     * @throws AssertionError if the models were not the same
      */
     public static void resolveAndCompareModels(ModelNode node1, ModelNode node2) {
         compare(node1.resolve(), node2.resolve(), false, true, new Stack<String>());
@@ -203,7 +201,6 @@ public class ModelTestUtils {
      * @param node1           the first model
      * @param node2           the second model
      * @param ignoreUndefined {@code true} if keys containing undefined nodes should be ignored
-     * @throws AssertionError if the models were not the same
      */
     public static void compare(ModelNode node1, ModelNode node2, boolean ignoreUndefined) {
         compare(node1, node2, ignoreUndefined, false, new Stack<String>());
@@ -267,7 +264,6 @@ public class ModelTestUtils {
             xmlMarshalled = marshalled;
         }
 
-
         Assert.assertEquals(normalizeXML(xmlOriginal), normalizeXML(xmlMarshalled));
     }
 
@@ -287,7 +283,6 @@ public class ModelTestUtils {
      * call ModelNode.set("${A}") when ModelNode.setExpression("${A}) should have been used
      *
      * @param model the model to check
-     * @throws AssertionError if any STRING entries contain expression formatted strings.
      */
     public static void scanForExpressionFormattedStrings(ModelNode model) {
         if (model.getType().equals(ModelType.STRING)) {
@@ -472,7 +467,7 @@ public class ModelTestUtils {
                     }
                 }
             } else {
-                if (children.contains(pe.getKeyValuePair())) {
+                if (children.contains(pe.getKey()) && model.hasDefined(pe.getKey()) && model.get(pe.getKey()).hasDefined(pe.getValue())) {
                     String name = pe.getValue();
                     ModelNode value = model.get(pe.getKeyValuePair());
                     ManagementResourceRegistration sub = rr.getSubModel(PathAddress.pathAddress(pe));

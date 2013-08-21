@@ -39,6 +39,7 @@ import org.jboss.as.controller.PathElement;
 import org.jboss.as.controller.operations.common.Util;
 import org.jboss.as.controller.transform.OperationTransformer;
 import org.jboss.as.model.test.FailedOperationTransformationConfig;
+import org.jboss.as.model.test.ModelTestControllerVersion;
 import org.jboss.as.model.test.ModelTestUtils;
 import org.jboss.as.subsystem.test.AdditionalInitialization;
 import org.jboss.as.subsystem.test.KernelServices;
@@ -73,23 +74,28 @@ public class InfinispanSubsystemTransformerTestCase extends OperationTestCaseBas
 
     @Test
     public void testTransformer712() throws Exception {
-        testTransformer_1_3_0("7.1.2.Final");
+        testTransformer_1_3_0(ModelTestControllerVersion.V7_1_2_FINAL);
     }
 
     @Test
     public void testTransformer713() throws Exception {
-        testTransformer_1_3_0("7.1.3.Final");
+        testTransformer_1_3_0(ModelTestControllerVersion.V7_1_3_FINAL);
     }
 
-    private void testTransformer_1_3_0(String asVersion) throws Exception {
+    private void testTransformer_1_3_0(ModelTestControllerVersion controllerVersion) throws Exception {
         ModelVersion version = ModelVersion.create(1, 3);
         KernelServicesBuilder builder = createKernelServicesBuilder(AdditionalInitialization.MANAGEMENT)
                 .setSubsystemXml(getSubsystemXml());
-        builder.createLegacyKernelServicesBuilder(null, version)
-            .addMavenResourceURL("org.jboss.as:jboss-as-clustering-infinispan:" + asVersion);
+        builder.createLegacyKernelServicesBuilder(null, controllerVersion, version)
+            .addMavenResourceURL("org.jboss.as:jboss-as-clustering-infinispan:" + controllerVersion.getMavenGavVersion())
+            //TODO storing the model triggers the weirdness mentioned in SubsystemTestDelegate.LegacyKernelServiceInitializerImpl.install()
+            //which is strange since it should be loading it all from the current jboss modules
+            //Also this works in several other tests
+            .dontPersistXml();
 
         KernelServices mainServices = builder.build();
         Assert.assertTrue("main services did not boot", mainServices.isSuccessfulBoot());
+        Assert.assertTrue(mainServices.getLegacyServices(version).isSuccessfulBoot());
 
         checkSubsystemModelTransformation(mainServices, version);
 
@@ -103,22 +109,26 @@ public class InfinispanSubsystemTransformerTestCase extends OperationTestCaseBas
 
     @Test
     public void testRejectExpressions712() throws Exception {
-        testRejectExpressions_1_3_0("7.1.2.Final");
+        testRejectExpressions_1_3_0(ModelTestControllerVersion.V7_1_2_FINAL);
     }
 
     @Test
     public void testRejectExpressions713() throws Exception {
-        testRejectExpressions_1_3_0("7.1.3.Final");
+        testRejectExpressions_1_3_0(ModelTestControllerVersion.V7_1_3_FINAL);
     }
 
-    public void testRejectExpressions_1_3_0(String asVersion) throws Exception {
+    public void testRejectExpressions_1_3_0(ModelTestControllerVersion controllerVersion) throws Exception {
         // create builder for current subsystem version
         KernelServicesBuilder builder = createKernelServicesBuilder(AdditionalInitialization.MANAGEMENT);
 
         // create builder for legacy subsystem version
         ModelVersion version_1_3_0 = ModelVersion.create(1, 3, 0);
-        builder.createLegacyKernelServicesBuilder(null, version_1_3_0)
-            .addMavenResourceURL("org.jboss.as:jboss-as-clustering-infinispan:" + asVersion);
+        builder.createLegacyKernelServicesBuilder(null, controllerVersion, version_1_3_0)
+            .addMavenResourceURL("org.jboss.as:jboss-as-clustering-infinispan:" + controllerVersion.getMavenGavVersion())
+            //TODO storing the model triggers the weirdness mentioned in SubsystemTestDelegate.LegacyKernelServiceInitializerImpl.install()
+            //which is strange since it should be loading it all from the current jboss modules
+            //Also this works in several other tests
+            .dontPersistXml();
 
         KernelServices mainServices = builder.build();
         KernelServices legacyServices = mainServices.getLegacyServices(version_1_3_0);
@@ -134,10 +144,11 @@ public class InfinispanSubsystemTransformerTestCase extends OperationTestCaseBas
     @Test
     public void testVirtualNodesTo140() throws Exception {
         ModelVersion version140 = ModelVersion.create(1, 4);
-        // create builder for current subsystem version
-        KernelServicesBuilder builder = createKernelServicesBuilder(AdditionalInitialization.MANAGEMENT);
-        builder.createLegacyKernelServicesBuilder(null, version140)
-                .addMavenResourceURL("org.jboss.as:jboss-as-clustering-infinispan:" + "7.2.0.Final");
+                // create builder for current subsystem version
+                KernelServicesBuilder builder = createKernelServicesBuilder(AdditionalInitialization.MANAGEMENT);
+                builder.createLegacyKernelServicesBuilder(null, ModelTestControllerVersion.MASTER, version140)
+                        .addMavenResourceURL("org.jboss.as:jboss-as-clustering-infinispan:7.2.0.Final");
+
 
         KernelServices mainServices = builder.build();
         KernelServices legacyServices = mainServices.getLegacyServices(version140);
@@ -172,7 +183,6 @@ public class InfinispanSubsystemTransformerTestCase extends OperationTestCaseBas
         Assert.assertEquals(result, transformedOperation.transformResult(result));
 
     }
-
 
     /**
      * Constructs a FailedOperationTransformationConfig which describes all attributes which should accept expressions

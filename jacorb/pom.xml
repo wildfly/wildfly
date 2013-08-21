@@ -132,9 +132,10 @@
         </dependency>
 
         <dependency>
-         <groupId>org.jboss.as</groupId>
-         <artifactId>jboss-as-subsystem-test</artifactId>
-         <scope>test</scope>
+            <groupId>org.jboss.as</groupId>
+            <artifactId>jboss-as-subsystem-test</artifactId>
+            <type>pom</type>
+            <scope>test</scope>
         </dependency>
 
         <dependency>

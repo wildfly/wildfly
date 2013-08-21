@@ -197,7 +197,7 @@ public abstract class ModelTestKernelServicesImpl<T extends ModelTestKernelServi
      * Execute an operation in the model controller
      *
      * @param operation the operation to execute
-     * @param inputStream Input Streams for the operation
+     * @param inputStreams Input Streams for the operation
      * @return the whole result of the operation
      */
     @Override
@@ -242,7 +242,6 @@ public abstract class ModelTestKernelServicesImpl<T extends ModelTestKernelServi
 
     /**
      * Execute an operation in the model controller, expecting failure.
-     * Gives a junit {@link AssertionError} if the operation did not fail.
      *
      * @param operation the operation to execute
      * @return the result of the operation
@@ -271,7 +270,6 @@ public abstract class ModelTestKernelServicesImpl<T extends ModelTestKernelServi
      * Validates the operations against the description providers in the model controller
      *
      * @param operations the operations to validate
-     * @throws AssertionError if the operations are not valid
      */
     public void validateOperations(List<ModelNode> operations) {
         operationValidator.validateOperations(operations);
@@ -283,7 +281,6 @@ public abstract class ModelTestKernelServicesImpl<T extends ModelTestKernelServi
      * Validates the operation against the description providers in the model controller
      *
      * @param operation the operation to validate
-     * @throws AssertionError if the operation is not valid
      */
     @Override
     public void validateOperation(ModelNode operation) {

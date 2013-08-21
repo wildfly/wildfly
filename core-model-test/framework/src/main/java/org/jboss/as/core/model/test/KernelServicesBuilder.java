@@ -26,13 +26,12 @@ import java.io.IOException;
 import java.util.List;
 
 import org.jboss.as.controller.ModelVersion;
-import org.jboss.as.core.model.test.LegacyKernelServicesInitializer.TestControllerVersion;
+import org.jboss.as.model.test.ModelTestControllerVersion;
 import org.jboss.dmr.ModelNode;
 
 /**
  * A builder to create a controller and initialize it with the passed in subsystem xml or boot operations.
  *
- * @see AbstractSubsystemTest#createKernelServicesBuilder(AdditionalInitialization)
  * @author <a href="kabir.khan@jboss.com">Kabir Khan</a>
  */
 public interface KernelServicesBuilder {
@@ -48,7 +47,6 @@ public interface KernelServicesBuilder {
     /**
      * By default the description is not validated. Call this to validates the full model description minus what is set up by {@link KnownIssuesValidationConfiguration}
      *
-     * @param validationConfiguration the validation configuration, set to {@code null} to turn off model validation configuration
      * @return this builder
      */
     KernelServicesBuilder validateDescription();
@@ -57,12 +55,11 @@ public interface KernelServicesBuilder {
     /**
      * Sets the subsystem xml resource containing the xml to be parsed to create the boot operations used to initialize the controller. The resource is loaded using similar
      * semantics to {@link Class#getResource(String)}
-     * @param subsystemXml the subsystem xml
+     * @param resource the resource with subsystem xml
      * @return this builder
-     * @throws IllegalStateException if {@link #setBootOperations(List)}, {@link #setSubsystemXml(String)} or {@link #setSubsystemXmlResource(String)} have
+     * @throws IllegalStateException if {@link #setBootOperations(List)}, {@link #setXml(String)} (String)} or {@link #setXmlResource(String)} (String)} have
      * already been called
      * @throws IllegalStateException if {@link #build()} has already been called
-     * @throws AssertionError if the resource could not be found
      * @throws IOException if there were problems reading the resource
      * @throws XMLStreamException if there were problems parsing the xml
      */
@@ -105,18 +102,16 @@ public interface KernelServicesBuilder {
      * Creates a new legacy kernel services initializer used to configure a new controller containing an older version of the subsystem being tested.
      * When {@link #build()} is called any legacy controllers will be created as well.
      *
-     * @param additionalInit Additional initialization that should be done to the parsers, controller and service container before initializing our extension
      * @param modelVersion The model version of the legacy subsystem
      * @param testControllerVersion the version of the legacy controller to load up
      * @return the legacy kernel services initializer
      * @throws IllegalStateException if {@link #build()} has already been called
-     * @throws AssertionError if the extension class name was not found in the {@code resources}
      */
-     LegacyKernelServicesInitializer createLegacyKernelServicesBuilder(ModelVersion modelVersion, TestControllerVersion testControllerVersion);
+     LegacyKernelServicesInitializer createLegacyKernelServicesBuilder(ModelVersion modelVersion, ModelTestControllerVersion testControllerVersion);
 
     /**
      * Creates the controller and initializes it with the passed in configuration options.
-     * If {@link #createLegacyKernelServicesBuilder(ModelVersion)} was called kernel services will be created for the legacy subsystem
+     * If {@link #createLegacyKernelServicesBuilder(org.jboss.as.controller.ModelVersion, org.jboss.as.core.model.test.LegacyKernelServicesInitializer.TestControllerVersion)} (ModelVersion)} was called kernel services will be created for the legacy subsystem
      * controllers as well, accessible from {@link KernelServices#getLegacyServices(ModelVersion)} on the created {@link KernelServices}
      *
      * @return the kernel services wrapping the controller

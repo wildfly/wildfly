@@ -1,0 +1,17 @@
+{
+    "model-description" => {
+        "description" => "The configuration of the JPA subsystem.",
+        "head-comment-allowed" => true,
+        "tail-comment-allowed" => true,
+        "namespace" => "urn:jboss:domain:jpa:1.0",
+        "attributes" => {"default-datasource" => {
+            "description" => "The name of the default global datasource.",
+            "type" => STRING,
+            "required" => true,
+            "min-length" => 0,
+            "nillable" => true
+        }},
+        "children" => {}
+    },
+    "address" => [("subsystem" => "jpa")]
+}

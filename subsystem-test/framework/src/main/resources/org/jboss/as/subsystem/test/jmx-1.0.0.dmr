@@ -1,0 +1,35 @@
+{
+    "model-description" => {
+        "description" => "The configuration of the JMX subsystem.",
+        "attributes" => {"show-model" => {
+            "type" => BOOLEAN,
+            "description" => "Set to 'true' to include MBeans for the model controller resources",
+            "expressions-allowed" => false,
+            "nillable" => true
+        }},
+        "operations" => undefined,
+        "children" => {"remoting-connector" => {
+            "description" => "JBoss remoting connectors for the JMX subsystem.",
+            "model-description" => undefined
+        }}
+    },
+    "address" => [("subsystem" => "jmx")],
+    "children" => [{
+        "model-description" => {
+            "description" => "A JBoss remoting connector for the JMX subsystem.",
+            "attributes" => {"use-management-endpoint" => {
+                "type" => BOOLEAN,
+                "description" => "If true the connector will use the management endpoint, otherwise it will use the remoting subsystem one",
+                "expressions-allowed" => false,
+                "nillable" => true,
+                "default" => true
+            }},
+            "operations" => undefined,
+            "children" => {}
+        },
+        "address" => [
+            ("subsystem" => "jmx"),
+            ("remoting-connector" => "jmx")
+        ]
+    }]
+}

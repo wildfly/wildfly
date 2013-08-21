@@ -1,15 +1,19 @@
 package org.jboss.as.core.model.test.host;
 
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.DOMAIN_CONTROLLER;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.LOCAL;
+
 import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.registry.Resource;
-import org.jboss.as.core.model.test.*;
+import org.jboss.as.core.model.test.AbstractCoreModelTest;
+import org.jboss.as.core.model.test.KernelServices;
+import org.jboss.as.core.model.test.ModelInitializer;
+import org.jboss.as.core.model.test.ModelWriteSanitizer;
+import org.jboss.as.core.model.test.TestModelType;
 import org.jboss.as.model.test.ModelTestUtils;
 import org.jboss.dmr.ModelNode;
 import org.junit.Assert;
 import org.junit.Test;
-
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.DOMAIN_CONTROLLER;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.LOCAL;
 
 /**
  * @author <a href="mailto:tomaz.cerar@redhat.com">Tomaz Cerar</a> (c) 2012 Red Hat Inc.

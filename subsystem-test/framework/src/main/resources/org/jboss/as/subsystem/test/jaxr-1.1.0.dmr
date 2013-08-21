@@ -1,0 +1,43 @@
+{
+    "model-description" => {
+        "description" => "The configuration of the JAXR subsystem.",
+        "attributes" => {
+            "jndi-name" => {
+                "type" => STRING,
+                "description" => "The JNDI name under which the JAXR ConnectionFactory is bound",
+                "expressions-allowed" => false,
+                "nillable" => true,
+                "min-length" => 1L,
+                "max-length" => 2147483647L
+            },
+            "class" => {
+                "type" => STRING,
+                "description" => "The JAXR ConnectionFactory implementation class",
+                "expressions-allowed" => false,
+                "nillable" => true,
+                "min-length" => 1L,
+                "max-length" => 2147483647L
+            }
+        },
+        "operations" => undefined,
+        "children" => {"property" => {
+            "description" => "A JAXR property. The identity of the resource defines the property name.",
+            "model-description" => undefined
+        }}
+    },
+    "address" => [("subsystem" => "jaxr")],
+    "children" => [{
+        "model-description" => {
+            "description" => "A JAXR property. The identity of the resource defines the property name.",
+            "attributes" => {"value" => {
+                "description" => "The JAXR property value.",
+                "type" => STRING,
+                "required" => true
+            }}
+        },
+        "address" => [
+            ("subsystem" => "jaxr"),
+            ("property" => "*")
+        ]
+    }]
+}
