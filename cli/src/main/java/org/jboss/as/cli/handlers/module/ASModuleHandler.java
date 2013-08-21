@@ -243,7 +243,7 @@ public class ASModuleHandler extends CommandHandlerWithHelp {
         final String[] resourceArr = (resourcePaths == null) ? new String[0] : resourcePaths.split(pathDelimiter);
         File[] resourceFiles = new File[resourceArr.length];
         for(int i = 0; i < resourceArr.length; ++i) {
-            final File f = new File(ctx.getCurrentDir(), resourceArr[i]);
+            final File f = new File(resourceArr[i]);
             if(!f.exists()) {
                 throw new CommandLineException("Failed to locate " + f.getAbsolutePath());
             }
