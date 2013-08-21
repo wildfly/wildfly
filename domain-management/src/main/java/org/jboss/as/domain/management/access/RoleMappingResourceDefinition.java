@@ -34,16 +34,18 @@ import org.jboss.as.domain.management._private.DomainManagementResolver;
 import org.jboss.dmr.ModelNode;
 
 /**
- * A {@link ResourceDefinition} representing an individual role mapping.
+ * A {@link org.jboss.as.controller.ResourceDefinition} representing an individual role mapping.
  *
  * @author <a href="mailto:darran.lofthouse@jboss.com">Darran Lofthouse</a>
  */
 public class RoleMappingResourceDefinition extends SimpleResourceDefinition {
 
+    public static final String PATH_KEY = ROLE_MAPPING;
+
     private final ConfigurableRoleMapper roleMapper;
 
     private RoleMappingResourceDefinition(final ConfigurableRoleMapper roleMapper) {
-        super(PathElement.pathElement(ROLE_MAPPING), DomainManagementResolver.getResolver("core.access-control.role-mapping"),
+        super(PathElement.pathElement(PATH_KEY), DomainManagementResolver.getResolver("core.access-control.role-mapping"),
                 RoleMappingAdd.create(roleMapper), RoleMappingRemove.create(roleMapper));
         this.roleMapper = roleMapper;
     }

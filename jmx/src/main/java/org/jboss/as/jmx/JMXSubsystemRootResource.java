@@ -63,7 +63,7 @@ public class JMXSubsystemRootResource extends SimpleResourceDefinition {
             .build();
 
     public static final SimpleAttributeDefinition CORE_MBEAN_SENSITIVITY = new SimpleAttributeDefinitionBuilder(CommonAttributes.CORE_MBEAN_SENSITIVITY, ModelType.BOOLEAN, true)
-            //.setAllowExpression(true)
+            //.setAllowExpression(true) //I don't think we should support expressions here
             .setXmlName(CommonAttributes.CORE_MBEANS)
             .setDefaultValue(new ModelNode(false)).build();
 

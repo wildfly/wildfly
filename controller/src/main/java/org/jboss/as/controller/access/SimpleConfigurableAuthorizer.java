@@ -124,7 +124,7 @@ public class SimpleConfigurableAuthorizer implements ConfigurableAuthorizer {
     @Override
     public AuthorizationResult authorizeJmxOperation(Caller caller, Environment callEnvironment, JmxTarget target) {
         Set<String> roles = roleMapper.mapRoles(caller, null, FAKE_JMX_ACTION, (TargetAttribute) null);
-        if (target.isNonFacadeMBeansSensitive()) {
+        if (target.isNonFacadeMBeansSensitive() || target.isSuperUserOrAdminOnly()) {
             return authorize(roles, StandardRole.SUPERUSER, StandardRole.ADMINISTRATOR);
         } else {
             if (target.isReadOnly()) {
