@@ -170,6 +170,7 @@ class JspDefinition extends PersistentResourceDefinition {
     protected static final SimpleAttributeDefinition[] ATTRIBUTES = {
             // IMPORTANT -- keep these in xsd order as this order controls marshalling
             DISABLED,
+            DEVELOPMENT,
             KEEP_GENERATED,
             TRIM_SPACES,
             TAG_POOLING,
