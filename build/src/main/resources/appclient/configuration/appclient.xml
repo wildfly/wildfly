@@ -122,7 +122,7 @@
                 </long-running-threads>
             </default-workmanager>
         </subsystem>
-        <subsystem xmlns="urn:jboss:domain:naming:1.0"/>
+        <subsystem xmlns="urn:jboss:domain:naming:2.0"/>
         <subsystem xmlns="urn:jboss:domain:security:1.0">
             <security-domains>
                 <security-domain name="other" cache-type="default">
