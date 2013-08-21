@@ -79,10 +79,9 @@ public class CLIWrapper {
     public CLIWrapper(boolean connect, String cliAddress) throws CliInitializationException {
 
         consoleOut = new ByteArrayOutputStream();
-        final char[] password = getPassword() == null ? null : getPassword().toCharArray();
         System.setProperty("aesh.terminal","org.jboss.aesh.terminal.TestTerminal");
         ctx = CLITestUtil.getCommandContext(
-                TestSuiteEnvironment.getServerAddress(), TestSuiteEnvironment.getServerPort(), getUsername(), password,
+                TestSuiteEnvironment.getServerAddress(), TestSuiteEnvironment.getServerPort(),
                 createConsoleInput(), consoleOut);
 
         if (!connect) {
