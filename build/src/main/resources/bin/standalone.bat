@@ -58,7 +58,7 @@ if not "x%DEBUG_ARG" == "x" (
 rem $Id$
 )
 
-pushd %DIRNAME%..
+pushd "%DIRNAME%.."
 set "RESOLVED_JBOSS_HOME=%CD%"
 popd
 
@@ -74,7 +74,7 @@ if /i "%RESOLVED_JBOSS_HOME%" NEQ "%SANITIZED_JBOSS_HOME%" (
    echo.
    echo   WARNING:  JBOSS_HOME may be pointing to a different installation - unpredictable results may occur.
    echo.
-   echo             JBOSS_HOME: %JBOSS_HOME%
+   echo             JBOSS_HOME: "%JBOSS_HOME%"
    echo.
    rem 2 seconds pause
    ping 127.0.0.1 -n 3 > nul
@@ -105,7 +105,7 @@ if "%DEBUG_MODE%" == "true" (
 set DIRNAME=
 
 rem Setup JBoss specific properties
-set JAVA_OPTS=-Dprogram.name=%PROGNAME% %JAVA_OPTS%
+set "JAVA_OPTS=-Dprogram.name=%PROGNAME% %JAVA_OPTS%"
 
 if "x%JAVA_HOME%" == "x" (
   set  JAVA=java
