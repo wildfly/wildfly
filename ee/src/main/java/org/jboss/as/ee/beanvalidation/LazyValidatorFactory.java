@@ -23,7 +23,6 @@ package org.jboss.as.ee.beanvalidation;
 
 import org.wildfly.security.manager.WildFlySecurityManager;
 
-import javax.validation.Configuration;
 import javax.validation.ConstraintValidatorFactory;
 import javax.validation.MessageInterpolator;
 import javax.validation.ParameterNameProvider;
@@ -42,20 +41,11 @@ import javax.validation.ValidatorFactory;
  */
 public class LazyValidatorFactory implements ValidatorFactory {
 
-    private final Configuration<?> configuration;
     private final ClassLoader classLoader;
 
     private volatile ValidatorFactory delegate; // use as a barrier
 
-    /**
-     * Use the default ValidatorFactory creation routine
-     */
     public LazyValidatorFactory(ClassLoader classLoader) {
-        this(null, classLoader);
-    }
-
-    public LazyValidatorFactory(Configuration<?> configuration, ClassLoader classLoader) {
-        this.configuration = configuration;
         this.classLoader = classLoader;
     }
 
@@ -87,13 +77,8 @@ public class LazyValidatorFactory implements ValidatorFactory {
         final ClassLoader oldTCCL = WildFlySecurityManager.getCurrentContextClassLoaderPrivileged();
         try {
             WildFlySecurityManager.setCurrentContextClassLoaderPrivileged(classLoader);
-            if (configuration == null) {
-                return Validation.byDefaultProvider().providerResolver(new WildFlyProviderResolver()).configure()
-                        .buildValidatorFactory();
-
-            } else {
-                return configuration.buildValidatorFactory();
-            }
+            return Validation.byDefaultProvider().providerResolver(new WildFlyProviderResolver()).configure()
+                    .buildValidatorFactory();
         } finally {
             WildFlySecurityManager.setCurrentContextClassLoaderPrivileged(oldTCCL);
         }
@@ -101,7 +86,14 @@ public class LazyValidatorFactory implements ValidatorFactory {
 
     @Override
     public ValidatorContext usingContext() {
-        return getDelegate().usingContext();
+        final ClassLoader oldTCCL = WildFlySecurityManager.getCurrentContextClassLoaderPrivileged();
+        try {
+            // Make sure the deployment's CL is set
+            WildFlySecurityManager.setCurrentContextClassLoaderPrivileged(classLoader);
+            return getDelegate().usingContext();
+        } finally {
+            WildFlySecurityManager.setCurrentContextClassLoaderPrivileged(oldTCCL);
+        }
     }
 
     @Override

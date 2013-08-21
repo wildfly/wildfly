@@ -46,6 +46,7 @@ import org.jboss.as.connector.subsystems.datasources.AbstractDataSourceService;
 import org.jboss.as.controller.PathElement;
 import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
 import org.jboss.as.controller.registry.Resource;
+import org.jboss.as.ee.beanvalidation.BeanValidationAttachments;
 import org.jboss.as.ee.component.ComponentDescription;
 import org.jboss.as.ee.component.EEModuleDescription;
 import org.jboss.as.ee.structure.DeploymentType;
@@ -66,7 +67,6 @@ import org.jboss.as.jpa.service.PhaseOnePersistenceUnitServiceImpl;
 import org.jboss.as.jpa.spi.PersistenceUnitService;
 import org.jboss.as.jpa.subsystem.PersistenceUnitRegistryImpl;
 import org.jboss.as.jpa.util.JPAServiceNames;
-import org.jboss.as.jpa.validator.SerializableValidatorFactory;
 import org.jboss.as.naming.ManagedReference;
 import org.jboss.as.naming.ManagedReferenceFactory;
 import org.jboss.as.naming.ServiceBasedNamingStore;
@@ -325,15 +325,16 @@ public class PersistenceUnitServiceHandler {
             final boolean allowCdiBeanManagerAccess) throws DeploymentUnitProcessingException {
         pu.setClassLoader(classLoader);
         try {
-            SerializableValidatorFactory validatorFactory = null;
+            ValidatorFactory validatorFactory = null;
             final HashMap<String, ValidatorFactory> properties = new HashMap();
             if (!ValidationMode.NONE.equals(pu.getValidationMode())) {
-                validatorFactory = SerializableValidatorFactory.validatorFactory();
+                // Get the CDI-enabled ValidatorFactory
+                validatorFactory = deploymentUnit.getAttachment(BeanValidationAttachments.VALIDATOR_FACTORY);
             }
 
             final PersistenceUnitServiceImpl service = new PersistenceUnitServiceImpl(classLoader, pu, adaptor, provider, PersistenceUnitRegistryImpl.INSTANCE, deploymentUnit.getServiceName(), validatorFactory);
 
-            deploymentUnit.addToAttachmentList(REMOVAL_KEY, new PersistenceAdaptorRemoval(validatorFactory, pu, adaptor));
+            deploymentUnit.addToAttachmentList(REMOVAL_KEY, new PersistenceAdaptorRemoval(pu, adaptor));
 
             // add persistence provider specific properties
             adaptor.addProviderProperties(properties, pu);
@@ -447,7 +448,7 @@ public class PersistenceUnitServiceHandler {
             final PersistenceProviderAdaptor adaptor) throws DeploymentUnitProcessingException {
         pu.setClassLoader(classLoader);
         try {
-            SerializableValidatorFactory validatorFactory = null;
+            ValidatorFactory validatorFactory = null;
             final HashMap<String, ValidatorFactory> properties = new HashMap();
 
             ProxyBeanManager proxyBeanManager = null;
@@ -459,7 +460,7 @@ public class PersistenceUnitServiceHandler {
 
             final PhaseOnePersistenceUnitServiceImpl service = new PhaseOnePersistenceUnitServiceImpl(classLoader, pu, adaptor, deploymentUnit.getServiceName(), proxyBeanManager);
 
-            deploymentUnit.addToAttachmentList(REMOVAL_KEY, new PersistenceAdaptorRemoval(validatorFactory, pu, adaptor));
+            deploymentUnit.addToAttachmentList(REMOVAL_KEY, new PersistenceAdaptorRemoval(pu, adaptor));
 
             // add persistence provider specific properties
             adaptor.addProviderProperties(properties, pu);
@@ -556,15 +557,16 @@ public class PersistenceUnitServiceHandler {
             final PersistenceProviderAdaptor adaptor) throws DeploymentUnitProcessingException {
         pu.setClassLoader(classLoader);
         try {
-            SerializableValidatorFactory validatorFactory = null;
+            ValidatorFactory validatorFactory = null;
             final HashMap<String, ValidatorFactory> properties = new HashMap();
             if (!ValidationMode.NONE.equals(pu.getValidationMode())) {
-                validatorFactory = SerializableValidatorFactory.validatorFactory();
+                // Get the CDI-enabled ValidatorFactory
+                validatorFactory = deploymentUnit.getAttachment(BeanValidationAttachments.VALIDATOR_FACTORY);
             }
 
             final PersistenceUnitServiceImpl service = new PersistenceUnitServiceImpl(classLoader, pu, adaptor, provider, PersistenceUnitRegistryImpl.INSTANCE, deploymentUnit.getServiceName(), validatorFactory);
 
-            deploymentUnit.addToAttachmentList(REMOVAL_KEY, new PersistenceAdaptorRemoval(validatorFactory, pu, adaptor));
+            deploymentUnit.addToAttachmentList(REMOVAL_KEY, new PersistenceAdaptorRemoval(pu, adaptor));
 
             // add persistence provider specific properties
             adaptor.addProviderProperties(properties, pu);
@@ -1078,21 +1080,16 @@ public class PersistenceUnitServiceHandler {
     }
 
     private static class PersistenceAdaptorRemoval {
-        final SerializableValidatorFactory validatorFactory;
         final PersistenceUnitMetadata pu;
         final PersistenceProviderAdaptor adaptor;
 
-        public PersistenceAdaptorRemoval(final SerializableValidatorFactory validatorFactory, PersistenceUnitMetadata pu, PersistenceProviderAdaptor adaptor) {
-            this.validatorFactory = validatorFactory;
+        public PersistenceAdaptorRemoval(PersistenceUnitMetadata pu, PersistenceProviderAdaptor adaptor) {
             this.pu = pu;
             this.adaptor = adaptor;
         }
 
         private void cleanup() {
             adaptor.cleanup(pu);
-            if (validatorFactory != null) {
-                validatorFactory.clean();
-            }
         }
     }
 
