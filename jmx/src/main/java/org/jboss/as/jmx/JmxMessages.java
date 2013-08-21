@@ -32,6 +32,7 @@ import javax.management.InvalidAttributeValueException;
 import javax.management.MBeanException;
 import javax.management.ObjectName;
 import javax.management.ReflectionException;
+import javax.management.RuntimeMBeanException;
 import javax.management.openmbean.OpenDataException;
 import javax.management.openmbean.OpenType;
 
@@ -384,6 +385,6 @@ public interface JmxMessages {
     IllegalStateException noHandlerCalled(String name);
 
     @Message(id = 11360, value = "Unauthorized access")
-    MBeanException unauthorized();
+    RuntimeMBeanException unauthorized();
 }
 

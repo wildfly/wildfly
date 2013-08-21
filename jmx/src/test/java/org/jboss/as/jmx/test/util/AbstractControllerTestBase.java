@@ -22,7 +22,7 @@
  *
  */
 
-package org.jboss.as.jmx.auditlog;
+package org.jboss.as.jmx.test.util;
 
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.FAILED;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.FAILURE_DESCRIPTION;
@@ -44,6 +44,7 @@ import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.PathElement;
 import org.jboss.as.controller.ProcessType;
 import org.jboss.as.controller.ResourceBuilder;
+import org.jboss.as.controller.access.DelegatingConfigurableAuthorizer;
 import org.jboss.as.controller.audit.AuditLogger;
 import org.jboss.as.controller.audit.ManagedAuditLogger;
 import org.jboss.as.controller.descriptions.NonResolvingResourceDescriptionResolver;
@@ -52,11 +53,11 @@ import org.jboss.as.controller.persistence.ConfigurationPersistenceException;
 import org.jboss.as.controller.persistence.ModelMarshallingContext;
 import org.jboss.as.controller.registry.ManagementResourceRegistration;
 import org.jboss.as.controller.registry.Resource;
+import org.jboss.as.server.Services;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.ModelType;
 import org.jboss.msc.service.ServiceBuilder;
 import org.jboss.msc.service.ServiceContainer;
-import org.jboss.msc.service.ServiceName;
 import org.jboss.msc.service.ServiceTarget;
 import org.jboss.staxmapper.XMLElementWriter;
 import org.junit.After;
@@ -126,8 +127,8 @@ public abstract class AbstractControllerTestBase {
     public void setupController() throws InterruptedException {
         container = ServiceContainer.Factory.create("test");
         ServiceTarget target = container.subTarget();
-        ModelControllerService svc = new ModelControllerService(processType, getAuditLogger());
-        ServiceBuilder<ModelController> builder = target.addService(ServiceName.of("ModelController"), svc);
+        ModelControllerService svc = new ModelControllerService(processType, getAuditLogger(), getAuthorizer());
+        ServiceBuilder<ModelController> builder = target.addService(Services.JBOSS_SERVER_CONTROLLER, svc);
         builder.install();
         svc.awaitStartup(30, TimeUnit.SECONDS);
         controller = svc.getValue();
@@ -157,12 +158,15 @@ public abstract class AbstractControllerTestBase {
         return AuditLogger.NO_OP_LOGGER;
     }
 
+    protected DelegatingConfigurableAuthorizer getAuthorizer() {
+        return null;
+    }
     class ModelControllerService extends TestModelControllerService {
 
-        ModelControllerService(final ProcessType processType, final ManagedAuditLogger auditLogger) {
+        ModelControllerService(final ProcessType processType, final ManagedAuditLogger auditLogger, final DelegatingConfigurableAuthorizer authorizer) {
             super(processType, new EmptyConfigurationPersister(), new ControlledProcessState(true),
                     ResourceBuilder.Factory.create(PathElement.pathElement("root"), new NonResolvingResourceDescriptionResolver()).build(),
-                    auditLogger);
+                    auditLogger, authorizer);
         }
 
         @Override
