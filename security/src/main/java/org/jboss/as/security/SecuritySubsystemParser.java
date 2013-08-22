@@ -800,6 +800,7 @@ public class SecuritySubsystemParser implements XMLStreamConstants, XMLElementRe
     private void parseJSSE(List<ModelNode> list, PathAddress parentAddress, XMLExtendedStreamReader reader) throws XMLStreamException {
         ModelNode op = appendAddOperation(list, parentAddress, JSSE, CLASSIC);
         EnumSet<Attribute> visited = EnumSet.noneOf(Attribute.class);
+        EnumSet<Attribute> required = EnumSet.noneOf(Attribute.class);
         final int count = reader.getAttributeCount();
         for (int i = 0; i < count; i++) {
             requireNoNamespaceAttribute(reader, i);
@@ -814,18 +815,22 @@ public class SecuritySubsystemParser implements XMLStreamConstants, XMLElementRe
                 }
                 case KEYSTORE_TYPE: {
                     ComplexAttributes.TYPE.parseAndSetParameter(value, op.get(KEYSTORE), reader);
+                    required.add(Attribute.KEYSTORE_PASSWORD);
                     break;
                 }
                 case KEYSTORE_URL: {
                     ComplexAttributes.URL.parseAndSetParameter(value, op.get(KEYSTORE), reader);
+                    required.add(Attribute.KEYSTORE_PASSWORD);
                     break;
                 }
                 case KEYSTORE_PROVIDER: {
                     ComplexAttributes.PROVIDER.parseAndSetParameter(value, op.get(KEYSTORE), reader);
+                    required.add(Attribute.KEYSTORE_PASSWORD);
                     break;
                 }
                 case KEYSTORE_PROVIDER_ARGUMENT: {
                     ComplexAttributes.PROVIDER_ARGUMENT.parseAndSetParameter(value, op.get(KEYSTORE), reader);
+                    required.add(Attribute.KEYSTORE_PASSWORD);
                     break;
                 }
                 case KEY_MANAGER_FACTORY_PROVIDER: {
@@ -843,18 +848,22 @@ public class SecuritySubsystemParser implements XMLStreamConstants, XMLElementRe
                 }
                 case TRUSTSTORE_TYPE: {
                     ComplexAttributes.TYPE.parseAndSetParameter(value, op.get(TRUSTSTORE), reader);
+                    required.add(Attribute.TRUSTSTORE_PASSWORD);
                     break;
                 }
                 case TRUSTSTORE_URL: {
                     ComplexAttributes.URL.parseAndSetParameter(value, op.get(TRUSTSTORE), reader);
+                    required.add(Attribute.TRUSTSTORE_PASSWORD);
                     break;
                 }
                 case TRUSTSTORE_PROVIDER: {
                     ComplexAttributes.PROVIDER.parseAndSetParameter(value, op.get(TRUSTSTORE), reader);
+                    required.add(Attribute.TRUSTSTORE_PASSWORD);
                     break;
                 }
                 case TRUSTSTORE_PROVIDER_ARGUMENT: {
                     ComplexAttributes.PROVIDER_ARGUMENT.parseAndSetParameter(value, op.get(TRUSTSTORE), reader);
+                    required.add(Attribute.TRUSTSTORE_PASSWORD);
                     break;
                 }
                 case TRUST_MANAGER_FACTORY_PROVIDER: {
@@ -894,7 +903,7 @@ public class SecuritySubsystemParser implements XMLStreamConstants, XMLElementRe
             }
         }
 
-        if (visited.size() == 0) {
+        if (!visited.containsAll(required)) {
             throw SecurityMessages.MESSAGES.xmlStreamExceptionMissingAttribute(Attribute.KEYSTORE_PASSWORD.getLocalName(),
                     Attribute.TRUSTSTORE_PASSWORD.getLocalName(), reader.getLocation());
         }

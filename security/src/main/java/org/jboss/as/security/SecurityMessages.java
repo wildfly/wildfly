@@ -289,4 +289,7 @@ public interface SecurityMessages {
     @Message(id = 13328, value = "No authentication cache for security domain '%s' available")
     OperationFailedException noAuthenticationCacheAvailable(String securityDomain);
 
+
+    @Message(id = 13332, value = "At least one attribute is to be defined")
+    OperationFailedException requiredJSSEConfigurationAttribute();
 }

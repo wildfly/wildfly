@@ -84,7 +84,7 @@ public class SecurityDomainModelv12UnitTestCase extends AbstractSubsystemBaseTes
 
         ModelNode writeOp = Util.createOperation("write-attribute", address);
         writeOp.get("name").set("login-modules");
-        for (int i = 1; i <= 5; i++) {
+        for (int i = 1; i <= 6; i++) {
             ModelNode module = writeOp.get("value").add();
             module.get("code").set("module-" + i);
             module.get("flag").set("optional");
@@ -96,8 +96,8 @@ public class SecurityDomainModelv12UnitTestCase extends AbstractSubsystemBaseTes
         readOp.get("name").set("login-modules");
         ModelNode result = service.executeForResult(readOp);
         List<ModelNode> modules = result.asList();
-        Assert.assertEquals("There should be exactly 5 modules but there are not", 5, modules.size());
-        for (int i = 1; i <= 5; i++) {
+        Assert.assertEquals("There should be exactly 6 modules but there are not", 6, modules.size());
+        for (int i = 1; i <= 6; i++) {
             ModelNode module = modules.get(i - 1);
             Assert.assertEquals(module.get("code").asString(), "module-" + i);
         }
