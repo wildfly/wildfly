@@ -26,7 +26,9 @@
     <global/>
     <default>
         <locking lockAcquisitionTimeout="15000" useLockStriping="false" concurrencyLevel="1000"/>
-        <transaction lockingMode="PESSIMISTIC"/>
+        <transaction lockingMode="PESSIMISTIC">
+            <recovery enabled="false"/>
+        </transaction>
         <storeAsBinary enabled="false"/>
         <clustering mode="local"></clustering>
         <eviction strategy="NONE"/>
