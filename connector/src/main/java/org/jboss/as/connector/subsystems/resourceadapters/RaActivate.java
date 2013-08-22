@@ -30,9 +30,7 @@ import org.jboss.as.controller.OperationStepHandler;
 import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.ServiceVerificationHandler;
 import org.jboss.dmr.ModelNode;
-
-import static org.jboss.as.connector.subsystems.resourceadapters.Constants.ARCHIVE;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
+import org.jboss.msc.service.ServiceName;
 
 /**
  * Operation handler responsible for disabling an existing data-source.
@@ -45,23 +43,25 @@ public class RaActivate implements OperationStepHandler {
     public void execute(OperationContext context, ModelNode operation)  throws OperationFailedException {
 
         final ModelNode address = operation.require(OP_ADDR);
-        final String raName = PathAddress.pathAddress(address).getLastElement().getValue();
+        final String idName = PathAddress.pathAddress(address).getLastElement().getValue();
+        final String raName = context.readResource(PathAddress.EMPTY_ADDRESS).getModel().get("archive").asString();
 
         if (context.isNormalServer()) {
             context.addStep(new OperationStepHandler() {
                 public void execute(final OperationContext context, ModelNode operation) throws OperationFailedException {
+                   final ServiceVerificationHandler svh = new ServiceVerificationHandler();
 
-                    RaOperationUtil.deactivateIfActive(context, raName);
+                    ServiceName restartedServiceName = RaOperationUtil.restartIfPresent(context, raName, idName, svh);
 
-                    final String archiveName = model.get(ARCHIVE.getName()).asString();
-                    final ServiceVerificationHandler svh = new ServiceVerificationHandler();
-                    RaOperationUtil.activate(context, raName, archiveName, svh);
+                    if (restartedServiceName == null) {
+                        RaOperationUtil.activate(context, idName, svh);
+                    }
                     context.addStep(svh, OperationContext.Stage.VERIFY);
                     context.completeStep(new OperationContext.RollbackHandler() {
                         @Override
                         public void handleRollback(OperationContext context, ModelNode operation) {
                             try {
-                                RaOperationUtil.deactivateIfActive(context, raName);
+                                RaOperationUtil.removeIfActive(context, raName);
                             } catch (OperationFailedException e) {
 
                             }

@@ -61,7 +61,7 @@ public final class ResourceAdapterXmlDeploymentService extends AbstractResourceA
 
     private final Module module;
     private final ConnectorXmlDescriptor connectorXmlDescriptor;
-    private final ResourceAdapter raxml;
+    private ResourceAdapter raxml;
     private final String deployment;
 
     private String raName;
@@ -154,6 +154,9 @@ public final class ResourceAdapterXmlDeploymentService extends AbstractResourceA
         return raxmlDeployment;
     }
 
+   public synchronized void setRaxml(ResourceAdapter raxml) {
+        this.raxml = raxml;
+    }
     private class AS7RaXmlDeployer extends AbstractAS7RaDeployer {
 
         private final ResourceAdapter ra;
