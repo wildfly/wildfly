@@ -144,7 +144,7 @@
         </xs:annotation>
       </xs:element>
     </xs:sequence>
-    <xs:attribute name="id" type="xs:token" use="optional">
+    <xs:attribute name="id" type="xs:token" use="required">
       <xs:annotation>
         <xs:documentation>
           <![CDATA[[
