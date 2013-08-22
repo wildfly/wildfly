@@ -22,19 +22,29 @@
 
 package org.jboss.as.modcluster;
 
-import org.jboss.as.controller.OperationContext;
-import org.jboss.as.controller.OperationFailedException;
-import org.jboss.as.controller.OperationStepHandler;
-import org.jboss.dmr.ModelNode;
-import org.jboss.msc.service.ServiceController;
-
 import static org.jboss.as.modcluster.ModClusterLogger.ROOT_LOGGER;
 import static org.jboss.as.modcluster.ModClusterMessages.MESSAGES;
+
+import org.jboss.as.controller.OperationContext;
+import org.jboss.as.controller.OperationDefinition;
+import org.jboss.as.controller.OperationFailedException;
+import org.jboss.as.controller.OperationStepHandler;
+import org.jboss.as.controller.SimpleOperationDefinitionBuilder;
+import org.jboss.as.controller.descriptions.ResourceDescriptionResolver;
+import org.jboss.dmr.ModelNode;
+import org.jboss.msc.service.ServiceController;
 
 public class ModClusterDisableContext implements OperationStepHandler {
 
     static final ModClusterDisableContext INSTANCE = new ModClusterDisableContext();
 
+    static OperationDefinition getDefinition(ResourceDescriptionResolver descriptionResolver) {
+        return new SimpleOperationDefinitionBuilder(CommonAttributes.DISABLE_CONTEXT, descriptionResolver)
+                .addParameter(ModClusterDefinition.VIRTUAL_HOST)
+                .addParameter(ModClusterDefinition.CONTEXT)
+                .setRuntimeOnly()
+                .build();
+    }
 
     @Override
     public void execute(OperationContext context, ModelNode operation)

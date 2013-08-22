@@ -22,19 +22,28 @@
 
 package org.jboss.as.modcluster;
 
-import java.net.InetAddress;
+import static org.jboss.as.modcluster.ModClusterLogger.ROOT_LOGGER;
+
 import org.jboss.as.controller.OperationContext;
+import org.jboss.as.controller.OperationDefinition;
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.OperationStepHandler;
+import org.jboss.as.controller.SimpleOperationDefinitionBuilder;
+import org.jboss.as.controller.descriptions.ResourceDescriptionResolver;
 import org.jboss.dmr.ModelNode;
 import org.jboss.msc.service.ServiceController;
-
-import static org.jboss.as.modcluster.ModClusterLogger.ROOT_LOGGER;
 
 public class ModClusterAddProxy implements OperationStepHandler {
 
     static final ModClusterAddProxy INSTANCE = new ModClusterAddProxy();
 
+    static OperationDefinition getDefinition(ResourceDescriptionResolver descriptionResolver) {
+        return new SimpleOperationDefinitionBuilder(CommonAttributes.ADD_PROXY, descriptionResolver)
+                .addParameter(ModClusterDefinition.HOST)
+                .addParameter(ModClusterDefinition.PORT)
+                .setRuntimeOnly()
+                .build();
+    }
 
     @Override
     public void execute(OperationContext context, ModelNode operation) throws OperationFailedException {

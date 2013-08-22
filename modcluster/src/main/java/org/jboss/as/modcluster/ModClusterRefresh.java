@@ -23,14 +23,23 @@
 package org.jboss.as.modcluster;
 
 import org.jboss.as.controller.OperationContext;
+import org.jboss.as.controller.OperationDefinition;
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.OperationStepHandler;
+import org.jboss.as.controller.SimpleOperationDefinitionBuilder;
+import org.jboss.as.controller.descriptions.ResourceDescriptionResolver;
 import org.jboss.dmr.ModelNode;
 import org.jboss.msc.service.ServiceController;
 
 public class ModClusterRefresh implements OperationStepHandler {
 
     static final ModClusterRefresh INSTANCE = new ModClusterRefresh();
+
+    static OperationDefinition getDefinition(ResourceDescriptionResolver descriptionResolver) {
+        return new SimpleOperationDefinitionBuilder(CommonAttributes.REFRESH, descriptionResolver)
+                .setRuntimeOnly()
+                .build();
+    }
 
 
     @Override
