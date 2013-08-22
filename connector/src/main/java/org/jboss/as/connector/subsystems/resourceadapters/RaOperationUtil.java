@@ -266,8 +266,8 @@ public class RaOperationUtil {
     }
 
 
-    public static ServiceName restartIfPresent(OperationContext context, final String raName, ServiceVerificationHandler svh) throws OperationFailedException {
-        final ServiceName raDeploymentServiceName = ConnectorServices.getDeploymentServiceName(raName,(String)null);
+    public static ServiceName restartIfPresent(OperationContext context, final String raName, final String id, ServiceVerificationHandler svh) throws OperationFailedException {
+        final ServiceName raDeploymentServiceName = ConnectorServices.getDeploymentServiceName(raName, id);
 
             final ServiceRegistry registry = context.getServiceRegistry(true);
             ServiceController raServiceController = registry.getService(raDeploymentServiceName);
@@ -283,7 +283,7 @@ public class RaOperationUtil {
                         switch (transition) {
                             case STOPPING_to_DOWN:
                                 try {
-                                    final ServiceController<?> RaxmlController = registry.getService(ServiceName.of(ConnectorServices.RA_SERVICE, raName));
+                                    final ServiceController<?> RaxmlController = registry.getService(ServiceName.of(ConnectorServices.RA_SERVICE, id));
                                     ResourceAdapter raxml = (ResourceAdapter) RaxmlController.getValue();
                                     ((ResourceAdapterXmlDeploymentService) controller.getService()).setRaxml(raxml);
                                     controller.compareAndSetMode(ServiceController.Mode.NEVER, originalMode);
