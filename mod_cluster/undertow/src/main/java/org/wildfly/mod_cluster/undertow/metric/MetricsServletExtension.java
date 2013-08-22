@@ -19,6 +19,7 @@
  * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
+
 package org.wildfly.mod_cluster.undertow.metric;
 
 import io.undertow.server.HandlerWrapper;
@@ -28,7 +29,14 @@ import io.undertow.servlet.api.DeploymentInfo;
 import io.undertow.servlet.spec.ServletContextImpl;
 
 /**
- * Extension that registers metrics (e.g. {@link RequestCountHttpHandler}) on deployment if mod_cluster module is loaded.
+ * Extension that registers metrics on deployment if mod_cluster module is loaded.
+ *
+ * <ul>
+ *     <li>{@link RequestCountHttpHandler}</li>
+ *     <li>{@link RunningRequestsThreadSetupAction}</li>
+ *     <li>{@link BytesSentThreadSetupAction}</li>
+ *     <li>{@link BytesReceivedThreadSetupAction}</li>
+ * </ul>
  *
  * @author Radoslav Husar
  * @version Aug 2013
@@ -39,19 +47,22 @@ public class MetricsServletExtension implements ServletExtension {
     @Override
     public void handleDeployment(final DeploymentInfo deploymentInfo, final ServletContextImpl servletContext) {
 
-        // Request Count wrapping
-        deploymentInfo.addInitialHandlerChainWrapper(new HandlerWrapper() {
-            @Override
-            public HttpHandler wrap(final HttpHandler handler) {
-                return new RequestCountHttpHandler(handler);
-            }
-        });
+        deploymentInfo
+                // Request Count wrapping
+                .addInitialHandlerChainWrapper(new HandlerWrapper() {
+                    @Override
+                    public HttpHandler wrap(final HttpHandler handler) {
+                        return new RequestCountHttpHandler(handler);
+                    }
+                })
 
-        // Busyness wrapping
-        deploymentInfo.addThreadSetupAction(new RunningRequestsThreadSetupAction());
+                // Busyness wrapping
+                .addThreadSetupAction(new RunningRequestsThreadSetupAction())
 
-        // Bytes Sent wrapping
-        ;
+                // Bytes Sent wrapping
+                .addThreadSetupAction(new BytesSentThreadSetupAction())
 
+                // Bytes Received wrapping
+                .addThreadSetupAction(new BytesReceivedThreadSetupAction());
     }
 }

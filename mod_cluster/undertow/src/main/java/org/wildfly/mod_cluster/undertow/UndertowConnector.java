@@ -28,6 +28,8 @@ import org.jboss.modcluster.container.Connector;
 import org.wildfly.extension.undertow.AbstractListenerService;
 import org.wildfly.extension.undertow.AjpListenerService;
 import org.wildfly.extension.undertow.HttpListenerService;
+import org.wildfly.mod_cluster.undertow.metric.BytesReceivedStreamSourceConduit;
+import org.wildfly.mod_cluster.undertow.metric.BytesSentStreamSinkConduit;
 import org.wildfly.mod_cluster.undertow.metric.RequestCountHttpHandler;
 import org.wildfly.mod_cluster.undertow.metric.RunningRequestsThreadSetupAction;
 
@@ -85,33 +87,41 @@ public class UndertowConnector implements Connector {
         return !this.listener.getWorker().getValue().isShutdown();
     }
 
+    /**
+     * @return int value "-1" to indicate this connector does not maintain corresponding maximum number of threads; capacity
+     *         needs to be defined instead
+     */
     @Override
     public int getMaxThreads() {
-        return this.listener.getWorker().getValue().getIoThreadCount();
+        return -1;
     }
 
     /**
-     * Returns number of <em>running requests</em> on all connectors as opposed to busy threads.
+     * @return int number of <em>running requests</em> on all connectors as opposed to busy threads
      */
     @Override
     public int getBusyThreads() {
         return RunningRequestsThreadSetupAction.getRunningRequestCount();
     }
 
+    /**
+     * @return long number of bytes sent on all connectors
+     */
     @Override
     public long getBytesSent() {
-        // TODO -- ongoing discussion with David
-        return 0;
-    }
-
-    @Override
-    public long getBytesReceived() {
-        // TODO -- ongoing discussion with David
-        return 0;
+        return BytesSentStreamSinkConduit.getBytesSent();
     }
 
     /**
-     * Returns number of requests on <em>all</em> connectors as opposed to only this connector.
+     * @return long number of bytes received on all listeners without HTTP request size itself
+     */
+    @Override
+    public long getBytesReceived() {
+        return BytesReceivedStreamSourceConduit.getBytesReceived();
+    }
+
+    /**
+     * @return long number of requests on all listeners as opposed to only this 'connector'
      */
     @Override
     public long getRequestCount() {

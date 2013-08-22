@@ -22,40 +22,34 @@
 
 package org.wildfly.mod_cluster.undertow.metric;
 
-import io.undertow.server.HttpHandler;
+import io.undertow.server.ConduitWrapper;
 import io.undertow.server.HttpServerExchange;
-import org.infinispan.util.concurrent.jdk8backported.LongAdder;
+import io.undertow.servlet.api.ThreadSetupAction;
+import io.undertow.util.ConduitFactory;
+import org.xnio.conduits.StreamSourceConduit;
 
 /**
- * {@link HttpHandler} that counts number of incoming requests.
+ * {@link ThreadSetupAction} implementation that counts number of bytes received via
+ * {@link BytesReceivedStreamSourceConduit} wrapping.
  *
  * @author Radoslav Husar
  * @version Aug 2013
  * @since 8.0
  */
-public class RequestCountHttpHandler implements HttpHandler {
-
-    private final HttpHandler wrappedHandler;
-    private static final LongAdder requestCount = new LongAdder();
-
-    public RequestCountHttpHandler(final HttpHandler handler) {
-        this.wrappedHandler = handler;
-    }
+public class BytesReceivedThreadSetupAction implements ThreadSetupAction {
 
     @Override
-    public void handleRequest(HttpServerExchange httpServerExchange) throws Exception {
+    public Handle setup(HttpServerExchange exchange) {
 
-        // Count incoming request
-        requestCount.increment();
+        if (exchange == null) return null;
 
-        // Proceed
-        wrappedHandler.handleRequest(httpServerExchange);
-    }
+        exchange.addRequestWrapper(new ConduitWrapper<StreamSourceConduit>() {
+            @Override
+            public StreamSourceConduit wrap(ConduitFactory<StreamSourceConduit> factory, HttpServerExchange exchange) {
+                return new BytesReceivedStreamSourceConduit(factory.create());
+            }
+        });
 
-    /**
-     * @return long value of all incoming requests on all connectors
-     */
-    public static long getRequestCount() {
-        return requestCount.longValue();
+        return null;
     }
 }

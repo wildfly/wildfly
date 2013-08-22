@@ -19,16 +19,18 @@
  * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
+
 package org.wildfly.mod_cluster.undertow.metric;
 
 import io.undertow.server.ConduitWrapper;
 import io.undertow.server.HttpServerExchange;
 import io.undertow.servlet.api.ThreadSetupAction;
 import io.undertow.util.ConduitFactory;
-import org.xnio.conduits.StreamSourceConduit;
+import org.xnio.conduits.StreamSinkConduit;
 
 /**
- * {@link io.undertow.servlet.api.ThreadSetupAction} implementation that counts number of active requests to replace the busyness metric.
+ * {@link ThreadSetupAction} implementation that counts number of bytes sent via {@link BytesSentStreamSinkConduit}
+ * wrapping.
  *
  * @author Radoslav Husar
  * @version Aug 2013
@@ -36,35 +38,18 @@ import org.xnio.conduits.StreamSourceConduit;
  */
 public class BytesSentThreadSetupAction implements ThreadSetupAction {
 
-    public volatile int busyThreads;
-
     @Override
     public Handle setup(HttpServerExchange exchange) {
 
-        exchange.addRequestWrapper(new ConduitWrapper<StreamSourceConduit>() {
+        if (exchange == null ) return null;
 
+        exchange.addResponseWrapper(new ConduitWrapper<StreamSinkConduit>() {
             @Override
-            public StreamSourceConduit wrap(ConduitFactory<StreamSourceConduit> factory, HttpServerExchange exchange) {
-
-
-                return factory.create();
-
-
+            public StreamSinkConduit wrap(ConduitFactory<StreamSinkConduit> factory, HttpServerExchange exchange) {
+                return new BytesSentStreamSinkConduit(factory.create());
             }
         });
 
-        //exchange.getConnection().
-
-
-        //busyThreads++;
-//        System.out.println("Busyness in: " + busyThreads);
-
-        return new Handle() {
-            @Override
-            public void tearDown() {
-                busyThreads--;
-                System.out.println("Busyness out: " + busyThreads);
-            }
-        };
+        return null;
     }
 }
