@@ -78,7 +78,7 @@
 
         <dependency>
             <groupId>org.jboss.spec.javax.security.auth.message</groupId>
-            <artifactId>jboss-jaspi-api_1.0_spec</artifactId>
+            <artifactId>jboss-jaspi-api_1.1_spec</artifactId>
         </dependency>
 
         <dependency>

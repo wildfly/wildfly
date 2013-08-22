@@ -540,7 +540,7 @@
         </module-def>
 
         <module-def name="javax.security.auth.message.api">
-            <maven-resource group="org.jboss.spec.javax.security.auth.message" artifact="jboss-jaspi-api_1.0_spec"/>
+            <maven-resource group="org.jboss.spec.javax.security.auth.message" artifact="jboss-jaspi-api_1.1_spec"/>
         </module-def>
 
         <module-def name="javax.security.jacc.api">
