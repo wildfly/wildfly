@@ -182,12 +182,10 @@ class TestModelControllerService extends ModelTestModelControllerService {
 
         File standalone = new File(home, "standalone");
         standalone.mkdir();
-        home.mkdir();
         props.put(ServerEnvironment.SERVER_BASE_DIR, standalone.getAbsolutePath());
 
         File configuration = new File(standalone, "configuration");
         configuration.mkdir();
-        home.mkdir();
         props.put(ServerEnvironment.SERVER_CONFIG_DIR, configuration.getAbsolutePath());
 
         File xml = new File(configuration, "standalone.xml");
