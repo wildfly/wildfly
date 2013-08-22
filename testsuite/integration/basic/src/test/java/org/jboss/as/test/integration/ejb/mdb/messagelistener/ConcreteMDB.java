@@ -22,20 +22,16 @@
 
 package org.jboss.as.test.integration.ejb.mdb.messagelistener;
 
-import org.jboss.logging.Logger;
-
-import javax.annotation.PostConstruct;
-import javax.annotation.PreDestroy;
 import javax.annotation.Resource;
 import javax.ejb.ActivationConfigProperty;
 import javax.ejb.MessageDriven;
-import javax.jms.Connection;
 import javax.jms.ConnectionFactory;
 import javax.jms.Destination;
+import javax.jms.JMSContext;
 import javax.jms.JMSException;
 import javax.jms.Message;
-import javax.jms.MessageProducer;
-import javax.jms.Session;
+
+import org.jboss.logging.Logger;
 
 /**
  * @author Jaikiran Pai
@@ -54,33 +50,20 @@ public class ConcreteMDB extends CommonBase {
     @Resource(mappedName = "java:/JmsXA")
     private ConnectionFactory factory;
 
-    private Connection connection;
-    private Session session;
-
-    @PreDestroy
-    protected void preDestroy() throws JMSException {
-        session.close();
-        connection.close();
-    }
-
-    @PostConstruct
-    protected void postConstruct() throws JMSException {
-        connection = factory.createConnection();
-        session = connection.createSession(false, Session.AUTO_ACKNOWLEDGE);
-    }
-
     @Override
     public void onMessage(Message message) {
         logger.info("Received message: " + message);
         try {
-            if (message.getJMSReplyTo() != null) {
-                logger.info("Replying to " + message.getJMSReplyTo());
-                final Destination destination = message.getJMSReplyTo();
-                final MessageProducer replyProducer = session.createProducer(destination);
-                final Message replyMsg = session.createTextMessage(SUCCESS_REPLY);
-                replyMsg.setJMSCorrelationID(message.getJMSMessageID());
-                replyProducer.send(replyMsg);
-                replyProducer.close();
+            final Destination replyTo = message.getJMSReplyTo();
+            if (replyTo != null) {
+                logger.info("Replying to " + replyTo);
+                try (
+                        JMSContext context = factory.createContext()
+                ) {
+                    context.createProducer()
+                            .setJMSCorrelationID(message.getJMSMessageID())
+                            .send(replyTo, SUCCESS_REPLY);
+                }
             }
         } catch (JMSException jmse) {
             throw new RuntimeException(jmse);

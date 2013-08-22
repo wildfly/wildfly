@@ -24,22 +24,18 @@ package org.jboss.as.test.integration.ejb.security.authorization;
 
 import org.jboss.ejb3.annotation.SecurityDomain;
 
-import javax.annotation.PostConstruct;
-import javax.annotation.PreDestroy;
 import javax.annotation.Resource;
 import javax.annotation.security.RunAs;
 import javax.ejb.ActivationConfigProperty;
 import javax.ejb.EJB;
 import javax.ejb.EJBAccessException;
 import javax.ejb.MessageDriven;
-import javax.jms.Connection;
 import javax.jms.ConnectionFactory;
 import javax.jms.Destination;
+import javax.jms.JMSContext;
 import javax.jms.JMSException;
 import javax.jms.Message;
 import javax.jms.MessageListener;
-import javax.jms.MessageProducer;
-import javax.jms.Session;
 import javax.jms.TextMessage;
 
 /**
@@ -56,9 +52,6 @@ public class MDBRole implements MessageListener {
    @Resource(lookup = "java:/JmsXA")
    private ConnectionFactory factory;
 
-   private Connection connection;
-   private Session session;
-   
    @EJB
    Simple simple;
    
@@ -102,30 +95,19 @@ public class MDBRole implements MessageListener {
          if (!"Let's test it!".equals(((TextMessage) message).getText())){
             throw new AssertionError("Unexpected message: " + ((TextMessage) message).getText() + " ; expected:\"Let's test it!\"");
          }
-         final Destination destination = message.getJMSReplyTo();
+         final Destination replyTo = message.getJMSReplyTo();
          // ignore messages that need no reply
-         if (destination == null)
+         if (replyTo == null)
             return;
-         final MessageProducer replyProducer = session.createProducer(destination);
-
-         final Message replyMsg = session.createTextMessage(createResponse());
-         replyMsg.setJMSCorrelationID(message.getJMSMessageID());
-         replyProducer.send(replyMsg);
-         replyProducer.close();
+         try (
+                JMSContext context = factory.createContext()
+         ) {
+            context.createProducer()
+                  .setJMSCorrelationID(message.getJMSMessageID())
+                  .send(replyTo, createResponse());
+          }
       } catch (JMSException e) {
          throw new RuntimeException(e);
       }
-   }
-
-   @PreDestroy
-   protected void preDestroy() throws JMSException {
-      session.close();
-      connection.close();
-   }
-
-   @PostConstruct
-   protected void postConstruct() throws JMSException {
-      connection = factory.createConnection();
-      session = connection.createSession(false, Session.AUTO_ACKNOWLEDGE);
    }
 }
