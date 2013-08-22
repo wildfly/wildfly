@@ -211,7 +211,7 @@
         <version.org.jboss.spec.javax.management.j2ee.jboss-j2eemgmt-api_1.1_spec>1.0.1.Final</version.org.jboss.spec.javax.management.j2ee.jboss-j2eemgmt-api_1.1_spec>
         <version.org.jboss.spec.javax.resource.jboss-connector-api_1.7_spec>1.0.0.Beta1</version.org.jboss.spec.javax.resource.jboss-connector-api_1.7_spec>
         <version.org.jboss.spec.javax.rmi.jboss-rmi-api_1.0_spec>1.0.4.Final</version.org.jboss.spec.javax.rmi.jboss-rmi-api_1.0_spec>
-        <version.org.jboss.spec.javax.security.auth.message.jboss-jaspi-api_1.0_spec>1.0.1.Final</version.org.jboss.spec.javax.security.auth.message.jboss-jaspi-api_1.0_spec>
+        <version.org.jboss.spec.javax.security.auth.message.jboss-jaspi-api_1.1_spec>1.0.0.Alpha1</version.org.jboss.spec.javax.security.auth.message.jboss-jaspi-api_1.1_spec>
         <version.org.jboss.spec.javax.security.jacc.jboss-jacc-api_1.4_spec>1.0.2.Final</version.org.jboss.spec.javax.security.jacc.jboss-jacc-api_1.4_spec>
         <version.org.jboss.spec.javax.servlet.jboss-servlet-api_3.1_spec>1.0.0.Beta1</version.org.jboss.spec.javax.servlet.jboss-servlet-api_3.1_spec>
         <version.org.jboss.spec.javax.servlet.jsp.jboss-jsp-api_2.2_spec>1.0.1.Final</version.org.jboss.spec.javax.servlet.jsp.jboss-jsp-api_2.2_spec>
@@ -4153,7 +4153,7 @@
                     </exclusion>
                     <exclusion>
                         <groupId>org.jboss.spec.javax.security.auth.message</groupId>
-                          <artifactId>jboss-jaspi-api_1.0_spec</artifactId>
+                        <artifactId>jboss-jaspi-api_1.0_spec</artifactId>
                     </exclusion>
                     <exclusion>
                         <groupId>org.jboss.security</groupId>
@@ -5208,8 +5208,8 @@
 
             <dependency>
                 <groupId>org.jboss.spec.javax.security.auth.message</groupId>
-                <artifactId>jboss-jaspi-api_1.0_spec</artifactId>
-                <version>${version.org.jboss.spec.javax.security.auth.message.jboss-jaspi-api_1.0_spec}</version>
+                <artifactId>jboss-jaspi-api_1.1_spec</artifactId>
+                <version>${version.org.jboss.spec.javax.security.auth.message.jboss-jaspi-api_1.1_spec}</version>
             </dependency>
 
             <dependency>
