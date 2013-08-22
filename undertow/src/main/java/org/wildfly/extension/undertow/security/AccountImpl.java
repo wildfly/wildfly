@@ -24,6 +24,7 @@ package org.wildfly.extension.undertow.security;
 
 import java.io.Serializable;
 import java.security.Principal;
+import java.util.Collections;
 import java.util.Set;
 import java.util.concurrent.CopyOnWriteArraySet;
 
@@ -90,8 +91,8 @@ public class AccountImpl implements Account, Serializable {
     }
 
     @Override
-    public boolean isUserInRole(String role) {
-        return roles.contains(role);
+    public Set<String> getRoles() {
+        return Collections.unmodifiableSet(roles);
     }
 
     public Object getCredential() {

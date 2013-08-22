@@ -169,7 +169,7 @@ public class Host implements Service<Host>, WebHost {
         d.setDeploymentName(webDeploymentBuilder.getContextRoot());
         d.setContextPath(webDeploymentBuilder.getContextRoot());
         d.setClassLoader(webDeploymentBuilder.getClassLoader());
-        d.setResourceManager(new FileResourceManager(new File(webDeploymentBuilder.getDocumentRoot().getAbsolutePath())));
+        d.setResourceManager(new FileResourceManager(new File(webDeploymentBuilder.getDocumentRoot().getAbsolutePath()), 1024 * 1024));
         for (ServletBuilder servlet : webDeploymentBuilder.getServlets()) {
             ServletInfo s;
             if (servlet.getServlet() == null) {

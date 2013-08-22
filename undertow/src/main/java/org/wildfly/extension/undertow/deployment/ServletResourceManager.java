@@ -21,7 +21,7 @@ public class ServletResourceManager implements ResourceManager {
     private final Collection<VirtualFile> overlays;
 
     public ServletResourceManager(final VirtualFile resourcesRoot, final Collection<VirtualFile> overlays) throws IOException {
-        deploymentResourceManager = new FileResourceManager(resourcesRoot.getPhysicalFile());
+        deploymentResourceManager = new FileResourceManager(resourcesRoot.getPhysicalFile(), 1024 * 1024);
         this.overlays = overlays;
     }
 

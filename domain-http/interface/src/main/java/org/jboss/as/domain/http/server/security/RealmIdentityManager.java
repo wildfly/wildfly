@@ -42,6 +42,7 @@ import java.security.Principal;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Map;
+import java.util.Set;
 
 import javax.security.auth.Subject;
 import javax.security.auth.callback.Callback;
@@ -263,9 +264,8 @@ public class RealmIdentityManager implements IdentityManager {
         }
 
         @Override
-        public boolean isUserInRole(String role) {
-            // TODO - Not really used for domains yet.
-            return false;
+        public Set<String> getRoles() {
+            return Collections.emptySet();
         }
 
         public Subject getSubject() {
