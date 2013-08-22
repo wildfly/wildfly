@@ -91,7 +91,7 @@ public class Utils {
     private static final Logger LOGGER = Logger.getLogger(Utils.class);
 
     /** The REDIRECT_STRATEGY for Apache HTTP Client */
-    private static final RedirectStrategy REDIRECT_STRATEGY = new DefaultRedirectStrategy() {
+    public static final RedirectStrategy REDIRECT_STRATEGY = new DefaultRedirectStrategy() {
         @Override
         public boolean isRedirected(HttpRequest request, HttpResponse response, HttpContext context) {
             boolean isRedirect = false;
