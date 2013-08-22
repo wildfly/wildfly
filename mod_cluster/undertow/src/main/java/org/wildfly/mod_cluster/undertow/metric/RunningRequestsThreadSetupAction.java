@@ -19,6 +19,7 @@
  * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
+
 package org.wildfly.mod_cluster.undertow.metric;
 
 import io.undertow.server.HttpServerExchange;
@@ -26,7 +27,8 @@ import io.undertow.servlet.api.ThreadSetupAction;
 import org.infinispan.util.concurrent.jdk8backported.LongAdder;
 
 /**
- * {@link ThreadSetupAction} implementation that counts number of active / running requests to replace the busyness metric.
+ * {@link ThreadSetupAction} implementation that counts number of active / running requests to replace the busyness
+ * metric.
  *
  * @author Radoslav Husar
  * @version Aug 2013
@@ -34,7 +36,7 @@ import org.infinispan.util.concurrent.jdk8backported.LongAdder;
  */
 public class RunningRequestsThreadSetupAction implements ThreadSetupAction {
 
-    private static LongAdder runningCount = new LongAdder();
+    private static final LongAdder runningCount = new LongAdder();
 
     @Override
     public Handle setup(final HttpServerExchange exchange) {

@@ -113,7 +113,7 @@ public class Server implements Service<Server> {
         return this;
     }
 
-    public InjectedValue<ServletContainerService> getServletContainer() {
+    protected InjectedValue<ServletContainerService> getServletContainer() {
         return servletContainer;
     }
 
