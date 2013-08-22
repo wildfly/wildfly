@@ -84,6 +84,9 @@ import org.jboss.as.server.jmx.PluggableMBeanServer;
  */
 class PluggableMBeanServerImpl implements PluggableMBeanServer {
 
+    private static final Object[] NO_ARGS = new Object[0];
+    private static final String[] EMPTY_SIG = new String[0];
+
     private final MBeanServerPlugin rootMBeanServer;
     private volatile JmxManagedAuditLogger auditLogger;
 
@@ -168,6 +171,8 @@ class PluggableMBeanServerImpl implements PluggableMBeanServer {
     public ObjectInstance createMBean(String className, ObjectName name, Object[] params, String[] signature)
             throws ReflectionException, InstanceAlreadyExistsException, MBeanException,
             NotCompliantMBeanException {
+        params = nullAsEmpty(params);
+        signature = nullAsEmpty(signature);
         Throwable error = null;
         MBeanServerPlugin delegate = null;
         final boolean readOnly = false;
@@ -195,6 +200,8 @@ class PluggableMBeanServerImpl implements PluggableMBeanServer {
     public ObjectInstance createMBean(String className, ObjectName name, ObjectName loaderName, Object[] params,
             String[] signature) throws ReflectionException, InstanceAlreadyExistsException,
             MBeanException, NotCompliantMBeanException, InstanceNotFoundException {
+        params = nullAsEmpty(params);
+        signature = nullAsEmpty(signature);
         Throwable error = null;
         MBeanServerPlugin delegate = null;
         final boolean readOnly = false;
@@ -595,6 +602,8 @@ class PluggableMBeanServerImpl implements PluggableMBeanServer {
 
     @Override
     public Object instantiate(String className, Object[] params, String[] signature) throws ReflectionException, MBeanException {
+        params = nullAsEmpty(params);
+        signature = nullAsEmpty(signature);
         Throwable error = null;
         MBeanServerPlugin delegate = rootMBeanServer;
         final boolean readOnly = false;
@@ -618,6 +627,8 @@ class PluggableMBeanServerImpl implements PluggableMBeanServer {
     @Override
     public Object instantiate(String className, ObjectName loaderName, Object[] params, String[] signature)
             throws ReflectionException, MBeanException, InstanceNotFoundException {
+        params = nullAsEmpty(params);
+        signature = nullAsEmpty(signature);
         Throwable error = null;
         MBeanServerPlugin delegate = rootMBeanServer;
         final boolean readOnly = false;
@@ -688,6 +699,8 @@ class PluggableMBeanServerImpl implements PluggableMBeanServer {
     @Override
     public Object invoke(ObjectName name, String operationName, Object[] params, String[] signature)
             throws InstanceNotFoundException, MBeanException, ReflectionException {
+        params = nullAsEmpty(params);
+        signature = nullAsEmpty(signature);
         Throwable error = null;
         MBeanServerPlugin delegate = findDelegate(name);
         boolean readOnly = false;
@@ -1162,6 +1175,21 @@ class PluggableMBeanServerImpl implements PluggableMBeanServer {
         }
     }
 
+
+    private String[] nullAsEmpty(String[] array) {
+        if (array == null) {
+            return EMPTY_SIG;
+        }
+        return array;
+    }
+
+    private Object[] nullAsEmpty(Object[] array) {
+        if (array == null) {
+            return NO_ARGS;
+        }
+        return array;
+    }
+
     static final class LogAction implements PrivilegedAction<Void> {
         final JmxManagedAuditLogger auditLogger;
         final boolean readOnly;
@@ -1237,7 +1265,6 @@ class PluggableMBeanServerImpl implements PluggableMBeanServer {
             return principals.iterator().next();
         }
     };
-
 
     private static final PrivilegedAction<Caller> GET_CALLER_ACTION = new PrivilegedAction<Caller>() {
         @Override
