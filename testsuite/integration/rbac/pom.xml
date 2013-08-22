@@ -68,19 +68,8 @@
                                     <includes>
                                         <include>standalone*.xml</include>
                                     </includes>
-                                    <stylesheet>${basedir}/../src/test/xslt/passwdMaskConfig.xsl</stylesheet>
                                     <stylesheet>${basedir}/../src/test/xslt/enableRbac.xsl</stylesheet>
                                     <outputDir>${basedir}/target/jbossas/standalone/configuration</outputDir>
-                                    <parameters>
-                                        <parameter>
-                                            <name>keystore</name>
-                                            <value>${basedir}/src/test/resources/security/vault.keystore</value>
-                                        </parameter>
-                                        <parameter>
-                                            <name>encFileDir</name>
-                                            <value>${basedir}/src/test/resources/security/</value>
-                                        </parameter>
-                                    </parameters>
                                 </transformationSet>
                             </transformationSets>
                         </configuration>
