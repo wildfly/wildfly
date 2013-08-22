@@ -21,19 +21,15 @@
  */
 package org.jboss.as.test.integration.ejb.mdb.messagedestination;
 
-import javax.annotation.PostConstruct;
-import javax.annotation.PreDestroy;
 import javax.annotation.Resource;
 import javax.ejb.ActivationConfigProperty;
 import javax.ejb.MessageDriven;
-import javax.jms.Connection;
 import javax.jms.ConnectionFactory;
 import javax.jms.Destination;
+import javax.jms.JMSContext;
 import javax.jms.JMSException;
 import javax.jms.Message;
 import javax.jms.MessageListener;
-import javax.jms.MessageProducer;
-import javax.jms.Session;
 import javax.jms.TextMessage;
 
 /**
@@ -47,36 +43,23 @@ public class ReplyingMDB implements MessageListener {
     @Resource(lookup = "java:/JmsXA")
     private ConnectionFactory factory;
 
-    private Connection connection;
-    private Session session;
-
     @Override
     public void onMessage(Message message) {
         try {
             System.out.println("Message " + message);
-            final Destination destination = message.getJMSReplyTo();
+            final Destination replyTo = message.getJMSReplyTo();
             // ignore messages that need no reply
-            if (destination == null)
+            if (replyTo == null)
                 return;
-            final MessageProducer replyProducer = session.createProducer(destination);
-            final Message replyMsg = session.createTextMessage("replying " + ((TextMessage) message).getText());
-            replyMsg.setJMSCorrelationID(message.getJMSMessageID());
-            replyProducer.send(replyMsg);
-            replyProducer.close();
+            try (
+                    JMSContext context = factory.createContext()
+            ) {
+                context.createProducer()
+                        .setJMSCorrelationID(message.getJMSMessageID())
+                        .send(replyTo, "replying " + ((TextMessage) message).getText());
+            }
         } catch (JMSException e) {
             throw new RuntimeException(e);
         }
-    }
-
-    @PreDestroy
-    protected void preDestroy() throws JMSException {
-        session.close();
-        connection.close();
-    }
-
-    @PostConstruct
-    protected void postConstruct() throws JMSException {
-        connection = factory.createConnection();
-        session = connection.createSession(false, Session.AUTO_ACKNOWLEDGE);
     }
 }

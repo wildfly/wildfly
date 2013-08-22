@@ -22,22 +22,18 @@
 
 package org.jboss.as.test.integration.ejb.mdb.messagedrivencontext;
 
-import javax.annotation.PostConstruct;
-import javax.annotation.PreDestroy;
 import javax.annotation.Resource;
 import javax.ejb.ActivationConfigProperty;
 import javax.ejb.EJBException;
 import javax.ejb.MessageDriven;
 import javax.ejb.MessageDrivenBean;
 import javax.ejb.MessageDrivenContext;
-import javax.jms.Connection;
 import javax.jms.ConnectionFactory;
 import javax.jms.Destination;
+import javax.jms.JMSContext;
 import javax.jms.JMSException;
 import javax.jms.Message;
 import javax.jms.MessageListener;
-import javax.jms.MessageProducer;
-import javax.jms.Session;
 
 import org.jboss.logging.Logger;
 
@@ -58,22 +54,7 @@ public class SimpleMDB implements MessageDrivenBean, MessageListener {
     @Resource(lookup = "java:/JmsXA")
     private ConnectionFactory factory;
 
-    private Connection connection;
-    private Session session;
-
     private MessageDrivenContext messageDrivenContext;
-
-    @PreDestroy
-    protected void preDestroy() throws JMSException {
-        session.close();
-        connection.close();
-    }
-
-    @PostConstruct
-    protected void postConstruct() throws JMSException {
-        connection = factory.createConnection();
-        session = connection.createSession(false, Session.AUTO_ACKNOWLEDGE);
-    }
 
     @Override
     public void setMessageDrivenContext(MessageDrivenContext ctx) throws EJBException {
@@ -89,19 +70,17 @@ public class SimpleMDB implements MessageDrivenBean, MessageListener {
     public void onMessage(Message message) {
         logger.info("Received message: " + message);
         try {
-            if (message.getJMSReplyTo() != null) {
-                logger.info("Replying to " + message.getJMSReplyTo());
-                final Destination destination = message.getJMSReplyTo();
-                final MessageProducer replyProducer = session.createProducer(destination);
-                final Message replyMsg;
-                if (this.messageDrivenContext != null) {
-                    replyMsg = session.createTextMessage(SUCCESS_REPLY);
-                } else {
-                    replyMsg = session.createTextMessage(FAILURE_REPLY);
+            final Destination replyTo = message.getJMSReplyTo();
+            if (replyTo != null) {
+                logger.info("Replying to " + replyTo);
+                try (
+                        JMSContext context = factory.createContext()
+                ) {
+                    String reply = (messageDrivenContext != null) ? SUCCESS_REPLY : FAILURE_REPLY;
+                    context.createProducer()
+                            .setJMSCorrelationID(message.getJMSMessageID())
+                            .send(replyTo, reply);
                 }
-                replyMsg.setJMSCorrelationID(message.getJMSMessageID());
-                replyProducer.send(replyMsg);
-                replyProducer.close();
             }
         } catch (JMSException jmse) {
             throw new RuntimeException(jmse);
