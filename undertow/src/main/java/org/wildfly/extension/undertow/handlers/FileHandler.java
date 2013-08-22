@@ -80,7 +80,7 @@ public class FileHandler extends Handler {
         String path = PATH.resolveModelAttribute(context, model).asString();
         boolean directoryListing = DIRECTORY_LISTING.resolveModelAttribute(context, model).asBoolean();
         UndertowLogger.ROOT_LOGGER.creatingFileHandler(path);
-        FileResourceManager resourceManager = new FileResourceManager(new File(path));
+        FileResourceManager resourceManager = new FileResourceManager(new File(path), 1024 * 1024);
         ResourceHandler handler = new ResourceHandler();
         handler.setResourceManager(resourceManager);
         handler.setDirectoryListingEnabled(directoryListing);
