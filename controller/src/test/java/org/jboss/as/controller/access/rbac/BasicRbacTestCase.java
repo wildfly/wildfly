@@ -26,6 +26,7 @@ import static org.jboss.as.controller.PathAddress.pathAddress;
 import static org.jboss.as.controller.PathElement.pathElement;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ADD;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.READ_RESOURCE_OPERATION;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.REMOVE;
 
 import java.util.Arrays;
 import java.util.Collections;
@@ -37,6 +38,8 @@ import org.jboss.as.controller.AbstractRemoveStepHandler;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.OperationStepHandler;
+import org.jboss.as.controller.PathAddress;
+import org.jboss.as.controller.PathElement;
 import org.jboss.as.controller.ProcessType;
 import org.jboss.as.controller.SimpleOperationDefinition;
 import org.jboss.as.controller.SimpleOperationDefinitionBuilder;
@@ -46,6 +49,7 @@ import org.jboss.as.controller.access.constraint.SensitivityClassification;
 import org.jboss.as.controller.access.constraint.management.AccessConstraintDefinition;
 import org.jboss.as.controller.access.constraint.management.ApplicationTypeAccessConstraintDefinition;
 import org.jboss.as.controller.access.constraint.management.SensitiveTargetAccessConstraintDefinition;
+import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
 import org.jboss.as.controller.descriptions.NonResolvingResourceDescriptionResolver;
 import org.jboss.as.controller.operations.common.Util;
 import org.jboss.as.controller.operations.global.GlobalOperationHandlers;
@@ -69,6 +73,10 @@ public class BasicRbacTestCase extends AbstractRbacTestBase {
     public static final String SENSITIVE_NON_ADDRESSABLE_RESOURCE = "sensitive-non-addressable-resource";
     public static final String SENSITIVE_ADDRESSABLE_RESOURCE = "sensitive-addressable-resource";
     public static final String SENSITIVE_READ_ONLY_RESOURCE = "sensitive-read-only-resource";
+
+    private static final PathElement CORE_MANAGEMENT = PathElement.pathElement(ModelDescriptionConstants.CORE_SERVICE, ModelDescriptionConstants.MANAGEMENT);
+    private static final PathElement ACCESS_AUDIT = PathElement.pathElement(ModelDescriptionConstants.ACCESS, ModelDescriptionConstants.AUDIT);
+    private static final PathAddress ACCESS_AUDIT_ADDR = PathAddress.pathAddress(CORE_MANAGEMENT, ACCESS_AUDIT);
 
     public static final String READONLY_OPERATION = "readonly-operation";
     public static final String READWRITE_OPERATION = "readwrite-operation";
@@ -104,6 +112,12 @@ public class BasicRbacTestCase extends AbstractRbacTestBase {
 
         operation = Util.createOperation(ADD, pathAddress(SENSITIVE_READ_ONLY_RESOURCE, FOO));
         executeWithRole(operation, StandardRole.SUPERUSER);
+
+        operation = Util.createOperation(ADD, PathAddress.pathAddress(CORE_MANAGEMENT));
+        executeWithRole(operation, StandardRole.SUPERUSER);
+
+        operation = Util.createOperation(ADD, PathAddress.pathAddress(ACCESS_AUDIT_ADDR));
+        executeWithRole(operation, StandardRole.SUPERUSER);
     }
 
     // monitor
@@ -111,6 +125,7 @@ public class BasicRbacTestCase extends AbstractRbacTestBase {
     @Test
     public void testMonitorNonAddressable() throws Exception {
         noAccess(READ_RESOURCE_OPERATION, pathAddress(SENSITIVE_NON_ADDRESSABLE_RESOURCE, FOO), StandardRole.MONITOR);
+        noAccess(READ_RESOURCE_OPERATION, ACCESS_AUDIT_ADDR, StandardRole.MONITOR);
     }
 
     @Test
@@ -156,6 +171,7 @@ public class BasicRbacTestCase extends AbstractRbacTestBase {
     @Test
     public void testOperatorNonAddressable() throws Exception {
         noAccess(READ_RESOURCE_OPERATION, pathAddress(SENSITIVE_NON_ADDRESSABLE_RESOURCE, FOO), StandardRole.OPERATOR);
+        noAccess(READ_RESOURCE_OPERATION, ACCESS_AUDIT_ADDR, StandardRole.OPERATOR);
     }
 
     @Test
@@ -205,6 +221,7 @@ public class BasicRbacTestCase extends AbstractRbacTestBase {
     @Test
     public void testMaintainerNonAddressable() throws Exception {
         noAccess(READ_RESOURCE_OPERATION, pathAddress(SENSITIVE_NON_ADDRESSABLE_RESOURCE, FOO), StandardRole.MAINTAINER);
+        noAccess(READ_RESOURCE_OPERATION, ACCESS_AUDIT_ADDR, StandardRole.MAINTAINER);
     }
 
     @Test
@@ -243,6 +260,7 @@ public class BasicRbacTestCase extends AbstractRbacTestBase {
     @Test
     public void testDeployerNoAccess() throws Exception {
         noAccess(READ_RESOURCE_OPERATION, pathAddress(SENSITIVE_NON_ADDRESSABLE_RESOURCE, FOO), StandardRole.DEPLOYER);
+        noAccess(READ_RESOURCE_OPERATION, ACCESS_AUDIT_ADDR, StandardRole.DEPLOYER);
     }
 
     @Test
@@ -289,6 +307,11 @@ public class BasicRbacTestCase extends AbstractRbacTestBase {
     // administrator
 
     @Test
+    public void testAdministratorNoAccess() throws Exception {
+        noAccess(READ_RESOURCE_OPERATION, ACCESS_AUDIT_ADDR, StandardRole.ADMINISTRATOR);
+    }
+
+    @Test
     public void testAdministratorReadConfigPermitted() throws Exception {
         permitted(READ_RESOURCE_OPERATION, pathAddress(UNCONSTRAINED_RESOURCE, FOO), StandardRole.ADMINISTRATOR);
         permitted(READ_RESOURCE_OPERATION, pathAddress(SENSITIVE_NON_ADDRESSABLE_RESOURCE, FOO), StandardRole.ADMINISTRATOR);
@@ -333,6 +356,7 @@ public class BasicRbacTestCase extends AbstractRbacTestBase {
         permitted(READ_RESOURCE_OPERATION, pathAddress(SENSITIVE_ADDRESSABLE_RESOURCE, FOO), StandardRole.AUDITOR);
         permitted(READ_RESOURCE_OPERATION, pathAddress(SENSITIVE_READ_ONLY_RESOURCE, FOO), StandardRole.AUDITOR);
         permitted(READ_RESOURCE_OPERATION, pathAddress(APPLICATION_CONSTRAINED_RESOURCE, FOO), StandardRole.AUDITOR);
+        permitted(READ_RESOURCE_OPERATION, ACCESS_AUDIT_ADDR, StandardRole.AUDITOR);
     }
 
     @Test
@@ -343,12 +367,19 @@ public class BasicRbacTestCase extends AbstractRbacTestBase {
     }
 
     @Test
+    public void testAuditorWriteConfigPermitted() throws Exception {
+        permitted(REMOVE, ACCESS_AUDIT_ADDR, StandardRole.AUDITOR);
+        permitted(ADD, ACCESS_AUDIT_ADDR, StandardRole.AUDITOR);
+    }
+
+    @Test
     public void testAuditorReadRuntimePermitted() throws Exception {
         permitted(READONLY_OPERATION, pathAddress(UNCONSTRAINED_RESOURCE, FOO), StandardRole.AUDITOR);
         permitted(READONLY_OPERATION, pathAddress(SENSITIVE_NON_ADDRESSABLE_RESOURCE, FOO), StandardRole.AUDITOR);
         permitted(READONLY_OPERATION, pathAddress(SENSITIVE_ADDRESSABLE_RESOURCE, FOO), StandardRole.AUDITOR);
         permitted(READONLY_OPERATION, pathAddress(SENSITIVE_READ_ONLY_RESOURCE, FOO), StandardRole.AUDITOR);
         permitted(READONLY_OPERATION, pathAddress(APPLICATION_CONSTRAINED_RESOURCE, FOO), StandardRole.AUDITOR);
+        permitted(READONLY_OPERATION, ACCESS_AUDIT_ADDR, StandardRole.AUDITOR);
     }
 
     @Test
@@ -356,6 +387,7 @@ public class BasicRbacTestCase extends AbstractRbacTestBase {
         denied(READWRITE_OPERATION, pathAddress(UNCONSTRAINED_RESOURCE, FOO), StandardRole.AUDITOR);
         denied(READWRITE_OPERATION, pathAddress(SENSITIVE_READ_ONLY_RESOURCE, FOO), StandardRole.AUDITOR);
         denied(READWRITE_OPERATION, pathAddress(APPLICATION_CONSTRAINED_RESOURCE, FOO), StandardRole.AUDITOR);
+        permitted(READWRITE_OPERATION, ACCESS_AUDIT_ADDR, StandardRole.AUDITOR);
     }
 
     // superuser
@@ -367,6 +399,7 @@ public class BasicRbacTestCase extends AbstractRbacTestBase {
         permitted(READ_RESOURCE_OPERATION, pathAddress(SENSITIVE_ADDRESSABLE_RESOURCE, FOO), StandardRole.SUPERUSER);
         permitted(READ_RESOURCE_OPERATION, pathAddress(SENSITIVE_READ_ONLY_RESOURCE, FOO), StandardRole.SUPERUSER);
         permitted(READ_RESOURCE_OPERATION, pathAddress(APPLICATION_CONSTRAINED_RESOURCE, FOO), StandardRole.SUPERUSER);
+        permitted(READ_RESOURCE_OPERATION, ACCESS_AUDIT_ADDR, StandardRole.AUDITOR);
     }
 
     @Test
@@ -376,6 +409,8 @@ public class BasicRbacTestCase extends AbstractRbacTestBase {
         permitted(ADD, pathAddress(SENSITIVE_ADDRESSABLE_RESOURCE, BAR), StandardRole.SUPERUSER);
         permitted(ADD, pathAddress(SENSITIVE_READ_ONLY_RESOURCE, BAR), StandardRole.SUPERUSER);
         permitted(ADD, pathAddress(APPLICATION_CONSTRAINED_RESOURCE, BAR), StandardRole.SUPERUSER);
+        permitted(REMOVE, ACCESS_AUDIT_ADDR, StandardRole.SUPERUSER);
+        permitted(ADD, ACCESS_AUDIT_ADDR, StandardRole.SUPERUSER);
     }
 
     @Test
@@ -385,6 +420,7 @@ public class BasicRbacTestCase extends AbstractRbacTestBase {
         permitted(READONLY_OPERATION, pathAddress(SENSITIVE_ADDRESSABLE_RESOURCE, FOO), StandardRole.SUPERUSER);
         permitted(READONLY_OPERATION, pathAddress(SENSITIVE_READ_ONLY_RESOURCE, FOO), StandardRole.SUPERUSER);
         permitted(READONLY_OPERATION, pathAddress(APPLICATION_CONSTRAINED_RESOURCE, FOO), StandardRole.SUPERUSER);
+        permitted(READONLY_OPERATION, ACCESS_AUDIT_ADDR, StandardRole.AUDITOR);
     }
 
     @Test
@@ -394,6 +430,7 @@ public class BasicRbacTestCase extends AbstractRbacTestBase {
         permitted(READWRITE_OPERATION, pathAddress(SENSITIVE_ADDRESSABLE_RESOURCE, BAR), StandardRole.SUPERUSER);
         permitted(READWRITE_OPERATION, pathAddress(SENSITIVE_READ_ONLY_RESOURCE, BAR), StandardRole.SUPERUSER);
         permitted(READWRITE_OPERATION, pathAddress(APPLICATION_CONSTRAINED_RESOURCE, BAR), StandardRole.SUPERUSER);
+        permitted(READWRITE_OPERATION, ACCESS_AUDIT_ADDR, StandardRole.AUDITOR);
     }
 
     // model definition
@@ -431,13 +468,20 @@ public class BasicRbacTestCase extends AbstractRbacTestBase {
                 WRITE_SENSITIVITY_CONSTRAINT));
         registration.registerSubModel(new TestResourceDefinition(APPLICATION_CONSTRAINED_RESOURCE,
                 MY_APPLICATION_CONSTRAINT));
+
+        ManagementResourceRegistration mgmt = registration.registerSubModel(new TestResourceDefinition(CORE_MANAGEMENT));
+        mgmt.registerSubModel(new TestResourceDefinition(ACCESS_AUDIT));
     }
 
     private static final class TestResourceDefinition extends SimpleResourceDefinition {
         private final List<AccessConstraintDefinition> constraintDefinitions;
 
         TestResourceDefinition(String path, AccessConstraintDefinition... constraintDefinitions) {
-            super(pathElement(path),
+            this(pathElement(path), constraintDefinitions);
+        }
+
+        TestResourceDefinition(PathElement element, AccessConstraintDefinition... constraintDefinitions) {
+            super(element,
                     new NonResolvingResourceDescriptionResolver(),
                     new AbstractAddStepHandler() {},
                     new AbstractRemoveStepHandler() {}

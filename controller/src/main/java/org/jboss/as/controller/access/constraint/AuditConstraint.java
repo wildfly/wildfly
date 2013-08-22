@@ -22,7 +22,11 @@
 
 package org.jboss.as.controller.access.constraint;
 
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
+
+import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.access.Action;
+import org.jboss.as.controller.access.Action.ActionEffect;
 import org.jboss.as.controller.access.TargetAttribute;
 import org.jboss.as.controller.access.TargetResource;
 import org.jboss.as.controller.access.rbac.StandardRole;
@@ -69,6 +73,9 @@ public class AuditConstraint extends AllowAllowNotConstraint {
 
         @Override
         public Constraint getStandardUserConstraint(StandardRole role, Action.ActionEffect actionEffect) {
+            if (actionEffect == ActionEffect.ADDRESS) {
+                return ALLOWS;
+            }
             return role == StandardRole.AUDITOR || role == StandardRole.SUPERUSER ? ALLOWS : DISALLOWS;
         }
 
@@ -79,18 +86,15 @@ public class AuditConstraint extends AllowAllowNotConstraint {
 
         @Override
         public Constraint getRequiredConstraint(Action.ActionEffect actionEffect, Action action, TargetResource target) {
-            //TODO implement getRequiredConstraint
             return (isAuditOperation(action) || isAuditResource(target)) ? AUDIT : NOT_AUDIT;
         }
 
         private boolean isAuditOperation(Action action) {
-            // TODO implement isAuditOperation
-            return false;
+            return AuditLogAddressUtil.isAuditLogAddress(PathAddress.pathAddress(action.getOperation().get(OP_ADDR)));
         }
 
         private boolean isAuditResource(TargetResource target) {
-            // TODO implement isAuditResource
-            return false;
+            return AuditLogAddressUtil.isAuditLogAddress(target.getResourceAddress());
         }
     }
 }
