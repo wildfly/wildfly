@@ -1,6 +1,6 @@
 /*
  * JBoss, Home of Professional Open Source.
- * Copyright 2012, Red Hat, Inc., and individual contributors
+ * Copyright 2013, Red Hat Middleware LLC, and individual contributors
  * as indicated by the @author tags. See the copyright.txt file in the
  * distribution for a full listing of individual contributors.
  *
@@ -19,34 +19,38 @@
  * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
+package org.jboss.as.webservices.metadata;
 
-package org.jboss.as.webservices.util;
+import static org.jboss.wsf.spi.util.StAXUtils.elementAsString;
 
-import org.jboss.wsf.spi.management.EndpointRegistry;
+import java.net.URL;
+
+import javax.xml.stream.XMLStreamException;
+import javax.xml.stream.XMLStreamReader;
+
+import org.jboss.metadata.property.PropertyReplacer;
+import org.jboss.wsf.spi.metadata.webservices.JBossWebservicesFactory;
 
 /**
- * JBoss AS 7 WS Endpoint registry factory
- *
- * @author alessio.soldano@jboss.com
  * @author <a href="mailto:ema@redhat.com">Jim Ma</a>
- * @since 25-Jan-2012
- *
  */
-public final class EndpointRegistryFactory extends org.jboss.wsf.spi.management.EndpointRegistryFactory {
+public class JBossWebservicesPropertyReplaceFactory extends JBossWebservicesFactory {
 
-    private static final EndpointRegistry registry = new ServiceContainerEndpointRegistry();
+    private PropertyReplacer replacer;
 
-    public EndpointRegistryFactory() {
-        super();
+
+    public JBossWebservicesPropertyReplaceFactory(final URL descriptorURL, final PropertyReplacer propertyReplacer) {
+        super(descriptorURL);
+        replacer = propertyReplacer;
     }
 
-    /**
-     * Retrieves endpoint registry through the corresponding Service
-     *
-     * @return endpoint registry
-     */
-    public EndpointRegistry getEndpointRegistry() {
-        return registry;
+    @Override
+    public String getElementText(XMLStreamReader reader) throws XMLStreamException {
+        String res = elementAsString(reader);
+        if (res != null && replacer != null) {
+            res = replacer.replaceProperties(res);
+        }
+        return res;
     }
 
 }

@@ -52,13 +52,14 @@ import org.jboss.metadata.web.jboss.JBossWebMetaData;
 import org.jboss.metadata.web.spec.ServletMappingMetaData;
 import org.jboss.msc.service.ServiceTarget;
 import org.jboss.ws.common.deployment.DeploymentAspectManagerImpl;
+import org.jboss.ws.common.deployment.EndpointHandlerDeploymentAspect;
+import org.jboss.ws.common.integration.AbstractDeploymentAspect;
 import org.jboss.ws.common.invocation.InvocationHandlerJAXWS;
 import org.jboss.wsf.spi.classloading.ClassLoaderProvider;
 import org.jboss.wsf.spi.deployment.Deployment;
 import org.jboss.wsf.spi.deployment.DeploymentAspect;
 import org.jboss.wsf.spi.deployment.DeploymentAspectManager;
 import org.jboss.wsf.spi.deployment.Endpoint;
-import org.jboss.wsf.spi.deployment.EndpointState;
 import org.jboss.wsf.spi.deployment.WSFServlet;
 import org.jboss.wsf.spi.metadata.webservices.JBossWebservicesMetaData;
 import org.jboss.wsf.spi.metadata.webservices.WebservicesMetaData;
@@ -75,6 +76,7 @@ public final class EndpointPublisherImpl implements EndpointPublisher {
 
     private Host host;
     private boolean runningInService = false;
+    private static List<DeploymentAspect> publisherDepAspects = null;
     private static List<DeploymentAspect> depAspects = null;
 
     public EndpointPublisherImpl(Host host) {
@@ -128,14 +130,6 @@ public final class EndpointPublisherImpl implements EndpointPublisher {
             DeploymentAspectManager dam = new DeploymentAspectManagerImpl();
             dam.setDeploymentAspects(aspects);
             dam.deploy(dep);
-            // [JBWS-3441] hack - fallback JAXWS invocation handler for dynamically generated deployments
-            for (Endpoint ep : dep.getService().getEndpoints()) {
-                synchronized (ep) {
-                    ep.setState(EndpointState.STOPPED);
-                    ep.setInvocationHandler(new InvocationHandlerJAXWS());
-                    ep.setState(EndpointState.STARTED);
-                }
-            }
         } finally {
             if (dep != null) {
                 dep.removeAttachment(ServiceTarget.class);
@@ -249,26 +243,62 @@ public final class EndpointPublisherImpl implements EndpointPublisher {
     }
 
     private List<DeploymentAspect> getDeploymentAspects() {
-        return runningInService ? DeploymentAspectsProvider.getSortedDeploymentAspects() : getPublisherDeploymentAspects();
+        return runningInService ? getReplacedDeploymentAspects() : getPublisherDeploymentAspects();
     }
 
-    private static synchronized List<DeploymentAspect> getPublisherDeploymentAspects() {
+    private static synchronized List<DeploymentAspect> getReplacedDeploymentAspects() {
         if (depAspects == null) {
             depAspects = new LinkedList<DeploymentAspect>();
-            final List<DeploymentAspect> serverAspects = DeploymentAspectsProvider.getSortedDeploymentAspects();
-            // copy to replace the EndpointServiceDeploymentAspect
+            List<DeploymentAspect> serverAspects = DeploymentAspectsProvider.getSortedDeploymentAspects();
             for (DeploymentAspect aspect : serverAspects) {
-                if (aspect instanceof EndpointServiceDeploymentAspect) {
-                    final EndpointServiceDeploymentAspect a = (EndpointServiceDeploymentAspect) aspect;
-                    EndpointServiceDeploymentAspect clone = (EndpointServiceDeploymentAspect) (a.clone());
-                    clone.setStopServices(true);
-                    depAspects.add(clone);
+                if(aspect instanceof EndpointHandlerDeploymentAspect) {
+                    depAspects.add(aspect);
+                    //add another aspect to set InvocationHandlerJAXWS to each endpoint
+                    ForceJAXWSInvocationHandlerDeploymentAspect handlerAspect = new ForceJAXWSInvocationHandlerDeploymentAspect();
+                    handlerAspect.setForJaxRpc(false);
+                    depAspects.add(handlerAspect);
                 } else {
                     depAspects.add(aspect);
                 }
             }
         }
         return depAspects;
+    }
+
+    private static synchronized List<DeploymentAspect> getPublisherDeploymentAspects() {
+        if (publisherDepAspects == null) {
+            publisherDepAspects = new LinkedList<DeploymentAspect>();
+            // copy to replace the EndpointServiceDeploymentAspect
+            List<DeploymentAspect> serverAspects = DeploymentAspectsProvider.getSortedDeploymentAspects();
+            for (DeploymentAspect aspect : serverAspects) {
+                if (aspect instanceof EndpointServiceDeploymentAspect) {
+                    final EndpointServiceDeploymentAspect a = (EndpointServiceDeploymentAspect) aspect;
+                    EndpointServiceDeploymentAspect clone = (EndpointServiceDeploymentAspect) (a.clone());
+                    clone.setStopServices(true);
+                    publisherDepAspects.add(clone);
+                } else if(aspect instanceof EndpointHandlerDeploymentAspect) {
+                    publisherDepAspects.add(aspect);
+                    //add another aspect to set InvocationHandlerJAXWS to each endpoint
+                    ForceJAXWSInvocationHandlerDeploymentAspect handlerAspect = new ForceJAXWSInvocationHandlerDeploymentAspect();
+                    handlerAspect.setForJaxRpc(false);
+                    publisherDepAspects.add(handlerAspect);
+                } else {
+                    publisherDepAspects.add(aspect);
+                }
+            }
+        }
+        return publisherDepAspects;
+    }
+
+    static class ForceJAXWSInvocationHandlerDeploymentAspect extends AbstractDeploymentAspect {
+        public ForceJAXWSInvocationHandlerDeploymentAspect() {
+        }
+        @Override
+        public void start(final Deployment dep) {
+            for (final Endpoint ep : dep.getService().getEndpoints()) {
+                ep.setInvocationHandler(new InvocationHandlerJAXWS());
+            }
+        }
     }
 
     private static class LocalInstanceManager implements InstanceManager {

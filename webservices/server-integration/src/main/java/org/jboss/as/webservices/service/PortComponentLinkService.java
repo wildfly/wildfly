@@ -96,7 +96,6 @@ public final class PortComponentLinkService implements Service<WebAppController>
     public static ServiceBuilder<WebAppController> createServiceBuilder(final ServiceTarget serviceTarget, final String hostName) {
         final PortComponentLinkService service = new PortComponentLinkService();
         final ServiceBuilder<WebAppController> builder = serviceTarget.addService(service.getName(), service);
-        builder.addDependency(DependencyType.REQUIRED, WSServices.REGISTRY_SERVICE);
         builder.addDependency(DependencyType.REQUIRED, WSServices.CONFIG_SERVICE, ServerConfig.class, service.getServerConfigInjector());
         builder.addDependency(WebSubsystemServices.JBOSS_WEB_HOST.append(hostName), VirtualHost.class, service.getHostInjector());
         return builder;

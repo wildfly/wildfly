@@ -640,6 +640,7 @@
             <maven-resource group="org.apache.cxf" artifact="cxf-tools-wsdlto-databinding-jaxb"/>
             <maven-resource group="org.apache.cxf" artifact="cxf-tools-wsdlto-frontend-jaxws"/>
             <maven-resource group="org.apache.cxf.services.sts" artifact="cxf-services-sts-core"/>
+            <maven-resource group="org.apache.cxf.services.ws-discovery" artifact="cxf-services-ws-discovery-api"/>
             <maven-resource group="org.apache.cxf.xjcplugins" artifact="cxf-xjc-boolean"/>
             <maven-resource group="org.apache.cxf.xjcplugins" artifact="cxf-xjc-dv"/>
             <maven-resource group="org.apache.cxf.xjcplugins" artifact="cxf-xjc-ts"/>
@@ -1018,7 +1019,7 @@
 
         <module-def name="org.jboss.as.webservices">
             <maven-resource group="org.jboss.as" artifact="jboss-as-webservices-server-integration"/>
-            <maven-resource-with-classifier group="org.jboss.ws.cxf" artifact="jbossws-cxf-resources" classifier="jboss711"/>
+            <maven-resource-with-classifier group="org.jboss.ws.cxf" artifact="jbossws-cxf-resources" classifier="jboss720"/>
         </module-def>
 
         <module-def name="org.jboss.as.webservices.server.integration">
@@ -1233,6 +1234,10 @@
         <module-def name="org.jboss.ws.cxf.jbossws-cxf-transports-httpserver">
             <maven-resource group="org.jboss.ws.cxf" artifact="jbossws-cxf-transports-httpserver"/>
         </module-def>
+
+        <module-def name="org.jboss.ws.cxf.jbossws-cxf-transports-udp">
+            <maven-resource group="org.jboss.ws.cxf" artifact="jbossws-cxf-transports-udp"/>
+        </module-def> 
 
         <module-def name="org.jboss.ws.jaxws-client">
             <maven-resource group="org.jboss.ws.cxf" artifact="jbossws-cxf-client"/>

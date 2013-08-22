@@ -540,6 +540,11 @@
                 </dependency>
 
                 <dependency>
+                    <groupId>org.apache.cxf.services.ws-discovery</groupId>
+                    <artifactId>cxf-services-ws-discovery-api</artifactId>
+                </dependency>
+
+                <dependency>
                     <groupId>org.apache.cxf.xjcplugins</groupId>
                     <artifactId>cxf-xjc-boolean</artifactId>
                 </dependency>
@@ -1695,7 +1700,7 @@
                 <dependency>
                     <groupId>org.jboss.ws.cxf</groupId>
                     <artifactId>jbossws-cxf-resources</artifactId>
-                    <classifier>jboss711</classifier>
+                    <classifier>jboss720</classifier>
                 </dependency>
 
                 <dependency>
@@ -1706,6 +1711,11 @@
                 <dependency>
                     <groupId>org.jboss.ws.cxf</groupId>
                     <artifactId>jbossws-cxf-transports-httpserver</artifactId>
+                </dependency>
+
+                <dependency>
+                    <groupId>org.jboss.ws.cxf</groupId>
+                    <artifactId>jbossws-cxf-transports-udp</artifactId>
                 </dependency>
 
                 <dependency>

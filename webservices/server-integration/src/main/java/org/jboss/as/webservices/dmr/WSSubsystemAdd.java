@@ -41,7 +41,6 @@ import org.jboss.as.controller.registry.Resource;
 import org.jboss.as.server.AbstractDeploymentChainStep;
 import org.jboss.as.server.DeploymentProcessorTarget;
 import org.jboss.as.webservices.config.ServerConfigImpl;
-import org.jboss.as.webservices.service.EndpointRegistryService;
 import org.jboss.as.webservices.service.PortComponentLinkService;
 import org.jboss.as.webservices.service.ServerConfigService;
 import org.jboss.as.webservices.util.ModuleClassLoaderProvider;
@@ -85,7 +84,6 @@ class WSSubsystemAdd extends AbstractBoottimeAddStepHandler {
         if (!appclient) {
             ServerConfigImpl serverConfig = createServerConfig(model, false, context);
             newControllers.add(ServerConfigService.install(serviceTarget, serverConfig, verificationHandler));
-            newControllers.add(EndpointRegistryService.install(serviceTarget, verificationHandler));
 
             final Resource webSubsystem = context.readResourceFromRoot(PathAddress.pathAddress(PathElement.pathElement("subsystem", "web")));
             String defaultHost = webSubsystem.getModel().get("default-virtual-server").asString();
