@@ -2,7 +2,7 @@
 <!--  See src/resources/configuration/ReadMe.txt for how the configuration assembly works -->
 <config>
    <extension-module>org.jboss.as.connector</extension-module>
-   <subsystem xmlns="urn:jboss:domain:jca:1.1">
+   <subsystem xmlns="urn:jboss:domain:jca:2.0">
        <archive-validation enabled="true" fail-on-error="true" fail-on-warn="false"/>
        <bean-validation enabled="true"/>
        <default-workmanager>
