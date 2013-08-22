@@ -104,9 +104,11 @@ public class LdapConnectionManagerService implements Service<LdapConnectionManag
     }
 
     private Object getConnection(final Properties properties, final SSLContext sslContext) throws Exception {
+        ClassLoader old = SecurityActions.getContextClassLoader();
         try {
             if (sslContext != null) {
                 ThreadLocalSSLSocketFactory.setSSLSocketFactory(sslContext.getSocketFactory());
+                SecurityActions.setContextClassLoader(ThreadLocalSSLSocketFactory.class);
                 properties.put("java.naming.ldap.factory.socket", ThreadLocalSSLSocketFactory.class.getName());
             }
             return new InitialDirContext(properties);
@@ -114,6 +116,7 @@ public class LdapConnectionManagerService implements Service<LdapConnectionManag
             if (sslContext != null) {
                 ThreadLocalSSLSocketFactory.removeSSLSocketFactory();
             }
+            SecurityActions.setContextClassLoader(old);
         }
     }
 
