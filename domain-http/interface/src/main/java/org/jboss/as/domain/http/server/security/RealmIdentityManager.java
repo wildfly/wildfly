@@ -26,13 +26,6 @@ package org.jboss.as.domain.http.server.security;
 import static org.jboss.as.domain.http.server.HttpServerLogger.ROOT_LOGGER;
 import static org.jboss.as.domain.http.server.HttpServerMessages.MESSAGES;
 import static org.jboss.as.domain.management.RealmConfigurationConstants.DIGEST_PLAIN_TEXT;
-import io.undertow.security.idm.Account;
-import io.undertow.security.idm.Credential;
-import io.undertow.security.idm.DigestCredential;
-import io.undertow.security.idm.IdentityManager;
-import io.undertow.security.idm.PasswordCredential;
-import io.undertow.security.idm.X509CertificateCredential;
-import io.undertow.util.HexConverter;
 
 import java.io.IOException;
 import java.nio.charset.Charset;
@@ -42,14 +35,19 @@ import java.security.Principal;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Map;
-import java.util.Set;
 
-import javax.security.auth.Subject;
 import javax.security.auth.callback.Callback;
 import javax.security.auth.callback.NameCallback;
 import javax.security.auth.callback.PasswordCallback;
 import javax.security.sasl.RealmCallback;
 
+import io.undertow.security.idm.Account;
+import io.undertow.security.idm.Credential;
+import io.undertow.security.idm.DigestCredential;
+import io.undertow.security.idm.IdentityManager;
+import io.undertow.security.idm.PasswordCredential;
+import io.undertow.security.idm.X509CertificateCredential;
+import io.undertow.util.HexConverter;
 import org.jboss.as.core.security.SimplePrincipal;
 import org.jboss.as.core.security.SubjectUserInfo;
 import org.jboss.as.domain.management.AuthMechanism;
@@ -233,32 +231,4 @@ public class RealmIdentityManager implements IdentityManager {
             throw new IllegalStateException("Unexpected authentication mechanism executing.");
         }
     }
-
-    private class RealmIdentityAccount implements SubjectAccount {
-
-        private final Subject subject;
-        private final Principal principal;
-
-        private RealmIdentityAccount(final Subject subject, final Principal principal) {
-            this.subject = subject;
-            this.principal = principal;
-        }
-
-        @Override
-        public Principal getPrincipal() {
-            return principal;
-        }
-
-        @Override
-        public Set<String> getRoles() {
-            return Collections.emptySet();
-        }
-
-        public Subject getSubject() {
-            // TODO may need to map this method to a domain management API to ensure it can be used.
-            return subject;
-        }
-
-    }
-
 }
