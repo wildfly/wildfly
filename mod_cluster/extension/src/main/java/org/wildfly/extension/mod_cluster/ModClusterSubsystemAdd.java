@@ -292,15 +292,6 @@ class ModClusterSubsystemAdd extends AbstractAddStepHandler {
             if (node.hasDefined(CommonAttributes.TYPE)) {
                 String type = TYPE.resolveModelAttribute(context, node).asString();
                 LoadMetricEnum metric = LoadMetricEnum.forType(type);
-
-                if (metric != null && (metric.equals(LoadMetricEnum.BUSY_CONNECTORS)
-                        || metric.equals(LoadMetricEnum.ACTIVE_SESSIONS)
-                        || metric.equals(LoadMetricEnum.SEND_TRAFFIC)
-                        || metric.equals(LoadMetricEnum.RECEIVE_TRAFFIC)
-                        || metric.equals(LoadMetricEnum.REQUEST_COUNT))) {
-                    ROOT_LOGGER.unsupportedMetric(type);
-                }
-
                 loadMetricClass = (metric != null) ? metric.getLoadMetricClass() : null;
             } else {
                 String className = CustomLoadMetricDefinition.CLASS.resolveModelAttribute(context, node).asString();

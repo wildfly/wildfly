@@ -86,14 +86,4 @@ interface ModClusterLogger extends BasicLogger {
     @LogMessage(level = INFO)
     @Message(id = 11704, value = "Mod_cluster uses default load balancer provider")
     void useDefaultLoadBalancer();
-
-    /**
-     * Logs if an unsupported metric is configured.
-     *
-     * @param metricName name of the unsupported metric
-     */
-    @LogMessage(level = ERROR)
-    @Message(id = 11705, value = "Configured metric '%s' is not currently supported.")
-    void unsupportedMetric(String metricName);
-
 }
