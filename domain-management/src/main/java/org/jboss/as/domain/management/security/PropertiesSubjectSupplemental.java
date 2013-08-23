@@ -22,6 +22,8 @@
 
 package org.jboss.as.domain.management.security;
 
+import static org.jboss.as.domain.management.DomainManagementLogger.SECURITY_LOGGER;
+
 import java.io.IOException;
 import java.security.Principal;
 import java.util.Collections;
@@ -107,10 +109,13 @@ public class PropertiesSubjectSupplemental extends PropertiesFileLoader implemen
             for (String current : groups) {
                 String cleaned = current.trim();
                 if (cleaned.length() > 0) {
-                    response.add(new RealmGroup(realmName, cleaned));
+                    RealmGroup newGroup = new RealmGroup(realmName, cleaned);
+                    SECURITY_LOGGER.tracef("Adding group '%s' for user '%s'.", newGroup, user);
+                    response.add(newGroup);
                 }
             }
         } else {
+            SECURITY_LOGGER.tracef("No roles found for user '%s' in properties file.", user);
             response = Collections.emptySet();
         }
 

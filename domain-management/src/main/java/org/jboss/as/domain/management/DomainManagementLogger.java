@@ -45,6 +45,11 @@ public interface DomainManagementLogger extends BasicLogger {
     DomainManagementLogger ROOT_LOGGER = Logger.getMessageLogger(DomainManagementLogger.class, DomainManagementLogger.class.getPackage().getName());
 
     /**
+     * A logger with category specifically for logging per request security related messages.
+     */
+    DomainManagementLogger SECURITY_LOGGER = Logger.getMessageLogger(DomainManagementLogger.class, DomainManagementLogger.class.getPackage().getName() + ".security");
+
+    /**
      * Logs a warning message indicating the user and password were found in the properties file.
      */
     @LogMessage(level = WARN)
