@@ -124,13 +124,13 @@ public class BasicRbacTestCase extends AbstractRbacTestBase {
 
     @Test
     public void testMonitorNonAddressable() throws Exception {
-        noAccess(READ_RESOURCE_OPERATION, pathAddress(SENSITIVE_NON_ADDRESSABLE_RESOURCE, FOO), StandardRole.MONITOR);
-        noAccess(READ_RESOURCE_OPERATION, ACCESS_AUDIT_ADDR, StandardRole.MONITOR);
+        noAddress(READ_RESOURCE_OPERATION, pathAddress(SENSITIVE_NON_ADDRESSABLE_RESOURCE, FOO), StandardRole.MONITOR);
     }
 
     @Test
     public void testMonitorReadConfigDenied() throws Exception {
         denied(READ_RESOURCE_OPERATION, pathAddress(SENSITIVE_ADDRESSABLE_RESOURCE, FOO), StandardRole.MONITOR);
+        denied(READ_RESOURCE_OPERATION, ACCESS_AUDIT_ADDR, StandardRole.MONITOR);
     }
 
     @Test
@@ -170,13 +170,13 @@ public class BasicRbacTestCase extends AbstractRbacTestBase {
 
     @Test
     public void testOperatorNonAddressable() throws Exception {
-        noAccess(READ_RESOURCE_OPERATION, pathAddress(SENSITIVE_NON_ADDRESSABLE_RESOURCE, FOO), StandardRole.OPERATOR);
-        noAccess(READ_RESOURCE_OPERATION, ACCESS_AUDIT_ADDR, StandardRole.OPERATOR);
+        noAddress(READ_RESOURCE_OPERATION, pathAddress(SENSITIVE_NON_ADDRESSABLE_RESOURCE, FOO), StandardRole.OPERATOR);
     }
 
     @Test
     public void testOperatorReadConfigDenied() throws Exception {
         denied(READ_RESOURCE_OPERATION, pathAddress(SENSITIVE_ADDRESSABLE_RESOURCE, FOO), StandardRole.OPERATOR);
+        denied(READ_RESOURCE_OPERATION, ACCESS_AUDIT_ADDR, StandardRole.OPERATOR);
     }
 
     @Test
@@ -220,13 +220,13 @@ public class BasicRbacTestCase extends AbstractRbacTestBase {
 
     @Test
     public void testMaintainerNonAddressable() throws Exception {
-        noAccess(READ_RESOURCE_OPERATION, pathAddress(SENSITIVE_NON_ADDRESSABLE_RESOURCE, FOO), StandardRole.MAINTAINER);
-        noAccess(READ_RESOURCE_OPERATION, ACCESS_AUDIT_ADDR, StandardRole.MAINTAINER);
+        noAddress(READ_RESOURCE_OPERATION, pathAddress(SENSITIVE_NON_ADDRESSABLE_RESOURCE, FOO), StandardRole.MAINTAINER);
     }
 
     @Test
     public void testMaintainerReadConfigDenied() throws Exception {
         denied(READ_RESOURCE_OPERATION, pathAddress(SENSITIVE_ADDRESSABLE_RESOURCE, FOO), StandardRole.MAINTAINER);
+        denied(READ_RESOURCE_OPERATION, ACCESS_AUDIT_ADDR, StandardRole.MAINTAINER);
     }
 
     @Test
@@ -259,13 +259,13 @@ public class BasicRbacTestCase extends AbstractRbacTestBase {
 
     @Test
     public void testDeployerNoAccess() throws Exception {
-        noAccess(READ_RESOURCE_OPERATION, pathAddress(SENSITIVE_NON_ADDRESSABLE_RESOURCE, FOO), StandardRole.DEPLOYER);
-        noAccess(READ_RESOURCE_OPERATION, ACCESS_AUDIT_ADDR, StandardRole.DEPLOYER);
+        noAddress(READ_RESOURCE_OPERATION, pathAddress(SENSITIVE_NON_ADDRESSABLE_RESOURCE, FOO), StandardRole.DEPLOYER);
     }
 
     @Test
     public void testDeployerReadConfigDenied() throws Exception {
         denied(READ_RESOURCE_OPERATION, pathAddress(SENSITIVE_ADDRESSABLE_RESOURCE, FOO), StandardRole.DEPLOYER);
+        denied(READ_RESOURCE_OPERATION, ACCESS_AUDIT_ADDR, StandardRole.DEPLOYER);
     }
 
     @Test
@@ -307,8 +307,8 @@ public class BasicRbacTestCase extends AbstractRbacTestBase {
     // administrator
 
     @Test
-    public void testAdministratorNoAccess() throws Exception {
-        noAccess(READ_RESOURCE_OPERATION, ACCESS_AUDIT_ADDR, StandardRole.ADMINISTRATOR);
+    public void testAdministratorReadConfigDenied() throws Exception {
+        denied(READ_RESOURCE_OPERATION, ACCESS_AUDIT_ADDR, StandardRole.ADMINISTRATOR);
     }
 
     @Test

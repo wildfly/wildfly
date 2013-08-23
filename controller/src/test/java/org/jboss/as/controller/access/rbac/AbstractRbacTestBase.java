@@ -59,7 +59,7 @@ public abstract class AbstractRbacTestBase extends AbstractControllerTestBase {
         assertTrue(operationResult.get(FAILURE_DESCRIPTION).asString().contains("Permission denied"));
     }
 
-    protected static void assertNoAccess(ModelNode operationResult) {
+    protected static void assertNoAddress(ModelNode operationResult) {
         assertEquals(FAILED, operationResult.get(OUTCOME).asString());
         assertTrue(operationResult.get(FAILURE_DESCRIPTION).asString().contains("not found"));
     }
@@ -70,7 +70,7 @@ public abstract class AbstractRbacTestBase extends AbstractControllerTestBase {
         switch (resultExpectation) {
             case PERMITTED: assertPermitted(operationResult); break;
             case DENIED:    assertDenied(operationResult); break;
-            case NO_ACCESS: assertNoAccess(operationResult); break;
+            case NO_ACCESS: assertNoAddress(operationResult); break;
         }
     }
 
@@ -82,7 +82,7 @@ public abstract class AbstractRbacTestBase extends AbstractControllerTestBase {
         assertDenied(executeWithRole(Util.createOperation(operation, pathAddress), role));
     }
 
-    protected void noAccess(String operation, PathAddress pathAddress, StandardRole role) {
-        assertNoAccess(executeWithRole(Util.createOperation(operation, pathAddress), role));
+    protected void noAddress(String operation, PathAddress pathAddress, StandardRole role) {
+        assertNoAddress(executeWithRole(Util.createOperation(operation, pathAddress), role));
     }
 }
