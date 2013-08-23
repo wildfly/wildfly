@@ -416,7 +416,7 @@ public class JMXSubsystemTestCase extends AbstractSubsystemTest {
 
 
     @Test
-    public void testParseAndMarshalModel2_0WithShowModels() throws Exception {
+    public void testParseAndMarshalModel1_3WithShowModels() throws Exception {
         //Parse the subsystem xml and install into the first controller
         String subsystemXml =
                 "<subsystem xmlns=\"" + Namespace.JMX_1_3.getUriString() + "\">" +
@@ -444,7 +444,7 @@ public class JMXSubsystemTestCase extends AbstractSubsystemTest {
     }
 
     @Test
-    public void testParseAndMarshalModel2_0WithShowModelsAndOldPropertyFormat() throws Exception {
+    public void testParseAndMarshalModel1_3WithShowModelsAndOldPropertyFormat() throws Exception {
         //Parse the subsystem xml and install into the first controller
         String subsystemXml =
                 "<subsystem xmlns=\"" + Namespace.JMX_1_3.getUriString() + "\">" +

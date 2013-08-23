@@ -33,22 +33,22 @@
     <xs:element name="subsystem" type="subsystem"/>
 
     <xs:complexType name="subsystem">
-        <xs:sequence>
-            <xs:element name="expose-resolved-model" type="resolvedModelType" minOccurs="0" maxOccurs="1"/>
-            <xs:element name="expose-expression-model" type="expressionModelType" minOccurs="0" maxOccurs="1"/>
-            <xs:element name="remoting-connector" type="remotingConnectorRefType" minOccurs="0"/>
-            <xs:element name="audit-log" type="audit-logType" minOccurs="0"/>
-            <xs:element name="sensitivity" type="sensitivityType" minOccurs="0"/>
-        </xs:sequence>
+      <xs:sequence>
+         <xs:element name="expose-resolved-model" type="resolvedModelType" minOccurs="0" maxOccurs="1"/>
+         <xs:element name="expose-expression-model" type="expressionModelType" minOccurs="0" maxOccurs="1"/>
+         <xs:element name="remoting-connector" type="remotingConnectorRefType" minOccurs="0"/>
+         <xs:element name="audit-log" type="audit-logType" minOccurs="0"/>
+         <xs:element name="sensitivity" type="sensitivityType" minOccurs="0"/>
+      </xs:sequence>
     </xs:complexType>
 
     <xs:complexType name="resolvedModelType">
-        <xs:attribute name="domain-name" type="xs:string" default="jboss.as"/>
-        <xs:attribute name="proper-property-format" type="xs:boolean" default="true"/>
+      <xs:attribute name="domain-name" type="xs:string" default="jboss.as"/>
+      <xs:attribute name="proper-property-format" type="xs:boolean" default="true"/>
     </xs:complexType>
 
     <xs:complexType name="expressionModelType">
-        <xs:attribute name="domain-name" type="xs:string" default="jboss.as.expr"/>
+      <xs:attribute name="domain-name" type="xs:string" default="jboss.as.expr"/>
     </xs:complexType>
 
     <xs:complexType name="remotingConnectorRefType">
@@ -70,7 +70,7 @@
         </xs:annotation>
         <xs:choice minOccurs="0" maxOccurs="unbounded">
             <xs:element name="handlers" type="audit-log-handlers-refType"/>
-        </xs:choice>
+        </xs:choice>        
         <xs:attribute name="log-boot" type="xs:boolean" default="false">
             <xs:annotation>
                 <xs:documentation>
@@ -93,7 +93,7 @@
             </xs:annotation>
         </xs:attribute>
     </xs:complexType>
-
+    
     <xs:complexType name="audit-log-handlers-refType">
         <xs:annotation>
             <xs:documentation>
@@ -113,7 +113,7 @@
         </xs:annotation>
         <xs:attribute name="name" type="xs:string" use="required"/>
     </xs:complexType>
-
+    
     <xs:complexType name="sensitivityType">
         <xs:annotation>
             <xs:documentation>
@@ -122,5 +122,5 @@
         </xs:annotation>
         <xs:attribute name="core-mbeans" type="xs:boolean" use="optional" default="false"/>
     </xs:complexType>
-
+    
 </xs:schema>
