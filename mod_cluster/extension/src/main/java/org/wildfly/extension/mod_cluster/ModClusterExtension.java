@@ -177,7 +177,24 @@ public class ModClusterExtension implements XMLStreamConstants, Extension {
             .getAttributeBuilder()
                 .addRejectCheck(RejectAttributeChecker.SIMPLE_EXPRESSIONS, CIPHER_SUITE, KEY_ALIAS, PROTOCOL)
                 .end();
+
+        // TODO WFLY-1938 reflect whatever was changed for 2.0.0 in the above!!
+
         TransformationDescription.Tools.register(builder.build(), subsystem, ModelVersion.create(1, 2, 0));
+    }
+
+    private static void registerTransformers_1_3_0(SubsystemRegistration subsystem) {
+        TransformationDescription.Tools.register(get1_3_0_1_4_0Description(), subsystem, ModelVersion.create(1, 3, 0));
+    }
+
+    private static void registerTransformers_1_4_0(SubsystemRegistration subsystem) {
+        TransformationDescription.Tools.register(get1_3_0_1_4_0Description(), subsystem, ModelVersion.create(1, 4, 0));
+    }
+
+    private static TransformationDescription get1_3_0_1_4_0Description() {
+        ResourceTransformationDescriptionBuilder builder = TransformationDescriptionBuilder.Factory.createSubsystemInstance();
+        // TODO WFLY-1938 implement 2.0.0 -> 1.x transformation
+        return builder.build();
     }
 
     /**

@@ -75,6 +75,7 @@ public class RemotingExtension implements Extension {
 
     private static final ModelVersion VERSION_1_1 = ModelVersion.create(1, 1);
     private static final ModelVersion VERSION_1_2 = ModelVersion.create(1, 2);
+    private static final ModelVersion VERSION_1_3 = ModelVersion.create(1, 3);
 
     @Override
     public void initialize(ExtensionContext context) {
@@ -140,14 +141,22 @@ public class RemotingExtension implements Extension {
     }
 
     private void registerTransformers_1_2(SubsystemRegistration registration) {
+        TransformationDescription.Tools.register(get1_2_0_1_3_0Description(), registration, VERSION_1_2);
+    }
+
+    private void registerTransformers_1_3(SubsystemRegistration registration) {
+        TransformationDescription.Tools.register(get1_2_0_1_3_0Description(), registration, VERSION_1_3);
+    }
+
+    private static TransformationDescription get1_2_0_1_3_0Description() {
         ResourceTransformationDescriptionBuilder builder = ResourceTransformationDescriptionBuilder.Factory.createSubsystemInstance();
         builder.rejectChildResource(HttpConnectorResource.PATH);
         protocolTransform(builder.addChildResource(RemoteOutboundConnectionResourceDefinition.ADDRESS)
                 .getAttributeBuilder());
-        TransformationDescription.Tools.register(builder.build(), registration, VERSION_1_2);
+        return builder.build();
     }
 
-    private AttributeTransformationDescriptionBuilder protocolTransform(AttributeTransformationDescriptionBuilder builder) {
+    private static AttributeTransformationDescriptionBuilder protocolTransform(AttributeTransformationDescriptionBuilder builder) {
         builder.addRejectCheck(new RejectAttributeChecker.DefaultRejectAttributeChecker() {
 
             @Override

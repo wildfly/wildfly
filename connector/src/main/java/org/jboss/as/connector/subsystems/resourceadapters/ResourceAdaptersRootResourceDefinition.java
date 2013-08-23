@@ -64,5 +64,7 @@ public class ResourceAdaptersRootResourceDefinition extends SimpleResourceDefini
         ResourceTransformationDescriptionBuilder builder120 = TransformationDescriptionBuilder.Factory.createSubsystemInstance();
         ResourceAdapterResourceDefinition.registerTransformers120(builder120);
         TransformationDescription.Tools.register(builder120.build(), subsystem, ModelVersion.create(1, 2, 0));
+        // Apply same to RBAC-updated version
+        TransformationDescription.Tools.register(builder120.build(), subsystem, ModelVersion.create(1, 3, 0));
     }
 }
