@@ -28,11 +28,13 @@ import java.util.Collections;
 import java.util.Date;
 import java.util.concurrent.TimeUnit;
 
+import io.undertow.security.api.AuthenticatedSessionManager.AuthenticatedSession;
 import io.undertow.server.HttpServerExchange;
 import io.undertow.server.session.SessionConfig;
 import io.undertow.server.session.SessionListener;
 import io.undertow.server.session.SessionListener.SessionDestroyedReason;
 import io.undertow.server.session.SessionListeners;
+import io.undertow.servlet.handlers.security.CachedAuthenticatedSessionHandler;
 
 import org.junit.Test;
 import org.mockito.ArgumentCaptor;
@@ -44,10 +46,10 @@ import org.wildfly.clustering.web.session.SessionMetaData;
 import org.wildfly.clustering.web.undertow.session.SessionAdapter;
 import org.wildfly.clustering.web.undertow.session.UndertowSessionManager;
 
-public class SessionFacadeTestCase {
+public class SessionAdapterTestCase {
     private final UndertowSessionManager manager = mock(UndertowSessionManager.class);
     private final SessionConfig config = mock(SessionConfig.class);
-    private final Session<Void> session = mock(Session.class);
+    private final Session<LocalSessionContext> session = mock(Session.class);
     
     private final io.undertow.server.session.Session adapter = new SessionAdapter(this.manager, this.session, this.config);
     
@@ -64,7 +66,7 @@ public class SessionFacadeTestCase {
     @Test
     public void requestDone() {
         HttpServerExchange exchange = new HttpServerExchange(null);
-        SessionManager<Void> manager = mock(SessionManager.class);
+        SessionManager<LocalSessionContext> manager = mock(SessionManager.class);
         Batcher batcher = mock(Batcher.class);
 
         when(this.manager.getSessionManager()).thenReturn(manager);
@@ -135,6 +137,20 @@ public class SessionFacadeTestCase {
 
         when(this.session.getAttributes()).thenReturn(attributes);
         when(attributes.getAttribute(name)).thenReturn(expected);
+        
+        Object result = this.adapter.getAttribute(name);
+        
+        assertSame(expected, result);
+    }
+    
+    @Test
+    public void getAuthenticatedSessionAttribute() {
+        LocalSessionContext context = mock(LocalSessionContext.class);
+        String name = CachedAuthenticatedSessionHandler.class.getName() + ".AuthenticatedSession";
+        AuthenticatedSession expected = new AuthenticatedSession(null, null);
+        
+        when(this.session.getLocalContext()).thenReturn(context);
+        when(context.getAuthenticatedSession()).thenReturn(expected);
         
         Object result = this.adapter.getAttribute(name);
         
@@ -233,7 +249,22 @@ public class SessionFacadeTestCase {
         verify(listener, never()).attributeUpdated(same(this.adapter), same(name), same(value), any());
         verify(listener, never()).attributeRemoved(same(this.adapter), same(name), any());
     }
-    
+
+    @Test
+    public void setAuthenticatedSessionAttribute() {
+        LocalSessionContext context = mock(LocalSessionContext.class);
+        String name = CachedAuthenticatedSessionHandler.class.getName() + ".AuthenticatedSession";
+        AuthenticatedSession value = new AuthenticatedSession(null, null);
+
+        when(this.session.getLocalContext()).thenReturn(context);
+
+        Object result = this.adapter.setAttribute(name, value);
+
+        verify(context).setAuthenticatedSession(same(value));
+
+        assertNull(result);
+    }
+
     @Test
     public void removeAttribute() {
         SessionAttributes attributes = mock(SessionAttributes.class);
@@ -276,7 +307,7 @@ public class SessionFacadeTestCase {
     @Test
     public void invalidate() {
         HttpServerExchange exchange = new HttpServerExchange(null);
-        SessionManager<Void> manager = mock(SessionManager.class);
+        SessionManager<LocalSessionContext> manager = mock(SessionManager.class);
         Batcher batcher = mock(Batcher.class);
         SessionListener listener = mock(SessionListener.class);
         SessionListeners listeners = new SessionListeners();
@@ -305,12 +336,14 @@ public class SessionFacadeTestCase {
     public void changeSessionId() {
         HttpServerExchange exchange = new HttpServerExchange(null);
         SessionConfig config = mock(SessionConfig.class);
-        SessionManager<Void> manager = mock(SessionManager.class);
-        Session<Void> session = mock(Session.class);
+        SessionManager<LocalSessionContext> manager = mock(SessionManager.class);
+        Session<LocalSessionContext> session = mock(Session.class);
         SessionAttributes oldAttributes = mock(SessionAttributes.class);
         SessionAttributes newAttributes = mock(SessionAttributes.class);
         SessionMetaData oldMetaData = mock(SessionMetaData.class);
         SessionMetaData newMetaData = mock(SessionMetaData.class);
+        LocalSessionContext oldContext = mock(LocalSessionContext.class);
+        LocalSessionContext newContext = mock(LocalSessionContext.class);
         String sessionId = "session";
         String route = "route";
         String routedSessionid = "session:route";
@@ -318,6 +351,7 @@ public class SessionFacadeTestCase {
         Object value = new Object();
         Date date = new Date();
         long interval = 10L;
+        AuthenticatedSession authenticatedSession = new AuthenticatedSession(null, null);
         ArgumentCaptor<TimeUnit> capturedUnit = ArgumentCaptor.forClass(TimeUnit.class);
         
         when(this.manager.getSessionManager()).thenReturn(manager);
@@ -334,6 +368,9 @@ public class SessionFacadeTestCase {
         when(oldMetaData.getMaxInactiveInterval(capturedUnit.capture())).thenReturn(interval);
         when(session.getId()).thenReturn(sessionId);
         when(manager.locate(sessionId)).thenReturn(route);
+        when(this.session.getLocalContext()).thenReturn(oldContext);
+        when(session.getLocalContext()).thenReturn(newContext);
+        when(oldContext.getAuthenticatedSession()).thenReturn(authenticatedSession);
         when(this.manager.format(sessionId, route)).thenReturn(routedSessionid);
         
         String result = this.adapter.changeSessionId(exchange, config);
@@ -343,5 +380,6 @@ public class SessionFacadeTestCase {
         verify(newMetaData).setLastAccessedTime(date);
         verify(newMetaData).setMaxInactiveInterval(interval, capturedUnit.getValue());
         verify(config).setSessionId(exchange, routedSessionid);
+        verify(newContext).setAuthenticatedSession(same(authenticatedSession));
     }
 }

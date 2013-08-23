@@ -45,8 +45,8 @@ import org.wildfly.clustering.web.session.ImmutableSession;
 import org.wildfly.clustering.web.session.Session;
 import org.wildfly.clustering.web.session.SessionManager;
 
-public class SessionManagerFacadeTestCase {
-    private final SessionManager<Void> manager = mock(SessionManager.class);
+public class SessionManagerAdapterTestCase {
+    private final SessionManager<LocalSessionContext> manager = mock(SessionManager.class);
     private final SessionListener listener = mock(SessionListener.class);
 
     private SessionManagerAdapter adapter = new SessionManagerAdapter(this.manager);
@@ -104,7 +104,7 @@ public class SessionManagerFacadeTestCase {
         HttpServerExchange exchange = new HttpServerExchange(null);
         Batcher batcher = mock(Batcher.class);
         SessionConfig config = mock(SessionConfig.class);
-        Session<Void> session = mock(Session.class);
+        Session<LocalSessionContext> session = mock(Session.class);
         String sessionId = "session";
         String route = "route";
         String routingSessionId = "session.route";
@@ -136,7 +136,7 @@ public class SessionManagerFacadeTestCase {
         HttpServerExchange exchange = new HttpServerExchange(null);
         Batcher batcher = mock(Batcher.class);
         SessionConfig config = mock(SessionConfig.class);
-        Session<Void> session = mock(Session.class);
+        Session<LocalSessionContext> session = mock(Session.class);
         String requestedSessionId = "session.route1";
         String sessionId = "session";
         String route = "route";
@@ -188,7 +188,7 @@ public class SessionManagerFacadeTestCase {
         HttpServerExchange exchange = new HttpServerExchange(null);
         Batcher batcher = mock(Batcher.class);
         SessionConfig config = mock(SessionConfig.class);
-        Session<Void> session = mock(Session.class);
+        Session<LocalSessionContext> session = mock(Session.class);
         String requestedSessionId = "session.route1";
         String sessionId = "session";
         String route = "route2";

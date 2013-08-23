@@ -44,9 +44,9 @@ import org.wildfly.clustering.web.session.SessionManager;
  */
 public class SessionManagerAdapter implements UndertowSessionManager {
     private final SessionListeners sessionListeners = new SessionListeners();
-    private final SessionManager<Void> manager;
+    private final SessionManager<LocalSessionContext> manager;
 
-    public SessionManagerAdapter(SessionManager<Void> manager) {
+    public SessionManagerAdapter(SessionManager<LocalSessionContext> manager) {
         this.manager = manager;
     }
 
@@ -56,7 +56,7 @@ public class SessionManagerAdapter implements UndertowSessionManager {
     }
 
     @Override
-    public SessionManager<Void> getSessionManager() {
+    public SessionManager<LocalSessionContext> getSessionManager() {
         return this.manager;
     }
 
@@ -104,7 +104,7 @@ public class SessionManagerAdapter implements UndertowSessionManager {
         Batcher batcher = this.manager.getBatcher();
         boolean started = batcher.startBatch();
         try {
-            Session<Void> session = this.manager.createSession(id);
+            Session<LocalSessionContext> session = this.manager.createSession(id);
             io.undertow.server.session.Session adapter = this.getSession(session, exchange, config);
             this.sessionListeners.sessionCreated(adapter, exchange);
             return adapter;
@@ -123,7 +123,7 @@ public class SessionManagerAdapter implements UndertowSessionManager {
 
         Batcher batcher = this.manager.getBatcher();
         boolean started = batcher.startBatch();
-        Session<Void> session = null;
+        Session<LocalSessionContext> session = null;
         try {
             session = this.manager.findSession(id);
             return (session != null) ? this.getSession(session, exchange, config) : null;
@@ -145,7 +145,7 @@ public class SessionManagerAdapter implements UndertowSessionManager {
     /**
      * Appends routing information to session identifier.
      */
-    private io.undertow.server.session.Session getSession(Session<Void> session, HttpServerExchange exchange, SessionConfig config) {
+    private io.undertow.server.session.Session getSession(Session<LocalSessionContext> session, HttpServerExchange exchange, SessionConfig config) {
         SessionAdapter adapter = new SessionAdapter(this, session, config);
         if (config != null) {
             String id = session.getId();
