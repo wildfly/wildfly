@@ -52,7 +52,6 @@ import org.jboss.as.connector.util.AbstractParser;
 import org.jboss.as.connector.util.ParserException;
 import org.jboss.dmr.ModelNode;
 import org.jboss.jca.common.CommonBundle;
-import org.jboss.jca.common.api.metadata.Defaults;
 import org.jboss.jca.common.api.metadata.common.Capacity;
 import org.jboss.jca.common.api.metadata.common.Credential;
 import org.jboss.jca.common.api.metadata.common.Recovery;
@@ -258,7 +257,7 @@ public class DsParser extends AbstractParser {
         String poolName = null;
         final ModelNode operation = new ModelNode();
         operation.get(OP).set(ADD);
-        boolean enabled = Defaults.ENABLED.booleanValue();
+        boolean enabled = ENABLED.getDefaultValue().asBoolean();
         // Persist the enabled flag because xml default is != from DMR default
         boolean persistEnabled = true;
         for (DataSource.Attribute attribute : DataSource.Attribute.values()) {
@@ -268,7 +267,6 @@ public class DsParser extends AbstractParser {
                     if (value != null) {
                         enabled = Boolean.parseBoolean(value);
                         //ENABLED.parseAndSetParameter(value, operation, reader);
-                        persistEnabled = true;
                     }
                     break;
                 }
@@ -484,7 +482,7 @@ public class DsParser extends AbstractParser {
         String poolName = null;
         final ModelNode operation = new ModelNode();
         operation.get(OP).set(ADD);
-        boolean enabled = Defaults.ENABLED.booleanValue();
+        boolean enabled = ENABLED.getDefaultValue().asBoolean();
         // Persist the enabled flag because xml default is != from DMR default
         boolean persistEnabled = true;
         for (DataSource.Attribute attribute : DataSource.Attribute.values()) {
@@ -494,7 +492,6 @@ public class DsParser extends AbstractParser {
                     if (value != null) {
                         enabled = Boolean.parseBoolean(value);
                         //ENABLED.parseAndSetParameter(value, operation, reader);
-                        persistEnabled = true;
                     }
                     break;
                 }
