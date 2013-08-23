@@ -416,10 +416,10 @@ public class JMXSubsystemTestCase extends AbstractSubsystemTest {
 
 
     @Test
-    public void testParseAndMarshalModel2_0WithShowModels() throws Exception {
+    public void testParseAndMarshalModel1_3WithShowModels() throws Exception {
         //Parse the subsystem xml and install into the first controller
         String subsystemXml =
-                "<subsystem xmlns=\"" + Namespace.JMX_2_0.getUriString() + "\">" +
+                "<subsystem xmlns=\"" + Namespace.JMX_1_3.getUriString() + "\">" +
                 "   <expose-resolved-model domain-name=\"jboss.RESOLVED\"/>" +
                 "   <expose-expression-model domain-name=\"jboss.EXPRESSION\"/>" +
                 "</subsystem>";
@@ -444,10 +444,10 @@ public class JMXSubsystemTestCase extends AbstractSubsystemTest {
     }
 
     @Test
-    public void testParseAndMarshalModel2_0WithShowModelsAndOldPropertyFormat() throws Exception {
+    public void testParseAndMarshalModel1_3WithShowModelsAndOldPropertyFormat() throws Exception {
         //Parse the subsystem xml and install into the first controller
         String subsystemXml =
-                "<subsystem xmlns=\"" + Namespace.JMX_2_0.getUriString() + "\">" +
+                "<subsystem xmlns=\"" + Namespace.JMX_1_3.getUriString() + "\">" +
                 "   <expose-resolved-model domain-name=\"jboss.RESOLVED\" proper-property-format=\"false\"/>" +
                 "   <expose-expression-model domain-name=\"jboss.EXPRESSION\"/>" +
                 "   <sensitivity core-mbeans=\"true\"/>" +
