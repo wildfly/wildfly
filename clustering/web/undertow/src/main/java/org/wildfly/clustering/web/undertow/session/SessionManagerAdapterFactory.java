@@ -45,7 +45,7 @@ public class SessionManagerAdapterFactory implements io.undertow.servlet.api.Ses
     public io.undertow.server.session.SessionManager createSessionManager(Deployment deployment) {
         SessionContext context = new SessionContextAdapter(deployment);
         SessionIdentifierFactory factory = new SessionIdentifierFactoryAdapter(new SecureRandomSessionIdGenerator());
-        SessionManager<Void> manager = this.factory.createSessionManager(context, factory, null);
+        SessionManager<LocalSessionContext> manager = this.factory.createSessionManager(context, factory, new LocalSessionContextFactory());
         return new SessionManagerAdapter(manager);
     }
 }

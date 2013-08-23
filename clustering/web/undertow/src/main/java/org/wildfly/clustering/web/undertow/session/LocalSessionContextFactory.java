@@ -21,16 +21,26 @@
  */
 package org.wildfly.clustering.web.undertow.session;
 
-import org.wildfly.clustering.web.session.RoutingSupport;
-import org.wildfly.clustering.web.session.SessionManager;
+import io.undertow.security.api.AuthenticatedSessionManager.AuthenticatedSession;
 
-import io.undertow.server.session.SessionListeners;
+import org.wildfly.clustering.web.LocalContextFactory;
 
-/**
- * Exposes additional session manager aspects to a session.
- * @author Paul Ferraro
- */
-public interface UndertowSessionManager extends io.undertow.server.session.SessionManager, RoutingSupport {
-    SessionListeners getSessionListeners();
-    SessionManager<LocalSessionContext> getSessionManager();
+public class LocalSessionContextFactory implements LocalContextFactory<LocalSessionContext> {
+
+    @Override
+    public LocalSessionContext createLocalContext() {
+        return new LocalSessionContext() {
+            private volatile AuthenticatedSession authenticatedSession;
+
+            @Override
+            public AuthenticatedSession getAuthenticatedSession() {
+                return this.authenticatedSession;
+            }
+
+            @Override
+            public void setAuthenticatedSession(AuthenticatedSession authenticatedSession) {
+                this.authenticatedSession = authenticatedSession;
+            }
+        };
+    }
 }
