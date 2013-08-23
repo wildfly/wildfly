@@ -40,7 +40,6 @@ import io.undertow.security.impl.DigestAuthenticationMechanism;
 import io.undertow.security.impl.DigestQop;
 import io.undertow.security.impl.SimpleNonceManager;
 import io.undertow.server.HttpHandler;
-import io.undertow.server.HttpOpenListener;
 import io.undertow.server.handlers.CanonicalPathHandler;
 import io.undertow.server.handlers.ChannelUpgradeHandler;
 import io.undertow.server.handlers.PathHandler;
@@ -57,6 +56,7 @@ import java.util.Set;
 
 import javax.net.ssl.SSLContext;
 
+import io.undertow.server.protocol.http.HttpOpenListener;
 import org.jboss.as.controller.ControlledProcessStateService;
 import org.jboss.as.controller.ModelController;
 import org.jboss.as.domain.http.server.security.AnonymousMechanism;
