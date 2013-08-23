@@ -117,9 +117,6 @@ public abstract class AbstractDataSourceAdd extends AbstractAddStepHandler {
 
         final ServiceTarget serviceTarget = context.getServiceTarget();
 
-        boolean enabled = false;
-                //!operation.hasDefined(ENABLED.getName()) || operation.get(ENABLED.getName()).asBoolean();
-
         ModelNode node = DATASOURCE_DRIVER.resolveModelAttribute(context, model);
 
         final String driverName = node.asString();
