@@ -157,13 +157,15 @@ public class LoggingExtension implements Extension {
         registerSubModels(registration.registerSubModel(profile), resolvePathHandler, false);
 
         if (context.isRegisterTransformers()) {
-            registerTransformers(subsystem);
+            registerTransformers1_1_0(subsystem);
+            registerTransformers1_2_0(subsystem);
+            registerTransformers1_3_0(subsystem);
         }
 
         subsystem.registerXMLElementWriter(LoggingSubsystemWriter.INSTANCE);
     }
 
-    private void registerTransformers(SubsystemRegistration subsystem) {
+    private void registerTransformers1_1_0(SubsystemRegistration subsystem) {
 
         // Create the transformer builder
         final ResourceTransformationDescriptionBuilder subsystemBuilder = TransformationDescriptionBuilder.Factory.createSubsystemInstance();
@@ -185,8 +187,27 @@ public class LoggingExtension implements Extension {
 
         PatternFormatterResourceDefinition.addTransformers(subsystemBuilder, loggingProfileBuilder);
 
+        // TODO WFLY-1807 add transformation of new stuff in 2.0.0
+
         // Register the transformers
         TransformationDescription.Tools.register(subsystemBuilder.build(), subsystem, ModelVersion.create(1, 1, 0));
+    }
+
+
+
+    private void registerTransformers1_2_0(SubsystemRegistration subsystem) {
+        TransformationDescription.Tools.register(get1_2_0_1_3_0Description(), subsystem, ModelVersion.create(1, 2, 0));
+    }
+
+
+    private void registerTransformers1_3_0(SubsystemRegistration subsystem) {
+        TransformationDescription.Tools.register(get1_2_0_1_3_0Description(), subsystem, ModelVersion.create(1, 3, 0));
+    }
+
+    private static TransformationDescription get1_2_0_1_3_0Description() {
+        final ResourceTransformationDescriptionBuilder subsystemBuilder = TransformationDescriptionBuilder.Factory.createSubsystemInstance();
+        // TODO WFLY-1807 add 2.0.0 stuff
+        return subsystemBuilder.build();
     }
 
 

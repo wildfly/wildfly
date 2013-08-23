@@ -35,6 +35,7 @@ import static org.jboss.as.messaging.CommonAttributes.RUNTIME_QUEUE;
 import static org.jboss.as.messaging.MessagingExtension.VERSION_1_1_0;
 import static org.jboss.as.messaging.MessagingExtension.VERSION_1_2_0;
 import static org.jboss.as.messaging.MessagingExtension.VERSION_1_2_1;
+import static org.jboss.as.messaging.MessagingExtension.VERSION_1_3_0;
 import static org.jboss.as.messaging.jms.ConnectionFactoryAttributes.Pooled;
 
 import java.util.Set;
@@ -66,6 +67,7 @@ public class MessagingTransformers {
         registerTransformers_1_1_0(subsystem);
         registerTransformers_1_2_0(subsystem);
         registerTransformers_1_2_1(subsystem);
+        registerTransformers_1_3_0(subsystem);
     }
 
     private static void registerTransformers_1_1_0(final SubsystemRegistration subsystem) {
@@ -259,6 +261,15 @@ public class MessagingTransformers {
 
     private static void registerTransformers_1_2_1(final SubsystemRegistration subsystem) {
 
+        TransformationDescription.Tools.register(get1_2_1_1_3_0Description(), subsystem, VERSION_1_2_1);
+    }
+
+    private static void registerTransformers_1_3_0(final SubsystemRegistration subsystem) {
+
+        TransformationDescription.Tools.register(get1_2_1_1_3_0Description(), subsystem, VERSION_1_3_0);
+    }
+
+    private static TransformationDescription get1_2_1_1_3_0Description() {
         final ResourceTransformationDescriptionBuilder subsystemRoot = TransformationDescriptionBuilder.Factory.createSubsystemInstance();
 
         ResourceTransformationDescriptionBuilder hornetqServer = subsystemRoot.addChildResource(PathElement.pathElement(HORNETQ_SERVER));
@@ -277,6 +288,6 @@ public class MessagingTransformers {
 
         hornetqServer.rejectChildResource(ServletConnectorDefinition.PATH);
 
-        TransformationDescription.Tools.register(subsystemRoot.build(), subsystem, VERSION_1_2_1);
+        return subsystemRoot.build();
     }
 }

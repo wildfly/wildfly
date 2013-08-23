@@ -68,6 +68,7 @@ public class NamingExtension implements Extension {
 
     public static final ModelVersion VERSION_1_1_0 = ModelVersion.create(1, 1, 0);
     public static final ModelVersion VERSION_1_2_0 = ModelVersion.create(1, 2, 0);
+    public static final ModelVersion VERSION_1_3_0 = ModelVersion.create(1, 3, 0);
 
     public static ResourceDescriptionResolver getResourceDescriptionResolver(final String keyPrefix) {
         return new StandardResourceDescriptionResolver(keyPrefix, RESOURCE_NAME, NamingExtension.class.getClassLoader(), true, true);
@@ -105,13 +106,14 @@ public class NamingExtension implements Extension {
                     .end();
             TransformationDescription.Tools.register(builder.build(), subsystem, VERSION_1_1_0);
 
-            // register 1.2.0 transformer
+            // register 1.2.0 and 1.3.0 transformer
             builder = TransformationDescriptionBuilder.Factory.createSubsystemInstance();
             builder.addChildResource(NamingSubsystemModel.BINDING_PATH)
                     .getAttributeBuilder()
                     .addRejectCheck(new BindingType11RejectChecker(), BINDING_TYPE)
                     .end();
             TransformationDescription.Tools.register(builder.build(), subsystem, VERSION_1_2_0);
+            TransformationDescription.Tools.register(builder.build(), subsystem, VERSION_1_3_0);
         }
     }
 
