@@ -41,7 +41,7 @@ class RuntimeOptions {
 
     private String groupProperties;
 
-    private boolean relaxPassword = false;
+    private boolean confirmWarning = false;
 
     /**
      * Enable/Disable mode is active by using --enable or --disable argument
@@ -117,11 +117,11 @@ class RuntimeOptions {
         this.disable = disable;
     }
 
-    boolean isRelaxPassword() {
-        return relaxPassword;
+    boolean isConfirmWarning() {
+        return confirmWarning;
     }
 
-    void setRelaxPassword(boolean relaxPassword) {
-        this.relaxPassword = relaxPassword;
+    void setConfirmWarning(boolean confirmWarning) {
+        this.confirmWarning = confirmWarning;
     }
 }

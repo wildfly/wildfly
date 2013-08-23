@@ -1,6 +1,6 @@
 /*
  * JBoss, Home of Professional Open Source.
- * Copyright 2011, Red Hat, Inc., and individual contributors
+ * Copyright 2012, Red Hat, Inc., and individual contributors
  * as indicated by the @author tags. See the copyright.txt file in the
  * distribution for a full listing of individual contributors.
  *
@@ -23,39 +23,21 @@
 package org.jboss.as.domain.management.security.password;
 
 /**
- * @author baranowb
- *
+ * @author <a href="mailto:g.grossetie@gmail.com">Guillaume Grossetie</a>
  */
-public class PasswordCheckResult {
+public class NoRestriction extends PasswordRestriction {
 
-    private final Result result;
-    private final String message;
-
-    /**
-     * @param result
-     * @param message
-     */
-    PasswordCheckResult(Result result, String message) {
-        super();
-        this.result = result;
-        this.message = message;
+    public NoRestriction() {
+        super("");
     }
 
-    /**
-     * @return the result
+    /*
+     * (non-Javadoc)
+     *
+     * @see org.jboss.as.domain.management.security.password.PasswordRestriction#pass(java.lang.String)
      */
-    public Result getResult() {
-        return result;
-    }
-
-    /**
-     * @return the message
-     */
-    public String getMessage() {
-        return message;
-    }
-
-    public enum Result {
-        REJECT, WARN, ACCEPT
+    @Override
+    public boolean pass(String password) {
+        return true;
     }
 }

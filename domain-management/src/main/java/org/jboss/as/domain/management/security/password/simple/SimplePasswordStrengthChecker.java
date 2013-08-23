@@ -32,7 +32,7 @@ import java.util.regex.Pattern;
 
 import org.jboss.as.domain.management.security.password.Dictionary;
 import org.jboss.as.domain.management.security.password.Keyboard;
-import org.jboss.as.domain.management.security.password.LengthRestriction;
+import org.jboss.as.domain.management.security.password.NoRestriction;
 import org.jboss.as.domain.management.security.password.PasswordRestriction;
 import org.jboss.as.domain.management.security.password.PasswordStrengthCheckResult;
 import org.jboss.as.domain.management.security.password.PasswordStrengthChecker;
@@ -49,24 +49,6 @@ public class SimplePasswordStrengthChecker implements PasswordStrengthChecker {
     public static final String REGEX_ALPHA_UC = "[A-Z]";
     public static final String REGEX_ALPHA_LC = "[a-z]";
     public static final String REGEX_ALPHA = "[a-zA-Z]";
-
-    public static final PasswordRestriction RESTRICTION_ALPHA = new RegexRestriction(".*" + REGEX_ALPHA + ".*", MESSAGES.passwordMustHaveAlpha());
-    public static final PasswordRestriction RESTRICTION_DIGITS = new RegexRestriction(".*" + REGEX_DIGITS + ".*", MESSAGES.passwordMustHaveDigit());
-    public static final PasswordRestriction RESTRICTION_SYMBOLS = new RegexRestriction(".*" + REGEX_SYMBOLS + ".*", MESSAGES.passwordMustHaveSymbol());
-    public static final PasswordRestriction RESTRICTION_LENGTH = new LengthRestriction(8);
-
-    public static final List<PasswordRestriction> DEFAULT_RESTRICTIONS;
-    static {
-        List<PasswordRestriction> list = new ArrayList<PasswordRestriction>();
-
-        list.add(RESTRICTION_LENGTH);
-        list.add(RESTRICTION_ALPHA);
-        list.add(RESTRICTION_DIGITS);
-        list.add(RESTRICTION_SYMBOLS);
-
-        DEFAULT_RESTRICTIONS = Collections.unmodifiableList(list);
-
-    }
 
     protected static final int PWD_LEN_WEIGHT = 2;
     protected static final int REQUIREMENTS_WEIGHT = 10;
@@ -93,7 +75,7 @@ public class SimplePasswordStrengthChecker implements PasswordStrengthChecker {
     private SimplePasswordStrengthCheckResult result;
 
     public SimplePasswordStrengthChecker() {
-        this.restrictionsInPlace = DEFAULT_RESTRICTIONS;
+        this.restrictionsInPlace = new ArrayList<PasswordRestriction>();
         this.dictionary = new SimpleDictionary();
         this.keyboard = new SimpleKeyboard();
     }
@@ -380,5 +362,33 @@ public class SimplePasswordStrengthChecker implements PasswordStrengthChecker {
                 this.result.negative(score * DICTIONARY_WORD_WEIGHT);
             }
         }
+    }
+
+    public static PasswordRestriction getRestrictionAlpha(int minAlpha) {
+        if (minAlpha <= 0) {
+            return new NoRestriction();
+        }
+        return getRestrictionChar(minAlpha, REGEX_ALPHA, MESSAGES.passwordMustHaveAlpha(minAlpha));
+    }
+
+    public static PasswordRestriction getRestrictionDigit(int minDigit) {
+        if (minDigit <= 0) {
+            return new NoRestriction();
+        }
+        return getRestrictionChar(minDigit, REGEX_DIGITS, MESSAGES.passwordMustHaveDigit(minDigit));
+    }
+
+    public static PasswordRestriction getRestrictionSymbol(int minSymbol) {
+        if (minSymbol <= 0) {
+            return new NoRestriction();
+        }
+        return getRestrictionChar(minSymbol, REGEX_SYMBOLS, MESSAGES.passwordMustHaveSymbol(minSymbol));
+    }
+
+    private static PasswordRestriction getRestrictionChar(int minChar, String regex, String message) {
+        if (minChar <= 0) {
+            return new NoRestriction();
+        }
+        return new RegexRestriction(String.format("(.*%s.*){%d}", REGEX_ALPHA, minChar), message);
     }
 }

@@ -47,6 +47,8 @@ public class AddUser {
     public static final String DOMAIN_CONFIG_DIR = "jboss.domain.config.dir";
     public static final String DOMAIN_CONFIG_USER_DIR = "jboss.domain.config.user.dir";
 
+    public static final String CONFIG_FILE = "jboss.adduser.config";
+
     public static final String DEFAULT_MANAGEMENT_REALM = "ManagementRealm";
     public static final String DEFAULT_APPLICATION_REALM = "ApplicationRealm";
     public static final String MGMT_USERS_PROPERTIES = "mgmt-users.properties";
@@ -168,7 +170,7 @@ public class AddUser {
                         final String value;
                         if (CommandLineArgument.SILENT.equals(commandLineArgument)) {
                             value = Boolean.TRUE.toString();
-                        } else  if (CommandLineArgument.RELAX_PASSWORD.equals(commandLineArgument)) {
+                        } else  if (CommandLineArgument.CONFIRM_WARNING.equals(commandLineArgument)) {
                             value = Boolean.TRUE.toString();
                         } else if (CommandLineArgument.DISABLE.equals(commandLineArgument)) {
                             value = Boolean.TRUE.toString();
@@ -205,8 +207,8 @@ public class AddUser {
             }
         }
 
-        if (argsCliProps.containsKey(CommandLineArgument.RELAX_PASSWORD.key())) {
-            options.setRelaxPassword(true);
+        if (argsCliProps.containsKey(CommandLineArgument.CONFIRM_WARNING.key())) {
+            options.setConfirmWarning(true);
         }
         if (argsCliProps.containsKey(CommandLineArgument.PASSWORD.key()) || argsCliProps.containsKey(CommandLineArgument.USER.key())) {
             final String password = argsCliProps.getProperty(CommandLineArgument.PASSWORD.key());
@@ -391,10 +393,10 @@ public class AddUser {
                 return MESSAGES.argSilent();
             }
         },
-        RELAX_PASSWORD("-rx", "--relax") {
+        CONFIRM_WARNING("-cw", "--confirm-warning") {
             @Override
             public String instructions() {
-                return MESSAGES.argRelaxPassword();
+                return MESSAGES.argConfirmWarning();
             }
         },
         HELP("-h", "--help") {
