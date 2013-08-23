@@ -22,13 +22,16 @@
 
 package org.jboss.as.domain.management.security.adduser;
 
-import org.jboss.as.domain.management.security.password.PasswordCheckUtil;
-import org.jboss.as.domain.management.security.password.PasswordRestriction;
-
-import java.util.Arrays;
-
 import static org.jboss.as.domain.management.DomainManagementMessages.MESSAGES;
 import static org.jboss.as.domain.management.security.adduser.AddUser.NEW_LINE;
+
+import java.util.Arrays;
+import java.util.List;
+
+import org.jboss.as.domain.management.DomainManagementMessages;
+import org.jboss.as.domain.management.security.password.PasswordCheckUtil;
+import org.jboss.as.domain.management.security.password.PasswordRestriction;
+import org.jboss.as.domain.management.security.password.RestrictionLevel;
 
 /**
  * State to prompt the user for a password
@@ -56,21 +59,17 @@ public class PromptPasswordState implements State {
         if (stateValues.isSilentOrNonInteractive() == false) {
             if (rePrompt == false) {
                 // Password requirements.
-                if (stateValues.getOptions().isRelaxPassword() == false) {
-                    theConsole.printf(MESSAGES.passwordRequirements());
+                if (!RestrictionLevel.RELAX.equals(PasswordCheckUtil.INSTANCE.getRestrictionLevel())) {
+                    final List<PasswordRestriction> passwordRestrictions = PasswordCheckUtil.INSTANCE.getPasswordRestrictions(stateValues.getUserName());
+                    theConsole.printf(DomainManagementMessages.MESSAGES.passwordRequirements());
                     theConsole.printf(NEW_LINE);
-                    theConsole.printf(MESSAGES.passwordMustHaveAlpha());
-                    theConsole.printf(NEW_LINE);
-                    theConsole.printf(MESSAGES.passwordMustHaveDigit());
-                    theConsole.printf(NEW_LINE);
-                    theConsole.printf(MESSAGES.passwordMustHaveSymbol());
-                    theConsole.printf(NEW_LINE);
-                    for (PasswordRestriction passwordValuesRestriction : PasswordCheckUtil.INSTANCE.passwordValuesRestrictions) {
-                        theConsole.printf(passwordValuesRestriction.getMessage());
-                        theConsole.printf(NEW_LINE);
+                    for (PasswordRestriction passwordRestriction : passwordRestrictions) {
+                        final String message = passwordRestriction.getMessage();
+                        if (message != null && !message.isEmpty()) {
+                            theConsole.printf(message);
+                            theConsole.printf(NEW_LINE);
+                        }
                     }
-                    theConsole.printf(MESSAGES.usernamePasswordMatch());
-                    theConsole.printf(NEW_LINE);
                 }
                 // Prompt for password.
                 theConsole.printf(MESSAGES.passwordPrompt());

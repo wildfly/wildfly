@@ -63,6 +63,8 @@ fi
 # Uncomment to override standalone and domain user location  
 #JAVA_OPTS="$JAVA_OPTS -Djboss.server.config.user.dir=../standalone/configuration -Djboss.domain.config.user.dir=../domain/configuration"
 
+JAVA_OPTS="$JAVA_OPTS -Djboss.adduser.config=./add-user.properties"
+
 eval \"$JAVA\" $JAVA_OPTS \
          -jar \"$JBOSS_HOME/jboss-modules.jar\" \
          -mp \"${JBOSS_MODULEPATH}\" \
