@@ -24,12 +24,10 @@ package org.jboss.as.test.manualmode.security;
 import static org.junit.Assert.*;
 
 import java.io.File;
-import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.URL;
-import java.util.Properties;
 
 import javax.servlet.http.HttpServletResponse;
 
@@ -135,10 +133,12 @@ public class OutboundLdapConnectionTestCase {
     private static final String SSL_CONF_REALM = "ssl-conf-realm";
     private static final String LDAPS_CONNECTION = "test-ldaps";
 
+    private static final String LDAPS_AUTHN_REALM_NO_SSL = "ldaps-authn-realm-no-ssl";
+    private static final String LDAPS_CONNECTION_NO_SSL_CONF = "test-ldaps-no-ssl";
+    private static final String LDAPS_AUTHN_SD_NO_SSL = "ldaps-authn-sd-no-ssl";
+
     private static final String SECURITY_CREDENTIALS = "secret";
     private static final String SECURITY_PRINCIPAL = "uid=admin,ou=system";
-
-    private static final Properties originalRoleConfiguration = new Properties();
 
     private final LDAPServerSetupTask ldapsSetup = new LDAPServerSetupTask();
     private final SecurityRealmsSetup realmsSetup = new SecurityRealmsSetup();
@@ -154,17 +154,6 @@ public class OutboundLdapConnectionTestCase {
     @Before
     public void initializeRoleConfiguration() throws Exception {
         if (containerController.isStarted(CONTAINER) && !serverConfigured) {
-            File roleConfiguration = new File(System.getProperty("jboss.home")
-                    + File.separatorChar + "standalone" + File.separatorChar
-                    + "configuration", "application-roles.properties");
-            try (FileInputStream in = new FileInputStream(roleConfiguration)) {
-                originalRoleConfiguration.load(in);
-            }
-            Properties myUpdatedConfiguration = new Properties(originalRoleConfiguration);
-            myUpdatedConfiguration.setProperty("jduke", "Admin");
-            try (FileOutputStream out = new FileOutputStream(roleConfiguration)) {
-                myUpdatedConfiguration.store(out, "Preparing the config");
-            }
             final ModelControllerClient client = TestSuiteEnvironment.getModelControllerClient();
             ManagementClient mgmtClient = new ManagementClient(client, TestSuiteEnvironment.getServerAddress(),
                     TestSuiteEnvironment.getServerPort(), "http-remoting");
@@ -175,12 +164,6 @@ public class OutboundLdapConnectionTestCase {
     @After
     public void restoreRoleConfiguration() throws Exception {
         if (serverConfigured && containerController.isStarted(CONTAINER)) {
-            File roleConfiguration = new File(System.getProperty("jboss.home")
-                    + File.separatorChar + "standalone" + File.separatorChar
-                    + "configuration", "application-roles.properties");
-            try (FileOutputStream out = new FileOutputStream(roleConfiguration)) {
-                originalRoleConfiguration.store(out, "Cleaning the config");
-            }
             final ModelControllerClient client = TestSuiteEnvironment.getModelControllerClient();
             ManagementClient mgmtClient = new ManagementClient(client, TestSuiteEnvironment.getServerAddress(),
                     TestSuiteEnvironment.getServerPort(), "http-remoting");
@@ -214,15 +197,14 @@ public class OutboundLdapConnectionTestCase {
         domainsSetup.tearDown(mgmtClient, CONTAINER);
     }
 
-    // Public methods --------------------------------------------------------
-    /**
-     * Creates {@link WebArchive} for {@link #test(URL)}.
-     *
-     * @return
-     */
     @Deployment(name = LDAPS_AUTHN_SD, managed = false, testable = false)
     public static WebArchive deployment() {
         return createDeployment(LDAPS_AUTHN_SD);
+    }
+
+    @Deployment(name = LDAPS_AUTHN_SD_NO_SSL, managed = false, testable = false)
+    public static WebArchive deploymentNoSsl() {
+        return createDeployment(LDAPS_AUTHN_SD_NO_SSL);
     }
 
     @Test
@@ -237,6 +219,13 @@ public class OutboundLdapConnectionTestCase {
     public void test(@ArquillianResource ManagementClient mgmtClient) throws Exception {
         try {
             deployer.deploy(LDAPS_AUTHN_SD);
+            deployer.deploy(LDAPS_AUTHN_SD_NO_SSL);
+
+            final URL appUrlNoSsl = new URL(mgmtClient.getWebUri().toString() + "/" + LDAPS_AUTHN_SD_NO_SSL + "/" + TEST_FILE);
+            Utils.makeCallWithBasicAuthn(appUrlNoSsl, "jduke", "theduke", HttpServletResponse.SC_UNAUTHORIZED);
+            assertFalse("Certificate (client key) from SecurityRealm already known to LDAP server.",
+                    TrustAndStoreTrustManager.isSubjectInClientCertChain("CN=JBAS"));
+
             final URL appUrl = new URL(mgmtClient.getWebUri().toString() + "/" + LDAPS_AUTHN_SD + "/" + TEST_FILE);
             final String resp = Utils.makeCallWithBasicAuthn(appUrl, "jduke", "theduke", HttpServletResponse.SC_OK);
             assertEquals(TEST_FILE_CONTENT, resp);
@@ -244,13 +233,14 @@ public class OutboundLdapConnectionTestCase {
                     TrustAndStoreTrustManager.isSubjectInClientCertChain("CN=JBAS"));
         } finally {
             deployer.undeploy(LDAPS_AUTHN_SD);
+            deployer.undeploy(LDAPS_AUTHN_SD_NO_SSL);
         }
 
     }
 
     @Test
     @InSequence(2)
-    public void stopContainer(@ArquillianResource ManagementClient mgmtClient) throws Exception {
+    public void stopContainer() throws Exception {
         containerController.stop(CONTAINER);
     }
     // Private methods -------------------------------------------------------
@@ -291,9 +281,16 @@ public class OutboundLdapConnectionTestCase {
         @Override
         protected SecurityDomain[] getSecurityDomains() {
             final Builder realmDirectLMBuilder = new SecurityModule.Builder().name("RealmDirect");
+            final SecurityModule mappingModule = new SecurityModule.Builder().name("SimpleRoles").putOption("jduke", "Admin")
+                    .build();
+
             final SecurityDomain sd1 = new SecurityDomain.Builder().name(LDAPS_AUTHN_SD)
-                    .loginModules(realmDirectLMBuilder.putOption("realm", LDAPS_AUTHN_REALM).build()).build();
-            return new SecurityDomain[]{sd1};
+                    .loginModules(realmDirectLMBuilder.putOption("realm", LDAPS_AUTHN_REALM).build())
+                    .mappingModules(mappingModule).build();
+            final SecurityDomain sd2 = new SecurityDomain.Builder().name(LDAPS_AUTHN_SD_NO_SSL)
+                    .loginModules(realmDirectLMBuilder.putOption("realm", LDAPS_AUTHN_REALM_NO_SSL).build())
+                    .mappingModules(mappingModule).build();
+            return new SecurityDomain[]{sd1, sd2};
         }
     }
 
