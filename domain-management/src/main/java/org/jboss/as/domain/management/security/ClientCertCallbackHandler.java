@@ -22,6 +22,8 @@
 
 package org.jboss.as.domain.management.security;
 
+import static org.jboss.as.domain.management.DomainManagementLogger.SECURITY_LOGGER;
+
 import java.io.IOException;
 import java.util.Collections;
 import java.util.Map;
@@ -93,7 +95,13 @@ public class ClientCertCallbackHandler implements Service<CallbackHandlerService
         for (Callback current : callbacks) {
             if (current instanceof AuthorizeCallback) {
                 AuthorizeCallback acb = (AuthorizeCallback) current;
-                acb.setAuthorized(acb.getAuthenticationID().equals(acb.getAuthorizationID()));
+                boolean authorized = acb.getAuthenticationID().equals(acb.getAuthorizationID());
+                if (authorized == false) {
+                    SECURITY_LOGGER.tracef(
+                            "Checking 'AuthorizeCallback', authorized=false, authenticationID=%s, authorizationID=%s.",
+                            acb.getAuthenticationID(), acb.getAuthorizationID());
+                }
+                acb.setAuthorized(authorized);
             } else {
                 throw new UnsupportedCallbackException(current);
             }

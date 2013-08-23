@@ -24,6 +24,7 @@ package org.jboss.as.domain.management.security;
 
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.PASSWORD;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.USER;
+import static org.jboss.as.domain.management.DomainManagementLogger.SECURITY_LOGGER;
 import static org.jboss.as.domain.management.DomainManagementMessages.MESSAGES;
 import static org.jboss.as.domain.management.RealmConfigurationConstants.DIGEST_PLAIN_TEXT;
 
@@ -154,11 +155,17 @@ public class UserDomainCallbackHandler implements Service<CallbackHandlerService
         // Second Pass - Now iterate the Callback(s) requiring a response.
         for (Callback current : toRespondTo) {
             if (current instanceof AuthorizeCallback) {
-                AuthorizeCallback authorizeCallback = (AuthorizeCallback) current;
-                // Don't support impersonating another identity
-                authorizeCallback.setAuthorized(authorizeCallback.getAuthenticationID().equals(authorizeCallback.getAuthorizationID()));
+                AuthorizeCallback acb = (AuthorizeCallback) current;
+                boolean authorized = acb.getAuthenticationID().equals(acb.getAuthorizationID());
+                if (authorized == false) {
+                    SECURITY_LOGGER.tracef(
+                            "Checking 'AuthorizeCallback', authorized=false, authenticationID=%s, authorizationID=%s.",
+                            acb.getAuthenticationID(), acb.getAuthorizationID());
+                }
+                acb.setAuthorized(authorized);
             } else if (current instanceof PasswordCallback) {
                 if (user == null) {
+                    SECURITY_LOGGER.tracef("User '%s' not found.", userName);
                     throw new UserNotFoundException(userName);
                 }
                 String password = user.require(PASSWORD).asString();

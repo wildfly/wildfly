@@ -22,6 +22,7 @@
 
 package org.jboss.as.domain.management.security;
 
+import static org.jboss.as.domain.management.DomainManagementLogger.SECURITY_LOGGER;
 import static org.jboss.as.domain.management.DomainManagementMessages.MESSAGES;
 
 import java.io.IOException;
@@ -39,6 +40,7 @@ import org.jboss.as.domain.management.plugin.PlugInConfigurationSupport;
 import org.jboss.msc.service.Service;
 
 /**
+ * The {@link SubjectSupplementalService} for Plug-Ins
  *
  * @author <a href="mailto:darran.lofthouse@jboss.com">Darran Lofthouse</a>
  */
@@ -91,7 +93,9 @@ public class PlugInSubjectSupplemental extends AbstractPlugInService implements 
                 String[] groups = ap.loadRoles(user.getName(), getRealmName());
                 response = new HashSet<RealmGroup>(groups.length);
                 for (String current : groups) {
-                    response.add(new RealmGroup(getRealmName(), current));
+                    RealmGroup newGroup = new RealmGroup(getRealmName(), current);
+                    SECURITY_LOGGER.tracef("Adding group '%s' for user '%s'.", newGroup, user);
+                    response.add(newGroup);
                 }
                 return response;
             }

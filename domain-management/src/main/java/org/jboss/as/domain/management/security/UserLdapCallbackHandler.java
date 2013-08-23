@@ -24,8 +24,8 @@ package org.jboss.as.domain.management.security;
 
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ADVANCED_FILTER;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.USERNAME_ATTRIBUTE;
+import static org.jboss.as.domain.management.DomainManagementLogger.SECURITY_LOGGER;
 import static org.jboss.as.domain.management.DomainManagementMessages.MESSAGES;
-import static org.jboss.as.domain.management.DomainManagementLogger.ROOT_LOGGER;
 import static org.jboss.as.domain.management.RealmConfigurationConstants.VERIFY_PASSWORD_CALLBACK_SUPPORTED;
 
 import java.io.IOException;
@@ -145,8 +145,13 @@ public class UserLdapCallbackHandler implements Service<CallbackHandlerService>,
             AuthorizeCallback acb = (AuthorizeCallback) callbacks[0];
             String authenticationId = acb.getAuthenticationID();
             String authorizationId = acb.getAuthorizationID();
-
-            acb.setAuthorized(authenticationId.equals(authorizationId));
+            boolean authorized = authenticationId.equals(authorizationId);
+            if (authorized == false) {
+                SECURITY_LOGGER.tracef(
+                        "Checking 'AuthorizeCallback', authorized=false, authenticationID=%s, authorizationID=%s.",
+                        authenticationId, authorizationId);
+            }
+            acb.setAuthorized(authorized);
 
             return;
         }
@@ -168,13 +173,16 @@ public class UserLdapCallbackHandler implements Service<CallbackHandlerService>,
         }
 
         if (username == null || username.length() == 0) {
+            SECURITY_LOGGER.trace("No username or 0 length username supplied.");
             throw MESSAGES.noUsername();
         }
         if (verifyPasswordCallback == null) {
+            SECURITY_LOGGER.trace("No password supplied.");
             throw MESSAGES.noPassword();
         }
         String password = verifyPasswordCallback.getPassword();
         if (password == null || (allowEmptyPassword == false && password.length() == 0)) {
+            SECURITY_LOGGER.trace("No password or 0 length password supplied.");
             throw MESSAGES.noPassword();
         }
 
@@ -187,18 +195,22 @@ public class UserLdapCallbackHandler implements Service<CallbackHandlerService>,
             // 2 - Search to identify the DN of the user connecting
             SearchControls searchControls = new SearchControls();
             if (recursive) {
+                SECURITY_LOGGER.trace("Performing recursive search");
                 searchControls.setSearchScope(SearchControls.SUBTREE_SCOPE);
             } else {
+                SECURITY_LOGGER.trace("Performing single level search");
                 searchControls.setSearchScope(SearchControls.ONELEVEL_SCOPE);
             }
             searchControls.setReturningAttributes(new String[]{userDn});
             searchControls.setTimeLimit(searchTimeLimit);
 
-            Object[] filterArguments = new Object[]{username};
+            Object[] filterArguments = new Object[] { username };
             String filter = usernameAttribute != null ? "(" + usernameAttribute + "={0})" : advancedFilter;
+            SECURITY_LOGGER.tracef("Searching for user '%s' using filter '%s'.", username, filter);
 
             searchEnumeration = searchContext.search(baseDn, filter, filterArguments, searchControls);
             if (searchEnumeration.hasMore() == false) {
+                SECURITY_LOGGER.tracef("User '%s' not found in directory.", username);
                 throw MESSAGES.userNotFoundInDirectory(username);
             }
 
@@ -213,20 +225,25 @@ public class UserLdapCallbackHandler implements Service<CallbackHandlerService>,
                 }
             }
             if (distinguishedUserDN == null) {
-                if (result.isRelative() == true)
+                if (result.isRelative() == true) {
                     distinguishedUserDN = result.getName() + ("".equals(baseDn) ? "" : "," + baseDn);
-                else
-                    throw MESSAGES.nameNotFound(result.getName());
+                } else {
+                    String name = result.getName();
+                    SECURITY_LOGGER.tracef("Can't follow referral for authentication: %s", name);
+                    throw MESSAGES.nameNotFound(name);
+                }
             }
+            SECURITY_LOGGER.tracef("DN '%s' found for user '%s'", distinguishedUserDN, username);
 
             // 3 - Connect as user once their DN is identified
             userContext = (InitialDirContext) connectionManager.getConnection(distinguishedUserDN, password);
             if (userContext != null) {
+                SECURITY_LOGGER.tracef("Password verified for user '%s'", username);
                 verifyPasswordCallback.setVerified(true);
             }
 
         } catch (Exception e) {
-            ROOT_LOGGER.trace("Unable to verify identity.", e);
+            SECURITY_LOGGER.trace("Unable to verify identity.", e);
             throw MESSAGES.cannotPerformVerification(e);
         } finally {
             safeClose(searchEnumeration);
