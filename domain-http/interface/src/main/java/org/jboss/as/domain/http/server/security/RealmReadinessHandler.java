@@ -26,12 +26,11 @@ import java.io.IOException;
 import java.security.cert.X509Certificate;
 
 import javax.net.ssl.SSLPeerUnverifiedException;
-import javax.net.ssl.SSLSession;
 
 import io.undertow.server.HttpHandler;
-import io.undertow.server.HttpServerConnection;
 import io.undertow.server.HttpServerExchange;
 
+import io.undertow.server.SSLSessionInfo;
 import org.jboss.as.domain.management.AuthMechanism;
 import org.jboss.as.domain.management.SecurityRealm;
 
@@ -72,7 +71,7 @@ abstract class RealmReadinessHandler implements HttpHandler {
             return false;
         }
 
-        SSLSession session = ((HttpServerConnection)exchange.getConnection()).getSslSession();
+        SSLSessionInfo session = exchange.getConnection().getSslSessionInfo();
         if (session != null) {
             try {
                 return session.getPeerCertificates()[0] instanceof X509Certificate;

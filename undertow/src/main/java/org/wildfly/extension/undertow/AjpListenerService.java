@@ -26,8 +26,8 @@ import java.io.IOException;
 import java.net.InetSocketAddress;
 
 import io.undertow.UndertowOptions;
-import io.undertow.ajp.AjpOpenListener;
 import io.undertow.server.OpenListener;
+import io.undertow.server.protocol.ajp.AjpOpenListener;
 import org.jboss.msc.service.StartContext;
 import org.xnio.ChannelListener;
 import org.xnio.IoUtils;
