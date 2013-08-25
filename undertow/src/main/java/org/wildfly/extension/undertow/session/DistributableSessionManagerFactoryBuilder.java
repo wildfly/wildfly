@@ -19,7 +19,9 @@
  * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
-package org.wildfly.clustering.web.session;
+package org.wildfly.extension.undertow.session;
+
+import io.undertow.servlet.api.SessionManagerFactory;
 
 import org.jboss.metadata.web.jboss.JBossWebMetaData;
 import org.jboss.modules.Module;
@@ -29,10 +31,10 @@ import org.jboss.msc.service.ServiceTarget;
 import org.jboss.msc.value.Value;
 
 /**
- * Interface for building a session manager factory.
+ * SPI to build a factory for creating a distributable session manager.
  * @author Paul Ferraro
  */
-public interface SessionManagerFactoryBuilder {
+public interface DistributableSessionManagerFactoryBuilder {
     ServiceBuilder<SessionManagerFactory> buildDeploymentDependency(ServiceTarget target, ServiceName name, ServiceName deploymentServiceName, Module module, JBossWebMetaData metaData);
 
     ServiceBuilder<?> buildServerDependency(ServiceTarget target, Value<String> instanceId);

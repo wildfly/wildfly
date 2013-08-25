@@ -23,6 +23,8 @@
 package org.wildfly.extension.undertow.deployment;
 
 import io.undertow.servlet.api.DeploymentInfo;
+import io.undertow.servlet.api.SessionManagerFactory;
+
 import org.jboss.as.controller.PathElement;
 import org.jboss.as.controller.services.path.PathManager;
 import org.jboss.as.controller.services.path.PathManagerService;
@@ -59,9 +61,6 @@ import org.jboss.msc.value.InjectedValue;
 import org.jboss.security.SecurityConstants;
 import org.jboss.security.SecurityUtil;
 import org.jboss.vfs.VirtualFile;
-import org.wildfly.clustering.web.session.SessionManagerFactory;
-import org.wildfly.clustering.web.session.SessionManagerFactoryBuilder;
-import org.wildfly.clustering.web.session.SessionManagerFactoryBuilderService;
 import org.wildfly.extension.io.IOServices;
 import org.wildfly.extension.undertow.DeploymentDefinition;
 import org.wildfly.extension.undertow.Host;
@@ -69,6 +68,8 @@ import org.wildfly.extension.undertow.ServletContainerService;
 import org.wildfly.extension.undertow.UndertowExtension;
 import org.wildfly.extension.undertow.UndertowLogger;
 import org.wildfly.extension.undertow.UndertowService;
+import org.wildfly.extension.undertow.session.DistributableSessionManagerFactoryBuilder;
+import org.wildfly.extension.undertow.session.DistributableSessionManagerFactoryBuilderValue;
 
 import java.util.Collection;
 import java.util.Collections;
@@ -247,11 +248,10 @@ public class UndertowDeploymentProcessor implements DeploymentUnitProcessor {
         }
 
         if (metaData.getDistributable() != null) {
-            SessionManagerFactoryBuilderService factoryBuilderService = new SessionManagerFactoryBuilderService();
-            SessionManagerFactoryBuilder factoryBuilder = factoryBuilderService.getValue();
-            if (factoryBuilder != null) {
+            DistributableSessionManagerFactoryBuilder builder = new DistributableSessionManagerFactoryBuilderValue().getValue();
+            if (builder != null) {
                 ServiceName factoryName = deploymentServiceName.append("session");
-                factoryBuilder.build(serviceTarget, factoryName, deploymentServiceName, module, metaData)
+                builder.buildDeploymentDependency(serviceTarget, factoryName, deploymentServiceName, module, metaData)
                     .setInitialMode(Mode.ON_DEMAND)
                     .install()
                 ;

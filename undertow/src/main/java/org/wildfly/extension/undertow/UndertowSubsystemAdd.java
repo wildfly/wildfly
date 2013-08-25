@@ -35,8 +35,6 @@ import org.jboss.as.server.AbstractDeploymentChainStep;
 import org.jboss.as.server.DeploymentProcessorTarget;
 import org.jboss.as.server.deployment.Phase;
 import org.jboss.as.server.deployment.jbossallxml.JBossAllXmlParserRegisteringProcessor;
-import org.wildfly.clustering.web.session.SessionManagerFactoryBuilder;
-import org.wildfly.clustering.web.session.SessionManagerFactoryBuilderService;
 import org.wildfly.extension.undertow.deployment.ELExpressionFactoryProcessor;
 import org.wildfly.extension.undertow.deployment.EarContextRootProcessor;
 import org.wildfly.extension.undertow.deployment.JBossWebParsingDeploymentProcessor;
@@ -53,6 +51,8 @@ import org.wildfly.extension.undertow.deployment.WarStructureDeploymentProcessor
 import org.wildfly.extension.undertow.deployment.WebFragmentParsingDeploymentProcessor;
 import org.wildfly.extension.undertow.deployment.WebJBossAllParser;
 import org.wildfly.extension.undertow.deployment.WebParsingDeploymentProcessor;
+import org.wildfly.extension.undertow.session.DistributableSessionManagerFactoryBuilder;
+import org.wildfly.extension.undertow.session.DistributableSessionManagerFactoryBuilderValue;
 import org.jboss.as.web.common.SharedTldsMetaDataBuilder;
 import org.jboss.as.web.host.CommonWebServer;
 import org.jboss.dmr.ModelNode;
@@ -148,9 +148,9 @@ class UndertowSubsystemAdd extends AbstractBoottimeAddStepHandler {
 
         UndertowLogger.ROOT_LOGGER.serverStarting(Version.getVersionString());
 
-        SessionManagerFactoryBuilder builder = new SessionManagerFactoryBuilderService().getValue();
+        DistributableSessionManagerFactoryBuilder builder = new DistributableSessionManagerFactoryBuilderValue().getValue();
         if (builder != null) {
-            newControllers.add(builder.buildServerDependency(target, new ImmediateValue<String>(instanceId)).setInitialMode(ServiceController.Mode.ON_DEMAND).install());
+            newControllers.add(builder.buildServerDependency(target, new ImmediateValue<>(instanceId)).setInitialMode(ServiceController.Mode.ON_DEMAND).install());
         }
     }
 }
