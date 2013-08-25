@@ -19,36 +19,37 @@
  * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
-package org.wildfly.clustering.web.session;
+package org.wildfly.extension.undertow.session;
 
 import java.util.ServiceLoader;
 
-import org.jboss.msc.service.AbstractService;
+import org.jboss.msc.value.Value;
 
 /**
- * An MSC service responsible for loading the web session clustering service provider.
+ * Uses a service loader to load an {@link DistributableSessionManagerFactoryBuilder} implementation.
  * @author Paul Ferraro
  */
-public class SessionManagerFactoryBuilderService extends AbstractService<SessionManagerFactoryBuilder> {
-    private final SessionManagerFactoryBuilder builder;
+public class DistributableSessionManagerFactoryBuilderValue implements Value<DistributableSessionManagerFactoryBuilder> {
 
-    public SessionManagerFactoryBuilderService() {
+    private final DistributableSessionManagerFactoryBuilder builder;
+
+    public DistributableSessionManagerFactoryBuilderValue() {
         this(load());
     }
 
-    public SessionManagerFactoryBuilderService(SessionManagerFactoryBuilder builder) {
+    public DistributableSessionManagerFactoryBuilderValue(DistributableSessionManagerFactoryBuilder builder) {
         this.builder = builder;
     }
 
-    private static SessionManagerFactoryBuilder load() {
-        for (SessionManagerFactoryBuilder builder: ServiceLoader.load(SessionManagerFactoryBuilder.class, SessionManagerFactoryBuilder.class.getClassLoader())) {
+    private static DistributableSessionManagerFactoryBuilder load() {
+        for (DistributableSessionManagerFactoryBuilder builder: ServiceLoader.load(DistributableSessionManagerFactoryBuilder.class, DistributableSessionManagerFactoryBuilder.class.getClassLoader())) {
             return builder;
         }
         return null;
     }
 
     @Override
-    public SessionManagerFactoryBuilder getValue() {
+    public DistributableSessionManagerFactoryBuilder getValue() {
         return this.builder;
     }
 }

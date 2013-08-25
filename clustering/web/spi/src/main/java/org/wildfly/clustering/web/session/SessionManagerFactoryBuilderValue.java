@@ -21,19 +21,34 @@
  */
 package org.wildfly.clustering.web.session;
 
-import org.jboss.metadata.web.jboss.JBossWebMetaData;
-import org.jboss.modules.Module;
-import org.jboss.msc.service.ServiceBuilder;
-import org.jboss.msc.service.ServiceName;
-import org.jboss.msc.service.ServiceTarget;
+import java.util.ServiceLoader;
+
 import org.jboss.msc.value.Value;
 
 /**
- * Interface for building a session manager factory.
+ * Uses a service loader to load the web session clustering service provider.
  * @author Paul Ferraro
  */
-public interface SessionManagerFactoryBuilder {
-    ServiceBuilder<SessionManagerFactory> buildDeploymentDependency(ServiceTarget target, ServiceName name, ServiceName deploymentServiceName, Module module, JBossWebMetaData metaData);
+public class SessionManagerFactoryBuilderValue implements Value<SessionManagerFactoryBuilder> {
+    private final SessionManagerFactoryBuilder builder;
 
-    ServiceBuilder<?> buildServerDependency(ServiceTarget target, Value<String> instanceId);
+    public SessionManagerFactoryBuilderValue() {
+        this(load());
+    }
+
+    public SessionManagerFactoryBuilderValue(SessionManagerFactoryBuilder builder) {
+        this.builder = builder;
+    }
+
+    private static SessionManagerFactoryBuilder load() {
+        for (SessionManagerFactoryBuilder builder: ServiceLoader.load(SessionManagerFactoryBuilder.class, SessionManagerFactoryBuilder.class.getClassLoader())) {
+            return builder;
+        }
+        return null;
+    }
+
+    @Override
+    public SessionManagerFactoryBuilder getValue() {
+        return this.builder;
+    }
 }

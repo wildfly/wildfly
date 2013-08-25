@@ -56,7 +56,7 @@ public class InfinispanSessionManagerFactoryBuilder implements SessionManagerFac
     public static final String DEFAULT_CACHE_CONTAINER = "web";
 
     @Override
-    public ServiceBuilder<SessionManagerFactory> build(ServiceTarget target, ServiceName name, ServiceName deploymentServiceName, Module module, JBossWebMetaData metaData) {
+    public ServiceBuilder<SessionManagerFactory> buildDeploymentDependency(ServiceTarget target, ServiceName name, ServiceName deploymentServiceName, Module module, JBossWebMetaData metaData) {
         ServiceName templateCacheServiceName = getCacheServiceName(metaData.getReplicationConfig());
         String templateCacheName = templateCacheServiceName.getSimpleName();
         ServiceName containerServiceName = templateCacheServiceName.getParent();
