@@ -42,7 +42,11 @@ import org.jboss.staxmapper.XMLExtendedStreamReader;
  */
 class NamingSubsystem10Parser implements XMLStreamConstants, XMLElementReader<List<ModelNode>> {
 
-    public static final NamingSubsystem10Parser INSTANCE = new NamingSubsystem10Parser();
+    private final boolean appclient;
+
+    NamingSubsystem10Parser(boolean appclient) {
+        this.appclient = appclient;
+    }
 
     /**
      * {@inheritDoc}
@@ -53,6 +57,10 @@ class NamingSubsystem10Parser implements XMLStreamConstants, XMLElementReader<Li
         ParseUtils.requireNoContent(reader);
 
         list.add(Util.createAddOperation(PathAddress.pathAddress(NamingExtension.SUBSYSTEM_PATH)));
-        list.add(Util.createAddOperation(PathAddress.pathAddress(NamingExtension.SUBSYSTEM_PATH).append(NamingSubsystemModel.SERVICE, NamingSubsystemModel.REMOTE_NAMING)));
+        if(!appclient) {
+            //we do not add remote naming to the application client
+            //note that this is a bi
+            list.add(Util.createAddOperation(PathAddress.pathAddress(NamingExtension.SUBSYSTEM_PATH).append(NamingSubsystemModel.SERVICE, NamingSubsystemModel.REMOTE_NAMING)));
+        }
     }
 }
