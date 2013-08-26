@@ -22,7 +22,6 @@
 
 package org.wildfly.extension.undertow.deployment;
 
-import io.undertow.websockets.jsr.JsrWebSocketFilter;
 import io.undertow.websockets.jsr.JsrWebSocketLogger;
 import io.undertow.websockets.jsr.ServerWebSocketContainer;
 import io.undertow.websockets.jsr.WebSocketDeploymentInfo;
@@ -44,7 +43,6 @@ import org.jboss.jandex.AnnotationInstance;
 import org.jboss.jandex.ClassInfo;
 import org.jboss.jandex.DotName;
 import org.jboss.metadata.web.spec.FilterMappingMetaData;
-import org.jboss.metadata.web.spec.FilterMetaData;
 import org.jboss.metadata.web.spec.FiltersMetaData;
 import org.jboss.modules.Module;
 import org.jboss.msc.service.ServiceName;
@@ -191,12 +189,6 @@ public class UndertowJSRWebSocketDeploymentProcessor implements DeploymentUnitPr
         if (filters == null) {
             metaData.getMergedJBossWebMetaData().setFilters(filters = new FiltersMetaData());
         }
-        FilterMetaData filterMetaData = new FilterMetaData();
-        filterMetaData.setAsyncSupported(true);
-        filterMetaData.setFilterClass(JsrWebSocketFilter.class.getName());
-        filterMetaData.setName(FILTER_NAME);
-        filters.add(filterMetaData);
-
         List<FilterMappingMetaData> mappings = metaData.getMergedJBossWebMetaData().getFilterMappings();
         if (mappings == null) {
             metaData.getMergedJBossWebMetaData().setFilterMappings(mappings = new ArrayList<>());
