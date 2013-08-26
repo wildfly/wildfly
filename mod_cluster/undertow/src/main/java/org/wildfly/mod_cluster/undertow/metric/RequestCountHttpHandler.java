@@ -24,7 +24,7 @@ package org.wildfly.mod_cluster.undertow.metric;
 
 import io.undertow.server.HttpHandler;
 import io.undertow.server.HttpServerExchange;
-import org.infinispan.util.concurrent.jdk8backported.LongAdder;
+import org.wildfly.mod_cluster.undertow.metric.jdk8backported.LongAdder;
 
 /**
  * {@link HttpHandler} that counts number of incoming requests.

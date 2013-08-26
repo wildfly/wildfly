@@ -46,11 +46,6 @@
             <groupId>org.wildfly</groupId>
             <artifactId>wildfly-undertow</artifactId>
         </dependency>
-        <!-- LongAdder V8 backport -->
-        <dependency>
-            <groupId>org.infinispan</groupId>
-            <artifactId>infinispan-core</artifactId>
-        </dependency>
         <dependency>
             <groupId>junit</groupId>
             <artifactId>junit</artifactId>

@@ -24,7 +24,7 @@ package org.wildfly.mod_cluster.undertow.metric;
 
 import io.undertow.server.HttpServerExchange;
 import io.undertow.servlet.api.ThreadSetupAction;
-import org.infinispan.util.concurrent.jdk8backported.LongAdder;
+import org.wildfly.mod_cluster.undertow.metric.jdk8backported.LongAdder;
 
 /**
  * {@link ThreadSetupAction} implementation that counts number of active / running requests to replace the busyness
