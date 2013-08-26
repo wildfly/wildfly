@@ -122,7 +122,7 @@ import org.wildfly.extension.undertow.UndertowService;
 import org.wildfly.extension.undertow.security.AuditNotificationReceiver;
 import org.wildfly.extension.undertow.security.JAASIdentityManagerImpl;
 import org.wildfly.extension.undertow.security.SecurityContextAssociationHandler;
-import org.wildfly.extension.undertow.security.SecurityContextCreationHandler;
+import org.wildfly.extension.undertow.security.SecurityContextThreadSetupAction;
 
 import javax.servlet.Filter;
 import javax.servlet.Servlet;
@@ -690,10 +690,10 @@ public class UndertowDeploymentInfoService implements Service<DeploymentInfo> {
             d.addSecurityRoles(mergedMetaData.getSecurityRoleNames());
 
 
-            d.addOuterHandlerChainWrapper(SecurityContextCreationHandler.wrapper(securityDomain));
-            d.addInnerHandlerChainWrapper(SecurityContextAssociationHandler.wrapper(securityDomainContextValue.getValue(), mergedMetaData.getPrincipalVersusRolesMap(), mergedMetaData.getRunAsIdentity(), securityContextId));
-
             Map<String, Set<String>> principalVersusRolesMap = mergedMetaData.getPrincipalVersusRolesMap();
+            d.addThreadSetupAction(new SecurityContextThreadSetupAction(securityDomain, securityDomainContextValue.getValue(), principalVersusRolesMap));
+            d.addInnerHandlerChainWrapper(SecurityContextAssociationHandler.wrapper(mergedMetaData.getRunAsIdentity(), securityContextId));
+
             if (principalVersusRolesMap != null) {
                 for (Map.Entry<String, Set<String>> entry : principalVersusRolesMap.entrySet()) {
                     d.addPrincipalVsRoleMappings(entry.getKey(), entry.getValue());
