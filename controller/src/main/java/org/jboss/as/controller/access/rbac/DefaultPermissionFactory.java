@@ -27,12 +27,14 @@ import java.security.PermissionCollection;
 import java.util.ArrayList;
 import java.util.Enumeration;
 import java.util.HashMap;
-import java.util.LinkedHashSet;
+import java.util.HashSet;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 import java.util.NoSuchElementException;
 import java.util.Set;
+import java.util.SortedSet;
 import java.util.TreeSet;
 
 import org.jboss.as.controller.ControllerMessages;
@@ -70,7 +72,7 @@ public class DefaultPermissionFactory implements PermissionFactory, JmxPermissio
     private static final PermissionCollection NO_PERMISSIONS = new NoPermissionsCollection();
     private final CombinationPolicy combinationPolicy;
     private final RoleMapper roleMapper;
-    private final Set<ConstraintFactory> constraintFactories;
+    private final SortedSet<ConstraintFactory> constraintFactories = new TreeSet<ConstraintFactory>();
     private final Map<String, ManagementPermissionCollection> permissionsByRole = new HashMap<String, ManagementPermissionCollection>();
     private final Map<String, ScopedBase> scopedBaseMap = new HashMap<String, ScopedBase>();
     private boolean rolePermissionsConfigured;
@@ -85,7 +87,7 @@ public class DefaultPermissionFactory implements PermissionFactory, JmxPermissio
                              Set<ConstraintFactory> constraintFactories) {
         this.combinationPolicy = combinationPolicy;
         this.roleMapper = roleMapper;
-        this.constraintFactories = constraintFactories;
+        this.constraintFactories.addAll(constraintFactories);
     }
 
     @Override
@@ -174,11 +176,13 @@ public class DefaultPermissionFactory implements PermissionFactory, JmxPermissio
         }
         ManagementPermissionCollection result = new ManagementPermissionCollection(SimpleManagementPermission.class);
         for (Action.ActionEffect actionEffect : action.getActionEffects()) {
-            Set<Constraint> constraints = new TreeSet<Constraint>();
+            Constraint[] constraints = new Constraint[factories.size()];
+            int i = 0;
             for (ConstraintFactory factory : factories) {
-                constraints.add(factory.getRequiredConstraint(actionEffect, action, target));
+                constraints[i] = factory.getRequiredConstraint(actionEffect, action, target);
+                i++;
             }
-            result.add(new SimpleManagementPermission(actionEffect, constraints.toArray(new Constraint[constraints.size()])));
+            result.add(new SimpleManagementPermission(actionEffect, constraints));
         }
         return result;
     }
@@ -191,11 +195,13 @@ public class DefaultPermissionFactory implements PermissionFactory, JmxPermissio
         }
         ManagementPermissionCollection result = new ManagementPermissionCollection(SimpleManagementPermission.class);
         for (Action.ActionEffect actionEffect : action.getActionEffects()) {
-            Set<Constraint> constraints = new TreeSet<Constraint>();
+            Constraint[] constraints = new Constraint[factories.size()];
+            int i = 0;
             for (ConstraintFactory factory : factories) {
-                constraints.add(factory.getRequiredConstraint(actionEffect, action, target));
+                constraints[i] = factory.getRequiredConstraint(actionEffect, action, target);
+                i++;
             }
-            result.add(new SimpleManagementPermission(actionEffect, constraints.toArray(new Constraint[constraints.size()])));
+            result.add(new SimpleManagementPermission(actionEffect, constraints));
         }
         return result;
     }
@@ -251,11 +257,13 @@ public class DefaultPermissionFactory implements PermissionFactory, JmxPermissio
             ManagementPermissionCollection rolePerms = new ManagementPermissionCollection(SimpleManagementPermission.class);
             for (Action.ActionEffect actionEffect : Action.ActionEffect.values()) {
                 if (standardRole.isActionEffectAllowed(actionEffect)) {
-                    Set<Constraint> constraints = new TreeSet<Constraint>();
+                    Constraint[] constraints = new Constraint[constraintFactories.size()];
+                    int i = 0;
                     for (ConstraintFactory factory : this.constraintFactories) {
-                        constraints.add(factory.getStandardUserConstraint(standardRole, actionEffect));
+                        constraints[i] = factory.getStandardUserConstraint(standardRole, actionEffect);
+                        i++;
                     }
-                    rolePerms.add(new SimpleManagementPermission(actionEffect, constraints.toArray(new Constraint[constraints.size()])));
+                    rolePerms.add(new SimpleManagementPermission(actionEffect, constraints));
                 }
             }
             result.put(getOfficialForm(standardRole), rolePerms);
@@ -272,6 +280,8 @@ public class DefaultPermissionFactory implements PermissionFactory, JmxPermissio
         if (baseCollection == null) {
             throw ControllerMessages.MESSAGES.unknownBaseRole(base.toString());
         }
+
+        int constraintIndex = getConstraintIndex(scopingConstraint.getFactory());
 
         Map<Action.ActionEffect, ManagementPermission> monitorPermissions = new HashMap<Action.ActionEffect, ManagementPermission>();
         ManagementPermissionCollection monitorCollection = permissionsByRole.get(getOfficialForm(StandardRole.MONITOR));
@@ -290,12 +300,12 @@ public class DefaultPermissionFactory implements PermissionFactory, JmxPermissio
             if (scopedPermissions == null) {
                 scopedPermissions = (ManagementPermissionCollection) combinedPermission.newPermissionCollection();
             }
-            ManagementPermission scopedPerm = basePerm.createScopedPermission(scopingConstraint.getStandardConstraint());
+            ManagementPermission scopedPerm = basePerm.createScopedPermission(scopingConstraint.getStandardConstraint(), constraintIndex);
             combinedPermission.addUnderlyingPermission(scopedPerm);
 
             ManagementPermission monitorPerm = monitorPermissions.get(actionEffect);
             if (monitorPerm != null) {
-                combinedPermission.addUnderlyingPermission(monitorPerm.createScopedPermission(scopingConstraint.getOutofScopeReadConstraint()));
+                combinedPermission.addUnderlyingPermission(monitorPerm.createScopedPermission(scopingConstraint.getOutofScopeReadConstraint(), constraintIndex));
             }
             scopedPermissions.add(combinedPermission);
         }
@@ -304,8 +314,18 @@ public class DefaultPermissionFactory implements PermissionFactory, JmxPermissio
         scopedBaseMap.put(officialForm, new ScopedBase(base, scopingConstraint));
     }
 
+    private int getConstraintIndex(ConstraintFactory factory) {
+        int i = 0;
+        for (Iterator<ConstraintFactory> iter = constraintFactories.iterator(); iter.hasNext(); i++) {
+            if (factory.equals(iter.next())) {
+                return i;
+            }
+        }
+        throw new IllegalStateException();
+    }
+
     private static Set<ConstraintFactory> getStandardConstraintFactories() {
-        final Set<ConstraintFactory> result = new LinkedHashSet<ConstraintFactory>();
+        final Set<ConstraintFactory> result = new HashSet<ConstraintFactory>();
         result.add(ApplicationTypeConstraint.FACTORY);
         result.add(AuditConstraint.FACTORY);
         result.add(NonAuditConstraint.FACTORY);

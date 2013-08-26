@@ -29,7 +29,7 @@ import org.jboss.as.controller.access.Action;
  *
  * @author Brian Stansberry (c) 2013 Red Hat Inc.
  */
-public interface Constraint extends Comparable<Constraint> {
+public interface Constraint {
 
     /**
      * Gets whether this constraint violates another restraint

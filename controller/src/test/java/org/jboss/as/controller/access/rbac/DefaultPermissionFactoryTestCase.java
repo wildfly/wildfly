@@ -289,6 +289,11 @@ public class DefaultPermissionFactoryTestCase {
         public int hashCode() {
             return 0;
         }
+
+        @Override
+        public int compareTo(ConstraintFactory o) {
+            return this.equals(o) ? 0 : -1;
+        }
     }
 
     private static final class TestConstraint implements Constraint {
@@ -309,11 +314,6 @@ public class DefaultPermissionFactoryTestCase {
         @Override
         public boolean replaces(Constraint other) {
             return false;
-        }
-
-        @Override
-        public int compareTo(Constraint o) {
-            return 0;
         }
     }
 }

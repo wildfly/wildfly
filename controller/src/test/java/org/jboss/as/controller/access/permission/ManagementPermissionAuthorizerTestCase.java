@@ -159,7 +159,7 @@ public class ManagementPermissionAuthorizerTestCase {
         }
 
         @Override
-        public ManagementPermission createScopedPermission(Constraint constraint) {
+        public ManagementPermission createScopedPermission(Constraint constraint, int constraintIndex) {
             return null;
         }
 

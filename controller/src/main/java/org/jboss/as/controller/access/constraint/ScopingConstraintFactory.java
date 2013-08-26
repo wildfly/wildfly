@@ -23,26 +23,10 @@
 package org.jboss.as.controller.access.constraint;
 
 /**
- * Base class for {@link Constraint} implementations.
+ * Marker interface that indicates the constraints produced by this factory are associated
+ * with a {@link ScopingConstraint}.
  *
  * @author Brian Stansberry (c) 2013 Red Hat Inc.
  */
-public abstract class AbstractConstraint implements Constraint {
-
-    protected AbstractConstraint() {
-    }
-
-    /**
-     * {@inheritDoc}
-     *
-     * <p>
-     * This default implementation always returns {@code false}.
-     * </p>
-     *
-     * @return {@code false}, always
-     */
-    @Override
-    public boolean replaces(Constraint other) {
-        return false;
-    }
+public interface ScopingConstraintFactory extends ConstraintFactory {
 }
