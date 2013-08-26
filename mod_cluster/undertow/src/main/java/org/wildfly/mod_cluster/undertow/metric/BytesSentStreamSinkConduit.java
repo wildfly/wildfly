@@ -26,7 +26,7 @@ import java.io.IOException;
 import java.nio.ByteBuffer;
 import java.nio.channels.FileChannel;
 
-import org.infinispan.util.concurrent.jdk8backported.LongAdder;
+import org.wildfly.mod_cluster.undertow.metric.jdk8backported.LongAdder;
 import org.xnio.channels.StreamSourceChannel;
 import org.xnio.conduits.AbstractSinkConduit;
 import org.xnio.conduits.StreamSinkConduit;
