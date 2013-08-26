@@ -50,10 +50,6 @@ public class SessionCacheConfigurationService extends AbstractCacheConfiguration
             config = new ReplicationConfig();
             this.metaData.setReplicationConfig(config);
         }
-        Boolean useJK = config.getUseJK();
-        if (useJK == null) {
-            config.setUseJK(Boolean.TRUE);
-        }
         ReplicationGranularity granularity = config.getReplicationGranularity();
         if (granularity == null) {
             config.setReplicationGranularity(ReplicationGranularity.SESSION);
