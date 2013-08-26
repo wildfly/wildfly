@@ -778,7 +778,7 @@ public abstract class AbstractEntityManager implements EntityManager {
         }
     }
 
-    public <T> EntityGraph<T> getEntityGraph(String s) {
+    public EntityGraph<?> getEntityGraph(String s) {
         long start = 0;
         if (isTraceEnabled)
             start = System.currentTimeMillis();

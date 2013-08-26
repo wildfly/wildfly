@@ -147,7 +147,7 @@
         <version.org.hibernate.commons.annotations>4.0.2.Final</version.org.hibernate.commons.annotations>
         <version.org.hibernate.javax.persistence.hibernate-jpa-2.0-api>1.0.1.Final</version.org.hibernate.javax.persistence.hibernate-jpa-2.0-api>
         <version.org.hibernate.validator>5.0.1.Final</version.org.hibernate.validator>
-        <version.org.hibernate.javax.persistence.hibernate-jpa-2.1-api>1.0.0.Draft-16</version.org.hibernate.javax.persistence.hibernate-jpa-2.1-api>
+        <version.org.hibernate.javax.persistence.hibernate-jpa-2.1-api>1.0.0.Final</version.org.hibernate.javax.persistence.hibernate-jpa-2.1-api>
         <version.org.hornetq>2.4.0.Beta1</version.org.hornetq>
         <version.org.infinispan>5.3.0.Final</version.org.infinispan>
         <version.org.jacorb>2.3.2.jbossorg-4</version.org.jacorb>
