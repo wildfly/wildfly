@@ -55,12 +55,14 @@ import org.jboss.msc.service.ServiceController.Mode;
 import org.jboss.msc.service.ServiceName;
 import org.jboss.msc.service.ServiceTarget;
 import org.jboss.msc.value.ImmediateValue;
+import org.jboss.msc.value.InjectedValue;
 import org.jboss.security.SecurityConstants;
 import org.jboss.security.SecurityUtil;
 import org.jboss.vfs.VirtualFile;
 import org.wildfly.clustering.web.session.SessionManagerFactory;
 import org.wildfly.clustering.web.session.SessionManagerFactoryBuilder;
 import org.wildfly.clustering.web.session.SessionManagerFactoryBuilderService;
+import org.wildfly.extension.io.IOServices;
 import org.wildfly.extension.undertow.DeploymentDefinition;
 import org.wildfly.extension.undertow.Host;
 import org.wildfly.extension.undertow.ServletContainerService;
@@ -73,6 +75,7 @@ import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
+import java.util.concurrent.Executor;
 
 import static org.wildfly.extension.undertow.UndertowMessages.MESSAGES;
 
@@ -218,6 +221,24 @@ public class UndertowDeploymentProcessor implements DeploymentUnitProcessor {
                 .addDependency(PathManagerService.SERVICE_NAME, PathManager.class, undertowDeploymentInfoService.getPathManagerInjector())
                 .addDependency(hostServiceName, Host.class, undertowDeploymentInfoService.getHost())
                 .addDependencies(additionalDependencies);
+
+        final Set<String> seenExecutors = new HashSet<String>();
+        if (metaData.getExecutorName() != null) {
+            final InjectedValue<Executor> executor = new InjectedValue<Executor>();
+            infoBuilder.addDependency(IOServices.WORKER.append(metaData.getExecutorName()), Executor.class, executor);
+            undertowDeploymentInfoService.addInjectedExecutor(metaData.getExecutorName(), executor);
+            seenExecutors.add(metaData.getExecutorName());
+        }
+        if (metaData.getServlets() != null) {
+            for (JBossServletMetaData servlet : metaData.getServlets()) {
+                if (servlet.getExecutorName() != null && !seenExecutors.contains(servlet.getExecutorName())) {
+                    final InjectedValue<Executor> executor = new InjectedValue<Executor>();
+                    infoBuilder.addDependency(IOServices.WORKER.append(servlet.getExecutorName()), Executor.class, executor);
+                    undertowDeploymentInfoService.addInjectedExecutor(servlet.getExecutorName(), executor);
+                    seenExecutors.add(servlet.getExecutorName());
+                }
+            }
+        }
 
         if(componentRegistryExists) {
             infoBuilder.addDependency(ComponentRegistry.serviceName(deploymentUnit), ComponentRegistry.class, undertowDeploymentInfoService.getComponentRegistryInjectedValue());
