@@ -141,6 +141,7 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.concurrent.Executor;
 
 import static io.undertow.servlet.api.SecurityInfo.EmptyRoleSemantic.*;
 
@@ -183,6 +184,7 @@ public class UndertowDeploymentInfoService implements Service<DeploymentInfo> {
     private final InjectedValue<PathManager> pathManagerInjector = new InjectedValue<PathManager>();
     private final InjectedValue<ComponentRegistry> componentRegistryInjectedValue = new InjectedValue<>();
     private final InjectedValue<Host> host = new InjectedValue<>();
+    private final Map<String, InjectedValue<Executor>> executorsByName = new HashMap<String, InjectedValue<Executor>>();
 
     private UndertowDeploymentInfoService(final JBossWebMetaData mergedMetaData, final String deploymentName, final TldsMetaData tldsMetaData, final List<TldMetaData> sharedTlds, final Module module, final ScisMetaData scisMetaData, final VirtualFile deploymentRoot, final String securityContextId, final String securityDomain, final List<ServletContextAttribute> attributes, final String contextPath, final List<SetupAction> setupActions, final Set<VirtualFile> overlays, final List<ExpressionFactoryWrapper> expressionFactoryWrappers, List<PredicatedHandler> predicatedHandlers, boolean explodedDeployment) {
         this.mergedMetaData = mergedMetaData;
@@ -451,6 +453,10 @@ public class UndertowDeploymentInfoService implements Service<DeploymentInfo> {
 
             final Map<String, List<ServletMappingMetaData>> servletMappings = new HashMap<>();
 
+            if(mergedMetaData.getExecutorName() != null) {
+                d.setExecutor(executorsByName.get(mergedMetaData.getExecutorName()).getValue());
+            }
+
             if (mergedMetaData.getServletMappings() != null) {
                 for (final ServletMappingMetaData mapping : mergedMetaData.getServletMappings()) {
                     List<ServletMappingMetaData> list = servletMappings.get(mapping.getServletName());
@@ -486,6 +492,10 @@ public class UndertowDeploymentInfoService implements Service<DeploymentInfo> {
                     }
                     if (servlet.getLoadOnStartupSet()) {//todo why not cleanup api and just use int everywhere
                         s.setLoadOnStartup(servlet.getLoadOnStartupInt());
+                    }
+
+                    if(servlet.getExecutorName() != null) {
+                        s.setExecutor(executorsByName.get(servlet.getExecutorName()).getValue());
                     }
 
                     List<ServletMappingMetaData> mappings = servletMappings.get(servlet.getName());
@@ -1020,7 +1030,9 @@ public class UndertowDeploymentInfoService implements Service<DeploymentInfo> {
         };
     }
 
-
+    public void addInjectedExecutor(final String name, final InjectedValue<Executor> injected) {
+        executorsByName.put(name, injected);
+    }
 
     public InjectedValue<ServletContainerService> getContainer() {
         return container;
