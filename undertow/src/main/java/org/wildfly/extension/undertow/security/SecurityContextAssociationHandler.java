@@ -85,7 +85,7 @@ public class SecurityContextAssociationHandler implements HttpHandler {
                 UndertowLogger.ROOT_LOGGER.tracef("%s, runAs: %s", servlet.getManagedServlet().getServletInfo().getName(), identity);
                 runAsIdentity = new RunAsIdentity(identity.getRoleName(), identity.getPrincipalName(), identity.getRunAsRoles());
             }
-            SecurityActions.pushRunAsIdentity(runAsIdentity);
+            SecurityActions.pushRunAsIdentity(runAsIdentity, sc);
 
             // set JACC contextID
             previousContextID = setContextID(contextId);
@@ -94,7 +94,7 @@ public class SecurityContextAssociationHandler implements HttpHandler {
             next.handleRequest(exchange);
         } finally {
             if (identity != null) {
-                SecurityActions.popRunAsIdentity();
+                SecurityActions.popRunAsIdentity(sc);
             }
             SecurityActions.clearSecurityContext();
             SecurityRolesAssociation.setSecurityRoles(null);

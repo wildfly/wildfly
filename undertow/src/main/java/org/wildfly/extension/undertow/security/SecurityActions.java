@@ -51,17 +51,24 @@ class SecurityActions {
      * @return an instanceof {@code SecurityContext}
      */
     static SecurityContext createSecurityContext(final String domain) {
-        return AccessController.doPrivileged(new PrivilegedAction<SecurityContext>() {
-
-            @Override
-            public SecurityContext run() {
-                try {
-                    return SecurityContextFactory.createSecurityContext(domain);
-                } catch (Exception e) {
-                    throw MESSAGES.failToCreateSecurityContext(e);
+        if (WildFlySecurityManager.isChecking()) {
+            return WildFlySecurityManager.doUnchecked(new PrivilegedAction<SecurityContext>() {
+                @Override
+                public SecurityContext run() {
+                    try {
+                        return SecurityContextFactory.createSecurityContext(domain);
+                    } catch (Exception e) {
+                        throw MESSAGES.failToCreateSecurityContext(e);
+                    }
                 }
+            });
+        } else {
+            try {
+                return SecurityContextFactory.createSecurityContext(domain);
+            } catch (Exception e) {
+                throw MESSAGES.failToCreateSecurityContext(e);
             }
-        });
+        }
     }
 
     /**
@@ -70,14 +77,17 @@ class SecurityActions {
      * @param sc the security context
      */
     static void setSecurityContextOnAssociation(final SecurityContext sc) {
-        AccessController.doPrivileged(new PrivilegedAction<Void>() {
-
-            @Override
-            public Void run() {
-                SecurityContextAssociation.setSecurityContext(sc);
-                return null;
-            }
-        });
+        if (WildFlySecurityManager.isChecking()) {
+            WildFlySecurityManager.doUnchecked(new PrivilegedAction<Void>() {
+                @Override
+                public Void run() {
+                    SecurityContextAssociation.setSecurityContext(sc);
+                    return null;
+                }
+            });
+        } else {
+            SecurityContextAssociation.setSecurityContext(sc);
+        }
     }
 
     /**
@@ -86,23 +96,31 @@ class SecurityActions {
      * @return an instance of {@code SecurityContext}
      */
     static SecurityContext getSecurityContext() {
-        return AccessController.doPrivileged(new PrivilegedAction<SecurityContext>() {
-            public SecurityContext run() {
-                return SecurityContextAssociation.getSecurityContext();
-            }
-        });
+        if (WildFlySecurityManager.isChecking()) {
+            return WildFlySecurityManager.doUnchecked(new PrivilegedAction<SecurityContext>() {
+                public SecurityContext run() {
+                    return SecurityContextAssociation.getSecurityContext();
+                }
+            });
+        } else {
+            return SecurityContextAssociation.getSecurityContext();
+        }
     }
 
     /**
      * Clears current {@code SecurityContext}
      */
     static void clearSecurityContext() {
-        AccessController.doPrivileged(new PrivilegedAction<Void>() {
-            public Void run() {
-                SecurityContextAssociation.clearSecurityContext();
-                return null;
-            }
-        });
+        if (WildFlySecurityManager.isChecking()) {
+            WildFlySecurityManager.doUnchecked(new PrivilegedAction<Void>() {
+                public Void run() {
+                    SecurityContextAssociation.clearSecurityContext();
+                    return null;
+                }
+            });
+        } else {
+            SecurityContextAssociation.clearSecurityContext();
+        }
     }
 
     /**
@@ -110,17 +128,25 @@ class SecurityActions {
      *
      * @param principal the identity
      */
-    static void pushRunAsIdentity(final RunAsIdentity principal) {
-        AccessController.doPrivileged(new PrivilegedAction<Void>() {
+    static void pushRunAsIdentity(final RunAsIdentity principal, final SecurityContext sc) {
+        if (WildFlySecurityManager.isChecking()) {
+            WildFlySecurityManager.doUnchecked(new PrivilegedAction<Void>() {
 
-            @Override
-            public Void run() {
-                SecurityContext sc = getSecurityContext();
-                if (sc == null) { throw MESSAGES.noSecurityContext(); }
-                sc.setOutgoingRunAs(principal);
-                return null;
+                @Override
+                public Void run() {
+                    if (sc == null) {
+                        throw MESSAGES.noSecurityContext();
+                    }
+                    sc.setOutgoingRunAs(principal);
+                    return null;
+                }
+            });
+        } else {
+            if (sc == null) {
+                throw MESSAGES.noSecurityContext();
             }
-        });
+            sc.setOutgoingRunAs(principal);
+        }
     }
 
     /**
@@ -128,55 +154,26 @@ class SecurityActions {
      *
      * @return the identity removed
      */
-    static RunAs popRunAsIdentity() {
-        return AccessController.doPrivileged(new PrivilegedAction<RunAs>() {
-
-            @Override
-            public RunAs run() {
-                SecurityContext sc = getSecurityContext();
-                if (sc == null) { throw MESSAGES.noSecurityContext(); }
-                RunAs principal = sc.getOutgoingRunAs();
-                sc.setOutgoingRunAs(null);
-                return principal;
+    static RunAs popRunAsIdentity(final SecurityContext sc) {
+        if (WildFlySecurityManager.isChecking()) {
+            return AccessController.doPrivileged(new PrivilegedAction<RunAs>() {
+                @Override
+                public RunAs run() {
+                    if (sc == null) {
+                        throw MESSAGES.noSecurityContext();
+                    }
+                    RunAs principal = sc.getOutgoingRunAs();
+                    sc.setOutgoingRunAs(null);
+                    return principal;
+                }
+            });
+        } else {
+            if (sc == null) {
+                throw MESSAGES.noSecurityContext();
             }
-        });
-    }
-
-    static void clearAuthException() {
-        if (WildFlySecurityManager.isChecking()) {
-            AccessController.doPrivileged(new PrivilegedAction<Void>() {
-
-                @Override
-                public Void run() {
-                    SecurityContext sc = getSecurityContext();
-                    if (sc != null) { sc.getData().put(AUTH_EXCEPTION_KEY, null); }
-                    return null;
-                }
-            });
-        } else {
-            SecurityContext sc = getSecurityContext();
-            if (sc != null) { sc.getData().put(AUTH_EXCEPTION_KEY, null); }
+            RunAs principal = sc.getOutgoingRunAs();
+            sc.setOutgoingRunAs(null);
+            return principal;
         }
     }
-
-    static Throwable getAuthException() {
-        if (WildFlySecurityManager.isChecking()) {
-            return AccessController.doPrivileged(new PrivilegedAction<Throwable>() {
-
-                @Override
-                public Throwable run() {
-                    SecurityContext sc = getSecurityContext();
-                    Throwable exception = null;
-                    if (sc != null) { exception = (Throwable) sc.getData().get(AUTH_EXCEPTION_KEY); }
-                    return exception;
-                }
-            });
-        } else {
-            SecurityContext sc = getSecurityContext();
-            Throwable exception = null;
-            if (sc != null) { exception = (Throwable) sc.getData().get(AUTH_EXCEPTION_KEY); }
-            return exception;
-        }
-    }
-
 }
