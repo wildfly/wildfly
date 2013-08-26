@@ -37,6 +37,7 @@ import org.jboss.security.callbacks.SecurityContextCallbackHandler;
 import org.jboss.security.identity.Role;
 import org.jboss.security.identity.RoleGroup;
 import org.wildfly.extension.undertow.UndertowLogger;
+import org.wildfly.extension.undertow.UndertowMessages;
 
 import javax.security.auth.Subject;
 import java.security.Principal;
@@ -108,8 +109,9 @@ public class JAASIdentityManagerImpl implements IdentityManager {
             boolean isValid = authenticationManager.isValid(incomingPrincipal, credential, subject);
             if (isValid) {
                 UndertowLogger.ROOT_LOGGER.tracef("User: %s is authenticated", incomingPrincipal);
-                if (sc == null)
-                    throw new IllegalStateException("No SecurityContext found!");
+                if (sc == null) {
+                    throw UndertowMessages.MESSAGES.noSecurityContext();
+                }
                 Principal userPrincipal = getPrincipal(subject);
                 sc.getUtil().createSubjectInfo(incomingPrincipal, credential, subject);
                 SecurityContextCallbackHandler scb = new SecurityContextCallbackHandler(sc);
@@ -117,7 +119,6 @@ public class JAASIdentityManagerImpl implements IdentityManager {
                 Set<String> roleSet = new HashSet<>();
                 for (Role role : roles.getRoles()) {
                     roleSet.add(role.getRoleName());
-
                 }
                 return new AccountImpl(userPrincipal, roleSet, credential);
             }

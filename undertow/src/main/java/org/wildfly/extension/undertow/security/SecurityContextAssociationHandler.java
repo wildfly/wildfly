@@ -22,89 +22,74 @@
 
 package org.wildfly.extension.undertow.security;
 
+import io.undertow.predicate.Predicates;
 import io.undertow.server.HandlerWrapper;
 import io.undertow.server.HttpHandler;
 import io.undertow.server.HttpServerExchange;
+import io.undertow.server.handlers.PredicateHandler;
 import io.undertow.servlet.handlers.ServletChain;
 import io.undertow.servlet.handlers.ServletRequestContext;
-
-import java.security.AccessController;
-import java.security.PrivilegedAction;
-import java.util.Map;
-import java.util.Set;
-
-import javax.security.jacc.PolicyContext;
-
-import org.jboss.as.security.plugins.SecurityDomainContext;
+import io.undertow.servlet.predicate.DispatcherTypePredicate;
 import org.jboss.metadata.javaee.jboss.RunAsIdentityMetaData;
-import org.jboss.security.identity.RoleGroup;
-import org.jboss.security.mapping.MappingContext;
-import org.jboss.security.mapping.MappingManager;
-import org.jboss.security.mapping.MappingType;
-import org.wildfly.extension.undertow.UndertowLogger;
+import org.jboss.security.RunAs;
 import org.jboss.security.RunAsIdentity;
 import org.jboss.security.SecurityContext;
-import org.jboss.security.SecurityRolesAssociation;
+import org.wildfly.extension.undertow.UndertowLogger;
+import org.wildfly.security.manager.WildFlySecurityManager;
+
+import javax.security.jacc.PolicyContext;
+import java.security.PrivilegedAction;
+import java.util.Map;
+
+import static org.wildfly.extension.undertow.security.SecurityActions.setRunAsIdentity;
 
 public class SecurityContextAssociationHandler implements HttpHandler {
 
-    private final SecurityDomainContext securityDomainContext;
-    private final Map<String, Set<String>> principleVsRoleMap;
     private final Map<String, RunAsIdentityMetaData> runAsIdentityMetaDataMap;
     private final String contextId;
     private final HttpHandler next;
 
-    public SecurityContextAssociationHandler(SecurityDomainContext securityDomainContext, final Map<String, Set<String>> principleVsRoleMap, final Map<String, RunAsIdentityMetaData> runAsIdentityMetaDataMap, final String contextId, final HttpHandler next) {
-        this.securityDomainContext = securityDomainContext;
-        this.principleVsRoleMap = principleVsRoleMap;
+    private final PrivilegedAction<String> setContextIdAction;
+
+    public SecurityContextAssociationHandler(final Map<String, RunAsIdentityMetaData> runAsIdentityMetaDataMap, final String contextId, final HttpHandler next) {
         this.runAsIdentityMetaDataMap = runAsIdentityMetaDataMap;
         this.contextId = contextId;
         this.next = next;
+        this.setContextIdAction = new SetContextIDAction(contextId);
     }
 
     @Override
     public void handleRequest(final HttpServerExchange exchange) throws Exception {
         SecurityContext sc = exchange.getAttachment(UndertowSecurityAttachments.SECURITY_CONTEXT_ATTACHMENT);
-        final MappingManager mappingManager = securityDomainContext.getMappingManager();
         String previousContextID = null;
         RunAsIdentityMetaData identity = null;
+        RunAs old = null;
         try {
-            SecurityActions.setSecurityContextOnAssociation(sc);
-
-            if (mappingManager != null) {
-                // if there are mapping modules let them handle the role mapping
-                MappingContext<RoleGroup> mc = mappingManager.getMappingContext(MappingType.ROLE.name());
-                if (mc != null && mc.hasModules()) {
-                    SecurityRolesAssociation.setSecurityRoles(principleVsRoleMap);
-                }
-            }
-            ServletChain servlet = exchange.getAttachment(ServletRequestContext.ATTACHMENT_KEY).getCurrentServlet();
+            final ServletChain servlet = exchange.getAttachment(ServletRequestContext.ATTACHMENT_KEY).getCurrentServlet();
             identity = runAsIdentityMetaDataMap.get(servlet.getManagedServlet().getServletInfo().getName());
             RunAsIdentity runAsIdentity = null;
             if (identity != null) {
                 UndertowLogger.ROOT_LOGGER.tracef("%s, runAs: %s", servlet.getManagedServlet().getServletInfo().getName(), identity);
                 runAsIdentity = new RunAsIdentity(identity.getRoleName(), identity.getPrincipalName(), identity.getRunAsRoles());
             }
-            SecurityActions.pushRunAsIdentity(runAsIdentity, sc);
+            old = setRunAsIdentity(runAsIdentity, sc);
 
             // set JACC contextID
-            previousContextID = setContextID(contextId);
+            previousContextID = setContextID(setContextIdAction);
 
             // Perform the request
             next.handleRequest(exchange);
         } finally {
             if (identity != null) {
-                SecurityActions.popRunAsIdentity(sc);
+                setRunAsIdentity(old, sc);
             }
-            SecurityActions.clearSecurityContext();
-            SecurityRolesAssociation.setSecurityRoles(null);
-            setContextID(previousContextID);
+            setContextID(new SetContextIDAction(previousContextID));
         }
     }
 
     private static class SetContextIDAction implements PrivilegedAction<String> {
 
-        private String contextID;
+        private final String contextID;
 
         SetContextIDAction(String contextID) {
             this.contextID = contextID;
@@ -118,17 +103,21 @@ public class SecurityContextAssociationHandler implements HttpHandler {
         }
     }
 
-    private String setContextID(String contextID) {
-        PrivilegedAction<String> action = new SetContextIDAction(contextID);
-        return AccessController.doPrivileged(action);
+    private String setContextID(PrivilegedAction<String> action) {
+        if(WildFlySecurityManager.isChecking()) {
+            return WildFlySecurityManager.doUnchecked(action);
+        }else {
+            return action.run();
+        }
     }
 
 
-    public static HandlerWrapper wrapper(final SecurityDomainContext securityDomainContext, final Map<String, Set<String>> principleVsRoleMap, final Map<String, RunAsIdentityMetaData> runAsIdentityMetaDataMap, final String contextId) {
+    public static HandlerWrapper wrapper(final Map<String, RunAsIdentityMetaData> runAsIdentityMetaDataMap, final String contextId) {
         return new HandlerWrapper() {
             @Override
             public HttpHandler wrap(final HttpHandler handler) {
-                return new SecurityContextAssociationHandler(securityDomainContext, principleVsRoleMap, runAsIdentityMetaDataMap, contextId, handler);
+                //we only run this on REQUEST or ASYNC invocations
+                return new PredicateHandler(Predicates.or(DispatcherTypePredicate.REQUEST, DispatcherTypePredicate.ASYNC), new SecurityContextAssociationHandler(runAsIdentityMetaDataMap, contextId, handler), handler);
             }
         };
     }

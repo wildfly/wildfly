@@ -28,7 +28,6 @@ import java.security.AccessController;
 import java.security.PrivilegedAction;
 
 import org.jboss.security.RunAs;
-import org.jboss.security.RunAsIdentity;
 import org.jboss.security.SecurityContext;
 import org.jboss.security.SecurityContextAssociation;
 import org.jboss.security.SecurityContextFactory;
@@ -128,24 +127,27 @@ class SecurityActions {
      *
      * @param principal the identity
      */
-    static void pushRunAsIdentity(final RunAsIdentity principal, final SecurityContext sc) {
+    static RunAs setRunAsIdentity(final RunAs principal, final SecurityContext sc) {
         if (WildFlySecurityManager.isChecking()) {
-            WildFlySecurityManager.doUnchecked(new PrivilegedAction<Void>() {
+            return WildFlySecurityManager.doUnchecked(new PrivilegedAction<RunAs>() {
 
                 @Override
-                public Void run() {
+                public RunAs run() {
                     if (sc == null) {
                         throw MESSAGES.noSecurityContext();
                     }
+                    RunAs old = sc.getOutgoingRunAs();
                     sc.setOutgoingRunAs(principal);
-                    return null;
+                    return old;
                 }
             });
         } else {
             if (sc == null) {
                 throw MESSAGES.noSecurityContext();
             }
+            RunAs old = sc.getOutgoingRunAs();
             sc.setOutgoingRunAs(principal);
+            return old;
         }
     }
 
@@ -174,6 +176,25 @@ class SecurityActions {
             RunAs principal = sc.getOutgoingRunAs();
             sc.setOutgoingRunAs(null);
             return principal;
+        }
+    }
+
+    public static RunAs getRunAsIdentity(final SecurityContext sc) {
+        if (WildFlySecurityManager.isChecking()) {
+            return AccessController.doPrivileged(new PrivilegedAction<RunAs>() {
+                @Override
+                public RunAs run() {
+                    if (sc == null) {
+                        throw MESSAGES.noSecurityContext();
+                    }
+                    return sc.getOutgoingRunAs();
+                }
+            });
+        } else {
+            if (sc == null) {
+                throw MESSAGES.noSecurityContext();
+            }
+            return sc.getOutgoingRunAs();
         }
     }
 }
