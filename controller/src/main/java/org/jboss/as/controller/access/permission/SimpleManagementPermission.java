@@ -24,7 +24,6 @@ package org.jboss.as.controller.access.permission;
 
 import java.security.Permission;
 import java.security.PermissionCollection;
-import java.util.ArrayList;
 import java.util.List;
 
 import org.jboss.as.controller.access.Action;
@@ -98,34 +97,27 @@ public class SimpleManagementPermission extends ManagementPermission {
     }
 
     @Override
-    public ManagementPermission createScopedPermission(Constraint constraint) {
-        boolean added = false;
-        List<Constraint> newList = new ArrayList<Constraint>();
-        for (Constraint existing : constraints) {
+    public ManagementPermission createScopedPermission(Constraint constraint, int constraintIndex) {
+        Constraint[] altered;
+        if (constraintIndex == constraints.length) {
+            altered = new Constraint[constraintIndex + 1];
+            System.arraycopy(constraints, 0, altered, 0, constraints.length);
+        } else {
+            Constraint existing = constraints[constraintIndex];
             if (constraint.replaces(existing)) {
-                // replace existing
-                newList.add(constraint);
-                added = true;
+                altered = new Constraint[constraints.length];
+                System.arraycopy(constraints, 0, altered, 0, constraints.length);
             } else {
-                newList.add(existing);
-            }
-        }
-        if (!added) {
-            for (Constraint existing : constraints) {
-                int compare = existing.compareTo(constraint);
-                if (compare > 0) {
-                    if (!added) {
-                        newList.add(constraint);
-                        added = true;
-                    }
-                } else if (compare == 0) {
-                    assert existing.equals(constraint) : "inconsistent equals and compareTo in " + constraint + " and " + existing;
+                altered = new Constraint[constraintIndex + 1];
+                if (constraintIndex == 0) {
+                    System.arraycopy(constraints, 0, altered, 1, constraints.length);
+                } else {
+                    System.arraycopy(constraints, 0, altered, 0, constraintIndex);
+                    System.arraycopy(constraints, constraintIndex, altered, constraintIndex + 1, constraints.length - constraintIndex);
                 }
             }
         }
-        if (!added) {
-            newList.add(constraint);
-        }
-        return new SimpleManagementPermission(getActionEffect(), newList);
+        altered[constraintIndex] = constraint;
+        return new SimpleManagementPermission(getActionEffect(), altered);
     }
 }

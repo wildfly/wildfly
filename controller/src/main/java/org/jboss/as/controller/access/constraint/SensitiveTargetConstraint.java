@@ -56,13 +56,7 @@ public class SensitiveTargetConstraint extends AllowAllowNotConstraint {
         super(allowsSensitive, allowsNonSensitive);
     }
 
-    @Override
-    protected int internalCompare(AbstractConstraint other) {
-        // We have no preference
-        return 0;
-    }
-
-    public static class Factory implements ConstraintFactory {
+    public static class Factory extends AbstractConstraintFactory {
 
         private final Map<SensitivityClassification.Key, SensitivityClassification> sensitivities =
                 Collections.synchronizedMap(new HashMap<SensitivityClassification.Key, SensitivityClassification>());
@@ -147,6 +141,12 @@ public class SensitiveTargetConstraint extends AllowAllowNotConstraint {
 
         public Collection<SensitivityClassification> getSensitivities(){
             return Collections.unmodifiableCollection(sensitivities.values());
+        }
+
+        @Override
+        protected int internalCompare(AbstractConstraintFactory other) {
+            // We have no preference
+            return 0;
         }
     }
 }

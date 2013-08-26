@@ -40,7 +40,7 @@ import org.jboss.as.controller.access.rbac.StandardRole;
 public class ServerGroupEffectConstraint extends AbstractConstraint implements Constraint, ScopingConstraint {
 
 
-    public static final ConstraintFactory FACTORY = new Factory();
+    public static final ScopingConstraintFactory FACTORY = new Factory();
 
     private static final ServerGroupEffectConstraint GLOBAL_USER = new ServerGroupEffectConstraint(true);
     private static final ServerGroupEffectConstraint GLOBAL_REQUIRED = new ServerGroupEffectConstraint(false);
@@ -160,7 +160,7 @@ public class ServerGroupEffectConstraint extends AbstractConstraint implements C
     // Scoping Constraint
 
     @Override
-    public ConstraintFactory getFactory() {
+    public ScopingConstraintFactory getFactory() {
         assert readOnlyConstraint != null : "invalid cast";
         return FACTORY;
     }
@@ -177,13 +177,7 @@ public class ServerGroupEffectConstraint extends AbstractConstraint implements C
         return readOnlyConstraint;
     }
 
-    @Override
-    protected int internalCompare(AbstractConstraint other) {
-        // We prefer going first
-        return this.equals(other) ? 0 : -1;
-    }
-
-    private static class Factory implements ConstraintFactory {
+    private static class Factory extends AbstractConstraintFactory implements ScopingConstraintFactory {
 
         @Override
         public Constraint getStandardUserConstraint(StandardRole role, Action.ActionEffect actionEffect) {
@@ -207,6 +201,12 @@ public class ServerGroupEffectConstraint extends AbstractConstraint implements C
                 return UNASSIGNED;
             }
             return new ServerGroupEffectConstraint(serverGroupEffect.getAffectedServerGroups());
+        }
+
+        @Override
+        protected int internalCompare(AbstractConstraintFactory other) {
+            // We prefer going first
+            return this.equals(other) ? 0 : -1;
         }
     }
 }

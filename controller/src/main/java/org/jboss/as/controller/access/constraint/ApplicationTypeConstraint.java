@@ -54,13 +54,7 @@ public class ApplicationTypeConstraint extends AllowAllowNotConstraint {
         super(allowsApplication, allowsNonApplication);
     }
 
-    @Override
-    protected int internalCompare(AbstractConstraint other) {
-        // We have no preference
-        return 0;
-    }
-
-    public static class Factory implements ConstraintFactory {
+    public static class Factory extends AbstractConstraintFactory {
 
         private final Map<ApplicationTypeConfig.Key, ApplicationTypeConfig> typeConfigs =
                 Collections.synchronizedMap(new HashMap<ApplicationTypeConfig.Key, ApplicationTypeConfig>());
@@ -143,5 +137,10 @@ public class ApplicationTypeConstraint extends AllowAllowNotConstraint {
             return Collections.unmodifiableCollection(typeConfigs.values());
         }
 
+        @Override
+        protected int internalCompare(AbstractConstraintFactory other) {
+            // We have no preference
+            return 0;
+        }
     }
 }

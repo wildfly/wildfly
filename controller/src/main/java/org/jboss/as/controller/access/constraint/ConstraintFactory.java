@@ -36,7 +36,7 @@ import org.jboss.as.controller.access.rbac.StandardRole;
  *
  * @author Brian Stansberry (c) 2013 Red Hat Inc.
  */
-public interface ConstraintFactory {
+public interface ConstraintFactory extends Comparable<ConstraintFactory> {
 
     /**
      * Provides a constraint suitable for the given {@code role} in the standard WildFly

@@ -56,13 +56,7 @@ public class SensitiveVaultExpressionConstraint extends AllowAllowNotConstraint 
         super(allowsSensitive, allowsNonSensitive);
     }
 
-    @Override
-    protected int internalCompare(AbstractConstraint other) {
-        // We have no preference
-        return 0;
-    }
-
-    private static class Factory implements ConstraintFactory {
+    private static class Factory extends AbstractConstraintFactory {
 
         private static final Pattern VAULT_PATTERN = Pattern.compile("VAULT::.*::.*::.*");
 
@@ -110,6 +104,12 @@ public class SensitiveVaultExpressionConstraint extends AllowAllowNotConstraint 
                 }
             }
             return false;
+        }
+
+        @Override
+        protected int internalCompare(AbstractConstraintFactory other) {
+            // We have no preference
+            return 0;
         }
     }
 }
