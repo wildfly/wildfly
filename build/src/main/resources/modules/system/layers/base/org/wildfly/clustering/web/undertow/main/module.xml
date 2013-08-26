@@ -37,6 +37,8 @@
         <module name="io.undertow.core"/>
         <module name="io.undertow.servlet"/>
         <module name="org.jboss.logging"/>
+        <module name="org.jboss.msc"/>
         <module name="org.wildfly.clustering.web.spi"/>
+        <module name="org.wildfly.extension.undertow"/>
     </dependencies>
 </module>

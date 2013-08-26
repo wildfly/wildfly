@@ -24,6 +24,7 @@ package org.wildfly.mod_cluster.undertow;
 
 import io.undertow.servlet.api.Deployment;
 import io.undertow.servlet.api.ListenerInfo;
+import io.undertow.servlet.core.InMemorySessionManagerFactory;
 import io.undertow.servlet.core.ManagedListener;
 import io.undertow.servlet.util.ImmediateInstanceFactory;
 
@@ -67,7 +68,7 @@ public class UndertowContext implements Context {
 
     @Override
     public void addRequestListener(ServletRequestListener listener) {
-        this.deployment.getApplicationListeners().addListener(new ManagedListener(new ListenerInfo(ServletRequestListener.class, new ImmediateInstanceFactory<ServletRequestListener>(listener)), true));
+        this.deployment.getApplicationListeners().addListener(new ManagedListener(new ListenerInfo(ServletRequestListener.class, new ImmediateInstanceFactory<>(listener)), true));
     }
 
     @Override
@@ -77,7 +78,7 @@ public class UndertowContext implements Context {
 
     @Override
     public void addSessionListener(HttpSessionListener listener) {
-        this.deployment.getApplicationListeners().addListener(new ManagedListener(new ListenerInfo(HttpSessionListener.class, new ImmediateInstanceFactory<HttpSessionListener>(listener)), true));
+        this.deployment.getApplicationListeners().addListener(new ManagedListener(new ListenerInfo(HttpSessionListener.class, new ImmediateInstanceFactory<>(listener)), true));
     }
 
     @Override
@@ -92,7 +93,7 @@ public class UndertowContext implements Context {
 
     @Override
     public boolean isDistributable() {
-        return this.deployment.getDeploymentInfo().getSessionManagerFactory() instanceof org.wildfly.clustering.web.undertow.session.SessionManagerAdapterFactory;
+        return !(this.deployment.getDeploymentInfo().getSessionManagerFactory() instanceof InMemorySessionManagerFactory);
     }
 
     @Override

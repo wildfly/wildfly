@@ -49,9 +49,11 @@ import io.undertow.servlet.api.ServletContainerInitializerInfo;
 import io.undertow.servlet.api.ServletInfo;
 import io.undertow.servlet.api.ServletSecurityInfo;
 import io.undertow.servlet.api.ServletSessionConfig;
+import io.undertow.servlet.api.SessionManagerFactory;
 import io.undertow.servlet.api.ThreadSetupAction;
 import io.undertow.servlet.api.WebResourceCollection;
 import io.undertow.servlet.util.ImmediateInstanceFactory;
+
 import org.apache.jasper.deploy.FunctionInfo;
 import org.apache.jasper.deploy.JspPropertyGroup;
 import org.apache.jasper.deploy.TagAttributeInfo;
@@ -112,8 +114,6 @@ import org.jboss.msc.service.StopContext;
 import org.jboss.msc.value.InjectedValue;
 import org.jboss.security.audit.AuditManager;
 import org.jboss.vfs.VirtualFile;
-import org.wildfly.clustering.web.session.SessionManagerFactory;
-import org.wildfly.clustering.web.undertow.session.SessionManagerAdapterFactory;
 import org.wildfly.extension.undertow.JSPConfig;
 import org.wildfly.extension.undertow.ServletContainerService;
 import org.wildfly.extension.undertow.SessionCookieConfig;
@@ -128,6 +128,7 @@ import javax.servlet.Servlet;
 import javax.servlet.ServletContainerInitializer;
 import javax.servlet.SessionTrackingMode;
 import javax.servlet.http.HttpServletRequest;
+
 import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
@@ -346,7 +347,7 @@ public class UndertowDeploymentInfoService implements Service<DeploymentInfo> {
         if (this.mergedMetaData.getDistributable() != null) {
             SessionManagerFactory factory = this.sessionManagerFactory.getOptionalValue();
             if (factory != null) {
-                deploymentInfo.setSessionManagerFactory(new SessionManagerAdapterFactory(factory));
+                deploymentInfo.setSessionManagerFactory(factory);
             }
         }
     }
