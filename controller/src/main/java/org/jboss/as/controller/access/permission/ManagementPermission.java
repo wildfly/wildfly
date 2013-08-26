@@ -75,5 +75,5 @@ public abstract class ManagementPermission extends Permission {
         return actionEffect;
     }
 
-    public abstract ManagementPermission createScopedPermission(Constraint constraint);
+    public abstract ManagementPermission createScopedPermission(Constraint constraint, int constraintIndex);
 }

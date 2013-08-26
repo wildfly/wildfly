@@ -81,10 +81,5 @@ public class SimpleManagementPermissionTestCase {
         public boolean replaces(Constraint other) {
             return false;
         }
-
-        @Override
-        public int compareTo(Constraint o) {
-            return 0;
-        }
     }
 }

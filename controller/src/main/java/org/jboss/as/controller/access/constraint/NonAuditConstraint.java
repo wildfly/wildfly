@@ -53,22 +53,7 @@ public class NonAuditConstraint extends AllowAllowNotConstraint {
         super(allowsAudit, allowsNonAudit);
     }
 
-    @Override
-    public int compareTo(Constraint o) {
-        // We prefer going ahead of anything except a ScopingConstraint
-        if (o instanceof ScopingConstraint) {
-            return 1;
-        }
-        return this.equals(o) ? 0 : -1;
-    }
-
-    @Override
-    protected int internalCompare(AbstractConstraint other) {
-        // We prefer going ahead of anything except a ScopingConstraint
-        return other instanceof ScopingConstraint ? 1 : -1;
-    }
-
-    private static class Factory implements ConstraintFactory {
+    private static class Factory extends AbstractConstraintFactory {
 
         @Override
         public Constraint getStandardUserConstraint(StandardRole role, Action.ActionEffect actionEffect) {
@@ -94,6 +79,13 @@ public class NonAuditConstraint extends AllowAllowNotConstraint {
 
         private boolean isAuditResource(TargetResource target) {
             return AuditLogAddressUtil.isAuditLogAddress(target.getResourceAddress());
+        }
+
+        @Override
+        protected int internalCompare(AbstractConstraintFactory other) {
+            // We prefer going ahead of anything except a ScopingConstraint or AuditConstraint
+            return (other instanceof ScopingConstraintFactory || other instanceof AuditConstraint.Factory)  ? 1 : -1;
+
         }
     }
 }

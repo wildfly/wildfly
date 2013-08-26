@@ -40,7 +40,7 @@ import org.jboss.as.controller.access.rbac.StandardRole;
 public class HostEffectConstraint extends AbstractConstraint implements Constraint, ScopingConstraint {
 
 
-    public static final ConstraintFactory FACTORY = new Factory();
+    public static final ScopingConstraintFactory FACTORY = new Factory();
 
     private static final HostEffectConstraint GLOBAL_USER = new HostEffectConstraint(true);
     private static final HostEffectConstraint GLOBAL_REQUIRED = new HostEffectConstraint(false);
@@ -151,7 +151,7 @@ public class HostEffectConstraint extends AbstractConstraint implements Constrai
     // Scoping Constraint
 
     @Override
-    public ConstraintFactory getFactory() {
+    public ScopingConstraintFactory getFactory() {
         assert readOnlyConstraint != null : "invalid cast";
         return FACTORY;
     }
@@ -168,13 +168,7 @@ public class HostEffectConstraint extends AbstractConstraint implements Constrai
         return readOnlyConstraint;
     }
 
-    @Override
-    protected int internalCompare(AbstractConstraint other) {
-        // We prefer going first
-        return this.equals(other) ? 0 : -1;
-    }
-
-    private static class Factory implements ConstraintFactory {
+    private static class Factory extends AbstractConstraintFactory implements ScopingConstraintFactory {
 
         @Override
         public Constraint getStandardUserConstraint(StandardRole role, Action.ActionEffect actionEffect) {
@@ -196,6 +190,12 @@ public class HostEffectConstraint extends AbstractConstraint implements Constrai
                 return GLOBAL_REQUIRED;
             }
             return new HostEffectConstraint(hostEffect.getAffectedHosts());
+        }
+
+        @Override
+        protected int internalCompare(AbstractConstraintFactory other) {
+            // We prefer going first
+            return this.equals(other) ? 0 : -1;
         }
     }
 }

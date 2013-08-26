@@ -119,11 +119,11 @@ public class CombinationManagementPermission extends ManagementPermission {
     }
 
     @Override
-    public ManagementPermission createScopedPermission(Constraint constraint) {
+    public ManagementPermission createScopedPermission(Constraint constraint, int constraintIndex) {
         CombinationManagementPermission result = new CombinationManagementPermission(combinationPolicy, getActionEffect());
         synchronized (underlyingPermissions) {
             for (ManagementPermission underlying : underlyingPermissions) {
-                result.addUnderlyingPermission(underlying.createScopedPermission(constraint));
+                result.addUnderlyingPermission(underlying.createScopedPermission(constraint, constraintIndex));
             }
         }
         return result;
