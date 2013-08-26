@@ -22,10 +22,6 @@
 
 package org.jboss.as.remoting;
 
-import static org.jboss.as.remoting.RemotingMessages.MESSAGES;
-import static org.xnio.Options.SASL_POLICY_NOANONYMOUS;
-import static org.xnio.Options.SASL_POLICY_NOPLAINTEXT;
-
 import java.io.IOException;
 import java.net.InetAddress;
 import java.net.URI;
@@ -47,6 +43,10 @@ import org.xnio.IoFuture;
 import org.xnio.OptionMap;
 import org.xnio.Options;
 import org.xnio.Sequence;
+
+import static org.jboss.as.remoting.RemotingMessages.MESSAGES;
+import static org.xnio.Options.SASL_POLICY_NOANONYMOUS;
+import static org.xnio.Options.SASL_POLICY_NOPLAINTEXT;
 
 /**
  * A {@link RemoteOutboundConnectionService} manages a remoting connection created out of a remote:// URI scheme.
@@ -98,13 +98,16 @@ public class RemoteOutboundConnectionService extends AbstractOutboundConnectionS
             sslContext = realm.getSSLContext();
         }
 
-        OptionMap.Builder builder = OptionMap.builder();
-        builder.addAll(this.connectionCreationOptions);
+        final OptionMap.Builder builder = OptionMap.builder();
+        // first set the defaults
         builder.set(SASL_POLICY_NOANONYMOUS, Boolean.FALSE);
         builder.set(SASL_POLICY_NOPLAINTEXT, Boolean.FALSE);
         builder.set(Options.SASL_DISALLOWED_MECHANISMS, Sequence.of(JBOSS_LOCAL_USER));
         builder.set(Options.SSL_ENABLED, true);
         builder.set(Options.SSL_STARTTLS, true);
+        // now override with user specified options
+        builder.addAll(this.connectionCreationOptions);
+
 
         return endpoint.connect(uri, builder.getMap(), callbackHandler, sslContext);
     }
