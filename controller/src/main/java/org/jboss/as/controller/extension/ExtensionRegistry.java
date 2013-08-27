@@ -30,6 +30,7 @@ import java.util.Collections;
 import java.util.EnumSet;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
@@ -58,13 +59,15 @@ import org.jboss.as.controller.SimpleResourceDefinition;
 import org.jboss.as.controller.SubsystemRegistration;
 import org.jboss.as.controller.access.Action;
 import org.jboss.as.controller.access.AuthorizationResult;
-import org.jboss.as.controller.access.Authorizer;
 import org.jboss.as.controller.access.Caller;
+import org.jboss.as.controller.access.ConfigurableAuthorizer;
 import org.jboss.as.controller.access.Environment;
-import org.jboss.as.controller.access.JmxTarget;
+import org.jboss.as.controller.access.JmxAction;
 import org.jboss.as.controller.access.TargetAttribute;
 import org.jboss.as.controller.access.TargetResource;
+import org.jboss.as.controller.access.constraint.ScopingConstraint;
 import org.jboss.as.controller.access.constraint.management.AccessConstraintDefinition;
+import org.jboss.as.controller.access.rbac.StandardRole;
 import org.jboss.as.controller.audit.AuditLogger;
 import org.jboss.as.controller.audit.ManagedAuditLogger;
 import org.jboss.as.controller.descriptions.DescriptionProvider;
@@ -111,17 +114,17 @@ public class ExtensionRegistry {
     private final ConcurrentMap<String, String> reverseMap = new ConcurrentHashMap<String, String>();
     private final RunningModeControl runningModeControl;
     private final ManagedAuditLogger auditLogger;
-    private final Authorizer authorizer;
+    private final ConfigurableAuthorizer authorizer;
     // protected by extensions
     private boolean unnamedMerged;
     private final ConcurrentHashMap<String, SubsystemInformation> subsystemsInfo = new ConcurrentHashMap<String, SubsystemInformation>();
     private volatile TransformerRegistry transformerRegistry = TransformerRegistry.Factory.create(this);
 
-    public ExtensionRegistry(ProcessType processType, RunningModeControl runningModeControl, ManagedAuditLogger auditLogger, Authorizer authorizer) {
+    public ExtensionRegistry(ProcessType processType, RunningModeControl runningModeControl, ManagedAuditLogger auditLogger, ConfigurableAuthorizer authorizer) {
         this.processType = processType;
         this.runningModeControl = runningModeControl;
         this.auditLogger = auditLogger != null ? auditLogger : AuditLogger.NO_OP_LOGGER;
-        this.authorizer = authorizer != null ? authorizer : NOOP_AUTHORIZER;
+        this.authorizer = authorizer != null ? authorizer : NO_OP_AUTHORIZER;
     }
 
     /**
@@ -582,9 +585,9 @@ public class ExtensionRegistry {
         }
 
         /**
-         * This method is only for internal use. We do NOT currently want to expose it on the ExtenstionContext interface.
+         * This method is only for internal use. We do NOT currently want to expose it on the ExtensionContext interface.
          */
-        public Authorizer getAuthorizer() {
+        public ConfigurableAuthorizer getAuthorizer() {
             return authorizer;
         }
     }
@@ -1048,7 +1051,7 @@ public class ExtensionRegistry {
         }
     }
 
-    private static final Authorizer NOOP_AUTHORIZER = new Authorizer() {
+    private static final ConfigurableAuthorizer NO_OP_AUTHORIZER = new ConfigurableAuthorizer() {
 
         @Override
         public AuthorizationResult authorize(Caller caller, Environment callEnvironment, Action action, TargetResource target) {
@@ -1061,8 +1064,39 @@ public class ExtensionRegistry {
         }
 
         @Override
-        public AuthorizationResult authorizeJmxOperation(Caller caller, Environment callEnvironment, JmxTarget target) {
+        public AuthorizationResult authorizeJmxOperation(Caller caller, Environment callEnvironment, JmxAction action) {
             return AuthorizationResult.PERMITTED;
+        }
+
+        @Override
+        public boolean isRoleBased() {
+            return false;
+        }
+
+        @Override
+        public Set<String> getStandardRoles() {
+            Set<String> result = new LinkedHashSet<String>();
+            for (StandardRole stdRole : StandardRole.values()) {
+                result.add(stdRole.toString());
+            }
+            return result;
+        }
+
+        @Override
+        public Set<String> getAllRoles() {
+            return getStandardRoles();
+        }
+
+        @Override
+        public void addScopedRole(String roleName, String baseRole, ScopingConstraint scopingConstraint) {
+        }
+
+        @Override
+        public void removeScopedRole(String roleName) {
+        }
+
+        @Override
+        public void setNonFacadeMBeansSensitive(boolean sensitive) {
         }
     };
 }

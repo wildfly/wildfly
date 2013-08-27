@@ -21,6 +21,67 @@
  */
 package org.jboss.as.jmx;
 
+import static org.jboss.as.jmx.MBeanServerSignature.ADD_NOTIFICATION_LISTENER;
+import static org.jboss.as.jmx.MBeanServerSignature.ADD_NOTIFICATION_LISTENER_SIG_1;
+import static org.jboss.as.jmx.MBeanServerSignature.ADD_NOTIFICATION_LISTENER_SIG_2;
+import static org.jboss.as.jmx.MBeanServerSignature.CREATE_MBEAN;
+import static org.jboss.as.jmx.MBeanServerSignature.CREATE_MBEAN_SIG_1;
+import static org.jboss.as.jmx.MBeanServerSignature.CREATE_MBEAN_SIG_2;
+import static org.jboss.as.jmx.MBeanServerSignature.CREATE_MBEAN_SIG_3;
+import static org.jboss.as.jmx.MBeanServerSignature.CREATE_MBEAN_SIG_4;
+import static org.jboss.as.jmx.MBeanServerSignature.DESERIALIZE;
+import static org.jboss.as.jmx.MBeanServerSignature.DESERIALIZE_SIG1;
+import static org.jboss.as.jmx.MBeanServerSignature.DESERIALIZE_SIG2;
+import static org.jboss.as.jmx.MBeanServerSignature.DESERIALIZE_SIG3;
+import static org.jboss.as.jmx.MBeanServerSignature.GET_ATTRIBUTE;
+import static org.jboss.as.jmx.MBeanServerSignature.GET_ATTRIBUTES;
+import static org.jboss.as.jmx.MBeanServerSignature.GET_ATTRIBUTES_SIG;
+import static org.jboss.as.jmx.MBeanServerSignature.GET_ATTRIBUTE_SIG;
+import static org.jboss.as.jmx.MBeanServerSignature.GET_CLASSLOADER;
+import static org.jboss.as.jmx.MBeanServerSignature.GET_CLASSLOADER_FOR;
+import static org.jboss.as.jmx.MBeanServerSignature.GET_CLASSLOADER_FOR_SIG;
+import static org.jboss.as.jmx.MBeanServerSignature.GET_CLASSLOADER_REPOSITORY;
+import static org.jboss.as.jmx.MBeanServerSignature.GET_CLASSLOADER_REPOSITORY_SIG;
+import static org.jboss.as.jmx.MBeanServerSignature.GET_CLASSLOADER_SIG;
+import static org.jboss.as.jmx.MBeanServerSignature.GET_DEFAULT_DOMAIN;
+import static org.jboss.as.jmx.MBeanServerSignature.GET_DEFAULT_DOMAIN_SIG;
+import static org.jboss.as.jmx.MBeanServerSignature.GET_DOMAINS;
+import static org.jboss.as.jmx.MBeanServerSignature.GET_DOMAINS_SIG;
+import static org.jboss.as.jmx.MBeanServerSignature.GET_MBEAN_COUNT;
+import static org.jboss.as.jmx.MBeanServerSignature.GET_MBEAN_COUNT_SIG;
+import static org.jboss.as.jmx.MBeanServerSignature.GET_MBEAN_INFO;
+import static org.jboss.as.jmx.MBeanServerSignature.GET_MBEAN_INFO_SIG;
+import static org.jboss.as.jmx.MBeanServerSignature.GET_OBJECT_INSTANCE;
+import static org.jboss.as.jmx.MBeanServerSignature.GET_OBJECT_INSTANCE_SIG;
+import static org.jboss.as.jmx.MBeanServerSignature.INSTANTIATE;
+import static org.jboss.as.jmx.MBeanServerSignature.INSTANTIATE_SIG1;
+import static org.jboss.as.jmx.MBeanServerSignature.INSTANTIATE_SIG2;
+import static org.jboss.as.jmx.MBeanServerSignature.INSTANTIATE_SIG3;
+import static org.jboss.as.jmx.MBeanServerSignature.INSTANTIATE_SIG4;
+import static org.jboss.as.jmx.MBeanServerSignature.INVOKE;
+import static org.jboss.as.jmx.MBeanServerSignature.INVOKE_SIG;
+import static org.jboss.as.jmx.MBeanServerSignature.IS_INSTANCE_OF;
+import static org.jboss.as.jmx.MBeanServerSignature.IS_INSTANCE_OF_SIG;
+import static org.jboss.as.jmx.MBeanServerSignature.IS_REGISTERED;
+import static org.jboss.as.jmx.MBeanServerSignature.IS_REGISTERED_SIG;
+import static org.jboss.as.jmx.MBeanServerSignature.QUERY_MBEANS;
+import static org.jboss.as.jmx.MBeanServerSignature.QUERY_MBEANS_SIG;
+import static org.jboss.as.jmx.MBeanServerSignature.QUERY_NAMES;
+import static org.jboss.as.jmx.MBeanServerSignature.QUERY_NAMES_SIG;
+import static org.jboss.as.jmx.MBeanServerSignature.REGISTER_MBEAN;
+import static org.jboss.as.jmx.MBeanServerSignature.REGISTER_MBEAN_SIG;
+import static org.jboss.as.jmx.MBeanServerSignature.REMOVE_NOTIFICATION_LISTENER;
+import static org.jboss.as.jmx.MBeanServerSignature.REMOVE_NOTIFICATION_LISTENER_SIG_1;
+import static org.jboss.as.jmx.MBeanServerSignature.REMOVE_NOTIFICATION_LISTENER_SIG_2;
+import static org.jboss.as.jmx.MBeanServerSignature.REMOVE_NOTIFICATION_LISTENER_SIG_3;
+import static org.jboss.as.jmx.MBeanServerSignature.REMOVE_NOTIFICATION_LISTENER_SIG_4;
+import static org.jboss.as.jmx.MBeanServerSignature.SET_ATTRIBUTE;
+import static org.jboss.as.jmx.MBeanServerSignature.SET_ATTRIBUTES;
+import static org.jboss.as.jmx.MBeanServerSignature.SET_ATTRIBUTES_SIG;
+import static org.jboss.as.jmx.MBeanServerSignature.SET_ATTRIBUTE_SIG;
+import static org.jboss.as.jmx.MBeanServerSignature.UNREGISTER_MBEAN;
+import static org.jboss.as.jmx.MBeanServerSignature.UNREGISTER_MBEAN_SIG;
+
 import javax.management.Attribute;
 import javax.management.AttributeList;
 import javax.management.InstanceAlreadyExistsException;
@@ -43,94 +104,6 @@ import java.util.Set;
  * @author <a href="kabir.khan@jboss.com">Kabir Khan</a>
  */
 public class MBeanServerAuditLogRecordFormatter implements MBeanServer {
-
-    private static final String[] NO_ARGS_SIG = new String[] {ObjectName.class.getName()};
-    private static final String[] OBJECT_NAME_ONLY_SIG = new String[] {ObjectName.class.getName()};
-
-    private static final String CREATE_MBEAN = "createMBean";
-    private static final String[] CREATE_MBEAN_SIG_1 = new String[] {String.class.getName(), ObjectName.class.getName()};
-    private static final String[] CREATE_MBEAN_SIG_2 = new String[] {String.class.getName(), ObjectName.class.getName(), ObjectName.class.getName()};
-    private static final String[] CREATE_MBEAN_SIG_3 = new String[] {String.class.getName(), Object[].class.getName(), String[].class.getName()};
-    private static final String[] CREATE_MBEAN_SIG_4 = new String[] {String.class.getName(), ObjectName.class.getName(), ObjectName.class.getName(), Object[].class.getName(), String[].class.getName()};
-
-    private static final String REGISTER_MBEAN = "registerMBean";
-    private static final String[] REGISTER_MBEAN_SIG = new String[] {Object.class.getName(), ObjectName.class.getName()};
-
-
-    private static final String UNREGISTER_MBEAN = "unregisterMBean";
-    private static final String[] UNREGISTER_MBEAN_SIG = OBJECT_NAME_ONLY_SIG;
-
-    private static final String GET_OBJECT_INSTANCE = "getObjectInstance";
-    private static final String[] GET_OBJECT_INSTANCE_SIG = OBJECT_NAME_ONLY_SIG;
-
-    private static final String QUERY_MBEANS = "queryMBeans";
-    private static final String[] QUERY_MBEANS_SIG = new String[] {ObjectName.class.getName(), QueryExp.class.getName()};
-
-    private static final String QUERY_NAMES = "queryMBeans";
-    private static final String[] QUERY_NAMES_SIG = QUERY_MBEANS_SIG;
-
-    private static final String IS_REGISTERED = "isRegistered";
-    private static final String[] IS_REGISTERED_SIG = OBJECT_NAME_ONLY_SIG;
-
-    private static final String GET_MBEAN_COUNT = "getMBeanCount";
-    private static final String[] GET_MBEAN_COUNT_SIG = NO_ARGS_SIG;
-
-    private static final String GET_ATTRIBUTE = "getAttribute";
-    private static final String[] GET_ATTRIBUTE_SIG = new String[] {ObjectName.class.getName(), String.class.getName()};
-
-    private static final String GET_ATTRIBUTES = "getAttribute";
-    private static final String[] GET_ATTRIBUTES_SIG = new String[] {ObjectName.class.getName(), String[].class.getName()};
-
-    private static final String SET_ATTRIBUTE = "setAttribute";
-    private static final String[] SET_ATTRIBUTE_SIG = new String[] {ObjectName.class.getName(), Attribute.class.getName()};
-
-    private static final String SET_ATTRIBUTES = "setAttribute";
-    private static final String[] SET_ATTRIBUTES_SIG = new String[] {ObjectName.class.getName(), AttributeList.class.getName()};
-
-    private static final String INVOKE = "invoke";
-    private static final String[] INVOKE_SIG = new String[] {ObjectName.class.getName(), String.class.getName(), Object[].class.getName(), String[].class.getName()};
-
-    private static final String GET_DEFAULT_DOMAIN = "getDefaultDomain";
-    private static final String[] GET_DEFAULT_DOMAIN_SIG = NO_ARGS_SIG;
-
-    private static final String GET_DOMAINS = "getDomains";
-    private static final String[] GET_DOMAINS_SIG = NO_ARGS_SIG;
-
-    private static final String ADD_NOTIFICATION_LISTENER  = "addNotificationListener";
-    private static final String[] ADD_NOTIFICATION_LISTENER_SIG_1 = new String[] {ObjectName.class.getName(), NotificationListener.class.getName(), NotificationFilter.class.getName(), Object.class.getName()};
-    private static final String[] ADD_NOTIFICATION_LISTENER_SIG_2 = new String[] {ObjectName.class.getName(), ObjectName.class.getName(), NotificationFilter.class.getName(), Object.class.getName()};
-
-    private static final String REMOVE_NOTIFICATION_LISTENER  = "addNotificationListener";
-    private static final String[] REMOVE_NOTIFICATION_LISTENER_SIG_1 = new String[] {ObjectName.class.getName(), ObjectName.class.getName()};
-    private static final String[] REMOVE_NOTIFICATION_LISTENER_SIG_2 = new String[] {ObjectName.class.getName(), ObjectName.class.getName(), NotificationFilter.class.getName(), Object.class.getName()};
-    private static final String[] REMOVE_NOTIFICATION_LISTENER_SIG_3 = new String[] {ObjectName.class.getName(), NotificationListener.class.getName()};
-    private static final String[] REMOVE_NOTIFICATION_LISTENER_SIG_4 = new String[] {ObjectName.class.getName(), NotificationListener.class.getName(), NotificationFilter.class.getName(), Object.class.getName()};
-
-    private static final String GET_MBEAN_INFO = "getMBeanInfo";
-    private static final String[] GET_MBEAN_INFO_SIG = OBJECT_NAME_ONLY_SIG;
-
-    private static final String IS_INSTANCE_OF = "isInstanceOf";
-    private static final String[] IS_INSTANCE_OF_SIG = new String[] {ObjectName.class.getName(), String.class.getName()};
-
-    private static final String INSTANTIATE = "instantiate";
-    private static final String[] INSTANTIATE_SIG1 = new String[] {String.class.getName()};
-    private static final String[] INSTANTIATE_SIG2 = new String[] {String.class.getName(), ObjectName.class.getName()};
-    private static final String[] INSTANTIATE_SIG3 = new String[] {String.class.getName(), Object[].class.getName(), String[].class.getName()};
-    private static final String[] INSTANTIATE_SIG4 = new String[] {String.class.getName(), ObjectName.class.getName(), Object[].class.getName(), String[].class.getName()};
-
-    private static final String DESERIALIZE = "deserialize";
-    private static final String[] DESERIALIZE_SIG1 = new String[] {ObjectName.class.getName(), byte[].class.getName()};
-    private static final String[] DESERIALIZE_SIG2 = new String[] {String.class.getName(), byte[].class.getName()};
-    private static final String[] DESERIALIZE_SIG3 = new String[] {String.class.getName(), ObjectName.class.getName(), byte[].class.getName()};
-
-    private static final String GET_CLASSLOADER_FOR = "getClassLoaderFor";
-    private static final String[] GET_CLASSLOADER_FOR_SIG = OBJECT_NAME_ONLY_SIG;
-
-    private static final String GET_CLASSLOADER = "getClassLoader";
-    private static final String[] GET_CLASSLOADER_SIG = OBJECT_NAME_ONLY_SIG;
-
-    private static final String GET_CLASSLOADER_REPOSITORY = "getClassLoaderRepository";
-    private static final String[] GET_CLASSLOADER_REPOSITORY_SIG = NO_ARGS_SIG;
 
     private final PluggableMBeanServerImpl pluggableMBeanServerImpl;
     private final Throwable error;

@@ -38,7 +38,7 @@ import org.jboss.as.controller.PathElement;
 import org.jboss.as.controller.SimpleAttributeDefinition;
 import org.jboss.as.controller.SimpleAttributeDefinitionBuilder;
 import org.jboss.as.controller.SimpleResourceDefinition;
-import org.jboss.as.controller.access.Authorizer;
+import org.jboss.as.controller.access.ConfigurableAuthorizer;
 import org.jboss.as.controller.access.constraint.management.AccessConstraintDefinition;
 import org.jboss.as.controller.access.constraint.management.SensitiveTargetAccessConstraintDefinition;
 import org.jboss.as.controller.audit.ManagedAuditLogger;
@@ -65,18 +65,18 @@ public class JMXSubsystemRootResource extends SimpleResourceDefinition {
             .addFlag(AttributeAccess.Flag.ALIAS)
             .build();
 
-    public static final SimpleAttributeDefinition CORE_MBEAN_SENSITIVITY = new SimpleAttributeDefinitionBuilder(CommonAttributes.CORE_MBEAN_SENSITIVITY, ModelType.BOOLEAN, true)
-            //.setAllowExpression(true) //I don't think we should support expressions here
+    public static final SimpleAttributeDefinition CORE_MBEAN_SENSITIVITY = new SimpleAttributeDefinitionBuilder(CommonAttributes.NON_CORE_MBEAN_SENSITIVITY, ModelType.BOOLEAN, true)
+            .setAllowExpression(true)
             .addAccessConstraint(SensitiveTargetAccessConstraintDefinition.ACCESS_CONTROL)
-            .setXmlName(CommonAttributes.CORE_MBEANS)
+            .setXmlName(CommonAttributes.NON_CORE_MBEANS)
             .setDefaultValue(new ModelNode(false)).build();
 
     private final List<AccessConstraintDefinition> accessConstraints;
 
     private final JmxManagedAuditLogger auditLogger;
-    private final Authorizer authorizer;
+    private final ConfigurableAuthorizer authorizer;
 
-    private JMXSubsystemRootResource(JmxManagedAuditLogger auditLogger, Authorizer authorizer) {
+    private JMXSubsystemRootResource(JmxManagedAuditLogger auditLogger, ConfigurableAuthorizer authorizer) {
         super(PATH_ELEMENT,
                 JMXExtension.getResourceDescriptionResolver(JMXExtension.SUBSYSTEM_NAME),
                 new JMXSubsystemAdd(auditLogger, authorizer),
@@ -86,7 +86,7 @@ public class JMXSubsystemRootResource extends SimpleResourceDefinition {
         this.authorizer = authorizer;
     }
 
-    public static JMXSubsystemRootResource create(ManagedAuditLogger auditLogger, Authorizer authorizer) {
+    public static JMXSubsystemRootResource create(ManagedAuditLogger auditLogger, ConfigurableAuthorizer authorizer) {
         return new JMXSubsystemRootResource(new JmxManagedAuditLogger(auditLogger), authorizer);
     }
 
@@ -180,7 +180,7 @@ public class JMXSubsystemRootResource extends SimpleResourceDefinition {
         private void setPluggableMBeanServerCoreSensitivity(OperationContext context, boolean sensitivity) {
             ServiceController<?> controller = context.getServiceRegistry(false).getRequiredService(MBeanServerService.SERVICE_NAME);
             PluggableMBeanServerImpl server = (PluggableMBeanServerImpl)controller.getValue();
-            server.setCoreMBeanSensitivity(sensitivity);
+            server.setNonFacadeMBeansSensitive(sensitivity);
         }
 
     }

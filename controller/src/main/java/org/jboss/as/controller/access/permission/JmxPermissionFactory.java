@@ -1,6 +1,6 @@
 /*
  * JBoss, Home of Professional Open Source.
- * Copyright 2013, Red Hat, Inc., and individual contributors
+ * Copyright 2012, Red Hat, Inc., and individual contributors
  * as indicated by the @author tags. See the copyright.txt file in the
  * distribution for a full listing of individual contributors.
  *
@@ -19,27 +19,20 @@
  * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
+package org.jboss.as.controller.access.permission;
 
-package org.jboss.as.controller.access;
+import java.util.Set;
 
+import org.jboss.as.controller.access.Action;
+import org.jboss.as.controller.access.Caller;
+import org.jboss.as.controller.access.Environment;
+import org.jboss.as.controller.access.TargetResource;
 
 /**
- * Interface exposed by the enforcement point in a WildFly access control system.
  *
- * @author Brian Stansberry (c) 2013 Red Hat Inc.
+ * @author <a href="kabir.khan@jboss.com">Kabir Khan</a>
  */
-public interface Authorizer {
-
-    AuthorizationResult authorize(Caller caller, Environment callEnvironment, Action action, TargetAttribute target);
-    AuthorizationResult authorize(Caller caller, Environment callEnvironment, Action action, TargetResource target);
-
-    /**
-     * Authorize a JMX operation. This operation should NOT be called for the non-management facade MBeans
-     *
-     * @param caller the caller
-     * @param callEnvironment the call environment
-     * @param action
-     * @return the authorization result
-     */
-    AuthorizationResult authorizeJmxOperation(Caller caller, Environment callEnvironment, JmxAction action);
+public interface JmxPermissionFactory {
+    boolean isNonFacadeMBeansSensitive();
+    Set<String> getUserRoles(Caller caller, Environment callEnvironment, Action action, TargetResource target);
 }

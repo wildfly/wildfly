@@ -208,6 +208,7 @@ public abstract class AbstractControllerService implements Service<ModelControll
         assert rootDescriptionProvider != null || rootResourceDefinition != null: rootDescriptionProvider == null ? "Null root description provider" : "Null root resource definition";
         assert expressionResolver != null : "Null expressionResolver";
         assert auditLogger != null : "Null auditLogger";
+        assert authorizer != null : "Null authorizer";
         this.processType = processType;
         this.runningModeControl = runningModeControl;
         this.configurationPersister = configurationPersister;

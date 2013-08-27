@@ -25,16 +25,22 @@ package org.jboss.as.controller.access.permission;
 import java.security.Permission;
 import java.security.PermissionCollection;
 import java.util.Enumeration;
+import java.util.Set;
 
 import org.jboss.as.controller.ControlledProcessState;
+import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.access.Action;
 import org.jboss.as.controller.access.AuthorizationResult;
+import org.jboss.as.controller.access.AuthorizationResult.Decision;
 import org.jboss.as.controller.access.Authorizer;
 import org.jboss.as.controller.access.Caller;
 import org.jboss.as.controller.access.Environment;
-import org.jboss.as.controller.access.JmxTarget;
+import org.jboss.as.controller.access.JmxAction;
+import org.jboss.as.controller.access.JmxAction.Impact;
 import org.jboss.as.controller.access.TargetAttribute;
 import org.jboss.as.controller.access.TargetResource;
+import org.jboss.as.controller.access.rbac.StandardRole;
+import org.jboss.as.controller.operations.common.Util;
 import org.jboss.dmr.ModelNode;
 
 /**
@@ -44,10 +50,15 @@ import org.jboss.dmr.ModelNode;
  */
 public class ManagementPermissionAuthorizer implements Authorizer {
 
-    private final PermissionFactory permissionFactory;
+    /** A fake action for JMX, just to have an operation with superuser permissions */
+    private static final Action FAKE_JMX_ACTION = new Action(Util.createOperation("test", PathAddress.EMPTY_ADDRESS), null);
 
-    public ManagementPermissionAuthorizer(PermissionFactory permissionFactory) {
+    private final PermissionFactory permissionFactory;
+    private final JmxPermissionFactory jmxPermissionFactory;
+
+    public ManagementPermissionAuthorizer(PermissionFactory permissionFactory, JmxPermissionFactory jmxPermissionFactory) {
         this.permissionFactory = permissionFactory;
+        this.jmxPermissionFactory = jmxPermissionFactory;
     }
 
     @Override
@@ -86,8 +97,26 @@ public class ManagementPermissionAuthorizer implements Authorizer {
     }
 
     @Override
-    public AuthorizationResult authorizeJmxOperation(Caller caller, Environment callEnvironment, JmxTarget target) {
-        //We should never end up here?
-        throw new IllegalStateException();
+    public AuthorizationResult authorizeJmxOperation(Caller caller, Environment callEnvironment, JmxAction action) {
+        Set<String> roles = jmxPermissionFactory.getUserRoles(caller, null, FAKE_JMX_ACTION, (TargetResource) null);
+        if (jmxPermissionFactory.isNonFacadeMBeansSensitive() || action.getImpact() == Impact.EXTRA_SENSITIVE) {
+            return authorize(roles, StandardRole.SUPERUSER, StandardRole.ADMINISTRATOR);
+        } else {
+            if (action.getImpact() == Impact.READ_ONLY) {
+                //Everybody can read mbeans when not sensitive
+                return AuthorizationResult.PERMITTED;
+                //authorize(exception, roles, StandardRole.SUPERUSER, StandardRole.ADMINISTRATOR, StandardRole.OPERATOR, StandardRole.MAINTAINER, StandardRole.AUDITOR, StandardRole.MONITOR, StandardRole.DEPLOYER);
+            } else {
+                return authorize(roles, StandardRole.SUPERUSER, StandardRole.ADMINISTRATOR, StandardRole.OPERATOR, StandardRole.MAINTAINER);
+            }
+        }
     }
-}
+
+    private AuthorizationResult authorize(Set<String> callerRoles, StandardRole...roles) {
+        for (StandardRole role : roles) {
+            if (callerRoles.contains(role.toString())) {
+                return AuthorizationResult.PERMITTED;
+            }
+        }
+        return new AuthorizationResult(Decision.DENY);
+    }}
