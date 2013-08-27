@@ -26,8 +26,6 @@ import java.util.HashSet;
 import java.util.LinkedHashSet;
 import java.util.Set;
 
-import org.jboss.as.controller.PathAddress;
-import org.jboss.as.controller.access.AuthorizationResult.Decision;
 import org.jboss.as.controller.access.constraint.ScopingConstraint;
 import org.jboss.as.controller.access.permission.CombinationPolicy;
 import org.jboss.as.controller.access.permission.ManagementPermissionAuthorizer;
@@ -35,7 +33,6 @@ import org.jboss.as.controller.access.rbac.DefaultPermissionFactory;
 import org.jboss.as.controller.access.rbac.MockRoleMapper;
 import org.jboss.as.controller.access.rbac.RoleMapper;
 import org.jboss.as.controller.access.rbac.StandardRole;
-import org.jboss.as.controller.operations.common.Util;
 
 /**
  * Simple {@link ConfigurableAuthorizer} implementation that gives all permissions to any authenticated
@@ -59,8 +56,6 @@ public class SimpleConfigurableAuthorizer implements ConfigurableAuthorizer {
     private final DefaultPermissionFactory permissionFactory;
     private final Authorizer authorizer;
     private final Set<String> addedRoles = new HashSet<String>();
-    /** A fake action for JMX, just to have an operation with superuser permissions */
-    private static final Action FAKE_JMX_ACTION = new Action(Util.createOperation("test", PathAddress.EMPTY_ADDRESS), null);
 
     public SimpleConfigurableAuthorizer() {
         this(MockRoleMapper.INSTANCE);
@@ -69,7 +64,7 @@ public class SimpleConfigurableAuthorizer implements ConfigurableAuthorizer {
     public SimpleConfigurableAuthorizer(final RoleMapper roleMapper) {
         this.roleMapper = roleMapper;
         permissionFactory = new DefaultPermissionFactory(CombinationPolicy.PERMISSIVE, roleMapper);
-        authorizer = new ManagementPermissionAuthorizer(permissionFactory);
+        authorizer = new ManagementPermissionAuthorizer(permissionFactory, permissionFactory);
     }
 
     @Override
@@ -122,27 +117,12 @@ public class SimpleConfigurableAuthorizer implements ConfigurableAuthorizer {
     }
 
     @Override
-    public AuthorizationResult authorizeJmxOperation(Caller caller, Environment callEnvironment, JmxTarget target) {
-        Set<String> roles = roleMapper.mapRoles(caller, null, FAKE_JMX_ACTION, (TargetAttribute) null);
-        if (target.isNonFacadeMBeansSensitive() || target.isSuperUserOrAdminOnly()) {
-            return authorize(roles, StandardRole.SUPERUSER, StandardRole.ADMINISTRATOR);
-        } else {
-            if (target.isReadOnly()) {
-                //Everybody can read mbeans when not sensitive
-                return AuthorizationResult.PERMITTED;
-                //authorize(exception, roles, StandardRole.SUPERUSER, StandardRole.ADMINISTRATOR, StandardRole.OPERATOR, StandardRole.MAINTAINER, StandardRole.AUDITOR, StandardRole.MONITOR, StandardRole.DEPLOYER);
-            } else {
-                return authorize(roles, StandardRole.SUPERUSER, StandardRole.ADMINISTRATOR, StandardRole.OPERATOR, StandardRole.MAINTAINER);
-            }
-        }
+    public AuthorizationResult authorizeJmxOperation(Caller caller, Environment callEnvironment, JmxAction action) {
+        return authorizer.authorizeJmxOperation(caller, callEnvironment, action);
     }
 
-    private AuthorizationResult authorize(Set<String> callerRoles, StandardRole...roles) {
-        for (StandardRole role : roles) {
-            if (callerRoles.contains(role.toString())) {
-                return AuthorizationResult.PERMITTED;
-            }
-        }
-        return new AuthorizationResult(Decision.DENY);
+    @Override
+    public void setNonFacadeMBeansSensitive(boolean sensitive) {
+        permissionFactory.setNonFacadeMBeansSensitive(sensitive);
     }
 }

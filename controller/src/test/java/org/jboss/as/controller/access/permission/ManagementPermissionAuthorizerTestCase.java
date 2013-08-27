@@ -27,6 +27,7 @@ import static org.junit.Assert.assertEquals;
 import java.security.Permission;
 import java.security.PermissionCollection;
 import java.util.EnumSet;
+import java.util.Set;
 
 import org.jboss.as.controller.ControlledProcessState;
 import org.jboss.as.controller.PathAddress;
@@ -56,7 +57,8 @@ public class ManagementPermissionAuthorizerTestCase {
         ControlledProcessState processState = new ControlledProcessState(false);
         processState.setRunning();
         environment = new Environment(processState, ProcessType.EMBEDDED_SERVER);
-        authorizer = new ManagementPermissionAuthorizer(new TestPermissionFactory());
+        TestPermissionFactory testPermissionFactory = new TestPermissionFactory();
+        authorizer = new ManagementPermissionAuthorizer(testPermissionFactory, testPermissionFactory);
     }
 
     @Test
@@ -103,7 +105,7 @@ public class ManagementPermissionAuthorizerTestCase {
 
     // ---
 
-    private static final class TestPermissionFactory implements PermissionFactory {
+    private static final class TestPermissionFactory implements PermissionFactory, JmxPermissionFactory {
         private PermissionCollection getUserPermissions() {
             ManagementPermissionCollection mpc = new ManagementPermissionCollection(TestManagementPermission.class);
             mpc.add(new TestManagementPermission(Action.ActionEffect.ADDRESS));
@@ -138,6 +140,16 @@ public class ManagementPermissionAuthorizerTestCase {
         @Override
         public PermissionCollection getRequiredPermissions(Action action, TargetResource target) {
             return getRequiredPermissions(action);
+        }
+
+        @Override
+        public boolean isNonFacadeMBeansSensitive() {
+            return false;
+        }
+
+        @Override
+        public Set<String> getUserRoles(Caller caller, Environment callEnvironment, Action action, TargetResource target) {
+            return null;
         }
     }
 

@@ -120,7 +120,7 @@
                 Configures access control sensititity for the mbeans in the jmx subsystem
             </xs:documentation>
         </xs:annotation>
-        <xs:attribute name="core-mbeans" type="xs:boolean" use="optional" default="false"/>
+        <xs:attribute name="non-core-mbeans" type="xs:boolean" use="optional" default="false"/>
     </xs:complexType>
     
 </xs:schema>

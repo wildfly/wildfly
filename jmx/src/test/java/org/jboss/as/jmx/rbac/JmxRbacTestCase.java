@@ -370,23 +370,6 @@ public abstract class JmxRbacTestCase extends AbstractControllerTestBase {
                         }
                     }
 
-                    //instantiate
-                    if (canWrite) {
-                        Assert.assertNotNull(server.instantiate(Bean.class.getName()));
-                        Assert.assertNotNull(server.instantiate(Bean.class.getName(), new Object[0], new String[0]));
-                    } else {
-                        try {
-                            server.instantiate(Bean.class.getName());
-                            Assert.fail();
-                        } catch (RuntimeMBeanException expected) {
-                        }
-                        try {
-                            server.instantiate(Bean.class.getName(), new Object[0], new String[0]);
-                            Assert.fail();
-                        } catch (RuntimeMBeanException expected) {
-                        }
-                    }
-
                     //Special methods, which only superuser or adminstrator can call
                     ByteArrayOutputStream bout = new ByteArrayOutputStream();
                     ObjectOutputStream out = new ObjectOutputStream(bout);
@@ -406,6 +389,8 @@ public abstract class JmxRbacTestCase extends AbstractControllerTestBase {
                         }
                         Assert.assertNotNull(server.getClassLoaderRepository());
                         Assert.assertNotNull(server.getClassLoaderFor(OBJECT_NAME));
+                        Assert.assertNotNull(server.instantiate(Bean.class.getName()));
+                        Assert.assertNotNull(server.instantiate(Bean.class.getName(), new Object[0], new String[0]));
 
                     } else {
                         try {
@@ -430,6 +415,16 @@ public abstract class JmxRbacTestCase extends AbstractControllerTestBase {
                         }
                         try {
                             server.getClassLoaderFor(OBJECT_NAME);
+                            Assert.fail();
+                        } catch (RuntimeMBeanException expected) {
+                        }
+                        try {
+                            server.instantiate(Bean.class.getName());
+                            Assert.fail();
+                        } catch (RuntimeMBeanException expected) {
+                        }
+                        try {
+                            server.instantiate(Bean.class.getName(), new Object[0], new String[0]);
                             Assert.fail();
                         } catch (RuntimeMBeanException expected) {
                         }

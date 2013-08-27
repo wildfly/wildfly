@@ -42,4 +42,6 @@ public interface ConfigurableAuthorizer extends Authorizer {
     void addScopedRole(String roleName, String baseRole, ScopingConstraint scopingConstraint);
 
     void removeScopedRole(String roleName);
+
+    void setNonFacadeMBeansSensitive(boolean sensitive);
 }

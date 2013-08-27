@@ -31,12 +31,12 @@ import java.util.Map;
 enum Attribute {
 
     UNKNOWN(null),
-    CORE_MBEANS(CommonAttributes.CORE_MBEANS),
     DOMAIN_NAME(CommonAttributes.DOMAIN_NAME),
     ENABLED(CommonAttributes.ENABLED),
     LOG_BOOT(CommonAttributes.LOG_BOOT),
     LOG_READ_ONLY(CommonAttributes.LOG_READ_ONLY),
     NAME(CommonAttributes.NAME),
+    NON_CORE_MBEANS(CommonAttributes.NON_CORE_MBEANS),
     PROPER_PROPETY_FORMAT(CommonAttributes.PROPER_PROPERTY_FORMAT),
     SHOW_MODEL(CommonAttributes.SHOW_MODEL),
     SERVER_BINDING(CommonAttributes.SERVER_BINDING),
