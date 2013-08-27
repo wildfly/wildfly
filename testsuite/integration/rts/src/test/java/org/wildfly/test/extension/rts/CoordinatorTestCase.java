@@ -24,12 +24,12 @@ package org.wildfly.test.extension.rts;
 import java.io.File;
 import java.io.IOException;
 import java.net.HttpURLConnection;
-import java.net.URL;
 
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.container.test.api.RunAsClient;
 import org.jboss.arquillian.junit.Arquillian;
 import org.jboss.arquillian.test.api.ArquillianResource;
+import org.jboss.as.arquillian.container.ManagementClient;
 import org.jboss.jbossts.star.util.TxMediaType;
 import org.jboss.jbossts.star.util.TxStatusMediaType;
 import org.jboss.jbossts.star.util.TxSupport;
@@ -55,7 +55,7 @@ public final class CoordinatorTestCase extends AbstractTestCase {
     private static final String DEPENDENCIES = "Dependencies: org.jboss.narayana.rts\n";
 
     @ArquillianResource
-    private URL deploymentUrl;
+    private ManagementClient managementClient;
 
     @Deployment
     public static WebArchive getDeployment() {
@@ -198,8 +198,8 @@ public final class CoordinatorTestCase extends AbstractTestCase {
         Assert.assertEquals(txnCount, txn.txCount());
     }
 
-    protected String getDeploymentUrl() {
-        return deploymentUrl.toString();
+    protected String getBaseUrl() {
+        return managementClient.getWebUri().toString();
     }
 
     private String enlistResource(final TxSupport txn, final String pUrl) {

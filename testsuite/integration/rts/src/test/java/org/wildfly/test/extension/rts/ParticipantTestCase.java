@@ -30,6 +30,8 @@ import javax.xml.bind.JAXBException;
 
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.junit.Arquillian;
+import org.jboss.arquillian.test.api.ArquillianResource;
+import org.jboss.as.arquillian.container.ManagementClient;
 import org.jboss.jbossts.star.util.TxStatus;
 import org.jboss.jbossts.star.util.TxSupport;
 import org.jboss.narayana.rest.integration.api.Aborted;
@@ -55,6 +57,9 @@ public final class ParticipantTestCase extends AbstractTestCase {
     private static final String APPLICATION_ID = "org.wildfly.test.extension.rts";
 
     private static final String DEPENDENCIES = "Dependencies: org.jboss.narayana.rts\n";
+
+    @ArquillianResource
+    private ManagementClient managementClient;
 
     @Deployment
     public static WebArchive getDeployment() {
@@ -218,8 +223,8 @@ public final class ParticipantTestCase extends AbstractTestCase {
         Assert.assertEquals(Collections.EMPTY_LIST, participants.get(1).getInvocations());
     }
 
-    protected String getDeploymentUrl() {
-        return getBaseUrlFromConfiguration() + "/" + DEPLOYMENT_NAME;
+    protected String getBaseUrl() {
+        return managementClient.getWebUri().toString();
     }
 
 }

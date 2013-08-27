@@ -57,43 +57,10 @@ public abstract class AbstractTestCase {
         Assert.assertEquals(0, txSupport.txCount());
     }
 
-    protected String getBaseUrl() {
-        if (getDeploymentUrl() == null) {
-            return null;
-        }
-
-        final int cutUntil = getDeploymentUrl().toString().indexOf(DEPLOYMENT_NAME);
-
-        return getDeploymentUrl().toString().substring(0, cutUntil);
+    protected String getDeploymentUrl() {
+        return getBaseUrl() + "/" + DEPLOYMENT_NAME + "/";
     }
 
-    protected static String getBaseUrlFromConfiguration() {
-        String baseAddress = System.getProperty("jboss.bind.address");
-        String basePort = System.getProperty("jboss.bind.port");
-
-        if (baseAddress == null) {
-            if (isIPv6()) {
-                baseAddress = "http://[::1]";
-            } else {
-                baseAddress = "http://localhost";
-            }
-        } else if (!baseAddress.toLowerCase().startsWith("http://") && !baseAddress.toLowerCase().startsWith("https://")) {
-            baseAddress = "http://" + baseAddress;
-        }
-
-        if (basePort == null) {
-            basePort = "8080";
-        }
-
-        return baseAddress + ":" + basePort;
-    }
-
-    protected abstract String getDeploymentUrl();
-
-    private static boolean isIPv6() {
-        final String preferIPv6Addresses = System.getProperty("java.net.preferIPv6Addresses");
-
-        return preferIPv6Addresses != null && preferIPv6Addresses.toLowerCase().equals("true");
-    }
+    protected abstract String getBaseUrl();
 
 }

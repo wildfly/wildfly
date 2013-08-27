@@ -22,7 +22,6 @@
 package org.wildfly.test.extension.rts;
 
 import java.io.File;
-import java.net.URL;
 
 import javax.ws.rs.client.ClientBuilder;
 import javax.ws.rs.core.Link;
@@ -33,6 +32,7 @@ import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.container.test.api.RunAsClient;
 import org.jboss.arquillian.junit.Arquillian;
 import org.jboss.arquillian.test.api.ArquillianResource;
+import org.jboss.as.arquillian.container.ManagementClient;
 import org.jboss.jbossts.star.util.TxLinkNames;
 import org.jboss.jbossts.star.util.TxStatusMediaType;
 import org.jboss.shrinkwrap.api.asset.StringAsset;
@@ -61,7 +61,7 @@ public final class InboundBridgeTestCase extends AbstractTestCase {
     private String loggingRestATParticipantInvocationsUrl;
 
     @ArquillianResource
-    private URL deploymentUrl;
+    private ManagementClient managementClient;
 
     @Deployment
     public static WebArchive getDeployment() {
@@ -153,8 +153,8 @@ public final class InboundBridgeTestCase extends AbstractTestCase {
         Assert.assertEquals("LoggingXAResource.rollback", xaResourceInvocations.get(2));
     }
 
-    protected String getDeploymentUrl() {
-        return deploymentUrl.toString();
+    protected String getBaseUrl() {
+        return managementClient.getWebUri().toString();
     }
 
     private void enlistInboundBridgeResource() {

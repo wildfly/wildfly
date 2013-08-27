@@ -27,11 +27,11 @@ import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.container.test.api.RunAsClient;
 import org.jboss.arquillian.junit.Arquillian;
 import org.jboss.arquillian.test.api.ArquillianResource;
+import org.jboss.as.arquillian.container.ManagementClient;
 import org.jboss.jbossts.star.util.TxStatus;
 import org.jboss.jbossts.star.util.TxSupport;
 import org.jboss.jbossts.star.util.media.txstatusext.TransactionManagerElement;
 import org.jboss.jbossts.star.util.media.txstatusext.TransactionStatisticsElement;
-import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.spec.WebArchive;
 import org.junit.Assert;
 import org.junit.Before;
@@ -53,7 +53,7 @@ import java.net.URL;
 public final class ProvidersTestCase extends AbstractTestCase {
 
     @ArquillianResource
-    private URL deploymentUrl;
+    private ManagementClient managementClient;
 
     @Deployment
     public static WebArchive getDeployment() {
@@ -87,8 +87,8 @@ public final class ProvidersTestCase extends AbstractTestCase {
         Assert.assertEquals(1, transactionStatisticsElement.getActive());
     }
 
-    protected String getDeploymentUrl() {
-        return deploymentUrl.toString();
+    protected String getBaseUrl() {
+        return managementClient.getWebUri().toString();
     }
 
 }
