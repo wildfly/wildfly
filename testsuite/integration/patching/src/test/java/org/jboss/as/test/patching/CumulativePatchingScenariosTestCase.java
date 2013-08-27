@@ -82,11 +82,10 @@ public class CumulativePatchingScenariosTestCase extends AbstractPatchingTestCas
                 .build();
 
         ContentModification moduleAdded = ContentModificationUtils.addModule(oneOffPatchDir, layerPatchID, newModule);
-        ProductConfig productConfig = new ProductConfig(PRODUCT, asVersion, "main");
         Patch oneOffPatch = PatchBuilder.create()
                 .setPatchId(patchID)
                 .setDescription("A one-off patch adding a new module.")
-                .oneOffPatchIdentity(productConfig.getProductName(), productConfig.getProductVersion())
+                .oneOffPatchIdentity(PRODUCT, asVersion)
                 .getParent()
                 .oneOffPatchElement(layerPatchID, "base", false)
                 .setDescription("New module for the base layer")
@@ -106,24 +105,6 @@ public class CumulativePatchingScenariosTestCase extends AbstractPatchingTestCas
         final ResourceItem resourceItem1 = new ResourceItem("testFile1", "content1".getBytes());
         final ResourceItem resourceItem2 = new ResourceItem("testFile2", "content2".getBytes());
 
-
-        Asset newManifest = new Asset() {
-            @Override
-            public InputStream openStream() {
-                String line = "JBossAS-Release-Version: " + targetAsVersion + "\n";
-                return new ByteArrayInputStream(line.getBytes());
-            }
-        };
-        JavaArchive versionModuleJar = ShrinkWrap.create(JavaArchive.class)
-                .addPackage("org.jboss.as.version")
-                .addAsManifestResource(newManifest, "MANIFEST.MF");
-
-        ByteArrayOutputStream baos = new ByteArrayOutputStream();
-        versionModuleJar.as(ZipExporter.class).exportTo(baos);
-        ResourceItem versionModuleResourceItem = new ResourceItem("as-version.jar", baos.toByteArray());
-        final String versionModuleName = "org.jboss.as.version";
-        final String originalVersionModulePath = MODULES_PATH + FILE_SEPARATOR + versionModuleName.replace(".", FILE_SEPARATOR) + FILE_SEPARATOR + "main";
-
         // Also see if we can update jboss-modules
         final File installation = new File(AS_DISTRIBUTION);
         final File patchDir = new File(cpPatchDir, patchID);
@@ -134,21 +115,19 @@ public class CumulativePatchingScenariosTestCase extends AbstractPatchingTestCas
                 .miscFile(resourceItem2)
                 .build();
 
-        Module modifiedModule = new Module.Builder(versionModuleName)
-                .resourceRoot(versionModuleResourceItem)
-                .property("jboss.api", "private")
-                .dependency("org.jboss.logging")
-                .dependency("org.jboss.modules")
-                .build();
+        // Create the version module
+        final String versionModuleName = ProductInfo.getVersionModule();
+        final String slot = ProductInfo.getVersionModuleSlot();
+        final String originalVersionModulePath = MODULES_PATH + FILE_SEPARATOR + versionModuleName.replace(".", FILE_SEPARATOR) + FILE_SEPARATOR + slot;
+        final Module modifiedModule = PatchingTestUtil.createVersionModule(targetAsVersion);
 
         ContentModification moduleAdded = ContentModificationUtils.addModule(cpPatchDir, layerPatchID, newModule);
         ContentModification versionModuleModified = ContentModificationUtils.modifyModule(cpPatchDir, layerPatchID, HashUtils.hashFile(new File(originalVersionModulePath)), modifiedModule);
 
-        ProductConfig productConfig = new ProductConfig(PRODUCT, asVersion, "main");
         Patch cpPatch = PatchBuilder.create()
                 .setPatchId(patchID)
                 .setDescription("A cp patch.")
-                .upgradeIdentity(productConfig.getProductName(), productConfig.getProductVersion(), targetAsVersion)
+                .upgradeIdentity(PRODUCT, asVersion, targetAsVersion)
                 .getParent()
                 .upgradeElement(layerPatchID, "base", false)
                 .addContentModification(moduleAdded)
@@ -164,37 +143,19 @@ public class CumulativePatchingScenariosTestCase extends AbstractPatchingTestCas
         String layerPatchID = randomString();
         File cpPatchDir = mkdir(tempDir, patchID);
 
-        Asset newManifest = new Asset() {
-            @Override
-            public InputStream openStream() {
-                String line = "JBossAS-Release-Version: " + targetAsVersion + "\n";
-                return new ByteArrayInputStream(line.getBytes());
-            }
-        };
-        JavaArchive versionModuleJar = ShrinkWrap.create(JavaArchive.class)
-                .addPackage("org.jboss.as.version")
-                .addAsManifestResource(newManifest, "MANIFEST.MF");
+        // Create the version module
+        final String versionModuleName = ProductInfo.getVersionModule();
+        final String slot = ProductInfo.getVersionModuleSlot();
+        final String originalVersionModulePath = MODULES_PATH + FILE_SEPARATOR + versionModuleName.replace(".", FILE_SEPARATOR) + FILE_SEPARATOR + slot;
 
-        ByteArrayOutputStream baos = new ByteArrayOutputStream();
-        versionModuleJar.as(ZipExporter.class).exportTo(baos);
-        ResourceItem versionModuleResourceItem = new ResourceItem("as-version.jar", baos.toByteArray());
-        final String versionModuleName = "org.jboss.as.version";
-        final String originalVersionModulePath = MODULES_PATH + FILE_SEPARATOR + versionModuleName.replace(".", FILE_SEPARATOR) + FILE_SEPARATOR + "main";
-
-        Module modifiedModule = new Module.Builder(versionModuleName)
-                .resourceRoot(versionModuleResourceItem)
-                .property("jboss.api", "private")
-                .dependency("org.jboss.logging")
-                .dependency("org.jboss.modules")
-                .build();
+        final Module modifiedModule = PatchingTestUtil.createVersionModule(targetAsVersion);
 
         // create broken patch - replaced layerPatchID with patchID
         ContentModification versionModuleModified = ContentModificationUtils.modifyModule(cpPatchDir, patchID, HashUtils.hashFile(new File(originalVersionModulePath)), modifiedModule);
-        ProductConfig productConfig = new ProductConfig(PRODUCT, asVersion, "main");
         Patch cpPatch = PatchBuilder.create()
                 .setPatchId(patchID)
                 .setDescription("A cp patch.")
-                .upgradeIdentity(productConfig.getProductName(), productConfig.getProductVersion(), targetAsVersion)
+                .upgradeIdentity(PRODUCT, asVersion, targetAsVersion)
                 .getParent()
                 .upgradeElement(layerPatchID, "base", false)
                 .addContentModification(versionModuleModified)
@@ -364,7 +325,7 @@ public class CumulativePatchingScenariosTestCase extends AbstractPatchingTestCas
 
         // apply cumulative patch
         controller.start(CONTAINER);
-        Assert.assertTrue("Patch should be accepted", CliUtilsForPatching.applyPatch(cpZip.getAbsolutePath()));
+        Assert.assertTrue("Patch should be accepted ", CliUtilsForPatching.applyPatch(cpZip.getAbsolutePath()));
         Assert.assertTrue("server should be in restart-required mode",
                 CliUtilsForPatching.doesServerRequireRestart());
         controller.stop(CONTAINER);

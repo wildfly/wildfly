@@ -33,10 +33,12 @@ import org.jboss.as.version.ProductConfig;
 import org.jboss.dmr.ModelNode;
 import org.jboss.logging.Logger;
 import org.junit.Assert;
+import org.junit.BeforeClass;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
 import java.io.File;
+import java.io.IOException;
 import java.util.Arrays;
 import java.util.List;
 
@@ -52,6 +54,7 @@ import static org.jboss.as.test.patching.PatchingTestUtil.PATCHES_PATH;
 import static org.jboss.as.test.patching.PatchingTestUtil.PRODUCT;
 import static org.jboss.as.test.patching.PatchingTestUtil.createPatchXMLFile;
 import static org.jboss.as.test.patching.PatchingTestUtil.createZippedPatchFile;
+import static org.jboss.as.test.patching.PatchingTestUtil.dump;
 import static org.jboss.as.test.patching.PatchingTestUtil.randomString;
 import static org.jboss.as.test.patching.PatchingTestUtil.readFile;
 
@@ -64,6 +67,17 @@ import static org.jboss.as.test.patching.PatchingTestUtil.readFile;
 public class BasicOneOffPatchingScenariosTestCase extends AbstractPatchingTestCase {
 
     private static final Logger logger = Logger.getLogger(BasicOneOffPatchingScenariosTestCase.class);
+
+    private static final String FILE1 = PatchingTestUtil.AS_DISTRIBUTION + FILE_SEPARATOR + "README.txt";
+
+    @BeforeClass
+    public static void prepare() throws IOException {
+        // README.txt does not exist on EAP
+        final File file  = new File(FILE1);
+        if (! file.exists()) {
+            dump(file, "test-content");
+        }
+    }
 
     /**
      * Prepare a one-off patch which adds a misc file. Apply it, check that the file was created.
@@ -571,7 +585,7 @@ public class BasicOneOffPatchingScenariosTestCase extends AbstractPatchingTestCa
         final String testContent2 = "test content2";
         final String originalContent2 = readFile(testFilePath2);
 
-        final String[] testFilePathSegments1 = new String[]{"welcome-content", "documentation.html"};
+        final String[] testFilePathSegments1 = new String[]{"welcome-content", "noredirect.html"};
         final String testFilePathDeleted1 = AS_DISTRIBUTION + FILE_SEPARATOR + Joiner.on(FILE_SEPARATOR).join(testFilePathSegments1);
         final String originalContentOfDeletedFile1 = readFile(testFilePathDeleted1);
         final String[] testFilePathSegments2 = new String[]{"welcome-content", "index.html"};

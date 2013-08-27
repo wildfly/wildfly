@@ -100,7 +100,7 @@ public class ContentModificationUtils {
         File baseDir = newFile(patchDir, patchElementID, MODULES);
         File mainDir = newModule.writeToDisk(baseDir);
         byte[] newHash = hashFile(mainDir);
-        ContentModification moduleUpdated = new ContentModification(new ModuleItem(newModule.getName(), ModuleItem.MAIN_SLOT, newHash), existingHash, MODIFY);
+        ContentModification moduleUpdated = new ContentModification(new ModuleItem(newModule.getName(), newModule.getSlot(), newHash), existingHash, MODIFY);
         return moduleUpdated;
     }
 
