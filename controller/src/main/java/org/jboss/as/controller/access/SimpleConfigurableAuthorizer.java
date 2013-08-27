@@ -30,9 +30,10 @@ import org.jboss.as.controller.access.constraint.ScopingConstraint;
 import org.jboss.as.controller.access.permission.CombinationPolicy;
 import org.jboss.as.controller.access.permission.ManagementPermissionAuthorizer;
 import org.jboss.as.controller.access.rbac.DefaultPermissionFactory;
-import org.jboss.as.controller.access.rbac.MockRoleMapper;
+import org.jboss.as.controller.access.rbac.RunAsRoleMapper;
 import org.jboss.as.controller.access.rbac.RoleMapper;
 import org.jboss.as.controller.access.rbac.StandardRole;
+import org.jboss.as.controller.access.rbac.SuperUserRoleMapper;
 
 /**
  * Simple {@link ConfigurableAuthorizer} implementation that gives all permissions to any authenticated
@@ -52,17 +53,17 @@ import org.jboss.as.controller.access.rbac.StandardRole;
  */
 public class SimpleConfigurableAuthorizer implements ConfigurableAuthorizer {
 
-    private final RoleMapper roleMapper;
+    private final RunAsRoleMapper roleMapper;
     private final DefaultPermissionFactory permissionFactory;
     private final Authorizer authorizer;
     private final Set<String> addedRoles = new HashSet<String>();
 
     public SimpleConfigurableAuthorizer() {
-        this(MockRoleMapper.INSTANCE);
+        this(new RunAsRoleMapper(SuperUserRoleMapper.INSTANCE));
     }
 
     public SimpleConfigurableAuthorizer(final RoleMapper roleMapper) {
-        this.roleMapper = roleMapper;
+        this.roleMapper = new RunAsRoleMapper(roleMapper);
         permissionFactory = new DefaultPermissionFactory(CombinationPolicy.PERMISSIVE, roleMapper);
         authorizer = new ManagementPermissionAuthorizer(permissionFactory, permissionFactory);
     }

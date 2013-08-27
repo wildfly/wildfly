@@ -32,8 +32,10 @@ import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.OperationStepHandler;
 import org.jboss.as.controller.SimpleOperationDefinition;
 import org.jboss.as.controller.SimpleOperationDefinitionBuilder;
+import org.jboss.as.controller.access.Action;
 import org.jboss.as.controller.access.TargetAttribute;
 import org.jboss.as.controller.access.rbac.RoleMapper;
+import org.jboss.as.controller.access.rbac.RunAsRoleMapper;
 import org.jboss.as.domain.management._private.DomainManagementResolver;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.ModelType;
@@ -53,7 +55,7 @@ public class IsCallerInRoleOperation implements OperationStepHandler {
     private final RoleMapper roleMapper;
 
     private IsCallerInRoleOperation(final RoleMapper roleMapper) {
-        this.roleMapper = roleMapper;
+        this.roleMapper = new RunAsRoleMapper(roleMapper);
     }
 
     @Override
@@ -65,7 +67,7 @@ public class IsCallerInRoleOperation implements OperationStepHandler {
         } else {
             ModelNode result = context.getResult();
 
-            Set<String> roles = roleMapper.mapRoles(context.getCaller(), null, null, (TargetAttribute) null);
+            Set<String> roles = roleMapper.mapRoles(context.getCaller(), null, new Action(operation, null), (TargetAttribute) null);
 
             result.set(roles.contains(roleName));
         }
