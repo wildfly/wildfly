@@ -60,6 +60,9 @@ public class DomainTransformers {
     private static final ModelVersion VERSION_1_3 = ModelVersion.create(1, 3, 0);
     //AS 7.2.0.Final
     private static final ModelVersion VERSION_1_4 = ModelVersion.create(1, 4, 0);
+    //WF 8.0.0.Final
+    private static final ModelVersion VERSION_2_0 = ModelVersion.create(2, 0, 0);
+
     /**
      * Initialize the domain registry.
      *
@@ -67,34 +70,41 @@ public class DomainTransformers {
      */
     public static void initializeDomainRegistry(final TransformerRegistry registry) {
 
-        initializeDomainRegistry(registry, VERSION_1_2);
-        initializeDomainRegistry(registry, VERSION_1_3);
-        initializeDomainRegistry(registry, VERSION_1_4);
+        initializeDomainRegistryEAP60(registry, VERSION_1_2);
+        initializeDomainRegistryEAP60(registry, VERSION_1_3);
+        initializeDomainRegistry14(registry);
+        initializeDomainRegistry20(registry);
     }
 
-    private static void initializeDomainRegistry(TransformerRegistry registry, ModelVersion modelVersion) {
+    private static void initializeDomainRegistryEAP60(TransformerRegistry registry, ModelVersion modelVersion) {
         TransformersSubRegistration domain = registry.getDomainRegistration(modelVersion);
-        if (modelVersion == VERSION_1_2 || modelVersion == VERSION_1_3) {
-            // Discard all operations to the newly introduced jsf extension
-            domain.registerSubResource(JSF_EXTENSION, IGNORED_EXTENSIONS);
 
-            JSFSubsystemTransformers.registerTransformers120(registry, domain);
-            PathsTransformers.registerTransformers120(domain);
-            DeploymentTransformers.registerTransformers120(domain);
-            SystemPropertyTransformers.registerTransformers120(domain);
-            SocketBindingGroupTransformers.registerTransformers120(domain);
-            ServerGroupTransformers.registerTransformers120(domain);
+        // Discard all operations to the newly introduced jsf extension
+        domain.registerSubResource(JSF_EXTENSION, IGNORED_EXTENSIONS);
 
-            //Add the domain interface and path name. This is from a read attribute handler but in < 1.4.0 it existed in the model
-            domain.registerSubResource(PathElement.pathElement(INTERFACE), AddNameFromAddressResourceTransformer.INSTANCE);
-            domain.registerSubResource(PathElement.pathElement(PATH), AddNameFromAddressResourceTransformer.INSTANCE);
+        JSFSubsystemTransformers.registerTransformers120(registry, domain);
+        PathsTransformers.registerTransformers120(domain);
+        DeploymentTransformers.registerTransformers120(domain);
+        SystemPropertyTransformers.registerTransformers120(domain);
+        SocketBindingGroupTransformers.registerTransformers120(domain);
+        ServerGroupTransformers.registerTransformers120(domain);
 
-        } else if (modelVersion == VERSION_1_4) {
-            //TODO not sure if these should be handled here for 1.4.0 or if it is better in the tests?
-            //Add the domain interface name. This is currently from a read attribute handler but in < 1.4.0 it existed in the model
-            domain.registerSubResource(PathElement.pathElement(INTERFACE), AddNameFromAddressResourceTransformer.INSTANCE);
-            domain.registerSubResource(PathElement.pathElement(PATH), AddNameFromAddressResourceTransformer.INSTANCE);
-        }
+        //Add the domain interface and path name. This is from a read attribute handler but in < 1.4.0 it existed in the model
+        domain.registerSubResource(PathElement.pathElement(INTERFACE), AddNameFromAddressResourceTransformer.INSTANCE);
+        domain.registerSubResource(PathElement.pathElement(PATH), AddNameFromAddressResourceTransformer.INSTANCE);
+    }
+
+    private static void initializeDomainRegistry14(TransformerRegistry registry) {
+        TransformersSubRegistration domain = registry.getDomainRegistration(VERSION_1_4);
+        //TODO not sure if these should be handled here for 1.4.0 or if it is better in the tests?
+        //Add the domain interface name. This is currently from a read attribute handler but in < 1.4.0 it existed in the model
+        domain.registerSubResource(PathElement.pathElement(INTERFACE), AddNameFromAddressResourceTransformer.INSTANCE);
+        domain.registerSubResource(PathElement.pathElement(PATH), AddNameFromAddressResourceTransformer.INSTANCE);
+    }
+
+    private static void initializeDomainRegistry20(TransformerRegistry registry) {
+        TransformersSubRegistration domain = registry.getDomainRegistration(VERSION_2_0);
+        ManagementTransformers.registerTransformers200(domain);
     }
 
     private static final ResourceTransformer IGNORED_EXTENSIONS = new IgnoreExtensionResourceTransformer();

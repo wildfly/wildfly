@@ -28,5 +28,13 @@ package org.jboss.as.controller.access.constraint;
  *
  * @author Brian Stansberry (c) 2013 Red Hat Inc.
  */
-public interface ScopingConstraint extends Constraint {
+public interface ScopingConstraint {
+
+    /** Get the factory that produces constraints of this type */
+    ConstraintFactory getFactory();
+
+    Constraint getStandardConstraint();
+
+    /** Get a constraint that should be used for reads of resources that are outside the scope of the constraint. */
+    Constraint getOutofScopeReadConstraint();
 }

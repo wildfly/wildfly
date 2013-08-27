@@ -21,13 +21,14 @@
  */
 package org.jboss.as.core.security;
 
-
 /**
  * A {@link Principal} used to represent an authenticated identities group membership.
  *
  * @author <a href="mailto:darran.lofthouse@jboss.com">Darran Lofthouse</a>
  */
 public final class RealmGroup extends AbstractRealmPrincipal implements GroupPrincipal {
+
+    private static final long serialVersionUID = -6964117745867235712L;
 
     public RealmGroup(String realm, String name) {
         super(realm, name);

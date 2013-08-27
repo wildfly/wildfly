@@ -26,7 +26,7 @@ import java.security.Permission;
 import java.security.PermissionCollection;
 
 import org.jboss.as.controller.access.Action;
-import org.jboss.as.controller.access.constraint.ScopingConstraint;
+import org.jboss.as.controller.access.constraint.Constraint;
 
 /**
  * Base class for {@link Permission} implementations related to WildFly access control.
@@ -75,5 +75,5 @@ public abstract class ManagementPermission extends Permission {
         return actionEffect;
     }
 
-    public abstract ManagementPermission createScopedPermission(ScopingConstraint constraint);
+    public abstract ManagementPermission createScopedPermission(Constraint constraint);
 }

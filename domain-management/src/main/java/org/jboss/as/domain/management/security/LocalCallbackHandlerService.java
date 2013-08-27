@@ -22,6 +22,7 @@
 
 package org.jboss.as.domain.management.security;
 
+import static org.jboss.as.domain.management.DomainManagementLogger.SECURITY_LOGGER;
 import static org.jboss.as.domain.management.DomainManagementMessages.MESSAGES;
 import static org.jboss.as.domain.management.RealmConfigurationConstants.LOCAL_DEFAULT_USER;
 
@@ -133,11 +134,18 @@ class LocalCallbackHandlerService implements Service<CallbackHandlerService>, Ca
                 NameCallback ncb = (NameCallback) current;
                 String userName = ncb.getDefaultName();
                 if ((allowAll || allowedUsersSet.contains(userName)) == false) {
+                    SECURITY_LOGGER.tracef("Username '%s' is not permitted for local authentication.", userName);
                     throw MESSAGES.invalidLocalUser(userName);
                 }
             } else if (current instanceof AuthorizeCallback) {
                 AuthorizeCallback acb = (AuthorizeCallback) current;
-                acb.setAuthorized(acb.getAuthenticationID().equals(acb.getAuthorizationID()));
+                boolean authorized = acb.getAuthenticationID().equals(acb.getAuthorizationID());
+                if (authorized == false) {
+                    SECURITY_LOGGER.tracef(
+                            "Checking 'AuthorizeCallback', authorized=false, authenticationID=%s, authorizationID=%s.",
+                            acb.getAuthenticationID(), acb.getAuthorizationID());
+                }
+                acb.setAuthorized(authorized);
             } else {
                 throw new UnsupportedCallbackException(current);
             }

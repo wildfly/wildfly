@@ -59,6 +59,7 @@ import javax.net.ssl.SSLContext;
 
 import org.jboss.as.controller.ControlledProcessStateService;
 import org.jboss.as.controller.ModelController;
+import org.jboss.as.domain.http.server.security.AnonymousMechanism;
 import org.jboss.as.domain.http.server.security.AuthenticationMechanismWrapper;
 import org.jboss.as.domain.http.server.security.ConnectionAuthenticationCacheHandler;
 import org.jboss.as.domain.http.server.security.DmrFailureReadinessHandler;
@@ -231,9 +232,10 @@ public class ManagementHttpServer {
     }
 
     private static HttpHandler secureDomainAccess(final HttpHandler domainHandler, final SecurityRealm securityRealm) {
+        List<AuthenticationMechanism> undertowMechanisms;
         if (securityRealm != null) {
             Set<AuthMechanism> mechanisms = securityRealm.getSupportedAuthenticationMechanisms();
-            List<AuthenticationMechanism> undertowMechanisms = new ArrayList<AuthenticationMechanism>(mechanisms.size());
+            undertowMechanisms = new ArrayList<AuthenticationMechanism>(mechanisms.size());
             undertowMechanisms.add(wrap(new CachedAuthenticatedSessionMechanism(), null));
             for (AuthMechanism current : mechanisms) {
                 switch (current) {
@@ -249,27 +251,24 @@ public class ManagementHttpServer {
                     case PLAIN:
                         undertowMechanisms.add(wrap(new BasicAuthenticationMechanism(securityRealm.getName()), current));
                         break;
+                    case LOCAL:
+                        break;
                 }
             }
-
-            if (undertowMechanisms.size() > 1) {
-                // If the only mechanism is the cached mechanism then no need to add these.
-                HttpHandler current = domainHandler;
-                current = new AuthenticationCallHandler(current);
-                // Currently the security handlers are being added after a PATH handler so we know authentication is required by
-                // this point.
-                current = new AuthenticationConstraintHandler(current);
-                current = new AuthenticationMechanismsHandler(current, undertowMechanisms);
-                current = new ConnectionAuthenticationCacheHandler(current);
-
-                return new SecurityInitialHandler(AuthenticationMode.PRO_ACTIVE, new RealmIdentityManager(securityRealm),
-                        current);
-            }
-            // TODO - If there were no mechanisms to begin with requests should be represented as an anonymous user.
-            // If there were mechanisms but none suitable for HTTP reject all requests.
+        } else {
+            undertowMechanisms = Collections.singletonList(wrap(new AnonymousMechanism(), null));
         }
 
-        return domainHandler;
+        // If the only mechanism is the cached mechanism then no need to add these.
+        HttpHandler current = domainHandler;
+        current = new AuthenticationCallHandler(current);
+        // Currently the security handlers are being added after a PATH handler so we know authentication is required by
+        // this point.
+        current = new AuthenticationConstraintHandler(current);
+        current = new AuthenticationMechanismsHandler(current, undertowMechanisms);
+        current = new ConnectionAuthenticationCacheHandler(current);
+
+        return new SecurityInitialHandler(AuthenticationMode.PRO_ACTIVE, new RealmIdentityManager(securityRealm), current);
     }
 
     private static AuthenticationMechanism wrap(final AuthenticationMechanism toWrap, final AuthMechanism mechanism) {

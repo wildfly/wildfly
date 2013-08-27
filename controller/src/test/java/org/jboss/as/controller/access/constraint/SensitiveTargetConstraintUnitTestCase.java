@@ -88,15 +88,16 @@ public class SensitiveTargetConstraintUnitTestCase {
         };
         ManagementResourceRegistration root = ManagementResourceRegistration.Factory.create(rootRd);
         root.registerOperationHandler(READ_CONFIG_DEF, NoopOperationStepHandler.WITH_RESULT, true);
-        rootTarget = TargetResource.forStandalone(root, Resource.Factory.create());
-        ResourceDefinition childRd = new SimpleResourceDefinition(PathElement.pathElement("child"), new NonResolvingResourceDescriptionResolver()) {
+        rootTarget = TargetResource.forStandalone(PathAddress.EMPTY_ADDRESS, root, Resource.Factory.create());
+        PathElement childPE = PathElement.pathElement("child");
+        ResourceDefinition childRd = new SimpleResourceDefinition(childPE, new NonResolvingResourceDescriptionResolver()) {
             @Override
             public List<AccessConstraintDefinition> getAccessConstraints() {
                 return childResourceConstraints;
             }
         };
         ManagementResourceRegistration child = root.registerSubModel(childRd);
-        childTarget = TargetResource.forStandalone(child, Resource.Factory.create());
+        childTarget = TargetResource.forStandalone(PathAddress.pathAddress(childPE), child, Resource.Factory.create());
     }
 
     @Before
@@ -150,19 +151,19 @@ public class SensitiveTargetConstraintUnitTestCase {
     private void multipleConsistentTest() {
 
         Constraint testee = SensitiveTargetConstraint.FACTORY.getRequiredConstraint(Action.ActionEffect.READ_CONFIG, getReadConfigAction(), childTarget);
-        assertFalse(MONITOR_READ_CONFIG.violates(testee));
-        assertFalse(testee.violates(MONITOR_READ_CONFIG));
-        assertFalse(ADMIN_READ_CONFIG.violates(testee));
-        assertFalse(testee.violates(ADMIN_READ_CONFIG));
+        assertFalse(MONITOR_READ_CONFIG.violates(testee, Action.ActionEffect.READ_CONFIG));
+        assertFalse(testee.violates(MONITOR_READ_CONFIG, Action.ActionEffect.READ_CONFIG));
+        assertFalse(ADMIN_READ_CONFIG.violates(testee, Action.ActionEffect.READ_CONFIG));
+        assertFalse(testee.violates(ADMIN_READ_CONFIG, Action.ActionEffect.READ_CONFIG));
 
         a.setConfiguredRequiresReadPermission(true);
         b.setConfiguredRequiresReadPermission(true);
 
         testee = SensitiveTargetConstraint.FACTORY.getRequiredConstraint(Action.ActionEffect.READ_CONFIG, getReadConfigAction(), childTarget);
-        assertTrue(MONITOR_READ_CONFIG.violates(testee));
-        assertTrue(testee.violates(MONITOR_READ_CONFIG));
-        assertFalse(ADMIN_READ_CONFIG.violates(testee));
-        assertFalse(testee.violates(ADMIN_READ_CONFIG));
+        assertTrue(MONITOR_READ_CONFIG.violates(testee, Action.ActionEffect.READ_CONFIG));
+        assertTrue(testee.violates(MONITOR_READ_CONFIG, Action.ActionEffect.READ_CONFIG));
+        assertFalse(ADMIN_READ_CONFIG.violates(testee, Action.ActionEffect.READ_CONFIG));
+        assertFalse(testee.violates(ADMIN_READ_CONFIG, Action.ActionEffect.READ_CONFIG));
     }
 
     private void multipleInconsistentTest() {
@@ -170,19 +171,19 @@ public class SensitiveTargetConstraintUnitTestCase {
         b.setConfiguredRequiresReadPermission(true);
 
         Constraint testee = SensitiveTargetConstraint.FACTORY.getRequiredConstraint(Action.ActionEffect.READ_CONFIG, getReadConfigAction(), childTarget);
-        assertTrue(MONITOR_READ_CONFIG.violates(testee));
-        assertTrue(testee.violates(MONITOR_READ_CONFIG));
-        assertFalse(ADMIN_READ_CONFIG.violates(testee));
-        assertFalse(testee.violates(ADMIN_READ_CONFIG));
+        assertTrue(MONITOR_READ_CONFIG.violates(testee, Action.ActionEffect.READ_CONFIG));
+        assertTrue(testee.violates(MONITOR_READ_CONFIG, Action.ActionEffect.READ_CONFIG));
+        assertFalse(ADMIN_READ_CONFIG.violates(testee, Action.ActionEffect.READ_CONFIG));
+        assertFalse(testee.violates(ADMIN_READ_CONFIG, Action.ActionEffect.READ_CONFIG));
 
         a.setConfiguredRequiresReadPermission(true);
         b.setConfiguredRequiresReadPermission(false);
 
         testee = SensitiveTargetConstraint.FACTORY.getRequiredConstraint(Action.ActionEffect.READ_CONFIG, getReadConfigAction(), childTarget);
-        assertTrue(MONITOR_READ_CONFIG.violates(testee));
-        assertTrue(testee.violates(MONITOR_READ_CONFIG));
-        assertFalse(ADMIN_READ_CONFIG.violates(testee));
-        assertFalse(testee.violates(ADMIN_READ_CONFIG));
+        assertTrue(MONITOR_READ_CONFIG.violates(testee, Action.ActionEffect.READ_CONFIG));
+        assertTrue(testee.violates(MONITOR_READ_CONFIG, Action.ActionEffect.READ_CONFIG));
+        assertFalse(ADMIN_READ_CONFIG.violates(testee, Action.ActionEffect.READ_CONFIG));
+        assertFalse(testee.violates(ADMIN_READ_CONFIG, Action.ActionEffect.READ_CONFIG));
 
     }
 

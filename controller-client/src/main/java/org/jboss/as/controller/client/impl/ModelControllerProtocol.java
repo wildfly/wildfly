@@ -35,7 +35,7 @@ public interface ModelControllerProtocol {
     byte GET_INPUTSTREAM_REQUEST = 0x4C;
     byte CANCEL_ASYNC_REQUEST = 0x4D;
     byte COMPLETE_TX_REQUEST = 0x4E;
-
+    byte GET_SUBJECT_REQUEST = 0x4F;
 
     byte PARAM_END = 0x60;
     byte PARAM_OPERATION = 0x61;
@@ -53,5 +53,7 @@ public interface ModelControllerProtocol {
     byte PARAM_OPERATION_FAILED = 0x49;
     byte PARAM_OPERATION_COMPLETED = 0x4A;
     byte PARAM_OPERATION_PREPARED = 0x4B;
+    // The Subject params
+    byte PARAM_SUBJECT_LENGTH = 0x50;
 
 }

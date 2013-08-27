@@ -34,6 +34,7 @@ import java.util.HashSet;
 import java.util.Set;
 
 import org.jboss.as.controller.ControlledProcessState;
+import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.ProcessType;
 import org.jboss.as.controller.access.Action;
 import org.jboss.as.controller.access.Caller;
@@ -148,7 +149,7 @@ public class DefaultPermissionFactoryTestCase {
                 Collections.singleton(constraintFactory));
 
         Action action = new Action(null, null, EnumSet.of(Action.ActionEffect.ADDRESS));
-        TargetResource targetResource = TargetResource.forStandalone(null, null);
+        TargetResource targetResource = TargetResource.forStandalone(PathAddress.EMPTY_ADDRESS, null, null);
 
         PermissionCollection userPermissions = permissionFactory.getUserPermissions(caller, environment, action, targetResource);
         PermissionCollection requiredPermissions = permissionFactory.getRequiredPermissions(action, targetResource);
@@ -169,7 +170,7 @@ public class DefaultPermissionFactoryTestCase {
                 Collections.singleton(constraintFactory));
 
         Action action = new Action(null, null, EnumSet.of(Action.ActionEffect.ADDRESS));
-        TargetResource targetResource = TargetResource.forStandalone(null, null);
+        TargetResource targetResource = TargetResource.forStandalone(PathAddress.EMPTY_ADDRESS, null, null);
         TargetAttribute targetAttribute = new TargetAttribute(null, new ModelNode(), targetResource);
 
         PermissionCollection userPermissions = permissionFactory.getUserPermissions(caller, environment, action, targetAttribute);
@@ -184,7 +185,7 @@ public class DefaultPermissionFactoryTestCase {
     public void testRoleCombinationRejecting() {
         Action action = new Action(null, null, EnumSet.of(Action.ActionEffect.ADDRESS,
                 Action.ActionEffect.READ_CONFIG));
-        TargetResource targetResource = TargetResource.forStandalone(null, null);
+        TargetResource targetResource = TargetResource.forStandalone(PathAddress.EMPTY_ADDRESS, null, null);
 
         DefaultPermissionFactory permissionFactory = null;
         try {
@@ -298,10 +299,15 @@ public class DefaultPermissionFactoryTestCase {
         }
 
         @Override
-        public boolean violates(Constraint other) {
+        public boolean violates(Constraint other, Action.ActionEffect actionEffect) {
             if (other instanceof TestConstraint) {
                 return this.allowed != ((TestConstraint) other).allowed;
             }
+            return false;
+        }
+
+        @Override
+        public boolean replaces(Constraint other) {
             return false;
         }
 

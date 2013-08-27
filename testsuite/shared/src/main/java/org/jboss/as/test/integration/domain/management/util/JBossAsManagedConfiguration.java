@@ -17,6 +17,11 @@
  */
 package org.jboss.as.test.integration.domain.management.util;
 
+import java.io.File;
+import java.net.URI;
+import java.net.URISyntaxException;
+import java.net.URL;
+
 import javax.security.auth.callback.CallbackHandler;
 
 import org.jboss.arquillian.container.spi.ConfigurationException;
@@ -29,6 +34,34 @@ import org.jboss.as.arquillian.container.CommonContainerConfiguration;
  * @author Brian Stansberry
  */
 public class JBossAsManagedConfiguration extends CommonContainerConfiguration {
+
+    public static JBossAsManagedConfiguration createFromClassLoaderResources(String domainConfigPath,
+                                                                             String hostConfigPath) {
+        JBossAsManagedConfiguration result = new JBossAsManagedConfiguration();
+        if (domainConfigPath != null) {
+            result.setDomainConfigFile(loadConfigFileFromContextClassLoader(domainConfigPath));
+        }
+        if (hostConfigPath != null) {
+            result.setHostConfigFile(hostConfigPath);
+        }
+        return result;
+    }
+
+    public static String loadConfigFileFromContextClassLoader(String resourcePath) {
+        ClassLoader tccl = Thread.currentThread().getContextClassLoader();
+        URL url = tccl.getResource(resourcePath);
+        assert url != null : "cannot find resource at path " + resourcePath;
+        return new File(toURI(url)).getAbsolutePath();
+    }
+
+    private static URI toURI(URL url) {
+        try {
+            return url.toURI();
+        } catch (URISyntaxException e) {
+            throw new RuntimeException(e);
+        }
+    }
+
     private String jbossHome = System.getProperty("jboss.home");
 
     private String javaHome = System.getenv("JAVA_HOME");
@@ -42,6 +75,8 @@ public class JBossAsManagedConfiguration extends CommonContainerConfiguration {
     private int startupTimeoutInSeconds = 120;
 
     private boolean outputToConsole = true;
+
+    private String hostControllerManagementProtocol = "remote";
 
     private String hostControllerManagementAddress = System.getProperty("jboss.test.host.master.address", "localhost");
 
@@ -65,10 +100,20 @@ public class JBossAsManagedConfiguration extends CommonContainerConfiguration {
 
     private CallbackHandler callbackHandler = Authentication.getCallbackHandler();
 
-    public JBossAsManagedConfiguration(JBossAsManagedConfigurationParameters params) {
-        this.jbossHome = params.getJBossHome();
-        this.modulePath = params.getModuleBaseDir();
+    private String mgmtUsersFile;
+
+    private String mgmtGroupsFile;
+
+    public JBossAsManagedConfiguration(String jbossHome) {
+        if (jbossHome != null) {
+            this.jbossHome = jbossHome;
+            this.modulePath = new File(jbossHome, "modules").getAbsolutePath();
+        }
     }
+
+    public JBossAsManagedConfiguration() {
+    }
+
     /*
      * (non-Javadoc)
      *
@@ -170,6 +215,14 @@ public class JBossAsManagedConfiguration extends CommonContainerConfiguration {
         return outputToConsole;
     }
 
+    public String getHostControllerManagementProtocol() {
+        return hostControllerManagementProtocol;
+    }
+
+    public void setHostControllerManagementProtocol(String hostControllerManagementProtocol) {
+        this.hostControllerManagementProtocol = hostControllerManagementProtocol;
+    }
+
     public String getHostControllerManagementAddress() {
         return hostControllerManagementAddress;
     }
@@ -208,6 +261,22 @@ public class JBossAsManagedConfiguration extends CommonContainerConfiguration {
 
     public void setHostConfigFile(String hostConfigFile) {
         this.hostConfigFile = hostConfigFile;
+    }
+
+    public String getMgmtUsersFile() {
+        return mgmtUsersFile;
+    }
+
+    public void setMgmtUsersFile(String mgmtUsersFile) {
+        this.mgmtUsersFile = mgmtUsersFile;
+    }
+
+    public String getMgmtGroupsFile() {
+        return mgmtGroupsFile;
+    }
+
+    public void setMgmtGroupsFile(String mgmtGroupsFile) {
+        this.mgmtGroupsFile = mgmtGroupsFile;
     }
 
     public String getHostCommandLineProperties() {

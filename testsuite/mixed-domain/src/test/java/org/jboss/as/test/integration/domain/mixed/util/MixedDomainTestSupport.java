@@ -24,7 +24,7 @@ package org.jboss.as.test.integration.domain.mixed.util;
 import java.io.File;
 
 import org.jboss.as.test.integration.domain.management.util.DomainTestSupport;
-import org.jboss.as.test.integration.domain.management.util.JBossAsManagedConfigurationParameters;
+import org.jboss.as.test.integration.domain.management.util.JBossAsManagedConfiguration;
 
 /**
  *
@@ -32,9 +32,9 @@ import org.jboss.as.test.integration.domain.management.util.JBossAsManagedConfig
  */
 public class MixedDomainTestSupport extends DomainTestSupport {
 
-    public MixedDomainTestSupport(String testClass, String domainConfig, String masterConfig, String slaveConfig, JBossAsManagedConfigurationParameters slaveParams)
+    public MixedDomainTestSupport(String testClass, String domainConfig, String masterConfig, String slaveConfig, String jbossHome)
             throws Exception {
-        super(testClass, domainConfig, masterConfig, slaveConfig, JBossAsManagedConfigurationParameters.STANDARD, slaveParams);
+        super(testClass, domainConfig, masterConfig, slaveConfig, new JBossAsManagedConfiguration(), new JBossAsManagedConfiguration(jbossHome));
     }
 
 
@@ -42,13 +42,7 @@ public class MixedDomainTestSupport extends DomainTestSupport {
         OldVersionCopier oldVersionCopier = OldVersionCopier.expandOldVersions();
         File dir = oldVersionCopier.getVersionDir(version);
 
-        JBossAsManagedConfigurationParameters slaveParams = new OldSlaveJBossAsManagedConfigurationParameters(dir.getAbsolutePath());
-        MixedDomainTestSupport support = new MixedDomainTestSupport(testClass, "master-config/domain.xml", "master-config/host.xml", "slave-configs/" + dir.getName() + "/domain/configuration/host-slave.xml", slaveParams);
-//
-//        //Override the jboss home for the slave
-//        JBossAsManagedConfiguration slaveConfig = support.getDomainSlaveConfiguration();
-//        slaveConfig.setJbossHome(dir.getAbsolutePath());
-
-        return support;
+        return new MixedDomainTestSupport(testClass, "master-config/domain.xml", "master-config/host.xml",
+                "slave-configs/" + dir.getName() + "/domain/configuration/host-slave.xml", dir.getAbsolutePath());
     }
 }

@@ -20,18 +20,29 @@
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
 
-package org.jboss.as.test.integration.mgmt.access.util;
+package org.jboss.as.domain.controller.transformers;
+
+import org.jboss.as.controller.transform.ResourceTransformer;
+import org.jboss.as.controller.transform.TransformersSubRegistration;
+import org.jboss.as.domain.management.CoreManagementResourceDefinition;
 
 /**
-* Expected outcome of a management request.
-*
-* @author Brian Stansberry (c) 2013 Red Hat Inc.
-*/
-public enum Outcome {
-    /** Request was successful */
-    SUCCESS,
-    /** Request failed with a failure description indicating it authorization failed */
-    UNAUTHORIZED,
-    /** Request failed with a failure description indicating the target resource was not found */
-    HIDDEN
+ * Transformers for the domain-wide management configuration.
+ *
+ * @author Brian Stansberry (c) 2013 Red Hat Inc.
+ */
+class ManagementTransformers {
+
+    /**
+     * TODO remove this; it's just temporary to avoid breaking slaves in non-RBAC configs unti
+     * propagation of RBAC configs to slaves is sorted.
+     * @param parent the parent registration
+     */
+    static void registerTransformers200(TransformersSubRegistration parent) {
+        parent.registerSubResource(CoreManagementResourceDefinition.PATH_ELEMENT, ResourceTransformer.DISCARD);
+    }
+
+    private ManagementTransformers() {
+        // prevent instantiation
+    }
 }

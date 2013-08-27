@@ -29,6 +29,8 @@ package org.jboss.as.core.security;
  */
 public class RealmRole extends SecurityRealmPrincipal implements RolePrincipal {
 
+    private static final long serialVersionUID = -3919796977468858556L;
+
     public RealmRole(final String name) {
         super(name);
     }

@@ -70,6 +70,7 @@ import org.jboss.as.host.controller.HostControllerEnvironment;
 import org.jboss.as.host.controller.ignored.IgnoredDomainResourceRegistry;
 import org.jboss.as.host.controller.mgmt.DomainControllerRuntimeIgnoreTransformationEntry;
 import org.jboss.as.host.controller.mgmt.DomainControllerRuntimeIgnoreTransformationRegistry;
+import org.jboss.as.host.controller.operations.LocalHostControllerInfoImpl;
 import org.jboss.as.management.client.content.ManagedDMRContentTypeResource;
 import org.jboss.as.protocol.mgmt.ManagementChannelHandler;
 import org.jboss.as.repository.ContentRepository;
@@ -269,7 +270,7 @@ public class ApplyRemoteMasterDomainModelHandlerTestCase extends AbstractOperati
 
         @Override
         public LocalHostControllerInfo getLocalHostInfo() {
-            return null;  //To change body of implemented methods use File | Settings | File Templates.
+            return new LocalHostControllerInfoImpl(null, "localhost");
         }
 
         @Override

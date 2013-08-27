@@ -31,8 +31,7 @@ import java.util.Map;
 import org.jboss.as.arquillian.api.ContainerResource;
 import org.jboss.as.arquillian.container.ManagementClient;
 import org.jboss.as.controller.client.ModelControllerClient;
-import org.jboss.as.test.integration.mgmt.access.util.RbacAdminCallbackHandler;
-import org.jboss.as.test.integration.mgmt.access.util.RbacUtil;
+import org.jboss.as.test.integration.management.rbac.RbacAdminCallbackHandler;
 import org.junit.AfterClass;
 
 /**
@@ -66,6 +65,7 @@ public class AbstractRbacTestCase {
         ModelControllerClient result = clients.get(userName);
         if (result == null) {
             result = createClient(userName);
+            clients.put(userName, result);
         }
         return result;
     }

@@ -29,7 +29,6 @@ import java.util.List;
 
 import org.jboss.as.controller.access.Action;
 import org.jboss.as.controller.access.constraint.Constraint;
-import org.jboss.as.controller.access.constraint.ScopingConstraint;
 
 /**
  * Simple implementation of {@link ManagementPermission}.
@@ -63,11 +62,12 @@ public class SimpleManagementPermission extends ManagementPermission {
             // Validate constraints
             assert constraints.length == other.constraints.length : String.format("incompatible ManagementPermission; " +
                     "differing constraint counts %d vs %d", constraints.length, other.constraints.length);
+            Action.ActionEffect actionEffect = getActionEffect();
             for (int i = 0; i < constraints.length; i++) {
                 Constraint ours = constraints[i];
                 Constraint theirs = other.constraints[i];
                 assert ours.getClass() == theirs.getClass() : "incompatible constraints: ours = " + ours.getClass() + " -- theirs = " + theirs.getClass();
-                if (ours.violates(theirs)) {
+                if (ours.violates(theirs, actionEffect)) {
                     return false;
                 }
             }
@@ -98,23 +98,30 @@ public class SimpleManagementPermission extends ManagementPermission {
     }
 
     @Override
-    public ManagementPermission createScopedPermission(ScopingConstraint constraint) {
+    public ManagementPermission createScopedPermission(Constraint constraint) {
         boolean added = false;
         List<Constraint> newList = new ArrayList<Constraint>();
         for (Constraint existing : constraints) {
-            int compare = existing.compareTo(constraint);
-            if (compare > 0) {
-                if (!added) {
-                    newList.add(constraint);
-                    added = true;
-                }
-            } else if (compare == 0) {
-                assert existing.equals(constraint) : "inconsistent equals and compareTo in " + constraint + " and " + existing;
-                continue;
-            } else if (compare < 0) {
-                assert !added : "inconsistent ordering of constraints";
+            if (constraint.replaces(existing)) {
+                // replace existing
+                newList.add(constraint);
+                added = true;
+            } else {
+                newList.add(existing);
             }
-            newList.add(existing);
+        }
+        if (!added) {
+            for (Constraint existing : constraints) {
+                int compare = existing.compareTo(constraint);
+                if (compare > 0) {
+                    if (!added) {
+                        newList.add(constraint);
+                        added = true;
+                    }
+                } else if (compare == 0) {
+                    assert existing.equals(constraint) : "inconsistent equals and compareTo in " + constraint + " and " + existing;
+                }
+            }
         }
         if (!added) {
             newList.add(constraint);

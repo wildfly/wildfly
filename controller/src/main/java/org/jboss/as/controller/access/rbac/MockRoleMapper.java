@@ -24,6 +24,7 @@ package org.jboss.as.controller.access.rbac;
 
 import java.util.Collections;
 import java.util.HashSet;
+import java.util.Locale;
 import java.util.Set;
 
 import org.jboss.as.controller.access.Action;
@@ -73,15 +74,24 @@ public class MockRoleMapper implements RoleMapper {
             ModelNode rolesNode = headers.get("roles");
             Set<String> roleSet = new HashSet<String>();
             if (rolesNode.getType() == ModelType.STRING) {
-                roleSet.add(rolesNode.asString().toUpperCase());
+                roleSet.add(getRoleFromText(rolesNode.asString()));
             } else {
                 for (ModelNode role : headers.get("roles").asList()) {
-                    roleSet.add(role.asString().toUpperCase());
+                    roleSet.add(getRoleFromText(role.asString()));
                 }
             }
             result = Collections.unmodifiableSet(roleSet);
         }
 
         return result;
+    }
+
+    private static String getRoleFromText(String text) {
+        try {
+            StandardRole standardRole = StandardRole.valueOf(text.toUpperCase(Locale.ENGLISH));
+            return standardRole.toString();
+        } catch (Exception e) {
+            return text;
+        }
     }
 }

@@ -21,6 +21,7 @@
  */
 package org.jboss.as.controller.security;
 
+import java.io.Serializable;
 import java.security.Principal;
 
 import org.jboss.as.core.security.AccessMechanism;
@@ -30,7 +31,10 @@ import org.jboss.as.core.security.AccessMechanism;
  *
  * @author <a href="kabir.khan@jboss.com">Kabir Khan</a>
  */
-public class AccessMechanismPrincipal implements Principal {
+public class AccessMechanismPrincipal implements Principal, Serializable {
+
+    private static final long serialVersionUID = -3233777258697207164L;
+
     private final AccessMechanism accessMechanism;
 
     public AccessMechanismPrincipal(AccessMechanism accessMechanism) {
