@@ -25,14 +25,14 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SUB
 
 import java.io.IOException;
 import java.util.List;
+import org.jboss.as.connector.logging.ConnectorLogger;
 
 import org.jboss.as.controller.ModelVersion;
 import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.PathElement;
 import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
-import org.jboss.as.model.test.FailedOperationTransformationConfig;
 import org.jboss.as.model.test.ModelTestControllerVersion;
-import org.jboss.as.model.test.ModelTestUtils;
+import org.jboss.as.model.test.SingleClassFilter;
 import org.jboss.as.subsystem.test.AbstractSubsystemBaseTest;
 import org.jboss.as.subsystem.test.AdditionalInitialization;
 import org.jboss.as.subsystem.test.KernelServices;
@@ -156,7 +156,8 @@ public class ResourceAdaptersSubsystemTestCase extends AbstractSubsystemBaseTest
                 .addOperationValidationResolve("add", PathAddress.pathAddress(
                         PathElement.pathElement(SUBSYSTEM, mainSubsystemName),
                         PathElement.pathElement("resource-adapter", "*"),
-                        PathElement.pathElement("connection-definitions", "*")));
+                        PathElement.pathElement("connection-definitions", "*")))
+                .excludeFromParent(SingleClassFilter.createFilter(ConnectorLogger.class));
 
         KernelServices mainServices = builder.build();
         org.junit.Assert.assertTrue(mainServices.isSuccessfulBoot());

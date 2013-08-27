@@ -40,6 +40,7 @@ import org.jboss.as.model.test.FailedOperationTransformationConfig;
 import org.jboss.as.model.test.FailedOperationTransformationConfig.RejectExpressionsConfig;
 import org.jboss.as.model.test.ModelTestControllerVersion;
 import org.jboss.as.model.test.ModelTestUtils;
+import org.jboss.as.model.test.SingleClassFilter;
 import org.jboss.as.subsystem.test.AbstractSubsystemBaseTest;
 import org.jboss.as.subsystem.test.AdditionalInitialization;
 import org.jboss.as.subsystem.test.KernelServices;
@@ -173,7 +174,8 @@ public class SecurityDomainModelv12UnitTestCase extends AbstractSubsystemBaseTes
         //which is why we need to include the jboss-as-controller artifact.
         builder.createLegacyKernelServicesBuilder(null, controllerVersion, modelVersion)
                 .addMavenResourceURL("org.jboss.as:jboss-as-security:" + controllerVersion.getMavenGavVersion())
-                .dontPersistXml();
+                .dontPersistXml()
+                .excludeFromParent(SingleClassFilter.createFilter(SecurityLogger.class));
 
 
         KernelServices mainServices = builder.build();
@@ -196,7 +198,8 @@ public class SecurityDomainModelv12UnitTestCase extends AbstractSubsystemBaseTes
         //which is why we need to include the jboss-as-controller artifact.
         builder.createLegacyKernelServicesBuilder(null, controllerVersion, modelVersion)
                 .addMavenResourceURL("org.jboss.as:jboss-as-security:" + controllerVersion.getMavenGavVersion())
-                .dontPersistXml();
+                .dontPersistXml()
+                .excludeFromParent(SingleClassFilter.createFilter(SecurityLogger.class));
 
         KernelServices mainServices = builder.build();
         Assert.assertTrue(mainServices.isSuccessfulBoot());
