@@ -35,12 +35,15 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
 
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.FileFilter;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.FileWriter;
 import java.io.IOException;
+import java.io.InputStream;
 import java.io.OutputStream;
 import java.nio.charset.Charset;
 import java.util.Arrays;
@@ -64,9 +67,11 @@ import org.jboss.as.patching.metadata.ModificationType;
 import org.jboss.as.patching.metadata.Patch;
 import org.jboss.as.patching.metadata.PatchXml;
 import org.jboss.as.process.protocol.StreamUtils;
+import org.jboss.as.test.patching.util.module.Module;
 import org.jboss.dmr.ModelNode;
 import org.jboss.logging.Logger;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
+import org.jboss.shrinkwrap.api.asset.Asset;
 import org.jboss.shrinkwrap.api.asset.StringAsset;
 import org.jboss.shrinkwrap.api.exporter.ZipExporter;
 import org.jboss.shrinkwrap.api.spec.JavaArchive;
@@ -83,8 +88,6 @@ public class PatchingTestUtil {
 
     public static final String CONTAINER = "jboss";
     public static final String AS_DISTRIBUTION = System.getProperty("jbossas.dist");
-    public static final String AS_VERSION = System.getProperty("jbossas.version");
-    public static final String PRODUCT = "WildFly";
     public static final String FILE_SEPARATOR = File.separator;
     private static final String RELATIVE_PATCHES_PATH = Joiner.on(FILE_SEPARATOR).join(new String[] {MODULES, SYSTEM, LAYERS, BASE, OVERLAYS});
     public static final String PATCHES_PATH = AS_DISTRIBUTION + FILE_SEPARATOR + RELATIVE_PATCHES_PATH;
@@ -92,6 +95,9 @@ public class PatchingTestUtil {
     public static final String MODULES_PATH = AS_DISTRIBUTION + FILE_SEPARATOR + RELATIVE_MODULES_PATH;
     public static final File BASE_MODULE_DIRECTORY = newFile(new File(PatchingTestUtil.AS_DISTRIBUTION), MODULES, SYSTEM, LAYERS, BASE);
     public static final boolean doCleanup = Boolean.getBoolean("cleanup.tmp");
+
+    public static final String AS_VERSION = ProductInfo.PRODUCT_VERSION;
+    public static final String PRODUCT = ProductInfo.PRODUCT_NAME;
 
     public static String randomString() {
         return UUID.randomUUID().toString();
@@ -406,4 +412,36 @@ public class PatchingTestUtil {
         }
         return found;
     }
+
+    public static ResourceItem createVersionItem(final String targetVersion) {
+        final Asset newManifest = new Asset() {
+            @Override
+            public InputStream openStream() {
+                return new ByteArrayInputStream(ProductInfo.createVersionString(targetVersion).getBytes());
+            }
+        };
+
+        final JavaArchive versionModuleJar = ShrinkWrap.create(JavaArchive.class);
+        if (! ProductInfo.isProduct) {
+            versionModuleJar.addPackage("org.jboss.as.version");
+        }
+        versionModuleJar.addAsManifestResource(newManifest, "MANIFEST.MF");
+
+        final ByteArrayOutputStream baos = new ByteArrayOutputStream();
+        versionModuleJar.as(ZipExporter.class).exportTo(baos);
+        return new ResourceItem("as-version.jar", baos.toByteArray());
+    }
+
+    public static Module createVersionModule(final String targetVersion) {
+        final ResourceItem item = createVersionItem(targetVersion);
+        return new Module.Builder(ProductInfo.getVersionModule())
+                .slot(ProductInfo.getVersionModuleSlot())
+                .resourceRoot(item)
+                .property("jboss.api", "private")
+                .dependency("org.jboss.logging")
+                .dependency("org.jboss.modules")
+                .build();
+    }
+
+
 }

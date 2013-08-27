@@ -73,6 +73,11 @@ public class OverridePreserveTestCase extends AbstractPatchingTestCase {
 
     @BeforeClass
     public static void setUp() throws Exception {
+        // README.txt does not exist on EAP
+        final File file  = new File(FILE1);
+        if (! file.exists()) {
+            dump(file, "test-content");
+        }
         file1originalContent = PatchingTestUtil.readFile(FILE1);
         file2originalContent = PatchingTestUtil.readFile(FILE2);
     }
