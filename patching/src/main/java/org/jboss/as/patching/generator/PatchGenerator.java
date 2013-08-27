@@ -127,6 +127,10 @@ public class PatchGenerator {
             builder.setPatchId(patchConfig.getPatchId());
             builder.setDescription(patchConfig.getDescription());
             if (patchConfig.getPatchType() == Patch.PatchType.CUMULATIVE) {
+                // CPs need to upgrade
+                if (base.getVersion().equals(updated.getVersion())) {
+                    throw processingError("cumulative patch does not upgrade version %s", base.getVersion());
+                }
                 builder.upgradeIdentity(base.getName(), base.getVersion(), updated.getVersion());
             } else {
                 builder.oneOffPatchIdentity(base.getName(), base.getVersion());
