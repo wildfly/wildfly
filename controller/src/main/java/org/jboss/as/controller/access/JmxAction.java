@@ -23,29 +23,44 @@ package org.jboss.as.controller.access;
 
 
 /**
+ * Encapsulates authorization information about an MBean call.
  *
  * @author <a href="kabir.khan@jboss.com">Kabir Khan</a>
  */
-public class JmxTarget {
-    final boolean superUserOrAdminOnly;
-    final boolean nonFacadeMBeansSensitive;
-    final boolean readOnly;
+public class JmxAction {
+    private final String methodName;
+    private final Impact impact;
 
-    public JmxTarget(boolean superUserOrAdminOnly, boolean nonFacadeMBeansSensitive, boolean readOnly) {
-        this.superUserOrAdminOnly = superUserOrAdminOnly;
-        this.nonFacadeMBeansSensitive = nonFacadeMBeansSensitive;
-        this.readOnly = readOnly;
+    public JmxAction(String methodName, Impact impact) {
+        this.methodName = methodName;
+        this.impact = impact;
     }
 
-    boolean isSuperUserOrAdminOnly() {
-        return superUserOrAdminOnly;
+    /**
+     * Gets the impact of the call
+     *
+     * @return the impact
+     */
+    public Impact getImpact() {
+        return impact;
     }
 
-    boolean isNonFacadeMBeansSensitive() {
-        return nonFacadeMBeansSensitive;
+    /**
+     * Gets the {@link javax.management.MBeanServer} method name that was called
+     */
+    public String getMethodName() {
+        return methodName;
     }
 
-    public boolean isReadOnly() {
-        return readOnly;
+    /**
+     * The impact of the call
+     */
+    public enum Impact {
+        /** The call is read-only */
+        READ_ONLY,
+        /** The call writes data */
+        WRITE,
+        /** The call is special, and will normally only work for a (@link org.jboss.as.controller.access.rbac.StandardRole#SUPERUSER} or a (@link org.jboss.as.controller.access.rbac.StandardRole#ADMINISTRATOR} */
+        EXTRA_SENSITIVE
     }
 }

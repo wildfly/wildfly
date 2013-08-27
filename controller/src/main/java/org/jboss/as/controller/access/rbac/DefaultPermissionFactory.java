@@ -53,6 +53,7 @@ import org.jboss.as.controller.access.constraint.SensitiveVaultExpressionConstra
 import org.jboss.as.controller.access.constraint.ServerGroupEffectConstraint;
 import org.jboss.as.controller.access.permission.CombinationManagementPermission;
 import org.jboss.as.controller.access.permission.CombinationPolicy;
+import org.jboss.as.controller.access.permission.JmxPermissionFactory;
 import org.jboss.as.controller.access.permission.ManagementPermission;
 import org.jboss.as.controller.access.permission.ManagementPermissionCollection;
 import org.jboss.as.controller.access.permission.PermissionFactory;
@@ -64,7 +65,7 @@ import org.jboss.as.controller.access.permission.SimpleManagementPermission;
  *
  * @author Brian Stansberry (c) 2013 Red Hat Inc.
  */
-public class DefaultPermissionFactory implements PermissionFactory {
+public class DefaultPermissionFactory implements PermissionFactory, JmxPermissionFactory {
 
     private static final PermissionCollection NO_PERMISSIONS = new NoPermissionsCollection();
     private final CombinationPolicy combinationPolicy;
@@ -73,6 +74,7 @@ public class DefaultPermissionFactory implements PermissionFactory {
     private final Map<String, ManagementPermissionCollection> permissionsByRole = new HashMap<String, ManagementPermissionCollection>();
     private final Map<String, ScopedBase> scopedBaseMap = new HashMap<String, ScopedBase>();
     private boolean rolePermissionsConfigured;
+    private volatile boolean nonFacadeMBeansSensitive;
 
     public DefaultPermissionFactory(CombinationPolicy combinationPolicy, RoleMapper roleMapper) {
         this(combinationPolicy, roleMapper, getStandardConstraintFactories());
@@ -94,6 +96,19 @@ public class DefaultPermissionFactory implements PermissionFactory {
     @Override
     public PermissionCollection getUserPermissions(Caller caller, Environment callEnvironment, Action action, TargetResource target) {
         return getUserPermissions(roleMapper.mapRoles(caller, callEnvironment, action, target));
+    }
+
+    @Override
+    public Set<String> getUserRoles(Caller caller, Environment callEnvironment, Action action, TargetResource target){
+        return roleMapper.mapRoles(caller, callEnvironment, action, target);
+    }
+
+    public void setNonFacadeMBeansSensitive(boolean sensitive) {
+        nonFacadeMBeansSensitive = sensitive;
+    }
+
+    public boolean isNonFacadeMBeansSensitive() {
+        return nonFacadeMBeansSensitive;
     }
 
     private PermissionCollection getUserPermissions(Set<String> roles) {
@@ -327,5 +342,4 @@ public class DefaultPermissionFactory implements PermissionFactory {
         }
 
     }
-
 }
