@@ -76,7 +76,7 @@ public final class TargetResource {
     }
 
     public List<AccessConstraintDefinition> getAccessConstraints() {
-        return resourceRegistration.getAccessConstraints();//accessConstraintDefinitions;
+        return accessConstraintDefinitions;
     }
 
     public Resource getResource() {

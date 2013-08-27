@@ -75,20 +75,28 @@ public class ApplicationTypeConstraintUnitTestCase {
     private static final Constraint DEPLOYER_WRITE_CONFIG = ApplicationTypeConstraint.FACTORY.getStandardUserConstraint(StandardRole.DEPLOYER, Action.ActionEffect.WRITE_CONFIG);
     private static final Constraint ADMIN_WRITE_CONFIG = ApplicationTypeConstraint.FACTORY.getStandardUserConstraint(StandardRole.ADMINISTRATOR, Action.ActionEffect.WRITE_CONFIG);
 
-    private static TargetResource rootTarget;
-    private static TargetResource childTarget;
+    private TargetResource rootTarget;
+    private TargetResource childTarget;
 
-    @BeforeClass
-    public static void setUpClass() {
+    @Before
+    public void setUp() {
+        setupResources(false, false);
+    }
+
+    private void setupResources(boolean isA, boolean isB) {
+
+        a.setConfiguredApplication(isA);
+        b.setConfiguredApplication(isB);
+
         ResourceDefinition rootRd = new SimpleResourceDefinition(null, new NonResolvingResourceDescriptionResolver()) {
             @Override
             public List<AccessConstraintDefinition> getAccessConstraints() {
                 return rootResourceConstraints;
             }
         };
-        ManagementResourceRegistration root = ManagementResourceRegistration.Factory.create(rootRd);
-        root.registerOperationHandler(WRITE_CONFIG_DEF, NoopOperationStepHandler.WITHOUT_RESULT, true);
-        rootTarget = TargetResource.forStandalone(PathAddress.EMPTY_ADDRESS, root, Resource.Factory.create());
+        ManagementResourceRegistration rootRegistration = ManagementResourceRegistration.Factory.create(rootRd);
+        rootRegistration.registerOperationHandler(WRITE_CONFIG_DEF, NoopOperationStepHandler.WITHOUT_RESULT, true);
+
         PathElement childPE = PathElement.pathElement("child");
         ResourceDefinition childRd = new SimpleResourceDefinition(childPE, new NonResolvingResourceDescriptionResolver()) {
             @Override
@@ -96,14 +104,9 @@ public class ApplicationTypeConstraintUnitTestCase {
                 return childResourceConstraints;
             }
         };
-        ManagementResourceRegistration child = root.registerSubModel(childRd);
-        childTarget = TargetResource.forStandalone(PathAddress.pathAddress(childPE), child, Resource.Factory.create());
-    }
-
-    @Before
-    public void setUp() {
-        a.setConfiguredApplication(false);
-        b.setConfiguredApplication(false);
+        ManagementResourceRegistration childRegistration = rootRegistration.registerSubModel(childRd);
+        rootTarget = TargetResource.forStandalone(PathAddress.EMPTY_ADDRESS, rootRegistration, Resource.Factory.create());
+        childTarget = TargetResource.forStandalone(PathAddress.pathAddress(childPE), childRegistration, Resource.Factory.create());
     }
 
     @After
@@ -152,8 +155,7 @@ public class ApplicationTypeConstraintUnitTestCase {
         assertFalse(ADMIN_WRITE_CONFIG.violates(testee, Action.ActionEffect.WRITE_CONFIG));
         assertFalse(testee.violates(ADMIN_WRITE_CONFIG, Action.ActionEffect.WRITE_CONFIG));
 
-        a.setConfiguredApplication(true);
-        b.setConfiguredApplication(true);
+        setupResources(true, true);
 
         testee = ApplicationTypeConstraint.FACTORY.getRequiredConstraint(Action.ActionEffect.WRITE_CONFIG, getWriteConfigAction(), childTarget);
         assertFalse(DEPLOYER_WRITE_CONFIG.violates(testee, Action.ActionEffect.WRITE_CONFIG));
@@ -164,7 +166,7 @@ public class ApplicationTypeConstraintUnitTestCase {
 
     private void multipleInconsistentTest() {
 
-        b.setConfiguredApplication(true);
+        setupResources(false, true);
 
         Constraint testee = ApplicationTypeConstraint.FACTORY.getRequiredConstraint(Action.ActionEffect.WRITE_CONFIG, getWriteConfigAction(), childTarget);
         assertFalse(DEPLOYER_WRITE_CONFIG.violates(testee, Action.ActionEffect.WRITE_CONFIG));
@@ -172,8 +174,7 @@ public class ApplicationTypeConstraintUnitTestCase {
         assertFalse(ADMIN_WRITE_CONFIG.violates(testee, Action.ActionEffect.WRITE_CONFIG));
         assertFalse(testee.violates(ADMIN_WRITE_CONFIG, Action.ActionEffect.WRITE_CONFIG));
 
-        a.setConfiguredApplication(true);
-        b.setConfiguredApplication(false);
+        setupResources(true, false);
 
         testee = ApplicationTypeConstraint.FACTORY.getRequiredConstraint(Action.ActionEffect.WRITE_CONFIG, getWriteConfigAction(), childTarget);
         assertFalse(DEPLOYER_WRITE_CONFIG.violates(testee, Action.ActionEffect.WRITE_CONFIG));
