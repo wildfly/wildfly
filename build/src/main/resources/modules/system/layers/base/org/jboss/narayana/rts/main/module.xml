@@ -32,9 +32,12 @@
         <module name="org.jboss.resteasy.resteasy-jaxb-provider"/>
         <module name="org.jboss.resteasy.resteasy-jettison-provider"/>
         <module name="javax.api"/>
+        <module name="javax.transaction.api"/>
+        <module name="javax.resource.api"/>
         <module name="javax.ws.rs.api"/>
         <module name="javax.servlet.api"/>
         <module name="javax.xml.bind.api"/>
+        <module name="javax.ejb.api"/>
         <module name="org.jboss.jts"/>
         <module name="org.jboss.logging"/>
     </dependencies>

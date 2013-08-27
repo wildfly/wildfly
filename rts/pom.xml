@@ -46,6 +46,11 @@
 
         <dependency>
             <groupId>org.jboss.narayana.rts</groupId>
+            <artifactId>restat-bridge</artifactId>
+        </dependency>
+
+        <dependency>
+            <groupId>org.jboss.narayana.rts</groupId>
             <artifactId>restat-api</artifactId>
         </dependency>
 
@@ -110,6 +115,11 @@
         <dependency>
             <groupId>org.wildfly</groupId>
             <artifactId>wildfly-server</artifactId>
+        </dependency>
+
+        <dependency>
+            <groupId>org.wildfly</groupId>
+            <artifactId>wildfly-jaxrs</artifactId>
         </dependency>
 
         <dependency>

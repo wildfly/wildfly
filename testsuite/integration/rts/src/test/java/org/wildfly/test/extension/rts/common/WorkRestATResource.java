@@ -48,8 +48,8 @@ import org.jboss.jbossts.star.util.TxStatus;
 import org.jboss.jbossts.star.util.TxStatusMediaType;
 import org.jboss.jbossts.star.util.TxSupport;
 
-@Path(RestfulParticipant.PATH_SEGMENT)
-public final class RestfulParticipant {
+@Path(WorkRestATResource.PATH_SEGMENT)
+public final class WorkRestATResource {
 
     public static final String PATH_SEGMENT = "txresource";
 
