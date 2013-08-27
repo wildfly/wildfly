@@ -24,8 +24,7 @@ package org.jboss.as.ejb3.subsystem;
 
 import com.arjuna.ats.arjuna.common.CoreEnvironmentBean;
 import com.arjuna.ats.jbossatx.jta.RecoveryManagerService;
-import org.jboss.as.clustering.registry.RegistryCollector;
-import org.jboss.as.clustering.registry.RegistryCollectorService;
+
 import org.jboss.as.connector.util.ConnectorServices;
 import org.jboss.as.controller.AbstractBoottimeAddStepHandler;
 import org.jboss.as.controller.OperationContext;
@@ -103,6 +102,8 @@ import org.jboss.as.ejb3.remote.DefaultEjbClientContextService;
 import org.jboss.as.ejb3.remote.EJBRemoteConnectorService;
 import org.jboss.as.ejb3.remote.EJBTransactionRecoveryService;
 import org.jboss.as.ejb3.remote.LocalEjbReceiver;
+import org.jboss.as.ejb3.remote.RegistryCollector;
+import org.jboss.as.ejb3.remote.RegistryCollectorService;
 import org.jboss.as.ejb3.remote.TCCLEJBClientContextSelectorService;
 import org.jboss.as.ejb3.util.ServiceLookupValue;
 import org.jboss.as.jacorb.rmi.DelegatingStubFactoryFactory;
@@ -135,7 +136,9 @@ import org.omg.PortableServer.POA;
 import javax.transaction.TransactionManager;
 import javax.transaction.TransactionSynchronizationRegistry;
 import javax.transaction.UserTransaction;
+
 import java.util.List;
+
 import org.wildfly.security.manager.WildFlySecurityManager;
 
 import static org.jboss.as.ejb3.subsystem.EJB3SubsystemModel.DEFAULT_ENTITY_BEAN_INSTANCE_POOL;

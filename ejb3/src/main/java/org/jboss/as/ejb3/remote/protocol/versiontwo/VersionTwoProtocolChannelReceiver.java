@@ -27,9 +27,9 @@ import java.io.InputStream;
 import java.util.List;
 import java.util.concurrent.ExecutorService;
 
-import org.jboss.as.clustering.registry.RegistryCollector;
 import org.jboss.as.ejb3.deployment.DeploymentRepository;
 import org.jboss.as.ejb3.remote.EJBRemoteTransactionsRepository;
+import org.jboss.as.ejb3.remote.RegistryCollector;
 import org.jboss.as.ejb3.remote.RemoteAsyncInvocationCancelStatusService;
 import org.jboss.as.ejb3.remote.protocol.MessageHandler;
 import org.jboss.as.ejb3.remote.protocol.versionone.ChannelAssociation;

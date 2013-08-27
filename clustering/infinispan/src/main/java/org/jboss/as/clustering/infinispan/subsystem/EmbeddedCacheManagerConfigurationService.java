@@ -34,6 +34,7 @@ import org.infinispan.configuration.global.ShutdownHookBehavior;
 import org.infinispan.configuration.global.TransportConfigurationBuilder;
 import org.infinispan.marshall.Ids;
 import org.jboss.as.clustering.infinispan.ChannelProvider;
+import org.jboss.as.clustering.infinispan.InfinispanLogger;
 import org.jboss.as.clustering.infinispan.MBeanServerProvider;
 import org.jboss.as.clustering.infinispan.ManagedExecutorFactory;
 import org.jboss.as.clustering.infinispan.ManagedScheduledExecutorFactory;
@@ -125,6 +126,7 @@ public class EmbeddedCacheManagerConfigurationService implements Service<Embedde
             builder.classLoader(loader);
             int id = Ids.MAX_ID;
             for (SimpleExternalizer<?> externalizer: ServiceLoader.load(SimpleExternalizer.class, loader)) {
+                InfinispanLogger.ROOT_LOGGER.debugf("Cache container %s will use an externalizer for %s", this.name, externalizer.getTargetClass().getName());
                 builder.serialization().addAdvancedExternalizer(id++, externalizer);
             }
         } catch (ModuleLoadException e) {

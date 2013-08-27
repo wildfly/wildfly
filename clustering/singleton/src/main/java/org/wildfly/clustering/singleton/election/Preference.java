@@ -21,7 +21,7 @@
  */
 package org.wildfly.clustering.singleton.election;
 
-import org.wildfly.clustering.Node;
+import org.wildfly.clustering.group.Node;
 
 public interface Preference {
     boolean preferred(Node node);

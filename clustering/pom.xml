@@ -40,12 +40,11 @@
     <modules>
         <module>api</module>
         <module>common</module>
-        <module>jgroups</module>
+        <module>ejb3-infinispan</module>
         <module>infinispan</module>
-        <module>registry</module>
+        <module>jgroups</module>
         <module>server</module>
         <module>singleton</module>
-        <module>ejb3-infinispan</module>
         <module>web</module>
     </modules>
 

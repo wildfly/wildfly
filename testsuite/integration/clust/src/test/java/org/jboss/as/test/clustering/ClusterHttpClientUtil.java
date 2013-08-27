@@ -104,13 +104,13 @@ public final class ClusterHttpClientUtil {
         HttpResponse response = tryGet(client, url);
 
         // Consume it
-        BufferedReader br = new BufferedReader(new InputStreamReader(response.getEntity().getContent()), 4096);
-        String line;
         StringBuilder sb = new StringBuilder();
-        while ((line = br.readLine()) != null) {
-            sb.append(line);
+        try (BufferedReader br = new BufferedReader(new InputStreamReader(response.getEntity().getContent()), 4096)) {
+            String line;
+            while ((line = br.readLine()) != null) {
+                sb.append(line);
+            }
         }
-        br.close();
         return sb.toString();
     }
 

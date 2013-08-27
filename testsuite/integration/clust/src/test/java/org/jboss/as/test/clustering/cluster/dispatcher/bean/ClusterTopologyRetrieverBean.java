@@ -10,11 +10,11 @@ import javax.ejb.Remote;
 import javax.ejb.Stateless;
 
 import org.jboss.ejb3.annotation.Clustered;
-import org.wildfly.clustering.Node;
 import org.wildfly.clustering.dispatcher.Command;
 import org.wildfly.clustering.dispatcher.CommandDispatcher;
 import org.wildfly.clustering.dispatcher.CommandDispatcherFactory;
 import org.wildfly.clustering.dispatcher.CommandResponse;
+import org.wildfly.clustering.group.Node;
 
 @Stateless
 @Clustered
@@ -36,7 +36,7 @@ public class ClusterTopologyRetrieverBean implements ClusterTopologyRetriever {
                 nodes.add(response.get());
             }
 
-            Node localNode = this.factory.getLocalNode();
+            Node localNode = this.factory.getGroup().getLocalNode();
             System.out.println("Executing command on node: " + localNode);
             String local = this.dispatcher.executeOnNode(this.command, localNode).get();
 

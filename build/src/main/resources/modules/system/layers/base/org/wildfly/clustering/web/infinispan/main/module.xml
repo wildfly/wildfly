@@ -38,7 +38,6 @@
         <module name="org.jboss.as.clustering.common"/>
         <module name="org.jboss.as.clustering.jgroups"/>
         <module name="org.jboss.as.clustering.infinispan"/>
-        <module name="org.jboss.as.clustering.registry"/>
         <module name="org.jboss.logging"/>
         <module name="org.jboss.marshalling"/>
         <module name="org.jboss.metadata"/>
@@ -47,6 +46,7 @@
         <module name="org.jboss.threads"/>
         <module name="org.jgroups"/>
         <module name="org.wildfly.clustering.api"/>
+        <module name="org.wildfly.clustering.server" services="import"/>
         <module name="org.wildfly.clustering.web.spi"/>
         <module name="org.wildfly.security.manager"/>
     </dependencies>

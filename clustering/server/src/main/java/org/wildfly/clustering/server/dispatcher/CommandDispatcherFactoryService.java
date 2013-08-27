@@ -25,27 +25,12 @@ import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
-import java.net.InetSocketAddress;
-import java.security.AccessController;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Collections;
 import java.util.HashMap;
-import java.util.HashSet;
-import java.util.List;
 import java.util.Map;
-import java.util.Set;
-import java.util.AbstractMap.SimpleImmutableEntry;
 import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.ConcurrentMap;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.PriorityBlockingQueue;
-import java.util.concurrent.RunnableFuture;
-import java.util.concurrent.ThreadFactory;
-import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicReference;
 
-import org.jboss.as.clustering.concurrent.ComparableRunnableFuture;
 import org.jboss.as.clustering.marshalling.DynamicClassTable;
 import org.jboss.as.clustering.marshalling.MarshallingConfigurationFactory;
 import org.jboss.as.clustering.marshalling.MarshallingContext;
@@ -55,125 +40,69 @@ import org.jboss.marshalling.Marshalling;
 import org.jboss.marshalling.MarshallingConfiguration;
 import org.jboss.marshalling.Unmarshaller;
 import org.jboss.modules.Module;
-import org.jboss.modules.ModuleIdentifier;
 import org.jboss.modules.ModuleLoadException;
 import org.jboss.modules.ModuleLoader;
 import org.jboss.msc.service.Service;
-import org.jboss.msc.service.ServiceName;
 import org.jboss.msc.service.StartContext;
 import org.jboss.msc.service.StartException;
 import org.jboss.msc.service.StopContext;
-import org.jboss.msc.value.Value;
-import org.jboss.threads.JBossThreadFactory;
 import org.jgroups.Address;
 import org.jgroups.Channel;
-import org.jgroups.Event;
-import org.jgroups.MergeView;
 import org.jgroups.Message;
-import org.jgroups.View;
 import org.jgroups.blocks.MessageDispatcher;
 import org.jgroups.blocks.RequestCorrelator;
 import org.jgroups.blocks.RequestHandler;
 import org.jgroups.blocks.RpcDispatcher;
 import org.jgroups.blocks.mux.MuxMessageDispatcher;
-import org.jgroups.stack.IpAddress;
 import org.jgroups.stack.Protocol;
-import org.wildfly.clustering.Node;
 import org.wildfly.clustering.dispatcher.Command;
 import org.wildfly.clustering.dispatcher.CommandDispatcher;
 import org.wildfly.clustering.dispatcher.CommandDispatcherFactory;
-import org.wildfly.clustering.dispatcher.MembershipListener;
-import org.wildfly.clustering.server.SimpleNode;
-import org.wildfly.security.manager.GetAccessControlContextAction;
+import org.wildfly.clustering.group.Group;
+import org.wildfly.clustering.group.NodeFactory;
 
 /**
  * Service providing a CommandDispatcherFactory.
- * Multiple command dispatchers share a single MessageDispatcher.
+ * Multiple command dispatchers share a single {@link MessageDispatcher}.
  * @author Paul Ferraro
  */
-public class CommandDispatcherFactoryService implements CommandDispatcherFactory, RequestHandler, Service<CommandDispatcherFactory>, org.jgroups.MembershipListener, NodeRegistry, VersionedMarshallingConfiguration {
+public class CommandDispatcherFactoryService implements CommandDispatcherFactory, RequestHandler, Service<CommandDispatcherFactory>, VersionedMarshallingConfiguration {
 
     private static final short SCOPE_ID = 222;
     private static final int CURRENT_VERSION = 1;
 
     final MarshallingContext marshallingContext = new MarshallingContext(this);
-    final Map<ServiceName, Map.Entry<Object, MembershipListener>> services = new ConcurrentHashMap<>();
-    final ConcurrentMap<Address, Node> nodes = new ConcurrentHashMap<>();
+    final Map<Object, AtomicReference<Object>> contexts = new ConcurrentHashMap<>();
+
     private final Map<Integer, MarshallingConfiguration> configurations = new HashMap<>();
-    private final Value<Channel> channel;
-    private final Value<ModuleLoader> loader;
-    private final ModuleIdentifier moduleId;
-    private volatile ExecutorService executor;
-    private volatile MessageDispatcher dispatcher;
-    volatile Set<Node> view = Collections.emptySet();
+    private final CommandDispatcherFactoryConfiguration config;
+
+    volatile NodeFactory<Address> factory = null;
+
+    private volatile Group group = null;
+    private volatile MessageDispatcher dispatcher = null;
     private volatile long timeout = TimeUnit.MINUTES.toMillis(1);
 
-    public CommandDispatcherFactoryService(Value<Channel> channel, Value<ModuleLoader> loader, ModuleIdentifier moduleId) {
-        this.channel = channel;
-        this.loader = loader;
-        this.moduleId = moduleId;
-    }
-
-    @Override
-    public <C> CommandDispatcher<C> createCommandDispatcher(ServiceName service, C context) {
-        return this.createCommandDispatcher(service, context, null);
-    }
-
-    @Override
-    public <C> CommandDispatcher<C> createCommandDispatcher(final ServiceName service, C context, MembershipListener listener) {
-        final int version = CURRENT_VERSION;
-        CommandMarshaller<C> marshaller = new CommandMarshaller<C>() {
-            @Override
-            public <R> byte[] marshal(Command<R, C> command) throws IOException {
-                try (ByteArrayOutputStream output = new ByteArrayOutputStream()) {
-                    output.write(version);
-                    try (Marshaller marshaller = CommandDispatcherFactoryService.this.marshallingContext.createMarshaller(version)) {
-                        marshaller.start(Marshalling.createByteOutput(output));
-                        marshaller.writeUTF(service.getCanonicalName());
-                        marshaller.writeObject(command);
-                        marshaller.flush();
-                    }
-                    return output.toByteArray();
-                }
-            }
-        };
-        this.services.put(service, new SimpleImmutableEntry<Object, MembershipListener>(context, listener));
-        return new ServiceCommandDispatcher<C>(this.dispatcher, marshaller, this, this.timeout) {
-            @Override
-            public void close() {
-                CommandDispatcherFactoryService.this.services.remove(service);
-            }
-        };
-    }
-
-    @Override
-    public CommandDispatcherFactory getValue() {
-        return this;
+    public CommandDispatcherFactoryService(CommandDispatcherFactoryConfiguration config) {
+        this.config = config;
     }
 
     @Override
     public void start(StartContext context) throws StartException {
-        ModuleLoader loader = this.loader.getValue();
+        this.factory = this.config.getNodeFactory();
+        this.group = this.config.getGroup();
+
+        ModuleLoader loader = this.config.getModuleLoader();
         MarshallingConfiguration config = MarshallingConfigurationFactory.createMarshallingConfiguration(loader);
         try {
-            Module module = loader.loadModule(this.moduleId);
+            Module module = loader.loadModule(this.config.getModuleIdentifier());
             config.setClassTable(new DynamicClassTable(module.getClassLoader()));
             this.configurations.put(CURRENT_VERSION, config);
         } catch (ModuleLoadException e) {
             throw new StartException(e);
         }
 
-        ThreadGroup group = new ThreadGroup(CommandDispatcherFactoryService.class.getSimpleName());
-        ThreadFactory factory = new JBossThreadFactory(group, Boolean.FALSE, null, "%G - %t", null, null, AccessController.doPrivileged(GetAccessControlContextAction.getInstance()));
-        this.executor = new ThreadPoolExecutor(1, 1, 0L, TimeUnit.SECONDS, new PriorityBlockingQueue<Runnable>(2), factory) {
-            @Override
-            protected <T> RunnableFuture<T> newTaskFor(Runnable runnable, T value) {
-                RunnableFuture<T> future = super.newTaskFor(runnable, value);
-                return (runnable instanceof ViewTask) ? new ComparableRunnableFuture<>(future, (ViewTask) runnable) : future;
-            }
-        };
-
-        Channel channel = this.channel.getValue();
+        Channel channel = this.config.getChannel();
         final RpcDispatcher.Marshaller marshaller = new CommandResponseMarshaller(this.marshallingContext, CURRENT_VERSION);
         this.dispatcher = new MuxMessageDispatcher(SCOPE_ID) {
             @Override
@@ -185,10 +114,7 @@ public class CommandDispatcherFactoryService implements CommandDispatcherFactory
         };
         this.dispatcher.setChannel(channel);
         this.dispatcher.setRequestHandler(this);
-        this.dispatcher.setMembershipListener(this);
         this.dispatcher.start();
-        // Process initial view
-        new ViewTask(channel.getView()).run();
     }
 
     @Override
@@ -196,11 +122,45 @@ public class CommandDispatcherFactoryService implements CommandDispatcherFactory
         try {
             this.dispatcher.stop();
         } finally {
-            this.executor.shutdown();
             this.configurations.clear();
-            this.nodes.clear();
-            this.view = Collections.emptySet();
         }
+    }
+
+    @Override
+    public CommandDispatcherFactory getValue() {
+        return this;
+    }
+
+    @Override
+    public Group getGroup() {
+        return this.group;
+    }
+
+    @Override
+    public <C> CommandDispatcher<C> createCommandDispatcher(final Object id, C context) {
+        final int version = CURRENT_VERSION;
+        CommandMarshaller<C> marshaller = new CommandMarshaller<C>() {
+            @Override
+            public <R> byte[] marshal(Command<R, C> command) throws IOException {
+                try (ByteArrayOutputStream output = new ByteArrayOutputStream()) {
+                    output.write(version);
+                    try (Marshaller marshaller = CommandDispatcherFactoryService.this.marshallingContext.createMarshaller(version)) {
+                        marshaller.start(Marshalling.createByteOutput(output));
+                        marshaller.writeObject(id);
+                        marshaller.writeObject(command);
+                        marshaller.flush();
+                    }
+                    return output.toByteArray();
+                }
+            }
+        };
+        this.contexts.put(id, new AtomicReference<Object>(context));
+        return new ServiceCommandDispatcher<C>(this.dispatcher, marshaller, this.factory, this.timeout) {
+            @Override
+            public void close() {
+                CommandDispatcherFactoryService.this.contexts.remove(id);
+            }
+        };
     }
 
     @Override
@@ -218,154 +178,17 @@ public class CommandDispatcherFactoryService implements CommandDispatcherFactory
     }
 
     @Override
-    public Node getNode(Address address) {
-        Node node = this.nodes.get(address);
-        if (node != null) return node;
-        Channel channel = this.dispatcher.getChannel();
-        IpAddress ipAddress = (IpAddress) channel.down(new Event(Event.GET_PHYSICAL_ADDRESS, address));
-        InetSocketAddress socketAddress = new InetSocketAddress(ipAddress.getIpAddress(), ipAddress.getPort());
-        String name = channel.getName(address);
-        if (name == null) {
-            name = String.format("%s:%s", socketAddress.getHostString(), socketAddress.getPort());
-        }
-        node = new SimpleNode(name, socketAddress);
-        Node existing = this.nodes.putIfAbsent(address, node);
-        return (existing != null) ? existing : node;
-    }
-
-    @Override
-    public Address getAddress(Node node) {
-        for (Map.Entry<Address, Node> entry: this.nodes.entrySet()) {
-            if (node.equals(entry.getValue())) {
-                return entry.getKey();
-            }
-        }
-        throw new IllegalArgumentException(node.getName());
-    }
-
-    private Address getLocalAddress() {
-        return this.dispatcher.getChannel().getAddress();
-    }
-
-    @Override
-    public List<Node> getNodes() {
-        List<Address> addresses = this.dispatcher.getChannel().getView().getMembers();
-        List<Node> nodes = new ArrayList<>(addresses.size());
-        for (Address address: addresses) {
-            nodes.add(this.getNode(address));
-        }
-        return nodes;
-    }
-
-    @Override
-    public boolean isCoordinator() {
-        return this.getLocalAddress().equals(this.getCoordinatorAddress());
-    }
-
-    @Override
-    public Node getLocalNode() {
-        return this.getNode(this.getLocalAddress());
-    }
-
-    @Override
-    public Node getCoordinatorNode() {
-        Address address = this.getCoordinatorAddress();
-        return (address != null) ? this.getNode(address) : null;
-    }
-
-    private Address getCoordinatorAddress() {
-        List<Address> addresses = this.dispatcher.getChannel().getView().getMembers();
-        return !addresses.isEmpty() ? addresses.get(0) : null;
-    }
-
-    @Override
     public Object handle(Message message) throws Exception {
         try (InputStream input = new ByteArrayInputStream(message.getRawBuffer(), message.getOffset(), message.getLength())) {
             int version = input.read();
             try (Unmarshaller unmarshaller = this.marshallingContext.createUnmarshaller(version)) {
                 unmarshaller.start(Marshalling.createByteInput(input));
-                ServiceName service = ServiceName.parse(unmarshaller.readUTF());
+                Object clientId = unmarshaller.readObject();
                 Command<Object, Object> command = (Command<Object, Object>) unmarshaller.readObject();
-                Map.Entry<Object, MembershipListener> entry = this.services.get(service);
-                if (entry == null) return new NoSuchService();
-                return command.execute(entry.getKey());
+                AtomicReference<Object> context = this.contexts.get(clientId);
+                if (context == null) return new NoSuchService();
+                return command.execute(context.get());
             }
-        }
-    }
-
-    @Override
-    public void viewAccepted(View view) {
-        this.executor.submit(new ViewTask(view));
-    }
-
-    @Override
-    public void suspect(Address suspected) {
-        // Do nothing
-    }
-
-    @Override
-    public void block() {
-        // Do nothing
-    }
-
-    @Override
-    public void unblock() {
-        // Do nothing
-    }
-
-    private class ViewTask implements Runnable, Comparable<ViewTask> {
-        private final View view;
-
-        ViewTask(View view) {
-            this.view = view;
-        }
-
-        @Override
-        public void run() {
-            Set<Node> previousView = CommandDispatcherFactoryService.this.view;
-            int size = this.view.size();
-            final List<Node> allNodes = new ArrayList<>(size);
-            final List<Node> newNodes = new ArrayList<>(size);
-            for (Address address: this.view.getMembers()) {
-                Node node = CommandDispatcherFactoryService.this.getNode(address);
-                allNodes.add(node);
-                if (!previousView.contains(node)) {
-                    newNodes.add(node);
-                }
-            }
-            final List<Node> deadNodes = new ArrayList<>(previousView);
-            deadNodes.removeAll(allNodes);
-            CommandDispatcherFactoryService.this.view = new HashSet<>(allNodes);
-            CommandDispatcherFactoryService.this.nodes.values().removeAll(deadNodes);
-
-            final Collection<Map.Entry<Object, MembershipListener>> listeners = CommandDispatcherFactoryService.this.services.values();
-            final List<List<Node>> groups = this.createGroups(this.view);
-            for (Map.Entry<Object, MembershipListener> entry: listeners) {
-                MembershipListener listener = entry.getValue();
-                if (listener != null) {
-                    listener.membershipChanged(deadNodes, newNodes, allNodes, groups);
-                }
-            }
-        }
-
-        private List<List<Node>> createGroups(View view) {
-            if (!(view instanceof MergeView)) return null;
-            MergeView merge = (MergeView) view;
-            List<View> partitions = merge.getSubgroups();
-            final List<List<Node>> groups = new ArrayList<>(partitions.size());
-            for (View partition: partitions) {
-                List<Node> nodes = new ArrayList<>(partition.size());
-                for (Address address: partition.getMembers()) {
-                    nodes.add(CommandDispatcherFactoryService.this.getNode(address));
-                }
-                groups.add(nodes);
-            }
-            return groups;
-        }
-
-        @Override
-        public int compareTo(ViewTask task) {
-            return this.view.getViewId().compareTo(task.view.getViewId());
         }
     }
 }

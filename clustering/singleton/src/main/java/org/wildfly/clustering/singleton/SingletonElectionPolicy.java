@@ -24,10 +24,10 @@ package org.wildfly.clustering.singleton;
 
 import java.util.List;
 
-import org.wildfly.clustering.Node;
+import org.wildfly.clustering.group.Node;
 
 /**
- * Used by {@link SingletonService} to elect a singleton master node
+ * Used by a singleton service to elect the node which should run the service
  * from the list of nodes providing that service.
  * @author Paul Ferraro
  */

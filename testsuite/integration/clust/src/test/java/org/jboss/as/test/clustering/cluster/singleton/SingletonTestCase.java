@@ -75,7 +75,6 @@ public class SingletonTestCase extends ClusterAbstractTestCase {
         war.addPackage(MyService.class.getPackage());
         war.addClasses(ViewChangeListener.class, ViewChangeListenerBean.class, ViewChangeListenerServlet.class);
         war.setManifest(new StringAsset("Manifest-Version: 1.0\nDependencies: org.wildfly.clustering.singleton, org.jboss.as.server, org.infinispan, org.jboss.as.clustering.common\n"));
-//        war.setManifest(new StringAsset("Manifest-Version: 1.0\nDependencies: org.jboss.msc, org.jboss.as.clustering.common, org.infinispan, org.jboss.as.clustering.singleton, org.jboss.as.server, org.jboss.marshalling, org.jgroups\n"));
         war.addAsServiceProvider(org.jboss.msc.service.ServiceActivator.class, MyServiceActivator.class);
         return war;
     }
@@ -84,7 +83,7 @@ public class SingletonTestCase extends ClusterAbstractTestCase {
     public void testSingletonService(
             @ArquillianResource() @OperateOnDeployment(DEPLOYMENT_1) URL baseURL1,
             @ArquillianResource() @OperateOnDeployment(DEPLOYMENT_2) URL baseURL2)
-            throws IOException, InterruptedException, URISyntaxException {
+            throws IOException, URISyntaxException {
 
         // Needed to be able to inject ArquillianResource
         stop(CONTAINER_2);
@@ -101,7 +100,7 @@ public class SingletonTestCase extends ClusterAbstractTestCase {
         URI quorumURI2 = MyServiceServlet.createURI(baseURL2, MyService.QUORUM_SERVICE_NAME);
 
         try {
-            this.establishView(client, baseURL1, NODE_1);
+            establishView(client, baseURL1, NODE_1);
 
             HttpResponse response = client.execute(new HttpGet(defaultURI1));
             try {
@@ -121,7 +120,7 @@ public class SingletonTestCase extends ClusterAbstractTestCase {
 
             start(CONTAINER_2);
 
-            this.establishView(client, baseURL1, NODE_1, NODE_2);
+            establishView(client, baseURL1, NODE_1, NODE_2);
 
             response = client.execute(new HttpGet(defaultURI1));
             try {
@@ -157,7 +156,7 @@ public class SingletonTestCase extends ClusterAbstractTestCase {
 
             stop(CONTAINER_2);
 
-            this.establishView(client, baseURL1, NODE_1);
+            establishView(client, baseURL1, NODE_1);
 
             response = client.execute(new HttpGet(defaultURI1));
             try {
@@ -175,9 +174,9 @@ public class SingletonTestCase extends ClusterAbstractTestCase {
                 HttpClientUtils.closeQuietly(response);
             }
 
-            controller.start(CONTAINER_2);
+            start(CONTAINER_2);
 
-            this.establishView(client, baseURL1, NODE_1, NODE_2);
+            establishView(client, baseURL1, NODE_1, NODE_2);
 
             response = client.execute(new HttpGet(defaultURI1));
             try {
@@ -214,7 +213,7 @@ public class SingletonTestCase extends ClusterAbstractTestCase {
 
             stop(CONTAINER_1);
 
-            this.establishView(client, baseURL2, NODE_2);
+            establishView(client, baseURL2, NODE_2);
 
             response = client.execute(new HttpGet(defaultURI2));
             try {
@@ -232,9 +231,9 @@ public class SingletonTestCase extends ClusterAbstractTestCase {
                 HttpClientUtils.closeQuietly(response);
             }
 
-            controller.start(CONTAINER_1);
+            start(CONTAINER_1);
 
-            this.establishView(client, baseURL2, NODE_1, NODE_2);
+            establishView(client, baseURL2, NODE_1, NODE_2);
 
             response = client.execute(new HttpGet(defaultURI1));
             try {
@@ -272,7 +271,7 @@ public class SingletonTestCase extends ClusterAbstractTestCase {
         }
     }
 
-    private void establishView(HttpClient client, URL baseURL, String... members) throws URISyntaxException, IOException {
+    private static void establishView(HttpClient client, URL baseURL, String... members) throws URISyntaxException, IOException {
         ClusterHttpClientUtil.establishView(client, baseURL, "server", members);
     }
 }

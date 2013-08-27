@@ -25,7 +25,7 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 
-import org.wildfly.clustering.Node;
+import org.wildfly.clustering.group.Node;
 import org.wildfly.clustering.singleton.SingletonElectionPolicy;
 
 /**
@@ -37,11 +37,6 @@ import org.wildfly.clustering.singleton.SingletonElectionPolicy;
 public class PreferredSingletonElectionPolicy implements SingletonElectionPolicy {
     private final List<Preference> preferences;
     private final SingletonElectionPolicy policy;
-
-    @Deprecated
-    public PreferredSingletonElectionPolicy(Preference preference, SingletonElectionPolicy policy) {
-        this(policy, preference);
-    }
 
     public PreferredSingletonElectionPolicy(SingletonElectionPolicy policy, Preference... preferences) {
         this.policy = policy;

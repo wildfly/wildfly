@@ -123,7 +123,7 @@ public class CacheTestCase extends AbstractMgmtTestBase {
         try {
             // check that it is available through JNDI
             String jndiClass = JndiServlet.lookup(url.toString(), "java:jboss/caches/TestCache");
-            Assert.assertEquals("org.jboss.as.clustering.infinispan.DefaultEmbeddedCacheManager$DelegatingCache", jndiClass);
+            Assert.assertEquals("org.jboss.as.clustering.infinispan.DefaultCacheContainer$DelegatingCache", jndiClass);
         } finally {
             // remove local cache
             op = createOpNode("subsystem=infinispan/cache-container=" + TEST_CONTAINER + "/local-cache=" + TEST_CACHE,
@@ -151,7 +151,7 @@ public class CacheTestCase extends AbstractMgmtTestBase {
         try {
             // check that it is available through JNDI
             String jndiClass = JndiServlet.lookup(url.toString(), "java:jboss/caches/TestCache");
-            Assert.assertEquals("org.jboss.as.clustering.infinispan.DefaultEmbeddedCacheManager$DelegatingCache", jndiClass);
+            Assert.assertEquals("org.jboss.as.clustering.infinispan.DefaultCacheContainer$DelegatingCache", jndiClass);
         } finally {
             // remove local cache
             op = createOpNode("subsystem=infinispan/cache-container=" + TEST_CONTAINER + "/distributed-cache=" + TEST_CACHE,
@@ -178,7 +178,7 @@ public class CacheTestCase extends AbstractMgmtTestBase {
         try {
             // check that it is available through JNDI
             String jndiClass = JndiServlet.lookup(url.toString(), "java:jboss/caches/TestCache");
-            Assert.assertEquals("org.jboss.as.clustering.infinispan.DefaultEmbeddedCacheManager$DelegatingCache", jndiClass);
+            Assert.assertEquals("org.jboss.as.clustering.infinispan.DefaultCacheContainer$DelegatingCache", jndiClass);
         } finally {
             // remove local cache
             op = createOpNode("subsystem=infinispan/cache-container=" + TEST_CONTAINER + "/replicated-cache=" + TEST_CACHE,
@@ -205,7 +205,7 @@ public class CacheTestCase extends AbstractMgmtTestBase {
         try {
             // check that it is available through JNDI
             String jndiClass = JndiServlet.lookup(url.toString(), "java:jboss/caches/TestCache");
-            Assert.assertEquals("org.jboss.as.clustering.infinispan.DefaultEmbeddedCacheManager$DelegatingCache", jndiClass);
+            Assert.assertEquals("org.jboss.as.clustering.infinispan.DefaultCacheContainer$DelegatingCache", jndiClass);
         } finally {
             // remove local cache
             op = createOpNode("subsystem=infinispan/cache-container=" + TEST_CONTAINER + "/invalidation-cache=" + TEST_CACHE,

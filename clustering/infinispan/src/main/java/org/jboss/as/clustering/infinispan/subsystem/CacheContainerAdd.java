@@ -35,13 +35,14 @@ import java.util.concurrent.ScheduledExecutorService;
 
 import javax.management.MBeanServer;
 
-import org.infinispan.manager.CacheContainer;
 import org.infinispan.manager.EmbeddedCacheManager;
+import org.jboss.as.clustering.infinispan.CacheContainer;
 import org.jboss.as.clustering.infinispan.affinity.KeyAffinityServiceFactoryService;
 import org.jboss.as.clustering.jgroups.ChannelFactory;
 import org.jboss.as.clustering.jgroups.subsystem.ChannelFactoryService;
 import org.jboss.as.clustering.jgroups.subsystem.ChannelInstanceResourceDefinition;
 import org.jboss.as.clustering.jgroups.subsystem.ChannelService;
+import org.jboss.as.clustering.jgroups.subsystem.ChannelServiceProvider;
 import org.jboss.as.clustering.jgroups.subsystem.JGroupsExtension;
 import org.jboss.as.clustering.msc.AsynchronousService;
 import org.jboss.as.clustering.naming.JndiNameFactory;
@@ -172,7 +173,7 @@ public class CacheContainerAdd extends AbstractAddStepHandler {
             // register the protocol metrics by adding a step
             ChannelInstanceResourceDefinition.addChannelProtocolMetricsRegistrationStep(context, cluster, stack);
 
-            for (ChannelDependentServiceProvider provider: ServiceLoader.load(ChannelDependentServiceProvider.class, ChannelDependentServiceProvider.class.getClassLoader())) {
+            for (ChannelServiceProvider provider: ServiceLoader.load(ChannelServiceProvider.class, ChannelServiceProvider.class.getClassLoader())) {
                 log.debugf("Installing %s for channel %s", provider.getClass().getSimpleName(), cluster);
                 controllers.addAll(provider.install(target, name, moduleId));
             }
@@ -190,6 +191,8 @@ public class CacheContainerAdd extends AbstractAddStepHandler {
 
         controllers.add(this.installKeyAffinityServiceFactoryService(target, name, verificationHandler));
 
+        controllers.add(this.installGlobalComponentRegistryService(target, name, verificationHandler));
+
         log.debugf("%s cache container installed", name);
         return controllers;
      }
@@ -205,17 +208,18 @@ public class CacheContainerAdd extends AbstractAddStepHandler {
         // remove the BinderService entry
         ModelNode resolvedValue = null;
         final String jndiName = (resolvedValue = CacheContainerResourceDefinition.JNDI_NAME.resolveModelAttribute(context, model)).isDefined() ? resolvedValue.asString() : null;
-        context.removeService(this.createCacheContainerBinding(jndiName, containerName).getBinderServiceName());
+        context.removeService(createCacheContainerBinding(jndiName, containerName).getBinderServiceName());
 
         // remove the cache container
         context.removeService(EmbeddedCacheManagerService.getServiceName(containerName));
         context.removeService(EmbeddedCacheManagerConfigurationService.getServiceName(containerName));
+        context.removeService(GlobalComponentRegistryService.getServiceName(containerName));
 
         // check if a channel was installed
         final ServiceName channelServiceName = ChannelService.getServiceName(containerName) ;
         final ServiceController<?> channelServiceController = context.getServiceRegistry(false).getService(channelServiceName);
         if (channelServiceController != null) {
-            for (ChannelDependentServiceProvider provider: ServiceLoader.load(ChannelDependentServiceProvider.class, ChannelDependentServiceProvider.class.getClassLoader())) {
+            for (ChannelServiceProvider provider: ServiceLoader.load(ChannelServiceProvider.class, ChannelServiceProvider.class.getClassLoader())) {
                 for (ServiceName name: provider.getServiceNames(containerName)) {
                     context.removeService(name);
                 }
@@ -223,9 +227,18 @@ public class CacheContainerAdd extends AbstractAddStepHandler {
             // unregister the protocol metrics by adding a step
             ChannelInstanceResourceDefinition.addChannelProtocolMetricsDeregistrationStep(context, containerName);
 
-            context.removeService(this.createChannelBinding(containerName).getBinderServiceName());
+            context.removeService(createChannelBinding(containerName).getBinderServiceName());
             context.removeService(channelServiceName);
         }
+    }
+
+    ServiceController<?> installGlobalComponentRegistryService(ServiceTarget target, String containerName, ServiceVerificationHandler verificationHandler) {
+        InjectedValue<CacheContainer> container = new InjectedValue<>();
+        return AsynchronousService.addService(target, GlobalComponentRegistryService.getServiceName(containerName), new GlobalComponentRegistryService(container))
+                .addDependency(EmbeddedCacheManagerService.getServiceName(containerName), CacheContainer.class, container)
+                .setInitialMode(ServiceController.Mode.ON_DEMAND)
+                .install()
+        ;
     }
 
     ServiceController<?> installKeyAffinityServiceFactoryService(ServiceTarget target, String containerName, ServiceVerificationHandler verificationHandler) {
@@ -238,7 +251,7 @@ public class CacheContainerAdd extends AbstractAddStepHandler {
     Collection<ServiceController<?>> installChannelServices(ServiceTarget target, String containerName, String cluster, String stack, ServiceVerificationHandler verificationHandler) {
 
         ServiceName name = ChannelService.getServiceName(containerName);
-        ContextNames.BindInfo bindInfo = this.createChannelBinding(containerName);
+        ContextNames.BindInfo bindInfo = createChannelBinding(containerName);
         BinderService binder = new BinderService(bindInfo.getBindName());
         ServiceController<?> binderService = target.addService(bindInfo.getBinderServiceName(), binder)
                 .addAliases(ContextNames.JAVA_CONTEXT_SERVICE_NAME.append(bindInfo.getBindName()))
@@ -311,7 +324,7 @@ public class CacheContainerAdd extends AbstractAddStepHandler {
     ServiceController<?> installJndiService(ServiceTarget target, String containerName, String jndiName, ServiceVerificationHandler verificationHandler) {
 
         final ServiceName containerServiceName = EmbeddedCacheManagerService.getServiceName(containerName);
-        final ContextNames.BindInfo binding = this.createCacheContainerBinding(jndiName, containerName);
+        final ContextNames.BindInfo binding = createCacheContainerBinding(jndiName, containerName);
 
         final BinderService binder = new BinderService(binding.getBindName());
         return target.addService(binding.getBinderServiceName(), binder)
@@ -323,24 +336,24 @@ public class CacheContainerAdd extends AbstractAddStepHandler {
         ;
     }
 
-    private void addExecutorDependency(ServiceBuilder<EmbeddedCacheManagerConfiguration> builder, String executor, Injector<Executor> injector) {
+    private static void addExecutorDependency(ServiceBuilder<EmbeddedCacheManagerConfiguration> builder, String executor, Injector<Executor> injector) {
         if (executor != null) {
             builder.addDependency(ThreadsServices.executorName(executor), Executor.class, injector);
         }
     }
 
-    private void addScheduledExecutorDependency(ServiceBuilder<EmbeddedCacheManagerConfiguration> builder, String executor, Injector<ScheduledExecutorService> injector) {
+    private static void addScheduledExecutorDependency(ServiceBuilder<EmbeddedCacheManagerConfiguration> builder, String executor, Injector<ScheduledExecutorService> injector) {
         if (executor != null) {
             builder.addDependency(ThreadsServices.executorName(executor), ScheduledExecutorService.class, injector);
         }
     }
 
-    private ContextNames.BindInfo createCacheContainerBinding(String jndiName, String container) {
+    private static ContextNames.BindInfo createCacheContainerBinding(String jndiName, String container) {
         JndiName name = (jndiName != null) ? JndiNameFactory.parse(jndiName) : JndiNameFactory.createJndiName(JndiNameFactory.DEFAULT_JNDI_NAMESPACE, InfinispanExtension.SUBSYSTEM_NAME, "container", container);
         return ContextNames.bindInfoFor(name.getAbsoluteName());
     }
 
-    private ContextNames.BindInfo createChannelBinding(String channel) {
+    private static ContextNames.BindInfo createChannelBinding(String channel) {
         return ContextNames.bindInfoFor(JndiNameFactory.createJndiName(JndiNameFactory.DEFAULT_JNDI_NAMESPACE, JGroupsExtension.SUBSYSTEM_NAME, "channel", channel).getAbsoluteName());
     }
 

@@ -33,8 +33,6 @@ import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.ExecutorService;
 
-import org.jboss.as.clustering.registry.Registry;
-import org.jboss.as.clustering.registry.RegistryCollector;
 import org.jboss.as.ejb3.EjbLogger;
 import org.jboss.as.ejb3.EjbMessages;
 import org.jboss.as.ejb3.deployment.DeploymentModuleIdentifier;
@@ -42,6 +40,7 @@ import org.jboss.as.ejb3.deployment.DeploymentRepository;
 import org.jboss.as.ejb3.deployment.DeploymentRepositoryListener;
 import org.jboss.as.ejb3.deployment.ModuleDeployment;
 import org.jboss.as.ejb3.remote.EJBRemoteTransactionsRepository;
+import org.jboss.as.ejb3.remote.RegistryCollector;
 import org.jboss.as.ejb3.remote.RemoteAsyncInvocationCancelStatusService;
 import org.jboss.as.ejb3.remote.protocol.MessageHandler;
 import org.jboss.as.network.ClientMapping;
@@ -50,6 +49,7 @@ import org.jboss.remoting3.Channel;
 import org.jboss.remoting3.CloseHandler;
 import org.jboss.remoting3.MessageInputStream;
 import org.jboss.remoting3.MessageOutputStream;
+import org.wildfly.clustering.registry.Registry;
 import org.xnio.IoUtils;
 
 /**
@@ -276,10 +276,10 @@ public class VersionOneProtocolChannelReceiver implements Channel.Receiver, Depl
     @Override
     public void registryAdded(Registry<String, List<ClientMapping>> cluster) {
         try {
-            EjbLogger.ROOT_LOGGER.debug("Received new cluster formation notification for cluster " + cluster.getName());
+            EjbLogger.ROOT_LOGGER.debug("Received new cluster formation notification for cluster " + cluster.getGroup().getName());
             this.sendNewClusterFormedMessage(Collections.singleton(cluster));
         } catch (IOException ioe) {
-            EjbLogger.EJB3_LOGGER.failedToSendClusterFormationMessageToClient(ioe, cluster.getName(), channelAssociation.getChannel());
+            EjbLogger.EJB3_LOGGER.failedToSendClusterFormationMessageToClient(ioe, cluster.getGroup().getName(), channelAssociation.getChannel());
         } finally {
             // add a listener for receiving node(s) addition/removal from the cluster
             final ClusterTopologyUpdateListener clusterTopologyUpdateListener = new ClusterTopologyUpdateListener(cluster, this);
@@ -346,7 +346,7 @@ public class VersionOneProtocolChannelReceiver implements Channel.Receiver, Depl
         outputStream = new DataOutputStream(messageOutputStream);
         final ClusterTopologyWriter clusterTopologyWriter = new ClusterTopologyWriter();
         try {
-            EjbLogger.ROOT_LOGGER.debug("Cluster " + registry.getName() + " removed, writing cluster removal message to channel " + this.channelAssociation.getChannel());
+            EjbLogger.ROOT_LOGGER.debug("Cluster " + registry.getGroup().getName() + " removed, writing cluster removal message to channel " + this.channelAssociation.getChannel());
             clusterTopologyWriter.writeClusterRemoved(outputStream, Collections.singleton(registry));
         } finally {
             channelAssociation.releaseChannelMessageOutputStream(messageOutputStream);
@@ -357,7 +357,7 @@ public class VersionOneProtocolChannelReceiver implements Channel.Receiver, Depl
     /**
      * Does all the necessary cleanup when a channel is no longer usable
      */
-    private void cleanupOnChannelDown() {
+    void cleanupOnChannelDown() {
         // we no longer are interested in cluster topology updates, so unregister the update listener
         synchronized (this.clusterTopologyUpdateListeners) {
             for (final ClusterTopologyUpdateListener clusterTopologyUpdateListener : this.clusterTopologyUpdateListeners) {
@@ -368,7 +368,7 @@ public class VersionOneProtocolChannelReceiver implements Channel.Receiver, Depl
         this.clientMappingRegistryCollector.removeListener(this);
     }
 
-    private class ChannelCloseHandler implements CloseHandler<Channel> {
+    class ChannelCloseHandler implements CloseHandler<Channel> {
 
         @Override
         public void handleClose(Channel closedChannel, IOException exception) {
@@ -388,7 +388,7 @@ public class VersionOneProtocolChannelReceiver implements Channel.Receiver, Depl
 
         ClusterTopologyUpdateListener(Registry<String, List<ClientMapping>> cluster, final VersionOneProtocolChannelReceiver channelReceiver) {
             this.channelReceiver = channelReceiver;
-            this.clusterName = cluster.getName();
+            this.clusterName = cluster.getGroup().getName();
             this.cluster = cluster;
         }
 
@@ -407,15 +407,15 @@ public class VersionOneProtocolChannelReceiver implements Channel.Receiver, Depl
         }
 
         @Override
-        public void removedEntries(Set<String> removed) {
+        public void removedEntries(Map<String, List<ClientMapping>> removed) {
             try {
-                this.sendClusterNodesRemoved(removed);
+                this.sendClusterNodesRemoved(removed.keySet());
             } catch (IOException ioe) {
                 EjbLogger.EJB3_LOGGER.failedToSendClusterNodeRemovalMessageToClient(ioe, channelAssociation.getChannel());
             }
         }
 
-        private void unregisterListener() {
+        void unregisterListener() {
             this.cluster.removeListener(this);
         }
 

@@ -64,7 +64,7 @@ public class ViewChangeListenerBean implements ViewChangeListener {
             long now = start;
             long timeout = start + TIMEOUT;
             synchronized (this) {
-                Set<String> members = this.getMembers(manager);
+                Set<String> members = getMembers(manager);
                 while (!expectedMembers.equals(members)) {
                     System.out.println(String.format("%s != %s, waiting for a view change event...", expectedMembers, members));
                     this.wait(timeout - now);
@@ -72,7 +72,7 @@ public class ViewChangeListenerBean implements ViewChangeListener {
                     if (now >= timeout) {
                         throw new InterruptedException(String.format("Cluster '%s' failed to establish view %s within %d ms.  Current view is: %s", cluster, expectedMembers, TIMEOUT, members));
                     }
-                    members = this.getMembers(manager);
+                    members = getMembers(manager);
                 }
                 System.out.println(String.format("Cluster '%s' successfully established view %s within %d ms.", cluster, expectedMembers, now - start));
             }
@@ -81,7 +81,7 @@ public class ViewChangeListenerBean implements ViewChangeListener {
         }
     }
 
-    private Set<String> getMembers(EmbeddedCacheManager manager) {
+    private static Set<String> getMembers(EmbeddedCacheManager manager) {
         Set<String> members = new TreeSet<>();
         for (Address address: manager.getMembers()) {
             members.add(address.toString());

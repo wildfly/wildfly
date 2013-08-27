@@ -23,7 +23,7 @@ package org.wildfly.clustering.singleton.election;
 
 import java.util.List;
 
-import org.wildfly.clustering.Node;
+import org.wildfly.clustering.group.Node;
 import org.wildfly.clustering.singleton.SingletonElectionPolicy;
 
 /**

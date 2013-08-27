@@ -52,9 +52,11 @@ import org.infinispan.notifications.cachelistener.event.CacheEntryRemovedEvent;
 import org.infinispan.notifications.cachelistener.event.TopologyChangedEvent;
 import org.infinispan.remoting.transport.Address;
 import org.jboss.as.clustering.infinispan.affinity.KeyAffinityServiceFactory;
-import org.jboss.as.clustering.registry.Registry;
 import org.jboss.metadata.web.jboss.JBossWebMetaData;
 import org.wildfly.clustering.web.Batch;
+import org.wildfly.clustering.group.Node;
+import org.wildfly.clustering.group.NodeFactory;
+import org.wildfly.clustering.registry.Registry;
 import org.wildfly.clustering.web.Batcher;
 import org.wildfly.clustering.web.infinispan.InfinispanWebLogger;
 import org.wildfly.clustering.web.infinispan.Scheduler;
@@ -80,17 +82,19 @@ public class InfinispanSessionManager<V, L> implements SessionManager<L>, KeyGen
     private final SessionIdentifierFactory idFactory;
     private final KeyAffinityService<String> affinity;
     private final Registry<String, Void> registry;
+    private final NodeFactory<Address> nodeFactory;
     private final List<Scheduler<ImmutableSession>> schedulers = new CopyOnWriteArrayList<>();
-    private volatile Time defaultMaxInactiveInterval = new Time(30, TimeUnit.MINUTES);
     private final int maxActiveSessions;
+    private volatile Time defaultMaxInactiveInterval = new Time(30, TimeUnit.MINUTES);
 
-    public InfinispanSessionManager(SessionContext context, SessionIdentifierFactory idFactory, Cache<String, V> cache, SessionFactory<V, L> factory, KeyAffinityServiceFactory affinityFactory, Registry<String, Void> registry, JBossWebMetaData metaData) {
+    public InfinispanSessionManager(SessionContext context, SessionIdentifierFactory idFactory, Cache<String, V> cache, SessionFactory<V, L> factory, KeyAffinityServiceFactory affinityFactory, Registry<String, Void> registry, NodeFactory<Address> nodeFactory, JBossWebMetaData metaData) {
         this.context = context;
         this.factory = factory;
         this.idFactory = idFactory;
         this.cache = cache;
         this.affinity = affinityFactory.createService(this.cache, this);
         this.registry = registry;
+        this.nodeFactory = nodeFactory;
         this.maxActiveSessions = metaData.getMaxActiveSessions().intValue();
     }
 
@@ -138,18 +142,16 @@ public class InfinispanSessionManager<V, L> implements SessionManager<L>, KeyGen
 
     @Override
     public String locate(String sessionId) {
+        if (this.registry == null) return null;
+        Map.Entry<String, Void> entry = null;
         Address location = this.locatePrimaryOwner(sessionId);
-        if ((location != null) && !location.equals(this.cache.getCacheManager().getAddress())) {
-            // Lookup route for address
-            Map.Entry<String, Void> entry = this.registry.getRemoteEntry(location);
-            if (entry != null) {
-                return entry.getKey();
-            }
+        if ((location != null) && (this.nodeFactory != null)) {
+            Node node = this.nodeFactory.createNode(location);
+            entry = this.registry.getEntry(node);
         }
-        Map.Entry<String, Void> entry = this.registry.getLocalEntry();
         if (entry == null) {
             // Accommodate mod_cluster's lazy route auto-generation
-            entry = this.registry.refreshLocalEntry();
+            entry = this.registry.getLocalEntry();
         }
         return (entry != null) ? entry.getKey() : null;
     }
@@ -318,46 +320,46 @@ public class InfinispanSessionManager<V, L> implements SessionManager<L>, KeyGen
 
     @TopologyChanged
     public void topologyChanged(TopologyChangedEvent<String, ?> event) {
-        if (!event.isPre()) {
-            Cache<String, ?> cache = event.getCache();
-            Address localAddress = cache.getCacheManager().getAddress();
-            ConsistentHash oldHash = event.getConsistentHashAtStart();
-            ConsistentHash newHash = event.getConsistentHashAtEnd();
-            Set<Address> oldAddresses = new HashSet<>(oldHash.getMembers());
-            // Find members that left this cache view
-            oldAddresses.removeAll(newHash.getMembers());
-            if (!oldAddresses.isEmpty()) {
-                // Iterate over sessions in memory
-                for (Object key: cache.getAdvancedCache().withFlags(Flag.CACHE_MODE_LOCAL, Flag.SKIP_CACHE_LOAD, Flag.SKIP_LOCKING).keySet()) {
-                    // Cache may contain non-string keys, so ignore any others
-                    if (key instanceof String) {
-                        String sessionId = (String) key;
-                        Address oldOwner = oldHash.locatePrimaryOwner(sessionId);
-                        // If the old owner of this session has left the cache view...
-                        if (oldAddresses.contains(oldOwner)) {
-                            Address newOwner = newHash.locatePrimaryOwner(sessionId);
-                            // And if we are the new primary owner of this session...
-                            if (localAddress.equals(newOwner)) {
-                                // Then schedule expiration of this session locally
-                                boolean started = cache.startBatch();
-                                try {
-                                    V value = this.factory.findValue(sessionId);
-                                    if (value != null) {
-                                        InfinispanWebLogger.ROOT_LOGGER.debugf("Scheduling expiration of session %s on behalf of previous owner: %s", sessionId, oldOwner);
-                                        ImmutableSession session = this.factory.createImmutableSession(sessionId, value);
-                                        for (Scheduler<ImmutableSession> scheduler: this.schedulers) {
-                                            scheduler.cancel(session);
-                                            scheduler.schedule(session);
-                                        }
-                                    }
-                                } finally {
-                                    if (started) {
-                                        cache.endBatch(false);
+        if (event.isPre()) return;
+
+        Cache<String, ?> cache = event.getCache();
+        Address localAddress = cache.getCacheManager().getAddress();
+        ConsistentHash oldHash = event.getConsistentHashAtStart();
+        ConsistentHash newHash = event.getConsistentHashAtEnd();
+        Set<Address> oldAddresses = new HashSet<>(oldHash.getMembers());
+        // Find members that left this cache view
+        oldAddresses.removeAll(newHash.getMembers());
+        if (!oldAddresses.isEmpty()) {
+            // Iterate over sessions in memory
+            for (Object key: cache.getAdvancedCache().withFlags(Flag.CACHE_MODE_LOCAL, Flag.SKIP_CACHE_LOAD, Flag.SKIP_LOCKING).keySet()) {
+                // Cache may contain non-string keys, so ignore any others
+                if (key instanceof String) {
+                    String sessionId = (String) key;
+                    Address oldOwner = oldHash.locatePrimaryOwner(sessionId);
+                    // If the old owner of this session has left the cache view...
+                    if (oldAddresses.contains(oldOwner)) {
+                        Address newOwner = newHash.locatePrimaryOwner(sessionId);
+                        // And if we are the new primary owner of this session...
+                        if (localAddress.equals(newOwner)) {
+                            // Then schedule expiration of this session locally
+                            boolean started = cache.startBatch();
+                            try {
+                                V value = this.factory.findValue(sessionId);
+                                if (value != null) {
+                                    InfinispanWebLogger.ROOT_LOGGER.debugf("Scheduling expiration of session %s on behalf of previous owner: %s", sessionId, oldOwner);
+                                    ImmutableSession session = this.factory.createImmutableSession(sessionId, value);
+                                    for (Scheduler<ImmutableSession> scheduler: this.schedulers) {
+                                        scheduler.cancel(session);
+                                        scheduler.schedule(session);
                                     }
                                 }
-                            } else {
-                                InfinispanWebLogger.ROOT_LOGGER.tracef("Expiration of session %s will be scheduled by node %s on behalf of previous owner: %s", sessionId, newOwner, oldOwner);
+                            } finally {
+                                if (started) {
+                                    cache.endBatch(false);
+                                }
                             }
+                        } else {
+                            InfinispanWebLogger.ROOT_LOGGER.tracef("Expiration of session %s will be scheduled by node %s on behalf of previous owner: %s", sessionId, newOwner, oldOwner);
                         }
                     }
                 }
