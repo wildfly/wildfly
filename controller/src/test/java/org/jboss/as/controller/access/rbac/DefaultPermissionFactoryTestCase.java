@@ -31,11 +31,13 @@ import java.util.Collections;
 import java.util.EnumSet;
 import java.util.Enumeration;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Set;
 
 import org.jboss.as.controller.ControlledProcessState;
 import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.ProcessType;
+import org.jboss.as.controller.SimpleResourceDefinition;
 import org.jboss.as.controller.access.Action;
 import org.jboss.as.controller.access.Caller;
 import org.jboss.as.controller.access.Environment;
@@ -43,7 +45,10 @@ import org.jboss.as.controller.access.TargetAttribute;
 import org.jboss.as.controller.access.TargetResource;
 import org.jboss.as.controller.access.constraint.Constraint;
 import org.jboss.as.controller.access.constraint.ConstraintFactory;
+import org.jboss.as.controller.access.constraint.management.AccessConstraintDefinition;
 import org.jboss.as.controller.access.permission.CombinationPolicy;
+import org.jboss.as.controller.descriptions.NonResolvingResourceDescriptionResolver;
+import org.jboss.as.controller.registry.ManagementResourceRegistration;
 import org.jboss.dmr.ModelNode;
 import org.junit.Before;
 import org.junit.Test;
@@ -52,6 +57,14 @@ import org.junit.Test;
  * @author Ladislav Thon <lthon@redhat.com>
  */
 public class DefaultPermissionFactoryTestCase {
+
+    private static final ManagementResourceRegistration ROOT_RR = ManagementResourceRegistration.Factory.create(new SimpleResourceDefinition(null, new NonResolvingResourceDescriptionResolver()) {
+        @Override
+        public List<AccessConstraintDefinition> getAccessConstraints() {
+            return Collections.emptyList();
+        }
+    });
+
     private Caller caller;
     private Environment environment;
 
@@ -149,7 +162,7 @@ public class DefaultPermissionFactoryTestCase {
                 Collections.singleton(constraintFactory));
 
         Action action = new Action(null, null, EnumSet.of(Action.ActionEffect.ADDRESS));
-        TargetResource targetResource = TargetResource.forStandalone(PathAddress.EMPTY_ADDRESS, null, null);
+        TargetResource targetResource = TargetResource.forStandalone(PathAddress.EMPTY_ADDRESS, ROOT_RR, null);
 
         PermissionCollection userPermissions = permissionFactory.getUserPermissions(caller, environment, action, targetResource);
         PermissionCollection requiredPermissions = permissionFactory.getRequiredPermissions(action, targetResource);
@@ -170,7 +183,7 @@ public class DefaultPermissionFactoryTestCase {
                 Collections.singleton(constraintFactory));
 
         Action action = new Action(null, null, EnumSet.of(Action.ActionEffect.ADDRESS));
-        TargetResource targetResource = TargetResource.forStandalone(PathAddress.EMPTY_ADDRESS, null, null);
+        TargetResource targetResource = TargetResource.forStandalone(PathAddress.EMPTY_ADDRESS, ROOT_RR, null);
         TargetAttribute targetAttribute = new TargetAttribute(null, new ModelNode(), targetResource);
 
         PermissionCollection userPermissions = permissionFactory.getUserPermissions(caller, environment, action, targetAttribute);
@@ -185,7 +198,7 @@ public class DefaultPermissionFactoryTestCase {
     public void testRoleCombinationRejecting() {
         Action action = new Action(null, null, EnumSet.of(Action.ActionEffect.ADDRESS,
                 Action.ActionEffect.READ_CONFIG));
-        TargetResource targetResource = TargetResource.forStandalone(PathAddress.EMPTY_ADDRESS, null, null);
+        TargetResource targetResource = TargetResource.forStandalone(PathAddress.EMPTY_ADDRESS, ROOT_RR, null);
 
         DefaultPermissionFactory permissionFactory = null;
         try {

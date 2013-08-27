@@ -26,12 +26,15 @@ import static org.junit.Assert.assertEquals;
 
 import java.security.Permission;
 import java.security.PermissionCollection;
+import java.util.Collections;
 import java.util.EnumSet;
+import java.util.List;
 import java.util.Set;
 
 import org.jboss.as.controller.ControlledProcessState;
 import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.ProcessType;
+import org.jboss.as.controller.SimpleResourceDefinition;
 import org.jboss.as.controller.access.Action;
 import org.jboss.as.controller.access.AuthorizationResult;
 import org.jboss.as.controller.access.Caller;
@@ -39,6 +42,9 @@ import org.jboss.as.controller.access.Environment;
 import org.jboss.as.controller.access.TargetAttribute;
 import org.jboss.as.controller.access.TargetResource;
 import org.jboss.as.controller.access.constraint.Constraint;
+import org.jboss.as.controller.access.constraint.management.AccessConstraintDefinition;
+import org.jboss.as.controller.descriptions.NonResolvingResourceDescriptionResolver;
+import org.jboss.as.controller.registry.ManagementResourceRegistration;
 import org.jboss.dmr.ModelNode;
 import org.junit.Before;
 import org.junit.Test;
@@ -47,6 +53,14 @@ import org.junit.Test;
  * @author Ladislav Thon <lthon@redhat.com>
  */
 public class ManagementPermissionAuthorizerTestCase {
+
+    private static final ManagementResourceRegistration ROOT_RR = ManagementResourceRegistration.Factory.create(new SimpleResourceDefinition(null, new NonResolvingResourceDescriptionResolver()) {
+        @Override
+        public List<AccessConstraintDefinition> getAccessConstraints() {
+            return Collections.emptyList();
+        }
+    });
+
     private Caller caller;
     private Environment environment;
     private ManagementPermissionAuthorizer authorizer;
@@ -65,7 +79,7 @@ public class ManagementPermissionAuthorizerTestCase {
     public void testAuthorizerResourcePermit() {
         Action action = new Action(null, null, EnumSet.of(Action.ActionEffect.ADDRESS,
                 Action.ActionEffect.READ_CONFIG));
-        TargetResource targetResource = TargetResource.forStandalone(PathAddress.EMPTY_ADDRESS, null, null);
+        TargetResource targetResource = TargetResource.forStandalone(PathAddress.EMPTY_ADDRESS, ROOT_RR, null);
         AuthorizationResult result = authorizer.authorize(caller, environment, action, targetResource);
 
         assertEquals(AuthorizationResult.Decision.PERMIT, result.getDecision());
@@ -75,7 +89,7 @@ public class ManagementPermissionAuthorizerTestCase {
     public void testAuthorizerResourceDeny() {
         Action action = new Action(null, null, EnumSet.of(Action.ActionEffect.ADDRESS,
                 Action.ActionEffect.READ_CONFIG, Action.ActionEffect.WRITE_CONFIG));
-        TargetResource targetResource = TargetResource.forStandalone(PathAddress.EMPTY_ADDRESS, null, null);
+        TargetResource targetResource = TargetResource.forStandalone(PathAddress.EMPTY_ADDRESS, ROOT_RR, null);
         AuthorizationResult result = authorizer.authorize(caller, environment, action, targetResource);
 
         assertEquals(AuthorizationResult.Decision.DENY, result.getDecision());
@@ -85,7 +99,7 @@ public class ManagementPermissionAuthorizerTestCase {
     public void testAuthorizerAttributePermit() {
         Action action = new Action(null, null, EnumSet.of(Action.ActionEffect.ADDRESS,
                 Action.ActionEffect.READ_CONFIG));
-        TargetResource targetResource = TargetResource.forStandalone(PathAddress.EMPTY_ADDRESS, null, null);
+        TargetResource targetResource = TargetResource.forStandalone(PathAddress.EMPTY_ADDRESS, ROOT_RR, null);
         TargetAttribute targetAttribute = new TargetAttribute(null, new ModelNode(), targetResource);
         AuthorizationResult result = authorizer.authorize(caller, environment, action, targetAttribute);
 
@@ -96,7 +110,7 @@ public class ManagementPermissionAuthorizerTestCase {
     public void testAuthorizerAttributeDeny() {
         Action action = new Action(null, null, EnumSet.of(Action.ActionEffect.ADDRESS,
                 Action.ActionEffect.READ_CONFIG, Action.ActionEffect.WRITE_CONFIG));
-        TargetResource targetResource = TargetResource.forStandalone(PathAddress.EMPTY_ADDRESS, null, null);
+        TargetResource targetResource = TargetResource.forStandalone(PathAddress.EMPTY_ADDRESS, ROOT_RR, null);
         TargetAttribute targetAttribute = new TargetAttribute(null, new ModelNode(), targetResource);
         AuthorizationResult result = authorizer.authorize(caller, environment, action, targetAttribute);
 
