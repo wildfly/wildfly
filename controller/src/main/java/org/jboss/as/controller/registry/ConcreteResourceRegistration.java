@@ -37,7 +37,6 @@ import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicReferenceFieldUpdater;
 
 import org.jboss.as.controller.AttributeDefinition;
-import org.jboss.as.controller.access.constraint.management.ConstrainedResourceDefinition;
 import org.jboss.as.controller.OperationDefinition;
 import org.jboss.as.controller.OperationStepHandler;
 import org.jboss.as.controller.PathAddress;
@@ -45,6 +44,7 @@ import org.jboss.as.controller.PathElement;
 import org.jboss.as.controller.ProxyController;
 import org.jboss.as.controller.ResourceDefinition;
 import org.jboss.as.controller.access.constraint.management.AccessConstraintDefinition;
+import org.jboss.as.controller.access.constraint.management.ConstrainedResourceDefinition;
 import org.jboss.as.controller.descriptions.DescriptionProvider;
 import org.jboss.as.controller.registry.AttributeAccess.AccessType;
 import org.jboss.as.controller.registry.AttributeAccess.Storage;
@@ -60,8 +60,8 @@ final class ConcreteResourceRegistration extends AbstractResourceRegistration {
     @SuppressWarnings("unused")
     private volatile Map<String, OperationEntry> operations;
 
-    @SuppressWarnings("unused")
-    private volatile ResourceDefinition resourceDefinition;
+    private final ResourceDefinition resourceDefinition;
+    private final List<AccessConstraintDefinition> accessConstraintDefinitions;
 
     @SuppressWarnings("unused")
     private volatile Map<String, AttributeAccess> attributes;
@@ -71,15 +71,16 @@ final class ConcreteResourceRegistration extends AbstractResourceRegistration {
     private static final AtomicMapFieldUpdater<ConcreteResourceRegistration, String, NodeSubregistry> childrenUpdater = AtomicMapFieldUpdater.newMapUpdater(AtomicReferenceFieldUpdater.newUpdater(ConcreteResourceRegistration.class, Map.class, "children"));
     private static final AtomicMapFieldUpdater<ConcreteResourceRegistration, String, OperationEntry> operationsUpdater = AtomicMapFieldUpdater.newMapUpdater(AtomicReferenceFieldUpdater.newUpdater(ConcreteResourceRegistration.class, Map.class, "operations"));
     private static final AtomicMapFieldUpdater<ConcreteResourceRegistration, String, AttributeAccess> attributesUpdater = AtomicMapFieldUpdater.newMapUpdater(AtomicReferenceFieldUpdater.newUpdater(ConcreteResourceRegistration.class, Map.class, "attributes"));
-    private static final AtomicReferenceFieldUpdater<ConcreteResourceRegistration, ResourceDefinition> descriptionProviderUpdater = AtomicReferenceFieldUpdater.newUpdater(ConcreteResourceRegistration.class, ResourceDefinition.class, "resourceDefinition");
 
-    ConcreteResourceRegistration(final String valueString, final NodeSubregistry parent, final ResourceDefinition provider, final boolean runtimeOnly) {
+    ConcreteResourceRegistration(final String valueString, final NodeSubregistry parent, final ResourceDefinition definition,
+                                 final boolean runtimeOnly) {
         super(valueString, parent);
         childrenUpdater.clear(this);
         operationsUpdater.clear(this);
         attributesUpdater.clear(this);
-        descriptionProviderUpdater.set(this, provider);
+        this.resourceDefinition = definition;
         this.runtimeOnly.set(runtimeOnly);
+        this.accessConstraintDefinitions = buildAccessConstraints();
     }
 
     @Override
@@ -103,6 +104,10 @@ final class ConcreteResourceRegistration extends AbstractResourceRegistration {
     @Override
     public List<AccessConstraintDefinition> getAccessConstraints() {
         checkPermission();
+        return accessConstraintDefinitions;
+    }
+
+    private List<AccessConstraintDefinition> buildAccessConstraints() {
         AbstractResourceRegistration reg = this;
         List<AccessConstraintDefinition> list = new ArrayList<AccessConstraintDefinition>();
         while (reg != null) {

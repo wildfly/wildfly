@@ -75,30 +75,8 @@ public class SensitiveTargetConstraintUnitTestCase {
     private static final Constraint MONITOR_READ_CONFIG = SensitiveTargetConstraint.FACTORY.getStandardUserConstraint(StandardRole.MONITOR, Action.ActionEffect.READ_CONFIG);
     private static final Constraint ADMIN_READ_CONFIG = SensitiveTargetConstraint.FACTORY.getStandardUserConstraint(StandardRole.ADMINISTRATOR, Action.ActionEffect.READ_CONFIG);
 
-    private static TargetResource rootTarget;
-    private static TargetResource childTarget;
-
-    @BeforeClass
-    public static void setUpClass() {
-        ResourceDefinition rootRd = new SimpleResourceDefinition(null, new NonResolvingResourceDescriptionResolver()) {
-            @Override
-            public List<AccessConstraintDefinition> getAccessConstraints() {
-                return rootResourceConstraints;
-            }
-        };
-        ManagementResourceRegistration root = ManagementResourceRegistration.Factory.create(rootRd);
-        root.registerOperationHandler(READ_CONFIG_DEF, NoopOperationStepHandler.WITH_RESULT, true);
-        rootTarget = TargetResource.forStandalone(PathAddress.EMPTY_ADDRESS, root, Resource.Factory.create());
-        PathElement childPE = PathElement.pathElement("child");
-        ResourceDefinition childRd = new SimpleResourceDefinition(childPE, new NonResolvingResourceDescriptionResolver()) {
-            @Override
-            public List<AccessConstraintDefinition> getAccessConstraints() {
-                return childResourceConstraints;
-            }
-        };
-        ManagementResourceRegistration child = root.registerSubModel(childRd);
-        childTarget = TargetResource.forStandalone(PathAddress.pathAddress(childPE), child, Resource.Factory.create());
-    }
+    private TargetResource rootTarget;
+    private TargetResource childTarget;
 
     @Before
     public void setUp() {
@@ -108,6 +86,29 @@ public class SensitiveTargetConstraintUnitTestCase {
         b.setConfiguredRequiresReadPermission(false);
         a.setConfiguredRequiresWritePermission(false);
         b.setConfiguredRequiresWritePermission(false);
+        setupResources();
+    }
+
+    private void setupResources() {
+        ResourceDefinition rootRd = new SimpleResourceDefinition(null, new NonResolvingResourceDescriptionResolver()) {
+            @Override
+            public List<AccessConstraintDefinition> getAccessConstraints() {
+                return rootResourceConstraints;
+            }
+        };
+        ManagementResourceRegistration rootRegistration = ManagementResourceRegistration.Factory.create(rootRd);
+        rootRegistration.registerOperationHandler(READ_CONFIG_DEF, NoopOperationStepHandler.WITH_RESULT, true);
+        PathElement childPE = PathElement.pathElement("child");
+        ResourceDefinition childRd = new SimpleResourceDefinition(childPE, new NonResolvingResourceDescriptionResolver()) {
+            @Override
+            public List<AccessConstraintDefinition> getAccessConstraints() {
+                return childResourceConstraints;
+            }
+        };
+        ManagementResourceRegistration childRegistration = rootRegistration.registerSubModel(childRd);
+
+        rootTarget = TargetResource.forStandalone(PathAddress.EMPTY_ADDRESS, rootRegistration, Resource.Factory.create());
+        childTarget = TargetResource.forStandalone(PathAddress.pathAddress(childPE), childRegistration, Resource.Factory.create());
     }
 
     @After
@@ -158,6 +159,7 @@ public class SensitiveTargetConstraintUnitTestCase {
 
         a.setConfiguredRequiresReadPermission(true);
         b.setConfiguredRequiresReadPermission(true);
+        setupResources();
 
         testee = SensitiveTargetConstraint.FACTORY.getRequiredConstraint(Action.ActionEffect.READ_CONFIG, getReadConfigAction(), childTarget);
         assertTrue(MONITOR_READ_CONFIG.violates(testee, Action.ActionEffect.READ_CONFIG));
@@ -169,6 +171,7 @@ public class SensitiveTargetConstraintUnitTestCase {
     private void multipleInconsistentTest() {
 
         b.setConfiguredRequiresReadPermission(true);
+        setupResources();
 
         Constraint testee = SensitiveTargetConstraint.FACTORY.getRequiredConstraint(Action.ActionEffect.READ_CONFIG, getReadConfigAction(), childTarget);
         assertTrue(MONITOR_READ_CONFIG.violates(testee, Action.ActionEffect.READ_CONFIG));
@@ -178,6 +181,7 @@ public class SensitiveTargetConstraintUnitTestCase {
 
         a.setConfiguredRequiresReadPermission(true);
         b.setConfiguredRequiresReadPermission(false);
+        setupResources();
 
         testee = SensitiveTargetConstraint.FACTORY.getRequiredConstraint(Action.ActionEffect.READ_CONFIG, getReadConfigAction(), childTarget);
         assertTrue(MONITOR_READ_CONFIG.violates(testee, Action.ActionEffect.READ_CONFIG));
