@@ -54,6 +54,7 @@ import org.jboss.as.controller.transform.OperationTransformer;
 import org.jboss.as.model.test.FailedOperationTransformationConfig;
 import org.jboss.as.model.test.ModelTestControllerVersion;
 import org.jboss.as.model.test.ModelTestUtils;
+import org.jboss.as.model.test.SingleClassFilter;
 import org.jboss.as.subsystem.test.AbstractSubsystemBaseTest;
 import org.jboss.as.subsystem.test.AdditionalInitialization;
 import org.jboss.as.subsystem.test.KernelServices;
@@ -123,7 +124,8 @@ public class TransactionSubsystemTestCase extends AbstractSubsystemBaseTest {
 
         // Add legacy subsystems
         builder.createLegacyKernelServicesBuilder(null, ModelTestControllerVersion.V7_1_2_FINAL, modelVersion)
-            .addMavenResourceURL("org.jboss.as:jboss-as-transactions:7.1.2.Final");
+            .addMavenResourceURL("org.jboss.as:jboss-as-transactions:7.1.2.Final")
+            .excludeFromParent(SingleClassFilter.createFilter(TransactionLogger.class));
 
         KernelServices mainServices = builder.build();
         KernelServices legacyServices = mainServices.getLegacyServices(modelVersion);
@@ -142,7 +144,8 @@ public class TransactionSubsystemTestCase extends AbstractSubsystemBaseTest {
 
         // Add legacy subsystems
         builder.createLegacyKernelServicesBuilder(null, ModelTestControllerVersion.V7_1_3_FINAL, modelVersion)
-                .addMavenResourceURL("org.jboss.as:jboss-as-transactions:7.1.3.Final");
+                .addMavenResourceURL("org.jboss.as:jboss-as-transactions:7.1.3.Final")
+                .excludeFromParent(SingleClassFilter.createFilter(TransactionLogger.class));
 
         KernelServices mainServices = builder.build();
         KernelServices legacyServices = mainServices.getLegacyServices(modelVersion);
@@ -162,7 +165,8 @@ public class TransactionSubsystemTestCase extends AbstractSubsystemBaseTest {
 
         // Add legacy subsystems
         builder.createLegacyKernelServicesBuilder(null, ModelTestControllerVersion.V7_1_2_FINAL, modelVersion)
-            .addMavenResourceURL("org.jboss.as:jboss-as-transactions:7.1.2.Final");
+            .addMavenResourceURL("org.jboss.as:jboss-as-transactions:7.1.2.Final")
+            .excludeFromParent(SingleClassFilter.createFilter(TransactionLogger.class)); 
 
         KernelServices mainServices = builder.build();
         KernelServices legacyServices = mainServices.getLegacyServices(modelVersion);
@@ -195,7 +199,8 @@ public class TransactionSubsystemTestCase extends AbstractSubsystemBaseTest {
         // Add legacy subsystems
         builder.createLegacyKernelServicesBuilder(null, ModelTestControllerVersion.V7_1_3_FINAL, modelVersion)
                 .addMavenResourceURL("org.jboss.as:jboss-as-transactions:7.1.3.Final")
-                .addOperationValidationResolve(ADD, subsystemAddress);
+                .addOperationValidationResolve(ADD, subsystemAddress)
+                .excludeFromParent(SingleClassFilter.createFilter(TransactionLogger.class)); 
 
         KernelServices mainServices = builder.build();
         KernelServices legacyServices = mainServices.getLegacyServices(modelVersion);
@@ -212,7 +217,8 @@ public class TransactionSubsystemTestCase extends AbstractSubsystemBaseTest {
         // Add legacy subsystems
         ModelVersion version_1_1 = ModelVersion.create(1, 1, 0);
         builder.createLegacyKernelServicesBuilder(createAdditionalInitialization(), ModelTestControllerVersion.V7_1_2_FINAL, version_1_1)
-            .addMavenResourceURL("org.jboss.as:jboss-as-transactions:7.1.2.Final");
+            .addMavenResourceURL("org.jboss.as:jboss-as-transactions:7.1.2.Final")
+            .excludeFromParent(SingleClassFilter.createFilter(TransactionLogger.class)); 
 
         KernelServices mainServices = builder.build();
         assertTrue(mainServices.isSuccessfulBoot());
@@ -247,7 +253,8 @@ public class TransactionSubsystemTestCase extends AbstractSubsystemBaseTest {
         // Add legacy subsystems
         ModelVersion version_1_1_1 = ModelVersion.create(1, 1, 1);
         builder.createLegacyKernelServicesBuilder(createAdditionalInitialization(), ModelTestControllerVersion.V7_1_3_FINAL, version_1_1_1)
-                .addMavenResourceURL("org.jboss.as:jboss-as-transactions:7.1.3.Final");
+                .addMavenResourceURL("org.jboss.as:jboss-as-transactions:7.1.3.Final")
+                .excludeFromParent(SingleClassFilter.createFilter(TransactionLogger.class)); 
 
         KernelServices mainServices = builder.build();
         assertTrue(mainServices.isSuccessfulBoot());
