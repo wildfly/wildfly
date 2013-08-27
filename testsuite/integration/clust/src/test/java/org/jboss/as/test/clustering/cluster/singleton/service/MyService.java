@@ -27,7 +27,6 @@ import org.jboss.as.server.ServerEnvironment;
 import org.jboss.msc.service.Service;
 import org.jboss.msc.service.ServiceName;
 import org.jboss.msc.service.StartContext;
-import org.jboss.msc.service.StartException;
 import org.jboss.msc.service.StopContext;
 import org.jboss.msc.value.Value;
 
@@ -48,11 +47,11 @@ public class MyService implements Service<Environment> {
         if (!this.started.get()) {
             throw new IllegalStateException();
         }
-        return new Environment(env.getValue().getNodeName());
+        return new Environment(this.env.getValue().getNodeName());
     }
 
     @Override
-    public void start(StartContext context) throws StartException {
+    public void start(StartContext context) {
         this.started.set(true);
     }
 

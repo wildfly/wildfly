@@ -11,11 +11,11 @@ import javax.ejb.Singleton;
 import javax.ejb.Startup;
 
 import org.jboss.msc.service.ServiceName;
-import org.wildfly.clustering.Node;
 import org.wildfly.clustering.dispatcher.Command;
 import org.wildfly.clustering.dispatcher.CommandDispatcher;
 import org.wildfly.clustering.dispatcher.CommandDispatcherFactory;
 import org.wildfly.clustering.dispatcher.CommandResponse;
+import org.wildfly.clustering.group.Node;
 
 @Singleton
 @Startup
@@ -29,7 +29,7 @@ public class CommandDispatcherBean implements CommandDispatcher<Node> {
 
     @PostConstruct
     public void init() {
-        this.dispatcher = this.factory.createCommandDispatcher(SERVICE_NAME, this.factory.getLocalNode(), null);
+        this.dispatcher = this.factory.createCommandDispatcher(SERVICE_NAME, this.factory.getGroup().getLocalNode());
     }
 
     @PreDestroy

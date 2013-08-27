@@ -32,12 +32,17 @@ import org.jboss.as.clustering.infinispan.TransactionSynchronizationRegistryProv
 import org.jboss.modules.ModuleIdentifier;
 import org.jboss.modules.ModuleLoadException;
 import org.jboss.modules.ModuleLoader;
+import org.jboss.msc.service.ServiceName;
 
 /**
  * @author Paul Ferraro
  * @author Richard Achmatowicz (c) 2011 Red Hat Inc.
  */
 public class CacheConfigurationService extends AbstractCacheConfigurationService {
+
+    public static ServiceName getServiceName(String container, String cache) {
+        return CacheService.getServiceName(container, cache).append("config");
+    }
 
     interface Dependencies {
         ModuleLoader getModuleLoader();

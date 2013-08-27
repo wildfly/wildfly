@@ -24,16 +24,13 @@ package org.jboss.as.clustering.ejb3.cache.backing.infinispan;
 
 import java.io.Serializable;
 import java.util.Collections;
-import java.util.List;
 import java.util.Map;
-import java.util.Random;
 import java.util.Set;
 
 import org.infinispan.Cache;
 import org.infinispan.affinity.KeyAffinityService;
 import org.infinispan.affinity.KeyGenerator;
 import org.infinispan.context.Flag;
-import org.infinispan.distribution.DataLocality;
 import org.infinispan.distribution.DistributionManager;
 import org.infinispan.loaders.CacheLoaderException;
 import org.infinispan.loaders.CacheLoaderManager;
@@ -47,7 +44,6 @@ import org.jboss.as.clustering.infinispan.affinity.KeyAffinityServiceFactory;
 import org.jboss.as.clustering.infinispan.invoker.CacheInvoker;
 import org.jboss.as.clustering.marshalling.MarshalledValue;
 import org.jboss.as.clustering.marshalling.MarshalledValueFactory;
-import org.jboss.as.clustering.registry.Registry;
 import org.jboss.as.ejb3.cache.Cacheable;
 import org.jboss.as.ejb3.cache.IdentifierFactory;
 import org.jboss.as.ejb3.cache.PassivationManager;
@@ -60,6 +56,9 @@ import org.jboss.ejb.client.Affinity;
 import org.jboss.ejb.client.ClusterAffinity;
 import org.jboss.ejb.client.NodeAffinity;
 import org.jboss.logging.Logger;
+import org.wildfly.clustering.group.Node;
+import org.wildfly.clustering.group.NodeFactory;
+import org.wildfly.clustering.registry.Registry;
 
 /**
  * Infinispan-based backing cache entry store.
@@ -76,12 +75,12 @@ public class InfinispanBackingCacheEntryStore<K extends Serializable, V extends 
     private final CacheInvoker invoker;
     private final PassivationManager<K, E> passivationManager;
     private final boolean clustered;
-    private final Random random = new Random(System.currentTimeMillis());
+    private final NodeFactory<Address> nodeFactory;
     private final Registry<String, ?> registry;
     private final IdentifierFactory<K> identifierFactory;
     private final KeyAffinityService<K> affinity;
 
-    public InfinispanBackingCacheEntryStore(Cache<K, MarshalledValue<E, C>> cache, CacheInvoker invoker, IdentifierFactory<K> identifierFactory, KeyAffinityServiceFactory affinityFactory, PassivationManager<K, E> passivationManager, StatefulTimeoutInfo timeout, ClusteredBackingCacheEntryStoreConfig config, boolean controlCacheLifecycle, MarshalledValueFactory<C> valueFactory, C context, Registry<String, ?> registry) {
+    public InfinispanBackingCacheEntryStore(Cache<K, MarshalledValue<E, C>> cache, CacheInvoker invoker, IdentifierFactory<K> identifierFactory, KeyAffinityServiceFactory affinityFactory, PassivationManager<K, E> passivationManager, StatefulTimeoutInfo timeout, ClusteredBackingCacheEntryStoreConfig config, boolean controlCacheLifecycle, MarshalledValueFactory<C> valueFactory, C context, NodeFactory<Address> nodeFactory, Registry<String, ?> registry) {
         super(timeout, config);
         this.cache = cache;
         this.invoker = invoker;
@@ -91,6 +90,7 @@ public class InfinispanBackingCacheEntryStore<K extends Serializable, V extends 
         this.clustered = cache.getCacheConfiguration().clustering().cacheMode().isClustered();
         this.valueFactory = valueFactory;
         this.context = context;
+        this.nodeFactory = nodeFactory;
         this.registry = registry;
         this.affinity = affinityFactory.createService(cache, this);
     }
@@ -125,8 +125,7 @@ public class InfinispanBackingCacheEntryStore<K extends Serializable, V extends 
     public boolean hasAffinity(K key) {
         DistributionManager dist = this.cache.getAdvancedCache().getDistributionManager();
         if (dist != null) {
-            DataLocality locality = dist.getLocality(key);
-            return locality.isLocal() || locality.isUncertain();
+            return dist.getPrimaryLocation(key).equals(this.cache.getCacheManager().getAddress());
         }
         return true;
     }
@@ -138,18 +137,22 @@ public class InfinispanBackingCacheEntryStore<K extends Serializable, V extends 
 
     @Override
     public Affinity getWeakAffinity(K key) {
-        if (!this.hasAffinity(key)) {
-            // Locate nodes on which the cache entry will reside
-            List<Address> addresses = this.cache.getAdvancedCache().getDistributionManager().locate(key);
-            if (!addresses.contains(this.cache.getCacheManager().getAddress())) {
-                // Otherwise choose random node from hash targets
-                Map.Entry<String, ?> entry = this.registry.getRemoteEntry(addresses.get(random.nextInt(addresses.size())));
-                if (entry != null) {
-                    return new NodeAffinity(entry.getKey());
-                }
-            }
+        if (this.registry == null) return Affinity.NONE;
+        Map.Entry<String, ?> entry = null;
+        Address location = this.locatePrimaryOwner(key);
+        if ((location != null) && (this.nodeFactory != null)) {
+            Node node = this.nodeFactory.createNode(location);
+            entry = this.registry.getEntry(node);
         }
-        return new NodeAffinity(this.registry.getLocalEntry().getKey());
+        if (entry == null) {
+            entry = this.registry.getLocalEntry();
+        }
+        return (entry != null) ? new NodeAffinity(entry.getKey()) : Affinity.NONE;
+    }
+
+    private Address locatePrimaryOwner(K key) {
+        DistributionManager dist = this.cache.getAdvancedCache().getDistributionManager();
+        return (dist != null) ? dist.getPrimaryLocation(key) : null;
     }
 
     @Override

@@ -26,33 +26,28 @@ import java.io.Serializable;
 import java.util.ServiceConfigurationError;
 import java.util.ServiceLoader;
 
-import org.jboss.as.clustering.registry.Registry;
-import org.jboss.as.clustering.registry.RegistryCollector;
 import org.jboss.as.ejb3.cache.Cacheable;
 import org.jboss.as.ejb3.cache.spi.BackingCacheEntryStoreSourceService;
 import org.jboss.as.ejb3.remote.EJBRemoteConnectorService;
+import org.jboss.as.ejb3.remote.RegistryCollector;
 import org.jboss.msc.service.ServiceBuilder;
 import org.jboss.msc.service.ServiceName;
 import org.jboss.msc.service.ServiceTarget;
 import org.jboss.msc.service.StartContext;
 import org.jboss.msc.service.StopContext;
 import org.jboss.msc.value.InjectedValue;
+import org.wildfly.clustering.registry.Registry;
 
 /**
  * @author Paul Ferraro
  */
 public class ClusteredBackingCacheEntryStoreSourceService<K extends Serializable, V extends Cacheable<K>, G extends Serializable> extends BackingCacheEntryStoreSourceService<K, V, G, ClusteredBackingCacheEntryStoreSource<K, V, G>> {
     private static final ServiceName BASE_CLIENT_MAPPING_SERVICE_NAME = ServiceName.JBOSS.append("ejb", "remoting", "connector", "client-mappings");
-    private static final ServiceName CLIENT_MAPPING_REGISTRY_SERVICE_NAME = BASE_CLIENT_MAPPING_SERVICE_NAME.append("registry");
     private static final ServiceName CACHE_FACTORY_CLUSTER_NAME_SERVICE_NAME = ServiceName.JBOSS.append("ejb", "cache", "cluster");
     private static final ServiceName PASSIVATION_STORE_CLUSTER_NAME_SERVICE_NAME = ServiceName.JBOSS.append("ejb", "store", "cluster");
     private static final ServiceName CACHE_CONTAINER_CLUSTER_NAME_SERVICE_NAME = ServiceName.JBOSS.append("ejb", "container", "cluster");
 
-    public static final ServiceName CLIENT_MAPPING_REGISTRY_COLLECTOR_SERVICE_NAME = BASE_CLIENT_MAPPING_SERVICE_NAME.append("collector");
-
-    public static ServiceName getClientMappingRegistryServiceName(String name) {
-        return (name != null) ? CLIENT_MAPPING_REGISTRY_SERVICE_NAME.append(name) : CLIENT_MAPPING_REGISTRY_SERVICE_NAME;
-    }
+    public static final ServiceName CLIENT_MAPPING_REGISTRY_COLLECTOR_SERVICE_NAME = BASE_CLIENT_MAPPING_SERVICE_NAME.append("registries");
 
     public static ServiceName getCacheFactoryClusterNameServiceName(String cacheFactoryName) {
         return (cacheFactoryName != null) ? CACHE_FACTORY_CLUSTER_NAME_SERVICE_NAME.append(cacheFactoryName) : CACHE_FACTORY_CLUSTER_NAME_SERVICE_NAME;
@@ -90,11 +85,10 @@ public class ClusteredBackingCacheEntryStoreSourceService<K extends Serializable
         return super.build(target)
                 .addDependency(EJBRemoteConnectorService.SERVICE_NAME)
                 .addDependency(CLIENT_MAPPING_REGISTRY_COLLECTOR_SERVICE_NAME, RegistryCollector.class, this.collector)
-                .addDependency(getClientMappingRegistryServiceName(this.getValue().getCacheContainer()), Registry.class, this.registry)
+                .addDependency(ServiceName.JBOSS.append("clustering", "registry", this.getValue().getCacheContainer(), this.getValue().getClientMappingCache()), Registry.class, this.registry)
         ;
     }
 
-    @SuppressWarnings("unchecked")
     @Override
     public void start(StartContext context) {
         super.start(context);
@@ -102,7 +96,6 @@ public class ClusteredBackingCacheEntryStoreSourceService<K extends Serializable
         this.collector.getValue().add(this.registry.getValue());
     }
 
-    @SuppressWarnings("unchecked")
     @Override
     public void stop(StopContext context) {
         super.stop(context);

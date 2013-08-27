@@ -57,9 +57,9 @@ public class SessionIDExternalizer extends AbstractSimpleExternalizer<SessionID>
     }
 
     @Override
-    public SessionID readObject(ObjectInput input) throws IOException, ClassNotFoundException {
+    public SessionID readObject(ObjectInput input) throws IOException {
         byte[] encoded = new byte[input.readInt()];
-        input.read(encoded);
+        input.readFully(encoded);
         return SessionID.createSessionID(encoded);
     }
 }

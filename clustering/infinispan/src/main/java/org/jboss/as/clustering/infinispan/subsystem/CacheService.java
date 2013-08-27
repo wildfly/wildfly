@@ -25,8 +25,8 @@ package org.jboss.as.clustering.infinispan.subsystem;
 import javax.transaction.xa.XAResource;
 
 import org.infinispan.Cache;
-import org.infinispan.manager.CacheContainer;
 import org.infinispan.manager.EmbeddedCacheManager;
+import org.jboss.as.clustering.infinispan.CacheContainer;
 import org.jboss.logging.Logger;
 import org.jboss.msc.service.Service;
 import org.jboss.msc.service.ServiceName;
@@ -49,7 +49,7 @@ public class CacheService<K, V> implements Service<Cache<K, V>> {
 
     private static final Logger log = Logger.getLogger(CacheService.class.getPackage().getName());
     public static ServiceName getServiceName(String container, String cache) {
-        return EmbeddedCacheManagerService.getServiceName(container).append((cache != null) ? cache : CacheContainer.DEFAULT_CACHE_NAME);
+        return EmbeddedCacheManagerService.getServiceName(container).append((cache != null) ? cache : CacheContainer.DEFAULT_CACHE_ALIAS);
     }
 
     public interface Dependencies {

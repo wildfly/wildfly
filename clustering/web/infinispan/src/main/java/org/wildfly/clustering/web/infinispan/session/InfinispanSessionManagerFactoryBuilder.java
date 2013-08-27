@@ -22,28 +22,31 @@
 package org.wildfly.clustering.web.infinispan.session;
 
 import org.infinispan.Cache;
-import org.infinispan.api.BasicCacheContainer;
 import org.infinispan.configuration.cache.Configuration;
 import org.infinispan.manager.EmbeddedCacheManager;
+import org.jboss.as.clustering.infinispan.CacheContainer;
 import org.jboss.as.clustering.infinispan.affinity.KeyAffinityServiceFactory;
 import org.jboss.as.clustering.infinispan.affinity.KeyAffinityServiceFactoryService;
-import org.jboss.as.clustering.infinispan.subsystem.AbstractCacheConfigurationService;
+import org.jboss.as.clustering.infinispan.subsystem.CacheConfigurationService;
 import org.jboss.as.clustering.infinispan.subsystem.CacheService;
 import org.jboss.as.clustering.infinispan.subsystem.EmbeddedCacheManagerService;
 import org.jboss.as.clustering.msc.AsynchronousService;
-import org.jboss.as.clustering.registry.Registry;
-import org.jboss.as.clustering.registry.RegistryService;
 import org.jboss.metadata.web.jboss.JBossWebMetaData;
 import org.jboss.metadata.web.jboss.ReplicationConfig;
 import org.jboss.modules.Module;
 import org.jboss.msc.service.ServiceBuilder;
+import org.jboss.msc.service.ServiceBuilder.DependencyType;
 import org.jboss.msc.service.ServiceController;
 import org.jboss.msc.service.ServiceName;
 import org.jboss.msc.service.ServiceTarget;
+import org.jboss.msc.service.ValueService;
 import org.jboss.msc.value.ImmediateValue;
 import org.jboss.msc.value.InjectedValue;
 import org.jboss.msc.value.Value;
 import org.jboss.tm.XAResourceRecoveryRegistry;
+import org.wildfly.clustering.group.NodeFactory;
+import org.wildfly.clustering.registry.Registry;
+import org.wildfly.clustering.registry.RegistryEntryProvider;
 import org.wildfly.clustering.web.session.SessionManagerFactory;
 import org.wildfly.clustering.web.session.SessionManagerFactoryBuilder;
 
@@ -52,7 +55,6 @@ import org.wildfly.clustering.web.session.SessionManagerFactoryBuilder;
  * @author Paul Ferraro
  */
 public class InfinispanSessionManagerFactoryBuilder implements SessionManagerFactoryBuilder {
-    public static final ServiceName ROUTING_REGISTRY_SERVICE_NAME = ServiceName.JBOSS.append("web", "routing", "registry");
     public static final String DEFAULT_CACHE_CONTAINER = "web";
 
     @Override
@@ -61,7 +63,7 @@ public class InfinispanSessionManagerFactoryBuilder implements SessionManagerFac
         String templateCacheName = templateCacheServiceName.getSimpleName();
         ServiceName containerServiceName = templateCacheServiceName.getParent();
         String containerName = containerServiceName.getSimpleName();
-        ServiceName templateCacheConfigurationServiceName = AbstractCacheConfigurationService.getServiceName(containerName, templateCacheName);
+        ServiceName templateCacheConfigurationServiceName = CacheConfigurationService.getServiceName(containerName, templateCacheName);
         String host = deploymentServiceName.getParent().getSimpleName();
         String contextPath = deploymentServiceName.getSimpleName();
         StringBuilder cacheNameBuilder = new StringBuilder(host).append(contextPath);
@@ -69,7 +71,7 @@ public class InfinispanSessionManagerFactoryBuilder implements SessionManagerFac
             cacheNameBuilder.append("ROOT");
         }
         String cacheName = cacheNameBuilder.toString();
-        ServiceName cacheConfigurationServiceName = AbstractCacheConfigurationService.getServiceName(containerName, cacheName);
+        ServiceName cacheConfigurationServiceName = CacheConfigurationService.getServiceName(containerName, cacheName);
         ServiceName cacheServiceName = CacheService.getServiceName(containerName, cacheName);
 
         InjectedValue<EmbeddedCacheManager> container = new InjectedValue<>();
@@ -102,12 +104,12 @@ public class InfinispanSessionManagerFactoryBuilder implements SessionManagerFac
         @SuppressWarnings("rawtypes")
         InjectedValue<Cache> cache = new InjectedValue<>();
         InjectedValue<KeyAffinityServiceFactory> affinityFactory = new InjectedValue<>();
-        @SuppressWarnings("rawtypes")
-        InjectedValue<Registry> routingRegistry = new InjectedValue<>();
-        return target.addService(name, new InfinispanSessionManagerFactory(module, metaData, cache, affinityFactory, routingRegistry))
+        InfinispanSessionManagerFactory factory = new InfinispanSessionManagerFactory(module, metaData, cache, affinityFactory);
+        return target.addService(name, factory)
                 .addDependency(cacheServiceName, Cache.class, cache)
                 .addDependency(KeyAffinityServiceFactoryService.getServiceName(containerName), KeyAffinityServiceFactory.class, affinityFactory)
-                .addDependency(ROUTING_REGISTRY_SERVICE_NAME, Registry.class, routingRegistry)
+                .addDependency(DependencyType.OPTIONAL, ServiceName.JBOSS.append("clustering", "registry", DEFAULT_CACHE_CONTAINER, CacheContainer.DEFAULT_CACHE_ALIAS), Registry.class, factory.getRegistryInjector())
+                .addDependency(DependencyType.OPTIONAL, ServiceName.JBOSS.append("clustering", "nodes", DEFAULT_CACHE_CONTAINER, CacheContainer.DEFAULT_CACHE_ALIAS), NodeFactory.class, factory.getNodeFactoryInjector())
         ;
     }
 
@@ -118,13 +120,12 @@ public class InfinispanSessionManagerFactoryBuilder implements SessionManagerFac
         if (!baseServiceName.isParentOf(serviceName)) {
             serviceName = baseServiceName.append(serviceName);
         }
-        return (serviceName.length() < 4) ? serviceName.append(BasicCacheContainer.DEFAULT_CACHE_NAME) : serviceName;
+        return (serviceName.length() < 4) ? serviceName.append(CacheContainer.DEFAULT_CACHE_ALIAS) : serviceName;
     }
 
-    @SuppressWarnings({ "rawtypes", "unchecked" })
     @Override
     public ServiceBuilder<?> buildServerDependency(ServiceTarget target, final Value<String> instanceId) {
-        Registry.RegistryEntryProvider<String, Void> provider = new Registry.RegistryEntryProvider<String, Void>() {
+        RegistryEntryProvider<String, Void> provider = new RegistryEntryProvider<String, Void>() {
             @Override
             public String getKey() {
                 return instanceId.getValue();
@@ -135,9 +136,7 @@ public class InfinispanSessionManagerFactoryBuilder implements SessionManagerFac
                 return null;
             }
         };
-        InjectedValue<Cache> cache = new InjectedValue<>();
-        return AsynchronousService.addService(target, ROUTING_REGISTRY_SERVICE_NAME, new RegistryService(cache, new ImmediateValue(provider)))
-                .addDependency(CacheService.getServiceName(DEFAULT_CACHE_CONTAINER, null), Cache.class, cache)
+        return target.addService(ServiceName.JBOSS.append("clustering", "registry", DEFAULT_CACHE_CONTAINER, CacheContainer.DEFAULT_CACHE_ALIAS, "entry"), new ValueService<>(new ImmediateValue<>(provider)))
                 .setInitialMode(ServiceController.Mode.ON_DEMAND)
         ;
     }

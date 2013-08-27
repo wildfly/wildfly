@@ -21,7 +21,6 @@
  */
 package org.jboss.as.test.clustering.cluster.web.expiration;
 
-import java.io.IOException;
 import java.io.Serializable;
 import java.net.URI;
 import java.net.URISyntaxException;
@@ -104,13 +103,13 @@ public class SessionOperationServlet extends HttpServlet {
     }
 
     @Override
-    protected void doGet(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
-        String operation = this.getRequiredParameter(req, OPERATION);
+    protected void doGet(HttpServletRequest req, HttpServletResponse resp) throws ServletException {
+        String operation = getRequiredParameter(req, OPERATION);
         HttpSession session = req.getSession(true);
         resp.addHeader(SESSION_ID, session.getId());
         System.out.println(String.format("%s?%s;jsessionid=%s", req.getRequestURL(), req.getQueryString(), session.getId()));
         if (operation.equals(SET)) {
-            String name = this.getRequiredParameter(req, NAME);
+            String name = getRequiredParameter(req, NAME);
             String[] values = req.getParameterValues(VALUE);
             if (values != null) {
                 SessionAttributeValue value = (values != null) ? new SessionAttributeValue(values[0]) : null;
@@ -122,12 +121,12 @@ public class SessionOperationServlet extends HttpServlet {
                 session.setAttribute(name, null);
             }
         } else if (operation.equals(REMOVE)) {
-            String name = this.getRequiredParameter(req, NAME);
+            String name = getRequiredParameter(req, NAME);
             session.removeAttribute(name);
         } else if (operation.equals(INVALIDATE)) {
             session.invalidate();
         } else if (operation.equals(GET)) {
-            String name = this.getRequiredParameter(req, NAME);
+            String name = getRequiredParameter(req, NAME);
             SessionAttributeValue value = (SessionAttributeValue) session.getAttribute(name);
             if (value != null) {
                 resp.setHeader(RESULT, value.getValue());
@@ -137,22 +136,22 @@ public class SessionOperationServlet extends HttpServlet {
                 }
             }
         } else if (operation.equals(TIMEOUT)) {
-            String timeout = this.getRequiredParameter(req, TIMEOUT);
+            String timeout = getRequiredParameter(req, TIMEOUT);
             session.setMaxInactiveInterval(Integer.parseInt(timeout));
         } else {
             throw new ServletException("Unrecognized operation: " + operation);
         }
 
-        this.setHeader(resp, CREATED_SESSIONS, RecordingWebListener.createdSessions);
-        this.setHeader(resp, DESTROYED_SESSIONS, RecordingWebListener.destroyedSessions);
-        this.setHeader(resp, ADDED_ATTRIBUTES, RecordingWebListener.addedAttributes.get(session.getId()));
-        this.setHeader(resp, REPLACED_ATTRIBUTES, RecordingWebListener.replacedAttributes.get(session.getId()));
-        this.setHeader(resp, REMOVED_ATTRIBUTES, RecordingWebListener.removedAttributes.get(session.getId()));
-        this.setHeader(resp, BOUND_ATTRIBUTES, SessionAttributeValue.boundAttributes);
-        this.setHeader(resp, UNBOUND_ATTRIBUTES, SessionAttributeValue.unboundAttributes);
+        setHeader(resp, CREATED_SESSIONS, RecordingWebListener.createdSessions);
+        setHeader(resp, DESTROYED_SESSIONS, RecordingWebListener.destroyedSessions);
+        setHeader(resp, ADDED_ATTRIBUTES, RecordingWebListener.addedAttributes.get(session.getId()));
+        setHeader(resp, REPLACED_ATTRIBUTES, RecordingWebListener.replacedAttributes.get(session.getId()));
+        setHeader(resp, REMOVED_ATTRIBUTES, RecordingWebListener.removedAttributes.get(session.getId()));
+        setHeader(resp, BOUND_ATTRIBUTES, SessionAttributeValue.boundAttributes);
+        setHeader(resp, UNBOUND_ATTRIBUTES, SessionAttributeValue.unboundAttributes);
     }
 
-    private void setHeader(HttpServletResponse response, String header, BlockingQueue<String> queue) {
+    private static void setHeader(HttpServletResponse response, String header, BlockingQueue<String> queue) {
         if (queue != null) {
             List<String> values = new LinkedList<>();
             if (queue.drainTo(values) > 0) {
@@ -163,7 +162,7 @@ public class SessionOperationServlet extends HttpServlet {
         }
     }
 
-    private String getRequiredParameter(HttpServletRequest req, String name) throws ServletException {
+    private static String getRequiredParameter(HttpServletRequest req, String name) throws ServletException {
         String value = req.getParameter(name);
         if (value == null) {
             throw new ServletException("Missing parameter: " + name);

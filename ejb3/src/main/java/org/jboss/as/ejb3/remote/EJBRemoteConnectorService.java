@@ -21,7 +21,6 @@
  */
 package org.jboss.as.ejb3.remote;
 
-import org.jboss.as.clustering.registry.RegistryCollector;
 import org.jboss.as.ejb3.EjbLogger;
 import org.jboss.as.ejb3.EjbMessages;
 import org.jboss.as.ejb3.deployment.DeploymentRepository;
@@ -30,7 +29,6 @@ import org.jboss.as.ejb3.remote.protocol.versionone.VersionOneProtocolChannelRec
 import org.jboss.as.ejb3.remote.protocol.versiontwo.VersionTwoProtocolChannelReceiver;
 import org.jboss.as.network.ClientMapping;
 import org.jboss.as.remoting.RemotingConnectorBindingInfoService;
-import org.jboss.as.server.ServerEnvironment;
 import org.jboss.ejb.client.ConstantContextSelector;
 import org.jboss.ejb.client.EJBClientTransactionContext;
 import org.jboss.ejb.client.remoting.PackedInteger;
@@ -81,7 +79,6 @@ public class EJBRemoteConnectorService implements Service<EJBRemoteConnectorServ
     private final InjectedValue<DeploymentRepository> deploymentRepositoryInjectedValue = new InjectedValue<DeploymentRepository>();
     private final InjectedValue<EJBRemoteTransactionsRepository> ejbRemoteTransactionsRepositoryInjectedValue = new InjectedValue<EJBRemoteTransactionsRepository>();
     private final InjectedValue<RegistryCollector> clusterRegistryCollector = new InjectedValue<RegistryCollector>();
-    private final InjectedValue<ServerEnvironment> serverEnvironment = new InjectedValue<ServerEnvironment>();
     private final InjectedValue<RemoteAsyncInvocationCancelStatusService> remoteAsyncInvocationCancelStatus = new InjectedValue<RemoteAsyncInvocationCancelStatusService>();
     private final InjectedValue<TransactionManager> txManager = new InjectedValue<TransactionManager>();
     private final InjectedValue<TransactionSynchronizationRegistry> txSyncRegistry = new InjectedValue<TransactionSynchronizationRegistry>();
@@ -310,10 +307,6 @@ public class EJBRemoteConnectorService implements Service<EJBRemoteConnectorServ
 
     public Injector<RegistryCollector> getClusterRegistryCollectorInjector() {
         return this.clusterRegistryCollector;
-    }
-
-    public Injector<ServerEnvironment> getServerEnvironmentInjector() {
-        return this.serverEnvironment;
     }
 
     public Injector<RemoteAsyncInvocationCancelStatusService> getAsyncInvocationCancelStatusInjector() {

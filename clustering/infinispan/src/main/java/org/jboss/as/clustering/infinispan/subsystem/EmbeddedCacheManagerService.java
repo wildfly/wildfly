@@ -27,7 +27,7 @@ import org.infinispan.notifications.cachemanagerlistener.annotation.CacheStarted
 import org.infinispan.notifications.cachemanagerlistener.annotation.CacheStopped;
 import org.infinispan.notifications.cachemanagerlistener.event.CacheStartedEvent;
 import org.infinispan.notifications.cachemanagerlistener.event.CacheStoppedEvent;
-import org.jboss.as.clustering.infinispan.DefaultEmbeddedCacheManager;
+import org.jboss.as.clustering.infinispan.DefaultCacheContainer;
 import org.jboss.as.clustering.infinispan.InfinispanLogger;
 import org.jboss.logging.Logger;
 import org.jboss.msc.service.Service;
@@ -64,7 +64,7 @@ public class EmbeddedCacheManagerService implements Service<EmbeddedCacheManager
     @Override
     public void start(StartContext context) {
         EmbeddedCacheManagerConfiguration config = this.config.getValue();
-        this.container = new DefaultEmbeddedCacheManager(config.getGlobalConfiguration(), config.getDefaultCache());
+        this.container = new DefaultCacheContainer(config.getGlobalConfiguration(), config.getDefaultCache());
         this.container.addListener(this);
         this.container.start();
         log.debugf("%s cache container started", config.getName());

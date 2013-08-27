@@ -21,7 +21,6 @@
  */
 package org.jboss.as.test.clustering;
 
-import java.io.IOException;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.net.URL;
@@ -38,7 +37,7 @@ import javax.servlet.http.HttpServletResponse;
  *
  * @author Paul Ferraro
  */
-@WebServlet(urlPatterns = {ViewChangeListenerServlet.SERVLET_PATH})
+@WebServlet(urlPatterns = { ViewChangeListenerServlet.SERVLET_PATH })
 public class ViewChangeListenerServlet extends HttpServlet {
     private static final long serialVersionUID = -4382952409558738642L;
     private static final String SERVLET_NAME = "membership";
@@ -59,7 +58,7 @@ public class ViewChangeListenerServlet extends HttpServlet {
     }
 
     @Override
-    protected void doGet(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
+    protected void doGet(HttpServletRequest req, HttpServletResponse resp) throws ServletException {
 
         String cluster = req.getParameter(CLUSTER);
         if (cluster == null) {

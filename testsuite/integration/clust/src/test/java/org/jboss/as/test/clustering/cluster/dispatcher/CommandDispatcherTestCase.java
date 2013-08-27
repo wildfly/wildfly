@@ -71,7 +71,7 @@ public class CommandDispatcherTestCase extends ClusterAbstractTestCase {
     @Test
     public void test() throws Exception {
 
-        String cluster = "ejb";
+        String cluster = "server";
         String nodeNameFormat = "%s/%s";
         String nodeName1 = String.format(nodeNameFormat, NODE_1, cluster);
         String nodeName2 = String.format(nodeNameFormat, NODE_2, cluster);
@@ -84,8 +84,8 @@ public class CommandDispatcherTestCase extends ClusterAbstractTestCase {
             ClusterTopologyRetriever bean = context.lookupStateless(ClusterTopologyRetrieverBean.class, ClusterTopologyRetriever.class);
             ClusterTopology topology = bean.getClusterTopology();
             assertEquals(2, topology.getNodes().size());
-            assertTrue(topology.getNodes().contains(nodeName1));
-            assertTrue(topology.getNodes().contains(nodeName2));
+            assertTrue(topology.getNodes().toString(), topology.getNodes().contains(nodeName1));
+            assertTrue(topology.getNodes().toString(), topology.getNodes().contains(nodeName2));
             assertFalse(topology.getRemoteNodes().toString() + " should not contain " + topology.getLocalNode(), topology.getRemoteNodes().contains(topology.getLocalNode()));
 
             undeploy(DEPLOYMENT_2);

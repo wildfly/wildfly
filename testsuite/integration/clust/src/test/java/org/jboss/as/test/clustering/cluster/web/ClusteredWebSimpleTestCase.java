@@ -116,7 +116,7 @@ public class ClusteredWebSimpleTestCase extends ClusterAbstractTestCase {
     public void testSessionReplication(
             @ArquillianResource(SimpleServlet.class) @OperateOnDeployment(DEPLOYMENT_1) URL baseURL1,
             @ArquillianResource(SimpleServlet.class) @OperateOnDeployment(DEPLOYMENT_2) URL baseURL2)
-            throws IllegalStateException, IOException, InterruptedException {
+            throws IOException {
         DefaultHttpClient client = HttpClientUtils.relaxedCookieHttpClient();
 
         String url1 = baseURL1.toString() + "simple";
