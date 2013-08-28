@@ -1,12 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <xsl:stylesheet version="2.0"
-                xmlns:xsl="http://www.w3.org/1999/XSL/Transform"
-                xmlns="urn:jboss:domain:1.5"
-                xmlns:d="urn:jboss:domain:1.5"
-                xmlns:ws11="urn:jboss:domain:webservices:1.1"
-                xmlns:ws12="urn:jboss:domain:webservices:1.2"
-                xmlns:xts="urn:jboss:domain:xts:1.0"
->
+                xmlns:xsl="http://www.w3.org/1999/XSL/Transform">
 
     <!--
       An XSLT style sheet which will change IP unicast and multicast addresses for standalone.xml and standalone-ha.xml.
@@ -31,6 +25,10 @@
 	...
       </server>
     -->
+    
+    <xsl:variable name="jboss" select="'urn:jboss:domain:'"/>
+    <xsl:variable name="web" select="'urn:jboss:domain:webservices:'"/>
+    <xsl:variable name="xts" select="'urn:jboss:domain:xts:'"/>
 
     <!-- IP addresses  select="..." is default value. -->
     <xsl:param name="managementIPAddress" select="'127.0.0.1'"/>
@@ -43,7 +41,9 @@
 
 
     <!-- Change the management and public IP addresses. -->
-    <xsl:template match="//d:interfaces/d:interface[@name='management']/d:inet-address">
+    <xsl:template match="//*[local-name()='interfaces' and starts-with(namespace-uri(), $jboss)]
+   						  /*[local-name()='interface' and @name='management']
+   						  /*[local-name()='inet-address']">
         <xsl:copy>
             <xsl:attribute name="value">
                 <xsl:value-of select="$managementIPAddress"/>
@@ -51,40 +51,44 @@
         </xsl:copy>
     </xsl:template>
 
-    <xsl:template match="//d:interfaces/d:interface[@name='public']/d:inet-address">
+    <xsl:template match="//*[local-name()='interfaces' and starts-with(namespace-uri(), $jboss)]
+   						  /*[local-name()='interface' and @name='public']
+   						  /*[local-name()='inet-address']">
         <xsl:copy><xsl:attribute name="value">${jboss.bind.address:<xsl:value-of select="$publicIPAddress"/>}</xsl:attribute></xsl:copy>
     </xsl:template>
-    <xsl:template match="//d:interfaces/d:interface[@name='unsecure']/d:inet-address">
+    <xsl:template match="//*[local-name()='interfaces' and starts-with(namespace-uri(), $jboss)]
+   						  /*[local-name()='interface' and @name='unsecure']
+   						  /*[local-name()='inet-address']">
         <xsl:copy><xsl:attribute name="value">${jboss.bind.address.unsecure:<xsl:value-of select="$publicIPAddress"/>}</xsl:attribute></xsl:copy>
     </xsl:template>
 
     <!-- Change UDP multicast addresses. -->
-    <xsl:template match="//d:socket-binding-group[@name='standard-sockets']/d:socket-binding[@name='jgroups-udp']/@multicast-address">
+    <xsl:template match="//*[local-name()='socket-binding-group' and @name='standard-sockets' and starts-with(namespace-uri(), $jboss)]
+   						  /*[local-name()='socket-binding' and @name='jgroups-udp']/@multicast-address">
         <xsl:attribute name="multicast-address">${jboss.default.multicast.address:<xsl:value-of select="$udpMcastAddress"/>}</xsl:attribute>
     </xsl:template>
 
     <!-- Change MPING multicast addresses. -->
-    <xsl:template match="//d:socket-binding-group[@name='standard-sockets']/d:socket-binding[@name='jgroups-mping']/@multicast-address">
+    <xsl:template match="//*[local-name()='socket-binding-group' and @name='standard-sockets' and starts-with(namespace-uri(), $jboss)]
+   						  /*[local-name()='socket-binding' and @name='jgroups-mping']/@multicast-address">
         <xsl:attribute name="multicast-address">${jboss.default.multicast.address:<xsl:value-of select="$mpingMcastAddress"/>}</xsl:attribute>
     </xsl:template>
 
     <!-- Change modcluster multicast addresses. -->
-    <xsl:template match="//d:socket-binding-group[@name='standard-sockets']/d:socket-binding[@name='modcluster']/@multicast-address">
+    <xsl:template match="//*[local-name()='socket-binding-group' and @name='standard-sockets' and starts-with(namespace-uri(), $jboss)]
+   						  /*[local-name()='socket-binding' and @name='modcluster']/@multicast-address">
         <xsl:attribute name="multicast-address">
             <xsl:value-of select="$modclusterMcastAddress"/>
         </xsl:attribute>
     </xsl:template>
 
     <!-- Change WSDL host. -->
-    <xsl:template match="//ws11:wsdl-host">
-        <xsl:copy>${jboss.bind.address:<xsl:value-of select="$publicIPAddress"/>}</xsl:copy>
-    </xsl:template>
-    <xsl:template match="//ws12:wsdl-host">
+    <xsl:template match="//*[local-name()='wsdl-host' and starts-with(namespace-uri(), $web)]">
         <xsl:copy>${jboss.bind.address:<xsl:value-of select="$publicIPAddress"/>}</xsl:copy>
     </xsl:template>
 
     <!-- Change XTS Coordinator -->
-    <xsl:template match="//xts:xts-environment/@url">
+    <xsl:template match="//*[local-name()='xts-environment' and starts-with(namespace-uri(), $xts)]/@url">
         <xsl:attribute name="url">
             <xsl:choose>
                 <xsl:when test="contains($publicIPAddress,':')">
@@ -98,7 +102,8 @@
     </xsl:template>
 
     <!-- Mail SMTP -->
-    <xsl:template match="//d:outbound-socket-binding[@name='mail-smtp']/d:remote-destination/@host">
+    <xsl:template match="//*[local-name()='outbound-socket-binding' and @name='mail-smtp' and starts-with(namespace-uri(), $jboss)]
+   						  /*[local-name()='remote-destination']/@host">
         <xsl:attribute name="host"><xsl:value-of select="$publicIPAddress"/></xsl:attribute>
     </xsl:template>
 

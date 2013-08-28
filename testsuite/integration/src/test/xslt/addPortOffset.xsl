@@ -1,6 +1,5 @@
 <xsl:stylesheet version="2.0"
-                xmlns:xsl="http://www.w3.org/1999/XSL/Transform"
-                xmlns:d="urn:jboss:domain:1.5">
+                xmlns:xsl="http://www.w3.org/1999/XSL/Transform">
 
     <!--
         An XSLT style sheet which will add a port offset to a standalone-ha.xml config.
@@ -18,6 +17,8 @@
             ...
         </server>
     -->
+    
+	<xsl:variable name="nsInf" select="'urn:jboss:domain:'"/>
 
     <!-- Template parameters and default values. -->
     <xsl:param name="portOffset" select="'100'"/>
@@ -25,19 +26,22 @@
     <xsl:param name="httpInterfaceManagementPort" select="'9990'"/>
 
     <!-- Set the native management port. -->
-    <xsl:template match="//d:socket-binding-group/d:socket-binding[@name='management-native']/@port">
+    <xsl:template match="//*[local-name()='socket-binding-group' and starts-with(namespace-uri(), $nsInf)]
+      					  /*[local-name()='socket-binding'  and @name='management-native']/@port">
+     					
         <xsl:attribute name="port">${jboss.management.native.port:<xsl:value-of select="$nativeInterfaceManagementPort"/>}</xsl:attribute>
     </xsl:template>
 
     <!-- Set the HTTP management port. -->
-    <xsl:template match="//d:socket-binding-group/d:socket-binding[@name='management-http']/@port">
+    <xsl:template match="//*[local-name()='socket-binding-group' and starts-with(namespace-uri(), $nsInf)]
+      					  /*[local-name()='socket-binding'  and @name='management-http']/@port">
         <xsl:attribute name="port">
             <xsl:value-of select="$httpInterfaceManagementPort"/>
         </xsl:attribute>
     </xsl:template>
 
     <!-- Set the port offset. -->
-    <xsl:template match="//d:socket-binding-group[@name='standard-sockets']/@port-offset">
+    <xsl:template match="//*[local-name()='socket-binding-group' and starts-with(namespace-uri(), $nsInf) and @name='standard-sockets']/@port-offset">
         <xsl:attribute name="port-offset">
             <xsl:value-of select="$portOffset"/>
         </xsl:attribute>

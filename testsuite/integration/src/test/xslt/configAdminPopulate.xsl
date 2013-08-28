@@ -22,29 +22,23 @@
 
   Author: David Bosschaert
  -->
-<xsl:stylesheet version="1.0" xmlns:xsl="http://www.w3.org/1999/XSL/Transform"
-                xmlns:ca="urn:jboss:domain:configadmin:1.0"
-                xmlns="urn:jboss:domain:1.5">
+<xsl:stylesheet version="1.0" xmlns:xsl="http://www.w3.org/1999/XSL/Transform">
+
+    <xsl:variable name="configadmin" select="'urn:jboss:domain:configadmin:'"/>
+
     <xsl:output indent="yes"/>
 
-    <xsl:template match="ca:subsystem" priority="100" xmlns="urn:jboss:domain:configadmin:1.0">
+    <xsl:template match="//*[local-name()='subsystem' and starts-with(namespace-uri(), $configadmin)]" >
         <xsl:copy>
             <xsl:apply-templates select="@* | *"/>
-            <xsl:element name="configuration">
-                <xsl:attribute name="pid">a.test.pid</xsl:attribute>
-                <xsl:element name="property">
-                    <xsl:attribute name="name">testkey</xsl:attribute>
-                    <xsl:attribute name="value">test value</xsl:attribute>
-                </xsl:element>
-                <xsl:element name="property">
-                    <xsl:attribute name="name">test.key.2</xsl:attribute>
-                    <xsl:attribute name="value">nothing</xsl:attribute>
-                </xsl:element>
-            </xsl:element>
+            <configuration pid="a.test.pid">
+            	<property name="testkey" value="test value"/>
+            	<property name="test.key.2" value="nothing"/>
+            </configuration>
         </xsl:copy>
     </xsl:template>
 
-    <xsl:template match="@*|node()" priority="1">
+    <xsl:template match="@*|node()">
         <xsl:copy>
             <xsl:apply-templates select="@*|node()"/>
         </xsl:copy>

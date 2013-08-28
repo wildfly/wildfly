@@ -1,13 +1,15 @@
 <xsl:stylesheet version="1.0"
-                xmlns:xsl="http://www.w3.org/1999/XSL/Transform"
-                xmlns:d="urn:jboss:domain:1.5"
-                xmlns:r="urn:jboss:domain:remoting:1.1">
+                xmlns:xsl="http://www.w3.org/1999/XSL/Transform">
+
     <xsl:output method="xml" indent="yes"/>
 
     <!--
         An XSLT style sheet which will enable EJB Remote calling to another server,
         by adding an outbound-socket-binding and remote-outbound-connection.
     -->
+
+	<xsl:variable name="jboss" select="'urn:jboss:domain:'" />
+	<xsl:variable name="nsInf" select="'urn:jboss:domain:remoting:'"/>
 
     <!-- remote outbound connection parameters -->
     <xsl:param name="connectionName" select="'remote-ejb-connection'"/>
@@ -17,7 +19,7 @@
     <xsl:param name="userName" select="NOT_DEFINED"/>
 
     <xsl:variable name="newRemoteOutboundConnection">
-        <r:remote-outbound-connection>
+        <remote-outbound-connection>
             <xsl:attribute name="name"><xsl:value-of select="$connectionName"/></xsl:attribute>
             <xsl:attribute name="outbound-socket-binding-ref">binding-<xsl:value-of select="$connectionName"/></xsl:attribute>
             <xsl:if test="$securityRealm != 'NOT_DEFINED'">
@@ -26,11 +28,11 @@
             <xsl:if test="$userName != 'NOT_DEFINED'">
                 <xsl:attribute name="username"><xsl:value-of select="$userName"/></xsl:attribute>
             </xsl:if>
-            <r:properties>
-                <r:property name="SASL_POLICY_NOANONYMOUS" value="false"/>
-                <r:property name="SSL_ENABLED" value="false"/>
-            </r:properties>
-        </r:remote-outbound-connection>
+            <properties>
+                <property name="SASL_POLICY_NOANONYMOUS" value="false"/>
+                <property name="SSL_ENABLED" value="false"/>
+            </properties>
+        </remote-outbound-connection>
     </xsl:variable>
 
     <!-- traverse the whole tree, so that all elements and attributes are eventually current node -->
@@ -39,15 +41,16 @@
             <xsl:apply-templates select="node()|@*"/>
         </xsl:copy>
     </xsl:template>
-
-    <xsl:template match="//r:subsystem">
+    
+    <xsl:template match="//*[local-name()='subsystem' and starts-with(namespace-uri(), $nsInf)]">
         <xsl:choose>
-            <xsl:when test="not(//r:subsystem/r:outbound-connections)">
+            <xsl:when test="not(//*[local-name()='subsystem' and starts-with(namespace-uri(), $nsInf)]
+               					 /*[local-name()='outbound-connections'] )">
                 <xsl:copy>
                     <xsl:apply-templates select="node()|@*"/>
-                    <r:outbound-connections>
+                    <outbound-connections>
                         <xsl:copy-of select="$newRemoteOutboundConnection"/>
-                    </r:outbound-connections>
+                    </outbound-connections>
                 </xsl:copy>
             </xsl:when>
             <xsl:otherwise>
@@ -58,14 +61,16 @@
         </xsl:choose>
     </xsl:template>
 
-    <xsl:template match="//r:subsystem/r:outbound-connections">
+    <xsl:template match="//*[local-name()='subsystem' and starts-with(namespace-uri(), $nsInf)]
+            			  /*[local-name()='outbound-connections']">
+
         <xsl:copy>
             <xsl:apply-templates select="node()|@*"/>
             <xsl:copy-of select="$newRemoteOutboundConnection"/>
         </xsl:copy>
     </xsl:template>
 
-    <xsl:template match="//d:socket-binding-group[@name='standard-sockets']">
+    <xsl:template match="//*[local-name()='socket-binding-group' and starts-with(namespace-uri(), $jboss) and @name='standard-sockets']">
         <xsl:copy>
             <xsl:attribute name="name">
                 <xsl:value-of select="'standard-sockets'"/>
@@ -77,14 +82,15 @@
                 <xsl:value-of select="@port-offset"/>
             </xsl:attribute>
             <xsl:apply-templates select="node()"/>
-            <d:outbound-socket-binding>
+            <outbound-socket-binding>
                 <xsl:attribute name="name">binding-<xsl:value-of select="$connectionName"/></xsl:attribute>
-                <d:remote-destination>
+                <remote-destination>
                     <xsl:attribute name="host"><xsl:value-of select="$node"/></xsl:attribute>
                     <xsl:attribute name="port"><xsl:value-of select="$remotePort"/></xsl:attribute>
-                </d:remote-destination>
-            </d:outbound-socket-binding>
+                </remote-destination>
+            </outbound-socket-binding>
         </xsl:copy>
     </xsl:template>
 
 </xsl:stylesheet>
+

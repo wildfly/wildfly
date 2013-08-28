@@ -1,9 +1,7 @@
 <xsl:stylesheet version="2.0"
-                xmlns:xsl="http://www.w3.org/1999/XSL/Transform"
-                xmlns:d="urn:jboss:domain:1.5"
-                xmlns:l="urn:jboss:domain:logging:1.1"
-                exclude-result-prefixes="l d"
-        >
+                xmlns:xsl="http://www.w3.org/1999/XSL/Transform">
+
+	<xsl:variable name="nsInf" select="'urn:jboss:domain:logging:'"/>
 
     <!--
       An XSLT style sheet which will enable trace logging for the test suite.
@@ -15,16 +13,17 @@
         <xsl:param name="list" />
         <xsl:variable name="first" select="substring-before(concat($list,','), ',')" />
         <xsl:variable name="remaining" select="substring-after($list, ',')" />
-        <xsl:element name="logger" namespace="urn:jboss:domain:logging:1.1">
+
+        <logger>
             <xsl:attribute name="category" >
-                <xsl:value-of select="$first"></xsl:value-of>
+                <xsl:value-of select="$first"/>
             </xsl:attribute>
-            <xsl:element name="level" namespace="urn:jboss:domain:logging:1.1" >
+            <level>
                 <xsl:attribute name="name" >
                     <xsl:value-of select="'TRACE'"/>
                 </xsl:attribute>
-            </xsl:element>
-        </xsl:element>
+            </level>
+        </logger>
         <xsl:if test="string-length($remaining) > 0">
             <xsl:call-template name="output-loggers">
                 <xsl:with-param name="list" select="$remaining" />
@@ -33,7 +32,8 @@
     </xsl:template>
 
 
-    <xsl:template match="//l:subsystem/l:console-handler">
+    <xsl:template match="//*[local-name()='subsystem' and starts-with(namespace-uri(), $nsInf)]
+   						  /*[local-name()='console-handler' and starts-with(namespace-uri(), $nsInf)]/@name">
         <xsl:choose>
             <xsl:when test="$trace='none'">
                 <xsl:copy>
@@ -41,18 +41,33 @@
                 </xsl:copy>
             </xsl:when>
             <xsl:otherwise>
-                <xsl:copy>
-                    <xsl:attribute name="name">
-                        <xsl:value-of select="'CONSOLE'"/>
-                    </xsl:attribute>
-                    <level name="TRACE"/>
-                    <xsl:apply-templates select="//l:subsystem/l:console-handler/l:formatter"/>
-                </xsl:copy>
+  				<xsl:attribute name="name"> 
+        			<xsl:value-of select="'CONSOLE'"/>
+        		</xsl:attribute>                 
             </xsl:otherwise>
         </xsl:choose>
-    </xsl:template>
 
-    <xsl:template match="//l:subsystem/l:periodic-rotating-file-handler" use-when="$trace">
+     </xsl:template>
+     
+	<xsl:template match="//*[local-name()='subsystem' and starts-with(namespace-uri(), $nsInf)]
+   						  /*[local-name()='console-handler' and starts-with(namespace-uri(), $nsInf)]
+   						  /*[local-name()='level' and starts-with(namespace-uri(), $nsInf)]/@name">		
+        <xsl:choose>
+            <xsl:when test="$trace='none'">
+                <xsl:copy>
+                    <xsl:apply-templates select="node()|@*"/>
+                </xsl:copy>
+            </xsl:when>
+            <xsl:otherwise>
+				<xsl:attribute name="name"> 
+        			<xsl:value-of select="'TRACE'" />
+        		</xsl:attribute>
+            </xsl:otherwise>
+        </xsl:choose>
+	</xsl:template>
+
+    <xsl:template match="//*[local-name()='subsystem' and starts-with(namespace-uri(), $nsInf)]
+   						  /*[local-name()='periodic-rotating-file-handler' and starts-with(namespace-uri(), $nsInf)]" use-when="$trace">
         <xsl:choose>
             <xsl:when test="$trace='none'">
                 <xsl:copy>

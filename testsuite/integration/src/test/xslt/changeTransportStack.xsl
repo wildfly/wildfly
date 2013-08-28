@@ -1,10 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!-- Author: Radoslav Husar, Version: March 2012 -->
 <xsl:stylesheet version="2.0"
-                xmlns:xsl="http://www.w3.org/1999/XSL/Transform"
-                xmlns:domain="urn:jboss:domain:1.5"
-                xmlns:jgroups="urn:jboss:domain:jgroups:1.1"
->
+                xmlns:xsl="http://www.w3.org/1999/XSL/Transform">
 
     <!--
         An XSLT that will change the default JGroups transport stack.
@@ -12,11 +9,14 @@
         <subsystem xmlns="urn:jboss:domain:jgroups:1.1" default-stack="tcp">
     -->
 
+
+    <xsl:variable name="jgroups" select="'urn:jboss:domain:jgroups:'"/>
+
     <!-- stack parameter -->
     <xsl:param name="defaultStack" select="'tcp'"/>
 
     <!-- only change default-stack attribute directly on jgroups subsystem -->
-    <xsl:template match="//jgroups:subsystem">
+    <xsl:template match="//*[local-name()='subsystem' and starts-with(namespace-uri(), $jgroups)]">
         <xsl:copy>
             <xsl:attribute name="default-stack">
                 <xsl:value-of select="$defaultStack"/>
