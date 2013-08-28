@@ -33,7 +33,7 @@ import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.TimeUnit;
 
-import org.wildfly.clustering.web.Batcher;
+import org.wildfly.clustering.web.Batch;
 import org.wildfly.clustering.web.session.ImmutableSession;
 import org.wildfly.clustering.web.session.Session;
 import org.wildfly.clustering.web.session.SessionManager;
@@ -101,17 +101,14 @@ public class SessionManagerAdapter implements UndertowSessionManager {
             id = this.manager.createSessionId();
         }
 
-        Batcher batcher = this.manager.getBatcher();
-        boolean started = batcher.startBatch();
+        Batch batch = this.manager.getBatcher().startBatch();
         try {
             Session<LocalSessionContext> session = this.manager.createSession(id);
-            io.undertow.server.session.Session adapter = this.getSession(session, exchange, config);
+            io.undertow.server.session.Session adapter = this.getSession(session, exchange, config, batch);
             this.sessionListeners.sessionCreated(adapter, exchange);
             return adapter;
         } catch (RuntimeException | Error e) {
-            if (started) {
-                batcher.endBatch(false);
-            }
+            batch.discard();
             throw e;
         }
     }
@@ -121,15 +118,14 @@ public class SessionManagerAdapter implements UndertowSessionManager {
         String id = this.findSessionId(exchange, config);
         if (id == null) return null;
 
-        Batcher batcher = this.manager.getBatcher();
-        boolean started = batcher.startBatch();
+        Batch batch = this.manager.getBatcher().startBatch();
         Session<LocalSessionContext> session = null;
         try {
             session = this.manager.findSession(id);
-            return (session != null) ? this.getSession(session, exchange, config) : null;
+            return (session != null) ? this.getSession(session, exchange, config, batch) : null;
         } finally {
-            if (started && (session == null)) {
-                batcher.endBatch(false);
+            if (session == null) {
+                batch.discard();
             }
         }
     }
@@ -145,8 +141,8 @@ public class SessionManagerAdapter implements UndertowSessionManager {
     /**
      * Appends routing information to session identifier.
      */
-    private io.undertow.server.session.Session getSession(Session<LocalSessionContext> session, HttpServerExchange exchange, SessionConfig config) {
-        SessionAdapter adapter = new SessionAdapter(this, session, config);
+    private io.undertow.server.session.Session getSession(Session<LocalSessionContext> session, HttpServerExchange exchange, SessionConfig config, Batch batch) {
+        SessionAdapter adapter = new SessionAdapter(this, session, config, batch);
         if (config != null) {
             String id = session.getId();
             String route = this.locate(id);
@@ -188,15 +184,12 @@ public class SessionManagerAdapter implements UndertowSessionManager {
 
     @Override
     public io.undertow.server.session.Session getSession(String sessionId) {
-        Batcher batcher = this.manager.getBatcher();
-        boolean started = batcher.startBatch();
+        Batch batch = this.manager.getBatcher().startBatch();
         try {
             ImmutableSession session = this.manager.viewSession(sessionId);
             return (session != null) ? new ImmutableSessionAdapter(this, session) : null;
         } finally {
-            if (started) {
-                batcher.endBatch(false);
-            }
+            batch.discard();
         }
     }
 }

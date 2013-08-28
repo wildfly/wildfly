@@ -29,6 +29,7 @@ import static org.mockito.Mockito.when;
 import java.util.concurrent.TimeUnit;
 
 import org.junit.Test;
+import org.wildfly.clustering.web.Batch;
 import org.wildfly.clustering.web.Batcher;
 import org.wildfly.clustering.web.infinispan.Remover;
 import org.wildfly.clustering.web.infinispan.Scheduler;
@@ -39,6 +40,7 @@ public class SessionExpirationSchedulerTestCase {
     @Test
     public void test() throws InterruptedException {
         Batcher batcher = mock(Batcher.class);
+        Batch batch = mock(Batch.class);
         Remover<String> remover = mock(Remover.class);
         ImmutableSession immortalSession = mock(ImmutableSession.class);
         ImmutableSession expiringSession = mock(ImmutableSession.class);
@@ -49,7 +51,7 @@ public class SessionExpirationSchedulerTestCase {
         String expiringSessionId = "expiring";
         String canceledSessionId = "canceled";
 
-        when(batcher.startBatch()).thenReturn(true);
+        when(batcher.startBatch()).thenReturn(batch);
 
         when(immortalSession.isValid()).thenReturn(true);
         when(expiringSession.isValid()).thenReturn(true);
@@ -79,7 +81,7 @@ public class SessionExpirationSchedulerTestCase {
 
         verify(remover).remove(expiringSessionId);
         verify(remover, never()).remove(canceledSessionId);
-        verify(batcher).endBatch(true);
+        verify(batch).close();
     }
 
 }

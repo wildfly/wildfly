@@ -28,6 +28,7 @@ import static org.junit.Assert.assertSame;
 import static org.junit.Assert.assertTrue;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.verifyZeroInteractions;
 import static org.mockito.Mockito.when;
 import io.undertow.server.HttpServerExchange;
 import io.undertow.server.session.SessionConfig;
@@ -40,6 +41,7 @@ import java.util.concurrent.TimeUnit;
 
 import org.junit.Before;
 import org.junit.Test;
+import org.wildfly.clustering.web.Batch;
 import org.wildfly.clustering.web.Batcher;
 import org.wildfly.clustering.web.session.ImmutableSession;
 import org.wildfly.clustering.web.session.Session;
@@ -103,6 +105,7 @@ public class SessionManagerAdapterTestCase {
     public void createSessionNoSessionId() {
         HttpServerExchange exchange = new HttpServerExchange(null);
         Batcher batcher = mock(Batcher.class);
+        Batch batch = mock(Batch.class);
         SessionConfig config = mock(SessionConfig.class);
         Session<LocalSessionContext> session = mock(Session.class);
         String sessionId = "session";
@@ -114,7 +117,7 @@ public class SessionManagerAdapterTestCase {
         when(this.manager.createSession(sessionId)).thenReturn(session);
         when(this.manager.locate(sessionId)).thenReturn(route);
         when(this.manager.getBatcher()).thenReturn(batcher);
-        when(batcher.startBatch()).thenReturn(true);
+        when(batcher.startBatch()).thenReturn(batch);
         when(session.getId()).thenReturn(sessionId);
         
         io.undertow.server.session.Session sessionAdapter = this.adapter.createSession(exchange, config);
@@ -123,7 +126,8 @@ public class SessionManagerAdapterTestCase {
         
         verify(this.listener).sessionCreated(sessionAdapter, exchange);
         verify(config).setSessionId(exchange, routingSessionId);
-        
+        verifyZeroInteractions(batch);
+
         String expected = "expected";
         when(session.getId()).thenReturn(expected);
         
@@ -135,6 +139,7 @@ public class SessionManagerAdapterTestCase {
     public void createSessionSpecifiedSessionId() {
         HttpServerExchange exchange = new HttpServerExchange(null);
         Batcher batcher = mock(Batcher.class);
+        Batch batch = mock(Batch.class);
         SessionConfig config = mock(SessionConfig.class);
         Session<LocalSessionContext> session = mock(Session.class);
         String requestedSessionId = "session.route1";
@@ -147,7 +152,7 @@ public class SessionManagerAdapterTestCase {
         when(this.manager.createSession(sessionId)).thenReturn(session);
         when(this.manager.locate(sessionId)).thenReturn(route);
         when(this.manager.getBatcher()).thenReturn(batcher);
-        when(batcher.startBatch()).thenReturn(true);
+        when(batcher.startBatch()).thenReturn(batch);
         when(session.getId()).thenReturn(sessionId);
         
         io.undertow.server.session.Session sessionAdapter = this.adapter.createSession(exchange, config);
@@ -156,6 +161,7 @@ public class SessionManagerAdapterTestCase {
         
         verify(this.listener).sessionCreated(sessionAdapter, exchange);
         verify(config).setSessionId(exchange, routingSessionId);
+        verifyZeroInteractions(batch);
         
         String expected = "expected";
         when(session.getId()).thenReturn(expected);
@@ -187,6 +193,7 @@ public class SessionManagerAdapterTestCase {
     public void getSession() {
         HttpServerExchange exchange = new HttpServerExchange(null);
         Batcher batcher = mock(Batcher.class);
+        Batch batch = mock(Batch.class);
         SessionConfig config = mock(SessionConfig.class);
         Session<LocalSessionContext> session = mock(Session.class);
         String requestedSessionId = "session.route1";
@@ -198,7 +205,7 @@ public class SessionManagerAdapterTestCase {
         when(this.manager.findSession(sessionId)).thenReturn(session);
         when(this.manager.locate(sessionId)).thenReturn(route);
         when(this.manager.getBatcher()).thenReturn(batcher);
-        when(batcher.startBatch()).thenReturn(true);
+        when(batcher.startBatch()).thenReturn(batch);
         when(session.getId()).thenReturn(sessionId);
 
         io.undertow.server.session.Session sessionAdapter = this.adapter.getSession(exchange, config);
@@ -206,6 +213,7 @@ public class SessionManagerAdapterTestCase {
         assertNotNull(sessionAdapter);
         
         verify(config).setSessionId(exchange, routingSessionId);
+        verifyZeroInteractions(batch);
         
         String expected = "expected";
         when(session.getId()).thenReturn(expected);
@@ -230,6 +238,7 @@ public class SessionManagerAdapterTestCase {
     public void getSessionNotExists() {
         HttpServerExchange exchange = new HttpServerExchange(null);
         Batcher batcher = mock(Batcher.class);
+        Batch batch = mock(Batch.class);
         SessionConfig config = mock(SessionConfig.class);
         String requestedSessionId = "session.route1";
         String sessionId = "session";
@@ -237,13 +246,13 @@ public class SessionManagerAdapterTestCase {
         when(config.findSessionId(exchange)).thenReturn(requestedSessionId);
         when(this.manager.findSession(sessionId)).thenReturn(null);
         when(this.manager.getBatcher()).thenReturn(batcher);
-        when(batcher.startBatch()).thenReturn(true);
+        when(batcher.startBatch()).thenReturn(batch);
 
         io.undertow.server.session.Session sessionAdapter = this.adapter.getSession(exchange, config);
         
         assertNull(sessionAdapter);
         
-        verify(batcher).endBatch(false);
+        verify(batch).discard();
     }
 
     @Test
@@ -289,33 +298,35 @@ public class SessionManagerAdapterTestCase {
         ImmutableSession session = mock(ImmutableSession.class);
         String id = "session";
         Batcher batcher = mock(Batcher.class);
+        Batch batch = mock(Batch.class);
         
         when(this.manager.getBatcher()).thenReturn(batcher);
         when(this.manager.viewSession(id)).thenReturn(session);
         when(session.getId()).thenReturn(id);
-        when(batcher.startBatch()).thenReturn(true);
+        when(batcher.startBatch()).thenReturn(batch);
         
         io.undertow.server.session.Session result = this.adapter.getSession(id);
         
         assertSame(this.adapter, result.getSessionManager());
         assertSame(id, result.getId());
         
-        verify(batcher).endBatch(false);
+        verify(batch).discard();
     }
 
     @Test
     public void getSessionByIdentifierNotExists() {
         String id = "session";
         Batcher batcher = mock(Batcher.class);
+        Batch batch = mock(Batch.class);
         
         when(this.manager.getBatcher()).thenReturn(batcher);
         when(this.manager.viewSession(id)).thenReturn(null);
-        when(batcher.startBatch()).thenReturn(true);
+        when(batcher.startBatch()).thenReturn(batch);
         
         io.undertow.server.session.Session result = this.adapter.getSession(id);
         
         assertNull(result);
 
-        verify(batcher).endBatch(false);
+        verify(batch).discard();
     }
 }

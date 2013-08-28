@@ -22,13 +22,18 @@
 package org.wildfly.clustering.web;
 
 /**
- * Exposes a mechanism to start a batch.
+ * Exposes a mechanism to close or discard a batch.
  * @author Paul Ferraro
  */
-public interface Batcher {
+public interface Batch extends AutoCloseable {
     /**
-     * Starts a batch.
-     * @return a batch.
+     * End this batch.
      */
-    Batch startBatch();
+    @Override
+    void close();
+
+    /**
+     * Discards this batch.
+     */
+    void discard();
 }

@@ -31,6 +31,7 @@ import java.util.concurrent.ExecutorService;
 
 import org.junit.Test;
 import org.mockito.ArgumentCaptor;
+import org.wildfly.clustering.web.Batch;
 import org.wildfly.clustering.web.Batcher;
 import org.wildfly.clustering.web.infinispan.Evictor;
 import org.wildfly.clustering.web.infinispan.Scheduler;
@@ -44,6 +45,7 @@ public class SessionEvictionSchedulerTestCase {
         ImmutableSession evictedSession = mock(ImmutableSession.class);
         ImmutableSession activeSession = mock(ImmutableSession.class);
         Batcher batcher = mock(Batcher.class);
+        Batch batch = mock(Batch.class);
         Evictor<String> evictor = mock(Evictor.class);
         ExecutorService executor = mock(ExecutorService.class);
         ArgumentCaptor<Runnable> capturedTask = ArgumentCaptor.forClass(Runnable.class);
@@ -60,13 +62,13 @@ public class SessionEvictionSchedulerTestCase {
 
             verify(executor).submit(capturedTask.capture());
             
-            when(batcher.startBatch()).thenReturn(true);
+            when(batcher.startBatch()).thenReturn(batch);
             
             capturedTask.getValue().run();
             
             verify(evictor).evict(evictedSessionId);
             verify(evictor, never()).evict(activeSessionId);
-            verify(batcher).endBatch(true);
+            verify(batch).close();
         }
     }
 }

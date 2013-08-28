@@ -25,6 +25,7 @@ import java.util.AbstractMap.SimpleImmutableEntry;
 import java.util.Map;
 import java.util.concurrent.TimeUnit;
 
+import org.wildfly.clustering.web.Batch;
 import org.wildfly.clustering.web.session.Session;
 import org.wildfly.clustering.web.session.SessionManager;
 
@@ -44,10 +45,12 @@ public class SessionAdapter extends AbstractSessionAdapter<Session<LocalSessionC
 
     private final UndertowSessionManager manager;
     private volatile Map.Entry<Session<LocalSessionContext>, SessionConfig> entry;
+    private final Batch batch;
 
-    public SessionAdapter(UndertowSessionManager manager, Session<LocalSessionContext> session, SessionConfig config) {
+    public SessionAdapter(UndertowSessionManager manager, Session<LocalSessionContext> session, SessionConfig config, Batch batch) {
         this.manager = manager;
         this.entry = new SimpleImmutableEntry<>(session, config);
+        this.batch = batch;
     }
 
     @Override
@@ -63,7 +66,7 @@ public class SessionAdapter extends AbstractSessionAdapter<Session<LocalSessionC
     @Override
     public void requestDone(HttpServerExchange exchange) {
         this.getSession().close();
-        this.manager.getSessionManager().getBatcher().endBatch(true);
+        this.batch.close();
     }
 
     @Override
@@ -123,7 +126,7 @@ public class SessionAdapter extends AbstractSessionAdapter<Session<LocalSessionC
         if (exchange != null) {
             entry.getValue().clearSession(exchange, session.getId());
         }
-        this.manager.getSessionManager().getBatcher().endBatch(true);
+        this.batch.close();
     }
 
     @Override

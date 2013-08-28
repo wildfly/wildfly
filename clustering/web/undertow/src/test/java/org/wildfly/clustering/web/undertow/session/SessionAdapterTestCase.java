@@ -38,7 +38,7 @@ import io.undertow.servlet.handlers.security.CachedAuthenticatedSessionHandler;
 
 import org.junit.Test;
 import org.mockito.ArgumentCaptor;
-import org.wildfly.clustering.web.Batcher;
+import org.wildfly.clustering.web.Batch;
 import org.wildfly.clustering.web.session.Session;
 import org.wildfly.clustering.web.session.SessionAttributes;
 import org.wildfly.clustering.web.session.SessionManager;
@@ -50,8 +50,9 @@ public class SessionAdapterTestCase {
     private final UndertowSessionManager manager = mock(UndertowSessionManager.class);
     private final SessionConfig config = mock(SessionConfig.class);
     private final Session<LocalSessionContext> session = mock(Session.class);
-    
-    private final io.undertow.server.session.Session adapter = new SessionAdapter(this.manager, this.session, this.config);
+    private final Batch batch = mock(Batch.class);
+
+    private final io.undertow.server.session.Session adapter = new SessionAdapter(this.manager, this.session, this.config, this.batch);
     
     @Test
     public void getId() {
@@ -67,15 +68,13 @@ public class SessionAdapterTestCase {
     public void requestDone() {
         HttpServerExchange exchange = new HttpServerExchange(null);
         SessionManager<LocalSessionContext> manager = mock(SessionManager.class);
-        Batcher batcher = mock(Batcher.class);
 
         when(this.manager.getSessionManager()).thenReturn(manager);
-        when(manager.getBatcher()).thenReturn(batcher);
 
         this.adapter.requestDone(exchange);
         
         verify(this.session).close();
-        verify(batcher).endBatch(true);
+        verify(this.batch).close();
     }
     
     @Test
@@ -308,7 +307,6 @@ public class SessionAdapterTestCase {
     public void invalidate() {
         HttpServerExchange exchange = new HttpServerExchange(null);
         SessionManager<LocalSessionContext> manager = mock(SessionManager.class);
-        Batcher batcher = mock(Batcher.class);
         SessionListener listener = mock(SessionListener.class);
         SessionListeners listeners = new SessionListeners();
         listeners.addSessionListener(listener);
@@ -317,14 +315,13 @@ public class SessionAdapterTestCase {
         when(this.manager.getSessionListeners()).thenReturn(listeners);
         when(this.session.getId()).thenReturn(sessionId);
         when(this.manager.getSessionManager()).thenReturn(manager);
-        when(manager.getBatcher()).thenReturn(batcher);
         
         this.adapter.invalidate(exchange);
         
         verify(this.session).invalidate();
         verify(this.config).clearSession(exchange, sessionId);
         verify(listener).sessionDestroyed(this.adapter, exchange, SessionDestroyedReason.INVALIDATED);
-        verify(batcher).endBatch(true);
+        verify(this.batch).close();
     }
     
     @Test
