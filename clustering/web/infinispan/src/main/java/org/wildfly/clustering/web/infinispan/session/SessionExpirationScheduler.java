@@ -31,6 +31,7 @@ import java.util.concurrent.ThreadFactory;
 import java.util.concurrent.TimeUnit;
 
 import org.jboss.threads.JBossThreadFactory;
+import org.wildfly.clustering.web.Batch;
 import org.wildfly.clustering.web.Batcher;
 import org.wildfly.clustering.web.infinispan.InfinispanWebLogger;
 import org.wildfly.clustering.web.infinispan.Remover;
@@ -98,14 +99,16 @@ public class SessionExpirationScheduler implements Scheduler<ImmutableSession> {
         public void run() {
             SessionExpirationScheduler.this.expirationFutures.remove(this.id);
             InfinispanWebLogger.ROOT_LOGGER.tracef("Expiring session %s", this.id);
-            boolean started = SessionExpirationScheduler.this.batcher.startBatch();
-            boolean successful = false;
+            Batch batch = SessionExpirationScheduler.this.batcher.startBatch();
+            boolean success = false;
             try {
                 SessionExpirationScheduler.this.remover.remove(this.id);
-                successful = true;
+                success = true;
             } finally {
-                if (started) {
-                    SessionExpirationScheduler.this.batcher.endBatch(successful);
+                if (success) {
+                    batch.close();
+                } else {
+                    batch.discard();
                 }
             }
         }

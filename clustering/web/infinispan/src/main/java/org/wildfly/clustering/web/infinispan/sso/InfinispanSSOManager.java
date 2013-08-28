@@ -22,6 +22,7 @@
 package org.wildfly.clustering.web.infinispan.sso;
 
 import org.infinispan.Cache;
+import org.wildfly.clustering.web.Batch;
 import org.wildfly.clustering.web.Batcher;
 import org.wildfly.clustering.web.sso.SSO;
 import org.wildfly.clustering.web.sso.SSOManager;
@@ -29,7 +30,7 @@ import org.wildfly.clustering.web.sso.SSOManager;
 public class InfinispanSSOManager<V, L> implements SSOManager<L>, Batcher {
 
     private final SSOFactory<V, L> factory;
-    private final Cache<String, V> cache;
+    final Cache<String, V> cache;
 
     public InfinispanSSOManager(SSOFactory<V, L> factory, Cache<String, V> cache) {
         this.factory = factory;
@@ -48,13 +49,25 @@ public class InfinispanSSOManager<V, L> implements SSOManager<L>, Batcher {
     }
 
     @Override
-    public boolean startBatch() {
-        return this.cache.startBatch();
-    }
+    public Batch startBatch() {
+        final boolean started = this.cache.startBatch();
+        return new Batch() {
+            @Override
+            public void close() {
+                this.end(true);
+            }
 
-    @Override
-    public void endBatch(boolean successful) {
-        this.cache.endBatch(successful);
+            @Override
+            public void discard() {
+                this.end(false);
+            }
+
+            private void end(boolean success) {
+                if (started) {
+                    InfinispanSSOManager.this.cache.endBatch(success);
+                }
+            }
+        };
     }
 
     @Override

@@ -29,6 +29,7 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.ThreadFactory;
 
 import org.jboss.threads.JBossThreadFactory;
+import org.wildfly.clustering.web.Batch;
 import org.wildfly.clustering.web.Batcher;
 import org.wildfly.clustering.web.infinispan.Evictor;
 import org.wildfly.clustering.web.infinispan.Scheduler;
@@ -95,14 +96,16 @@ public class SessionEvictionScheduler implements Scheduler<ImmutableSession> {
 
         @Override
         public void run() {
-            boolean started = SessionEvictionScheduler.this.batcher.startBatch();
-            boolean successful = false;
+            Batch batch = SessionEvictionScheduler.this.batcher.startBatch();
+            boolean success = false;
             try {
                 SessionEvictionScheduler.this.evictor.evict(this.id);
-                successful = true;
+                success = true;
             } finally {
-                if (started) {
-                    SessionEvictionScheduler.this.batcher.endBatch(successful);
+                if (success) {
+                    batch.close();
+                } else {
+                    batch.discard();
                 }
             }
         }

@@ -54,6 +54,7 @@ import org.infinispan.remoting.transport.Address;
 import org.jboss.as.clustering.infinispan.affinity.KeyAffinityServiceFactory;
 import org.jboss.as.clustering.registry.Registry;
 import org.jboss.metadata.web.jboss.JBossWebMetaData;
+import org.wildfly.clustering.web.Batch;
 import org.wildfly.clustering.web.Batcher;
 import org.wildfly.clustering.web.infinispan.InfinispanWebLogger;
 import org.wildfly.clustering.web.infinispan.Scheduler;
@@ -74,7 +75,7 @@ import org.wildfly.clustering.web.session.SessionMetaData;
 @Listener
 public class InfinispanSessionManager<V, L> implements SessionManager<L>, KeyGenerator<String>, Batcher {
     private final SessionContext context;
-    private final Cache<String, V> cache;
+    final Cache<String, V> cache;
     private final SessionFactory<V, L> factory;
     private final SessionIdentifierFactory idFactory;
     private final KeyAffinityService<String> affinity;
@@ -114,13 +115,25 @@ public class InfinispanSessionManager<V, L> implements SessionManager<L>, KeyGen
     }
 
     @Override
-    public boolean startBatch() {
-        return this.cache.startBatch();
-    }
+    public Batch startBatch() {
+        final boolean started = this.cache.startBatch();
+        return new Batch() {
+            @Override
+            public void close() {
+                this.end(true);
+            }
 
-    @Override
-    public void endBatch(final boolean successful) {
-        this.cache.endBatch(successful);
+            @Override
+            public void discard() {
+                this.end(false);
+            }
+
+            private void end(boolean success) {
+                if (started) {
+                    InfinispanSessionManager.this.cache.endBatch(success);
+                }
+            }
+        };
     }
 
     @Override
