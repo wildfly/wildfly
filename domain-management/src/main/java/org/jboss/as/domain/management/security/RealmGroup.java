@@ -21,10 +21,11 @@
  */
 package org.jboss.as.domain.management.security;
 
-import java.nio.file.attribute.GroupPrincipal;
+
+import org.jboss.as.controller.security.GroupPrincipal;
 
 /**
- * A {@link Principal} used to represent an authenticated identities group membership.
+ * A {@link java.security.Principal} used to represent an authenticated identities group membership.
  *
  * @author <a href="mailto:darran.lofthouse@jboss.com">Darran Lofthouse</a>
  */
