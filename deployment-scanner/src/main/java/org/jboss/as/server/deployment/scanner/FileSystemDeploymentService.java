@@ -108,8 +108,10 @@ class FileSystemDeploymentService implements DeploymentScanner {
     private long scanInterval = 0;
     private volatile boolean scanEnabled = false;
     private volatile boolean firstScan = true;
+    private volatile boolean requireUndeploy = false;
     private ScheduledFuture<?> scanTask;
     private ScheduledFuture<?> rescanIncompleteTask;
+    private ScheduledFuture<?> rescanUndeployTask;
     private final Lock scanLock = new ReentrantLock();
 
     private final Map<String, DeploymentMarker> deployed = new HashMap<String, DeploymentMarker>();
@@ -140,7 +142,7 @@ class FileSystemDeploymentService implements DeploymentScanner {
         @Override
         public void run() {
             try {
-                scan(false, deploymentOperations);
+                scan(false, deploymentOperations, false);
             } catch (Exception e) {
                 ROOT_LOGGER.scanException(e, deploymentDir.getAbsolutePath());
             }
@@ -323,17 +325,17 @@ class FileSystemDeploymentService implements DeploymentScanner {
 
     void oneOffScan(final DeploymentOperations deploymentOperations) {
         this.establishDeployedContentList(this.deploymentDir, deploymentOperations);
-        scan(true, deploymentOperations);
+        scan(true, deploymentOperations, false);
     }
 
     void scan() {
-        scan(false, deploymentOperations);
+        scan(false, deploymentOperations, false);
     }
 
     /**
      * This method isn't private solely to allow a unit test in the same package to call it.
      */
-    void scan(boolean oneOffScan, final DeploymentOperations deploymentOperations) {
+    void scan(boolean oneOffScan, final DeploymentOperations deploymentOperations, boolean forcedUndeployScan) {
 
         try {
             scanLock.lockInterruptibly();
@@ -348,7 +350,9 @@ class FileSystemDeploymentService implements DeploymentScanner {
                 ROOT_LOGGER.tracef("Scanning directory %s for deployment content changes", deploymentDir.getAbsolutePath());
 
                 ScanContext scanContext = new ScanContext(deploymentOperations);
-                scanDirectory(deploymentDir, relativePath, scanContext);
+                if (!forcedUndeployScan)
+                    // skip directory scan since only undeployment required
+                    scanDirectory(deploymentDir, relativePath, scanContext);
 
                 // WARN about markers with no associated content. Do this first in case any auto-deploy issue
                 // is due to a file that wasn't meant to be auto-deployed, but has a misspelled marker
@@ -398,7 +402,19 @@ class FileSystemDeploymentService implements DeploymentScanner {
                 // Add remove actions to the plan for anything we count as
                 // deployed that we didn't find on the scan
                 for (Map.Entry<String, DeploymentMarker> missing : scanContext.toRemove.entrySet()) {
-                    scannerTasks.add(new UndeployTask(missing.getKey(), missing.getValue().parentFolder, scanContext.scanStartTime));
+                    if (!forcedUndeployScan)
+                        scannerTasks.add(new UndeployTask(missing.getKey(), missing.getValue().parentFolder, scanContext.scanStartTime, false));
+                    else {
+                        // remove successful deployment and left will be removed
+                        if (scanContext.registeredDeployments.containsKey(missing.getKey()))
+                            scanContext.registeredDeployments.remove(missing.getKey());
+                    }
+                }
+
+                if (forcedUndeployScan) {
+                    for (Map.Entry<String, Boolean> toUndeploy : scanContext.registeredDeployments.entrySet()) {
+                        scannerTasks.add(new UndeployTask(toUndeploy.getKey(), deploymentDir, scanContext.scanStartTime, true));
+                    }
                 }
                 // Process the tasks
                 if (scannerTasks.size() > 0) {
@@ -446,16 +462,22 @@ class FileSystemDeploymentService implements DeploymentScanner {
                         final List<ScannerTask> retryTasks = new ArrayList<ScannerTask>();
                         if (results.hasDefined(RESULT)) {
                             final List<Property> resultList = results.get(RESULT).asPropertyList();
+                            requireUndeploy = false;
                             for (int i = 0; i < resultList.size(); i++) {
                                 final ModelNode result = resultList.get(i).getValue();
                                 final ScannerTask task = scannerTasks.get(i);
                                 final ModelNode outcome = result.get(OUTCOME);
-                                if (outcome.isDefined() && SUCCESS.equals(outcome.asString())) {
+                                StringBuilder failureDesc = new StringBuilder();
+                                if (outcome.isDefined() && SUCCESS.equals(outcome.asString()) && handleCompositeResult(result, failureDesc)){
                                     task.handleSuccessResult();
                                 } else if (outcome.isDefined() && CANCELLED.equals(outcome.asString())) {
                                     toRetry.add(updates.get(i));
                                     retryTasks.add(task);
                                 } else {
+                                    if (failureDesc.length() > 0) {
+                                        result.get(FAILURE_DESCRIPTION).set(failureDesc.toString());
+                                        requireUndeploy = true;
+                                    }
                                     task.handleFailureResult(result);
                                 }
                             }
@@ -482,7 +504,52 @@ class FileSystemDeploymentService implements DeploymentScanner {
                     }
                 }
             }
+
+            if (requireUndeploy) {
+                // run a quick rescan to undeploy failed deployment during boot
+                synchronized (this) {
+                    if (scanEnabled && oneOffScan) {
+                        rescanUndeployTask = scheduledExecutor.schedule(new UndeployScanRunnable(), 200, TimeUnit.MILLISECONDS);
+                    }
+                }
+            }
+
         }
+    }
+
+    private class UndeployScanRunnable implements Runnable {
+
+        @Override
+        public void run() {
+            try {
+                scan(true, deploymentOperations, true);
+            } catch (Exception e) {
+                ROOT_LOGGER.scanException(e, deploymentDir.getAbsolutePath());
+            }
+        }
+    }
+
+    private boolean handleCompositeResult(ModelNode resultNode, StringBuilder failureDesc) {
+        // WFLY-1305, regardless rollback-on-runtime-failure option, check each composite step result
+        ModelNode outcome = resultNode.get(OUTCOME);
+        boolean success = true;
+        if (resultNode.get(OUTCOME).isDefined() && SUCCESS.equals(outcome.asString())) {
+            if (resultNode.get(RESULT).isDefined()) {
+                List<Property> results = resultNode.get(RESULT).asPropertyList();
+                for (int i = 0; i < results.size(); i++) {
+                    if (!handleCompositeResult(results.get(i).getValue(), failureDesc)) {
+                        success = false;
+                        break;
+                    }
+                }
+            }
+        } else {
+            success = false;
+            if (resultNode.get(FAILURE_DESCRIPTION).isDefined())
+                failureDesc.append(resultNode.get(FAILURE_DESCRIPTION).toString());
+        }
+
+        return success;
     }
 
     /**
@@ -862,6 +929,10 @@ class FileSystemDeploymentService implements DeploymentScanner {
             rescanIncompleteTask.cancel(false);
             rescanIncompleteTask = null;
         }
+        if (rescanUndeployTask != null) {
+            rescanUndeployTask.cancel(false);
+            rescanUndeployTask = null;
+        }
         if (scanTask != null) {
             scanTask.cancel(false);
             scanTask = null;
@@ -1142,10 +1213,12 @@ class FileSystemDeploymentService implements DeploymentScanner {
     private final class UndeployTask extends ScannerTask {
 
         private final long scanStartTime;
+        private boolean forcedUndeploy;
 
-        private UndeployTask(final String deploymentName, final File parent, final long scanStartTime) {
+        private UndeployTask(final String deploymentName, final File parent, final long scanStartTime, boolean forcedUndeploy) {
             super(deploymentName, parent, UNDEPLOYING);
             this.scanStartTime = scanStartTime;
+            this.forcedUndeploy = forcedUndeploy;
         }
 
         @Override
@@ -1161,11 +1234,13 @@ class FileSystemDeploymentService implements DeploymentScanner {
 
             // Remove the in-progress marker and any .deployed marker
             removeInProgressMarker();
-            deleteDeployedMarker();
+            if (!forcedUndeploy) {
+                deleteDeployedMarker();
 
-            final File undeployedMarker = new File(parent, deploymentName + UNDEPLOYED);
-            createMarkerFile(undeployedMarker, deploymentName);
-            undeployedMarker.setLastModified(scanStartTime);
+                final File undeployedMarker = new File(parent, deploymentName + UNDEPLOYED);
+                createMarkerFile(undeployedMarker, deploymentName);
+                undeployedMarker.setLastModified(scanStartTime);
+            }
 
             deployed.remove(deploymentName);
             noticeLogged.remove(deploymentName);
@@ -1177,7 +1252,8 @@ class FileSystemDeploymentService implements DeploymentScanner {
             // Remove the in-progress marker
             removeInProgressMarker();
 
-            writeFailedMarker(new File(parent, deploymentName), result.get(FAILURE_DESCRIPTION).toString(), scanStartTime);
+            if (!forcedUndeploy)
+                writeFailedMarker(new File(parent, deploymentName), result.get(FAILURE_DESCRIPTION).toString(), scanStartTime);
         }
     }
 

@@ -251,6 +251,21 @@ public class FileSystemDeploymentServiceUnitTestCase {
     }
 
     @Test
+    public void testCompositeFailure() throws Exception {
+        File war = createFile("foo.war");
+        File dodeploy = createFile("foo.war" + FileSystemDeploymentService.DO_DEPLOY);
+        File deployed = new File(tmpDir, "foo.war" + FileSystemDeploymentService.DEPLOYED);
+        File failed = new File(tmpDir, "foo.war" + FileSystemDeploymentService.FAILED_DEPLOY);
+        TesteeSet ts = createTestee();
+        ts.controller.addCompositeFailureResultResponse(2, 2);
+        ts.testee.scan();
+        assertTrue(war.exists());
+        assertFalse(dodeploy.exists());
+        assertFalse(deployed.exists());
+        assertTrue(failed.exists());
+    }
+
+    @Test
     public void testTwoFileFailure() throws Exception {
         File war1 = createFile("foo.war");
         File dodeploy1 = createFile("foo.war" + FileSystemDeploymentService.DO_DEPLOY);
@@ -1685,6 +1700,40 @@ public class FileSystemDeploymentServiceUnitTestCase {
                 }
                 else {
                     result.get(step, OUTCOME).set(CANCELLED);
+                }
+            }
+            rsp.get(FAILURE_DESCRIPTION).set(new ModelNode().set("badness happened"));
+            rsp.get(ROLLED_BACK).set(true);
+
+            responses.add(new Response(true, rsp));
+        }
+
+        public void addCompositeFailureResultResponse(int count, int failureStep) {
+
+            if (count < failureStep) {
+                throw new IllegalArgumentException("failureStep must be > count");
+            }
+
+            ModelNode rsp = new ModelNode();
+            rsp.get(OUTCOME).set(SUCCESS);
+            ModelNode result = rsp.get(RESULT);
+            ModelNode failedStep = result.get("step-" + failureStep);
+            failedStep.get(OUTCOME).set(SUCCESS);
+            ModelNode stepResult = failedStep.get(RESULT);
+            for (int i = 1; i <= count; i++) {
+                String step = "step-" + i;
+                if (i < failureStep) {
+                    stepResult.get(step, OUTCOME).set(SUCCESS);
+                    stepResult.get(step, RESULT);
+                    stepResult.get(step, ROLLED_BACK).set(true);
+                }
+                else if (i == failureStep){
+                    stepResult.get(step, OUTCOME).set(FAILED);
+                    stepResult.get(step, FAILURE_DESCRIPTION).set(new ModelNode().set("true failed step"));
+                    stepResult.get(step, ROLLED_BACK).set(true);
+                }
+                else {
+                    stepResult.get(step, OUTCOME).set(CANCELLED);
                 }
             }
             rsp.get(FAILURE_DESCRIPTION).set(new ModelNode().set("badness happened"));
