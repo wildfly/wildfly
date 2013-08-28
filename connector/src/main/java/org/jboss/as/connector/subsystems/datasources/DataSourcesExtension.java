@@ -236,7 +236,12 @@ public class DataSourcesExtension implements Extension {
                 JTA.marshallAsAttribute(dataSourceNode, writer);
                 JNDI_NAME.marshallAsAttribute(dataSourceNode, writer);
                 writer.writeAttribute("pool-name", property.getName());
-                ENABLED.marshallAsAttribute(dataSourceNode, writer);
+                if (!dataSourceNode.hasDefined(ENABLED.getName())) {
+                    //Since the xml default is the opposite of the model attribute default marshall it if it is undefined
+                    writer.writeAttribute(ENABLED.getXmlName(), Boolean.FALSE.toString());
+                } else {
+                    ENABLED.marshallAsAttribute(dataSourceNode, writer);
+                }
                 USE_JAVA_CONTEXT.marshallAsAttribute(dataSourceNode, writer);
                 SPY.marshallAsAttribute(dataSourceNode, writer);
                 USE_CCM.marshallAsAttribute(dataSourceNode, writer);
