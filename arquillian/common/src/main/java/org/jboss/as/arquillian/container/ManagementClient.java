@@ -340,7 +340,10 @@ public class ManagementClient implements AutoCloseable, Closeable {
         if (connection == null) {
             try {
                 final HashMap<String, Object> env = new HashMap<String, Object>();
-                env.put(CallbackHandler.class.getName(), Authentication.getCallbackHandler());
+                if (Authentication.username != null && Authentication.username.length() > 0) {
+                    // Only set this is there is a username as it disabled local authentication.
+                    env.put(CallbackHandler.class.getName(), Authentication.getCallbackHandler());
+                }
                 connection = new MBeanConnectionProxy(JMXConnectorFactory.connect(getRemoteJMXURL(), env).getMBeanServerConnection());
             } catch (IOException e) {
                 throw new RuntimeException(e);
