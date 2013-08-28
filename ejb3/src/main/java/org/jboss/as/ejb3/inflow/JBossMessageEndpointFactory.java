@@ -21,15 +21,16 @@
  */
 package org.jboss.as.ejb3.inflow;
 
-import org.jboss.invocation.proxy.ProxyConfiguration;
-import org.jboss.invocation.proxy.ProxyFactory;
+import java.lang.reflect.Method;
+import java.util.concurrent.atomic.AtomicInteger;
 
 import javax.resource.spi.UnavailableException;
 import javax.resource.spi.endpoint.MessageEndpoint;
 import javax.resource.spi.endpoint.MessageEndpointFactory;
 import javax.transaction.xa.XAResource;
-import java.lang.reflect.Method;
-import java.util.concurrent.atomic.AtomicInteger;
+
+import org.jboss.invocation.proxy.ProxyConfiguration;
+import org.jboss.invocation.proxy.ProxyFactory;
 
 import static java.util.concurrent.TimeUnit.MILLISECONDS;
 
@@ -40,6 +41,7 @@ public class JBossMessageEndpointFactory implements MessageEndpointFactory {
     private static final AtomicInteger PROXY_ID = new AtomicInteger(0);
     private final MessageEndpointService service;
     private final ProxyFactory<Object> factory;
+    private final Class<?> endpointClass;
 
     public JBossMessageEndpointFactory(final ClassLoader classLoader, final MessageEndpointService service, final Class<Object> ejbClass, final Class<?> messageListenerInterface) {
         // todo: generics bug; only Object.class is a Class<Object>.  Everything else is Class<? extends Object> aka Class<?>
@@ -52,6 +54,7 @@ public class JBossMessageEndpointFactory implements MessageEndpointFactory {
                 .addAdditionalInterface(MessageEndpoint.class)
                 .addAdditionalInterface(messageListenerInterface);
         this.factory = new ProxyFactory<Object>(configuration);
+        this.endpointClass = ejbClass;
     }
 
     @Override
@@ -84,6 +87,7 @@ public class JBossMessageEndpointFactory implements MessageEndpointFactory {
 
     @Override
     public Class<?> getEndpointClass() {
-        return MessageEndpointInvocationHandler.class;
+        // The MDB class is the message endpoint class
+        return this.endpointClass;
     }
 }
