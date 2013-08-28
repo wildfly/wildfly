@@ -30,6 +30,7 @@ import org.jboss.as.clustering.registry.Registry;
 import org.jboss.as.clustering.registry.RegistryCollector;
 import org.jboss.as.ejb3.cache.Cacheable;
 import org.jboss.as.ejb3.cache.spi.BackingCacheEntryStoreSourceService;
+import org.jboss.as.ejb3.remote.EJBRemoteConnectorService;
 import org.jboss.msc.service.ServiceBuilder;
 import org.jboss.msc.service.ServiceName;
 import org.jboss.msc.service.ServiceTarget;
@@ -87,6 +88,7 @@ public class ClusteredBackingCacheEntryStoreSourceService<K extends Serializable
     @Override
     public ServiceBuilder<ClusteredBackingCacheEntryStoreSource<K, V, G>> build(ServiceTarget target) {
         return super.build(target)
+                .addDependency(EJBRemoteConnectorService.SERVICE_NAME)
                 .addDependency(CLIENT_MAPPING_REGISTRY_COLLECTOR_SERVICE_NAME, RegistryCollector.class, this.collector)
                 .addDependency(getClientMappingRegistryServiceName(this.getValue().getCacheContainer()), Registry.class, this.registry)
         ;
