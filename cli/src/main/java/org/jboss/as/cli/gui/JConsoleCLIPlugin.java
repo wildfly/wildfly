@@ -18,10 +18,12 @@
  */
 package org.jboss.as.cli.gui;
 
-import com.sun.tools.jconsole.JConsoleContext;
-import com.sun.tools.jconsole.JConsolePlugin;
+import static java.security.AccessController.doPrivileged;
+
 import java.awt.BorderLayout;
 import java.awt.Component;
+import java.awt.event.ComponentEvent;
+import java.awt.event.ComponentListener;
 import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
@@ -31,27 +33,28 @@ import java.util.concurrent.ThreadFactory;
 import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
+
 import javax.management.MBeanServerConnection;
 import javax.swing.ImageIcon;
 import javax.swing.JInternalFrame;
-import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.SwingWorker;
+
 import org.jboss.as.cli.CliInitializationException;
 import org.jboss.as.cli.CommandContext;
 import org.jboss.as.cli.CommandContextFactory;
 import org.jboss.as.controller.client.ModelControllerClient;
 import org.jboss.as.controller.client.impl.ExistingChannelModelControllerClient;
-import org.wildfly.security.manager.GetAccessControlContextAction;
-import org.jboss.dmr.ModelNode;
 import org.jboss.remoting3.Channel;
 import org.jboss.remoting3.Connection;
 import org.jboss.remotingjmx.RemotingMBeanServerConnection;
 import org.jboss.threads.JBossThreadFactory;
+import org.wildfly.security.manager.GetAccessControlContextAction;
 import org.xnio.IoFuture;
 import org.xnio.OptionMap;
 
-import static java.security.AccessController.doPrivileged;
+import com.sun.tools.jconsole.JConsoleContext;
+import com.sun.tools.jconsole.JConsolePlugin;
 
 /**
  *
@@ -60,60 +63,66 @@ import static java.security.AccessController.doPrivileged;
 public class JConsoleCLIPlugin extends JConsolePlugin {
 
     private static final int DEFAULT_MAX_THREADS = 6;
+    private static final String LABEL = "WildFly CLI";
 
     // Global count of created pools
     private static final AtomicInteger executorCount = new AtomicInteger();
 
+    private ConnectDialog dialog;
     CliGuiContext cliGuiCtx;
     private JPanel jconsolePanel;
     private boolean initComplete = false;
     private boolean isConnected = false;
 
+    private ComponentListener doConnectListener;
     @Override
     public Map<String,JPanel> getTabs() {
         Map<String, JPanel> panelMap = new HashMap<String, JPanel>();
+        this.jconsolePanel = new JPanel(new BorderLayout());
+        this.dialog = new ConnectDialog(this, this.jconsolePanel);
+        doConnectListener = new ComponentListener() {
 
-        final CommandContext cmdCtx;
-        try {
-            cmdCtx = CommandContextFactory.getInstance().newCommandContext();
-            isConnected = connectCommandContext(cmdCtx);
-            if (!isConnected) return panelMap;
-        } catch (Exception e) {
-            throw new RuntimeException("Error connecting to JBoss AS.", e);
-        }
+            @Override
+            public void componentShown(ComponentEvent arg0) {
+                try {
+                    if(!isConnected)
+                        connect();
+                } catch (Exception e) {
+                    throw new RuntimeException("Error connecting to JBoss AS.", e);
+                }
+            }
 
-        cliGuiCtx = GuiMain.startEmbedded(cmdCtx);
-        JPanel cliGuiPanel = cliGuiCtx.getMainPanel();
+            @Override
+            public void componentResized(ComponentEvent arg0) {
+            }
 
-        jconsolePanel = new JPanel(new BorderLayout());
-        jconsolePanel.add(GuiMain.makeMenuBar(cliGuiCtx), BorderLayout.NORTH);
-        jconsolePanel.add(cliGuiPanel, BorderLayout.CENTER);
+            @Override
+            public void componentMoved(ComponentEvent arg0) {
+            }
 
-        panelMap.put(getJBossServerName(), jconsolePanel);
+            @Override
+            public void componentHidden(ComponentEvent arg0) {
+                if(dialog.isStarted()){
+                    dialog.stop();
+                }
+            }
+        };
+        jconsolePanel.addComponentListener(doConnectListener);
+        panelMap.put(LABEL, jconsolePanel);
         return panelMap;
     }
 
-    private boolean connectCommandContext(CommandContext cmdCtx) throws Exception {
+    private void connect() throws Exception {
         JConsoleContext jcCtx = this.getContext();
         MBeanServerConnection mbeanServerConn = jcCtx.getMBeanServerConnection();
 
         if (mbeanServerConn instanceof RemotingMBeanServerConnection) {
-            return connectUsingRemoting(cmdCtx, (RemotingMBeanServerConnection)mbeanServerConn);
+            final CommandContext cmdCtx = CommandContextFactory.getInstance().newCommandContext();
+            isConnected = connectUsingRemoting(cmdCtx, (RemotingMBeanServerConnection)mbeanServerConn);
         } else {
-            try {
-                cmdCtx.connectController("http-remoting", "localhost", 9990);
-            } catch (Exception e) {
-                String message = "CLI GUI unable to connect to JBoss AS with localhost:9999 \n";
-                message += "Go to Connection -> New Connection and enter a Remote Process \n";
-                message += "of the form service:jmx:remoting-jmx://{host_name}:{port}  where \n";
-                message += "{host_name} and {port} are the address of the native management \n";
-                message += "interface of the AS7 installation being monitored.";
-                JOptionPane.showMessageDialog(null, message);
-                return false;
-            }
+            //show dialog
+            dialog.start();
         }
-
-        return true;
     }
 
     private boolean connectUsingRemoting(CommandContext cmdCtx, RemotingMBeanServerConnection rmtMBeanSvrConn)
@@ -150,6 +159,23 @@ public class JConsoleCLIPlugin extends JConsolePlugin {
         return null;
     }
 
+
+    /**
+     * @param cmdCtx
+     */
+    public void init(CommandContext cmdCtx) {
+        //TODO: add checks
+      cliGuiCtx = GuiMain.startEmbedded(cmdCtx);
+      final JPanel cliGuiPanel = cliGuiCtx.getMainPanel();
+      jconsolePanel.setVisible(false);
+      dialog.stop();
+      jconsolePanel.add(GuiMain.makeMenuBar(cliGuiCtx), BorderLayout.NORTH);
+      jconsolePanel.add(cliGuiPanel, BorderLayout.CENTER);
+      jconsolePanel.setVisible(true);
+      jconsolePanel.repaint();
+      isConnected = true;
+    }
+
     private void configureMyJInternalFrame() {
         ImageIcon icon = new ImageIcon(GuiMain.getJBossIcon());
         Component component = jconsolePanel;
@@ -163,27 +189,4 @@ public class JConsoleCLIPlugin extends JConsolePlugin {
             }
         }
     }
-
-    private String getJBossServerName() {
-        String serverNamePrefix = "JBoss CLI / ";
-        String serverNameCommand = "/:read-attribute(name=name,include-defaults=true)";
-        if (!cliGuiCtx.isStandalone()) {
-            serverNameCommand = "/host=*" + serverNameCommand;
-        }
-
-        try {
-            ModelNode result = cliGuiCtx.getExecutor().doCommand(serverNameCommand);
-            String outcome = result.get("outcome").asString();
-            if (outcome.equals("success") && cliGuiCtx.isStandalone()) {
-                return serverNamePrefix + result.get("result").asString();
-            } else if (outcome.equals("success")) {
-                return serverNamePrefix + result.get("result").asList().get(0).get("result").asString();
-            }
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
-
-        return serverNamePrefix + "<unknown>";
-    }
-
 }

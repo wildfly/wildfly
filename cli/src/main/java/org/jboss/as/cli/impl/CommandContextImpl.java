@@ -827,7 +827,7 @@ class CommandContextImpl implements CommandContext, ModelControllerClientFactory
                 }
                 initNewClient(newClient, host, port);
             } catch (IOException e) {
-                throw new CommandLineException("Failed to resolve host '" + host + "': " + e.getLocalizedMessage());
+                throw new CommandLineException("Failed to resolve host '" + host + "'",e);
             }
         } while (retry);
     }
