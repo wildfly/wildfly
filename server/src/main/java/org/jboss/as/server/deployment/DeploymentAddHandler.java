@@ -27,7 +27,6 @@ import static org.jboss.as.server.controller.resources.DeploymentAttributes.CONT
 import static org.jboss.as.server.controller.resources.DeploymentAttributes.CONTENT_RELATIVE_TO;
 import static org.jboss.as.server.controller.resources.DeploymentAttributes.ENABLED;
 import static org.jboss.as.server.controller.resources.DeploymentAttributes.PERSISTENT;
-import static org.jboss.as.server.controller.resources.DeploymentAttributes.RUNTIME_NAME;
 import static org.jboss.as.server.controller.resources.DeploymentAttributes.SERVER_ADD_ATTRIBUTES;
 import static org.jboss.as.server.deployment.DeploymentHandlerUtils.asString;
 import static org.jboss.as.server.deployment.DeploymentHandlerUtils.createFailureException;
@@ -36,6 +35,7 @@ import static org.jboss.as.server.deployment.DeploymentHandlerUtils.hasValidCont
 
 import java.io.IOException;
 import java.io.InputStream;
+import java.util.Set;
 
 import org.jboss.as.controller.AttributeDefinition;
 import org.jboss.as.controller.HashUtil;
@@ -44,12 +44,16 @@ import org.jboss.as.controller.OperationContext.ResultAction;
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.OperationStepHandler;
 import org.jboss.as.controller.PathAddress;
+import org.jboss.as.controller.PathElement;
+import org.jboss.as.controller.ProcessType;
 import org.jboss.as.controller.RunningMode;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.DEPLOYMENT;
 import org.jboss.as.controller.registry.Resource;
 import org.jboss.as.protocol.StreamUtils;
 import org.jboss.as.repository.ContentRepository;
 import org.jboss.as.server.ServerLogger;
 import org.jboss.as.server.ServerMessages;
+import static org.jboss.as.server.controller.resources.DeploymentAttributes.RUNTIME_NAME;
 import org.jboss.as.server.services.security.AbstractVaultReader;
 import org.jboss.dmr.ModelNode;
 
@@ -107,6 +111,7 @@ public class DeploymentAddHandler implements OperationStepHandler {
         PathAddress address = PathAddress.pathAddress(opAddr);
         final String name = address.getLastElement().getValue();
         final String runtimeName = operation.hasDefined(RUNTIME_NAME.getName()) ? operation.get(RUNTIME_NAME.getName()).asString() : name;
+        isRuntimeNameUnique(context, name, runtimeName, address);
         newModel.get(RUNTIME_NAME.getName()).set(runtimeName);
 
         final DeploymentHandlerUtil.ContentItem contentItem;
@@ -140,6 +145,20 @@ public class DeploymentAddHandler implements OperationStepHandler {
             });
         } else {
             context.stepCompleted();
+        }
+    }
+
+    private void isRuntimeNameUnique(OperationContext context, final String name, final String runtimeName, PathAddress address) throws OperationFailedException {
+        if(context.getProcessType() == ProcessType.STANDALONE_SERVER) {
+            Set<Resource.ResourceEntry> deployments = context.readResourceFromRoot(PathAddress.pathAddress(PathAddress.EMPTY_ADDRESS, PathElement.pathElement(DEPLOYMENT))).getChildren(DEPLOYMENT);
+            for(Resource.ResourceEntry existingDeployment : deployments) {
+                ModelNode existingDeploymentModel = existingDeployment.getModel();
+                if(existingDeploymentModel.hasDefined(RUNTIME_NAME.getName()) && !name.equals(existingDeployment.getName())) {
+                    if(existingDeploymentModel.get(RUNTIME_NAME.getName()).asString().equals(runtimeName)) {
+                        throw ServerMessages.MESSAGES.runtimeNameMustBeUnique(existingDeployment.getName(), runtimeName);
+                    }
+                }
+            }
         }
     }
 

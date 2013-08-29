@@ -19,7 +19,6 @@
  * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
-
 package org.jboss.as.host.controller.parsing;
 
 import static javax.xml.stream.XMLStreamConstants.END_ELEMENT;
@@ -105,7 +104,7 @@ import org.jboss.staxmapper.XMLExtendedStreamReader;
 import org.jboss.staxmapper.XMLExtendedStreamWriter;
 
 /**
- * A mapper between an AS server's configuration model and XML representations, particularly  {@code domain.xml}.
+ * A mapper between an AS server's configuration model and XML representations, particularly {@code domain.xml}.
  *
  * @author Emanuel Muckenhuber
  * @author <a href="mailto:darran.lofthouse@jboss.com">Darran Lofthouse</a>
@@ -242,7 +241,6 @@ public class DomainXml extends CommonXml {
 
         // Content
         // Handle elements: sequence
-
         Element element = nextElement(reader, expectedNs);
         if (element == Element.EXTENSIONS) {
             extensionXml.parseExtensions(reader, address, expectedNs, list);
@@ -294,7 +292,6 @@ public class DomainXml extends CommonXml {
 
         // Content
         // Handle elements: sequence
-
         Element element = nextElement(reader, expectedNs);
         if (element == Element.EXTENSIONS) {
             extensionXml.parseExtensions(reader, address, expectedNs, list);
@@ -350,7 +347,6 @@ public class DomainXml extends CommonXml {
 
         // Content
         // Handle elements: sequence
-
         Element element = nextElement(reader, expectedNs);
         if (element == Element.EXTENSIONS) {
             extensionXml.parseExtensions(reader, address, expectedNs, list);
@@ -406,7 +402,6 @@ public class DomainXml extends CommonXml {
 
         // Content
         // Handle elements: sequence
-
         Element element = nextElement(reader, expectedNs);
         if (element == Element.EXTENSIONS) {
             extensionXml.parseExtensions(reader, address, expectedNs, list);
@@ -466,7 +461,6 @@ public class DomainXml extends CommonXml {
 
         // Content
         // Handle elements: sequence
-
         Element element = nextElement(reader, expectedNs);
         if (element == Element.EXTENSIONS) {
             extensionXml.parseExtensions(reader, address, expectedNs, list);
@@ -575,22 +569,22 @@ public class DomainXml extends CommonXml {
                 }
                 default:
                     switch (Attribute.forName(reader.getAttributeLocalName(i))) {
-                        case NAME:
-                            ModelNode op = new ModelNode();
-                            op.get(OP).set(WRITE_ATTRIBUTE_OPERATION);
-                            op.get(NAME).set(NAME);
-                            op.get(VALUE).set(ParseUtils.parsePossibleExpression(reader.getAttributeValue(i)));
-                            list.add(op);
-                            break;
-                        default:
-                            throw unexpectedAttribute(reader, i);
-                    }
+                    case NAME:
+                        ModelNode op = new ModelNode();
+                        op.get(OP).set(WRITE_ATTRIBUTE_OPERATION);
+                        op.get(NAME).set(NAME);
+                        op.get(VALUE).set(ParseUtils.parsePossibleExpression(reader.getAttributeValue(i)));
+                        list.add(op);
+                        break;
+                    default:
+                        throw unexpectedAttribute(reader, i);
+                }
             }
         }
     }
 
     void parseDomainSocketBindingGroups(final XMLExtendedStreamReader reader, final ModelNode address, final Namespace expectedNs,
-                                        final List<ModelNode> list, final Set<String> interfaces) throws XMLStreamException {
+            final List<ModelNode> list, final Set<String> interfaces) throws XMLStreamException {
         while (reader.hasNext() && reader.nextTag() != END_ELEMENT) {
             requireNamespace(reader, expectedNs);
             final Element element = Element.forName(reader.getLocalName());
@@ -616,7 +610,7 @@ public class DomainXml extends CommonXml {
     }
 
     void parseSocketBindingGroup_1_0(final XMLExtendedStreamReader reader, final Set<String> interfaces, final ModelNode address,
-                                     final Namespace expectedNs, final List<ModelNode> updates) throws XMLStreamException {
+            final Namespace expectedNs, final List<ModelNode> updates) throws XMLStreamException {
         final Set<String> includedGroups = new HashSet<String>();
         // unique socket-binding names
         final Set<String> uniqueBindingNames = new HashSet<String>();
@@ -653,12 +647,12 @@ public class DomainXml extends CommonXml {
                     HOST_CONTROLLER_LOGGER.warnIgnoringSocketBindingGroupInclude(reader.getLocation());
 
                     /* This will be reintroduced for 7.2.0, leave commented out
-                    final String includedGroup = readStringAttributeElement(reader, Attribute.SOCKET_BINDING_GROUP.getLocalName());
-                    if (!includedGroups.add(includedGroup)) {
-                        throw MESSAGES.alreadyDeclared(Attribute.SOCKET_BINDING_GROUP.getLocalName(), includedGroup, reader.getLocation());
-                    }
-                    SocketBindingGroupResourceDefinition.INCLUDES.parseAndAddParameterElement(includedGroup, bindingGroupUpdate, reader.getLocation());
-                    */
+                     final String includedGroup = readStringAttributeElement(reader, Attribute.SOCKET_BINDING_GROUP.getLocalName());
+                     if (!includedGroups.add(includedGroup)) {
+                     throw MESSAGES.alreadyDeclared(Attribute.SOCKET_BINDING_GROUP.getLocalName(), includedGroup, reader.getLocation());
+                     }
+                     SocketBindingGroupResourceDefinition.INCLUDES.parseAndAddParameterElement(includedGroup, bindingGroupUpdate, reader.getLocation());
+                     */
                     break;
                 }
                 case SOCKET_BINDING: {
@@ -676,7 +670,7 @@ public class DomainXml extends CommonXml {
     }
 
     void parseSocketBindingGroup_1_1(final XMLExtendedStreamReader reader, final Set<String> interfaces, final ModelNode address,
-                                     final Namespace expectedNs, final List<ModelNode> updates) throws XMLStreamException {
+            final Namespace expectedNs, final List<ModelNode> updates) throws XMLStreamException {
         final Set<String> includedGroups = new HashSet<String>();
         // both outbound-socket-bindings and socket-binding names
         final Set<String> uniqueBindingNames = new HashSet<String>();
@@ -701,9 +695,9 @@ public class DomainXml extends CommonXml {
         }
 
         /*This will be reintroduced for 7.2.0, leave commented out
-        final ModelNode includes = bindingGroupUpdate.get(INCLUDES);
-        includes.setEmptyList();
-        */
+         final ModelNode includes = bindingGroupUpdate.get(INCLUDES);
+         includes.setEmptyList();
+         */
         updates.add(bindingGroupUpdate);
 
         // Handle elements
@@ -712,15 +706,15 @@ public class DomainXml extends CommonXml {
             final Element element = Element.forName(reader.getLocalName());
             switch (element) {
                 /* This will be reintroduced for 7.2.0, leave commented out
-                case INCLUDE: {
-                    final String includedGroup = readStringAttributeElement(reader, Attribute.SOCKET_BINDING_GROUP.getLocalName());
-                    if (!includedGroups.add(includedGroup)) {
-                        throw MESSAGES.alreadyDeclared(Attribute.SOCKET_BINDING_GROUP.getLocalName(), includedGroup, reader.getLocation());
-                    }
-                    SocketBindingGroupResourceDefinition.INCLUDES.parseAndAddParameterElement(includedGroup, bindingGroupUpdate, reader.getLocation());
-                    break;
-                }
-                */
+                 case INCLUDE: {
+                 final String includedGroup = readStringAttributeElement(reader, Attribute.SOCKET_BINDING_GROUP.getLocalName());
+                 if (!includedGroups.add(includedGroup)) {
+                 throw MESSAGES.alreadyDeclared(Attribute.SOCKET_BINDING_GROUP.getLocalName(), includedGroup, reader.getLocation());
+                 }
+                 SocketBindingGroupResourceDefinition.INCLUDES.parseAndAddParameterElement(includedGroup, bindingGroupUpdate, reader.getLocation());
+                 break;
+                 }
+                 */
                 case SOCKET_BINDING: {
                     final String bindingName = parseSocketBinding(reader, interfaces, groupAddress, updates);
                     if (!uniqueBindingNames.add(bindingName)) {
@@ -804,8 +798,8 @@ public class DomainXml extends CommonXml {
             list.add(groupAddOp);
 
             // Handle elements
-
             boolean sawDeployments = false;
+
             while (reader.hasNext() && reader.nextTag() != END_ELEMENT) {
                 requireNamespace(reader, expectedNs);
                 final Element element = Element.forName(reader.getLocalName());
@@ -824,7 +818,10 @@ public class DomainXml extends CommonXml {
                             throw MESSAGES.alreadyDefined(element.getLocalName(), reader.getLocation());
                         }
                         sawDeployments = true;
-                        parseDeployments(reader, groupAddress, expectedNs, list, EnumSet.of(Attribute.NAME, Attribute.RUNTIME_NAME, Attribute.ENABLED), Collections.<Element>emptySet());
+                        List<ModelNode> deployments = new ArrayList<ModelNode>();
+                        parseDeployments(reader, groupAddress, expectedNs, deployments, EnumSet.of(Attribute.NAME, Attribute.RUNTIME_NAME, Attribute.ENABLED), Collections.<Element>emptySet());
+                        checkDeployments(deployments, reader);
+                        list.addAll(deployments);
                         break;
                     }
                     case DEPLOYMENT_OVERLAYS: {
@@ -840,6 +837,26 @@ public class DomainXml extends CommonXml {
                 }
             }
 
+        }
+    }
+
+    private void checkDeployments(List<ModelNode> deployments, final XMLExtendedStreamReader reader) throws XMLStreamException {
+        final Set<String> uniqueDeploymentNames = new HashSet<String>(deployments.size());
+        final Set<String> uniqueRuntimeNames = new HashSet<String>(deployments.size());
+        for (ModelNode deployment : deployments) {
+            String deploymentName = null;
+            for (Property property : deployment.get(ModelDescriptionConstants.ADDRESS).asPropertyList()) {
+                if (ModelDescriptionConstants.DEPLOYMENT.equals(property.getName())) {
+                    deploymentName = property.getValue().asString();
+                }
+            }
+            if (!uniqueDeploymentNames.add(deploymentName)) {
+                throw ParseUtils.duplicateNamedElement(reader, deploymentName);
+            }
+            String runtimeName = deployment.get(ModelDescriptionConstants.RUNTIME_NAME).asString();
+            if (!uniqueRuntimeNames.add(runtimeName)) {
+                throw ParseUtils.duplicateNamedElement(reader, runtimeName);
+            }
         }
     }
 
@@ -862,10 +879,8 @@ public class DomainXml extends CommonXml {
                 throw MESSAGES.duplicateDeclaration("profile", name, reader.getLocation());
             }
 
-
             //final Set<String> includes = new HashSet<String>();  // See commented out section below.
             //final ModelNode profileIncludes = new ModelNode();
-
             // Content
             // Sequence
             final Map<String, List<ModelNode>> profileOps = new LinkedHashMap<String, List<ModelNode>>();
@@ -906,16 +921,16 @@ public class DomainXml extends CommonXml {
                         }
                         throw unexpectedElement(reader);
                         /* This will be reintroduced for 7.2.0, leave commented out
-                        final String includedName = readStringAttributeElement(reader, Attribute.PROFILE.getLocalName());
-                        if (! names.contains(includedName)) {
-                            throw MESSAGES.profileNotFound(reader.getLocation());
-                        }
-                        if (! includes.add(includedName)) {
-                            throw MESSAGES.duplicateProfile(reader.getLocation());
-                        }
-                        profileIncludes.add(includedName);
-                        break;
-                        */
+                         final String includedName = readStringAttributeElement(reader, Attribute.PROFILE.getLocalName());
+                         if (! names.contains(includedName)) {
+                         throw MESSAGES.profileNotFound(reader.getLocation());
+                         }
+                         if (! includes.add(includedName)) {
+                         throw MESSAGES.duplicateProfile(reader.getLocation());
+                         }
+                         profileIncludes.add(includedName);
+                         break;
+                         */
                     }
                     default: {
                         throw unexpectedElement(reader);
@@ -933,8 +948,8 @@ public class DomainXml extends CommonXml {
             profile.get(OP).set(ADD);
             profile.get(OP_ADDR).set(address).add(ModelDescriptionConstants.PROFILE, name);
             /* This will be reintroduced for 7.2.0, leave commented out
-            profile.get(INCLUDES).set(profileIncludes);
-            */
+             profile.get(INCLUDES).set(profileIncludes);
+             */
             list.add(profile);
 
             // Process subsystems
@@ -1133,7 +1148,7 @@ public class DomainXml extends CommonXml {
 
         @Override
         public void parseAccessControl(final XMLExtendedStreamReader reader, final ModelNode address, final Namespace expectedNs,
-                                       final List<ModelNode> list) throws XMLStreamException {
+                final List<ModelNode> list) throws XMLStreamException {
             ModelNode accAuthzAddr = address.clone().add(ACCESS, AUTHORIZATION);
 
             final int count = reader.getAttributeCount();

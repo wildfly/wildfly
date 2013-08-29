@@ -19,9 +19,12 @@
  * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
-
 package org.jboss.as.core.model.test.servergroup;
 
+import javax.xml.stream.Location;
+import javax.xml.stream.XMLStreamException;
+import static org.hamcrest.CoreMatchers.containsString;
+import org.jboss.as.controller.ControllerMessages;
 import org.jboss.as.core.model.test.AbstractCoreModelTest;
 import org.jboss.as.core.model.test.KernelServices;
 import org.jboss.as.core.model.test.TestModelType;
@@ -45,6 +48,47 @@ public class DomainServerGroupTestCase extends AbstractCoreModelTest {
     @Test
     public void testServerGroupXmlExpressions() throws Exception {
         testServerGroupXml("servergroup-with-expressions.xml");
+    }
+
+    @Test
+    public void testServerGroupXmlWithWrongDeployments() throws Exception {
+        try {
+            createKernelServicesBuilder(TestModelType.DOMAIN)
+                    .setXmlResource("servergroup-with-duplicate-runtime-names.xml")
+                    .setModelInitializer(StandardServerGroupInitializers.XML_MODEL_INITIALIZER, StandardServerGroupInitializers.XML_MODEL_WRITE_SANITIZER)
+                    .createContentRepositoryContent("12345678901234567890")
+                    .createContentRepositoryContent("09876543210987654321")
+                    .build();
+        } catch (XMLStreamException ex) {
+            String expectedMessage = ControllerMessages.MESSAGES.duplicateNamedElement("foo.war", new Location() {
+                public int getLineNumber() {
+                    return 1634;
+                }
+
+                public int getColumnNumber() {
+                    return 1;
+                }
+
+                public int getCharacterOffset() {
+                    return 1;
+                }
+
+                public String getPublicId() {
+                    return "";
+                }
+
+                public String getSystemId() {
+                    return "";
+                }
+            }).getMessage();
+            expectedMessage = expectedMessage.substring(expectedMessage.indexOf("JBAS014664:"));
+            Assert.assertThat(ex.getMessage(), containsString(expectedMessage));
+        }
+    }
+
+    @Test
+    public void testServerGroupXmlWithDeployments() throws Exception {
+        testServerGroupXml("servergroup-with-deployments.xml");
     }
 
     private void testServerGroupXml(String resource) throws Exception {
