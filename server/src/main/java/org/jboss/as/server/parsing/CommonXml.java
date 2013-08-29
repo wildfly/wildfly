@@ -964,6 +964,7 @@ public abstract class CommonXml implements XMLElementReader<List<ModelNode>>, XM
         requireNoAttributes(reader);
 
         final Set<String> names = new HashSet<String>();
+        final Set<String> runtimeNames = new HashSet<String>();
 
         while (reader.nextTag() != END_ELEMENT) {
             requireNamespace(reader, expectedNs);
@@ -996,6 +997,9 @@ public abstract class CommonXml implements XMLElementReader<List<ModelNode>>, XM
                             break;
                         }
                         case RUNTIME_NAME: {
+                            if (!runtimeNames.add(value)) {
+                                throw duplicateNamedElement(reader, value);
+                            }
                             DeploymentAttributes.RUNTIME_NAME.parseAndSetParameter(value, deploymentAdd, reader);
                             break;
                         }

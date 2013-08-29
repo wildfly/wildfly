@@ -578,4 +578,7 @@ public interface DomainControllerMessages {
     @Message(id = 10880, value = "No socket-binding-group named: %s")
     OperationFailedException noSocketBindingGroupCalled(String socketBindingGroup);
 
+    @Message(id = 10881, value = "There is already a deployment called %s with the same runtime name %s on server group %s")
+    OperationFailedException runtimeNameMustBeUnique(String existingDeployment, String runtimeName, String serverGroup);
+
 }

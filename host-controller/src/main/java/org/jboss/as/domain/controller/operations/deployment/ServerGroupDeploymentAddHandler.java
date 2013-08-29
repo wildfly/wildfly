@@ -18,6 +18,8 @@
  */
 package org.jboss.as.domain.controller.operations.deployment;
 
+import java.util.List;
+import java.util.Set;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ADD;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.CONTENT;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.DEPLOYMENT;
@@ -32,9 +34,14 @@ import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.OperationStepHandler;
 import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.PathElement;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ADDRESS;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SERVER_GROUP;
 import org.jboss.as.controller.registry.Resource;
+import org.jboss.as.domain.controller.DomainControllerMessages;
 import org.jboss.as.repository.HostFileRepository;
+import static org.jboss.as.server.controller.resources.DeploymentAttributes.RUNTIME_NAME;
 import org.jboss.dmr.ModelNode;
+import org.jboss.dmr.Property;
 
 /**
  * Handles addition of a deployment to a server group.
@@ -61,6 +68,10 @@ public class ServerGroupDeploymentAddHandler implements OperationStepHandler {
 
         final Resource deploymentResource = context.readResourceFromRoot(PathAddress.pathAddress(PathElement.pathElement(DEPLOYMENT, name)));
         ModelNode deployment = deploymentResource.getModel();
+        String runtimeName = deployment.get(RUNTIME_NAME.getName()).asString();
+
+        String serverGroupName = getServerGroupName(operation);
+        isRuntimeNameUniqueForServerGroup(serverGroupName, context, name, runtimeName);
 
         for (ModelNode content : deployment.require(CONTENT).asList()) {
             if ((content.hasDefined(CONTENT_HASH.getName()))) {
@@ -81,5 +92,32 @@ public class ServerGroupDeploymentAddHandler implements OperationStepHandler {
         }
 
         context.stepCompleted();
+    }
+
+    private void isRuntimeNameUniqueForServerGroup(String serverGroupName, OperationContext context, String name, String runtimeName) throws OperationFailedException {
+        if(serverGroupName != null) {
+            PathAddress address = PathAddress.pathAddress(PathAddress.pathAddress(SERVER_GROUP, serverGroupName), PathElement.pathElement(DEPLOYMENT));
+            Set<Resource.ResourceEntry> deployments = context.readResourceFromRoot(address).getChildren(DEPLOYMENT);
+            for(Resource.ResourceEntry existingDeployment : deployments) {
+                ModelNode existingDeploymentModel = existingDeployment.getModel();
+                if(existingDeploymentModel.hasDefined(RUNTIME_NAME.getName()) && !name.equals(existingDeployment.getName())) {
+                    if(existingDeploymentModel.get(RUNTIME_NAME.getName()).asString().equals(runtimeName)) {
+                        throw DomainControllerMessages.MESSAGES.runtimeNameMustBeUnique(existingDeployment.getName(), runtimeName, serverGroupName);
+                    }
+                }
+            }
+        }
+    }
+
+    private String getServerGroupName(ModelNode operation) {
+        if(operation.hasDefined(ADDRESS)) {
+            List<Property> adress = operation.get(ADDRESS).asPropertyList();
+            for(Property prop : adress) {
+                if(SERVER_GROUP.equals(prop.getName())) {
+                    return prop.getValue().asString();
+                }
+            }
+        }
+        return null;
     }
 }
