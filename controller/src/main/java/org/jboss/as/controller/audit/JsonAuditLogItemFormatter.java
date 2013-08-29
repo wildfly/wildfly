@@ -22,7 +22,7 @@
 package org.jboss.as.controller.audit;
 
 import org.jboss.as.controller.OperationContext.ResultAction;
-import org.jboss.as.controller.audit.AuditLogItem.MethodAccessAuditLogItem;
+import org.jboss.as.controller.audit.AuditLogItem.JmxAccessAuditLogItem;
 import org.jboss.as.controller.audit.AuditLogItem.ModelControllerAuditLogItem;
 import org.jboss.dmr.ModelNode;
 
@@ -38,8 +38,6 @@ public class JsonAuditLogItemFormatter extends AuditLogItemFormatter {
         UNDEFINED.protect();
     }
     public static final String TYPE = "type";
-    public static final String TYPE_METHOD = "method";
-    public static final String TYPE_CORE = "core";
     public static final String READ_ONLY = "r/o";
     public static final String BOOTING = "booting";
     public static final String AS_VERSION = "version";
@@ -99,13 +97,13 @@ public class JsonAuditLogItemFormatter extends AuditLogItemFormatter {
     }
 
     @Override
-    public String formatAuditLogItem(MethodAccessAuditLogItem item) {
+    public String formatAuditLogItem(JmxAccessAuditLogItem item) {
         String formattedString = getCachedString();
         if (formattedString != null) {
             return formattedString;
         }
         ModelNode formatted = new ModelNode();
-        formatted.get(TYPE).set(TYPE_METHOD);
+        formatted.get(TYPE).set(TYPE_JMX);
         addCommonFields(item, formatted);
 
         formatted.get(METHOD_NAME).set(item.getMethodName());

@@ -692,7 +692,7 @@ public class JmxAuditLogHandlerTestCase extends AbstractControllerTestBase {
     }
 
     private void checkJmxBootRecordHeader(ModelNode bootRecord, boolean readOnly, String[] sig, String[] args) {
-        Assert.assertEquals("method", bootRecord.get("type").asString());
+        Assert.assertEquals("jmx", bootRecord.get("type").asString());
         Assert.assertEquals(readOnly, bootRecord.get("r/o").asBoolean());
         Assert.assertFalse(bootRecord.get("booting").asBoolean());
         Assert.assertFalse(bootRecord.get("user").isDefined());
