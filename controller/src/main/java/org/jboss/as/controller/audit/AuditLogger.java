@@ -55,7 +55,7 @@ public interface AuditLogger {
     void log(boolean readOnly, boolean booting, OperationContext.ResultAction resultAction, String userId,
              String domainUUID, AccessMechanism accessMechanism, InetAddress remoteAddress, final Resource resultantModel, List<ModelNode> operations);
 
-    void logMethodAccess(final boolean readOnly, final boolean booting, final String userId, final String domainUUID, final AccessMechanism accessMechanism,
+    void logJmxMethodAccess(final boolean readOnly, final boolean booting, final String userId, final String domainUUID, final AccessMechanism accessMechanism,
              InetAddress remoteAddress, final String methodName, final String[] methodSignature, final Object[] methodParams, final Throwable error);
     /**
      * An audit logger that doesn't log.
@@ -88,7 +88,7 @@ public interface AuditLogger {
         }
 
         @Override
-        public void logMethodAccess(boolean readOnly, boolean booting, String userId, String domainUUID, AccessMechanism accessMechanism, InetAddress remoteAddress, String methodName, String[] methodSignature, Object[] methodParams, Throwable error) {
+        public void logJmxMethodAccess(boolean readOnly, boolean booting, String userId, String domainUUID, AccessMechanism accessMechanism, InetAddress remoteAddress, String methodName, String[] methodSignature, Object[] methodParams, Throwable error) {
         }
 
         @Override

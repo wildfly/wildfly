@@ -98,7 +98,7 @@ public class ManagedAuditLoggerImpl implements ManagedAuditLogger, ManagedAuditL
     }
 
     @Override
-    public void logMethodAccess(boolean readOnly, boolean booting, String userId, String domainUUID,
+    public void logJmxMethodAccess(boolean readOnly, boolean booting, String userId, String domainUUID,
             AccessMechanism accessMechanism, InetAddress remoteAddress, String methodName, String[] methodSignature, Object[] methodParams, Throwable error) {
         config.lock();
         try {

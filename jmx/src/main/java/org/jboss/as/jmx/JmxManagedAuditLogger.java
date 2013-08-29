@@ -128,16 +128,16 @@ class JmxManagedAuditLogger implements ManagedAuditLogger {
         throw new IllegalStateException("Not implemented");
     }
 
-    public void logMethodAccess(boolean readOnly, boolean booting, String userId, String domainUUID,
+    public void logJmxMethodAccess(boolean readOnly, boolean booting, String userId, String domainUUID,
             AccessMechanism accessMechanism, InetAddress remoteAddress, String methodName, String[] methodSignature,
             Object[] methodParams, Throwable error) {
-        auditLogger.logMethodAccess(readOnly, booting, userId, domainUUID, accessMechanism, remoteAddress, methodName,
+        auditLogger.logJmxMethodAccess(readOnly, booting, userId, domainUUID, accessMechanism, remoteAddress, methodName,
                 methodSignature, methodParams, error);
     }
 
     void logMethodAccess(boolean readOnly, String userId, String domainUUID,
             AccessMechanism accessMechanism, InetAddress remoteAddress, String methodName, String[] methodSignature,
             Object[] methodParams, Throwable error) {
-        logMethodAccess(readOnly, booting, userId, domainUUID, accessMechanism, remoteAddress, methodName, methodSignature, methodParams, error);
+        logJmxMethodAccess(readOnly, booting, userId, domainUUID, accessMechanism, remoteAddress, methodName, methodSignature, methodParams, error);
     }
 }
