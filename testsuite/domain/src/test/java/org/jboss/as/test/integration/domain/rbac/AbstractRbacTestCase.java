@@ -104,6 +104,7 @@ public abstract class AbstractRbacTestCase {
             }
         }
 
+        clients.clear();
     }
 
     protected static void deployDeployment1(DomainClient domainClient) throws IOException {
