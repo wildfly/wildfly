@@ -65,7 +65,6 @@ class AccessLogAdd extends AbstractAddStepHandler {
         final String hostName = hostAddress.getLastElement().getValue();
 
         final ServiceName serviceName = UndertowService.accessLogServiceName(serverName, hostName);
-        UndertowLogger.ROOT_LOGGER.warn("service name: "+serviceName);
         final ServiceBuilder<AccessLogService> builder = context.getServiceTarget().addService(serviceName, service)
                 .addDependency(IOServices.WORKER.append(worker), XnioWorker.class, service.getWorker());
 

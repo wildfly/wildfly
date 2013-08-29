@@ -16,6 +16,7 @@ import org.jboss.as.controller.operations.validation.StringLengthValidator;
 import org.jboss.as.controller.registry.AttributeAccess;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.ModelType;
+import org.jboss.dmr.ValueExpression;
 
 /**
  * @author Tomaz Cerar (c) 2013 Red Hat Inc.
@@ -34,7 +35,7 @@ public class AccessLogDefinition extends PersistentResourceDefinition {
             .setDefaultValue(new ModelNode("default"))
             .build();
     protected static final SimpleAttributeDefinition PREFIX = new SimpleAttributeDefinitionBuilder(Constants.PREFIX, ModelType.STRING, true)
-            .setDefaultValue(new ModelNode("access_log."))
+            .setDefaultValue(new ModelNode("access_log"))
             .setValidator(new StringLengthValidator(1, true))
             .setAllowExpression(true)
             .build();
@@ -45,7 +46,7 @@ public class AccessLogDefinition extends PersistentResourceDefinition {
     protected static final SimpleAttributeDefinition DIRECTORY = new SimpleAttributeDefinitionBuilder(Constants.DIRECTORY, ModelType.STRING)
             .setAllowNull(true)
             .setValidator(new StringLengthValidator(1, true))
-            .setDefaultValue(new ModelNode("${jboss.server.log.dir}"))
+            .setDefaultValue(new ModelNode(new ValueExpression("${jboss.server.log.dir}")))
             .setAllowExpression(true)
             .build();
     static final Collection<SimpleAttributeDefinition> ATTRIBUTES = Arrays.asList(
