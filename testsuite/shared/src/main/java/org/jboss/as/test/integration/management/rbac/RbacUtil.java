@@ -57,6 +57,14 @@ public class RbacUtil {
     public static final String AUDITOR_USER = "Auditor";
     public static final String SUPERUSER_USER = "SuperUser";
 
+    public static final String MONITOR_ROLE = "Monitor";
+    public static final String OPERATOR_ROLE = "Operator";
+    public static final String MAINTAINER_ROLE = "Maintainer";
+    public static final String DEPLOYER_ROLE = "Deployer";
+    public static final String ADMINISTRATOR_ROLE = "Administrator";
+    public static final String AUDITOR_ROLE = "Auditor";
+    public static final String SUPERUSER_ROLE = "SuperUser";
+
     private static final String ROLE_MAPPING_ADDRESS_BASE = "core-service=management/access=authorization/role-mapping=";
     private static final String ROLE_MAPPING_USER_INCLUDE_ADDRESS_BASE = "/include=user-";
     private static final String LOCAL_USER = "$local";
