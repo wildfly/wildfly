@@ -30,6 +30,8 @@ import java.text.SimpleDateFormat;
   * @author <a href="kabir.khan@jboss.com">Kabir Khan</a>
  */
 public abstract class AuditLogItemFormatter {
+    public static final String TYPE_JMX = "jmx";
+    public static final String TYPE_CORE = "core";
 
     protected final String name;
     private volatile String formattedString;
@@ -95,10 +97,10 @@ public abstract class AuditLogItemFormatter {
      * @param item the log item
      * @return the formatted string
      */
-    abstract String formatAuditLogItem(AuditLogItem.MethodAccessAuditLogItem item);
+    abstract String formatAuditLogItem(AuditLogItem.JmxAccessAuditLogItem item);
 
     /**
-     * Clears the formatted log item created by {@link #formatAuditLogItem(org.jboss.as.controller.audit.AuditLogItem.MethodAccessAuditLogItem)}
+     * Clears the formatted log item created by {@link #formatAuditLogItem(org.jboss.as.controller.audit.AuditLogItem.JmxAccessAuditLogItem)}
      * or {@link #formatAuditLogItem(org.jboss.as.controller.audit.AuditLogItem.ModelControllerAuditLogItem)} once the audit log item has been
      * fully processed.
      */
