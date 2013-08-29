@@ -235,9 +235,7 @@ public class DomainControllerMigrationTestCase {
         executor.retryTask(new Callable<Object>() {
 
             public Object call() throws Exception {
-                ModelNode readOp = new ModelNode();
-                readOp.get(ModelDescriptionConstants.OP).set(ModelDescriptionConstants.READ_RESOURCE_OPERATION);
-                return dcUtil.executeForResult(readOp);
+                return dcUtil.isHostControllerStarted() && dcUtil.areServersStarted();
             }
         });
 

@@ -272,8 +272,8 @@ public interface HostControllerLogger extends BasicLogger {
      * @param channel the channel used to register the connection.
      */
     @LogMessage(level = Level.INFO)
-    @Message(id = 10920, value = "Server [%s] registered using connection [%s]")
-    void serverRegistered(String name, Channel channel);
+    @Message(id = 10920, value = "Server [%s] connected using connection [%s]")
+    void serverConnected(String name, Channel channel);
 
     /**
      * Logs a warning message indicating graceful shutdown of management request handling of slave HC to master HC

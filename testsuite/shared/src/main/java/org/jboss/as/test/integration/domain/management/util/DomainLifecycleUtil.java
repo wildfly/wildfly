@@ -83,7 +83,7 @@ public class DomainLifecycleUtil {
     // A shared domain client
     private DomainTestClient domainClient;
 
-    private Map<ServerIdentity, ControlledProcessState.State> serverStatuses = new HashMap<ServerIdentity, ControlledProcessState.State>();
+//    private Map<ServerIdentity, ControlledProcessState.State> serverStatuses = new HashMap<ServerIdentity, ControlledProcessState.State>();
     private ExecutorService executor;
 
     private final JBossAsManagedConfiguration configuration;
@@ -487,7 +487,7 @@ public class DomainLifecycleUtil {
         return executor;
     }
 
-    private boolean areServersStarted() {
+    public boolean areServersStarted() {
         try {
             Map<ServerIdentity, ControlledProcessState.State> statuses = getServerStatuses();
             for (Map.Entry<ServerIdentity, ControlledProcessState.State> entry : statuses.entrySet()) {
@@ -499,7 +499,7 @@ public class DomainLifecycleUtil {
                         return false;
                 }
             }
-            serverStatuses.putAll(statuses);
+//            serverStatuses.putAll(statuses);
             return true;
         } catch (Exception ignored) {
             // ignore, as we will get exceptions until the management comm services start
@@ -507,7 +507,7 @@ public class DomainLifecycleUtil {
         return false;
     }
 
-    private boolean isHostControllerStarted() {
+    public boolean isHostControllerStarted() {
         try {
             ModelNode address = new ModelNode();
             address.add("host", configuration.getHostName());

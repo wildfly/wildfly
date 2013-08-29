@@ -170,7 +170,7 @@ public class ServerToHostProtocolHandler implements ManagementRequestHandlerFact
             final String serverName = input.readUTF();
             final int operationId = input.readInt();
             serverProcessName = serverName;
-            CONTROLLER_MANAGEMENT_LOGGER.serverRegistered(serverName, context.getChannel());
+            CONTROLLER_MANAGEMENT_LOGGER.serverConnected(serverName, context.getChannel());
             // Execute the registration request
             context.executeAsync(new ManagementRequestContext.AsyncTask<Void>() {
                 @Override
@@ -257,7 +257,7 @@ public class ServerToHostProtocolHandler implements ManagementRequestHandlerFact
             expectHeader(input, DomainServerProtocol.PARAM_SERVER_NAME);
             final String serverName = input.readUTF();
             final Channel channel = context.getChannel();
-            CONTROLLER_MANAGEMENT_LOGGER.serverRegistered(serverName, channel);
+            CONTROLLER_MANAGEMENT_LOGGER.serverConnected(serverName, channel);
             context.executeAsync(new ManagementRequestContext.AsyncTask<Void>() {
                 @Override
                 public void execute(final ManagementRequestContext<Void> requestContext) throws Exception {
