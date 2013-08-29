@@ -222,8 +222,12 @@ public class SyslogAuditLogHandler extends AuditLogHandler {
 
     @Override
     void stop() {
-        handler.close();
-        handler = null;
+        SyslogHandler handler = this.handler;
+        this.handler = null;
+        if (handler != null) {
+            handler.close();
+        }
+
     }
 
     @Override
