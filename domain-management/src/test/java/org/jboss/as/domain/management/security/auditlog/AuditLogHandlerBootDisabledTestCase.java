@@ -25,6 +25,7 @@ package org.jboss.as.domain.management.security.auditlog;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.READ_RESOURCE_OPERATION;
 
 import java.io.File;
+import java.net.InetAddress;
 import java.util.List;
 
 import org.jboss.as.controller.PathAddress;
@@ -70,6 +71,15 @@ public class AuditLogHandlerBootDisabledTestCase extends AbstractAuditLogHandler
         records = readFile(file, 3);
         ops = checkBootRecordHeader(records.get(2), 1, "core", false, false, true);
         checkOpsEqual(op, ops.get(0));
+    }
+
+    @Test
+    public void testAddRemoveDisabledSyslogHandler() throws Exception {
+        //No need to start any syslog server, since audit logging is disabled
+        executeForResult(createAddSyslogHandlerUdpOperation("test-syslog", "test-formatter", InetAddress.getByName("localhost"), 6666, null, 0));
+
+        executeForResult(createAddHandlerReferenceOperation("test-syslog"));
+        executeForResult(createRemoveHandlerReferenceOperation("test-syslog"));
     }
 
     @Test
