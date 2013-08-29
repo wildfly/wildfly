@@ -23,11 +23,11 @@
   -->
 
 <xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema"
-            targetNamespace="urn:jboss:domain:transactions:2.0"
-            xmlns="urn:jboss:domain:transactions:2.0"
+            targetNamespace="urn:jboss:domain:transactions:1.4"
+            xmlns="urn:jboss:domain:transactions:1.4"
             elementFormDefault="qualified"
             attributeFormDefault="unqualified"
-            version="2.0">
+            version="1.4">
 
     <!-- The transaction subsystem root element -->
     <xs:element name="subsystem" type="subsystem"/>
