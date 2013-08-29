@@ -166,9 +166,7 @@ public class JsonAuditLogItemFormatter extends AuditLogItemFormatter {
     private void addCommonFields(AuditLogItem item, ModelNode formatted) {
         formatted.get(READ_ONLY).set(item.isReadOnly());
         formatted.get(BOOTING).set(item.isBooting());
-        if (item.isBooting()) {
-            formatted.get(AS_VERSION).set(item.getAsVersion());
-        }
+        formatted.get(AS_VERSION).set(item.getAsVersion());
         formatted.get(USER_ID);
         if (item.getUserId() != null) {
             formatted.get(USER_ID).set(item.getUserId());
