@@ -74,6 +74,7 @@
     <MERGE3 max_interval="100000" min_interval="20000"/>
     <FD_SOCK/>
     <FD timeout="6000" max_tries="5"/>
+    <FD_ALL timeout="15000"/>
     <VERIFY_SUSPECT timeout="1500"/>
     <BARRIER/>
     <pbcast.NAKACK use_mcast_xmit="true"
@@ -91,6 +92,9 @@
         max_bytes="1m"
         max_msg_batch_size="100"
         xmit_table_num_rows="20"
+        xmit_table_msgs_per_row="10000"
+        xmit_table_max_compaction_time="10000"/>
+    <UNICAST3 xmit_table_num_rows="20"
         xmit_table_msgs_per_row="10000"
         xmit_table_max_compaction_time="10000"/>
     <pbcast.STABLE stability_delay="1000"
