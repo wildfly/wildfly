@@ -96,11 +96,7 @@ import org.jboss.as.domain.controller.LocalHostControllerInfo;
 import org.jboss.as.domain.controller.SlaveRegistrationException;
 import org.jboss.as.domain.controller.resources.DomainRootDefinition;
 import org.jboss.as.domain.management.CoreManagementResourceDefinition;
-<<<<<<< HEAD
-=======
 import org.jboss.as.domain.management.audit.EnvironmentNameReader;
-import org.jboss.as.host.controller.discovery.DiscoveryOption;
->>>>>>> d94ab03... [WFLY-456] Audit Logging - squashed the below commits since master has changed so much
 import org.jboss.as.host.controller.ignored.IgnoredDomainResourceRegistry;
 import org.jboss.as.host.controller.model.jvm.JvmResourceDefinition;
 import org.jboss.as.host.controller.operations.HostSpecifiedInterfaceAddHandler;
@@ -770,11 +766,7 @@ public class ParseAndMarshalModelsTestCase {
 
             @Override
             public void setup(Resource resource, ManagementResourceRegistration rootRegistration, DelegatingConfigurableAuthorizer authorizer) {
-<<<<<<< HEAD
-                ServerRootResourceDefinition def = new ServerRootResourceDefinition(new MockContentRepository(), persister, null, null, null, null, extensionRegistry, false, MOCK_PATH_MANAGER, authorizer);
-=======
-                ServerRootResourceDefinition def = new ServerRootResourceDefinition(new MockContentRepository(), persister, null, null, null, null, extensionRegistry, false, MOCK_PATH_MANAGER, null, authorizer, AuditLogger.NO_OP_LOGGER);
->>>>>>> d94ab03... [WFLY-456] Audit Logging - squashed the below commits since master has changed so much
+                ServerRootResourceDefinition def = new ServerRootResourceDefinition(new MockContentRepository(), persister, null, null, null, null, extensionRegistry, false, MOCK_PATH_MANAGER, authorizer, AuditLogger.NO_OP_LOGGER);
                 def.registerAttributes(rootRegistration);
                 def.registerOperations(rootRegistration);
                 def.registerChildren(rootRegistration);

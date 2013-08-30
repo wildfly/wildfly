@@ -33,8 +33,6 @@
         <copy todir="target/jbossas-with-remote-outbound-connection">
             <fileset dir="target/jbossas"/>
         </copy>
-<<<<<<< HEAD
-=======
 
         <echo message="Copying and configuring instance jbossas-layered"/>
         <copy todir="target/jbossas-layered">
@@ -52,7 +50,6 @@
             <fileset dir="${jboss.dist}/modules"/>
         </copy>
 
->>>>>>> d94ab03... [WFLY-456] Audit Logging - squashed the below commits since master has changed so much
         <!-- Connects back to original host (node0) -->
         <ts.config-as.add-remote-outbound-connection name="jbossas-with-remote-outbound-connection" node="${node0}"
                                                      remotePort="4447" securityRealm="PasswordRealm" userName="user1"/>
