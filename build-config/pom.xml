@@ -29,7 +29,7 @@
     <parent>
       <groupId>org.jboss</groupId>
       <artifactId>jboss-parent</artifactId>
-      <version>10</version>
+      <version>11</version>
       <relativePath></relativePath>
     </parent>
 
@@ -45,6 +45,11 @@
             <distribution>repo</distribution>
         </license>
     </licenses>
+
+    <properties>
+        <maven.compiler.target>1.6</maven.compiler.target>
+        <maven.compiler.source>1.6</maven.compiler.source>
+    </properties>
 
     <build>
         <plugins>
