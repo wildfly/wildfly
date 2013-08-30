@@ -306,6 +306,7 @@ public abstract class CacheAdd extends AbstractAddStepHandler {
         final ServiceBuilder<?> builder = AsynchronousService.addService(target, CacheService.getServiceName(containerName, cacheName), service)
                 .addDependency(CacheConfigurationService.getServiceName(containerName, cacheName))
                 .addDependency(EmbeddedCacheManagerService.getServiceName(containerName), EmbeddedCacheManager.class, container)
+                .addDependency(GlobalComponentRegistryService.getServiceName(containerName))
                 .setInitialMode(initialMode)
         ;
         if (config.transaction().recovery().enabled()) {

@@ -59,7 +59,7 @@ import org.infinispan.remoting.transport.jgroups.JGroupsTransport;
 import org.infinispan.transaction.TransactionMode;
 import org.infinispan.transaction.tm.BatchModeTransactionManager;
 import org.jboss.as.clustering.impl.CoreGroupCommunicationService;
-import org.jboss.as.clustering.infinispan.DefaultEmbeddedCacheManager;
+import org.jboss.as.clustering.infinispan.DefaultCacheContainer;
 import org.jboss.as.clustering.infinispan.TransactionManagerProvider;
 import org.jboss.as.clustering.infinispan.subsystem.CacheAdd;
 import org.jboss.as.clustering.jgroups.MuxChannel;
@@ -102,7 +102,7 @@ public class SessionTestUtil {
 
     private static final Logger log = Logger.getLogger(SessionTestUtil.class);
 
-    public static class ExtendedCacheManager extends DefaultEmbeddedCacheManager {
+    public static class ExtendedCacheManager extends DefaultCacheContainer {
         private final CoreGroupCommunicationService service;
         private final SharedLocalYieldingClusterLockManager lockManager;
 
@@ -279,7 +279,7 @@ public class SessionTestUtil {
         }
 
         try {
-            return new ExtendedCacheManager(new DefaultEmbeddedCacheManager(globalBuilder.build(), builder.build(), CacheContainer.DEFAULT_CACHE_NAME));
+            return new ExtendedCacheManager(new DefaultCacheContainer(globalBuilder.build(), builder.build(), CacheContainer.DEFAULT_CACHE_NAME));
         } catch (Exception e) {
             throw new IllegalStateException(e);
         }

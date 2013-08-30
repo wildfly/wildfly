@@ -54,7 +54,7 @@ import org.junit.Test;
  */
 public class DefaultEmbeddedCacheManagerTest {
     private final EmbeddedCacheManager manager = mock(EmbeddedCacheManager.class);
-    private final EmbeddedCacheManager subject = new DefaultEmbeddedCacheManager(this.manager, "default");
+    private final EmbeddedCacheManager subject = new DefaultCacheContainer(this.manager, "default");
     
     @After
     public void cleanup() {

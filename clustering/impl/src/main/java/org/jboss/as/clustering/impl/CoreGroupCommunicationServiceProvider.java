@@ -24,6 +24,7 @@ package org.jboss.as.clustering.impl;
 
 import org.jboss.as.clustering.infinispan.subsystem.CacheService;
 import org.jboss.as.clustering.infinispan.subsystem.ChannelDependentServiceProvider;
+import org.jboss.as.clustering.infinispan.subsystem.GlobalComponentRegistryService;
 import org.jboss.as.clustering.jgroups.subsystem.ChannelService;
 import org.jboss.as.server.Services;
 import org.jboss.modules.ModuleLoader;
@@ -53,7 +54,7 @@ public class CoreGroupCommunicationServiceProvider implements ChannelDependentSe
         final Service<CoreGroupCommunicationService> service = new CoreGroupCommunicationService(GROUP_COMMUNICATION_SERVICE_SCOPE, channel, loader);
         return target.addService(this.getServiceName(cluster), service)
                 // Make sure Infinispan starts its channel before we try to use it..
-                .addDependency(CacheService.getServiceName(cluster, null))
+                .addDependency(GlobalComponentRegistryService.getServiceName(cluster))
                 .addDependency(ChannelService.getServiceName(cluster), Channel.class, channel)
                 .addDependency(Services.JBOSS_SERVICE_MODULE_LOADER, ModuleLoader.class, loader)
                 .setInitialMode(ServiceController.Mode.ON_DEMAND)

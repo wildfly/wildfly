@@ -22,6 +22,9 @@
 
 package org.jboss.as.clustering.infinispan;
 
+import java.lang.reflect.Field;
+import java.security.AccessController;
+import java.security.PrivilegedAction;
 import java.util.HashSet;
 import java.util.LinkedHashSet;
 import java.util.Set;
@@ -29,10 +32,11 @@ import java.util.Set;
 import org.infinispan.AbstractDelegatingAdvancedCache;
 import org.infinispan.AdvancedCache;
 import org.infinispan.Cache;
+import org.infinispan.api.BasicCacheContainer;
 import org.infinispan.configuration.cache.Configuration;
 import org.infinispan.configuration.global.GlobalConfiguration;
+import org.infinispan.factories.GlobalComponentRegistry;
 import org.infinispan.manager.AbstractDelegatingEmbeddedCacheManager;
-import org.infinispan.manager.CacheContainer;
 import org.infinispan.manager.DefaultCacheManager;
 import org.infinispan.manager.EmbeddedCacheManager;
 
@@ -40,19 +44,19 @@ import org.infinispan.manager.EmbeddedCacheManager;
  * EmbeddedCacheManager decorator that overrides the default cache semantics of a cache manager.
  * @author Paul Ferraro
  */
-public class DefaultEmbeddedCacheManager extends AbstractDelegatingEmbeddedCacheManager {
+public class DefaultCacheContainer extends AbstractDelegatingEmbeddedCacheManager implements CacheContainer {
 
     private final String defaultCache;
 
-    public DefaultEmbeddedCacheManager(GlobalConfiguration global, String defaultCache) {
+    public DefaultCacheContainer(GlobalConfiguration global, String defaultCache) {
         this(new DefaultCacheManager(global, null, false), defaultCache);
     }
 
-    public DefaultEmbeddedCacheManager(GlobalConfiguration global, Configuration config, String defaultCache) {
+    public DefaultCacheContainer(GlobalConfiguration global, Configuration config, String defaultCache) {
         this(new DefaultCacheManager(global, config, false), defaultCache);
     }
 
-    public DefaultEmbeddedCacheManager(EmbeddedCacheManager container, String defaultCache) {
+    public DefaultCacheContainer(EmbeddedCacheManager container, String defaultCache) {
         super(container);
         this.defaultCache = defaultCache;
     }
@@ -168,7 +172,35 @@ public class DefaultEmbeddedCacheManager extends AbstractDelegatingEmbeddedCache
     }
 
     private String getCacheName(String name) {
-        return ((name == null) || name.equals(CacheContainer.DEFAULT_CACHE_NAME)) ? this.defaultCache : name;
+        return ((name == null) || name.equals(BasicCacheContainer.DEFAULT_CACHE_NAME)) ? this.defaultCache : name;
+    }
+
+    @Override
+    public GlobalComponentRegistry getGlobalComponentRegistry() {
+        // The GlobalComponentRegistry is only exposed in Infinispan 6.0, so for now we hack it out
+        PrivilegedAction<Field> action = new PrivilegedAction<Field>() {
+            @Override
+            public Field run() {
+                try {
+                    Field field = DefaultCacheManager.class.getDeclaredField("globalComponentRegistry");
+                    field.setAccessible(true);
+                    return field;
+                } catch (NoSuchFieldException e) {
+                    throw new IllegalStateException(e);
+                }
+            }
+        };
+        Field field = AccessController.doPrivileged(action);
+        try {
+            return (GlobalComponentRegistry) field.get(this.cm);
+        } catch (IllegalAccessException e) {
+            throw new IllegalStateException(e);
+        }
+    }
+
+    @Override
+    public String getDefaultCacheName() {
+        return this.defaultCache;
     }
 
     /**
@@ -206,7 +238,7 @@ public class DefaultEmbeddedCacheManager extends AbstractDelegatingEmbeddedCache
 
         @Override
         public EmbeddedCacheManager getCacheManager() {
-            return DefaultEmbeddedCacheManager.this;
+            return DefaultCacheContainer.this;
         }
 
         @Override

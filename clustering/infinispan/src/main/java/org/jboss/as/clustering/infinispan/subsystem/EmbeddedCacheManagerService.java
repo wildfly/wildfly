@@ -21,13 +21,13 @@
  */
 package org.jboss.as.clustering.infinispan.subsystem;
 
-import org.infinispan.manager.EmbeddedCacheManager;
 import org.infinispan.notifications.Listener;
 import org.infinispan.notifications.cachemanagerlistener.annotation.CacheStarted;
 import org.infinispan.notifications.cachemanagerlistener.annotation.CacheStopped;
 import org.infinispan.notifications.cachemanagerlistener.event.CacheStartedEvent;
 import org.infinispan.notifications.cachemanagerlistener.event.CacheStoppedEvent;
-import org.jboss.as.clustering.infinispan.DefaultEmbeddedCacheManager;
+import org.jboss.as.clustering.infinispan.CacheContainer;
+import org.jboss.as.clustering.infinispan.DefaultCacheContainer;
 import org.jboss.as.clustering.infinispan.InfinispanLogger;
 import org.jboss.logging.Logger;
 import org.jboss.msc.service.Service;
@@ -40,7 +40,7 @@ import org.jboss.msc.value.Value;
  * @author Paul Ferraro
  */
 @Listener
-public class EmbeddedCacheManagerService implements Service<EmbeddedCacheManager> {
+public class EmbeddedCacheManagerService implements Service<CacheContainer> {
 
     private static final Logger log = Logger.getLogger(EmbeddedCacheManagerService.class.getPackage().getName());
     private static final ServiceName SERVICE_NAME = ServiceName.JBOSS.append(InfinispanExtension.SUBSYSTEM_NAME);
@@ -50,21 +50,21 @@ public class EmbeddedCacheManagerService implements Service<EmbeddedCacheManager
     }
 
     private final Value<EmbeddedCacheManagerConfiguration> config;
-    private volatile EmbeddedCacheManager container;
+    private volatile CacheContainer container;
 
     public EmbeddedCacheManagerService(Value<EmbeddedCacheManagerConfiguration> config) {
         this.config = config;
     }
 
     @Override
-    public EmbeddedCacheManager getValue() {
+    public CacheContainer getValue() {
         return this.container;
     }
 
     @Override
     public void start(StartContext context) {
         EmbeddedCacheManagerConfiguration config = this.config.getValue();
-        this.container = new DefaultEmbeddedCacheManager(config.getGlobalConfiguration(), config.getDefaultCache());
+        this.container = new DefaultCacheContainer(config.getGlobalConfiguration(), config.getDefaultCache());
         this.container.addListener(this);
         this.container.start();
         log.debugf("%s cache container started", config.getName());

@@ -34,8 +34,8 @@ import java.util.concurrent.ScheduledExecutorService;
 
 import javax.management.MBeanServer;
 
-import org.infinispan.manager.CacheContainer;
 import org.infinispan.manager.EmbeddedCacheManager;
+import org.jboss.as.clustering.infinispan.CacheContainer;
 import org.jboss.as.clustering.infinispan.affinity.KeyAffinityServiceFactoryService;
 import org.jboss.as.clustering.jgroups.ChannelFactory;
 import org.jboss.as.clustering.jgroups.subsystem.ChannelFactoryService;
@@ -175,6 +175,8 @@ public class CacheContainerAdd extends AbstractAddStepHandler {
         // install a cache container service
         controllers.add(this.installContainerService(target, name, aliases, transportConfig, initialMode, verificationHandler));
 
+        controllers.add(this.installGlobalComponentRegistryService(target, name, verificationHandler));
+
         // install a name service entry for the cache container
         controllers.add(this.installJndiService(target, name, InfinispanJndiName.createCacheContainerJndiName(jndiName, name), verificationHandler));
 
@@ -199,6 +201,7 @@ public class CacheContainerAdd extends AbstractAddStepHandler {
         context.removeService(bindInfo.getBinderServiceName());
 
         // remove the cache container
+        context.removeService(GlobalComponentRegistryService.getServiceName(containerName));
         context.removeService(EmbeddedCacheManagerService.getServiceName(containerName));
         context.removeService(EmbeddedCacheManagerConfigurationService.getServiceName(containerName));
 
@@ -268,8 +271,8 @@ public class CacheContainerAdd extends AbstractAddStepHandler {
         final ServiceName containerServiceName = EmbeddedCacheManagerService.getServiceName(containerName);
         final ServiceName configServiceName = EmbeddedCacheManagerConfigurationService.getServiceName(containerName);
         final InjectedValue<EmbeddedCacheManagerConfiguration> config = new InjectedValue<EmbeddedCacheManagerConfiguration>();
-        final Service<EmbeddedCacheManager> service = new EmbeddedCacheManagerService(config);
-        ServiceBuilder<EmbeddedCacheManager> builder = target.addService(containerServiceName, service)
+        final Service<CacheContainer> service = new EmbeddedCacheManagerService(config);
+        ServiceBuilder<CacheContainer> builder = target.addService(containerServiceName, service)
                 .addDependency(configServiceName, EmbeddedCacheManagerConfiguration.class, config)
                 .addAliases(aliases)
                 .setInitialMode(initialMode)
@@ -278,6 +281,15 @@ public class CacheContainerAdd extends AbstractAddStepHandler {
             builder.addDependency(ChannelService.getServiceName(containerName));
         }
         return builder.install();
+    }
+
+    ServiceController<?> installGlobalComponentRegistryService(ServiceTarget target, String containerName, ServiceVerificationHandler verificationHandler) {
+        InjectedValue<CacheContainer> container = new InjectedValue<CacheContainer>();
+        return target.addService(GlobalComponentRegistryService.getServiceName(containerName), new GlobalComponentRegistryService(container))
+                .addDependency(EmbeddedCacheManagerService.getServiceName(containerName), CacheContainer.class, container)
+                .setInitialMode(ServiceController.Mode.ON_DEMAND)
+                .install()
+        ;
     }
 
     ServiceController<?> installJndiService(ServiceTarget target, String containerName, String jndiName, ServiceVerificationHandler verificationHandler) {
