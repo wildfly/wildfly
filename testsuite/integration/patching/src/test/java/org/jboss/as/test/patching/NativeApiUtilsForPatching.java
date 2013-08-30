@@ -103,7 +103,7 @@ public class NativeApiUtilsForPatching {
         readOp.get(ModelDescriptionConstants.OP).set("show-history");
         List<ModelNode> list = client.execute(readOp).get("result").asList();
         for (ModelNode item : list) {
-            if (item.get("one-off").asString().equalsIgnoreCase(patchId))
+            if (item.get("patch-id").asString().equalsIgnoreCase(patchId))
                 return item;
         }
         return null;

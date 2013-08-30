@@ -64,6 +64,20 @@ public interface PatchOperationBuilder extends PatchTool.ContentPolicyBuilder {
         }
 
         /**
+         * Get the patching history.
+         *
+         * @return the patching history
+         */
+        public static PatchOperationBuilder history() {
+            return new AbstractOperationBuilder() {
+                @Override
+                public ModelNode execute(PatchOperationTarget target) throws IOException {
+                    return target.history();
+                }
+            };
+        }
+
+        /**
          * Create the rollback builder.
          *
          * @param patchId the patch-id to rollback

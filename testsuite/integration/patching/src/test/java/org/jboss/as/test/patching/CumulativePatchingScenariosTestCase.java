@@ -2,6 +2,7 @@ package org.jboss.as.test.patching;
 
 import org.jboss.arquillian.container.test.api.RunAsClient;
 import org.jboss.arquillian.junit.Arquillian;
+import org.jboss.as.patching.Constants;
 import org.jboss.as.patching.HashUtils;
 import org.jboss.as.patching.metadata.ContentModification;
 import org.jboss.as.patching.metadata.Patch;
@@ -30,7 +31,6 @@ import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.InputStream;
 
-import static org.jboss.as.patching.Constants.BASE;
 import static org.jboss.as.patching.IoUtils.mkdir;
 import static org.jboss.as.patching.IoUtils.newFile;
 import static org.jboss.as.test.patching.PatchingTestUtil.AS_DISTRIBUTION;
@@ -82,11 +82,10 @@ public class CumulativePatchingScenariosTestCase extends AbstractPatchingTestCas
                 .build();
 
         ContentModification moduleAdded = ContentModificationUtils.addModule(oneOffPatchDir, layerPatchID, newModule);
-        ProductConfig productConfig = new ProductConfig(PRODUCT, asVersion, "main");
         Patch oneOffPatch = PatchBuilder.create()
                 .setPatchId(patchID)
                 .setDescription("A one-off patch adding a new module.")
-                .oneOffPatchIdentity(productConfig.getProductName(), productConfig.getProductVersion())
+                .oneOffPatchIdentity(PRODUCT, asVersion)
                 .getParent()
                 .oneOffPatchElement(layerPatchID, "base", false)
                 .setDescription("New module for the base layer")
@@ -98,31 +97,13 @@ public class CumulativePatchingScenariosTestCase extends AbstractPatchingTestCas
     }
 
     private File createCumulativePatch(String patchID, String asVersion, final String targetAsVersion) throws Exception {
-        String layerPatchID = randomString();
+        String layerPatchID = "layer" + patchID;
         File cpPatchDir = mkdir(tempDir, patchID);
 
         final String moduleName = "org.wildfly.test." + randomString();
 
         final ResourceItem resourceItem1 = new ResourceItem("testFile1", "content1".getBytes());
         final ResourceItem resourceItem2 = new ResourceItem("testFile2", "content2".getBytes());
-
-
-        Asset newManifest = new Asset() {
-            @Override
-            public InputStream openStream() {
-                String line = "JBossAS-Release-Version: " + targetAsVersion + "\n";
-                return new ByteArrayInputStream(line.getBytes());
-            }
-        };
-        JavaArchive versionModuleJar = ShrinkWrap.create(JavaArchive.class)
-                .addPackage("org.jboss.as.version")
-                .addAsManifestResource(newManifest, "MANIFEST.MF");
-
-        ByteArrayOutputStream baos = new ByteArrayOutputStream();
-        versionModuleJar.as(ZipExporter.class).exportTo(baos);
-        ResourceItem versionModuleResourceItem = new ResourceItem("as-version.jar", baos.toByteArray());
-        final String versionModuleName = "org.jboss.as.version";
-        final String originalVersionModulePath = MODULES_PATH + FILE_SEPARATOR + versionModuleName.replace(".", FILE_SEPARATOR) + FILE_SEPARATOR + "main";
 
         // Also see if we can update jboss-modules
         final File installation = new File(AS_DISTRIBUTION);
@@ -134,21 +115,19 @@ public class CumulativePatchingScenariosTestCase extends AbstractPatchingTestCas
                 .miscFile(resourceItem2)
                 .build();
 
-        Module modifiedModule = new Module.Builder(versionModuleName)
-                .resourceRoot(versionModuleResourceItem)
-                .property("jboss.api", "private")
-                .dependency("org.jboss.logging")
-                .dependency("org.jboss.modules")
-                .build();
+        // Create the version module
+        final String versionModuleName = ProductInfo.getVersionModule();
+        final String slot = ProductInfo.getVersionModuleSlot();
+        final String originalVersionModulePath = MODULES_PATH + FILE_SEPARATOR + versionModuleName.replace(".", FILE_SEPARATOR) + FILE_SEPARATOR + slot;
+        final Module modifiedModule = PatchingTestUtil.createVersionModule(targetAsVersion);
 
         ContentModification moduleAdded = ContentModificationUtils.addModule(cpPatchDir, layerPatchID, newModule);
         ContentModification versionModuleModified = ContentModificationUtils.modifyModule(cpPatchDir, layerPatchID, HashUtils.hashFile(new File(originalVersionModulePath)), modifiedModule);
 
-        ProductConfig productConfig = new ProductConfig(PRODUCT, asVersion, "main");
         Patch cpPatch = PatchBuilder.create()
                 .setPatchId(patchID)
                 .setDescription("A cp patch.")
-                .upgradeIdentity(productConfig.getProductName(), productConfig.getProductVersion(), targetAsVersion)
+                .upgradeIdentity(PRODUCT, asVersion, targetAsVersion)
                 .getParent()
                 .upgradeElement(layerPatchID, "base", false)
                 .addContentModification(moduleAdded)
@@ -160,36 +139,23 @@ public class CumulativePatchingScenariosTestCase extends AbstractPatchingTestCas
         return createZippedPatchFile(cpPatchDir, patchID);
     }
 
-    private File createInvalidCumulativePatch(String patchID, String asVersion, final String targetAsVersion) throws Exception {
-        String layerPatchID = randomString();
+    private File createSecondCumulativePatch(String patchID, String asVersion, final String currentPatch, final String targetAsVersion) throws Exception {
+        String layerPatchID = "layer" + patchID;
         File cpPatchDir = mkdir(tempDir, patchID);
 
-        Asset newManifest = new Asset() {
-            @Override
-            public InputStream openStream() {
-                String line = "JBossAS-Release-Version: " + targetAsVersion + "\n";
-                return new ByteArrayInputStream(line.getBytes());
-            }
-        };
-        JavaArchive versionModuleJar = ShrinkWrap.create(JavaArchive.class)
-                .addPackage("org.jboss.as.version")
-                .addAsManifestResource(newManifest, "MANIFEST.MF");
+        // Create the version module
+        final String versionModuleName = ProductInfo.getVersionModule();
+        final Module modifiedModule = PatchingTestUtil.createVersionModule(targetAsVersion);
 
-        ByteArrayOutputStream baos = new ByteArrayOutputStream();
-        versionModuleJar.as(ZipExporter.class).exportTo(baos);
-        ResourceItem versionModuleResourceItem = new ResourceItem("as-version.jar", baos.toByteArray());
-        final String versionModuleName = "org.jboss.as.version";
-        final String originalVersionModulePath = MODULES_PATH + FILE_SEPARATOR + versionModuleName.replace(".", FILE_SEPARATOR) + FILE_SEPARATOR + "main";
+        // Calculate the target hash of the currently active module
+        final String currentLayerPatchID = "layer" + currentPatch;
+        final String originalVersionModulePath = MODULES_PATH + FILE_SEPARATOR + Constants.OVERLAYS + FILE_SEPARATOR +
+                currentLayerPatchID + FILE_SEPARATOR + versionModuleName.replace(".", FILE_SEPARATOR) + FILE_SEPARATOR + ProductInfo.getVersionModuleSlot();
+        byte[] patchedAsVersionHash = HashUtils.hashFile(new File(originalVersionModulePath));
+        assert patchedAsVersionHash != null;
 
-        Module modifiedModule = new Module.Builder(versionModuleName)
-                .resourceRoot(versionModuleResourceItem)
-                .property("jboss.api", "private")
-                .dependency("org.jboss.logging")
-                .dependency("org.jboss.modules")
-                .build();
+        ContentModification versionModuleModified = ContentModificationUtils.modifyModule(cpPatchDir, layerPatchID, patchedAsVersionHash, modifiedModule);
 
-        // create broken patch - replaced layerPatchID with patchID
-        ContentModification versionModuleModified = ContentModificationUtils.modifyModule(cpPatchDir, patchID, HashUtils.hashFile(new File(originalVersionModulePath)), modifiedModule);
         ProductConfig productConfig = new ProductConfig(PRODUCT, asVersion, "main");
         Patch cpPatch = PatchBuilder.create()
                 .setPatchId(patchID)
@@ -204,25 +170,56 @@ public class CumulativePatchingScenariosTestCase extends AbstractPatchingTestCas
         return createZippedPatchFile(cpPatchDir, patchID);
     }
 
+    private File createInvalidCumulativePatch(String patchID, String asVersion, final String targetAsVersion) throws Exception {
+        String layerPatchID = randomString();
+        File cpPatchDir = mkdir(tempDir, patchID);
+
+        // Create the version module
+        final String versionModuleName = ProductInfo.getVersionModule();
+        final String slot = ProductInfo.getVersionModuleSlot();
+        final String originalVersionModulePath = MODULES_PATH + FILE_SEPARATOR + versionModuleName.replace(".", FILE_SEPARATOR) + FILE_SEPARATOR + slot;
+
+        final Module modifiedModule = PatchingTestUtil.createVersionModule(targetAsVersion);
+
+        // create broken patch - replaced layerPatchID with patchID
+        ContentModification versionModuleModified = ContentModificationUtils.modifyModule(cpPatchDir, patchID, HashUtils.hashFile(new File(originalVersionModulePath)), modifiedModule);
+        Patch cpPatch = PatchBuilder.create()
+                .setPatchId(patchID)
+                .setDescription("A cp patch.")
+                .upgradeIdentity(PRODUCT, asVersion, targetAsVersion)
+                .getParent()
+                .upgradeElement(layerPatchID, "base", false)
+                .addContentModification(versionModuleModified)
+                .getParent()
+                .build();
+        createPatchXMLFile(cpPatchDir, cpPatch);
+        return createZippedPatchFile(cpPatchDir, patchID);
+    }
+
     /**
      * Applies one-off that adds a misc file
-     * Applies one-off that adds a module
      * Applies CP that adds a module, should invalidate all previously installed one-off
-     * does rollback of CP
-     * does rollback of all one-offs
+     * Applies one-off that adds a module
+     * Applies second CP that modifies version module
+     * does rollback of second CP
+     * does rollback of second one-off
+     * does rollback of first CP
+     * does rollback of first one-off
      *
      * @throws Exception
      */
     @Test
-    public void testTwoOneOffsInvalidatedByCumulativePatch() throws Exception {
-        String oneOffPatchID1 = randomString();
-        String oneOffPatchID2 = randomString();
-        String cpPatchID = randomString();
+    public void testOneOffCPOneOffCP() throws Exception {
+        final String oneOffPatchID1 = randomString();
+        final String oneOffPatchID2 = randomString();
+        final String cpPatchID = randomString();
+        final String cpPatchID2 = randomString();
+        final String eapWithCP = "EAP with cp patch";
         File oneOffZip1 = createOneOffPatchAddingMiscFile(oneOffPatchID1, AS_VERSION);
-        File oneOffZip2 = createOneOffPatchAddingAModule(oneOffPatchID2, AS_VERSION);
-        File cpZip = createCumulativePatch(cpPatchID, AS_VERSION, "EAP with cp patch");
+        File cpZip = createCumulativePatch(cpPatchID, AS_VERSION, eapWithCP);
+        File oneOffZip2 = createOneOffPatchAddingAModule(oneOffPatchID2, eapWithCP);
 
-        // apply oneoffs
+        // apply oneoff
         controller.start(CONTAINER);
         Assert.assertTrue("Patch should be accepted", CliUtilsForPatching.applyPatch(oneOffZip1.getAbsolutePath()));
         Assert.assertTrue("server should be in restart-required mode",
@@ -232,14 +229,6 @@ public class CumulativePatchingScenariosTestCase extends AbstractPatchingTestCas
         controller.start(CONTAINER);
         Assert.assertTrue("The patch " + oneOffPatchID1 + " should be listed as installed",
                 CliUtilsForPatching.getInstalledPatches().contains(oneOffPatchID1));
-        Assert.assertTrue("Patch should be accepted", CliUtilsForPatching.applyPatch(oneOffZip2.getAbsolutePath()));
-        Assert.assertTrue("server should be in restart-required mode",
-                CliUtilsForPatching.doesServerRequireRestart());
-        controller.stop(CONTAINER);
-
-        controller.start(CONTAINER);
-        Assert.assertTrue("The patch " + oneOffPatchID2 + " should be listed as installed",
-                CliUtilsForPatching.getInstalledPatches().contains(oneOffPatchID2));
 
         // apply cumulative patch
         Assert.assertTrue("Patch should be accepted", CliUtilsForPatching.applyPatch(cpZip.getAbsolutePath()));
@@ -252,26 +241,45 @@ public class CumulativePatchingScenariosTestCase extends AbstractPatchingTestCas
                 CliUtilsForPatching.getCumulativePatchId().equalsIgnoreCase(cpPatchID));
         Assert.assertFalse("The patch " + oneOffPatchID1 + " should NOT be listed as installed",
                 CliUtilsForPatching.getInstalledPatches().contains(oneOffPatchID1));
+
+        // apply one-off
+        Assert.assertTrue("Patch should be accepted", CliUtilsForPatching.applyPatch(oneOffZip2.getAbsolutePath()));
+        Assert.assertTrue("server should be in restart-required mode",
+                CliUtilsForPatching.doesServerRequireRestart());
+        controller.stop(CONTAINER);
+
+        controller.start(CONTAINER);
+        Assert.assertTrue("The patch " + oneOffPatchID2 + " should be listed as installed",
+                CliUtilsForPatching.getInstalledPatches().contains(oneOffPatchID2));
+
+        // apply second cumulative patch
+        File cpZip2 = createSecondCumulativePatch(cpPatchID2, eapWithCP, cpPatchID, "EAP with second CP");
+        Assert.assertTrue("Patch should be accepted", CliUtilsForPatching.applyPatch(cpZip2.getAbsolutePath()));
+        Assert.assertTrue("server should be in restart-required mode",
+                CliUtilsForPatching.doesServerRequireRestart());
+        controller.stop(CONTAINER);
+
+        controller.start(CONTAINER);
+        Assert.assertTrue("The patch " + cpPatchID2 + " should be listed as installed",
+                CliUtilsForPatching.getCumulativePatchId().equalsIgnoreCase(cpPatchID2));
         Assert.assertFalse("The patch " + oneOffPatchID2 + " should NOT be listed as installed",
                 CliUtilsForPatching.getInstalledPatches().contains(oneOffPatchID2));
 
-        // rollback cumulative patch
+        // rollback second cumulative patch
         Assert.assertTrue("Rollback should be accepted", CliUtilsForPatching.rollbackCumulativePatch(true));
         Assert.assertTrue("server should be in restart-required mode",
                 CliUtilsForPatching.doesServerRequireRestart());
         controller.stop(CONTAINER);
 
         controller.start(CONTAINER);
-        Assert.assertFalse("The patch " + cpPatchID + " should NOT be listed as installed",
+        Assert.assertFalse("The patch " + cpPatchID2 + " should NOT be listed as installed",
+                CliUtilsForPatching.getCumulativePatchId().equalsIgnoreCase(cpPatchID2));
+        Assert.assertTrue("The cumulative patch id should be " + cpPatchID,
                 CliUtilsForPatching.getCumulativePatchId().equalsIgnoreCase(cpPatchID));
-        Assert.assertTrue("The cumulative patch id should be " + BASE,
-                CliUtilsForPatching.getCumulativePatchId().equalsIgnoreCase(BASE));
-        Assert.assertTrue("The patch " + oneOffPatchID1 + " should be listed as installed",
-                CliUtilsForPatching.getInstalledPatches().contains(oneOffPatchID1));
         Assert.assertTrue("The patch " + oneOffPatchID2 + " should be listed as installed",
                 CliUtilsForPatching.getInstalledPatches().contains(oneOffPatchID2));
 
-        //rollback oneoffs
+        //rollback oneoff
         Assert.assertTrue("Rollback should be accepted", CliUtilsForPatching.rollbackPatch(oneOffPatchID2));
         Assert.assertTrue("server should be in restart-required mode",
                 CliUtilsForPatching.doesServerRequireRestart());
@@ -280,6 +288,22 @@ public class CumulativePatchingScenariosTestCase extends AbstractPatchingTestCas
         controller.start(CONTAINER);
         Assert.assertFalse("The patch " + oneOffPatchID2 + " should NOT be listed as installed",
                 CliUtilsForPatching.getInstalledPatches().contains(oneOffPatchID2));
+
+        // rollback first cumulative patch
+        Assert.assertTrue("Rollback should be accepted", CliUtilsForPatching.rollbackCumulativePatch(true));
+        Assert.assertTrue("server should be in restart-required mode",
+                CliUtilsForPatching.doesServerRequireRestart());
+        controller.stop(CONTAINER);
+
+        controller.start(CONTAINER);
+        Assert.assertFalse("The patch " + cpPatchID + " should NOT be listed as installed",
+                CliUtilsForPatching.getCumulativePatchId().equalsIgnoreCase(cpPatchID));
+        Assert.assertTrue("The cumulative patch id should be " + Constants.BASE,
+                CliUtilsForPatching.getCumulativePatchId().equalsIgnoreCase(Constants.BASE));
+        Assert.assertTrue("The patch " + oneOffPatchID1 + " should be listed as installed",
+                CliUtilsForPatching.getInstalledPatches().contains(oneOffPatchID1));
+
+        // rollback one-off
         Assert.assertTrue("Rollback should be accepted", CliUtilsForPatching.rollbackPatch(oneOffPatchID1));
         Assert.assertTrue("server should be in restart-required mode",
                 CliUtilsForPatching.doesServerRequireRestart());
@@ -364,7 +388,7 @@ public class CumulativePatchingScenariosTestCase extends AbstractPatchingTestCas
 
         // apply cumulative patch
         controller.start(CONTAINER);
-        Assert.assertTrue("Patch should be accepted", CliUtilsForPatching.applyPatch(cpZip.getAbsolutePath()));
+        Assert.assertTrue("Patch should be accepted ", CliUtilsForPatching.applyPatch(cpZip.getAbsolutePath()));
         Assert.assertTrue("server should be in restart-required mode",
                 CliUtilsForPatching.doesServerRequireRestart());
         controller.stop(CONTAINER);

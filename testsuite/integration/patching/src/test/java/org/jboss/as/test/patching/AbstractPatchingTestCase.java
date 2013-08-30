@@ -13,9 +13,9 @@ import java.io.IOException;
 import static org.jboss.as.patching.IoUtils.mkdir;
 import static org.jboss.as.test.patching.PatchingTestUtil.BASE_MODULE_DIRECTORY;
 import static org.jboss.as.test.patching.PatchingTestUtil.CONTAINER;
+import static org.jboss.as.test.patching.PatchingTestUtil.DO_CLEANUP;
 import static org.jboss.as.test.patching.PatchingTestUtil.MODULES_PATH;
 import static org.jboss.as.test.patching.PatchingTestUtil.assertPatchElements;
-import static org.jboss.as.test.patching.PatchingTestUtil.doCleanup;
 import static org.jboss.as.test.patching.PatchingTestUtil.randomString;
 
 /**
@@ -39,12 +39,16 @@ public class AbstractPatchingTestCase {
             controller.stop(CONTAINER);
 
         // clean up created temporary files and directories
-        if(doCleanup) {
+        if(DO_CLEANUP) {
             if (IoUtils.recursiveDelete(tempDir)) {
                 tempDir.deleteOnExit();
             }
         }
 
+        rollbackAllPatches();
+    }
+
+    protected void rollbackAllPatches() throws Exception {
         // rollback all installed patches
         final boolean success = CliUtilsForPatching.rollbackAll();
         boolean ok = false;

@@ -56,4 +56,18 @@ public interface PatchManagementMessages {
     @Message(id = 16943, value = "failed to load identity info")
     String failedToLoadIdentity();
 
+    @Message(id = 16944, value = "No more patches")
+    String noMorePatches();
+
+    @Message(id = 16945, value = "No patch history %s")
+    String noPatchHistory(String path);
+
+    @Message(id = 16946, value = "Patch is missing file %s")
+    String patchIsMissingFile(String path);
+
+    @Message(id = 16947, value = "File is not readable %s")
+    String fileIsNotReadable(String path);
+
+    @Message(id = 16948, value = "Layer not found %s")
+    String layerNotFound(String name);
 }

@@ -27,15 +27,19 @@ import static org.jboss.as.patching.generator.PatchGenerator.processingError;
 import java.io.File;
 import java.io.FileFilter;
 import java.io.IOException;
+import java.lang.reflect.Constructor;
+import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.LinkedHashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 
 import org.jboss.as.patching.installation.LayersConfig;
-import org.jboss.as.version.ProductConfig;
 import org.jboss.modules.LocalModuleLoader;
+import org.jboss.modules.Module;
+import org.jboss.modules.ModuleIdentifier;
 import org.jboss.modules.ModuleLoader;
 
 /**
@@ -73,9 +77,22 @@ class DistributionProcessor {
 
         // Update name and version
         final ModuleLoader loader = new LocalModuleLoader(mp.toArray(new File[mp.size()]));
-        final ProductConfig config = new ProductConfig(loader, distributionRoot.getAbsolutePath(), Collections.emptyMap());
-        distribution.setName(config.resolveName());
-        distribution.setVersion(config.resolveVersion());
+        try {
+            Module module = loader.loadModule(ModuleIdentifier.create("org.jboss.as.version"));
+
+            final Class<?> clazz = module.getClassLoader().loadClass("org.jboss.as.version.ProductConfig");
+            final Method resolveName = clazz.getMethod("resolveName");
+            final Method resolveVersion  = clazz.getMethod("resolveVersion");
+            final Constructor<?> constructor = clazz.getConstructor(ModuleLoader.class, String.class, Map.class);
+
+            final Object productConfig = constructor.newInstance(loader, distributionRoot.getAbsolutePath(), Collections.emptyMap());
+
+            distribution.setName((String) resolveName.invoke(productConfig));
+            distribution.setVersion((String) resolveVersion.invoke(productConfig));
+
+        } catch (Exception e) {
+            throw new IOException(e);
+        }
     }
 
     /**

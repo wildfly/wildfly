@@ -37,6 +37,10 @@ public class Module {
         return name;
     }
 
+    public String getSlot() {
+        return slot;
+    }
+
     public String generateXml() {
         StringBuilder stringBuilder = new StringBuilder("<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n");
         String rootElementTemplate = "<module xmlns=\"%s\" name=\"%s\" slot=\"%s\">\n";

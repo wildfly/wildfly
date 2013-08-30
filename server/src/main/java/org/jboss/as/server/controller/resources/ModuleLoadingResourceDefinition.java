@@ -211,7 +211,7 @@ public class ModuleLoadingResourceDefinition extends SimpleResourceDefinition {
         // TODO get a formal API from jboss-modules to replace this reflection
 
         List<String> result = new ArrayList<String>();
-        Module module = Module.getModuleFromCallerModuleLoader(ModuleIdentifier.create(moduleName));
+        Module module = Module.getModuleFromCallerModuleLoader(ModuleIdentifier.fromString(moduleName));
         ModuleClassLoader mcl = module.getClassLoader();
         Field pathsField = ModuleClassLoader.class.getDeclaredField("paths");
         Field sourceListField = null;
