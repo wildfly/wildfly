@@ -14,8 +14,6 @@ import org.jboss.arquillian.junit.Arquillian;
 import org.jboss.as.test.clustering.EJBClientContextSelector;
 import org.jboss.as.test.clustering.EJBDirectory;
 import org.jboss.as.test.clustering.RemoteEJBDirectory;
-import org.jboss.as.test.clustering.ViewChangeListener;
-import org.jboss.as.test.clustering.ViewChangeListenerBean;
 import org.jboss.as.test.clustering.cluster.ClusterAbstractTestCase;
 import org.jboss.as.test.clustering.cluster.provider.bean.ServiceProviderRetriever;
 import org.jboss.as.test.clustering.cluster.provider.bean.ServiceProviderRetrieverBean;
@@ -54,8 +52,7 @@ public class ServiceProviderRegistrationTestCase extends ClusterAbstractTestCase
     private static Archive<?> createDeployment() {
         final JavaArchive ejbJar = ShrinkWrap.create(JavaArchive.class, MODULE_NAME + ".jar");
         ejbJar.addPackage(ServiceProviderRetriever.class.getPackage());
-        ejbJar.addClasses(ViewChangeListener.class, ViewChangeListenerBean.class);
-        ejbJar.setManifest(new StringAsset("Manifest-Version: 1.0\nDependencies: org.wildfly.clustering.api, org.jboss.msc, org.jboss.as.clustering.common, org.infinispan\n"));
+        ejbJar.setManifest(new StringAsset("Manifest-Version: 1.0\nDependencies: org.wildfly.clustering.api, org.jboss.msc\n"));
         log.info(ejbJar.toString(true));
         return ejbJar;
     }
@@ -81,10 +78,6 @@ public class ServiceProviderRegistrationTestCase extends ClusterAbstractTestCase
         ContextSelector<EJBClientContext> selector = EJBClientContextSelector.setup(CLIENT_PROPERTIES);
 
         try {
-            ViewChangeListener view = context.lookupStateless(ViewChangeListenerBean.class, ViewChangeListener.class);
-            
-            view.establishView(cluster, NODE_1, NODE_2);
-            
             ServiceProviderRetriever bean = context.lookupStateless(ServiceProviderRetrieverBean.class, ServiceProviderRetriever.class);
             Collection<String> names = bean.getProviders();
             assertEquals(2, names.size());
@@ -93,15 +86,11 @@ public class ServiceProviderRegistrationTestCase extends ClusterAbstractTestCase
             
             undeploy(DEPLOYMENT_1);
             
-            view.establishView(cluster, NODE_2);
-            
             names = bean.getProviders();
             assertEquals(1, names.size());
             assertTrue(names.contains(nodeName2));
             
             deploy(DEPLOYMENT_1);
-            
-            view.establishView(cluster, NODE_1, NODE_2);
             
             names = bean.getProviders();
             assertEquals(2, names.size());
@@ -110,15 +99,11 @@ public class ServiceProviderRegistrationTestCase extends ClusterAbstractTestCase
             
             stop(CONTAINER_2);
             
-            view.establishView(cluster, NODE_1);
-            
             names = bean.getProviders();
             assertEquals(1, names.size());
             assertTrue(names.contains(nodeName1));
             
             start(CONTAINER_2);
-            
-            view.establishView(cluster, NODE_1, NODE_2);
             
             names = bean.getProviders();
             assertEquals(2, names.size());

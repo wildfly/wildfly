@@ -18,15 +18,13 @@ import org.wildfly.clustering.provider.ServiceProviderRegistrationFactory;
 @Startup
 @Local(ServiceProviderRegistration.class)
 public class ServiceProviderRegistrationBean implements ServiceProviderRegistration, ServiceProviderRegistration.Listener {
-    private static final ServiceName SERVICE_NAME = ServiceName.JBOSS.append("test", "providers");
-
     @Resource(lookup = "java:jboss/clustering/providers/server/default")
     private ServiceProviderRegistrationFactory factory;
     private ServiceProviderRegistration registration;
 
     @PostConstruct
     public void init() {
-        this.registration = this.factory.createRegistration(SERVICE_NAME, this);
+        this.registration = this.factory.createRegistration("ServiceProviderRegistrationTestCase", this);
     }
 
     @PreDestroy

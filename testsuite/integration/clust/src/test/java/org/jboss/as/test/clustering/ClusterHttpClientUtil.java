@@ -46,16 +46,6 @@ import org.junit.Assert;
  */
 public final class ClusterHttpClientUtil {
 
-    public static void establishView(final HttpClient client, final URL baseURL, final String cluster, final String... members) throws URISyntaxException, IOException {
-        URI uri = ViewChangeListenerServlet.createURI(baseURL, cluster, members);
-        HttpResponse response = client.execute(new HttpGet(uri));
-        try {
-            Assert.assertEquals(HttpServletResponse.SC_OK, response.getStatusLine().getStatusCode());
-        } finally {
-            HttpClientUtils.closeQuietly(response);
-        }
-    }
-
     /**
      * Tries a get on the provided client with default GRACE_TIME_TO_MEMBERSHIP_CHANGE.
      *

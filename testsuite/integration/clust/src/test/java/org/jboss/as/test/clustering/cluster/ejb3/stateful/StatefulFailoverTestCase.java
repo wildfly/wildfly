@@ -44,9 +44,6 @@ import org.jboss.as.test.clustering.AbstractEJBDirectory;
 import org.jboss.as.test.clustering.ClusterHttpClientUtil;
 import org.jboss.as.test.clustering.EJBDirectory;
 import org.jboss.as.test.clustering.LocalEJBDirectory;
-import org.jboss.as.test.clustering.ViewChangeListener;
-import org.jboss.as.test.clustering.ViewChangeListenerBean;
-import org.jboss.as.test.clustering.ViewChangeListenerServlet;
 import org.jboss.as.test.clustering.cluster.ClusterAbstractTestCase;
 import org.jboss.as.test.clustering.cluster.ejb3.stateful.bean.CounterDecorator;
 import org.jboss.as.test.clustering.cluster.ejb3.stateful.bean.StatefulBean;
@@ -88,8 +85,6 @@ public class StatefulFailoverTestCase extends ClusterAbstractTestCase {
                 "<interceptors><class>" + StatefulCDIInterceptor.class.getName() + "</class></interceptors>" +
                 "<decorators><class>" + CounterDecorator.class.getName() + "</class></decorators>" +
                 "</beans>"), "beans.xml");
-        war.addClasses(ViewChangeListener.class, ViewChangeListenerBean.class, ViewChangeListenerServlet.class);
-        war.setManifest(new StringAsset("Manifest-Version: 1.0\nDependencies: org.jboss.msc, org.jboss.as.clustering.common, org.infinispan\n"));
         log.info(war.toString(true));
         return war;
     }
@@ -111,14 +106,10 @@ public class StatefulFailoverTestCase extends ClusterAbstractTestCase {
         log.info("URLs are: " + url1 + ", " + url2);
 
         try {
-            this.establishView(client, baseURL1, NODE_1);
-
             assertEquals(20010101, this.queryCount(client, url1));
             assertEquals(20020202, this.queryCount(client, url1));
 
             start(CONTAINER_2);
-
-            this.establishView(client, baseURL1, NODE_1, NODE_2);
 
             assertEquals(20030303, this.queryCount(client, url1));
             assertEquals(20040404, this.queryCount(client, url1));
@@ -128,14 +119,10 @@ public class StatefulFailoverTestCase extends ClusterAbstractTestCase {
 
             stop(CONTAINER_2);
 
-            this.establishView(client, baseURL1, NODE_1);
-
             assertEquals(20070707, this.queryCount(client, url1));
             assertEquals(20080808, this.queryCount(client, url1));
 
             start(CONTAINER_2);
-
-            this.establishView(client, baseURL1, NODE_1, NODE_2);
 
             assertEquals(20090909, this.queryCount(client, url1));
             assertEquals(20101010, this.queryCount(client, url1));
@@ -145,15 +132,11 @@ public class StatefulFailoverTestCase extends ClusterAbstractTestCase {
 
             stop(CONTAINER_1);
 
-            this.establishView(client, baseURL2, NODE_2);
-
             assertEquals(20131313, this.queryCount(client, url2));
             assertEquals(20141414, this.queryCount(client, url2));
 
 
             start(CONTAINER_1);
-
-            this.establishView(client, baseURL2, NODE_1, NODE_2);
 
             assertEquals(20151515, this.queryCount(client, url1));
             assertEquals(20161616, this.queryCount(client, url1));
@@ -179,14 +162,10 @@ public class StatefulFailoverTestCase extends ClusterAbstractTestCase {
         String url2 = baseURL2.toString() + "count";
 
         try {
-            this.establishView(client, baseURL1, NODE_1);
-
             assertEquals(20010101, this.queryCount(client, url1));
             assertEquals(20020202, this.queryCount(client, url1));
 
             start(CONTAINER_2);
-
-            this.establishView(client, baseURL1, NODE_1, NODE_2);
 
             assertEquals(20030303, this.queryCount(client, url1));
             assertEquals(20040404, this.queryCount(client, url1));
@@ -196,14 +175,10 @@ public class StatefulFailoverTestCase extends ClusterAbstractTestCase {
 
             undeploy(DEPLOYMENT_2);
 
-            this.establishView(client, baseURL1, NODE_1);
-
             assertEquals(20070707, this.queryCount(client, url1));
             assertEquals(20080808, this.queryCount(client, url1));
 
             deploy(DEPLOYMENT_2);
-
-            this.establishView(client, baseURL1, NODE_1, NODE_2);
 
             assertEquals(20090909, this.queryCount(client, url1));
             assertEquals(20101010, this.queryCount(client, url1));
@@ -213,14 +188,10 @@ public class StatefulFailoverTestCase extends ClusterAbstractTestCase {
 
             undeploy(DEPLOYMENT_1);
 
-            this.establishView(client, baseURL2, NODE_2);
-
             assertEquals(20131313, this.queryCount(client, url2));
             assertEquals(20141414, this.queryCount(client, url2));
 
             deploy(DEPLOYMENT_1);
-
-            this.establishView(client, baseURL2, NODE_1, NODE_2);
 
             assertEquals(20151515, this.queryCount(client, url1));
             assertEquals(20161616, this.queryCount(client, url1));
@@ -240,10 +211,5 @@ public class StatefulFailoverTestCase extends ClusterAbstractTestCase {
         } finally {
             HttpClientUtils.closeQuietly(response);
         }
-    }
-
-    private void establishView(HttpClient client, URL baseURL, String... members) throws URISyntaxException, IOException {
-        ClusterHttpClientUtil.establishView(client, baseURL, "web", members);
-        ClusterHttpClientUtil.establishView(client, baseURL, "ejb", members);
     }
 }

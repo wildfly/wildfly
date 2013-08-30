@@ -28,9 +28,6 @@ import org.jboss.arquillian.container.test.api.TargetsContainer;
 import org.jboss.arquillian.junit.Arquillian;
 import org.jboss.arquillian.junit.InSequence;
 import org.jboss.as.test.clustering.NodeNameGetter;
-import org.jboss.as.test.clustering.ViewChangeListener;
-import org.jboss.as.test.clustering.ViewChangeListenerBean;
-import org.jboss.as.test.clustering.ViewChangeListenerHome;
 import org.jboss.as.test.clustering.extended.ejb2.stateful.remote.failover.CounterBaseBean;
 import org.jboss.as.test.clustering.extended.ejb2.stateful.remote.failover.CounterRemote;
 import org.jboss.as.test.clustering.extended.ejb2.stateful.remote.failover.CounterRemoteHome;
@@ -81,10 +78,9 @@ public class RemoteEJB2ClientStatefulBeanFailoverDDTestCase extends RemoteEJBCli
         final JavaArchive jar = ShrinkWrap.create(JavaArchive.class, ARCHIVE_NAME + ".jar");
         jar.addClasses(CounterBaseBean.class, CounterBeanDD.class, CounterRemote.class, CounterRemoteHome.class, CounterResult.class);
         jar.addClass(NodeNameGetter.class);
-        jar.addClasses(ViewChangeListener.class, ViewChangeListenerBean.class, ViewChangeListenerHome.class);
         jar.addAsManifestResource(RemoteEJB2ClientStatefulBeanFailoverDDTestCase.class.getPackage(), "ejb-jar.xml", "ejb-jar.xml");
         jar.addAsManifestResource(RemoteEJB2ClientStatefulBeanFailoverDDTestCase.class.getPackage(), "jboss-ejb3.xml", "jboss-ejb3.xml");
-        jar.addAsManifestResource(new StringAsset("Dependencies: deployment." + ARCHIVE_NAME_SINGLE + ".jar, org.wildfly.clustering.singleton, org.jboss.as.server, org.jboss.msc, org.jboss.as.clustering.common, org.infinispan\n"), "MANIFEST.MF");
+        jar.addAsManifestResource(new StringAsset("Dependencies: deployment." + ARCHIVE_NAME_SINGLE + ".jar\n"), "MANIFEST.MF");
         log.info(jar.toString(true));
         return jar;
     }

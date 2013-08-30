@@ -21,15 +21,13 @@ import org.wildfly.clustering.group.Node;
 @Startup
 @Local(CommandDispatcher.class)
 public class CommandDispatcherBean implements CommandDispatcher<Node> {
-    private static final ServiceName SERVICE_NAME = ServiceName.JBOSS.append("test", "dispatcher");
-
     @EJB
     private CommandDispatcherFactory factory;
     private CommandDispatcher<Node> dispatcher;
 
     @PostConstruct
     public void init() {
-        this.dispatcher = this.factory.createCommandDispatcher(SERVICE_NAME, this.factory.getGroup().getLocalNode());
+        this.dispatcher = this.factory.createCommandDispatcher("CommandDispatcherTestCase", this.factory.getGroup().getLocalNode());
     }
 
     @PreDestroy
