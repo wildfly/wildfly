@@ -45,9 +45,6 @@ import org.jboss.as.test.clustering.AbstractEJBDirectory;
 import org.jboss.as.test.clustering.ClusterHttpClientUtil;
 import org.jboss.as.test.clustering.EJBDirectory;
 import org.jboss.as.test.clustering.LocalEJBDirectory;
-import org.jboss.as.test.clustering.ViewChangeListener;
-import org.jboss.as.test.clustering.ViewChangeListenerBean;
-import org.jboss.as.test.clustering.ViewChangeListenerServlet;
 import org.jboss.as.test.clustering.cluster.ClusterAbstractTestCase;
 import org.jboss.as.test.clustering.cluster.ejb3.xpc.bean.StatefulBean;
 import org.jboss.as.test.http.util.HttpClientUtils;
@@ -102,8 +99,6 @@ public class StatefulWithXPCFailoverTestCase extends ClusterAbstractTestCase {
         war.addClasses(EJBDirectory.class, AbstractEJBDirectory.class, LocalEJBDirectory.class);
         war.setWebXML(StatefulBean.class.getPackage(), "web.xml");
         war.addAsResource(new StringAsset(persistence_xml), "META-INF/persistence.xml");
-        war.addClasses(ViewChangeListener.class, ViewChangeListenerBean.class, ViewChangeListenerServlet.class);
-        war.setManifest(new StringAsset("Manifest-Version: 1.0\nDependencies: org.jboss.msc, org.jboss.as.clustering.common, org.infinispan\n"));
         log.info(war.toString(true));
         return war;
     }
@@ -147,8 +142,6 @@ public class StatefulWithXPCFailoverTestCase extends ClusterAbstractTestCase {
         String xpc2_secondLevelCacheEntries_url = baseURL2 + "count?command=getEmployeesInSecondLevelCache";
 
         try {
-            this.establishView(client, baseURL1, NODE_1, NODE_2);
-
             assertExecuteUrl(client, xpc1_echo_url + "StartingTestSecondLevelCache");  // echo message to server.log
             assertExecuteUrl(client, xpc2_echo_url + "StartingTestSecondLevelCache"); // echo message to server.log
 
@@ -218,8 +211,6 @@ public class StatefulWithXPCFailoverTestCase extends ClusterAbstractTestCase {
         try {
             stop(CONTAINER_2);
 
-            this.establishView(client, baseURL1, NODE_1);
-
             // extended persistence context is available on node1
 
             log.info(new Date() + "create employee entity ");
@@ -235,8 +226,6 @@ public class StatefulWithXPCFailoverTestCase extends ClusterAbstractTestCase {
 
             start(CONTAINER_2);
 
-            this.establishView(client, baseURL1, NODE_1, NODE_2);
-
             log.info(new Date() + "2. started node2 + deployed, about to read entity on node1");
 
             employeeName = executeUrlWithAnswer(client, xpc2_get_url, "2. started node2, xpc on node1, node1 should be able to read entity on node1");
@@ -246,8 +235,6 @@ public class StatefulWithXPCFailoverTestCase extends ClusterAbstractTestCase {
 
             // failover to deployment2
             stop(CONTAINER_1); // failover #1 to node 2
-
-            this.establishView(client, baseURL2, NODE_2);
 
             log.info(new Date() + "3. stopped node1 to force failover, about to read entity on node2");
 
@@ -284,9 +271,5 @@ public class StatefulWithXPCFailoverTestCase extends ClusterAbstractTestCase {
         } finally {
             org.apache.http.client.utils.HttpClientUtils.closeQuietly(response);
         }
-    }
-
-    private void establishView(HttpClient client, URL baseURL, String... members) throws URISyntaxException, IOException {
-        ClusterHttpClientUtil.establishView(client, baseURL, "ejb", members);
     }
 }

@@ -5,8 +5,6 @@ import javax.naming.NamingException;
 import org.jboss.as.test.clustering.EJBClientContextSelector;
 import org.jboss.as.test.clustering.EJBDirectory;
 import org.jboss.as.test.clustering.RemoteEJBDirectory;
-import org.jboss.as.test.clustering.ViewChangeListener;
-import org.jboss.as.test.clustering.ViewChangeListenerBean;
 import org.jboss.as.test.clustering.cluster.ClusterAbstractTestCase;
 import org.jboss.ejb.client.ContextSelector;
 import org.jboss.ejb.client.EJBClientContext;
@@ -86,10 +84,6 @@ public abstract class RemoteEJBClientStatefulFailoverTestBase extends ClusterAbs
         final ContextSelector<EJBClientContext> previousSelector = EJBClientContextSelector.setup(PROPERTIES_FILE);
 
         try {
-            ViewChangeListener listener = directory.lookupStateless(ViewChangeListenerBean.class, ViewChangeListener.class);
-
-            this.establishView(listener, NODE_1, NODE_2);
-
             CounterRemoteHome home = directory.lookupHome(CounterBean.class, CounterRemoteHome.class);
             CounterRemote remoteCounter = home.create();
             Assert.assertNotNull(remoteCounter);
@@ -119,8 +113,6 @@ public abstract class RemoteEJBClientStatefulFailoverTestBase extends ClusterAbs
                 } else {
                     stop(CONTAINER_1);
                 }
-
-                this.establishView(listener, NODE_2);
             } else {
                 if (undeployOnly) {
                     deployer.undeploy(DEPLOYMENT_2);
@@ -128,8 +120,6 @@ public abstract class RemoteEJBClientStatefulFailoverTestBase extends ClusterAbs
                 } else {
                     stop(CONTAINER_2);
                 }
-
-                this.establishView(listener, NODE_1);
             }
             // invoke again
             CounterResult resultAfterShuttingDownANode = remoteCounter.increment();
@@ -163,9 +153,5 @@ public abstract class RemoteEJBClientStatefulFailoverTestBase extends ClusterAbs
                 EJBClientContext.setSelector(previousSelector);
             }
         }
-    }
-
-    private void establishView(ViewChangeListener listener, String... members) throws InterruptedException {
-        listener.establishView("ejb", members);
     }
 }

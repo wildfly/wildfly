@@ -78,8 +78,6 @@ public abstract class ClusteredWebFailoverAbstractCase extends ClusterAbstractTe
         String url2 = baseURL2.toString() + "simple";
 
         try {
-            establishView(client, baseURL1, NODE_1, NODE_2);
-
             HttpResponse response = client.execute(new HttpGet(url1));
             try {
                 log.info("Requested " + url1 + ", got " + response.getFirstHeader("value").getValue() + ".");
@@ -101,8 +99,6 @@ public abstract class ClusteredWebFailoverAbstractCase extends ClusterAbstractTe
 
             // Gracefully shutdown the 1st container.
             stop(CONTAINER_1);
-
-            establishView(client, baseURL2, NODE_2);
 
             // Now check on the 2nd server
 
@@ -130,8 +126,6 @@ public abstract class ClusteredWebFailoverAbstractCase extends ClusterAbstractTe
 
             start(CONTAINER_1);
 
-            establishView(client, baseURL2, NODE_1, NODE_2);
-
             // Lets wait for the cluster to update membership and tranfer state.
 
             response = client.execute(new HttpGet(url1));
@@ -155,8 +149,6 @@ public abstract class ClusteredWebFailoverAbstractCase extends ClusterAbstractTe
         } finally {
             HttpClientUtils.closeQuietly(client);
         }
-
-        // Assert.fail("Show me the logs please!");
     }
 
     /**
@@ -185,8 +177,6 @@ public abstract class ClusteredWebFailoverAbstractCase extends ClusterAbstractTe
         String url2 = baseURL2.toString() + "simple";
 
         try {
-            establishView(client, baseURL1, NODE_1, NODE_2);
-
             HttpResponse response = client.execute(new HttpGet(url1));
             try {
                 log.info("Requested " + url1 + ", got " + response.getFirstHeader("value").getValue() + ".");
@@ -208,8 +198,6 @@ public abstract class ClusteredWebFailoverAbstractCase extends ClusterAbstractTe
 
             // Gracefully undeploy from the 1st container.
             undeploy(DEPLOYMENT_1);
-
-            establishView(client, baseURL2, NODE_2);
 
             // Now check on the 2nd server
 
@@ -237,8 +225,6 @@ public abstract class ClusteredWebFailoverAbstractCase extends ClusterAbstractTe
             // Redeploy
             deploy(DEPLOYMENT_1);
 
-            establishView(client, baseURL2, NODE_1, NODE_2);
-
             response = client.execute(new HttpGet(url1));
             try {
                 log.info("Requested " + url1 + ", got " + response.getFirstHeader("value").getValue() + ".");
@@ -260,12 +246,5 @@ public abstract class ClusteredWebFailoverAbstractCase extends ClusterAbstractTe
         } finally {
             HttpClientUtils.closeQuietly(client);
         }
-
-        // Assert.fail("Show me the logs please!");
     }
-
-    private static void establishView(HttpClient client, URL baseURL, String... members) throws URISyntaxException, IOException {
-        ClusterHttpClientUtil.establishView(client, baseURL, "web", members);
-    }
-
 }

@@ -14,8 +14,6 @@ import org.jboss.arquillian.junit.Arquillian;
 import org.jboss.as.test.clustering.EJBClientContextSelector;
 import org.jboss.as.test.clustering.EJBDirectory;
 import org.jboss.as.test.clustering.RemoteEJBDirectory;
-import org.jboss.as.test.clustering.ViewChangeListener;
-import org.jboss.as.test.clustering.ViewChangeListenerBean;
 import org.jboss.as.test.clustering.cluster.ClusterAbstractTestCase;
 import org.jboss.as.test.clustering.cluster.registry.bean.RegistryRetriever;
 import org.jboss.as.test.clustering.cluster.registry.bean.RegistryRetrieverBean;
@@ -54,8 +52,7 @@ public class RegistryTestCase extends ClusterAbstractTestCase {
     private static Archive<?> createDeployment() {
         final JavaArchive jar = ShrinkWrap.create(JavaArchive.class, MODULE_NAME + ".jar");
         jar.addPackage(RegistryRetriever.class.getPackage());
-        jar.addClasses(ViewChangeListener.class, ViewChangeListenerBean.class);
-        jar.setManifest(new StringAsset("Manifest-Version: 1.0\nDependencies: org.wildfly.clustering.api, org.jboss.msc, org.jboss.as.clustering.common, org.infinispan, org.jboss.as.server\n"));
+        jar.setManifest(new StringAsset("Manifest-Version: 1.0\nDependencies: org.wildfly.clustering.api\n"));
         log.info(jar.toString(true));
         return jar;
     }
@@ -78,10 +75,6 @@ public class RegistryTestCase extends ClusterAbstractTestCase {
         ContextSelector<EJBClientContext> selector = EJBClientContextSelector.setup(CLIENT_PROPERTIES);
 
         try {
-            ViewChangeListener view = context.lookupStateless(ViewChangeListenerBean.class, ViewChangeListener.class);
-            
-            view.establishView(cluster, NODE_1, NODE_2);
-            
             RegistryRetriever bean = context.lookupStateless(RegistryRetrieverBean.class, RegistryRetriever.class);
             Collection<String> names = bean.getNodes();
             assertEquals(2, names.size());
@@ -90,15 +83,11 @@ public class RegistryTestCase extends ClusterAbstractTestCase {
             
             undeploy(DEPLOYMENT_1);
             
-            view.establishView(cluster, NODE_2);
-            
             names = bean.getNodes();
             assertEquals(1, names.size());
             assertTrue(names.contains(NODE_2));
             
             deploy(DEPLOYMENT_1);
-            
-            view.establishView(cluster, NODE_1, NODE_2);
             
             names = bean.getNodes();
             assertEquals(2, names.size());
@@ -107,15 +96,11 @@ public class RegistryTestCase extends ClusterAbstractTestCase {
             
             stop(CONTAINER_2);
             
-            view.establishView(cluster, NODE_1);
-            
             names = bean.getNodes();
             assertEquals(1, names.size());
             assertTrue(names.contains(NODE_1));
             
             start(CONTAINER_2);
-            
-            view.establishView(cluster, NODE_1, NODE_2);
             
             names = bean.getNodes();
             assertEquals(2, names.size());

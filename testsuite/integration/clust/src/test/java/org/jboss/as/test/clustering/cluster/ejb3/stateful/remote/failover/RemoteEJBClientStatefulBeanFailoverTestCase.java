@@ -33,8 +33,6 @@ import org.jboss.as.test.clustering.EJBClientContextSelector;
 import org.jboss.as.test.clustering.EJBDirectory;
 import org.jboss.as.test.clustering.NodeNameGetter;
 import org.jboss.as.test.clustering.RemoteEJBDirectory;
-import org.jboss.as.test.clustering.ViewChangeListener;
-import org.jboss.as.test.clustering.ViewChangeListenerBean;
 import org.jboss.as.test.clustering.cluster.ClusterAbstractTestCase;
 import org.jboss.ejb.client.ContextSelector;
 import org.jboss.ejb.client.EJBClientContext;
@@ -90,12 +88,10 @@ public class RemoteEJBClientStatefulBeanFailoverTestCase extends ClusterAbstract
         ejbJar.addClasses(CDIDecorator.class, ClientSFSBRemote.class, DestructionCounterSingleton.class,
                 NodeNameRetriever.class, CDIManagedBean.class, CounterBean.class, DecoratorInterface.class,
                 NodeNameSFSB.class, ClientSFSB.class, CounterResult.class, DestructionCounterRemote.class,
-                RemoteCounter.class, ViewChangeListener.class, ViewChangeListenerBean.class, NodeNameGetter.class);
-        ejbJar.addClass(NodeNameGetter.class);
+                RemoteCounter.class, NodeNameGetter.class);
         ejbJar.addAsManifestResource(new StringAsset("<beans>" +
                 "<decorators><class>" + CDIDecorator.class.getName() + "</class></decorators>" +
                 "</beans>"), "beans.xml");
-        ejbJar.setManifest(new StringAsset("Manifest-Version: 1.0\nDependencies: org.jboss.msc, org.jboss.as.clustering.common, org.infinispan\n"));
         return ejbJar;
     }
 
@@ -143,10 +139,6 @@ public class RemoteEJBClientStatefulBeanFailoverTestCase extends ClusterAbstract
         boolean container1Stopped = false;
         boolean container2Stopped = false;
         try {
-            final ViewChangeListener listener = context.lookupStateless(ViewChangeListenerBean.class, ViewChangeListener.class);
-
-            this.establishView(listener, NODE_1, NODE_2);
-
             final RemoteCounter remoteCounter = context.lookupStateful(CounterBean.class, RemoteCounter.class);
             final DestructionCounterRemote destructionCounter = context.lookupSingleton(DestructionCounterSingleton.class, DestructionCounterRemote.class);
             // invoke on the bean a few times
@@ -171,16 +163,12 @@ public class RemoteEJBClientStatefulBeanFailoverTestCase extends ClusterAbstract
                     stop(CONTAINER_1);
                 }
                 container1Stopped = true;
-
-                this.establishView(listener, NODE_2);
             } else {
                 undeploy(DEPLOYMENT_2);
                 if (!undeployOnly) {
                     stop(CONTAINER_2);
                 }
                 container2Stopped = true;
-
-                this.establishView(listener, NODE_1);
             }
 
             // invoke again
@@ -240,9 +228,5 @@ public class RemoteEJBClientStatefulBeanFailoverTestCase extends ClusterAbstract
                 }
             }
         }
-    }
-
-    private void establishView(ViewChangeListener listener, String... members) throws InterruptedException {
-        listener.establishView("ejb", members);
     }
 }
