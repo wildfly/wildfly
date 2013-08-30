@@ -10,6 +10,7 @@
             <property name="allowConnectingToRunningServer">true</property>
             <property name="managementAddress">${node0:127.0.0.1}</property>
             <property name="managementPort">${as.managementPort:9990}</property>
+            <property name="adminOnly">true</property>
 
             <!-- get modules from the patching/target directory, not from ../../../build/target -->
             <property name="modulePath">${basedir}/target/jbossas/modules</property>
@@ -18,6 +19,7 @@
             <!-- AS7-4070 -->
             <property name="waitForPorts">${as.debug.port:8787} ${as.managementPort:9990}</property>
             <property name="waitForPortsTimeoutInSeconds">8</property>
+
         </configuration>
     </container>
 
