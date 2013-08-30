@@ -27,7 +27,11 @@ import org.jboss.as.server.deployment.DeploymentPhaseContext;
 import org.jboss.as.server.deployment.DeploymentUnit;
 import org.jboss.as.server.deployment.DeploymentUnitProcessingException;
 import org.jboss.as.server.deployment.DeploymentUnitProcessor;
+import org.jboss.marshalling.reflect.SerializableClassRegistry;
+import org.jboss.modules.Module;
 
+import java.security.AccessController;
+import java.security.PrivilegedAction;
 import java.util.List;
 
 /**
@@ -37,6 +41,16 @@ import java.util.List;
  * @author <a href="mailto:ropalka@redhat.com">Richard Opalka</a>
  */
 public final class ModuleDependencyProcessor implements DeploymentUnitProcessor {
+
+    private static final SerializableClassRegistry REGISTRY;
+
+    static {
+        REGISTRY = AccessController.doPrivileged(new PrivilegedAction<SerializableClassRegistry>() {
+            public SerializableClassRegistry run() {
+                return SerializableClassRegistry.getInstance();
+            }
+        });
+    }
 
     /**
      * Process the deployment root for module dependency information.
@@ -58,16 +72,9 @@ public final class ModuleDependencyProcessor implements DeploymentUnitProcessor 
     }
 
     public void undeploy(final DeploymentUnit context) {
-    }
-
-    private boolean containsParam(final String[] parts, final String expected) {
-        if (parts.length > 1) {
-            for (int i = 1; i < parts.length; i++) {
-                if (expected.equals(parts[i])) {
-                    return true;
-                }
-            }
+        final Module module = context.getAttachment(Attachments.MODULE);
+        if (module != null) {
+            REGISTRY.release(module.getClassLoader());
         }
-        return false;
     }
 }
