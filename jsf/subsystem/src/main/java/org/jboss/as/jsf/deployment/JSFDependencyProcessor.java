@@ -72,9 +72,6 @@ public class JSFDependencyProcessor implements DeploymentUnitProcessor {
         //TODO: we should do that same check that is done in com.sun.faces.config.FacesInitializer
         //and only add the dependency if JSF is actually needed
 
-        final ModuleSpecification moduleSpecification = deploymentUnit.getAttachment(Attachments.MODULE_SPECIFICATION);
-        final ModuleLoader moduleLoader = Module.getBootModuleLoader();
-
         String defaultJsfVersion = JSFModuleIdFactory.getInstance().getDefaultSlot();
         String jsfVersion = JsfVersionMarker.getVersion(topLevelDeployment);
         if (!moduleIdFactory.isValidJSFSlot(jsfVersion)) {
@@ -86,8 +83,17 @@ public class JSFDependencyProcessor implements DeploymentUnitProcessor {
             throw JSFMessages.MESSAGES.invalidDefaultJSFImpl(defaultJsfVersion);
         }
 
+        final ModuleSpecification moduleSpecification = deploymentUnit.getAttachment(Attachments.MODULE_SPECIFICATION);
+        final ModuleLoader moduleLoader = Module.getBootModuleLoader();
+
         addJSFAPI(jsfVersion, moduleSpecification, moduleLoader);
-        addJSFImpl(jsfVersion, moduleSpecification, moduleLoader, topLevelDeployment);
+        addJSFImpl(jsfVersion, moduleSpecification, moduleLoader);
+
+        if (deploymentUnit != topLevelDeployment) { // add JSF to top level deployment
+            final ModuleSpecification topLevelModuleSpecification = topLevelDeployment.getAttachment(Attachments.MODULE_SPECIFICATION);
+            addJSFAPI(jsfVersion, topLevelModuleSpecification, moduleLoader);
+            addJSFImpl(jsfVersion, topLevelModuleSpecification, moduleLoader);
+        }
 
         moduleSpecification.addSystemDependency(new ModuleDependency(moduleLoader, JSTL, false, false, false, false));
         moduleSpecification.addSystemDependency(new ModuleDependency(moduleLoader, BEAN_VALIDATION, false, false, true, false));
@@ -122,8 +128,7 @@ public class JSFDependencyProcessor implements DeploymentUnitProcessor {
 
     private void addJSFImpl(String jsfVersion,
             ModuleSpecification moduleSpecification,
-            ModuleLoader moduleLoader,
-            DeploymentUnit topLevelDeployment) {
+            ModuleLoader moduleLoader) {
         if (jsfVersion.equals(JsfVersionMarker.WAR_BUNDLES_JSF_IMPL)) return;
 
         ModuleIdentifier jsfModule = moduleIdFactory.getImplModId(jsfVersion);
