@@ -44,7 +44,7 @@ public class DefaultManagedExecutorServiceTestCase {
     @Deployment
     public static WebArchive getDeployment() {
         return ShrinkWrap.create(WebArchive.class, DefaultManagedExecutorServiceTestCase.class.getSimpleName() + ".war")
-                .addClasses(DefaultManagedExecutorServiceTestCase.class, DefaultManagedExecutorServiceTestEJB.class, TestRunnable.class);
+                .addClasses(DefaultManagedExecutorServiceTestCase.class, DefaultManagedExecutorServiceTestEJB.class, TestEJBRunnable.class);
     }
 
     @Test
@@ -54,7 +54,7 @@ public class DefaultManagedExecutorServiceTestCase {
         client.login();
         try {
             final DefaultManagedExecutorServiceTestEJB testEJB = (DefaultManagedExecutorServiceTestEJB) new InitialContext().lookup("java:module/" + DefaultManagedExecutorServiceTestEJB.class.getSimpleName());
-            testEJB.submit(new TestRunnable()).get();
+            testEJB.submit(new TestEJBRunnable()).get();
         } finally {
             client.logout();
         }

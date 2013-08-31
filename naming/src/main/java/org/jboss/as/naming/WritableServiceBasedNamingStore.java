@@ -157,4 +157,8 @@ public class WritableServiceBasedNamingStore extends ServiceBasedNamingStore imp
         WRITE_OWNER.pop();
     }
 
+    public static ServiceName currentOwner() {
+        return WRITE_OWNER.peek();
+    }
+
 }

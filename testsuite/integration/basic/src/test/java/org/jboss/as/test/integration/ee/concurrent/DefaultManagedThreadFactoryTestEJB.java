@@ -57,7 +57,7 @@ public class DefaultManagedThreadFactoryTestEJB {
      * @param task
      * @throws Exception
      */
-    public void run(final TestRunnable task) throws Exception {
+    public void run(final TestEJBRunnable task) throws Exception {
         final Principal principal = ejbContext.getCallerPrincipal();
         logger.debugf("Principal: %s", principal);
         task.setExpectedPrincipal(principal);

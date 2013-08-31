@@ -1,6 +1,6 @@
 /*
  * JBoss, Home of Professional Open Source.
- * Copyright 2013, Red Hat, Inc., and individual contributors
+ * Copyright (c) 2013, Red Hat, Inc., and individual contributors
  * as indicated by the @author tags. See the copyright.txt file in the
  * distribution for a full listing of individual contributors.
  *
@@ -19,45 +19,48 @@
  * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
-
 package org.jboss.as.test.integration.ee.concurrent;
 
 import org.jboss.arquillian.container.test.api.Deployment;
+import org.jboss.arquillian.container.test.api.RunAsClient;
 import org.jboss.arquillian.junit.Arquillian;
+import org.jboss.arquillian.test.api.ArquillianResource;
+import org.jboss.as.test.integration.common.HttpRequest;
+import org.jboss.as.test.integration.web.injection.SimpleStatelessSessionBean;
 import org.jboss.security.client.SecurityClient;
 import org.jboss.security.client.SecurityClientFactory;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.spec.WebArchive;
+import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
 import javax.naming.InitialContext;
+import java.net.URL;
+
+import static java.util.concurrent.TimeUnit.SECONDS;
+import static org.junit.Assert.assertEquals;
 
 /**
- * Test for EE's default managed thread factory
- *
  * @author Eduardo Martins
  */
 @RunWith(Arquillian.class)
-public class DefaultManagedThreadFactoryTestCase {
+@RunAsClient
+public class DefaultContextServiceServletTestCase {
+
+    @ArquillianResource
+    private URL url;
 
     @Deployment
-    public static WebArchive getDeployment() {
-        return ShrinkWrap.create(WebArchive.class, DefaultManagedThreadFactoryTestCase.class.getSimpleName() + ".war")
-                .addClasses(DefaultManagedThreadFactoryTestCase.class, DefaultManagedThreadFactoryTestEJB.class, TestEJBRunnable.class);
+    public static WebArchive deployment() {
+        WebArchive war = ShrinkWrap.create(WebArchive.class, "war-example.war");
+        war.addClasses(HttpRequest.class, DefaultContextServiceTestServlet.class, TestServletRunnable.class);
+        return war;
     }
 
     @Test
-    public void testTaskSubmit() throws Exception {
-        SecurityClient client = SecurityClientFactory.getSecurityClient();
-        client.setSimple("guest", "guest");
-        client.login();
-        try {
-            final DefaultManagedThreadFactoryTestEJB testEJB = (DefaultManagedThreadFactoryTestEJB) new InitialContext().lookup("java:module/" + DefaultManagedThreadFactoryTestEJB.class.getSimpleName());
-            testEJB.run(new TestEJBRunnable());
-        } finally {
-            client.logout();
-        }
-
+    public void testServlet() throws Exception {
+        HttpRequest.get(url.toExternalForm() + "simple", 10, SECONDS);
     }
+
 }

@@ -1,6 +1,6 @@
 /*
  * JBoss, Home of Professional Open Source.
- * Copyright 2013, Red Hat, Inc., and individual contributors
+ * Copyright (c) 2013, Red Hat, Inc., and individual contributors
  * as indicated by the @author tags. See the copyright.txt file in the
  * distribution for a full listing of individual contributors.
  *
@@ -19,54 +19,48 @@
  * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
-
 package org.jboss.as.test.integration.ee.concurrent;
 
-import org.jboss.logging.Logger;
-
 import javax.annotation.Resource;
-import javax.annotation.security.RolesAllowed;
-import javax.ejb.EJBContext;
-import javax.ejb.LocalBean;
-import javax.ejb.Stateless;
-import javax.ejb.TransactionManagement;
-import javax.ejb.TransactionManagementType;
 import javax.enterprise.concurrent.ContextService;
+import javax.naming.InitialContext;
 import javax.naming.NamingException;
+import javax.servlet.ServletException;
+import javax.servlet.annotation.WebServlet;
+import javax.servlet.http.HttpServlet;
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
+import java.io.IOException;
 import java.security.Principal;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
-import java.util.concurrent.Future;
 
 /**
  * @author Eduardo Martins
  */
-@Stateless
-@TransactionManagement(TransactionManagementType.BEAN)
-@LocalBean
-@RolesAllowed("guest")
-public class DefaultContextServiceTestEJB {
-
-    private static final Logger logger = Logger.getLogger(DefaultContextServiceTestEJB.class);
+@WebServlet(name = "SimpleServlet", urlPatterns = { "/simple" })
+public class DefaultContextServiceTestServlet extends HttpServlet {
 
     @Resource
     private ContextService contextService;
 
-    @Resource
-    private EJBContext ejbContext;
-
-    /**
-     * @param task
-     * @return
-     * @throws javax.naming.NamingException
-     */
-    public Future<?> submit(TestEJBRunnable task) throws NamingException {
-        final Principal principal = ejbContext.getCallerPrincipal();
-        logger.debugf("Principal: %s", principal);
-        task.setExpectedPrincipal(principal);
+    @Override
+    protected void doGet(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
+        req.login("guest","guest");
+        Principal principal = req.getUserPrincipal();
+        String moduleName = null;
+        try {
+            moduleName = (String) new InitialContext().lookup("java:module/ModuleName");
+        } catch (NamingException e) {
+            throw new ServletException(e);
+        }
+        final Runnable runnable = new TestServletRunnable(moduleName);
+        final Runnable contextualProxy = contextService.createContextualProxy(runnable,Runnable.class);
         final ExecutorService executorService = Executors.newSingleThreadExecutor();
         try {
-            return executorService.submit(contextService.createContextualProxy(task,Runnable.class));
+            executorService.submit(contextualProxy).get();
+        } catch (Throwable e) {
+            throw new ServletException(e);
         } finally {
             executorService.shutdown();
         }

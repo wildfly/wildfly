@@ -22,24 +22,18 @@
 
 package org.jboss.as.test.integration.ee.concurrent;
 
-import javax.ejb.EJBContext;
-import javax.ejb.SessionContext;
 import javax.naming.InitialContext;
 import javax.naming.NamingException;
-import javax.transaction.NotSupportedException;
-import javax.transaction.SystemException;
-import javax.transaction.UserTransaction;
-import java.security.Principal;
 
 /**
  * @author Eduardo Martins
  */
-public class TestRunnable implements Runnable {
+public class TestServletRunnable implements Runnable {
 
-    private Principal expectedPrincipal;
+    private final String moduleName;
 
-    public void setExpectedPrincipal(Principal expectedPrincipal) {
-        this.expectedPrincipal = expectedPrincipal;
+    public TestServletRunnable(String moduleName) {
+        this.moduleName = moduleName;
     }
 
     @Override
@@ -57,30 +51,14 @@ public class TestRunnable implements Runnable {
         } catch (NamingException e) {
             throw new RuntimeException(e);
         }
-        final EJBContext ejbContext;
+        String moduleNameOnJNDI = null;
         try {
-            ejbContext = (SessionContext) initialContext.lookup("java:comp/EJBContext");
+            moduleNameOnJNDI = (String) initialContext.lookup("java:module/ModuleName");
         } catch (NamingException e) {
             throw new RuntimeException(e);
         }
-        // asserts correct security context is set
-        final Principal callerPrincipal = ejbContext.getCallerPrincipal();
-        if (expectedPrincipal != null) {
-            if (!expectedPrincipal.equals(callerPrincipal)) {
-                throw new IllegalStateException("the caller principal " + callerPrincipal + " is not the expected " + expectedPrincipal);
-            }
-        } else {
-            if (callerPrincipal != null) {
-                throw new IllegalStateException("the caller principal " + callerPrincipal + " is not the expected " + expectedPrincipal);
-            }
-        }
-        // assert tx context is set
-        try {
-            final UserTransaction userTransaction = (UserTransaction) initialContext.lookup("java:comp/UserTransaction");
-            userTransaction.begin();
-            userTransaction.rollback();
-        } catch (NamingException | SystemException | NotSupportedException e) {
-            throw new RuntimeException(e);
+        if(!moduleName.equals(moduleNameOnJNDI)) {
+            throw new IllegalStateException("the module name " + moduleNameOnJNDI + " is not the expected " + moduleName);
         }
     }
 }
