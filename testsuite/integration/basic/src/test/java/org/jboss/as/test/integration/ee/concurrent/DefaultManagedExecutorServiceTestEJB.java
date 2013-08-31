@@ -48,7 +48,8 @@ public class DefaultManagedExecutorServiceTestEJB {
     private static final Logger logger = Logger.getLogger(DefaultManagedExecutorServiceTestEJB.class);
 
     // keep the lookup, it's part of the test. It is not needed for injection of the default managed executor service, but the jndi name used when lookup is missing is the original one in java:jboss/ee/concurrent
-    @Resource(lookup = "java:comp/DefaultManagedExecutorService")
+    //@Resource(lookup = "java:comp/DefaultManagedExecutorService")
+    @Resource
     private ManagedExecutorService executorService;
 
     @Resource
@@ -59,7 +60,7 @@ public class DefaultManagedExecutorServiceTestEJB {
      * @return
      * @throws NamingException
      */
-    public Future<?> submit(TestRunnable task) throws NamingException {
+    public Future<?> submit(TestEJBRunnable task) throws NamingException {
         final Principal principal = ejbContext.getCallerPrincipal();
         logger.debugf("Principal: %s", principal);
         task.setExpectedPrincipal(principal);

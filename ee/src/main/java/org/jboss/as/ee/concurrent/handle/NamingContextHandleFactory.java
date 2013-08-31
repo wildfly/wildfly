@@ -35,35 +35,37 @@ import java.util.Map;
  */
 public class NamingContextHandleFactory extends ChainedContextHandleFactory {
 
-    /**
-     * @param namespaceContextSelector
-     * @param duServiceName
-     */
-    public NamingContextHandleFactory(NamespaceContextSelector namespaceContextSelector, ServiceName duServiceName) {
+    public static final NamingContextHandleFactory INSTANCE = new NamingContextHandleFactory();
+
+    private NamingContextHandleFactory() {
         super(Type.NAMING_CHAINED);
-        add(new NamespaceContextSelectorContextHandleFactory(namespaceContextSelector));
-        add(new DeploymentUnitServiceNameContextHandleFactory(duServiceName));
+        add(NamespaceContextSelectorContextHandleFactory.INSTANCE);
+        add(DeploymentUnitServiceNameContextHandleFactory.INSTANCE);
     }
 
     private static class NamespaceContextSelectorContextHandleFactory implements ContextHandleFactory {
 
-        private final NamespaceContextSelector namespaceContextSelector;
+        public static final NamespaceContextSelectorContextHandleFactory INSTANCE = new NamespaceContextSelectorContextHandleFactory();
 
-        private NamespaceContextSelectorContextHandleFactory(NamespaceContextSelector namespaceContextSelector) {
-            this.namespaceContextSelector = namespaceContextSelector;
+        private NamespaceContextSelectorContextHandleFactory() {
         }
 
         @Override
         public ContextHandle saveContext(ContextService contextService, Map<String, String> contextObjectProperties) {
+            final NamespaceContextSelector namespaceContextSelector = NamespaceContextSelector.getCurrentSelector();
             return new ContextHandle() {
                 @Override
                 public void setup() throws IllegalStateException {
-                    NamespaceContextSelector.pushCurrentSelector(namespaceContextSelector);
+                    if(namespaceContextSelector != null) {
+                        NamespaceContextSelector.pushCurrentSelector(namespaceContextSelector);
+                    }
                 }
 
                 @Override
                 public void reset() {
-                    NamespaceContextSelector.popCurrentSelector();
+                    if(namespaceContextSelector != null) {
+                        NamespaceContextSelector.popCurrentSelector();
+                    }
                 }
             };
         }
@@ -76,23 +78,27 @@ public class NamingContextHandleFactory extends ChainedContextHandleFactory {
 
     private static class DeploymentUnitServiceNameContextHandleFactory implements ContextHandleFactory {
 
-        private final ServiceName duServiceName;
+        public static final DeploymentUnitServiceNameContextHandleFactory INSTANCE = new DeploymentUnitServiceNameContextHandleFactory();
 
-        private DeploymentUnitServiceNameContextHandleFactory(ServiceName duServiceName) {
-            this.duServiceName = duServiceName;
+        private DeploymentUnitServiceNameContextHandleFactory() {
         }
 
         @Override
         public ContextHandle saveContext(ContextService contextService, Map<String, String> contextObjectProperties) {
+            final ServiceName duServiceName = WritableServiceBasedNamingStore.currentOwner();
             return new ContextHandle() {
                 @Override
                 public void setup() throws IllegalStateException {
-                    WritableServiceBasedNamingStore.pushOwner(duServiceName);
+                    if(duServiceName != null) {
+                        WritableServiceBasedNamingStore.pushOwner(duServiceName);
+                    }
                 }
 
                 @Override
                 public void reset() {
-                    WritableServiceBasedNamingStore.popOwner();
+                    if(duServiceName != null) {
+                        WritableServiceBasedNamingStore.popOwner();
+                    }
                 }
             };
         }

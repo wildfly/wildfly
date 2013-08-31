@@ -22,7 +22,6 @@
 package org.jboss.as.ee.concurrent.deployers;
 
 import org.jboss.as.ee.component.BindingConfiguration;
-import org.jboss.as.ee.component.ComponentDescription;
 import org.jboss.as.ee.component.ServiceInjectionSource;
 import org.jboss.as.ee.concurrent.service.ConcurrentServiceNames;
 import org.jboss.as.ee.concurrent.service.ManagedThreadFactoryService;
@@ -35,10 +34,6 @@ import java.util.List;
  * @author Eduardo Martins
  */
 public class EEConcurrentDefaultManagedThreadFactoryProcessor extends EEConcurrentAbstractProcessor {
-
-    @Override
-    void installComponentConfigurator(ComponentDescription componentDescription) {
-    }
 
     @Override
     void addBindingsConfigurations(String bindingNamePrefix, List<BindingConfiguration> bindingConfigurations) {

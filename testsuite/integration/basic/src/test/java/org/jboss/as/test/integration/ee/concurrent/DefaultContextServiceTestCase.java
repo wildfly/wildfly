@@ -44,7 +44,7 @@ public class DefaultContextServiceTestCase {
     @Deployment
     public static WebArchive getDeployment() {
         return ShrinkWrap.create(WebArchive.class, DefaultContextServiceTestCase.class.getSimpleName() + ".war")
-                .addClasses(DefaultContextServiceTestCase.class, DefaultContextServiceTestEJB.class, TestRunnable.class);
+                .addClasses(DefaultContextServiceTestCase.class, DefaultContextServiceTestEJB.class, TestEJBRunnable.class);
     }
 
     @Test
@@ -54,7 +54,7 @@ public class DefaultContextServiceTestCase {
         client.login();
         try {
             final DefaultContextServiceTestEJB testEJB = (DefaultContextServiceTestEJB) new InitialContext().lookup("java:module/" + DefaultContextServiceTestEJB.class.getSimpleName());
-            testEJB.submit(new TestRunnable()).get();
+            testEJB.submit(new TestEJBRunnable()).get();
         } finally {
             client.logout();
         }

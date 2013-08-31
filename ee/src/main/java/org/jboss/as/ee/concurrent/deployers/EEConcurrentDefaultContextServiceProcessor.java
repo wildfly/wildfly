@@ -21,6 +21,7 @@
  */
 package org.jboss.as.ee.concurrent.deployers;
 
+import org.jboss.as.ee.component.Attachments;
 import org.jboss.as.ee.component.BindingConfiguration;
 import org.jboss.as.ee.component.ComponentConfiguration;
 import org.jboss.as.ee.component.ComponentConfigurator;
@@ -28,6 +29,7 @@ import org.jboss.as.ee.component.ComponentDescription;
 import org.jboss.as.ee.component.ServiceInjectionSource;
 import org.jboss.as.ee.component.interceptors.InterceptorOrder;
 import org.jboss.as.ee.concurrent.ConcurrentContextInterceptor;
+import org.jboss.as.ee.concurrent.ConcurrentContextSetupAction;
 import org.jboss.as.ee.concurrent.handle.ClassLoaderContextHandleFactory;
 import org.jboss.as.ee.concurrent.handle.ConcurrentContextHandleFactory;
 import org.jboss.as.ee.concurrent.handle.NamingContextHandleFactory;
@@ -35,6 +37,7 @@ import org.jboss.as.ee.concurrent.handle.SecurityContextHandleFactory;
 import org.jboss.as.ee.concurrent.service.ConcurrentServiceNames;
 import org.jboss.as.ee.concurrent.service.ContextServiceService;
 import org.jboss.as.server.deployment.DeploymentPhaseContext;
+import org.jboss.as.server.deployment.DeploymentUnit;
 import org.jboss.as.server.deployment.DeploymentUnitProcessingException;
 import org.jboss.invocation.ImmediateInterceptorFactory;
 import org.jboss.invocation.InterceptorFactory;
@@ -49,7 +52,7 @@ import java.util.List;
 public class EEConcurrentDefaultContextServiceProcessor extends EEConcurrentAbstractProcessor {
 
     @Override
-    void installComponentConfigurator(ComponentDescription componentDescription) {
+    void processComponentDescription(ComponentDescription componentDescription) {
         final ComponentConfigurator componentConfigurator = new ComponentConfigurator() {
             @Override
             public void configure(DeploymentPhaseContext context, ComponentDescription description, final ComponentConfiguration configuration) throws DeploymentUnitProcessingException {
@@ -66,11 +69,21 @@ public class EEConcurrentDefaultContextServiceProcessor extends EEConcurrentAbst
                 // add default context handle factories
                 configuration.getAllChainedContextHandleFactory().add(ClassLoaderContextHandleFactory.INSTANCE);
                 configuration.getAllChainedContextHandleFactory().add(SecurityContextHandleFactory.INSTANCE);
-                configuration.getAllChainedContextHandleFactory().add(new NamingContextHandleFactory(configuration.getNamespaceContextSelector(), context.getDeploymentUnit().getServiceName()));
+                configuration.getAllChainedContextHandleFactory().add(NamingContextHandleFactory.INSTANCE);
                 configuration.getAllChainedContextHandleFactory().add(ConcurrentContextHandleFactory.INSTANCE);
             }
         };
         componentDescription.getConfigurators().add(componentConfigurator);
+    }
+
+    @Override
+    void processWarDeploymentUnit(DeploymentUnit deploymentUnit) {
+        final ConcurrentContextSetupAction setupAction = new ConcurrentContextSetupAction();
+        setupAction.getAllChainedContextHandleFactory().add(ClassLoaderContextHandleFactory.INSTANCE);
+        setupAction.getAllChainedContextHandleFactory().add(SecurityContextHandleFactory.INSTANCE);
+        setupAction.getAllChainedContextHandleFactory().add(NamingContextHandleFactory.INSTANCE);
+        setupAction.getAllChainedContextHandleFactory().add(ConcurrentContextHandleFactory.INSTANCE);
+        deploymentUnit.getAttachmentList(Attachments.WEB_SETUP_ACTIONS).add(setupAction);
     }
 
     @Override

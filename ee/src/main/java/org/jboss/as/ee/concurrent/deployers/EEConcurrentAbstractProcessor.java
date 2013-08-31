@@ -60,11 +60,12 @@ abstract class EEConcurrentAbstractProcessor implements DeploymentUnitProcessor 
                 // skip components without namespace
                 continue;
             }
-            installComponentConfigurator(componentDescription);
+            processComponentDescription(componentDescription);
         }
 
         // add the jndi bindings
         if (DeploymentTypeMarker.isType(DeploymentType.WAR, deploymentUnit)) {
+            processWarDeploymentUnit(deploymentUnit);
             addBindingsConfigurations("java:module/", eeModuleDescription.getBindingConfigurations());
         }
         for (ComponentDescription componentDescription : componentDescriptions) {
@@ -74,7 +75,13 @@ abstract class EEConcurrentAbstractProcessor implements DeploymentUnitProcessor 
         }
     }
 
-    abstract void installComponentConfigurator(ComponentDescription componentDescription);
+    void processComponentDescription(ComponentDescription componentDescription) {
+
+    }
+
+    void processWarDeploymentUnit(DeploymentUnit deploymentUnit) {
+
+    }
 
     abstract void addBindingsConfigurations(String bindingNamePrefix, List<BindingConfiguration> bindingConfigurations);
 

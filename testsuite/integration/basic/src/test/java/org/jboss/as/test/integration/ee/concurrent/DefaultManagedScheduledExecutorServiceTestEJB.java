@@ -62,7 +62,7 @@ public class DefaultManagedScheduledExecutorServiceTestEJB {
      * @return
      * @throws NamingException
      */
-    public Future<?> schedule(TestRunnable task, long delay, TimeUnit timeUnit) throws NamingException {
+    public Future<?> schedule(TestEJBRunnable task, long delay, TimeUnit timeUnit) throws NamingException {
         final Principal principal = ejbContext.getCallerPrincipal();
         logger.debugf("Principal: %s", principal);
         task.setExpectedPrincipal(principal);
