@@ -196,21 +196,21 @@ public class PatchModuleInvalidationTestCase extends AbstractPatchingTest {
 
         final URL[] urls = new URL[] { jar.toURL() };
         final URLClassLoader cl = new URLClassLoader(urls);
-        try {
+//        try {
             Assert.assertNotNull(cl.getResource("testResource"));
             final Class<?> clazz = cl.loadClass("org.jboss.as.patching.tests.TestClass");
             final Constructor<?> constructor = clazz.getConstructor(String.class);
             final Object instance = constructor.newInstance("test");
             Assert.assertNotNull(instance);
-        } finally {
-            IoUtils.safeClose(cl);
-        }
+//        } finally {
+//            IoUtils.safeClose(cl);
+//        }
     }
 
     static void assertNotLoadable(final File jar) throws Exception {
         final URL[] urls = new URL[] { jar.toURL() };
         final URLClassLoader cl = new URLClassLoader(urls, null);
-        try {
+//        try {
             Assert.assertNull(cl.getResource("testResource"));
             try {
                 cl.loadClass("org.jboss.as.patching.tests.TestClass");
@@ -218,9 +218,9 @@ public class PatchModuleInvalidationTestCase extends AbstractPatchingTest {
             } catch (ClassNotFoundException ok) {
                 //
             }
-        } finally {
-            IoUtils.safeClose(cl);
-        }
+//        } finally {
+//            IoUtils.safeClose(cl);
+//        }
 
         ZipFile file = null;
         try {
