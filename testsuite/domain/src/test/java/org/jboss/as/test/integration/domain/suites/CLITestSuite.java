@@ -31,6 +31,7 @@ import org.jboss.as.test.integration.domain.management.cli.BasicOpsTestCase;
 import org.jboss.as.test.integration.domain.management.cli.DataSourceTestCase;
 import org.jboss.as.test.integration.domain.management.cli.DeployAllServerGroupsTestCase;
 import org.jboss.as.test.integration.domain.management.cli.DeploySingleServerGroupTestCase;
+import org.jboss.as.test.integration.domain.management.cli.DomainDeployWithRuntimeNameTestCase;
 import org.jboss.as.test.integration.domain.management.cli.DomainDeploymentOverlayTestCase;
 import org.jboss.as.test.integration.domain.management.cli.JmsTestCase;
 import org.jboss.as.test.integration.domain.management.cli.RolloutPlanTestCase;
@@ -55,7 +56,8 @@ import org.junit.runners.Suite;
     UndeployWildcardDomainTestCase.class,
     JmsTestCase.class,
     DataSourceTestCase.class,
-    RolloutPlanTestCase.class
+    RolloutPlanTestCase.class,
+    DomainDeployWithRuntimeNameTestCase.class
 })
 public class CLITestSuite {
 
