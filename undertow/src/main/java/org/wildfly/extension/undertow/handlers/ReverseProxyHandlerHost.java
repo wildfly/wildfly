@@ -79,7 +79,13 @@ public class ReverseProxyHandlerHost extends PersistentResourceDefinition {
         super.registerOperations(resourceRegistration);
         ReverseProxyHostAdd add = new ReverseProxyHostAdd();
         registerAddOperation(resourceRegistration, add, OperationEntry.Flag.RESTART_RESOURCE_SERVICES);
-        registerRemoveOperation(resourceRegistration, new ServiceRemoveStepHandler(UndertowService.HANDLER, add), OperationEntry.Flag.RESTART_RESOURCE_SERVICES);
+        registerRemoveOperation(resourceRegistration, new ServiceRemoveStepHandler(SERVICE_NAME, add) {
+            @Override
+            protected ServiceName serviceName(String name, final PathAddress address) {
+                final String proxyName = address.getElement(address.size() - 2).getValue();
+                return SERVICE_NAME.append(proxyName).append(name);
+            }
+        }, OperationEntry.Flag.RESTART_RESOURCE_SERVICES);
 
     }
 
@@ -93,7 +99,7 @@ public class ReverseProxyHandlerHost extends PersistentResourceDefinition {
             final String proxyName = address.getElement(address.size() - 2).getValue();
 
             ReverseProxyHostService service = new ReverseProxyHostService(name);
-            ServiceBuilder<ReverseProxyHostService> builder = context.getServiceTarget().addService(SERVICE_NAME.append(name), service)
+            ServiceBuilder<ReverseProxyHostService> builder = context.getServiceTarget().addService(SERVICE_NAME.append(proxyName).append(name), service)
                     .addDependency(UndertowService.HANDLER.append(proxyName), ProxyHandler.class, service.proxyHandler);
             if (verificationHandler != null) {
                 builder.addListener(verificationHandler);

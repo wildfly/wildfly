@@ -22,18 +22,20 @@
 
 package org.wildfly.extension.undertow;
 
+import org.jboss.as.controller.AttributeDefinition;
+import org.jboss.as.controller.PathAddress;
+import org.jboss.as.controller.PersistentResourceDefinition;
+import org.jboss.as.controller.ServiceRemoveStepHandler;
+import org.jboss.as.controller.SimpleAttributeDefinitionBuilder;
+import org.jboss.as.controller.operations.validation.StringLengthValidator;
+import org.jboss.dmr.ModelType;
+import org.jboss.msc.service.ServiceName;
+import org.wildfly.extension.undertow.filters.FilterRefDefinition;
+
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
-
-import org.jboss.as.controller.AttributeDefinition;
-import org.jboss.as.controller.PersistentResourceDefinition;
-import org.jboss.as.controller.ReloadRequiredRemoveStepHandler;
-import org.jboss.as.controller.SimpleAttributeDefinitionBuilder;
-import org.jboss.as.controller.operations.validation.StringLengthValidator;
-import org.wildfly.extension.undertow.filters.FilterRefDefinition;
-import org.jboss.dmr.ModelType;
 
 /**
  * @author <a href="mailto:tomaz.cerar@redhat.com">Tomaz Cerar</a> (c) 2013 Red Hat Inc.
@@ -51,7 +53,17 @@ class LocationDefinition extends PersistentResourceDefinition {
         super(UndertowExtension.PATH_LOCATION,
                 UndertowExtension.getResolver(Constants.HOST, Constants.LOCATION),
                 LocationAdd.INSTANCE,
-                ReloadRequiredRemoveStepHandler.INSTANCE
+                new ServiceRemoveStepHandler(LocationAdd.INSTANCE) {
+
+                    @Override
+                    protected ServiceName serviceName(String name, PathAddress address) {
+                        final PathAddress hostAddress = address.subAddress(0, address.size() - 1);
+                        final PathAddress serverAddress = hostAddress.subAddress(0, hostAddress.size() - 1);
+                        final String serverName = serverAddress.getLastElement().getValue();
+                        final String hostName = hostAddress.getLastElement().getValue();
+                        return UndertowService.locationServiceName(serverName, hostName, name);
+                    }
+                }
         );
     }
 
