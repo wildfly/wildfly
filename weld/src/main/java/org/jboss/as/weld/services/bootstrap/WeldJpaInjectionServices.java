@@ -43,12 +43,10 @@ import org.jboss.weld.injection.spi.JpaInjectionServices;
 
 public class WeldJpaInjectionServices implements JpaInjectionServices {
 
-    private final DeploymentUnit deploymentUnit;
-    private final ServiceRegistry serviceRegistry;
+    private DeploymentUnit deploymentUnit;
 
-    public WeldJpaInjectionServices(DeploymentUnit deploymentUnit, ServiceRegistry serviceRegistry) {
+    public WeldJpaInjectionServices(DeploymentUnit deploymentUnit) {
         this.deploymentUnit = deploymentUnit;
-        this.serviceRegistry = serviceRegistry;
     }
 
     @Override
@@ -61,7 +59,7 @@ public class WeldJpaInjectionServices implements JpaInjectionServices {
         final String scopedPuName = getScopedPUName(deploymentUnit, context.unitName());
         final ServiceName persistenceUnitServiceName = PersistenceUnitServiceImpl.getPUServiceName(scopedPuName);
 
-        final ServiceController<?> serviceController = serviceRegistry.getRequiredService(persistenceUnitServiceName);
+        final ServiceController<?> serviceController = deploymentUnit.getServiceRegistry().getRequiredService(persistenceUnitServiceName);
         //now we have the service controller, as this method is only called at runtime the service should
         //always be up
         PersistenceUnitServiceImpl persistenceUnitService = (PersistenceUnitServiceImpl) serviceController.getValue();
@@ -78,7 +76,7 @@ public class WeldJpaInjectionServices implements JpaInjectionServices {
         final String scopedPuName = getScopedPUName(deploymentUnit, context.unitName());
         final ServiceName persistenceUnitServiceName = PersistenceUnitServiceImpl.getPUServiceName(scopedPuName);
 
-        final ServiceController<?> serviceController = serviceRegistry.getRequiredService(persistenceUnitServiceName);
+        final ServiceController<?> serviceController = deploymentUnit.getServiceRegistry().getRequiredService(persistenceUnitServiceName);
         //now we have the service controller, as this method is only called at runtime the service should
         //always be up
         PersistenceUnitServiceImpl persistenceUnitService = (PersistenceUnitServiceImpl) serviceController.getValue();
@@ -87,6 +85,7 @@ public class WeldJpaInjectionServices implements JpaInjectionServices {
 
     @Override
     public void cleanup() {
+        deploymentUnit = null;
     }
 
     private String getScopedPUName(final DeploymentUnit deploymentUnit, final String persistenceUnitName) {

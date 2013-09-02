@@ -113,7 +113,7 @@ public class BeanArchiveProcessor implements DeploymentUnitProcessor {
         }
         processEEComponents(deploymentUnit, bdaMap, rootBda, indexes, reflectionIndex);
 
-        final JpaInjectionServices jpaInjectionServices = new WeldJpaInjectionServices(deploymentUnit, deploymentUnit.getServiceRegistry());
+        final JpaInjectionServices jpaInjectionServices = new WeldJpaInjectionServices(deploymentUnit);
 
         final BeanDeploymentModule bdm = new BeanDeploymentModule(beanDeploymentArchives);
         bdm.addService(JpaInjectionServices.class, jpaInjectionServices);
