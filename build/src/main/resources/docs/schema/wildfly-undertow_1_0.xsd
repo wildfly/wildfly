@@ -46,7 +46,7 @@
             <xs:element name="servlet-container" type="servletContainerType" minOccurs="0" maxOccurs="1"/>
             <xs:element name="error-pages" type="errorPagesType" minOccurs="0" maxOccurs="1"/>
             <xs:element name="handlers" type="handlerType" minOccurs="0" maxOccurs="1"/>
-            <xs:element name="filters" type="servletContainerType" minOccurs="0" maxOccurs="1"/>
+            <xs:element name="filters" type="filterType" minOccurs="0" maxOccurs="1"/>
         </xs:sequence>
         <xs:attribute name="default-server" type="xs:string" default="default-server"/>
         <xs:attribute name="default-virtual-host" type="xs:string" default="default-host"/>
@@ -162,6 +162,14 @@
         </xs:sequence>
     </xs:complexType>
 
+
+    <xs:complexType name="filterType">
+        <xs:sequence>
+            <xs:element name="basic-auth" type="basic-authType" minOccurs="0" maxOccurs="unbounded"/>
+            <xs:element name="connection-limit" type="connection-limitType" minOccurs="0" maxOccurs="unbounded"/>
+        </xs:sequence>
+    </xs:complexType>
+
     <xs:complexType name="errorPagesType">
         <xs:sequence>
             <xs:element name="error-page" type="errorPageType" minOccurs="0" maxOccurs="unbounded"/>
@@ -236,4 +244,13 @@
         <xs:attribute name="max-regions" use="required" type="xs:string"/>
     </xs:complexType>
 
+    <xs:complexType name="basic-authType">
+        <xs:attribute name="name" use="required" type="xs:string"/>
+        <xs:attribute name="security-domain" use="required" type="xs:string"/>
+
+    </xs:complexType>
+    <xs:complexType name="connection-limitType">
+        <xs:attribute name="name" use="required" type="xs:string"/>
+        <xs:attribute name="max-concurrent-requests" use="required" type="xs:integer"/>
+    </xs:complexType>
 </xs:schema>
