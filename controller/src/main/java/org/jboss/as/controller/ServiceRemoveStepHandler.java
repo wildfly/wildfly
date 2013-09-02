@@ -34,10 +34,20 @@ public class ServiceRemoveStepHandler extends AbstractRemoveStepHandler {
         if (context.isResourceServiceRestartAllowed()) {
             final PathAddress address = PathAddress.pathAddress(operation.require(OP_ADDR));
             final String name = address.getLastElement().getValue();
-            context.removeService(serviceName(name));
+            context.removeService(serviceName(name, address));
         } else {
             context.reloadRequired();
         }
+    }
+
+    /**
+     * The service name to be removed. Can be overridden for unusual service naming patterns
+     * @param name The name of the resource being removed
+     * @param address The address of the resource being removed
+     * @return The service name to remove
+     */
+    protected ServiceName serviceName(String name, PathAddress address) {
+        return serviceName(name);
     }
 
     /**
