@@ -26,7 +26,9 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.REMOVE;
 import static org.jboss.as.messaging.CommonAttributes.POOLED_CONNECTION_FACTORY;
 import static org.jboss.as.messaging.MessagingDescriptions.getDescriptionOnlyOperation;
+import static org.jboss.as.messaging.jms.ConnectionFactoryAttributes.Common.ENTRIES;
 
+import java.util.List;
 import java.util.Locale;
 
 import org.jboss.as.controller.AbstractRemoveStepHandler;
@@ -35,6 +37,7 @@ import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.descriptions.DescriptionProvider;
 import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
 import org.jboss.as.messaging.MessagingServices;
+import org.jboss.as.naming.deployment.ContextNames;
 import org.jboss.dmr.ModelNode;
 import org.jboss.msc.service.ServiceName;
 
@@ -56,6 +59,8 @@ public class PooledConnectionFactoryRemove extends AbstractRemoveStepHandler imp
         final ServiceName hqServiceName = MessagingServices.getHornetQServiceName(PathAddress.pathAddress(operation.get(ModelDescriptionConstants.OP_ADDR)));
 
         context.removeService(JMSServices.getPooledConnectionFactoryBaseServiceName(hqServiceName).append(name));
+
+        removeJNDIAliases(context, model.require(ENTRIES.getName()).asList());
     }
 
     protected void recoverServices(OperationContext context, ModelNode operation, ModelNode model) {
@@ -65,5 +70,20 @@ public class PooledConnectionFactoryRemove extends AbstractRemoveStepHandler imp
     @Override
     public ModelNode getModelDescription(Locale locale) {
         return getDescriptionOnlyOperation(locale, REMOVE, POOLED_CONNECTION_FACTORY);
+    }
+
+    /**
+     * Remove JNDI alias' binder services.
+     *
+     * The 1st JNDI entry is not removed by this method as it is already handled when removing
+     * the pooled-connection-factory service
+     */
+    private void removeJNDIAliases(OperationContext context, List<ModelNode> entries) {
+        if (entries.size() > 1) {
+            for (int i = 1; i < entries.size() ; i++) {
+                ContextNames.BindInfo aliasBindInfo = ContextNames.bindInfoFor(entries.get(i).asString());
+                context.removeService(aliasBindInfo.getBinderServiceName());
+            }
+        }
     }
 }

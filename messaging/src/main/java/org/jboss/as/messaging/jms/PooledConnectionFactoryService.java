@@ -434,9 +434,12 @@ public class PooledConnectionFactoryService implements Service<Void> {
 
     private void createJNDIAliases(final BindInfo bindInfo, List<String> aliases, ServiceController<ResourceAdapterDeployment> controller) {
         for (final String alias : aliases) {
-            installAliasBinderService(controller.getServiceContainer(),
-                    bindInfo,
-                    alias);
+            // do not install the alias' binder service if it is already registered
+            if (controller.getServiceContainer().getService(ContextNames.bindInfoFor(alias).getBinderServiceName()) == null) {
+                installAliasBinderService(controller.getServiceContainer(),
+                        bindInfo,
+                        alias);
+            }
         }
     }
 
