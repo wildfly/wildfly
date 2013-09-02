@@ -77,11 +77,11 @@ public class BinderServiceUtil {
                     public void transition(ServiceController<? extends ManagedReferenceFactory> controller, ServiceController.Transition transition) {
                         switch (transition) {
                             case STARTING_to_UP: {
-                                ROOT_LOGGER.boundJndiName("ALIAS " + alias);
+                                ROOT_LOGGER.boundJndiName(alias);
                                 break;
                             }
-                            case START_REQUESTED_to_DOWN: {
-                                ROOT_LOGGER.unboundJndiName("ALIAS " + alias);
+                            case STOPPING_to_DOWN: {
+                                ROOT_LOGGER.unboundJndiName(alias);
                                 break;
                             }
                             case REMOVING_to_REMOVED: {
