@@ -59,7 +59,7 @@ public class ReverseProxyHandler extends Handler {
             .build();
 
     public static final AttributeDefinition SESSION_COOKIE_NAMES = new SimpleAttributeDefinitionBuilder(Constants.SESSION_COOKIE_NAMES, ModelType.STRING)
-            .setAllowNull(false)
+            .setAllowNull(true)
             .setAllowExpression(true)
             .setDefaultValue(new ModelNode("JSESSIONID"))
             .build();
