@@ -140,4 +140,9 @@ class JmxManagedAuditLogger implements ManagedAuditLogger {
             Object[] methodParams, Throwable error) {
         logMethodAccess(readOnly, booting, userId, domainUUID, accessMechanism, remoteAddress, methodName, methodSignature, methodParams, error);
     }
+
+    @Override
+    public void bootDone() {
+        auditLogger.bootDone();
+    }
 }

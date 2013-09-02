@@ -169,5 +169,9 @@ public interface AuditLogger {
         @Override
         public void updateHandlerMaxFailureCount(String name, int count) {
         }
+
+        @Override
+        public void bootDone() {
+        }
     };
 }
