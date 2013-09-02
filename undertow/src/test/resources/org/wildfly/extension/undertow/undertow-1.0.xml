@@ -77,6 +77,9 @@
 
     <handlers>
         <file name="welcome-content" path="${jboss.home.dir}/welcome-content" directory-listing="true"/>
+        <reverse-proxy name="reverse-proxy" connections-per-thread="30" >
+            <host name="ajp://localhost:8080"/>
+        </reverse-proxy>
     </handlers>
     <filters>
         <basic-auth name="security-other" security-domain="other"/>

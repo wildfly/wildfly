@@ -158,6 +158,7 @@
     <xs:complexType name="handlerType">
         <xs:sequence>
             <xs:element name="file" type="file-handlerType" minOccurs="0" maxOccurs="unbounded"/>
+            <xs:element name="reverse-proxy" type="reverse-proxy-handlerType" minOccurs="0" maxOccurs="unbounded"/>
         </xs:sequence>
     </xs:complexType>
 
@@ -189,6 +190,22 @@
         <xs:attribute name="cache-buffer-size" use="optional" type="xs:int" default="1024"/>
         <xs:attribute name="cache-buffers" use="optional" type="xs:int" default="1024"/>
         <xs:attribute name="directory-listing" use="optional" type="xs:boolean" default="true"/>
+    </xs:complexType>
+
+    <xs:complexType name="reverse-proxy-handlerType">
+        <xs:sequence>
+            <xs:element name="host" type="reverse-proxy-hostType" minOccurs="0" maxOccurs="unbounded"/>
+        </xs:sequence>
+        <xs:attribute name="name" use="required" type="xs:string"/>
+        <xs:attribute name="connections-per-thread" use="optional" type="xs:integer"/>
+        <xs:attribute name="sticky-session-lifetime" use="optional" type="xs:integer"/>
+        <xs:attribute name="session-cookie-names" use="optional" type="xs:string"/>
+        <xs:attribute name="problem-server-retry" use="optional" type="xs:integer"/>
+        <xs:attribute name="max-request-time" use="optional" type="xs:integer"/>
+    </xs:complexType>
+
+    <xs:complexType name="reverse-proxy-hostType">
+        <xs:attribute name="name" use="required" type="xs:string"/>
     </xs:complexType>
 
     <xs:complexType name="buffer-cachesType">
