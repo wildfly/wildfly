@@ -41,7 +41,8 @@ public class HandlerDefinitions extends PersistentResourceDefinition {
 
     public static final HandlerDefinitions INSTANCE = new HandlerDefinitions();
     private static List<? extends PersistentResourceDefinition> HANDLERS = Collections.unmodifiableList(Arrays.asList(
-            FileHandler.INSTANCE
+            FileHandler.INSTANCE,
+            ReverseProxyHandler.INSTANCE
     ));
 
     private HandlerDefinitions() {

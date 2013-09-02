@@ -46,6 +46,8 @@ import org.wildfly.extension.undertow.filters.FilterDefinitions;
 import org.wildfly.extension.undertow.filters.FilterRefDefinition;
 import org.wildfly.extension.undertow.handlers.FileHandler;
 import org.wildfly.extension.undertow.handlers.HandlerDefinitions;
+import org.wildfly.extension.undertow.handlers.ReverseProxyHandler;
+import org.wildfly.extension.undertow.handlers.ReverseProxyHandlerHost;
 
 /**
  * @author <a href="mailto:tomaz.cerar@redhat.com">Tomaz Cerar</a> (c) 2012 Red Hat Inc.
@@ -86,9 +88,9 @@ public class UndertowSubsystemParser_1_0 implements XMLStreamConstants, XMLEleme
                                                                 builder(FilterRefDefinition.INSTANCE)
                                                         )
                                         ).addChild(
-                                                builder(AccessLogDefinition.INSTANCE)
-                                                        .addAttributes(AccessLogDefinition.PATTERN, AccessLogDefinition.DIRECTORY, AccessLogDefinition.PREFIX, AccessLogDefinition.WORKER, AccessLogDefinition.ROTATE)
-                                        )
+                                        builder(AccessLogDefinition.INSTANCE)
+                                                .addAttributes(AccessLogDefinition.PATTERN, AccessLogDefinition.DIRECTORY, AccessLogDefinition.PREFIX, AccessLogDefinition.WORKER, AccessLogDefinition.ROTATE)
+                                )
 
                         )
                 )
@@ -155,6 +157,17 @@ public class UndertowSubsystemParser_1_0 implements XMLStreamConstants, XMLEleme
                                                         FileHandler.CACHE_BUFFER_SIZE,
                                                         FileHandler.CACHE_BUFFERS,
                                                         FileHandler.DIRECTORY_LISTING)
+                                )
+                                .addChild(
+                                        builder(ReverseProxyHandler.INSTANCE)
+                                                .addAttributes(
+                                                        ReverseProxyHandler.CONNECTIONS_PER_THREAD,
+                                                        ReverseProxyHandler.STICKY_SESSION_LIFETIME,
+                                                        ReverseProxyHandler.SESSION_COOKIE_NAMES,
+                                                        ReverseProxyHandler.PROBLEM_SERVER_RETRY,
+                                                        ReverseProxyHandler.MAX_REQUEST_TIME)
+                                                .addChild(builder(ReverseProxyHandlerHost.INSTANCE)
+                                                        .setXmlElementName(Constants.HOST))
                                 )
 
 

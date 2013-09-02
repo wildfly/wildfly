@@ -125,4 +125,10 @@ public interface Constants {
     String DIRECTORY = "directory";
     String STACK_TRACE_ON_ERROR = "stack-trace-on-error";
     String NONE = "none";
+    String PROBLEM_SERVER_RETRY = "problem-server-retry";
+    String STICKY_SESSION_LIFETIME = "sticky-session-lifetime";
+    String SESSION_COOKIE_NAMES = "session-cookie-names";
+    String CONNECTIONS_PER_THREAD = "connections-per-thread";
+    String REVERSE_PROXY = "reverse-proxy";
+    String MAX_REQUEST_TIME = "max-request-time";
 }
