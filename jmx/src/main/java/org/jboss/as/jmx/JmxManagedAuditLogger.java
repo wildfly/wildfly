@@ -145,4 +145,9 @@ class JmxManagedAuditLogger implements ManagedAuditLogger {
     public void bootDone() {
         auditLogger.bootDone();
     }
+
+    @Override
+    public void bootDone() {
+        auditLogger.bootDone();
+    }
 }
