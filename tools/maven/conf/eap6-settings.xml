@@ -50,8 +50,8 @@ under the License.
    | The path to the local repository maven will use to store artifacts.
    |
    | Default: ~/.m2/repository
-   -->
-  <localRepository>staging-repository</localRepository>
+  <localRepository>/path/to/local/repo</localRepository>
+  -->
 
   <!-- interactiveMode
    | This will determine whether maven prompts you when it needs input. If set to false,
@@ -156,11 +156,11 @@ under the License.
       <url>http://my.repository.com/repo/path</url>
     </mirror>
      -->
-   <mirror> 
-      <id>jboss-staging-repository-group</id> 
+    <mirror> 
+      <id>eap-productization-maven-repository</id> 
       <mirrorOf>*</mirrorOf> 
-      <name>JBoss.org Staging Repository Group</name> 
-      <url>https://repository.jboss.org/nexus/content/groups/staging/</url> 
+      <name>EAP 6 Productization Maven Repository</name> 
+      <url>http://download.lab.bos.redhat.com/brewroot/repos/jb-eap-6-rhel-6-build/latest/maven/</url> 
     </mirror>
   </mirrors>
   
