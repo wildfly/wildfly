@@ -34,6 +34,7 @@ enum Attribute {
     UNKNOWN(null),
     URL("url"),
     ENABLED("enabled"),
+    NAME("name"),
     ;
     private final String name;
 

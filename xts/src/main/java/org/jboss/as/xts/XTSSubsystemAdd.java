@@ -24,6 +24,7 @@ package org.jboss.as.xts;
 
 import static org.jboss.as.xts.XTSSubsystemDefinition.DEFAULT_CONTEXT_PROPAGATION;
 import static org.jboss.as.xts.XTSSubsystemDefinition.ENVIRONMENT_URL;
+import static org.jboss.as.xts.XTSSubsystemDefinition.HOST_NAME;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -133,13 +134,6 @@ class XTSSubsystemAdd extends AbstractBoottimeAddStepHandler {
                     })
     };
 
-    /**
-     * the hsot name used when deploying endpoints for the local host via the endpoint publisher service
-     */
-    //todo default host should be read from web subsystem / service
-    private static final String ENDPOINT_SERVICE_HOST_NAME = "default-host";
-
-
     private XTSSubsystemAdd() {
     }
 
@@ -149,6 +143,7 @@ class XTSSubsystemAdd extends AbstractBoottimeAddStepHandler {
 
     @Override
     protected void populateModel(ModelNode operation, ModelNode model) throws OperationFailedException {
+        HOST_NAME.validateAndSet(operation, model);
         ENVIRONMENT_URL.validateAndSet(operation, model);
         DEFAULT_CONTEXT_PROPAGATION.validateAndSet(operation, model);
     }
@@ -156,6 +151,7 @@ class XTSSubsystemAdd extends AbstractBoottimeAddStepHandler {
 
     @Override
     protected void performBoottime(OperationContext context, ModelNode operation, ModelNode model, ServiceVerificationHandler verificationHandler, List<ServiceController<?>> newControllers) throws OperationFailedException {
+        final String hostName = HOST_NAME.resolveModelAttribute(context, model).asString();
 
         final String coordinatorURL = model.get(CommonAttributes.XTS_ENVIRONMENT).hasDefined(ModelDescriptionConstants.URL) ? model.get(CommonAttributes.XTS_ENVIRONMENT, ModelDescriptionConstants.URL).asString() : null;
         if (coordinatorURL != null && XtsAsLogger.ROOT_LOGGER.isDebugEnabled()) {
@@ -198,8 +194,7 @@ class XTSSubsystemAdd extends AbstractBoottimeAddStepHandler {
             for (EndpointInfo endpointInfo : contextInfo.endpointInfo) {
                 map.put(endpointInfo.URLPattern, endpointInfo.SEIClassname);
             }
-            endpointBuilder = EndpointPublishService.createServiceBuilder(target, contextName, loader,
-                    ENDPOINT_SERVICE_HOST_NAME, map);
+            endpointBuilder = EndpointPublishService.createServiceBuilder(target, contextName, loader, hostName, map);
 
             controllers.add(endpointBuilder.setInitialMode(Mode.ACTIVE)
                     .install());

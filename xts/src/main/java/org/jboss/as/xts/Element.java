@@ -34,6 +34,7 @@ enum Element {
     // must be first
     UNKNOWN(null),
 
+    HOST(CommonAttributes.HOST),
     XTS_ENVIRONMENT(CommonAttributes.XTS_ENVIRONMENT),
     DEFAULT_CONTEXT_PROPAGATION(CommonAttributes.DEFAULT_CONTEXT_PROPAGATION),
     ;

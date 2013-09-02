@@ -34,13 +34,14 @@ enum Namespace {
     // must be first
     UNKNOWN(null),
 
-    XTS_1_0("urn:jboss:domain:xts:1.0")
+    XTS_1_0("urn:jboss:domain:xts:1.0"),
+    XTS_2_0("urn:jboss:domain:xts:2.0"),
     ;
 
     /**
      * The current namespace version.
      */
-    public static final Namespace CURRENT = XTS_1_0;
+    public static final Namespace CURRENT = XTS_2_0;
 
     private final String name;
 

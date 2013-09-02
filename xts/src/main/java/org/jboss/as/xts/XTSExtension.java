@@ -45,8 +45,8 @@ public class XTSExtension implements Extension {
 
     private static final String RESOURCE_NAME = XTSExtension.class.getPackage().getName() + ".LocalDescriptions";
 
-    private static final int MANAGEMENT_API_MAJOR_VERSION = 1;
-    private static final int MANAGEMENT_API_MINOR_VERSION = 1;
+    private static final int MANAGEMENT_API_MAJOR_VERSION = 2;
+    private static final int MANAGEMENT_API_MINOR_VERSION = 0;
     private static final int MANAGEMENT_API_MICRO_VERSION = 0;
 
     static StandardResourceDescriptionResolver getResourceDescriptionResolver(final String keyPrefix) {
@@ -64,7 +64,8 @@ public class XTSExtension implements Extension {
     }
 
     public void initializeParsers(ExtensionParsingContext context) {
-        context.setSubsystemXmlMapping(SUBSYSTEM_NAME, Namespace.CURRENT.getUriString(), parser);
+        context.setSubsystemXmlMapping(SUBSYSTEM_NAME, Namespace.XTS_1_0.getUriString(), parser);
+        context.setSubsystemXmlMapping(SUBSYSTEM_NAME, Namespace.XTS_2_0.getUriString(), parser);
     }
 
 
