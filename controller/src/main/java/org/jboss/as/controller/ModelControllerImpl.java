@@ -422,10 +422,8 @@ class ModelControllerImpl implements ModelController {
     }
 
     void finishBoot() {
-        // If a boot op didn't enable the logger, disable it
-        if (auditLogger.getLoggerStatus() == AuditLogger.Status.QUEUEING) {
-            auditLogger.setLoggerStatus(AuditLogger.Status.DISABLED);
-        }
+        // Notify the audit logger that we're done booting
+        auditLogger.bootDone();
         bootingFlag.set(false);
     }
 

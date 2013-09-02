@@ -2714,5 +2714,8 @@ public interface ControllerMessages {
     @Message(id = 13473, value = "Role '%s' is already registered")
     IllegalStateException roleIsAlreadyRegistered(String roleName);
 
+    @Message(id = 13474, value = "Can only create child audit logger for main audit logger")
+    IllegalStateException canOnlyCreateChildAuditLoggerForMainAuditLogger();
+
     // 13499 IS END OF 134xx SERIES USABLE FOR NON-LOGGER MESSAGES
 }
