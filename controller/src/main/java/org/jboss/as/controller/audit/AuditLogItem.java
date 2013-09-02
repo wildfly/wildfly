@@ -65,7 +65,7 @@ abstract class AuditLogItem {
     static AuditLogItem createMethodAccessItem(String asVersion, boolean readOnly, boolean booting, String userId, String domainUUID,
                 AccessMechanism accessMechanism, InetAddress remoteAddress, String methodName, String[] methodSignature,
                 Object[] methodParams, Throwable error) {
-        return new MethodAccessAuditLogItem(asVersion, readOnly, booting, userId, domainUUID, accessMechanism, remoteAddress, methodName, methodSignature, methodParams, error);
+        return new JmxAccessAuditLogItem(asVersion, readOnly, booting, userId, domainUUID, accessMechanism, remoteAddress, methodName, methodSignature, methodParams, error);
     }
 
 
@@ -180,13 +180,13 @@ abstract class AuditLogItem {
         }
     }
 
-    static class MethodAccessAuditLogItem extends AuditLogItem {
+    static class JmxAccessAuditLogItem extends AuditLogItem {
         private final String methodName;
         private final String[] methodSignature;
         private final Object[] methodParams;
         private final Throwable error;
 
-        MethodAccessAuditLogItem(String asVersion, boolean readOnly, boolean booting, String userId, String domainUUID,
+        JmxAccessAuditLogItem(String asVersion, boolean readOnly, boolean booting, String userId, String domainUUID,
                 AccessMechanism accessMechanism, InetAddress remoteAddress, String methodName, String[] methodSignature,
                 Object[] methodParams, Throwable error) {
             super(asVersion, readOnly, booting, userId, domainUUID, accessMechanism, remoteAddress);
