@@ -54,6 +54,9 @@ public class ManagedAuditLoggerImpl implements ManagedAuditLogger, ManagedAuditL
     /** Maximum number of consecutive logging failures before we stop logging */
     private static final short MAX_FAILURE_COUNT = 10;
 
+    private final List<ManagedAuditLoggerImpl> childImpls;
+
+    /** If we are the core audit logger, list the children */
     private final ManagedAuditLogConfiguration config;
 
     /** Guarded by config's auditLock - updates to the handlers */
@@ -67,11 +70,13 @@ public class ManagedAuditLoggerImpl implements ManagedAuditLogger, ManagedAuditL
 
     public ManagedAuditLoggerImpl(String asVersion, boolean server) {
         config = new CoreAuditLogConfiguration(asVersion, server);
+        childImpls = new ArrayList<ManagedAuditLoggerImpl>();
     }
 
     private ManagedAuditLoggerImpl(ManagedAuditLoggerImpl src, boolean manualCommit) {
         assert src.config instanceof CoreAuditLogConfiguration : "Not an instance of CoreAuditLogConfiguration";
         config = new NewAuditLogConfiguration((CoreAuditLogConfiguration)src.config, manualCommit);
+        childImpls = null;
     }
 
     @Override
@@ -120,7 +125,12 @@ public class ManagedAuditLoggerImpl implements ManagedAuditLogger, ManagedAuditL
     }
 
     public ManagedAuditLoggerImpl createNewConfiguration(boolean manualCommit) {
-        return new ManagedAuditLoggerImpl(this, manualCommit);
+        if (childImpls == null) {
+            throw ControllerMessages.MESSAGES.canOnlyCreateChildAuditLoggerForMainAuditLogger();
+        }
+        ManagedAuditLoggerImpl child = new ManagedAuditLoggerImpl(this, manualCommit);
+        childImpls.add(child);
+        return child;
     }
 
     public boolean isLogReadOnly() {
@@ -853,6 +863,25 @@ public class ManagedAuditLoggerImpl implements ManagedAuditLogger, ManagedAuditL
                     config.removeHandlerReference(name);
                 }
             }
+        }
+    }
+
+
+    @Override
+    public void bootDone() {
+        config.lock();
+        try {
+            if (childImpls != null) {
+                for (ManagedAuditLogger child : childImpls) {
+                    child.bootDone();
+                }
+            }
+            if (config.getLoggerStatus() == Status.QUEUEING) {
+                //There was no configuration to either enable or disable the logger during boot, so disable it
+                setLoggerStatus(AuditLogger.Status.DISABLED);
+            }
+        } finally {
+            config.unlock();
         }
     }
  }

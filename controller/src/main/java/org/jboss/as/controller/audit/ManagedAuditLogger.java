@@ -145,7 +145,18 @@ public interface ManagedAuditLogger extends AuditLogger {
      */
     boolean getHandlerDisabledDueToFailure(String name);
 
+    /**
+     * Gets a formatter by its name
+     *
+     * @param name the name of the formatter
+     * @return the formatter
+     */
     JsonAuditLogItemFormatter getJsonFormatter(String name);
+
+    /**
+     * Callback for the controller to call when the controller has been booted
+     */
+    void bootDone();
 
     /**
      * <p>The audit log handler updater. Additive changes will be used for the audit log record as a result of
