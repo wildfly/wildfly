@@ -10,6 +10,7 @@ import java.util.Collections;
 import java.util.List;
 import java.util.regex.Pattern;
 
+import org.jboss.as.patching.validation.PatchingGarbageLocator;
 import org.jboss.as.version.ProductConfig;
 import org.jboss.msc.service.Service;
 import org.jboss.msc.service.ServiceController;
@@ -57,6 +58,11 @@ public class InstallationManagerService implements Service<InstallationManager> 
             final File jbossHome = new File(SecurityActions.getSystemProperty("jboss.home.dir"));
             final ProductConfig productConfig = this.productConfig.getValue();
             this.manager = load(jbossHome, productConfig);
+
+            if(new File(jbossHome, "cleanup-patching-dirs").exists()) {
+                final PatchingGarbageLocator garbageLocator = PatchingGarbageLocator.getIninitialized(getValue());
+                garbageLocator.deleteInactiveContent();
+            }
         } catch (Exception e) {
             throw new StartException(e);
         }
