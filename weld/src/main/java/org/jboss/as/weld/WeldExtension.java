@@ -22,52 +22,34 @@
 
 package org.jboss.as.weld;
 
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SUBSYSTEM;
+
 import org.jboss.as.controller.Extension;
 import org.jboss.as.controller.ExtensionContext;
-import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.PathElement;
-import org.jboss.as.controller.ReloadRequiredRemoveStepHandler;
-import org.jboss.as.controller.ResourceDefinition;
-import org.jboss.as.controller.SimpleResourceDefinition;
 import org.jboss.as.controller.SubsystemRegistration;
 import org.jboss.as.controller.descriptions.StandardResourceDescriptionResolver;
 import org.jboss.as.controller.operations.common.GenericSubsystemDescribeHandler;
-import org.jboss.as.controller.operations.common.Util;
 import org.jboss.as.controller.parsing.ExtensionParsingContext;
-import org.jboss.as.controller.persistence.SubsystemMarshallingContext;
 import org.jboss.as.controller.registry.ManagementResourceRegistration;
-import org.jboss.dmr.ModelNode;
-import org.jboss.staxmapper.XMLElementReader;
-import org.jboss.staxmapper.XMLElementWriter;
-import org.jboss.staxmapper.XMLExtendedStreamReader;
-import org.jboss.staxmapper.XMLExtendedStreamWriter;
-
-import javax.xml.stream.XMLStreamConstants;
-import javax.xml.stream.XMLStreamException;
-import java.util.List;
-
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SUBSYSTEM;
-import static org.jboss.as.controller.parsing.ParseUtils.requireNoAttributes;
-import static org.jboss.as.controller.parsing.ParseUtils.requireNoContent;
 
 /**
  * Domain extension used to initialize the weld subsystem.
  *
  * @author Stuart Douglas
  * @author Emanuel Muckenhuber
+ * @author Jozef Hartinger
  */
 public class WeldExtension implements Extension {
 
     public static final String SUBSYSTEM_NAME = "weld";
-    public static final String NAMESPACE = "urn:jboss:domain:weld:1.0";
 
-    private static final WeldSubsystemParser parser = new WeldSubsystemParser();
-    private static final PathElement PATH_SUBSYSTEM = PathElement.pathElement(SUBSYSTEM, SUBSYSTEM_NAME);
+    static final PathElement PATH_SUBSYSTEM = PathElement.pathElement(SUBSYSTEM, SUBSYSTEM_NAME);
 
 
     private static final String RESOURCE_NAME = WeldExtension.class.getPackage().getName() + ".LocalDescriptions";
 
-    private static final int MANAGEMENT_API_MAJOR_VERSION = 1;
+    private static final int MANAGEMENT_API_MAJOR_VERSION = 2;
     private static final int MANAGEMENT_API_MINOR_VERSION = 0;
     private static final int MANAGEMENT_API_MICRO_VERSION = 0;
 
@@ -79,46 +61,21 @@ public class WeldExtension implements Extension {
         return new StandardResourceDescriptionResolver(prefix.toString(), RESOURCE_NAME, WeldExtension.class.getClassLoader(), true, false);
     }
 
-    private static final ResourceDefinition WELD_SUBSYSTEM_RESOURCE = new SimpleResourceDefinition(
-            PATH_SUBSYSTEM,
-            getResourceDescriptionResolver(),
-            WeldSubsystemAdd.INSTANCE,
-            ReloadRequiredRemoveStepHandler.INSTANCE);
-
     /** {@inheritDoc} */
     @Override
     public void initialize(final ExtensionContext context) {
         WeldLogger.ROOT_LOGGER.debug("Activating Weld Extension");
         final SubsystemRegistration subsystem = context.registerSubsystem(SUBSYSTEM_NAME, MANAGEMENT_API_MAJOR_VERSION,
                 MANAGEMENT_API_MINOR_VERSION, MANAGEMENT_API_MICRO_VERSION);
-        final ManagementResourceRegistration registration = subsystem.registerSubsystemModel(WELD_SUBSYSTEM_RESOURCE);
+        final ManagementResourceRegistration registration = subsystem.registerSubsystemModel(WeldResourceDefinition.INSTANCE);
         registration.registerOperationHandler(GenericSubsystemDescribeHandler.DEFINITION, GenericSubsystemDescribeHandler.INSTANCE);
-        subsystem.registerXMLElementWriter(parser);
+        subsystem.registerXMLElementWriter(WeldSubsystemPersister.INSTANCE);
     }
 
     /** {@inheritDoc} */
     @Override
     public void initializeParsers(final ExtensionParsingContext context) {
-        context.setSubsystemXmlMapping(SUBSYSTEM_NAME, WeldExtension.NAMESPACE, parser);
+        context.setSubsystemXmlMapping(SUBSYSTEM_NAME, WeldSubsystem10Parser.NAMESPACE, WeldSubsystem10Parser.INSTANCE);
+        context.setSubsystemXmlMapping(SUBSYSTEM_NAME, WeldSubsystem20Parser.NAMESPACE, WeldSubsystem20Parser.INSTANCE);
     }
-
-    static class WeldSubsystemParser implements XMLStreamConstants, XMLElementReader<List<ModelNode>>, XMLElementWriter<SubsystemMarshallingContext> {
-
-        /** {@inheritDoc} */
-        @Override
-        public void readElement(final XMLExtendedStreamReader reader, final List<ModelNode> list) throws XMLStreamException {
-            // Require no attributes or content
-            requireNoAttributes(reader);
-            requireNoContent(reader);
-            list.add(Util.createAddOperation(PathAddress.pathAddress(PATH_SUBSYSTEM)));
-        }
-
-        /** {@inheritDoc} */
-        @Override
-        public void writeContent(final XMLExtendedStreamWriter streamWriter, final SubsystemMarshallingContext context) throws XMLStreamException {
-            context.startSubsystemElement(WeldExtension.NAMESPACE, true);
-        }
-
-    }
-
 }

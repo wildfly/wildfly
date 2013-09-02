@@ -90,6 +90,12 @@ public class BeanArchiveProcessor implements DeploymentUnitProcessor {
 
     private static final DotName EXTENSION_NAME = DotName.createSimple(Extension.class.getName());
 
+    private final boolean requireBeanDescriptor;
+
+    public BeanArchiveProcessor(boolean requireBeanDescriptor) {
+        this.requireBeanDescriptor = requireBeanDescriptor;
+    }
+
     @Override
     public void deploy(DeploymentPhaseContext phaseContext) throws DeploymentUnitProcessingException {
         final DeploymentUnit deploymentUnit = phaseContext.getDeploymentUnit();
@@ -189,7 +195,7 @@ public class BeanArchiveProcessor implements DeploymentUnitProcessor {
         }
     }
 
-    private static class ResourceRootHandler {
+    private class ResourceRootHandler {
         private final DeploymentUnit deploymentUnit;
         private final Module module;
         private final Map<ResourceRoot, Index> indexes;
@@ -231,6 +237,13 @@ public class BeanArchiveProcessor implements DeploymentUnitProcessor {
                 metadata = explicitBeanArchives.getBeanArchiveMetadata().get(resourceRoot);
             }
             BeanDeploymentArchiveImpl bda = null;
+            if (metadata == null && requireBeanDescriptor) {
+                /*
+                 * For compatibility with Contexts and Dependency 1.0, products must contain an option to cause an archive to be ignored by the
+                 * container when no beans.xml is present.
+                 */
+                return null;
+            }
             if (metadata == null || metadata.getBeansXml().getBeanDiscoveryMode().equals(BeanDiscoveryMode.ANNOTATED)) {
                 // this is either an implicit bean archive or not a bean archive at all!
 

@@ -81,12 +81,15 @@ import org.jboss.msc.service.ServiceController;
 import org.jboss.msc.service.ServiceName;
 import org.jboss.msc.service.ServiceTarget;
 import org.jboss.weld.bootstrap.api.Environments;
+import org.jboss.weld.bootstrap.spi.BootstrapConfiguration;
 import org.jboss.weld.bootstrap.spi.Metadata;
+import org.jboss.weld.bootstrap.spi.helpers.FileBasedBootstrapConfiguration;
 import org.jboss.weld.ejb.spi.EjbServices;
 import org.jboss.weld.injection.spi.EjbInjectionServices;
 import org.jboss.weld.injection.spi.JaxwsInjectionServices;
 import org.jboss.weld.injection.spi.JpaInjectionServices;
 import org.jboss.weld.injection.spi.ResourceInjectionServices;
+import org.jboss.weld.resources.DefaultResourceLoader;
 import org.jipijapa.plugin.spi.PersistenceUnitMetadata;
 
 /**
@@ -95,6 +98,12 @@ import org.jipijapa.plugin.spi.PersistenceUnitMetadata;
  * @author Stuart Douglas
  */
 public class WeldDeploymentProcessor implements DeploymentUnitProcessor {
+
+    private final boolean nonPortableMode;
+
+    public WeldDeploymentProcessor(boolean nonPortableMode) {
+        this.nonPortableMode = nonPortableMode;
+    }
 
     @Override
     public void deploy(DeploymentPhaseContext phaseContext) throws DeploymentUnitProcessingException {
@@ -226,6 +235,8 @@ public class WeldDeploymentProcessor implements DeploymentUnitProcessor {
 
         final WeldBootstrapService weldBootstrapService = new WeldBootstrapService(deployment, Environments.EE_INJECT, deploymentUnit.getName());
 
+        installBootstrapConfigurationService(deployment);
+
         weldBootstrapService.addWeldService(EjbInjectionServices.class, ejbInjectionServices);
         weldBootstrapService.addWeldService(ResourceInjectionServices.class, resourceInjectionServices);
         weldBootstrapService.addWeldService(EjbServices.class, new WeldEjbServices(deploymentUnit.getServiceRegistry()));
@@ -311,6 +322,15 @@ public class WeldDeploymentProcessor implements DeploymentUnitProcessor {
                 .getWeldTransactionServices());
 
         return weldTransactionServiceName;
+    }
+
+    private void installBootstrapConfigurationService(WeldDeployment deployment) {
+        deployment.getServices().add(BootstrapConfiguration.class, new FileBasedBootstrapConfiguration(DefaultResourceLoader.INSTANCE) {
+            @Override
+            public boolean isNonPortableModeEnabled() {
+                return nonPortableMode;
+            }
+        });
     }
 
     @Override

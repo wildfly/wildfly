@@ -39,6 +39,6 @@ public class WeldSubsystemTestCase extends AbstractSubsystemBaseTest {
     protected String getSubsystemXml() throws IOException {
         //This is just copied from standalone.xml testing more combinations would be good
         return
-            "<subsystem xmlns=\"urn:jboss:domain:weld:1.0\" />";
+            "<subsystem xmlns=\"urn:jboss:domain:weld:2.0\" require-bean-descriptor=\"false\" non-portable-mode=\"false\" />";
     }
 }
