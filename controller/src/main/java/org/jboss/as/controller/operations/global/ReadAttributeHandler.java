@@ -220,6 +220,7 @@ public class ReadAttributeHandler extends GlobalOperationHandlers.AbstractMultiT
             ModelNode value = context.hasResult() ? context.getResult().clone() : new ModelNode();
             AuthorizationResult authorizationResult = context.authorize(operation, operation.require(NAME).asString(), value);
             if (authorizationResult.getDecision() == AuthorizationResult.Decision.DENY) {
+                context.getResult().clear();
                 throw ControllerMessages.MESSAGES.unauthorized(operation.require(OP).asString(),
                         PathAddress.pathAddress(operation.get(OP_ADDR)),
                         authorizationResult.getExplanation());
