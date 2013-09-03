@@ -36,6 +36,7 @@ import org.jboss.as.controller.SimpleResourceDefinition;
 import org.jboss.as.controller.access.management.DelegatingConfigurableAuthorizer;
 import org.jboss.as.controller.audit.ManagedAuditLogger;
 import org.jboss.as.controller.registry.ManagementResourceRegistration;
+import org.jboss.as.controller.registry.Resource;
 import org.jboss.as.controller.services.path.PathManagerService;
 import org.jboss.as.domain.management._private.DomainManagementResolver;
 import org.jboss.as.domain.management.access.AccessAuthorizationResourceDefinition;
@@ -55,6 +56,12 @@ import org.jboss.as.domain.management.security.SecurityRealmResourceDefinition;
 public class CoreManagementResourceDefinition extends SimpleResourceDefinition {
 
     public static final PathElement PATH_ELEMENT = PathElement.pathElement(CORE_SERVICE, MANAGEMENT);
+
+    public static void registerDomainResource(Resource parent) {
+        Resource coreManagement = Resource.Factory.create();
+        coreManagement.registerChild(AccessAuthorizationResourceDefinition.PATH_ELEMENT, AccessAuthorizationResourceDefinition.RESOURCE);
+        parent.registerChild(PATH_ELEMENT, coreManagement);
+    }
 
     private final Environment environment;
     private final List<ResourceDefinition> interfaces;

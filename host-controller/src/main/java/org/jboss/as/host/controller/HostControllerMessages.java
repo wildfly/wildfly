@@ -735,4 +735,7 @@ public interface HostControllerMessages {
 
     @Message(id=16540, value="There is no resource called %s")
     OperationFailedException noResourceFor(PathAddress address);
+
+
+    // END WITH 16575
 }

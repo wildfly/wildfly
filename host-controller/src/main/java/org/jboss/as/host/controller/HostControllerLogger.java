@@ -26,6 +26,7 @@ import org.jboss.as.controller.RunningMode;
 import org.jboss.as.controller.client.helpers.domain.ServerStatus;
 import org.jboss.as.host.controller.model.jvm.JvmType;
 import org.jboss.as.server.ServerState;
+import org.jboss.dmr.ModelNode;
 import org.jboss.logging.BasicLogger;
 import org.jboss.logging.annotations.Cause;
 import org.jboss.logging.annotations.LogMessage;
@@ -397,6 +398,7 @@ public interface HostControllerLogger extends BasicLogger {
     @Message(id=10939, value="The slave host controller \"%s\"  could not be reached in the last [%d] milliseconds. Unregistering.")
     void slaveHostControllerUnreachable(String hostName, long timeout);
 
+    // WARNING -- THESE MESSAGE NUMBERS SHOULD NOT BE IN THIS FILE, BUT NOW THEY ARE OUT IN THE WILD
     /**
      * Logs a warning message indicating that the slave host controller could not
      * connect to the remote domain controller and that another discovery option
@@ -437,4 +439,21 @@ public interface HostControllerLogger extends BasicLogger {
     @LogMessage(level = Level.ERROR)
     @Message(id=16537, value = "Could not remove S3 file. Error was: %s")
     void cannotRemoveS3File(Exception e);
+
+    // WARNING -- THE MESSAGE NUMBERS ABOVE SHOULD NOT BE IN THIS FILE, BUT NOW THEY ARE OUT IN THE WILD
+
+    // BEGIN WITH 16576
+
+    @LogMessage(level = Level.ERROR)
+    @Message(id=16576, value = "Failed to apply domain-wide configuration from master host controller")
+    void failedToApplyDomainConfig(@Cause Exception e);
+
+    @LogMessage(level = Level.ERROR)
+    @Message(id=16577, value = "Failed to apply domain-wide configuration from master host controller. " +
+            "Operation outcome: %s. Failure description %s")
+    void failedToApplyDomainConfig(String outcome, ModelNode failureDescription);
+
+
+
+    // END WITH 16599
 }

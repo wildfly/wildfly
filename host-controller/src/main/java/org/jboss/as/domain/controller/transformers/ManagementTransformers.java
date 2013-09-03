@@ -22,9 +22,7 @@
 
 package org.jboss.as.domain.controller.transformers;
 
-import org.jboss.as.controller.transform.ResourceTransformer;
 import org.jboss.as.controller.transform.TransformersSubRegistration;
-import org.jboss.as.domain.management.CoreManagementResourceDefinition;
 
 /**
  * Transformers for the domain-wide management configuration.
@@ -39,7 +37,7 @@ class ManagementTransformers {
      * @param parent the parent registration
      */
     static void registerTransformers200(TransformersSubRegistration parent) {
-        parent.registerSubResource(CoreManagementResourceDefinition.PATH_ELEMENT, ResourceTransformer.DISCARD);
+//        parent.registerSubResource(CoreManagementResourceDefinition.PATH_ELEMENT, ResourceTransformer.DISCARD);
     }
 
     private ManagementTransformers() {

@@ -96,7 +96,6 @@ import org.jboss.as.domain.controller.operations.ApplyMissingDomainModelResource
 import org.jboss.as.domain.controller.operations.coordination.PrepareStepHandler;
 import org.jboss.as.domain.controller.resources.DomainRootDefinition;
 import org.jboss.as.domain.management.CoreManagementResourceDefinition;
-import org.jboss.as.domain.management.access.AccessAuthorizationResourceDefinition;
 import org.jboss.as.host.controller.RemoteDomainConnectionService.RemoteFileRepository;
 import org.jboss.as.host.controller.discovery.DiscoveryOption;
 import org.jboss.as.host.controller.ignored.IgnoredDomainResourceRegistry;
@@ -417,10 +416,7 @@ public class DomainModelControllerService extends AbstractControllerService impl
     protected void initModel(Resource rootResource, ManagementResourceRegistration rootRegistration) {
         HostModelUtil.createRootRegistry(rootRegistration, environment, ignoredRegistry, this, processType);
         VersionModelInitializer.registerRootResource(rootResource, environment != null ? environment.getProductConfig() : null);
-        // TODO wire in once we get master-slave propagation sorted
-        Resource managementResource = Resource.Factory.create(); // TODO - Can we get a Resource direct from CoreManagementResourceDefinition?
-        rootResource.registerChild(CoreManagementResourceDefinition.PATH_ELEMENT, managementResource);
-        managementResource.registerChild(AccessAuthorizationResourceDefinition.PATH_ELEMENT, AccessAuthorizationResourceDefinition.RESOURCE);
+        CoreManagementResourceDefinition.registerDomainResource(rootResource);
         this.modelNodeRegistration = rootRegistration;
     }
 
