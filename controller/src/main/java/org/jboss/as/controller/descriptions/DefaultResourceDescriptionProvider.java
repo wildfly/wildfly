@@ -36,7 +36,7 @@ import java.util.Set;
 import org.jboss.as.controller.AttributeDefinition;
 import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.PathElement;
-import org.jboss.as.controller.access.constraint.management.AccessConstraintDescriptionProviderUtil;
+import org.jboss.as.controller.access.management.AccessConstraintDescriptionProviderUtil;
 import org.jboss.as.controller.registry.AttributeAccess;
 import org.jboss.as.controller.registry.ImmutableManagementResourceRegistration;
 import org.jboss.dmr.ModelNode;

@@ -20,7 +20,7 @@
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
 
-package org.jboss.as.controller.access.constraint.management;
+package org.jboss.as.controller.access.management;
 
 import java.util.Locale;
 

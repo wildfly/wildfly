@@ -30,8 +30,8 @@ import java.util.Map;
 import org.jboss.as.controller.access.Action;
 import org.jboss.as.controller.access.TargetAttribute;
 import org.jboss.as.controller.access.TargetResource;
-import org.jboss.as.controller.access.constraint.management.AccessConstraintDefinition;
-import org.jboss.as.controller.access.constraint.management.ApplicationTypeAccessConstraintDefinition;
+import org.jboss.as.controller.access.management.AccessConstraintDefinition;
+import org.jboss.as.controller.access.management.ApplicationTypeAccessConstraintDefinition;
 import org.jboss.as.controller.access.rbac.StandardRole;
 
 /**

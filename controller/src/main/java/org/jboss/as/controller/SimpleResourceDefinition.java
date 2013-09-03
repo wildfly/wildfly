@@ -28,8 +28,8 @@ import java.util.Collections;
 import java.util.EnumSet;
 import java.util.List;
 
-import org.jboss.as.controller.access.constraint.management.AccessConstraintDefinition;
-import org.jboss.as.controller.access.constraint.management.ConstrainedResourceDefinition;
+import org.jboss.as.controller.access.management.AccessConstraintDefinition;
+import org.jboss.as.controller.access.management.ConstrainedResourceDefinition;
 import org.jboss.as.controller.descriptions.DefaultResourceAddDescriptionProvider;
 import org.jboss.as.controller.descriptions.DefaultResourceDescriptionProvider;
 import org.jboss.as.controller.descriptions.DescriptionProvider;
