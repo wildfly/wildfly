@@ -366,7 +366,6 @@ abstract class AbstractOperationContext implements OperationContext {
                 Subject subject = SubjectUtils.getCurrent();
                 auditLogger.log(
                         !isModelAffected(),
-                        isBooting(),
                         resultAction,
                         getCallerUserId(subject),
                         getDomainUUID(),
