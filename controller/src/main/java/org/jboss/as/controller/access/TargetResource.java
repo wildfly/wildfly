@@ -25,7 +25,7 @@ package org.jboss.as.controller.access;
 import java.util.List;
 
 import org.jboss.as.controller.PathAddress;
-import org.jboss.as.controller.access.constraint.management.AccessConstraintDefinition;
+import org.jboss.as.controller.access.management.AccessConstraintDefinition;
 import org.jboss.as.controller.registry.ImmutableManagementResourceRegistration;
 import org.jboss.as.controller.registry.Resource;
 
