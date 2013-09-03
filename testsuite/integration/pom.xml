@@ -236,6 +236,7 @@
                                          <include>standalone-xts.xml</include>
                                          <include>standalone-rts.xml</include>
                                          <include>standalone-ec2-*.xml</include>
+                                         <include>standalone-gossip-*.xml</include>
                                     </includes>
                                 </resource>
                             </resources>

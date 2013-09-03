@@ -88,6 +88,28 @@
                 paramSubsystemsFile="examples/standalone/subsystems-ec2-ha.xml"
                 paramOutputFile="${generated.configs.examples}/standalone-ec2-ha.xml"/>
       </sequential>
+      <sequential>
+          <xslt
+                in="${generated.configs.src.dir}/configuration/standalone/subsystems-full-ha.xml" 
+                out="${project.build.directory}/generated-subsystems/examples/standalone/subsystems-gossip-full-ha.xml"
+                style="${generated.configs.src.dir}/configuration/examples/xslt/supplement-gossip-discovery.xsl"/>
+          <generate-server-config
+                paramTemplateFile="configuration/standalone/template.xml"
+                paramSubsystemsFileBaseDir="${project.build.directory}/generated-subsystems/"
+                paramSubsystemsFile="examples/standalone/subsystems-gossip-full-ha.xml"
+                paramOutputFile="${generated.configs.examples}/standalone-gossip-full-ha.xml"/>
+      </sequential>
+      <sequential>
+          <xslt
+                in="${generated.configs.src.dir}/configuration/standalone/subsystems-ha.xml"
+                out="${project.build.directory}/generated-subsystems/examples/standalone/subsystems-gossip-ha.xml"
+                style="${generated.configs.src.dir}/configuration/examples/xslt/supplement-gossip-discovery.xsl"/>
+          <generate-server-config
+                paramTemplateFile="configuration/standalone/template.xml"
+                paramSubsystemsFileBaseDir="${project.build.directory}/generated-subsystems/"
+                paramSubsystemsFile="examples/standalone/subsystems-gossip-ha.xml"
+                paramOutputFile="${generated.configs.examples}/standalone-gossip-ha.xml"/>
+      </sequential>
       <generate-server-config 
            paramTemplateFile="configuration/standalone/template.xml" 
            paramSubsystemsFile="configuration/examples/subsystems-hornetq-colocated.xml"
