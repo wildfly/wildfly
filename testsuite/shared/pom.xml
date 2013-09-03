@@ -73,6 +73,12 @@
             <artifactId>apacheds-all</artifactId>
             <version>${version.apacheds}</version>
         </dependency>
+        
+        <dependency>
+            <groupId>org.syslog4j</groupId>
+            <artifactId>syslog4j</artifactId>
+            <version>0.9.30</version>
+        </dependency>
     </dependencies>
     
 </project>
