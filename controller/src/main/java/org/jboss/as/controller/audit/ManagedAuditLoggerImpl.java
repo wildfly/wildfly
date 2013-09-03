@@ -80,18 +80,18 @@ public class ManagedAuditLoggerImpl implements ManagedAuditLogger, ManagedAuditL
     }
 
     @Override
-    public void log(boolean readOnly, boolean booting, ResultAction resultAction, String userId, String domainUUID,
-            AccessMechanism accessMechanism, InetAddress remoteAddress, Resource resultantModel, List<ModelNode> operations) {
+    public void log(boolean readOnly, ResultAction resultAction, String userId, String domainUUID, AccessMechanism accessMechanism,
+            InetAddress remoteAddress, Resource resultantModel, List<ModelNode> operations) {
         config.lock();
         try {
-            if (booting && !isLogBoot()) {
+            if (config.isBooting() && !isLogBoot()) {
                 return;
             }
             if (readOnly && !isLogReadOnly()) {
                 return;
             }
             storeLogItem(
-                    AuditLogItem.createModelControllerItem(config.getAsVersion(), readOnly, booting, resultAction, userId, domainUUID,
+                    AuditLogItem.createModelControllerItem(config.getAsVersion(), readOnly, config.isBooting(), resultAction, userId, domainUUID,
                             accessMechanism, remoteAddress, resultantModel, operations));
         } catch (Exception e) {
             handleLoggingException(e);
@@ -103,18 +103,18 @@ public class ManagedAuditLoggerImpl implements ManagedAuditLogger, ManagedAuditL
     }
 
     @Override
-    public void logJmxMethodAccess(boolean readOnly, boolean booting, String userId, String domainUUID,
-            AccessMechanism accessMechanism, InetAddress remoteAddress, String methodName, String[] methodSignature, Object[] methodParams, Throwable error) {
+    public void logJmxMethodAccess(boolean readOnly, String userId, String domainUUID, AccessMechanism accessMechanism,
+            InetAddress remoteAddress, String methodName, String[] methodSignature, Object[] methodParams, Throwable error) {
         config.lock();
         try {
-            if (booting && !isLogBoot()) {
+            if (config.isBooting() && !isLogBoot()) {
                 return;
             }
             if (readOnly && !isLogReadOnly()) {
                 return;
             }
             storeLogItem(
-                    AuditLogItem.createMethodAccessItem(config.getAsVersion(), readOnly, booting, userId, domainUUID, accessMechanism,
+                    AuditLogItem.createMethodAccessItem(config.getAsVersion(), readOnly, config.isBooting(), userId, domainUUID, accessMechanism,
                             remoteAddress, methodName, methodSignature, methodParams, error));
         } catch (Exception e) {
             handleLoggingException(e);
@@ -514,12 +514,24 @@ public class ManagedAuditLoggerImpl implements ManagedAuditLogger, ManagedAuditL
             return sharedConfiguration.isServer();
         }
 
+        /** Call with lock taken */
         AuditLogItemFormatter getFormatter(String name) {
             return sharedConfiguration.getFormatter(name);
         }
 
+        /** Call with lock taken */
         AuditLogHandler getConfiguredHandler(String name) {
             return sharedConfiguration.getConfiguredHandler(name);
+        }
+
+        /** Call with lock taken */
+        void bootDone() {
+            sharedConfiguration.bootDone();
+        }
+
+        /** Call with lock taken */
+        boolean isBooting() {
+            return sharedConfiguration.isBooting();
         }
 
         /** Call with lock taken */
@@ -654,6 +666,9 @@ public class ManagedAuditLoggerImpl implements ManagedAuditLogger, ManagedAuditL
         /** Guarded by auditLock - the handlers configured in the global file-handlers and syslog-handlers section */
         private final Map<String, AuditLogHandler> configuredHandlers = new HashMap<String, AuditLogHandler>();
 
+        /** Guarded by auditLock - whether we are boothing or not */
+        private boolean booting = true;
+
 
         SharedConfiguration(String asVersion, boolean server) {
             this.asVersion = asVersion;
@@ -708,6 +723,15 @@ public class ManagedAuditLoggerImpl implements ManagedAuditLogger, ManagedAuditL
         AuditLogHandler removeConfiguredHandler(String name) {
             return configuredHandlers.remove(name);
         }
+
+        void bootDone() {
+            booting = false;
+        }
+
+        boolean isBooting() {
+            return booting;
+        }
+
     }
 
 
@@ -871,6 +895,7 @@ public class ManagedAuditLoggerImpl implements ManagedAuditLogger, ManagedAuditL
     public void bootDone() {
         config.lock();
         try {
+            config.bootDone();
             if (childImpls != null) {
                 for (ManagedAuditLogger child : childImpls) {
                     child.bootDone();

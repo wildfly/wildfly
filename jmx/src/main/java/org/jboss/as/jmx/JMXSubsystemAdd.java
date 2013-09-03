@@ -26,13 +26,11 @@ import java.util.List;
 
 import org.jboss.as.controller.AbstractAddStepHandler;
 import org.jboss.as.controller.OperationContext;
-import org.jboss.as.controller.OperationContext.ResultAction;
-import org.jboss.as.controller.OperationContext.Stage;
 import org.jboss.as.controller.OperationFailedException;
-import org.jboss.as.controller.OperationStepHandler;
 import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.ServiceVerificationHandler;
 import org.jboss.as.controller.access.management.JmxAuthorizer;
+import org.jboss.as.controller.audit.ManagedAuditLogger;
 import org.jboss.as.controller.registry.Resource;
 import org.jboss.dmr.ModelNode;
 import org.jboss.msc.service.ServiceController;
@@ -44,32 +42,12 @@ import org.jboss.msc.service.ServiceController;
  */
 class JMXSubsystemAdd extends AbstractAddStepHandler {
 
-    private final JmxManagedAuditLogger auditLoggerInfo;
+    private final ManagedAuditLogger auditLoggerInfo;
     private final JmxAuthorizer authorizer;
 
-    JMXSubsystemAdd(JmxManagedAuditLogger auditLoggerInfo, JmxAuthorizer authorizer) {
+    JMXSubsystemAdd(ManagedAuditLogger auditLoggerInfo, JmxAuthorizer authorizer) {
         this.auditLoggerInfo = auditLoggerInfo;
         this.authorizer = authorizer;
-    }
-
-    @Override
-    public void execute(OperationContext context, ModelNode operation) throws OperationFailedException {
-        if (context.isBooting()) {
-            context.addStep(new OperationStepHandler() {
-                @Override
-                public void execute(OperationContext context, ModelNode operation) throws OperationFailedException {
-                    context.completeStep(new OperationContext.ResultHandler() {
-                        @Override
-                        public void handleResult(ResultAction resultAction, OperationContext context, ModelNode operation) {
-                            auditLoggerInfo.setBooting(false);
-                        }
-                    });
-                }
-            }, Stage.VERIFY);
-        } else {
-            auditLoggerInfo.setBooting(false);
-        }
-        super.execute(context, operation);
     }
 
     @Override
@@ -84,7 +62,7 @@ class JMXSubsystemAdd extends AbstractAddStepHandler {
     }
 
     static void launchServices(OperationContext context, ModelNode model, ServiceVerificationHandler verificationHandler,
-                               JmxManagedAuditLogger auditLoggerInfo, JmxAuthorizer authorizer, List<ServiceController<?>> newControllers) throws OperationFailedException {
+                               ManagedAuditLogger auditLoggerInfo, JmxAuthorizer authorizer, List<ServiceController<?>> newControllers) throws OperationFailedException {
         ModelNode recursiveModel = Resource.Tools.readModel(context.readResource(PathAddress.EMPTY_ADDRESS));
         // Add the MBean service
         String resolvedDomain = getDomainName(context, recursiveModel, CommonAttributes.RESOLVED);

@@ -52,11 +52,11 @@ public interface AuditLogger {
         DISABLED
     }
 
-    void log(boolean readOnly, boolean booting, OperationContext.ResultAction resultAction, String userId,
-             String domainUUID, AccessMechanism accessMechanism, InetAddress remoteAddress, final Resource resultantModel, List<ModelNode> operations);
+    void log(boolean readOnly, OperationContext.ResultAction resultAction, String userId, String domainUUID,
+             AccessMechanism accessMechanism, InetAddress remoteAddress, final Resource resultantModel, List<ModelNode> operations);
 
-    void logJmxMethodAccess(final boolean readOnly, final boolean booting, final String userId, final String domainUUID, final AccessMechanism accessMechanism,
-             InetAddress remoteAddress, final String methodName, final String[] methodSignature, final Object[] methodParams, final Throwable error);
+    void logJmxMethodAccess(final boolean readOnly, final String userId, final String domainUUID, final AccessMechanism accessMechanism, InetAddress remoteAddress,
+             final String methodName, final String[] methodSignature, final Object[] methodParams, final Throwable error);
     /**
      * An audit logger that doesn't log.
      */
@@ -84,11 +84,11 @@ public interface AuditLogger {
         }
 
         @Override
-        public void log(boolean readOnly, boolean booting, OperationContext.ResultAction resultAction, String userId, String domainUUID, AccessMechanism accessMechanism, InetAddress remoteAddress, Resource resultantModel, List<ModelNode> operations) {
+        public void log(boolean readOnly, OperationContext.ResultAction resultAction, String userId, String domainUUID, AccessMechanism accessMechanism, InetAddress remoteAddress, Resource resultantModel, List<ModelNode> operations) {
         }
 
         @Override
-        public void logJmxMethodAccess(boolean readOnly, boolean booting, String userId, String domainUUID, AccessMechanism accessMechanism, InetAddress remoteAddress, String methodName, String[] methodSignature, Object[] methodParams, Throwable error) {
+        public void logJmxMethodAccess(boolean readOnly, String userId, String domainUUID, AccessMechanism accessMechanism, InetAddress remoteAddress, String methodName, String[] methodSignature, Object[] methodParams, Throwable error) {
         }
 
         @Override
