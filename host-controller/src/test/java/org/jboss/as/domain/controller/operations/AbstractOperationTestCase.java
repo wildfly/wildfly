@@ -63,6 +63,7 @@ import org.jboss.as.controller.ResourceDefinition;
 import org.jboss.as.controller.RunningMode;
 import org.jboss.as.controller.access.Action;
 import org.jboss.as.controller.access.Action.ActionEffect;
+import org.jboss.as.controller.access.Environment;
 import org.jboss.as.controller.access.ResourceAuthorization;
 import org.jboss.as.controller.access.AuthorizationResult;
 import org.jboss.as.controller.access.Caller;
@@ -539,6 +540,12 @@ public abstract class AbstractOperationTestCase {
         public Caller getCaller() {
             // TODO Auto-generated method stub
             return null;
+        }
+
+        @Override
+        public Environment getCallEnvironment() {
+            //TODO implement getCallEnvironment
+            throw null;
         }
     }
 

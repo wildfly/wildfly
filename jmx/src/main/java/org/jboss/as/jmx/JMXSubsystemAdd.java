@@ -32,7 +32,7 @@ import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.OperationStepHandler;
 import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.ServiceVerificationHandler;
-import org.jboss.as.controller.access.ConfigurableAuthorizer;
+import org.jboss.as.controller.access.management.JmxAuthorizer;
 import org.jboss.as.controller.registry.Resource;
 import org.jboss.dmr.ModelNode;
 import org.jboss.msc.service.ServiceController;
@@ -45,9 +45,9 @@ import org.jboss.msc.service.ServiceController;
 class JMXSubsystemAdd extends AbstractAddStepHandler {
 
     private final JmxManagedAuditLogger auditLoggerInfo;
-    private final ConfigurableAuthorizer authorizer;
+    private final JmxAuthorizer authorizer;
 
-    JMXSubsystemAdd(JmxManagedAuditLogger auditLoggerInfo, ConfigurableAuthorizer authorizer) {
+    JMXSubsystemAdd(JmxManagedAuditLogger auditLoggerInfo, JmxAuthorizer authorizer) {
         this.auditLoggerInfo = auditLoggerInfo;
         this.authorizer = authorizer;
     }
@@ -83,7 +83,8 @@ class JMXSubsystemAdd extends AbstractAddStepHandler {
         launchServices(context, model, verificationHandler, auditLoggerInfo, authorizer, newControllers);
     }
 
-    static void launchServices(OperationContext context, ModelNode model, ServiceVerificationHandler verificationHandler, JmxManagedAuditLogger auditLoggerInfo, ConfigurableAuthorizer authorizer, List<ServiceController<?>> newControllers) throws OperationFailedException {
+    static void launchServices(OperationContext context, ModelNode model, ServiceVerificationHandler verificationHandler,
+                               JmxManagedAuditLogger auditLoggerInfo, JmxAuthorizer authorizer, List<ServiceController<?>> newControllers) throws OperationFailedException {
         ModelNode recursiveModel = Resource.Tools.readModel(context.readResource(PathAddress.EMPTY_ADDRESS));
         // Add the MBean service
         String resolvedDomain = getDomainName(context, recursiveModel, CommonAttributes.RESOLVED);
@@ -95,8 +96,10 @@ class JMXSubsystemAdd extends AbstractAddStepHandler {
         boolean coreMBeanSensitivity = JMXSubsystemRootResource.CORE_MBEAN_SENSITIVITY.resolveModelAttribute(context, recursiveModel).asBoolean();
 
         ServiceController<?> controller = verificationHandler != null ?
-                MBeanServerService.addService(context.getServiceTarget(), resolvedDomain, expressionsDomain, legacyWithProperPropertyFormat, coreMBeanSensitivity, auditLoggerInfo, authorizer, verificationHandler) :
-                    MBeanServerService.addService(context.getServiceTarget(), resolvedDomain, expressionsDomain, legacyWithProperPropertyFormat, coreMBeanSensitivity, auditLoggerInfo, authorizer);
+                MBeanServerService.addService(context.getServiceTarget(), resolvedDomain, expressionsDomain, legacyWithProperPropertyFormat,
+                        coreMBeanSensitivity, auditLoggerInfo, authorizer, verificationHandler) :
+                    MBeanServerService.addService(context.getServiceTarget(), resolvedDomain, expressionsDomain, legacyWithProperPropertyFormat,
+                            coreMBeanSensitivity, auditLoggerInfo, authorizer);
         if (newControllers != null) {
             newControllers.add(controller);
         }

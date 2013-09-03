@@ -42,8 +42,8 @@ import org.jboss.as.controller.SimpleAttributeDefinitionBuilder;
 import org.jboss.as.controller.SimpleListAttributeDefinition;
 import org.jboss.as.controller.SimpleOperationDefinitionBuilder;
 import org.jboss.as.controller.SimpleResourceDefinition;
-import org.jboss.as.controller.access.ConfigurableAuthorizer;
 import org.jboss.as.controller.access.constraint.ServerGroupEffectConstraint;
+import org.jboss.as.controller.access.management.WritableAuthorizerConfiguration;
 import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
 import org.jboss.as.controller.parsing.Attribute;
 import org.jboss.as.controller.parsing.Element;
@@ -87,12 +87,12 @@ public class ServerGroupScopedRoleResourceDefinition extends SimpleResourceDefin
     private final ServerGroupScopedRoleRemove removeHandler;
     private final ServerGroupScopedRoleWriteAttributeHandler writeAttributeHandler;
 
-    public ServerGroupScopedRoleResourceDefinition(ConfigurableAuthorizer authorizer) {
+    public ServerGroupScopedRoleResourceDefinition(WritableAuthorizerConfiguration authorizerConfiguration) {
         super(PATH_ELEMENT, DomainManagementResolver.getResolver("core.access-control.server-group-scoped-role"));
 
         Map<String, ServerGroupEffectConstraint> constraintMap = new HashMap<String, ServerGroupEffectConstraint>();
-        this.addHandler = new ServerGroupScopedRoleAdd(constraintMap, authorizer);
-        this.removeHandler =  new ServerGroupScopedRoleRemove(constraintMap, authorizer);
+        this.addHandler = new ServerGroupScopedRoleAdd(constraintMap, authorizerConfiguration);
+        this.removeHandler =  new ServerGroupScopedRoleRemove(constraintMap, authorizerConfiguration);
         this.writeAttributeHandler = new ServerGroupScopedRoleWriteAttributeHandler(constraintMap);
     }
 

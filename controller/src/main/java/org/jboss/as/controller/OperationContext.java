@@ -26,6 +26,7 @@ import java.io.InputStream;
 import java.util.Set;
 
 import org.jboss.as.controller.access.Action;
+import org.jboss.as.controller.access.Environment;
 import org.jboss.as.controller.access.ResourceAuthorization;
 import org.jboss.as.controller.access.AuthorizationResult;
 import org.jboss.as.controller.access.Caller;
@@ -715,6 +716,12 @@ public interface OperationContext extends ExpressionResolver {
      * @return The current caller.
      */
     Caller getCaller();
+
+    /**
+     * Gets the caller environment for the current request.
+     * @return the call environment
+     */
+    Environment getCallEnvironment();
 
     /**
      * The stage at which a step should apply.

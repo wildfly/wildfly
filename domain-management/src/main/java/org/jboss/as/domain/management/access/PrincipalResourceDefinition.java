@@ -32,8 +32,8 @@ import org.jboss.as.controller.PathElement;
 import org.jboss.as.controller.SimpleAttributeDefinition;
 import org.jboss.as.controller.SimpleAttributeDefinitionBuilder;
 import org.jboss.as.controller.SimpleResourceDefinition;
-import org.jboss.as.controller.access.rbac.ConfigurableRoleMapper;
-import org.jboss.as.controller.access.rbac.ConfigurableRoleMapper.PrincipalType;
+import org.jboss.as.controller.access.AuthorizerConfiguration;
+import org.jboss.as.controller.access.management.WritableAuthorizerConfiguration;
 import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
 import org.jboss.as.controller.operations.validation.EnumValidator;
 import org.jboss.as.controller.registry.ManagementResourceRegistration;
@@ -66,14 +66,14 @@ public class PrincipalResourceDefinition extends SimpleResourceDefinition {
         super(pathElement, DomainManagementResolver.getResolver("core.access-control.role-mapping.principal"), add, remove);
     }
 
-    static PrincipalResourceDefinition includeResourceDefinition(final ConfigurableRoleMapper roleMapper) {
-        return new PrincipalResourceDefinition(PathElement.pathElement(INCLUDE), PrincipalAdd.createForInclude(roleMapper),
-                PrincipalRemove.createForInclude(roleMapper));
+    static PrincipalResourceDefinition includeResourceDefinition(final WritableAuthorizerConfiguration authorizerConfiguration) {
+        return new PrincipalResourceDefinition(PathElement.pathElement(INCLUDE), PrincipalAdd.createForInclude(authorizerConfiguration),
+                PrincipalRemove.createForInclude(authorizerConfiguration));
     }
 
-    static PrincipalResourceDefinition excludeResourceDefinition(final ConfigurableRoleMapper roleMapper) {
-        return new PrincipalResourceDefinition(PathElement.pathElement(EXCLUDE), PrincipalAdd.createForExclude(roleMapper),
-                PrincipalRemove.createForExclude(roleMapper));
+    static PrincipalResourceDefinition excludeResourceDefinition(final WritableAuthorizerConfiguration authorizerConfiguration) {
+        return new PrincipalResourceDefinition(PathElement.pathElement(EXCLUDE), PrincipalAdd.createForExclude(authorizerConfiguration),
+                PrincipalRemove.createForExclude(authorizerConfiguration));
     }
 
     @Override
@@ -83,9 +83,9 @@ public class PrincipalResourceDefinition extends SimpleResourceDefinition {
         resourceRegistration.registerReadOnlyAttribute(NAME, null);
     }
 
-    static ConfigurableRoleMapper.PrincipalType getPrincipalType(final OperationContext context, final ModelNode model)
+    static AuthorizerConfiguration.PrincipalType getPrincipalType(final OperationContext context, final ModelNode model)
             throws OperationFailedException {
-        return PrincipalType.valueOf(TYPE.resolveValue(context, model.get(TYPE.getName())).asString());
+        return AuthorizerConfiguration.PrincipalType.valueOf(TYPE.resolveValue(context, model.get(TYPE.getName())).asString());
     }
 
     static String getRealm(final OperationContext context, final ModelNode model) throws OperationFailedException {
