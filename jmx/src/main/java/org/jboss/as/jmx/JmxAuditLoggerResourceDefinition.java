@@ -29,7 +29,6 @@ import java.util.List;
 
 import org.jboss.as.controller.AbstractWriteAttributeHandler;
 import org.jboss.as.controller.AttributeDefinition;
-import org.jboss.as.controller.ModelOnlyWriteAttributeHandler;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.OperationStepHandler;
@@ -82,11 +81,10 @@ public class JmxAuditLoggerResourceDefinition extends SimpleResourceDefinition {
 
     @Override
     public void registerAttributes(ManagementResourceRegistration resourceRegistration) {
-        //This one only takes effect at boot
-        resourceRegistration.registerReadWriteAttribute(LOG_BOOT, null, new ModelOnlyWriteAttributeHandler(LOG_BOOT));
-
-        resourceRegistration.registerReadWriteAttribute(LOG_READ_ONLY, null, new AuditLogReadOnlyWriteAttributeHandler(auditLogger));
-        resourceRegistration.registerReadWriteAttribute(ENABLED, null, new AuditLogEnabledWriteAttributeHandler(auditLogger));
+        AuditLogWriteAttributeHandler wah = new AuditLogWriteAttributeHandler(auditLogger, LOG_BOOT, LOG_READ_ONLY, ENABLED);
+        resourceRegistration.registerReadWriteAttribute(LOG_BOOT, null, wah);
+        resourceRegistration.registerReadWriteAttribute(LOG_READ_ONLY, null, wah);
+        resourceRegistration.registerReadWriteAttribute(ENABLED, null, wah);
     }
 
     @Override
@@ -117,9 +115,11 @@ public class JmxAuditLoggerResourceDefinition extends SimpleResourceDefinition {
             context.addStep(new OperationStepHandler() {
                 public void execute(final OperationContext context, final ModelNode operation) throws OperationFailedException {
                     final boolean wasReadOnly = auditLoggerProvider.isLogReadOnly();
+                    final boolean wasLogBoot = auditLoggerProvider.isLogBoot();
                     final AuditLogger.Status oldStatus = auditLoggerProvider.getLoggerStatus();
 
                     auditLoggerProvider.setLogReadOnly(JmxAuditLoggerResourceDefinition.LOG_READ_ONLY.resolveModelAttribute(context, model).asBoolean());
+                    auditLoggerProvider.setLogBoot(JmxAuditLoggerResourceDefinition.LOG_BOOT.resolveModelAttribute(context, model).asBoolean());
                     boolean enabled = JmxAuditLoggerResourceDefinition.ENABLED.resolveModelAttribute(context, model).asBoolean();
                     auditLoggerProvider.setLoggerStatus(enabled ? AuditLogger.Status.LOGGING : AuditLogger.Status.DISABLED);
 
@@ -128,6 +128,7 @@ public class JmxAuditLoggerResourceDefinition extends SimpleResourceDefinition {
                         public void handleRollback(OperationContext context, ModelNode operation) {
                             auditLoggerProvider.setLogReadOnly(wasReadOnly);
                             auditLoggerProvider.setLoggerStatus(oldStatus);
+                            auditLoggerProvider.setLogBoot(wasLogBoot);
                         }
                     });
                 }
@@ -173,54 +174,48 @@ public class JmxAuditLoggerResourceDefinition extends SimpleResourceDefinition {
         }
     }
 
-    private static class AuditLogReadOnlyWriteAttributeHandler extends AbstractWriteAttributeHandler<Boolean> {
+    private static class AuditLogWriteAttributeHandler extends AbstractWriteAttributeHandler<Object>{
 
         private final ManagedAuditLogger auditLogger;
 
-        AuditLogReadOnlyWriteAttributeHandler(ManagedAuditLogger auditLogger) {
-            super(JmxAuditLoggerResourceDefinition.LOG_READ_ONLY);
+        AuditLogWriteAttributeHandler(ManagedAuditLogger auditLogger, AttributeDefinition...attributeDefinitions) {
+            super(attributeDefinitions);
             this.auditLogger = auditLogger;
         }
 
         @Override
         protected boolean applyUpdateToRuntime(OperationContext context, ModelNode operation, String attributeName,
-                                               ModelNode resolvedValue, ModelNode currentValue,
-                                               HandbackHolder<Boolean> handbackHolder) throws OperationFailedException {
-            handbackHolder.setHandback(auditLogger.isLogReadOnly());
-            auditLogger.setLogReadOnly(resolvedValue.asBoolean());
-            return false;
-        }
+                ModelNode resolvedValue, ModelNode currentValue,
+                org.jboss.as.controller.AbstractWriteAttributeHandler.HandbackHolder<Object> handbackHolder)
+                throws OperationFailedException {
+            if (attributeName.equals(LOG_BOOT.getName())) {
+                handbackHolder.setHandback(auditLogger.isLogBoot());
+                auditLogger.setLogBoot(resolvedValue.asBoolean());
 
-        @Override
-        protected void revertUpdateToRuntime(OperationContext context, ModelNode operation, String attributeName, ModelNode valueToRestore, ModelNode valueToRevert, Boolean handback) throws OperationFailedException {
-            auditLogger.setLogReadOnly(handback);
-        }
-    }
+            } else if (attributeName.equals(ENABLED.getName())) {
+                handbackHolder.setHandback(auditLogger.getLoggerStatus());
+                boolean enabled = resolvedValue.asBoolean();
+                ManagedAuditLogger.Status status = enabled ? AuditLogger.Status.LOGGING : AuditLogger.Status.DISABLED;
+                auditLogger.setLoggerStatus(status);
 
-    private static class AuditLogEnabledWriteAttributeHandler extends AbstractWriteAttributeHandler<ManagedAuditLogger.Status> {
-
-        private final ManagedAuditLogger auditLogger;
-
-        public AuditLogEnabledWriteAttributeHandler(ManagedAuditLogger auditLogger) {
-            super(JmxAuditLoggerResourceDefinition.ENABLED);
-            this.auditLogger = auditLogger;
-        }
-
-        @Override
-        protected boolean applyUpdateToRuntime(OperationContext context, ModelNode operation, String attributeName,
-                                               ModelNode resolvedValue, ModelNode currentValue,
-                                               HandbackHolder<ManagedAuditLogger.Status> handbackHolder) throws OperationFailedException {
-            handbackHolder.setHandback(auditLogger.getLoggerStatus());
-            boolean enabled = resolvedValue.asBoolean();
-            ManagedAuditLogger.Status status = enabled ? AuditLogger.Status.LOGGING : AuditLogger.Status.DISABLED;
-            auditLogger.setLoggerStatus(status);
+            } else if (attributeName.equals(LOG_READ_ONLY.getName())){
+                handbackHolder.setHandback(auditLogger.isLogReadOnly());
+                auditLogger.setLogReadOnly(resolvedValue.asBoolean());
+            }
             return false;
         }
 
         @Override
         protected void revertUpdateToRuntime(OperationContext context, ModelNode operation, String attributeName,
-                                             ModelNode valueToRestore, ModelNode valueToRevert, ManagedAuditLogger.Status handback) throws OperationFailedException {
-            auditLogger.setLoggerStatus(handback);
+                ModelNode valueToRestore, ModelNode valueToRevert, Object handback) throws OperationFailedException {
+            if (attributeName.equals(LOG_BOOT.getName())) {
+                auditLogger.setLogBoot((Boolean)handback);
+            } else if (attributeName.equals(ENABLED.getName())) {
+                auditLogger.setLoggerStatus((ManagedAuditLogger.Status)handback);
+
+            } else if (attributeName.equals(LOG_READ_ONLY.getName())){
+                auditLogger.setLogReadOnly((Boolean)handback);
+            }
         }
     }
 }
