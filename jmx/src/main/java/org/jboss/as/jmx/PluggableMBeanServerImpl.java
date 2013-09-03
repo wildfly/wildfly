@@ -86,6 +86,7 @@ import org.jboss.as.controller.access.Caller;
 import org.jboss.as.controller.access.JmxAction;
 import org.jboss.as.controller.access.management.JmxAuthorizer;
 import org.jboss.as.controller.audit.AuditLogger;
+import org.jboss.as.controller.audit.ManagedAuditLogger;
 import org.jboss.as.controller.security.AccessMechanismPrincipal;
 import org.jboss.as.controller.security.InetAddressPrincipal;
 import org.jboss.as.core.security.AccessMechanism;
@@ -105,7 +106,7 @@ class PluggableMBeanServerImpl implements PluggableMBeanServer {
     private static final String[] EMPTY_SIG = new String[0];
 
     private final MBeanServerPlugin rootMBeanServer;
-    private volatile JmxManagedAuditLogger auditLogger;
+    private volatile ManagedAuditLogger auditLogger;
 
     private final Set<MBeanServerPlugin> delegates = new CopyOnWriteArraySet<MBeanServerPlugin>();
 
@@ -115,8 +116,8 @@ class PluggableMBeanServerImpl implements PluggableMBeanServer {
         this.rootMBeanServer = new TcclMBeanServer(rootMBeanServer);
     }
 
-    void setAuditLogger(JmxManagedAuditLogger auditLoggerInfo) {
-        this.auditLogger = auditLoggerInfo != null ? auditLoggerInfo : NOOP_INFO;
+    void setAuditLogger(ManagedAuditLogger auditLoggerInfo) {
+        this.auditLogger = auditLoggerInfo != null ? auditLoggerInfo : AuditLogger.NO_OP_LOGGER;
     }
 
     void setAuthorizer(JmxAuthorizer authorizer) {
@@ -1098,7 +1099,7 @@ class PluggableMBeanServerImpl implements PluggableMBeanServer {
     }
 
     private boolean shouldAuditLog(MBeanServerPlugin delegate, boolean readOnly) {
-        if (auditLogger != null && auditLogger.shouldLog(readOnly)) {
+        if (auditLogger != null) {
             if (delegate == null) {
                 return true;
             }
@@ -1207,14 +1208,14 @@ class PluggableMBeanServerImpl implements PluggableMBeanServer {
     }
 
     static final class LogAction implements PrivilegedAction<Void> {
-        final JmxManagedAuditLogger auditLogger;
+        final ManagedAuditLogger auditLogger;
         final boolean readOnly;
         final Throwable error;
         final String methodName;
         final String[] methodSignature;
         final Object[] methodParams;
 
-        public LogAction(JmxManagedAuditLogger auditLogger, boolean readOnly, Throwable error, String methodName,
+        public LogAction(ManagedAuditLogger auditLogger, boolean readOnly, Throwable error, String methodName,
                 String[] methodSignature, Object[] methodParams) {
             this.auditLogger = auditLogger;
             this.readOnly = readOnly;
@@ -1232,10 +1233,10 @@ class PluggableMBeanServerImpl implements PluggableMBeanServer {
         }
 
 
-        static void doLog(JmxManagedAuditLogger auditLogger, boolean readOnly, Throwable error, String methodName, String[] methodSignature, Object...methodParams) {
+        static void doLog(ManagedAuditLogger auditLogger, boolean readOnly, Throwable error, String methodName, String[] methodSignature, Object...methodParams) {
             Subject subject = Subject.getSubject(AccessController.getContext());
             if (auditLogger != null) {
-                auditLogger.logMethodAccess(
+                auditLogger.logJmxMethodAccess(
                         readOnly,
                         getCallerUserId(subject),
                         null, //TODO domainUUID
@@ -1574,6 +1575,4 @@ class PluggableMBeanServerImpl implements PluggableMBeanServer {
             SecurityActions.resetThreadContextClassLoader(cl);
         }
     }
-
-    private static final JmxManagedAuditLogger NOOP_INFO = new JmxManagedAuditLogger(AuditLogger.NO_OP_LOGGER);
 }

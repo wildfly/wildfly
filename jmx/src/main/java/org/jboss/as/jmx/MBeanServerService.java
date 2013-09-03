@@ -28,6 +28,7 @@ import javax.management.MBeanServer;
 
 import org.jboss.as.controller.ModelController;
 import org.jboss.as.controller.access.management.JmxAuthorizer;
+import org.jboss.as.controller.audit.ManagedAuditLogger;
 import org.jboss.as.jmx.model.ConfiguredDomains;
 import org.jboss.as.jmx.model.ModelControllerMBeanServerPlugin;
 import org.jboss.as.server.Services;
@@ -57,8 +58,8 @@ public class MBeanServerService implements Service<PluggableMBeanServer> {
     private final String expressionsDomainName;
     private final boolean legacyWithProperPropertyFormat;
     private final boolean coreMBeanSensitivity;
-    private final JmxManagedAuditLogger auditLoggerInfo;
     private final JmxAuthorizer authorizer;
+    private final ManagedAuditLogger auditLoggerInfo;
     private final InjectedValue<ModelController> modelControllerValue = new InjectedValue<ModelController>();
 
     private PluggableMBeanServer mBeanServer;
@@ -66,7 +67,7 @@ public class MBeanServerService implements Service<PluggableMBeanServer> {
 
     private MBeanServerService(final String resolvedDomainName, final String expressionsDomainName, final boolean legacyWithProperPropertyFormat,
                                final boolean coreMBeanSensitivity,
-            final JmxManagedAuditLogger auditLoggerInfo, final JmxAuthorizer authorizer) {
+            final ManagedAuditLogger auditLoggerInfo, final JmxAuthorizer authorizer) {
         this.resolvedDomainName = resolvedDomainName;
         this.expressionsDomainName = expressionsDomainName;
         this.legacyWithProperPropertyFormat = legacyWithProperPropertyFormat;
@@ -77,7 +78,7 @@ public class MBeanServerService implements Service<PluggableMBeanServer> {
 
     public static ServiceController<?> addService(final ServiceTarget batchBuilder, final String resolvedDomainName, final String expressionsDomainName, final boolean legacyWithProperPropertyFormat,
                                                         final boolean coreMBeanSensitivity,
-                                                        final JmxManagedAuditLogger auditLoggerInfo, final JmxAuthorizer authorizer,
+                                                        final ManagedAuditLogger auditLoggerInfo, final JmxAuthorizer authorizer,
                                                         final ServiceListener<Object>... listeners) {
         MBeanServerService service = new MBeanServerService(resolvedDomainName, expressionsDomainName, legacyWithProperPropertyFormat, coreMBeanSensitivity, auditLoggerInfo, authorizer);
         return batchBuilder.addService(MBeanServerService.SERVICE_NAME, service)

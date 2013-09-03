@@ -39,8 +39,8 @@ import org.jboss.as.controller.SimpleAttributeDefinition;
 import org.jboss.as.controller.SimpleAttributeDefinitionBuilder;
 import org.jboss.as.controller.SimpleResourceDefinition;
 import org.jboss.as.controller.access.management.AccessConstraintDefinition;
-import org.jboss.as.controller.access.management.SensitiveTargetAccessConstraintDefinition;
 import org.jboss.as.controller.access.management.JmxAuthorizer;
+import org.jboss.as.controller.access.management.SensitiveTargetAccessConstraintDefinition;
 import org.jboss.as.controller.audit.ManagedAuditLogger;
 import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
 import org.jboss.as.controller.operations.common.GenericSubsystemDescribeHandler;
@@ -73,10 +73,10 @@ public class JMXSubsystemRootResource extends SimpleResourceDefinition {
 
     private final List<AccessConstraintDefinition> accessConstraints;
 
-    private final JmxManagedAuditLogger auditLogger;
+    private final ManagedAuditLogger auditLogger;
     private final JmxAuthorizer authorizer;
 
-    private JMXSubsystemRootResource(JmxManagedAuditLogger auditLogger, JmxAuthorizer authorizer) {
+    private JMXSubsystemRootResource(ManagedAuditLogger auditLogger, JmxAuthorizer authorizer) {
         super(PATH_ELEMENT,
                 JMXExtension.getResourceDescriptionResolver(JMXExtension.SUBSYSTEM_NAME),
                 new JMXSubsystemAdd(auditLogger, authorizer),
@@ -87,7 +87,7 @@ public class JMXSubsystemRootResource extends SimpleResourceDefinition {
     }
 
     public static JMXSubsystemRootResource create(ManagedAuditLogger auditLogger, JmxAuthorizer authorizer) {
-        return new JMXSubsystemRootResource(new JmxManagedAuditLogger(auditLogger), authorizer);
+        return new JMXSubsystemRootResource(auditLogger, authorizer);
     }
 
     @Override

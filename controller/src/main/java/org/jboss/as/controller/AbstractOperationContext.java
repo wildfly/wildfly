@@ -381,7 +381,6 @@ abstract class AbstractOperationContext implements OperationContext {
                         getCurrentAction.run() : AccessController.doPrivileged(getCurrentAction);
                 auditLogger.log(
                         !isModelAffected(),
-                        isBooting(),
                         resultAction,
                         getCallerUserId(subject),
                         getDomainUUID(),
