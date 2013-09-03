@@ -45,6 +45,7 @@
         <!-- Used to provide an absolute location for the XSLT scripts. -->
         <!-- This value is overridden in submodules with the correct relative path. -->
         <xslt.scripts.dir>${basedir}/../integration/src/test/xslt</xslt.scripts.dir>
+        <enforcer.skip>true</enforcer.skip>
     </properties>
 
     <!--

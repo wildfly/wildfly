@@ -27,9 +27,10 @@
     <modelVersion>4.0.0</modelVersion>
 
     <parent>
-      <groupId>org.jboss</groupId>
-      <artifactId>jboss-parent</artifactId>
-      <version>11</version>
+        <groupId>org.jboss</groupId>
+        <artifactId>jboss-parent</artifactId>
+        <version>11</version>
+        <relativePath></relativePath>
     </parent>
 
     <groupId>org.wildfly</groupId>
@@ -56,16 +57,16 @@
             <scope>provided</scope>
         </dependency>
         <dependency>
-           <groupId>org.wildfly</groupId>
-           <artifactId>wildfly-subsystem-test-framework</artifactId>
-           <version>${project.version}</version>
-	        <scope>provided</scope>
-           <exclusions>
-               <exclusion>
-                   <groupId>org.wildfly</groupId>
-                   <artifactId>wildfly-server</artifactId>
-               </exclusion>
-           </exclusions>
+            <groupId>org.wildfly</groupId>
+            <artifactId>wildfly-subsystem-test-framework</artifactId>
+            <version>${project.version}</version>
+            <scope>provided</scope>
+            <exclusions>
+                <exclusion>
+                    <groupId>org.wildfly</groupId>
+                    <artifactId>wildfly-server</artifactId>
+                </exclusion>
+            </exclusions>
         </dependency>
     </dependencies>
 

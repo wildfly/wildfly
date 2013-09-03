@@ -43,6 +43,11 @@ import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang.SystemUtils;
 import org.apache.commons.lang.text.StrSubstitutor;
+import org.apache.directory.api.ldap.model.entry.DefaultEntry;
+import org.apache.directory.api.ldap.model.ldif.LdifEntry;
+import org.apache.directory.api.ldap.model.ldif.LdifReader;
+import org.apache.directory.api.ldap.model.schema.SchemaManager;
+import org.apache.directory.server.annotations.CreateKdcServer;
 import org.apache.directory.server.annotations.CreateTransport;
 import org.apache.directory.server.core.annotations.ContextEntry;
 import org.apache.directory.server.core.annotations.CreateDS;
@@ -51,11 +56,8 @@ import org.apache.directory.server.core.annotations.CreatePartition;
 import org.apache.directory.server.core.api.DirectoryService;
 import org.apache.directory.server.core.factory.DSAnnotationProcessor;
 import org.apache.directory.server.core.kerberos.KeyDerivationInterceptor;
+import org.apache.directory.server.factory.ServerAnnotationProcessor;
 import org.apache.directory.server.kerberos.kdc.KdcServer;
-import org.apache.directory.shared.ldap.model.entry.DefaultEntry;
-import org.apache.directory.shared.ldap.model.ldif.LdifEntry;
-import org.apache.directory.shared.ldap.model.ldif.LdifReader;
-import org.apache.directory.shared.ldap.model.schema.SchemaManager;
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.container.test.api.OperateOnDeployment;
 import org.jboss.arquillian.container.test.api.RunAsClient;
@@ -67,8 +69,6 @@ import org.jboss.as.arquillian.container.ManagementClient;
 import org.jboss.as.network.NetworkUtils;
 import org.jboss.as.test.integration.security.common.AbstractSecurityDomainsServerSetupTask;
 import org.jboss.as.test.integration.security.common.AbstractSystemPropertiesServerSetupTask;
-import org.jboss.as.test.integration.security.common.ExtCreateKdcServer;
-import org.jboss.as.test.integration.security.common.KDCServerAnnotationProcessor;
 import org.jboss.as.test.integration.security.common.Krb5LoginConfiguration;
 import org.jboss.as.test.integration.security.common.Utils;
 import org.jboss.as.test.integration.security.common.config.SecurityDomain;
@@ -371,7 +371,7 @@ public class SPNEGOLoginModuleTestCase {
                 })
         },
         additionalInterceptors = { KeyDerivationInterceptor.class })
-    @ExtCreateKdcServer(primaryRealm = "JBOSS.ORG",
+    @CreateKdcServer(primaryRealm = "JBOSS.ORG",
         kdcPrincipal = "krbtgt/JBOSS.ORG@JBOSS.ORG",
         searchBaseDn = "dc=jboss,dc=org",
         transports =
@@ -413,7 +413,8 @@ public class SPNEGOLoginModuleTestCase {
                 e.printStackTrace();
                 throw e;
             }
-            kdcServer = KDCServerAnnotationProcessor.getKdcServer(directoryService, 1024, hostname);
+            //kdcServer = KDCServerAnnotationProcessor.getKdcServer(directoryService, 1024, hostname);
+            kdcServer = ServerAnnotationProcessor.getKdcServer(directoryService, 1024);
         }
 
         /**
