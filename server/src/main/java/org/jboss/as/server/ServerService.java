@@ -45,7 +45,7 @@ import org.jboss.as.controller.PathElement;
 import org.jboss.as.controller.ProcessType;
 import org.jboss.as.controller.ResourceDefinition;
 import org.jboss.as.controller.RunningModeControl;
-import org.jboss.as.controller.access.DelegatingConfigurableAuthorizer;
+import org.jboss.as.controller.access.management.DelegatingConfigurableAuthorizer;
 import org.jboss.as.controller.audit.ManagedAuditLogger;
 import org.jboss.as.controller.descriptions.DescriptionProvider;
 import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
@@ -347,10 +347,9 @@ public final class ServerService extends AbstractControllerService {
     }
 
     public void stop(final StopContext context) {
-        super.stop(context);
-
         configuration.getExtensionRegistry().clear();
         configuration.getServerEnvironment().resetProvidedProperties();
+        super.stop(context);
     }
 
     @Override

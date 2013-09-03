@@ -30,8 +30,8 @@ import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.OperationStepHandler;
 import org.jboss.as.controller.PathAddress;
-import org.jboss.as.controller.access.ConfigurableAuthorizer;
 import org.jboss.as.controller.access.constraint.HostEffectConstraint;
+import org.jboss.as.controller.access.management.WritableAuthorizerConfiguration;
 import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
 import org.jboss.as.controller.registry.Resource;
 import org.jboss.dmr.ModelNode;
@@ -44,11 +44,12 @@ import org.jboss.dmr.ModelNode;
 class HostScopedRoleRemove implements OperationStepHandler {
 
     private final Map<String, HostEffectConstraint> constraintMap;
-    private final ConfigurableAuthorizer authorizer;
+    private final WritableAuthorizerConfiguration authorizerConfiguration;
 
-    HostScopedRoleRemove(Map<String, HostEffectConstraint> constraintMap, ConfigurableAuthorizer authorizer) {
+    HostScopedRoleRemove(Map<String, HostEffectConstraint> constraintMap,
+                         WritableAuthorizerConfiguration authorizerConfiguration) {
         this.constraintMap = constraintMap;
-        this.authorizer = authorizer;
+        this.authorizerConfiguration = authorizerConfiguration;
     }
 
     @Override
@@ -67,12 +68,12 @@ class HostScopedRoleRemove implements OperationStepHandler {
                 ModelNode hostsAttribute = HostScopedRolesResourceDefinition.HOSTS.resolveModelAttribute(context, model);
                 final List<ModelNode> hostNodes = hostsAttribute.isDefined() ? hostsAttribute.asList() : Collections.<ModelNode>emptyList();
 
-                authorizer.removeScopedRole(roleName);
+                authorizerConfiguration.removeScopedRole(roleName);
                 constraintMap.remove(roleName);
                 context.completeStep(new OperationContext.RollbackHandler() {
                     @Override
                     public void handleRollback(OperationContext context, ModelNode operation) {
-                        HostScopedRoleAdd.addScopedRole(roleName, baseRole, hostNodes, authorizer, constraintMap);
+                        HostScopedRoleAdd.addScopedRole(roleName, baseRole, hostNodes, authorizerConfiguration, constraintMap);
                     }
                 });
             }

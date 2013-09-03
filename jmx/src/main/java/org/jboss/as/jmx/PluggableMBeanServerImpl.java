@@ -20,6 +20,7 @@
 * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
 */
 package org.jboss.as.jmx;
+
 import static org.jboss.as.jmx.MBeanServerSignature.ADD_NOTIFICATION_LISTENER;
 import static org.jboss.as.jmx.MBeanServerSignature.CREATE_MBEAN;
 import static org.jboss.as.jmx.MBeanServerSignature.DESERIALIZE;
@@ -42,6 +43,17 @@ import static org.jboss.as.jmx.MBeanServerSignature.REMOVE_NOTIFICATION_LISTENER
 import static org.jboss.as.jmx.MBeanServerSignature.SET_ATTRIBUTE;
 import static org.jboss.as.jmx.MBeanServerSignature.SET_ATTRIBUTES;
 import static org.jboss.as.jmx.MBeanServerSignature.UNREGISTER_MBEAN;
+
+import java.io.ObjectInputStream;
+import java.net.InetAddress;
+import java.security.AccessController;
+import java.security.Principal;
+import java.security.PrivilegedAction;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.HashSet;
+import java.util.Set;
+import java.util.concurrent.CopyOnWriteArraySet;
 
 import javax.management.Attribute;
 import javax.management.AttributeList;
@@ -67,29 +79,12 @@ import javax.management.QueryExp;
 import javax.management.ReflectionException;
 import javax.management.loading.ClassLoaderRepository;
 import javax.security.auth.Subject;
-import java.io.ObjectInputStream;
-import java.net.InetAddress;
-import java.security.AccessController;
-import java.security.Principal;
-import java.security.PrivilegedAction;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.HashSet;
-import java.util.Set;
-import java.util.concurrent.CopyOnWriteArraySet;
 
-import org.jboss.as.controller.access.Action;
 import org.jboss.as.controller.access.AuthorizationResult;
 import org.jboss.as.controller.access.AuthorizationResult.Decision;
 import org.jboss.as.controller.access.Caller;
-import org.jboss.as.controller.access.ConfigurableAuthorizer;
-import org.jboss.as.controller.access.Environment;
 import org.jboss.as.controller.access.JmxAction;
-import org.jboss.as.controller.access.TargetAttribute;
-import org.jboss.as.controller.access.TargetResource;
-import org.jboss.as.controller.access.rbac.RoleMapper;
-import org.jboss.as.controller.access.rbac.StandardRole;
+import org.jboss.as.controller.access.management.JmxAuthorizer;
 import org.jboss.as.controller.audit.AuditLogger;
 import org.jboss.as.controller.security.AccessMechanismPrincipal;
 import org.jboss.as.controller.security.InetAddressPrincipal;
@@ -114,7 +109,7 @@ class PluggableMBeanServerImpl implements PluggableMBeanServer {
 
     private final Set<MBeanServerPlugin> delegates = new CopyOnWriteArraySet<MBeanServerPlugin>();
 
-    private volatile ConfigurableAuthorizer authorizer;
+    private volatile JmxAuthorizer authorizer;
 
     PluggableMBeanServerImpl(MBeanServer rootMBeanServer) {
         this.rootMBeanServer = new TcclMBeanServer(rootMBeanServer);
@@ -124,7 +119,7 @@ class PluggableMBeanServerImpl implements PluggableMBeanServer {
         this.auditLogger = auditLoggerInfo != null ? auditLoggerInfo : NOOP_INFO;
     }
 
-    void setAuthorizer(ConfigurableAuthorizer authorizer) {
+    void setAuthorizer(JmxAuthorizer authorizer) {
         this.authorizer = authorizer;
     }
 
@@ -1581,17 +1576,4 @@ class PluggableMBeanServerImpl implements PluggableMBeanServer {
     }
 
     private static final JmxManagedAuditLogger NOOP_INFO = new JmxManagedAuditLogger(AuditLogger.NO_OP_LOGGER);
-
-    private static final RoleMapper SUPER_USER_MAPPER = new RoleMapper() {
-
-        @Override
-        public Set<String> mapRoles(Caller caller, Environment callEnvironment, Action action, TargetResource resource) {
-            return Collections.singleton(StandardRole.SUPERUSER.toString());
-        }
-
-        @Override
-        public Set<String> mapRoles(Caller caller, Environment callEnvironment, Action action, TargetAttribute attribute) {
-            return Collections.singleton(StandardRole.SUPERUSER.toString());
-        }
-    };
 }

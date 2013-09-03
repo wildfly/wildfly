@@ -32,16 +32,14 @@ import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.OperationStepHandler;
 import org.jboss.as.controller.SimpleOperationDefinition;
 import org.jboss.as.controller.SimpleOperationDefinitionBuilder;
-import org.jboss.as.controller.access.Action;
-import org.jboss.as.controller.access.TargetAttribute;
-import org.jboss.as.controller.access.rbac.RoleMapper;
+import org.jboss.as.controller.access.Authorizer;
 import org.jboss.as.controller.access.rbac.RunAsRoleMapper;
 import org.jboss.as.domain.management._private.DomainManagementResolver;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.ModelType;
 
 /**
- * A {@link ResourceDefinition} representing an individual role mapping.
+ * A {@link org.jboss.as.controller.ResourceDefinition} representing an individual role mapping.
  *
  * @author <a href="mailto:darran.lofthouse@jboss.com">Darran Lofthouse</a>
  */
@@ -52,10 +50,10 @@ public class IsCallerInRoleOperation implements OperationStepHandler {
             .setReadOnly()
             .build();
 
-    private final RoleMapper roleMapper;
+    private final Authorizer authorizer;
 
-    private IsCallerInRoleOperation(final RoleMapper roleMapper) {
-        this.roleMapper = new RunAsRoleMapper(roleMapper);
+    private IsCallerInRoleOperation(final Authorizer authorizer) {
+        this.authorizer = authorizer;
     }
 
     @Override
@@ -66,17 +64,15 @@ public class IsCallerInRoleOperation implements OperationStepHandler {
             context.addStep(this, Stage.RUNTIME);
         } else {
             ModelNode result = context.getResult();
-
-            Set<String> roles = roleMapper.mapRoles(context.getCaller(), null, new Action(operation, null), (TargetAttribute) null);
-
-            result.set(roles.contains(roleName));
+            Set<String> operationHeaderRoles = RunAsRoleMapper.getOperationHeaderRoles(operation);
+            result.set(authorizer.isCallerInRole(roleName, context.getCaller(), context.getCallEnvironment(), operationHeaderRoles));
         }
 
         context.stepCompleted();
     }
 
-    public static OperationStepHandler create(final RoleMapper roleMapper) {
-        return new IsCallerInRoleOperation(roleMapper);
+    public static OperationStepHandler create(final Authorizer authorizer) {
+        return new IsCallerInRoleOperation(authorizer);
     }
 
 }

@@ -24,6 +24,7 @@ package org.jboss.as.controller.access.permission;
 
 import java.security.Permission;
 import java.security.PermissionCollection;
+import java.util.Collections;
 import java.util.Enumeration;
 import java.util.Set;
 
@@ -59,6 +60,22 @@ public class ManagementPermissionAuthorizer implements Authorizer {
     public ManagementPermissionAuthorizer(PermissionFactory permissionFactory, JmxPermissionFactory jmxPermissionFactory) {
         this.permissionFactory = permissionFactory;
         this.jmxPermissionFactory = jmxPermissionFactory;
+    }
+
+    @Override
+    public AuthorizerDescription getDescription() {
+        // We go ahead and create this each time because we expect this to be overridden anyway
+        return new AuthorizerDescription() {
+            @Override
+            public boolean isRoleBased() {
+                return true;
+            }
+
+            @Override
+            public Set<String> getStandardRoles() {
+                return Collections.emptySet();
+            }
+        };
     }
 
     @Override
@@ -110,6 +127,12 @@ public class ManagementPermissionAuthorizer implements Authorizer {
                 return authorize(roles, StandardRole.SUPERUSER, StandardRole.ADMINISTRATOR, StandardRole.OPERATOR, StandardRole.MAINTAINER);
             }
         }
+    }
+
+    @Override
+    public boolean isCallerInRole(String roleName, Caller caller, Environment callEnvironment, Set<String> operationHeaderRoles) {
+        // Not supported in this base class; see StandardRBACAuthorizer
+        return false;
     }
 
     private AuthorizationResult authorize(Set<String> callerRoles, StandardRole...roles) {

@@ -28,7 +28,7 @@ import static org.jboss.as.controller.ControllerMessages.MESSAGES;
 import java.util.List;
 import java.util.concurrent.ExecutorService;
 
-import org.jboss.as.controller.access.DelegatingConfigurableAuthorizer;
+import org.jboss.as.controller.access.management.DelegatingConfigurableAuthorizer;
 import org.jboss.as.controller.audit.AuditLogger;
 import org.jboss.as.controller.audit.ManagedAuditLogger;
 import org.jboss.as.controller.client.OperationAttachments;
@@ -309,6 +309,33 @@ public abstract class AbstractControllerService implements Service<ModelControll
 
     public void stop(final StopContext context) {
         controller = null;
+
+        context.asynchronous();
+        Runnable r = new Runnable() {
+            @Override
+            public void run() {
+                try {
+                    stopAsynchronous(context);
+                } finally {
+                    try {
+                        authorizer.shutdown();
+                    } finally {
+                        context.complete();
+                    }
+                }
+            }
+        };
+        injectedExecutorService.getValue().execute(r);
+    }
+
+    /**
+     * Hook for subclasses to perform work during the asynchronous task started by
+     * {@link #stop(org.jboss.msc.service.StopContext)}. This base method does nothing.
+     * <p><strong>Subclasses must not invoke {@link org.jboss.msc.service.StopContext#complete()}</strong></p>
+     * @param context the stop context
+     */
+    protected void stopAsynchronous(StopContext context) {
+        // no-op
     }
 
     /**

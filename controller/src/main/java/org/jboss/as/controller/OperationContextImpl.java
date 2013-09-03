@@ -124,7 +124,6 @@ final class OperationContextImpl extends AbstractOperationContext {
     private final ConcurrentMap<AttachmentKey<?>, Object> valueAttachments = new ConcurrentHashMap<AttachmentKey<?>, Object>();
     private final Map<OperationId, AuthorizationResponseImpl> authorizations =
             new ConcurrentHashMap<OperationId, AuthorizationResponseImpl>();
-    private final Environment callEnvironment;
     /** Tracks whether any steps have gotten write access to the management resource registration*/
     private volatile boolean affectsResourceRegistration;
 
@@ -162,7 +161,6 @@ final class OperationContextImpl extends AbstractOperationContext {
         this.affectsModel = booting ? new ConcurrentHashMap<PathAddress, Object>(16 * 16) : new HashMap<PathAddress, Object>(1);
         this.contextFlags = contextFlags;
         this.serviceTarget = new ContextServiceTarget(modelController);
-        this.callEnvironment = new Environment(processState, processType);
         this.operationId = operationId;
         this.domainUUID = domainUUID;
         this.hostServerGroupTracker = hostServerGroupTracker;
@@ -866,6 +864,7 @@ final class OperationContextImpl extends AbstractOperationContext {
             // later for reasons unrelated to authz
             return authResp;
         }
+        Environment callEnvironment = getCallEnvironment();
         if (authResp.getResourceResult(ActionEffect.ADDRESS) == null) {
             Action action = authResp.standardAction.limitAction(ActionEffect.ADDRESS);
             authResp.addResourceResult(ActionEffect.ADDRESS, modelController.getAuthorizer().authorize(getCaller(), callEnvironment, action, authResp.targetResource));
@@ -958,7 +957,7 @@ final class OperationContextImpl extends AbstractOperationContext {
                 operation.get(OPERATION_HEADERS).set(activeStep.operation.get(OPERATION_HEADERS));
                 Action targetAction = new Action(operation, operationEntry);
 
-                authResult = modelController.getAuthorizer().authorize(getCaller(), callEnvironment, targetAction, authResp.targetResource);
+                authResult = modelController.getAuthorizer().authorize(getCaller(), getCallEnvironment(), targetAction, authResp.targetResource);
                 authResp.addOperationResult(operationName, authResult);
 
                 //When authorizing the remove operation, make sure that all the attributes are accessible
@@ -1036,7 +1035,7 @@ final class OperationContextImpl extends AbstractOperationContext {
                 AuthorizationResult effectResult = authResp.getResourceResult(requiredEffect);
                 if (effectResult == null) {
                     Action action = authResp.standardAction.limitAction(requiredEffect);
-                    effectResult = modelController.getAuthorizer().authorize(getCaller(), callEnvironment, action, authResp.targetResource);
+                    effectResult = modelController.getAuthorizer().authorize(getCaller(), getCallEnvironment(), action, authResp.targetResource);
                     authResp.addResourceResult(requiredEffect, effectResult);
                 }
                 if (effectResult.getDecision() == AuthorizationResult.Decision.DENY) {
@@ -1079,7 +1078,7 @@ final class OperationContextImpl extends AbstractOperationContext {
                         AttributeAccess attributeAccess = authResp.targetResource.getResourceRegistration().getAttributeAccess(PathAddress.EMPTY_ADDRESS, attribute);
                         targetAttribute = new TargetAttribute(attributeAccess, currentValue, authResp.targetResource);
                     }
-                    authResult = modelController.getAuthorizer().authorize(getCaller(), callEnvironment, action, targetAttribute);
+                    authResult = modelController.getAuthorizer().authorize(getCaller(), getCallEnvironment(), action, targetAttribute);
                     authResp.addAttributeResult(attribute, actionEffect, authResult);
                 }
                 if (authResult.getDecision() == AuthorizationResult.Decision.DENY) {
@@ -1123,7 +1122,7 @@ final class OperationContextImpl extends AbstractOperationContext {
 
 
         AuthorizationResponseImpl result = new AuthorizationResponseImpl(action, targetResource);
-        AuthorizationResult simple = modelController.getAuthorizer().authorize(caller, callEnvironment, action, targetResource);
+        AuthorizationResult simple = modelController.getAuthorizer().authorize(caller, getCallEnvironment(), action, targetResource);
         if (simple.getDecision() == AuthorizationResult.Decision.PERMIT) {
             for (Action.ActionEffect actionEffect : action.getActionEffects()) {
                 result.addResourceResult(actionEffect, simple);

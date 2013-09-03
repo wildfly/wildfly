@@ -62,6 +62,7 @@ import java.util.concurrent.atomic.AtomicReference;
 import javax.security.auth.Subject;
 
 import org.jboss.as.controller.access.Caller;
+import org.jboss.as.controller.access.Environment;
 import org.jboss.as.controller.audit.AuditLogger;
 import org.jboss.as.controller.client.MessageSeverity;
 import org.jboss.as.controller.persistence.ConfigurationPersistenceException;
@@ -96,7 +97,7 @@ abstract class AbstractOperationContext implements OperationContext {
     private final boolean booting;
     private final ProcessType processType;
     private final RunningMode runningMode;
-
+    private final Environment callEnvironment;
     // We only respect interruption on the way in; once we complete all steps
     // and begin
     // returning, any calls that can throw InterruptedException are converted to
@@ -146,6 +147,7 @@ abstract class AbstractOperationContext implements OperationContext {
             }
         }
         initiatingThread = Thread.currentThread();
+        this.callEnvironment = new Environment(processState, processType);
     }
 
     @Override
@@ -862,13 +864,18 @@ abstract class AbstractOperationContext implements OperationContext {
         return more;
     }
 
-
+    @Override
     public Caller getCaller() {
         // TODO Consider threading but in general no harm in multiple instances being created rather than adding synchronization.
         Caller response = SecurityActions.getCaller(caller); // This allows for a change of Subject whilst the same OperationContext is in use.
         caller = response;
 
         return response;
+    }
+
+    @Override
+    public Environment getCallEnvironment() {
+        return callEnvironment;
     }
 
     class Step {

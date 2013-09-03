@@ -25,24 +25,24 @@ package org.jboss.as.domain.management.access;
 import org.jboss.as.controller.AbstractWriteAttributeHandler;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
-import org.jboss.as.controller.access.rbac.ConfigurableRoleMapper;
+import org.jboss.as.controller.access.management.WritableAuthorizerConfiguration;
 import org.jboss.as.controller.registry.Resource;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.ModelType;
 
 /**
  * An {@link org.jboss.as.controller.OperationStepHandler} for updates to the use-realm-roles attribute and to pass the current value on to the
- * {@link ConfigurableRoleMapper}.
+ * {@link org.jboss.as.controller.access.rbac.StandardRoleMapper}.
  *
  * @author <a href="mailto:darran.lofthouse@jboss.com">Darran Lofthouse</a>
  */
 public class AccessAuthorizationUseRealmRolesWriteAttributeHandler extends AbstractWriteAttributeHandler<Void> {
 
-    private final ConfigurableRoleMapper rbacRoleMapper;
+    private final WritableAuthorizerConfiguration authorizerConfiguration;
 
-    AccessAuthorizationUseRealmRolesWriteAttributeHandler(final ConfigurableRoleMapper rbacRoleMapper) {
+    AccessAuthorizationUseRealmRolesWriteAttributeHandler(WritableAuthorizerConfiguration authorizerConfiguration) {
         super(AccessAuthorizationResourceDefinition.USE_REALM_ROLES);
-        this.rbacRoleMapper = rbacRoleMapper;
+        this.authorizerConfiguration = authorizerConfiguration;
     }
 
     @Override
@@ -73,7 +73,7 @@ public class AccessAuthorizationUseRealmRolesWriteAttributeHandler extends Abstr
     }
 
     private void setUseRealmRoles(final ModelNode value) {
-        rbacRoleMapper.setUseRealmRoles(value.asBoolean());
+        authorizerConfiguration.setUseRealmRoles(value.asBoolean());
     }
 
     @Override

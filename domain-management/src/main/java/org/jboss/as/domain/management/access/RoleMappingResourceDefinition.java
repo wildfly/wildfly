@@ -28,7 +28,8 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ROL
 import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.PathElement;
 import org.jboss.as.controller.SimpleResourceDefinition;
-import org.jboss.as.controller.access.rbac.ConfigurableRoleMapper;
+import org.jboss.as.controller.access.management.DelegatingConfigurableAuthorizer;
+import org.jboss.as.controller.access.management.WritableAuthorizerConfiguration;
 import org.jboss.as.controller.registry.ManagementResourceRegistration;
 import org.jboss.as.domain.management._private.DomainManagementResolver;
 import org.jboss.dmr.ModelNode;
@@ -42,28 +43,30 @@ public class RoleMappingResourceDefinition extends SimpleResourceDefinition {
 
     public static final String PATH_KEY = ROLE_MAPPING;
 
-    private final ConfigurableRoleMapper roleMapper;
+    private final DelegatingConfigurableAuthorizer authorizer;
 
-    private RoleMappingResourceDefinition(final ConfigurableRoleMapper roleMapper) {
+    private RoleMappingResourceDefinition(final DelegatingConfigurableAuthorizer authorizer) {
         super(PathElement.pathElement(PATH_KEY), DomainManagementResolver.getResolver("core.access-control.role-mapping"),
-                RoleMappingAdd.create(roleMapper), RoleMappingRemove.create(roleMapper));
-        this.roleMapper = roleMapper;
+                RoleMappingAdd.create(authorizer.getWritableAuthorizerConfiguration()),
+                RoleMappingRemove.create(authorizer.getWritableAuthorizerConfiguration()));
+        this.authorizer = authorizer;
     }
 
-    public static SimpleResourceDefinition create(final ConfigurableRoleMapper roleMapper) {
-        return new RoleMappingResourceDefinition(roleMapper);
+    public static SimpleResourceDefinition create(final DelegatingConfigurableAuthorizer authorizer) {
+        return new RoleMappingResourceDefinition(authorizer);
     }
 
     @Override
     public void registerChildren(ManagementResourceRegistration resourceRegistration) {
-        resourceRegistration.registerSubModel(PrincipalResourceDefinition.includeResourceDefinition(roleMapper));
-        resourceRegistration.registerSubModel(PrincipalResourceDefinition.excludeResourceDefinition(roleMapper));
+        WritableAuthorizerConfiguration authorizerConfiguration = authorizer.getWritableAuthorizerConfiguration();
+        resourceRegistration.registerSubModel(PrincipalResourceDefinition.includeResourceDefinition(authorizerConfiguration));
+        resourceRegistration.registerSubModel(PrincipalResourceDefinition.excludeResourceDefinition(authorizerConfiguration));
     }
 
     @Override
     public void registerOperations(ManagementResourceRegistration resourceRegistration) {
         super.registerOperations(resourceRegistration);
-        resourceRegistration.registerOperationHandler(IsCallerInRoleOperation.DEFINITION, IsCallerInRoleOperation.create(roleMapper));
+        resourceRegistration.registerOperationHandler(IsCallerInRoleOperation.DEFINITION, IsCallerInRoleOperation.create(authorizer));
     }
 
     static String getRoleName(final ModelNode operation) {
