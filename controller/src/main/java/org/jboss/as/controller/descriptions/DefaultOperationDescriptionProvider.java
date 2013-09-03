@@ -37,8 +37,8 @@ import java.util.ResourceBundle;
 
 import org.jboss.as.controller.AttributeDefinition;
 import org.jboss.as.controller.DeprecationData;
-import org.jboss.as.controller.access.constraint.management.AccessConstraintDefinition;
-import org.jboss.as.controller.access.constraint.management.AccessConstraintDescriptionProviderUtil;
+import org.jboss.as.controller.access.management.AccessConstraintDefinition;
+import org.jboss.as.controller.access.management.AccessConstraintDescriptionProviderUtil;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.ModelType;
 

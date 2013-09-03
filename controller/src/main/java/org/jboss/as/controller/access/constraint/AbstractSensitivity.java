@@ -27,7 +27,7 @@ import org.jboss.as.controller.access.Action;
 /**
  * Configuration of sensitive data. Typically {@link org.jboss.as.controller.AttributeDefinition}, {@link org.jboss.as.controller.OperationDefinition}
  * and {@link org.jboss.as.controller.ResourceDefinition} will be annotated with zero or more
- * {@link org.jboss.as.controller.access.constraint.management.SensitiveTargetAccessConstraintDefinition} containing this information. The purpose of this
+ * {@link org.jboss.as.controller.access.management.SensitiveTargetAccessConstraintDefinition} containing this information. The purpose of this
  * class is to establish a default behaviour regarding sensitivity for
  * <ul>
  *      <li><b>access</b> - to be able to even be aware of the target's existence</li>
