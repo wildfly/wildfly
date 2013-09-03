@@ -85,4 +85,4 @@ done
 
 echo CLASSPATH $CLASSPATH
 
-jconsole -J-Djava.class.path="$CLASSPATH" $@
+$JAVA_HOME/bin/jconsole -J-Djava.class.path="$CLASSPATH" $@
