@@ -30,9 +30,8 @@ import org.jboss.as.controller.OperationContext.Stage;
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.OperationStepHandler;
 import org.jboss.as.controller.PathAddress;
-import org.jboss.as.controller.access.rbac.ConfigurableRoleMapper;
-import org.jboss.as.controller.access.rbac.ConfigurableRoleMapper.MatchType;
-import org.jboss.as.controller.access.rbac.ConfigurableRoleMapper.PrincipalType;
+import org.jboss.as.controller.access.AuthorizerConfiguration;
+import org.jboss.as.controller.access.management.WritableAuthorizerConfiguration;
 import org.jboss.dmr.ModelNode;
 
 /**
@@ -42,20 +41,20 @@ import org.jboss.dmr.ModelNode;
  */
 public class PrincipalRemove implements OperationStepHandler {
 
-    private final ConfigurableRoleMapper roleMapper;
-    private final ConfigurableRoleMapper.MatchType matchType;
+    private final WritableAuthorizerConfiguration authorizerConfiguration;
+    private final WritableAuthorizerConfiguration.MatchType matchType;
 
-    private PrincipalRemove(final ConfigurableRoleMapper roleMapper, final ConfigurableRoleMapper.MatchType matchType) {
-        this.roleMapper = roleMapper;
+    private PrincipalRemove(final WritableAuthorizerConfiguration authorizerConfiguration, final WritableAuthorizerConfiguration.MatchType matchType) {
+        this.authorizerConfiguration = authorizerConfiguration;
         this.matchType = matchType;
     }
 
-    public static OperationStepHandler createForInclude(final ConfigurableRoleMapper roleMapper) {
-        return new PrincipalRemove(roleMapper, MatchType.INCLUDE);
+    public static OperationStepHandler createForInclude(final WritableAuthorizerConfiguration authorizerConfiguration) {
+        return new PrincipalRemove(authorizerConfiguration, WritableAuthorizerConfiguration.MatchType.INCLUDE);
     }
 
-    public static OperationStepHandler createForExclude(final ConfigurableRoleMapper roleMapper) {
-        return new PrincipalRemove(roleMapper, MatchType.EXCLUDE);
+    public static OperationStepHandler createForExclude(final WritableAuthorizerConfiguration authorizerConfiguration) {
+        return new PrincipalRemove(authorizerConfiguration, WritableAuthorizerConfiguration.MatchType.EXCLUDE);
     }
 
     @Override
@@ -63,13 +62,13 @@ public class PrincipalRemove implements OperationStepHandler {
         ModelNode model = context.readResource(PathAddress.EMPTY_ADDRESS).getModel();
 
         final String roleName = RoleMappingResourceDefinition.getRoleName(operation);
-        final PrincipalType principalType = PrincipalResourceDefinition.getPrincipalType(context, model);
+        final AuthorizerConfiguration.PrincipalType principalType = PrincipalResourceDefinition.getPrincipalType(context, model);
         final String realm = PrincipalResourceDefinition.getRealm(context, model);
         final String name = PrincipalResourceDefinition.getName(context, model);
 
         context.removeResource(PathAddress.EMPTY_ADDRESS);
 
-        if (matchType == MatchType.INCLUDE) {
+        if (matchType == WritableAuthorizerConfiguration.MatchType.INCLUDE) {
             RbacSanityCheckOperation.registerOperation(context);
         }
 
@@ -79,7 +78,7 @@ public class PrincipalRemove implements OperationStepHandler {
     }
 
     private void registerRuntimeRemove(final OperationContext context, final String roleName,
-            final PrincipalType principalType, final String name, final String realm) {
+            final AuthorizerConfiguration.PrincipalType principalType, final String name, final String realm) {
         /*
          * The address of the resource whilst hopefully being related to the attributes of the Principal resource is not
          * guaranteed, a unique name is needed but not one attribute can be regarded as being suitable as a unique key.
@@ -88,7 +87,7 @@ public class PrincipalRemove implements OperationStepHandler {
 
             @Override
             public void execute(OperationContext context, ModelNode operation) throws OperationFailedException {
-                if (roleMapper.removePrincipal(roleName, principalType, matchType, name, realm)) {
+                if (authorizerConfiguration.removeRoleMappingPrincipal(roleName, principalType, matchType, name, realm)) {
                     registerRollbackHandler(context, roleName, principalType, name, realm);
                 } else {
                     context.restartRequired();
@@ -99,12 +98,12 @@ public class PrincipalRemove implements OperationStepHandler {
     }
 
     private void registerRollbackHandler(final OperationContext context, final String roleName,
-            final PrincipalType principalType, final String name, final String realm) {
+            final AuthorizerConfiguration.PrincipalType principalType, final String name, final String realm) {
         context.completeStep(new RollbackHandler() {
 
             @Override
             public void handleRollback(OperationContext context, ModelNode operation) {
-                if (roleMapper.addPrincipal(roleName, principalType, matchType, name, realm, false) == false) {
+                if (authorizerConfiguration.addRoleMappingPrincipal(roleName, principalType, matchType, name, realm, false) == false) {
                     context.restartRequired();
                 }
             }

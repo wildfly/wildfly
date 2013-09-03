@@ -23,7 +23,6 @@
 package org.jboss.as.host.controller;
 
 import static java.security.AccessController.doPrivileged;
-import org.jboss.as.controller.ModelControllerServiceInitialization;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.DESCRIBE;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.FAILURE_DESCRIPTION;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.HOST;
@@ -63,6 +62,7 @@ import org.jboss.as.controller.ControlledProcessState;
 import org.jboss.as.controller.ExpressionResolver;
 import org.jboss.as.controller.ModelController;
 import org.jboss.as.controller.ModelController.OperationTransactionControl;
+import org.jboss.as.controller.ModelControllerServiceInitialization;
 import org.jboss.as.controller.OperationStepHandler;
 import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.PathElement;
@@ -72,7 +72,7 @@ import org.jboss.as.controller.ProxyOperationAddressTranslator;
 import org.jboss.as.controller.ResourceDefinition;
 import org.jboss.as.controller.RunningMode;
 import org.jboss.as.controller.TransformingProxyController;
-import org.jboss.as.controller.access.DelegatingConfigurableAuthorizer;
+import org.jboss.as.controller.access.management.DelegatingConfigurableAuthorizer;
 import org.jboss.as.controller.audit.ManagedAuditLogger;
 import org.jboss.as.controller.audit.ManagedAuditLoggerImpl;
 import org.jboss.as.controller.client.OperationMessageHandler;
@@ -613,23 +613,14 @@ public class DomainModelControllerService extends AbstractControllerService impl
         serverInventory = null;
         extensionRegistry.clear();
         super.stop(context);
+    }
 
-        context.asynchronous();
-        Thread executorShutdown = new Thread(new Runnable() {
-            @Override
-            public void run() {
-                try {
-                    pingScheduler.shutdownNow();
-                } finally {
-                    try {
-                        proxyExecutor.shutdown();
-                    } finally {
-                        context.complete();
-                    }
-                }
-            }
-        }, DomainModelControllerService.class.getSimpleName() + " ExecutorService Shutdown Thread");
-        executorShutdown.start();
+    protected void stopAsynchronous(StopContext context)  {
+        try {
+            pingScheduler.shutdownNow();
+        } finally {
+            proxyExecutor.shutdown();
+        }
     }
 
 

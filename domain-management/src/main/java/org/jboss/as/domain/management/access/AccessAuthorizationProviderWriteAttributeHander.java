@@ -27,10 +27,13 @@ import java.util.Locale;
 import org.jboss.as.controller.AbstractWriteAttributeHandler;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
-import org.jboss.as.controller.access.ConfigurableAuthorizer;
-import org.jboss.as.controller.access.DelegatingConfigurableAuthorizer;
-import org.jboss.as.controller.access.SimpleConfigurableAuthorizer;
+import org.jboss.as.controller.access.Authorizer;
+import org.jboss.as.controller.access.AuthorizerConfiguration;
+import org.jboss.as.controller.access.management.DelegatingConfigurableAuthorizer;
 import org.jboss.as.controller.access.rbac.RoleMapper;
+import org.jboss.as.controller.access.rbac.StandardRoleMapper;
+import org.jboss.as.controller.access.rbac.StandardRBACAuthorizer;
+import org.jboss.as.controller.access.rbac.SuperUserRoleMapper;
 import org.jboss.as.controller.registry.Resource;
 import org.jboss.as.domain.management.access.AccessAuthorizationResourceDefinition.Provider;
 import org.jboss.dmr.ModelNode;
@@ -46,16 +49,9 @@ class AccessAuthorizationProviderWriteAttributeHander extends AbstractWriteAttri
 
     private final DelegatingConfigurableAuthorizer configurableAuthorizer;
 
-    /**
-     * The {@link RoleMapper} to use if the provider is switched to rbac.
-     */
-    private final RoleMapper rbacRoleMapper;
-
-    AccessAuthorizationProviderWriteAttributeHander(DelegatingConfigurableAuthorizer configurableAuthorizer,
-            RoleMapper rbacRoleMapper) {
+    AccessAuthorizationProviderWriteAttributeHander(DelegatingConfigurableAuthorizer configurableAuthorizer) {
         super(AccessAuthorizationResourceDefinition.PROVIDER);
         this.configurableAuthorizer = configurableAuthorizer;
-        this.rbacRoleMapper = rbacRoleMapper;
     }
 
 
@@ -100,21 +96,24 @@ class AccessAuthorizationProviderWriteAttributeHander extends AbstractWriteAttri
     private void updateAuthorizer(final ModelNode value) {
         String providerName = value.asString().toUpperCase(Locale.ENGLISH);
         Provider provider = Provider.valueOf(providerName);
-        ConfigurableAuthorizer delegate;
+        AuthorizerConfiguration authorizerConfiguration = configurableAuthorizer.getWritableAuthorizerConfiguration();
+        RoleMapper roleMapper;
         if (provider == Provider.SIMPLE) {
-            delegate = getSimpleAuthorizer();
+            roleMapper = new SuperUserRoleMapper(authorizerConfiguration);
         } else {
-            delegate = getRoleBasedAuthorizer();
+            roleMapper = getRoleBasedAuthorizer();
         }
+        Authorizer delegate = StandardRBACAuthorizer.create(configurableAuthorizer.getWritableAuthorizerConfiguration(),
+                roleMapper);
         configurableAuthorizer.setDelegate(delegate);
     }
 
-    private ConfigurableAuthorizer getSimpleAuthorizer() {
-        return new SimpleConfigurableAuthorizer();
+    private RoleMapper getSimpleAuthorizer(AuthorizerConfiguration authorizerConfiguration) {
+        return new SuperUserRoleMapper(configurableAuthorizer.getWritableAuthorizerConfiguration());
     }
 
-    private ConfigurableAuthorizer getRoleBasedAuthorizer() {
-        return new SimpleConfigurableAuthorizer(rbacRoleMapper);
+    private RoleMapper getRoleBasedAuthorizer() {
+        return new StandardRoleMapper(configurableAuthorizer.getWritableAuthorizerConfiguration());
     }
 
 }

@@ -20,28 +20,24 @@
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
 
-package org.jboss.as.controller.access;
+package org.jboss.as.controller.access.management;
 
-import java.util.Set;
-
-import org.jboss.as.controller.access.constraint.ScopingConstraint;
+import org.jboss.as.controller.access.Authorizer;
 
 /**
- * An {@link Authorizer} that supports configuration via the WildFly management API.
+ * Hook to expose JMX-related access control configuration to the JMX subsystem without
+ * exposing unrelated capabilities.
  *
  * @author Brian Stansberry (c) 2013 Red Hat Inc.
  */
-public interface ConfigurableAuthorizer extends Authorizer {
+public interface JmxAuthorizer extends Authorizer {
 
-    boolean isRoleBased();
-
-    Set<String> getStandardRoles();
-
-    Set<String> getAllRoles();
-
-    void addScopedRole(String roleName, String baseRole, ScopingConstraint scopingConstraint);
-
-    void removeScopedRole(String roleName);
-
+    /**
+     * Gets whether JMX calls to non-facade mbeans (i.e. those that result in invocations to
+     * {@link Authorizer#authorizeJmxOperation(org.jboss.as.controller.access.Caller, org.jboss.as.controller.access.Environment,
+     * org.jboss.as.controller.access.JmxAction)}) should be treated as 'sensitive'.
+     *
+     * @param sensitive {@code true} if non-facade mbean calls are sensitive; {@code false} otherwise
+     */
     void setNonFacadeMBeansSensitive(boolean sensitive);
 }

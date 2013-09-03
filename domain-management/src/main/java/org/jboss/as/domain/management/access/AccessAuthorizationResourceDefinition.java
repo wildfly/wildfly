@@ -40,8 +40,8 @@ import org.jboss.as.controller.SimpleAttributeDefinition;
 import org.jboss.as.controller.SimpleAttributeDefinitionBuilder;
 import org.jboss.as.controller.SimpleListAttributeDefinition;
 import org.jboss.as.controller.SimpleResourceDefinition;
-import org.jboss.as.controller.access.DelegatingConfigurableAuthorizer;
-import org.jboss.as.controller.access.rbac.ConfigurableRoleMapper;
+import org.jboss.as.controller.access.management.DelegatingConfigurableAuthorizer;
+import org.jboss.as.controller.access.management.WritableAuthorizerConfiguration;
 import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
 import org.jboss.as.controller.operations.validation.EnumValidator;
 import org.jboss.as.controller.parsing.Attribute;
@@ -101,17 +101,6 @@ public class AccessAuthorizationResourceDefinition extends SimpleResourceDefinit
             .setDefaultValue(new ModelNode(false))
             .setAllowExpression(true).build();
 
-    private final DelegatingConfigurableAuthorizer configurableAuthorizer;
-
-    /*
-     * Currently this needs to exist even if it is not currently being used so that even if the current provider is 'simple'
-     * updates to the ConfigurableRoleMapper will be in place should the provider be switched to 'rbac'.
-     */
-    private final ConfigurableRoleMapper roleMapper = new ConfigurableRoleMapper();
-
-    private final boolean isDomain;
-    private final boolean isHostController;
-
     public static AccessAuthorizationResourceDefinition forDomain(DelegatingConfigurableAuthorizer configurableAuthorizer) {
         return new AccessAuthorizationResourceDefinition(configurableAuthorizer, true, false);
     }
@@ -127,6 +116,11 @@ public class AccessAuthorizationResourceDefinition extends SimpleResourceDefinit
     public static AccessAuthorizationResourceDefinition forStandaloneServer(DelegatingConfigurableAuthorizer configurableAuthorizer) {
         return new AccessAuthorizationResourceDefinition(configurableAuthorizer, false, false);
     }
+
+    private final DelegatingConfigurableAuthorizer configurableAuthorizer;
+
+    private final boolean isDomain;
+    private final boolean isHostController;
 
     private AccessAuthorizationResourceDefinition(DelegatingConfigurableAuthorizer configurableAuthorizer, boolean domain, boolean hostController) {
         super(PATH_ELEMENT, DomainManagementResolver.getResolver("core.access-control"));
@@ -146,11 +140,9 @@ public class AccessAuthorizationResourceDefinition extends SimpleResourceDefinit
                 }
             });
         } else {
-            resourceRegistration.registerReadWriteAttribute(USE_REALM_ROLES, null, new AccessAuthorizationUseRealmRolesWriteAttributeHandler(roleMapper));
-        }
-
-        if (!isHostController) {
-            resourceRegistration.registerReadWriteAttribute(PROVIDER, null, new AccessAuthorizationProviderWriteAttributeHander(configurableAuthorizer, roleMapper));
+            WritableAuthorizerConfiguration authorizerConfiguration = configurableAuthorizer.getWritableAuthorizerConfiguration();
+            resourceRegistration.registerReadWriteAttribute(USE_REALM_ROLES, null, new AccessAuthorizationUseRealmRolesWriteAttributeHandler(authorizerConfiguration));
+            resourceRegistration.registerReadWriteAttribute(PROVIDER, null, new AccessAuthorizationProviderWriteAttributeHander(configurableAuthorizer));
         }
     }
 
@@ -158,14 +150,15 @@ public class AccessAuthorizationResourceDefinition extends SimpleResourceDefinit
     public void registerChildren(ManagementResourceRegistration resourceRegistration) {
         if (!isHostController) {
             // Role Mapping
-            resourceRegistration.registerSubModel(RoleMappingResourceDefinition.create(roleMapper));
+            resourceRegistration.registerSubModel(RoleMappingResourceDefinition.create(configurableAuthorizer));
         }
 
         // Scoped roles
         if (isDomain) {
-            resourceRegistration.registerSubModel(new ServerGroupScopedRoleResourceDefinition(configurableAuthorizer));
+            WritableAuthorizerConfiguration authorizerConfiguration = configurableAuthorizer.getWritableAuthorizerConfiguration();
+            resourceRegistration.registerSubModel(new ServerGroupScopedRoleResourceDefinition(authorizerConfiguration));
             if (!isHostController) {
-                resourceRegistration.registerSubModel(new HostScopedRolesResourceDefinition(configurableAuthorizer));
+                resourceRegistration.registerSubModel(new HostScopedRolesResourceDefinition(authorizerConfiguration));
             }
         }
 

@@ -52,61 +52,62 @@ import org.jboss.dmr.ModelType;
 public class RunAsRoleMapper implements RoleMapper {
 
     private final RoleMapper realRoleMapper;
-    private volatile Set<String> knownRoles;
 
     public RunAsRoleMapper(RoleMapper realRoleMapper) {
         this.realRoleMapper = realRoleMapper;
-
-        Set<String> knownRoles = new HashSet<String>();
-        for (StandardRole current : StandardRole.values()) {
-            knownRoles.add(current.toString());
-        }
-        this.knownRoles = knownRoles;
-    }
-
-    public void addKnownRole(String roleName) {
-        Set<String> newKnownRoles = new HashSet<String>(knownRoles);
-        newKnownRoles.add(roleName);
-        this.knownRoles = newKnownRoles;
-    }
-
-    public void removeKnownRole(String roleName) {
-        Set<String> newKnownRoles = new HashSet<String>(knownRoles);
-        newKnownRoles.remove(roleName);
-        this.knownRoles = newKnownRoles;
     }
 
     @Override
     public Set<String> mapRoles(Caller caller, Environment callEnvironment, Action action, TargetAttribute attribute) {
-        Set<String> mappedRoles = realRoleMapper.mapRoles(caller, callEnvironment, action, attribute);
-        if (action != null) {
-            mappedRoles = mapRoles(caller, mappedRoles, action.getOperation());
-        }
-        return mappedRoles;
+        Set<String> runAsRoles = getOperationHeaderRoles(action.getOperation());
+        return mapRoles(caller, realRoleMapper.mapRoles(caller, callEnvironment, action, attribute), runAsRoles, true);
     }
 
     @Override
     public Set<String> mapRoles(Caller caller, Environment callEnvironment, Action action, TargetResource resource) {
-        return mapRoles(caller, realRoleMapper.mapRoles(caller, callEnvironment, action, resource), action.getOperation());
+        Set<String> runAsRoles = getOperationHeaderRoles(action.getOperation());
+        return mapRoles(caller, realRoleMapper.mapRoles(caller, callEnvironment, action, resource), runAsRoles, true);
     }
 
-    private Set<String> mapRoles(Caller caller, Set<String> currentRoles, ModelNode operation) {
-        Set<String> result = currentRoles;
-        ModelNode headers = operation.get(ModelDescriptionConstants.OPERATION_HEADERS);
-        if (headers.isDefined() && headers.hasDefined("roles")) {
-            ModelNode rolesNode = headers.get("roles");
-            Set<String> roleSet = new HashSet<String>();
-            if (rolesNode.getType() == ModelType.STRING) {
-                String requestedRole = getRoleFromText(rolesNode.asString());
-                if (canRunAs(currentRoles, requestedRole)) {
-                    roleSet.add(requestedRole);
-                }
-            } else {
-                for (ModelNode role : headers.get("roles").asList()) {
-                    String requestedRole = getRoleFromText(role.asString());
-                    if (canRunAs(currentRoles, requestedRole)) {
-                        roleSet.add(requestedRole);
+    @Override
+    public Set<String> mapRoles(Caller caller, Environment callEnvironment, Set<String> operationHeaderRoles) {
+        return mapRoles(caller, realRoleMapper.mapRoles(caller, callEnvironment, null), operationHeaderRoles, false);
+    }
+
+    @Override
+    public boolean canRunAs(Set<String> mappedRoles, String runAsRole) {
+        // This method is for us to call, not for others :)
+        return false;
+    }
+
+    public static Set<String> getOperationHeaderRoles(ModelNode operation) {
+        Set<String> result = null;
+        if (operation.hasDefined(ModelDescriptionConstants.OPERATION_HEADERS)) {
+            ModelNode headers = operation.get(ModelDescriptionConstants.OPERATION_HEADERS);
+            if (headers.hasDefined(ModelDescriptionConstants.ROLES)) {
+                ModelNode rolesNode = headers.get(ModelDescriptionConstants.ROLES);
+                if (rolesNode.getType() == ModelType.STRING) {
+                    result = Collections.singleton(getRoleFromText(rolesNode.asString()));
+                } else {
+                    result = new HashSet<String>();
+
+                    for (ModelNode role : rolesNode.asList()) {
+                        result.add(getRoleFromText(role.asString()));
                     }
+                }
+            }
+        }
+        return result;
+    }
+
+    private Set<String> mapRoles(Caller caller, Set<String> currentRoles, Set<String> runAsRoles, boolean sanitized) {
+        Set<String> result = currentRoles;
+        if (runAsRoles != null) {
+            Set<String> roleSet = new HashSet<String>();
+            for (String role : runAsRoles) {
+                String requestedRole = sanitized ? role : getRoleFromText(role);
+                if (realRoleMapper.canRunAs(currentRoles, requestedRole)) {
+                    roleSet.add(requestedRole);
                 }
             }
             if (roleSet.isEmpty() == false) {
@@ -124,11 +125,6 @@ public class RunAsRoleMapper implements RoleMapper {
         }
 
         return result;
-    }
-
-    private boolean canRunAs(Set<String> currentRoles, String requestedRole) {
-        return requestedRole != null && currentRoles.contains(StandardRole.SUPERUSER.toString())
-                && knownRoles.contains(requestedRole);
     }
 
     private static String getRoleFromText(String text) {

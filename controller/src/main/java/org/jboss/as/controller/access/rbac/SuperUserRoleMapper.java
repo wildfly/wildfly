@@ -26,6 +26,7 @@ import java.util.Collections;
 import java.util.Set;
 
 import org.jboss.as.controller.access.Action;
+import org.jboss.as.controller.access.AuthorizerConfiguration;
 import org.jboss.as.controller.access.Caller;
 import org.jboss.as.controller.access.Environment;
 import org.jboss.as.controller.access.TargetAttribute;
@@ -38,12 +39,11 @@ import org.jboss.as.controller.access.TargetResource;
  */
 public class SuperUserRoleMapper implements RoleMapper {
 
-    public static final RoleMapper INSTANCE = new SuperUserRoleMapper();
-
     private final Set<String> SUPERUSER = Collections.singleton(StandardRole.SUPERUSER.toString());
 
-    private SuperUserRoleMapper() {
-        // Singleton
+    private final AuthorizerConfiguration authorizerConfiguration;
+    public SuperUserRoleMapper(AuthorizerConfiguration configuration) {
+        authorizerConfiguration = configuration;
     }
 
     @Override
@@ -54,6 +54,17 @@ public class SuperUserRoleMapper implements RoleMapper {
     @Override
     public Set<String> mapRoles(Caller caller, Environment callEnvironment, Action action, TargetResource resource) {
         return SUPERUSER;
+    }
+
+    @Override
+    public Set<String> mapRoles(Caller caller, Environment callEnvironment, Set<String> operationHeaderRoles) {
+        return SUPERUSER;
+    }
+
+    @Override
+    public boolean canRunAs(Set<String> mappedRoles, String runAsRole) {
+        return runAsRole != null && mappedRoles.contains(StandardRole.SUPERUSER.toString())
+                && authorizerConfiguration.hasRole(runAsRole);
     }
 
 }

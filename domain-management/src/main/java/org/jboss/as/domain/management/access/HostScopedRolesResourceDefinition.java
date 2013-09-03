@@ -42,8 +42,8 @@ import org.jboss.as.controller.SimpleAttributeDefinitionBuilder;
 import org.jboss.as.controller.SimpleListAttributeDefinition;
 import org.jboss.as.controller.SimpleOperationDefinitionBuilder;
 import org.jboss.as.controller.SimpleResourceDefinition;
-import org.jboss.as.controller.access.ConfigurableAuthorizer;
 import org.jboss.as.controller.access.constraint.HostEffectConstraint;
+import org.jboss.as.controller.access.management.WritableAuthorizerConfiguration;
 import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
 import org.jboss.as.controller.parsing.Attribute;
 import org.jboss.as.controller.parsing.Element;
@@ -85,12 +85,12 @@ public class HostScopedRolesResourceDefinition extends SimpleResourceDefinition 
     private final HostScopedRoleRemove removeHandler;
     private final HostScopedRoleWriteAttributeHandler writeAttributeHandler;
 
-    public HostScopedRolesResourceDefinition(ConfigurableAuthorizer authorizer) {
+    public HostScopedRolesResourceDefinition(WritableAuthorizerConfiguration authorizerConfiguration) {
         super(PATH_ELEMENT, DomainManagementResolver.getResolver("core.access-control.host-scoped-role"));
 
         Map<String, HostEffectConstraint> constraintMap = new HashMap<String, HostEffectConstraint>();
-        this.addHandler = new HostScopedRoleAdd(constraintMap, authorizer);
-        this.removeHandler =  new HostScopedRoleRemove(constraintMap, authorizer);
+        this.addHandler = new HostScopedRoleAdd(constraintMap, authorizerConfiguration);
+        this.removeHandler =  new HostScopedRoleRemove(constraintMap, authorizerConfiguration);
         this.writeAttributeHandler = new HostScopedRoleWriteAttributeHandler(constraintMap);
     }
 

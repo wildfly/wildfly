@@ -30,7 +30,7 @@ import org.jboss.as.controller.OperationContext.Stage;
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.OperationStepHandler;
 import org.jboss.as.controller.PathAddress;
-import org.jboss.as.controller.access.rbac.ConfigurableRoleMapper;
+import org.jboss.as.controller.access.management.WritableAuthorizerConfiguration;
 import org.jboss.dmr.ModelNode;
 
 /**
@@ -42,14 +42,14 @@ import org.jboss.dmr.ModelNode;
  */
 public class RoleMappingAdd implements OperationStepHandler {
 
-    private final ConfigurableRoleMapper roleMapper;
+    private final WritableAuthorizerConfiguration authorizerConfiguration;
 
-    private RoleMappingAdd(final ConfigurableRoleMapper roleMapper) {
-        this.roleMapper = roleMapper;
+    private RoleMappingAdd(final WritableAuthorizerConfiguration authorizerConfiguration) {
+        this.authorizerConfiguration = authorizerConfiguration;
     }
 
-    public static OperationStepHandler create(final ConfigurableRoleMapper roleMapper) {
-        return new RoleMappingAdd(roleMapper);
+    public static OperationStepHandler create(final WritableAuthorizerConfiguration authorizerConfiguration) {
+        return new RoleMappingAdd(authorizerConfiguration);
     }
 
     @Override
@@ -69,9 +69,9 @@ public class RoleMappingAdd implements OperationStepHandler {
             @Override
             public void execute(OperationContext context, ModelNode operation) throws OperationFailedException {
                 if (context.isBooting()) {
-                    roleMapper.addRoleImmediate(roleName);
+                    authorizerConfiguration.addRoleMappingImmediate(roleName);
                 } else {
-                    roleMapper.addRole(roleName);
+                    authorizerConfiguration.addRoleMapping(roleName);
                 }
                 registerRollbackHandler(context, roleName);
             }
@@ -83,7 +83,7 @@ public class RoleMappingAdd implements OperationStepHandler {
 
             @Override
             public void handleRollback(OperationContext context, ModelNode operation) {
-                Object undoKey = roleMapper.removeRole(roleName);
+                Object undoKey = authorizerConfiguration.removeRoleMapping(roleName);
 
                 if (undoKey == null) {
                     // Despite being added the role could not be removed.

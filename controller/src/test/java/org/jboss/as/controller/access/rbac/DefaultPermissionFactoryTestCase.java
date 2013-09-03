@@ -159,7 +159,7 @@ public class DefaultPermissionFactoryTestCase {
         ConstraintFactory constraintFactory = new TestConstraintFactory(allowedRoles);
         TestRoleMapper roleMapper = new TestRoleMapper(userRoles);
         DefaultPermissionFactory permissionFactory = new DefaultPermissionFactory(combinationPolicy, roleMapper,
-                Collections.singleton(constraintFactory));
+                Collections.singleton(constraintFactory), null);
 
         Action action = new Action(null, null, EnumSet.of(Action.ActionEffect.ADDRESS));
         TargetResource targetResource = TargetResource.forStandalone(PathAddress.EMPTY_ADDRESS, ROOT_RR, null);
@@ -180,7 +180,7 @@ public class DefaultPermissionFactoryTestCase {
         ConstraintFactory constraintFactory = new TestConstraintFactory(allowedRoles);
         TestRoleMapper roleMapper = new TestRoleMapper(userRoles);
         DefaultPermissionFactory permissionFactory = new DefaultPermissionFactory(combinationPolicy, roleMapper,
-                Collections.singleton(constraintFactory));
+                Collections.singleton(constraintFactory), null);
 
         Action action = new Action(null, null, EnumSet.of(Action.ActionEffect.ADDRESS));
         TargetResource targetResource = TargetResource.forStandalone(PathAddress.EMPTY_ADDRESS, ROOT_RR, null);
@@ -203,7 +203,7 @@ public class DefaultPermissionFactoryTestCase {
         DefaultPermissionFactory permissionFactory = null;
         try {
             permissionFactory = new DefaultPermissionFactory(CombinationPolicy.REJECTING, new TestRoleMapper(),
-                    Collections.<ConstraintFactory>emptySet());
+                    Collections.<ConstraintFactory>emptySet(), null);
             permissionFactory.getUserPermissions(caller, environment, action, targetResource);
         } catch (Exception e) {
             fail();
@@ -211,14 +211,14 @@ public class DefaultPermissionFactoryTestCase {
 
         try {
             permissionFactory = new DefaultPermissionFactory(CombinationPolicy.REJECTING,
-                    new TestRoleMapper(StandardRole.MONITOR), Collections.<ConstraintFactory>emptySet());
+                    new TestRoleMapper(StandardRole.MONITOR), Collections.<ConstraintFactory>emptySet(), null);
             permissionFactory.getUserPermissions(caller, environment, action, targetResource);
         } catch (Exception e) {
             fail();
         }
 
         permissionFactory = new DefaultPermissionFactory(CombinationPolicy.REJECTING,
-                new TestRoleMapper(StandardRole.MONITOR, StandardRole.DEPLOYER));
+                new TestRoleMapper(StandardRole.MONITOR, StandardRole.DEPLOYER), null);
         try {
             permissionFactory.getUserPermissions(caller, environment, action, targetResource);
             fail();
@@ -226,7 +226,7 @@ public class DefaultPermissionFactoryTestCase {
 
         permissionFactory = new DefaultPermissionFactory(CombinationPolicy.REJECTING,
                 new TestRoleMapper(StandardRole.MONITOR, StandardRole.DEPLOYER, StandardRole.AUDITOR),
-                Collections.<ConstraintFactory>emptySet());
+                Collections.<ConstraintFactory>emptySet(), null);
         try {
             permissionFactory.getUserPermissions(caller, environment, action, targetResource);
             fail();
@@ -263,6 +263,16 @@ public class DefaultPermissionFactoryTestCase {
         @Override
         public Set<String> mapRoles(Caller caller, Environment callEnvironment, Action action, TargetResource resource) {
             return roles;
+        }
+
+        @Override
+        public Set<String> mapRoles(Caller caller, Environment callEnvironment, Set<String> operationHeaderRoles) {
+            return roles;
+        }
+
+        @Override
+        public boolean canRunAs(Set<String> mappedRoles, String runAsRole) {
+            return runAsRole != null && roles.contains(runAsRole) && mappedRoles.contains(StandardRole.SUPERUSER.toString());
         }
     }
 

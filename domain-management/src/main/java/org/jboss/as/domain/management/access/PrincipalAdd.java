@@ -30,9 +30,8 @@ import org.jboss.as.controller.OperationContext.Stage;
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.OperationStepHandler;
 import org.jboss.as.controller.PathAddress;
-import org.jboss.as.controller.access.rbac.ConfigurableRoleMapper;
-import org.jboss.as.controller.access.rbac.ConfigurableRoleMapper.MatchType;
-import org.jboss.as.controller.access.rbac.ConfigurableRoleMapper.PrincipalType;
+import org.jboss.as.controller.access.AuthorizerConfiguration;
+import org.jboss.as.controller.access.management.WritableAuthorizerConfiguration;
 import org.jboss.dmr.ModelNode;
 
 /**
@@ -42,20 +41,20 @@ import org.jboss.dmr.ModelNode;
  */
 public class PrincipalAdd implements OperationStepHandler {
 
-    private final ConfigurableRoleMapper roleMapper;
-    private final ConfigurableRoleMapper.MatchType matchType;
+    private final WritableAuthorizerConfiguration authorizerConfiguration;
+    private final WritableAuthorizerConfiguration.MatchType matchType;
 
-    private PrincipalAdd(final ConfigurableRoleMapper roleMapper, final ConfigurableRoleMapper.MatchType matchType) {
-        this.roleMapper = roleMapper;
+    private PrincipalAdd(final WritableAuthorizerConfiguration authorizerConfiguration, final WritableAuthorizerConfiguration.MatchType matchType) {
+        this.authorizerConfiguration = authorizerConfiguration;
         this.matchType = matchType;
     }
 
-    public static OperationStepHandler createForInclude(final ConfigurableRoleMapper roleMapper) {
-        return new PrincipalAdd(roleMapper, MatchType.INCLUDE);
+    public static OperationStepHandler createForInclude(final WritableAuthorizerConfiguration authorizerConfiguration) {
+        return new PrincipalAdd(authorizerConfiguration, WritableAuthorizerConfiguration.MatchType.INCLUDE);
     }
 
-    public static OperationStepHandler createForExclude(final ConfigurableRoleMapper roleMapper) {
-        return new PrincipalAdd(roleMapper, MatchType.EXCLUDE);
+    public static OperationStepHandler createForExclude(final WritableAuthorizerConfiguration authorizerConfiguration) {
+        return new PrincipalAdd(authorizerConfiguration, WritableAuthorizerConfiguration.MatchType.EXCLUDE);
     }
 
     @Override
@@ -68,7 +67,7 @@ public class PrincipalAdd implements OperationStepHandler {
         PrincipalResourceDefinition.NAME.validateAndSet(operation, model);
 
         final String roleName = RoleMappingResourceDefinition.getRoleName(operation);
-        final PrincipalType principalType = PrincipalResourceDefinition.getPrincipalType(context, model);
+        final AuthorizerConfiguration.PrincipalType principalType = PrincipalResourceDefinition.getPrincipalType(context, model);
         final String realm = PrincipalResourceDefinition.getRealm(context, model);
         final String name = PrincipalResourceDefinition.getName(context, model);
 
@@ -77,7 +76,7 @@ public class PrincipalAdd implements OperationStepHandler {
         context.stepCompleted();
     }
 
-    private void registerRuntimeAdd(final OperationContext context, final String roleName, final PrincipalType principalType,
+    private void registerRuntimeAdd(final OperationContext context, final String roleName, final AuthorizerConfiguration.PrincipalType principalType,
             final String name, final String realm) {
         /*
          * The address of the resource whilst hopefully being related to the attributes of the Principal resource is not
@@ -87,7 +86,7 @@ public class PrincipalAdd implements OperationStepHandler {
 
             @Override
             public void execute(OperationContext context, ModelNode operation) throws OperationFailedException {
-                if (roleMapper.addPrincipal(roleName, principalType, matchType, name, realm, context.isBooting())) {
+                if (authorizerConfiguration.addRoleMappingPrincipal(roleName, principalType, matchType, name, realm, context.isBooting())) {
                     registerRollbackHandler(context, roleName, principalType, name, realm);
                 } else {
                     throw MESSAGES.inconsistentRbacRuntimeState();
@@ -97,12 +96,12 @@ public class PrincipalAdd implements OperationStepHandler {
     }
 
     private void registerRollbackHandler(final OperationContext context, final String roleName,
-            final PrincipalType principalType, final String name, final String realm) {
+            final AuthorizerConfiguration.PrincipalType principalType, final String name, final String realm) {
         context.completeStep(new RollbackHandler() {
 
             @Override
             public void handleRollback(OperationContext context, ModelNode operation) {
-                if (roleMapper.removePrincipal(roleName, principalType, matchType, name, realm) == false) {
+                if (authorizerConfiguration.removeRoleMappingPrincipal(roleName, principalType, matchType, name, realm) == false) {
                     context.restartRequired();
                 }
             }

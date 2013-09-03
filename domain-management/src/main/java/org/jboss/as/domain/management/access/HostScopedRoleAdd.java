@@ -32,8 +32,9 @@ import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.ServiceVerificationHandler;
-import org.jboss.as.controller.access.ConfigurableAuthorizer;
+import org.jboss.as.controller.access.AuthorizerConfiguration;
 import org.jboss.as.controller.access.constraint.HostEffectConstraint;
+import org.jboss.as.controller.access.management.WritableAuthorizerConfiguration;
 import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
 import org.jboss.dmr.ModelNode;
 import org.jboss.msc.service.ServiceController;
@@ -46,12 +47,12 @@ import org.jboss.msc.service.ServiceController;
 class HostScopedRoleAdd extends AbstractAddStepHandler {
 
     private final Map<String, HostEffectConstraint> constraintMap;
-    private final ConfigurableAuthorizer authorizer;
+    private final WritableAuthorizerConfiguration authorizerConfiguration;
 
-    HostScopedRoleAdd(Map<String, HostEffectConstraint> constraintMap, ConfigurableAuthorizer authorizer) {
+    HostScopedRoleAdd(Map<String, HostEffectConstraint> constraintMap, WritableAuthorizerConfiguration authorizerConfiguration) {
         super(HostScopedRolesResourceDefinition.BASE_ROLE, HostScopedRolesResourceDefinition.HOSTS);
         this.constraintMap = constraintMap;
-        this.authorizer = authorizer;
+        this.authorizerConfiguration = authorizerConfiguration;
     }
 
     @Override
@@ -74,26 +75,27 @@ class HostScopedRoleAdd extends AbstractAddStepHandler {
         ModelNode hostsAttribute = HostScopedRolesResourceDefinition.HOSTS.resolveModelAttribute(context, model);
         List<ModelNode> nodeList = hostsAttribute.isDefined() ? hostsAttribute.asList() : Collections.<ModelNode>emptyList();
 
-        addScopedRole(roleName, baseRole, nodeList, authorizer, constraintMap);
+        addScopedRole(roleName, baseRole, nodeList, authorizerConfiguration, constraintMap);
     }
 
     @Override
     protected void rollbackRuntime(OperationContext context, ModelNode operation, ModelNode model, List<ServiceController<?>> controllers) {
 
         String roleName = PathAddress.pathAddress(operation.require(ModelDescriptionConstants.OP_ADDR)).getLastElement().getValue();
-        authorizer.removeScopedRole(roleName);
+        authorizerConfiguration.removeScopedRole(roleName);
         constraintMap.remove(roleName);
     }
 
     static void addScopedRole(final String roleName, final String baseRole, final List<ModelNode> hostNodes,
-                              final ConfigurableAuthorizer authorizer, final Map<String, HostEffectConstraint> constraintMap) {
+                              final WritableAuthorizerConfiguration authorizerConfiguration,
+                              final Map<String, HostEffectConstraint> constraintMap) {
 
         List<String> hosts = new ArrayList<String>();
         for (ModelNode host : hostNodes) {
             hosts.add(host.asString());
         }
         HostEffectConstraint constraint = new HostEffectConstraint(hosts);
-        authorizer.addScopedRole(roleName, baseRole, constraint);
+        authorizerConfiguration.addScopedRole(new AuthorizerConfiguration.ScopedRole(roleName, baseRole, constraint));
         constraintMap.put(roleName, constraint);
     }
 }
