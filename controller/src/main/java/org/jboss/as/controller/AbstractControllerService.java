@@ -331,7 +331,13 @@ public abstract class AbstractControllerService implements Service<ModelControll
                 }
             }
         };
-        injectedExecutorService.getValue().execute(r);
+        ExecutorService executorService = injectedExecutorService.getOptionalValue();
+        if (executorService != null) {
+            injectedExecutorService.getValue().execute(r);
+        } else {
+            Thread executorShutdown = new Thread(r, getClass().getSimpleName() + " Shutdown Thread");
+            executorShutdown.start();
+        }
     }
 
     /**
