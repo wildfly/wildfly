@@ -177,6 +177,7 @@ public class ServerInventoryImpl implements ServerInventory {
             // Create a new authKey
             final byte[] authKey = new byte[16];
             new Random(new SecureRandom().nextLong()).nextBytes(authKey);
+            removeNullChar(authKey);
             // Create the managed server
             final ManagedServer newServer = createManagedServer(serverName, authKey);
             server = servers.putIfAbsent(serverName, newServer);
@@ -649,6 +650,14 @@ public class ServerInventoryImpl implements ServerInventory {
 
             }
         };
+    }
+
+    static void removeNullChar(byte[] authKey) {
+        for(int i =0; i < authKey.length; i++) {
+            if(authKey[i] == 0x00) {
+                authKey[i] = 0x01;
+            }
+        }
     }
 
 }
