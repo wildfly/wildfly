@@ -84,7 +84,22 @@
            </protocol>
        </replacement>
    </supplement>
+   <supplement name="gossip-discovery">
+       <replacement placeholder="TCP-DISCOVERY">
+           <protocol type="TCPGOSSIP">
+               <property name="initial_hosts">${jboss.jgroups.gossip.initial_hosts}</property>
+               <property name="num_initial_members">${jboss.jgroups.gossip.num_initial_members}</property>
+           </protocol>
+       </replacement>
+       <replacement placeholder="UDP-DISCOVERY">
+           <protocol type="TCPGOSSIP">
+               <property name="initial_hosts">${jboss.jgroups.gossip.initial_hosts}</property>
+               <property name="num_initial_members">${jboss.jgroups.gossip.num_initial_members}</property>
+           </protocol>
+       </replacement>
+   </supplement>
    <supplement name="ec2" includes="no-multicast s3-ping"/>
+   <supplement name="gossip" includes="no-multicast gossip-discovery"/>
    <socket-binding name="jgroups-mping" port="0" multicast-address="${jboss.default.multicast.address:230.0.0.4}" multicast-port="45700"/>
    <socket-binding name="jgroups-tcp" port="7600"/>
    <socket-binding name="jgroups-tcp-fd" port="57600"/>
