@@ -32,6 +32,7 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SER
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SERVER_GROUP;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SOCKET_BINDING;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SOCKET_BINDING_GROUP;
+import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 
 import java.io.File;
@@ -41,6 +42,7 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
@@ -53,6 +55,9 @@ import org.jboss.as.controller.ProcessType;
 import org.jboss.as.controller.ProxyController;
 import org.jboss.as.controller.RunningMode;
 import org.jboss.as.controller.RunningModeControl;
+import org.jboss.as.controller.access.Authorizer;
+import org.jboss.as.controller.access.management.WritableAuthorizerConfiguration;
+import org.jboss.as.controller.access.rbac.StandardRBACAuthorizer;
 import org.jboss.as.controller.extension.ExtensionRegistry;
 import org.jboss.as.controller.persistence.ExtensibleConfigurationPersister;
 import org.jboss.as.controller.registry.ManagementResourceRegistration;
@@ -91,7 +96,9 @@ public class ApplyRemoteMasterDomainModelHandlerTestCase extends AbstractOperati
             // nothing here
         }
     };
-    private final ApplyRemoteMasterDomainModelHandler handler = new ApplyRemoteMasterDomainModelHandler(new MockDomainController(), createHostControllerEnvironment(), null, null, HOST_INFO, new IgnoredDomainResourceRegistry(HOST_INFO));
+    WritableAuthorizerConfiguration authorizerConfiguration = new WritableAuthorizerConfiguration(StandardRBACAuthorizer.AUTHORIZER_DESCRIPTION);
+    private final ApplyRemoteMasterDomainModelHandler handler = new ApplyRemoteMasterDomainModelHandler(new MockDomainController(),
+            createHostControllerEnvironment(), null, null, HOST_INFO, new IgnoredDomainResourceRegistry(HOST_INFO), authorizerConfiguration);
 
     @Test
     public void testNoChanges() throws Exception {
@@ -153,9 +160,19 @@ public class ApplyRemoteMasterDomainModelHandlerTestCase extends AbstractOperati
         change.get(ReadMasterDomainModelUtil.DOMAIN_RESOURCE_MODEL).set(group);
         operation.get(DOMAIN_MODEL).set(getCurrentModelUpdates(root, UpdateListModifier.createForChanges(change)));
 
-        final MockOperationContext operationContext = getOperationContext(root, false);
-        operationContext.expectStep(PathAddress.pathAddress(PathElement.pathElement(HOST, "localhost"), PathElement.pathElement(SERVER, "server-one")));
+        MockOperationContext operationContext = getOperationContext(root, false);
+        operationContext.expectStep(PathAddress.EMPTY_ADDRESS);
         handler.execute(operationContext, operation);
+        Map<OperationContext.Stage, List<OperationAndHandler>> addedSteps = operationContext.verify();
+
+        assertTrue(addedSteps.containsKey(OperationContext.Stage.MODEL));
+        List<OperationAndHandler> modelSteps = addedSteps.get(OperationContext.Stage.MODEL);
+        assertEquals(2, modelSteps.size());
+        OperationAndHandler oah = modelSteps.get(1);
+
+        operationContext = getOperationContext(root, false);
+        operationContext.expectStep(PathAddress.pathAddress(PathElement.pathElement(HOST, "localhost"), PathElement.pathElement(SERVER, "server-one")));
+        oah.handler.execute(operationContext, oah.operation);
         operationContext.verify();
     }
 
@@ -209,7 +226,7 @@ public class ApplyRemoteMasterDomainModelHandlerTestCase extends AbstractOperati
     }
 
     private MockOperationContext getOperationContext(Resource root, boolean booting) {
-        return new MockOperationContext(root, booting, PathAddress.EMPTY_ADDRESS);
+        return new MockOperationContext(root, booting, PathAddress.EMPTY_ADDRESS, false);
     }
 
 

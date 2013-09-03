@@ -270,7 +270,7 @@ public class DomainRootDefinition extends SimpleResourceDefinition {
             resourceRegistration.registerOperationHandler(ApplyExtensionsHandler.DEFINITION, aexh);
 
             ApplyRemoteMasterDomainModelHandler armdmh = new ApplyRemoteMasterDomainModelHandler(domainController, environment, fileRepository,
-                    contentRepo, hostControllerInfo, ignoredDomainResourceRegistry);
+                    contentRepo, hostControllerInfo, ignoredDomainResourceRegistry, authorizer.getWritableAuthorizerConfiguration());
             resourceRegistration.registerOperationHandler(ApplyRemoteMasterDomainModelHandler.DEFINITION, armdmh);
             ApplyMissingDomainModelResourcesHandler amdmrh = new ApplyMissingDomainModelResourcesHandler(domainController, environment, hostControllerInfo, ignoredDomainResourceRegistry);
             resourceRegistration.registerOperationHandler(ApplyMissingDomainModelResourcesHandler.DEFINITION, amdmrh);

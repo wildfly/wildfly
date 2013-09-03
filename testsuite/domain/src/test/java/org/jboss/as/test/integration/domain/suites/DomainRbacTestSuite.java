@@ -102,11 +102,11 @@ public class DomainRbacTestSuite {
         try {
             // TODO enable slaves once propagation is working
             final DomainTestSupport.Configuration configuration = DomainTestSupport.Configuration.create(testName,
-                    "domain-configs/domain-standard.rbac", "host-configs/host-master.xml", null);
+                    "domain-configs/domain-standard.rbac", "host-configs/host-master.xml", "host-configs/host-slave.xml");
             String mgmtUserProperties = JBossAsManagedConfiguration.loadConfigFileFromContextClassLoader("mgmt-users/mgmt-users.properties");
             configuration.getMasterConfiguration().setMgmtUsersFile(mgmtUserProperties);
             // TODO enable slaves once propagation is working
-            //configuration.getSlaveConfiguration().setMgmtUsersFile(mgmtUserProperties);
+            configuration.getSlaveConfiguration().setMgmtUsersFile(mgmtUserProperties);
             final DomainTestSupport testSupport = DomainTestSupport.create(configuration);
             // Start!
             testSupport.start();

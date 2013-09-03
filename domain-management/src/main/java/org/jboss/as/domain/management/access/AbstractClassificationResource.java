@@ -46,8 +46,7 @@ abstract class AbstractClassificationResource implements Resource.ResourceEntry 
 
     @Override
     public void writeModel(ModelNode newModel) {
-        //TODO i18n
-        throw new IllegalStateException("Not writable");
+        // called in slave host boot; ignore this unless overridden
     }
 
     @Override

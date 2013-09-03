@@ -81,7 +81,7 @@ class AccessAuthorizationProviderWriteAttributeHander extends AbstractWriteAttri
             if (!context.isBooting()) {
                 return true;
             }
-            updateAuthorizer(resolvedValue);
+            updateAuthorizer(resolvedValue, configurableAuthorizer);
         }
 
         return false;
@@ -90,10 +90,10 @@ class AccessAuthorizationProviderWriteAttributeHander extends AbstractWriteAttri
     @Override
     protected void revertUpdateToRuntime(OperationContext context, ModelNode operation, String attributeName,
             ModelNode valueToRestore, ModelNode valueToRevert, Void handback) throws OperationFailedException {
-        updateAuthorizer(valueToRestore);
+        updateAuthorizer(valueToRestore, configurableAuthorizer);
     }
 
-    private void updateAuthorizer(final ModelNode value) {
+    static void updateAuthorizer(final ModelNode value, final DelegatingConfigurableAuthorizer configurableAuthorizer) {
         String providerName = value.asString().toUpperCase(Locale.ENGLISH);
         Provider provider = Provider.valueOf(providerName);
         AuthorizerConfiguration authorizerConfiguration = configurableAuthorizer.getWritableAuthorizerConfiguration();
@@ -101,19 +101,11 @@ class AccessAuthorizationProviderWriteAttributeHander extends AbstractWriteAttri
         if (provider == Provider.SIMPLE) {
             roleMapper = new SuperUserRoleMapper(authorizerConfiguration);
         } else {
-            roleMapper = getRoleBasedAuthorizer();
+            roleMapper = new StandardRoleMapper(configurableAuthorizer.getWritableAuthorizerConfiguration());
         }
         Authorizer delegate = StandardRBACAuthorizer.create(configurableAuthorizer.getWritableAuthorizerConfiguration(),
                 roleMapper);
         configurableAuthorizer.setDelegate(delegate);
-    }
-
-    private RoleMapper getSimpleAuthorizer(AuthorizerConfiguration authorizerConfiguration) {
-        return new SuperUserRoleMapper(configurableAuthorizer.getWritableAuthorizerConfiguration());
-    }
-
-    private RoleMapper getRoleBasedAuthorizer() {
-        return new StandardRoleMapper(configurableAuthorizer.getWritableAuthorizerConfiguration());
     }
 
 }

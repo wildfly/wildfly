@@ -26,6 +26,9 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ACC
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.AUTHORIZATION;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ROLE;
 
+import java.util.Arrays;
+import java.util.List;
+
 import javax.xml.stream.XMLStreamException;
 import javax.xml.stream.XMLStreamWriter;
 
@@ -101,6 +104,8 @@ public class AccessAuthorizationResourceDefinition extends SimpleResourceDefinit
             .setDefaultValue(new ModelNode(false))
             .setAllowExpression(true).build();
 
+    public static final List<AttributeDefinition> ATTRIBUTES = Arrays.<AttributeDefinition>asList(PROVIDER, USE_REALM_ROLES);
+
     public static AccessAuthorizationResourceDefinition forDomain(DelegatingConfigurableAuthorizer configurableAuthorizer) {
         return new AccessAuthorizationResourceDefinition(configurableAuthorizer, true, false);
     }
@@ -170,6 +175,16 @@ public class AccessAuthorizationResourceDefinition extends SimpleResourceDefinit
             resourceRegistration.registerSubModel(SensitivityClassificationParentResourceDefinition.INSTANCE);
             //  -- Vault Expression
             resourceRegistration.registerSubModel(SensitivityResourceDefinition.createVaultExpressionConfiguration());
+        }
+    }
+
+    @Override
+    public void registerOperations(ManagementResourceRegistration resourceRegistration) {
+        super.registerOperations(resourceRegistration);
+        if (isDomain) {
+            // Op to apply config from the master to a slave
+            resourceRegistration.registerOperationHandler(AccessAuthorizationDomainSlaveConfigHandler.DEFINITION,
+                    new AccessAuthorizationDomainSlaveConfigHandler(configurableAuthorizer));
         }
     }
 

@@ -151,6 +151,20 @@ public class ApplicationClassificationConfigResourceDefinition extends SimpleRes
             return model;
         }
 
+        @Override
+        public void writeModel(ModelNode newModel) {
+            // Called on a slave host controller during boot
+            if (newModel.hasDefined(CONFIGURED_APPLICATION.getName())) {
+                boolean b = newModel.get(CONFIGURED_APPLICATION.getName()).asBoolean();
+                applicationType.setConfiguredApplication(b);
+            }
+        }
+
+        @Override
+        public boolean isModelDefined() {
+            return true;
+        }
+
         private ModelNode getBoolean(Boolean booleanValue) {
             if (booleanValue == null) {
                 return new ModelNode();
