@@ -25,6 +25,14 @@
         <jbossas.project.dir>${jbossas.ts.dir}/..</jbossas.project.dir>
     </properties>
 
+    <dependencies>
+	<dependency>
+            <groupId>org.syslog4j</groupId>
+            <artifactId>syslog4j</artifactId>
+            <version>0.9.30</version>
+        </dependency>
+    </dependencies>
+
     <profiles>
 
         <profile>
