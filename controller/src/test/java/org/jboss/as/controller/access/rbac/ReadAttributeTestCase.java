@@ -29,6 +29,8 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.NAM
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.READ_ATTRIBUTE_OPERATION;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.RESULT;
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertTrue;
 
 import java.util.Arrays;
 import java.util.Collections;
@@ -212,6 +214,8 @@ public class ReadAttributeTestCase extends AbstractRbacTestBase {
         assertOperationResult(result, resultExpectation);
         if (resultExpectation == ResultExpectation.PERMITTED) {
             assertEquals(attributeValue, result.get(RESULT).asString());
+        } else {
+            assertFalse(result.hasDefined(RESULT));
         }
     }
 

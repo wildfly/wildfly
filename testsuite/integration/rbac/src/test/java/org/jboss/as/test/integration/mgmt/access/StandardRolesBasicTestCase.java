@@ -26,9 +26,11 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ADD
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.BYTES;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.CONTENT;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ENABLED;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.NAME;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OUTCOME;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.PASSWORD;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.PATH;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.READ_ATTRIBUTE_OPERATION;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.READ_RESOURCE_OPERATION;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.REMOVE;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.RESULT;
@@ -209,12 +211,24 @@ public class StandardRolesBasicTestCase extends AbstractRbacTestCase {
         return RbacUtil.executeOperation(client, op, expectedOutcome);
     }
 
+    private static ModelNode readAttribute(ModelControllerClient client, String address, String attributeName,
+                                           Outcome expectedOutcome) throws IOException {
+        ModelNode op = createOpNode(address, READ_ATTRIBUTE_OPERATION);
+        op.get(NAME).set(attributeName);
+
+        return RbacUtil.executeOperation(client, op, expectedOutcome);
+    }
+
     private static void checkSensitiveAttribute(ModelControllerClient client, boolean expectSuccess) throws IOException {
-        ModelNode attrValue = readResource(client, EXAMPLE_DS, Outcome.SUCCESS).get(RESULT, PASSWORD);
         ModelNode correct = new ModelNode();
         if (expectSuccess) {
             correct.set("sa");
         }
+
+        ModelNode attrValue = readResource(client, EXAMPLE_DS, Outcome.SUCCESS).get(RESULT, PASSWORD);
+        assertEquals(correct, attrValue);
+
+        attrValue = readAttribute(client, EXAMPLE_DS, PASSWORD, expectSuccess ? Outcome.SUCCESS : Outcome.UNAUTHORIZED).get(RESULT);
         assertEquals(correct, attrValue);
     }
 
