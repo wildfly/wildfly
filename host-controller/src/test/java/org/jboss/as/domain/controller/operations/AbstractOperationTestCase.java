@@ -41,6 +41,7 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SYS
 import static org.junit.Assert.fail;
 
 import java.io.InputStream;
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.EnumSet;
 import java.util.HashMap;
@@ -52,6 +53,7 @@ import java.util.Set;
 
 import org.jboss.as.controller.AttributeDefinition;
 import org.jboss.as.controller.ControlledProcessState;
+import org.jboss.as.controller.NoopOperationStepHandler;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationDefinition;
 import org.jboss.as.controller.OperationStepHandler;
@@ -63,10 +65,10 @@ import org.jboss.as.controller.ResourceDefinition;
 import org.jboss.as.controller.RunningMode;
 import org.jboss.as.controller.access.Action;
 import org.jboss.as.controller.access.Action.ActionEffect;
-import org.jboss.as.controller.access.Environment;
-import org.jboss.as.controller.access.ResourceAuthorization;
 import org.jboss.as.controller.access.AuthorizationResult;
 import org.jboss.as.controller.access.Caller;
+import org.jboss.as.controller.access.Environment;
+import org.jboss.as.controller.access.ResourceAuthorization;
 import org.jboss.as.controller.access.management.AccessConstraintDefinition;
 import org.jboss.as.controller.client.MessageSeverity;
 import org.jboss.as.controller.client.OperationAttachments;
@@ -80,6 +82,7 @@ import org.jboss.as.controller.registry.ManagementResourceRegistration;
 import org.jboss.as.controller.registry.OperationEntry;
 import org.jboss.as.controller.registry.Resource;
 import org.jboss.as.domain.controller.LocalHostControllerInfo;
+import org.jboss.as.domain.management.CoreManagementResourceDefinition;
 import org.jboss.dmr.ModelNode;
 import org.jboss.msc.service.ServiceController;
 import org.jboss.msc.service.ServiceName;
@@ -159,29 +162,47 @@ public abstract class AbstractOperationTestCase {
         return new MockOperationContext(root, false, operationAddress);
     }
 
+    static class OperationAndHandler {
+        public final ModelNode operation;
+        public final OperationStepHandler handler;
+
+        OperationAndHandler(ModelNode operation, OperationStepHandler handler) {
+            this.operation = operation;
+            this.handler = handler;
+        }
+    }
+
     class MockOperationContext implements OperationContext {
         Resource root;
         private final boolean booting;
         private final PathAddress operationAddress;
         private Set<PathAddress> expectedSteps = new HashSet<PathAddress>();
         private final Map<AttachmentKey<?>, Object> valueAttachments = new HashMap<AttachmentKey<?>, Object>();
+        private final boolean failOnUnexpected;
+        private final Map<Stage, List<OperationAndHandler>> addedSteps = new HashMap<Stage, List<OperationAndHandler>>();
 
-
-        private MockOperationContext(final Resource root, final boolean booting, final PathAddress operationAddress) {
+        protected MockOperationContext(final Resource root, final boolean booting, final PathAddress operationAddress,
+                                       boolean failOnUnexpected) {
             this.root = root;
             this.booting = booting;
             this.operationAddress = operationAddress;
+            this.failOnUnexpected = failOnUnexpected;
+        }
+
+        protected MockOperationContext(final Resource root, final boolean booting, final PathAddress operationAddress) {
+            this(root, booting, operationAddress, true);
         }
 
         public void expectStep(final PathAddress address) {
             this.expectedSteps.add(address);
         }
 
-        public void verify() {
+        public Map<Stage, List<OperationAndHandler>> verify() {
             if (!expectedSteps.isEmpty()) {
                 System.out.println("Missing: " + expectedSteps);
                 fail("Not all the expected steps were added. " + expectedSteps);
             }
+            return addedSteps;
         }
 
         public void addStep(OperationStepHandler step, OperationContext.Stage stage) throws IllegalArgumentException {
@@ -190,7 +211,7 @@ public abstract class AbstractOperationTestCase {
 
         @Override
         public void addStep(OperationStepHandler step, Stage stage, boolean addFirst) throws IllegalArgumentException {
-            addStep(step, stage);
+            addStep(new ModelNode().setEmptyObject(), step, stage, addFirst);
         }
 
         public void addStep(ModelNode operation, OperationStepHandler step, OperationContext.Stage stage) throws IllegalArgumentException {
@@ -198,7 +219,7 @@ public abstract class AbstractOperationTestCase {
         }
         public void addStep(ModelNode operation, OperationStepHandler step, OperationContext.Stage stage, boolean addFirst) throws IllegalArgumentException {
             final PathAddress opAddress = PathAddress.pathAddress(operation.get(OP_ADDR));
-            if (!expectedSteps.contains(opAddress)) {
+            if (!expectedSteps.contains(opAddress) && failOnUnexpected) {
                 if (opAddress.size() == 2){
                     //Ignore the add/removing running server add step done by ServerAddHandler and ServerRemoveHandler
                     if (opAddress.getElement(0).getKey().equals(HOST) && opAddress.getElement(1).getKey().equals(SERVER) &&
@@ -210,6 +231,17 @@ public abstract class AbstractOperationTestCase {
                 fail("Should not have added step for: " + opAddress);
             }
             expectedSteps.remove(opAddress);
+            List<OperationAndHandler> stageList = addedSteps.get(stage);
+            if (stageList == null) {
+                stageList = new ArrayList<OperationAndHandler>();
+                addedSteps.put(stage, stageList);
+            }
+            OperationAndHandler oah = new OperationAndHandler(operation, step);
+            if (addFirst) {
+                stageList.add(0, oah);
+            } else {
+                stageList.add(oah);
+            }
         }
 
         @Override
@@ -553,6 +585,9 @@ public abstract class AbstractOperationTestCase {
 
     Resource createRootResource() {
         final Resource rootResource = Resource.Factory.create();
+
+        CoreManagementResourceDefinition.registerDomainResource(rootResource);
+
         final Resource host = Resource.Factory.create();
         final Resource serverOneConfig = Resource.Factory.create();
         final ModelNode serverOneModel = new ModelNode();
@@ -734,7 +769,7 @@ public abstract class AbstractOperationTestCase {
         }
 
         public OperationStepHandler getOperationHandler(PathAddress address, String operationName) {
-            return null;
+            return NoopOperationStepHandler.WITHOUT_RESULT;
         }
 
         public DescriptionProvider getOperationDescription(PathAddress address, String operationName) {

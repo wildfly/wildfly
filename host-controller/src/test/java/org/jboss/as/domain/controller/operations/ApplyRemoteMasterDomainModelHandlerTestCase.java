@@ -35,14 +35,21 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SER
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SERVER_GROUP;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SOCKET_BINDING_GROUP;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SYSTEM_PROPERTY;
+import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 
+import java.util.List;
+import java.util.Map;
+
 import org.jboss.as.controller.OperationContext;
+import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.PathElement;
 import org.jboss.as.controller.ProcessType;
 import org.jboss.as.controller.RunningMode;
 import org.jboss.as.controller.RunningModeControl;
+import org.jboss.as.controller.access.management.WritableAuthorizerConfiguration;
+import org.jboss.as.controller.access.rbac.StandardRBACAuthorizer;
 import org.jboss.as.controller.extension.ExtensionRegistry;
 import org.jboss.as.controller.registry.Resource;
 import org.jboss.as.host.controller.ignored.IgnoredDomainResourceRegistry;
@@ -62,14 +69,16 @@ public class ApplyRemoteMasterDomainModelHandlerTestCase extends AbstractOperati
             // nothing here
         }
     };
-    private final ApplyRemoteMasterDomainModelHandler handler = new ApplyRemoteMasterDomainModelHandler(null, null, HOST_INFO, new IgnoredDomainResourceRegistry(HOST_INFO));
+    WritableAuthorizerConfiguration authorizerConfiguration = new WritableAuthorizerConfiguration(StandardRBACAuthorizer.AUTHORIZER_DESCRIPTION);
+    private final ApplyRemoteMasterDomainModelHandler handler = new ApplyRemoteMasterDomainModelHandler(null, null, HOST_INFO, authorizerConfiguration);
 
     @Test
     public void testNoChanges() throws Exception {
+        final Resource root = createRootResource();
         final ModelNode operation = new ModelNode();
         operation.get(DOMAIN_MODEL).setEmptyList();
-        final OperationContext operationContext = getOperationContext();
-        handler.execute(operationContext, operation);
+
+        executeAndVerify(root, operation);
     }
 
     @Test
@@ -108,32 +117,34 @@ public class ApplyRemoteMasterDomainModelHandlerTestCase extends AbstractOperati
 
     @Test
     public void testPathAdd() throws Exception {
+        final Resource root = createRootResource();
         final ModelNode operation = new ModelNode();
         final ModelNode change = new ModelNode();
         change.get("domain-resource-address").set(PathAddress.pathAddress(PathElement.pathElement(PATH, "some-path")).toModelNode());
         change.get("domain-resource-model").set(new ModelNode());
         operation.get(DOMAIN_MODEL).add(change);
-        final MockOperationContext operationContext = getOperationContext();
-        operationContext.expectStep(PathAddress.pathAddress(PathElement.pathElement(HOST, "localhost"), PathElement.pathElement(SERVER, "server-one")));
-        operationContext.expectStep(PathAddress.pathAddress(PathElement.pathElement(HOST, "localhost"), PathElement.pathElement(SERVER, "server-three")));
-        handler.execute(operationContext, operation);
-        operationContext.verify();
+
+        executeAndVerify(root, operation,
+                PathAddress.pathAddress(PathElement.pathElement(HOST, "localhost"), PathElement.pathElement(SERVER, "server-one")),
+                PathAddress.pathAddress(PathElement.pathElement(HOST, "localhost"), PathElement.pathElement(SERVER, "server-three")));
     }
 
     @Test
     public void testPathRemove() throws Exception {
+        final Resource root = createRootResource();
         final ModelNode operation = new ModelNode();
         operation.get(DOMAIN_MODEL).setEmptyList();
-        final MockOperationContext operationContext = getOperationContext();
-        operationContext.root.registerChild(PathElement.pathElement(PATH, "some-path"), Resource.Factory.create());
-        operationContext.expectStep(PathAddress.pathAddress(PathElement.pathElement(HOST, "localhost"), PathElement.pathElement(SERVER, "server-one")));
-        operationContext.expectStep(PathAddress.pathAddress(PathElement.pathElement(HOST, "localhost"), PathElement.pathElement(SERVER, "server-three")));
-        handler.execute(operationContext, operation);
-        operationContext.verify();
+
+        root.registerChild(PathElement.pathElement(PATH, "some-path"), Resource.Factory.create());
+
+        executeAndVerify(root, operation,
+                PathAddress.pathAddress(PathElement.pathElement(HOST, "localhost"), PathElement.pathElement(SERVER, "server-one")),
+                PathAddress.pathAddress(PathElement.pathElement(HOST, "localhost"), PathElement.pathElement(SERVER, "server-three")));
     }
 
     @Test
     public void testPathChange() throws Exception {
+        final Resource root = createRootResource();
         final ModelNode operation = new ModelNode();
         final ModelNode change = new ModelNode();
         change.get("domain-resource-address").set(PathAddress.pathAddress(PathElement.pathElement(PATH, "some-path")).toModelNode());
@@ -141,16 +152,15 @@ public class ApplyRemoteMasterDomainModelHandlerTestCase extends AbstractOperati
         path.set("some path");
         change.get("domain-resource-model").set(path);
         operation.get(DOMAIN_MODEL).add(change);
-        final MockOperationContext operationContext = getOperationContext();
-        operationContext.root.registerChild(PathElement.pathElement(PATH, "some-path"), Resource.Factory.create());
-        operationContext.expectStep(PathAddress.pathAddress(PathElement.pathElement(HOST, "localhost"), PathElement.pathElement(SERVER, "server-one")));
-        operationContext.expectStep(PathAddress.pathAddress(PathElement.pathElement(HOST, "localhost"), PathElement.pathElement(SERVER, "server-three")));
-        handler.execute(operationContext, operation);
-        operationContext.verify();
+
+        executeAndVerify(root, operation,
+                PathAddress.pathAddress(PathElement.pathElement(HOST, "localhost"), PathElement.pathElement(SERVER, "server-one")),
+                PathAddress.pathAddress(PathElement.pathElement(HOST, "localhost"), PathElement.pathElement(SERVER, "server-three")));
     }
 
     @Test
     public void testSystemPropertyAdd() throws Exception {
+        final Resource root = createRootResource();
         final ModelNode operation = new ModelNode();
         ModelNode change = new ModelNode();
         change.get("domain-resource-address").set(PathAddress.pathAddress(PathElement.pathElement(SYSTEM_PROPERTY, "some-property")).toModelNode());
@@ -164,27 +174,27 @@ public class ApplyRemoteMasterDomainModelHandlerTestCase extends AbstractOperati
         change.get("domain-resource-model").set(new ModelNode());
         operation.get(DOMAIN_MODEL).add(change);
 
-        final MockOperationContext operationContext = getOperationContext();
-        operationContext.expectStep(PathAddress.pathAddress(PathElement.pathElement(HOST, "localhost"), PathElement.pathElement(SERVER, "server-one")));
-        operationContext.expectStep(PathAddress.pathAddress(PathElement.pathElement(HOST, "localhost"), PathElement.pathElement(SERVER, "server-three")));
-        handler.execute(operationContext, operation);
-        operationContext.verify();
+        executeAndVerify(root, operation,
+                PathAddress.pathAddress(PathElement.pathElement(HOST, "localhost"), PathElement.pathElement(SERVER, "server-one")),
+                PathAddress.pathAddress(PathElement.pathElement(HOST, "localhost"), PathElement.pathElement(SERVER, "server-three")));
     }
 
     @Test
     public void testSystemPropertyRemove() throws Exception {
+        final Resource root = createRootResource();
         final ModelNode operation = new ModelNode();
         operation.get(DOMAIN_MODEL).setEmptyList();
-        final MockOperationContext operationContext = getOperationContext();
-        operationContext.root.registerChild(PathElement.pathElement(SERVER_GROUP, "group-one"), Resource.Factory.create());
-        operationContext.root.registerChild(PathElement.pathElement(SYSTEM_PROPERTY, "some-property"), Resource.Factory.create());
-        operationContext.expectStep(PathAddress.pathAddress(PathElement.pathElement(HOST, "localhost"), PathElement.pathElement(SERVER, "server-one")));
-        handler.execute(operationContext, operation);
-        operationContext.verify();
+
+        root.registerChild(PathElement.pathElement(SERVER_GROUP, "group-one"), Resource.Factory.create());
+        root.registerChild(PathElement.pathElement(SYSTEM_PROPERTY, "some-property"), Resource.Factory.create());
+
+        executeAndVerify(root, operation,
+                PathAddress.pathAddress(PathElement.pathElement(HOST, "localhost"), PathElement.pathElement(SERVER, "server-one")));
     }
 
     @Test
     public void testSystemPropertyChange() throws Exception {
+        final Resource root = createRootResource();
         final ModelNode operation = new ModelNode();
         final ModelNode change = new ModelNode();
         change.get("domain-resource-address").set(PathAddress.pathAddress(PathElement.pathElement(SYSTEM_PROPERTY, "some-property")).toModelNode());
@@ -192,16 +202,17 @@ public class ApplyRemoteMasterDomainModelHandlerTestCase extends AbstractOperati
         property.set("some property");
         change.get("domain-resource-model").set(property);
         operation.get(DOMAIN_MODEL).add(change);
-        final MockOperationContext operationContext = getOperationContext();
-        operationContext.root.registerChild(PathElement.pathElement(SERVER_GROUP, "group-two"), Resource.Factory.create());
-        operationContext.root.registerChild(PathElement.pathElement(SYSTEM_PROPERTY, "some-property"), Resource.Factory.create());
-        operationContext.expectStep(PathAddress.pathAddress(PathElement.pathElement(HOST, "localhost"), PathElement.pathElement(SERVER, "server-three")));
-        handler.execute(operationContext, operation);
-        operationContext.verify();
+
+        root.registerChild(PathElement.pathElement(SERVER_GROUP, "group-two"), Resource.Factory.create());
+        root.registerChild(PathElement.pathElement(SYSTEM_PROPERTY, "some-property"), Resource.Factory.create());
+
+        executeAndVerify(root, operation,
+                PathAddress.pathAddress(PathElement.pathElement(HOST, "localhost"), PathElement.pathElement(SERVER, "server-three")));
     }
 
     @Test
     public void testProfileAdd() throws Exception {
+        final Resource root = createRootResource();
         final ModelNode operation = new ModelNode();
         ModelNode change = new ModelNode();
         change.get("domain-resource-address").set(PathAddress.pathAddress(PathElement.pathElement(PROFILE, "some-profile")).toModelNode());
@@ -215,29 +226,29 @@ public class ApplyRemoteMasterDomainModelHandlerTestCase extends AbstractOperati
         change.get("domain-resource-model").set(new ModelNode());
         operation.get(DOMAIN_MODEL).add(change);
 
-        final MockOperationContext operationContext = getOperationContext();
-        operationContext.expectStep(PathAddress.pathAddress(PathElement.pathElement(HOST, "localhost"), PathElement.pathElement(SERVER, "server-one")));
-        operationContext.expectStep(PathAddress.pathAddress(PathElement.pathElement(HOST, "localhost"), PathElement.pathElement(SERVER, "server-three")));
-        handler.execute(operationContext, operation);
-        operationContext.verify();
+        executeAndVerify(root, operation,
+                PathAddress.pathAddress(PathElement.pathElement(HOST, "localhost"), PathElement.pathElement(SERVER, "server-one")),
+                PathAddress.pathAddress(PathElement.pathElement(HOST, "localhost"), PathElement.pathElement(SERVER, "server-three")));
     }
 
     @Test
     public void testProfileRemove() throws Exception {
+        final Resource root = createRootResource();
         final ModelNode operation = new ModelNode();
         operation.get(DOMAIN_MODEL).setEmptyList();
-        final MockOperationContext operationContext = getOperationContext();
-        operationContext.root.registerChild(PathElement.pathElement(PROFILE, "some-profile"), Resource.Factory.create());
+
+        root.registerChild(PathElement.pathElement(PROFILE, "some-profile"), Resource.Factory.create());
         final Resource serverGroupResource = Resource.Factory.create();
         serverGroupResource.getModel().get(PROFILE).set("some-profile");
-        operationContext.root.registerChild(PathElement.pathElement(SERVER_GROUP, "group-one"), serverGroupResource);
-        operationContext.expectStep(PathAddress.pathAddress(PathElement.pathElement(HOST, "localhost"), PathElement.pathElement(SERVER, "server-one")));
-        handler.execute(operationContext, operation);
-        operationContext.verify();
+        root.registerChild(PathElement.pathElement(SERVER_GROUP, "group-one"), serverGroupResource);
+
+        executeAndVerify(root, operation,
+                PathAddress.pathAddress(PathElement.pathElement(HOST, "localhost"), PathElement.pathElement(SERVER, "server-one")));
     }
 
     @Test
     public void testProfileChange() throws Exception {
+        final Resource root = createRootResource();
         final ModelNode operation = new ModelNode();
         final ModelNode change = new ModelNode();
         change.get("domain-resource-address").set(PathAddress.pathAddress(PathElement.pathElement(PROFILE, "some-profile")).toModelNode());
@@ -245,61 +256,63 @@ public class ApplyRemoteMasterDomainModelHandlerTestCase extends AbstractOperati
         property.set("some profile");
         change.get("domain-resource-model").set(property);
         operation.get(DOMAIN_MODEL).add(change);
-        final MockOperationContext operationContext = getOperationContext();
-        operationContext.root.registerChild(PathElement.pathElement(PROFILE, "some-profile"), Resource.Factory.create());
+
+        root.registerChild(PathElement.pathElement(PROFILE, "some-profile"), Resource.Factory.create());
         final Resource serverGroupResource = Resource.Factory.create();
         serverGroupResource.getModel().get(PROFILE).set("some-profile");
-        operationContext.root.registerChild(PathElement.pathElement(SERVER_GROUP, "group-two"), serverGroupResource);
-        operationContext.expectStep(PathAddress.pathAddress(PathElement.pathElement(HOST, "localhost"), PathElement.pathElement(SERVER, "server-three")));
-        handler.execute(operationContext, operation);
-        operationContext.verify();
+        root.registerChild(PathElement.pathElement(SERVER_GROUP, "group-two"), serverGroupResource);
+
+        executeAndVerify(root, operation,
+                PathAddress.pathAddress(PathElement.pathElement(HOST, "localhost"), PathElement.pathElement(SERVER, "server-three")));
     }
 
     @Test
     public void testInterfaceAdd() throws Exception {
+        final Resource root = createRootResource();
+
         final ModelNode operation = new ModelNode();
         final ModelNode change = new ModelNode();
         change.get("domain-resource-address").set(PathAddress.pathAddress(PathElement.pathElement(INTERFACE, "some-interface")).toModelNode());
         change.get("domain-resource-model").set(new ModelNode());
         operation.get(DOMAIN_MODEL).add(change);
 
-        final MockOperationContext operationContext = getOperationContext();
-        operationContext.expectStep(PathAddress.pathAddress(PathElement.pathElement(HOST, "localhost"), PathElement.pathElement(SERVER, "server-one")));
-        operationContext.expectStep(PathAddress.pathAddress(PathElement.pathElement(HOST, "localhost"), PathElement.pathElement(SERVER, "server-three")));
-        handler.execute(operationContext, operation);
-        operationContext.verify();
+        executeAndVerify(root, operation,
+                PathAddress.pathAddress(PathElement.pathElement(HOST, "localhost"), PathElement.pathElement(SERVER, "server-one")),
+                PathAddress.pathAddress(PathElement.pathElement(HOST, "localhost"), PathElement.pathElement(SERVER, "server-three")));
     }
 
     @Test
     public void testInterfaceAddWithServerOverride() throws Exception {
+        final Resource root = createRootResource();
+
         final ModelNode operation = new ModelNode();
         final ModelNode change = new ModelNode();
         change.get("domain-resource-address").set(PathAddress.pathAddress(PathElement.pathElement(INTERFACE, "some-interface")).toModelNode());
         change.get("domain-resource-model").set(new ModelNode());
         operation.get(DOMAIN_MODEL).add(change);
 
-        final MockOperationContext operationContext = getOperationContext();
-        operationContext.root.getChild(PathElement.pathElement(HOST, "localhost")).getChild(PathElement.pathElement(SERVER_CONFIG, "server-one")).registerChild(PathElement.pathElement(INTERFACE, "some-interface"), Resource.Factory.create());
+        root.getChild(PathElement.pathElement(HOST, "localhost")).getChild(PathElement.pathElement(SERVER_CONFIG, "server-one")).registerChild(PathElement.pathElement(INTERFACE, "some-interface"), Resource.Factory.create());
 
-        operationContext.expectStep(PathAddress.pathAddress(PathElement.pathElement(HOST, "localhost"), PathElement.pathElement(SERVER, "server-three")));
-        handler.execute(operationContext, operation);
-        operationContext.verify();
+        executeAndVerify(root, operation,
+                PathAddress.pathAddress(PathElement.pathElement(HOST, "localhost"), PathElement.pathElement(SERVER, "server-three")));
     }
 
     @Test
     public void testInterfaceRemove() throws Exception {
+        final Resource root = createRootResource();
         final ModelNode operation = new ModelNode();
         operation.get(DOMAIN_MODEL).setEmptyList();
-        final MockOperationContext operationContext = getOperationContext();
-        operationContext.root.registerChild(PathElement.pathElement(INTERFACE, "some-interface"), Resource.Factory.create());
-        operationContext.expectStep(PathAddress.pathAddress(PathElement.pathElement(HOST, "localhost"), PathElement.pathElement(SERVER, "server-one")));
-        operationContext.expectStep(PathAddress.pathAddress(PathElement.pathElement(HOST, "localhost"), PathElement.pathElement(SERVER, "server-three")));
-        handler.execute(operationContext, operation);
-        operationContext.verify();
+
+        root.registerChild(PathElement.pathElement(INTERFACE, "some-interface"), Resource.Factory.create());
+        executeAndVerify(root, operation,
+                PathAddress.pathAddress(PathElement.pathElement(HOST, "localhost"), PathElement.pathElement(SERVER, "server-one")),
+                PathAddress.pathAddress(PathElement.pathElement(HOST, "localhost"), PathElement.pathElement(SERVER, "server-three")));
     }
 
     @Test
     public void testInterfaceChange() throws Exception {
+        final Resource root = createRootResource();
+
         final ModelNode operation = new ModelNode();
         final ModelNode change = new ModelNode();
         change.get("domain-resource-address").set(PathAddress.pathAddress(PathElement.pathElement(INTERFACE, "some-interface")).toModelNode());
@@ -308,16 +321,17 @@ public class ApplyRemoteMasterDomainModelHandlerTestCase extends AbstractOperati
         change.get("domain-resource-model").set(property);
         operation.get(DOMAIN_MODEL).add(change);
 
-        final MockOperationContext operationContext = getOperationContext();
-        operationContext.root.registerChild(PathElement.pathElement(INTERFACE, "some-interface"), Resource.Factory.create());
-        operationContext.expectStep(PathAddress.pathAddress(PathElement.pathElement(HOST, "localhost"), PathElement.pathElement(SERVER, "server-one")));
-        operationContext.expectStep(PathAddress.pathAddress(PathElement.pathElement(HOST, "localhost"), PathElement.pathElement(SERVER, "server-three")));
-        handler.execute(operationContext, operation);
-        operationContext.verify();
+        root.registerChild(PathElement.pathElement(INTERFACE, "some-interface"), Resource.Factory.create());
+
+        executeAndVerify(root, operation,
+                PathAddress.pathAddress(PathElement.pathElement(HOST, "localhost"), PathElement.pathElement(SERVER, "server-one")),
+                PathAddress.pathAddress(PathElement.pathElement(HOST, "localhost"), PathElement.pathElement(SERVER, "server-three")));
     }
 
     @Test
     public void testSocketBindingAdd() throws Exception {
+        final Resource root = createRootResource();
+
         final ModelNode operation = new ModelNode();
         ModelNode change = new ModelNode();
         change.get("domain-resource-address").set(PathAddress.pathAddress(PathElement.pathElement(SOCKET_BINDING_GROUP, "some-binding")).toModelNode());
@@ -331,15 +345,14 @@ public class ApplyRemoteMasterDomainModelHandlerTestCase extends AbstractOperati
         change.get("domain-resource-model").set(serverConfig);
         operation.get(DOMAIN_MODEL).add(change);
 
-        final MockOperationContext operationContext = getOperationContext();
-
-        operationContext.expectStep(PathAddress.pathAddress(PathElement.pathElement(HOST, "localhost"), PathElement.pathElement(SERVER, "server-one")));
-        handler.execute(operationContext, operation);
-        operationContext.verify();
+        executeAndVerify(root, operation,
+                PathAddress.pathAddress(PathElement.pathElement(HOST, "localhost"), PathElement.pathElement(SERVER, "server-one")));
     }
 
     @Test
     public void testSocketBindingChangeWithServerOverride() throws Exception {
+        final Resource root = createRootResource();
+
         final ModelNode operation = new ModelNode();
         ModelNode change = new ModelNode();
         change.get("domain-resource-address").set(PathAddress.pathAddress(PathElement.pathElement(SOCKET_BINDING_GROUP, "some-binding")).toModelNode());
@@ -362,41 +375,40 @@ public class ApplyRemoteMasterDomainModelHandlerTestCase extends AbstractOperati
         change.get("domain-resource-model").set(serverConfig);
         operation.get(DOMAIN_MODEL).add(change);
 
-        final MockOperationContext operationContext = getOperationContext();
         final Resource groupOneResource = Resource.Factory.create();
-        operationContext.root.registerChild(PathElement.pathElement(SERVER_GROUP, "group-one"), groupOneResource);
+        root.registerChild(PathElement.pathElement(SERVER_GROUP, "group-one"), groupOneResource);
         groupOneResource.getModel().get(SOCKET_BINDING_GROUP).set("some-binding");
         final Resource groupTwoResource = Resource.Factory.create();
-        operationContext.root.registerChild(PathElement.pathElement(SERVER_GROUP, "group-two"), groupTwoResource);
+        root.registerChild(PathElement.pathElement(SERVER_GROUP, "group-two"), groupTwoResource);
         groupTwoResource.getModel().get(SOCKET_BINDING_GROUP).set("some-binding");
 
-        operationContext.root.getChild(PathElement.pathElement(HOST, "localhost")).getChild(PathElement.pathElement(SERVER_CONFIG, "server-one")).getModel().get(SOCKET_BINDING_GROUP).set("other-binding");
-        operationContext.expectStep(PathAddress.pathAddress(PathElement.pathElement(HOST, "localhost"), PathElement.pathElement(SERVER, "server-three")));
-        handler.execute(operationContext, operation);
-        operationContext.verify();
+        root.getChild(PathElement.pathElement(HOST, "localhost")).getChild(PathElement.pathElement(SERVER_CONFIG, "server-one")).getModel().get(SOCKET_BINDING_GROUP).set("other-binding");
+
+        executeAndVerify(root, operation,
+                PathAddress.pathAddress(PathElement.pathElement(HOST, "localhost"), PathElement.pathElement(SERVER, "server-three")));
     }
 
     @Test
     public void testSocketBindingRemove() throws Exception {
+        final Resource root = createRootResource();
         final ModelNode operation = new ModelNode();
         operation.get(DOMAIN_MODEL).setEmptyList();
 
-        final MockOperationContext operationContext = getOperationContext();
         final Resource groupOneResource = Resource.Factory.create();
-        operationContext.root.registerChild(PathElement.pathElement(SERVER_GROUP, "group-one"), groupOneResource);
+        root.registerChild(PathElement.pathElement(SERVER_GROUP, "group-one"), groupOneResource);
         groupOneResource.getModel().get(SOCKET_BINDING_GROUP).set("some-binding");
         final Resource groupTwoResource = Resource.Factory.create();
-        operationContext.root.registerChild(PathElement.pathElement(SERVER_GROUP, "group-two"), groupTwoResource);
+        root.registerChild(PathElement.pathElement(SERVER_GROUP, "group-two"), groupTwoResource);
         groupTwoResource.getModel().get(SOCKET_BINDING_GROUP).set("some-binding");
 
-        operationContext.expectStep(PathAddress.pathAddress(PathElement.pathElement(HOST, "localhost"), PathElement.pathElement(SERVER, "server-one")));
-        operationContext.expectStep(PathAddress.pathAddress(PathElement.pathElement(HOST, "localhost"), PathElement.pathElement(SERVER, "server-three")));
-        handler.execute(operationContext, operation);
-        operationContext.verify();
+        executeAndVerify(root, operation,
+                PathAddress.pathAddress(PathElement.pathElement(HOST, "localhost"), PathElement.pathElement(SERVER, "server-one")),
+                PathAddress.pathAddress(PathElement.pathElement(HOST, "localhost"), PathElement.pathElement(SERVER, "server-three")));
     }
 
     @Test
     public void testSocketBindingChange() throws Exception {
+        final Resource root = createRootResource();
         final ModelNode operation = new ModelNode();
         ModelNode change = new ModelNode();
         change.get("domain-resource-address").set(PathAddress.pathAddress(PathElement.pathElement(SOCKET_BINDING_GROUP, "some-binding")).toModelNode());
@@ -420,47 +432,46 @@ public class ApplyRemoteMasterDomainModelHandlerTestCase extends AbstractOperati
         operation.get(DOMAIN_MODEL).add(change);
 
 
-        final MockOperationContext operationContext = getOperationContext();
         final Resource groupOneResource = Resource.Factory.create();
-        operationContext.root.registerChild(PathElement.pathElement(SERVER_GROUP, "group-one"), groupOneResource);
+        root.registerChild(PathElement.pathElement(SERVER_GROUP, "group-one"), groupOneResource);
         groupOneResource.getModel().get(SOCKET_BINDING_GROUP).set("some-binding");
         final Resource groupTwoResource = Resource.Factory.create();
-        operationContext.root.registerChild(PathElement.pathElement(SERVER_GROUP, "group-two"), groupTwoResource);
+        root.registerChild(PathElement.pathElement(SERVER_GROUP, "group-two"), groupTwoResource);
         groupTwoResource.getModel().get(SOCKET_BINDING_GROUP).set("some-binding");
 
-        operationContext.expectStep(PathAddress.pathAddress(PathElement.pathElement(HOST, "localhost"), PathElement.pathElement(SERVER, "server-one")));
-        operationContext.expectStep(PathAddress.pathAddress(PathElement.pathElement(HOST, "localhost"), PathElement.pathElement(SERVER, "server-three")));
-        handler.execute(operationContext, operation);
-        operationContext.verify();
+        executeAndVerify(root, operation,
+                PathAddress.pathAddress(PathElement.pathElement(HOST, "localhost"), PathElement.pathElement(SERVER, "server-one")),
+                PathAddress.pathAddress(PathElement.pathElement(HOST, "localhost"), PathElement.pathElement(SERVER, "server-three")));
     }
 
      @Test
     public void testServerGroupAdd() throws Exception {
+        final Resource root = createRootResource();
         final ModelNode operation = new ModelNode();
         final ModelNode change = new ModelNode();
         change.get("domain-resource-address").set(PathAddress.pathAddress(PathElement.pathElement(SERVER_GROUP, "group-one")).toModelNode());
         change.get("domain-resource-model").set(new ModelNode());
         operation.get(DOMAIN_MODEL).add(change);
 
-        final MockOperationContext operationContext = getOperationContext();
-        operationContext.expectStep(PathAddress.pathAddress(PathElement.pathElement(HOST, "localhost"), PathElement.pathElement(SERVER, "server-one")));
-        handler.execute(operationContext, operation);
-        operationContext.verify();
+         executeAndVerify(root, operation,
+                 PathAddress.pathAddress(PathElement.pathElement(HOST, "localhost"), PathElement.pathElement(SERVER, "server-one")));
     }
 
     @Test
     public void testServerGroupRemove() throws Exception {
+        final Resource root = createRootResource();
         final ModelNode operation = new ModelNode();
         operation.get(DOMAIN_MODEL).setEmptyList();
-        final MockOperationContext operationContext = getOperationContext();
-        operationContext.root.registerChild(PathElement.pathElement(SERVER_GROUP, "group-one"), Resource.Factory.create());
-        operationContext.expectStep(PathAddress.pathAddress(PathElement.pathElement(HOST, "localhost"), PathElement.pathElement(SERVER, "server-one")));
-        handler.execute(operationContext, operation);
-        operationContext.verify();
+
+        root.registerChild(PathElement.pathElement(SERVER_GROUP, "group-one"), Resource.Factory.create());
+
+        executeAndVerify(root, operation,
+                PathAddress.pathAddress(PathElement.pathElement(HOST, "localhost"), PathElement.pathElement(SERVER, "server-one")));
     }
 
     @Test
     public void testServerGroupChange() throws Exception {
+        final Resource root = createRootResource();
         final ModelNode operation = new ModelNode();
         final ModelNode change = new ModelNode();
         change.get("domain-resource-address").set(PathAddress.pathAddress(PathElement.pathElement(SERVER_GROUP, "group-one")).toModelNode());
@@ -469,25 +480,60 @@ public class ApplyRemoteMasterDomainModelHandlerTestCase extends AbstractOperati
         change.get("domain-resource-model").set(group);
         operation.get(DOMAIN_MODEL).add(change);
 
-        final MockOperationContext operationContext = getOperationContext();
-        operationContext.root.registerChild(PathElement.pathElement(SERVER_GROUP, "group-one"), Resource.Factory.create());
-        operationContext.expectStep(PathAddress.pathAddress(PathElement.pathElement(HOST, "localhost"), PathElement.pathElement(SERVER, "server-one")));
-        handler.execute(operationContext, operation);
-        operationContext.verify();
+        root.registerChild(PathElement.pathElement(SERVER_GROUP, "group-one"), Resource.Factory.create());
+
+        executeAndVerify(root, operation,
+                PathAddress.pathAddress(PathElement.pathElement(HOST, "localhost"), PathElement.pathElement(SERVER, "server-one")));
     }
 
     @Test
     public void testRolloutPlans() throws Exception {
+        final Resource root = createRootResource();
         final ModelNode operation = new ModelNode();
         final ModelNode change = new ModelNode();
         PathAddress pa = PathAddress.pathAddress(PathElement.pathElement(MANAGEMENT_CLIENT_CONTENT, ROLLOUT_PLANS));
         change.get("domain-resource-address").set(pa.toModelNode());
         change.get("domain-resource-model").set(new ModelNode());
         operation.get(DOMAIN_MODEL).add(change);
-        final MockOperationContext operationContext = getOperationContext();
-        handler.execute(operationContext, operation);
-        Resource r = operationContext.root.navigate(pa);
+
+        executeAndVerify(root, operation);
+
+        Resource r = root.navigate(pa);
         assertTrue(r instanceof ManagedDMRContentTypeResource);
+    }
+
+
+
+
+    private void executeAndVerify(Resource root, ModelNode operation,
+                                  PathAddress... expected) throws OperationFailedException {
+        executeAndVerify(root, operation, false, expected);
+    }
+
+    private void executeAndVerify(Resource root, ModelNode operation, boolean booting,
+                                  PathAddress... expected) throws OperationFailedException {
+        MockOperationContext operationContext = getOperationContext(root, booting);
+        operationContext.expectStep(PathAddress.EMPTY_ADDRESS);
+        handler.execute(operationContext, operation);
+
+        Map<OperationContext.Stage, List<OperationAndHandler>> addedSteps = operationContext.verify();
+
+        assertTrue(addedSteps.containsKey(OperationContext.Stage.MODEL));
+        List<OperationAndHandler> modelSteps = addedSteps.get(OperationContext.Stage.MODEL);
+        assertEquals(1, modelSteps.size());
+        OperationAndHandler oah = modelSteps.get(0);
+
+        operationContext = getOperationContext(root, false);
+        for (PathAddress address : expected) {
+            operationContext.expectStep(address);
+        }
+        oah.handler.execute(operationContext, oah.operation);
+        operationContext.verify();
+
+    }
+
+    private MockOperationContext getOperationContext(Resource root, boolean booting) {
+        return new MockOperationContext(root, booting, PathAddress.EMPTY_ADDRESS, false);
     }
 
 }

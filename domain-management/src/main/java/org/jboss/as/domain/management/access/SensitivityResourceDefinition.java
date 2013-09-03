@@ -214,6 +214,30 @@ public class SensitivityResourceDefinition extends SimpleResourceDefinition {
             return model;
         }
 
+        @Override
+        public void writeModel(ModelNode newModel) {
+
+            // Called on a slave host controller during boot
+
+            if (newModel.hasDefined(CONFIGURED_REQUIRES_ADDRESSABLE.getName())) {
+                boolean b = newModel.get(CONFIGURED_REQUIRES_ADDRESSABLE.getName()).asBoolean();
+                classification.setConfiguredRequiresAccessPermission(b);
+            }
+            if (newModel.hasDefined(CONFIGURED_REQUIRES_READ.getName())) {
+                boolean b = newModel.get(CONFIGURED_REQUIRES_READ.getName()).asBoolean();
+                classification.setConfiguredRequiresReadPermission(b);
+            }
+            if (newModel.hasDefined(CONFIGURED_REQUIRES_WRITE.getName())) {
+                boolean b = newModel.get(CONFIGURED_REQUIRES_WRITE.getName()).asBoolean();
+                classification.setConfiguredRequiresWritePermission(b);
+            }
+        }
+
+        @Override
+        public boolean isModelDefined() {
+            return true;
+        }
+
         private ModelNode getBoolean(Boolean booleanValue) {
             if (booleanValue == null) {
                 return new ModelNode();

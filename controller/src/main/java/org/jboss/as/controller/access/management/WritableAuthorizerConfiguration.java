@@ -34,6 +34,7 @@ import java.util.WeakHashMap;
 import org.jboss.as.controller.access.Authorizer;
 import org.jboss.as.controller.access.AuthorizerConfiguration;
 import org.jboss.as.controller.access.Caller;
+import org.jboss.as.controller.access.rbac.StandardRBACAuthorizer;
 
 /**
  * Standard {@link AuthorizerConfiguration} implementation that also exposes mutator APIs for use by
@@ -51,9 +52,31 @@ public class WritableAuthorizerConfiguration implements AuthorizerConfiguration 
     private volatile RoleMaps roleMaps;
     private final Set<ScopedRoleListener> scopedRoleListeners = new LinkedHashSet<ScopedRoleListener>();
 
-    WritableAuthorizerConfiguration(Authorizer.AuthorizerDescription authorizerDescription) {
+    public WritableAuthorizerConfiguration(Authorizer.AuthorizerDescription authorizerDescription) {
         this.authorizerDescription = authorizerDescription;
         this.roleMaps = new RoleMaps(authorizerDescription.getStandardRoles(), Collections.<String, ScopedRole>emptyMap());
+    }
+
+    /**
+     * Reset the internal state of this object back to what it originally was.
+     * Only to be used in a slave host controller following a post-boot reconnect
+     * to the master.
+     */
+    public synchronized void domainReconnectReset() {
+        this.authorizerDescription = StandardRBACAuthorizer.AUTHORIZER_DESCRIPTION;
+        this.useRealmRoles = this.nonFacadeMBeansSensitive = false;
+        this.roleMappings = new HashMap<String, RoleMappingImpl>();
+        RoleMaps oldRoleMaps = this.roleMaps;
+        this.roleMaps = new RoleMaps(authorizerDescription.getStandardRoles(), Collections.<String, ScopedRole>emptyMap());
+        for (ScopedRole role : oldRoleMaps.scopedRoles.values()) {
+            for (ScopedRoleListener listener : scopedRoleListeners) {
+                try {
+                    listener.scopedRoleRemoved(role);
+                } catch (Exception ignored) {
+                    // TODO log an ERROR
+                }
+            }
+        }
     }
 
     public synchronized void registerScopedRoleListener(ScopedRoleListener listener) {

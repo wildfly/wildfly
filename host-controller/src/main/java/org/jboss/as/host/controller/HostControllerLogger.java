@@ -22,20 +22,21 @@
 
 package org.jboss.as.host.controller;
 
+import java.io.IOException;
+
 import org.jboss.as.controller.RunningMode;
 import org.jboss.as.controller.client.helpers.domain.ServerStatus;
 import org.jboss.as.host.controller.model.jvm.JvmType;
 import org.jboss.as.server.ServerState;
+import org.jboss.dmr.ModelNode;
 import org.jboss.logging.BasicLogger;
-import org.jboss.logging.annotations.Cause;
-import org.jboss.logging.annotations.LogMessage;
 import org.jboss.logging.Logger;
 import org.jboss.logging.Logger.Level;
+import org.jboss.logging.annotations.Cause;
+import org.jboss.logging.annotations.LogMessage;
 import org.jboss.logging.annotations.Message;
 import org.jboss.logging.annotations.MessageLogger;
 import org.jboss.remoting3.Channel;
-
-import java.io.IOException;
 
 /**
  * This module is using message IDs in the range 10800-10999. This file is using the subset 10900-10939 for host
@@ -396,4 +397,63 @@ public interface HostControllerLogger extends BasicLogger {
     @LogMessage(level = Level.WARN)
     @Message(id=10939, value="The slave host controller \"%s\"  could not be reached in the last [%d] milliseconds. Unregistering.")
     void slaveHostControllerUnreachable(String hostName, long timeout);
+
+    // WARNING -- THESE MESSAGE NUMBERS SHOULD NOT BE IN THIS FILE, BUT NOW THEY ARE OUT IN THE WILD
+    /**
+     * Logs a warning message indicating that the slave host controller could not
+     * connect to the remote domain controller and that another discovery option
+     * will be tried.
+     *
+     * @param e the cause of the error.
+     */
+    @LogMessage(level = Level.WARN)
+    @Message(id=16534, value = "Could not connect to master. Trying another domain controller discovery option. Error was: %s")
+    void tryingAnotherDiscoveryOption(Exception e);
+
+    /**
+     * Logs a warning message indicating that the slave host controller could not
+     * connect to the remote domain controller and that there are no discovery options left.
+     *
+     * @param e the cause of the error.
+     */
+    @LogMessage(level = Level.WARN)
+    @Message(id=16535, value = "Could not connect to master. No domain controller discovery options left. Error was: %s")
+    void noDiscoveryOptionsLeft(Exception e);
+
+    /**
+     * Logs an error message indicating that the master host controller could not write its
+     * data to the S3 file.
+     *
+     * @param e the cause of the error.
+     */
+    @LogMessage(level = Level.ERROR)
+    @Message(id=16536, value = "Could not write domain controller data to S3 file. Error was: %s")
+    void cannotWriteDomainControllerData(Exception e);
+
+    /**
+     * Logs an error message indicating that the master host controller could not remove
+     * the S3 file.
+     *
+     * @param e the cause of the error.
+     */
+    @LogMessage(level = Level.ERROR)
+    @Message(id=16537, value = "Could not remove S3 file. Error was: %s")
+    void cannotRemoveS3File(Exception e);
+
+    // WARNING -- THE MESSAGE NUMBERS ABOVE SHOULD NOT BE IN THIS FILE, BUT NOW THEY ARE OUT IN THE WILD
+
+    // BEGIN WITH 16576
+
+    @LogMessage(level = Level.ERROR)
+    @Message(id=16576, value = "Failed to apply domain-wide configuration from master host controller")
+    void failedToApplyDomainConfig(@Cause Exception e);
+
+    @LogMessage(level = Level.ERROR)
+    @Message(id=16577, value = "Failed to apply domain-wide configuration from master host controller. " +
+            "Operation outcome: %s. Failure description %s")
+    void failedToApplyDomainConfig(String outcome, ModelNode failureDescription);
+
+
+
+    // END WITH 16599
 }
