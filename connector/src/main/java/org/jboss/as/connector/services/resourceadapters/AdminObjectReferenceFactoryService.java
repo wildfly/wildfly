@@ -35,15 +35,14 @@ import org.jboss.msc.value.ImmediateValue;
 import org.jboss.msc.value.InjectedValue;
 
 /**
- * Service responsible for exposing a {@link ManagedReferenceFactory} for a
- * {@link org.jboss.jca.core.api.management.AdminObject}.
- * @author @author <a href="mailto:stefano.maestri@redhat.com">Stefano
- *         Maestri</a>
+ * Service responsible for exposing a {@link ManagedReferenceFactory} for an admin object
+ * @author @author <a href="mailto:stefano.maestri@redhat.com">Stefano Maestri</a>
  */
 public class AdminObjectReferenceFactoryService implements Service<ManagedReferenceFactory>, ManagedReferenceFactory {
-    public static final ServiceName SERVICE_NAME_BASE = ServiceName.JBOSS.append("admin-object").append("reference-factory");
-    private final InjectedValue<Object> adminObjectValue = new InjectedValue<Object>();
+    public static final ServiceName SERVICE_NAME_BASE =
+        ServiceName.JBOSS.append("connector").append("admin-object").append("reference-factory");
 
+    private final InjectedValue<Object> adminObjectValue = new InjectedValue<Object>();
     private ManagedReference reference;
 
     public synchronized void start(StartContext startContext) throws StartException {
@@ -63,6 +62,6 @@ public class AdminObjectReferenceFactoryService implements Service<ManagedRefere
     }
 
     public Injector<Object> getAdminObjectInjector() {
-        return adminObjectValue; // TODO: Should we use unique references
+        return adminObjectValue;
     }
 }

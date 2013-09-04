@@ -1,6 +1,6 @@
 /*
  * JBoss, Home of Professional Open Source.
- * Copyright 2011, Red Hat, Inc., and individual contributors
+ * Copyright 2013, Red Hat, Inc., and individual contributors
  * as indicated by the @author tags. See the copyright.txt file in the
  * distribution for a full listing of individual contributors.
  *
@@ -20,8 +20,14 @@
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
 
-package org.jboss.as.connector.services.resourceadapters;
+package org.jboss.as.connector.subsystems.resourceadapters;
 
+import org.jboss.as.connector.util.ConnectorServices;
+
+import javax.naming.Referenceable;
+
+import org.jboss.as.naming.ContextListAndJndiViewManagedReferenceFactory;
+import org.jboss.as.naming.ContextListManagedReferenceFactory;
 import org.jboss.as.naming.ManagedReference;
 import org.jboss.as.naming.ManagedReferenceFactory;
 import org.jboss.as.naming.ValueManagedReference;
@@ -35,18 +41,18 @@ import org.jboss.msc.value.ImmediateValue;
 import org.jboss.msc.value.InjectedValue;
 
 /**
- * Service responsible for exposing a {@link ManagedReferenceFactory} for a connection factory
- * @author @author <a href="mailto:stefano.maestri@redhat.com">Stefano Maestri</a>
+ * Service responsible for exposing a {@link ManagedReferenceFactory} for a {@link Referenceable}.
+ *
+ * @author Jesper Pedersen
  */
-public class ConnectionFactoryReferenceFactoryService implements Service<ManagedReferenceFactory>, ManagedReferenceFactory {
-    public static final ServiceName SERVICE_NAME_BASE = ServiceName.JBOSS.append("connection-factory").append(
-            "reference-factory");
+public class ReferenceFactoryService implements Service<ManagedReferenceFactory>, ContextListAndJndiViewManagedReferenceFactory {
+    public static final ServiceName SERVICE_NAME_BASE = ConnectorServices.RESOURCE_ADAPTER_SERVICE_PREFIX.append("reference-factory");
+    private final InjectedValue<Referenceable> refValue = new InjectedValue<Referenceable>();
 
-    private final InjectedValue<Object> connectionFactoryValue = new InjectedValue<Object>();
     private ManagedReference reference;
 
     public synchronized void start(StartContext startContext) throws StartException {
-        reference = new ValueManagedReference(new ImmediateValue<Object>(connectionFactoryValue.getValue()));
+        reference = new ValueManagedReference(new ImmediateValue<Object>(refValue.getValue()));
     }
 
     public synchronized void stop(StopContext stopContext) {
@@ -61,7 +67,19 @@ public class ConnectionFactoryReferenceFactoryService implements Service<Managed
         return reference;
     }
 
-    public Injector<Object> getConnectionFactoryInjector() {
-        return connectionFactoryValue;
+    public Injector<Referenceable> getReferenceableInjector() {
+        return refValue;
+    }
+
+    @Override
+    public String getInstanceClassName() {
+        final Object value = reference != null ? reference.getInstance() : null;
+        return value != null ? value.getClass().getName() : ContextListManagedReferenceFactory.DEFAULT_INSTANCE_CLASS_NAME;
+    }
+
+    @Override
+    public String getJndiViewInstanceValue() {
+        final Object value = reference != null ? reference.getInstance() : null;
+        return String.valueOf(value);
     }
 }

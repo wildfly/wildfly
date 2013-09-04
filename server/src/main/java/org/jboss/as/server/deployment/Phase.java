@@ -484,6 +484,8 @@ public enum Phase {
     public static final int INSTALL_RESOLVER_MODULE                     = 0x0600;
     public static final int INSTALL_RA_NATIVE                           = 0x0800;
     public static final int INSTALL_RA_DEPLOYMENT                       = 0x0801;
+    public static final int INSTALL_CONNECTION_FACTORY_DEFINITION_ANNOTATION = 0x0802;
+    public static final int INSTALL_ADMIN_OBJECT_DEFINITION_ANNOTATION  = 0x0803;
     public static final int INSTALL_SERVICE_DEPLOYMENT                  = 0x0900;
     public static final int INSTALL_POJO_DEPLOYMENT                     = 0x0A00;
     public static final int INSTALL_RA_XML_DEPLOYMENT                   = 0x0B00;
