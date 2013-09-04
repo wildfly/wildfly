@@ -50,7 +50,7 @@ public class SecurityRealmMapGroupsAttributeWriteHandler extends ReloadRequiredW
             ModelNode oldValue, Resource model) throws OperationFailedException {
         if ((oldValue.equals(newValue) == false) && newValue.isDefined() &&
                 (newValue.getType() == ModelType.EXPRESSION || newValue.asBoolean() == false)) {
-            RbacSanityCheckOperation.registerOperation(context);
+            RbacSanityCheckOperation.addOperation(context);
         }
         super.finishModelStage(context, operation, attributeName, newValue, oldValue, model);
     }

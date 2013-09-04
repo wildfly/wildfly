@@ -48,7 +48,7 @@ public class SecurityRealmRemoveHandler implements OperationStepHandler {
     public void execute(OperationContext context, ModelNode operation) throws OperationFailedException {
         final ModelNode model = Resource.Tools.readModel(context.readResource(PathAddress.EMPTY_ADDRESS));
         context.removeResource(PathAddress.EMPTY_ADDRESS);
-        RbacSanityCheckOperation.registerOperation(context);
+        RbacSanityCheckOperation.addOperation(context);
         context.addStep(new OperationStepHandler() {
             @Override
             public void execute(OperationContext context, ModelNode operation) throws OperationFailedException {

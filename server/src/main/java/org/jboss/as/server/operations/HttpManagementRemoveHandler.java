@@ -44,7 +44,7 @@ public class HttpManagementRemoveHandler extends AbstractRemoveStepHandler {
     @Override
     protected void performRemove(OperationContext context, ModelNode operation, ModelNode model)
             throws OperationFailedException {
-        RbacSanityCheckOperation.registerOperation(context);
+        RbacSanityCheckOperation.addOperation(context);
         super.performRemove(context, operation, model);
     }
 

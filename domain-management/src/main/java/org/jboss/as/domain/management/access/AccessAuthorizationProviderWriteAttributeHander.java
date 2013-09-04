@@ -31,8 +31,8 @@ import org.jboss.as.controller.access.Authorizer;
 import org.jboss.as.controller.access.AuthorizerConfiguration;
 import org.jboss.as.controller.access.management.DelegatingConfigurableAuthorizer;
 import org.jboss.as.controller.access.rbac.RoleMapper;
-import org.jboss.as.controller.access.rbac.StandardRoleMapper;
 import org.jboss.as.controller.access.rbac.StandardRBACAuthorizer;
+import org.jboss.as.controller.access.rbac.StandardRoleMapper;
 import org.jboss.as.controller.access.rbac.SuperUserRoleMapper;
 import org.jboss.as.controller.registry.Resource;
 import org.jboss.as.domain.management.access.AccessAuthorizationResourceDefinition.Provider;
@@ -63,7 +63,7 @@ class AccessAuthorizationProviderWriteAttributeHander extends AbstractWriteAttri
              /*
               * As the provider is being set to RBAC we need to be sure roles can be assigned.
               */
-             RbacSanityCheckOperation.registerOperation(context);
+             RbacSanityCheckOperation.addOperation(context);
          }
     }
 
