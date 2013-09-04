@@ -1482,6 +1482,10 @@
             <maven-resource group="org.wildfly" artifact="wildfly-batch"/>
         </module-def>
 
+        <module-def name="org.wildfly.jberet">
+            <maven-resource group="org.wildfly" artifact="wildfly-jberet"/>
+        </module-def>
+
 
     </target>
 
