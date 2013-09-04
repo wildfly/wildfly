@@ -29,60 +29,37 @@
 
     <parent>
         <groupId>org.wildfly</groupId>
-        <artifactId>wildfly-parent</artifactId>
+        <artifactId>wildfly-batch-parent</artifactId>
         <version>8.0.0.Beta1-SNAPSHOT</version>
-        <relativePath>../pom.xml</relativePath>
     </parent>
 
-    <artifactId>wildfly-batch-parent</artifactId>
-    <packaging>pom</packaging>
+    <artifactId>wildfly-batch</artifactId>
+    <packaging>jar</packaging>
 
-    <name>WildFly: Batch Integration</name>
+    <name>WildFly: Batch Integration Subsystem</name>
 
-    <modules>
-        <module>extension</module>
-        <module>jberet</module>
-    </modules>
-
-    <!-- Common dependencies -->
     <dependencies>
         <dependency>
-            <groupId>org.jberet</groupId>
-            <artifactId>jberet-core</artifactId>
+            <groupId>org.wildfly</groupId>
+            <artifactId>wildfly-jberet</artifactId>
         </dependency>
         <dependency>
-            <groupId>org.jboss.logging</groupId>
-            <artifactId>jboss-logging</artifactId>
+            <groupId>org.wildfly</groupId>
+            <artifactId>wildfly-controller</artifactId>
         </dependency>
         <dependency>
-            <groupId>org.jboss.logging</groupId>
-            <artifactId>jboss-logging-annotations</artifactId>
-            <!-- This is a compile-time dependency of this project, but is not needed at compile or runtime by other
-                  projects that depend on this project.-->
-            <scope>provided</scope>
-            <optional>true</optional>
+            <groupId>org.wildfly</groupId>
+            <artifactId>wildfly-server</artifactId>
         </dependency>
         <dependency>
-            <groupId>org.jboss.logging</groupId>
-            <artifactId>jboss-logging-processor</artifactId>
-            <!-- This is a compile-time dependency of this project, but is not needed at compile or runtime by other
-                  projects that depend on this project.-->
-            <scope>provided</scope>
-            <optional>true</optional>
-        </dependency>
-        <dependency>
-            <groupId>org.jboss.msc</groupId>
-            <artifactId>jboss-msc</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>org.wildfly.security</groupId>
-            <artifactId>wildfly-security-manager</artifactId>
+            <groupId>org.wildfly</groupId>
+            <artifactId>wildfly-transactions</artifactId>
         </dependency>
 
         <!-- test -->
         <dependency>
-            <groupId>junit</groupId>
-            <artifactId>junit</artifactId>
+            <groupId>org.wildfly</groupId>
+            <artifactId>wildfly-subsystem-test-framework</artifactId>
             <scope>test</scope>
         </dependency>
     </dependencies>

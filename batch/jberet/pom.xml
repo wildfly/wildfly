@@ -22,31 +22,33 @@
   ~ 02110-1301 USA, or see the FSF site: http://www.fsf.org.
   -->
 
-<module xmlns="urn:jboss:module:1.1" name="org.wildfly.extension.batch">
-    <properties>
-        <property name="jboss.api" value="private"/>
-    </properties>
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+    <modelVersion>4.0.0</modelVersion>
 
-    <resources>
-        <!-- Insert resources here -->
-    </resources>
+    <parent>
+        <groupId>org.wildfly</groupId>
+        <artifactId>wildfly-batch-parent</artifactId>
+        <version>8.0.0.Beta1-SNAPSHOT</version>
+    </parent>
+
+    <artifactId>wildfly-jberet</artifactId>
+    <name>WildFly: JBeret Integration</name>
+    <description>JSR 352 implementation classes specific to WildFly Application Server</description>
 
     <dependencies>
-        <module name="javax.api"/>
-        <module name="javax.batch.api"/>
-        <module name="javax.enterprise.api"/>
-        <module name="javax.transaction.api"/>
-        <module name="org.jberet.jberet-core" services="import"/>
-        <module name="org.jboss.as.controller"/>
-        <module name="org.jboss.as.ee"/>
-        <module name="org.jboss.as.server"/>
-        <module name="org.jboss.as.transactions"/>
-        <module name="org.jboss.logging"/>
-        <module name="org.jboss.modules"/>
-        <module name="org.jboss.msc"/>
-        <module name="org.jboss.staxmapper"/>
-        <module name="org.jboss.vfs"/>
-        <module name="org.wildfly.jberet" services="import"/>
-        <module name="org.wildfly.security.manager"/>
+        <dependency>
+            <groupId>javax.enterprise</groupId>
+            <artifactId>cdi-api</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.jboss.spec.javax.batch</groupId>
+            <artifactId>jboss-batch-api_1.0_spec</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.jboss.spec.javax.transaction</groupId>
+            <artifactId>jboss-transaction-api_1.2_spec</artifactId>
+        </dependency>
     </dependencies>
-</module>
+</project>

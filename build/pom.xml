@@ -754,7 +754,7 @@
                 <!-- JSR-236 RI -->
                 <dependency>
                     <groupId>org.glassfish</groupId>
-                    <artifactId>javax.enterprise.concurrent</artifactId>                    
+                    <artifactId>javax.enterprise.concurrent</artifactId>
                 </dependency>
 
                 <dependency>
@@ -1024,6 +1024,11 @@
                 <dependency>
                     <groupId>org.wildfly</groupId>
                     <artifactId>wildfly-batch</artifactId>
+                </dependency>
+
+                <dependency>
+                    <groupId>org.wildfly</groupId>
+                    <artifactId>wildfly-jberet</artifactId>
                 </dependency>
 
                 <dependency>

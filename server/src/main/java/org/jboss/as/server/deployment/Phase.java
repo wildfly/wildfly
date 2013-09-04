@@ -456,6 +456,7 @@ public enum Phase {
     public static final int POST_MODULE_UNDERTOW_WEBSOCKETS             = 0x2E00;
     public static final int POST_MODULE_UNDERTOW_HANDLERS               = 0x2F00;
     public static final int POST_MODULE_EE_CONCURRENT_CONTEXT           = 0x3000;
+    public static final int POST_MODULE_BATCH_ENVIRONMENT               = 0x3100;
 
     // INSTALL
     public static final int INSTALL_JACC_POLICY                         = 0x0350;

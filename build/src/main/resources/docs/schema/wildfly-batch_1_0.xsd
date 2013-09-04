@@ -45,6 +45,40 @@
     </xs:complexType>
 
     <xs:complexType name="job-repositoryType">
-        <xs:attribute name="type" use="required" type="xs:string"/>
+        <xs:annotation>
+            <xs:documentation>
+                <![CDATA[
+                The type of the job repository
+            ]]>
+            </xs:documentation>
+        </xs:annotation>
+        <xs:choice minOccurs="1" maxOccurs="1">
+            <xs:element name="in-memory" />
+            <xs:element name="jdbc" type="job-repositoryJDBCType"/>
+        </xs:choice>
+    </xs:complexType>
+
+    <xs:complexType name="job-repositoryJDBCType">
+        <xs:annotation>
+            <xs:documentation>
+                <![CDATA[
+                        Used to describe how the job repository should connect to a database.
+                ]]>
+            </xs:documentation>
+        </xs:annotation>
+        <xs:choice minOccurs="1" maxOccurs="1">
+            <xs:element name="datasource" type="datasourceType"/>
+        </xs:choice>
+    </xs:complexType>
+
+    <xs:complexType name="datasourceType">
+        <xs:annotation>
+            <xs:documentation>
+                <![CDATA[
+                        The datasource JNDI name used for the JDBC connection
+                ]]>
+            </xs:documentation>
+        </xs:annotation>
+        <xs:attribute name="jndi-name" type="xs:string" use="required" />
     </xs:complexType>
 </xs:schema>
