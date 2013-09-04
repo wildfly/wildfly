@@ -64,6 +64,7 @@ import org.junit.runner.RunWith;
  */
 @RunWith(Arquillian.class)
 @RunAsClient
+@Ignore("Until :reload operation is fixed. Fails and leaves hanging processes, causing other tests to fail.")
 public class HornetQBackupActivationTestCase {
 
     // maximum time for HornetQ activation to detect node failover/failback
