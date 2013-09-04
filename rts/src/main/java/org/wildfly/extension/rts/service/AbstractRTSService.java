@@ -28,11 +28,13 @@ import io.undertow.servlet.api.ListenerInfo;
 import io.undertow.servlet.api.ServletContainer;
 import io.undertow.servlet.api.ServletInfo;
 
+import java.net.Inet4Address;
 import java.util.Map;
 import java.util.Map.Entry;
 
 import javax.servlet.ServletException;
 
+import org.jboss.as.network.SocketBinding;
 import org.jboss.jbossts.star.service.ContextListener;
 import org.jboss.msc.value.InjectedValue;
 import org.jboss.resteasy.plugins.server.servlet.HttpServletDispatcher;
@@ -49,10 +51,16 @@ public class AbstractRTSService {
 
     private InjectedValue<Host> injectedHost = new InjectedValue<>();
 
+    private InjectedValue<SocketBinding> injectedSocketBinding = new InjectedValue<>();
+
     private volatile Deployment deployment = null;
 
     public InjectedValue<Host> getInjectedHost() {
         return injectedHost;
+    }
+
+    public InjectedValue<SocketBinding> getInjectedSocketBinding() {
+        return injectedSocketBinding;
     }
 
     protected DeploymentInfo getDeploymentInfo(final String name, final String contextPath, final Map<String, String> initialParameters) {
@@ -89,6 +97,17 @@ public class AbstractRTSService {
         if (deployment != null) {
             injectedHost.getValue().unregisterDeployment(deployment);
             deployment = null;
+        }
+    }
+
+    protected String getBaseUrl() {
+        final String address = injectedSocketBinding.getValue().getAddress().getHostAddress();
+        final int port = injectedSocketBinding.getValue().getPort();
+
+        if (injectedSocketBinding.getValue().getAddress() instanceof Inet4Address) {
+            return "http://" + address + ":" + port;
+        } else {
+            return "http://[" + address + "]:" + port;
         }
     }
 
