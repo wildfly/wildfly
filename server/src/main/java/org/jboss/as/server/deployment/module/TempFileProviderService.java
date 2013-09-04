@@ -22,6 +22,9 @@
 
 package org.jboss.as.server.deployment.module;
 
+import java.io.IOException;
+import java.util.concurrent.Executors;
+
 import org.jboss.as.server.ServerMessages;
 import org.jboss.msc.service.Service;
 import org.jboss.msc.service.ServiceName;
@@ -30,9 +33,6 @@ import org.jboss.msc.service.StartException;
 import org.jboss.msc.service.StopContext;
 import org.jboss.vfs.TempFileProvider;
 import org.jboss.vfs.VFSUtils;
-
-import java.io.IOException;
-import java.util.concurrent.Executors;
 
 /**
  * Service responsible for managing the life-cycle of a TempFileProvider.
@@ -45,7 +45,7 @@ public class TempFileProviderService implements Service<TempFileProvider> {
     private static final TempFileProvider PROVIDER;
     static {
        try {
-          PROVIDER = TempFileProvider.create("deployment", Executors.newScheduledThreadPool(2));
+          PROVIDER = TempFileProvider.create("deployment", Executors.newScheduledThreadPool(2), true);
        }
        catch (final IOException ioe) {
           throw ServerMessages.MESSAGES.failedToCreateTempFileProvider(ioe);
