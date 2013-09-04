@@ -56,6 +56,9 @@ public class ActiveApplicationClientProcessor implements DeploymentUnitProcessor
     public void deploy(final DeploymentPhaseContext phaseContext) throws DeploymentUnitProcessingException {
         final DeploymentUnit deploymentUnit = phaseContext.getDeploymentUnit();
         if (!DeploymentTypeMarker.isType(DeploymentType.EAR, deploymentUnit)) {
+            if(deploymentUnit.getParent() == null ) {
+                deploymentUnit.putAttachment(AppClientAttachments.START_APP_CLIENT, true);
+            }
             return;
         }
         final List<DeploymentUnit> appClients = new ArrayList<DeploymentUnit>();
