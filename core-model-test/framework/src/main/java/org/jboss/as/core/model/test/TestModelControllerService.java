@@ -463,7 +463,7 @@ class TestModelControllerService extends ModelTestModelControllerService {
                         @Override
                         public void registerHostModel(String hostName, ManagementResourceRegistration rootRegistration) {
                         }
-                    },ProcessType.HOST_CONTROLLER);
+                    },ProcessType.HOST_CONTROLLER, authorizer);
 
             HostModelUtil.createHostRegistry(
                     hostName,
@@ -516,7 +516,7 @@ class TestModelControllerService extends ModelTestModelControllerService {
                         @Override
                         public void registerHostModel(String hostName, ManagementResourceRegistration root) {
                         }
-                    },processType);
+                    },processType, authorizer);
         }
 
     }

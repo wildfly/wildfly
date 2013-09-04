@@ -33,6 +33,8 @@ import org.jboss.as.controller.OperationStepHandler;
 import org.jboss.as.controller.SimpleOperationDefinition;
 import org.jboss.as.controller.SimpleOperationDefinitionBuilder;
 import org.jboss.as.controller.access.Authorizer;
+import org.jboss.as.controller.access.Caller;
+import org.jboss.as.controller.access.Environment;
 import org.jboss.as.controller.access.rbac.RunAsRoleMapper;
 import org.jboss.as.domain.management._private.DomainManagementResolver;
 import org.jboss.dmr.ModelNode;
@@ -65,10 +67,26 @@ public class IsCallerInRoleOperation implements OperationStepHandler {
         } else {
             ModelNode result = context.getResult();
             Set<String> operationHeaderRoles = RunAsRoleMapper.getOperationHeaderRoles(operation);
-            result.set(authorizer.isCallerInRole(roleName, context.getCaller(), context.getCallEnvironment(), operationHeaderRoles));
+            result.set(isCallerInRole(roleName, context.getCaller(), context.getCallEnvironment(), operationHeaderRoles));
         }
 
         context.stepCompleted();
+    }
+
+    private boolean isCallerInRole(String roleName, Caller caller, Environment callEnvironment, Set<String> operationHeaderRoles) {
+        Set<String> mappedRoles = authorizer.getCallerRoles(caller, callEnvironment, operationHeaderRoles);
+        if (mappedRoles == null) {
+            return false;
+        } else if (mappedRoles.contains(roleName)) {
+            return true;
+        } else {
+            for (String role : mappedRoles) {
+                if (role.equalsIgnoreCase(roleName)) {
+                    return true;
+                }
+            }
+        }
+        return false;
     }
 
     public static OperationStepHandler create(final Authorizer authorizer) {

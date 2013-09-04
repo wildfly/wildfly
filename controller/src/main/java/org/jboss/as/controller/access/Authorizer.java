@@ -22,7 +22,6 @@
 
 package org.jboss.as.controller.access;
 
-
 import java.util.Set;
 
 /**
@@ -72,20 +71,16 @@ public interface Authorizer {
     AuthorizationResult authorizeJmxOperation(Caller caller, Environment callEnvironment, JmxAction action);
 
     /**
-     * Gets whether the given caller can run in the given role.
+     * Gets the set of roles the caller can run as taking into account and requested 'run as' roles.
      *
-     * @param roleName the name of the role. Cannot be {@code null}
      * @param caller the caller. Cannot be {@code null}
      * @param callEnvironment the call environment. Cannot be {@code null}
-     * @param operationHeaderRoles any roles specified as headers in the operation. May be {@code null}
+     * @param runAsRoles any requested 'run as' roles. May be {@code null}
      *
-     * @return {@code true} if the caller maps to the given role in the given environment. {@code false} if the
-     *         caller does not map to the role for whatever reason, including because the authorizer implementation
-     *         is not {@link AuthorizerDescription#isRoleBased() role based} or because the implementation does not support mapping roles
-     *         without {@link Action}, {@link JmxAction}, {@link TargetResource} and/or {@link TargetAttribute}
-     *         information.
+     * @return The set of roles assigned to the caller, an empty set may be returned of no roles are assigned or {@code null}
+     *         may be returned if the access control provider does not support role mapping.
      */
-    boolean isCallerInRole(String roleName, Caller caller, Environment callEnvironment, Set<String> operationHeaderRoles);
+    Set<String> getCallerRoles(Caller caller, Environment callEnvironment, Set<String> runAsroles);
 
     /**
      * Description of standard information about the custom authorizer.

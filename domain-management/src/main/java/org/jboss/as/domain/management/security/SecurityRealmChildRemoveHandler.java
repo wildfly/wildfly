@@ -52,7 +52,7 @@ public class SecurityRealmChildRemoveHandler extends SecurityRealmParentRestartH
             context.addStep(validationOp, AuthenticationValidatingHandler.INSTANCE, OperationContext.Stage.MODEL);
         } // else we know the SecurityRealmAddHandler is part of this overall set of ops and it added AuthenticationValidatingHandler
         if (validateRbac) {
-            RbacSanityCheckOperation.registerOperation(context);
+            RbacSanityCheckOperation.addOperation(context);
         }
     }
 }

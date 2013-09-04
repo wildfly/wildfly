@@ -72,8 +72,9 @@ public class HostModelUtil {
 
     public static void createRootRegistry(final ManagementResourceRegistration root, final HostControllerEnvironment environment,
                                           final IgnoredDomainResourceRegistry ignoredDomainResourceRegistry,
-                                          final HostModelRegistrar hostModelRegistrar, ProcessType processType) {
-
+                                          final HostModelRegistrar hostModelRegistrar,
+                                          final ProcessType processType,
+                                          final DelegatingConfigurableAuthorizer authorizer) {
         // Add of the host itself
         final HostModelRegistrationHandler hostModelRegistratorHandler = new HostModelRegistrationHandler(environment, ignoredDomainResourceRegistry, hostModelRegistrar);
         root.registerOperationHandler(HostModelRegistrationHandler.DEFINITION, hostModelRegistratorHandler);
@@ -84,7 +85,7 @@ public class HostModelUtil {
         if (root.getOperationEntry(PathAddress.EMPTY_ADDRESS, ValidateOperationHandler.DEFINITION.getName())==null){//this is hack
             root.registerOperationHandler(ValidateOperationHandler.DEFINITION, ValidateOperationHandler.INSTANCE);
         }
-        root.registerOperationHandler(WhoAmIOperation.DEFINITION, WhoAmIOperation.INSTANCE, true);
+        root.registerOperationHandler(WhoAmIOperation.DEFINITION, WhoAmIOperation.createOperation(authorizer), true);
 
         // Other root resource operations
         root.registerOperationHandler(CompositeOperationHandler.DEFINITION, CompositeOperationHandler.INSTANCE);
@@ -103,7 +104,7 @@ public class HostModelUtil {
                                           final IgnoredDomainResourceRegistry ignoredRegistry,
                                           final ControlledProcessState processState,
                                           final PathManagerService pathManager,
-                                          DelegatingConfigurableAuthorizer authorizer,
+                                          final DelegatingConfigurableAuthorizer authorizer,
                                           final ManagedAuditLogger auditLogger) {
         // Add of the host itself
         ManagementResourceRegistration hostRegistration = root.registerSubModel(

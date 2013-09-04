@@ -25,6 +25,7 @@ package org.jboss.as.domain.management.security;
 import static org.jboss.as.domain.management.DomainManagementMessages.MESSAGES;
 import static org.jboss.as.domain.management.ModelDescriptionConstants.GROUPS;
 import static org.jboss.as.domain.management.ModelDescriptionConstants.IDENTITY;
+import static org.jboss.as.domain.management.ModelDescriptionConstants.MAPPED_ROLES;
 import static org.jboss.as.domain.management.ModelDescriptionConstants.REALM;
 import static org.jboss.as.domain.management.ModelDescriptionConstants.ROLES;
 import static org.jboss.as.domain.management.ModelDescriptionConstants.USERNAME;
@@ -39,7 +40,9 @@ import org.jboss.as.controller.SimpleAttributeDefinition;
 import org.jboss.as.controller.SimpleAttributeDefinitionBuilder;
 import org.jboss.as.controller.SimpleOperationDefinition;
 import org.jboss.as.controller.SimpleOperationDefinitionBuilder;
+import org.jboss.as.controller.access.Authorizer;
 import org.jboss.as.controller.access.Caller;
+import org.jboss.as.controller.access.rbac.RunAsRoleMapper;
 import org.jboss.as.controller.descriptions.common.ControllerResolver;
 import org.jboss.as.domain.management.ModelDescriptionConstants;
 import org.jboss.dmr.ModelNode;
@@ -58,7 +61,6 @@ import org.jboss.dmr.ModelType;
  * @author <a href="mailto:darran.lofthouse@jboss.com">Darran Lofthouse</a>
  */
 public class WhoAmIOperation implements OperationStepHandler {
-    public static final WhoAmIOperation INSTANCE = new WhoAmIOperation();
 
     private static final SimpleAttributeDefinition VERBOSE = new SimpleAttributeDefinitionBuilder(ModelDescriptionConstants.VERBOSE, ModelType.BOOLEAN)
             .setAllowNull(true)
@@ -70,6 +72,12 @@ public class WhoAmIOperation implements OperationStepHandler {
             .setReplyType(ModelType.STRING)
             .setReplyValueType(ModelType.STRING)
             .build();
+
+    private final Authorizer authorizer;
+
+    private WhoAmIOperation(final Authorizer authorizer) {
+        this.authorizer = authorizer;
+    }
 
     /**
      * @see org.jboss.as.controller.OperationStepHandler#execute(org.jboss.as.controller.OperationContext,
@@ -107,9 +115,21 @@ public class WhoAmIOperation implements OperationStepHandler {
                     roles.add(current);
                 }
             }
+
+            Set<String> mappedRoles = authorizer == null ? null : authorizer.getCallerRoles(context.getCaller(), context.getCallEnvironment(), RunAsRoleMapper.getOperationHeaderRoles(operation));
+            if (mappedRoles != null) {
+                ModelNode roles = result.get(MAPPED_ROLES);
+                for (String current : mappedRoles) {
+                    roles.add(current);
+                }
+            }
         }
 
         context.completeStep(OperationContext.RollbackHandler.NOOP_ROLLBACK_HANDLER);
+    }
+
+    public static OperationStepHandler createOperation(final Authorizer authorizer) {
+        return new WhoAmIOperation(authorizer);
     }
 
 }
