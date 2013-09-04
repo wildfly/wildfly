@@ -28,6 +28,7 @@ import java.net.URL;
 import org.jboss.as.controller.PathAddress;
 import org.jboss.as.model.test.ModelFixer;
 import org.jboss.as.model.test.OperationFixer;
+import org.jboss.modules.filter.ClassFilter;
 
 
 /**
@@ -169,4 +170,12 @@ public interface LegacyKernelServicesInitializer {
      * @param pathAddress the address of the operation, the pathAddress may use {@code *} as a wildcard for both the key and the value of {@link org.jboss.as.controller.PathElement}s
      */
     LegacyKernelServicesInitializer addOperationValidationResolve(String name, PathAddress pathAddress);
+
+     /**
+     * By default all the parent classloader classes are available to be kernel which may provides conflict with classesloaded
+     * through the service initializer. Thus we provide an exclusion mecanism.
+     *
+     * @param exclusionFilter the class filter used to exclude class from the the parent classloader when resolving.
+     */
+    LegacyKernelServicesInitializer excludeFromParent(ClassFilter exclusionFilter);
 }

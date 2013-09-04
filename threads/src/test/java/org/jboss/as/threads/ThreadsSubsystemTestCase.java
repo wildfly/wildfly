@@ -35,6 +35,7 @@ import org.jboss.as.controller.PathElement;
 import org.jboss.as.model.test.FailedOperationTransformationConfig;
 import org.jboss.as.model.test.ModelTestControllerVersion;
 import org.jboss.as.model.test.ModelTestUtils;
+import org.jboss.as.model.test.SingleClassFilter;
 import org.jboss.as.subsystem.test.AbstractSubsystemBaseTest;
 import org.jboss.as.subsystem.test.AdditionalInitialization;
 import org.jboss.as.subsystem.test.KernelServices;
@@ -88,7 +89,8 @@ public class ThreadsSubsystemTestCase extends AbstractSubsystemBaseTest {
         // Add legacy subsystems
         builder.createLegacyKernelServicesBuilder(null, controllerVersion, modelVersion)
                 .addOperationValidationResolve("add", subsystemAddress.append(PathElement.pathElement("thread-factory")))
-                .addMavenResourceURL("org.jboss.as:jboss-as-threads:" + controllerVersion.getMavenGavVersion());
+                .addMavenResourceURL("org.jboss.as:jboss-as-threads:" + controllerVersion.getMavenGavVersion())
+                .excludeFromParent(SingleClassFilter.createFilter(ThreadsLogger.class)); 
 
         KernelServices mainServices = builder.build();
         KernelServices legacyServices = mainServices.getLegacyServices(modelVersion);
@@ -113,7 +115,8 @@ public class ThreadsSubsystemTestCase extends AbstractSubsystemBaseTest {
         // create builder for legacy subsystem version
         ModelVersion version_1_0_0 = ModelVersion.create(1, 0, 0);
         builder.createLegacyKernelServicesBuilder(null, controllerVersion, version_1_0_0)
-                .addMavenResourceURL("org.jboss.as:jboss-as-threads:" + controllerVersion.getMavenGavVersion());
+                .addMavenResourceURL("org.jboss.as:jboss-as-threads:" + controllerVersion.getMavenGavVersion())
+                .excludeFromParent(SingleClassFilter.createFilter(ThreadsLogger.class));
 
         KernelServices mainServices = builder.build();
         KernelServices legacyServices = mainServices.getLegacyServices(version_1_0_0);

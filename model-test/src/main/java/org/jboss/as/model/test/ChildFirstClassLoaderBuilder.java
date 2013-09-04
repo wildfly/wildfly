@@ -37,6 +37,7 @@ import java.util.regex.Pattern;
 
 import org.eclipse.aether.collection.DependencyCollectionException;
 import org.eclipse.aether.resolution.DependencyResolutionException;
+import org.jboss.modules.filter.ClassFilter;
 import org.xnio.IoUtils;
 
 /**
@@ -62,7 +63,7 @@ public class ChildFirstClassLoaderBuilder {
     private final List<URL> classloaderURLs = new ArrayList<URL>();
     private final List<Pattern> parentFirst = new ArrayList<Pattern>();
     private final List<Pattern> childFirst = new ArrayList<Pattern>();
-
+    private ClassFilter parentExclusionFilter;
 
     public ChildFirstClassLoaderBuilder() {
         final String root = System.getProperty(ROOT_PROPERTY);
@@ -244,13 +245,18 @@ public class ChildFirstClassLoaderBuilder {
         return this;
     }
 
+    public ChildFirstClassLoaderBuilder excludeFromParent(ClassFilter filter) {
+        parentExclusionFilter = filter;
+        return this;
+    }
+
     private String escape(String artifactGav) {
         return artifactGav.replaceAll(":", "-x-");
     }
 
     public ClassLoader build() {
         ClassLoader parent = this.getClass().getClassLoader() != null ? this.getClass().getClassLoader() : null;
-        return new ChildFirstClassLoader(parent, parentFirst, childFirst, classloaderURLs.toArray(new URL[classloaderURLs.size()]));
+        return new ChildFirstClassLoader(parent, parentFirst, childFirst, parentExclusionFilter, classloaderURLs.toArray(new URL[classloaderURLs.size()]));
     }
 
     private Pattern compilePattern(String pattern) {

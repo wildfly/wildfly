@@ -26,6 +26,7 @@ import static org.jboss.as.connector.subsystems.jca.Constants.WORKMANAGER_SHORT_
 
 import java.io.IOException;
 import java.util.List;
+import org.jboss.as.connector.logging.ConnectorLogger;
 
 import org.jboss.as.controller.ModelVersion;
 import org.jboss.as.controller.PathAddress;
@@ -33,6 +34,7 @@ import org.jboss.as.controller.PathElement;
 import org.jboss.as.model.test.FailedOperationTransformationConfig;
 import org.jboss.as.model.test.ModelTestControllerVersion;
 import org.jboss.as.model.test.ModelTestUtils;
+import org.jboss.as.model.test.SingleClassFilter;
 import org.jboss.as.subsystem.test.AbstractSubsystemBaseTest;
 import org.jboss.as.subsystem.test.AdditionalInitialization;
 import org.jboss.as.subsystem.test.KernelServices;
@@ -94,7 +96,8 @@ public class JcaSubsystemTestCase extends AbstractSubsystemBaseTest {
         builder.createLegacyKernelServicesBuilder(null, controllerVersion, modelVersion)
                 .addMavenResourceURL("org.jboss.as:jboss-as-connector:" + controllerVersion.getMavenGavVersion())
                 .addMavenResourceURL("org.jboss.as:jboss-as-threads:" + controllerVersion.getMavenGavVersion())
-                .setExtensionClassName("org.jboss.as.connector.subsystems.jca.JcaExtension");
+                .setExtensionClassName("org.jboss.as.connector.subsystems.jca.JcaExtension")
+                 .excludeFromParent(SingleClassFilter.createFilter(ConnectorLogger.class));
 
         KernelServices mainServices = builder.build();
         KernelServices legacyServices = mainServices.getLegacyServices(modelVersion);
@@ -121,7 +124,8 @@ public class JcaSubsystemTestCase extends AbstractSubsystemBaseTest {
         builder.createLegacyKernelServicesBuilder(null, controllerVersion, version_1_1_0)
                 .addMavenResourceURL("org.jboss.as:jboss-as-connector:" + controllerVersion.getMavenGavVersion())
                 .addMavenResourceURL("org.jboss.as:jboss-as-threads:" + controllerVersion.getMavenGavVersion())
-                .setExtensionClassName("org.jboss.as.connector.subsystems.jca.JcaExtension");
+                .setExtensionClassName("org.jboss.as.connector.subsystems.jca.JcaExtension")
+                .excludeFromParent(SingleClassFilter.createFilter(ConnectorLogger.class));
 
         KernelServices mainServices = builder.build();
         KernelServices legacyServices = mainServices.getLegacyServices(version_1_1_0);
