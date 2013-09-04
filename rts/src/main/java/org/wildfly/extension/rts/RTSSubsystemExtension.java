@@ -56,6 +56,8 @@ public final class RTSSubsystemExtension implements Extension {
 
     public static final ServiceName PARTICIPANT = RTS.append("participant");
 
+    public static final ServiceName VOLATILE_PARTICIPANT = RTS.append("volatile-participant");
+
     public static final ServiceName INBOUND_BRIDGE = RTS.append("inbound-bridge");
 
     protected static final PathElement SUBSYSTEM_PATH = PathElement.pathElement(SUBSYSTEM, SUBSYSTEM_NAME);

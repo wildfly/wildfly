@@ -19,37 +19,26 @@
  * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
-package org.wildfly.extension.rts;
+package org.wildfly.extension.rts.jaxrs;
 
-import org.jboss.as.controller.AbstractRemoveStepHandler;
-import org.jboss.as.controller.OperationContext;
-import org.jboss.as.controller.OperationFailedException;
-import org.jboss.dmr.ModelNode;
-import org.wildfly.extension.rts.logging.RTSLogger;
+import org.jboss.narayana.rest.integration.VolatileParticipantResource;
+
+import java.util.Set;
 
 /**
  *
  * @author <a href="mailto:gytis@redhat.com">Gytis Trikleris</a>
  *
  */
-final class RTSSubsystemRemove extends AbstractRemoveStepHandler {
-
-    static final RTSSubsystemRemove INSTANCE = new RTSSubsystemRemove();
-
-    private RTSSubsystemRemove() {
-    }
+public final class VolatileParticipantApplication extends AbstractRTSApplication {
 
     @Override
-    protected void performRuntime(OperationContext context, ModelNode operation, ModelNode model) throws OperationFailedException {
-        if (RTSLogger.ROOT_LOGGER.isTraceEnabled()) {
-            RTSLogger.ROOT_LOGGER.trace("RTSSubsystemRemove.performRuntime");
-        }
+    public Set<Class<?>> getClasses() {
+        Set<Class<?>> classes = super.getClasses();
 
-        context.removeService(RTSSubsystemExtension.COORDINATOR);
-        context.removeService(RTSSubsystemExtension.PARTICIPANT);
-        context.removeService(RTSSubsystemExtension.VOLATILE_PARTICIPANT);
-        context.removeService(RTSSubsystemExtension.INBOUND_BRIDGE);
+        classes.add(VolatileParticipantResource.class);
+
+        return classes;
     }
-
 
 }
