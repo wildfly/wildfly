@@ -270,4 +270,8 @@ public interface WSLogger extends BasicLogger {
     @Message(id = 15601, value = "Cannot unregister endpoint: %s from JMX server")
     void cannotUnregisterEndpoint(Object endpoint);
 
+    @LogMessage(level = WARN)
+    @Message(id = 15602, value = "Invalid handler chain file: %s")
+    void invalidHandlerChainFile(String fileName);
+
 }
