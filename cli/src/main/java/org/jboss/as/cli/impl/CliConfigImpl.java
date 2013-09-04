@@ -437,7 +437,7 @@ class CliConfigImpl implements CliConfig {
                 } else if ("trustStorePassword".equals(localName)) {
                     config.setTrustStorePassword(reader.getElementText());
                 } else if ("modifyTrustStore".equals(localName)) {
-                    config.setModifyTrustStore(Boolean.getBoolean(reader.getElementText()));
+                    config.setModifyTrustStore(resolveBoolean(reader.getElementText()));
                 } else {
                     throw new XMLStreamException("Unexpected child of ssl : " + localName);
                 }
@@ -466,7 +466,7 @@ class CliConfigImpl implements CliConfig {
                 } else if ("trust-store-password".equals(localName) || "trustStorePassword".equals(localName)) {
                     config.setTrustStorePassword(reader.getElementText());
                 } else if ("modify-trust-store".equals(localName) || "modifyTrustStore".equals(localName)) {
-                    config.setModifyTrustStore(Boolean.getBoolean(reader.getElementText()));
+                    config.setModifyTrustStore(resolveBoolean(reader.getElementText()));
                 } else {
                     throw new XMLStreamException("Unexpected child of ssl : " + localName);
                 }
