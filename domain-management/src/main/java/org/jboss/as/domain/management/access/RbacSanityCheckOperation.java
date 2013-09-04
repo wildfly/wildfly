@@ -115,9 +115,9 @@ public class RbacSanityCheckOperation implements OperationStepHandler {
     }
 
     /**
-     * Register the operation at the end of Stage MODEL if this operation has not already been registered.
+     * Add the operation at the end of Stage MODEL if this operation has not already been registered.
      *
-     * This operation should be registered if any of the following occur: -
+     * This operation should be added if any of the following occur: -
      *   - map-group-to-roles is set to false on an existing security realm.
      *   - A security realm is removed.
      *   - The authorization configuration is removed from a security realm.
@@ -133,9 +133,9 @@ public class RbacSanityCheckOperation implements OperationStepHandler {
      *
      * @param context - The OperationContext to use to register the step.
      */
-    public static void registerOperation(final OperationContext context) {
-        RbacSanityCheckOperation registered = context.getAttachment(KEY);
-        if (registered == null) {
+    public static void addOperation(final OperationContext context) {
+        RbacSanityCheckOperation added = context.getAttachment(KEY);
+        if (added == null) {
             // TODO support managed domain
             if (!context.isNormalServer()) return;
             context.addStep(createOperation(), INSTANCE, Stage.MODEL);

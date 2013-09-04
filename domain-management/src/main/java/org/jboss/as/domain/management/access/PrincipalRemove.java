@@ -69,7 +69,7 @@ public class PrincipalRemove implements OperationStepHandler {
         context.removeResource(PathAddress.EMPTY_ADDRESS);
 
         if (matchType == WritableAuthorizerConfiguration.MatchType.INCLUDE) {
-            RbacSanityCheckOperation.registerOperation(context);
+            RbacSanityCheckOperation.addOperation(context);
         }
 
         registerRuntimeRemove(context, roleName, principalType, name, realm);

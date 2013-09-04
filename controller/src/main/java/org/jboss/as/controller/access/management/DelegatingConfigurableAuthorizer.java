@@ -79,8 +79,8 @@ public final class DelegatingConfigurableAuthorizer implements JmxAuthorizer {
     }
 
     @Override
-    public boolean isCallerInRole(String roleName, Caller caller, Environment callEnvironment, Set<String> operationHeaderRoles) {
-        return delegate.isCallerInRole(roleName, caller, callEnvironment, operationHeaderRoles);
+    public Set<String> getCallerRoles(Caller caller, Environment callEnvironment, Set<String> runAsroles) {
+        return delegate.getCallerRoles(caller, callEnvironment, runAsroles);
     }
 
     @Override

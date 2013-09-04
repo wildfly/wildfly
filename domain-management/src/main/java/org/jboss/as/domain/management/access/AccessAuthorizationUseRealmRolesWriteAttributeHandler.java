@@ -53,7 +53,7 @@ public class AccessAuthorizationUseRealmRolesWriteAttributeHandler extends Abstr
              * Using roles from the realm has been disabled so now need to check if there that RBAC has been disabled or an
              * alternative mapping strategy is in place.
              */
-            RbacSanityCheckOperation.registerOperation(context);
+            RbacSanityCheckOperation.addOperation(context);
         }
     }
 

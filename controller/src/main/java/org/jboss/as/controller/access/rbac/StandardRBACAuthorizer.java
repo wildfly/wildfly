@@ -91,18 +91,8 @@ public final class StandardRBACAuthorizer extends ManagementPermissionAuthorizer
     }
 
     @Override
-    public boolean isCallerInRole(String roleName, Caller caller, Environment callEnvironment, Set<String> operationHeaderRoles) {
-        Set<String> mappedRoles = roleMapper.mapRoles(caller, callEnvironment, operationHeaderRoles);
-        if (mappedRoles.contains(roleName)) {
-            return true;
-        } else {
-            for (String role : mappedRoles) {
-                if (role.equalsIgnoreCase(roleName)) {
-                    return true;
-                }
-            }
-        }
-        return false;
+    public Set<String> getCallerRoles(Caller caller, Environment callEnvironment, Set<String> runAsroles) {
+        return roleMapper.mapRoles(caller, callEnvironment, runAsroles);
     }
 
     @Override
