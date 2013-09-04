@@ -122,7 +122,7 @@ public class SecurityContextAssociationValve extends ValveBase {
                         runAsIdentity = new RunAsIdentity(identity.getRoleName(), identity.getPrincipalName(),
                                 identity.getRunAsRoles());
                     }
-                    SecurityActions.pushRunAsIdentity(runAsIdentity);
+                    SecurityActions.pushRunAsIdentity(runAsIdentity, sc);
                 }
 
                 // If there is a session, get the tomcat session for the principal
@@ -168,7 +168,7 @@ public class SecurityContextAssociationValve extends ValveBase {
             // Perform the request
             getNext().invoke(request, response);
             if (servlet != null) {
-                SecurityActions.popRunAsIdentity();
+                SecurityActions.popRunAsIdentity(sc);
             }
         } finally {
             WebLogger.WEB_SECURITY_LOGGER.tracef("End invoke, caller=" + caller);
@@ -200,7 +200,13 @@ public class SecurityContextAssociationValve extends ValveBase {
     }
 
     private String setContextID(String contextID) {
-        PrivilegedAction<String> action = new SetContextIDAction(contextId);
-        return AccessController.doPrivileged(action);
+        if (System.getSecurityManager() == null) {
+            String currentContextID = PolicyContext.getContextID();
+            PolicyContext.setContextID(contextID);
+            return currentContextID;
+        } else {
+            PrivilegedAction<String> action = new SetContextIDAction(contextID);
+            return AccessController.doPrivileged(action);
+        }
     }
 }

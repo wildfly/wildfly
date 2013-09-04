@@ -41,6 +41,18 @@ import java.security.PrivilegedAction;
  */
 class SecurityActions {
 
+    public static final PrivilegedAction<SecurityContext> GET_SECURITY_CONTEXT = new PrivilegedAction<SecurityContext>() {
+        public SecurityContext run() {
+            return SecurityContextAssociation.getSecurityContext();
+        }
+    };
+    public static final PrivilegedAction<Void> CLEAR_SECURITY_CONTEXT = new PrivilegedAction<Void>() {
+        public Void run() {
+            SecurityContextAssociation.clearSecurityContext();
+            return null;
+        }
+    };
+
     /**
      * Create a JBoss Security Context with the given security domain name
      *
@@ -48,17 +60,25 @@ class SecurityActions {
      * @return an instanceof {@code SecurityContext}
      */
     static SecurityContext createSecurityContext(final String domain) {
-        return AccessController.doPrivileged(new PrivilegedAction<SecurityContext>() {
-
-            @Override
-            public SecurityContext run() {
-                try {
-                    return SecurityContextFactory.createSecurityContext(domain);
-                } catch (Exception e) {
-                    throw MESSAGES.failToCreateSecurityContext(e);
-                }
+        if (System.getSecurityManager() == null) {
+            try {
+                return SecurityContextFactory.createSecurityContext(domain);
+            } catch (Exception e) {
+                throw MESSAGES.failToCreateSecurityContext(e);
             }
-        });
+        } else {
+            return AccessController.doPrivileged(new PrivilegedAction<SecurityContext>() {
+
+                @Override
+                public SecurityContext run() {
+                    try {
+                        return SecurityContextFactory.createSecurityContext(domain);
+                    } catch (Exception e) {
+                        throw MESSAGES.failToCreateSecurityContext(e);
+                    }
+                }
+            });
+        }
     }
 
     /**
@@ -67,14 +87,18 @@ class SecurityActions {
      * @param sc the security context
      */
     static void setSecurityContextOnAssociation(final SecurityContext sc) {
-        AccessController.doPrivileged(new PrivilegedAction<Void>() {
+        if (System.getSecurityManager() == null) {
+            SecurityContextAssociation.setSecurityContext(sc);
+        } else {
+            AccessController.doPrivileged(new PrivilegedAction<Void>() {
 
-            @Override
-            public Void run() {
-                SecurityContextAssociation.setSecurityContext(sc);
-                return null;
-            }
-        });
+                @Override
+                public Void run() {
+                    SecurityContextAssociation.setSecurityContext(sc);
+                    return null;
+                }
+            });
+        }
     }
 
     /**
@@ -83,23 +107,22 @@ class SecurityActions {
      * @return an instance of {@code SecurityContext}
      */
     static SecurityContext getSecurityContext() {
-        return AccessController.doPrivileged(new PrivilegedAction<SecurityContext>() {
-            public SecurityContext run() {
-                return SecurityContextAssociation.getSecurityContext();
-            }
-        });
+        if(System.getSecurityManager() == null) {
+            return SecurityContextAssociation.getSecurityContext();
+        } else {
+            return AccessController.doPrivileged(GET_SECURITY_CONTEXT);
+        }
     }
 
     /**
      * Clears current {@code SecurityContext}
      */
     static void clearSecurityContext() {
-        AccessController.doPrivileged(new PrivilegedAction<Void>() {
-            public Void run() {
-                SecurityContextAssociation.clearSecurityContext();
-                return null;
-            }
-        });
+        if(System.getSecurityManager() == null) {
+            SecurityContextAssociation.clearSecurityContext();
+        } else {
+            AccessController.doPrivileged(CLEAR_SECURITY_CONTEXT);
+        }
     }
 
     /**
@@ -107,18 +130,21 @@ class SecurityActions {
      *
      * @param principal the identity
      */
-    static void pushRunAsIdentity(final RunAsIdentity principal) {
-        AccessController.doPrivileged(new PrivilegedAction<Void>() {
+    static void pushRunAsIdentity(final RunAsIdentity principal, final SecurityContext sc) {
+        if (sc == null)
+            throw MESSAGES.noSecurityContext();
+        if (System.getSecurityManager() == null) {
+            sc.setOutgoingRunAs(principal);
+        } else {
+            AccessController.doPrivileged(new PrivilegedAction<Void>() {
 
-            @Override
-            public Void run() {
-                SecurityContext sc = getSecurityContext();
-                if (sc == null)
-                    throw MESSAGES.noSecurityContext();
-                sc.setOutgoingRunAs(principal);
-                return null;
-            }
-        });
+                @Override
+                public Void run() {
+                    sc.setOutgoingRunAs(principal);
+                    return null;
+                }
+            });
+        }
     }
 
     /**
@@ -126,19 +152,24 @@ class SecurityActions {
      *
      * @return the identity removed
      */
-    static RunAs popRunAsIdentity() {
-        return AccessController.doPrivileged(new PrivilegedAction<RunAs>() {
+    static RunAs popRunAsIdentity(final SecurityContext sc) {
+        if (sc == null)
+            throw MESSAGES.noSecurityContext();
+        if (System.getSecurityManager() == null) {
+            RunAs principal = sc.getOutgoingRunAs();
+            sc.setOutgoingRunAs(null);
+            return principal;
+        } else {
+            return AccessController.doPrivileged(new PrivilegedAction<RunAs>() {
 
-            @Override
-            public RunAs run() {
-                SecurityContext sc = getSecurityContext();
-                if (sc == null)
-                    throw MESSAGES.noSecurityContext();
-                RunAs principal = sc.getOutgoingRunAs();
-                sc.setOutgoingRunAs(null);
-                return principal;
-            }
-        });
+                @Override
+                public RunAs run() {
+                    RunAs principal = sc.getOutgoingRunAs();
+                    sc.setOutgoingRunAs(null);
+                    return principal;
+                }
+            });
+        }
     }
 
     public static final String AUTH_EXCEPTION_KEY = "org.jboss.security.exception";
