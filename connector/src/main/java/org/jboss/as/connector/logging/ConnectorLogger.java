@@ -246,4 +246,15 @@ public interface ConnectorLogger extends BasicLogger {
     @Message(id = 10425, value = "Unsupported policy's option: %s")
     OperationFailedException unsupportedPolicy(String name);
 
+    @LogMessage(level = WARN)
+    @Message(id = 10426, value = "No ironjacamar.security defined for %s")
+    void noSecurityDefined(String jndiName);
+
+    @LogMessage(level = WARN)
+    @Message(id = 10427, value = "@ConnectionFactoryDefinition will have limited management: %s")
+    void connectionFactoryAnnotation(String jndiName);
+
+    @LogMessage(level = WARN)
+    @Message(id = 10428, value = "@AdministeredObjectDefinition will have limited management: %s")
+    void adminObjectAnnotation(String jndiName);
 }

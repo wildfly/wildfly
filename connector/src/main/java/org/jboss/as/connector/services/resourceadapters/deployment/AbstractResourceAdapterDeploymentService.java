@@ -157,7 +157,7 @@ public abstract class AbstractResourceAdapterDeploymentService {
                 }
             }
 
-            if (value.getDeployment() != null && value.getDeployment().getRecovery() != null && txInt.getValue() != null) {
+            if (value!= null && value.getDeployment() != null && value.getDeployment().getRecovery() != null && txInt !=null && txInt.getValue() != null) {
                 XAResourceRecoveryRegistry rr = txInt.getValue().getRecoveryRegistry();
 
                 if (rr != null) {
@@ -368,7 +368,7 @@ public abstract class AbstractResourceAdapterDeploymentService {
             final ServiceName referenceFactoryServiceName = ConnectionFactoryReferenceFactoryService.SERVICE_NAME_BASE
                     .append(bindInfo.getBinderServiceName());
             serviceTarget.addService(referenceFactoryServiceName, referenceFactoryService)
-                    .addDependency(connectionFactoryServiceName, Object.class, referenceFactoryService.getDataSourceInjector())
+                    .addDependency(connectionFactoryServiceName, Object.class, referenceFactoryService.getConnectionFactoryInjector())
                     .setInitialMode(ServiceController.Mode.ACTIVE).install();
 
             if (isCreateBinderService()) {
@@ -425,40 +425,45 @@ public abstract class AbstractResourceAdapterDeploymentService {
             final ServiceName adminObjectServiceName = AdminObjectService.SERVICE_NAME_BASE.append(jndi);
             serviceTarget.addService(adminObjectServiceName, adminObjectService).setInitialMode(ServiceController.Mode.ACTIVE)
                     .install();
+            // use a BindInfo to build the referenceFactoryService's service name.
+            // if the CF is in a java:app/ or java:module/ namespace, we need the whole bindInfo's binder service name
+            // to distinguish CFs with same name in different application (or module).
+            final ContextNames.BindInfo bindInfo = getBindInfo(jndi);
 
             final AdminObjectReferenceFactoryService referenceFactoryService = new AdminObjectReferenceFactoryService();
-            final ServiceName referenceFactoryServiceName = AdminObjectReferenceFactoryService.SERVICE_NAME_BASE.append(jndi);
+            final ServiceName referenceFactoryServiceName = AdminObjectReferenceFactoryService.SERVICE_NAME_BASE.append(bindInfo.getBinderServiceName());
             serviceTarget.addService(referenceFactoryServiceName, referenceFactoryService)
                     .addDependency(adminObjectServiceName, Object.class, referenceFactoryService.getAdminObjectInjector())
                     .setInitialMode(ServiceController.Mode.ACTIVE).install();
 
-            final ContextNames.BindInfo bindInfo = ContextNames.bindInfoFor(jndi);
-            final BinderService binderService = new BinderService(bindInfo.getBindName());
-            final ServiceName binderServiceName = bindInfo.getBinderServiceName();
-            serviceTarget
-                    .addService(binderServiceName, binderService)
-                    .addDependency(referenceFactoryServiceName, ManagedReferenceFactory.class,
-                            binderService.getManagedObjectInjector())
-                    .addDependency(bindInfo.getParentContextServiceName(), ServiceBasedNamingStore.class,
-                            binderService.getNamingStoreInjector()).addListener(new AbstractServiceListener<Object>() {
+            if (isCreateBinderService()) {
+                final BinderService binderService = new BinderService(bindInfo.getBindName());
+                final ServiceName binderServiceName = bindInfo.getBinderServiceName();
 
-                        public void transition(final ServiceController<? extends Object> controller, final ServiceController.Transition transition) {
-                            switch (transition) {
-                                case STARTING_to_UP: {
-                                    DEPLOYMENT_CONNECTOR_LOGGER.boundJca("AdminObject", jndi);
-                                    break;
-                                }
-                                case STOPPING_to_DOWN: {
-                                    DEPLOYMENT_CONNECTOR_LOGGER.unboundJca("AdminObject", jndi);
-                                    break;
-                                }
-                                case REMOVING_to_REMOVED: {
-                                    DEPLOYMENT_CONNECTOR_LOGGER.debugf("Removed JCA AdminObject [%s]", jndi);
-                                }
+                serviceTarget
+                        .addService(binderServiceName, binderService)
+                        .addDependency(referenceFactoryServiceName, ManagedReferenceFactory.class,
+                                binderService.getManagedObjectInjector())
+                        .addDependency(bindInfo.getParentContextServiceName(), ServiceBasedNamingStore.class,
+                                binderService.getNamingStoreInjector()).addListener(new AbstractServiceListener<Object>() {
+
+                    public void transition(final ServiceController<? extends Object> controller, final ServiceController.Transition transition) {
+                        switch (transition) {
+                            case STARTING_to_UP: {
+                                DEPLOYMENT_CONNECTOR_LOGGER.boundJca("AdminObject", jndi);
+                                break;
+                            }
+                            case STOPPING_to_DOWN: {
+                                DEPLOYMENT_CONNECTOR_LOGGER.unboundJca("AdminObject", jndi);
+                                break;
+                            }
+                            case REMOVING_to_REMOVED: {
+                                DEPLOYMENT_CONNECTOR_LOGGER.debugf("Removed JCA AdminObject [%s]", jndi);
                             }
                         }
-                    }).setInitialMode(ServiceController.Mode.ACTIVE).install();
-
+                    }
+                }).setInitialMode(ServiceController.Mode.ACTIVE).install();
+            }
             // AS7-2222: Just hack it
             if (ao instanceof javax.resource.Referenceable) {
                 ((javax.resource.Referenceable)ao).setReference(new Reference(jndi));

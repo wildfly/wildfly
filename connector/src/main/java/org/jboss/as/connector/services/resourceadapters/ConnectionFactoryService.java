@@ -31,8 +31,8 @@ import org.jboss.msc.service.StartException;
 import org.jboss.msc.service.StopContext;
 
 public class ConnectionFactoryService implements Service<Object> {
-
-    public static final ServiceName SERVICE_NAME_BASE = ServiceName.JBOSS.append("connector", "connection-factory");
+    public static final ServiceName SERVICE_NAME_BASE =
+        ServiceName.JBOSS.append("connector").append("connection-factory").append("reference-factory");
 
     private final Object value;
 

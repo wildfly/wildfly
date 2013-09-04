@@ -270,7 +270,7 @@ public final class ResourceAdapterActivatorService extends AbstractResourceAdapt
                         }
                     }
 
-                    return mcfOk && aoOk;
+                    return mcfOk || aoOk;
                 }
             }
 
