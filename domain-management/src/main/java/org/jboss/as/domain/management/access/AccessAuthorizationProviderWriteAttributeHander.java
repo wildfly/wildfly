@@ -94,7 +94,8 @@ class AccessAuthorizationProviderWriteAttributeHander extends AbstractWriteAttri
     }
 
     static void updateAuthorizer(final ModelNode value, final DelegatingConfigurableAuthorizer configurableAuthorizer) {
-        String providerName = value.asString().toUpperCase(Locale.ENGLISH);
+        ModelNode resolvedValue = value.isDefined() ? value : AccessAuthorizationResourceDefinition.PROVIDER.getDefaultValue();
+        String providerName = resolvedValue.asString().toUpperCase(Locale.ENGLISH);
         Provider provider = Provider.valueOf(providerName);
         AuthorizerConfiguration authorizerConfiguration = configurableAuthorizer.getWritableAuthorizerConfiguration();
         RoleMapper roleMapper;
