@@ -64,13 +64,12 @@ import org.junit.runner.RunWith;
  */
 @RunWith(Arquillian.class)
 @RunAsClient
-@Ignore("Until :reload operation is fixed. Fails and leaves hanging processes, causing other tests to fail.")
 public class HornetQBackupActivationTestCase {
 
     // maximum time for HornetQ activation to detect node failover/failback
-    private static int ACTIVATION_TIMEOUT = 10000;
+    private static int ACTIVATION_TIMEOUT = 30000;
     // maximum time to reload a server
-    private static int RELOAD_TIMEOUT = 10000;
+    private static int RELOAD_TIMEOUT = 30000;
 
     public static final String LIVE_SERVER = "jbossas-messaging-live";
     public static final String BACKUP_SERVER = "jbossas-messaging-backup";
@@ -84,8 +83,15 @@ public class HornetQBackupActivationTestCase {
 
     @Before
     public void initServer() throws Exception {
+
+        System.out.println("starting LIVE_SERVER");
         container.start(LIVE_SERVER);
+        assertTrue(container.isStarted(LIVE_SERVER));
+
+        System.out.println("starting BACKUP_SERVER");
         container.start(BACKUP_SERVER);
+        assertTrue(container.isStarted(BACKUP_SERVER));
+
         liveClient = createLiveClient();
         backupClient = createBackupClient();
     }
@@ -100,6 +106,9 @@ public class HornetQBackupActivationTestCase {
         }
         liveClient = null;
         backupClient = null;
+
+        assertFalse(container.isStarted(BACKUP_SERVER));
+        assertFalse(container.isStarted(LIVE_SERVER));
     }
 
     private static ModelControllerClient createLiveClient() {
@@ -493,8 +502,8 @@ public class HornetQBackupActivationTestCase {
         operation.get(OP).set(READ_RESOURCE_OPERATION);
         operation.get(INCLUDE_RUNTIME).set(true);
         ModelNode result = execute(client, operation);
-        assertEquals(expectedStarted, result.get(RESULT, "started").asBoolean());
-        assertEquals(expectedActive, result.get(RESULT, "active").asBoolean());
+        assertEquals(result.toJSONString(false), expectedStarted, result.get(RESULT, "started").asBoolean());
+        assertEquals(result.toJSONString(false), expectedActive, result.get(RESULT, "active").asBoolean());
     }
 
     private static ModelNode execute(ModelControllerClient client, ModelNode operation) throws IOException {
