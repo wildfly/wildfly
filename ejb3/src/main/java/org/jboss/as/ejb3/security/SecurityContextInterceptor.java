@@ -28,6 +28,7 @@ import javax.ejb.EJBAccessException;
 import org.jboss.invocation.Interceptor;
 import org.jboss.invocation.InterceptorContext;
 import org.jboss.security.SecurityRolesAssociation;
+import org.wildfly.security.manager.WildFlySecurityManager;
 
 import static java.security.AccessController.doPrivileged;
 
@@ -85,11 +86,19 @@ public class SecurityContextInterceptor implements Interceptor {
     @Override
     public Object processInvocation(final InterceptorContext context) throws Exception {
         // TODO - special cases need to be handled where SecurityContext not established or minimal unauthenticated principal context instead.
-        doPrivileged(pushAction);
+        if (WildFlySecurityManager.isChecking()) {
+            doPrivileged(pushAction);
+        } else {
+            pushAction.run();
+        }
         try {
             return context.proceed();
         } finally {
-            doPrivileged(popAction);
+            if (WildFlySecurityManager.isChecking()) {
+                doPrivileged(popAction);
+            } else {
+                popAction.run();
+            }
         }
     }
 }
