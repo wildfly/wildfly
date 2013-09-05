@@ -71,11 +71,20 @@ public class SecurityContextInterceptor implements Interceptor {
     @Override
     public Object processInvocation(final InterceptorContext context) throws Exception {
         // TODO - special cases need to be handled where SecurityContext not established or minimal unauthenticated principal context instead.
-        doPrivileged(pushAction);
+        boolean securityManager = System.getSecurityManager() != null;
+        if(securityManager) {
+            doPrivileged(pushAction);
+        } else {
+            pushAction.run();
+        }
         try {
             return context.proceed();
         } finally {
-            doPrivileged(popAction);
+            if(securityManager) {
+                doPrivileged(popAction);
+            } else {
+                popAction.run();
+            }
         }
     }
 }
