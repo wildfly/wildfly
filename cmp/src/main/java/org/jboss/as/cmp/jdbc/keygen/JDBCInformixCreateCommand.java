@@ -63,12 +63,12 @@ public class JDBCInformixCreateCommand extends JDBCIdentityColumnCreateCommand {
         } catch (NoSuchMethodException e) {
             throw MESSAGES.driverDoesNotHaveMethod(className, methodName);
         }
-
+        String statementAccessClassName = "org.jboss.jca.adapters.jdbc.StatementAccess";
         try {
-            Class wrapperClass = loader.loadClass("org.jboss.jca.adapters.jdbc.StatementAccess");
+            Class wrapperClass = loader.loadClass(statementAccessClassName);
             getUnderlyingStatement = wrapperClass.getMethod("getUnderlyingStatement");
         } catch (ClassNotFoundException e) {
-            throw MESSAGES.couldNotLoadStatementAccess(e);
+            throw MESSAGES.couldNotLoadStatementAccess(e, statementAccessClassName);
         } catch (NoSuchMethodException e) {
             throw MESSAGES.getUnderlyingStatementNotFound(e);
         }

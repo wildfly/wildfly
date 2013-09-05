@@ -601,8 +601,8 @@ public interface CmpMessages {
     @Message(id = 18573, value = "Driver %s does not have method: %s()")
     RuntimeException driverDoesNotHaveMethod(String driverName, String methodName);
 
-    @Message(id = 18574, value = "Could not load org.jboss.resource.adapter.jdbc.StatementAccess")
-    RuntimeException couldNotLoadStatementAccess(@Cause Exception e);
+    @Message(id = 18574, value = "Could not load %s")
+    RuntimeException couldNotLoadStatementAccess(@Cause Exception e, String className);
 
     @Message(id = 18575, value = "StatementAccess.getUnderlyingStatement not found")
     RuntimeException getUnderlyingStatementNotFound(@Cause Exception e);
