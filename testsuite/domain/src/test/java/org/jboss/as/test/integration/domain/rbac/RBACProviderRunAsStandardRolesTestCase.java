@@ -22,50 +22,54 @@
 
 package org.jboss.as.test.integration.domain.rbac;
 
-import static org.jboss.as.test.integration.management.rbac.PermissionsCoverageTestUtil.assertTheEntireDomainTreeHasPermissionsDefined;
-
-import java.io.IOException;
-
-import org.jboss.as.controller.client.ModelControllerClient;
 import org.jboss.as.controller.client.helpers.domain.DomainClient;
+import org.jboss.as.test.integration.domain.suites.FullRbacProviderRunAsTestSuite;
 import org.jboss.as.test.integration.domain.suites.FullRbacProviderTestSuite;
 import org.jboss.as.test.integration.management.rbac.RbacUtil;
 import org.jboss.as.test.integration.management.rbac.UserRolesMappingServerSetupTask;
 import org.jboss.dmr.ModelNode;
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
-import org.junit.Test;
 
 /**
- * @author Ladislav Thon <lthon@redhat.com>
+ * Tests of the standard roles using the "rbac" access control provider but with
+ * the client using operation-headers to control the roles.
+ *
+ * @author Brian Stansberry (c) 2013 Red Hat Inc.
  */
-public class PermissionsCoverageTestCase extends AbstractRbacTestCase {
+public class RBACProviderRunAsStandardRolesTestCase extends AbstractStandardRolesTestCase {
+
     @BeforeClass
     public static void setupDomain() throws Exception {
-        testSupport = FullRbacProviderTestSuite.createSupport(PermissionsCoverageTestCase.class.getSimpleName());
+        testSupport = FullRbacProviderRunAsTestSuite.createSupport(RBACProviderRunAsStandardRolesTestCase.class.getSimpleName());
         masterClientConfig = testSupport.getDomainMasterConfiguration();
         DomainClient domainClient = testSupport.getDomainMasterLifecycleUtil().getDomainClient();
         UserRolesMappingServerSetupTask.StandardUsersSetup.INSTANCE.setup(domainClient);
+        deployDeployment1(domainClient);
     }
 
     @AfterClass
     public static void tearDownDomain() throws Exception {
+
         try {
             UserRolesMappingServerSetupTask.StandardUsersSetup.INSTANCE.tearDown(testSupport.getDomainMasterLifecycleUtil().getDomainClient());
         } finally {
-            FullRbacProviderTestSuite.stopSupport();
-            testSupport = null;
+            try {
+                removeDeployment1(testSupport.getDomainMasterLifecycleUtil().getDomainClient());
+            } finally {
+                FullRbacProviderTestSuite.stopSupport();
+                testSupport = null;
+            }
         }
     }
 
     @Override
-    protected void configureRoles(ModelNode op, String[] roles) {
-        // no-op. Role mapping is done based on the client's authenticated Subject
+    protected boolean isAllowLocalAuth() {
+        return true;
     }
 
-    @Test
-    public void testTheEntireDomainTreeHasPermissionsDefined() throws IOException {
-        ModelControllerClient client = getClientForUser(RbacUtil.SUPERUSER_USER, true, masterClientConfig);
-        assertTheEntireDomainTreeHasPermissionsDefined(client);
+    @Override
+    protected void configureRoles(ModelNode op, String[] roles) {
+        RbacUtil.addRoleHeader(op, roles);
     }
 }

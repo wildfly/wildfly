@@ -23,9 +23,8 @@
 package org.jboss.as.test.integration.domain.rbac;
 
 import org.jboss.as.controller.client.helpers.domain.DomainClient;
-import org.jboss.as.test.integration.domain.management.util.DomainTestSupport;
+import org.jboss.as.test.integration.domain.suites.SimpleRbacProviderTestSuite;
 import org.jboss.as.test.integration.management.rbac.RbacUtil;
-import org.jboss.as.test.integration.management.rbac.UserRolesMappingServerSetupTask;
 import org.jboss.dmr.ModelNode;
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
@@ -42,12 +41,7 @@ public class SimpleProviderHostScopedRolesTestCase extends AbstractHostScopedRol
 
         // Launch the domain
 
-        // TODO use DomainTestSuite once config propagation to slaves is sorted
-//        testSupport = DomainTestSuite.createSupport(SimpleRbacProviderTestCase.class.getSimpleName());
-        final DomainTestSupport.Configuration config =
-                DomainTestSupport.Configuration.create(SimpleProviderHostScopedRolesTestCase.class.getSimpleName(),
-                        "domain-configs/domain-standard.xml", "host-configs/host-master.xml", null);
-        testSupport = DomainTestSupport.createAndStartSupport(config);
+        testSupport = SimpleRbacProviderTestSuite.createSupport(SimpleProviderHostScopedRolesTestCase.class.getSimpleName());
         masterClientConfig = testSupport.getDomainMasterConfiguration();
         DomainClient domainClient = testSupport.getDomainMasterLifecycleUtil().getDomainClient();
         setupRoles(domainClient);
@@ -64,11 +58,8 @@ public class SimpleProviderHostScopedRolesTestCase extends AbstractHostScopedRol
             try {
                 removeDeployment1(domainClient);
             } finally {
-                // TODO use DomainTestSuite once config propagation to slaves is sorted
-//                testSupport = null;
-//                DomainTestSuite.stopSupport();
-                testSupport.stop();
                 testSupport = null;
+                SimpleRbacProviderTestSuite.stopSupport();
             }
         }
     }

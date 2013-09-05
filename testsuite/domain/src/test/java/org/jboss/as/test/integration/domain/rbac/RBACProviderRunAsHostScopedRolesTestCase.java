@@ -28,35 +28,37 @@ import java.util.Map;
 import java.util.Set;
 
 import org.jboss.as.controller.client.helpers.domain.DomainClient;
+import org.jboss.as.test.integration.domain.suites.FullRbacProviderRunAsTestSuite;
 import org.jboss.as.test.integration.domain.suites.FullRbacProviderTestSuite;
+import org.jboss.as.test.integration.management.rbac.RbacUtil;
 import org.jboss.as.test.integration.management.rbac.UserRolesMappingServerSetupTask;
 import org.jboss.dmr.ModelNode;
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
 
 /**
- * Tests of server group scoped roles using the "rbac" access control provider.
+ * Tests of host scoped roles using the "rbac" access control provider but with
+ * the client using operation-headers to control the roles.
  *
  * @author Brian Stansberry (c) 2013 Red Hat Inc.
  */
-public class RBACProviderServerGroupScopedRolesTestCase extends AbstractServerGroupScopedRolesTestCase {
+public class RBACProviderRunAsHostScopedRolesTestCase extends AbstractHostScopedRolesTestCase {
 
     @BeforeClass
     public static void setupDomain() throws Exception {
-        testSupport = FullRbacProviderTestSuite.createSupport(RBACProviderServerGroupScopedRolesTestCase.class.getSimpleName());
+        testSupport = FullRbacProviderRunAsTestSuite.createSupport(RBACProviderRunAsHostScopedRolesTestCase.class.getSimpleName());
         masterClientConfig = testSupport.getDomainMasterConfiguration();
         DomainClient domainClient = testSupport.getDomainMasterLifecycleUtil().getDomainClient();
         setupRoles(domainClient);
-        ServerGroupRolesMappingSetup.INSTANCE.setup(domainClient);
+        HostRolesMappingSetup.INSTANCE.setup(domainClient);
         deployDeployment1(domainClient);
     }
 
     @AfterClass
     public static void tearDownDomain() throws Exception {
         DomainClient domainClient = testSupport.getDomainMasterLifecycleUtil().getDomainClient();
-
         try {
-            ServerGroupRolesMappingSetup.INSTANCE.tearDown(domainClient);
+            HostRolesMappingSetup.INSTANCE.tearDown(domainClient);
         } finally {
             try {
                 tearDownRoles(domainClient);
@@ -73,15 +75,15 @@ public class RBACProviderServerGroupScopedRolesTestCase extends AbstractServerGr
 
     @Override
     protected boolean isAllowLocalAuth() {
-        return false;
+        return true;
     }
 
     @Override
     protected void configureRoles(ModelNode op, String[] roles) {
-        // no-op. Role mapping is done based on the client's authenticated Subject
+        RbacUtil.addRoleHeader(op, roles);
     }
 
-    private static class ServerGroupRolesMappingSetup extends UserRolesMappingServerSetupTask {
+    private static class HostRolesMappingSetup extends UserRolesMappingServerSetupTask {
 
         private static final Map<String, Set<String>> STANDARD_USERS;
 
@@ -97,9 +99,9 @@ public class RBACProviderServerGroupScopedRolesTestCase extends AbstractServerGr
             STANDARD_USERS = rolesToUsers;
         }
 
-        private static final ServerGroupRolesMappingSetup INSTANCE = new ServerGroupRolesMappingSetup();
+        private static final HostRolesMappingSetup INSTANCE = new HostRolesMappingSetup();
 
-        protected ServerGroupRolesMappingSetup() {
+        protected HostRolesMappingSetup() {
             super(STANDARD_USERS);
         }
     }

@@ -65,20 +65,20 @@ public abstract class AbstractRbacTestCase {
     protected static final byte[] DEPLOYMENT_2_CONTENT = "CONTENT".getBytes(Charset.defaultCharset());
     protected static final String TEST_PATH = "path=rbac.test";
     protected static final String MASTER = "master";
-    protected static final String MAIN_SERVER_GROUP = "main-server-group";
-    protected static final String MAIN_ONE = "main-one";
-    protected static final String OTHER_ONE = "other-one";
+    protected static final String SLAVE = "slave";
+    protected static final String SERVER_GROUP_A = "server-group-a";
+    protected static final String MASTER_A = "master-a";
+    protected static final String SLAVE_B = "slave-b";
     private static final Map<String, ModelControllerClient> nonLocalAuthclients = new HashMap<String, ModelControllerClient>();
     private static final Map<String, ModelControllerClient> localAuthClients = new HashMap<String, ModelControllerClient>();
 
     private static final Map<String, String> SASL_OPTIONS = Collections.singletonMap("SASL_DISALLOWED_MECHANISMS", "JBOSS-LOCAL-USER");
     private static final String TEST = "test.war";
     private static final String REPLACEMENT = "test.war.v2";
-    private static final String SLAVE = "slave";
     private static final String SECURITY_DOMAIN = "subsystem=security/security-domain=other";
-    private static final String HTTP_BINDING = "socket-binding-group=standard-sockets/socket-binding=http";
+    private static final String HTTP_BINDING = "socket-binding-group=sockets-a/socket-binding=http";
     private static final String MEMORY_MBEAN = "core-service=platform-mbean/type=memory";
-    private static final String DEFAULT_PROFILE = "profile=default";
+    private static final String PROFILE_A = "profile=profile-a";
     private static final String EXAMPLE_DS = "subsystem=datasources/data-source=ExampleDS";
     protected static DomainTestSupport testSupport;
     protected static JBossAsManagedConfiguration masterClientConfig;
@@ -173,12 +173,12 @@ public abstract class AbstractRbacTestCase {
     }
 
     protected void checkSecurityDomainRead(ModelControllerClient client, String host, String server, Outcome expectedOutcome, String... roles) throws IOException {
-        String sdAddress = host == null ? DEFAULT_PROFILE + "/" + SECURITY_DOMAIN : SECURITY_DOMAIN;
+        String sdAddress = host == null ? PROFILE_A + "/" + SECURITY_DOMAIN : SECURITY_DOMAIN;
         readResource(client, sdAddress, host, server, expectedOutcome, roles);
     }
 
     protected void checkSensitiveAttribute(ModelControllerClient client, String host, String server, boolean expectSuccess, String... roles) throws IOException {
-        String dsAddress = host == null ? DEFAULT_PROFILE + "/" + EXAMPLE_DS
+        String dsAddress = host == null ? PROFILE_A + "/" + EXAMPLE_DS
                 : "host=" + host + "server=" + server + "/" + EXAMPLE_DS;
         ModelNode attrValue = readResource(client, dsAddress, host, server, Outcome.SUCCESS, roles).get(RESULT, PASSWORD);
         ModelNode correct = new ModelNode();
