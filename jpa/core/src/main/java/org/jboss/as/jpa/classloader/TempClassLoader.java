@@ -23,10 +23,13 @@
 package org.jboss.as.jpa.classloader;
 
 import java.io.ByteArrayOutputStream;
+import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.URL;
 import java.util.Enumeration;
+import java.util.jar.Attributes;
+import java.util.jar.Manifest;
 
 import org.jboss.modules.ConcurrentClassLoader;
 
@@ -44,6 +47,7 @@ import org.jboss.modules.ConcurrentClassLoader;
 public class TempClassLoader extends ConcurrentClassLoader {
 
     private final ClassLoader delegate;
+    private static final String MANIFEST_MF = "META-INF" + File.separatorChar + "MANIFEST.MF";
 
     TempClassLoader(final ClassLoader delegate) {
         super(null);
@@ -67,6 +71,40 @@ public class TempClassLoader extends ConcurrentClassLoader {
         InputStream resource = delegate.getResourceAsStream(name.replace('.', '/') + ".class");
         if (resource == null) {
             throw new ClassNotFoundException(name);
+        }
+
+        // Ensure that the package is loaded
+        final int lastIdx = name.lastIndexOf('.');
+        if (lastIdx != -1) {
+            // there's a package name; get the Package for it
+            final String packageName = name.substring(0, lastIdx);
+            synchronized (this) {
+                Package pkg = findLoadedPackage(packageName);
+                if (pkg == null) {
+                    Manifest manifest = readManifestFile();
+                    if (manifest != null) {
+                        final Attributes mainAttribute = manifest.getMainAttributes();
+                        final Attributes entryAttribute = manifest.getAttributes(packageName);
+                        URL url =
+                                "true".equals(getDefinedAttribute(Attributes.Name.SEALED, entryAttribute, mainAttribute))
+                                        ? delegate.getResource(name.replace('.', '/') + ".class") : null;
+                        definePackage(
+                                packageName,
+                                getDefinedAttribute(Attributes.Name.SPECIFICATION_TITLE, entryAttribute, mainAttribute),
+                                getDefinedAttribute(Attributes.Name.SPECIFICATION_VERSION, entryAttribute, mainAttribute),
+                                getDefinedAttribute(Attributes.Name.SPECIFICATION_VENDOR, entryAttribute, mainAttribute),
+                                getDefinedAttribute(Attributes.Name.IMPLEMENTATION_TITLE, entryAttribute, mainAttribute),
+                                getDefinedAttribute(Attributes.Name.IMPLEMENTATION_VERSION, entryAttribute, mainAttribute),
+                                getDefinedAttribute(Attributes.Name.IMPLEMENTATION_VENDOR, entryAttribute, mainAttribute),
+                                url
+                                );
+                    }
+                    else {
+                        definePackage(packageName, null, null, null, null, null, null, null);
+                    }
+
+                }
+            }
         }
 
         ByteArrayOutputStream baos = new ByteArrayOutputStream();
@@ -101,6 +139,36 @@ public class TempClassLoader extends ConcurrentClassLoader {
     @Override
     protected InputStream findResourceAsStream(String name, boolean exportsOnly) {
         return delegate.getResourceAsStream(name);
+    }
+
+    /** {@inheritDoc} */
+    @Override
+    protected final Package definePackage(final String name, final String specTitle, final String specVersion, final String specVendor, final String implTitle, final String implVersion, final String implVendor, final URL sealBase) throws IllegalArgumentException {
+        return super.definePackage(name, specTitle, specVersion, specVendor, implTitle, implVersion, implVendor, sealBase);
+    }
+
+    private Manifest readManifestFile() {
+        InputStream resource = null;
+        try {
+            resource = delegate.getResourceAsStream(MANIFEST_MF);
+            return resource != null ? new Manifest(resource) : null;
+        } catch (IOException e) {
+            return null;
+        }
+        finally {
+            if ( resource != null) {
+                try {
+                    resource.close();
+                } catch (IOException ignored) {
+
+                }
+            }
+        }
+    }
+
+    private static String getDefinedAttribute(Attributes.Name name, Attributes entryAttribute, Attributes mainAttribute) {
+        final String value = entryAttribute == null ? null : entryAttribute.getValue(name);
+        return value == null ? mainAttribute == null ? null : mainAttribute.getValue(name) : value;
     }
 
 }
