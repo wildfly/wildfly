@@ -33,6 +33,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.net.URL;
+import java.util.Arrays;
 import java.util.jar.JarOutputStream;
 
 import javax.enterprise.deploy.shared.ModuleType;
@@ -98,7 +99,7 @@ public class JSR88DeployUndeployEARTestCase extends AbstractDeploymentTest {
 
             Target[] targets = manager.getTargets();
             TargetModuleID[] targetModules = manager.getAvailableModules(ModuleType.EAR, targets);
-            assertEquals(1, targetModules.length);
+            assertEquals("Found: " + Arrays.toString(targetModules), 1, targetModules.length);
 
             jsr88Undeploy(manager, targetModules);
 

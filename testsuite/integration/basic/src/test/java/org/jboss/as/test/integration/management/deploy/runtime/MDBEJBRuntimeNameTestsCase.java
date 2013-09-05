@@ -50,7 +50,7 @@ import org.junit.runner.RunWith;
 
 @RunWith(Arquillian.class)
 @RunAsClient
-public class MDBEJBRuntimeNameTestsCase {
+public class MDBEJBRuntimeNameTestsCase extends AbstractRuntimeTestCase {
 
     private static final Logger log = Logger.getLogger(MDBEJBRuntimeNameTestsCase.class);
 
@@ -122,18 +122,13 @@ public class MDBEJBRuntimeNameTestsCase {
 
     @After
     public void tearDown() throws Exception {
-        ModelNode undeployOp = new ModelNode();
-        undeployOp.get(ModelDescriptionConstants.ADDRESS).add(ModelDescriptionConstants.DEPLOYMENT, DEPLOYMENT_NAME);
-        undeployOp.get(ModelDescriptionConstants.OP).set(ModelDescriptionConstants.UNDEPLOY);
-        ModelNode result = managementClient.getControllerClient().execute(undeployOp);
-        adminSupport.removeJmsQueue(QUEUE_NAME);
+        ModelNode result = managementClient.getControllerClient().execute(composite(
+                undeploy(DEPLOYMENT_NAME),
+                remove(DEPLOYMENT_NAME)
+        ));
         // just to blow up
         Assert.assertTrue("Failed to undeploy: " + result, Operations.isSuccessfulOutcome(result));
-        ModelNode removeDeploymentOp = new ModelNode();
-        removeDeploymentOp.get(ModelDescriptionConstants.ADDRESS).add(ModelDescriptionConstants.DEPLOYMENT, DEPLOYMENT_NAME);
-        removeDeploymentOp.get(ModelDescriptionConstants.OP).set(ModelDescriptionConstants.REMOVE);
-        result = managementClient.getControllerClient().execute(removeDeploymentOp);
-        Assert.assertTrue("Failed to remove: " + result, Operations.isSuccessfulOutcome(result));
+        adminSupport.removeJmsQueue(QUEUE_NAME);
     }
 
     @Test
