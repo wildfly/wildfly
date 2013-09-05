@@ -342,7 +342,7 @@ public class PatchingTestUtil {
         return binDir;
     }
 
-    public static void assertPatchElements(File baseModuleDir, String[] patchElements) {
+    public static void assertPatchElements(File baseModuleDir, String[] expectedPatchElements) {
 
         if (isWindows) {
             return; // Skip this on windows for now
@@ -350,23 +350,23 @@ public class PatchingTestUtil {
 
         File modulesPatchesDir = new File(baseModuleDir, ".overlays");
         if(!modulesPatchesDir.exists()) {
-            assertNull(patchElements);
+            assertNull("Overlay directory does not exist, but it should", expectedPatchElements);
             return;
         }
-        assertTrue(modulesPatchesDir.exists());
         final List<File> patchDirs = Arrays.asList(modulesPatchesDir.listFiles(new FileFilter() {
             @Override
             public boolean accept(File pathname) {
                 return pathname.isDirectory();
             }
         }));
-        if(patchElements == null) {
-            assertTrue(patchDirs.toString(), patchDirs.isEmpty());
+        if(expectedPatchElements == null) {
+            assertTrue("Overlays directory should contain no directories, but contains: " + patchDirs.toString(), patchDirs.isEmpty());
         } else {
-            final List<String> ids = Arrays.asList(patchElements);
-            assertEquals(patchDirs.size(), patchElements.length);
+            final List<String> ids = Arrays.asList(expectedPatchElements);
+            assertEquals("Overlays directory should contain " + expectedPatchElements.length + "  patches",
+                    expectedPatchElements.length, patchDirs.size());
             for (File f : patchDirs) {
-                assertTrue(ids.contains(f.getName()));
+                assertTrue("Unexpected patch in .overlays directory: " + f.getName(), ids.contains(f.getName()));
             }
         }
     }
