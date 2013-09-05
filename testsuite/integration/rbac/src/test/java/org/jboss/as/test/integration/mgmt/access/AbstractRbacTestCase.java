@@ -55,6 +55,7 @@ public class AbstractRbacTestCase {
                 e.printStackTrace(System.out);
             }
         }
+        clients.clear();
     }
 
 
