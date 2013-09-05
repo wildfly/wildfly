@@ -28,7 +28,7 @@ import java.util.Map;
 import java.util.Set;
 
 import org.jboss.as.controller.client.helpers.domain.DomainClient;
-import org.jboss.as.test.integration.domain.suites.DomainRbacTestSuite;
+import org.jboss.as.test.integration.domain.suites.FullRbacProviderTestSuite;
 import org.jboss.as.test.integration.management.rbac.UserRolesMappingServerSetupTask;
 import org.jboss.dmr.ModelNode;
 import org.junit.AfterClass;
@@ -43,7 +43,7 @@ public class RBACProviderHostScopedRolesTestCase extends AbstractHostScopedRoles
 
     @BeforeClass
     public static void setupDomain() throws Exception {
-        testSupport = DomainRbacTestSuite.createSupport(RBACProviderHostScopedRolesTestCase.class.getSimpleName());
+        testSupport = FullRbacProviderTestSuite.createSupport(RBACProviderHostScopedRolesTestCase.class.getSimpleName());
         masterClientConfig = testSupport.getDomainMasterConfiguration();
         DomainClient domainClient = testSupport.getDomainMasterLifecycleUtil().getDomainClient();
         setupRoles(domainClient);
@@ -63,7 +63,7 @@ public class RBACProviderHostScopedRolesTestCase extends AbstractHostScopedRoles
                 try {
                     removeDeployment1(domainClient);
                 } finally {
-                    DomainRbacTestSuite.stopSupport();
+                    FullRbacProviderTestSuite.stopSupport();
                     testSupport = null;
                 }
             }

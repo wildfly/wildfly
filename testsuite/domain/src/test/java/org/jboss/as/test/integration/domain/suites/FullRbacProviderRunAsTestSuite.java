@@ -24,10 +24,9 @@ package org.jboss.as.test.integration.domain.suites;
 
 import org.jboss.as.test.integration.domain.management.util.DomainTestSupport;
 import org.jboss.as.test.integration.domain.management.util.JBossAsManagedConfiguration;
-import org.jboss.as.test.integration.domain.rbac.PermissionsCoverageTestCase;
-import org.jboss.as.test.integration.domain.rbac.RBACProviderHostScopedRolesTestCase;
-import org.jboss.as.test.integration.domain.rbac.RBACProviderServerGroupScopedRolesTestCase;
-import org.jboss.as.test.integration.domain.rbac.RBACProviderStandardRolesTestCase;
+import org.jboss.as.test.integration.domain.rbac.RBACProviderRunAsHostScopedRolesTestCase;
+import org.jboss.as.test.integration.domain.rbac.RBACProviderRunAsServerGroupScopedRolesTestCase;
+import org.jboss.as.test.integration.domain.rbac.RBACProviderRunAsStandardRolesTestCase;
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
 import org.junit.runner.RunWith;
@@ -35,18 +34,17 @@ import org.junit.runners.Suite;
 
 /**
  * Simple {@code Suite} test wrapper to start the domain only once for multiple
- * test cases using the same RBAC-enabled domain configuration.
+ * test cases using the same full-RBAC-provider-enabled domain configuration.
  *
  * @author Brian Stansberry (c) 2013 Red Hat Inc.
  */
 @RunWith(Suite.class)
 @Suite.SuiteClasses ({
-        RBACProviderHostScopedRolesTestCase.class,
-        RBACProviderServerGroupScopedRolesTestCase.class,
-        RBACProviderStandardRolesTestCase.class,
-        PermissionsCoverageTestCase.class
+        RBACProviderRunAsHostScopedRolesTestCase.class,
+        RBACProviderRunAsServerGroupScopedRolesTestCase.class,
+        RBACProviderRunAsStandardRolesTestCase.class
 })
-public class DomainRbacTestSuite {
+public class FullRbacProviderRunAsTestSuite {
 
     private static boolean initializedLocally = false;
     private static volatile DomainTestSupport support;
@@ -84,7 +82,7 @@ public class DomainRbacTestSuite {
     @BeforeClass
     public synchronized static void beforeClass() {
         initializedLocally = true;
-        start(DomainRbacTestSuite.class.getSimpleName());
+        start(FullRbacProviderRunAsTestSuite.class.getSimpleName());
     }
 
     @AfterClass
@@ -100,12 +98,10 @@ public class DomainRbacTestSuite {
      */
     public static DomainTestSupport createAndStartDefaultSupport(final String testName) {
         try {
-            // TODO enable slaves once propagation is working
             final DomainTestSupport.Configuration configuration = DomainTestSupport.Configuration.create(testName,
-                    "domain-configs/domain-standard.rbac", "host-configs/host-master.xml", "host-configs/host-slave.xml");
+                    "domain-configs/domain-rbac.rbac", "host-configs/host-master-rbac.xml", "host-configs/host-slave-rbac.xml");
             String mgmtUserProperties = JBossAsManagedConfiguration.loadConfigFileFromContextClassLoader("mgmt-users/mgmt-users.properties");
             configuration.getMasterConfiguration().setMgmtUsersFile(mgmtUserProperties);
-            // TODO enable slaves once propagation is working
             configuration.getSlaveConfiguration().setMgmtUsersFile(mgmtUserProperties);
             final DomainTestSupport testSupport = DomainTestSupport.create(configuration);
             // Start!
