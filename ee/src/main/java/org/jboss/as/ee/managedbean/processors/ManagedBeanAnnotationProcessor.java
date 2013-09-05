@@ -55,6 +55,7 @@ import org.jboss.jandex.AnnotationTarget;
 import org.jboss.jandex.AnnotationValue;
 import org.jboss.jandex.ClassInfo;
 import org.jboss.jandex.DotName;
+import org.wildfly.security.manager.WildFlySecurityManager;
 
 import static org.jboss.as.ee.EeLogger.ROOT_LOGGER;
 import static org.jboss.as.ee.EeMessages.MESSAGES;
@@ -118,7 +119,9 @@ public class ManagedBeanAnnotationProcessor implements DeploymentUnitProcessor {
                     configuration.addClientInterceptor(associatingInterceptorFactory, InterceptorOrder.Client.ASSOCIATING_INTERCEPTOR);
                     configuration.addClientPreDestroyInterceptor(new ManagedBeanDestroyInterceptorFactory(contextKey), InterceptorOrder.ClientPreDestroy.INSTANCE_DESTROY);
                     final ClassLoader classLoader = componentConfiguration.getModuleClassLoader();
-                    configuration.addViewInterceptor(PrivilegedInterceptor.getFactory(), InterceptorOrder.View.PRIVILEGED_INTERCEPTOR);
+                    if(WildFlySecurityManager.isChecking()) {
+                        configuration.addViewInterceptor(PrivilegedInterceptor.getFactory(), InterceptorOrder.View.PRIVILEGED_INTERCEPTOR);
+                    }
                     configuration.addViewInterceptor(AccessCheckingInterceptor.getFactory(), InterceptorOrder.View.CHECKING_INTERCEPTOR);
                     configuration.addViewInterceptor(new ImmediateInterceptorFactory(new ContextClassLoaderInterceptor(classLoader)), InterceptorOrder.View.TCCL_INTERCEPTOR);
                 }

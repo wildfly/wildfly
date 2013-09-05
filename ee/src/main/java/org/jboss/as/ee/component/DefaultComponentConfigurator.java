@@ -23,6 +23,7 @@ import org.jboss.invocation.Interceptors;
 import org.jboss.invocation.PrivilegedInterceptor;
 import org.jboss.invocation.proxy.MethodIdentifier;
 import org.jboss.modules.Module;
+import org.wildfly.security.manager.WildFlySecurityManager;
 
 import static org.jboss.as.server.deployment.Attachments.REFLECTION_INDEX;
 
@@ -114,7 +115,7 @@ class DefaultComponentConfigurator extends AbstractComponentConfigurator impleme
 
         final ClassLoader classLoader = module.getClassLoader();
         final InterceptorFactory tcclInterceptor = new ImmediateInterceptorFactory(new ContextClassLoaderInterceptor(classLoader));
-        final InterceptorFactory privilegedInterceptor = PrivilegedInterceptor.getFactory();
+        final InterceptorFactory privilegedInterceptor = WildFlySecurityManager.isChecking() ? PrivilegedInterceptor.getFactory() : null;
 
 
         if (!injectors.isEmpty()) {
@@ -126,8 +127,9 @@ class DefaultComponentConfigurator extends AbstractComponentConfigurator impleme
         }
         configuration.addPostConstructInterceptor(Interceptors.getTerminalInterceptorFactory(), InterceptorOrder.ComponentPostConstruct.TERMINAL_INTERCEPTOR);
         configuration.addPostConstructInterceptor(tcclInterceptor, InterceptorOrder.ComponentPostConstruct.TCCL_INTERCEPTOR);
-        configuration.addPostConstructInterceptor(privilegedInterceptor, InterceptorOrder.ComponentPostConstruct.PRIVILEGED_INTERCEPTOR);
-
+        if(privilegedInterceptor != null) {
+            configuration.addPostConstructInterceptor(privilegedInterceptor, InterceptorOrder.ComponentPostConstruct.PRIVILEGED_INTERCEPTOR);
+        }
 
         // Apply pre-destroy
         if (!uninjectors.isEmpty()) {
@@ -141,7 +143,9 @@ class DefaultComponentConfigurator extends AbstractComponentConfigurator impleme
         }
         configuration.addPreDestroyInterceptor(Interceptors.getTerminalInterceptorFactory(), InterceptorOrder.ComponentPreDestroy.TERMINAL_INTERCEPTOR);
         configuration.addPreDestroyInterceptor(tcclInterceptor, InterceptorOrder.ComponentPreDestroy.TCCL_INTERCEPTOR);
-        configuration.addPreDestroyInterceptor(privilegedInterceptor, InterceptorOrder.ComponentPreDestroy.PRIVILEGED_INTERCEPTOR);
+        if(privilegedInterceptor != null) {
+            configuration.addPreDestroyInterceptor(privilegedInterceptor, InterceptorOrder.ComponentPreDestroy.PRIVILEGED_INTERCEPTOR);
+        }
 
         if (description.isPassivationApplicable()) {
             if (!componentUserPrePassivate.isEmpty()) {
@@ -149,14 +153,17 @@ class DefaultComponentConfigurator extends AbstractComponentConfigurator impleme
             }
             configuration.addPrePassivateInterceptor(Interceptors.getTerminalInterceptorFactory(), InterceptorOrder.ComponentPassivation.TERMINAL_INTERCEPTOR);
             configuration.addPrePassivateInterceptor(tcclInterceptor, InterceptorOrder.ComponentPassivation.TCCL_INTERCEPTOR);
-            configuration.addPrePassivateInterceptor(privilegedInterceptor, InterceptorOrder.ComponentPassivation.PRIVILEGED_INTERCEPTOR);
-
+            if(privilegedInterceptor != null) {
+                configuration.addPrePassivateInterceptor(privilegedInterceptor, InterceptorOrder.ComponentPassivation.PRIVILEGED_INTERCEPTOR);
+            }
             if (!componentUserPostActivate.isEmpty()) {
                 configuration.addPostActivateInterceptor(weaved(componentUserPostActivate), InterceptorOrder.ComponentPassivation.COMPONENT_USER_INTERCEPTORS);
             }
             configuration.addPostActivateInterceptor(Interceptors.getTerminalInterceptorFactory(), InterceptorOrder.ComponentPassivation.TERMINAL_INTERCEPTOR);
             configuration.addPostActivateInterceptor(tcclInterceptor, InterceptorOrder.ComponentPassivation.TCCL_INTERCEPTOR);
-            configuration.addPostActivateInterceptor(privilegedInterceptor, InterceptorOrder.ComponentPassivation.PRIVILEGED_INTERCEPTOR);
+            if(privilegedInterceptor != null) {
+                configuration.addPostActivateInterceptor(privilegedInterceptor, InterceptorOrder.ComponentPassivation.PRIVILEGED_INTERCEPTOR);
+            }
         }
 
         // @AroundInvoke interceptors
