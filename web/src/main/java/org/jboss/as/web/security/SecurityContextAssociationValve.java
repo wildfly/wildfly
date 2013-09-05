@@ -98,7 +98,7 @@ public class SecurityContextAssociationValve extends ValveBase {
         JBossGenericPrincipal principal = null;
         HttpSession hsession = request.getSession(false);
 
-        WebLogger.WEB_SECURITY_LOGGER.tracef("Begin invoke, caller=" + caller);
+        WebLogger.WEB_SECURITY_LOGGER.tracef("Begin invoke, caller=%s", caller);
 
         boolean createdSecurityContext = false;
         SecurityContext sc = SecurityActions.getSecurityContext();
@@ -118,7 +118,7 @@ public class SecurityContextAssociationValve extends ValveBase {
                     RunAsIdentityMetaData identity = runAsIdentity.get(name);
                     RunAsIdentity runAsIdentity = null;
                     if (identity != null) {
-                        WebLogger.WEB_SECURITY_LOGGER.tracef(name + ", runAs: " + identity);
+                        WebLogger.WEB_SECURITY_LOGGER.tracef("%s, runAs: %s", name, identity);
                         runAsIdentity = new RunAsIdentity(identity.getRoleName(), identity.getPrincipalName(),
                                 identity.getRunAsRoles());
                     }
@@ -171,7 +171,7 @@ public class SecurityContextAssociationValve extends ValveBase {
                 SecurityActions.popRunAsIdentity(sc);
             }
         } finally {
-            WebLogger.WEB_SECURITY_LOGGER.tracef("End invoke, caller=" + caller);
+            WebLogger.WEB_SECURITY_LOGGER.tracef("End invoke, caller=%s", caller);
             SecurityActions.clearSecurityContext();
             SecurityRolesAssociation.setSecurityRoles(null);
             setContextID(previousContextID);
