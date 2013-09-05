@@ -84,7 +84,7 @@ public interface Console {
             try {
                 aeshConsole = new org.jboss.aesh.console.Console();
             } catch (IOException e) {
-                e.printStackTrace();
+                throw new CliInitializationException(e);
             }
 
             final org.jboss.aesh.console.Console finalAeshConsole = aeshConsole;
