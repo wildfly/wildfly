@@ -33,7 +33,7 @@ import org.junit.runner.RunWith;
 
 @RunWith(Arquillian.class)
 @RunAsClient
-public class StatefulEJBRemoteHomeRuntimeNameTestCase {
+public class StatefulEJBRemoteHomeRuntimeNameTestCase extends AbstractRuntimeTestCase {
 
     private static Logger log = Logger.getLogger(StatefulEJBRemoteHomeRuntimeNameTestCase.class);
 
@@ -88,10 +88,10 @@ public class StatefulEJBRemoteHomeRuntimeNameTestCase {
     @AfterClass
     public static void tearDown() throws Exception {
         safeClose(context);
-        ModelNode undeployOp = new ModelNode();
-        undeployOp.get(ModelDescriptionConstants.ADDRESS).add(ModelDescriptionConstants.DEPLOYMENT, DEPLOYMENT_NAME);
-        undeployOp.get(ModelDescriptionConstants.OP).set(ModelDescriptionConstants.UNDEPLOY);
-        ModelNode result = controllerClient.execute(undeployOp);
+        ModelNode result = controllerClient.execute(composite(
+                undeploy(DEPLOYMENT_NAME),
+                remove(DEPLOYMENT_NAME)
+        ));
 
         // just to blow up
         Assert.assertTrue("Failed to undeploy: " + result, Operations.isSuccessfulOutcome(result));
