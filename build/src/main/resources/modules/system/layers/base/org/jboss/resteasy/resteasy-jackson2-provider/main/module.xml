@@ -22,26 +22,21 @@
   ~ 02110-1301 USA, or see the FSF site: http://www.fsf.org.
   -->
 
-<module xmlns="urn:jboss:module:1.1" name="org.jboss.resteasy.resteasy-jaxrs">
-
+<module xmlns="urn:jboss:module:1.1" name="org.jboss.resteasy.resteasy-jackson2-provider">
     <resources>
         <!-- Insert resources here -->
     </resources>
 
     <dependencies>
+        <module name="com.fasterxml.jackson.core.jackson-annotations" export="true"/>
+        <module name="com.fasterxml.jackson.core.jackson-core" export="true"/>
+        <module name="com.fasterxml.jackson.core.jackson-databind" export="true"/>
+        <module name="com.fasterxml.jackson.jaxrs.jackson-jaxrs-json-provider"/>
+        <module name="javax.xml.bind.api"/>
         <module name="javax.api"/>
-        <module name="javax.annotation.api"/>
-        <module name="javax.activation.api"/>
-        <module name="javax.validation.api"/>
-        <module name="javax.ws.rs.api"/>
-        <module name="org.apache.commons.io"/>
-        <module name="org.apache.commons.codec" />
-        <module name="org.apache.httpcomponents" export="true"/>
-        <module name="org.apache.log4j"/>
-        <module name="org.hibernate.validator"/>
-        <module name="org.scannotation.scannotation" />
-        <module name="org.slf4j" />
+        <module name="javax.enterprise.api"/>
         <module name="javax.servlet.api"/>
-        <module name="org.jboss.resteasy.resteasy-validator-provider-11" services="export" export="true"/>
+        <module name="javax.ws.rs.api"/>
+        <module name="org.jboss.resteasy.resteasy-jaxrs"/>
     </dependencies>
 </module>
