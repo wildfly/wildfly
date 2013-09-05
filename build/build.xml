@@ -395,6 +395,24 @@
             <maven-resource group="com.fasterxml" artifact="classmate" />
         </module-def>
 
+        <module-def name="com.fasterxml.jackson.core.jackson-core">
+            <maven-resource group="com.fasterxml.jackson.core" artifact="jackson-core"/>
+        </module-def>
+
+        <module-def name="com.fasterxml.jackson.core.jackson-databind">
+            <maven-resource group="com.fasterxml.jackson.core" artifact="jackson-databind"/>
+        </module-def>
+
+        <module-def name="com.fasterxml.jackson.core.jackson-annotations">
+            <maven-resource group="com.fasterxml.jackson.core" artifact="jackson-annotations"/>
+        </module-def>
+
+        <module-def name="com.fasterxml.jackson.jaxrs.jackson-jaxrs-json-provider">
+            <maven-resource group="com.fasterxml.jackson.jaxrs" artifact="jackson-jaxrs-json-provider"/>
+            <maven-resource group="com.fasterxml.jackson.jaxrs" artifact="jackson-jaxrs-base"/>
+            <maven-resource group="com.fasterxml.jackson.module" artifact="jackson-module-jaxb-annotations" />
+        </module-def>
+
         <module-def name="com.github.relaxng">
             <maven-resource group="com.github.relaxng" artifact="relaxngDatatype" />
         </module-def>
@@ -1153,6 +1171,10 @@
             <maven-resource group="org.jboss.remotingjmx" artifact="remoting-jmx"/>
         </module-def>
 
+        <module-def name="org.jboss.resteasy.jose-jwt">
+            <maven-resource group="org.jboss.resteasy" artifact="jose-jwt"/>
+        </module-def>
+
         <module-def name="org.jboss.resteasy.resteasy-atom-provider">
             <maven-resource group="org.jboss.resteasy" artifact="resteasy-atom-provider"/>
         </module-def>
@@ -1167,6 +1189,10 @@
 
         <module-def name="org.jboss.resteasy.resteasy-jackson-provider">
             <maven-resource group="org.jboss.resteasy" artifact="resteasy-jackson-provider"/>
+        </module-def>
+
+        <module-def name="org.jboss.resteasy.resteasy-jackson2-provider">
+            <maven-resource group="org.jboss.resteasy" artifact="resteasy-jackson2-provider" jandex="true"/>
         </module-def>
 
         <module-def name="org.jboss.resteasy.resteasy-jaxb-provider">
