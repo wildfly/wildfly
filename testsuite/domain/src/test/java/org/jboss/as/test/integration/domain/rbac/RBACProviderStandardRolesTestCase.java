@@ -23,7 +23,7 @@
 package org.jboss.as.test.integration.domain.rbac;
 
 import org.jboss.as.controller.client.helpers.domain.DomainClient;
-import org.jboss.as.test.integration.domain.suites.DomainRbacTestSuite;
+import org.jboss.as.test.integration.domain.suites.FullRbacProviderTestSuite;
 import org.jboss.as.test.integration.management.rbac.UserRolesMappingServerSetupTask;
 import org.jboss.dmr.ModelNode;
 import org.junit.AfterClass;
@@ -38,7 +38,7 @@ public class RBACProviderStandardRolesTestCase extends AbstractStandardRolesTest
 
     @BeforeClass
     public static void setupDomain() throws Exception {
-        testSupport = DomainRbacTestSuite.createSupport(RBACProviderStandardRolesTestCase.class.getSimpleName());
+        testSupport = FullRbacProviderTestSuite.createSupport(RBACProviderStandardRolesTestCase.class.getSimpleName());
         masterClientConfig = testSupport.getDomainMasterConfiguration();
         DomainClient domainClient = testSupport.getDomainMasterLifecycleUtil().getDomainClient();
         UserRolesMappingServerSetupTask.StandardUsersSetup.INSTANCE.setup(domainClient);
@@ -54,7 +54,7 @@ public class RBACProviderStandardRolesTestCase extends AbstractStandardRolesTest
             try {
                 removeDeployment1(testSupport.getDomainMasterLifecycleUtil().getDomainClient());
             } finally {
-                DomainRbacTestSuite.stopSupport();
+                FullRbacProviderTestSuite.stopSupport();
                 testSupport = null;
             }
         }
