@@ -22,6 +22,7 @@
 package org.jboss.as.ejb3.component.messagedriven;
 
 import java.lang.reflect.Method;
+import static java.security.AccessController.doPrivileged;
 import java.util.Map;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicReference;
@@ -65,6 +66,7 @@ public class MessageDrivenComponent extends EJBComponent implements PooledCompon
     private final MessageEndpointFactory endpointFactory;
     private final Class<?> messageListenerInterface;
     private final ClassLoader classLoader;
+    private volatile boolean deliveryActive;
     private ResourceAdapter resourceAdapter;
     private Endpoint endpoint;
 
@@ -72,8 +74,9 @@ public class MessageDrivenComponent extends EJBComponent implements PooledCompon
      * Construct a new instance.
      *
      * @param ejbComponentCreateService the component configuration
+     * @param deliveryActive true if the component must start delivering messages as soon as it is started
      */
-    protected MessageDrivenComponent(final MessageDrivenComponentCreateService ejbComponentCreateService, final Class<?> messageListenerInterface, final ActivationSpec activationSpec) {
+    protected MessageDrivenComponent(final MessageDrivenComponentCreateService ejbComponentCreateService, final Class<?> messageListenerInterface, final ActivationSpec activationSpec, final boolean deliveryActive) {
         super(ejbComponentCreateService);
 
         StatelessObjectFactory<MessageDrivenComponentInstance> factory = new StatelessObjectFactory<MessageDrivenComponentInstance>() {
@@ -101,6 +104,7 @@ public class MessageDrivenComponent extends EJBComponent implements PooledCompon
 
         this.activationSpec = activationSpec;
         this.messageListenerInterface = messageListenerInterface;
+        final ClassLoader componentClassLoader = ejbComponentCreateService.getComponentClass().getClassLoader();
         final MessageEndpointService<?> service = new MessageEndpointService<Object>() {
             @Override
             public Class<Object> getMessageListenerInterface() {
@@ -137,7 +141,8 @@ public class MessageDrivenComponent extends EJBComponent implements PooledCompon
                 return ejbComponentCreateService.getComponentClass().getClassLoader();
             }
         };
-        this.endpointFactory = new JBossMessageEndpointFactory(getComponentClass().getClassLoader(), service);
+        this.endpointFactory = new JBossMessageEndpointFactory(componentClassLoader, service);
+        this.deliveryActive = deliveryActive;
     }
 
     @Override
@@ -172,14 +177,8 @@ public class MessageDrivenComponent extends EJBComponent implements PooledCompon
         getShutDownInterceptorFactory().start();
         super.start();
 
-        ClassLoader oldTccl = SecurityActions.getContextClassLoader();
-        try {
-            SecurityActions.setContextClassLoader(classLoader);
-            this.endpoint.activate(endpointFactory, activationSpec);
-        } catch (ResourceException e) {
-            throw new RuntimeException(e);
-        } finally {
-            SecurityActions.setContextClassLoader(oldTccl);
+        if (deliveryActive) {
+            activate();
         }
 
         if (this.pool != null) {
@@ -190,6 +189,30 @@ public class MessageDrivenComponent extends EJBComponent implements PooledCompon
     @Override
     public void stop() {
 
+        deactivate();
+        deliveryActive = false;
+
+        getShutDownInterceptorFactory().shutdown();
+        if (this.pool != null) {
+            this.pool.stop();
+        }
+
+        super.stop();
+    }
+
+    private void activate() {
+        ClassLoader oldTccl = SecurityActions.getContextClassLoader();
+        try {
+            SecurityActions.setContextClassLoader(classLoader);
+            this.endpoint.activate(endpointFactory, activationSpec);
+        } catch (ResourceException e) {
+            throw new RuntimeException(e);
+        } finally {
+            SecurityActions.setContextClassLoader(oldTccl);
+        }
+    }
+
+    private void deactivate() {
         ClassLoader oldTccl = SecurityActions.getContextClassLoader();
         try {
             SecurityActions.setContextClassLoader(classLoader);
@@ -199,14 +222,20 @@ public class MessageDrivenComponent extends EJBComponent implements PooledCompon
         } finally {
             SecurityActions.setContextClassLoader(oldTccl);
         }
+    }
 
-        getShutDownInterceptorFactory().shutdown();
-        if (this.pool != null) {
-            this.pool.stop();
-        }
+    public void startDelivery() {
+        this.deliveryActive = true;
+        activate();
+    }
 
+    public void stopDelivery() {
+        this.deactivate();
+        this.deliveryActive = false;
+    }
 
-        super.stop();
+    public boolean isDeliveryActive() {
+        return deliveryActive;
     }
 
     @Override

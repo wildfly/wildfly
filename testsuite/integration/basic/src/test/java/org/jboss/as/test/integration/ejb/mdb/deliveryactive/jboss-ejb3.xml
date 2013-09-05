@@ -1,0 +1,28 @@
+<?xml version="1.0"?>
+<jboss:ejb-jar xmlns:jboss="http://www.jboss.com/xml/ns/javaee"
+               xmlns:d="urn:delivery-active:1.0"
+               xmlns="http://java.sun.com/xml/ns/javaee"
+               xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+               xsi:schemaLocation="http://www.jboss.com/xml/ns/javaee http://www.jboss.org/j2ee/schema/jboss-ejb3-2_0.xsd
+                     http://java.sun.com/xml/ns/javaee http://java.sun.com/xml/ns/javaee/ejb-jar_3_1.xsd"
+               version="3.1"
+               impl-version="2.0">
+    <enterprise-beans>
+        <message-driven>
+            <ejb-name>MDBWithDeliveryActiveDeploymentDescriptor</ejb-name>
+            <ejb-class>org.jboss.as.test.integration.ejb.mdb.deliveryactive.MDBWithDeliveryActiveDeploymentDescriptor</ejb-class>
+            <activation-config>
+                <activation-config-property>
+                    <activation-config-property-name>destination</activation-config-property-name>
+                    <activation-config-property-value>java:jboss/deliveryactive/MDBWithDeploymentDescriptorQueue</activation-config-property-value>
+                </activation-config-property>
+            </activation-config>
+        </message-driven>
+    </enterprise-beans>
+    <assembly-descriptor>
+        <d:delivery>
+            <ejb-name>MDBWithDeliveryActiveDeploymentDescriptor</ejb-name>
+            <d:active>false</d:active>
+        </d:delivery>
+    </assembly-descriptor>
+</jboss:ejb-jar>
