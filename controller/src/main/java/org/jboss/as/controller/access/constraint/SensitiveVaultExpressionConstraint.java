@@ -29,6 +29,7 @@ import org.jboss.as.controller.access.Action;
 import org.jboss.as.controller.access.TargetAttribute;
 import org.jboss.as.controller.access.TargetResource;
 import org.jboss.as.controller.access.rbac.StandardRole;
+import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.ModelType;
 import org.jboss.dmr.Property;
@@ -72,21 +73,46 @@ public class SensitiveVaultExpressionConstraint extends AllowAllowNotConstraint 
 
         @Override
         public Constraint getRequiredConstraint(Action.ActionEffect actionEffect, Action action, TargetAttribute target) {
-            return (VaultExpressionSensitivityConfig.INSTANCE.isSensitive(actionEffect)
-                    && isSensitiveValue(target.getCurrentValue())) ? SENSITIVE : NOT_SENSITIVE;
+            return isSensitiveAction(action, actionEffect, target) ? SENSITIVE : NOT_SENSITIVE;
         }
 
         @Override
         public Constraint getRequiredConstraint(Action.ActionEffect actionEffect, Action action, TargetResource target) {
-            return (VaultExpressionSensitivityConfig.INSTANCE.isSensitive(actionEffect) &&
-                    isSensitiveAction(action, actionEffect)) ? SENSITIVE : NOT_SENSITIVE;
+            return isSensitiveAction(action, actionEffect) ? SENSITIVE : NOT_SENSITIVE;
         }
 
         private boolean isSensitiveAction(Action action, Action.ActionEffect actionEffect) {
-            if (actionEffect == Action.ActionEffect.WRITE_RUNTIME || actionEffect == Action.ActionEffect.WRITE_CONFIG) {
-                ModelNode operation = action.getOperation();
-                for (Property property : operation.asPropertyList()) {
-                    if (isSensitiveValue(property.getValue())) {
+            if (VaultExpressionSensitivityConfig.INSTANCE.isSensitive(actionEffect)) {
+                if (actionEffect == Action.ActionEffect.WRITE_RUNTIME || actionEffect == Action.ActionEffect.WRITE_CONFIG) {
+                    ModelNode operation = action.getOperation();
+                    for (Property property : operation.asPropertyList()) {
+                        if (isSensitiveValue(property.getValue())) {
+                            return true;
+                        }
+                    }
+                }
+            }
+            return false;
+        }
+
+        private boolean isSensitiveAction(Action action, Action.ActionEffect actionEffect, TargetAttribute targetAttribute) {
+            if (VaultExpressionSensitivityConfig.INSTANCE.isSensitive(actionEffect)) {
+                if (actionEffect == Action.ActionEffect.WRITE_RUNTIME || actionEffect == Action.ActionEffect.WRITE_CONFIG) {
+                    ModelNode operation = action.getOperation();
+                    if (operation.hasDefined(targetAttribute.getAttributeName())) {
+                        if (isSensitiveValue(operation.get(targetAttribute.getAttributeName()))) {
+                            return true;
+                        }
+                    }
+                    if (ModelDescriptionConstants.WRITE_ATTRIBUTE_OPERATION.equals(operation.get(ModelDescriptionConstants.OP).asString())
+                            && operation.hasDefined(ModelDescriptionConstants.VALUE)) {
+                        if (isSensitiveValue(operation.get(ModelDescriptionConstants.VALUE))) {
+                            return true;
+                        }
+                    }
+                }
+                if (actionEffect != Action.ActionEffect.ADDRESS) {
+                    if (isSensitiveValue(targetAttribute.getCurrentValue())) {
                         return true;
                     }
                 }

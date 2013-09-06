@@ -37,10 +37,14 @@ import org.jboss.dmr.ModelType;
  */
 public final class StringListAttributeDefinition extends PrimitiveListAttributeDefinition {
 
-    private StringListAttributeDefinition(final String name, final String xmlName, final boolean allowNull,final boolean allowExpressions, final int minSize, final int maxSize, final String[] alternatives,
-                                          final String[] requires, ParameterValidator elementValidator, final AttributeMarshaller attributeMarshaller, final boolean resourceOnly,
-                                          final DeprecationData deprecated, final AccessConstraintDefinition[] accessConstraints, final AttributeAccess.Flag... flags) {
-        super(name, xmlName, allowNull, allowExpressions, ModelType.STRING, minSize, maxSize, alternatives, requires, elementValidator, attributeMarshaller, resourceOnly, deprecated, accessConstraints, flags);
+
+    private StringListAttributeDefinition(final String name, final String xmlName, final boolean allowNull, final boolean allowExpressions,
+                                          final int minSize, final int maxSize, ParameterValidator elementValidator, final String[] alternatives,
+                                          final String[] requires, final AttributeMarshaller attributeMarshaller, final boolean resourceOnly,
+                                          final DeprecationData deprecated, final AccessConstraintDefinition[] accessConstraints,
+                                          final Boolean nullSignificant, final AttributeAccess.Flag... flags) {
+        super(name, xmlName, allowNull, allowExpressions, ModelType.STRING, minSize, maxSize, elementValidator, alternatives, requires,
+                attributeMarshaller, resourceOnly, deprecated, accessConstraints, nullSignificant, flags);
     }
 
 
@@ -71,8 +75,9 @@ public final class StringListAttributeDefinition extends PrimitiveListAttributeD
 
         @Override
         public StringListAttributeDefinition build() {
-            return new StringListAttributeDefinition(name, xmlName, allowNull, allowExpression, minSize, maxSize, alternatives, requires, validator,
-                    attributeMarshaller, resourceOnly, deprecated, accessConstraints, flags);
+            return new StringListAttributeDefinition(name, xmlName, allowNull, allowExpression, minSize, maxSize,
+                    validator, alternatives, requires,
+                    attributeMarshaller, resourceOnly, deprecated, accessConstraints, nullSignficant, flags);
         }
     }
 }

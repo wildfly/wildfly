@@ -24,11 +24,16 @@ package org.jboss.as.controller;
 
 import static org.jboss.as.controller.ControllerLogger.MGMT_OP_LOGGER;
 import static org.jboss.as.controller.ControllerMessages.MESSAGES;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ADD;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ATTRIBUTES;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.CALLER_TYPE;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.HOST;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.NILLABLE;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.NIL_SIGNIFICANT;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OPERATION_HEADERS;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.REQUIRED;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SERVER_GROUP;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.USER;
 
@@ -39,6 +44,7 @@ import java.util.EnumSet;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
@@ -57,6 +63,7 @@ import org.jboss.as.controller.audit.AuditLogger;
 import org.jboss.as.controller.client.MessageSeverity;
 import org.jboss.as.controller.client.OperationAttachments;
 import org.jboss.as.controller.client.OperationMessageHandler;
+import org.jboss.as.controller.descriptions.DescriptionProvider;
 import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
 import org.jboss.as.controller.operations.global.GlobalOperationHandlers;
 import org.jboss.as.controller.operations.global.ReadResourceHandler;
@@ -64,6 +71,7 @@ import org.jboss.as.controller.persistence.ConfigurationPersistenceException;
 import org.jboss.as.controller.persistence.ConfigurationPersister;
 import org.jboss.as.controller.registry.AttributeAccess;
 import org.jboss.as.controller.registry.DelegatingImmutableManagementResourceRegistration;
+import org.jboss.as.controller.registry.DelegatingManagementResourceRegistration;
 import org.jboss.as.controller.registry.ImmutableManagementResourceRegistration;
 import org.jboss.as.controller.registry.ManagementResourceRegistration;
 import org.jboss.as.controller.registry.OperationEntry;
@@ -98,14 +106,14 @@ final class OperationContextImpl extends AbstractOperationContext {
 
     private static final Object NULL = new Object();
 
-    private static final Set<Action.ActionEffect> ACCESS = EnumSet.of(Action.ActionEffect.ADDRESS);
+    private static final Set<Action.ActionEffect> ADDRESS = EnumSet.of(Action.ActionEffect.ADDRESS);
     private static final Set<Action.ActionEffect> READ_CONFIG = EnumSet.of(Action.ActionEffect.READ_CONFIG);
     private static final Set<Action.ActionEffect> READ_RUNTIME = EnumSet.of(Action.ActionEffect.READ_RUNTIME);
     private static final Set<Action.ActionEffect> READ_WRITE_CONFIG = EnumSet.of(Action.ActionEffect.READ_CONFIG, Action.ActionEffect.WRITE_CONFIG);
     private static final Set<Action.ActionEffect> READ_WRITE_RUNTIME = EnumSet.of(Action.ActionEffect.READ_RUNTIME, Action.ActionEffect.WRITE_RUNTIME);
     private static final Set<Action.ActionEffect> WRITE_CONFIG = EnumSet.of(Action.ActionEffect.WRITE_CONFIG);
     private static final Set<Action.ActionEffect> WRITE_RUNTIME = EnumSet.of(Action.ActionEffect.WRITE_RUNTIME);
-    private static final Set<Action.ActionEffect> ALL = EnumSet.of(Action.ActionEffect.READ_CONFIG, Action.ActionEffect.READ_RUNTIME, Action.ActionEffect.WRITE_CONFIG, Action.ActionEffect.WRITE_RUNTIME);
+    private static final Set<Action.ActionEffect> ALL_READ_WRITE = EnumSet.of(Action.ActionEffect.READ_CONFIG, Action.ActionEffect.READ_RUNTIME, Action.ActionEffect.WRITE_CONFIG, Action.ActionEffect.WRITE_RUNTIME);
 
     private final ModelControllerImpl modelController;
     private final EnumSet<ContextFlag> contextFlags;
@@ -142,6 +150,13 @@ final class OperationContextImpl extends AbstractOperationContext {
     private Step containerMonitorStep;
     private volatile Boolean requiresModelUpdateAuthorization;
 
+    /**
+     * Cache of resource descriptions generated during operation execution. Primarily intended for
+     * read-resource-description execution where the handler will ask for the description but the
+     * description may also be needed internally to support access control decisions.
+     */
+    private final Map<PathAddress, ModelNode> resourceDescriptions =
+            Collections.synchronizedMap(new HashMap<PathAddress, ModelNode>());
 
     private final Integer operationId;
 
@@ -235,7 +250,8 @@ final class OperationContextImpl extends AbstractOperationContext {
             takeWriteLock();
             affectsResourceRegistration = true;
         }
-        return modelController.getRootRegistration().getSubModel(address);
+        ManagementResourceRegistration delegate = modelController.getRootRegistration().getSubModel(address);
+        return new DescriptionCachingResourceRegistration(delegate, address);
 
     }
 
@@ -249,13 +265,13 @@ final class OperationContextImpl extends AbstractOperationContext {
         }
         authorize(false, Collections.<ActionEffect>emptySet());
         ImmutableManagementResourceRegistration delegate = modelController.getRootRegistration().getSubModel(address);
-        return delegate == null ? null : new DelegatingImmutableManagementResourceRegistration(delegate);
+        return delegate == null ? null : new DescriptionCachingImmutableResourceRegistration(delegate, address);
     }
 
     @Override
     public ImmutableManagementResourceRegistration getRootResourceRegistration() {
         ImmutableManagementResourceRegistration delegate = modelController.getRootRegistration();
-        return delegate == null ? null : new DelegatingImmutableManagementResourceRegistration(delegate);
+        return delegate == null ? null : new DescriptionCachingImmutableResourceRegistration(delegate, PathAddress.EMPTY_ADDRESS);
     }
 
     public ServiceRegistry getServiceRegistry(final boolean modify) throws UnsupportedOperationException {
@@ -619,7 +635,7 @@ final class OperationContextImpl extends AbstractOperationContext {
         // Check for user updates to a domain server model
         rejectUserDomainServerUpdates();
         checkHostServerGroupTracker(absoluteAddress);
-        authorize(true, WRITE_CONFIG);
+        authorizeAdd();
         if (!isModelAffected()) {
             takeWriteLock();
             model = model.clone();
@@ -673,7 +689,7 @@ final class OperationContextImpl extends AbstractOperationContext {
         }
         rejectUserDomainServerUpdates();
         checkHostServerGroupTracker(address);
-        authorize(true, READ_WRITE_CONFIG);
+        authorize(false, READ_WRITE_CONFIG);
         if (!isModelAffected()) {
             takeWriteLock();
             model = model.clone();
@@ -871,7 +887,7 @@ final class OperationContextImpl extends AbstractOperationContext {
         }
 
         if (authResp.getResourceResult(ActionEffect.ADDRESS).getDecision() == Decision.PERMIT) {
-            for (Action.ActionEffect requiredEffect : ALL) {
+            for (Action.ActionEffect requiredEffect : ALL_READ_WRITE) {
                 AuthorizationResult effectResult = authResp.getResourceResult(requiredEffect);
                 if (effectResult == null) {
                     Action action = authResp.standardAction.limitAction(requiredEffect);
@@ -886,13 +902,15 @@ final class OperationContextImpl extends AbstractOperationContext {
                 for (String attr : mrr.getAttributeNames(PathAddress.EMPTY_ADDRESS)) {
                     TargetAttribute targetAttribute = null;
                     if (authResp.getAttributeResult(attr, ActionEffect.ADDRESS) == null) {
-                        if (targetAttribute == null) {
-                            targetAttribute = createTargetAttribute(authResp, attr, isDefaultResponse);
-                        }
-                        Action action = authResp.standardAction.limitAction(ActionEffect.ADDRESS);
-                        authResp.addAttributeResult(attr, ActionEffect.ADDRESS, modelController.getAuthorizer().authorize(getCaller(), callEnvironment, action, targetAttribute));
+//                        if (targetAttribute == null) {
+//                            targetAttribute = createTargetAttribute(authResp, attr, isDefaultResponse);
+//                        }
+//                        Action action = authResp.standardAction.limitAction(ActionEffect.ADDRESS);
+//                        authResp.addAttributeResult(attr, ActionEffect.ADDRESS, modelController.getAuthorizer().authorize(getCaller(), callEnvironment, action, targetAttribute));
+                        // ADDRESS does not apply to attributes
+                        authResp.addAttributeResult(attr, ActionEffect.ADDRESS, AuthorizationResult.PERMITTED);
                     }
-                    for (Action.ActionEffect actionEffect : ALL) {
+                    for (Action.ActionEffect actionEffect : ALL_READ_WRITE) {
                         AuthorizationResult authResult = authResp.getAttributeResult(attr, actionEffect);
                         if (authResult == null) {
                             Action action = authResp.standardAction.limitAction(actionEffect);
@@ -931,7 +949,7 @@ final class OperationContextImpl extends AbstractOperationContext {
             currentValue = model.has(attributeName) ? model.get(attributeName) : new ModelNode();
         }
         AttributeAccess attributeAccess = authResp.targetResource.getResourceRegistration().getAttributeAccess(PathAddress.EMPTY_ADDRESS, attributeName);
-        return new TargetAttribute(attributeAccess, currentValue, authResp.targetResource);
+        return new TargetAttribute(attributeName, attributeAccess, currentValue, authResp.targetResource);
 
     }
 
@@ -960,21 +978,13 @@ final class OperationContextImpl extends AbstractOperationContext {
                 authResult = modelController.getAuthorizer().authorize(getCaller(), getCallEnvironment(), targetAction, authResp.targetResource);
                 authResp.addOperationResult(operationName, authResult);
 
-                //When authorizing the remove operation, make sure that all the attributes are accessible
-                if (authResult.getDecision() == AuthorizationResult.Decision.PERMIT && operationName.equals(ModelDescriptionConstants.REMOVE)) {
+                //When authorizing the 'add' operation, make sure that all the attributes are accessible
+                if (authResult.getDecision() == AuthorizationResult.Decision.PERMIT && operationName.equals(ModelDescriptionConstants.ADD)) {
                     if (!authResp.attributesComplete) {
                         authResp = authorizeResource(true, false);
+                        authResp.addOperationResult(operationName, authResult);
                     }
-                    out:
-                    for (ActionEffect actionEffect : targetAction.getActionEffects()) {
-                        for (Map<Action.ActionEffect, AuthorizationResult> attributeResults : authResp.attributeResults.values()) {
-                            authResult = attributeResults.get(actionEffect);
-                            if (authResult.getDecision() == AuthorizationResult.Decision.DENY) {
-                                authResp.addOperationResult(operationName, authResult);
-                                break out;
-                            }
-                        }
-                    }
+                    authResult = authResp.validateAddAttributeEffects(ADD, targetAction.getActionEffects());
                 }
             }
 
@@ -1004,18 +1014,33 @@ final class OperationContextImpl extends AbstractOperationContext {
     }
 
     private void authorize(boolean allAttributes, Set<Action.ActionEffect> actionEffects) {
-        AuthorizationResult accessResult = authorize(activeStep, false, ACCESS);
+        AuthorizationResult accessResult = authorize(activeStep.operationId, activeStep.operation, false, ADDRESS);
         if (accessResult.getDecision() == AuthorizationResult.Decision.DENY) {
             throw ControllerMessages.MESSAGES.managementResourceNotFound(activeStep.address);
         }
-        AuthorizationResult authResult = authorize(activeStep, allAttributes, actionEffects);
+        AuthorizationResult authResult = authorize(activeStep.operationId, activeStep.operation, allAttributes, actionEffects);
         if (authResult.getDecision() == AuthorizationResult.Decision.DENY) {
             throw ControllerMessages.MESSAGES.unauthorized(activeStep.operationId.name, activeStep.address, authResult.getExplanation());
         }
     }
 
-    private AuthorizationResult authorize(Step step, boolean allAttributes, Set<Action.ActionEffect> actionEffects) {
-        return authorize(step.operationId, step.operation, allAttributes, actionEffects);
+    private void authorizeAdd() {
+        AuthorizationResult accessResult = authorize(activeStep.operationId, activeStep.operation, false, ADDRESS);
+        if (accessResult.getDecision() == AuthorizationResult.Decision.DENY) {
+            throw ControllerMessages.MESSAGES.managementResourceNotFound(activeStep.address);
+        }
+        AuthorizationResult authResult = authorize(activeStep.operationId, activeStep.operation, true, WRITE_CONFIG);
+        if (authResult.getDecision() == AuthorizationResult.Decision.DENY) {
+            AuthorizationResponseImpl authResp = authorizations.get(activeStep.operationId);
+            assert authResp != null : "no AuthorizationResponse";
+            String opName = activeStep.operation.get(OP).asString();
+            authResp.addOperationResult(opName, authResult);
+            authResult = authResp.validateAddAttributeEffects(opName, WRITE_CONFIG);
+            authResp.addOperationResult(opName, authResult);
+            if (authResult.getDecision() == AuthorizationResult.Decision.DENY) {
+                throw ControllerMessages.MESSAGES.unauthorized(activeStep.operationId.name, activeStep.address, authResult.getExplanation());
+            }
+        }
     }
 
     private AuthorizationResult authorize(OperationId opId, ModelNode operation, boolean allAttributes, Set<Action.ActionEffect> actionEffects) {
@@ -1076,7 +1101,7 @@ final class OperationContextImpl extends AbstractOperationContext {
                     Action action = authResp.standardAction.limitAction(actionEffect);
                     if (targetAttribute == null) {
                         AttributeAccess attributeAccess = authResp.targetResource.getResourceRegistration().getAttributeAccess(PathAddress.EMPTY_ADDRESS, attribute);
-                        targetAttribute = new TargetAttribute(attributeAccess, currentValue, authResp.targetResource);
+                        targetAttribute = new TargetAttribute(attribute, attributeAccess, currentValue, authResp.targetResource);
                     }
                     authResult = modelController.getAuthorizer().authorize(getCaller(), getCallEnvironment(), action, targetAttribute);
                     authResp.addAttributeResult(attribute, actionEffect, authResult);
@@ -1567,7 +1592,7 @@ final class OperationContextImpl extends AbstractOperationContext {
 
     }
 
-    private static class AuthorizationResponseImpl implements ResourceAuthorization {
+    private class AuthorizationResponseImpl implements ResourceAuthorization {
 
         private Map<Action.ActionEffect, AuthorizationResult> resourceResults = new HashMap<Action.ActionEffect, AuthorizationResult>();
         private Map<String, Map<Action.ActionEffect, AuthorizationResult>> attributeResults = new HashMap<String, Map<Action.ActionEffect, AuthorizationResult>>();
@@ -1611,5 +1636,161 @@ final class OperationContextImpl extends AbstractOperationContext {
             operationResults.put(operationName, result);
         }
 
+        private AuthorizationResult validateAddAttributeEffects(String operationName, Set<ActionEffect> actionEffects) {
+            AuthorizationResult basic = operationResults.get(operationName);
+            assert basic != null : " no basic authorization has been performed for operation 'add'";
+            if (basic.getDecision() == Decision.DENY) {
+                ImmutableManagementResourceRegistration resourceRegistration = targetResource.getResourceRegistration();
+                ModelNode model = targetResource.getResource().getModel();
+                boolean attributeWasDenied = false;
+                for (Map.Entry<String, Map<ActionEffect, AuthorizationResult>> attributeResultEntry : attributeResults.entrySet()) {
+                    String attrName = attributeResultEntry.getKey();
+                    boolean attrDenied = isAttributeDenied(attributeResultEntry.getValue(), actionEffects);
+                    if (attrDenied) {
+                        attributeWasDenied = true;
+                        // See if we even care about this attribute
+                        if (model.hasDefined(attrName) || isAddableAttribute(attrName, resourceRegistration)) {
+                            Map<ActionEffect, AuthorizationResult> attrResults = attributeResultEntry.getValue();
+                            for (ActionEffect actionEffect : actionEffects) {
+                                AuthorizationResult authResult = attrResults.get(actionEffect);
+                                if (authResult.getDecision() == AuthorizationResult.Decision.DENY) {
+                                    addOperationResult(operationName, authResult);
+                                    return authResult;
+                                }
+                            }
+                        }
+                    }
+                }
+                if (attributeWasDenied) {
+                    // An attribute had been denied, but we didn't return, so, the attribute must not have been required
+                    addOperationResult(operationName, AuthorizationResult.PERMITTED);
+                    return AuthorizationResult.PERMITTED;
+                }
+            }
+            return basic;
+        }
+
+        private boolean isAttributeDenied(Map<ActionEffect, AuthorizationResult> attributeResults, Set<ActionEffect> actionEffects) {
+            for (ActionEffect actionEffect : actionEffects) {
+                AuthorizationResult ar = attributeResults.get(actionEffect);
+                if (ar != null && ar.getDecision() == Decision.DENY) {
+                    return true;
+                }
+            }
+            return false;
+        }
+
+        private boolean isAddableAttribute(String attrName, ImmutableManagementResourceRegistration resourceRegistration) {
+            AttributeAccess attributeAccess = resourceRegistration.getAttributeAccess(PathAddress.EMPTY_ADDRESS, attrName);
+            if (attributeAccess == null) {
+                return isRequiredConfigFromDescription(attrName, resourceRegistration);
+            }
+            if (attributeAccess.getStorageType() == AttributeAccess.Storage.CONFIGURATION
+                    && attributeAccess.getAccessType() == AttributeAccess.AccessType.READ_WRITE) {
+                AttributeDefinition ad = attributeAccess.getAttributeDefinition();
+                if (ad == null) {
+                    return isRequiredConfigFromDescription(attrName, resourceRegistration);
+                }
+                if (!ad.isAllowNull() || (ad.getDefaultValue() != null && ad.getDefaultValue().isDefined())
+                        || ad.isNullSignificant()) {
+                    // must be set, presence of a default means not setting is the same as setting,
+                    // or the AD is specifically configured that null is significant
+                    return true;
+                }
+            }
+            return false;
+        }
+
+        private boolean isRequiredConfigFromDescription(String attrName, ImmutableManagementResourceRegistration resourceRegistration) {
+            PathAddress address = targetResource.getResourceAddress();
+            ModelNode resourceDescription = resourceDescriptions.get(address);
+            if (resourceDescription == null) {
+                resourceDescription = resourceRegistration.getModelDescription(PathAddress.EMPTY_ADDRESS).getModelDescription(Locale.ENGLISH);
+                resourceDescriptions.put(address, resourceDescription);
+            }
+            if (resourceDescription.hasDefined(ATTRIBUTES)) {
+                ModelNode attributes = resourceDescription.get(ATTRIBUTES);
+                if (attributes.hasDefined(attrName)) {
+                    ModelNode attrDesc = attributes.get(attrName);
+                    if (attrDesc.hasDefined(REQUIRED)) {
+                        return attrDesc.get(REQUIRED).asBoolean();
+                    } else if (attrDesc.hasDefined(NILLABLE)) {
+                        return !attrDesc.get(NILLABLE).asBoolean()
+                                || attrDesc.hasDefined(ModelDescriptionConstants.DEFAULT)
+                                || (attrDesc.hasDefined(NIL_SIGNIFICANT) && attrDesc.get(NIL_SIGNIFICANT).asBoolean());
+                    }
+                    return true;
+                }
+            }
+            return false;
+        }
+
+    }
+
+    /** DescriptionProvider that caches any generated description in our internal cache */
+    private class CachingDescriptionProvider implements DescriptionProvider {
+        private final PathAddress cacheAddress;
+        private final DescriptionProvider delegate;
+
+        private CachingDescriptionProvider(PathAddress cacheAddress, DescriptionProvider delegate) {
+            this.cacheAddress = cacheAddress;
+            this.delegate = delegate;
+        }
+
+        @Override
+        public ModelNode getModelDescription(Locale locale) {
+            // Don't try to read from the cache, as the cached description may have used the wrong locale
+            ModelNode result = delegate.getModelDescription(locale);
+            resourceDescriptions.put(cacheAddress, result);
+            return result;
+        }
+    }
+
+    /** ImmutableManagementResourceRegistration that caches any generated resource description in our internal cache */
+    private class DescriptionCachingImmutableResourceRegistration extends DelegatingImmutableManagementResourceRegistration  {
+
+        private final PathAddress address;
+
+        /**
+         * Creates a new DescriptionCachingImmutableResourceRegistration.
+         *
+         * @param delegate the delegate. Cannot be {@code null}
+         * @param address the address of the resource registration. Cannot be {@code null}
+         */
+        public DescriptionCachingImmutableResourceRegistration(ImmutableManagementResourceRegistration delegate, PathAddress address) {
+            super(delegate);
+            this.address = address;
+        }
+
+        @Override
+        public DescriptionProvider getModelDescription(PathAddress relativeAddress) {
+            PathAddress fullAddress = address.append(relativeAddress);
+            DescriptionProvider realProvider = super.getModelDescription(relativeAddress);
+            return new CachingDescriptionProvider(fullAddress, realProvider);
+        }
+    }
+
+    /** ManagementResourceRegistration that caches any generated resource description in our internal cache */
+    private class DescriptionCachingResourceRegistration extends DelegatingManagementResourceRegistration {
+
+        private final PathAddress address;
+
+        /**
+         * Creates a new DescriptionCachingResourceRegistration.
+         *
+         * @param delegate the delegate. Cannot be {@code null}
+         * @param address the address of the resource registration. Cannot be {@code null}
+         */
+        public DescriptionCachingResourceRegistration(ManagementResourceRegistration delegate, PathAddress address) {
+            super(delegate);
+            this.address = address;
+        }
+
+        @Override
+        public DescriptionProvider getModelDescription(PathAddress relativeAddress) {
+            PathAddress fullAddress = address.append(relativeAddress);
+            DescriptionProvider realProvider = super.getModelDescription(relativeAddress);
+            return new CachingDescriptionProvider(fullAddress, realProvider);
+        }
     }
 }

@@ -1,6 +1,6 @@
 /*
  * JBoss, Home of Professional Open Source.
- * Copyright 2012, Red Hat, Inc., and individual contributors
+ * Copyright 2013, Red Hat, Inc., and individual contributors
  * as indicated by the @author tags. See the copyright.txt file in the
  * distribution for a full listing of individual contributors.
  *
@@ -19,6 +19,7 @@
  * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
+
 package org.jboss.as.controller.access.rbac;
 
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OPERATION_HEADERS;
@@ -33,7 +34,6 @@ import org.jboss.as.controller.AbstractRemoveStepHandler;
 import org.jboss.as.controller.AttributeDefinition;
 import org.jboss.as.controller.ModelOnlyWriteAttributeHandler;
 import org.jboss.as.controller.OperationDefinition;
-import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.PathElement;
 import org.jboss.as.controller.ProcessType;
@@ -55,17 +55,15 @@ import org.jboss.dmr.ModelType;
 import org.junit.Test;
 
 /**
- * Tests access control of resource remove.
+ * Tests access control of resource addition.
  *
- * @author <a href="kabir.khan@jboss.com">Kabir Khan</a>
+ * @author Brian Stansberry (c) 2013 Red Hat Inc.
  */
-public class RemoveResourceTestCase extends AbstractControllerTestBase {
+public class AddResourceTestCase extends AbstractControllerTestBase {
 
     private static final PathElement ONE = PathElement.pathElement("one");
     private static final PathElement ONE_A = PathElement.pathElement("one", "a");
     private static final PathElement ONE_B = PathElement.pathElement("one", "b");
-    private static final PathAddress ONE_ADDR = PathAddress.pathAddress(ONE);
-    private static final PathAddress ONE_A_ADDR = PathAddress.pathAddress(ONE_A);
     private static final PathAddress ONE_B_ADDR = PathAddress.pathAddress(ONE_B);
 
     private static final SensitiveTargetAccessConstraintDefinition WRITE_CONSTRAINT = new SensitiveTargetAccessConstraintDefinition(
@@ -75,21 +73,21 @@ public class RemoveResourceTestCase extends AbstractControllerTestBase {
     private volatile Resource rootResource;
 
     @Test
-    public void testMonitorRemoveNoSensitivity() throws Exception {
-        testRemoveNoSensitivity(StandardRole.MONITOR, false);
+    public void testMonitorAddNoSensitivity() throws Exception {
+        testAddNoSensitivity(StandardRole.MONITOR, false);
     }
 
     @Test
-    public void testMaintainerRemoveNoSensitivity() throws Exception {
-        testRemoveNoSensitivity(StandardRole.MAINTAINER, true);
+    public void testMaintainerAddNoSensitivity() throws Exception {
+        testAddNoSensitivity(StandardRole.MAINTAINER, true);
     }
 
     @Test
-    public void testAdministratorRemoveNoSensitivity() throws Exception {
-        testRemoveNoSensitivity(StandardRole.ADMINISTRATOR, true);
+    public void testAdministratorAddNoSensitivity() throws Exception {
+        testAddNoSensitivity(StandardRole.ADMINISTRATOR, true);
     }
 
-    private void testRemoveNoSensitivity(StandardRole role, boolean success) throws Exception {
+    private void testAddNoSensitivity(StandardRole role, boolean success) throws Exception {
         ChildResourceDefinition def = new ChildResourceDefinition(ONE);
         def.addAttribute("test");
         rootRegistration.registerSubModel(def);
@@ -98,11 +96,8 @@ public class RemoveResourceTestCase extends AbstractControllerTestBase {
         resourceA.getModel().get("test").set("a");
         rootResource.registerChild(ONE_A, resourceA);
 
-        Resource resourceB = Resource.Factory.create();
-        resourceB.getModel().get("test").set("b");
-        rootResource.registerChild(ONE_B, resourceB);
-
-        ModelNode op = Util.createRemoveOperation(ONE_B_ADDR);
+        ModelNode op = Util.createAddOperation(ONE_B_ADDR);
+        op.get("test").set("b");
         op.get(OPERATION_HEADERS, "roles").set(role.toString());
         if (success) {
             executeForResult(op);
@@ -112,21 +107,21 @@ public class RemoveResourceTestCase extends AbstractControllerTestBase {
     }
 
     @Test
-    public void testMonitorRemoveWithWriteAttributeSensitivity() throws Exception {
-        testRemoveWithWriteAttributeSensitivity(StandardRole.MONITOR, false);
+    public void testMonitorAddWithWriteAttributeSensitivity() throws Exception {
+        testAddWithWriteAttributeSensitivity(StandardRole.MONITOR, false);
     }
 
     @Test
-    public void testMaintainerRemoveWithWriteAttributeSensitivity() throws Exception {
-        testRemoveWithWriteAttributeSensitivity(StandardRole.MAINTAINER, true);
+    public void testMaintainerAddWithWriteAttributeSensitivity() throws Exception {
+        testAddWithWriteAttributeSensitivity(StandardRole.MAINTAINER, false);
     }
 
     @Test
-    public void testAdministratorRemoveWithWriteAttributeSensitivity() throws Exception {
-        testRemoveWithWriteAttributeSensitivity(StandardRole.ADMINISTRATOR, true);
+    public void testAdministratorAddWithWriteAttributeSensitivity() throws Exception {
+        testAddWithWriteAttributeSensitivity(StandardRole.ADMINISTRATOR, true);
     }
 
-    private void testRemoveWithWriteAttributeSensitivity(StandardRole role, boolean success) throws Exception {
+    private void testAddWithWriteAttributeSensitivity(StandardRole role, boolean success) throws Exception {
         ChildResourceDefinition def = new ChildResourceDefinition(ONE);
         def.addAttribute("test", WRITE_CONSTRAINT);
         rootRegistration.registerSubModel(def);
@@ -135,11 +130,8 @@ public class RemoveResourceTestCase extends AbstractControllerTestBase {
         resourceA.getModel().get("test").set("a");
         rootResource.registerChild(ONE_A, resourceA);
 
-        Resource resourceB = Resource.Factory.create();
-        resourceB.getModel().get("test").set("b");
-        rootResource.registerChild(ONE_B, resourceB);
-
-        ModelNode op = Util.createRemoveOperation(ONE_B_ADDR);
+        ModelNode op = Util.createAddOperation(ONE_B_ADDR);
+        op.get("test").set("b");
         op.get(OPERATION_HEADERS, "roles").set(role.toString());
         if (success) {
             executeForResult(op);
@@ -150,21 +142,21 @@ public class RemoveResourceTestCase extends AbstractControllerTestBase {
 
 
     @Test
-    public void testMonitorRemoveWithVaultWriteSensitivity() throws Exception {
-        testRemoveWithVaultWriteSensitivity(StandardRole.MONITOR, false);
+    public void testMonitorAddWithVaultWriteSensitivity() throws Exception {
+        testAddWithVaultWriteSensitivity(StandardRole.MONITOR, false);
     }
 
     @Test
-    public void testMaintainerRemoveWithVaultWriteSensitivity() throws Exception {
-        testRemoveWithVaultWriteSensitivity(StandardRole.MAINTAINER, true);
+    public void testMaintainerAddWithVaultWriteSensitivity() throws Exception {
+        testAddWithVaultWriteSensitivity(StandardRole.MAINTAINER, false);
     }
 
     @Test
-    public void testAdministratorRemoveWithVaultWriteSensitivity() throws Exception {
-        testRemoveWithVaultWriteSensitivity(StandardRole.ADMINISTRATOR, true);
+    public void testAdministratorAddWithVaultWriteSensitivity() throws Exception {
+        testAddWithVaultWriteSensitivity(StandardRole.ADMINISTRATOR, true);
     }
 
-    private void testRemoveWithVaultWriteSensitivity(StandardRole role, boolean success) throws Exception {
+    private void testAddWithVaultWriteSensitivity(StandardRole role, boolean success) throws Exception {
         try {
             VaultExpressionSensitivityConfig.INSTANCE.setConfiguredRequiresWritePermission(true);
 
@@ -176,11 +168,8 @@ public class RemoveResourceTestCase extends AbstractControllerTestBase {
             resourceA.getModel().get("test").set("a");
             rootResource.registerChild(ONE_A, resourceA);
 
-            Resource resourceB = Resource.Factory.create();
-            resourceB.getModel().get("test").set("${VAULT::AA::bb::cc}");
-            rootResource.registerChild(ONE_B, resourceB);
-
-            ModelNode op = Util.createRemoveOperation(ONE_B_ADDR);
+            ModelNode op = Util.createAddOperation(ONE_B_ADDR);
+            op.get("test").set("${VAULT::AA::bb::cc}");
             op.get(OPERATION_HEADERS, "roles").set(role.toString());
             if (success) {
                 executeForResult(op);
@@ -191,6 +180,105 @@ public class RemoveResourceTestCase extends AbstractControllerTestBase {
             VaultExpressionSensitivityConfig.INSTANCE.setConfiguredRequiresAccessPermission(null);
             VaultExpressionSensitivityConfig.INSTANCE.setConfiguredRequiresReadPermission(null);
             VaultExpressionSensitivityConfig.INSTANCE.setConfiguredRequiresWritePermission(null);
+        }
+    }
+
+    @Test
+    public void testMonitorAddWithAllowNullWriteAttributeSensitivity() throws Exception {
+        testAddWithAllowNullWriteAttributeSensitivity(StandardRole.MONITOR, false);
+    }
+
+    @Test
+    public void testMaintainerAddWithAllowNullWriteAttributeSensitivity() throws Exception {
+        testAddWithAllowNullWriteAttributeSensitivity(StandardRole.MAINTAINER, true);
+    }
+
+    @Test
+    public void testAdministratorAddWithAllowNullWriteAttributeSensitivity() throws Exception {
+        testAddWithAllowNullWriteAttributeSensitivity(StandardRole.ADMINISTRATOR, true);
+    }
+
+    private void testAddWithAllowNullWriteAttributeSensitivity(StandardRole role, boolean success) throws Exception {
+        ChildResourceDefinition def = new ChildResourceDefinition(ONE);
+        def.addAttribute("test", true, null, null, WRITE_CONSTRAINT);
+        rootRegistration.registerSubModel(def);
+
+        Resource resourceA = Resource.Factory.create();
+        resourceA.getModel().get("test").set("a");
+        rootResource.registerChild(ONE_A, resourceA);
+
+        ModelNode op = Util.createAddOperation(ONE_B_ADDR);
+        op.get(OPERATION_HEADERS, "roles").set(role.toString());
+        if (success) {
+            executeForResult(op);
+        } else {
+            executeForFailure(op);
+        }
+    }
+
+    @Test
+    public void testMonitorAddWithDefaultValueWriteAttributeSensitivity() throws Exception {
+        testAddWithDefaultValueWriteAttributeSensitivity(StandardRole.MONITOR, false);
+    }
+
+    @Test
+    public void testMaintainerAddWithDefaultValueWriteAttributeSensitivity() throws Exception {
+        testAddWithDefaultValueWriteAttributeSensitivity(StandardRole.MAINTAINER, false);
+    }
+
+    @Test
+    public void testAdministratorAddWithDefaultValueWriteAttributeSensitivity() throws Exception {
+        testAddWithDefaultValueWriteAttributeSensitivity(StandardRole.ADMINISTRATOR, true);
+    }
+
+    private void testAddWithDefaultValueWriteAttributeSensitivity(StandardRole role, boolean success) throws Exception {
+        ChildResourceDefinition def = new ChildResourceDefinition(ONE);
+        def.addAttribute("test", true, null, new ModelNode("b"), WRITE_CONSTRAINT);
+        rootRegistration.registerSubModel(def);
+
+        Resource resourceA = Resource.Factory.create();
+        resourceA.getModel().get("test").set("a");
+        rootResource.registerChild(ONE_A, resourceA);
+
+        ModelNode op = Util.createAddOperation(ONE_B_ADDR);
+        op.get(OPERATION_HEADERS, "roles").set(role.toString());
+        if (success) {
+            executeForResult(op);
+        } else {
+            executeForFailure(op);
+        }
+    }
+
+    @Test
+    public void testMonitorAddWithSignificantNullWriteAttributeSensitivity() throws Exception {
+        testAddWithSignificantNullWriteAttributeSensitivity(StandardRole.MONITOR, false);
+    }
+
+    @Test
+    public void testMaintainerAddWithSignificantNullWriteAttributeSensitivity() throws Exception {
+        testAddWithSignificantNullWriteAttributeSensitivity(StandardRole.MAINTAINER, false);
+    }
+
+    @Test
+    public void testAdministratorAddWithSignificantNullWriteAttributeSensitivity() throws Exception {
+        testAddWithSignificantNullWriteAttributeSensitivity(StandardRole.ADMINISTRATOR, true);
+    }
+
+    private void testAddWithSignificantNullWriteAttributeSensitivity(StandardRole role, boolean success) throws Exception {
+        ChildResourceDefinition def = new ChildResourceDefinition(ONE);
+        def.addAttribute("test", true, Boolean.TRUE, null, WRITE_CONSTRAINT);
+        rootRegistration.registerSubModel(def);
+
+        Resource resourceA = Resource.Factory.create();
+        resourceA.getModel().get("test").set("a");
+        rootResource.registerChild(ONE_A, resourceA);
+
+        ModelNode op = Util.createAddOperation(ONE_B_ADDR);
+        op.get(OPERATION_HEADERS, "roles").set(role.toString());
+        if (success) {
+            executeForResult(op);
+        } else {
+            executeForFailure(op);
         }
     }
 
@@ -210,12 +298,7 @@ public class RemoveResourceTestCase extends AbstractControllerTestBase {
         TestResourceDefinition(PathElement pathElement) {
             super(pathElement,
                     new NonResolvingResourceDescriptionResolver(),
-                    new AbstractAddStepHandler() {
-                        @Override
-                        protected void populateModel(ModelNode operation, ModelNode model) throws OperationFailedException {
-                            // no-op
-                        }
-                    },
+                    new AbstractAddStepHandler() {},
                     new AbstractRemoveStepHandler() {});
         }
     }
@@ -243,7 +326,17 @@ public class RemoveResourceTestCase extends AbstractControllerTestBase {
         }
 
         void addAttribute(String name, AccessConstraintDefinition...constraints) {
-            SimpleAttributeDefinitionBuilder builder = new SimpleAttributeDefinitionBuilder(name, ModelType.STRING);
+            addAttribute(name, false, null, null, constraints);
+        }
+
+        void addAttribute(String name, boolean allowNull, Boolean nullSignificant, ModelNode defaultValue, AccessConstraintDefinition...constraints) {
+            SimpleAttributeDefinitionBuilder builder = new SimpleAttributeDefinitionBuilder(name, ModelType.STRING, allowNull);
+            if (nullSignificant != null) {
+                builder.setNullSignficant(nullSignificant);
+            }
+            if (defaultValue != null) {
+                builder.setDefaultValue(defaultValue);
+            }
             if (constraints != null) {
                 builder.setAccessConstraints(constraints);
             }

@@ -55,8 +55,9 @@ public class LogHandlerListAttributeDefinition extends SimpleListAttributeDefini
     LogHandlerListAttributeDefinition(final String name, final String xmlName, final String propertyName, final AttributeDefinition valueType,
                                       final boolean allowNull, final int minSize, final int maxSize, final String[] alternatives, final String[] requires,
                                       final AttributeMarshaller attributeMarshaller, final boolean resourceOnly,final DeprecationData deprecationData,
-                                      final AccessConstraintDefinition[] accessConstraints, final AttributeAccess.Flag... flags) {
-        super(name, xmlName, valueType,allowNull, minSize, maxSize,  alternatives, requires, attributeMarshaller, resourceOnly, deprecationData, accessConstraints, flags);
+                                      final AccessConstraintDefinition[] accessConstraints, final Boolean nilSignificant, final AttributeAccess.Flag... flags) {
+        super(name, xmlName, valueType,allowNull, minSize, maxSize,  alternatives, requires, attributeMarshaller,
+                resourceOnly, deprecationData, accessConstraints, nilSignificant, flags);
         this.propertyName = propertyName;
     }
 
@@ -111,7 +112,7 @@ public class LogHandlerListAttributeDefinition extends SimpleListAttributeDefini
             if (propertyName == null) propertyName = name;
             if (attributeMarshaller == null) attributeMarshaller = HandlersAttributeMarshaller.INSTANCE;
             return new LogHandlerListAttributeDefinition(name, xmlName, propertyName, CommonAttributes.HANDLER, allowNull, minSize, maxSize, alternatives, requires,
-                    attributeMarshaller, resourceOnly, deprecated, accessConstraints, flags);
+                    attributeMarshaller, resourceOnly, deprecated, accessConstraints, nullSignficant, flags);
         }
 
         public Builder setPropertyName(final String propertyName) {

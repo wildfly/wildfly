@@ -62,9 +62,10 @@ public final class PropertiesAttributeDefinition extends MapAttributeDefinition 
     private PropertiesAttributeDefinition(final String name, final String xmlName, final boolean allowNull, boolean allowExpression,
                                           final int minSize, final int maxSize, final ParameterCorrector corrector, final ParameterValidator elementValidator,
                                           final String[] alternatives, final String[] requires, final AttributeMarshaller attributeMarshaller, final boolean resourceOnly,
-                                          final DeprecationData deprecated, final AccessConstraintDefinition[] accessConstraints, final AttributeAccess.Flag... flags) {
+                                          final DeprecationData deprecated, final AccessConstraintDefinition[] accessConstraints,
+                                          final Boolean nullSignificant, final AttributeAccess.Flag... flags) {
         super(name, xmlName, allowNull, allowExpression, minSize, maxSize, corrector, elementValidator, alternatives, requires, attributeMarshaller,
-                resourceOnly, deprecated, accessConstraints, flags);
+                resourceOnly, deprecated, accessConstraints, nullSignificant, flags);
     }
 
     @Override
@@ -167,7 +168,7 @@ public final class PropertiesAttributeDefinition extends MapAttributeDefinition 
                 attributeMarshaller = new PropertiesAttributeMarshaller(wrapXmlElement, wrapperElement);
             }
             return new PropertiesAttributeDefinition(name, xmlName, allowNull, allowExpression, minSize, maxSize, corrector, validator, alternatives,
-                    requires, attributeMarshaller, resourceOnly, deprecated, accessConstraints, flags);
+                    requires, attributeMarshaller, resourceOnly, deprecated, accessConstraints, nullSignficant, flags);
         }
     }
 }

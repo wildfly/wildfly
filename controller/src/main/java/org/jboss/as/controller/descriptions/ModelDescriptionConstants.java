@@ -211,6 +211,7 @@ public class ModelDescriptionConstants {
     public static final String NATIVE_REMOTING_INTERFACE = "native-remoting-interface";
     public static final String NETWORK = "network";
     public static final String NILLABLE = "nillable";
+    public static final String NIL_SIGNIFICANT = "nil-significant";
     public static final String NOT = "not";
     /** Use this as the standard operation name field in the operation *request* ModelNode */
     public static final String OP = "operation";

@@ -51,7 +51,6 @@ import org.jboss.dmr.ModelNode;
 import org.jboss.shrinkwrap.api.Archive;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.spec.JavaArchive;
-import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
@@ -82,7 +81,6 @@ public class ReadResourceDescriptionVsActualOperationTestCase extends AbstractRb
     }
 
     @Test
-    @Ignore("read-resource-description doesn't work properly in this case")
     public void testMaintainer() throws Exception {
         test(RbacUtil.MAINTAINER_USER);
     }

@@ -53,8 +53,9 @@ public class ObjectListAttributeDefinition extends ListAttributeDefinition {
 
     private ObjectListAttributeDefinition(final String name, final String xmlName, final ObjectTypeAttributeDefinition valueType, final boolean allowNull, final int minSize, final int maxSize, final String[] alternatives, final String[] requires,
                                           final AttributeMarshaller attributeMarshaller, final boolean resourceOnly, final DeprecationData deprecated,
-                                          final AccessConstraintDefinition[] accessConstaints, final AttributeAccess.Flag... flags) {
-        super(name, xmlName, allowNull, false, minSize, maxSize, valueType.getValidator(), alternatives, requires, attributeMarshaller, resourceOnly, deprecated, accessConstaints, flags);
+                                          final AccessConstraintDefinition[] accessConstaints, Boolean nullSignificant, final AttributeAccess.Flag... flags) {
+        super(name, xmlName, allowNull, false, minSize, maxSize, valueType.getValidator(), alternatives, requires, attributeMarshaller,
+                resourceOnly, deprecated, accessConstaints, nullSignificant, flags);
         this.valueType = valueType;
     }
 
@@ -193,7 +194,9 @@ public class ObjectListAttributeDefinition extends ListAttributeDefinition {
         public ObjectListAttributeDefinition build() {
             if (xmlName == null) { xmlName = name; }
             if (maxSize < 1) { maxSize = Integer.MAX_VALUE; }
-            return new ObjectListAttributeDefinition(name, xmlName, valueType, allowNull, minSize, maxSize, alternatives, requires, attributeMarshaller, resourceOnly, deprecated, accessConstraints, flags);
+            return new ObjectListAttributeDefinition(name, xmlName, valueType, allowNull, minSize, maxSize,
+                    alternatives, requires, attributeMarshaller, resourceOnly, deprecated, accessConstraints,
+                    nullSignficant, flags);
         }
 
         /*
