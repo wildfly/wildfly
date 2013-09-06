@@ -1365,12 +1365,39 @@
             <maven-resource group="org.osgi" artifact="org.osgi.core"/>
         </module-def>
 
-        <module-def name="org.picketlink">
-            <maven-resource group="org.picketlink" artifact="picketlink-core" jandex="true"/>
-            <maven-resource group="org.picketlink.distribution" artifact="picketlink-jbas7" jandex="true"/>
+        <module-def name="org.picketlink.common">
+            <maven-resource group="org.picketlink" artifact="picketlink-common"/>
+        </module-def>
+    	
+        <module-def name="org.picketlink.config">
+            <maven-resource group="org.picketlink" artifact="picketlink-config"/>
         </module-def>
 
-        <module-def name="org.picketbox">
+    	<module-def name="org.picketlink.core.api">
+            <maven-resource group="org.picketlink" artifact="picketlink-api"/>
+        </module-def>
+
+    	<module-def name="org.picketlink.core">
+            <maven-resource group="org.picketlink" artifact="picketlink-impl"/>
+        </module-def>
+    	
+    	<module-def name="org.picketlink.federation.bindings">
+            <maven-resource group="org.picketlink.distribution" artifact="picketlink-jbas7"/>
+        </module-def>
+
+    	<module-def name="org.picketlink.federation">
+            <maven-resource group="org.picketlink" artifact="picketlink-federation"/>
+        </module-def>
+
+    	<module-def name="org.picketlink.idm.api">
+            <maven-resource group="org.picketlink" artifact="picketlink-idm-api"/>
+        </module-def>
+
+    	<module-def name="org.picketlink.idm">
+            <maven-resource group="org.picketlink" artifact="picketlink-idm-impl"/>
+        </module-def>
+
+    	<module-def name="org.picketbox">
             <maven-resource group="org.picketbox" artifact="picketbox"/>
             <maven-resource group="org.picketbox" artifact="picketbox-infinispan"/>
             <maven-resource group="org.picketbox" artifact="picketbox-commons"/>
