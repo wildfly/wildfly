@@ -344,7 +344,7 @@ public abstract class AbstractDataSourceService implements Service<DataSource> {
 
         @Override
         public CachedConnectionManager getCachedConnectionManager() {
-            return ccmValue.getValue();
+            return ccmValue.getOptionalValue();
         }
 
         @Override
