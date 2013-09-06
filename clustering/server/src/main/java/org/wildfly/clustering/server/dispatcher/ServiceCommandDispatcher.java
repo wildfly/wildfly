@@ -33,6 +33,7 @@ import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
 
+import org.jboss.as.clustering.jgroups.Addressable;
 import org.jgroups.Address;
 import org.jgroups.Message;
 import org.jgroups.blocks.MessageDispatcher;
@@ -40,10 +41,11 @@ import org.jgroups.blocks.RequestOptions;
 import org.jgroups.blocks.ResponseMode;
 import org.jgroups.blocks.RspFilter;
 import org.jgroups.util.Rsp;
-import org.wildfly.clustering.Node;
 import org.wildfly.clustering.dispatcher.Command;
 import org.wildfly.clustering.dispatcher.CommandDispatcher;
 import org.wildfly.clustering.dispatcher.CommandResponse;
+import org.wildfly.clustering.group.Node;
+import org.wildfly.clustering.group.NodeFactory;
 
 /**
  * MessageDispatcher-based command dispatcher.
@@ -67,13 +69,13 @@ public abstract class ServiceCommandDispatcher<C> implements CommandDispatcher<C
 
     private final MessageDispatcher dispatcher;
     private final CommandMarshaller<C> marshaller;
-    private final NodeRegistry registry;
+    private final NodeFactory<Address> factory;
     private final long timeout;
 
-    public ServiceCommandDispatcher(MessageDispatcher dispatcher, CommandMarshaller<C> marshaller, NodeRegistry registry, long timeout) {
+    public ServiceCommandDispatcher(MessageDispatcher dispatcher, CommandMarshaller<C> marshaller, NodeFactory<Address> factory, long timeout) {
         this.dispatcher = dispatcher;
         this.marshaller = marshaller;
-        this.registry = registry;
+        this.factory = factory;
         this.timeout = timeout;
     }
 
@@ -88,7 +90,7 @@ public abstract class ServiceCommandDispatcher<C> implements CommandDispatcher<C
             for (Map.Entry<Address, Rsp<R>> entry: responses.entrySet()) {
                 Address address = entry.getKey();
                 Rsp<R> response = entry.getValue();
-                results.put(this.registry.getNode(address), createCommandResponse(response));
+                results.put(this.factory.createNode(address), createCommandResponse(response));
             }
 
             return results;
@@ -106,7 +108,7 @@ public abstract class ServiceCommandDispatcher<C> implements CommandDispatcher<C
             Map<Node, Future<R>> results = new HashMap<>();
             Set<Node> excluded = (excludedNodes != null) ? new HashSet<>(Arrays.asList(excludedNodes)) : Collections.<Node>emptySet();
             for (Address address: this.dispatcher.getChannel().getView().getMembers()) {
-                final Node node = this.registry.getNode(address);
+                final Node node = this.factory.createNode(address);
                 if (!excluded.contains(node)) {
                     Future<R> future = new Future<R>() {
                         @Override
@@ -172,10 +174,17 @@ public abstract class ServiceCommandDispatcher<C> implements CommandDispatcher<C
 
     private <R> Message createMessage(Command<R, C> command, Node node) {
         try {
-            return new Message(this.registry.getAddress(node), this.getLocalAddress(), this.marshaller.marshal(command));
+            return new Message(getAddress(node), this.getLocalAddress(), this.marshaller.marshal(command));
         } catch (IOException e) {
             throw new IllegalArgumentException(e);
         }
+    }
+
+    private static Address getAddress(Node node) {
+        if (node instanceof Addressable) {
+            return ((Addressable) node).getAddress();
+        }
+        throw new IllegalArgumentException(node.getName());
     }
 
     private RequestOptions createRequestOptions(Node... excludedNodes) {
@@ -183,7 +192,7 @@ public abstract class ServiceCommandDispatcher<C> implements CommandDispatcher<C
         if ((excludedNodes != null) && (excludedNodes.length > 0)) {
             Address[] addresses = new Address[excludedNodes.length];
             for (int i = 0; i < excludedNodes.length; ++i) {
-                addresses[i] = this.registry.getAddress(excludedNodes[i]);
+                addresses[i] = getAddress(excludedNodes[i]);
             }
             options.setExclusionList(addresses);
         }

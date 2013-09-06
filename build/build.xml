@@ -863,10 +863,6 @@
             <maven-resource group="org.wildfly" artifact="wildfly-clustering-jgroups"/>
         </module-def>
 
-        <module-def name="org.jboss.as.clustering.registry">
-            <maven-resource group="org.wildfly" artifact="wildfly-clustering-registry"/>
-        </module-def>
-
         <module-def name="org.wildfly.clustering.server">
             <maven-resource group="org.wildfly" artifact="wildfly-clustering-server"/>
         </module-def>

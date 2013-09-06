@@ -23,7 +23,7 @@ package org.wildfly.clustering.singleton.election;
 
 import java.net.InetSocketAddress;
 
-import org.wildfly.clustering.Node;
+import org.wildfly.clustering.group.Node;
 
 public class SocketAddressPreference implements Preference {
     private final InetSocketAddress address;

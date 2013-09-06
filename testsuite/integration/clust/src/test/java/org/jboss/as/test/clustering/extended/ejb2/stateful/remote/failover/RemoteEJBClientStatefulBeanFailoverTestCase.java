@@ -28,8 +28,6 @@ import org.jboss.arquillian.container.test.api.TargetsContainer;
 import org.jboss.arquillian.junit.Arquillian;
 import org.jboss.arquillian.junit.InSequence;
 import org.jboss.as.test.clustering.NodeNameGetter;
-import org.jboss.as.test.clustering.ViewChangeListener;
-import org.jboss.as.test.clustering.ViewChangeListenerBean;
 import org.jboss.shrinkwrap.api.Archive;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.asset.StringAsset;
@@ -78,8 +76,7 @@ public class RemoteEJBClientStatefulBeanFailoverTestCase extends RemoteEJBClient
         final JavaArchive jar = ShrinkWrap.create(JavaArchive.class, ARCHIVE_NAME + ".jar");
         jar.addClasses(CounterBaseBean.class, CounterBean.class, CounterRemote.class, CounterRemoteHome.class, CounterResult.class);
         jar.addClass(NodeNameGetter.class);
-        jar.addAsManifestResource(new StringAsset("Manifest-Version: 1.0\nDependencies: deployment." + ARCHIVE_NAME_SINGLE + ".jar, org.jboss.msc, org.jboss.as.clustering.common, org.infinispan\n"), "MANIFEST.MF");
-        jar.addClasses(ViewChangeListener.class, ViewChangeListenerBean.class);
+        jar.addAsManifestResource(new StringAsset("Manifest-Version: 1.0\nDependencies: deployment." + ARCHIVE_NAME_SINGLE + ".jar\n"), "MANIFEST.MF");
         return jar;
     }
     

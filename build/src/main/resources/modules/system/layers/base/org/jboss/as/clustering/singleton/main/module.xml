@@ -32,7 +32,8 @@
     </resources>
 
     <dependencies>
-        <module name="org.jboss.as.clustering.api"/>
+        <module name="org.jboss.as.clustering.api" export="true"/>
+        <module name="org.wildfly.clustering.server" export="true"/>
         <module name="org.wildfly.clustering.singleton" export="true"/>
     </dependencies>
 </module>

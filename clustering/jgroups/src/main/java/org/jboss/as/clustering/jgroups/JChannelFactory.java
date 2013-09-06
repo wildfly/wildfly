@@ -39,7 +39,6 @@ import javax.management.MBeanServer;
 import org.jboss.as.clustering.concurrent.ManagedExecutorService;
 import org.jboss.as.clustering.concurrent.ManagedScheduledExecutorService;
 import org.jboss.as.network.SocketBinding;
-import org.jboss.as.server.ServerEnvironment;
 import org.jgroups.Channel;
 import org.jgroups.ChannelListener;
 import org.jgroups.Global;
@@ -64,11 +63,6 @@ public class JChannelFactory implements ChannelFactory, ChannelListener, Protoco
 
     public JChannelFactory(ProtocolStackConfiguration configuration) {
         this.configuration = configuration;
-    }
-
-    @Override
-    public ServerEnvironment getServerEnvironment() {
-        return this.configuration.getEnvironment();
     }
 
     @Override

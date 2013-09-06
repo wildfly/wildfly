@@ -27,6 +27,10 @@ import java.util.Collection;
 import org.jboss.as.clustering.marshalling.ClassTableContributor;
 import org.wildfly.clustering.dispatcher.Command;
 
+/**
+ * ClassTable contributor for the marshaller of a {@link CommandDispatcher}.
+ * @author Paul Ferraro
+ */
 public class CommandDispatcherClassTableContributor implements ClassTableContributor {
 
     @Override

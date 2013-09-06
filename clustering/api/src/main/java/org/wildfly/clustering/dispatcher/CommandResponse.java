@@ -23,6 +23,11 @@ package org.wildfly.clustering.dispatcher;
 
 import java.util.concurrent.ExecutionException;
 
+/**
+ * Remote command execution response
+ * @author Paul Ferraro
+ * @param <R> the response type
+ */
 public interface CommandResponse<R> {
     R get() throws ExecutionException;
 }

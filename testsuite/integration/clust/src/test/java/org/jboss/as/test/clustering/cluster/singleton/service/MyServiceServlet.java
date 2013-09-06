@@ -35,7 +35,7 @@ import javax.servlet.http.HttpServletResponse;
 import org.jboss.as.server.CurrentServiceContainer;
 import org.jboss.msc.service.ServiceName;
 
-@WebServlet(urlPatterns = {MyServiceServlet.SERVLET_PATH})
+@WebServlet(urlPatterns = { MyServiceServlet.SERVLET_PATH })
 public class MyServiceServlet extends HttpServlet {
     private static final long serialVersionUID = -592774116315946908L;
     private static final String SERVLET_NAME = "service";

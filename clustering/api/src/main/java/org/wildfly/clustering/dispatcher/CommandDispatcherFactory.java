@@ -21,56 +21,26 @@
  */
 package org.wildfly.clustering.dispatcher;
 
-import java.util.List;
-
-import org.jboss.msc.service.ServiceName;
-import org.wildfly.clustering.Node;
+import org.wildfly.clustering.group.Group;
 
 /**
  * Factory for creating a command dispatcher.
  * @author Paul Ferraro
  */
 public interface CommandDispatcherFactory {
-    ServiceName SERVICE_NAME = ServiceName.JBOSS.append("clustering", "dispatcher");
 
     /**
-     * Creates a new command dispatcher for the specified service.
-     * @param service a service name
+     * Returns the group upon which the this command dispatcher operates.
+     * @return a group
+     */
+    Group getGroup();
+
+    /**
+     * Creates a new command dispatcher using the specified identifier and context..
+     * The resulting {@link CommandDispatcher} will communicate with those dispatchers within the group sharing the same identifier.
+     * @param id a unique identifier for this dispatcher.
      * @param context the context used for executing commands
      * @return a new command dispatcher
      */
-    <C> CommandDispatcher<C> createCommandDispatcher(ServiceName service, C context);
-
-    /**
-     * Creates a new command dispatcher for the specified service.
-     * @param service a service name
-     * @param context the context used for executing commands
-     * @param listener a listener for changes to cluster membership
-     * @return a new command dispatcher
-     */
-    <C> CommandDispatcher<C> createCommandDispatcher(ServiceName service, C context, MembershipListener listener);
-
-    /**
-     * Indicates whether or not we are the group coordinator.
-     * @return true, if we are the group coordinator, false otherwise.
-     */
-    boolean isCoordinator();
-
-    /**
-     * Returns the local node.
-     * @return the local node.
-     */
-    Node getLocalNode();
-
-    /**
-     * Returns the group coordinator.
-     * @return the group coordinator.
-     */
-    Node getCoordinatorNode();
-
-    /**
-     * Returns the list of nodes in this cluster.
-     * @return a list of nodes
-     */
-    List<Node> getNodes();
+    <C> CommandDispatcher<C> createCommandDispatcher(Object id, C context);
 }

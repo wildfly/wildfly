@@ -30,6 +30,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Properties;
 import java.util.Set;
+
 import javax.naming.NamingException;
 
 import org.jboss.arquillian.container.test.api.Deployment;
@@ -40,8 +41,6 @@ import org.jboss.as.test.clustering.EJBClientContextSelector;
 import org.jboss.as.test.clustering.EJBDirectory;
 import org.jboss.as.test.clustering.NodeNameGetter;
 import org.jboss.as.test.clustering.RemoteEJBDirectory;
-import org.jboss.as.test.clustering.ViewChangeListener;
-import org.jboss.as.test.clustering.ViewChangeListenerBean;
 import org.jboss.as.test.clustering.cluster.ClusterAbstractTestCase;
 import org.jboss.as.test.clustering.cluster.ejb3.stateless.bean.Stateless;
 import org.jboss.as.test.clustering.cluster.ejb3.stateless.bean.StatelessBean;
@@ -49,7 +48,6 @@ import org.jboss.ejb.client.EJBClientContext;
 import org.jboss.logging.Logger;
 import org.jboss.shrinkwrap.api.Archive;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
-import org.jboss.shrinkwrap.api.asset.StringAsset;
 import org.jboss.shrinkwrap.api.spec.JavaArchive;
 import org.junit.AfterClass;
 import org.junit.Assert;
@@ -91,8 +89,7 @@ public class RemoteStatelessFailoverTestCase extends ClusterAbstractTestCase {
     private static Archive<?> createDeployment() {
         final JavaArchive ejbJar = ShrinkWrap.create(JavaArchive.class, MODULE_NAME + ".jar");
         ejbJar.addPackage(StatelessBean.class.getPackage());
-        ejbJar.addClasses(NodeNameGetter.class, ViewChangeListener.class, ViewChangeListenerBean.class);
-        ejbJar.setManifest(new StringAsset("Manifest-Version: 1.0\nDependencies: org.jboss.msc, org.jboss.as.clustering.common, org.infinispan\n"));
+        ejbJar.addClass(NodeNameGetter.class);
         log.info(ejbJar.toString(true));
         return ejbJar;
     }
@@ -115,17 +112,11 @@ public class RemoteStatelessFailoverTestCase extends ClusterAbstractTestCase {
         EJBClientContextSelector.setup(CLIENT_PROPERTIES);
 
         try {
-            ViewChangeListener listener = context.lookupStateless(ViewChangeListenerBean.class, ViewChangeListener.class);
-
-            this.establishView(listener, NODES[0]);
-
             Stateless bean = context.lookupStateless(StatelessBean.class, Stateless.class);
 
             assertEquals(NODES[0], bean.getNodeName());
 
             start(CONTAINER_2);
-
-            this.establishView(listener, NODES);
 
             List<String> results = new ArrayList<String>(10);
             for (int i = 0; i < 10; ++i) {
@@ -138,8 +129,6 @@ public class RemoteStatelessFailoverTestCase extends ClusterAbstractTestCase {
             }
 
             stop(CONTAINER_1);
-
-            this.establishView(listener, NODES[1]);
 
             assertEquals(NODES[1], bean.getNodeName());
         } finally {
@@ -155,17 +144,11 @@ public class RemoteStatelessFailoverTestCase extends ClusterAbstractTestCase {
         EJBClientContextSelector.setup(CLIENT_PROPERTIES);
 
         try {
-            ViewChangeListener listener = context.lookupStateless(ViewChangeListenerBean.class, ViewChangeListener.class);
-
-            this.establishView(listener, NODES[0]);
-
             Stateless bean = context.lookupStateless(StatelessBean.class, Stateless.class);
 
             assertEquals(NODES[0], bean.getNodeName());
 
             deploy(DEPLOYMENT_2);
-
-            this.establishView(listener, NODES);
 
             List<String> results = new ArrayList<String>(10);
             for (int i = 0; i < 10; ++i) {
@@ -178,8 +161,6 @@ public class RemoteStatelessFailoverTestCase extends ClusterAbstractTestCase {
             }
 
             undeploy(DEPLOYMENT_1);
-
-            this.establishView(listener, NODES[1]);
 
             assertEquals(NODES[1], bean.getNodeName());
         } finally {
@@ -201,10 +182,6 @@ public class RemoteStatelessFailoverTestCase extends ClusterAbstractTestCase {
         double serversProcessedAtLeast = 0.2;
 
         try {
-            ViewChangeListener listener = context.lookupStateless(ViewChangeListenerBean.class, ViewChangeListener.class);
-
-            this.establishView(listener, NODES);
-
             Stateless bean = context.lookupStateless(StatelessBean.class, Stateless.class);
 
             String node = bean.getNodeName();
@@ -225,14 +202,10 @@ public class RemoteStatelessFailoverTestCase extends ClusterAbstractTestCase {
 
             stop(CONTAINER_1);
 
-            this.establishView(listener, NODES[1]);
-
             node = bean.getNodeName();
             log.info("Node called: " + node);
 
             start(CONTAINER_1);
-
-            this.establishView(listener, NODES);
 
             node = bean.getNodeName();
             log.info("Node called: " + node);
@@ -247,7 +220,7 @@ public class RemoteStatelessFailoverTestCase extends ClusterAbstractTestCase {
      * Method calls the bean function getNodeName() {numCalls} times and checks whether all servers processed at least part of calls.
      * The necessary number of processed calls by each server is {minPercentage} of the number of all calls.
      */
-    private void validateBalancing(Stateless bean, int numCalls, int expectedServers, double minPercentage) {
+    private static void validateBalancing(Stateless bean, int numCalls, int expectedServers, double minPercentage) {
         List<String> results = new ArrayList<String>(numCalls);
         for (int i = 0; i < numCalls; i++) {
             results.add(bean.getNodeName());
@@ -264,9 +237,5 @@ public class RemoteStatelessFailoverTestCase extends ClusterAbstractTestCase {
             Assert.assertTrue(Integer.toString(frequency), frequency >= minCalls);
         }
         log.info(String.format("All %d servers processed at least %f of calls", expectedServers, minCalls));
-    }
-
-    private void establishView(ViewChangeListener listener, String... members) throws InterruptedException {
-        listener.establishView("ejb", members);
     }
 }

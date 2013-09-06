@@ -41,7 +41,7 @@ public class RecordingWebListener implements HttpSessionListener, HttpSessionAtt
     public static ConcurrentMap<String, BlockingQueue<String>> removedAttributes = new ConcurrentHashMap<>();
     public static ConcurrentMap<String, BlockingQueue<String>> replacedAttributes = new ConcurrentHashMap<>();
 
-    private void record(HttpSessionBindingEvent event, ConcurrentMap<String, BlockingQueue<String>> attributes) {
+    private static void record(HttpSessionBindingEvent event, ConcurrentMap<String, BlockingQueue<String>> attributes) {
         BlockingQueue<String> set = new LinkedBlockingQueue<>();
         BlockingQueue<String> existing = attributes.putIfAbsent(event.getSession().getId(), set);
         ((existing != null) ? existing : set).add(event.getName());
@@ -49,30 +49,30 @@ public class RecordingWebListener implements HttpSessionListener, HttpSessionAtt
 
     @Override
     public void attributeAdded(HttpSessionBindingEvent event) {
-        this.record(event, addedAttributes);
+        record(event, addedAttributes);
     }
 
     @Override
     public void attributeRemoved(HttpSessionBindingEvent event) {
-        this.record(event, removedAttributes);
+        record(event, removedAttributes);
     }
 
     @Override
     public void attributeReplaced(HttpSessionBindingEvent event) {
-        this.record(event, replacedAttributes);
+        record(event, replacedAttributes);
     }
 
-    private void record(HttpSessionEvent event, BlockingQueue<String> sessions) {
+    private static void record(HttpSessionEvent event, BlockingQueue<String> sessions) {
         sessions.add(event.getSession().getId());
     }
 
     @Override
     public void sessionCreated(HttpSessionEvent event) {
-        this.record(event, createdSessions);
+        record(event, createdSessions);
     }
 
     @Override
     public void sessionDestroyed(HttpSessionEvent event) {
-        this.record(event, destroyedSessions);
+        record(event, destroyedSessions);
     }
 }

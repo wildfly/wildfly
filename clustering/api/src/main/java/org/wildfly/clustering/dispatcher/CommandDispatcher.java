@@ -24,7 +24,7 @@ package org.wildfly.clustering.dispatcher;
 import java.util.Map;
 import java.util.concurrent.Future;
 
-import org.wildfly.clustering.Node;
+import org.wildfly.clustering.group.Node;
 
 /**
  * A dispatcher for remote invocation of commands.

@@ -37,10 +37,4 @@
 
     <name>WildFly: Clustering public API</name>
 
-    <dependencies>
-        <dependency>
-            <groupId>org.jboss.msc</groupId>
-            <artifactId>jboss-msc</artifactId>
-        </dependency>
-    </dependencies>
 </project>

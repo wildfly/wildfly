@@ -32,6 +32,12 @@ import org.jboss.marshalling.Unmarshaller;
 import org.jgroups.blocks.RpcDispatcher;
 import org.jgroups.util.Buffer;
 
+/**
+ * Marshalling strategy for the command response.
+ * @author Paul Ferraro
+ *
+ * @param <C> command execution context
+ */
 public class CommandResponseMarshaller implements RpcDispatcher.Marshaller {
     private final MarshallingContext context;
     private final int currentVersion;

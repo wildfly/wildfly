@@ -24,7 +24,6 @@ package org.jboss.as.test.clustering;
 
 import java.io.IOException;
 
-import javax.servlet.ServletException;
 import javax.servlet.annotation.WebServlet;
 import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
@@ -38,7 +37,8 @@ public class NodeInfoServlet extends HttpServlet {
     private static final long serialVersionUID = 1L;
     public static final String URL = "nodename";
 
-    protected void doGet(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
+    @Override
+    protected void doGet(HttpServletRequest req, HttpServletResponse resp) throws IOException {
         resp.getWriter().write(NodeNameGetter.getNodeName());
     }
 }

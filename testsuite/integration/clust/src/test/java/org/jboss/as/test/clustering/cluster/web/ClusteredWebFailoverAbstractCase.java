@@ -24,7 +24,6 @@ package org.jboss.as.test.clustering.cluster.web;
 import java.io.IOException;
 import java.net.URISyntaxException;
 import java.net.URL;
-import java.util.concurrent.ExecutionException;
 import javax.servlet.http.HttpServletResponse;
 
 import org.apache.http.HttpResponse;
@@ -71,7 +70,7 @@ public abstract class ClusteredWebFailoverAbstractCase extends ClusterAbstractTe
     public void testGracefulSimpleFailover(
             @ArquillianResource(SimpleServlet.class) @OperateOnDeployment(DEPLOYMENT_1) URL baseURL1,
             @ArquillianResource(SimpleServlet.class) @OperateOnDeployment(DEPLOYMENT_2) URL baseURL2)
-            throws IOException, InterruptedException, ExecutionException, URISyntaxException {
+            throws IOException, InterruptedException, URISyntaxException {
 
         DefaultHttpClient client = org.jboss.as.test.http.util.HttpClientUtils.relaxedCookieHttpClient();
 
@@ -79,8 +78,6 @@ public abstract class ClusteredWebFailoverAbstractCase extends ClusterAbstractTe
         String url2 = baseURL2.toString() + "simple";
 
         try {
-            this.establishView(client, baseURL1, NODE_1, NODE_2);
-
             HttpResponse response = client.execute(new HttpGet(url1));
             try {
                 log.info("Requested " + url1 + ", got " + response.getFirstHeader("value").getValue() + ".");
@@ -102,8 +99,6 @@ public abstract class ClusteredWebFailoverAbstractCase extends ClusterAbstractTe
 
             // Gracefully shutdown the 1st container.
             stop(CONTAINER_1);
-
-            this.establishView(client, baseURL2, NODE_2);
 
             // Now check on the 2nd server
 
@@ -131,8 +126,6 @@ public abstract class ClusteredWebFailoverAbstractCase extends ClusterAbstractTe
 
             start(CONTAINER_1);
 
-            this.establishView(client, baseURL2, NODE_1, NODE_2);
-
             // Lets wait for the cluster to update membership and tranfer state.
 
             response = client.execute(new HttpGet(url1));
@@ -156,8 +149,6 @@ public abstract class ClusteredWebFailoverAbstractCase extends ClusterAbstractTe
         } finally {
             HttpClientUtils.closeQuietly(client);
         }
-
-        // Assert.fail("Show me the logs please!");
     }
 
     /**
@@ -186,8 +177,6 @@ public abstract class ClusteredWebFailoverAbstractCase extends ClusterAbstractTe
         String url2 = baseURL2.toString() + "simple";
 
         try {
-            this.establishView(client, baseURL1, NODE_1, NODE_2);
-
             HttpResponse response = client.execute(new HttpGet(url1));
             try {
                 log.info("Requested " + url1 + ", got " + response.getFirstHeader("value").getValue() + ".");
@@ -209,8 +198,6 @@ public abstract class ClusteredWebFailoverAbstractCase extends ClusterAbstractTe
 
             // Gracefully undeploy from the 1st container.
             undeploy(DEPLOYMENT_1);
-
-            this.establishView(client, baseURL2, NODE_2);
 
             // Now check on the 2nd server
 
@@ -238,8 +225,6 @@ public abstract class ClusteredWebFailoverAbstractCase extends ClusterAbstractTe
             // Redeploy
             deploy(DEPLOYMENT_1);
 
-            this.establishView(client, baseURL2, NODE_1, NODE_2);
-
             response = client.execute(new HttpGet(url1));
             try {
                 log.info("Requested " + url1 + ", got " + response.getFirstHeader("value").getValue() + ".");
@@ -261,12 +246,5 @@ public abstract class ClusteredWebFailoverAbstractCase extends ClusterAbstractTe
         } finally {
             HttpClientUtils.closeQuietly(client);
         }
-
-        // Assert.fail("Show me the logs please!");
     }
-
-    private void establishView(HttpClient client, URL baseURL, String... members) throws URISyntaxException, IOException {
-        ClusterHttpClientUtil.establishView(client, baseURL, "web", members);
-    }
-
 }

@@ -57,7 +57,7 @@ public abstract class SessionPassivationTestCase extends ClusterAbstractTestCase
     @Test
     @InSequence(1)
     public void test(@ArquillianResource(SessionOperationServlet.class) @OperateOnDeployment(DEPLOYMENT_1) URL baseURL1)
-                             throws IOException, URISyntaxException, InterruptedException {
+                             throws IOException, URISyntaxException {
         DefaultHttpClient client1 = org.jboss.as.test.http.util.HttpClientUtils.relaxedCookieHttpClient();
         DefaultHttpClient client2 = org.jboss.as.test.http.util.HttpClientUtils.relaxedCookieHttpClient();
         String session1 = null;
@@ -175,10 +175,11 @@ public abstract class SessionPassivationTestCase extends ClusterAbstractTestCase
 
     private static String showHeaders(final org.apache.http.Header[] headers) {
         StringBuilder stringBuilder = new StringBuilder();
-        Formatter result = new Formatter(stringBuilder);
-        for (Header header : headers) {
-            result.format("{name=%s, value=%s}, ", header.getName(), header.getValue());
+        try (Formatter result = new Formatter(stringBuilder)) {
+            for (Header header : headers) {
+                result.format("{name=%s, value=%s}, ", header.getName(), header.getValue());
+            }
+            return result.toString();
         }
-        return result.toString();
     }
 }

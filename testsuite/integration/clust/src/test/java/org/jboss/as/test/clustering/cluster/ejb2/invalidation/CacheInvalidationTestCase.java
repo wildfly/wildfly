@@ -34,8 +34,6 @@ import org.jboss.as.test.clustering.EJBDirectory;
 import org.jboss.as.test.clustering.NodeInfoServlet;
 import org.jboss.as.test.clustering.NodeNameGetter;
 import org.jboss.as.test.clustering.RemoteEJBDirectory;
-import org.jboss.as.test.clustering.ViewChangeListener;
-import org.jboss.as.test.clustering.ViewChangeListenerBean;
 import org.jboss.as.test.clustering.cluster.ejb2.StatefulBean;
 import org.jboss.as.test.clustering.cluster.ejb2.StatefulBeanBase;
 import org.jboss.as.test.clustering.cluster.ejb2.StatefulRemote;
@@ -99,8 +97,7 @@ public class CacheInvalidationTestCase {
     public static Archive<?> createDeployment() {
         JavaArchive archive = ShrinkWrap.create(JavaArchive.class, ARCHIVE_NAME + ".jar");
         archive.addClasses(CacheInvalidationTestCase.class, StatefulBean.class, StatefulBeanBase.class, StatefulRemote.class, StatefulRemoteHome.class);
-        archive.addClasses(NodeNameGetter.class, NodeInfoServlet.class, ViewChangeListener.class, ViewChangeListenerBean.class);
-        archive.setManifest(new StringAsset("Manifest-Version: 1.0\nDependencies: org.jboss.msc, org.jboss.as.clustering.common, org.infinispan\n"));
+        archive.addClasses(NodeNameGetter.class, NodeInfoServlet.class);
         return archive;
     }
 
@@ -125,9 +122,6 @@ public class CacheInvalidationTestCase {
 
         previousSelector = EJBClientContextSelector.setup("cluster/ejb3/stateless/jboss-ejb-client.properties");
 
-        ViewChangeListener listener = directory.lookupStateless(ViewChangeListenerBean.class, ViewChangeListener.class);
-        this.establishView(listener, NODE_1, NODE_2);
-
         StatefulRemoteHome home = directory.lookupHome(StatefulBean.class, StatefulRemoteHome.class);
         StatefulRemote remote = home.create();
         for (int i = 0; i < 25; i++) {
@@ -135,18 +129,12 @@ public class CacheInvalidationTestCase {
         }
         controller.stop(CONTAINER_1);
 
-        this.establishView(listener, NODE_2);
-
         int x = remote.getNumber();
         controller.start(CONTAINER_1);
-
-        this.establishView(listener, NODE_1, NODE_2);
 
         int y = remote.getNumber();
         deployer.undeploy(DEPLOYMENT_2);
         controller.stop(CONTAINER_2);
-
-        this.establishView(listener, NODE_1);
 
         int z = remote.getNumber();
         deployer.undeploy(DEPLOYMENT_1);
@@ -155,9 +143,5 @@ public class CacheInvalidationTestCase {
         Assert.assertEquals(25, x);
         Assert.assertEquals(25, y);
         Assert.assertEquals(25, z);
-    }
-
-    private void establishView(ViewChangeListener listener, String... members) throws InterruptedException {
-        listener.establishView("ejb", members);
     }
 }

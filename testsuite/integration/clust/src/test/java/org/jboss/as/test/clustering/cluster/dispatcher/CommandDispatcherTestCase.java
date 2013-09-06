@@ -11,8 +11,6 @@ import org.jboss.arquillian.junit.Arquillian;
 import org.jboss.as.test.clustering.EJBClientContextSelector;
 import org.jboss.as.test.clustering.EJBDirectory;
 import org.jboss.as.test.clustering.RemoteEJBDirectory;
-import org.jboss.as.test.clustering.ViewChangeListener;
-import org.jboss.as.test.clustering.ViewChangeListenerBean;
 import org.jboss.as.test.clustering.cluster.ClusterAbstractTestCase;
 import org.jboss.as.test.clustering.cluster.dispatcher.bean.ClusterTopology;
 import org.jboss.as.test.clustering.cluster.dispatcher.bean.ClusterTopologyRetriever;
@@ -52,8 +50,7 @@ public class CommandDispatcherTestCase extends ClusterAbstractTestCase {
     private static Archive<?> createDeployment() {
         final JavaArchive ejbJar = ShrinkWrap.create(JavaArchive.class, MODULE_NAME + ".jar");
         ejbJar.addPackage(ClusterTopologyRetriever.class.getPackage());
-        ejbJar.addClasses(ViewChangeListener.class, ViewChangeListenerBean.class);
-        ejbJar.setManifest(new StringAsset("Manifest-Version: 1.0\nDependencies: org.wildfly.clustering.api, org.jboss.msc, org.jboss.as.clustering.common, org.infinispan\n"));
+        ejbJar.setManifest(new StringAsset("Manifest-Version: 1.0\nDependencies: org.wildfly.clustering.api\n"));
         log.info(ejbJar.toString(true));
         return ejbJar;
     }
@@ -71,7 +68,7 @@ public class CommandDispatcherTestCase extends ClusterAbstractTestCase {
     @Test
     public void test() throws Exception {
 
-        String cluster = "ejb";
+        String cluster = "server";
         String nodeNameFormat = "%s/%s";
         String nodeName1 = String.format(nodeNameFormat, NODE_1, cluster);
         String nodeName2 = String.format(nodeNameFormat, NODE_2, cluster);
@@ -79,18 +76,14 @@ public class CommandDispatcherTestCase extends ClusterAbstractTestCase {
         ContextSelector<EJBClientContext> selector = EJBClientContextSelector.setup(CLIENT_PROPERTIES);
 
         try {
-            ViewChangeListener listener = context.lookupStateless(ViewChangeListenerBean.class, ViewChangeListener.class);
-            listener.establishView(cluster, NODE_1, NODE_2);
             ClusterTopologyRetriever bean = context.lookupStateless(ClusterTopologyRetrieverBean.class, ClusterTopologyRetriever.class);
             ClusterTopology topology = bean.getClusterTopology();
             assertEquals(2, topology.getNodes().size());
-            assertTrue(topology.getNodes().contains(nodeName1));
-            assertTrue(topology.getNodes().contains(nodeName2));
+            assertTrue(topology.getNodes().toString(), topology.getNodes().contains(nodeName1));
+            assertTrue(topology.getNodes().toString(), topology.getNodes().contains(nodeName2));
             assertFalse(topology.getRemoteNodes().toString() + " should not contain " + topology.getLocalNode(), topology.getRemoteNodes().contains(topology.getLocalNode()));
 
             undeploy(DEPLOYMENT_2);
-
-            listener.establishView(cluster, NODE_1);
 
             topology = bean.getClusterTopology();
             assertEquals(1, topology.getNodes().size());
@@ -100,8 +93,6 @@ public class CommandDispatcherTestCase extends ClusterAbstractTestCase {
 
             deploy(DEPLOYMENT_2);
 
-            listener.establishView(cluster, NODE_1, NODE_2);
-
             topology = bean.getClusterTopology();
             assertEquals(2, topology.getNodes().size());
             assertTrue(topology.getNodes().contains(nodeName1));
@@ -110,8 +101,6 @@ public class CommandDispatcherTestCase extends ClusterAbstractTestCase {
 
             stop(CONTAINER_1);
 
-            listener.establishView(cluster, NODE_2);
-
             topology = bean.getClusterTopology();
             assertEquals(1, topology.getNodes().size());
             assertTrue(topology.getNodes().contains(nodeName2));
@@ -119,8 +108,6 @@ public class CommandDispatcherTestCase extends ClusterAbstractTestCase {
             assertTrue(topology.getRemoteNodes().toString(), topology.getRemoteNodes().isEmpty());
 
             start(CONTAINER_1);
-
-            listener.establishView(cluster, NODE_1, NODE_2);
 
             topology = bean.getClusterTopology();
             assertEquals(2, topology.getNodes().size());

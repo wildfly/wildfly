@@ -44,6 +44,7 @@ public class RemoteEJBDirectory extends AbstractEJBDirectory {
         this.module = module;
     }
 
+    @Override
     protected <T> String createJndiName(String beanName, Class<T> beanInterface, Type type) {
         return String.format("ejb:/%s/%s!%s%s", this.module, beanName, beanInterface.getName(), (type == Type.STATEFUL) ? "?stateful" : "");
     }

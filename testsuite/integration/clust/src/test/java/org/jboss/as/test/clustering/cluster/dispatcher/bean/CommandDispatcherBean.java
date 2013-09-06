@@ -11,25 +11,23 @@ import javax.ejb.Singleton;
 import javax.ejb.Startup;
 
 import org.jboss.msc.service.ServiceName;
-import org.wildfly.clustering.Node;
 import org.wildfly.clustering.dispatcher.Command;
 import org.wildfly.clustering.dispatcher.CommandDispatcher;
 import org.wildfly.clustering.dispatcher.CommandDispatcherFactory;
 import org.wildfly.clustering.dispatcher.CommandResponse;
+import org.wildfly.clustering.group.Node;
 
 @Singleton
 @Startup
 @Local(CommandDispatcher.class)
 public class CommandDispatcherBean implements CommandDispatcher<Node> {
-    private static final ServiceName SERVICE_NAME = ServiceName.JBOSS.append("test", "dispatcher");
-
     @EJB
     private CommandDispatcherFactory factory;
     private CommandDispatcher<Node> dispatcher;
 
     @PostConstruct
     public void init() {
-        this.dispatcher = this.factory.createCommandDispatcher(SERVICE_NAME, this.factory.getLocalNode(), null);
+        this.dispatcher = this.factory.createCommandDispatcher("CommandDispatcherTestCase", this.factory.getGroup().getLocalNode());
     }
 
     @PreDestroy

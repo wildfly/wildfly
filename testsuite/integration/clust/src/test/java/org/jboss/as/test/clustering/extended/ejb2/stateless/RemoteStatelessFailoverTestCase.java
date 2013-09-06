@@ -48,8 +48,6 @@ import org.jboss.as.test.clustering.EJBClientContextSelector;
 import org.jboss.as.test.clustering.EJBDirectory;
 import org.jboss.as.test.clustering.NodeNameGetter;
 import org.jboss.as.test.clustering.RemoteEJBDirectory;
-import org.jboss.as.test.clustering.ViewChangeListener;
-import org.jboss.as.test.clustering.ViewChangeListenerBean;
 import org.jboss.ejb.client.ContextSelector;
 import org.jboss.ejb.client.EJBClientContext;
 import org.jboss.logging.Logger;
@@ -154,8 +152,6 @@ public class RemoteStatelessFailoverTestCase {
         final JavaArchive jar = ShrinkWrap.create(JavaArchive.class, ARCHIVE_NAME + ".jar");
         jar.addClasses(StatelessBeanBase.class, StatelessBean.class, StatelessRemote.class, StatelessRemoteHome.class);
         jar.addClass(NodeNameGetter.class);
-        jar.addClasses(ViewChangeListener.class, ViewChangeListenerBean.class);
-        jar.setManifest(new StringAsset("Manifest-Version: 1.0\nDependencies: org.jboss.msc, org.jboss.as.clustering.common, org.infinispan\n"));
         log.info(jar.toString(true));
         return jar;
     }
@@ -166,8 +162,6 @@ public class RemoteStatelessFailoverTestCase {
         jar.addClass(NodeNameGetter.class);
         jar.addAsManifestResource(RemoteStatelessFailoverTestCase.class.getPackage(), "ejb-jar.xml", "ejb-jar.xml");
         jar.addAsManifestResource(RemoteStatelessFailoverTestCase.class.getPackage(), "jboss-ejb3.xml", "jboss-ejb3.xml");
-        jar.addClasses(ViewChangeListener.class, ViewChangeListenerBean.class);
-        jar.setManifest(new StringAsset("Manifest-Version: 1.0\nDependencies: org.jboss.msc, org.jboss.as.clustering.common, org.infinispan\n"));
         log.info(jar.toString(true));
         return jar;
     }
@@ -199,10 +193,6 @@ public class RemoteStatelessFailoverTestCase {
         final ContextSelector<EJBClientContext> selector = EJBClientContextSelector.setup(CLIENT_PROPERTIES);
 
         try {
-            ViewChangeListener listener = directory.lookupStateless(ViewChangeListenerBean.class, ViewChangeListener.class);
-
-            this.establishView(listener, NODES[0]);
-
             StatelessRemoteHome home = directory.lookupHome(StatelessBean.class, StatelessRemoteHome.class);
             StatelessRemote bean = home.create();
 
@@ -211,15 +201,11 @@ public class RemoteStatelessFailoverTestCase {
             this.start(CONTAINER_2);
             this.deploy(CONTAINER_2, deployment2);
 
-            this.establishView(listener, NODES);
-
             if (isStop) {
                 this.stop(CONTAINER_1);
             } else {
                 this.undeploy(CONTAINER_1, deployment1);
             }
-
-            this.establishView(listener, NODES[1]);
 
             assertEquals("Only " + NODES[1] + " is active. The bean had to be invoked on it but it wasn't.", NODES[1], bean.getNodeName());
         } finally {
@@ -295,7 +281,7 @@ public class RemoteStatelessFailoverTestCase {
      * Method calls the bean function getNodeName() {numCalls} times and checks whether all servers processed at least part of calls.
      * The necessary number of processed calls by each server is {minPercentage} of the number of all calls.
      */
-    private void validateBalancing(StatelessRemote bean, int numCalls, int expectedServers, double minPercentage) {
+    private static void validateBalancing(StatelessRemote bean, int numCalls, int expectedServers, double minPercentage) {
         Map<String, Integer> callCount = new HashMap<String, Integer>();
         int maxNumOfProcessedCalls = -1;
         int minNumOfProcessedCalls = Integer.MAX_VALUE;
@@ -359,9 +345,5 @@ public class RemoteStatelessFailoverTestCase {
             this.container.stop(container);
             started.put(container, false);
         }
-    }
-
-    private void establishView(ViewChangeListener listener, String... members) throws InterruptedException {
-        listener.establishView("ejb", members);
     }
 }

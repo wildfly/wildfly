@@ -29,6 +29,7 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+
 import javax.servlet.http.HttpServletResponse;
 
 import org.apache.commons.io.IOUtils;
@@ -41,6 +42,7 @@ import org.apache.http.client.methods.HttpPost;
 import org.apache.http.client.methods.HttpUriRequest;
 import org.apache.http.client.utils.HttpClientUtils;
 import org.apache.http.client.utils.URLEncodedUtils;
+import org.apache.http.entity.ContentType;
 import org.apache.http.entity.StringEntity;
 import org.apache.http.impl.client.DefaultHttpClient;
 import org.apache.http.message.BasicNameValuePair;
@@ -51,9 +53,6 @@ import org.jboss.arquillian.container.test.api.TargetsContainer;
 import org.jboss.arquillian.junit.Arquillian;
 import org.jboss.arquillian.test.api.ArquillianResource;
 import org.jboss.as.test.clustering.ClusterHttpClientUtil;
-import org.jboss.as.test.clustering.ViewChangeListener;
-import org.jboss.as.test.clustering.ViewChangeListenerBean;
-import org.jboss.as.test.clustering.ViewChangeListenerServlet;
 import org.jboss.as.test.clustering.cluster.ClusterAbstractTestCase;
 import org.jboss.as.test.clustering.cluster.web.ClusteredWebSimpleTestCase;
 import org.jboss.shrinkwrap.api.Archive;
@@ -89,12 +88,10 @@ public class JSFFailoverTestCase extends ClusterAbstractTestCase {
     private static Archive<?> createDeployment() {
         WebArchive war = ShrinkWrap.create(WebArchive.class, "numberguess-jsf.war");
         war.addClasses(Game.class, Generator.class, MaxNumber.class, Random.class);
-        war.addClasses(ViewChangeListenerServlet.class, ViewChangeListener.class, ViewChangeListenerBean.class);
         war.setWebXML(ClusteredWebSimpleTestCase.class.getPackage(), "web.xml");
         war.addAsWebResource(JSFFailoverTestCase.class.getPackage(), "home.xhtml", "home.xhtml");
         war.addAsWebInfResource(JSFFailoverTestCase.class.getPackage(), "faces-config.xml", "faces-config.xml");
         war.addAsWebInfResource(EmptyAsset.INSTANCE, "beans.xml");
-        war.setManifest(new StringAsset("Manifest-Version: 1.0\nDependencies: org.jboss.msc, org.jboss.as.clustering.common, org.infinispan\n"));
         return war;
     }
 
@@ -170,7 +167,7 @@ public class JSFFailoverTestCase extends ClusterAbstractTestCase {
         list.add(new BasicNameValuePair("numberGuess:guessButton", "Guess"));
         list.add(new BasicNameValuePair("numberGuess:inputGuess", guess));
 
-        post.setEntity(new StringEntity(URLEncodedUtils.format(list, "UTF-8"), "application/x-www-form-urlencoded", "UTF-8"));
+        post.setEntity(new StringEntity(URLEncodedUtils.format(list, "UTF-8"), ContentType.APPLICATION_FORM_URLENCODED));
         if (sessionId != null) {
             post.setHeader("Cookie", "JSESSIONID=" + sessionId);
         }
@@ -258,8 +255,6 @@ public class JSFFailoverTestCase extends ClusterAbstractTestCase {
             // Gracefully shutdown the 1st container.
             stop(CONTAINER_1);
 
-            this.establishView(client, baseURL2, NODE_2);
-
             // Now we do a JSF POST request with a cookie on to the second node, guessing 100, expecting to find a replicated state.
             response = client.execute(buildPostRequest(url2, state.sessionId, state.jsfViewState, "100"));
             try {
@@ -291,8 +286,6 @@ public class JSFFailoverTestCase extends ClusterAbstractTestCase {
             Assert.assertEquals("98", state.biggest);
 
             start(CONTAINER_1);
-
-            this.establishView(client, baseURL2, NODE_1, NODE_2);
 
             // And now we go back to the first node, guessing 2
             response = client.execute(buildPostRequest(url1, state.sessionId, state.jsfViewState, "2"));
@@ -390,8 +383,6 @@ public class JSFFailoverTestCase extends ClusterAbstractTestCase {
             // Gracefully undeploy from the 1st container.
             undeploy(DEPLOYMENT_1);
 
-            this.establishView(client, baseURL2, NODE_2);
-
             // Now we do a JSF POST request with a cookie on to the second node, guessing 100, expecting to find a replicated state.
             response = client.execute(buildPostRequest(url2, state.sessionId, state.jsfViewState, "100"));
             try {
@@ -424,8 +415,6 @@ public class JSFFailoverTestCase extends ClusterAbstractTestCase {
 
             // Redeploy
             deploy(DEPLOYMENT_1);
-
-            this.establishView(client, baseURL2, NODE_1, NODE_2);
 
             // And now we go back to the first node, guessing 2
             response = client.execute(buildPostRequest(url1, state.sessionId, state.jsfViewState, "2"));
@@ -471,9 +460,4 @@ public class JSFFailoverTestCase extends ClusterAbstractTestCase {
         String remainingGuesses;
         String jsfViewState;
     }
-
-    private void establishView(HttpClient client, URL baseURL, String... members) throws URISyntaxException, IOException {
-        ClusterHttpClientUtil.establishView(client, baseURL, "web", members);
-    }
-
 }

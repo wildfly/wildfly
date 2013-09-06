@@ -22,10 +22,10 @@
 
 package org.jboss.as.ejb3.remote.protocol.versionone;
 
-import org.jboss.as.clustering.registry.Registry;
 import org.jboss.as.ejb3.EjbMessages;
 import org.jboss.as.network.ClientMapping;
 import org.jboss.ejb.client.remoting.PackedInteger;
+import org.wildfly.clustering.registry.Registry;
 
 import java.io.DataOutput;
 import java.io.IOException;
@@ -70,11 +70,10 @@ class ClusterTopologyWriter {
         // write out each of the cluster's topology
         for (final Registry<String, List<ClientMapping>> registry : clientMappingsRegistries) {
             // write the cluster name
-            output.writeUTF(registry.getName());
+            output.writeUTF(registry.getGroup().getName());
             // write out the information of each cluster node
-            this.writeClusterNodes(output, registry.getName(), registry.getEntries());
+            writeClusterNodes(output, registry.getGroup().getName(), registry.getEntries());
         }
-
     }
 
     /**
@@ -98,7 +97,7 @@ class ClusterTopologyWriter {
         PackedInteger.writePackedInteger(output, registries.size());
         // write out the cluster name for each of the removed cluster
         for (final Registry<String, List<ClientMapping>> registry : registries) {
-            output.writeUTF(registry.getName());
+            output.writeUTF(registry.getGroup().getName());
         }
     }
 
@@ -117,7 +116,7 @@ class ClusterTopologyWriter {
         // write the cluster name
         output.writeUTF(clusterName);
         // write out the cluster node(s) information
-        this.writeClusterNodes(output, clusterName, clientMappings);
+        writeClusterNodes(output, clusterName, clientMappings);
     }
 
     void writeNodesRemoved(final DataOutput output, final String clusterName, final Set<String> removedNodes) throws IOException {
@@ -143,7 +142,7 @@ class ClusterTopologyWriter {
         }
     }
 
-    private void writeClusterNodes(final DataOutput output, final String clusterName, final Map<String, List<ClientMapping>> clientMappings) throws IOException {
+    private static void writeClusterNodes(final DataOutput output, final String clusterName, final Map<String, List<ClientMapping>> clientMappings) throws IOException {
         // write the member node count
         final int memberCount = clientMappings.size();
         PackedInteger.writePackedInteger(output, memberCount);

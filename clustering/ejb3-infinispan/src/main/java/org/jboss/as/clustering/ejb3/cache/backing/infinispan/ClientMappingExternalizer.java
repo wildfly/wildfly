@@ -50,9 +50,9 @@ public class ClientMappingExternalizer extends AbstractSimpleExternalizer<Client
     }
 
     @Override
-    public ClientMapping readObject(ObjectInput input) throws IOException, ClassNotFoundException {
+    public ClientMapping readObject(ObjectInput input) throws IOException {
         byte[] sourceAddress = new byte[input.readInt()];
-        input.read(sourceAddress);
+        input.readFully(sourceAddress);
         int sourcePort = input.readInt();
         String destAddress = input.readUTF();
         int destPort = input.readInt();
