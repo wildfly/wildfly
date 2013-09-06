@@ -49,13 +49,21 @@ fi
 export JBOSS_HOME
 
 # Setup the JVM
-if [ "x$JAVA" = "x" ]; then
-    if [ "x$JAVA_HOME" != "x" ]; then
-        JAVA="$JAVA_HOME/bin/java"
-    else
+if [ "x$JAVA_HOME" = x ]; then
+   fail_java_home () {
         echo "JAVA_HOME is not set. Unable to locate the jars needed to run jconsole."
         exit 2
-    fi
+   }
+
+   JCONSOLE_PATH=`which jconsole` || fail_java_home
+   which readlink || fail_java_home # make sure readlink is present
+   JCONSOLE_TEST=`readlink "$JCONSOLE_PATH"`
+   while [ x"$JCONSOLE_TEST" != x ]; do
+      JCONSOLE_PATH="$JCONSOLE_TEST"
+      JCONSOLE_TEST=`readlink "$JCONSOLE_PATH"`
+   done
+   JAVA_HOME=`dirname "$JCONSOLE_PATH"`
+   JAVA_HOME=`dirname "$JAVA_HOME"`
 fi
 
 if [ "x$JBOSS_MODULEPATH" = "x" ]; then
@@ -85,4 +93,4 @@ done
 
 echo CLASSPATH $CLASSPATH
 
-jconsole -J-Djava.class.path="$CLASSPATH"
+$JAVA_HOME/bin/jconsole -J-Djava.class.path="$CLASSPATH" "$@"
