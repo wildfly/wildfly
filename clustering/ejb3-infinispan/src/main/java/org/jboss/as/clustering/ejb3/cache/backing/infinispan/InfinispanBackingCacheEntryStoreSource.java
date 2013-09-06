@@ -41,6 +41,7 @@ import org.jboss.as.clustering.marshalling.MarshalledValue;
 import org.jboss.as.clustering.marshalling.MarshalledValueFactory;
 import org.jboss.as.clustering.marshalling.MarshallingContext;
 import org.jboss.as.clustering.marshalling.SimpleMarshalledValueFactory;
+import org.jboss.as.clustering.marshalling.SimpleMarshallingContextFactory;
 import org.jboss.as.ejb3.cache.Cacheable;
 import org.jboss.as.ejb3.cache.IdentifierFactory;
 import org.jboss.as.ejb3.cache.PassivationManager;
@@ -114,7 +115,7 @@ public class InfinispanBackingCacheEntryStoreSource<K extends Serializable, V ex
     @Override
     public <E extends SerializationGroup<K, V, G>> BackingCacheEntryStore<G, Cacheable<G>, E> createGroupIntegratedObjectStore(IdentifierFactory<G> identifierFactory, PassivationManager<G, E> passivationManager, StatefulTimeoutInfo timeout) {
         Cache<G, MarshalledValue<E, MarshallingContext>> cache = this.groupCache.getValue();
-        MarshallingContext context = new MarshallingContext(passivationManager);
+        MarshallingContext context = new SimpleMarshallingContextFactory().createMarshallingContext(passivationManager, passivationManager.getClassLoader());
         MarshalledValueFactory<MarshallingContext> valueFactory = new SimpleMarshalledValueFactory(context);
         Registry<String, ?> registry = this.registry.getOptionalValue();
         NodeFactory<Address> nodeFactory = this.nodeFactory.getOptionalValue();
@@ -136,7 +137,7 @@ public class InfinispanBackingCacheEntryStoreSource<K extends Serializable, V ex
         }
         groupCache.getCacheManager().defineConfiguration(beanName, builder.build());
         Cache<K, MarshalledValue<E, MarshallingContext>> cache = container.<K, MarshalledValue<E, MarshallingContext>>getCache(beanName);
-        MarshallingContext context = new MarshallingContext(passivationManager);
+        MarshallingContext context = new SimpleMarshallingContextFactory().createMarshallingContext(passivationManager, passivationManager.getClassLoader());
         MarshalledValueFactory<MarshallingContext> valueFactory = new SimpleMarshalledValueFactory(context);
         NodeFactory<Address> nodeFactory = this.nodeFactory.getOptionalValue();
         Registry<String, ?> registry = this.registry.getOptionalValue();

@@ -66,6 +66,11 @@ public class SerializationGroupContainer<K extends Serializable, V extends Cache
     }
 
     @Override
+    public ClassLoader getClassLoader() {
+        return this.passivationManager.getClassLoader();
+    }
+
+    @Override
     public int getCurrentMarshallingVersion() {
         return this.passivationManager.getCurrentMarshallingVersion();
     }

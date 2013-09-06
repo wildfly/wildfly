@@ -1,6 +1,6 @@
 /*
  * JBoss, Home of Professional Open Source.
- * Copyright 2011, Red Hat, Inc., and individual contributors
+ * Copyright 2013, Red Hat, Inc., and individual contributors
  * as indicated by the @author tags. See the copyright.txt file in the
  * distribution for a full listing of individual contributors.
  *
@@ -19,46 +19,23 @@
  * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
-
 package org.jboss.as.clustering.marshalling;
 
 import java.io.IOException;
 
 import org.jboss.marshalling.Marshaller;
-import org.jboss.marshalling.MarshallerFactory;
-import org.jboss.marshalling.Marshalling;
-import org.jboss.marshalling.MarshallingConfiguration;
 import org.jboss.marshalling.Unmarshaller;
 
 /**
+ * A marshalling context for use with a {@link MarshalledValue}.
  * @author Paul Ferraro
  */
-public class MarshallingContext {
-    private final MarshallerFactory factory;
-    private final VersionedMarshallingConfiguration configuration;
+public interface MarshallingContext {
+    ClassLoader getClassLoader();
 
-    public MarshallingContext(VersionedMarshallingConfiguration configuration) {
-        this(Marshalling.getMarshallerFactory("river", Marshalling.class.getClassLoader()), configuration);
-    }
+    int getCurrentVersion();
 
-    public MarshallingContext(MarshallerFactory factory, VersionedMarshallingConfiguration configuration) {
-        this.factory = factory;
-        this.configuration = configuration;
-    }
+    Unmarshaller createUnmarshaller(int version) throws IOException;
 
-    public int getCurrentVersion() {
-        return this.configuration.getCurrentMarshallingVersion();
-    }
-
-    public Unmarshaller createUnmarshaller(int version) throws IOException {
-        return this.factory.createUnmarshaller(this.getMarshallingConfiguration(version));
-    }
-
-    public Marshaller createMarshaller(int version) throws IOException {
-        return this.factory.createMarshaller(this.getMarshallingConfiguration(version));
-    }
-
-    private MarshallingConfiguration getMarshallingConfiguration(int version) {
-        return this.configuration.getMarshallingConfiguration(version);
-    }
+    Marshaller createMarshaller(int version) throws IOException;
 }

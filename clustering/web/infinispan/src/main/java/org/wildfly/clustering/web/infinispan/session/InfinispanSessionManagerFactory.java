@@ -31,6 +31,7 @@ import org.jboss.as.clustering.marshalling.MarshalledValue;
 import org.jboss.as.clustering.marshalling.MarshalledValueFactory;
 import org.jboss.as.clustering.marshalling.MarshallingContext;
 import org.jboss.as.clustering.marshalling.SimpleMarshalledValueFactory;
+import org.jboss.as.clustering.marshalling.SimpleMarshallingContextFactory;
 import org.jboss.metadata.web.jboss.JBossWebMetaData;
 import org.jboss.modules.Module;
 import org.jboss.msc.inject.Injector;
@@ -58,7 +59,7 @@ import org.wildfly.clustering.web.session.SessionManagerFactory;
  */
 @SuppressWarnings("rawtypes")
 public class InfinispanSessionManagerFactory extends AbstractService<SessionManagerFactory> implements SessionManagerFactory {
-    private final SessionAttributeMarshallingContext context;
+    private final Module module;
     private final JBossWebMetaData metaData;
     private final CacheInvoker invoker = new RetryingCacheInvoker(10, 100);
     private final Value<Cache> cache;
@@ -67,7 +68,7 @@ public class InfinispanSessionManagerFactory extends AbstractService<SessionMana
     private final InjectedValue<Registry> registry = new InjectedValue<>();
 
     public InfinispanSessionManagerFactory(Module module, JBossWebMetaData metaData, Value<Cache> cache, Value<KeyAffinityServiceFactory> affinityFactory) {
-        this.context = new SessionAttributeMarshallingContext(module);
+        this.module = module;
         this.cache = cache;
         this.affinityFactory = affinityFactory;
         this.metaData = metaData;
@@ -84,7 +85,7 @@ public class InfinispanSessionManagerFactory extends AbstractService<SessionMana
     }
 
     private <L> SessionFactory<?, L> getSessionFactory(SessionContext context, LocalContextFactory<L> localContextFactory) {
-        MarshallingContext marshallingContext = new MarshallingContext(this.context);
+        MarshallingContext marshallingContext = new SimpleMarshallingContextFactory().createMarshallingContext(new SessionAttributeMarshallingContext(this.module), this.module.getClassLoader());
         MarshalledValueFactory<MarshallingContext> factory = new SimpleMarshalledValueFactory(marshallingContext);
 
         switch (this.metaData.getReplicationConfig().getReplicationGranularity()) {

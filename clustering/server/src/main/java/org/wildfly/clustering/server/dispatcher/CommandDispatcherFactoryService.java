@@ -34,6 +34,7 @@ import java.util.concurrent.atomic.AtomicReference;
 import org.jboss.as.clustering.marshalling.DynamicClassTable;
 import org.jboss.as.clustering.marshalling.MarshallingConfigurationFactory;
 import org.jboss.as.clustering.marshalling.MarshallingContext;
+import org.jboss.as.clustering.marshalling.SimpleMarshallingContextFactory;
 import org.jboss.as.clustering.marshalling.VersionedMarshallingConfiguration;
 import org.jboss.marshalling.Marshaller;
 import org.jboss.marshalling.Marshalling;
@@ -71,12 +72,12 @@ public class CommandDispatcherFactoryService implements CommandDispatcherFactory
     private static final short SCOPE_ID = 222;
     private static final int CURRENT_VERSION = 1;
 
-    final MarshallingContext marshallingContext = new MarshallingContext(this);
     final Map<Object, AtomicReference<Object>> contexts = new ConcurrentHashMap<>();
 
     private final Map<Integer, MarshallingConfiguration> configurations = new HashMap<>();
     private final CommandDispatcherFactoryConfiguration config;
 
+    volatile MarshallingContext marshallingContext;
     volatile NodeFactory<Address> factory = null;
 
     private volatile Group group = null;
@@ -98,6 +99,7 @@ public class CommandDispatcherFactoryService implements CommandDispatcherFactory
             Module module = loader.loadModule(this.config.getModuleIdentifier());
             config.setClassTable(new DynamicClassTable(module.getClassLoader()));
             this.configurations.put(CURRENT_VERSION, config);
+            this.marshallingContext = new SimpleMarshallingContextFactory().createMarshallingContext(this, module.getClassLoader());
         } catch (ModuleLoadException e) {
             throw new StartException(e);
         }

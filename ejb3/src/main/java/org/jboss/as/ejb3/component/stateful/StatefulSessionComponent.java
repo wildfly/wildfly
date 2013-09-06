@@ -86,6 +86,7 @@ public class StatefulSessionComponent extends SessionBeanComponent implements St
     private final InterceptorFactory postActivate;
     private final Map<EJBBusinessMethod, AccessTimeoutDetails> methodAccessTimeouts;
     private final DefaultAccessTimeoutService defaultAccessTimeoutProvider;
+    private final ClassLoader loader;
     private final int currentMarshallingVersion;
     private final Map<Integer, MarshallingConfiguration> marshallingConfigurations;
 
@@ -119,6 +120,7 @@ public class StatefulSessionComponent extends SessionBeanComponent implements St
         this.methodAccessTimeouts = ejbComponentCreateService.getMethodApplicableAccessTimeouts();
         this.defaultAccessTimeoutProvider = ejbComponentCreateService.getDefaultAccessTimeoutService();
         this.ejb2XRemoveMethod = ejbComponentCreateService.getEjb2XRemoveMethod();
+        this.loader = ejbComponentCreateService.getClassLoader();
         this.currentMarshallingVersion = ejbComponentCreateService.getCurrentMarshallingVersion();
         this.marshallingConfigurations = ejbComponentCreateService.getMarshallingConfigurations();
         this.serialiableInterceptorContextKeys = ejbComponentCreateService.getSerializableInterceptorContextKeys();
@@ -158,6 +160,11 @@ public class StatefulSessionComponent extends SessionBeanComponent implements St
     @Override
     public void prePassivate(StatefulSessionComponentInstance instance) {
         instance.prePassivate();
+    }
+
+    @Override
+    public ClassLoader getClassLoader() {
+        return this.loader;
     }
 
     @Override

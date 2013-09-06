@@ -26,7 +26,11 @@ package org.jboss.as.clustering.marshalling;
  * @author Paul Ferraro
  */
 public class SimpleMarshalledValueFactory implements MarshalledValueFactory<MarshallingContext> {
-    final MarshallingContext context;
+    protected final MarshallingContext context;
+
+    public SimpleMarshalledValueFactory(MarshallingContextFactory factory, VersionedMarshallingConfiguration configuration, ClassLoader loader) {
+        this(factory.createMarshallingContext(configuration, loader));
+    }
 
     public SimpleMarshalledValueFactory(MarshallingContext context) {
         this.context = context;

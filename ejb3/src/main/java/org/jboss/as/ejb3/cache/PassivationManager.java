@@ -44,4 +44,6 @@ public interface PassivationManager<K, V extends Identifiable<K>> extends Versio
      *         assume it will be thrown.
      */
     void prePassivate(V obj);
+
+    ClassLoader getClassLoader();
 }

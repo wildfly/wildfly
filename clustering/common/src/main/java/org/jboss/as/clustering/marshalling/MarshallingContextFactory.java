@@ -21,23 +21,10 @@
  */
 package org.jboss.as.clustering.marshalling;
 
-import org.jboss.marshalling.MarshallingConfiguration;
-import org.jboss.marshalling.ModularClassResolver;
-import org.jboss.modules.ModuleLoader;
-
 /**
- * Boilerplate code for marshalling configuration creation.
+ * Factory for creating a marshalling context.
  * @author Paul Ferraro
  */
-public class MarshallingConfigurationFactory {
-
-    public static MarshallingConfiguration createMarshallingConfiguration(ModuleLoader loader) {
-        MarshallingConfiguration config = new MarshallingConfiguration();
-        config.setClassResolver(ModularClassResolver.getInstance(loader));
-        return config;
-    }
-
-    private MarshallingConfigurationFactory() {
-        // Hide constructor
-    }
+public interface MarshallingContextFactory {
+    MarshallingContext createMarshallingContext(VersionedMarshallingConfiguration configuration, ClassLoader loader);
 }
