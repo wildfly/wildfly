@@ -21,7 +21,6 @@
  */
 package org.jboss.as.cli.handlers.jca;
 
-import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
@@ -31,6 +30,9 @@ import org.jboss.as.cli.CommandContext;
 import org.jboss.as.cli.CommandFormatException;
 import org.jboss.as.cli.CommandLineException;
 import org.jboss.as.cli.Util;
+import org.jboss.as.cli.accesscontrol.AccessRequirement;
+import org.jboss.as.cli.accesscontrol.AccessRequirementBuilder;
+import org.jboss.as.cli.accesscontrol.HostServerOperationAccess;
 import org.jboss.as.cli.handlers.BaseOperationCommand;
 import org.jboss.as.cli.impl.ArgumentWithValue;
 import org.jboss.as.cli.impl.DefaultCompleter;
@@ -49,6 +51,8 @@ public class JDBCDriverInfoHandler extends BaseOperationCommand {
     private final ArgumentWithValue server;
     private final ArgumentWithValue name;
 
+    private HostServerOperationAccess hostServerPermission;
+
     public JDBCDriverInfoHandler(CommandContext ctx) {
         super(ctx, "jdbc-driver-info", true);
         addRequiredPath("/subsystem=datasources");
@@ -60,26 +64,7 @@ public class JDBCDriverInfoHandler extends BaseOperationCommand {
                 if(client == null) {
                     return Collections.emptyList();
                 }
-                final ModelNode req = new ModelNode();
-                req.get(Util.ADDRESS).setEmptyList();
-                req.get(Util.OPERATION).set(Util.READ_CHILDREN_NAMES);
-                req.get(Util.CHILD_TYPE).set(Util.HOST);
-                final ModelNode response;
-                try {
-                    response = client.execute(req);
-                } catch (IOException e) {
-                    return Collections.emptyList();
-                }
-                final ModelNode result = response.get(Util.RESULT);
-                if(!result.isDefined()) {
-                    return Collections.emptyList();
-                }
-                final List<ModelNode> list = result.asList();
-                final List<String> names = new ArrayList<String>(list.size());
-                for(ModelNode node : list) {
-                    names.add(node.asString());
-                }
-                return names;
+                return hostServerPermission.getAllowedHosts(ctx);
             }}), "--host") {
             @Override
             public boolean canAppearNext(CommandContext ctx) throws CommandFormatException {
@@ -87,6 +72,7 @@ public class JDBCDriverInfoHandler extends BaseOperationCommand {
             }
         };
 
+        final HostServerOperationAccess hostServerPermission = this.hostServerPermission;
         server = new ArgumentWithValue(this, new DefaultCompleter(new CandidatesProvider(){
             @Override
             public Collection<String> getAllCandidates(CommandContext ctx) {
@@ -94,26 +80,7 @@ public class JDBCDriverInfoHandler extends BaseOperationCommand {
                 if(client == null) {
                     return Collections.emptyList();
                 }
-                final ModelNode req = new ModelNode();
-                req.get(Util.ADDRESS).add(Util.HOST, host.getValue(ctx.getParsedCommandLine()));
-                req.get(Util.OPERATION).set(Util.READ_CHILDREN_NAMES);
-                req.get(Util.CHILD_TYPE).set(Util.SERVER);
-                final ModelNode response;
-                try {
-                    response = client.execute(req);
-                } catch (IOException e) {
-                    return Collections.emptyList();
-                }
-                final ModelNode result = response.get(Util.RESULT);
-                if(!result.isDefined()) {
-                    return Collections.emptyList();
-                }
-                final List<ModelNode> list = result.asList();
-                final List<String> names = new ArrayList<String>(list.size());
-                for(ModelNode node : list) {
-                    names.add(node.asString());
-                }
-                return names;
+                return hostServerPermission.getAllowedServers(ctx, host.getValue(ctx.getParsedCommandLine()));
             }}), "--server") {
             @Override
             public boolean canAppearNext(CommandContext ctx) throws CommandFormatException {
@@ -153,6 +120,15 @@ public class JDBCDriverInfoHandler extends BaseOperationCommand {
                 return super.canAppearNext(ctx);
             }
         };
+    }
+
+    protected AccessRequirement setupAccessRequirement(CommandContext ctx) {
+        hostServerPermission = new HostServerOperationAccess(ctx, Util.SUBSYSTEM + '=' + Util.DATASOURCES, Util.INSTALLED_DRIVERS_LIST);
+        return AccessRequirementBuilder.Factory.create(ctx)
+                .any()
+                .operation(Util.SUBSYSTEM + '=' + Util.DATASOURCES, Util.INSTALLED_DRIVERS_LIST)
+                .requirement(hostServerPermission)
+                .build();
     }
 
     @Override

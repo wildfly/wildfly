@@ -72,6 +72,9 @@ public class ReadOperationHandler extends BaseOperationCommand {
                         }
                     }
                     req.get(Util.OPERATION).set(Util.READ_OPERATION_NAMES);
+                    if(ctx.getConfig().isAccessControl()) {
+                        req.get(Util.ACCESS_CONTROL).set(true);
+                    }
                     try {
                         final ModelNode response = ctx.getModelControllerClient().execute(req);
                         return Util.getList(response);
@@ -95,7 +98,11 @@ public class ReadOperationHandler extends BaseOperationCommand {
         final String name = this.name.getValue(parsedCmd);
         if(name == null || name.isEmpty()) {
             final OperationRequestAddress address = getAddress(ctx);
-            return Util.buildRequest(ctx, address, Util.READ_OPERATION_NAMES);
+            final ModelNode request = Util.buildRequest(ctx, address, Util.READ_OPERATION_NAMES);
+            if(ctx.getConfig().isAccessControl()) {
+                request.get(Util.ACCESS_CONTROL).set(true);
+            }
+            return request;
         }
 
         final OperationRequestAddress address = getAddress(ctx);

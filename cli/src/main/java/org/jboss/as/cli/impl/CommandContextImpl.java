@@ -204,7 +204,7 @@ class CommandContextImpl implements CommandContext, ModelControllerClientFactory
     /** operation request address prefix */
     private final OperationRequestAddress prefix = new DefaultOperationRequestAddress();
     /** the prefix formatter */
-    private final NodePathFormatter prefixFormatter = new DefaultPrefixFormatter();
+    private final NodePathFormatter prefixFormatter = DefaultPrefixFormatter.INSTANCE;
     /** provider of operation request candidates for tab-completion */
     private final OperationCandidatesProvider operationCandidatesProvider;
     /** operation request handler */
@@ -1249,7 +1249,7 @@ class CommandContextImpl implements CommandContext, ModelControllerClientFactory
                 printLine("");
                 printLine("The connection to the controller has been closed as the result of the shutdown operation.");
                 printLine("(Although the command prompt will wrongly indicate connection until the next line is entered)");
-            }
+            } // else maybe still notify the listeners that the connection has been closed
         }
     }
 

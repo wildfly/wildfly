@@ -37,6 +37,8 @@ import org.jboss.as.cli.CommandFormatException;
 import org.jboss.as.cli.CommandLineCompleter;
 import org.jboss.as.cli.CommandLineException;
 import org.jboss.as.cli.Util;
+import org.jboss.as.cli.accesscontrol.AccessRequirementBuilder;
+import org.jboss.as.cli.accesscontrol.AccessRequirementBuilder.RequirementSetBuilder;
 import org.jboss.as.cli.impl.ArgumentWithValue;
 import org.jboss.as.cli.impl.DefaultCompleter;
 import org.jboss.as.cli.impl.DefaultCompleter.CandidatesProvider;
@@ -50,7 +52,7 @@ import org.jboss.dmr.ModelType;
 import org.jboss.dmr.Property;
 
 /**
- * A command that it is composed of a several operations
+ * A command that is composed of several operations
  * performed against the same resource.
  *
  * @author Alexey Loubyansky
@@ -123,7 +125,7 @@ public class ResourceCompositeOperationHandler extends BaseOperationCommand {
                     if(profile == null) {
                         return Collections.emptyList();
                     }
-                    address.toNode("profile", profileName);
+                    address.toNode(Util.PROFILE, profileName);
                 }
                 for(OperationRequestAddress.Node node : getRequiredAddress()) {
                     address.toNode(node.getType(), node.getName());
@@ -145,6 +147,17 @@ public class ResourceCompositeOperationHandler extends BaseOperationCommand {
         staticArgs.put(helpArg.getFullName(), helpArg);
         staticArgs.put(profile.getFullName(), profile);
         staticArgs.put(name.getFullName(), name);
+
+        final RequirementSetBuilder reqBuilder = AccessRequirementBuilder.Factory.create(ctx).any();
+        final RequirementSetBuilder domainReq = this.isDependsOnProfile() ? reqBuilder.domain().all() : null;
+        final RequirementSetBuilder standaloneReq = reqBuilder.standalone().all();
+        for(String op : ops) {
+            if(domainReq != null) {
+                domainReq.profileOperation(nodeType + "=?", op);
+            }
+            standaloneReq.operation(nodeType + "=?", op);
+        }
+        this.accessRequirement = reqBuilder.build();
     }
 
     public void addValueConverter(String propertyName, ArgumentValueConverter converter) {

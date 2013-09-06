@@ -31,6 +31,9 @@ import java.util.regex.Pattern;
 import org.jboss.as.cli.CommandContext;
 import org.jboss.as.cli.CommandFormatException;
 import org.jboss.as.cli.Util;
+import org.jboss.as.cli.accesscontrol.AccessRequirement;
+import org.jboss.as.cli.accesscontrol.AccessRequirementBuilder;
+import org.jboss.as.cli.accesscontrol.PerNodeOperationAccess;
 import org.jboss.as.cli.impl.ArgumentWithValue;
 import org.jboss.as.cli.impl.DefaultCompleter;
 import org.jboss.as.cli.impl.DefaultCompleter.CandidatesProvider;
@@ -63,6 +66,7 @@ public class DeploymentInfoHandler extends BaseOperationCommand {
 
     private List<String> addedServerGroups;
     private List<String> otherServerGroups;
+    private PerNodeOperationAccess sgChildrenResourcesPermission;
 
     public DeploymentInfoHandler(CommandContext ctx) {
         super(ctx, "deployment-info", true);
@@ -75,7 +79,7 @@ public class DeploymentInfoHandler extends BaseOperationCommand {
         serverGroup = new ArgumentWithValue(this, new DefaultCompleter(new CandidatesProvider(){
             @Override
             public Collection<String> getAllCandidates(CommandContext ctx) {
-                return Util.getServerGroups(ctx.getModelControllerClient());
+                return sgChildrenResourcesPermission.getAllowedOn(ctx);
             }}), "--server-group") {
             @Override
             public boolean canAppearNext(CommandContext ctx) throws CommandFormatException {
@@ -85,6 +89,33 @@ public class DeploymentInfoHandler extends BaseOperationCommand {
                 return super.canAppearNext(ctx);
             }
         };
+    }
+
+    protected AccessRequirement setupAccessRequirement(CommandContext ctx) {
+        sgChildrenResourcesPermission = new PerNodeOperationAccess(ctx, Util.SERVER_GROUP, null, Util.READ_CHILDREN_RESOURCES);
+        return AccessRequirementBuilder.Factory.create(ctx)
+                .any()
+                    .standalone()
+                        .any()
+                            .operation(Util.READ_CHILDREN_RESOURCES)
+                            .operation(Util.DEPLOYMENT + "=?", Util.READ_RESOURCE)
+                            .parent()
+                        .parent()
+
+                    .domain()
+                        .any()
+                            .all()
+                                .operation(Util.VALIDATE_ADDRESS)
+                                .operation(Util.DEPLOYMENT + "=?", Util.READ_RESOURCE)
+                                .serverGroupOperation(Util.DEPLOYMENT + "=?", Util.READ_RESOURCE)
+                                .parent()
+                            .all()
+                                .operation(Util.READ_CHILDREN_RESOURCES)
+                                .requirement(sgChildrenResourcesPermission)
+                                .parent()
+                            .parent()
+                        .parent()
+                .build();
     }
 
     /* (non-Javadoc)

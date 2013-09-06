@@ -28,4 +28,7 @@
 
     <!-- Whether to write info and error messages to the terminal output -->
     <silent>false</silent>
+
+    <!-- Whether to filter out commands and attributes based on user's permissions -->
+    <access-control>false</access-control>
 </jboss-cli>

@@ -38,6 +38,8 @@ import org.jboss.as.cli.CommandFormatException;
 import org.jboss.as.cli.CommandLineCompleter;
 import org.jboss.as.cli.CommandLineException;
 import org.jboss.as.cli.Util;
+import org.jboss.as.cli.accesscontrol.AccessRequirement;
+import org.jboss.as.cli.accesscontrol.AccessRequirementBuilder;
 import org.jboss.as.cli.impl.ArgumentWithValue;
 import org.jboss.as.cli.impl.ArgumentWithoutValue;
 import org.jboss.as.cli.impl.CommaSeparatedCompleter;
@@ -66,6 +68,10 @@ public class UndeployHandler extends DeploymentHandler {
     private final ArgumentWithoutValue keepContent;
     private final ArgumentWithValue script;
 
+    private AccessRequirement listPermission;
+    private AccessRequirement mainRemovePermission;
+    private AccessRequirement undeployPermission;
+
     public UndeployHandler(CommandContext ctx) {
         super(ctx, "undeploy", true);
 
@@ -75,6 +81,13 @@ public class UndeployHandler extends DeploymentHandler {
 
         l = new ArgumentWithoutValue(this, "-l");
         l.setExclusive(true);
+        l.setAccessRequirement(listPermission);
+
+        final AccessRequirement removeOrUndeployPermission = AccessRequirementBuilder.Factory.create(ctx)
+                .any()
+                .requirement(mainRemovePermission)
+                .requirement(undeployPermission)
+                .build();
 
         name = new ArgumentWithValue(this, new CommandLineCompleter() {
             @Override
@@ -121,6 +134,7 @@ public class UndeployHandler extends DeploymentHandler {
 
             }}, 0, "--name");
         name.addCantAppearAfter(l);
+        name.setAccessRequirement(removeOrUndeployPermission);
 
         allRelevantServerGroups = new ArgumentWithoutValue(this, "--all-relevant-server-groups") {
             @Override
@@ -132,6 +146,7 @@ public class UndeployHandler extends DeploymentHandler {
             }
         };
         allRelevantServerGroups.addRequiredPreceding(name);
+        allRelevantServerGroups.setAccessRequirement(undeployPermission);
 
         serverGroups = new ArgumentWithValue(this, new CommaSeparatedCompleter() {
             @Override
@@ -159,19 +174,50 @@ public class UndeployHandler extends DeploymentHandler {
             }
         };
         serverGroups.addRequiredPreceding(name);
+        serverGroups.setAccessRequirement(undeployPermission);
 
         serverGroups.addCantAppearAfter(allRelevantServerGroups);
         allRelevantServerGroups.addCantAppearAfter(serverGroups);
 
         keepContent = new ArgumentWithoutValue(this, "--keep-content");
         keepContent.addRequiredPreceding(name);
+        keepContent.setAccessRequirement(undeployPermission);
 
         final FilenameTabCompleter pathCompleter = Util.isWindows() ? new WindowsFilenameTabCompleter(ctx) : new DefaultFilenameTabCompleter(ctx);
         path = new FileSystemPathArgument(this, pathCompleter, "--path");
         path.addCantAppearAfter(l);
+        path.setAccessRequirement(removeOrUndeployPermission);
 
         script = new ArgumentWithValue(this, "--script");
         script.addRequiredPreceding(path);
+    }
+
+    @Override
+    protected AccessRequirement setupAccessRequirement(CommandContext ctx) {
+
+        listPermission = AccessRequirementBuilder.Factory.create(ctx)
+                .all()
+                .operation(Util.READ_CHILDREN_NAMES)
+                .operation("deployment=?", Util.READ_RESOURCE)
+                .build();
+
+        mainRemovePermission = AccessRequirementBuilder.Factory.create(ctx).any().operation("deployment=?", Util.REMOVE).build();
+
+        undeployPermission = AccessRequirementBuilder.Factory.create(ctx)
+                .any()
+                .operation("deployment=?", Util.UNDEPLOY)
+                .all()
+                .serverGroupOperation("deployment=?", Util.REMOVE)
+                .serverGroupOperation("deployment=?", Util.UNDEPLOY)
+                .parent()
+                .build();
+
+        return AccessRequirementBuilder.Factory.create(ctx)
+                .any()
+                .requirement(listPermission)
+                .requirement(mainRemovePermission)
+                .requirement(undeployPermission)
+                .build();
     }
 
     @Override

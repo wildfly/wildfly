@@ -22,6 +22,7 @@
 package org.jboss.as.cli.operation.impl;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
 
@@ -34,7 +35,7 @@ import org.jboss.as.cli.operation.OperationRequestAddress;
  */
 public class DefaultOperationRequestAddress implements OperationRequestAddress {
 
-    private final List<NodeImpl> nodes = new ArrayList<NodeImpl>();
+    private List<NodeImpl> nodes = Collections.emptyList();
 
     public DefaultOperationRequestAddress() {
     }
@@ -54,7 +55,7 @@ public class DefaultOperationRequestAddress implements OperationRequestAddress {
     @Override
     public void toNodeType(String nodeType) {
 
-        nodes.add(new NodeImpl(nodeType, null));
+        addNode(new NodeImpl(nodeType, null));
     }
 
     @Override
@@ -72,7 +73,20 @@ public class DefaultOperationRequestAddress implements OperationRequestAddress {
         if(endsOnType()) {
             throw new IllegalStateException("The prefix ends on a type. A node name must be specified before this method can be invoked.");
         }
-        nodes.add(new NodeImpl(nodeType, nodeName));
+        addNode(new NodeImpl(nodeType, nodeName));
+    }
+
+    @Override
+    public void appendPath(OperationRequestAddress path) {
+        if(path == null || path.isEmpty()) {
+            return;
+        }
+        if(nodes.isEmpty()) {
+            nodes = new ArrayList<NodeImpl>(path.length());
+        }
+        for(Node n : path) {
+            nodes.add(new NodeImpl(n.getType(), n.getType()));
+        }
     }
 
     @Override
@@ -81,8 +95,9 @@ public class DefaultOperationRequestAddress implements OperationRequestAddress {
         if(nodes.isEmpty()) {
             return null;
         }
-        String name = nodes.get(nodes.size() - 1).name;
-        nodes.get(nodes.size() - 1).name = null;
+        final int index = nodes.size() - 1;
+        String name = nodes.get(index).name;
+        nodes.get(index).name = null;
         return name;
     }
 
@@ -116,7 +131,16 @@ public class DefaultOperationRequestAddress implements OperationRequestAddress {
     }
 
     @Override
+    public int length() {
+        return nodes.size();
+    }
+
+    @Override
     public Iterator<Node> iterator() {
+
+        if(nodes.isEmpty()) {
+            return Collections.emptyListIterator();
+        }
 
         final Node[] array = nodes.toArray(new Node[nodes.size()]);
         return new Iterator<Node>() {
@@ -203,6 +227,13 @@ public class DefaultOperationRequestAddress implements OperationRequestAddress {
             }
         }
         return result;
+    }
+
+    private void addNode(NodeImpl node) {
+        if(nodes.isEmpty()) {
+            nodes = new ArrayList<NodeImpl>();
+        }
+        nodes.add(node);
     }
 
     private static final class NodeImpl implements Node {

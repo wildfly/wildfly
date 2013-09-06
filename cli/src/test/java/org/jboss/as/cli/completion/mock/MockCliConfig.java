@@ -90,4 +90,9 @@ public class MockCliConfig implements CliConfig {
     public boolean isSilent() {
         return false;
     }
+
+    @Override
+    public boolean isAccessControl() {
+        return false;
+    }
 }

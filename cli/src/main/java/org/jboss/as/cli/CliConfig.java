@@ -129,4 +129,13 @@ public interface CliConfig {
      * @return
      */
     boolean isSilent();
+
+    /**
+     * Whether the role based access control should be used
+     * to check the availability of the commands (for tab-completion).
+     *
+     * @return  true if command availability checks should include RBAC,
+     *          otherwise - false
+     */
+    boolean isAccessControl();
 }
