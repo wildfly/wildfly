@@ -49,7 +49,6 @@
         <module name="org.jboss.classfilewriter"/>
         <module name="org.jboss.weld.api" />
         <module name="org.jboss.weld.spi" />
-        <module name="org.slf4j" />
-        <module name="org.slf4j.ext" />
+        <module name="org.jboss.logging" />
     </dependencies>
 </module>
