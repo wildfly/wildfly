@@ -122,7 +122,9 @@ public class ManagedBeanAnnotationProcessor implements DeploymentUnitProcessor {
                     if(WildFlySecurityManager.isChecking()) {
                         configuration.addViewInterceptor(PrivilegedInterceptor.getFactory(), InterceptorOrder.View.PRIVILEGED_INTERCEPTOR);
                     }
-                    configuration.addViewInterceptor(AccessCheckingInterceptor.getFactory(), InterceptorOrder.View.CHECKING_INTERCEPTOR);
+                    if(WildFlySecurityManager.isChecking()) {
+                        configuration.addViewInterceptor(AccessCheckingInterceptor.getFactory(), InterceptorOrder.View.CHECKING_INTERCEPTOR);
+                    }
                     configuration.addViewInterceptor(new ImmediateInterceptorFactory(new ContextClassLoaderInterceptor(classLoader)), InterceptorOrder.View.TCCL_INTERCEPTOR);
                 }
             });

@@ -128,7 +128,9 @@ public abstract class AbstractIntegrationProcessorJAXWS implements DeploymentUni
                 if(WildFlySecurityManager.isChecking()) {
                     configuration.addViewInterceptor(PrivilegedInterceptor.getFactory(), InterceptorOrder.View.PRIVILEGED_INTERCEPTOR);
                 }
-                configuration.addViewInterceptor(AccessCheckingInterceptor.getFactory(), InterceptorOrder.View.CHECKING_INTERCEPTOR);
+                if(WildFlySecurityManager.isChecking()) {
+                    configuration.addViewInterceptor(AccessCheckingInterceptor.getFactory(), InterceptorOrder.View.CHECKING_INTERCEPTOR);
+                }
                 // add WS POJO component instance associating interceptor
                 configuration.addViewInterceptor(WSComponentInstanceAssociationInterceptor.FACTORY, InterceptorOrder.View.ASSOCIATING_INTERCEPTOR);
             }
