@@ -21,6 +21,7 @@
  */
 package org.wildfly.clustering.web.infinispan.session;
 
+import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
@@ -38,6 +39,7 @@ import javax.servlet.http.HttpSessionListener;
 import org.infinispan.Cache;
 import org.infinispan.affinity.KeyAffinityService;
 import org.infinispan.affinity.KeyGenerator;
+import org.infinispan.configuration.cache.Configuration;
 import org.infinispan.context.Flag;
 import org.infinispan.distribution.DistributionManager;
 import org.infinispan.distribution.ch.ConsistentHash;
@@ -87,6 +89,7 @@ public class InfinispanSessionManager<V, L> implements SessionManager<L>, KeyGen
     private final List<Scheduler<ImmutableSession>> schedulers = new CopyOnWriteArrayList<>();
     private final int maxActiveSessions;
     private volatile Time defaultMaxInactiveInterval = new Time(30, TimeUnit.MINUTES);
+    private final boolean alwaysSerialize;
 
     public InfinispanSessionManager(SessionContext context, SessionIdentifierFactory idFactory, Cache<String, V> cache, SessionFactory<V, L> factory, KeyAffinityServiceFactory affinityFactory, Registry<String, Void> registry, NodeFactory<Address> nodeFactory, JBossWebMetaData metaData) {
         this.context = context;
@@ -97,6 +100,11 @@ public class InfinispanSessionManager<V, L> implements SessionManager<L>, KeyGen
         this.registry = registry;
         this.nodeFactory = nodeFactory;
         this.maxActiveSessions = metaData.getMaxActiveSessions().intValue();
+        Configuration config = cache.getCacheConfiguration();
+        // If cache is clustered or configured with a write-through cache store
+        // then we need to trigger any HttpSessionActivationListeners per request
+        // See SRV.7.7.2 Distributed Environments
+        this.alwaysSerialize = config.clustering().cacheMode().isClustered() || (config.persistence().usingStores() && !config.persistence().passivation());
     }
 
     @Override
@@ -213,7 +221,10 @@ public class InfinispanSessionManager<V, L> implements SessionManager<L>, KeyGen
         for (Scheduler<ImmutableSession> scheduler: this.schedulers) {
             scheduler.cancel(session);
         }
-        return new SchedulableSession<>(session, this.schedulers);
+        if (this.alwaysSerialize) {
+            triggerPostActivationEvents(session);
+        }
+        return new SchedulableSession<>(session, this.schedulers, this.alwaysSerialize);
     }
 
     @Override
@@ -221,7 +232,7 @@ public class InfinispanSessionManager<V, L> implements SessionManager<L>, KeyGen
         Session<L> session = this.factory.createSession(id, this.factory.createValue(id));
         final Time time = this.defaultMaxInactiveInterval;
         session.getMetaData().setMaxInactiveInterval(time.getValue(), time.getUnit());
-        return new SchedulableSession<>(session, this.schedulers);
+        return new SchedulableSession<>(session, this.schedulers, this.alwaysSerialize);
     }
 
     @Override
@@ -254,41 +265,21 @@ public class InfinispanSessionManager<V, L> implements SessionManager<L>, KeyGen
 
     @CacheEntryActivated
     public void activated(CacheEntryActivatedEvent<String, ?> event) {
-        if (!event.isPre()) {
+        if (!event.isPre() && !this.alwaysSerialize) {
             String id = event.getKey();
             InfinispanWebLogger.ROOT_LOGGER.tracef("Session %s was activated", id);
             ImmutableSession session = this.factory.createImmutableSession(id, this.factory.findValue(id));
-            ImmutableSessionAttributes attributes = session.getAttributes();
-
-            HttpSessionEvent sessionEvent = new HttpSessionEvent(new ImmutableHttpSessionAdapter(session));
-            for (String attribute: attributes.getAttributeNames()) {
-                Object value = attributes.getAttribute(attribute);
-                if (value instanceof HttpSessionActivationListener) {
-                    HttpSessionActivationListener listener = (HttpSessionActivationListener) value;
-                    listener.sessionDidActivate(sessionEvent);
-                }
-            }
+            triggerPostActivationEvents(session);
         }
     }
 
     @CacheEntryPassivated
     public void passivated(CacheEntryPassivatedEvent<String, ?> event) {
-        if (event.isPre()) {
+        if (event.isPre() && !this.alwaysSerialize) {
             String id = event.getKey();
-            if (event.isOriginLocal()) {
-                InfinispanWebLogger.ROOT_LOGGER.tracef("Session %s will be passivated", id);
-                ImmutableSession session = this.factory.createSession(id, this.factory.findValue(id));
-                ImmutableSessionAttributes attributes = session.getAttributes();
-
-                HttpSessionEvent sessionEvent = new HttpSessionEvent(new ImmutableHttpSessionAdapter(session));
-                for (String attribute: attributes.getAttributeNames()) {
-                    Object value = attributes.getAttribute(attribute);
-                    if (value instanceof HttpSessionActivationListener) {
-                        HttpSessionActivationListener listener = (HttpSessionActivationListener) value;
-                        listener.sessionWillPassivate(sessionEvent);
-                    }
-                }
-            }
+            InfinispanWebLogger.ROOT_LOGGER.tracef("Session %s will be passivated", id);
+            ImmutableSession session = this.factory.createSession(id, this.factory.findValue(id));
+            triggerPrePassivationEvents(session);
         }
     }
 
@@ -296,23 +287,21 @@ public class InfinispanSessionManager<V, L> implements SessionManager<L>, KeyGen
     public void removed(CacheEntryRemovedEvent<String, ?> event) {
         if (event.isPre() && event.isOriginLocal()) {
             String id = event.getKey();
-            if (event.isOriginLocal()) {
-                InfinispanWebLogger.ROOT_LOGGER.tracef("Session %s will be removed", id);
-                ImmutableSession session = this.factory.createImmutableSession(id, this.factory.findValue(id));
-                ImmutableSessionAttributes attributes = session.getAttributes();
+            InfinispanWebLogger.ROOT_LOGGER.tracef("Session %s will be removed", id);
+            ImmutableSession session = this.factory.createImmutableSession(id, this.factory.findValue(id));
+            ImmutableSessionAttributes attributes = session.getAttributes();
 
-                HttpSession httpSession = new ImmutableHttpSessionAdapter(session);
-                HttpSessionEvent sessionEvent = new HttpSessionEvent(httpSession);
-                for (HttpSessionListener listener: this.context.getSessionListeners()) {
-                    listener.sessionDestroyed(sessionEvent);
-                }
+            HttpSession httpSession = new ImmutableHttpSessionAdapter(session);
+            HttpSessionEvent sessionEvent = new HttpSessionEvent(httpSession);
+            for (HttpSessionListener listener: this.context.getSessionListeners()) {
+                listener.sessionDestroyed(sessionEvent);
+            }
 
-                for (String attribute: attributes.getAttributeNames()) {
-                    Object value = attributes.getAttribute(attribute);
-                    if (value instanceof HttpSessionBindingListener) {
-                        HttpSessionBindingListener listener = (HttpSessionBindingListener) value;
-                        listener.valueUnbound(new HttpSessionBindingEvent(httpSession, attribute, value));
-                    }
+            for (String attribute: attributes.getAttributeNames()) {
+                Object value = attributes.getAttribute(attribute);
+                if (value instanceof HttpSessionBindingListener) {
+                    HttpSessionBindingListener listener = (HttpSessionBindingListener) value;
+                    listener.valueUnbound(new HttpSessionBindingEvent(httpSession, attribute, value));
                 }
             }
         }
@@ -367,14 +356,49 @@ public class InfinispanSessionManager<V, L> implements SessionManager<L>, KeyGen
         }
     }
 
+    static void triggerPrePassivationEvents(ImmutableSession session) {
+        List<HttpSessionActivationListener> listeners = findListeners(session);
+        if (!listeners.isEmpty()) {
+            HttpSessionEvent event = new HttpSessionEvent(new ImmutableHttpSessionAdapter(session));
+            for (HttpSessionActivationListener listener: listeners) {
+                listener.sessionWillPassivate(event);
+            }
+        }
+    }
+
+    static void triggerPostActivationEvents(ImmutableSession session) {
+        List<HttpSessionActivationListener> listeners = findListeners(session);
+        if (!listeners.isEmpty()) {
+            HttpSessionEvent event = new HttpSessionEvent(new ImmutableHttpSessionAdapter(session));
+            for (HttpSessionActivationListener listener: listeners) {
+                listener.sessionDidActivate(event);
+            }
+        }
+    }
+
+    private static List<HttpSessionActivationListener> findListeners(ImmutableSession session) {
+        ImmutableSessionAttributes attributes = session.getAttributes();
+        Set<String> names = attributes.getAttributeNames();
+        List<HttpSessionActivationListener> listeners = new ArrayList<>(names.size());
+        for (String name: names) {
+            Object attribute = attributes.getAttribute(name);
+            if (attribute instanceof HttpSessionActivationListener) {
+                listeners.add((HttpSessionActivationListener) attribute);
+            }
+        }
+        return listeners;
+    }
+
     // Session decorator that performs scheduling on close().
     private static class SchedulableSession<L> implements Session<L> {
         private final Session<L> session;
         private final List<Scheduler<ImmutableSession>> schedulers;
+        private final boolean alwaysSerialize;
 
-        SchedulableSession(Session<L> session, List<Scheduler<ImmutableSession>> schedulers) {
+        SchedulableSession(Session<L> session, List<Scheduler<ImmutableSession>> schedulers, boolean alwaysSerialize) {
             this.session = session;
             this.schedulers = schedulers;
+            this.alwaysSerialize = alwaysSerialize;
         }
 
         @Override
@@ -409,6 +433,9 @@ public class InfinispanSessionManager<V, L> implements SessionManager<L>, KeyGen
 
         @Override
         public void close() {
+            if (this.alwaysSerialize) {
+                triggerPrePassivationEvents(this.session);
+            }
             this.session.close();
             for (Scheduler<ImmutableSession> scheduler: this.schedulers) {
                 scheduler.schedule(this.session);

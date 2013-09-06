@@ -39,5 +39,6 @@
         <module name="org.jboss.marshalling"/>
         <module name="org.jboss.msc"/>
         <module name="org.jboss.threads"/>
+        <module name="org.wildfly.security.manager"/>
     </dependencies>
 </module>

@@ -27,6 +27,11 @@ package org.jboss.as.clustering.marshalling;
  * @author Paul Ferraro
  */
 public class HashableMarshalledValueFactory extends SimpleMarshalledValueFactory {
+
+    public HashableMarshalledValueFactory(MarshallingContextFactory factory, VersionedMarshallingConfiguration configuration, ClassLoader loader) {
+        super(factory, configuration, loader);
+    }
+
     public HashableMarshalledValueFactory(MarshallingContext context) {
         super(context);
     }

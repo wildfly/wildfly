@@ -1,6 +1,6 @@
 /*
  * JBoss, Home of Professional Open Source.
- * Copyright 2011, Red Hat, Inc., and individual contributors
+ * Copyright 2013, Red Hat, Inc., and individual contributors
  * as indicated by the @author tags. See the copyright.txt file in the
  * distribution for a full listing of individual contributors.
  *
@@ -35,9 +35,11 @@ import org.jboss.marshalling.Marshalling;
 import org.jboss.marshalling.SimpleDataInput;
 import org.jboss.marshalling.SimpleDataOutput;
 import org.jboss.marshalling.Unmarshaller;
+import org.wildfly.security.manager.WildFlySecurityManager;
 
 /**
- * A non-hashable marshalled value, that is lazily serialized, but only deserialized on demand.
+ * A marshalled value that is lazily serialized and deserialized on demand.
+ * This implementation does not preserve the hash code of its object in serialized form.
  * @author Paul Ferraro
  */
 public class SimpleMarshalledValue<T> implements MarshalledValue<T, MarshallingContext>, Externalizable {
@@ -56,6 +58,7 @@ public class SimpleMarshalledValue<T> implements MarshalledValue<T, MarshallingC
         // Required for externalization
     }
 
+    // Used for testing purposes only
     T peek() {
         return this.object;
     }
@@ -66,6 +69,7 @@ public class SimpleMarshalledValue<T> implements MarshalledValue<T, MarshallingC
         if (this.object == null) return null;
         int version = this.context.getCurrentVersion();
         ByteArrayOutputStream output = new ByteArrayOutputStream();
+        ClassLoader loader = setThreadContextClassLoader(this.context.getClassLoader());
         try (SimpleDataOutput data = new SimpleDataOutput(Marshalling.createByteOutput(output))) {
             data.writeInt(version);
             try (Marshaller marshaller = this.context.createMarshaller(version)) {
@@ -74,6 +78,8 @@ public class SimpleMarshalledValue<T> implements MarshalledValue<T, MarshallingC
                 marshaller.finish();
                 return output.toByteArray();
             }
+        } finally {
+            setThreadContextClassLoader(loader);
         }
     }
 
@@ -87,6 +93,7 @@ public class SimpleMarshalledValue<T> implements MarshalledValue<T, MarshallingC
             this.context = context;
             if (this.bytes != null) {
                 ByteArrayInputStream input = new ByteArrayInputStream(this.bytes);
+                ClassLoader loader = setThreadContextClassLoader(this.context.getClassLoader());
                 try (SimpleDataInput data = new SimpleDataInput(Marshalling.createByteInput(input))) {
                     int version = data.readInt();
                     try (Unmarshaller unmarshaller = context.createUnmarshaller(version)) {
@@ -95,6 +102,8 @@ public class SimpleMarshalledValue<T> implements MarshalledValue<T, MarshallingC
                         unmarshaller.finish();
                         this.bytes = null; // Free up memory
                     }
+                } finally {
+                    setThreadContextClassLoader(loader);
                 }
             }
         }
@@ -153,8 +162,12 @@ public class SimpleMarshalledValue<T> implements MarshalledValue<T, MarshallingC
         byte[] bytes = null;
         if (size > 0) {
             bytes = new byte[size];
-            in.read(bytes);
+            in.readFully(bytes);
         }
         this.bytes = bytes;
+    }
+
+    private static ClassLoader setThreadContextClassLoader(ClassLoader loader) {
+        return (loader != null) ? WildFlySecurityManager.setCurrentContextClassLoaderPrivileged(loader) : null;
     }
 }

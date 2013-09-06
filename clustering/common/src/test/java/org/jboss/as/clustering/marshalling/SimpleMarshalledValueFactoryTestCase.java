@@ -60,7 +60,7 @@ public class SimpleMarshalledValueFactoryTestCase {
                 return new MarshallingConfiguration();
             }
         };
-        this.context = new MarshallingContext(Marshalling.getMarshallerFactory("river", Marshalling.class.getClassLoader()), configuration);
+        this.context = new SimpleMarshallingContext(Marshalling.getMarshallerFactory("river", Marshalling.class.getClassLoader()), configuration, Thread.currentThread().getContextClassLoader());
         this.factory = this.createFactory(this.context);
     }
 
@@ -152,7 +152,7 @@ public class SimpleMarshalledValueFactoryTestCase {
         return (SimpleMarshalledValue<V>) unmarshall(marshall(mv));
     }
 
-    private byte[] marshall(Object mv) throws IOException {
+    private static byte[] marshall(Object mv) throws IOException {
         ByteArrayOutputStream baos = new ByteArrayOutputStream();
         ObjectOutputStream oos = new ObjectOutputStream(baos);
         oos.writeObject(mv);
@@ -160,7 +160,7 @@ public class SimpleMarshalledValueFactoryTestCase {
         return baos.toByteArray();
     }
 
-    private Object unmarshall(byte[] bytes) throws IOException, ClassNotFoundException {
+    private static Object unmarshall(byte[] bytes) throws IOException, ClassNotFoundException {
         ByteArrayInputStream bais = new ByteArrayInputStream(bytes);
         ObjectInputStream ois = new ObjectInputStream(bais);
         try {
