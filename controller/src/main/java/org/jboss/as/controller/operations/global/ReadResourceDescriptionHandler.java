@@ -396,7 +396,7 @@ public class ReadResourceDescriptionHandler implements OperationStepHandler {
                 ModelNode attributes = new ModelNode();
                 attributes.setEmptyObject();
 
-                if (result.get(READ.toString()).asBoolean()) {
+                if (result.get(READ).asBoolean()) {
                     for (Property attrProp : nodeDescription.require(ATTRIBUTES).asPropertyList()) {
                         ModelNode attributeResult = new ModelNode();
                         Storage storage = Storage.valueOf(attrProp.getValue().get(STORAGE).asString().toUpperCase());
@@ -482,10 +482,12 @@ public class ReadResourceDescriptionHandler implements OperationStepHandler {
          * @param childResources  read-resource-description response from child resources, where the key is the PathAddress
          *                        relative to the address of the operation this handler is handling and the
          *                        value is the full read-resource response. Will not be {@code null}
-         * @param includeAttrs whether or not the description should include the attributes or not
+         * @param accessControlContext context for tracking access control data
+         * @param accessControl   type of access control output that is needed
          */
         private ReadResourceDescriptionAssemblyHandler(final ModelNode nodeDescription, final Map<String, ModelNode> operations,
-                final Map<PathElement, ModelNode> childResources, final ReadResourceDescriptionAccessControlContext accessControlContext, final AccessControl accessControl) {
+                final Map<PathElement, ModelNode> childResources, final ReadResourceDescriptionAccessControlContext accessControlContext,
+                final AccessControl accessControl) {
             this.nodeDescription = nodeDescription;
             this.operations = operations;
             this.childResources = childResources;

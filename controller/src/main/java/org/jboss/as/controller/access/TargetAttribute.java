@@ -40,15 +40,21 @@ public final class TargetAttribute {
 
     private static final List<AccessConstraintDefinition> NO_CONSTRAINTS = Collections.emptyList();
 
+    private final String attributeName;
     private final TargetResource targetResource;
     private final AttributeAccess attributeAccess;
 
     private final ModelNode currentValue;
 
-    public TargetAttribute(AttributeAccess attributeAccess, ModelNode currentValue, TargetResource targetResource) {
+    public TargetAttribute(String attributeName, AttributeAccess attributeAccess, ModelNode currentValue, TargetResource targetResource) {
+        this.attributeName = attributeName;
         this.targetResource = targetResource;
         this.currentValue = currentValue;
         this.attributeAccess = attributeAccess;
+    }
+
+    public String getAttributeName() {
+        return attributeName;
     }
 
     public TargetResource getTargetResource() {

@@ -50,9 +50,10 @@ class OptionAttributeDefinition extends SimpleAttributeDefinition {
     private OptionAttributeDefinition(String name, String xmlName, ModelNode defaultValue, ModelType type, boolean allowNull, boolean allowExpression,
                                       MeasurementUnit measurementUnit, ParameterCorrector corrector, ParameterValidator validator, boolean validateNull,
                                       String[] alternatives, String[] requires, AttributeMarshaller attributeMarshaller, boolean resourceOnly,
-                                      DeprecationData deprecated, Option<?> option, AccessConstraintDefinition[] accessConstraints, AttributeAccess.Flag... flags) {
+                                      DeprecationData deprecated, Option<?> option, AccessConstraintDefinition[] accessConstraints,
+                                      Boolean nullSignificant, AttributeAccess.Flag... flags) {
         super(name, xmlName, defaultValue, type, allowNull, allowExpression, measurementUnit, corrector, validator, validateNull, alternatives, requires,
-                attributeMarshaller, resourceOnly, deprecated, accessConstraints, flags);
+                attributeMarshaller, resourceOnly, deprecated, accessConstraints, nullSignificant, flags);
         this.option = option;
     }
 
@@ -72,7 +73,8 @@ class OptionAttributeDefinition extends SimpleAttributeDefinition {
         @Override
         public OptionAttributeDefinition build() {
             return new OptionAttributeDefinition(name, xmlName, defaultValue, type, allowNull, allowExpression, measurementUnit,
-                    corrector, validator, validateNull, alternatives, requires, attributeMarshaller, resourceOnly, deprecated, option, accessConstraints, flags);
+                    corrector, validator, validateNull, alternatives, requires, attributeMarshaller, resourceOnly,
+                    deprecated, option, accessConstraints, nullSignficant, flags);
         }
 
         private static ModelType getType(Option<?> option) {

@@ -184,7 +184,7 @@ public class DefaultPermissionFactoryTestCase {
 
         Action action = new Action(null, null, EnumSet.of(Action.ActionEffect.ADDRESS));
         TargetResource targetResource = TargetResource.forStandalone(PathAddress.EMPTY_ADDRESS, ROOT_RR, null);
-        TargetAttribute targetAttribute = new TargetAttribute(null, new ModelNode(), targetResource);
+        TargetAttribute targetAttribute = new TargetAttribute("test", null, new ModelNode(), targetResource);
 
         PermissionCollection userPermissions = permissionFactory.getUserPermissions(caller, environment, action, targetAttribute);
         PermissionCollection requiredPermissions = permissionFactory.getRequiredPermissions(action, targetAttribute);

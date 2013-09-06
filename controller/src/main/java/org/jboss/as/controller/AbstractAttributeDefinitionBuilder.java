@@ -59,6 +59,7 @@ public abstract class AbstractAttributeDefinitionBuilder<BUILDER extends Abstrac
     protected boolean resourceOnly = false;
     protected DeprecationData deprecated = null;
     protected AccessConstraintDefinition[] accessConstraints;
+    protected Boolean nullSignficant;
 
     public AbstractAttributeDefinitionBuilder(final String attributeName, final ModelType type) {
         this(attributeName, type, false);
@@ -265,6 +266,11 @@ public abstract class AbstractAttributeDefinitionBuilder<BUILDER extends Abstrac
             accessConstraints = Arrays.copyOf(accessConstraints, accessConstraints.length + 1);
             accessConstraints[accessConstraints.length - 1] = accessConstraint;
         }
+        return (BUILDER) this;
+    }
+
+    public BUILDER setNullSignficant(boolean nullSignficant) {
+        this.nullSignficant = nullSignficant;
         return (BUILDER) this;
     }
 }

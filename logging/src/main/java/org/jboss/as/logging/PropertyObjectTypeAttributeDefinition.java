@@ -52,8 +52,10 @@ public class PropertyObjectTypeAttributeDefinition extends ObjectTypeAttributeDe
                                                   final AttributeDefinition[] valueTypes, final boolean allowNull, final ModelNodeResolver<String> resolver,
                                                   final ParameterValidator validator, final ParameterCorrector corrector, final String[] alternatives, final String[] requires,
                                                   final AttributeMarshaller attributeMarshaller, final boolean resourceOnly, final DeprecationData deprecationData,
-                                                  final AccessConstraintDefinition[] accessConstraints, final AttributeAccess.Flag... flags) {
-        super(name, xmlName, suffix, valueTypes, allowNull, validator, corrector, alternatives, requires, attributeMarshaller, resourceOnly, deprecationData, accessConstraints, flags);
+                                                  final AccessConstraintDefinition[] accessConstraints,
+                                                  final Boolean nullSignificant, final AttributeAccess.Flag... flags) {
+        super(name, xmlName, suffix, valueTypes, allowNull, validator, corrector, alternatives, requires, attributeMarshaller,
+                resourceOnly, deprecationData, accessConstraints, nullSignificant, flags);
         this.propertyName = propertyName;
         this.resolver = resolver;
     }
@@ -114,7 +116,7 @@ public class PropertyObjectTypeAttributeDefinition extends ObjectTypeAttributeDe
                 validator = new ObjectTypeValidator(allowNull, valueTypes);
             }
             return new PropertyObjectTypeAttributeDefinition(name, xmlName, propertyName, suffix, valueTypes, allowNull, resolver, validator, corrector, alternatives, requires,
-                        attributeMarshaller, resourceOnly, deprecated, accessConstraints, flags);
+                        attributeMarshaller, resourceOnly, deprecated, accessConstraints, nullSignficant, flags);
         }
 
         public Builder setSuffix(final String suffix) {

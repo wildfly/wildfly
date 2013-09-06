@@ -67,10 +67,10 @@ public abstract class AbstractRbacTestCase {
     protected static final String MASTER = "master";
     protected static final String SLAVE = "slave";
     protected static final String SERVER_GROUP_A = "server-group-a";
+    protected static final String SERVER_GROUP_B = "server-group-b";
     protected static final String MASTER_A = "master-a";
     protected static final String SLAVE_B = "slave-b";
-    private static final Map<String, ModelControllerClient> nonLocalAuthclients = new HashMap<String, ModelControllerClient>();
-    private static final Map<String, ModelControllerClient> localAuthClients = new HashMap<String, ModelControllerClient>();
+    protected static final String SMALL_JVM = "jvm=small";
 
     private static final Map<String, String> SASL_OPTIONS = Collections.singletonMap("SASL_DISALLOWED_MECHANISMS", "JBOSS-LOCAL-USER");
     private static final String TEST = "test.war";
@@ -80,6 +80,9 @@ public abstract class AbstractRbacTestCase {
     private static final String MEMORY_MBEAN = "core-service=platform-mbean/type=memory";
     private static final String PROFILE_A = "profile=profile-a";
     private static final String EXAMPLE_DS = "subsystem=datasources/data-source=ExampleDS";
+
+    private static final Map<String, ModelControllerClient> nonLocalAuthclients = new HashMap<String, ModelControllerClient>();
+    private static final Map<String, ModelControllerClient> localAuthClients = new HashMap<String, ModelControllerClient>();
     protected static DomainTestSupport testSupport;
     protected static JBossAsManagedConfiguration masterClientConfig;
 
@@ -159,7 +162,7 @@ public abstract class AbstractRbacTestCase {
     }
 
     protected ModelNode readResource(ModelControllerClient client, String address, String host, String server, Outcome expectedOutcome,
-                                          String... roles) throws IOException {
+                                     String... roles) throws IOException {
         String serverPart = server == null ? "" : "/server=" + server;
         String fullAddress = host == null ? address : "host=" + host + serverPart + "/" + address;
         ModelNode op = createOpNode(fullAddress, READ_RESOURCE_OPERATION);
@@ -208,6 +211,18 @@ public abstract class AbstractRbacTestCase {
     protected void addPath(ModelControllerClient client, Outcome expectedOutcome, String... roles) throws IOException {
         ModelNode op = createOpNode(TEST_PATH, ADD);
         op.get(PATH).set("/");
+        configureRoles(op, roles);
+        RbacUtil.executeOperation(client, op, expectedOutcome);
+    }
+
+    protected static String getPrefixedAddress(String prefixKey, String prefixValue, String address) {
+        return prefixKey + "=" + prefixValue + "/" + address;
+    }
+
+    protected void addJvm(ModelControllerClient client, String prefixKey, String prefixValue,
+                          Outcome expectedOutcome, String... roles) throws IOException {
+        String fullAddress = getPrefixedAddress(prefixKey, prefixValue, SMALL_JVM);
+        ModelNode op = createOpNode(fullAddress, ADD);
         configureRoles(op, roles);
         RbacUtil.executeOperation(client, op, expectedOutcome);
     }
