@@ -322,7 +322,9 @@ class DefaultInterceptorConfigurator extends AbstractComponentConfigurator imple
                         }
                     }
                 }
-                configuration.addComponentInterceptor(method, new UserInterceptorFactory(weaved(userAroundInvokes), weaved(userAroundTimeouts)), InterceptorOrder.Component.INTERCEPTOR_USER_INTERCEPTORS);
+                if(!userAroundInvokes.isEmpty() || ! userAroundTimeouts.isEmpty()) {
+                    configuration.addComponentInterceptor(method, new UserInterceptorFactory(weaved(userAroundInvokes), weaved(userAroundTimeouts)), InterceptorOrder.Component.INTERCEPTOR_USER_INTERCEPTORS);
+                }
             }
         }
     }

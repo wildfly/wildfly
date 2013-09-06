@@ -29,6 +29,9 @@ public class AbstractComponentConfigurator {
         if(interceptorFactories == null) {
             return null;
         }
+        if(interceptorFactories.size() == 1) {
+            return interceptorFactories.iterator().next();
+        }
         return new InterceptorFactory() {
             @Override
             public Interceptor create(InterceptorFactoryContext context) {
