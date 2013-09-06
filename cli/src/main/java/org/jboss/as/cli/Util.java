@@ -40,7 +40,6 @@ import org.jboss.as.cli.operation.impl.DefaultOperationRequestBuilder;
 import org.jboss.as.controller.client.ModelControllerClient;
 import org.jboss.as.protocol.StreamUtils;
 import org.jboss.dmr.ModelNode;
-import org.jboss.dmr.Property;
 import org.wildfly.security.manager.WildFlySecurityManager;
 
 /**
@@ -51,6 +50,7 @@ public class Util {
 
     public static final String LINE_SEPARATOR = WildFlySecurityManager.getPropertyPrivileged("line.separator", null);
 
+    public static final String ACCESS_CONTROL = "access-control";
     public static final String ACCESS_TYPE = "access-type";
     public static final String ADD = "add";
     public static final String ADDRESS = "address";
@@ -61,11 +61,13 @@ public class Util {
     public static final String BYTES = "bytes";
     public static final String CHILDREN = "children";
     public static final String CHILD_TYPE = "child-type";
+    public static final String COMBINED_DESCRIPTIONS = "combined-descriptions";
     public static final String COMPOSITE = "composite";
     public static final String CONCURRENT_GROUPS = "concurrent-groups";
     public static final String CONTENT = "content";
     public static final String CORE_SERVICE = "core-service";
     public static final String DATASOURCES = "datasources";
+    public static final String DEFAULT = "default";
     public static final String DEPLOY = "deploy";
     public static final String DEPLOYMENT = "deployment";
     public static final String DEPLOYMENT_NAME = "deployment-name";
@@ -76,6 +78,7 @@ public class Util {
     public static final String DRIVER_MODULE_NAME = "driver-module-name";
     public static final String DRIVER_NAME = "driver-name";
     public static final String ENABLED = "enabled";
+    public static final String EXECUTE = "execute";
     public static final String EXPRESSIONS_ALLOWED = "expressions-allowed";
     public static final String FAILURE_DESCRIPTION = "failure-description";
     public static final String FULL_REPLACE_DEPLOYMENT = "full-replace-deployment";
@@ -97,6 +100,7 @@ public class Util {
     public static final String NAME = "name";
     public static final String NILLABLE = "nillable";
     public static final String OPERATION = "operation";
+    public static final String OPERATIONS = "operations";
     public static final String OPERATION_HEADERS = "operation-headers";
     public static final String OUTCOME = "outcome";
     public static final String PATH = "path";
@@ -105,6 +109,7 @@ public class Util {
     public static final String PRODUCT_NAME = "product-name";
     public static final String PRODUCT_VERSION = "product-version";
     public static final String PROFILE = "profile";
+    public static final String READ = "read";
     public static final String READ_ATTRIBUTE = "read-attribute";
     public static final String READ_CHILDREN_NAMES = "read-children-names";
     public static final String READ_CHILDREN_RESOURCES = "read-children-resources";
@@ -118,6 +123,7 @@ public class Util {
     public static final String REDEPLOY = "redeploy";
     public static final String RELEASE_CODENAME = "release-codename";
     public static final String RELEASE_VERSION = "release-version";
+    public static final String RELOAD = "reload";
     public static final String REMOVE = "remove";
     public static final String REPLY_PROPERTIES = "reply-properties";
     public static final String REQUEST_PROPERTIES = "request-properties";
@@ -135,6 +141,7 @@ public class Util {
     public static final String RUNTIME_NAME = "runtime-name";
     public static final String SERVER = "server";
     public static final String SERVER_GROUP = "server-group";
+    public static final String SHUTDOWN = "shutdown";
     public static final String STATUS = "status";
     public static final String STEP_1 = "step-1";
     public static final String STEP_2 = "step-2";
@@ -144,6 +151,7 @@ public class Util {
     public static final String SUBSYSTEM = "subsystem";
     public static final String SUCCESS = "success";
     public static final String TAIL_COMMENT_ALLOWED = "tail-comment-allowed";
+    public static final String TRIM_DESCRIPTIONS = "trim-descriptions";
     public static final String TRUE = "true";
     public static final String TYPE = "type";
     public static final String UNDEFINE_ATTRIBUTE = "undefine-attribute";
@@ -154,6 +162,7 @@ public class Util {
     public static final String VALIDATE_ADDRESS = "validate-address";
     public static final String VALUE = "value";
     public static final String VALUE_TYPE = "value-type";
+    public static final String WRITE = "write";
     public static final String WRITE_ATTRIBUTE = "write-attribute";
 
     public static boolean isWindows() {
@@ -251,25 +260,6 @@ public class Util {
         return false;
     }
 
-    public static List<String> getRequestPropertyNames(ModelNode operationResult) {
-        if(!operationResult.hasDefined("result"))
-            return Collections.emptyList();
-
-        ModelNode result = operationResult.get("result");
-        if(!result.hasDefined("request-properties"))
-            return Collections.emptyList();
-
-        List<Property> nodeList = result.get("request-properties").asPropertyList();
-        if(nodeList.isEmpty())
-            return Collections.emptyList();
-
-        List<String> list = new ArrayList<String>(nodeList.size());
-        for(Property node : nodeList) {
-            list.add(node.getName());
-        }
-        return list;
-    }
-
     public static boolean isDeploymentInRepository(String name, ModelControllerClient client) {
         return getDeployments(client).contains(name);
     }
@@ -356,10 +346,10 @@ public class Util {
             }
 
             builder = new DefaultOperationRequestBuilder();
-            builder.addNode("server-group", serverGroup);
-            builder.addNode("deployment", deploymentName);
-            builder.setOperationName("read-attribute");
-            builder.addProperty("name", "enabled");
+            builder.addNode(SERVER_GROUP, serverGroup);
+            builder.addNode(DEPLOYMENT, deploymentName);
+            builder.setOperationName(READ_ATTRIBUTE);
+            builder.addProperty(NAME, ENABLED);
             try {
                 request = builder.buildRequest();
             } catch (OperationFormatException e) {
@@ -600,6 +590,45 @@ public class Util {
             request = builder.buildRequest();
         } catch (OperationFormatException e1) {
             throw new IllegalStateException("Failed to build operation", e1);
+        }
+
+        List<String> result;
+        try {
+            ModelNode outcome = client.execute(request);
+            if (!Util.isSuccess(outcome)) {
+                // TODO logging... exception?
+                result = Collections.emptyList();
+            } else {
+                result = Util.getList(outcome);
+            }
+        } catch (Exception e) {
+            result = Collections.emptyList();
+        }
+        return result;
+    }
+
+    public static List<String> getOperationNames(CommandContext ctx, OperationRequestAddress prefix) {
+
+        ModelControllerClient client = ctx.getModelControllerClient();
+        if(client == null) {
+            return Collections.emptyList();
+        }
+
+        if(prefix.endsOnType()) {
+            throw new IllegalArgumentException("The prefix isn't expected to end on a type.");
+        }
+
+        ModelNode request;
+        DefaultOperationRequestBuilder builder = new DefaultOperationRequestBuilder(prefix);
+        try {
+            builder.setOperationName(Util.READ_OPERATION_NAMES);
+            request = builder.buildRequest();
+        } catch (OperationFormatException e1) {
+            throw new IllegalStateException("Failed to build operation", e1);
+        }
+
+        if(ctx.getConfig().isAccessControl()) {
+            request.get(Util.ACCESS_CONTROL).set(true);
         }
 
         List<String> result;

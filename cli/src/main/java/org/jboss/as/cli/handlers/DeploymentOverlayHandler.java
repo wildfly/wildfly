@@ -39,11 +39,14 @@ import org.jboss.as.cli.CommandFormatException;
 import org.jboss.as.cli.CommandLineCompleter;
 import org.jboss.as.cli.CommandLineException;
 import org.jboss.as.cli.Util;
+import org.jboss.as.cli.accesscontrol.AccessRequirement;
+import org.jboss.as.cli.accesscontrol.AccessRequirementBuilder;
 import org.jboss.as.cli.impl.ArgumentWithValue;
 import org.jboss.as.cli.impl.ArgumentWithoutValue;
 import org.jboss.as.cli.impl.CommaSeparatedCompleter;
 import org.jboss.as.cli.impl.DefaultCompleter;
 import org.jboss.as.cli.impl.DefaultCompleter.CandidatesProvider;
+import org.jboss.as.cli.impl.PermittedCandidates;
 import org.jboss.as.cli.operation.ParsedCommandLine;
 import org.jboss.as.controller.client.ModelControllerClient;
 import org.jboss.as.controller.client.OperationBuilder;
@@ -81,6 +84,14 @@ public class DeploymentOverlayHandler extends BatchModeCommandHandler {//Command
 
     private final FilenameTabCompleter pathCompleter;
 
+    private AccessRequirement generalListPermission;
+    private AccessRequirement addPermission;
+    private AccessRequirement linkPermission;
+    private AccessRequirement removePermission;
+    private AccessRequirement redeployPermission;
+    private AccessRequirement listContentPermission;
+    private AccessRequirement listLinksPermission;
+
     public DeploymentOverlayHandler(CommandContext ctx) {
         super(ctx, "deployment-overlay", true);
 
@@ -94,9 +105,17 @@ public class DeploymentOverlayHandler extends BatchModeCommandHandler {//Command
                 return false;
             }
         };
+        l.setAccessRequirement(generalListPermission);
 
-        action = new ArgumentWithValue(this, new SimpleTabCompleter(
-                new String[]{ADD, LINK, LIST_CONTENT, LIST_LINKS, REDEPLOY_AFFECTED, REMOVE, UPLOAD}), 0, "--action");
+        action = new ArgumentWithValue(this, new DefaultCompleter(
+                PermittedCandidates.create(ADD, addPermission)
+                .add(LINK, linkPermission)
+                .add(LIST_CONTENT, listContentPermission)
+                .add(LIST_LINKS, listLinksPermission)
+                .add(REDEPLOY_AFFECTED, redeployPermission)
+                .add(REMOVE, removePermission)
+                .add(UPLOAD, addPermission)),
+                0, "--action");
 
         name = new ArgumentWithValue(this, new DefaultCompleter(new CandidatesProvider(){
             @Override
@@ -126,6 +145,14 @@ public class DeploymentOverlayHandler extends BatchModeCommandHandler {//Command
                 return names;
             }}), "--name");
         name.addRequiredPreceding(action);
+        name.setAccessRequirement(AccessRequirementBuilder.Factory.create(ctx).any()
+                .requirement(addPermission)
+                .requirement(removePermission)
+                .requirement(linkPermission)
+                .requirement(listContentPermission)
+                .requirement(listLinksPermission)
+                .requirement(redeployPermission)
+                .build());
 
         pathCompleter = Util.isWindows() ? new WindowsFilenameTabCompleter(ctx) : new DefaultFilenameTabCompleter(ctx);
         content = new ArgumentWithValue(this, new CommandLineCompleter(){
@@ -326,6 +353,64 @@ public class DeploymentOverlayHandler extends BatchModeCommandHandler {//Command
                 return false;
             }
         };
+        redeployAffected.setAccessRequirement(redeployPermission);
+    }
+
+    @Override
+    protected AccessRequirement setupAccessRequirement(CommandContext ctx) {
+
+        generalListPermission = AccessRequirementBuilder.Factory.create(ctx).any()
+                .operation(Util.DEPLOYMENT_OVERLAY + "=?", Util.READ_CHILDREN_NAMES).build();
+
+        addPermission = AccessRequirementBuilder.Factory.create(ctx)
+                .any()
+                .operation(Util.DEPLOYMENT_OVERLAY + "=?", Util.ADD)
+                .operation(Util.DEPLOYMENT_OVERLAY + "=?/" + Util.CONTENT + "=?", Util.ADD)
+                .build();
+
+        linkPermission = AccessRequirementBuilder.Factory.create(ctx)
+                .any()
+                .operation(Util.DEPLOYMENT_OVERLAY + "=?/" + Util.DEPLOYMENT + "=?", Util.ADD)
+                .serverGroupOperation(Util.DEPLOYMENT_OVERLAY + "=?", Util.ADD)
+                .serverGroupOperation(Util.DEPLOYMENT_OVERLAY + "=?/" + Util.DEPLOYMENT + "=?", Util.ADD)
+                .build();
+
+        removePermission = AccessRequirementBuilder.Factory.create(ctx)
+                .any()
+                .operation(Util.DEPLOYMENT_OVERLAY + "=?", Util.REMOVE)
+                .operation(Util.DEPLOYMENT_OVERLAY + "=?/" + Util.CONTENT + "=?", Util.REMOVE)
+                .operation(Util.DEPLOYMENT_OVERLAY + "=?/" + Util.DEPLOYMENT + "=?", Util.REMOVE)
+                .all()
+                .serverGroupOperation(Util.DEPLOYMENT_OVERLAY + "=?/" + Util.DEPLOYMENT + "=?", Util.REMOVE)
+                .serverGroupOperation(Util.DEPLOYMENT_OVERLAY + "=?", Util.REMOVE)
+                .parent()
+                .build();
+
+        redeployPermission = AccessRequirementBuilder.Factory.create(ctx).any()
+                .operation(Util.DEPLOYMENT + "=?", Util.REDEPLOY)
+                .serverGroupOperation(Util.DEPLOYMENT + "=?", Util.REDEPLOY + "a")
+                .build();
+
+        listContentPermission = AccessRequirementBuilder.Factory.create(ctx).any()
+                .operation(Util.DEPLOYMENT_OVERLAY + "=?", Util.READ_CHILDREN_NAMES)
+                .build();
+
+        listLinksPermission = AccessRequirementBuilder.Factory.create(ctx)
+                .any()
+                .operation(Util.DEPLOYMENT_OVERLAY + "=?", Util.READ_CHILDREN_NAMES)
+                .serverGroupOperation(Util.DEPLOYMENT_OVERLAY + "=?", Util.READ_CHILDREN_NAMES)
+                .build();
+
+        return AccessRequirementBuilder.Factory.create(ctx)
+                .any()
+                .requirement(generalListPermission)
+                .requirement(addPermission)
+                .requirement(linkPermission)
+                .requirement(removePermission)
+                .requirement(redeployPermission)
+                .requirement(listContentPermission)
+                .requirement(listLinksPermission)
+                .build();
     }
 
     @Override

@@ -57,6 +57,8 @@
                 <xs:element ref="ssl" minOccurs="0" maxOccurs="1"/>
 
                 <xs:element ref="silent" minOccurs="0" maxOccurs="1"/>
+
+                <xs:element ref="access-control" minOccurs="0" maxOccurs="1"/>
             </xs:sequence>
         </xs:complexType>
     </xs:element>
@@ -145,6 +147,21 @@
                 Even if the value is false, the messages will still be logged
                 using the logger if its configuration allows and/or if the
                 output target was specified as part of the command line using '>'.
+            </xs:documentation>
+        </xs:annotation>
+    </xs:element>
+
+    <xs:element name="access-control" type="xs:boolean" default="true">
+        <xs:annotation>
+            <xs:documentation>
+                Whether the management-related commands and attributes should be 
+                filtered for the current user based on the permissions the user
+                has been granted. In other words, if access-control is true,
+                the tab-completion will hide commands and attributes the user
+                is not allowed to access.
+                In case the user attempts to execute a command or an operation
+                without having sufficient permissions to do so, regardless of the value
+                this element has, the attempt will fail with an access control error. 
             </xs:documentation>
         </xs:annotation>
     </xs:element>

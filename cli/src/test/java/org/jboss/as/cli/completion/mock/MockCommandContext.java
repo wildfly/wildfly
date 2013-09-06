@@ -57,7 +57,6 @@ public class MockCommandContext implements CommandContext {
     private ModelControllerClient mcc;
     //private CommandLineParser operationParser;
     private OperationRequestAddress prefix;
-    private NodePathFormatter prefixFormatter;
     private OperationCandidatesProvider operationCandidatesProvider;
 
     private DefaultCallbackHandler parsedCmd = new DefaultCallbackHandler();
@@ -165,10 +164,7 @@ public class MockCommandContext implements CommandContext {
      */
     @Override
     public NodePathFormatter getNodePathFormatter() {
-        if(prefixFormatter == null) {
-            prefixFormatter = new DefaultPrefixFormatter();
-        }
-        return prefixFormatter;
+        return DefaultPrefixFormatter.INSTANCE;
     }
 
     /* (non-Javadoc)

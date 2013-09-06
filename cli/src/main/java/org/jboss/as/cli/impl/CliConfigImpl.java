@@ -38,6 +38,7 @@ import org.jboss.as.cli.CliInitializationException;
 import org.jboss.as.cli.CommandContext;
 import org.jboss.as.cli.SSLConfig;
 import org.jboss.as.protocol.StreamUtils;
+import org.jboss.logging.Logger;
 import org.jboss.staxmapper.XMLElementReader;
 import org.jboss.staxmapper.XMLExtendedStreamReader;
 import org.jboss.staxmapper.XMLMapper;
@@ -54,6 +55,7 @@ class CliConfigImpl implements CliConfig {
     private static final String CURRENT_WORKING_DIRECTORY = "user.dir";
     private static final String JBOSS_CLI_FILE = "jboss-cli.xml";
 
+    private static final String ACCESS_CONTROL = "access-control";
     private static final String DEFAULT_CONTROLLER = "default-controller";
     private static final String ENABLED = "enabled";
     private static final String FILE_DIR = "file-dir";
@@ -68,6 +70,8 @@ class CliConfigImpl implements CliConfig {
     private static final String RESOLVE_PARAMETER_VALUES = "resolve-parameter-values";
     private static final String SILENT = "silent";
     private static final String VALIDATE_OPERATION_REQUESTS = "validate-operation-requests";
+
+    private static final Logger log = Logger.getLogger(CliConfig.class);
 
     static CliConfig load(final CommandContext ctx) throws CliInitializationException {
         File jbossCliFile = findCLIFileFromSystemProperty();
@@ -198,6 +202,8 @@ class CliConfigImpl implements CliConfig {
 
     private boolean silent;
 
+    private boolean accessControl = true;
+
     @Override
     public String getDefaultControllerProtocol() {
         return defaultControllerProtocol;
@@ -256,6 +262,11 @@ class CliConfigImpl implements CliConfig {
     @Override
     public boolean isSilent() {
         return silent;
+    }
+
+    @Override
+    public boolean isAccessControl() {
+        return accessControl;
     }
 
     static class SslConfig implements SSLConfig {
@@ -388,6 +399,11 @@ class CliConfigImpl implements CliConfig {
                         }
                     } else if(localName.equals(SILENT)) {
                         config.silent = resolveBoolean(reader.getElementText());
+                    } else if(localName.equals(ACCESS_CONTROL)) {
+                        config.accessControl = resolveBoolean(reader.getElementText());
+                        if(log.isTraceEnabled()) {
+                            log.trace(ACCESS_CONTROL + " is " + config.accessControl);
+                        }
                     } else {
                         throw new XMLStreamException("Unexpected element: " + localName);
                     }
@@ -518,5 +534,4 @@ class CliConfigImpl implements CliConfig {
             }
         }
     }
-
 }

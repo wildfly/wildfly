@@ -31,32 +31,41 @@ package org.jboss.as.cli.operation;
 public interface OperationRequestAddress extends Iterable<OperationRequestAddress.Node> {
 
     /**
-     * Appends the node type to the prefix.
-     * Note, the current prefix must end on the node name before this method
+     * Appends the node type to the current address.
+     * Note, the current address must end on a node name before this method
      * is invoked.
      *
-     * @param nodeType  the node type to append to the prefix.
+     * @param nodeType  the node type to append to the current address
      */
     void toNodeType(String nodeType);
 
     /**
-     * Appends the node name to the prefix.
-     * Note, the current prefix must end on the node type before this method
+     * Appends the node name to the current address.
+     * Note, the current address must end on a node type before this method
      * is invoked.
      *
-     * @param nodeName the node name to append to the prefix.
+     * @param nodeName the node name to append to the current address
      */
     void toNode(String nodeName);
 
     /**
-     * Appends the node to the prefix.
-     * Note, the current prefix must end on the node (i.e. node name) before
+     * Appends the node to the current address.
+     * Note, the current address must end on a node (i.e. node name) before
      * this method is invoked.
      *
-     * @param nodeType  the node type of the node to append to the prefix
-     * @param nodeName  the node name of the node to append to the prefix
+     * @param nodeType  the node type of the node to append to the current address
+     * @param nodeName  the node name of the node to append to the current address
      */
     void toNode(String nodeType, String nodeName);
+
+    /**
+     * Appends the path to the current address.
+     * Note, the current address must end on a node (i.e. node name) before
+     * this method is invoked.
+     *
+     * @param path  the path to append to the current address
+     */
+    void appendPath(OperationRequestAddress path);
 
     /**
      * Sets the current prefix to the node type of the current node,
@@ -100,6 +109,15 @@ public interface OperationRequestAddress extends Iterable<OperationRequestAddres
      * on a type or is empty.
      */
     String getNodeName();
+
+    /**
+     * Returns the number of nodes (more specifically node types, if the address
+     * ends on a type, it means the last node is not complete, but it will be
+     * counted as a node by this method).
+     *
+     * @return  the number of nodes this address consists of
+     */
+    int length();
 
     interface Node {
 

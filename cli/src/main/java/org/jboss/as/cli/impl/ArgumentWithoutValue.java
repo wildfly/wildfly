@@ -31,6 +31,7 @@ import org.jboss.as.cli.CommandArgument;
 import org.jboss.as.cli.CommandContext;
 import org.jboss.as.cli.CommandFormatException;
 import org.jboss.as.cli.CommandLineCompleter;
+import org.jboss.as.cli.accesscontrol.AccessRequirement;
 import org.jboss.as.cli.handlers.CommandHandlerWithArguments;
 import org.jboss.as.cli.operation.ParsedCommandLine;
 
@@ -48,6 +49,8 @@ public class ArgumentWithoutValue implements CommandArgument {
     protected List<CommandArgument> requiredPreceding;
     protected List<CommandArgument> cantAppearAfter = Collections.emptyList();
     protected boolean exclusive;
+
+    protected AccessRequirement access = AccessRequirement.NONE;
 
     public ArgumentWithoutValue(CommandHandlerWithArguments handler, String fullName) {
         this(handler, -1, fullName);
@@ -184,6 +187,10 @@ public class ArgumentWithoutValue implements CommandArgument {
     @Override
     public boolean canAppearNext(CommandContext ctx) throws CommandFormatException {
 
+        if(!access.isSatisfied(ctx)) {
+            return false;
+        }
+
         ParsedCommandLine args = ctx.getParsedCommandLine();
         if (exclusive) {
             final Set<String> propertyNames = args.getPropertyNames();
@@ -244,5 +251,12 @@ public class ArgumentWithoutValue implements CommandArgument {
     @Override
     public String getShortName() {
         return shortName;
+    }
+
+    public void setAccessRequirement(AccessRequirement access) {
+        if(access == null) {
+            throw new IllegalArgumentException("access requirement is null");
+        }
+        this.access = access;
     }
 }
