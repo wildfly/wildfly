@@ -35,6 +35,7 @@ import org.jboss.invocation.InterceptorFactory;
 import org.jboss.invocation.InterceptorFactoryContext;
 import org.jboss.security.SecurityContext;
 import org.jboss.security.SecurityContextAssociation;
+import org.jboss.security.plugins.JBossSecurityContext;
 
 
 /**
@@ -70,10 +71,20 @@ public final class AsyncFutureInterceptorFactory implements InterceptorFactory {
                 asyncInterceptorContext.putPrivateData(InvocationType.class, InvocationType.ASYNC);
                 final CancellationFlag flag = new CancellationFlag();
                 final SecurityContext securityContext = SecurityContextAssociation.getSecurityContext();
+                // clone the original security context so that changes to the original security context in a separate (caller/unrelated) thread doesn't affect
+                // the security context associated with the async invocation thread
+                final SecurityContext clonedSecurityContext;
+                if (securityContext instanceof JBossSecurityContext) {
+                    clonedSecurityContext = (SecurityContext) ((JBossSecurityContext) securityContext).clone();
+                } else {
+                    // we can't do anything if it isn't a JBossSecurityContext so just use the original one
+                    clonedSecurityContext = securityContext;
+                }
                 final AsyncInvocationTask task = new AsyncInvocationTask(flag) {
+
                     @Override
                     protected Object runInvocation() throws Exception {
-                        setSecurityContextOnAssociation(securityContext);
+                        setSecurityContextOnAssociation(clonedSecurityContext);
                         try {
                             return asyncInterceptorContext.proceed();
                         } finally {
