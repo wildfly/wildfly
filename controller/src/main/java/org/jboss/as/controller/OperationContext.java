@@ -676,7 +676,8 @@ public interface OperationContext extends ExpressionResolver {
     AuthorizationResult authorize(ModelNode operation, Set<Action.ActionEffect> effects);
 
     /**
-     * Check for authorization for a resource and, optionally, its individual attributes
+     * Check for authorization for the resource associated with the currently executing operation step and,
+     * optionally, its individual attributes
      * @param attributes {@code true} if the result should include attribute authorizations
      * @param isDefaultResource {@code true} if
      * @return the resource authorization

@@ -48,9 +48,24 @@ import org.jboss.dmr.ModelType;
 public class SimpleListAttributeDefinition extends ListAttributeDefinition {
     private final AttributeDefinition valueType;
 
-    protected SimpleListAttributeDefinition(final String name, final String xmlName, final AttributeDefinition valueType, final boolean allowNull, final int minSize, final int maxSize, final String[] alternatives, final String[] requires, AttributeMarshaller attributeMarshaller,
-            final boolean resourceOnly, final DeprecationData deprecated, final AccessConstraintDefinition[] accessConstraints, final AttributeAccess.Flag... flags) {
-        super(name, xmlName, allowNull, false, minSize, maxSize, valueType.getValidator(), alternatives, requires, attributeMarshaller, resourceOnly, deprecated, accessConstraints, flags);
+    @Deprecated
+    protected SimpleListAttributeDefinition(final String name, final String xmlName, final AttributeDefinition valueType,
+                                            final boolean allowNull, final int minSize, final int maxSize,
+                                            final String[] alternatives, final String[] requires, AttributeMarshaller attributeMarshaller,
+                                            final boolean resourceOnly, final DeprecationData deprecated,
+                                            final AccessConstraintDefinition[] accessConstraints, final AttributeAccess.Flag... flags) {
+        this(name, xmlName, valueType, allowNull, minSize, maxSize, alternatives, requires,
+                attributeMarshaller, resourceOnly, deprecated, accessConstraints, null, flags);
+    }
+
+    protected SimpleListAttributeDefinition(final String name, final String xmlName, final AttributeDefinition valueType,
+                                            final boolean allowNull, final int minSize, final int maxSize,
+                                            final String[] alternatives, final String[] requires, AttributeMarshaller attributeMarshaller,
+                                            final boolean resourceOnly, final DeprecationData deprecated,
+                                            final AccessConstraintDefinition[] accessConstraints, final Boolean nullSignificant,
+                                            final AttributeAccess.Flag... flags) {
+        super(name, xmlName, allowNull, false, minSize, maxSize, valueType.getValidator(), alternatives, requires,
+                attributeMarshaller, resourceOnly, deprecated, accessConstraints, nullSignificant, flags);
         this.valueType = valueType;
     }
 
@@ -228,7 +243,7 @@ public class SimpleListAttributeDefinition extends ListAttributeDefinition {
                 };
             }
             return new SimpleListAttributeDefinition(name, xmlName, valueType, allowNull, minSize, maxSize, alternatives, requires,
-                    attributeMarshaller, resourceOnly, deprecated, accessConstraints, flags);
+                    attributeMarshaller, resourceOnly, deprecated, accessConstraints, nullSignficant, flags);
         }
 
         /*

@@ -1381,9 +1381,9 @@ public class ReadResourceDescriptionAccessControlTestCase extends AbstractContro
             Assert.assertEquals(true, defaultOps.get(ADD));
             Assert.assertEquals(true, defaultOps.get(REMOVE));
             Map<String, Boolean> exceptionOps = checkOperationAccessControlNames(accessControl.exceptions.get(ONE_A_ADDR), ADD, REMOVE);
+            // Vault expressions in an existing resource do not mean add should not be executable
             Assert.assertEquals(true, exceptionOps.get(ADD));
-            //Since this has attributes which are sensitive due to a vault expressions, remove should not be executable
-            Assert.assertEquals(false, exceptionOps.get(REMOVE));
+            Assert.assertEquals(true, exceptionOps.get(REMOVE));
 
         } finally {
             VaultExpressionSensitivityConfig.INSTANCE.setConfiguredRequiresAccessPermission(null);
@@ -1476,9 +1476,9 @@ public class ReadResourceDescriptionAccessControlTestCase extends AbstractContro
             Assert.assertEquals(true, defaultOps.get(ADD));
             Assert.assertEquals(true, defaultOps.get(REMOVE));
             Map<String, Boolean> exceptionOps = checkOperationAccessControlNames(accessControl.exceptions.get(ONE_A_ADDR), ADD, REMOVE);
+            // Vault expressions in an existing resource do not mean add should not be executable
             Assert.assertEquals(true, exceptionOps.get(ADD));
-            // Since this has attributes which are sensitive due to a vault expressions, remove should not be executable
-            Assert.assertEquals(false, exceptionOps.get(REMOVE));
+            Assert.assertEquals(true, exceptionOps.get(REMOVE));
 
         } finally {
             VaultExpressionSensitivityConfig.INSTANCE.setConfiguredRequiresAccessPermission(null);
@@ -1564,9 +1564,9 @@ public class ReadResourceDescriptionAccessControlTestCase extends AbstractContro
             Assert.assertEquals(true, defaultOps.get(ADD));
             Assert.assertEquals(true, defaultOps.get(REMOVE));
             Map<String, Boolean> exceptionOps = checkOperationAccessControlNames(accessControl.exceptions.get(ONE_A_ADDR), ADD, REMOVE);
+            // Vault expressions in an existing resource do not mean add should not be executable
             Assert.assertEquals(true, exceptionOps.get(ADD));
-            // Since this has attributes which are sensitive due to a vault expressions, remove should not be executable
-            Assert.assertEquals(false, exceptionOps.get(REMOVE));
+            Assert.assertEquals(true, exceptionOps.get(REMOVE));
 
         } finally {
             VaultExpressionSensitivityConfig.INSTANCE.setConfiguredRequiresAccessPermission(null);
@@ -1664,9 +1664,9 @@ public class ReadResourceDescriptionAccessControlTestCase extends AbstractContro
             Assert.assertEquals(true, defaultOps.get(ADD));
             Assert.assertEquals(true, defaultOps.get(REMOVE));
             Map<String, Boolean> exceptionOps = checkOperationAccessControlNames(accessControl.exceptions.get(ONE_A_ADDR), ADD, REMOVE);
+            // Vault expressions in an existing resource do not mean add should not be executable
             Assert.assertEquals(true, exceptionOps.get(ADD));
-            //Since this has attributes which are sensitive due to a vault expressions, remove should not be executable
-            Assert.assertEquals(false, exceptionOps.get(REMOVE));
+            Assert.assertEquals(true, exceptionOps.get(REMOVE));
         } finally {
             VaultExpressionSensitivityConfig.INSTANCE.setConfiguredRequiresAccessPermission(null);
             VaultExpressionSensitivityConfig.INSTANCE.setConfiguredRequiresReadPermission(null);
@@ -1841,7 +1841,7 @@ public class ReadResourceDescriptionAccessControlTestCase extends AbstractContro
 
     private ModelNode getChildDescription(ModelNode description, PathElement element) {
         ModelNode childDesc = description.get(CHILDREN, element.getKey(), MODEL_DESCRIPTION, element.getValue());
-        Assert.assertTrue(childDesc.isDefined());
+        Assert.assertTrue(description.toString(), childDesc.isDefined());
         return childDesc;
     }
 
@@ -1864,7 +1864,7 @@ public class ReadResourceDescriptionAccessControlTestCase extends AbstractContro
             exceptionsMap.put(PathAddress.pathAddress(ModelNode.fromString(prop.getName())), prop.getValue());
         }
         List<PathAddress> expected = Arrays.asList(exceptions);
-        Assert.assertTrue(exceptionsMap.keySet().containsAll(expected));
+        Assert.assertTrue(exceptionsMap.keySet().toString(), exceptionsMap.keySet().containsAll(expected));
         Assert.assertTrue(expected.containsAll(exceptionsMap.keySet()));
         return new ResourceAccessControl(defaultControl, exceptionsMap);
     }

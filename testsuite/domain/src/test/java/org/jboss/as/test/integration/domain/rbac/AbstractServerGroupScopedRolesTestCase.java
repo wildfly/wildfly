@@ -24,10 +24,11 @@ package org.jboss.as.test.integration.domain.rbac;
 
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ADD;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.BASE_ROLE;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.HOST;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.REMOVE;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SERVER_GROUP;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SERVER_GROUPS;
 import static org.jboss.as.test.integration.management.util.ModelUtil.createOpNode;
-import static org.junit.Assert.assertEquals;
 
 import java.io.IOException;
 
@@ -55,10 +56,10 @@ public abstract class AbstractServerGroupScopedRolesTestCase extends AbstractRba
     public static final String SUPERUSER_USER = "MainGroupSuperUser";
 
     private static final String[] USERS = { MONITOR_USER, OPERATOR_USER, MAINTAINER_USER, DEPLOYER_USER,
-                                            ADMINISTRATOR_USER, AUDITOR_USER, SUPERUSER_USER };
+            ADMINISTRATOR_USER, AUDITOR_USER, SUPERUSER_USER };
     private static final String[] BASES = { RbacUtil.MONITOR_USER, RbacUtil.OPERATOR_USER, RbacUtil.MAINTAINER_USER,
-                                            RbacUtil.DEPLOYER_USER, RbacUtil.ADMINISTRATOR_USER, RbacUtil.AUDITOR_USER,
-                                            RbacUtil.SUPERUSER_USER };
+            RbacUtil.DEPLOYER_USER, RbacUtil.ADMINISTRATOR_USER, RbacUtil.AUDITOR_USER,
+            RbacUtil.SUPERUSER_USER };
 
     private static final String SCOPED_ROLE = "core-service=management/access=authorization/server-group-scoped-role=";
 
@@ -81,12 +82,16 @@ public abstract class AbstractServerGroupScopedRolesTestCase extends AbstractRba
     @After
     public void tearDown() throws IOException {
         AssertionError assertionError = null;
-        try {
-            removeResource(DEPLOYMENT_2);
-        } catch (AssertionError e) {
-            assertionError = e;
-        } finally {
-            removeResource(TEST_PATH);
+        String[] toRemove = {DEPLOYMENT_2, TEST_PATH, getPrefixedAddress(SERVER_GROUP, SERVER_GROUP_A, SMALL_JVM),
+                getPrefixedAddress(SERVER_GROUP, SERVER_GROUP_B, SMALL_JVM)};
+        for (String address : toRemove) {
+            try {
+                removeResource(address);
+            } catch (AssertionError e) {
+                if (assertionError == null) {
+                    assertionError = e;
+                }
+            }
         }
 
         if (assertionError != null) {
@@ -116,6 +121,8 @@ public abstract class AbstractServerGroupScopedRolesTestCase extends AbstractRba
         runGC(client, MASTER, SLAVE_B, Outcome.HIDDEN, MONITOR_USER);
         addDeployment2(client, Outcome.UNAUTHORIZED, MONITOR_USER);
         addPath(client, Outcome.UNAUTHORIZED, MONITOR_USER);
+        addJvm(client, SERVER_GROUP, SERVER_GROUP_A, Outcome.UNAUTHORIZED, MONITOR_USER);
+        addJvm(client, SERVER_GROUP, SERVER_GROUP_B, Outcome.HIDDEN, MONITOR_USER);
     }
 
     @Test
@@ -136,6 +143,8 @@ public abstract class AbstractServerGroupScopedRolesTestCase extends AbstractRba
         runGC(client, MASTER, SLAVE_B, Outcome.HIDDEN, OPERATOR_USER);
         addDeployment2(client, Outcome.UNAUTHORIZED, OPERATOR_USER);
         addPath(client, Outcome.UNAUTHORIZED, OPERATOR_USER);
+        addJvm(client, SERVER_GROUP, SERVER_GROUP_A, Outcome.UNAUTHORIZED, OPERATOR_USER);
+        addJvm(client, SERVER_GROUP, SERVER_GROUP_B, Outcome.HIDDEN, OPERATOR_USER);
     }
 
     @Test
@@ -156,6 +165,8 @@ public abstract class AbstractServerGroupScopedRolesTestCase extends AbstractRba
         runGC(client, MASTER, SLAVE_B, Outcome.HIDDEN, MAINTAINER_USER);
         addDeployment2(client, Outcome.SUCCESS, MAINTAINER_USER);
         addPath(client, Outcome.UNAUTHORIZED, MAINTAINER_USER);
+        addJvm(client, SERVER_GROUP, SERVER_GROUP_A, Outcome.SUCCESS, MAINTAINER_USER);
+        addJvm(client, SERVER_GROUP, SERVER_GROUP_B, Outcome.HIDDEN, MAINTAINER_USER);
     }
 
     @Test
@@ -176,6 +187,8 @@ public abstract class AbstractServerGroupScopedRolesTestCase extends AbstractRba
         runGC(client, MASTER, SLAVE_B, Outcome.HIDDEN, DEPLOYER_USER);
         addDeployment2(client, Outcome.SUCCESS, DEPLOYER_USER);
         addPath(client, Outcome.UNAUTHORIZED, DEPLOYER_USER);
+        addJvm(client, SERVER_GROUP, SERVER_GROUP_A, Outcome.UNAUTHORIZED, DEPLOYER_USER);
+        addJvm(client, SERVER_GROUP, SERVER_GROUP_B, Outcome.HIDDEN, DEPLOYER_USER);
     }
 
     @Test
@@ -196,6 +209,8 @@ public abstract class AbstractServerGroupScopedRolesTestCase extends AbstractRba
         runGC(client, MASTER, SLAVE_B, Outcome.HIDDEN, ADMINISTRATOR_USER);
         addDeployment2(client, Outcome.SUCCESS, ADMINISTRATOR_USER);
         addPath(client, Outcome.UNAUTHORIZED, ADMINISTRATOR_USER);
+        addJvm(client, SERVER_GROUP, SERVER_GROUP_A, Outcome.SUCCESS, ADMINISTRATOR_USER);
+        addJvm(client, SERVER_GROUP, SERVER_GROUP_B, Outcome.HIDDEN, ADMINISTRATOR_USER);
     }
 
     @Test
@@ -216,6 +231,8 @@ public abstract class AbstractServerGroupScopedRolesTestCase extends AbstractRba
         runGC(client, MASTER, SLAVE_B, Outcome.HIDDEN, AUDITOR_USER);
         addDeployment2(client, Outcome.UNAUTHORIZED, AUDITOR_USER);
         addPath(client, Outcome.UNAUTHORIZED, AUDITOR_USER);
+        addJvm(client, SERVER_GROUP, SERVER_GROUP_A, Outcome.UNAUTHORIZED, AUDITOR_USER);
+        addJvm(client, SERVER_GROUP, SERVER_GROUP_B, Outcome.HIDDEN, AUDITOR_USER);
     }
 
     @Test
@@ -236,5 +253,7 @@ public abstract class AbstractServerGroupScopedRolesTestCase extends AbstractRba
         runGC(client, MASTER, SLAVE_B, Outcome.HIDDEN, SUPERUSER_USER);
         addDeployment2(client, Outcome.SUCCESS, SUPERUSER_USER);
         addPath(client, Outcome.UNAUTHORIZED, SUPERUSER_USER);
+        addJvm(client, SERVER_GROUP, SERVER_GROUP_A, Outcome.SUCCESS, SUPERUSER_USER);
+        addJvm(client, SERVER_GROUP, SERVER_GROUP_B, Outcome.HIDDEN, SUPERUSER_USER);
     }
 }

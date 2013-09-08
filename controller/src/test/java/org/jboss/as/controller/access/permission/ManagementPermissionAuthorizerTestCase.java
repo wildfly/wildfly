@@ -100,7 +100,7 @@ public class ManagementPermissionAuthorizerTestCase {
         Action action = new Action(null, null, EnumSet.of(Action.ActionEffect.ADDRESS,
                 Action.ActionEffect.READ_CONFIG));
         TargetResource targetResource = TargetResource.forStandalone(PathAddress.EMPTY_ADDRESS, ROOT_RR, null);
-        TargetAttribute targetAttribute = new TargetAttribute(null, new ModelNode(), targetResource);
+        TargetAttribute targetAttribute = new TargetAttribute("test", null, new ModelNode(), targetResource);
         AuthorizationResult result = authorizer.authorize(caller, environment, action, targetAttribute);
 
         assertEquals(AuthorizationResult.Decision.PERMIT, result.getDecision());
@@ -111,7 +111,7 @@ public class ManagementPermissionAuthorizerTestCase {
         Action action = new Action(null, null, EnumSet.of(Action.ActionEffect.ADDRESS,
                 Action.ActionEffect.READ_CONFIG, Action.ActionEffect.WRITE_CONFIG));
         TargetResource targetResource = TargetResource.forStandalone(PathAddress.EMPTY_ADDRESS, ROOT_RR, null);
-        TargetAttribute targetAttribute = new TargetAttribute(null, new ModelNode(), targetResource);
+        TargetAttribute targetAttribute = new TargetAttribute("test", null, new ModelNode(), targetResource);
         AuthorizationResult result = authorizer.authorize(caller, environment, action, targetAttribute);
 
         assertEquals(AuthorizationResult.Decision.DENY, result.getDecision());

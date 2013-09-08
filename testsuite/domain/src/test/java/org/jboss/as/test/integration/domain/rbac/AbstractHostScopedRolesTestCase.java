@@ -24,6 +24,7 @@ package org.jboss.as.test.integration.domain.rbac;
 
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ADD;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.BASE_ROLE;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.HOST;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.HOSTS;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.REMOVE;
 import static org.jboss.as.test.integration.management.util.ModelUtil.createOpNode;
@@ -80,12 +81,16 @@ public abstract class AbstractHostScopedRolesTestCase extends AbstractRbacTestCa
     @After
     public void tearDown() throws IOException {
         AssertionError assertionError = null;
-        try {
-            removeResource(DEPLOYMENT_2);
-        } catch (AssertionError e) {
-            assertionError = e;
-        } finally {
-            removeResource(TEST_PATH);
+        String[] toRemove = {DEPLOYMENT_2, TEST_PATH, getPrefixedAddress(HOST, MASTER, SMALL_JVM),
+                getPrefixedAddress(HOST, SLAVE, SMALL_JVM)};
+        for (String address : toRemove) {
+            try {
+                removeResource(address);
+            } catch (AssertionError e) {
+                if (assertionError == null) {
+                    assertionError = e;
+                }
+            }
         }
 
 
@@ -116,6 +121,8 @@ public abstract class AbstractHostScopedRolesTestCase extends AbstractRbacTestCa
         runGC(client, SLAVE, SLAVE_B, Outcome.HIDDEN, MONITOR_USER);
         addDeployment2(client, Outcome.UNAUTHORIZED, MONITOR_USER);
         addPath(client, Outcome.UNAUTHORIZED, MONITOR_USER);
+        addJvm(client, HOST, MASTER, Outcome.UNAUTHORIZED, MONITOR_USER);
+        addJvm(client, HOST, SLAVE, Outcome.HIDDEN, MONITOR_USER);
     }
 
     @Test
@@ -136,6 +143,8 @@ public abstract class AbstractHostScopedRolesTestCase extends AbstractRbacTestCa
         runGC(client, SLAVE, SLAVE_B, Outcome.HIDDEN, OPERATOR_USER);
         addDeployment2(client, Outcome.UNAUTHORIZED, OPERATOR_USER);
         addPath(client, Outcome.UNAUTHORIZED, OPERATOR_USER);
+        addJvm(client, HOST, MASTER, Outcome.UNAUTHORIZED, OPERATOR_USER);
+        addJvm(client, HOST, SLAVE, Outcome.HIDDEN, OPERATOR_USER);
     }
 
     @Test
@@ -156,6 +165,8 @@ public abstract class AbstractHostScopedRolesTestCase extends AbstractRbacTestCa
         runGC(client, SLAVE, SLAVE_B, Outcome.HIDDEN, MAINTAINER_USER);
         addDeployment2(client, Outcome.UNAUTHORIZED, MAINTAINER_USER);
         addPath(client, Outcome.UNAUTHORIZED, MAINTAINER_USER);
+        addJvm(client, HOST, MASTER, Outcome.SUCCESS, MAINTAINER_USER);
+        addJvm(client, HOST, SLAVE, Outcome.HIDDEN, MAINTAINER_USER);
     }
 
     @Test
@@ -176,6 +187,8 @@ public abstract class AbstractHostScopedRolesTestCase extends AbstractRbacTestCa
         runGC(client, SLAVE, SLAVE_B, Outcome.HIDDEN, DEPLOYER_USER);
         addDeployment2(client, Outcome.UNAUTHORIZED, DEPLOYER_USER);
         addPath(client, Outcome.UNAUTHORIZED, DEPLOYER_USER);
+        addJvm(client, HOST, MASTER, Outcome.UNAUTHORIZED, DEPLOYER_USER);
+        addJvm(client, HOST, SLAVE, Outcome.HIDDEN, DEPLOYER_USER);
     }
 
     @Test
@@ -196,6 +209,8 @@ public abstract class AbstractHostScopedRolesTestCase extends AbstractRbacTestCa
         runGC(client, SLAVE, SLAVE_B, Outcome.HIDDEN, ADMINISTRATOR_USER);
         addDeployment2(client, Outcome.UNAUTHORIZED, ADMINISTRATOR_USER);
         addPath(client, Outcome.UNAUTHORIZED, ADMINISTRATOR_USER);
+        addJvm(client, HOST, MASTER, Outcome.SUCCESS, ADMINISTRATOR_USER);
+        addJvm(client, HOST, SLAVE, Outcome.HIDDEN, ADMINISTRATOR_USER);
     }
 
     @Test
@@ -216,6 +231,8 @@ public abstract class AbstractHostScopedRolesTestCase extends AbstractRbacTestCa
         runGC(client, SLAVE, SLAVE_B, Outcome.HIDDEN, AUDITOR_USER);
         addDeployment2(client, Outcome.UNAUTHORIZED, AUDITOR_USER);
         addPath(client, Outcome.UNAUTHORIZED, AUDITOR_USER);
+        addJvm(client, HOST, MASTER, Outcome.UNAUTHORIZED, AUDITOR_USER);
+        addJvm(client, HOST, SLAVE, Outcome.HIDDEN, AUDITOR_USER);
     }
 
     @Test
@@ -236,5 +253,7 @@ public abstract class AbstractHostScopedRolesTestCase extends AbstractRbacTestCa
         runGC(client, SLAVE, SLAVE_B, Outcome.HIDDEN, SUPERUSER_USER);
         addDeployment2(client, Outcome.UNAUTHORIZED, SUPERUSER_USER);
         addPath(client, Outcome.UNAUTHORIZED, SUPERUSER_USER);
+        addJvm(client, HOST, MASTER, Outcome.SUCCESS, SUPERUSER_USER);
+        addJvm(client, HOST, SLAVE, Outcome.HIDDEN, SUPERUSER_USER);
     }
 }

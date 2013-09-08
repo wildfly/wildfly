@@ -71,7 +71,7 @@ public class DefaultOperationDescriptionProvider implements DescriptionProvider 
                                                final ResourceDescriptionResolver descriptionResolver,
                                                final DeprecationData deprecationData,
                                                final AttributeDefinition... parameters) {
-        this(operationName, descriptionResolver, null, null, parameters);
+        this(operationName, descriptionResolver, descriptionResolver, null, null, deprecationData, null, parameters);
     }
 
     public DefaultOperationDescriptionProvider(final String operationName,
