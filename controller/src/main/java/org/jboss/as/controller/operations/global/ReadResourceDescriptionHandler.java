@@ -53,6 +53,7 @@ import java.util.Map;
 import java.util.Set;
 
 import org.jboss.as.controller.AttributeDefinition;
+import org.jboss.as.controller.ControllerLogger;
 import org.jboss.as.controller.ControllerMessages;
 import org.jboss.as.controller.NoSuchResourceException;
 import org.jboss.as.controller.OperationContext;
@@ -401,7 +402,9 @@ public class ReadResourceDescriptionHandler implements OperationStepHandler {
                         ModelNode attributeResult = new ModelNode();
                         Storage storage = Storage.valueOf(attrProp.getValue().get(STORAGE).asString().toUpperCase());
                         addAttributeAuthorizationResults(attributeResult, attrProp.getName(), authResp, storage == Storage.RUNTIME);
-                        attributes.get(attrProp.getName()).set(attributeResult);
+                        if (attributeResult.isDefined()) {
+                            attributes.get(attrProp.getName()).set(attributeResult);
+                        }
                     }
                     result.get(ATTRIBUTES).set(attributes);
 
@@ -453,7 +456,9 @@ public class ReadResourceDescriptionHandler implements OperationStepHandler {
 
         private void addAttributeAuthorizationResult(ModelNode result, String attributeName, ResourceAuthorization authResp, ActionEffect actionEffect) {
             AuthorizationResult authorizationResult = authResp.getAttributeResult(attributeName, actionEffect);
-            result.get(actionEffect == ActionEffect.READ_CONFIG || actionEffect == ActionEffect.READ_RUNTIME ? READ : WRITE).set(authorizationResult.getDecision() == Decision.PERMIT);
+            if (authorizationResult != null) {
+                result.get(actionEffect == ActionEffect.READ_CONFIG || actionEffect == ActionEffect.READ_RUNTIME ? READ : WRITE).set(authorizationResult.getDecision() == Decision.PERMIT);
+            }
         }
 
         private void addOperationAuthorizationResult(OperationContext context, ModelNode result, ModelNode operation, String operationName) {
