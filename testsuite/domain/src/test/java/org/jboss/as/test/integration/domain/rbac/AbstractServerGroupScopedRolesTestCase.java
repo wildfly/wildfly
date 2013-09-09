@@ -83,7 +83,8 @@ public abstract class AbstractServerGroupScopedRolesTestCase extends AbstractRba
     public void tearDown() throws IOException {
         AssertionError assertionError = null;
         String[] toRemove = {DEPLOYMENT_2, TEST_PATH, getPrefixedAddress(SERVER_GROUP, SERVER_GROUP_A, SMALL_JVM),
-                getPrefixedAddress(SERVER_GROUP, SERVER_GROUP_B, SMALL_JVM)};
+                getPrefixedAddress(SERVER_GROUP, SERVER_GROUP_B, SMALL_JVM),
+                getPrefixedAddress(HOST, MASTER, SMALL_JVM)};
         for (String address : toRemove) {
             try {
                 removeResource(address);
@@ -118,11 +119,14 @@ public abstract class AbstractServerGroupScopedRolesTestCase extends AbstractRba
         checkSensitiveAttribute(client, MASTER, MASTER_A, false, MONITOR_USER);
         runGC(client, MASTER, null, Outcome.UNAUTHORIZED, MONITOR_USER);
         runGC(client, MASTER, MASTER_A, Outcome.UNAUTHORIZED, MONITOR_USER);
-        runGC(client, MASTER, SLAVE_B, Outcome.HIDDEN, MONITOR_USER);
+        runGC(client, SLAVE, null, Outcome.UNAUTHORIZED, MONITOR_USER);
+        runGC(client, SLAVE, SLAVE_B, Outcome.HIDDEN, MONITOR_USER);
         addDeployment2(client, Outcome.UNAUTHORIZED, MONITOR_USER);
         addPath(client, Outcome.UNAUTHORIZED, MONITOR_USER);
         addJvm(client, SERVER_GROUP, SERVER_GROUP_A, Outcome.UNAUTHORIZED, MONITOR_USER);
         addJvm(client, SERVER_GROUP, SERVER_GROUP_B, Outcome.HIDDEN, MONITOR_USER);
+        addJvm(client, HOST, MASTER, Outcome.UNAUTHORIZED, MONITOR_USER);
+        addJvm(client, HOST, SLAVE, Outcome.UNAUTHORIZED, MONITOR_USER);
     }
 
     @Test
@@ -138,13 +142,16 @@ public abstract class AbstractServerGroupScopedRolesTestCase extends AbstractRba
         checkSecurityDomainRead(client, MASTER, SLAVE_B, Outcome.HIDDEN, OPERATOR_USER);
         checkSensitiveAttribute(client, null, null, false, OPERATOR_USER);
         checkSensitiveAttribute(client, MASTER, MASTER_A, false, OPERATOR_USER);
-        runGC(client, MASTER, null, Outcome.UNAUTHORIZED, OPERATOR_USER);
+        runGC(client, MASTER, null, Outcome.SUCCESS, OPERATOR_USER);
         runGC(client, MASTER, MASTER_A, Outcome.SUCCESS, OPERATOR_USER);
-        runGC(client, MASTER, SLAVE_B, Outcome.HIDDEN, OPERATOR_USER);
+        runGC(client, SLAVE, null, Outcome.UNAUTHORIZED, OPERATOR_USER);
+        runGC(client, SLAVE, SLAVE_B, Outcome.HIDDEN, OPERATOR_USER);
         addDeployment2(client, Outcome.UNAUTHORIZED, OPERATOR_USER);
         addPath(client, Outcome.UNAUTHORIZED, OPERATOR_USER);
         addJvm(client, SERVER_GROUP, SERVER_GROUP_A, Outcome.UNAUTHORIZED, OPERATOR_USER);
         addJvm(client, SERVER_GROUP, SERVER_GROUP_B, Outcome.HIDDEN, OPERATOR_USER);
+        addJvm(client, HOST, MASTER, Outcome.UNAUTHORIZED, OPERATOR_USER);
+        addJvm(client, HOST, SLAVE, Outcome.UNAUTHORIZED, OPERATOR_USER);
     }
 
     @Test
@@ -160,13 +167,16 @@ public abstract class AbstractServerGroupScopedRolesTestCase extends AbstractRba
         checkSecurityDomainRead(client, MASTER, SLAVE_B, Outcome.HIDDEN, MAINTAINER_USER);
         checkSensitiveAttribute(client, null, null, false, MAINTAINER_USER);
         checkSensitiveAttribute(client, MASTER, MASTER_A, false, MAINTAINER_USER);
-        runGC(client, MASTER, null, Outcome.UNAUTHORIZED, MAINTAINER_USER);
+        runGC(client, MASTER, null, Outcome.SUCCESS, MAINTAINER_USER);
         runGC(client, MASTER, MASTER_A, Outcome.SUCCESS, MAINTAINER_USER);
+        runGC(client, SLAVE, null, Outcome.UNAUTHORIZED, MAINTAINER_USER);
         runGC(client, MASTER, SLAVE_B, Outcome.HIDDEN, MAINTAINER_USER);
         addDeployment2(client, Outcome.SUCCESS, MAINTAINER_USER);
         addPath(client, Outcome.UNAUTHORIZED, MAINTAINER_USER);
         addJvm(client, SERVER_GROUP, SERVER_GROUP_A, Outcome.SUCCESS, MAINTAINER_USER);
         addJvm(client, SERVER_GROUP, SERVER_GROUP_B, Outcome.HIDDEN, MAINTAINER_USER);
+        addJvm(client, HOST, MASTER, Outcome.SUCCESS, MAINTAINER_USER);
+        addJvm(client, HOST, SLAVE, Outcome.UNAUTHORIZED, MAINTAINER_USER);
     }
 
     @Test
@@ -184,11 +194,14 @@ public abstract class AbstractServerGroupScopedRolesTestCase extends AbstractRba
         checkSensitiveAttribute(client, MASTER, MASTER_A, false, DEPLOYER_USER);
         runGC(client, MASTER, null, Outcome.UNAUTHORIZED, DEPLOYER_USER);
         runGC(client, MASTER, MASTER_A, Outcome.UNAUTHORIZED, DEPLOYER_USER);
-        runGC(client, MASTER, SLAVE_B, Outcome.HIDDEN, DEPLOYER_USER);
+        runGC(client, SLAVE, null, Outcome.UNAUTHORIZED, DEPLOYER_USER);
+        runGC(client, SLAVE, SLAVE_B, Outcome.HIDDEN, DEPLOYER_USER);
         addDeployment2(client, Outcome.SUCCESS, DEPLOYER_USER);
         addPath(client, Outcome.UNAUTHORIZED, DEPLOYER_USER);
         addJvm(client, SERVER_GROUP, SERVER_GROUP_A, Outcome.UNAUTHORIZED, DEPLOYER_USER);
         addJvm(client, SERVER_GROUP, SERVER_GROUP_B, Outcome.HIDDEN, DEPLOYER_USER);
+        addJvm(client, HOST, MASTER, Outcome.UNAUTHORIZED, DEPLOYER_USER);
+        addJvm(client, HOST, SLAVE, Outcome.UNAUTHORIZED, DEPLOYER_USER);
     }
 
     @Test
@@ -204,13 +217,16 @@ public abstract class AbstractServerGroupScopedRolesTestCase extends AbstractRba
         checkSecurityDomainRead(client, MASTER, SLAVE_B, Outcome.HIDDEN, ADMINISTRATOR_USER);
         checkSensitiveAttribute(client, null, null, true, ADMINISTRATOR_USER);
         checkSensitiveAttribute(client, MASTER, MASTER_A, true, ADMINISTRATOR_USER);
-        runGC(client, MASTER, null, Outcome.UNAUTHORIZED, ADMINISTRATOR_USER);
+        runGC(client, MASTER, null, Outcome.SUCCESS, ADMINISTRATOR_USER);
         runGC(client, MASTER, MASTER_A, Outcome.SUCCESS, ADMINISTRATOR_USER);
-        runGC(client, MASTER, SLAVE_B, Outcome.HIDDEN, ADMINISTRATOR_USER);
+        runGC(client, SLAVE, null, Outcome.UNAUTHORIZED, ADMINISTRATOR_USER);
+        runGC(client, SLAVE, SLAVE_B, Outcome.HIDDEN, ADMINISTRATOR_USER);
         addDeployment2(client, Outcome.SUCCESS, ADMINISTRATOR_USER);
         addPath(client, Outcome.UNAUTHORIZED, ADMINISTRATOR_USER);
         addJvm(client, SERVER_GROUP, SERVER_GROUP_A, Outcome.SUCCESS, ADMINISTRATOR_USER);
         addJvm(client, SERVER_GROUP, SERVER_GROUP_B, Outcome.HIDDEN, ADMINISTRATOR_USER);
+        addJvm(client, HOST, MASTER, Outcome.SUCCESS, ADMINISTRATOR_USER);
+        addJvm(client, HOST, SLAVE, Outcome.UNAUTHORIZED, ADMINISTRATOR_USER);
     }
 
     @Test
@@ -228,11 +244,14 @@ public abstract class AbstractServerGroupScopedRolesTestCase extends AbstractRba
         checkSensitiveAttribute(client, MASTER, MASTER_A, true, AUDITOR_USER);
         runGC(client, MASTER, null, Outcome.UNAUTHORIZED, AUDITOR_USER);
         runGC(client, MASTER, MASTER_A, Outcome.UNAUTHORIZED, AUDITOR_USER);
-        runGC(client, MASTER, SLAVE_B, Outcome.HIDDEN, AUDITOR_USER);
+        runGC(client, SLAVE, null, Outcome.UNAUTHORIZED, AUDITOR_USER);
+        runGC(client, SLAVE, SLAVE_B, Outcome.HIDDEN, AUDITOR_USER);
         addDeployment2(client, Outcome.UNAUTHORIZED, AUDITOR_USER);
         addPath(client, Outcome.UNAUTHORIZED, AUDITOR_USER);
         addJvm(client, SERVER_GROUP, SERVER_GROUP_A, Outcome.UNAUTHORIZED, AUDITOR_USER);
         addJvm(client, SERVER_GROUP, SERVER_GROUP_B, Outcome.HIDDEN, AUDITOR_USER);
+        addJvm(client, HOST, MASTER, Outcome.UNAUTHORIZED, AUDITOR_USER);
+        addJvm(client, HOST, SLAVE, Outcome.UNAUTHORIZED, AUDITOR_USER);
     }
 
     @Test
@@ -248,12 +267,15 @@ public abstract class AbstractServerGroupScopedRolesTestCase extends AbstractRba
         checkSecurityDomainRead(client, MASTER, SLAVE_B, Outcome.HIDDEN, SUPERUSER_USER);
         checkSensitiveAttribute(client, null, null, true, SUPERUSER_USER);
         checkSensitiveAttribute(client, MASTER, MASTER_A, true, SUPERUSER_USER);
-        runGC(client, MASTER, null, Outcome.UNAUTHORIZED, SUPERUSER_USER);
+        runGC(client, MASTER, null, Outcome.SUCCESS, SUPERUSER_USER);
         runGC(client, MASTER, MASTER_A, Outcome.SUCCESS, SUPERUSER_USER);
-        runGC(client, MASTER, SLAVE_B, Outcome.HIDDEN, SUPERUSER_USER);
+        runGC(client, SLAVE, null, Outcome.UNAUTHORIZED, SUPERUSER_USER);
+        runGC(client, SLAVE, SLAVE_B, Outcome.HIDDEN, SUPERUSER_USER);
         addDeployment2(client, Outcome.SUCCESS, SUPERUSER_USER);
         addPath(client, Outcome.UNAUTHORIZED, SUPERUSER_USER);
         addJvm(client, SERVER_GROUP, SERVER_GROUP_A, Outcome.SUCCESS, SUPERUSER_USER);
         addJvm(client, SERVER_GROUP, SERVER_GROUP_B, Outcome.HIDDEN, SUPERUSER_USER);
+        addJvm(client, HOST, MASTER, Outcome.SUCCESS, SUPERUSER_USER);
+        addJvm(client, HOST, SLAVE, Outcome.UNAUTHORIZED, SUPERUSER_USER);
     }
 }

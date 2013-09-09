@@ -79,8 +79,16 @@ class HostServerGroupTracker {
             return new HostServerGroupEffect(address, Collections.singleton(serverGroup), null, false);
         }
 
-        private static HostServerGroupEffect forHost(PathAddress address, String hostEffect) {
+        private static HostServerGroupEffect forHost(PathAddress address, Set<String> serverGroupEffects, String hostEffect) {
+            return new HostServerGroupEffect(address, serverGroupEffects, hostEffect, false);
+        }
+
+        private static HostServerGroupEffect forNonLocalHost(PathAddress address, String hostEffect) {
             return new HostServerGroupEffect(address, (Set<String>) null, hostEffect, false);
+        }
+
+        private static HostServerGroupEffect forUnassignedHost(PathAddress address, String hostEffect) {
+            return new HostServerGroupEffect(address, (Set<String>) null, hostEffect, true);
         }
 
 
@@ -134,6 +142,7 @@ class HostServerGroupTracker {
     private final Map<String, Set<String>> socketsToGroups = new HashMap<String, Set<String>>();
     private final Map<String, Set<String>> deploymentsToGroups = new HashMap<String, Set<String>>();
     private final Map<String, Set<String>> overlaysToGroups = new HashMap<String, Set<String>>();
+    private final Map<String, Set<String>> hostsToGroups = new HashMap<String, Set<String>>();
 
     HostServerGroupEffect getHostServerGroupEffects(PathAddress address, ModelNode operation, Resource root) {
 
@@ -170,9 +179,10 @@ class HostServerGroupTracker {
                               // forHost response, which will be acceptable for a read for any server group scoped role
                         } // else not the local host. Can only be a read, so just use the forHost response,
                           // which will be acceptable for a read for any server group scoped role
+                        return HostServerGroupEffect.forNonLocalHost(address, hostName);
                     }
                 }
-                return HostServerGroupEffect.forHost(address, hostName);
+                return getHostEffect(address, hostName, root);
             } else if (PROFILE.equals(type)) {
                 return getDomainEffect(address, firstElement.getValue(), profilesToGroups, root);
             } else if (SOCKET_BINDING_GROUP.equals(type)) {
@@ -195,6 +205,7 @@ class HostServerGroupTracker {
         socketsToGroups.clear();
         deploymentsToGroups.clear();
         overlaysToGroups.clear();
+        hostsToGroups.clear();
     }
 
     private synchronized HostServerGroupEffect getDomainEffect(PathAddress address, String key,
@@ -206,6 +217,17 @@ class HostServerGroupTracker {
         Set<String> mapped = map.get(key);
         return mapped != null ? HostServerGroupEffect.forDomain(address, mapped)
                               : HostServerGroupEffect.forUnassignedDomain(address);
+    }
+
+    private synchronized HostServerGroupEffect getHostEffect(PathAddress address, String host, Resource root)  {
+        if (requiresMapping) {
+            map(root);
+            requiresMapping = false;
+        }
+        Set<String> mapped = hostsToGroups.get(host);
+        return mapped == null ? HostServerGroupEffect.forUnassignedHost(address, host)
+                : HostServerGroupEffect.forHost(address, mapped, host);
+
     }
 
     /** Only call with monitor for 'this' held */
@@ -227,6 +249,15 @@ class HostServerGroupTracker {
                 store(serverGroupName, overlay.getName(), overlaysToGroups);
             }
 
+        }
+
+        for (Resource.ResourceEntry host : root.getChildren(HOST)) {
+            String hostName = host.getPathElement().getValue();
+            for (Resource.ResourceEntry serverConfig : host.getChildren(SERVER_CONFIG)) {
+                ModelNode serverConfigModel = serverConfig.getModel();
+                String serverGroupName = serverConfigModel.require(GROUP).asString();
+                store(serverGroupName, hostName, hostsToGroups);
+            }
         }
     }
 

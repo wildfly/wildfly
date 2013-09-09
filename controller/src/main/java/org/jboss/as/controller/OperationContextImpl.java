@@ -34,6 +34,7 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OPERATION_HEADERS;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.REQUIRED;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SERVER_CONFIG;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SERVER_GROUP;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.USER;
 
@@ -1188,8 +1189,13 @@ final class OperationContextImpl extends AbstractOperationContext {
 
     private void checkHostServerGroupTracker(PathAddress pathAddress) {
         if (hostServerGroupTracker != null && !isBooting()) {
-            if (pathAddress.size() > 0 && SERVER_GROUP.equals(pathAddress.getElement(0).getKey())) {
-                hostServerGroupTracker = new HostServerGroupTracker();
+            if (pathAddress.size() > 0) {
+                String key0 = pathAddress.getElement(0).getKey();
+                if (SERVER_GROUP.equals(key0)
+                        || (pathAddress.size() > 1 && HOST.equals(key0))
+                                && SERVER_CONFIG.equals(pathAddress.getElement(1).getKey())) {
+                    hostServerGroupTracker = new HostServerGroupTracker();
+                }
             }
         }
     }

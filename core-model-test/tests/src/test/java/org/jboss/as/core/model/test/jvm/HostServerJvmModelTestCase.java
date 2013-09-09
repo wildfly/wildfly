@@ -21,6 +21,7 @@
 */
 package org.jboss.as.core.model.test.jvm;
 
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.GROUP;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.HOST;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.JVM;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SERVER_CONFIG;
@@ -108,8 +109,14 @@ public class HostServerJvmModelTestCase extends AbstractJvmModelTest {
         public void populateModel(Resource rootResource) {
             Resource host = Resource.Factory.create();
             rootResource.registerChild(HOST_ELEMENT, host);
-            host.registerChild(SERVER_ONE_ELEMENT, Resource.Factory.create());
-            host.registerChild(SERVER_TWO_ELEMENT, Resource.Factory.create());
+            ModelNode serverConfig = new ModelNode();
+            serverConfig.get(GROUP).set("test");
+            Resource server1 = Resource.Factory.create();
+            server1.writeModel(serverConfig);
+            Resource server2 = Resource.Factory.create();
+            server2.writeModel(serverConfig);
+            host.registerChild(SERVER_ONE_ELEMENT, server1);
+            host.registerChild(SERVER_TWO_ELEMENT, server2);
         }
     };
 }

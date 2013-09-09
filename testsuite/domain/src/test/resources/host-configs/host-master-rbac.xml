@@ -106,14 +106,5 @@
 
     <servers>
         <server name="master-a" group="server-group-a"/>
-        <server name="master-b" group="server-group-b" auto-start="false">
-            <socket-bindings socket-binding-group="sockets-b" port-offset="100"/>
-        </server>
-        <server name="master-c" group="server-group-c" auto-start="false">
-            <socket-bindings socket-binding-group="sockets-shared" port-offset="200"/>
-        </server>
-        <server name="master-d" group="server-group-d" auto-start="false">
-            <socket-bindings socket-binding-group="sockets-shared" port-offset="300"/>
-        </server>
     </servers>
 </host>
