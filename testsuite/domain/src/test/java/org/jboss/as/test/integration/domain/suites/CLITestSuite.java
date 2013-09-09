@@ -37,6 +37,7 @@ import org.jboss.as.test.integration.domain.management.cli.JmsTestCase;
 import org.jboss.as.test.integration.domain.management.cli.RolloutPlanTestCase;
 import org.jboss.as.test.integration.domain.management.cli.UndeployWildcardDomainTestCase;
 import org.jboss.as.test.integration.domain.management.util.DomainTestSupport;
+import org.jboss.as.test.integration.domain.management.util.JBossAsManagedConfiguration;
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
 import org.junit.runner.RunWith;
@@ -73,6 +74,9 @@ public class CLITestSuite {
         DomainTestSupport.Configuration configuration = DomainTestSupport.Configuration.create(CLITestSuite.class.getSimpleName(),
                 "domain-configs"+ File.separatorChar+"domain-standard.xml", "host-configs"+File.separatorChar+"host-master.xml",
                 "host-configs"+File.separatorChar+"host-slave.xml");
+        String mgmtUserProperties = JBossAsManagedConfiguration.loadConfigFileFromContextClassLoader("mgmt-users/mgmt-users.properties");
+        configuration.getMasterConfiguration().setMgmtUsersFile(mgmtUserProperties);
+        configuration.getSlaveConfiguration().setMgmtUsersFile(mgmtUserProperties);
         domainSupport = DomainTestSupport.create(configuration);
         domainSupport.start();
 

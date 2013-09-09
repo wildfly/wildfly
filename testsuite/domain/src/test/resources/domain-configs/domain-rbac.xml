@@ -71,7 +71,7 @@
     <profiles>
 
         <profile name="profile-a">
-            <subsystem xmlns="urn:jboss:domain:datasources:2.0">
+            <subsystem xmlns="urn:jboss:domain:datasources:1.1">
                 <datasources>
                     <datasource jndi-name="java:jboss/datasources/ExampleDS" pool-name="ExampleDS" enabled="true" use-java-context="true">
                         <connection-url>jdbc:h2:mem:test;DB_CLOSE_DELAY=-1</connection-url>
@@ -89,10 +89,6 @@
                 </datasources>
             </subsystem>
             <subsystem xmlns="urn:jboss:domain:ee:1.0"/>
-            <subsystem xmlns="urn:jboss:domain:io:1.0">
-                <worker name="default" io-threads="3"/>
-                <buffer-pool name="default" buffer-size="16384" buffers-per-slice="128"/>
-            </subsystem>
             <subsystem xmlns="urn:jboss:domain:jca:1.1">
                 <archive-validation enabled="true" fail-on-error="true" fail-on-warn="false"/>
                 <bean-validation enabled="true"/>
@@ -116,7 +112,7 @@
                 <jmx-connector registry-binding="jmx-connector-registry" server-binding="jmx-connector-server"/>
             </subsystem>
             <subsystem xmlns="urn:jboss:domain:naming:1.0"/>
-            <subsystem xmlns="urn:jboss:domain:remoting:2.0"/>
+            <subsystem xmlns="urn:jboss:domain:remoting:1.1"/>
             <subsystem xmlns="urn:jboss:domain:security:1.0">
                 <security-domains>
                     <security-domain name="other" cache-type="default">
@@ -143,27 +139,16 @@
                 <recovery-environment socket-binding="txn-recovery-environment" status-socket-binding="txn-status-manager"/>
                 <coordinator-environment default-timeout="300"/>
             </subsystem>
-            <subsystem xmlns="urn:jboss:domain:undertow:1.0">
-                <buffer-caches>
-                    <buffer-cache name="default" buffer-size="1024" buffers-per-region="1024" max-regions="10"/>
-                </buffer-caches>
-                <server name="default-server">
-                    <http-listener name="default" socket-binding="http"/>
-                    <host name="default-host" alias="localhost">
-                        <location name="/" handler="welcome-content"/>
-                    </host>
-                </server>
-                <servlet-container name="default">
-                    <jsp-config/>
-                </servlet-container>
-                <handlers>
-                    <file name="welcome-content" path="${jboss.home.dir}/welcome-content" directory-listing="true"/>
-                </handlers>
+            <subsystem xmlns="urn:jboss:domain:web:1.0">
+                <connector name="http" protocol="HTTP/1.1" scheme="http" socket-binding="http"/>
+                <virtual-server name="default-host">
+                    <alias name="localhost" />
+                </virtual-server>
             </subsystem>
         </profile>
 
         <profile name="profile-b">
-            <subsystem xmlns="urn:jboss:domain:datasources:2.0">
+            <subsystem xmlns="urn:jboss:domain:datasources:1.1">
                 <datasources>
                     <datasource jndi-name="java:jboss/datasources/ExampleDS" pool-name="ExampleDS" enabled="true" use-java-context="true">
                         <connection-url>jdbc:h2:mem:test;DB_CLOSE_DELAY=-1</connection-url>
@@ -181,10 +166,6 @@
                 </datasources>
             </subsystem>
             <subsystem xmlns="urn:jboss:domain:ee:1.0"/>
-            <subsystem xmlns="urn:jboss:domain:io:1.0">
-                <worker name="default" io-threads="3"/>
-                <buffer-pool name="default" buffer-size="16384" buffers-per-slice="128"/>
-            </subsystem>
             <subsystem xmlns="urn:jboss:domain:jca:1.1">
                 <archive-validation enabled="true" fail-on-error="true" fail-on-warn="false"/>
                 <bean-validation enabled="true"/>
@@ -208,7 +189,7 @@
                 <jmx-connector registry-binding="jmx-connector-registry" server-binding="jmx-connector-server"/>
             </subsystem>
             <subsystem xmlns="urn:jboss:domain:naming:1.0"/>
-            <subsystem xmlns="urn:jboss:domain:remoting:2.0"/>
+            <subsystem xmlns="urn:jboss:domain:remoting:1.1"/>
             <subsystem xmlns="urn:jboss:domain:security:1.0">
                 <security-domains>
                     <security-domain name="other" cache-type="default">
@@ -235,27 +216,16 @@
                 <recovery-environment socket-binding="txn-recovery-environment" status-socket-binding="txn-status-manager"/>
                 <coordinator-environment default-timeout="300"/>
             </subsystem>
-            <subsystem xmlns="urn:jboss:domain:undertow:1.0">
-                <buffer-caches>
-                    <buffer-cache name="default" buffer-size="1024" buffers-per-region="1024" max-regions="10"/>
-                </buffer-caches>
-                <server name="default-server">
-                    <http-listener name="default" socket-binding="http"/>
-                    <host name="default-host" alias="localhost">
-                        <location name="/" handler="welcome-content"/>
-                    </host>
-                </server>
-                <servlet-container name="default">
-                    <jsp-config/>
-                </servlet-container>
-                <handlers>
-                    <file name="welcome-content" path="${jboss.home.dir}/welcome-content" directory-listing="true"/>
-                </handlers>
+            <subsystem xmlns="urn:jboss:domain:web:1.0">
+                <connector name="http" protocol="HTTP/1.1" scheme="http" socket-binding="http"/>
+                <virtual-server name="default-host">
+                    <alias name="localhost" />
+                </virtual-server>
             </subsystem>
         </profile>
 
         <profile name="profile-shared">
-            <subsystem xmlns="urn:jboss:domain:datasources:2.0">
+            <subsystem xmlns="urn:jboss:domain:datasources:1.1">
                 <datasources>
                     <datasource jndi-name="java:jboss/datasources/ExampleDS" pool-name="ExampleDS" enabled="true" use-java-context="true">
                         <connection-url>jdbc:h2:mem:test;DB_CLOSE_DELAY=-1</connection-url>
@@ -273,10 +243,6 @@
                 </datasources>
             </subsystem>
             <subsystem xmlns="urn:jboss:domain:ee:1.0"/>
-            <subsystem xmlns="urn:jboss:domain:io:1.0">
-                <worker name="default" io-threads="3"/>
-                <buffer-pool name="default" buffer-size="16384" buffers-per-slice="128"/>
-            </subsystem>
             <subsystem xmlns="urn:jboss:domain:jca:1.1">
                 <archive-validation enabled="true" fail-on-error="true" fail-on-warn="false"/>
                 <bean-validation enabled="true"/>
@@ -300,7 +266,7 @@
                 <jmx-connector registry-binding="jmx-connector-registry" server-binding="jmx-connector-server"/>
             </subsystem>
             <subsystem xmlns="urn:jboss:domain:naming:1.0"/>
-            <subsystem xmlns="urn:jboss:domain:remoting:2.0"/>
+            <subsystem xmlns="urn:jboss:domain:remoting:1.1"/>
             <subsystem xmlns="urn:jboss:domain:security:1.0">
                 <security-domains>
                     <security-domain name="other" cache-type="default">
@@ -327,22 +293,11 @@
                 <recovery-environment socket-binding="txn-recovery-environment" status-socket-binding="txn-status-manager"/>
                 <coordinator-environment default-timeout="300"/>
             </subsystem>
-            <subsystem xmlns="urn:jboss:domain:undertow:1.0">
-                <buffer-caches>
-                    <buffer-cache name="default" buffer-size="1024" buffers-per-region="1024" max-regions="10"/>
-                </buffer-caches>
-                <server name="default-server">
-                    <http-listener name="default" socket-binding="http"/>
-                    <host name="default-host" alias="localhost">
-                        <location name="/" handler="welcome-content"/>
-                    </host>
-                </server>
-                <servlet-container name="default">
-                    <jsp-config/>
-                </servlet-container>
-                <handlers>
-                    <file name="welcome-content" path="${jboss.home.dir}/welcome-content" directory-listing="true"/>
-                </handlers>
+            <subsystem xmlns="urn:jboss:domain:web:1.0">
+                <connector name="http" protocol="HTTP/1.1" scheme="http" socket-binding="http"/>
+                <virtual-server name="default-host">
+                    <alias name="localhost" />
+                </virtual-server>
             </subsystem>
         </profile>
     </profiles>
