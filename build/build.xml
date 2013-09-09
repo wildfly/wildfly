@@ -356,7 +356,7 @@
           -->
 
         <module-def name="org.jboss.as.console" slot="eap">
-            <maven-resource-with-classifier group="org.jboss.hal" artifact="release-stream" classifier="resources"/>
+            <maven-resource-with-classifier group="org.jboss.as" artifact="jboss-as-console" classifier="resources"/>
         </module-def>
 
         <module-def name="org.jboss.as.domain-http-error-context" slot="eap"/>
