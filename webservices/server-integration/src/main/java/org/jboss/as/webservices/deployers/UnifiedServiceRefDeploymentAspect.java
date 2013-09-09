@@ -35,7 +35,7 @@ import org.jboss.wsf.spi.deployment.Deployment;
 import org.jboss.wsf.spi.metadata.j2ee.serviceref.UnifiedServiceRefMetaData;
 
 /**
- * DeploymentAspect to set deployed ServiceName and address map in unifiedServiceRefMetaData 
+ * DeploymentAspect to set deployed ServiceName and address map in unifiedServiceRefMetaData
  * @author <a href="mailto:ema@redhat.com">Jim Ma</a>
  */
 public class UnifiedServiceRefDeploymentAspect extends AbstractDeploymentAspect {
