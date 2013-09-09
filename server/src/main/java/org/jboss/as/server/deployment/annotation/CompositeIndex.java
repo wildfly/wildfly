@@ -213,4 +213,8 @@ public class CompositeIndex {
         }
         return Collections.unmodifiableCollection(allKnown);
     }
+
+    public Collection<Index> getIndexes() {
+        return Collections.unmodifiableCollection(indexes);
+    }
 }
