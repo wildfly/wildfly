@@ -329,10 +329,9 @@ public class PersistenceUnitServiceHandler {
             final HashMap<String, ValidatorFactory> properties = new HashMap();
             if (!ValidationMode.NONE.equals(pu.getValidationMode())) {
                 validatorFactory = SerializableValidatorFactory.validatorFactory();
-                properties.put("javax.persistence.validation.factory", validatorFactory);
             }
 
-            final PersistenceUnitServiceImpl service = new PersistenceUnitServiceImpl(classLoader, pu, adaptor, provider, PersistenceUnitRegistryImpl.INSTANCE, deploymentUnit.getServiceName());
+            final PersistenceUnitServiceImpl service = new PersistenceUnitServiceImpl(classLoader, pu, adaptor, provider, PersistenceUnitRegistryImpl.INSTANCE, deploymentUnit.getServiceName(), validatorFactory);
 
             deploymentUnit.addToAttachmentList(REMOVAL_KEY, new PersistenceAdaptorRemoval(validatorFactory, pu, adaptor));
 
@@ -450,10 +449,6 @@ public class PersistenceUnitServiceHandler {
         try {
             SerializableValidatorFactory validatorFactory = null;
             final HashMap<String, ValidatorFactory> properties = new HashMap();
-            if (!ValidationMode.NONE.equals(pu.getValidationMode())) {
-                validatorFactory = SerializableValidatorFactory.validatorFactory();
-                properties.put("javax.persistence.validation.factory", validatorFactory);
-            }
 
             ProxyBeanManager proxyBeanManager = null;
             // JPA 2.1 sections 3.5.1 + 9.1 require the CDI bean manager to be passed to the peristence provider
@@ -565,10 +560,9 @@ public class PersistenceUnitServiceHandler {
             final HashMap<String, ValidatorFactory> properties = new HashMap();
             if (!ValidationMode.NONE.equals(pu.getValidationMode())) {
                 validatorFactory = SerializableValidatorFactory.validatorFactory();
-                properties.put("javax.persistence.validation.factory", validatorFactory);
             }
 
-            final PersistenceUnitServiceImpl service = new PersistenceUnitServiceImpl(classLoader, pu, adaptor, provider, PersistenceUnitRegistryImpl.INSTANCE, deploymentUnit.getServiceName());
+            final PersistenceUnitServiceImpl service = new PersistenceUnitServiceImpl(classLoader, pu, adaptor, provider, PersistenceUnitRegistryImpl.INSTANCE, deploymentUnit.getServiceName(), validatorFactory);
 
             deploymentUnit.addToAttachmentList(REMOVAL_KEY, new PersistenceAdaptorRemoval(validatorFactory, pu, adaptor));
 
