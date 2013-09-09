@@ -27,6 +27,7 @@ package org.jboss.as.security;
 import static java.util.Collections.addAll;
 
 import java.io.ByteArrayOutputStream;
+import java.io.File;
 import java.io.IOException;
 import java.io.PrintStream;
 import java.net.URLDecoder;
@@ -50,11 +51,11 @@ public class VaultToolTestCase {
   private static final String BLOCK_NAME = "myblock";
   private static final String ATTRIBUTE_NAME = "the_attribute_I_want_to_store";
   private static final String VALUE_TO_STORE = "the_value";
-  private static final String ENC_FILE_DIR_VALUE = System.getProperty("java.io.tmpdir") + "/tmp/vault/";
   private static final String KEYSTORE_ALIAS_VALUE = "vault";
   private static final String ITERATION_COUNT_VALUE = "12";
   private static final String CODE_LOCATION = VaultToolTestCase.class.getProtectionDomain().getCodeSource().getLocation().getFile();
   private static final String KEYSTORE_URL_VALUE = getKeystorePath();
+  private static final String ENC_FILE_DIR_VALUE = CODE_LOCATION + "test_vault_dir";
   private static final String MASKED_MYPASSWORD_VALUE = "MASK-UWB5tlhOmKYzJVl9KZaPN";
   private static final String SALT_VALUE = "bdfbdf12";
   private static final ByteArrayOutputStream SYSTEM_OUT = new ByteArrayOutputStream();
@@ -114,6 +115,10 @@ public class VaultToolTestCase {
     return vaultSharedKey;
   }
 
+  /**
+   * Generates arguments to create security vault and store a password inside.
+   * @return
+   */
   private String[] generateArgs() {
     List<String> args = new ArrayList<String>();
     addAll(args, "-k", KEYSTORE_URL_VALUE);
@@ -157,12 +162,27 @@ public class VaultToolTestCase {
 
   @Before
   public void setUp() throws Exception {
+    cleanDirectory(ENC_FILE_DIR_VALUE);
     System.setSecurityManager(new NoExitSecurityManager());
   }
 
   @After
   public void tearDown() throws Exception {
     System.setSecurityManager(null); // or save and restore original
+  }
+
+  /**
+   * Clean given directory.
+   * 
+   * @param directory
+   */
+  private static void cleanDirectory(String dir) {
+    File directory = new File(dir);  
+    if (directory.exists()) {
+      for (File f : directory.listFiles()) {
+        f.delete();
+       }
+    }
   }
 
 }
