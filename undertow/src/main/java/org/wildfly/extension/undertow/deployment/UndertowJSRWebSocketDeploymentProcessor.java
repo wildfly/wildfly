@@ -42,7 +42,6 @@ import org.jboss.as.web.common.WarMetaData;
 import org.jboss.jandex.AnnotationInstance;
 import org.jboss.jandex.ClassInfo;
 import org.jboss.jandex.DotName;
-import org.jboss.metadata.web.spec.FilterMappingMetaData;
 import org.jboss.metadata.web.spec.FiltersMetaData;
 import org.jboss.modules.Module;
 import org.jboss.msc.service.ServiceName;
@@ -59,8 +58,6 @@ import javax.websocket.server.ServerContainer;
 import javax.websocket.server.ServerEndpoint;
 import javax.websocket.server.ServerEndpointConfig;
 import java.lang.reflect.Modifier;
-import java.util.ArrayList;
-import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
@@ -77,7 +74,6 @@ public class UndertowJSRWebSocketDeploymentProcessor implements DeploymentUnitPr
     private static final DotName CLIENT_ENDPOINT = DotName.createSimple(ClientEndpoint.class.getName());
     private static final DotName SERVER_APPLICATION_CONFIG = DotName.createSimple(ServerApplicationConfig.class.getName());
     private static final DotName ENDPOINT = DotName.createSimple(Endpoint.class.getName());
-    public static final String FILTER_NAME = "Undertow Web Socket Filter";
 
 
     @Override
@@ -189,15 +185,6 @@ public class UndertowJSRWebSocketDeploymentProcessor implements DeploymentUnitPr
         if (filters == null) {
             metaData.getMergedJBossWebMetaData().setFilters(filters = new FiltersMetaData());
         }
-        List<FilterMappingMetaData> mappings = metaData.getMergedJBossWebMetaData().getFilterMappings();
-        if (mappings == null) {
-            metaData.getMergedJBossWebMetaData().setFilterMappings(mappings = new ArrayList<>());
-        }
-        FilterMappingMetaData mapping = new FilterMappingMetaData();
-        mapping.setFilterName(FILTER_NAME);
-        mapping.setDispatchers(Collections.singletonList(org.jboss.metadata.web.spec.DispatcherType.REQUEST));
-        mapping.setUrlPatterns(Collections.singletonList("/*"));
-        mappings.add(mapping);
 
         deploymentUnit.addToAttachmentList(ServletContextAttribute.ATTACHMENT_KEY, new ServletContextAttribute(ServerContainer.class.getName(), webSocketDeploymentInfo));
 
