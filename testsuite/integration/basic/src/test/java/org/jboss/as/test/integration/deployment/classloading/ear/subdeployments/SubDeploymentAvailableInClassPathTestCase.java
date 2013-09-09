@@ -41,6 +41,9 @@ import org.jboss.as.test.integration.deployment.classloading.ear.subdeployments.
 import org.jboss.as.test.integration.deployment.classloading.ear.subdeployments.servlet.ServletInOtherWar;
 import org.jboss.logging.Logger;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
+import org.jboss.shrinkwrap.api.asset.ClassAsset;
+import org.jboss.shrinkwrap.api.asset.StringAsset;
+import org.jboss.shrinkwrap.api.exporter.ZipExporter;
 import org.jboss.shrinkwrap.api.spec.EnterpriseArchive;
 import org.jboss.shrinkwrap.api.spec.JavaArchive;
 import org.jboss.shrinkwrap.api.spec.WebArchive;
@@ -66,6 +69,8 @@ public class SubDeploymentAvailableInClassPathTestCase {
 
     private static final String OTHER_WEB_APP_CONTEXT = "other-war";
 
+    private static final String EXPLODED_WEB_APP_CONTEXT = "exploded";
+
     @ContainerResource
     private ManagementClient managementClient;
 
@@ -86,6 +91,21 @@ public class SubDeploymentAvailableInClassPathTestCase {
         ear.addAsModule(ejbJar);
         ear.addAsModule(war);
 
+        logger.info(ear.toString(true));
+        return ear;
+    }
+
+    @Deployment(name = "ear-with-exploded-war", testable = false)
+    public static EnterpriseArchive createEarWithExplodedWar() {
+        final JavaArchive ejbJar = ShrinkWrap.create(JavaArchive.class, "ejb.jar");
+        ejbJar.addClasses(EJBBusinessInterface.class, SimpleSLSB.class);
+        final EnterpriseArchive ear = ShrinkWrap.create(EnterpriseArchive.class, EXPLODED_WEB_APP_CONTEXT + ".ear");
+        ear.addAsModule(ejbJar);
+        ear.add(new StringAsset("OK!"), EXPLODED_WEB_APP_CONTEXT + ".war/index.jsp");
+        ear.add(new ClassAsset(EjbInvokingServlet.class), EXPLODED_WEB_APP_CONTEXT + ".war/WEB-INF/classes/" + EjbInvokingServlet.class.getName().replace('.', '/') + ".class");
+        final JavaArchive servletJar = ShrinkWrap.create(JavaArchive.class, "servlet.jar");
+        servletJar.addClass(HelloWorldServlet.class);
+        ear.add(servletJar, EXPLODED_WEB_APP_CONTEXT + ".war/WEB-INF/lib", ZipExporter.class);
         logger.info(ear.toString(true));
         return ear;
     }
@@ -147,8 +167,44 @@ public class SubDeploymentAvailableInClassPathTestCase {
      * Tests that for a .ear like this one:
      * myapp.ear
      * |
-     * |--- web.war
+     * |--- web.war/WEB-INF/classes
+     * |--- web.war/index.jsp
      * |
+     * |--- ejb.jar
+     * <p/>
+     * <p/>
+     * the classes within the web.war have access to the classes in the ejb.jar
+     * web.war is a folder, not an archive.
+     * @throws Exception
+     */
+    @Test
+    @OperateOnDeployment("ear-with-exploded-war")
+    public void testExplodedWarInEar() throws Exception {
+        final HttpClient httpClient = new DefaultHttpClient();
+        String message = "OK!";
+        String requestURL = managementClient.getWebUri() + "/" + EXPLODED_WEB_APP_CONTEXT + "/index.jsp";
+        HttpGet request = new HttpGet(requestURL);
+        HttpResponse response = httpClient.execute(request);
+        HttpEntity entity = response.getEntity();
+        Assert.assertNotNull("Response message from servlet was null", entity);
+        String responseMessage = EntityUtils.toString(entity);
+        Assert.assertEquals("Unexpected echo message from servlet", message, responseMessage);
+        message = "JBossAS7";
+        requestURL = managementClient.getWebUri() + "/" + EXPLODED_WEB_APP_CONTEXT + HelloWorldServlet.URL_PATTERN + "?" + HelloWorldServlet.PARAMETER_NAME + "=" + message;
+        request = new HttpGet(requestURL);
+        response = httpClient.execute(request);
+        entity = response.getEntity();
+        Assert.assertNotNull("Response message from servlet was null", entity);
+        responseMessage = EntityUtils.toString(entity);
+        Assert.assertEquals("Unexpected echo message from servlet", message, responseMessage);
+    }
+
+    /**
+     * Tests that for a .ear like this one: 
+     * myapp.ear
+     * |
+     * |--- web.war
+     * | 
      * |--- ejb.jar
      * <p/>
      * <p/>
