@@ -82,6 +82,7 @@ import org.jboss.as.domain.management.CoreManagementResourceDefinition;
 import org.jboss.as.domain.management.access.AccessAuthorizationDomainSlaveConfigHandler;
 import org.jboss.as.domain.management.access.AccessAuthorizationResourceDefinition;
 import org.jboss.as.domain.management.access.AccessConstraintResources;
+import org.jboss.as.host.controller.ignored.IgnoredDomainResourceRegistry;
 import org.jboss.as.management.client.content.ManagedDMRContentTypeResource;
 import org.jboss.as.repository.ContentRepository;
 import org.jboss.as.repository.HostFileRepository;
@@ -105,6 +106,7 @@ public class ApplyRemoteMasterDomainModelHandler implements OperationStepHandler
 
     private final HostFileRepository fileRepository;
     private final ContentRepository contentRepository;
+    private final IgnoredDomainResourceRegistry ignoredResourceRegistry;
 
     private final LocalHostControllerInfo localHostInfo;
     private final WritableAuthorizerConfiguration authorizerConfiguration;
@@ -112,10 +114,12 @@ public class ApplyRemoteMasterDomainModelHandler implements OperationStepHandler
     public ApplyRemoteMasterDomainModelHandler(final HostFileRepository fileRepository,
                                                final ContentRepository contentRepository,
                                                final LocalHostControllerInfo localHostInfo,
+                                               final IgnoredDomainResourceRegistry ignoredResourceRegistry,
                                                final WritableAuthorizerConfiguration authorizerConfiguration) {
         this.fileRepository = fileRepository;
         this.contentRepository = contentRepository;
         this.localHostInfo = localHostInfo;
+        this.ignoredResourceRegistry = ignoredResourceRegistry;
         this.authorizerConfiguration = authorizerConfiguration;
     }
 
@@ -141,6 +145,9 @@ public class ApplyRemoteMasterDomainModelHandler implements OperationStepHandler
         for (final ModelNode resourceDescription : domainModel.asList()) {
 
             final PathAddress resourceAddress = PathAddress.pathAddress(resourceDescription.require("domain-resource-address"));
+            if (ignoredResourceRegistry.isResourceExcluded(resourceAddress)) {
+                continue;
+            }
 
             if (resourceAddress.size() == 1 && resourceAddress.getElement(0).getKey().equals(EXTENSION)) {
                 // Extensions are handled in ApplyExtensionsHandler

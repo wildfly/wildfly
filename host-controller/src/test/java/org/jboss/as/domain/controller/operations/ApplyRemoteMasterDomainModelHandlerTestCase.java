@@ -70,7 +70,8 @@ public class ApplyRemoteMasterDomainModelHandlerTestCase extends AbstractOperati
         }
     };
     WritableAuthorizerConfiguration authorizerConfiguration = new WritableAuthorizerConfiguration(StandardRBACAuthorizer.AUTHORIZER_DESCRIPTION);
-    private final ApplyRemoteMasterDomainModelHandler handler = new ApplyRemoteMasterDomainModelHandler(null, null, HOST_INFO, authorizerConfiguration);
+    private final ApplyRemoteMasterDomainModelHandler handler =
+            new ApplyRemoteMasterDomainModelHandler(null, null, HOST_INFO, new IgnoredDomainResourceRegistry(HOST_INFO), authorizerConfiguration);
 
     @Test
     public void testNoChanges() throws Exception {

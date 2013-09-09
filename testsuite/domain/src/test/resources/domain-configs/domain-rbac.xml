@@ -20,7 +20,7 @@
   ~ 02110-1301 USA, or see the FSF site: http://www.fsf.org.
   -->
 
-<domain xmlns="urn:jboss:domain:2.0">
+<domain xmlns="urn:jboss:domain:1.5">
 
     <extensions>
         <extension module="org.jboss.as.clustering.infinispan"/>
@@ -43,9 +43,8 @@
         <extension module="org.jboss.as.threads"/>
         <extension module="org.jboss.as.transactions"/>
         <extension module="org.jboss.as.weld"/>
+        <extension module="org.jboss.as.web"/>
         <extension module="org.jboss.as.webservices"/>
-        <extension module="org.wildfly.extension.io"/>
-        <extension module="org.wildfly.extension.undertow"/>
     </extensions>
 
     <system-properties>
