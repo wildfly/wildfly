@@ -26,6 +26,7 @@ import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Set;
 
+import org.jboss.as.controller.ControllerLogger;
 import org.jboss.as.controller.access.Action;
 import org.jboss.as.controller.access.ServerGroupEffect;
 import org.jboss.as.controller.access.TargetAttribute;
@@ -116,19 +117,34 @@ public class ServerGroupEffectConstraint extends AbstractConstraint implements C
                 if (readOnly) {
                     // Allow global or any matching server group
                     if (!sgec.global) {
-                        return !anyMatch(sgec);
+                        boolean anyMatch = anyMatch(sgec);
+                        if (!anyMatch) ControllerLogger.ACCESS_LOGGER.tracef("read-only server-group constraint violated " +
+                                "for action %s due to no match between groups %s and allowed groups %s",
+                                actionEffect, sgec.specific, specific);
+                        return !anyMatch;
                     }
                 } else if (!global) {
                     if (sgec.global) {
                         // Only the readOnlyConstraint gets global
+                        ControllerLogger.ACCESS_LOGGER.tracef("server-group constraint violated for action %s due to " +
+                            "requirement for access to global resources", actionEffect);
                         return true;
                     } else if (!sgec.unassigned) {
                         if (actionEffect == Action.ActionEffect.WRITE_RUNTIME || actionEffect == Action.ActionEffect.WRITE_CONFIG) {
                             //  Writes must not effect other groups
-                            return !specific.containsAll(sgec.specific);
+                            boolean containsAll = specific.containsAll(sgec.specific);
+                            if (!containsAll) {
+                                ControllerLogger.ACCESS_LOGGER.tracef("server-group constraint violated for action %s due to " +
+                                        "mismatch of groups %s vs allowed %s", actionEffect, sgec.specific, specific);
+                            }
+                            return !containsAll;
                         } else {
                             // Reads ok as long as one of our groups match
-                            return !anyMatch(sgec);
+                            boolean anyMatch = anyMatch(sgec);
+                            if (!anyMatch) ControllerLogger.ACCESS_LOGGER.tracef("server-group constraint violated " +
+                                    "for action %s due to no match between groups %s and allowed groups %s",
+                                    actionEffect, sgec.specific, specific);
+                            return !anyMatch;
                         }
                     } // else fall through
                 }
