@@ -25,8 +25,10 @@ package org.jboss.as.server.deployment.annotation;
 import java.util.ArrayDeque;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 
 import org.jboss.as.server.ServerLogger;
@@ -62,7 +64,7 @@ public class CompositeIndexProcessor implements DeploymentUnitProcessor {
         if (computeCompositeIndex != null && !computeCompositeIndex) {
             return;
         }
-
+        Map<ModuleIdentifier, CompositeIndex> additionalAnnotationIndexes = new HashMap<ModuleIdentifier, CompositeIndex>();
         final List<ModuleIdentifier> additionalModuleIndexes = deploymentUnit.getAttachmentList(Attachments.ADDITIONAL_ANNOTATION_INDEXES);
         final List<Index> indexes = new ArrayList<Index>();
         for (final ModuleIdentifier moduleIdentifier : additionalModuleIndexes) {
@@ -71,6 +73,7 @@ public class CompositeIndexProcessor implements DeploymentUnitProcessor {
                 final CompositeIndex additionalIndex = ModuleIndexBuilder.buildCompositeIndex(module);
                 if (additionalIndex != null) {
                     indexes.addAll(additionalIndex.indexes);
+                    additionalAnnotationIndexes.put(moduleIdentifier, additionalIndex);
                 } else {
                     ServerLogger.DEPLOYMENT_LOGGER.noCompositeIndex(module.getIdentifier(), ModuleIndexBuilder.INDEX_LOCATION);
                 }
@@ -78,6 +81,7 @@ public class CompositeIndexProcessor implements DeploymentUnitProcessor {
                 throw new DeploymentUnitProcessingException(e);
             }
         }
+        deploymentUnit.putAttachment(Attachments.ADDITIONAL_ANNOTATION_INDEXES_BY_MODULE, additionalAnnotationIndexes);
 
         final List<ResourceRoot> allResourceRoots = new ArrayList<ResourceRoot>();
         final List<ResourceRoot> resourceRoots = deploymentUnit.getAttachmentList(Attachments.RESOURCE_ROOTS);

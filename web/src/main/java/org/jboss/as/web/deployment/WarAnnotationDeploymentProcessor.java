@@ -42,11 +42,13 @@ import org.jboss.annotation.javaee.DisplayNames;
 import org.jboss.annotation.javaee.Icons;
 import org.jboss.as.ee.structure.DeploymentType;
 import org.jboss.as.ee.structure.DeploymentTypeMarker;
+import org.jboss.as.server.deployment.Attachments;
 import org.jboss.as.server.deployment.DeploymentPhaseContext;
 import org.jboss.as.server.deployment.DeploymentUnit;
 import org.jboss.as.server.deployment.DeploymentUnitProcessingException;
 import org.jboss.as.server.deployment.DeploymentUnitProcessor;
 import org.jboss.as.server.deployment.annotation.AnnotationIndexUtils;
+import org.jboss.as.server.deployment.annotation.CompositeIndex;
 import org.jboss.as.server.deployment.module.ResourceRoot;
 import org.jboss.jandex.AnnotationInstance;
 import org.jboss.jandex.AnnotationTarget;
@@ -82,6 +84,7 @@ import org.jboss.metadata.web.spec.ServletsMetaData;
 import org.jboss.metadata.web.spec.TransportGuaranteeType;
 import org.jboss.metadata.web.spec.Web30MetaData;
 import org.jboss.metadata.web.spec.WebMetaData;
+import org.jboss.modules.ModuleIdentifier;
 
 /**
  * Web annotation deployment processor.
@@ -121,6 +124,17 @@ public class WarAnnotationDeploymentProcessor implements DeploymentUnitProcessor
         for (final Entry<ResourceRoot, Index> entry : indexes.entrySet()) {
             final Index jarIndex = entry.getValue();
             annotationsMetaData.put(entry.getKey().getRootName(), processAnnotations(jarIndex));
+        }
+
+        Map<ModuleIdentifier, CompositeIndex> additionalModelAnnotations = deploymentUnit.getAttachment(Attachments.ADDITIONAL_ANNOTATION_INDEXES_BY_MODULE);
+        if (additionalModelAnnotations != null) {
+            final List<WebMetaData> additional = new ArrayList<WebMetaData>();
+            for (Entry<ModuleIdentifier, CompositeIndex> entry : additionalModelAnnotations.entrySet()) {
+                for(Index index : entry.getValue().getIndexes()) {
+                    additional.add(processAnnotations(index));
+                }
+            }
+            warMetaData.setAdditionalModuleAnnotationsMetadata(additional);
         }
     }
 

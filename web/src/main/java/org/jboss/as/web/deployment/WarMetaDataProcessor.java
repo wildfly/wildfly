@@ -317,7 +317,17 @@ public class WarMetaDataProcessor implements DeploymentUnitProcessor {
                 throw new DeploymentUnitProcessingException(MESSAGES.invalidWebFragment(jar), e);
             }
         }
+
         WebCommonMetaDataMerger.augment(specMetaData, mergedFragmentMetaData, null, true);
+
+        List<WebMetaData> additional = warMetaData.getAdditionalModuleAnnotationsMetadata();
+        if (additional != null && !isComplete) {
+            //augument with annotations from additional modules
+            for (WebMetaData annotations : additional) {
+                // Merge annotations corresponding to the JAR
+                WebCommonMetaDataMerger.augment(specMetaData, annotations, null, true);
+            }
+        }
 
         // Override with meta data (JBossWebMetaData) Create a merged view
         JBossWebMetaData mergedMetaData = new JBossWebMetaData();

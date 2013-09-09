@@ -22,6 +22,7 @@
 
 package org.jboss.as.server.deployment;
 
+import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.jar.Manifest;
@@ -196,6 +197,8 @@ public final class Attachments {
     public static final AttachmentKey<AttachmentList<AdditionalModuleSpecification>> ADDITIONAL_MODULES = AttachmentKey.createList(AdditionalModuleSpecification.class);
 
     public static final AttachmentKey<AttachmentList<ModuleIdentifier>> ADDITIONAL_ANNOTATION_INDEXES = AttachmentKey.createList(ModuleIdentifier.class);
+
+    public static final AttachmentKey<Map<ModuleIdentifier, CompositeIndex>> ADDITIONAL_ANNOTATION_INDEXES_BY_MODULE = AttachmentKey.create(Map.class);
 
     //
     // VALIDATE

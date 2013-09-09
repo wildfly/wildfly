@@ -64,6 +64,10 @@ public class WarMetaData {
     private volatile Map<String, WebMetaData> annotationsMetaData;
 
     /**
+     * additional module annotations metadata.
+     */
+    private volatile List<WebMetaData> additionalModuleAnnotationsMetadata;
+    /**
      * Order.
      */
     private volatile List<String> order;
@@ -168,4 +172,11 @@ public class WarMetaData {
         this.mergedJBossWebMetaData = mergedJBossWebMetaData;
     }
 
+    public List<WebMetaData> getAdditionalModuleAnnotationsMetadata() {
+        return additionalModuleAnnotationsMetadata;
+    }
+
+    public void setAdditionalModuleAnnotationsMetadata(List<WebMetaData> additionalModuleAnnotationsMetadata) {
+        this.additionalModuleAnnotationsMetadata = additionalModuleAnnotationsMetadata;
+    }
 }
