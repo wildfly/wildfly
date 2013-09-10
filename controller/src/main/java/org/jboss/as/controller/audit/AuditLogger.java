@@ -173,5 +173,9 @@ public interface AuditLogger {
         @Override
         public void bootDone() {
         }
+
+        @Override
+        public void startBoot() {
+        }
     };
 }
