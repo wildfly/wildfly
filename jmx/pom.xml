@@ -48,7 +48,6 @@
                     <includes>
                         <include>**/*TestCase.java</include>
                     </includes>
-                    <enableAssertions>false</enableAssertions>
                     <systemPropertyVariables>
                         <org.jboss.model.test.cache.root>${org.jboss.model.test.cache.root}</org.jboss.model.test.cache.root>
                         <org.jboss.model.test.classpath.cache>${org.jboss.model.test.classpath.cache}</org.jboss.model.test.classpath.cache>
