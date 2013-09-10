@@ -41,41 +41,26 @@ import java.io.StringWriter;
 import java.io.UnsupportedEncodingException;
 import java.net.InetAddress;
 import java.util.ArrayList;
-import java.util.Collections;
-import java.util.LinkedHashMap;
 import java.util.List;
-import java.util.Map;
-import java.util.concurrent.CountDownLatch;
-import java.util.concurrent.TimeUnit;
 import java.util.regex.Pattern;
 
-import org.jboss.as.controller.CompositeOperationHandler;
 import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.PathElement;
-import org.jboss.as.controller.access.management.DelegatingConfigurableAuthorizer;
 import org.jboss.as.controller.audit.ManagedAuditLogger;
 import org.jboss.as.controller.audit.ManagedAuditLoggerImpl;
 import org.jboss.as.controller.audit.SyslogAuditLogHandler;
 import org.jboss.as.controller.audit.SyslogAuditLogHandler.Transport;
 import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
 import org.jboss.as.controller.operations.common.Util;
-import org.jboss.as.controller.operations.global.GlobalOperationHandlers;
-import org.jboss.as.controller.registry.ManagementResourceRegistration;
-import org.jboss.as.controller.registry.Resource;
-import org.jboss.as.controller.services.path.PathManagerService;
-import org.jboss.as.controller.services.path.PathResourceDefinition;
 import org.jboss.as.domain.management.CoreManagementResourceDefinition;
 import org.jboss.as.domain.management.audit.AccessAuditResourceDefinition;
 import org.jboss.as.domain.management.audit.AuditLogHandlerResourceDefinition;
 import org.jboss.as.domain.management.audit.AuditLogLoggerResourceDefinition;
-import org.jboss.as.domain.management.audit.EnvironmentNameReader;
 import org.jboss.as.domain.management.audit.FileAuditLogHandlerResourceDefinition;
 import org.jboss.as.domain.management.audit.SyslogAuditLogProtocolResourceDefinition;
+import org.jboss.as.domain.management.security.util.ManagementControllerTestBase;
 import org.jboss.dmr.ModelNode;
 import org.jboss.logmanager.handlers.SyslogHandler;
-import org.jboss.msc.service.AbstractServiceListener;
-import org.jboss.msc.service.ServiceController;
-import org.jboss.msc.service.ServiceName;
 import org.junit.After;
 import org.junit.Assert;
 import org.xnio.IoUtils;
@@ -85,14 +70,10 @@ import org.xnio.IoUtils;
  *
  * @author: Kabir Khan
  */
-public class AbstractAuditLogHandlerTestCase extends AbstractControllerTestBase {
+public class AbstractAuditLogHandlerTestCase extends ManagementControllerTestBase {
     protected static final PathAddress AUDIT_ADDR = PathAddress.pathAddress(CoreManagementResourceDefinition.PATH_ELEMENT, AccessAuditResourceDefinition.PATH_ELEMENT);
     protected static final int SYSLOG_PORT = 6666;
     protected static final int SYSLOG_PORT2 = 6667;
-
-    volatile PathManagerService pathManagerService;
-    volatile ManagedAuditLogger auditLogger;
-    volatile File logDir;
 
     protected final List<ModelNode> bootOperations = new ArrayList<ModelNode>();
 
@@ -368,82 +349,4 @@ public class AbstractAuditLogHandlerTestCase extends AbstractControllerTestBase 
         bootOperations.addAll(this.bootOperations);
     }
 
-    protected void initModel(Resource rootResource, ManagementResourceRegistration registration) {
-        if (logDir == null){
-            logDir = new File(".");
-            logDir = new File(logDir, "target");
-            logDir = new File(logDir, "audit-log-test-log-dir").getAbsoluteFile();
-            if (!logDir.exists()){
-                logDir.mkdirs();
-            }
-        }
-
-        for (File file : logDir.listFiles()){
-            file.delete();
-        }
-
-        pathManagerService = new PathManagerService() {
-            {
-                super.addHardcodedAbsolutePath(getContainer(), "log.dir", logDir.getAbsolutePath());
-            }
-        };
-        GlobalOperationHandlers.registerGlobalOperations(registration, processType);
-        registration.registerOperationHandler(CompositeOperationHandler.DEFINITION, CompositeOperationHandler.INSTANCE);
-
-        TestServiceListener listener = new TestServiceListener();
-        listener.reset(1);
-        getContainer().addService(PathManagerService.SERVICE_NAME, pathManagerService)
-                .addListener(listener)
-                .install();
-
-        try {
-            listener.latch.await(10, TimeUnit.SECONDS);
-        } catch (InterruptedException e) {
-            Thread.currentThread().interrupt();
-            throw new RuntimeException(e);
-        }
-
-        registration.registerSubModel(PathResourceDefinition.createSpecified(pathManagerService));
-        registration.registerSubModel(CoreManagementResourceDefinition.forStandaloneServer(new DelegatingConfigurableAuthorizer(), getAuditLogger(), pathManagerService, new EnvironmentNameReader() {
-            public boolean isServer() {
-                return true;
-            }
-
-            public String getServerName() {
-                return "Test";
-            }
-
-            public String getHostName() {
-                return null;
-            }
-
-            public String getProductName() {
-                return null;
-            }
-        }));
-
-
-        pathManagerService.addPathManagerResources(rootResource);
-        rootResource.registerChild(CoreManagementResourceDefinition.PATH_ELEMENT, Resource.Factory.create());
-    }
-
-
-    private class TestServiceListener extends AbstractServiceListener<Object> {
-
-        volatile CountDownLatch latch;
-        Map<ServiceController.Transition, ServiceName> services = Collections.synchronizedMap(new LinkedHashMap<ServiceController.Transition, ServiceName>());
-
-
-        void reset(int count) {
-            latch = new CountDownLatch(count);
-            services.clear();
-        }
-
-        public void transition(ServiceController<? extends Object> controller, ServiceController.Transition transition) {
-            if (transition == ServiceController.Transition.STARTING_to_UP || transition == ServiceController.Transition.REMOVING_to_REMOVED) {
-                services.put(transition, controller.getName());
-                latch.countDown();
-            }
-        }
-    }
 }

@@ -21,7 +21,9 @@
  */
 package org.jboss.as.test.manualmode.security;
 
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertTrue;
 
 import java.io.File;
 import java.io.FileOutputStream;
@@ -134,7 +136,6 @@ public class OutboundLdapConnectionTestCase {
     private static final String LDAPS_CONNECTION = "test-ldaps";
 
     private static final String LDAPS_AUTHN_REALM_NO_SSL = "ldaps-authn-realm-no-ssl";
-    private static final String LDAPS_CONNECTION_NO_SSL_CONF = "test-ldaps-no-ssl";
     private static final String LDAPS_AUTHN_SD_NO_SSL = "ldaps-authn-sd-no-ssl";
 
     private static final String SECURITY_CREDENTIALS = "secret";
