@@ -9,7 +9,6 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.COR
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ENABLED;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.HANDLER;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.LOGGER;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.LOG_BOOT;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.LOG_READ_ONLY;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.MANAGEMENT;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.NAME;
@@ -20,6 +19,7 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.REM
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.STEPS;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SYSLOG_FORMAT;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SYSLOG_HANDLER;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SYSTEM_PROPERTY;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.UDP;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.VALUE;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.WRITE_ATTRIBUTE_OPERATION;
@@ -28,6 +28,8 @@ import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileReader;
 import java.io.IOException;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.TimeUnit;
@@ -72,6 +74,7 @@ public class AuditLogToSyslogTestCase {
     private static SyslogServerIF server;
     private static BlockingQueue<String> queue;
     private static final int ADJUSTED_SECOND = TimeoutUtil.adjust(1000);
+    private static List<Long> properties = new ArrayList<Long>();
 
     @Test
     public void testAuditLoggingToSyslog() throws Exception {
@@ -87,7 +90,8 @@ public class AuditLogToSyslogTestCase {
         Assert.assertEquals("Audit log is logged to syslog even it isn't enabled", 0, readFile(logFile));
         try {
             enableLog();
-            Assert.assertEquals(1, readFile(logFile));
+            queue.poll(15 * ADJUSTED_SECOND, TimeUnit.MILLISECONDS);
+            Assert.assertEquals("Enabled message of audit log isn't logged to syslog", 1, readFile(logFile));
             makeOneLog();
             queue.poll(15 * ADJUSTED_SECOND, TimeUnit.MILLISECONDS);
             Assert.assertEquals("Audit log isn't logged to syslog", 2, readFile(logFile));
@@ -128,13 +132,13 @@ public class AuditLogToSyslogTestCase {
     }
 
     private void makeOneLog() throws Exception {
+        long timeStamp = System.currentTimeMillis();
+        properties.add(Long.valueOf(timeStamp));
         ModelNode op = new ModelNode();
-        op.get(OP).set(WRITE_ATTRIBUTE_OPERATION);
-        op.get(OP_ADDR).add(CORE_SERVICE, MANAGEMENT);
-        op.get(OP_ADDR).add(ACCESS, AUDIT);
-        op.get(OP_ADDR).add(LOGGER, AUDIT_LOG);
-        op.get(NAME).set(LOG_BOOT);
-        op.get(VALUE).set("true");
+        op.get(OP).set(ADD);
+        op.get(OP_ADDR).add(SYSTEM_PROPERTY, timeStamp);
+        op.get(NAME).set(NAME);
+        op.get(VALUE).set("someValue");
         AuditLogToSyslogSetup.applyUpdate(managementClient.getControllerClient(), op, false);
     }
 
@@ -238,6 +242,13 @@ public class AuditLogToSyslogTestCase {
             SyslogServer.shutdown();
 
             ModelNode op;
+
+            for (Long property : properties) {
+                op = new ModelNode();
+                op.get(OP).set(REMOVE);
+                op.get(OP_ADDR).add(SYSTEM_PROPERTY, property);
+                AuditLogToSyslogSetup.applyUpdate(managementClient.getControllerClient(), op, false);
+            }
 
             op = new ModelNode();
             op.get(OP).set(REMOVE);
