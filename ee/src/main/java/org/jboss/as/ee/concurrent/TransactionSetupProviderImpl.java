@@ -47,14 +47,15 @@ public class TransactionSetupProviderImpl implements TransactionSetupProvider {
 
     @Override
     public TransactionHandle beforeProxyMethod(String transactionExecutionProperty) {
+        Transaction transaction = null;
         if (!ManagedTask.USE_TRANSACTION_OF_EXECUTION_THREAD.equals(transactionExecutionProperty)) {
             try {
-                return new TransactionHandleImpl(transactionManager.suspend());
+                transaction = transactionManager.suspend();
             } catch (Throwable e) {
                 EeLogger.ROOT_LOGGER.debug("failed to suspend transaction",e);
             }
         }
-        return null;
+        return new TransactionHandleImpl(transaction);
     }
 
     @Override
