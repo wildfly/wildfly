@@ -1,0 +1,88 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<!--
+ Copyright (c) 2013 Red Hat, Inc. and/or its affiliates.
+
+ All rights reserved. This program and the accompanying materials
+ are made available under the terms of the Eclipse Public License v1.0
+ which accompanies this distribution, and is available at
+ http://www.eclipse.org/legal/epl-v10.html
+
+ Contributors:
+ Cheng Fang - Initial API and implementation
+-->
+
+<job id="chunkPartition" xmlns="http://xmlns.jcp.org/xml/ns/javaee" version="1.0">
+    <step id="step1">
+        <chunk item-count="3">
+            <reader ref="integerArrayReader">
+                <properties>
+                    <property name="data.count" value="30"/>
+                    <property name="reader.fail.at" value="-1"/>
+                    <property name="partition.start" value="#{partitionPlan['partition.start']}"/>
+                    <property name="partition.end" value="#{partitionPlan['partition.end']}"/>
+                </properties>
+            </reader>
+            <writer ref="integerArrayWriter">
+                <properties>
+                    <property name="data.count" value="30"/>
+                    <property name="writer.fail.at" value="-1"/>
+                    <property name="writer.sleep.time" value="#{jobParameters['writer.sleep.time']}"/>
+                    <property name="partition.start" value="#{partitionPlan['partition.start']}"/>
+                    <property name="partition.end" value="#{partitionPlan['partition.end']}"/>
+                </properties>
+            </writer>
+        </chunk>
+        <partition>
+            <plan partitions="10" threads="#{jobParameters['thread.count']}">
+                <properties partition="0">
+                    <property name="partition.start" value="0"/>
+                    <property name="partition.end" value="2"/>
+                </properties>
+                <properties partition="1">
+                    <property name="partition.start" value="3"/>
+                    <property name="partition.end" value="5"/>
+                </properties>
+                <properties partition="2">
+                    <property name="partition.start" value="6"/>
+                    <property name="partition.end" value="8"/>
+                </properties>
+                <properties partition="3">
+                    <property name="partition.start" value="9"/>
+                    <property name="partition.end" value="11"/>
+                </properties>
+                <properties partition="4">
+                    <property name="partition.start" value="12"/>
+                    <property name="partition.end" value="14"/>
+                </properties>
+                <properties partition="5">
+                    <property name="partition.start" value="15"/>
+                    <property name="partition.end" value="17"/>
+                </properties>
+                <properties partition="6">
+                    <property name="partition.start" value="18"/>
+                    <property name="partition.end" value="20"/>
+                </properties>
+                <properties partition="7">
+                    <property name="partition.start" value="21"/>
+                    <property name="partition.end" value="23"/>
+                </properties>
+                <properties partition="8">
+                    <property name="partition.start" value="24"/>
+                    <property name="partition.end" value="26"/>
+                </properties>
+                <properties partition="9">
+                    <property name="partition.start" value="27"/>
+                    <property name="partition.end" value="29"/>
+                </properties>
+            </plan>
+            <collector ref="chunkPartitionCollector"></collector>
+            <analyzer ref="chunkPartitionAnalyzer">
+                <properties>
+                    <property name="thread.count" value="#{jobParameters['thread.count']}" />
+                    <property name="skip.thread.check" value="#{jobParameters['skip.thread.check']}" />
+                </properties>
+            </analyzer>
+        </partition>
+    </step>
+</job>
