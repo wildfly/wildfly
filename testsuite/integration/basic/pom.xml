@@ -31,8 +31,6 @@
         <jbossas.ts.integ.dir>${basedir}/..</jbossas.ts.integ.dir>
         <jbossas.ts.dir>${jbossas.ts.integ.dir}/..</jbossas.ts.dir>
         <jbossas.project.dir>${jbossas.ts.dir}/..</jbossas.project.dir>
-        <version.apacheds>2.0.0-M7</version.apacheds>
-        <version.apacheds.shared>1.0.0-M12</version.apacheds.shared>
         <version.exec.maven.plugin>1.2.1</version.exec.maven.plugin>
     </properties>
 
@@ -42,56 +40,6 @@
             <artifactId>jbossxacml</artifactId>
             <scope>provided</scope>
         </dependency>
-<!--
-       <dependency>
-            <groupId>org.apache.directory.server</groupId>
-            <artifactId>apacheds-core</artifactId>
-            <version>${version.apacheds}</version>
-            <scope>test</scope>
-        </dependency>
-        <dependency>
-            <groupId>org.apache.directory.server</groupId>
-            <artifactId>apacheds-server-config</artifactId>
-            <version>${version.apacheds}</version>
-            <scope>test</scope>
-        </dependency>
-        <dependency>
-            <groupId>org.apache.directory.server</groupId>
-            <artifactId>apacheds-protocol-ldap</artifactId>
-            <version>${version.apacheds}</version>
-            <scope>test</scope>
-        </dependency>
-        <dependency>
-            <groupId>org.apache.directory.server</groupId>
-            <artifactId>apacheds-interceptors-hash</artifactId>
-            <version>${version.apacheds}</version>
-            <scope>test</scope>
-        </dependency>
-        <dependency>
-            <groupId>org.apache.directory.server</groupId>
-            <artifactId>apacheds-interceptor-kerberos</artifactId>
-            <version>${version.apacheds}</version>
-            <scope>test</scope>
-        </dependency>
-        <dependency>
-            <groupId>org.apache.directory.server</groupId>
-            <artifactId>apacheds-server-annotations</artifactId>
-            <version>${version.apacheds}</version>
-            <scope>test</scope>
-        </dependency>
-        <dependency>
-            <groupId>org.apache.directory.shared</groupId>
-            <artifactId>shared-ldap-codec-standalone</artifactId>
-            <version>${version.apacheds.shared}</version>
-            <scope>test</scope>
-        </dependency>
-        <dependency>
-            <groupId>org.apache.directory.server</groupId>
-            <artifactId>apacheds-core-jndi</artifactId>
-            <version>${version.apacheds}</version>
-            <scope>test</scope>
-        </dependency>
--->
         <dependency>
             <groupId>org.syslog4j</groupId>
             <artifactId>syslog4j</artifactId>

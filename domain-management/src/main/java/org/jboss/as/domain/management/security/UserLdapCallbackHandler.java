@@ -238,10 +238,15 @@ public class UserLdapCallbackHandler implements Service<CallbackHandlerService>,
             SECURITY_LOGGER.tracef("DN '%s' found for user '%s'", distinguishedUserDN, username);
 
             // 3 - Connect as user once their DN is identified
-            userContext = (InitialDirContext) connectionManager.getConnection(distinguishedUserDN, password);
-            if (userContext != null) {
-                SECURITY_LOGGER.tracef("Password verified for user '%s'", username);
-                verifyPasswordCallback.setVerified(true);
+            try {
+                userContext = (InitialDirContext) connectionManager.getConnection(distinguishedUserDN, password);
+                if (userContext != null) {
+                    SECURITY_LOGGER.tracef("Password verified for user '%s'", username);
+                    verifyPasswordCallback.setVerified(true);
+                }
+            } catch (Exception e) {
+                SECURITY_LOGGER.tracef("Password verification failed for user '%s'", username);
+                verifyPasswordCallback.setVerified(false);
             }
 
         } catch (Exception e) {

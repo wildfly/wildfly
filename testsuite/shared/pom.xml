@@ -23,7 +23,6 @@
         <!-- Arquillian dependency versions -->
         <version.arquillian_as7>${project.parent.version}</version.arquillian_as7>
         <version.apacheds>2.0.0-M7</version.apacheds>
-        <version.apacheds.shared>1.0.0-M12</version.apacheds.shared>
     </properties>
 
     <build>
@@ -58,6 +57,7 @@
             <groupId>org.apache.directory.server</groupId>
             <artifactId>apacheds-all</artifactId>
             <version>${version.apacheds}</version>
+            <scope>compile</scope>
         </dependency>
         
         <dependency>

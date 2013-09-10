@@ -1,28 +1,26 @@
 /*
+ * JBoss, Home of Professional Open Source.
+ * Copyright 2013, Red Hat, Inc., and individual contributors
+ * as indicated by the @author tags. See the copyright.txt file in the
+ * distribution for a full listing of individual contributors.
  *
- *  * JBoss, Home of Professional Open Source.
- *  * Copyright 2013, Red Hat, Inc., and individual contributors
- *  * as indicated by the @author tags. See the copyright.txt file in the
- *  * distribution for a full listing of individual contributors.
- *  *
- *  * This is free software; you can redistribute it and/or modify it
- *  * under the terms of the GNU Lesser General Public License as
- *  * published by the Free Software Foundation; either version 2.1 of
- *  * the License, or (at your option) any later version.
- *  *
- *  * This software is distributed in the hope that it will be useful,
- *  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- *  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
- *  * Lesser General Public License for more details.
- *  *
- *  * You should have received a copy of the GNU Lesser General Public
- *  * License along with this software; if not, write to the Free
- *  * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
- *  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
+ * This is free software; you can redistribute it and/or modify it
+ * under the terms of the GNU Lesser General Public License as
+ * published by the Free Software Foundation; either version 2.1 of
+ * the License, or (at your option) any later version.
  *
+ * This software is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
+ * Lesser General Public License for more details.
+ *
+ * You should have received a copy of the GNU Lesser General Public
+ * License along with this software; if not, write to the Free
+ * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
+ * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
 
-package org.jboss.as.domain.management.security.auditlog;
+package org.jboss.as.domain.management.security.util;
 
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.FAILED;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.FAILURE_DESCRIPTION;
@@ -32,8 +30,12 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OUT
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.RESULT;
 
 import java.util.ArrayList;
+import java.util.Collections;
+import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
+import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
 
 import org.jboss.as.controller.ControlledProcessState;
@@ -54,8 +56,10 @@ import org.jboss.as.controller.registry.ManagementResourceRegistration;
 import org.jboss.as.controller.registry.Resource;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.ModelType;
+import org.jboss.msc.service.AbstractServiceListener;
 import org.jboss.msc.service.ServiceBuilder;
 import org.jboss.msc.service.ServiceContainer;
+import org.jboss.msc.service.ServiceController;
 import org.jboss.msc.service.ServiceName;
 import org.jboss.msc.service.ServiceTarget;
 import org.jboss.staxmapper.XMLElementWriter;
@@ -149,7 +153,7 @@ public abstract class AbstractControllerTestBase {
         }
     }
 
-    protected void addBootOperations(List<ModelNode> bootOperations) {
+    protected void addBootOperations(List<ModelNode> bootOperations) throws Exception {
 
     }
 
@@ -168,7 +172,11 @@ public abstract class AbstractControllerTestBase {
         @Override
         protected boolean boot(List<ModelNode> bootOperations, boolean rollbackOnRuntimeFailure)
                 throws ConfigurationPersistenceException {
-            addBootOperations(bootOperations);
+            try {
+                addBootOperations(bootOperations);
+            } catch (Exception e) {
+                throw new RuntimeException(e);
+            }
             return super.boot(bootOperations, rollbackOnRuntimeFailure);
         }
 
@@ -248,6 +256,27 @@ public abstract class AbstractControllerTestBase {
                         createModel(context, base.append(PathElement.pathElement(childType, key)), node.get(childType, key));
                     }
                 }
+            }
+        }
+    }
+
+    protected class TestServiceListener extends AbstractServiceListener<Object> {
+
+        public volatile CountDownLatch latch;
+        Map<ServiceController.Transition, ServiceName> services = Collections.synchronizedMap(new LinkedHashMap<ServiceController.Transition, ServiceName>());
+
+        public TestServiceListener() {
+        }
+
+        public void reset(int count) {
+            latch = new CountDownLatch(count);
+            services.clear();
+        }
+
+        public void transition(ServiceController<? extends Object> controller, ServiceController.Transition transition) {
+            if (transition == ServiceController.Transition.STARTING_to_UP || transition == ServiceController.Transition.REMOVING_to_REMOVED) {
+                services.put(transition, controller.getName());
+                latch.countDown();
             }
         }
     }
