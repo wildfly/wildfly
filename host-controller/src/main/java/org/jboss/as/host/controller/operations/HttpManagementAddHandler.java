@@ -40,7 +40,7 @@ import org.jboss.as.controller.ServiceVerificationHandler;
 import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
 import org.jboss.as.domain.controller.LocalHostControllerInfo;
 import org.jboss.as.domain.http.server.ConsoleMode;
-import org.jboss.as.domain.management.security.SecurityRealmService;
+import org.jboss.as.domain.management.SecurityRealm;
 import org.jboss.as.host.controller.DomainModelControllerService;
 import org.jboss.as.host.controller.HostControllerEnvironment;
 import org.jboss.as.host.controller.resources.HttpManagementResourceDefinition;
@@ -145,7 +145,7 @@ public class HttpManagementAddHandler extends AbstractAddStepHandler {
                 .addInjection(service.getExecutorServiceInjector(), Executors.newCachedThreadPool(httpMgmtThreads));
 
         if (securityRealm != null) {
-            builder.addDependency(SecurityRealmService.BASE_SERVICE_NAME.append(securityRealm), SecurityRealmService.class, service.getSecurityRealmInjector());
+            SecurityRealm.ServiceUtil.addDependency(builder, service.getSecurityRealmInjector(), securityRealm, false);
         } else {
             AS_ROOT_LOGGER.noSecurityRealmDefined();
         }
@@ -155,6 +155,5 @@ public class HttpManagementAddHandler extends AbstractAddStepHandler {
 
         builder.setInitialMode(onDemand ? ServiceController.Mode.ON_DEMAND : ServiceController.Mode.ACTIVE)
                 .install();
-
     }
 }

@@ -25,6 +25,7 @@ package org.jboss.as.domain.management.parsing;
 import static javax.xml.stream.XMLStreamConstants.END_ELEMENT;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ACCESS;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ADD;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ADVANCED_FILTER;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.APPLICATION_CLASSIFICATION;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.AUDIT;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.AUTHENTICATION;
@@ -34,6 +35,8 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.CON
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.CORE_SERVICE;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.EXCLUDE;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.GROUP;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.GROUP_SEARCH;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.GROUP_TO_PRINCIPAL;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.HOST_SCOPED_ROLE;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.HOST_SCOPED_ROLES;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.HTTP_INTERFACE;
@@ -49,6 +52,7 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.NAT
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.PLAIN_TEXT;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.PRINCIPAL_TO_GROUP;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.PROPERTIES;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.REALM;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ROLE_MAPPING;
@@ -61,6 +65,9 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SSL
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.TRUSTSTORE;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.TYPE;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.USER;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.USERNAME_FILTER;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.USERNAME_IS_DN;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.USERNAME_TO_DN;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.USERS;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.VAULT_EXPRESSION;
 import static org.jboss.as.controller.parsing.ParseUtils.isNoNamespaceAttribute;
@@ -69,6 +76,7 @@ import static org.jboss.as.controller.parsing.ParseUtils.missingRequired;
 import static org.jboss.as.controller.parsing.ParseUtils.missingRequiredElement;
 import static org.jboss.as.controller.parsing.ParseUtils.readStringAttributeElement;
 import static org.jboss.as.controller.parsing.ParseUtils.requireNamespace;
+import static org.jboss.as.controller.parsing.ParseUtils.requireNoAttributes;
 import static org.jboss.as.controller.parsing.ParseUtils.requireNoContent;
 import static org.jboss.as.controller.parsing.ParseUtils.requireSingleAttribute;
 import static org.jboss.as.controller.parsing.ParseUtils.unexpectedAttribute;
@@ -111,18 +119,26 @@ import org.jboss.as.domain.management.access.SensitivityResourceDefinition;
 import org.jboss.as.domain.management.access.ServerGroupScopedRoleResourceDefinition;
 import org.jboss.as.domain.management.connections.ldap.LdapConnectionResourceDefinition;
 import org.jboss.as.domain.management.security.AbstractPlugInAuthResourceDefinition;
+import org.jboss.as.domain.management.security.AdvancedUserSearchResourceDefintion;
+import org.jboss.as.domain.management.security.BaseLdapGroupSearchResource;
+import org.jboss.as.domain.management.security.BaseLdapUserSearchResource;
+import org.jboss.as.domain.management.security.GroupToPrincipalResourceDefinition;
 import org.jboss.as.domain.management.security.JaasAuthenticationResourceDefinition;
 import org.jboss.as.domain.management.security.KeystoreAttributes;
 import org.jboss.as.domain.management.security.LdapAuthenticationResourceDefinition;
+import org.jboss.as.domain.management.security.LdapAuthorizationResourceDefinition;
 import org.jboss.as.domain.management.security.LocalAuthenticationResourceDefinition;
 import org.jboss.as.domain.management.security.PlugInAuthenticationResourceDefinition;
+import org.jboss.as.domain.management.security.PrincipalToGroupResourceDefinition;
 import org.jboss.as.domain.management.security.PropertiesAuthenticationResourceDefinition;
 import org.jboss.as.domain.management.security.PropertiesAuthorizationResourceDefinition;
 import org.jboss.as.domain.management.security.PropertyResourceDefinition;
 import org.jboss.as.domain.management.security.SSLServerIdentityResourceDefinition;
 import org.jboss.as.domain.management.security.SecretServerIdentityResourceDefinition;
 import org.jboss.as.domain.management.security.SecurityRealmResourceDefinition;
+import org.jboss.as.domain.management.security.UserIsDnResourceDefintion;
 import org.jboss.as.domain.management.security.UserResourceDefinition;
+import org.jboss.as.domain.management.security.UserSearchResourceDefintion;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.Property;
 import org.jboss.staxmapper.XMLExtendedStreamReader;
@@ -1581,12 +1597,410 @@ public class ManagementXml {
                     authzFound = true;
                     break;
                 }
+                case LDAP: {
+                    parseLdapAuthorization_1_5(reader, expectedNs, realmAddress, list);
+                    authzFound = true;
+                    break;
+                }
                 default: {
                     throw unexpectedElement(reader);
                 }
             }
 
         }
+    }
+
+
+
+    private static void parseLdapAuthorization_1_5(final XMLExtendedStreamReader reader, final Namespace expectedNs,
+            final ModelNode realmAddress, final List<ModelNode> list) throws XMLStreamException {
+        ModelNode addr = realmAddress.clone().add(AUTHORIZATION, LDAP);
+        ModelNode ldapAuthorization = Util.getEmptyOperation(ADD, addr);
+
+        list.add(ldapAuthorization);
+
+        Set<Attribute> required = EnumSet.of(Attribute.CONNECTION);
+        final int count = reader.getAttributeCount();
+        for (int i = 0; i < count; i++) {
+            final String value = reader.getAttributeValue(i);
+            if (!isNoNamespaceAttribute(reader, i)) {
+                throw unexpectedAttribute(reader, i);
+            } else {
+                final Attribute attribute = Attribute.forName(reader.getAttributeLocalName(i));
+                required.remove(attribute);
+                switch (attribute) {
+                    case CONNECTION: {
+                        LdapAuthorizationResourceDefinition.CONNECTION.parseAndSetParameter(value, ldapAuthorization, reader);
+                        break;
+                    }
+                    default: {
+                        throw unexpectedAttribute(reader, i);
+                    }
+                }
+            }
+        }
+
+        if (required.isEmpty() == false) {
+            throw missingRequired(reader, required);
+        }
+
+        Set<Element> foundElements = new HashSet<Element>();
+        while (reader.hasNext() && reader.nextTag() != END_ELEMENT) {
+            requireNamespace(reader, expectedNs);
+            final Element element = Element.forName(reader.getLocalName());
+            if (foundElements.add(element) == false) {
+                throw unexpectedElement(reader); // Only one of each allowed.
+            }
+            switch (element) {
+                case USERNAME_TO_DN: {
+                    parseUsernameToDn(reader, expectedNs, addr, list);
+                    break;
+                }
+                case GROUP_SEARCH: {
+                    parseGroupSearch(reader, expectedNs, addr, list);
+                    break;
+                }
+                default: {
+                    throw unexpectedElement(reader);
+                }
+            }
+        }
+    }
+
+    private static void parseUsernameToDn(final XMLExtendedStreamReader reader, final Namespace expectedNs,
+            final ModelNode ldapAddress, final List<ModelNode> list) throws XMLStreamException {
+        // Add operation to be defined by parsing a child element, however the attribute FORCE is common here.
+        ModelNode childAdd = new ModelNode();
+        childAdd.get(OP).set(ADD);
+
+        boolean forceFound = false;
+        final int count = reader.getAttributeCount();
+        for (int i = 0; i < count; i++) {
+            final String value = reader.getAttributeValue(i);
+            if (!isNoNamespaceAttribute(reader, i)) {
+                throw unexpectedAttribute(reader, i);
+            } else {
+                final Attribute attribute = Attribute.forName(reader.getAttributeLocalName(i));
+                switch (attribute) {
+                    case FORCE:
+                        forceFound = true;
+                        BaseLdapUserSearchResource.FORCE.parseAndSetParameter(value, childAdd, reader);
+                        break;
+                    default: {
+                        throw unexpectedAttribute(reader, i);
+                    }
+                }
+            }
+        }
+
+        if (forceFound == false) {
+            throw missingRequired(reader, Collections.singleton(Attribute.FORCE));
+        }
+
+        ModelNode address = ldapAddress.clone().add(USERNAME_TO_DN);
+        while (reader.hasNext() && reader.nextTag() != END_ELEMENT) {
+            requireNamespace(reader, expectedNs);
+
+            final Element element = Element.forName(reader.getLocalName());
+            if (childAdd == null) {
+                throw unexpectedElement(reader);
+            }
+            switch (element) {
+                case USERNAME_IS_DN:
+                    parseUsernameIsDn(reader, address, childAdd, list);
+                    break;
+                case USERNAME_FILTER:
+                    parseUsernameFilter(reader, address, childAdd, list);
+                    break;
+                case ADVANCED_FILTER:
+                    parseAdvancedFilter(reader, address, childAdd, list);
+                    break;
+                default: {
+                    throw unexpectedElement(reader);
+                }
+            }
+            childAdd = null; // Must have been used in the switch or an Exception would have been thrown.
+        }
+
+        if (childAdd != null) {
+            throw missingOneOf(reader, EnumSet.of(Element.USERNAME_IS_DN, Element.USERNAME_FILTER, Element.ADVANCED_FILTER));
+        }
+    }
+
+    private static void parseUsernameIsDn(final XMLExtendedStreamReader reader,
+            final ModelNode parentAddress, final ModelNode addOp, final List<ModelNode> list) throws XMLStreamException {
+        requireNoAttributes(reader);
+        requireNoContent(reader);
+
+        addOp.get(OP_ADDR).set(parentAddress.clone().add(USERNAME_IS_DN));
+        list.add(addOp);
+    }
+
+    private static void parseUsernameFilter(final XMLExtendedStreamReader reader, final ModelNode parentAddress,
+            final ModelNode addOp, final List<ModelNode> list) throws XMLStreamException {
+
+        boolean baseDnFound = false;
+        final int count = reader.getAttributeCount();
+        for (int i = 0; i < count; i++) {
+            final String value = reader.getAttributeValue(i);
+            if (!isNoNamespaceAttribute(reader, i)) {
+                throw unexpectedAttribute(reader, i);
+            } else {
+                final Attribute attribute = Attribute.forName(reader.getAttributeLocalName(i));
+                switch (attribute) {
+                    case BASE_DN: {
+                        baseDnFound = true;
+                        UserSearchResourceDefintion.BASE_DN.parseAndSetParameter(value, addOp, reader);
+                        break;
+                    }
+                    case RECURSIVE: {
+                        UserSearchResourceDefintion.RECURSIVE.parseAndSetParameter(value, addOp, reader);
+                        break;
+                    }
+                    case USER_DN_ATTRIBUTE: {
+                        UserSearchResourceDefintion.USER_DN_ATTRIBUTE.parseAndSetParameter(value, addOp, reader);
+                        break;
+                    }
+                    case ATTRIBUTE: {
+                        UserSearchResourceDefintion.ATTRIBUTE.parseAndSetParameter(value, addOp, reader);
+                        break;
+                    }
+                    default: {
+                        throw unexpectedAttribute(reader, i);
+                    }
+                }
+            }
+        }
+
+        if (baseDnFound == false) {
+            throw missingRequired(reader, Collections.singleton(Attribute.BASE_DN));
+        }
+
+        requireNoContent(reader);
+
+        addOp.get(OP_ADDR).set(parentAddress.clone().add(USERNAME_FILTER));
+        list.add(addOp);
+    }
+
+    private static void parseAdvancedFilter(final XMLExtendedStreamReader reader, final ModelNode parentAddress,
+            final ModelNode addOp, final List<ModelNode> list) throws XMLStreamException {
+
+        boolean baseDnFound = false;
+        final int count = reader.getAttributeCount();
+        for (int i = 0; i < count; i++) {
+            final String value = reader.getAttributeValue(i);
+            if (!isNoNamespaceAttribute(reader, i)) {
+                throw unexpectedAttribute(reader, i);
+            } else {
+                final Attribute attribute = Attribute.forName(reader.getAttributeLocalName(i));
+                switch (attribute) {
+                    case BASE_DN: {
+                        baseDnFound = true;
+                        AdvancedUserSearchResourceDefintion.BASE_DN.parseAndSetParameter(value, addOp, reader);
+                        break;
+                    }
+                    case RECURSIVE: {
+                        AdvancedUserSearchResourceDefintion.RECURSIVE.parseAndSetParameter(value, addOp, reader);
+                        break;
+                    }
+                    case USER_DN_ATTRIBUTE: {
+                        UserSearchResourceDefintion.USER_DN_ATTRIBUTE.parseAndSetParameter(value, addOp, reader);
+                        break;
+                    }
+                    case FILTER: {
+                        AdvancedUserSearchResourceDefintion.FILTER.parseAndSetParameter(value, addOp, reader);
+                        break;
+                    }
+                    default: {
+                        throw unexpectedAttribute(reader, i);
+                    }
+                }
+            }
+        }
+
+        if (baseDnFound == false) {
+            throw missingRequired(reader, Collections.singleton(Attribute.BASE_DN));
+        }
+
+        requireNoContent(reader);
+
+        addOp.get(OP_ADDR).set(parentAddress.clone().add(ADVANCED_FILTER));
+        list.add(addOp);
+    }
+
+    private static void parseGroupSearch(final XMLExtendedStreamReader reader, final Namespace expectedNs,
+            final ModelNode ldapAddress, final List<ModelNode> list) throws XMLStreamException {
+        // Add operation to be defined by parsing a child element, however the attribute FORCE is common here.
+        ModelNode childAdd = new ModelNode();
+        childAdd.get(OP).set(ADD);
+
+        final int count = reader.getAttributeCount();
+        for (int i = 0; i < count; i++) {
+            final String value = reader.getAttributeValue(i);
+            if (!isNoNamespaceAttribute(reader, i)) {
+                throw unexpectedAttribute(reader, i);
+            } else {
+                final Attribute attribute = Attribute.forName(reader.getAttributeLocalName(i));
+                switch (attribute) {
+                    case GROUP_NAME:
+                        BaseLdapGroupSearchResource.GROUP_NAME.parseAndSetParameter(value, childAdd, reader);
+                        break;
+                    case ITERATIVE:
+                        BaseLdapGroupSearchResource.ITERATIVE.parseAndSetParameter(value, childAdd, reader);
+                        break;
+                    case GROUP_DN_ATTRIBUTE:
+                        BaseLdapGroupSearchResource.GROUP_DN_ATTRIBUTE.parseAndSetParameter(value, childAdd, reader);
+                        break;
+                    case GROUP_NAME_ATTRIBUTE:
+                        BaseLdapGroupSearchResource.GROUP_NAME_ATTRIBUTE.parseAndSetParameter(value, childAdd, reader);
+                        break;
+                    default: {
+                        throw unexpectedAttribute(reader, i);
+                    }
+                }
+            }
+        }
+
+        ModelNode address = ldapAddress.clone().add(GROUP_SEARCH);
+        while (reader.hasNext() && reader.nextTag() != END_ELEMENT) {
+            requireNamespace(reader, expectedNs);
+
+            final Element element = Element.forName(reader.getLocalName());
+            if (childAdd == null) {
+                throw unexpectedElement(reader);
+            }
+            switch (element) {
+                case GROUP_TO_PRINCIPAL:
+                    parseGroupToPrincipal(reader, expectedNs, address, childAdd, list);
+                    break;
+                case PRINCIPAL_TO_GROUP:
+                    parsePrincipalToGroup(reader, expectedNs, address, childAdd, list);
+                    break;
+                default: {
+                    throw unexpectedElement(reader);
+                }
+            }
+            childAdd = null; // Must have been used in the switch or an Exception would have been thrown.
+        }
+
+        if (childAdd != null) {
+            throw missingOneOf(reader, EnumSet.of(Element.GROUP_TO_PRINCIPAL, Element.PRINCIPAL_TO_GROUP));
+        }
+    }
+
+    private static void parseGroupToPrincipal(final XMLExtendedStreamReader reader, final Namespace expectedNs, final ModelNode parentAddress,
+            final ModelNode addOp, final List<ModelNode> list) throws XMLStreamException {
+        boolean baseDnFound = false;
+        final int count = reader.getAttributeCount();
+        for (int i = 0; i < count; i++) {
+            final String value = reader.getAttributeValue(i);
+            if (!isNoNamespaceAttribute(reader, i)) {
+                throw unexpectedAttribute(reader, i);
+            } else {
+                final Attribute attribute = Attribute.forName(reader.getAttributeLocalName(i));
+                switch (attribute) {
+                    case BASE_DN: {
+                        baseDnFound = true;
+                        GroupToPrincipalResourceDefinition.BASE_DN.parseAndSetParameter(value, addOp, reader);
+                        break;
+                    }
+                    case RECURSIVE: {
+                        GroupToPrincipalResourceDefinition.RECURSIVE.parseAndSetParameter(value, addOp, reader);
+                        break;
+                    }
+                    case SEARCH_BY:
+                        GroupToPrincipalResourceDefinition.SEARCH_BY.parseAndSetParameter(value, addOp, reader);
+                        break;
+                    default: {
+                        throw unexpectedAttribute(reader, i);
+                    }
+                }
+            }
+        }
+
+        if (baseDnFound == false) {
+            throw missingRequired(reader, Collections.singleton(Attribute.BASE_DN));
+        }
+
+        boolean elementFound = false;
+        while (reader.hasNext() && reader.nextTag() != END_ELEMENT) {
+            requireNamespace(reader, expectedNs);
+
+            final Element element = Element.forName(reader.getLocalName());
+            if (elementFound) {
+                throw unexpectedElement(reader);
+            }
+            elementFound = true;
+            switch (element) {
+                case MEMBERSHIP_FILTER:
+                    parseMembershipFilter(reader, addOp);
+                    break;
+                default: {
+                    throw unexpectedElement(reader);
+                }
+            }
+        }
+
+        addOp.get(OP_ADDR).set(parentAddress.clone().add(GROUP_TO_PRINCIPAL));
+        list.add(addOp);
+    }
+
+    private static void parseMembershipFilter(final XMLExtendedStreamReader reader,
+            final ModelNode addOp) throws XMLStreamException {
+        boolean principalAttribute = false;
+        final int count = reader.getAttributeCount();
+        for (int i = 0; i < count; i++) {
+            final String value = reader.getAttributeValue(i);
+            if (!isNoNamespaceAttribute(reader, i)) {
+                throw unexpectedAttribute(reader, i);
+            } else {
+                final Attribute attribute = Attribute.forName(reader.getAttributeLocalName(i));
+                switch (attribute) {
+                    case PRINCIPAL_ATTRIBUTE: {
+                        principalAttribute = true;
+                        GroupToPrincipalResourceDefinition.PRINCIPAL_ATTRIBUTE.parseAndSetParameter(value, addOp, reader);
+                        break;
+                    }
+                    default: {
+                        throw unexpectedAttribute(reader, i);
+                    }
+                }
+            }
+        }
+
+        if (principalAttribute == false) {
+            throw missingRequired(reader, Collections.singleton(Attribute.PRINCIPAL_ATTRIBUTE));
+        }
+
+        requireNoContent(reader);
+    }
+
+    private static void parsePrincipalToGroup(final XMLExtendedStreamReader reader, final Namespace expectedNs, final ModelNode parentAddress,
+            final ModelNode addOp, final List<ModelNode> list) throws XMLStreamException {
+
+        final int count = reader.getAttributeCount();
+        for (int i = 0; i < count; i++) {
+            final String value = reader.getAttributeValue(i);
+            if (!isNoNamespaceAttribute(reader, i)) {
+                throw unexpectedAttribute(reader, i);
+            } else {
+                final Attribute attribute = Attribute.forName(reader.getAttributeLocalName(i));
+                switch (attribute) {
+                    case GROUP_ATTRIBUTE: {
+                        PrincipalToGroupResourceDefinition.GROUP_ATTRIBUTE.parseAndSetParameter(value, addOp, reader);
+                        break;
+                    }
+                    default: {
+                        throw unexpectedAttribute(reader, i);
+                    }
+                }
+            }
+        }
+
+        requireNoContent(reader);
+
+        addOp.get(OP_ADDR).set(parentAddress.clone().add(PRINCIPAL_TO_GROUP));
+        list.add(addOp);
     }
 
     private static void parsePropertiesAuthorization(final XMLExtendedStreamReader reader, final ModelNode realmAddress,
@@ -1761,7 +2175,7 @@ public class ManagementXml {
 
     public static void parseAccessControlRoleMapping(final XMLExtendedStreamReader reader, final ModelNode accContAddr,
             final Namespace expectedNs, final List<ModelNode> list) throws XMLStreamException {
-        ParseUtils.requireNoAttributes(reader);
+        requireNoAttributes(reader);
 
         while (reader.hasNext() && reader.nextTag() != END_ELEMENT) {
             requireNamespace(reader, expectedNs);
@@ -2508,6 +2922,79 @@ public class ManagementXml {
             PropertiesAuthorizationResourceDefinition.RELATIVE_TO.marshallAsAttribute(properties, writer);
         } else if (authorization.hasDefined(PLUG_IN)) {
             writePlugIn_Authorization(writer, authorization.get(PLUG_IN));
+        } else if (authorization.hasDefined(LDAP)) {
+            writeLdapAuthorization(writer,authorization.get(LDAP));
+        }
+
+        writer.writeEndElement();
+    }
+
+    private void writeLdapAuthorization(XMLExtendedStreamWriter writer, ModelNode ldapNode) throws XMLStreamException {
+        writer.writeStartElement(Element.LDAP.getLocalName());
+        LdapAuthorizationResourceDefinition.CONNECTION.marshallAsAttribute(ldapNode, writer);
+        if (ldapNode.hasDefined(USERNAME_TO_DN)) {
+            ModelNode usenameToDn = ldapNode.require(USERNAME_TO_DN);
+            if (usenameToDn.hasDefined(USERNAME_IS_DN) || usenameToDn.hasDefined(USERNAME_FILTER)
+                    || usenameToDn.hasDefined(ADVANCED_FILTER)) {
+                writer.writeStartElement(Element.USERNAME_TO_DN.getLocalName());
+                if (usenameToDn.hasDefined(USERNAME_IS_DN)) {
+                    ModelNode usernameIsDn = usenameToDn.require(USERNAME_IS_DN);
+                    UserIsDnResourceDefintion.FORCE.marshallAsAttribute(usernameIsDn, writer);
+                    writer.writeEmptyElement(Element.USERNAME_IS_DN.getLocalName());
+                } else if (usenameToDn.hasDefined(USERNAME_FILTER)) {
+                    ModelNode usernameFilter = usenameToDn.require(USERNAME_FILTER);
+                    UserSearchResourceDefintion.FORCE.marshallAsAttribute(usernameFilter, writer);
+                    writer.writeStartElement(Element.USERNAME_FILTER.getLocalName());
+                    UserSearchResourceDefintion.BASE_DN.marshallAsAttribute(usernameFilter, writer);
+                    UserSearchResourceDefintion.RECURSIVE.marshallAsAttribute(usernameFilter, writer);
+                    UserSearchResourceDefintion.USER_DN_ATTRIBUTE.marshallAsAttribute(usernameFilter, writer);
+                    UserSearchResourceDefintion.ATTRIBUTE.marshallAsAttribute(usernameFilter, writer);
+                    writer.writeEndElement();
+                } else {
+                    ModelNode advancedFilter = usenameToDn.require(ADVANCED_FILTER);
+                    AdvancedUserSearchResourceDefintion.FORCE.marshallAsAttribute(advancedFilter, writer);
+                    writer.writeStartElement(Element.ADVANCED_FILTER.getLocalName());
+                    AdvancedUserSearchResourceDefintion.BASE_DN.marshallAsAttribute(advancedFilter, writer);
+                    AdvancedUserSearchResourceDefintion.RECURSIVE.marshallAsAttribute(advancedFilter, writer);
+                    AdvancedUserSearchResourceDefintion.USER_DN_ATTRIBUTE.marshallAsAttribute(advancedFilter, writer);
+                    AdvancedUserSearchResourceDefintion.FILTER.marshallAsAttribute(advancedFilter, writer);
+                    writer.writeEndElement();
+                }
+                writer.writeEndElement();
+            }
+        }
+
+        if (ldapNode.hasDefined(GROUP_SEARCH)) {
+            ModelNode groupSearch = ldapNode.require(GROUP_SEARCH);
+
+            if (groupSearch.hasDefined(GROUP_TO_PRINCIPAL) || groupSearch.hasDefined(PRINCIPAL_TO_GROUP)) {
+                writer.writeStartElement(Element.GROUP_SEARCH.getLocalName());
+                if (groupSearch.hasDefined(GROUP_TO_PRINCIPAL)) {
+                    ModelNode groupToPrincipal = groupSearch.require(GROUP_TO_PRINCIPAL);
+                    GroupToPrincipalResourceDefinition.GROUP_NAME.marshallAsAttribute(groupToPrincipal, writer);
+                    GroupToPrincipalResourceDefinition.ITERATIVE.marshallAsAttribute(groupToPrincipal, writer);
+                    GroupToPrincipalResourceDefinition.GROUP_DN_ATTRIBUTE.marshallAsAttribute(groupToPrincipal, writer);
+                    GroupToPrincipalResourceDefinition.GROUP_NAME_ATTRIBUTE.marshallAsAttribute(groupToPrincipal, writer);
+                    writer.writeStartElement(Element.GROUP_TO_PRINCIPAL.getLocalName());
+                    GroupToPrincipalResourceDefinition.SEARCH_BY.marshallAsAttribute(groupToPrincipal, writer);
+                    GroupToPrincipalResourceDefinition.BASE_DN.marshallAsAttribute(groupToPrincipal, writer);
+                    GroupToPrincipalResourceDefinition.RECURSIVE.marshallAsAttribute(groupToPrincipal, writer);
+                    writer.writeStartElement(Element.MEMBERSHIP_FILTER.getLocalName());
+                    GroupToPrincipalResourceDefinition.PRINCIPAL_ATTRIBUTE.marshallAsAttribute(groupToPrincipal, writer);
+                    writer.writeEndElement();
+                    writer.writeEndElement();
+                } else {
+                    ModelNode principalToGroup = groupSearch.require(PRINCIPAL_TO_GROUP);
+                    PrincipalToGroupResourceDefinition.GROUP_NAME.marshallAsAttribute(principalToGroup, writer);
+                    PrincipalToGroupResourceDefinition.ITERATIVE.marshallAsAttribute(principalToGroup, writer);
+                    PrincipalToGroupResourceDefinition.GROUP_DN_ATTRIBUTE.marshallAsAttribute(principalToGroup, writer);
+                    PrincipalToGroupResourceDefinition.GROUP_NAME_ATTRIBUTE.marshallAsAttribute(principalToGroup, writer);
+                    writer.writeStartElement(Element.PRINCIPAL_TO_GROUP.getLocalName());
+                    PrincipalToGroupResourceDefinition.GROUP_ATTRIBUTE.marshallAsAttribute(principalToGroup, writer);
+                    writer.writeEndElement();
+                }
+                writer.writeEndElement();
+            }
         }
 
         writer.writeEndElement();

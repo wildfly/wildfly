@@ -25,7 +25,9 @@ package org.jboss.as.domain.management.security;
 import static org.jboss.as.domain.management.DomainManagementLogger.ROOT_LOGGER;
 
 import org.jboss.as.domain.management.CallbackHandlerFactory;
+import org.jboss.as.domain.management.SecurityRealm;
 import org.jboss.msc.service.Service;
+import org.jboss.msc.service.ServiceName;
 import org.jboss.msc.service.StartContext;
 import org.jboss.msc.service.StartException;
 import org.jboss.msc.service.StopContext;
@@ -50,7 +52,7 @@ import static org.jboss.as.domain.management.DomainManagementMessages.MESSAGES;
  */
 public class SecretIdentityService implements Service<CallbackHandlerFactory> {
 
-    public static final String SERVICE_SUFFIX = "secret";
+    private static final String SERVICE_SUFFIX = "secret";
 
     private final String password;
     private final boolean base64;
@@ -122,5 +124,16 @@ public class SecretIdentityService implements Service<CallbackHandlerFactory> {
                 }
             }
         }
+    }
+
+    public static final class ServiceUtil {
+
+        private ServiceUtil() {
+        }
+
+        public static ServiceName createServiceName(final String realmName) {
+            return SecurityRealm.ServiceUtil.createServiceName(realmName).append(SERVICE_SUFFIX);
+        }
+
     }
 }

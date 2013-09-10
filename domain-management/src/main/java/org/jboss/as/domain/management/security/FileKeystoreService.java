@@ -46,10 +46,8 @@ import org.jboss.msc.value.InjectedValue;
  */
 public class FileKeystoreService implements Service<KeyStore> {
 
-    public static final String KEYSTORE_SUFFIX = "keystore";
-    public static final String TRUSTSTORE_SUFFIX = "truststore";
-
     private KeyStore theKeyStore;
+
     private final String path;
     private final char[] keystorePassword;
     /*

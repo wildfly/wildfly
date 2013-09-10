@@ -26,6 +26,10 @@ import java.util.Set;
 
 import javax.net.ssl.SSLContext;
 
+import org.jboss.msc.inject.Injector;
+import org.jboss.msc.service.ServiceBuilder;
+import org.jboss.msc.service.ServiceName;
+
 /**
  * Interface to the security realm.
  *
@@ -73,5 +77,25 @@ public interface SecurityRealm {
      * @return A CallbackHandlerFactory for a pre-configured secret.
      */
     CallbackHandlerFactory getSecretCallbackHandlerFactory();
+
+    public static final class ServiceUtil {
+
+        private static final ServiceName BASE_SERVICE_NAME = ServiceName.JBOSS.append("server", "controller", "management", "security_realm");
+
+        private ServiceUtil() {
+        }
+
+        public static ServiceName createServiceName(final String realmName) {
+            return BASE_SERVICE_NAME.append(realmName);
+        }
+
+        public static ServiceBuilder<?> addDependency(ServiceBuilder<?> sb, Injector<SecurityRealm> injector,
+                String realmName, boolean optional) {
+            ServiceBuilder.DependencyType type = optional ? ServiceBuilder.DependencyType.OPTIONAL : ServiceBuilder.DependencyType.REQUIRED;
+            sb.addDependency(type, createServiceName(realmName), SecurityRealm.class, injector);
+
+            return sb;
+        }
+    }
 
 }

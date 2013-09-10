@@ -436,14 +436,14 @@ public interface DomainManagementMessages {
     @Message(id = 15247, value = "Only one of '%s' or '%s' is required.")
     OperationFailedException operationFailedOnlyOneOfRequired(String attr1, String attr2);
 
-//    /**
-//     * Creates an IllegalArgumentException indicating that a value can not be null.
-//     *
-//     * @param name - The name of the parameter that can not be null.
-//     * @return an {@link IllegalArgumentException} for the error.
-//     */
-//    @Message(id = 15248, value = "'%s' can not be null.")
-//    IllegalArgumentException canNotBeNull(String name);
+    /**
+     * Creates an IllegalArgumentException indicating that a value can not be null.
+     *
+     * @param name - The name of the parameter that can not be null.
+     * @return an {@link IllegalArgumentException} for the error.
+     */
+    @Message(id = 15248, value = "'%s' can not be null.")
+    IllegalArgumentException canNotBeNull(String name);
 
     /**
      * Creates a String for use in an OperationFailedException to indicate that no security context has been established for a

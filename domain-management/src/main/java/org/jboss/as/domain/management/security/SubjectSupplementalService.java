@@ -24,6 +24,10 @@ package org.jboss.as.domain.management.security;
 
 import java.util.Map;
 
+import org.jboss.msc.inject.Injector;
+import org.jboss.msc.service.ServiceBuilder;
+import org.jboss.msc.service.ServiceName;
+
 /**
  * Interface to be implemented by services supplying SubjectSupplemental implementations.
  *
@@ -44,4 +48,18 @@ public interface SubjectSupplementalService {
      */
     SubjectSupplemental getSubjectSupplemental(final Map<String, Object> sharedState);
 
+    public static final class ServiceUtil {
+
+        private ServiceUtil() {
+        }
+
+        public static ServiceBuilder<?> addDependency(ServiceBuilder<?> sb, Injector<SubjectSupplementalService> injector,
+                ServiceName serviceName, boolean optional) {
+            ServiceBuilder.DependencyType type = optional ? ServiceBuilder.DependencyType.OPTIONAL : ServiceBuilder.DependencyType.REQUIRED;
+            sb.addDependency(type, serviceName, SubjectSupplementalService.class, injector);
+
+            return sb;
+        }
+
+    }
 }

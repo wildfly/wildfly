@@ -22,7 +22,7 @@
  *
  */
 
-package org.jboss.as.domain.management.security.auditlog;
+package org.jboss.as.domain.management.security.util;
 
 import java.util.Locale;
 import java.util.concurrent.CountDownLatch;

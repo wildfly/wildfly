@@ -36,7 +36,9 @@ import javax.security.auth.Subject;
 
 import org.jboss.as.core.security.RealmGroup;
 import org.jboss.as.core.security.RealmUser;
+import org.jboss.as.domain.management.SecurityRealm;
 import org.jboss.msc.service.Service;
+import org.jboss.msc.service.ServiceName;
 import org.jboss.msc.service.StartContext;
 import org.jboss.msc.service.StartException;
 import org.jboss.msc.service.StopContext;
@@ -48,7 +50,7 @@ import org.jboss.msc.service.StopContext;
 public class PropertiesSubjectSupplemental extends PropertiesFileLoader implements Service<SubjectSupplementalService>, SubjectSupplementalService,
         SubjectSupplemental {
 
-    public static final String SERVICE_SUFFIX = "properties_authorization";
+    private static final String SERVICE_SUFFIX = "properties_authorization";
     private static final String COMMA = ",";
 
     private final String realmName;
@@ -120,6 +122,16 @@ public class PropertiesSubjectSupplemental extends PropertiesFileLoader implemen
         }
 
         return response;
+    }
+
+    public static final class ServiceUtil {
+
+        private ServiceUtil() {
+        }
+
+        public static ServiceName createServiceName(final String realmName) {
+            return SecurityRealm.ServiceUtil.createServiceName(realmName).append(SERVICE_SUFFIX);
+        }
     }
 
 }

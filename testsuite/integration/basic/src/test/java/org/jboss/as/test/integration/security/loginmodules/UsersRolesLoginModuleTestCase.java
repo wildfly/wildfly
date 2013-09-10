@@ -1,3 +1,25 @@
+/*
+ * JBoss, Home of Professional Open Source.
+ * Copyright 2012, Red Hat, Inc., and individual contributors
+ * as indicated by the @author tags. See the copyright.txt file in the
+ * distribution for a full listing of individual contributors.
+ *
+ * This is free software; you can redistribute it and/or modify it
+ * under the terms of the GNU Lesser General Public License as
+ * published by the Free Software Foundation; either version 2.1 of
+ * the License, or (at your option) any later version.
+ *
+ * This software is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
+ * Lesser General Public License for more details.
+ *
+ * You should have received a copy of the GNU Lesser General Public
+ * License along with this software; if not, write to the Free
+ * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
+ * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
+ */
+
 package org.jboss.as.test.integration.security.loginmodules;
 
 import static org.junit.Assert.assertEquals;
@@ -40,7 +62,7 @@ import org.junit.runner.RunWith;
 
 /**
  * Tests for UserRoles login module.
- * 
+ *
  * @author Jan Lanik
  * @author Josef Cacek
  */
@@ -155,7 +177,7 @@ public class UsersRolesLoginModuleTestCase {
 
     /**
      * testExternalFiles
-     * 
+     *
      * @see #USERS_EXT
      * @see #ROLES_EXT
      * @throws Exception
@@ -183,7 +205,7 @@ public class UsersRolesLoginModuleTestCase {
 
     /**
      * testMD5Password
-     * 
+     *
      * @throws Exception
      */
     @OperateOnDeployment(DEP2)
@@ -194,7 +216,7 @@ public class UsersRolesLoginModuleTestCase {
 
     /**
      * testMD5PasswordHex
-     * 
+     *
      * @throws Exception
      */
     @OperateOnDeployment(DEP3)
@@ -205,7 +227,7 @@ public class UsersRolesLoginModuleTestCase {
 
     /**
      * testMD5PasswordBase64
-     * 
+     *
      * @throws Exception
      */
     @OperateOnDeployment(DEP4)
@@ -216,7 +238,7 @@ public class UsersRolesLoginModuleTestCase {
 
     /**
      * testHashUserPasswordTrue
-     * 
+     *
      * @throws Exception
      */
     @OperateOnDeployment(DEP5a)
@@ -227,7 +249,7 @@ public class UsersRolesLoginModuleTestCase {
 
     /**
      * testHashUserPassword
-     * 
+     *
      * @throws Exception
      */
     @OperateOnDeployment(DEP5b)
@@ -238,7 +260,7 @@ public class UsersRolesLoginModuleTestCase {
 
     /**
      * testHashOnlyStorePassword
-     * 
+     *
      * @throws Exception
      */
     @OperateOnDeployment(DEP6a)
@@ -257,7 +279,7 @@ public class UsersRolesLoginModuleTestCase {
 
     /**
      * testHashStorePassword
-     * 
+     *
      * @throws Exception
      */
     @OperateOnDeployment(DEP6b)
@@ -268,7 +290,7 @@ public class UsersRolesLoginModuleTestCase {
 
     /**
      * testIgnorePasswordCaseTrue
-     * 
+     *
      * @throws Exception
      */
     @OperateOnDeployment(DEP7a)
@@ -279,7 +301,7 @@ public class UsersRolesLoginModuleTestCase {
 
     /**
      * testIgnorePasswordCaseFalse
-     * 
+     *
      * @throws Exception
      */
     @OperateOnDeployment(DEP7b)
@@ -292,7 +314,7 @@ public class UsersRolesLoginModuleTestCase {
 
     /**
      * Tests access to a protected servlet.
-     * 
+     *
      * @param url
      * @param ignoreCase flag which says if the password should be case insensitive
      * @throws MalformedURLException
@@ -327,7 +349,7 @@ public class UsersRolesLoginModuleTestCase {
 
     /**
      * Creates {@link WebArchive} (WAR) for given deployment name.
-     * 
+     *
      * @param deployment
      * @return
      */
@@ -356,14 +378,14 @@ public class UsersRolesLoginModuleTestCase {
 
     /**
      * A {@link ServerSetupTask} instance which creates security domains for this test case.
-     * 
+     *
      * @author Josef Cacek
      */
     static class SecurityDomainsSetup extends AbstractSecurityDomainsServerSetupTask {
 
         /**
          * Returns SecurityDomains configuration for this testcase.
-         * 
+         *
          * @see org.jboss.as.test.integration.security.common.AbstractSecurityDomainsServerSetupTask#getSecurityDomains()
          */
         @Override
@@ -421,7 +443,7 @@ public class UsersRolesLoginModuleTestCase {
 
     /**
      * A {@link ServerSetupTask} instance which creates property files with users and roles.
-     * 
+     *
      * @author Josef Cacek
      */
     static class PropertyFilesSetup implements ServerSetupTask {

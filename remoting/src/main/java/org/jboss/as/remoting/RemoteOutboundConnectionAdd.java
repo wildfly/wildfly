@@ -31,7 +31,6 @@ import org.jboss.as.controller.ServiceVerificationHandler;
 import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
 import org.jboss.as.controller.registry.Resource;
 import org.jboss.as.domain.management.SecurityRealm;
-import org.jboss.as.domain.management.security.SecurityRealmService;
 import org.jboss.as.network.OutboundSocketBinding;
 import org.jboss.dmr.ModelNode;
 import org.jboss.msc.service.ServiceBuilder;
@@ -90,8 +89,7 @@ class RemoteOutboundConnectionAdd extends AbstractOutboundConnectionAddHandler {
                 .addDependency(outboundSocketBindingDependency, OutboundSocketBinding.class, outboundConnectionService.getDestinationOutboundSocketBindingInjector());
 
         if (securityRealm != null) {
-            final ServiceName secuirtyRealmName = SecurityRealmService.BASE_SERVICE_NAME.append(securityRealm);
-            svcBuilder.addDependency(secuirtyRealmName, SecurityRealm.class, outboundConnectionService.getSecurityRealmInjector());
+            SecurityRealm.ServiceUtil.addDependency(svcBuilder, outboundConnectionService.getSecurityRealmInjector(), securityRealm, false);
         }
 
         if (verificationHandler != null) {

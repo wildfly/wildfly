@@ -46,6 +46,9 @@ import javax.security.sasl.AuthorizeCallback;
 import javax.security.sasl.RealmCallback;
 
 import org.jboss.as.domain.management.AuthenticationMechanism;
+
+import org.jboss.as.domain.management.SecurityRealm;
+
 import org.jboss.as.domain.management.plugin.AuthenticationPlugIn;
 import org.jboss.as.domain.management.plugin.Credential;
 import org.jboss.as.domain.management.plugin.DigestCredential;
@@ -55,9 +58,12 @@ import org.jboss.as.domain.management.plugin.PlugInConfigurationSupport;
 import org.jboss.as.domain.management.plugin.ValidatePasswordCredential;
 import org.jboss.dmr.ModelNode;
 import org.jboss.msc.service.Service;
+
 import org.jboss.msc.service.StartContext;
 import org.jboss.msc.service.StartException;
 import org.jboss.msc.service.StopContext;
+
+import org.jboss.msc.service.ServiceName;
 import org.jboss.sasl.callback.DigestHashCallback;
 import org.jboss.sasl.callback.VerifyPasswordCallback;
 import org.jboss.sasl.util.UsernamePasswordHashUtil;
@@ -70,7 +76,7 @@ import org.jboss.sasl.util.UsernamePasswordHashUtil;
 public class PlugInAuthenticationCallbackHandler extends AbstractPlugInService implements Service<CallbackHandlerService>,
         CallbackHandlerService {
 
-    public static final String SERVICE_SUFFIX = "plug-in-authentication";
+    private static final String SERVICE_SUFFIX = "plug-in-authentication";
 
     private static UsernamePasswordHashUtil hashUtil = null;
 
@@ -262,6 +268,17 @@ public class PlugInAuthenticationCallbackHandler extends AbstractPlugInService i
                 }
             }
         };
+
+    }
+
+    public static final class ServiceUtil {
+
+        private ServiceUtil() {
+        }
+
+        public static ServiceName createServiceName(final String realmName) {
+            return SecurityRealm.ServiceUtil.createServiceName(realmName).append(SERVICE_SUFFIX);
+        }
 
     }
 

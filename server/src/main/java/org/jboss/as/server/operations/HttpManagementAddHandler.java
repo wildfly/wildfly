@@ -44,11 +44,12 @@ import org.jboss.as.controller.RunningMode;
 import org.jboss.as.controller.ServiceVerificationHandler;
 import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
 import org.jboss.as.domain.http.server.ConsoleMode;
-import org.jboss.as.domain.management.security.SecurityRealmService;
+import org.jboss.as.domain.management.SecurityRealm;
 import org.jboss.as.network.NetworkInterfaceBinding;
 import org.jboss.as.network.SocketBinding;
 import org.jboss.as.network.SocketBindingManager;
 import org.jboss.as.network.SocketBindingManagerImpl;
+
 import org.jboss.as.server.ServerEnvironment;
 import org.jboss.as.server.ServerEnvironmentService;
 import org.jboss.as.server.ServerLogger;
@@ -64,6 +65,10 @@ import org.jboss.msc.service.ServiceController;
 import org.jboss.msc.service.ServiceName;
 import org.jboss.msc.service.ServiceTarget;
 import org.jboss.threads.JBossThreadFactory;
+
+
+import org.xnio.OptionMap;
+
 
 /**
  * A handler that activates the HTTP management API on a Server.
@@ -205,10 +210,10 @@ public class HttpManagementAddHandler extends AbstractAddStepHandler {
             }
         }
 
-        ServiceName realmSvcName = null;
+        String securityRealm = null;
         final ModelNode realmNode = SECURITY_REALM.resolveModelAttribute(context, model);
         if (realmNode.isDefined()) {
-            realmSvcName = SecurityRealmService.BASE_SERVICE_NAME.append(realmNode.asString());
+            securityRealm = realmNode.asString();
         } else {
             ServerLogger.ROOT_LOGGER.httpManagementInterfaceIsUnsecured();
         }
@@ -241,8 +246,8 @@ public class HttpManagementAddHandler extends AbstractAddStepHandler {
             }
         }
 
-        if (realmSvcName != null) {
-            builder.addDependency(realmSvcName, SecurityRealmService.class, service.getSecurityRealmInjector());
+        if (securityRealm != null) {
+            SecurityRealm.ServiceUtil.addDependency(builder, service.getSecurityRealmInjector(), securityRealm, false);
         }
 
         if (verificationHandler != null) {

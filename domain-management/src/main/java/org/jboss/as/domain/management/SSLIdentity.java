@@ -23,6 +23,10 @@ package org.jboss.as.domain.management;
 
 import javax.net.ssl.SSLContext;
 
+import org.jboss.msc.inject.Injector;
+import org.jboss.msc.service.ServiceBuilder;
+import org.jboss.msc.service.ServiceName;
+
 /**
  * Interface for services providing SSL identities through pre-configured SSLContexts.
  *
@@ -43,5 +47,26 @@ public interface SSLIdentity {
      * @return The SSLContext.
      */
     SSLContext getTrustOnlyContext();
+
+    public static final class ServiceUtil {
+
+        private static final String SERVICE_SUFFIX = "ssl";
+
+        private ServiceUtil() {
+        }
+
+        public static ServiceName createServiceName(final String realmName) {
+            return SecurityRealm.ServiceUtil.createServiceName(realmName).append(SERVICE_SUFFIX);
+        }
+
+        public static ServiceBuilder<?> addDependency(ServiceBuilder<?> sb, Injector<SSLIdentity> injector,
+                String realmName, boolean optional) {
+            ServiceBuilder.DependencyType type = optional ? ServiceBuilder.DependencyType.OPTIONAL : ServiceBuilder.DependencyType.REQUIRED;
+            sb.addDependency(type, createServiceName(realmName), SSLIdentity.class, injector);
+
+            return sb;
+        }
+
+    }
 
 }

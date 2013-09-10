@@ -34,6 +34,10 @@
 
     <groupId>org.jboss.as</groupId>
     <artifactId>jboss-as-domain-management</artifactId>
+    
+    <properties>
+        <version.org.apache.ds>2.0.0-M15</version.org.apache.ds>
+    </properties>
 
     <name>JBoss Application Server: Domain Management</name>
 
@@ -45,8 +49,13 @@
                 <configuration>
                     <includes>
                         <include>**/*TestCase.java</include>
+                        <include>**/*TestSuite.java</include>
                     </includes>
                     <enableAssertions>false</enableAssertions>
+                    
+                    <additionalClasspathElements>
+                        <additionalClasspathElement>${project.basedir}/../src/test/resources</additionalClasspathElement>
+                    </additionalClasspathElements>                                        
                 </configuration>
             </plugin>
             <plugin>
@@ -62,6 +71,13 @@
     </build>
 
     <dependencies>
+        <dependency>
+            <groupId>org.apache.directory.server</groupId>
+            <artifactId>apacheds-all</artifactId>
+            <version>${version.org.apache.ds}</version>
+            <scope>test</scope>                                            
+        </dependency>    
+    
         <dependency>
             <groupId>org.jboss</groupId>
             <artifactId>jboss-common-core</artifactId>
@@ -92,11 +108,6 @@
         </dependency>
 
         <dependency>
-            <groupId>org.wildfly</groupId>
-            <artifactId>wildfly-core-security</artifactId>
-        </dependency>
-
-        <dependency>
             <groupId>org.jboss</groupId>
             <artifactId>jboss-dmr</artifactId>
         </dependency>
@@ -106,5 +117,6 @@
             <artifactId>junit</artifactId>
             <scope>test</scope>
         </dependency>
+       
     </dependencies>
 </project>

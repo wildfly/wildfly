@@ -21,7 +21,8 @@
  */
 package org.jboss.as.test.integration.security.loginmodules.negotiation;
 
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.fail;
 
 import java.io.IOException;
 import java.net.URI;
@@ -90,11 +91,11 @@ import org.junit.runner.RunWith;
 
 /**
  * Basic Negotiation login module (SPNEGOLoginModule) tests.
- * 
+ *
  * @author Josef Cacek
  */
 @RunWith(Arquillian.class)
-@ServerSetup({ Krb5ConfServerSetupTask.class, // 
+@ServerSetup({ Krb5ConfServerSetupTask.class, //
         SPNEGOLoginModuleTestCase.KerberosSystemPropertiesSetupTask.class, //
         SPNEGOLoginModuleTestCase.KDCServerSetupTask.class, //
         GSSTestServer.class, //
@@ -118,7 +119,7 @@ public class SPNEGOLoginModuleTestCase {
 
     /**
      * Creates {@link WebArchive}.
-     * 
+     *
      * @return
      */
     @Deployment(name = "WEB")
@@ -129,7 +130,7 @@ public class SPNEGOLoginModuleTestCase {
 
     /**
      * Creates {@link WebArchive}.
-     * 
+     *
      * @return
      */
     @Deployment(name = "WEB-FORM")
@@ -145,7 +146,7 @@ public class SPNEGOLoginModuleTestCase {
 
     /**
      * Creates {@link JavaArchive} for testing the {@link CustomXACMLAuthorizationModule}.
-     * 
+     *
      * @return
      * @throws IOException
      * @throws IllegalArgumentException
@@ -160,7 +161,7 @@ public class SPNEGOLoginModuleTestCase {
                                 "<jboss:ejb-jar xmlns:jboss='http://www.jboss.com/xml/ns/javaee' xmlns='http://java.sun.com/xml/ns/javaee' xmlns:s='urn:security' version='3.1' impl-version='2.0'>"
                                         + "<assembly-descriptor><s:security>"
                                         + "<ejb-name>*</ejb-name><s:security-domain>SPNEGO</s:security-domain>"
-                                        + "</s:security></assembly-descriptor>" // 
+                                        + "</s:security></assembly-descriptor>" //
                                         + "</jboss:ejb-jar>"), "jboss-ejb3.xml");
         jar.addAsManifestResource(Utils.getJBossDeploymentStructure("org.jboss.security.negotiation"),
                 "jboss-deployment-structure.xml");
@@ -170,7 +171,7 @@ public class SPNEGOLoginModuleTestCase {
 
     /**
      * Correct login.
-     * 
+     *
      * @throws Exception
      */
     @Test
@@ -184,7 +185,7 @@ public class SPNEGOLoginModuleTestCase {
 
     /**
      * Incorrect login.
-     * 
+     *
      * @throws Exception
      */
     @Test
@@ -208,7 +209,7 @@ public class SPNEGOLoginModuleTestCase {
 
     /**
      * Correct login, but without permissions.
-     * 
+     *
      * @throws Exception
      */
     @Test
@@ -221,7 +222,7 @@ public class SPNEGOLoginModuleTestCase {
 
     /**
      * Unsecured request.
-     * 
+     *
      * @throws Exception
      */
     @Test
@@ -235,7 +236,7 @@ public class SPNEGOLoginModuleTestCase {
 
     /**
      * Tests identity propagation by requesting {@link PropagateIdentityServlet}.
-     * 
+     *
      * @throws Exception
      */
     @Test
@@ -249,7 +250,7 @@ public class SPNEGOLoginModuleTestCase {
 
     /**
      * Tests web SPNEGO authentication with FORM method fallback.
-     * 
+     *
      * @throws Exception
      */
     @Test
@@ -275,7 +276,7 @@ public class SPNEGOLoginModuleTestCase {
 
     /**
      * Tests EJB authentication using SPNEGO.
-     * 
+     *
      * @throws Exception
      */
     @Test
@@ -333,7 +334,7 @@ public class SPNEGOLoginModuleTestCase {
 
     /**
      * Constructs URI for given servlet path.
-     * 
+     *
      * @param servletPath
      * @return
      * @throws URISyntaxException
@@ -348,32 +349,32 @@ public class SPNEGOLoginModuleTestCase {
      * A server setup task which configures and starts Kerberos KDC server.
      */
     //@formatter:off
-    @CreateDS( 
+    @CreateDS(
         name = "JBossDS",
         partitions =
         {
             @CreatePartition(
                 name = "jboss",
                 suffix = "dc=jboss,dc=org",
-                contextEntry = @ContextEntry( 
+                contextEntry = @ContextEntry(
                     entryLdif =
                         "dn: dc=jboss,dc=org\n" +
                         "dc: jboss\n" +
                         "objectClass: top\n" +
                         "objectClass: domain\n\n" ),
-                indexes = 
+                indexes =
                 {
                     @CreateIndex( attribute = "objectClass" ),
                     @CreateIndex( attribute = "dc" ),
                     @CreateIndex( attribute = "ou" )
                 })
         },
-        additionalInterceptors = { KeyDerivationInterceptor.class })     
+        additionalInterceptors = { KeyDerivationInterceptor.class })
     @ExtCreateKdcServer(primaryRealm = "JBOSS.ORG",
         kdcPrincipal = "krbtgt/JBOSS.ORG@JBOSS.ORG",
         searchBaseDn = "dc=jboss,dc=org",
-        transports = 
-        { 
+        transports =
+        {
             @CreateTransport(protocol = "UDP", port = 6088)
         })
     //@formatter:on
@@ -384,7 +385,7 @@ public class SPNEGOLoginModuleTestCase {
 
         /**
          * Creates directory services, starts LDAP server and KDCServer
-         * 
+         *
          * @param managementClient
          * @param containerId
          * @throws Exception
@@ -416,7 +417,7 @@ public class SPNEGOLoginModuleTestCase {
 
         /**
          * Stops LDAP server and KDCServer and shuts down the directory service.
-         * 
+         *
          * @param managementClient
          * @param containerId
          * @throws Exception
@@ -433,14 +434,14 @@ public class SPNEGOLoginModuleTestCase {
 
     /**
      * A {@link ServerSetupTask} instance which creates security domains for this test case.
-     * 
+     *
      * @author Josef Cacek
      */
     static class SecurityDomainsSetup extends AbstractSecurityDomainsServerSetupTask {
 
         /**
          * Returns SecurityDomains configuration for this testcase.
-         * 
+         *
          * @see org.jboss.as.test.integration.security.common.AbstractSecurityDomainsServerSetupTask#getSecurityDomains()
          */
         @Override
@@ -450,11 +451,11 @@ public class SPNEGOLoginModuleTestCase {
                 //http://www.ibm.com/developerworks/java/jdk/security/60/secguides/jgssDocs/api/com/ibm/security/auth/module/Krb5LoginModule.html
                 //http://publib.boulder.ibm.com/infocenter/iseries/v5r3/index.jsp?topic=%2Frzaha%2Frzahajgssusejaas20.htm
                 //TODO Handle class name on AS side?
-                kerberosModuleBuilder.name("com.ibm.security.auth.module.Krb5LoginModule") // 
+                kerberosModuleBuilder.name("com.ibm.security.auth.module.Krb5LoginModule") //
                         .putOption("useKeytab", Krb5ConfServerSetupTask.HTTP_KEYTAB_FILE.toURI().toString()) //
                         .putOption("credsType", "acceptor");
             } else {
-                kerberosModuleBuilder.name("Kerberos") // 
+                kerberosModuleBuilder.name("Kerberos") //
                         .putOption("storeKey", TRUE) //
                         .putOption("refreshKrb5Config", TRUE) //
                         .putOption("useKeyTab", TRUE) //
@@ -501,14 +502,14 @@ public class SPNEGOLoginModuleTestCase {
     /**
      * A Kerberos system-properties server setup task. Sets path to a <code>krb5.conf</code> file and enables Kerberos debug
      * messages.
-     * 
+     *
      * @author Josef Cacek
      */
     static class KerberosSystemPropertiesSetupTask extends AbstractSystemPropertiesServerSetupTask {
 
         /**
          * Returns "java.security.krb5.conf" and "sun.security.krb5.debug" properties.
-         * 
+         *
          * @return Kerberos properties
          * @see org.jboss.as.test.integration.security.common.AbstractSystemPropertiesServerSetupTask#getSystemProperties()
          */

@@ -115,6 +115,7 @@
         <version.org.apache.ant>1.8.3</version.org.apache.ant>
         <version.org.apache.cxf>2.7.6.redhat-2</version.org.apache.cxf>
         <version.org.apache.cxf.xjcplugins>2.6.1.redhat-1</version.org.apache.cxf.xjcplugins>
+        <version.org.apache.ds>2.0.0-M7</version.org.apache.ds>
         <version.org.apache.felix.configadmin>1.2.8-redhat-2</version.org.apache.felix.configadmin>
         <version.org.apache.felix.log>1.0.0-redhat-2</version.org.apache.felix.log>
         <version.org.apache.james.apache-mime4j>0.6-redhat-2</version.org.apache.james.apache-mime4j>
@@ -2904,6 +2905,13 @@
                          <artifactId>spring-jms</artifactId>
                     </exclusion>
                 </exclusions>
+            </dependency>
+            
+            <dependency>
+                <groupId>org.apache.directory.server</groupId>
+                <artifactId>apacheds-all</artifactId>
+                <scope>test</scope>
+                <version>${version.org.apache.ds}</version>                                            
             </dependency>
 
             <dependency>

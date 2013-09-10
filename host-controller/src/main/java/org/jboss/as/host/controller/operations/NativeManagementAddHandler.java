@@ -23,7 +23,6 @@
 package org.jboss.as.host.controller.operations;
 
 import java.util.List;
-import java.util.concurrent.TimeUnit;
 
 import org.jboss.as.controller.AbstractAddStepHandler;
 import org.jboss.as.controller.AttributeDefinition;
@@ -33,7 +32,6 @@ import org.jboss.as.controller.ServiceVerificationHandler;
 import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
 import org.jboss.as.controller.remote.ModelControllerClientOperationHandlerFactoryService;
 import org.jboss.as.domain.controller.LocalHostControllerInfo;
-import org.jboss.as.domain.management.security.SecurityRealmService;
 import org.jboss.as.host.controller.DomainModelControllerService;
 import org.jboss.as.host.controller.jmx.RemotingConnectorService;
 import org.jboss.as.host.controller.mgmt.ServerToHostOperationHandlerFactoryService;
@@ -115,17 +113,13 @@ public class NativeManagementAddHandler extends AbstractAddStepHandler {
                                                        final List<ServiceController<?>> newControllers,
                                                        final boolean onDemand) {
 
-        ServiceName realmSvcName = null;
         String nativeSecurityRealm = hostControllerInfo.getNativeManagementSecurityRealm();
-        if (nativeSecurityRealm != null) {
-            realmSvcName = SecurityRealmService.BASE_SERVICE_NAME.append(nativeSecurityRealm);
-        }
 
         final ServiceName nativeManagementInterfaceBinding =
                 NetworkInterfaceService.JBOSS_NETWORK_INTERFACE.append(hostControllerInfo.getNativeManagementInterface());
 
         ManagementRemotingServices.installDomainConnectorServices(serviceTarget, ManagementRemotingServices.MANAGEMENT_ENDPOINT,
-                nativeManagementInterfaceBinding, hostControllerInfo.getNativeManagementPort(), realmSvcName, CONNECTION_OPTIONS, verificationHandler, newControllers);
+                nativeManagementInterfaceBinding, hostControllerInfo.getNativeManagementPort(), nativeSecurityRealm, CONNECTION_OPTIONS, verificationHandler, newControllers);
 
         ManagementRemotingServices.installManagementChannelOpenListenerService(serviceTarget, ManagementRemotingServices.MANAGEMENT_ENDPOINT,
                 ManagementRemotingServices.SERVER_CHANNEL,

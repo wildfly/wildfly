@@ -28,6 +28,9 @@ import java.util.Set;
 import javax.security.auth.callback.CallbackHandler;
 
 import org.jboss.as.domain.management.AuthenticationMechanism;
+import org.jboss.msc.inject.Injector;
+import org.jboss.msc.service.ServiceBuilder;
+import org.jboss.msc.service.ServiceName;
 
 /**
  * The interface to be implemented by all services supplying callback handlers.
@@ -73,5 +76,20 @@ public interface CallbackHandlerService {
      * @return A CallbackHandler instance.
      */
     CallbackHandler getCallbackHandler(final Map<String, Object> sharedState);
+
+    public static final class ServiceUtil {
+
+        private ServiceUtil() {
+        }
+
+        public static ServiceBuilder<?> addDependency(ServiceBuilder<?> sb, Injector<CallbackHandlerService> injector,
+                ServiceName serviceName, boolean optional) {
+            ServiceBuilder.DependencyType type = optional ? ServiceBuilder.DependencyType.OPTIONAL : ServiceBuilder.DependencyType.REQUIRED;
+            sb.addDependency(type, serviceName, CallbackHandlerService.class, injector);
+
+            return sb;
+        }
+
+    }
 
 }

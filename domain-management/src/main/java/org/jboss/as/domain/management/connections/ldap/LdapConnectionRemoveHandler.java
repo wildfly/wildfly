@@ -55,7 +55,7 @@ public class LdapConnectionRemoveHandler extends AbstractRemoveStepHandler {
     protected void performRuntime(OperationContext context, ModelNode operation, ModelNode model) {
         PathAddress address = PathAddress.pathAddress(operation.require(OP_ADDR));
         String name = address.getLastElement().getValue();
-        ServiceName svcName = LdapConnectionManagerService.BASE_SERVICE_NAME.append(name);
+        ServiceName svcName = LdapConnectionManagerService.ServiceUtil.createServiceName(name);
         ServiceRegistry registry = context.getServiceRegistry(true);
         ServiceController<?> controller = registry.getService(svcName);
         boolean removeIt;
@@ -78,7 +78,7 @@ public class LdapConnectionRemoveHandler extends AbstractRemoveStepHandler {
     protected void recoverServices(OperationContext context, ModelNode operation, ModelNode model) throws OperationFailedException {
         PathAddress address = PathAddress.pathAddress(operation.require(OP_ADDR));
         String name = address.getLastElement().getValue();
-        ServiceName svcName = LdapConnectionManagerService.BASE_SERVICE_NAME.append(name);
+        ServiceName svcName = LdapConnectionManagerService.ServiceUtil.createServiceName(name);
         ServiceRegistry registry = context.getServiceRegistry(true);
         ServiceController<?> controller = registry.getService(svcName);
         if (controller != null) {

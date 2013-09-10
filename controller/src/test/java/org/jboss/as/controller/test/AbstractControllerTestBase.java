@@ -59,8 +59,6 @@ import org.jboss.msc.service.ServiceContainer;
 import org.jboss.msc.service.ServiceName;
 import org.jboss.msc.service.ServiceTarget;
 import org.jboss.staxmapper.XMLElementWriter;
-import org.jboss.msc.service.StartContext;
-import org.jboss.msc.service.StartException;
 import org.junit.After;
 import org.junit.Assert;
 import org.junit.Before;

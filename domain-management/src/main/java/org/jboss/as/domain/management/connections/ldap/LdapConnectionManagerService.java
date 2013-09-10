@@ -35,7 +35,9 @@ import javax.net.ssl.SSLContext;
 import org.jboss.as.domain.management.SSLIdentity;
 import org.jboss.as.domain.management.connections.ConnectionManager;
 import org.jboss.dmr.ModelNode;
+import org.jboss.msc.inject.Injector;
 import org.jboss.msc.service.Service;
+import org.jboss.msc.service.ServiceBuilder;
 import org.jboss.msc.service.ServiceName;
 import org.jboss.msc.service.StartContext;
 import org.jboss.msc.service.StartException;
@@ -49,7 +51,7 @@ import org.jboss.msc.value.InjectedValue;
  */
 public class LdapConnectionManagerService implements Service<LdapConnectionManagerService>, ConnectionManager {
 
-    public static final ServiceName BASE_SERVICE_NAME = ServiceName.JBOSS.append("server", "controller", "management", "connection_manager");
+    private static final ServiceName BASE_SERVICE_NAME = ServiceName.JBOSS.append("server", "controller", "management", "connection_manager");
 
     private final InjectedValue<SSLIdentity> sslIdentity = new InjectedValue<SSLIdentity>();
     private volatile ModelNode resolvedConfiguration;
@@ -150,6 +152,24 @@ public class LdapConnectionManagerService implements Service<LdapConnectionManag
         }
 
         return result;
+    }
+
+    public static final class ServiceUtil {
+
+        private ServiceUtil() {
+        }
+
+        public static ServiceName createServiceName(final String connectionName) {
+            return BASE_SERVICE_NAME.append(connectionName);
+        }
+
+        public static ServiceBuilder<?> addDependency(ServiceBuilder<?> sb, Injector<ConnectionManager> injector,
+                String connectionName, boolean optional) {
+            ServiceBuilder.DependencyType type = optional ? ServiceBuilder.DependencyType.OPTIONAL : ServiceBuilder.DependencyType.REQUIRED;
+            sb.addDependency(type, createServiceName(connectionName), ConnectionManager.class, injector);
+
+            return sb;
+        }
     }
 
 }
