@@ -53,7 +53,6 @@ import java.util.Map;
 import java.util.Set;
 
 import org.jboss.as.controller.AttributeDefinition;
-import org.jboss.as.controller.ControllerLogger;
 import org.jboss.as.controller.ControllerMessages;
 import org.jboss.as.controller.NoSuchResourceException;
 import org.jboss.as.controller.OperationContext;
@@ -79,6 +78,7 @@ import org.jboss.as.controller.operations.common.Util;
 import org.jboss.as.controller.operations.validation.EnumValidator;
 import org.jboss.as.controller.registry.AliasEntry;
 import org.jboss.as.controller.registry.AttributeAccess;
+import org.jboss.as.controller.registry.AttributeAccess.AccessType;
 import org.jboss.as.controller.registry.AttributeAccess.Storage;
 import org.jboss.as.controller.registry.ImmutableManagementResourceRegistration;
 import org.jboss.as.controller.registry.OperationEntry;
@@ -401,7 +401,8 @@ public class ReadResourceDescriptionHandler implements OperationStepHandler {
                     for (Property attrProp : nodeDescription.require(ATTRIBUTES).asPropertyList()) {
                         ModelNode attributeResult = new ModelNode();
                         Storage storage = Storage.valueOf(attrProp.getValue().get(STORAGE).asString().toUpperCase());
-                        addAttributeAuthorizationResults(attributeResult, attrProp.getName(), authResp, storage == Storage.RUNTIME);
+                        AccessType accessType = AccessType.forName(attrProp.getValue().get(ACCESS_TYPE).asString());
+                        addAttributeAuthorizationResults(attributeResult, attrProp.getName(), authResp, storage == Storage.RUNTIME, accessType);
                         if (attributeResult.isDefined()) {
                             attributes.get(attrProp.getName()).set(attributeResult);
                         }
@@ -444,13 +445,23 @@ public class ReadResourceDescriptionHandler implements OperationStepHandler {
             result.get(actionEffect == ActionEffect.READ_CONFIG || actionEffect == ActionEffect.READ_RUNTIME ? READ : WRITE).set(authResult.getDecision() == Decision.PERMIT);
         }
 
-        private void addAttributeAuthorizationResults(ModelNode result, String attributeName, ResourceAuthorization authResp, boolean runtime) {
+        private void addAttributeAuthorizationResults(ModelNode result, String attributeName, ResourceAuthorization authResp, boolean runtime, AccessType accessType) {
             if (runtime) {
                 addAttributeAuthorizationResult(result, attributeName, authResp, ActionEffect.READ_RUNTIME);
-                addAttributeAuthorizationResult(result, attributeName, authResp, ActionEffect.WRITE_RUNTIME);
+                if (accessType.isWritable()) {
+                    addAttributeAuthorizationResult(result, attributeName, authResp, ActionEffect.WRITE_RUNTIME);
+                } else {
+
+                }
             } else {
                 addAttributeAuthorizationResult(result, attributeName, authResp, ActionEffect.READ_CONFIG);
-                addAttributeAuthorizationResult(result, attributeName, authResp, ActionEffect.WRITE_CONFIG);
+                if (accessType.isWritable()) {
+                    addAttributeAuthorizationResult(result, attributeName, authResp, ActionEffect.WRITE_CONFIG);
+                }
+            }
+
+            if (!accessType.isWritable()) {
+                result.get(WRITE).set(false);
             }
         }
 
@@ -465,6 +476,7 @@ public class ReadResourceDescriptionHandler implements OperationStepHandler {
             AuthorizationResult authorizationResult = context.authorizeOperation(operation);
             result.get(EXECUTE).set(authorizationResult.getDecision() == Decision.PERMIT);
         }
+
     }
 
     /**
