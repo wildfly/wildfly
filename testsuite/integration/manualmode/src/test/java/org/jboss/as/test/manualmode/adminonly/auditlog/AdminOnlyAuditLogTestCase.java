@@ -89,14 +89,12 @@ public class AdminOnlyAuditLogTestCase {
             file.delete();
         }
 
-        System.out.println(file.getAbsolutePath());
-
         ModelControllerClient client = managementClient.getControllerClient();
         try {
             ModelNode op = Util.createOperation(READ_RESOURCE_OPERATION, PathAddress.EMPTY_ADDRESS);
             ModelNode result = client.execute(op);
-            junit.framework.Assert.assertEquals(SUCCESS, result.get(OUTCOME).asString());
-            junit.framework.Assert.assertFalse(file.exists());
+            Assert.assertEquals(SUCCESS, result.get(OUTCOME).asString());
+            Assert.assertFalse(file.exists());
 
             PathAddress auditLogConfigAddress = PathAddress.pathAddress(
                     CoreManagementResourceDefinition.PATH_ELEMENT,
@@ -141,6 +139,15 @@ public class AdminOnlyAuditLogTestCase {
                 result = client.execute(op);
                 Assert.assertEquals(SUCCESS, result.get(OUTCOME).asString());
                 Assert.assertFalse(file.exists());
+
+                //Set read-only operations back to false
+                op = Util.getWriteAttributeOperation(
+                        auditLogConfigAddress,
+                        AuditLogLoggerResourceDefinition.LOG_READ_ONLY.getName(),
+                        new ModelNode(false));
+                result = client.execute(op);
+                Assert.assertEquals(SUCCESS, result.get(OUTCOME).asString());
+
             }
         } finally {
             IoUtils.safeClose(client);
