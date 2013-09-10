@@ -736,7 +736,8 @@ public class ReadResourceDescriptionAccessControlTestCase extends AbstractContro
         ModelNode op = createReadResourceDescriptionOperation(PathAddress.EMPTY_ADDRESS, StandardRole.MAINTAINER, false);
         ModelNode result = executeForResult(op);
         ResourceAccessControl accessControl = getResourceAccessControl(getChildDescription(result, ONE));
-        Map<String, ModelNode> attributes = checkAttributeAccessControlNames(accessControl.defaultControl, ATTR_ACCESS_READ_WRITE, ATTR_READ_WRITE, ATTR_WRITE, ATTR_READ, ATTR_NONE);
+        Map<String, ModelNode> attributes = checkAttributeAccessControlNames(accessControl.defaultControl,
+                ATTR_ACCESS_READ_WRITE, ATTR_READ_WRITE, ATTR_WRITE, ATTR_READ, ATTR_NONE);
         checkAttributePermissions(attributes, ATTR_ACCESS_READ_WRITE, false, false);
         checkAttributePermissions(attributes, ATTR_READ_WRITE, false, false);
         checkAttributePermissions(attributes, ATTR_WRITE, true, false);
@@ -766,6 +767,74 @@ public class ReadResourceDescriptionAccessControlTestCase extends AbstractContro
         oneChild.addAttribute(ATTR_WRITE, createSensitivityConstraint(testName + "-write", false, false, true));
         oneChild.addAttribute(ATTR_READ, createSensitivityConstraint(testName + "-read", false, true, false));
         oneChild.addAttribute(ATTR_NONE);
+        rootRegistration.registerSubModel(oneChild);
+        Resource resourceA = Resource.Factory.create();
+        ModelNode modelA = resourceA.getModel();
+        modelA.get(ATTR_ACCESS_READ_WRITE).set("test1");
+        modelA.get(ATTR_READ_WRITE).set("test2");
+        modelA.get(ATTR_WRITE).set("test3");
+        modelA.get(ATTR_READ).set("test4");
+        modelA.get(ATTR_NONE).set("test5");
+        rootResource.registerChild(ONE_A, resourceA);
+        rootResource.registerChild(ONE_B, Resource.Factory.create());
+    }
+
+    // These three are the same for different roles
+
+    @Test
+    public void testReadOnlyAttributeSensitivityAsMonitor() throws Exception {
+        registerReadOnlyAttributeResource("testReadOnlyAttributeSensitivityAsMonitor");
+
+        ModelNode op = createReadResourceDescriptionOperation(PathAddress.EMPTY_ADDRESS, StandardRole.MONITOR, false);
+        ModelNode result = executeForResult(op);
+        ResourceAccessControl accessControl = getResourceAccessControl(getChildDescription(result, ONE));
+        Map<String, ModelNode> attributes = checkAttributeAccessControlNames(accessControl.defaultControl, ATTR_ACCESS_READ_WRITE, ATTR_READ_WRITE, ATTR_WRITE, ATTR_READ, ATTR_NONE);
+        checkAttributePermissions(attributes, ATTR_ACCESS_READ_WRITE, false, false);
+        checkAttributePermissions(attributes, ATTR_READ_WRITE, false, false);
+        checkAttributePermissions(attributes, ATTR_WRITE, true, false);
+        checkAttributePermissions(attributes, ATTR_READ, false, false);
+        checkAttributePermissions(attributes, ATTR_NONE, true, false);
+    }
+
+    @Test
+    public void testReadOnlyAttributeSensitivityAsMaintainer() throws Exception {
+        registerReadOnlyAttributeResource("testReadOnlyAttributeSensitivityAsMaintainer");
+
+        ModelNode op = createReadResourceDescriptionOperation(PathAddress.EMPTY_ADDRESS, StandardRole.MAINTAINER, false);
+        ModelNode result = executeForResult(op);
+        ResourceAccessControl accessControl = getResourceAccessControl(getChildDescription(result, ONE));
+        Map<String, ModelNode> attributes = checkAttributeAccessControlNames(accessControl.defaultControl,
+                ATTR_ACCESS_READ_WRITE, ATTR_READ_WRITE, ATTR_WRITE, ATTR_READ, ATTR_NONE);
+        checkAttributePermissions(attributes, ATTR_ACCESS_READ_WRITE, false, false);
+        checkAttributePermissions(attributes, ATTR_READ_WRITE, false, false);
+        checkAttributePermissions(attributes, ATTR_WRITE, true, false);
+        checkAttributePermissions(attributes, ATTR_READ, false, false);
+        checkAttributePermissions(attributes, ATTR_NONE, true, false);
+    }
+
+    @Test
+    public void testReadOnlyAttributeSensitivityAsAdministrator() throws Exception {
+        registerReadOnlyAttributeResource("testReadOnlyAttributeSensitivityAsAdministrator");
+
+        ModelNode op = createReadResourceDescriptionOperation(PathAddress.EMPTY_ADDRESS, StandardRole.ADMINISTRATOR, false);
+        ModelNode result = executeForResult(op);
+        ResourceAccessControl accessControl = getResourceAccessControl(getChildDescription(result, ONE));
+        Map<String, ModelNode> attributes = checkAttributeAccessControlNames(accessControl.defaultControl, ATTR_ACCESS_READ_WRITE, ATTR_READ_WRITE, ATTR_WRITE, ATTR_READ, ATTR_NONE);
+        checkAttributePermissions(attributes, ATTR_ACCESS_READ_WRITE, true, false);
+        checkAttributePermissions(attributes, ATTR_READ_WRITE, true, false);
+        checkAttributePermissions(attributes, ATTR_WRITE, true, false);
+        checkAttributePermissions(attributes, ATTR_READ, true, false);
+        checkAttributePermissions(attributes, ATTR_NONE, true, false);
+    }
+
+
+    private void registerReadOnlyAttributeResource(String testName) {
+        ChildResourceDefinition oneChild = new ChildResourceDefinition(ONE);
+        oneChild.addReadOnlyAttribute(ATTR_ACCESS_READ_WRITE, createSensitivityConstraint(testName + "-access-read-write", true, true, true));
+        oneChild.addReadOnlyAttribute(ATTR_READ_WRITE, createSensitivityConstraint(testName + "-read-write", false, true, true));
+        oneChild.addReadOnlyAttribute(ATTR_WRITE, createSensitivityConstraint(testName + "-write", false, false, true));
+        oneChild.addReadOnlyAttribute(ATTR_READ, createSensitivityConstraint(testName + "-read", false, true, false));
+        oneChild.addReadOnlyAttribute(ATTR_NONE);
         rootRegistration.registerSubModel(oneChild);
         Resource resourceA = Resource.Factory.create();
         ModelNode modelA = resourceA.getModel();
@@ -2003,6 +2072,7 @@ public class ReadResourceDescriptionAccessControlTestCase extends AbstractContro
     private static class ChildResourceDefinition extends TestResourceDefinition implements ConstrainedResourceDefinition {
         private final List<AccessConstraintDefinition> constraints;
         private final List<AttributeDefinition> attributes = Collections.synchronizedList(new ArrayList<AttributeDefinition>());
+        private final List<AttributeDefinition> readOnlyAttributes = Collections.synchronizedList(new ArrayList<AttributeDefinition>());
         private final List<OperationDefinition> operations = Collections.synchronizedList(new ArrayList<OperationDefinition>());
 
         ChildResourceDefinition(PathElement element, AccessConstraintDefinition...constraints){
@@ -2016,6 +2086,14 @@ public class ReadResourceDescriptionAccessControlTestCase extends AbstractContro
                 builder.setAccessConstraints(constraints);
             }
             attributes.add(builder.build());
+        }
+
+        void addReadOnlyAttribute(String name, AccessConstraintDefinition...constraints) {
+            SimpleAttributeDefinitionBuilder builder = new SimpleAttributeDefinitionBuilder(name, ModelType.STRING);
+            if (constraints != null) {
+                builder.setAccessConstraints(constraints);
+            }
+            readOnlyAttributes.add(builder.build());
         }
 
         void addOperation(String name, boolean readOnly, boolean runtimeOnly, AccessConstraintDefinition...constraints) {
@@ -2036,6 +2114,9 @@ public class ReadResourceDescriptionAccessControlTestCase extends AbstractContro
         public void registerAttributes(ManagementResourceRegistration resourceRegistration) {
             for (AttributeDefinition attribute : attributes) {
                 resourceRegistration.registerReadWriteAttribute(attribute, null, new ModelOnlyWriteAttributeHandler(attribute));
+            }
+            for (AttributeDefinition attribute : readOnlyAttributes) {
+                resourceRegistration.registerReadOnlyAttribute(attribute, null);
             }
         }
 

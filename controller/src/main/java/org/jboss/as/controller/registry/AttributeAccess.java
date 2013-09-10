@@ -24,6 +24,8 @@ package org.jboss.as.controller.registry;
 import static org.jboss.as.controller.ControllerMessages.MESSAGES;
 
 import java.util.EnumSet;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.Set;
 
 import org.jboss.as.controller.AttributeDefinition;
@@ -41,21 +43,46 @@ public final class AttributeAccess {
      */
     public static enum AccessType {
         /** A read-only attribute, which can be either {@code Storage.CONFIGURATION} or {@code Storage.RUNTIME} */
-        READ_ONLY("read-only"),
+        READ_ONLY("read-only", false),
         /** A read-write attribute, which can be either {@code Storage.CONFIGURATION} or {@code Storage.RUNTIME} */
-        READ_WRITE("read-write"),
+        READ_WRITE("read-write", true),
         /** A read-only {@code Storage.RUNTIME} attribute */
-        METRIC("metric");
+        METRIC("metric", false);
 
         private final String label;
+        private final boolean writable;
 
-        private AccessType(final String label) {
+        private AccessType(final String label, final boolean writable) {
             this.label = label;
+            this.writable = writable;
         }
 
         @Override
         public String toString() {
             return label;
+        }
+
+        private static final Map<String, AccessType> MAP;
+
+        static {
+            final Map<String, AccessType> map = new HashMap<String, AccessType>();
+            for (AccessType element : values()) {
+                final String name = element.getLocalName();
+                if (name != null) map.put(name, element);
+            }
+            MAP = map;
+        }
+
+        public static AccessType forName(String localName) {
+            return MAP.get(localName);
+        }
+
+        private String getLocalName() {
+            return label;
+        }
+
+        public boolean isWritable() {
+            return writable;
         }
     }
 
