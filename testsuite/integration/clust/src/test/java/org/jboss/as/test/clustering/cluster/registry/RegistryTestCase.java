@@ -12,11 +12,11 @@ import org.jboss.arquillian.container.test.api.RunAsClient;
 import org.jboss.arquillian.container.test.api.TargetsContainer;
 import org.jboss.arquillian.junit.Arquillian;
 import org.jboss.as.test.clustering.EJBClientContextSelector;
-import org.jboss.as.test.clustering.EJBDirectory;
-import org.jboss.as.test.clustering.RemoteEJBDirectory;
 import org.jboss.as.test.clustering.cluster.ClusterAbstractTestCase;
 import org.jboss.as.test.clustering.cluster.registry.bean.RegistryRetriever;
 import org.jboss.as.test.clustering.cluster.registry.bean.RegistryRetrieverBean;
+import org.jboss.as.test.clustering.ejb.EJBDirectory;
+import org.jboss.as.test.clustering.ejb.RemoteEJBDirectory;
 import org.jboss.ejb.client.ContextSelector;
 import org.jboss.ejb.client.EJBClientContext;
 import org.jboss.logging.Logger;
@@ -69,8 +69,6 @@ public class RegistryTestCase extends ClusterAbstractTestCase {
 
     @Test
     public void test() throws Exception {
-
-        String cluster = "server";
 
         ContextSelector<EJBClientContext> selector = EJBClientContextSelector.setup(CLIENT_PROPERTIES);
 

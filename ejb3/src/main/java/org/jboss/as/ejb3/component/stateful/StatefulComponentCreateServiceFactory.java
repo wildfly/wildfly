@@ -24,24 +24,29 @@ package org.jboss.as.ejb3.component.stateful;
 
 import org.jboss.as.ee.component.BasicComponentCreateService;
 import org.jboss.as.ee.component.ComponentConfiguration;
+import org.jboss.as.ee.component.ComponentStartService;
 import org.jboss.as.ee.component.DependencyConfigurator;
 import org.jboss.as.ejb3.cache.CacheInfo;
-import org.jboss.as.ejb3.cache.CacheFactory;
-import org.jboss.as.ejb3.cache.CacheFactoryService;
+import org.jboss.as.ejb3.cache.CacheFactoryBuilder;
+import org.jboss.as.ejb3.cache.CacheFactoryBuilderService;
 import org.jboss.as.ejb3.component.DefaultAccessTimeoutService;
 import org.jboss.as.ejb3.component.EJBComponentCreateServiceFactory;
-import org.jboss.as.server.deployment.DeploymentUnitProcessingException;
+import org.jboss.as.ejb3.component.session.ClusteringInfo;
 import org.jboss.msc.service.ServiceBuilder;
 import org.jboss.msc.service.ServiceName;
 
 import static org.jboss.as.ejb3.EjbMessages.MESSAGES;
+
+import org.jboss.as.ejb3.cache.CacheFactory;
+import org.jboss.as.ejb3.remote.RegistryInstallerService;
+import org.jboss.msc.value.InjectedValue;
 
 /**
  * User: jpai
  */
 public class StatefulComponentCreateServiceFactory extends EJBComponentCreateServiceFactory {
     @Override
-    public BasicComponentCreateService constructService(ComponentConfiguration configuration) {
+    public BasicComponentCreateService constructService(final ComponentConfiguration configuration) {
         if (this.ejbJarConfiguration == null) {
             throw MESSAGES.ejbJarConfigNotBeenSet(this,configuration.getComponentName());
         }
@@ -49,28 +54,44 @@ public class StatefulComponentCreateServiceFactory extends EJBComponentCreateSer
         // component create service
         configuration.getCreateDependencies().add(new DependencyConfigurator<StatefulSessionComponentCreateService>() {
             @Override
-            public void configureDependency(ServiceBuilder<?> serviceBuilder, StatefulSessionComponentCreateService componentCreateService) throws DeploymentUnitProcessingException {
+            public void configureDependency(ServiceBuilder<?> serviceBuilder, StatefulSessionComponentCreateService componentCreateService) {
                 serviceBuilder.addDependency(DefaultAccessTimeoutService.STATEFUL_SERVICE_NAME, DefaultAccessTimeoutService.class, componentCreateService.getDefaultAccessTimeoutInjector());
             }
         });
         configuration.getCreateDependencies().add(new DependencyConfigurator<StatefulSessionComponentCreateService>() {
             @Override
-            public void configureDependency(ServiceBuilder<?> builder, StatefulSessionComponentCreateService service) throws DeploymentUnitProcessingException {
-                builder.addDependency(this.getServiceName(service), CacheFactory.class, service.getCacheFactoryInjector());
+            public void configureDependency(ServiceBuilder<?> builder, StatefulSessionComponentCreateService service) {
+                if (service.getClustering() != null) {
+                    builder.addDependency(RegistryInstallerService.SERVICE_NAME);
+                }
+            }
+        });
+        configuration.getCreateDependencies().add(new DependencyConfigurator<StatefulSessionComponentCreateService>() {
+            @Override
+            public void configureDependency(final ServiceBuilder<?> builder, final StatefulSessionComponentCreateService service) {
+                builder.addDependency(this.getServiceName(service), CacheFactoryBuilder.class, service.getCacheFactoryBuilderInjector());
             }
 
             private ServiceName getServiceName(StatefulSessionComponentCreateService service) {
+                if (!service.isPassivationCapable()) {
+                    return CacheFactoryBuilderService.DEFAULT_PASSIVATION_DISABLED_CACHE_SERVICE_NAME;
+                }
                 CacheInfo cache = service.getCache();
                 if (cache != null) {
-                    return CacheFactoryService.getServiceName(cache.getName());
+                    return CacheFactoryBuilderService.getServiceName(cache.getName());
                 }
-                if (!service.isPassivationCapable()) {
-                    // use the default passivation disabled cache
-                    return CacheFactoryService.DEFAULT_SFSB_PASSIVATION_DISABLED_CACHE_SERVICE_NAME;
-                }
-                return (service.getClustering() == null) ? CacheFactoryService.DEFAULT_SFSB_CACHE_SERVICE_NAME : CacheFactoryService.DEFAULT_CLUSTERED_SFSB_CACHE_SERVICE_NAME;
+                ClusteringInfo clustering = service.getClustering();
+                return (clustering != null) ? CacheFactoryBuilderService.DEFAULT_CLUSTERED_CACHE_SERVICE_NAME : CacheFactoryBuilderService.DEFAULT_CACHE_SERVICE_NAME;
             }
         });
-        return new StatefulSessionComponentCreateService(configuration, this.ejbJarConfiguration);
+        @SuppressWarnings("rawtypes")
+        final InjectedValue<CacheFactory> factory = new InjectedValue<>();
+        configuration.getStartDependencies().add(new DependencyConfigurator<ComponentStartService>() {
+            @Override
+            public void configureDependency(ServiceBuilder<?> builder, ComponentStartService service) {
+                builder.addDependency(configuration.getComponentDescription().getServiceName().append("cache"), CacheFactory.class, factory);
+            }
+        });
+        return new StatefulSessionComponentCreateService(configuration, this.ejbJarConfiguration, factory);
     }
 }

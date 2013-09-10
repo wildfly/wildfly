@@ -89,7 +89,6 @@ public class NonHaWebSessionPersistenceTestCase extends ClusterAbstractTestCase 
             HttpResponse response = client.execute(new HttpGet(url));
             Assert.assertEquals(HttpServletResponse.SC_OK, response.getStatusLine().getStatusCode());
             Assert.assertEquals(1, Integer.parseInt(response.getFirstHeader("value").getValue()));
-            Assert.assertFalse(Boolean.valueOf(response.getFirstHeader("serialized").getValue()));
             response.getEntity().getContent().close();
 
             response = client.execute(new HttpGet(url));

@@ -30,32 +30,30 @@ import java.util.List;
 import org.jboss.as.network.ClientMapping;
 import org.jboss.as.remoting.RemotingConnectorBindingInfoService;
 import org.jboss.as.server.ServerEnvironment;
-import org.jboss.msc.inject.Injector;
-import org.jboss.msc.service.Service;
+import org.jboss.as.server.ServerEnvironmentService;
+import org.jboss.msc.service.AbstractService;
+import org.jboss.msc.service.ServiceBuilder;
 import org.jboss.msc.service.ServiceName;
-import org.jboss.msc.service.StartContext;
-import org.jboss.msc.service.StopContext;
+import org.jboss.msc.service.ServiceTarget;
 import org.jboss.msc.value.InjectedValue;
 import org.wildfly.clustering.registry.RegistryEntryProvider;
 
 /**
  * @author Jaikiran Pai
  */
-public class EJBRemotingConnectorClientMappingsEntryProviderService implements Service<RegistryEntryProvider<String, List<ClientMapping>>> {
+public class EJBRemotingConnectorClientMappingsEntryProviderService extends AbstractService<RegistryEntryProvider<String, List<ClientMapping>>> {
 
-    public static final ServiceName SERVICE_NAME = ServiceName.JBOSS.append("ejb").append("remoting").append("connector").append("client-mapping-entry-provider-service");
+    public static final ServiceName SERVICE_NAME = ServiceName.JBOSS.append("clustering", "registry", "ejb", "default", "entry");
 
     private final RegistryEntryProvider<String, List<ClientMapping>> registryEntryProvider = new ClientMappingEntryProvider();
-    private final InjectedValue<ServerEnvironment> serverEnvironment = new InjectedValue<ServerEnvironment>();
+    private final InjectedValue<ServerEnvironment> serverEnvironment = new InjectedValue<>();
     private final InjectedValue<RemotingConnectorBindingInfoService.RemotingConnectorInfo> remotingConnectorInfo = new InjectedValue<>();
 
-    @Override
-    public void start(StartContext context) {
-
-    }
-
-    @Override
-    public void stop(StopContext context) {
+    public ServiceBuilder<RegistryEntryProvider<String, List<ClientMapping>>> build(ServiceTarget target, ServiceName remotingServerInfoServiceName) {
+        return target.addService(SERVICE_NAME, this)
+                .addDependency(ServerEnvironmentService.SERVICE_NAME, ServerEnvironment.class, this.serverEnvironment)
+                .addDependency(remotingServerInfoServiceName, RemotingConnectorBindingInfoService.RemotingConnectorInfo.class, this.remotingConnectorInfo)
+        ;
     }
 
     @Override
@@ -63,17 +61,9 @@ public class EJBRemotingConnectorClientMappingsEntryProviderService implements S
         return this.registryEntryProvider;
     }
 
-    public Injector<ServerEnvironment> getServerEnvironmentInjector() {
-        return this.serverEnvironment;
-    }
-
-    public Injector<RemotingConnectorBindingInfoService.RemotingConnectorInfo> getRemotingConnectorInfoInjector() {
-        return remotingConnectorInfo;
-    }
-
     List<ClientMapping> getClientMappings() {
         final List<ClientMapping> ret = new ArrayList<>();
-        RemotingConnectorBindingInfoService.RemotingConnectorInfo info = remotingConnectorInfo.getValue();
+        RemotingConnectorBindingInfoService.RemotingConnectorInfo info = this.remotingConnectorInfo.getValue();
         if (info.getSocketBinding().getClientMappings() != null && !info.getSocketBinding().getClientMappings().isEmpty()) {
             ret.addAll(info.getSocketBinding().getClientMappings());
         } else {

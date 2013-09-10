@@ -25,7 +25,7 @@
 <infinispan xmlns="urn:infinispan:config:6.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="urn:infinispan:config:6.0 http://infinispan.org/schemas/infinispan-config-6.0.xsd">
     <global/>
     <default>
-        <locking lockAcquisitionTimeout="15000" useLockStriping="false" concurrencyLevel="1000"/>
+        <locking isolationLevel="REPEATABLE_READ" lockAcquisitionTimeout="15000" useLockStriping="false" concurrencyLevel="1000"/>
         <transaction lockingMode="PESSIMISTIC">
             <recovery enabled="false"/>
         </transaction>

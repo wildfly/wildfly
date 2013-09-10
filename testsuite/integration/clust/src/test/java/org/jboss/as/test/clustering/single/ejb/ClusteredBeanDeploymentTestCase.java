@@ -22,13 +22,16 @@
 
 package org.jboss.as.test.clustering.single.ejb;
 
-import javax.naming.Context;
-import javax.naming.InitialContext;
+import javax.naming.NamingException;
 
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.junit.Arquillian;
-import org.jboss.as.test.clustering.cluster.ejb3.deployment.ClusteredBean;
-import org.jboss.as.test.clustering.cluster.ejb3.deployment.DDBasedClusteredBean;
+import org.jboss.as.test.clustering.cluster.ejb.remote.bean.Incrementor;
+import org.jboss.as.test.clustering.cluster.ejb.remote.bean.Result;
+import org.jboss.as.test.clustering.cluster.ejb.remote.bean.StatelessDDIncrementorBean;
+import org.jboss.as.test.clustering.cluster.ejb.remote.bean.StatelessIncrementorBean;
+import org.jboss.as.test.clustering.ejb.EJBDirectory;
+import org.jboss.as.test.clustering.ejb.LocalEJBDirectory;
 import org.jboss.shrinkwrap.api.Archive;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.spec.JavaArchive;
@@ -46,13 +49,15 @@ import org.junit.runner.RunWith;
 @RunWith(Arquillian.class)
 public class ClusteredBeanDeploymentTestCase {
 
-    private static final String DD_BASED_MODULE_NAME = "clustered-ejb-deployment";
+    private static final String MODULE = "clustered-ejb-deployment";
+    private static final int COUNT = 5;
 
     @Deployment
     public static Archive<?> createDDBasedDeployment() {
-        final JavaArchive ejbJar = ShrinkWrap.create(JavaArchive.class, DD_BASED_MODULE_NAME + ".jar");
-        ejbJar.addClasses(DDBasedClusteredBean.class, ClusteredBean.class);
-        ejbJar.addAsManifestResource("cluster/ejb3/deployment/jboss-ejb3.xml", "jboss-ejb3.xml");
+        final JavaArchive ejbJar = ShrinkWrap.create(JavaArchive.class, MODULE + ".jar");
+        ejbJar.addPackage(Incrementor.class.getPackage());
+        ejbJar.addPackage(EJBDirectory.class.getPackage());
+        ejbJar.addAsManifestResource(Incrementor.class.getPackage(), "jboss-ejb3.xml", "jboss-ejb3.xml");
         return ejbJar;
     }
 
@@ -64,13 +69,7 @@ public class ClusteredBeanDeploymentTestCase {
      */
     @Test
     public void testDDBasedClusteredBeanDeployment() throws Exception {
-        final Context ctx = new InitialContext();
-        final DDBasedClusteredBean ddBasedClusteredBean = (DDBasedClusteredBean) ctx.lookup("java:module/" + DDBasedClusteredBean.class.getSimpleName() + "!" + DDBasedClusteredBean.class.getName());
-        final int NUM_TIMES = 5;
-        for (int i = 0; i < NUM_TIMES; i++) {
-            ddBasedClusteredBean.increment();
-        }
-        Assert.assertEquals("Unexpected count on stateful bean", ddBasedClusteredBean.getCount(), NUM_TIMES);
+        testDeployment(StatelessIncrementorBean.class);
     }
 
     /**
@@ -81,13 +80,16 @@ public class ClusteredBeanDeploymentTestCase {
      */
     @Test
     public void testAnnotationBasedClusteredBeanDeployment() throws Exception {
-        final Context ctx = new InitialContext();
-        final ClusteredBean clusteredBean = (ClusteredBean) ctx.lookup("java:module/" + ClusteredBean.class.getSimpleName() + "!" + ClusteredBean.class.getName());
-        final int NUM_TIMES = 5;
-        for (int i = 0; i < NUM_TIMES; i++) {
-            clusteredBean.increment();
-        }
-        Assert.assertEquals("Unexpected count on stateful bean", clusteredBean.getCount(), NUM_TIMES);
+        testDeployment(StatelessDDIncrementorBean.class);
     }
 
+    private static void testDeployment(Class<? extends Incrementor> beanClass) throws NamingException {
+        try (EJBDirectory directory = new LocalEJBDirectory(MODULE)) {
+            final Incrementor incrementor = directory.lookupStateless(beanClass, Incrementor.class);
+            for (int i = 0; i < COUNT; ++i) {
+                Result<Integer> result = incrementor.increment();
+                Assert.assertEquals(i + 1, result.getValue().intValue());
+            }
+        }
+    }
 }

@@ -3,9 +3,9 @@ package org.jboss.as.test.clustering.extended.ejb2.stateful.remote.failover;
 import javax.naming.NamingException;
 
 import org.jboss.as.test.clustering.EJBClientContextSelector;
-import org.jboss.as.test.clustering.EJBDirectory;
-import org.jboss.as.test.clustering.RemoteEJBDirectory;
 import org.jboss.as.test.clustering.cluster.ClusterAbstractTestCase;
+import org.jboss.as.test.clustering.ejb.EJBDirectory;
+import org.jboss.as.test.clustering.ejb.RemoteEJBDirectory;
 import org.jboss.ejb.client.ContextSelector;
 import org.jboss.ejb.client.EJBClientContext;
 import org.jboss.logging.Logger;

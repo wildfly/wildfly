@@ -86,19 +86,15 @@ public interface EJB3SubsystemModel {
     String CACHE = "cache";
     String PASSIVATION_STORE = "passivation-store";
 
-    String FILE_PASSIVATION_STORE = "file-passivation-store";
-    String IDLE_TIMEOUT = "idle-timeout";
-    String IDLE_TIMEOUT_UNIT = "idle-timeout-unit";
+    @Deprecated String IDLE_TIMEOUT = "idle-timeout";
+    @Deprecated String IDLE_TIMEOUT_UNIT = "idle-timeout-unit";
     String MAX_SIZE = "max-size";
-    String GROUPS_PATH = "groups-path";
-    String SESSIONS_PATH = "sessions-path";
-    String SUBDIRECTORY_COUNT = "subdirectory-count";
 
-    String CLUSTER_PASSIVATION_STORE = "cluster-passivation-store";
+    @Deprecated String CLUSTER_PASSIVATION_STORE = "cluster-passivation-store";
     String BEAN_CACHE = "bean-cache";
     String CACHE_CONTAINER = "cache-container";
-    String CLIENT_MAPPINGS_CACHE = "client-mappings-cache";
-    String PASSIVATE_EVENTS_ON_REPLICATE = "passivate-events-on-replicate";
+    @Deprecated String CLIENT_MAPPINGS_CACHE = "client-mappings-cache";
+    @Deprecated String PASSIVATE_EVENTS_ON_REPLICATE = "passivate-events-on-replicate";
 
     String CHANNEL_CREATION_OPTIONS = "channel-creation-options";
     String VALUE = "value";

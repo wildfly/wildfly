@@ -74,6 +74,10 @@ vi:ts=4:sw=4:expandtab
             <groupId>${project.groupId}</groupId>
             <artifactId>wildfly-clustering-common</artifactId>
         </dependency>
+        <dependency>
+            <groupId>${project.groupId}</groupId>
+            <artifactId>wildfly-clustering-ejb-spi</artifactId>
+        </dependency>
 
         <dependency>
             <groupId>${project.groupId}</groupId>

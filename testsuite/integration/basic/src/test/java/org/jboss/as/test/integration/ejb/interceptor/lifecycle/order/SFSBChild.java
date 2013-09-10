@@ -30,7 +30,7 @@ import org.junit.Assert;
 /**
  * @author Stuart Douglas
  */
-@Stateful
+@Stateful(passivationCapable = false)
 @Interceptors({ FirstInterceptor.class, InterceptorChild.class, LastInterceptor.class })
 public class SFSBChild extends SFSBParent {
 

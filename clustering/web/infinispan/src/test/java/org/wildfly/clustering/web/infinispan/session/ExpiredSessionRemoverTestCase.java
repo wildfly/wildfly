@@ -26,8 +26,8 @@ import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
+import org.jboss.as.clustering.infinispan.invoker.Remover;
 import org.junit.Test;
-import org.wildfly.clustering.web.infinispan.Remover;
 import org.wildfly.clustering.web.session.Session;
 import org.wildfly.clustering.web.session.SessionMetaData;
 

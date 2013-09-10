@@ -22,8 +22,6 @@
 
 package org.jboss.as.ejb3.subsystem;
 
-import java.io.Serializable;
-import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashSet;
@@ -37,16 +35,14 @@ import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.ServiceVerificationHandler;
 import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
-import org.jboss.as.ejb3.cache.Cacheable;
-import org.jboss.as.ejb3.cache.impl.backing.clustering.ClusteredBackingCacheEntryStoreSourceService;
-import org.jboss.as.ejb3.cache.impl.factory.GroupAwareCacheFactoryService;
-import org.jboss.as.ejb3.cache.impl.factory.NonPassivatingCacheFactoryService;
+import org.jboss.as.ejb3.cache.CacheFactoryBuilderService;
+import org.jboss.as.ejb3.cache.DelegateCacheFactoryBuilderService;
+import org.jboss.as.ejb3.cache.distributable.DistributableCacheFactoryBuilderService;
+import org.jboss.as.ejb3.cache.simple.SimpleCacheFactoryBuilderService;
 import org.jboss.dmr.ModelNode;
 import org.jboss.msc.service.ServiceBuilder;
 import org.jboss.msc.service.ServiceController;
 import org.jboss.msc.service.ServiceTarget;
-import org.jboss.msc.service.ValueService;
-import org.jboss.msc.value.InjectedValue;
 
 /**
  * @author Paul Ferraro
@@ -67,9 +63,7 @@ public class CacheFactoryAdd extends AbstractAddStepHandler {
     }
 
     @Override
-    protected void performRuntime(OperationContext context, ModelNode operation, ModelNode model,
-                                  ServiceVerificationHandler verificationHandler,
-                                  List<ServiceController<?>> serviceControllers) throws OperationFailedException {
+    protected void performRuntime(OperationContext context, ModelNode operation, ModelNode model, ServiceVerificationHandler verificationHandler, List<ServiceController<?>> serviceControllers) throws OperationFailedException {
         // add this to the service controllers
         serviceControllers.addAll(this.installRuntimeServices(context, operation, model, verificationHandler));
     }
@@ -81,25 +75,22 @@ public class CacheFactoryAdd extends AbstractAddStepHandler {
         String passivationStore = passivationStoreModel.isDefined() ? passivationStoreModel.asString() : null;
 
         final Collection<String> unwrappedAliasValues = CacheFactoryResourceDefinition.ALIASES.unwrap(context,model);
-        final Set<String> aliases = unwrappedAliasValues != null ? new HashSet<String>(unwrappedAliasValues) : Collections.EMPTY_SET;
+        final Set<String> aliases = unwrappedAliasValues != null ? new HashSet<>(unwrappedAliasValues) : Collections.EMPTY_SET;
         ServiceTarget target = context.getServiceTarget();
-        ServiceBuilder<?> builder = (passivationStore != null) ? new GroupAwareCacheFactoryService<Serializable, Cacheable<Serializable>>(name, aliases).build(target, passivationStore) : new NonPassivatingCacheFactoryService<Serializable, Cacheable<Serializable>>(name, aliases).build(target);
+        ServiceBuilder<?> builder = buildCacheFactoryBuilder(target, name, passivationStore);
+        for (String alias: aliases) {
+            builder.addAliases(CacheFactoryBuilderService.getServiceName(alias));
+        }
         if (verificationHandler != null) {
             builder.addListener(verificationHandler);
         }
-        ServiceController<?> controller = builder.setInitialMode(ServiceController.Mode.ON_DEMAND).install();
-        if (passivationStore != null) {
-            InjectedValue<String> clusterName = new InjectedValue<String>();
-            final ServiceBuilder<String> passivationBuilder = target.addService(ClusteredBackingCacheEntryStoreSourceService.getCacheFactoryClusterNameServiceName(name), new ValueService<String>(clusterName))
-                    .addDependency(ClusteredBackingCacheEntryStoreSourceService.getPassivationStoreClusterNameServiceName(passivationStore), String.class, clusterName)
-                    .setInitialMode(ServiceController.Mode.ON_DEMAND);
-            if(verificationHandler != null) {
-                passivationBuilder.addListener(verificationHandler);
-            }
-            ServiceController<?> clusterNameController = passivationBuilder
-                    .install();
-            return Arrays.asList(controller, clusterNameController);
+        return Collections.<ServiceController<?>>singleton(builder.install());
+    }
+
+    private static ServiceBuilder<?> buildCacheFactoryBuilder(ServiceTarget target, String name, String passivationStore) {
+        if (passivationStore == null) {
+            return new SimpleCacheFactoryBuilderService<>(name).build(target);
         }
-        return Collections.<ServiceController<?>>singleton(controller);
+        return new DelegateCacheFactoryBuilderService<>(name, DistributableCacheFactoryBuilderService.getServiceName(passivationStore)).build(target);
     }
 }
