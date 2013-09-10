@@ -44,20 +44,22 @@ import javax.security.sasl.AuthorizeCallback;
 import javax.security.sasl.RealmCallback;
 
 import org.jboss.as.domain.management.AuthMechanism;
+import org.jboss.as.domain.management.SecurityRealm;
 import org.jboss.dmr.ModelNode;
 import org.jboss.msc.service.Service;
+import org.jboss.msc.service.ServiceName;
 import org.jboss.msc.service.StartContext;
 import org.jboss.msc.service.StartException;
 import org.jboss.msc.service.StopContext;
 
 /**
- * A CallbackHandler for users defined within the domain mode.
+ * A CallbackHandler for users defined within the domain model.
  *
  * @author <a href="mailto:darran.lofthouse@jboss.com">Darran Lofthouse</a>
  */
 public class UserDomainCallbackHandler implements Service<CallbackHandlerService>, CallbackHandlerService, CallbackHandler {
 
-    public static final String SERVICE_SUFFIX = "users";
+    private static final String SERVICE_SUFFIX = "users";
 
     private final String realm;
 
@@ -171,6 +173,17 @@ public class UserDomainCallbackHandler implements Service<CallbackHandlerService
                 String password = user.require(PASSWORD).asString();
                 ((PasswordCallback) current).setPassword(password.toCharArray());
             }
+        }
+
+    }
+
+    public static final class ServiceUtil {
+
+        private ServiceUtil() {
+        }
+
+        public static ServiceName createServiceName(final String realmName) {
+            return SecurityRealm.ServiceUtil.createServiceName(realmName).append(SERVICE_SUFFIX);
         }
 
     }

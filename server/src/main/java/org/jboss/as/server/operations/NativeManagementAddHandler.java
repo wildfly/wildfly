@@ -37,7 +37,6 @@ import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.ServiceVerificationHandler;
 import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
-import org.jboss.as.domain.management.security.SecurityRealmService;
 import org.jboss.as.network.SocketBinding;
 import org.jboss.as.remoting.RemotingServices;
 import org.jboss.as.remoting.management.ManagementRemotingServices;
@@ -152,16 +151,16 @@ public class NativeManagementAddHandler extends AbstractAddStepHandler {
             port = NATIVE_PORT.resolveModelAttribute(context, model).asInt();
         }
 
-        ServiceName realmSvcName = null;
+        String securityRealm = null;
         final ModelNode realmNode = SECURITY_REALM.resolveModelAttribute(context, model);
         if (realmNode.isDefined()) {
-            realmSvcName = SecurityRealmService.BASE_SERVICE_NAME.append(realmNode.asString());
+            securityRealm = realmNode.asString();
         } else {
             ServerLogger.ROOT_LOGGER.nativeManagementInterfaceIsUnsecured();
         }
 
         ServiceName tmpDirPath = ServiceName.JBOSS.append("server", "path", "jboss.server.temp.dir");
-        RemotingServices.installSecurityServices(serviceTarget, ManagementRemotingServices.MANAGEMENT_CONNECTOR, realmSvcName, null, tmpDirPath, verificationHandler, newControllers);
+        RemotingServices.installSecurityServices(serviceTarget, ManagementRemotingServices.MANAGEMENT_CONNECTOR, securityRealm, null, tmpDirPath, verificationHandler, newControllers);
 //        final OptionMap options = OptionMap.builder().set(RemotingOptions.HEARTBEAT_INTERVAL, 30000).set(Options.READ_TIMEOUT, 65000).getMap();
         final OptionMap options = OptionMap.EMPTY;
         if (socketBindingServiceName == null) {

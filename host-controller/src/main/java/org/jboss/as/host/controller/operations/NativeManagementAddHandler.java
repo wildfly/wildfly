@@ -31,7 +31,6 @@ import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.ServiceVerificationHandler;
 import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
 import org.jboss.as.domain.controller.LocalHostControllerInfo;
-import org.jboss.as.domain.management.security.SecurityRealmService;
 import org.jboss.as.host.controller.resources.NativeManagementResourceDefinition;
 import org.jboss.as.remoting.management.ManagementRemotingServices;
 import org.jboss.as.server.services.net.NetworkInterfaceService;
@@ -95,17 +94,13 @@ public class NativeManagementAddHandler extends AbstractAddStepHandler {
                                                        final List<ServiceController<?>> newControllers,
                                                        final boolean onDemand) {
 
-        ServiceName realmSvcName = null;
         String nativeSecurityRealm = hostControllerInfo.getNativeManagementSecurityRealm();
-        if (nativeSecurityRealm != null) {
-            realmSvcName = SecurityRealmService.BASE_SERVICE_NAME.append(nativeSecurityRealm);
-        }
 
         final ServiceName nativeManagementInterfaceBinding =
                 NetworkInterfaceService.JBOSS_NETWORK_INTERFACE.append(hostControllerInfo.getNativeManagementInterface());
 
         ManagementRemotingServices.installDomainConnectorServices(serviceTarget, ManagementRemotingServices.MANAGEMENT_ENDPOINT,
-                nativeManagementInterfaceBinding, hostControllerInfo.getNativeManagementPort(), realmSvcName, NativeManagementServices.CONNECTION_OPTIONS, verificationHandler, newControllers);
+                nativeManagementInterfaceBinding, hostControllerInfo.getNativeManagementPort(), nativeSecurityRealm, NativeManagementServices.CONNECTION_OPTIONS, verificationHandler, newControllers);
 
     }
 

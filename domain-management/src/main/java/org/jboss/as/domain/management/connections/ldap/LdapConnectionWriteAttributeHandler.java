@@ -74,7 +74,7 @@ public class LdapConnectionWriteAttributeHandler extends AbstractWriteAttributeH
     private void updateLdapConnectionService(final OperationContext context, final ModelNode operation, final ModelNode model) throws OperationFailedException {
         PathAddress address = PathAddress.pathAddress(operation.require(OP_ADDR));
         String name = address.getLastElement().getValue();
-        ServiceName svcName = LdapConnectionManagerService.BASE_SERVICE_NAME.append(name);
+        ServiceName svcName = LdapConnectionManagerService.ServiceUtil.createServiceName(name);
         ServiceRegistry registry = context.getServiceRegistry(true);
         ServiceController<?> controller = registry.getService(svcName);
         if (controller != null) {

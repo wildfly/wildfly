@@ -22,9 +22,12 @@
 
 package org.jboss.as.ejb3.remote;
 
+import java.util.Properties;
+
+import javax.security.auth.callback.CallbackHandler;
+
 import org.jboss.as.domain.management.CallbackHandlerFactory;
 import org.jboss.as.domain.management.SecurityRealm;
-import org.jboss.as.domain.management.security.SecurityRealmService;
 import org.jboss.as.ejb3.EjbLogger;
 import org.jboss.ejb.client.EJBClientConfiguration;
 import org.jboss.logging.Logger;
@@ -33,9 +36,6 @@ import org.jboss.msc.service.ServiceName;
 import org.jboss.msc.service.ServiceRegistry;
 import org.xnio.Option;
 import org.xnio.OptionMap;
-
-import javax.security.auth.callback.CallbackHandler;
-import java.util.Properties;
 
 
 /**
@@ -116,7 +116,7 @@ class EJBClientCommonConnectionConfig implements EJBClientConfiguration.CommonCo
             if (this.securityRealmName == null || this.securityRealmName.trim().isEmpty()) {
                 return new AnonymousCallbackHandler();
             }
-            final ServiceName securityRealmServiceName = SecurityRealmService.BASE_SERVICE_NAME.append(this.securityRealmName);
+            final ServiceName securityRealmServiceName = SecurityRealm.ServiceUtil.createServiceName(this.securityRealmName);
             final ServiceController<SecurityRealm> securityRealmController = (ServiceController<SecurityRealm>) this.serviceRegistry.getService(securityRealmServiceName);
             if (securityRealmController == null) {
                 return new AnonymousCallbackHandler();

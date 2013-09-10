@@ -35,9 +35,11 @@ import javax.security.auth.Subject;
 
 import org.jboss.as.core.security.RealmGroup;
 import org.jboss.as.core.security.RealmUser;
+import org.jboss.as.domain.management.SecurityRealm;
 import org.jboss.as.domain.management.plugin.AuthorizationPlugIn;
 import org.jboss.as.domain.management.plugin.PlugInConfigurationSupport;
 import org.jboss.msc.service.Service;
+import org.jboss.msc.service.ServiceName;
 
 /**
  * The {@link SubjectSupplementalService} for Plug-Ins
@@ -47,7 +49,7 @@ import org.jboss.msc.service.Service;
 public class PlugInSubjectSupplemental extends AbstractPlugInService implements Service<SubjectSupplementalService>,
         SubjectSupplementalService {
 
-    public static final String SERVICE_SUFFIX = "plug-in-authorization";
+    private static final String SERVICE_SUFFIX = "plug-in-authorization";
 
     PlugInSubjectSupplemental(final String realmName, final String name, final Map<String, String> properties) {
         super(realmName, name, properties);
@@ -102,6 +104,16 @@ public class PlugInSubjectSupplemental extends AbstractPlugInService implements 
 
         };
 
+    }
+
+    public static final class ServiceUtil {
+
+        private ServiceUtil() {
+        }
+
+        public static ServiceName createServiceName(final String realmName) {
+            return SecurityRealm.ServiceUtil.createServiceName(realmName).append(SERVICE_SUFFIX);
+        }
     }
 
 }

@@ -22,6 +22,9 @@
 
 package org.jboss.as.remoting;
 
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
+import static org.jboss.as.remoting.CommonAttributes.SECURITY_REALM;
+
 import java.util.List;
 
 import org.jboss.as.controller.AbstractAddStepHandler;
@@ -30,15 +33,11 @@ import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.ServiceVerificationHandler;
 import org.jboss.as.controller.registry.Resource;
-import org.jboss.as.domain.management.security.SecurityRealmService;
 import org.jboss.dmr.ModelNode;
 import org.jboss.msc.service.ServiceController;
 import org.jboss.msc.service.ServiceName;
 import org.jboss.msc.service.ServiceTarget;
 import org.xnio.OptionMap;
-
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
-import static org.jboss.as.remoting.CommonAttributes.SECURITY_REALM;
 
 /**
  * Add a connector to a remoting container.
@@ -68,9 +67,8 @@ public class HttpConnectorAdd extends AbstractAddStepHandler {
         OptionMap optionMap = ConnectorUtils.getFullOptions(context, model);
 
         ServiceName tmpDirPath = ServiceName.JBOSS.append("server", "path", "jboss.controller.temp.dir");
-        final ServiceName securityRealm = model.hasDefined(SECURITY_REALM) ? SecurityRealmService.BASE_SERVICE_NAME
-                .append(model.require(SECURITY_REALM).asString()) : null;
-        RemotingServices.installSecurityServices(context.getServiceTarget(), connectorName, securityRealm, null, tmpDirPath, verificationHandler, newControllers);
+        final String realmName= model.hasDefined(SECURITY_REALM) ? model.require(SECURITY_REALM).asString() : null;
+        RemotingServices.installSecurityServices(context.getServiceTarget(), connectorName, realmName, null, tmpDirPath, verificationHandler, newControllers);
 
         final ServiceTarget target = context.getServiceTarget();
         final String connectorRef = HttpConnectorResource.CONNECTOR_REF.resolveModelAttribute(context, model).asString();

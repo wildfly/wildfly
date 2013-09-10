@@ -33,7 +33,6 @@ import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.ServiceVerificationHandler;
 import org.jboss.as.controller.registry.Resource;
-import org.jboss.as.domain.management.security.SecurityRealmService;
 import org.jboss.as.network.SocketBinding;
 import org.jboss.dmr.ModelNode;
 import org.jboss.msc.service.ServiceController;
@@ -62,8 +61,7 @@ public class ConnectorAdd extends AbstractAddStepHandler {
         final PathAddress address = PathAddress.pathAddress(operation.get(OP_ADDR));
         final String connectorName = address.getLastElement().getValue();
         ServiceName tmpDirPath = ServiceName.JBOSS.append("server", "path", "jboss.controller.temp.dir");
-        final ServiceName securityRealm = model.hasDefined(SECURITY_REALM) ? SecurityRealmService.BASE_SERVICE_NAME
-                .append(model.require(SECURITY_REALM).asString()) : null;
+        final String securityRealm = model.hasDefined(SECURITY_REALM) ? model.require(SECURITY_REALM).asString() : null;
         final ModelNode fullModel = Resource.Tools.readModel(context.readResource(PathAddress.EMPTY_ADDRESS));
 
         RemotingServices.installSecurityServices(context.getServiceTarget(), connectorName, securityRealm, null, tmpDirPath, verificationHandler, newControllers);

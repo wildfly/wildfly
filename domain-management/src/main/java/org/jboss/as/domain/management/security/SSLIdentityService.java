@@ -54,8 +54,6 @@ import org.jboss.msc.value.InjectedValue;
  */
 class SSLIdentityService implements Service<SSLIdentity>, SSLIdentity {
 
-    static final String SERVICE_SUFFIX = "ssl";
-
     private final String protocol;
     private final char[] keystorePassword;
     private final char[] keyPassword;

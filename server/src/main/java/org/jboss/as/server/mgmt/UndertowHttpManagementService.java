@@ -21,18 +21,19 @@
 */
 package org.jboss.as.server.mgmt;
 
+import io.undertow.server.ListenerRegistry;
+import io.undertow.server.handlers.ChannelUpgradeHandler;
+
 import java.net.BindException;
 import java.net.InetSocketAddress;
 import java.util.ArrayList;
 import java.util.List;
 
-import io.undertow.server.ListenerRegistry;
-import io.undertow.server.handlers.ChannelUpgradeHandler;
 import org.jboss.as.controller.ControlledProcessStateService;
 import org.jboss.as.controller.ModelController;
 import org.jboss.as.domain.http.server.ConsoleMode;
 import org.jboss.as.domain.http.server.ManagementHttpServer;
-import org.jboss.as.domain.management.security.SecurityRealmService;
+import org.jboss.as.domain.management.SecurityRealm;
 import org.jboss.as.network.ManagedBinding;
 import org.jboss.as.network.ManagedBindingRegistry;
 import org.jboss.as.network.NetworkInterfaceBinding;
@@ -74,7 +75,7 @@ public class UndertowHttpManagementService implements Service<HttpManagement> {
     private final InjectedValue<SocketBindingManager> injectedSocketBindingManager = new InjectedValue<SocketBindingManager>();
     private final InjectedValue<Integer> portValue = new InjectedValue<Integer>();
     private final InjectedValue<Integer> securePortValue = new InjectedValue<Integer>();
-    private final InjectedValue<SecurityRealmService> securityRealmServiceValue = new InjectedValue<SecurityRealmService>();
+    private final InjectedValue<SecurityRealm> securityRealmServiceValue = new InjectedValue<SecurityRealm>();
     private final InjectedValue<ControlledProcessStateService> controlledProcessStateServiceValue = new InjectedValue<ControlledProcessStateService>();
     private final ConsoleMode consoleMode;
     private final String consoleSlot;
@@ -162,7 +163,7 @@ public class UndertowHttpManagementService implements Service<HttpManagement> {
         final ControlledProcessStateService controlledProcessStateService = controlledProcessStateServiceValue.getValue();
         socketBindingManager = injectedSocketBindingManager.getOptionalValue();
 
-        final SecurityRealmService securityRealmService = securityRealmServiceValue.getOptionalValue();
+        final SecurityRealm securityRealmService = securityRealmServiceValue.getOptionalValue();
 
         InetSocketAddress bindAddress = null;
         InetSocketAddress secureBindAddress = null;
@@ -353,7 +354,7 @@ public class UndertowHttpManagementService implements Service<HttpManagement> {
      *
      * @return the securityRealmServiceValue
      */
-    public InjectedValue<SecurityRealmService> getSecurityRealmInjector() {
+    public InjectedValue<SecurityRealm> getSecurityRealmInjector() {
         return securityRealmServiceValue;
     }
 

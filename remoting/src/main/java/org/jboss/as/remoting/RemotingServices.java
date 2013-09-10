@@ -153,7 +153,7 @@ public class RemotingServices {
 
     public static void installSecurityServices(ServiceTarget serviceTarget,
                                                  final String connectorName,
-                                                 final ServiceName securityRealmName,
+                                                 final String realmName,
                                                  final ServiceName serverCallbackServiceName,
                                                  final ServiceName tmpDirService,
                                                  final ServiceVerificationHandler verificationHandler,
@@ -162,8 +162,8 @@ public class RemotingServices {
 
         final RealmSecurityProviderService rsps = new RealmSecurityProviderService();
         ServiceBuilder<?> builder = serviceTarget.addService(securityProviderName, rsps);
-        if (securityRealmName != null) {
-            builder.addDependency(securityRealmName, SecurityRealm.class, rsps.getSecurityRealmInjectedValue());
+        if (realmName != null) {
+            SecurityRealm.ServiceUtil.addDependency(builder, rsps.getSecurityRealmInjectedValue(), realmName, false);
         }
         if (serverCallbackServiceName != null) {
             builder.addDependency(serverCallbackServiceName, CallbackHandler.class, rsps.getServerCallbackValue());

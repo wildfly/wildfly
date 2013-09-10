@@ -46,13 +46,12 @@ import javax.security.auth.callback.UnsupportedCallbackException;
 import javax.security.auth.login.LoginException;
 import javax.security.sasl.RealmCallback;
 
-import org.jboss.as.domain.management.AuthMechanism;
 import org.jboss.as.core.security.RealmRole;
 import org.jboss.as.core.security.RealmUser;
 import org.jboss.as.core.security.SubjectUserInfo;
+import org.jboss.as.domain.management.AuthMechanism;
 import org.jboss.as.domain.management.AuthorizingCallbackHandler;
 import org.jboss.as.domain.management.SecurityRealm;
-import org.jboss.as.domain.management.security.SecurityRealmService;
 import org.jboss.as.server.CurrentServiceContainer;
 import org.jboss.msc.service.ServiceContainer;
 import org.jboss.msc.service.ServiceController;
@@ -96,7 +95,7 @@ public class RealmDirectLoginModule extends UsernamePasswordLoginModule {
 
         final String realm = options.containsKey(REALM_OPTION) ? (String) options.get(REALM_OPTION) : DEFAULT_REALM;
 
-        final ServiceController<?> controller = currentServiceContainer().getService(SecurityRealmService.BASE_SERVICE_NAME.append(realm));
+        final ServiceController<?> controller = currentServiceContainer().getService(SecurityRealm.ServiceUtil.createServiceName(realm));
         if (controller != null) {
             securityRealm = (SecurityRealm) controller.getValue();
         }
