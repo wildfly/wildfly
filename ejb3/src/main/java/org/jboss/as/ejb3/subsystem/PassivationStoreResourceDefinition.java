@@ -50,14 +50,14 @@ public abstract class PassivationStoreResourceDefinition extends SimpleResourceD
                     .setDefaultValue(new ModelNode().set(BackingCacheEntryStoreConfig.DEFAULT_IDLE_TIMEOUT))
                     .setAllowExpression(true)
                     .setValidator(new LongRangeValidator(1, Integer.MAX_VALUE, true, true))
-                    .setFlags(AttributeAccess.Flag.RESTART_NONE)
+                    .setFlags(AttributeAccess.Flag.RESTART_ALL_SERVICES)
                     .build();
     static final SimpleAttributeDefinition IDLE_TIMEOUT_UNIT =
             new SimpleAttributeDefinitionBuilder(EJB3SubsystemModel.IDLE_TIMEOUT_UNIT, ModelType.STRING, true)
                     .setXmlName(EJB3SubsystemXMLAttribute.IDLE_TIMEOUT_UNIT.getLocalName())
                     .setValidator(new TimeUnitValidator(true,true))
                     .setDefaultValue(new ModelNode().set(BackingCacheEntryStoreConfig.DEFAULT_IDLE_TIMEOUT_UNIT.name()))
-                    .setFlags(AttributeAccess.Flag.RESTART_NONE)
+                    .setFlags(AttributeAccess.Flag.RESTART_ALL_SERVICES)
                     .setAllowExpression(true)
                     .build();
     static final SimpleAttributeDefinitionBuilder MAX_SIZE_BUILDER =
@@ -66,7 +66,7 @@ public abstract class PassivationStoreResourceDefinition extends SimpleResourceD
                     .setDefaultValue(new ModelNode().set(BackingCacheEntryStoreConfig.DEFAULT_MAX_SIZE))
                     .setAllowExpression(true)
                     .setValidator(new LongRangeValidator(1, Integer.MAX_VALUE, true, true))
-                    .setFlags(AttributeAccess.Flag.RESTART_NONE)
+                    .setFlags(AttributeAccess.Flag.RESTART_ALL_SERVICES)
                     ;
 
     private final PassivationStoreWriteHandler<?> writeHandler;

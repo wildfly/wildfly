@@ -45,27 +45,27 @@ public class ClusterPassivationStoreResourceDefinition extends PassivationStoreR
                     .setXmlName(EJB3SubsystemXMLAttribute.CACHE_CONTAINER.getLocalName())
                     .setDefaultValue(new ModelNode(ClusteredBackingCacheEntryStoreConfig.DEFAULT_CACHE_CONTAINER))
                     .setAllowExpression(true)
-                    .setFlags(AttributeAccess.Flag.RESTART_NONE)
+                    .setFlags(AttributeAccess.Flag.RESTART_ALL_SERVICES)
                     .build();
     static final SimpleAttributeDefinition BEAN_CACHE =
             new SimpleAttributeDefinitionBuilder(EJB3SubsystemModel.BEAN_CACHE, ModelType.STRING, true)
                     .setXmlName(EJB3SubsystemXMLAttribute.BEAN_CACHE.getLocalName())
                     .setAllowExpression(true)
-                    .setFlags(AttributeAccess.Flag.RESTART_NONE)
+                    .setFlags(AttributeAccess.Flag.RESTART_ALL_SERVICES)
                     .build();
     static final SimpleAttributeDefinition CLIENT_MAPPINGS_CACHE =
             new SimpleAttributeDefinitionBuilder(EJB3SubsystemModel.CLIENT_MAPPINGS_CACHE, ModelType.STRING, true)
                     .setXmlName(EJB3SubsystemXMLAttribute.CLIENT_MAPPINGS_CACHE.getLocalName())
                     .setDefaultValue(new ModelNode(ClusteredBackingCacheEntryStoreConfig.DEFAULT_CLIENT_MAPPING_CACHE))
                     .setAllowExpression(true)
-                    .setFlags(AttributeAccess.Flag.RESTART_NONE)
+                    .setFlags(AttributeAccess.Flag.RESTART_ALL_SERVICES)
                     .build();
     static final SimpleAttributeDefinition PASSIVATE_EVENTS_ON_REPLICATE =
             new SimpleAttributeDefinitionBuilder(EJB3SubsystemModel.PASSIVATE_EVENTS_ON_REPLICATE, ModelType.BOOLEAN, true)
                     .setXmlName(EJB3SubsystemXMLAttribute.PASSIVATE_EVENTS_ON_REPLICATE.getLocalName())
                     .setDefaultValue(new ModelNode(ClusteredBackingCacheEntryStoreConfig.DEFAULT_PASSIVATE_EVENTS_ON_REPLICATE))
                     .setAllowExpression(true)
-                    .setFlags(AttributeAccess.Flag.RESTART_NONE)
+                    .setFlags(AttributeAccess.Flag.RESTART_ALL_SERVICES)
                     .build();
 
     static final AttributeDefinition[] ATTRIBUTES = {IDLE_TIMEOUT, IDLE_TIMEOUT_UNIT, MAX_SIZE, CACHE_CONTAINER, BEAN_CACHE, CLIENT_MAPPINGS_CACHE, PASSIVATE_EVENTS_ON_REPLICATE };
