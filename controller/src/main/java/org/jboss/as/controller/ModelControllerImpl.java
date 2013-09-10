@@ -128,6 +128,7 @@ class ModelControllerImpl implements ModelController {
         this.authorizer = authorizer;
         this.auditLogger = auditLogger;
         this.hostServerGroupTracker = processType.isManagedDomain() ? new HostServerGroupTracker() : null;
+        auditLogger.startBoot();
     }
 
     public ModelNode execute(final ModelNode operation, final OperationMessageHandler handler, final OperationTransactionControl control, final OperationAttachments attachments) {

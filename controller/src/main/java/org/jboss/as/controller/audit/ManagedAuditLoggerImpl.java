@@ -164,6 +164,9 @@ public class ManagedAuditLoggerImpl implements ManagedAuditLogger, ManagedAuditL
         config.lock();
         try {
             config.setLogBoot(logBoot);
+            if (logBoot == false && config.isBooting() && !config.isLogBoot()) {
+                queuedItems.clear();
+            }
         } finally {
             config.unlock();
         }
@@ -525,8 +528,8 @@ public class ManagedAuditLoggerImpl implements ManagedAuditLogger, ManagedAuditL
         }
 
         /** Call with lock taken */
-        void bootDone() {
-            sharedConfiguration.bootDone();
+        void setBooting(boolean booting) {
+            sharedConfiguration.setBooting(booting);
         }
 
         /** Call with lock taken */
@@ -724,8 +727,8 @@ public class ManagedAuditLoggerImpl implements ManagedAuditLogger, ManagedAuditL
             return configuredHandlers.remove(name);
         }
 
-        void bootDone() {
-            booting = false;
+        void setBooting(boolean booting) {
+            this.booting = booting;
         }
 
         boolean isBooting() {
@@ -895,7 +898,7 @@ public class ManagedAuditLoggerImpl implements ManagedAuditLogger, ManagedAuditL
     public void bootDone() {
         config.lock();
         try {
-            config.bootDone();
+            config.setBooting(false);
             if (childImpls != null) {
                 for (ManagedAuditLogger child : childImpls) {
                     child.bootDone();
@@ -909,4 +912,20 @@ public class ManagedAuditLoggerImpl implements ManagedAuditLogger, ManagedAuditL
             config.unlock();
         }
     }
+
+
+    @Override
+    public void startBoot() {
+        config.lock();
+        try {
+            config.setBooting(true);
+            if (childImpls != null) {
+                childImpls.clear();
+            }
+            config.setLoggerStatus(Status.QUEUEING);
+        } finally {
+            config.unlock();
+        }
+    }
+
  }

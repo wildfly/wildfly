@@ -154,6 +154,11 @@ public interface ManagedAuditLogger extends AuditLogger {
     JsonAuditLogItemFormatter getJsonFormatter(String name);
 
     /**
+     * Callback for the controller to call before the controller is booted
+     */
+    void startBoot();
+
+    /**
      * Callback for the controller to call when the controller has been booted
      */
     void bootDone();
