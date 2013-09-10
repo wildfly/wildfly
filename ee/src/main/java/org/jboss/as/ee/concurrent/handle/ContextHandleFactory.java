@@ -22,6 +22,9 @@
 package org.jboss.as.ee.concurrent.handle;
 
 import javax.enterprise.concurrent.ContextService;
+import java.io.IOException;
+import java.io.ObjectInputStream;
+import java.io.ObjectOutputStream;
 import java.util.Map;
 
 /**
@@ -40,34 +43,29 @@ public interface ContextHandleFactory {
     ContextHandle saveContext(ContextService contextService, Map<String, String> contextObjectProperties);
 
     /**
-     * Retrieves the factory's type
-     *
+     * The factory priority is used to define the order of handles when chained. The handle with the lowest priority is the first in the chain.
      * @return
      */
-    Type getType();
-
+    int getChainPriority();
 
     /**
-     * enumeration of context types
+     * Retrieves the factory's name.
+     * @return
      */
-    enum Type {
+    String getName();
 
-        // note that ordinal() value, i.e. declaration order, is used when ordering context handle factories, so ensure types are declared in correct order.
+    /**
+     * Writes the handle to the specified output stream.
+     * @param contextHandle
+     * @param out
+     */
+    void writeHandle(ContextHandle contextHandle, ObjectOutputStream out) throws IOException;
 
-        ALL_CHAINED,
-
-        CLASS_LOADER,
-
-        SECURITY,
-
-        EJB,
-
-        NAMING_CHAINED,
-        NAMING_NAMESPACE_SELECTOR,
-        NAMING_WRITABLE_SERVICE_BASED_STORE_OWNER,
-
-        CONCURRENT;
-    }
-
+    /**
+     * Reads a handle from the specified input stream.
+     * @param in
+     * @return
+     */
+    ContextHandle readHandle(ObjectInputStream in) throws IOException, ClassNotFoundException;
 
 }

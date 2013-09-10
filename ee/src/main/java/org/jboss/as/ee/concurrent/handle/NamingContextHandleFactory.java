@@ -21,11 +21,15 @@
  */
 package org.jboss.as.ee.concurrent.handle;
 
+import org.jboss.as.ee.EeMessages;
 import org.jboss.as.naming.WritableServiceBasedNamingStore;
 import org.jboss.as.naming.context.NamespaceContextSelector;
 import org.jboss.msc.service.ServiceName;
 
 import javax.enterprise.concurrent.ContextService;
+import java.io.IOException;
+import java.io.ObjectInputStream;
+import java.io.ObjectOutputStream;
 import java.util.Map;
 
 /**
@@ -33,79 +37,85 @@ import java.util.Map;
  *
  * @author Eduardo Martins
  */
-public class NamingContextHandleFactory extends ChainedContextHandleFactory {
+public class NamingContextHandleFactory implements ContextHandleFactory {
 
-    public static final NamingContextHandleFactory INSTANCE = new NamingContextHandleFactory();
+    public static final String NAME = "NAMING";
 
-    private NamingContextHandleFactory() {
-        super(Type.NAMING_CHAINED);
-        add(NamespaceContextSelectorContextHandleFactory.INSTANCE);
-        add(DeploymentUnitServiceNameContextHandleFactory.INSTANCE);
+    private final NamespaceContextSelector namespaceContextSelector;
+    private final ServiceName duServiceName;
+
+    public NamingContextHandleFactory(NamespaceContextSelector namespaceContextSelector, ServiceName duServiceName) {
+        this.namespaceContextSelector = namespaceContextSelector;
+        this.duServiceName = duServiceName;
     }
 
-    private static class NamespaceContextSelectorContextHandleFactory implements ContextHandleFactory {
-
-        public static final NamespaceContextSelectorContextHandleFactory INSTANCE = new NamespaceContextSelectorContextHandleFactory();
-
-        private NamespaceContextSelectorContextHandleFactory() {
-        }
-
-        @Override
-        public ContextHandle saveContext(ContextService contextService, Map<String, String> contextObjectProperties) {
-            final NamespaceContextSelector namespaceContextSelector = NamespaceContextSelector.getCurrentSelector();
-            return new ContextHandle() {
-                @Override
-                public void setup() throws IllegalStateException {
-                    if(namespaceContextSelector != null) {
-                        NamespaceContextSelector.pushCurrentSelector(namespaceContextSelector);
-                    }
-                }
-
-                @Override
-                public void reset() {
-                    if(namespaceContextSelector != null) {
-                        NamespaceContextSelector.popCurrentSelector();
-                    }
-                }
-            };
-        }
-
-        @Override
-        public Type getType() {
-            return Type.NAMING_NAMESPACE_SELECTOR;
-        }
+    @Override
+    public ContextHandle saveContext(ContextService contextService, Map<String, String> contextObjectProperties) {
+        return new NamingContextHandle(namespaceContextSelector,duServiceName);
     }
 
-    private static class DeploymentUnitServiceNameContextHandleFactory implements ContextHandleFactory {
+    @Override
+    public String getName() {
+        return NAME;
+    }
 
-        public static final DeploymentUnitServiceNameContextHandleFactory INSTANCE = new DeploymentUnitServiceNameContextHandleFactory();
+    @Override
+    public int getChainPriority() {
+        return 200;
+    }
 
-        private DeploymentUnitServiceNameContextHandleFactory() {
+    @Override
+    public void writeHandle(ContextHandle contextHandle, ObjectOutputStream out) throws IOException {
+    }
+
+    @Override
+    public ContextHandle readHandle(ObjectInputStream in) throws IOException, ClassNotFoundException {
+        return new NamingContextHandle(namespaceContextSelector,duServiceName);
+    }
+
+    private static class NamingContextHandle implements ContextHandle {
+
+        private final NamespaceContextSelector namespaceContextSelector;
+        private final ServiceName duServiceName;
+
+        private NamingContextHandle(NamespaceContextSelector namespaceContextSelector, ServiceName duServiceName) {
+            this.namespaceContextSelector = namespaceContextSelector;
+            this.duServiceName = duServiceName;
         }
 
         @Override
-        public ContextHandle saveContext(ContextService contextService, Map<String, String> contextObjectProperties) {
-            final ServiceName duServiceName = WritableServiceBasedNamingStore.currentOwner();
-            return new ContextHandle() {
-                @Override
-                public void setup() throws IllegalStateException {
-                    if(duServiceName != null) {
-                        WritableServiceBasedNamingStore.pushOwner(duServiceName);
-                    }
-                }
-
-                @Override
-                public void reset() {
-                    if(duServiceName != null) {
-                        WritableServiceBasedNamingStore.popOwner();
-                    }
-                }
-            };
+        public String getFactoryName() {
+            return NAME;
         }
 
         @Override
-        public Type getType() {
-            return Type.NAMING_WRITABLE_SERVICE_BASED_STORE_OWNER;
+        public void setup() throws IllegalStateException {
+            if(namespaceContextSelector != null) {
+                NamespaceContextSelector.pushCurrentSelector(namespaceContextSelector);
+            }
+            if(duServiceName != null) {
+                WritableServiceBasedNamingStore.pushOwner(duServiceName);
+            }
+        }
+
+        @Override
+        public void reset() {
+            if(namespaceContextSelector != null) {
+                NamespaceContextSelector.popCurrentSelector();
+            }
+            if(duServiceName != null) {
+                WritableServiceBasedNamingStore.popOwner();
+            }
+        }
+
+        // serialization
+
+        private void writeObject(ObjectOutputStream out) throws IOException {
+            throw EeMessages.MESSAGES.serializationMustBeHandledByThefactory();
+        }
+
+        private void readObject(ObjectInputStream in) throws IOException, ClassNotFoundException {
+            throw EeMessages.MESSAGES.serializationMustBeHandledByThefactory();
         }
     }
 }

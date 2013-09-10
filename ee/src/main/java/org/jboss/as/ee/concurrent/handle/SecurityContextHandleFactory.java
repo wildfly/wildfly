@@ -26,6 +26,9 @@ import org.jboss.security.SecurityContextAssociation;
 import org.wildfly.security.manager.WildFlySecurityManager;
 
 import javax.enterprise.concurrent.ContextService;
+import java.io.IOException;
+import java.io.ObjectInputStream;
+import java.io.ObjectOutputStream;
 import java.security.AccessController;
 import java.security.PrivilegedAction;
 import java.util.Map;
@@ -37,8 +40,9 @@ import java.util.Map;
  */
 public class SecurityContextHandleFactory implements ContextHandleFactory {
 
-    public static final SecurityContextHandleFactory INSTANCE = new SecurityContextHandleFactory();
+    public static final String NAME = "SECURITY";
 
+    public static final SecurityContextHandleFactory INSTANCE = new SecurityContextHandleFactory();
 
     private SecurityContextHandleFactory() {
     }
@@ -49,8 +53,23 @@ public class SecurityContextHandleFactory implements ContextHandleFactory {
     }
 
     @Override
-    public Type getType() {
-        return Type.SECURITY;
+    public String getName() {
+        return NAME;
+    }
+
+    @Override
+    public int getChainPriority() {
+        return 300;
+    }
+
+    @Override
+    public void writeHandle(ContextHandle contextHandle, ObjectOutputStream out) throws IOException {
+        out.writeObject(contextHandle);
+    }
+
+    @Override
+    public ContextHandle readHandle(ObjectInputStream in) throws IOException, ClassNotFoundException {
+        return (ContextHandle) in.readObject();
     }
 
     private static class SecurityContextHandle implements ContextHandle {
@@ -73,6 +92,11 @@ public class SecurityContextHandleFactory implements ContextHandleFactory {
 
         private SecurityContext saveSecurityContext() {
             return SecurityContextAssociation.getSecurityContext();
+        }
+
+        @Override
+        public String getFactoryName() {
+            return NAME;
         }
 
         @Override

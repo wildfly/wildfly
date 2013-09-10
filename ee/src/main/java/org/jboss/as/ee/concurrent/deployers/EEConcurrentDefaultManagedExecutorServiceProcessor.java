@@ -33,7 +33,7 @@ import java.util.List;
  *
  * @author Eduardo Martins
  */
-public class EEConcurrentDefaultManagedExecutorServiceProcessor extends EEConcurrentAbstractProcessor {
+public class EEConcurrentDefaultManagedExecutorServiceProcessor extends EEConcurrentDefaultAbstractProcessor {
 
     @Override
     void addBindingsConfigurations(String bindingNamePrefix, List<BindingConfiguration> bindingConfigurations) {

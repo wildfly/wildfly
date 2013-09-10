@@ -192,4 +192,20 @@ public interface EeLogger extends BasicLogger {
     @Message(id = 11013, value = "%s in subdeployment ignored. jboss-ejb-client.xml is only parsed for top level deployments.")
     void subdeploymentIgnored(String pathName);
 
+    @LogMessage(level = WARN)
+    @Message(id = 11014, value = "Transaction started in EE Concurrent invocation left open, starting rollback to prevent leak.")
+    void rollbackOfTransactionStartedInEEConcurrentInvocation();
+
+    @LogMessage(level = WARN)
+    @Message(id = 11015, value = "Failed to rollback transaction.")
+    void failedToRollbackTransaction(@Cause Throwable cause);
+
+    @LogMessage(level = WARN)
+    @Message(id = 11016, value = "Failed to suspend transaction.")
+    void failedToSuspendTransaction(@Cause Throwable cause);
+
+    @LogMessage(level = WARN)
+    @Message(id = 11017, value = "System error while checking for transaction leak in EE Concurrent invocation.")
+    void systemErrorWhileCheckingForTransactionLeak(@Cause Throwable cause);
+
 }

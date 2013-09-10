@@ -21,8 +21,6 @@
  */
 package org.jboss.as.ee.concurrent;
 
-import org.jboss.as.ee.concurrent.handle.ChainedContextHandleFactory;
-import org.jboss.as.ee.concurrent.handle.ContextHandleFactory;
 import org.jboss.as.server.deployment.SetupAction;
 import org.jboss.msc.service.ServiceName;
 
@@ -35,19 +33,15 @@ import java.util.Set;
  */
 public class ConcurrentContextSetupAction implements SetupAction {
 
-    private final ChainedContextHandleFactory allChainedContextHandleFactory;
+    private final ConcurrentContext concurrentContext;
 
-    public ConcurrentContextSetupAction() {
-        this.allChainedContextHandleFactory = new ChainedContextHandleFactory(ContextHandleFactory.Type.ALL_CHAINED);
-    }
-
-    public ChainedContextHandleFactory getAllChainedContextHandleFactory() {
-        return allChainedContextHandleFactory;
+    public ConcurrentContextSetupAction(ConcurrentContext concurrentContext) {
+        this.concurrentContext = concurrentContext;
     }
 
     @Override
     public void setup(Map<String, Object> properties) {
-        ConcurrentContext.pushCurrent(new ConcurrentContext(allChainedContextHandleFactory));
+        ConcurrentContext.pushCurrent(concurrentContext);
     }
 
     @Override
@@ -63,5 +57,9 @@ public class ConcurrentContextSetupAction implements SetupAction {
     @Override
     public Set<ServiceName> dependencies() {
         return Collections.emptySet();
+    }
+
+    public ConcurrentContext getConcurrentContext() {
+        return concurrentContext;
     }
 }

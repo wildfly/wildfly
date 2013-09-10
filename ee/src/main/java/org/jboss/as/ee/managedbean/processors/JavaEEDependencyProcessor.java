@@ -77,7 +77,8 @@ public class JavaEEDependencyProcessor implements DeploymentUnitProcessor {
             ModuleIdentifier.create("javax.xml.soap.api"),
             ModuleIdentifier.create("javax.xml.ws.api"),
             ModuleIdentifier.create("javax.api"),
-            ModuleIdentifier.create("org.glassfish.javax.el")
+            ModuleIdentifier.create("org.glassfish.javax.el"),
+            ModuleIdentifier.create("org.glassfish.javax.enterprise.concurrent")
     };
 
 
@@ -104,6 +105,8 @@ public class JavaEEDependencyProcessor implements DeploymentUnitProcessor {
 
         ModuleDependency ee = new ModuleDependency(moduleLoader, JBOSS_AS_EE, false, false, false, false);
         ee.addImportFilter(PathFilters.is("org/jboss/as/ee/component/serialization"), true);
+        ee.addImportFilter(PathFilters.is("org/jboss/as/ee/concurrent"), true);
+        ee.addImportFilter(PathFilters.is("org/jboss/as/ee/concurrent/handle"), true);
         ee.addImportFilter(PathFilters.acceptAll(), false);
         moduleSpecification.addSystemDependency(ee);
 
