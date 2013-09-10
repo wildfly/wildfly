@@ -108,8 +108,8 @@ public class SecurityTestCase {
             sf.createSession(HornetQDefaultConfiguration.getDefaultClusterUser(), HornetQDefaultConfiguration.getDefaultClusterPassword(), false, true, true, false, 1);
             fail("must not allow to create a session with the default cluster user credentials");
         } catch (HornetQException e) {
-            assertEquals(HornetQExceptionType.SECURITY_EXCEPTION, e.getType());
-            assertTrue(e.getMessage().startsWith("HQ119031"));
+            assertEquals(HornetQExceptionType.CLUSTER_SECURITY_EXCEPTION, e.getType());
+            assertTrue(e.getMessage().startsWith("HQ119099"));
         } finally {
             if (sf != null) {
                 sf.close();
