@@ -46,6 +46,7 @@ import org.junit.runner.RunWith;
  */
 @RunWith(Arquillian.class)
 @ServerSetup(PassivationTestCaseSetup.class)
+@org.junit.Ignore
 public class PassivationSucceedsEJB2TestCase {
     private static final Logger log = Logger.getLogger(PassivationSucceedsEJB2TestCase.class);
     private static String jndi;
@@ -92,7 +93,7 @@ public class PassivationSucceedsEJB2TestCase {
         remote1.remove();
         remote2.remove();
     }
-
+/*
     @Test
     public void testPassivationIdleTimeout() throws Exception {
         // Lookup and create stateful instance of ejb2 bean
@@ -112,4 +113,5 @@ public class PassivationSucceedsEJB2TestCase {
         Assert.assertTrue("ejbPassivate not called, check CacheConfig and client sleep time", remote.hasBeenPassivated());
         remote.remove();
     }
+*/
 }

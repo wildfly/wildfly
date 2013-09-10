@@ -26,10 +26,13 @@ import javax.ejb.PostActivate;
 import javax.ejb.PrePassivate;
 import javax.ejb.Stateful;
 
+import org.jboss.ejb3.annotation.Cache;
+
 /**
  * @author Jaikiran Pai
  */
 @Stateful
+@Cache("passivating")
 public class DDBasedSFSB {
 
     private boolean prePrePassivateInvoked;

@@ -189,7 +189,6 @@ public class EJB3SubsystemRootResourceDefinition extends SimpleResourceDefinitio
     public void registerAttributes(ManagementResourceRegistration resourceRegistration) {
         resourceRegistration.registerReadWriteAttribute(DEFAULT_SFSB_CACHE, null, EJB3SubsystemDefaultCacheWriteHandler.SFSB_CACHE);
         resourceRegistration.registerReadWriteAttribute(DEFAULT_SFSB_PASSIVATION_DISABLED_CACHE, null, EJB3SubsystemDefaultCacheWriteHandler.SFSB_PASSIVATION_DISABLED_CACHE);
-        resourceRegistration.registerReadWriteAttribute(DEFAULT_CLUSTERED_SFSB_CACHE, null, EJB3SubsystemDefaultCacheWriteHandler.CLUSTERED_SFSB_CACHE);
         resourceRegistration.registerReadWriteAttribute(DEFAULT_SLSB_INSTANCE_POOL, null, EJB3SubsystemDefaultPoolWriteHandler.SLSB_POOL);
         resourceRegistration.registerReadWriteAttribute(DEFAULT_MDB_INSTANCE_POOL, null, EJB3SubsystemDefaultPoolWriteHandler.MDB_POOL);
         resourceRegistration.registerReadWriteAttribute(DEFAULT_ENTITY_BEAN_INSTANCE_POOL, null, EJB3SubsystemDefaultPoolWriteHandler.ENTITY_BEAN_POOL);
@@ -230,8 +229,7 @@ public class EJB3SubsystemRootResourceDefinition extends SimpleResourceDefinitio
         subsystemRegistration.registerSubModel(StrictMaxPoolResourceDefinition.INSTANCE);
 
         subsystemRegistration.registerSubModel(CacheFactoryResourceDefinition.INSTANCE);
-        subsystemRegistration.registerSubModel(FilePassivationStoreResourceDefinition.INSTANCE);
-        subsystemRegistration.registerSubModel(ClusterPassivationStoreResourceDefinition.INSTANCE);
+        subsystemRegistration.registerSubModel(PassivationStoreResourceDefinition.INSTANCE);
 
         // subsystem=ejb3/service=timerservice
         subsystemRegistration.registerSubModel(new TimerServiceResourceDefinition(pathManager));

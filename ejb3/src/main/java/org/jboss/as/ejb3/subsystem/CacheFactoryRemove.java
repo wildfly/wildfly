@@ -22,7 +22,7 @@
 package org.jboss.as.ejb3.subsystem;
 
 import org.jboss.as.controller.ServiceRemoveStepHandler;
-import org.jboss.as.ejb3.cache.CacheFactoryService;
+import org.jboss.as.ejb3.cache.CacheFactoryBuilderService;
 import org.jboss.msc.service.ServiceName;
 
 /**
@@ -36,6 +36,6 @@ public class CacheFactoryRemove extends ServiceRemoveStepHandler {
 
     @Override
     protected ServiceName serviceName(final String name) {
-        return CacheFactoryService.getServiceName(name);
+        return CacheFactoryBuilderService.getServiceName(name);
     }
 }

@@ -22,17 +22,21 @@
 
 package org.jboss.as.ejb3.component.stateful;
 
+import org.jboss.as.ejb3.component.EJBComponent;
+import org.jboss.as.ejb3.deployment.EjbDeploymentInformation;
+import org.jboss.as.ejb3.deployment.ModuleDeployment;
 import org.jboss.marshalling.SerializabilityChecker;
+import org.jboss.msc.value.Value;
 
 /**
  * @author Paul Ferraro
  */
 public class StatefulSessionBeanSerializabilityChecker implements SerializabilityChecker {
 
-    private final Class<?> beanClass;
+    private final Value<ModuleDeployment> deployment;
 
-    public StatefulSessionBeanSerializabilityChecker(Class<?> beanClass) {
-        this.beanClass = beanClass;
+    public StatefulSessionBeanSerializabilityChecker(Value<ModuleDeployment> deployment) {
+        this.deployment = deployment;
     }
 
     /**
@@ -40,10 +44,15 @@ public class StatefulSessionBeanSerializabilityChecker implements Serializabilit
      * @see org.jboss.marshalling.SerializabilityChecker#isSerializable(java.lang.Class)
      */
     @Override
-    public boolean isSerializable(Class<?> clazz) {
-        if(clazz == Object.class) {
-            return false;
+    public boolean isSerializable(Class<?> targetClass) {
+        if (targetClass == Object.class) return false;
+        if (DEFAULT.isSerializable(targetClass)) return true;
+        for (EjbDeploymentInformation info: this.deployment.getValue().getEjbs().values()) {
+            EJBComponent component = info.getEjbComponent();
+            if ((component instanceof StatefulSessionComponent) && targetClass.isAssignableFrom(component.getComponentClass())) {
+                return true;
+            }
         }
-        return DEFAULT.isSerializable(clazz) || clazz.isAssignableFrom(this.beanClass);
+        return false;
     }
 }

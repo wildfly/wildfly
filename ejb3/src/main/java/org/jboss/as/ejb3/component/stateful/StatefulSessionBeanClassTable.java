@@ -37,12 +37,7 @@ import javax.persistence.EntityManagerFactory;
 import javax.transaction.UserTransaction;
 
 import org.jboss.as.clustering.marshalling.SimpleClassTable;
-import org.jboss.as.clustering.marshalling.SimpleMarshalledValue;
 import org.jboss.as.ee.component.BasicComponentInstance;
-import org.jboss.as.ejb3.cache.Cacheable;
-import org.jboss.as.ejb3.cache.impl.backing.SerializationGroupImpl;
-import org.jboss.as.ejb3.cache.impl.backing.SerializationGroupMemberImpl;
-import org.jboss.as.ejb3.cache.spi.impl.AbstractBackingCacheEntry;
 import org.jboss.as.ejb3.component.EjbComponentInstance;
 import org.jboss.as.ejb3.component.session.SessionBeanComponentInstance;
 import org.jboss.as.naming.ManagedReference;
@@ -73,15 +68,10 @@ public class StatefulSessionBeanClassTable extends SimpleClassTable {
         EjbComponentInstance.class,
         BasicComponentInstance.class,
         Serializable.class,
-        Cacheable.class,
-        SerializationGroupImpl.class,
-        SerializationGroupMemberImpl.class,
-        AbstractBackingCacheEntry.class,
         StatefulSerializedProxy.class,
         ManagedReference.class,
         ValueManagedReferenceFactory.ValueManagedReference.class,
         SerializedCdiInterceptorsKey.class,
-        SimpleMarshalledValue.class,
     };
 
     public StatefulSessionBeanClassTable() {

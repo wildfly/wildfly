@@ -21,29 +21,26 @@
  */
 package org.jboss.as.ejb3.cache;
 
-import java.io.Serializable;
+import java.util.UUID;
+
+import org.wildfly.clustering.ejb.AffinitySupport;
+import org.wildfly.clustering.ejb.IdentifierFactory;
 
 /**
  * Cache a stateful object and make sure any life cycle callbacks are
  * called at the appropriate time.
  *
  * @author <a href="mailto:carlo.dewolf@jboss.com">Carlo de Wolf</a>
- * @version $Revision: $
  */
-public interface Cache<K extends Serializable, V extends Identifiable<K>> extends Removable<K>, AffinitySupport<K>, IdentifierFactory<K> {
+public interface Cache<K, V extends Identifiable<K>> extends AffinitySupport<K>, IdentifierFactory<K> {
+    ThreadLocal<UUID> currentGroup = new ThreadLocal<>();
+
     /**
      * Creates and caches a new instance of <code>T</code>.
      *
      * @return a new <code>T</code>
      */
     V create();
-
-    /**
-     * Discard the specified object from cache.
-     *
-     * @param key the identifier of the object
-     */
-    void discard(K key);
 
     /**
      * Get the specified object from cache. This will mark
@@ -55,18 +52,33 @@ public interface Cache<K extends Serializable, V extends Identifiable<K>> extend
     V get(K key);
 
     /**
-     *
-     * @param key The EJB identifier to check
-     * @return <code>true</code> if the EJB is present in the cache
-     */
-    boolean contains(K key);
-
-    /**
      * Decreases the objects usage count. If the usage count hits 0 then the object will be released.
      *
      * @param obj the object
      */
     void release(V obj);
+
+    /**
+     * Indicates whether or not the specified key is contained within this cache.
+     * @param key the cache key
+     * @return <code>true</code> if the key is present in the cache, <code>false</code> otherwise.
+     */
+    boolean contains(K key);
+
+    /**
+     * Discard the specified object from cache.
+     *
+     * @param key the identifier of the object
+     */
+    void discard(K key);
+
+    /**
+     * Remove and destroy the specified object from cache.
+     *
+     * @param key the identifier of the object
+     */
+    void remove(K key);
+
 
     /**
      * Start the cache.

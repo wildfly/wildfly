@@ -26,9 +26,9 @@ import java.util.Set;
 import org.infinispan.Cache;
 import org.infinispan.context.Flag;
 import org.jboss.as.clustering.infinispan.invoker.CacheInvoker;
+import org.jboss.as.clustering.infinispan.invoker.Remover;
 import org.jboss.as.clustering.infinispan.invoker.CacheInvoker.Operation;
-import org.wildfly.clustering.web.infinispan.CacheMutator;
-import org.wildfly.clustering.web.infinispan.Remover;
+import org.wildfly.clustering.web.infinispan.session.CacheMutator;
 import org.wildfly.clustering.web.infinispan.session.SessionAttributeMarshaller;
 import org.wildfly.clustering.web.session.SessionAttributes;
 

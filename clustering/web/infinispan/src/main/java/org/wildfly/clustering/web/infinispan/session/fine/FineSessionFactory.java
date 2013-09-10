@@ -24,12 +24,12 @@ package org.wildfly.clustering.web.infinispan.session.fine;
 import org.infinispan.Cache;
 import org.infinispan.context.Flag;
 import org.jboss.as.clustering.infinispan.invoker.CacheInvoker;
+import org.jboss.as.clustering.infinispan.invoker.Mutator;
 import org.jboss.as.clustering.infinispan.invoker.CacheInvoker.Operation;
 import org.jboss.as.clustering.marshalling.MarshalledValue;
 import org.jboss.as.clustering.marshalling.MarshallingContext;
 import org.wildfly.clustering.web.LocalContextFactory;
-import org.wildfly.clustering.web.infinispan.CacheMutator;
-import org.wildfly.clustering.web.infinispan.Mutator;
+import org.wildfly.clustering.web.infinispan.session.CacheMutator;
 import org.wildfly.clustering.web.infinispan.session.InfinispanImmutableSession;
 import org.wildfly.clustering.web.infinispan.session.InfinispanSession;
 import org.wildfly.clustering.web.infinispan.session.SessionAttributeMarshaller;
@@ -122,7 +122,7 @@ public class FineSessionFactory<L> implements SessionFactory<FineSessionCacheEnt
                 }
             };
             this.invoker.invoke(this.attributeCache, evictOperation, Flag.FAIL_SILENTLY, Flag.SKIP_LOCKING);
-            this.invoker.invoke(this.sessionCache, new EvictOperation<String, FineSessionCacheEntry<L>>(id), Flag.FAIL_SILENTLY);
+            this.invoker.invoke(this.sessionCache, new PreLockedEvictOperation<String, FineSessionCacheEntry<L>>(id), Flag.FAIL_SILENTLY);
         }
     }
 }

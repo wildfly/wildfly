@@ -39,17 +39,16 @@ import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.ServiceVerificationHandler;
 import org.jboss.as.controller.registry.Resource;
 import org.jboss.as.ejb3.EjbMessages;
-import org.jboss.as.ejb3.cache.impl.backing.clustering.ClusteredBackingCacheEntryStoreSourceService;
 import org.jboss.as.ejb3.deployment.DeploymentRepository;
 import org.jboss.as.ejb3.remote.EJBRemoteConnectorService;
 import org.jboss.as.ejb3.remote.EJBRemoteTransactionsRepository;
 import org.jboss.as.ejb3.remote.EJBRemotingConnectorClientMappingsEntryProviderService;
 import org.jboss.as.ejb3.remote.RegistryCollector;
+import org.jboss.as.ejb3.remote.RegistryCollectorService;
+import org.jboss.as.ejb3.remote.RegistryInstallerService;
 import org.jboss.as.ejb3.remote.RemoteAsyncInvocationCancelStatusService;
 import org.jboss.as.remoting.RemotingConnectorBindingInfoService;
 import org.jboss.as.remoting.RemotingServices;
-import org.jboss.as.server.ServerEnvironment;
-import org.jboss.as.server.ServerEnvironmentService;
 import org.jboss.as.txn.service.TransactionManagerService;
 import org.jboss.as.txn.service.TransactionSynchronizationRegistryService;
 import org.jboss.as.txn.service.TxnServices;
@@ -108,25 +107,30 @@ public class EJB3RemoteServiceAdd extends AbstractBoottimeAddStepHandler {
         final ServiceName remotingServerInfoServiceName = RemotingConnectorBindingInfoService.serviceName(connectorName);
 
         final List<ServiceController<?>> services = new ArrayList<ServiceController<?>>();
-        final ServiceTarget serviceTarget = context.getServiceTarget();
+        final ServiceTarget target = context.getServiceTarget();
 
         // Install the client-mapping service for the remoting connector
-        final EJBRemotingConnectorClientMappingsEntryProviderService clientMappingEntryProviderService = new EJBRemotingConnectorClientMappingsEntryProviderService();
-        final ServiceBuilder<?> clientMappingEntryProviderServiceBuilder = serviceTarget.addService(EJBRemotingConnectorClientMappingsEntryProviderService.SERVICE_NAME, clientMappingEntryProviderService)
-                .addDependency(ServerEnvironmentService.SERVICE_NAME, ServerEnvironment.class, clientMappingEntryProviderService.getServerEnvironmentInjector())
-                .addDependency(remotingServerInfoServiceName, RemotingConnectorBindingInfoService.RemotingConnectorInfo.class, clientMappingEntryProviderService.getRemotingConnectorInfoInjector());
+        ServiceBuilder<?> clientMappingEntryProviderServiceBuilder = new EJBRemotingConnectorClientMappingsEntryProviderService().build(target, remotingServerInfoServiceName)
+                .setInitialMode(ServiceController.Mode.ON_DEMAND)
+        ;
         if (verificationHandler != null) {
             clientMappingEntryProviderServiceBuilder.addListener(verificationHandler);
         }
-        final ServiceController<?> clientMappingEntryProviderServiceController = clientMappingEntryProviderServiceBuilder.install();
-        // add it to the services to be returned
-        services.add(clientMappingEntryProviderServiceController);
+        services.add(clientMappingEntryProviderServiceBuilder.install());
+
+        ServiceBuilder<?> registryInstallerBuilder = new RegistryInstallerService().build(target)
+                .setInitialMode(ServiceController.Mode.ON_DEMAND)
+        ;
+        if (verificationHandler != null) {
+            registryInstallerBuilder.addListener(verificationHandler);
+        }
+        services.add(registryInstallerBuilder.install());
 
         final OptionMap channelCreationOptions = this.getChannelCreationOptions(context);
         // Install the EJB remoting connector service which will listen for client connections on the remoting channel
         // TODO: Externalize (expose via management API if needed) the version and the marshalling strategy
         final EJBRemoteConnectorService ejbRemoteConnectorService = new EJBRemoteConnectorService((byte) 0x02, new String[]{"river"}, channelCreationOptions);
-        final ServiceBuilder<EJBRemoteConnectorService> ejbRemoteConnectorServiceBuilder = serviceTarget.addService(EJBRemoteConnectorService.SERVICE_NAME, ejbRemoteConnectorService);
+        final ServiceBuilder<EJBRemoteConnectorService> ejbRemoteConnectorServiceBuilder = target.addService(EJBRemoteConnectorService.SERVICE_NAME, ejbRemoteConnectorService);
         // add dependency on the Remoting subsystem endpoint
         ejbRemoteConnectorServiceBuilder.addDependency(RemotingServices.SUBSYSTEM_ENDPOINT, Endpoint.class, ejbRemoteConnectorService.getEndpointInjector());
         // add dependency on the remoting server (which allows remoting connector to connect to it)
@@ -134,7 +138,7 @@ public class EJB3RemoteServiceAdd extends AbstractBoottimeAddStepHandler {
         ejbRemoteConnectorServiceBuilder.addDependency(EJB3SubsystemModel.BASE_THREAD_POOL_SERVICE_NAME.append(threadPoolName), ExecutorService.class, ejbRemoteConnectorService.getExecutorService())
                 .addDependency(DeploymentRepository.SERVICE_NAME, DeploymentRepository.class, ejbRemoteConnectorService.getDeploymentRepositoryInjector())
                 .addDependency(EJBRemoteTransactionsRepository.SERVICE_NAME, EJBRemoteTransactionsRepository.class, ejbRemoteConnectorService.getEJBRemoteTransactionsRepositoryInjector())
-                .addDependency(ClusteredBackingCacheEntryStoreSourceService.CLIENT_MAPPING_REGISTRY_COLLECTOR_SERVICE_NAME, RegistryCollector.class, ejbRemoteConnectorService.getClusterRegistryCollectorInjector())
+                .addDependency(RegistryCollectorService.SERVICE_NAME, RegistryCollector.class, ejbRemoteConnectorService.getClusterRegistryCollectorInjector())
                 .addDependency(TransactionManagerService.SERVICE_NAME, TransactionManager.class, ejbRemoteConnectorService.getTransactionManagerInjector())
                 .addDependency(TransactionSynchronizationRegistryService.SERVICE_NAME, TransactionSynchronizationRegistry.class, ejbRemoteConnectorService.getTxSyncRegistryInjector())
                 .addDependency(RemoteAsyncInvocationCancelStatusService.SERVICE_NAME, RemoteAsyncInvocationCancelStatusService.class, ejbRemoteConnectorService.getAsyncInvocationCancelStatusInjector())
@@ -143,9 +147,7 @@ public class EJB3RemoteServiceAdd extends AbstractBoottimeAddStepHandler {
         if (verificationHandler != null) {
             ejbRemoteConnectorServiceBuilder.addListener(verificationHandler);
         }
-        final ServiceController<?> ejbRemotingConnectorServiceController = ejbRemoteConnectorServiceBuilder.install();
-        // add it to the services to be returned
-        services.add(ejbRemotingConnectorServiceController);
+        services.add(ejbRemoteConnectorServiceBuilder.install());
 
         return services;
     }
@@ -174,9 +176,8 @@ public class EJB3RemoteServiceAdd extends AbstractBoottimeAddStepHandler {
                 builder.set(option, option.parseValue(value, loader));
             }
             return builder.getMap();
-        } else {
-            return OptionMap.EMPTY;
         }
+        return OptionMap.EMPTY;
     }
 
     private String getClassNameForChannelOptionType(final String optionType) {

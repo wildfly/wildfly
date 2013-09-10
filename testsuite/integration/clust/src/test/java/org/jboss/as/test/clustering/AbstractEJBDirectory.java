@@ -43,7 +43,11 @@ public abstract class AbstractEJBDirectory implements EJBDirectory {
     }
 
     protected AbstractEJBDirectory(Properties env) throws NamingException {
-        this.context = new InitialContext(env);
+        this(new InitialContext(env));
+    }
+
+    protected AbstractEJBDirectory(InitialContext context) {
+        this.context = context;
     }
 
     @Override

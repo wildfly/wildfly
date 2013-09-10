@@ -31,7 +31,7 @@ import javax.naming.NamingException;
  *
  * @author Paul Ferraro
  */
-public interface EJBDirectory {
+public interface EJBDirectory extends AutoCloseable {
     <T> T lookupStateful(String beanName, Class<T> beanInterface) throws NamingException;
 
     <T> T lookupStateful(Class<? extends T> beanClass, Class<T> beanInterface) throws NamingException;
@@ -48,5 +48,6 @@ public interface EJBDirectory {
 
     <T extends EJBHome> T lookupHome(Class<? extends SessionBean> beanClass, Class<T> homeInterface) throws NamingException;
 
+    @Override
     void close() throws NamingException;
 }

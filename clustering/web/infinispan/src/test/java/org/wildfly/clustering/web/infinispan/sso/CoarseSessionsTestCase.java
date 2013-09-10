@@ -28,8 +28,8 @@ import java.util.Collections;
 import java.util.Map;
 import java.util.Set;
 
+import org.jboss.as.clustering.infinispan.invoker.Mutator;
 import org.junit.Test;
-import org.wildfly.clustering.web.infinispan.Mutator;
 import org.wildfly.clustering.web.infinispan.sso.coarse.CoarseSessions;
 import org.wildfly.clustering.web.sso.Sessions;
 import org.wildfly.clustering.web.sso.WebApplication;

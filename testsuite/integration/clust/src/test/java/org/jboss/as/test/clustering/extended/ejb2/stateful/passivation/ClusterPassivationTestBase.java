@@ -81,16 +81,14 @@ public abstract class ClusterPassivationTestBase {
      * Setting all passivation attributes.
      */
     protected void setPassivationAttributes(ModelControllerClient client) throws Exception {
-        DMRUtil.setPassivationIdleTimeout(client);
-        DMRUtil.setPassivationOnReplicate(client, true);
+        DMRUtil.setMaxSize(client, 1);
     }
 
     /**
      * Unsetting all cache attributes - defining their default values.
      */
     protected void unsetPassivationAttributes(ModelControllerClient client) throws Exception {
-        DMRUtil.unsetIdleTimeoutPassivationAttribute(client);
-        DMRUtil.unsetPassivationOnReplicate(client);
+        DMRUtil.unsetMaxSizeAttribute(client);
     }
 
     /**

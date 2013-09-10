@@ -27,11 +27,11 @@ import java.util.Map;
 import org.infinispan.Cache;
 import org.infinispan.context.Flag;
 import org.jboss.as.clustering.infinispan.invoker.CacheInvoker;
+import org.jboss.as.clustering.infinispan.invoker.Mutator;
 import org.jboss.as.clustering.marshalling.MarshalledValue;
 import org.jboss.as.clustering.marshalling.MarshallingContext;
 import org.wildfly.clustering.web.LocalContextFactory;
-import org.wildfly.clustering.web.infinispan.CacheMutator;
-import org.wildfly.clustering.web.infinispan.Mutator;
+import org.wildfly.clustering.web.infinispan.session.CacheMutator;
 import org.wildfly.clustering.web.infinispan.session.InfinispanImmutableSession;
 import org.wildfly.clustering.web.infinispan.session.InfinispanSession;
 import org.wildfly.clustering.web.infinispan.session.SessionAttributeMarshaller;
@@ -119,8 +119,8 @@ public class CoarseSessionFactory<L> implements SessionFactory<CoarseSessionEntr
 
     @Override
     public void evict(String id) {
-        if (this.invoker.invoke(this.sessionCache, new LockingEvictOperation<String, CoarseSessionCacheEntry<L>>(id), Flag.FAIL_SILENTLY).booleanValue()) {
-            this.invoker.invoke(this.attributesCache, new EvictOperation<SessionAttributesCacheKey, MarshalledValue<Map<String, Object>, MarshallingContext>>(new SessionAttributesCacheKey(id)), Flag.FAIL_SILENTLY);
+        if (this.invoker.invoke(this.sessionCache, new EvictOperation<String, CoarseSessionCacheEntry<L>>(id), Flag.FAIL_SILENTLY).booleanValue()) {
+            this.invoker.invoke(this.attributesCache, new PreLockedEvictOperation<SessionAttributesCacheKey, MarshalledValue<Map<String, Object>, MarshallingContext>>(new SessionAttributesCacheKey(id)), Flag.FAIL_SILENTLY);
         }
     }
 }

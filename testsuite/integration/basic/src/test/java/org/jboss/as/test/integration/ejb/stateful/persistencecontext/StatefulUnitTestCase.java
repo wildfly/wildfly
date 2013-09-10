@@ -56,7 +56,7 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SUC
 @ServerSetup(StatefulUnitTestCase.StatefulUnitTestCaseSetup.class)
 public class StatefulUnitTestCase {
     private static final Logger log = Logger.getLogger(StatefulUnitTestCase.class);
-    private static int TIME_TO_WAIT_FOR_PASSIVATION_MS = 2000;
+    private static int TIME_TO_WAIT_FOR_PASSIVATION_MS = 500;
 
     @ArquillianResource
     InitialContext ctx;
@@ -73,12 +73,11 @@ public class StatefulUnitTestCase {
             ModelNode operation = new ModelNode();
             operation.get(OP).set("write-attribute");
             operation.get(OP_ADDR).set(address);
-            operation.get("name").set("idle-timeout");
-            operation.get("value").set(1);
+            operation.get("name").set("max-size");
+            operation.get("value").set(0);
             ModelNode result = managementClient.getControllerClient().execute(operation);
-            log.info("modelnode operation write-attribute idle-timeout=1: " + result);
+            log.info("modelnode operation write-attribute max-size=0: " + result);
             Assert.assertEquals(SUCCESS, result.get(OUTCOME).asString());
-
         }
 
         @Override
@@ -87,9 +86,17 @@ public class StatefulUnitTestCase {
             ModelNode operation = new ModelNode();
             operation.get(OP).set("undefine-attribute");
             operation.get(OP_ADDR).set(address);
-            operation.get("name").set("idle-timeout");
+            operation.get("name").set("max-size");
             ModelNode result = managementClient.getControllerClient().execute(operation);
             Assert.assertEquals(SUCCESS, result.get(OUTCOME).asString());
+        }
+
+        private static ModelNode getAddress() {
+            ModelNode address = new ModelNode();
+            address.add("subsystem", "ejb3");
+            address.add("passivation-store", "infinispan");
+            address.protect();
+            return address;
         }
     }
 
@@ -102,14 +109,6 @@ public class StatefulUnitTestCase {
         jar.addAsManifestResource(new StringAsset("Dependencies: org.jboss.as.controller-client, org.jboss.dmr, org.jboss.marshalling \n"), "MANIFEST.MF");
         log.info(jar.toString(true));
         return jar;
-    }
-
-    private static ModelNode getAddress() {
-        ModelNode address = new ModelNode();
-        address.add("subsystem", "ejb3");
-        address.add("file-passivation-store", "file");
-        address.protect();
-        return address;
     }
 
     @Test

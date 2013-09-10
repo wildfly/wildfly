@@ -22,6 +22,8 @@
 
 package org.jboss.as.ejb3.subsystem;
 
+import java.io.File;
+
 import org.jboss.as.controller.AttributeDefinition;
 import org.jboss.as.controller.SimpleAttributeDefinition;
 import org.jboss.as.controller.SimpleAttributeDefinitionBuilder;
@@ -29,41 +31,41 @@ import org.jboss.as.controller.operations.validation.IntRangeValidator;
 import org.jboss.as.controller.registry.AttributeAccess;
 import org.jboss.as.controller.registry.OperationEntry;
 import org.jboss.as.controller.transform.description.ResourceTransformationDescriptionBuilder;
-import org.jboss.as.ejb3.cache.impl.factory.NonClusteredBackingCacheEntryStoreSource;
+import org.jboss.as.server.ServerEnvironment;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.ModelType;
 
 /**
  * @author Paul Ferraro
  */
-public class FilePassivationStoreResourceDefinition extends PassivationStoreResourceDefinition {
+public class FilePassivationStoreResourceDefinition extends AbstractPassivationStoreResourceDefinition {
 
     public static final SimpleAttributeDefinition MAX_SIZE = MAX_SIZE_BUILDER.build();
     public static final SimpleAttributeDefinition RELATIVE_TO =
             new SimpleAttributeDefinitionBuilder(EJB3SubsystemModel.RELATIVE_TO, ModelType.STRING, true)
                     .setXmlName(EJB3SubsystemXMLAttribute.RELATIVE_TO.getLocalName())
-                    .setDefaultValue(new ModelNode().set(NonClusteredBackingCacheEntryStoreSource.DEFAULT_RELATIVE_TO))
+                    .setDefaultValue(new ModelNode().set(ServerEnvironment.SERVER_DATA_DIR))
                     .setAllowExpression(true)
                     .setFlags(AttributeAccess.Flag.RESTART_NONE)
                     .build();
     public static final SimpleAttributeDefinition GROUPS_PATH =
             new SimpleAttributeDefinitionBuilder(EJB3SubsystemModel.GROUPS_PATH, ModelType.STRING, true)
                     .setXmlName(EJB3SubsystemXMLAttribute.GROUPS_PATH.getLocalName())
-                    .setDefaultValue(new ModelNode().set(NonClusteredBackingCacheEntryStoreSource.DEFAULT_GROUP_DIRECTORY_NAME))
+                    .setDefaultValue(new ModelNode().set("ejb3" + File.separatorChar + "groups"))
                     .setAllowExpression(true)
                     .setFlags(AttributeAccess.Flag.RESTART_NONE)
                     .build();
     public static final SimpleAttributeDefinition SESSIONS_PATH =
             new SimpleAttributeDefinitionBuilder(EJB3SubsystemModel.SESSIONS_PATH, ModelType.STRING, true)
                     .setXmlName(EJB3SubsystemXMLAttribute.SESSIONS_PATH.getLocalName())
-                    .setDefaultValue(new ModelNode().set(NonClusteredBackingCacheEntryStoreSource.DEFAULT_SESSION_DIRECTORY_NAME))
+                    .setDefaultValue(new ModelNode().set("ejb3" + File.separatorChar + "sessions"))
                     .setAllowExpression(true)
                     .setFlags(AttributeAccess.Flag.RESTART_NONE)
                     .build();
     public static final SimpleAttributeDefinition SUBDIRECTORY_COUNT =
             new SimpleAttributeDefinitionBuilder(EJB3SubsystemModel.SUBDIRECTORY_COUNT, ModelType.LONG, true)
                     .setXmlName(EJB3SubsystemXMLAttribute.SUBDIRECTORY_COUNT.getLocalName())
-                    .setDefaultValue(new ModelNode().set(NonClusteredBackingCacheEntryStoreSource.DEFAULT_SUBDIRECTORY_COUNT))
+                    .setDefaultValue(new ModelNode().set(100))
                     .setAllowExpression(true)
                     .setValidator(new IntRangeValidator(1, Integer.MAX_VALUE, true, true))
                     .setFlags(AttributeAccess.Flag.RESTART_NONE)
@@ -71,17 +73,16 @@ public class FilePassivationStoreResourceDefinition extends PassivationStoreReso
 
     private static final AttributeDefinition[] ATTRIBUTES = {IDLE_TIMEOUT, IDLE_TIMEOUT_UNIT, MAX_SIZE, RELATIVE_TO, GROUPS_PATH, SESSIONS_PATH, SUBDIRECTORY_COUNT};
 
-    private static final FilePassivationStoreAdd ADD = new FilePassivationStoreAdd(ATTRIBUTES);
+    private static final PassivationStoreAdd ADD = new PassivationStoreAdd(ATTRIBUTES);
     private static final PassivationStoreRemove REMOVE = new PassivationStoreRemove(ADD);
-    private static final FilePassivationStoreWriteHandler WRITE_HANDLER = new FilePassivationStoreWriteHandler(ATTRIBUTES);
 
     public static final FilePassivationStoreResourceDefinition INSTANCE = new FilePassivationStoreResourceDefinition();
 
     private FilePassivationStoreResourceDefinition() {
-        super(EJB3SubsystemModel.FILE_PASSIVATION_STORE, ADD, REMOVE, OperationEntry.Flag.RESTART_NONE, OperationEntry.Flag.RESTART_RESOURCE_SERVICES, WRITE_HANDLER, ATTRIBUTES);
+        super(EJB3SubsystemModel.FILE_PASSIVATION_STORE, ADD, REMOVE, OperationEntry.Flag.RESTART_NONE, OperationEntry.Flag.RESTART_RESOURCE_SERVICES, ATTRIBUTES);
     }
 
     static void registerTransformers_1_1_0(ResourceTransformationDescriptionBuilder parent) {
-        PassivationStoreResourceDefinition.registerTransformers_1_1_0(INSTANCE.getPathElement(), parent);
+        AbstractPassivationStoreResourceDefinition.registerTransformers_1_1_0(INSTANCE.getPathElement(), parent);
     }
 }

@@ -23,6 +23,7 @@
 package org.jboss.as.test.clustering;
 
 import java.util.Properties;
+import javax.naming.InitialContext;
 
 import javax.naming.NamingException;
 
@@ -35,6 +36,23 @@ public class LocalEJBDirectory extends AbstractEJBDirectory {
     public LocalEJBDirectory(String module) throws NamingException {
         super(new Properties());
         this.module = module;
+    }
+
+    public LocalEJBDirectory(String module, InitialContext context) {
+        super(context);
+        this.module = module;
+    }
+
+    public <T> T lookupStateful(Class<T> beanClass) throws NamingException {
+        return this.lookupStateful(beanClass, beanClass);
+    }
+
+    public <T> T lookupStateless(Class<T> beanClass) throws NamingException {
+        return this.lookupStateless(beanClass, beanClass);
+    }
+
+    public <T> T lookupSingleton(Class<T> beanClass) throws NamingException {
+        return this.lookupSingleton(beanClass, beanClass);
     }
 
     @Override

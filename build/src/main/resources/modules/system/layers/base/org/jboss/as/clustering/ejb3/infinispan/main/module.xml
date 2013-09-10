@@ -21,32 +21,4 @@
   ~ Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
   ~ 02110-1301 USA, or see the FSF site: http://www.fsf.org.
   -->
-
-<module xmlns="urn:jboss:module:1.1" name="org.jboss.as.clustering.ejb3.infinispan">
-    <properties>
-        <property name="jboss.api" value="private"/>
-    </properties>
-
-    <resources>
-        <!-- Insert resources here -->
-    </resources>
-
-    <dependencies>
-        <module name="javax.api"/>
-        <module name="javax.transaction.api"/>
-        <module name="org.infinispan"/>
-        <module name="org.jboss.as.controller"/>
-        <module name="org.jboss.as.clustering.common"/>
-        <module name="org.jboss.as.clustering.infinispan"/>
-        <module name="org.jboss.as.clustering.jgroups"/>
-        <module name="org.jboss.as.ejb3"/>
-        <module name="org.jboss.as.network"/>
-        <module name="org.jboss.ejb-client"/>
-        <module name="org.jboss.logging"/>
-        <module name="org.jboss.marshalling"/>
-        <module name="org.jboss.msc"/>
-        <module name="org.jgroups"/>
-        <module name="org.wildfly.clustering.api"/>
-        <module name="org.wildfly.clustering.server" services="import"/>
-    </dependencies>
-</module>
+<module-alias xmlns="urn:jboss:module:1.1" name="org.jboss.as.clustering.ejb3.infinispan" target-name="org.wildfly.clustering.ejb.infinispan"/>

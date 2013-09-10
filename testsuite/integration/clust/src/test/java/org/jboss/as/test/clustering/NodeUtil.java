@@ -60,7 +60,7 @@ public final class NodeUtil {
         }
     }
 
-    public static void start(ContainerController controller, String[] containers) {
+    public static void start(ContainerController controller, String... containers) {
         // TODO do this in parallel.
         for (String container : containers) {
             try {
@@ -72,16 +72,7 @@ public final class NodeUtil {
         }
     }
 
-    public static void start(ContainerController controller, String container) {
-        try {
-            log.info("Starting deployment=NONE, container=" + container);
-            controller.start(container);
-        } catch (Throwable e) {
-            log.error("Failed to start containers", e);
-        }
-    }
-
-    public static void stop(ContainerController controller, String[] containers) {
+    public static void stop(ContainerController controller, String... containers) {
         for (String container : containers) {
             try {
                 log.info("Stopping container=" + container);
@@ -99,15 +90,6 @@ public final class NodeUtil {
             deployer.undeploy(deployment);
             controller.stop(container);
             log.info("Stopped deployment=" + deployment + ", container=" + container);
-        } catch (Throwable e) {
-            log.error("Failed to stop containers", e);
-        }
-    }
-
-    public static void stop(ContainerController controller, String container) {
-        try {
-            controller.stop(container);
-            log.info("Stopped deployment=NONE, container=" + container);
         } catch (Throwable e) {
             log.error("Failed to stop containers", e);
         }
