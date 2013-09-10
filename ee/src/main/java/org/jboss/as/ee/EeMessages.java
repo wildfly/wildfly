@@ -35,6 +35,7 @@ import javax.xml.stream.XMLStreamException;
 import org.jboss.as.ee.component.BindingConfiguration;
 import org.jboss.as.ee.component.ComponentConfiguration;
 import org.jboss.as.ee.component.InjectionSource;
+import org.jboss.as.ee.concurrent.ConcurrentContext;
 import org.jboss.as.server.deployment.DeploymentUnitProcessingException;
 import org.jboss.invocation.proxy.MethodIdentifier;
 import org.jboss.jandex.AnnotationTarget;
@@ -45,6 +46,7 @@ import org.jboss.logging.annotations.Cause;
 import org.jboss.logging.annotations.Message;
 import org.jboss.logging.annotations.MessageBundle;
 import org.jboss.logging.annotations.Param;
+import org.jboss.msc.service.ServiceName;
 import org.jboss.vfs.VirtualFile;
 
 /**
@@ -900,5 +902,20 @@ public interface EeMessages {
 
     @Message(id = 16708, value = "EE Concurrent Service's value uninitialized.")
     IllegalStateException concurrentServiceValueUninitialized();
+
+    @Message(id = 16709, value = "EE Concurrent ContextHandle serialization must be handled by the factory.")
+    IOException serializationMustBeHandledByThefactory();
+
+    @Message(id = 16710, value = "The EE Concurrent Context %s already has a factory named %s")
+    IllegalArgumentException factoryAlreadyExists(ConcurrentContext concurrentContext, String factoryName);
+
+    @Message(id = 16711, value = "EE Concurrent Context %s does not has a factory named %s")
+    IOException factoryNotFound(ConcurrentContext concurrentContext, String factoryName);
+
+    @Message(id = 16712, value = "EE Concurrent Context %s service not installed.")
+    IOException concurrentContextServiceNotInstalled(ServiceName serviceName);
+
+    @Message(id = 16713, value = "EE Concurrent Transaction Setup Provider service not installed.")
+    IllegalStateException transactionSetupProviderServiceNotInstalled();
 
 }

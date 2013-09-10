@@ -39,4 +39,9 @@ public interface ContextHandle extends org.glassfish.enterprise.concurrent.spi.C
      */
     void reset();
 
+    /**
+     * Retrieves the name of the factory which built the handle.
+     * @return
+     */
+    String getFactoryName();
 }

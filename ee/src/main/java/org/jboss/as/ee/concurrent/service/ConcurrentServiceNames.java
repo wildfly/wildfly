@@ -53,11 +53,13 @@ public class ConcurrentServiceNames {
 
     public static final String DEFAULT_MANAGED_SCHEDULED_EXECUTOR_SERVICE_JNDI_NAME = BASE_JNDI_NAME + "default/scheduledexecutor";
 
-    private static final ServiceName BASE_SERVICE_NAME = ServiceName.JBOSS.append("concurrent", "ee");
+    public static final ServiceName BASE_SERVICE_NAME = ServiceName.JBOSS.append("concurrent", "ee");
 
-    private static final ServiceName CONTEXT_SERVICE_BASE_SERVICE_NAME = BASE_SERVICE_NAME.append("contextservice");
+    private static final ServiceName CONTEXT_BASE_SERVICE_NAME = BASE_SERVICE_NAME.append("context");
 
-    public static final ServiceName DEFAULT_CONTEXT_SERVICE_SERVICE_NAME = BASE_SERVICE_NAME.append("default").append("contextservice");
+    private static final ServiceName CONTEXT_SERVICE_BASE_SERVICE_NAME = CONTEXT_BASE_SERVICE_NAME.append("service");
+
+    public static final ServiceName DEFAULT_CONTEXT_SERVICE_SERVICE_NAME = CONTEXT_BASE_SERVICE_NAME.append("defaultservice");
 
     private static final ServiceName MANAGED_THREAD_FACTORY_BASE_SERVICE_NAME = BASE_SERVICE_NAME.append("threadfactory");
 
@@ -72,6 +74,8 @@ public class ConcurrentServiceNames {
     public static final ServiceName DEFAULT_MANAGED_SCHEDULED_EXECUTOR_SERVICE_SERVICE_NAME = BASE_SERVICE_NAME.append("default").append("scheduledexecutor");
 
     public static final ServiceName TRANSACTION_SETUP_PROVIDER_SERVICE_NAME = BASE_SERVICE_NAME.append("tsp");
+
+    public static final ServiceName CONCURRENT_CONTEXT_BASE_SERVICE_NAME = CONTEXT_BASE_SERVICE_NAME.append("config");
 
     public static String getContextServiceJndiName(String name) {
         return DEFAULT_NAME.equals(name) ? DEFAULT_CONTEXT_SERVICE_JNDI_NAME :  CONTEXT_SERVICE_BASE_JNDI_NAME + name;
@@ -103,6 +107,15 @@ public class ConcurrentServiceNames {
 
     public static ServiceName getManagedScheduledExecutorServiceServiceName(String name) {
         return DEFAULT_NAME.equals(name) ? DEFAULT_MANAGED_SCHEDULED_EXECUTOR_SERVICE_SERVICE_NAME :  MANAGED_SCHEDULED_EXECUTOR_SERVICE_BASE_SERVICE_NAME.append(name);
+    }
+
+    public static ServiceName getConcurrentContextServiceName(String app, String module, String component) {
+        final ServiceName moduleServiceName = CONCURRENT_CONTEXT_BASE_SERVICE_NAME.append(app).append(module);
+        if(component == null) {
+            return moduleServiceName;
+        } else {
+            return moduleServiceName.append(component);
+        }
     }
 
 }

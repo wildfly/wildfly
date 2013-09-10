@@ -22,8 +22,6 @@
 
 package org.jboss.as.ee.concurrent;
 
-import org.jboss.as.ee.component.ComponentConfiguration;
-import org.jboss.as.ee.concurrent.handle.ChainedContextHandleFactory;
 import org.jboss.invocation.Interceptor;
 import org.jboss.invocation.InterceptorContext;
 
@@ -34,15 +32,14 @@ import org.jboss.invocation.InterceptorContext;
  */
 public class ConcurrentContextInterceptor implements Interceptor {
 
-    private final ChainedContextHandleFactory allChainedContextHandleFactory;
+    private final ConcurrentContext concurrentContext;
 
-    public ConcurrentContextInterceptor(ComponentConfiguration componentConfiguration) {
-        this.allChainedContextHandleFactory = componentConfiguration.getAllChainedContextHandleFactory();
+    public ConcurrentContextInterceptor(ConcurrentContext concurrentContext) {
+        this.concurrentContext = concurrentContext;
     }
 
     @Override
     public Object processInvocation(InterceptorContext context) throws Exception {
-        final ConcurrentContext concurrentContext = new ConcurrentContext(allChainedContextHandleFactory);
         ConcurrentContext.pushCurrent(concurrentContext);
         try {
             return context.proceed();

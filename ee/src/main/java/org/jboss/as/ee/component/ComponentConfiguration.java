@@ -35,8 +35,7 @@ import java.util.Map;
 import java.util.Set;
 
 import org.jboss.as.ee.component.interceptors.OrderedItemContainer;
-import org.jboss.as.ee.concurrent.handle.ChainedContextHandleFactory;
-import org.jboss.as.ee.concurrent.handle.ContextHandleFactory;
+import org.jboss.as.ee.concurrent.ConcurrentContext;
 import org.jboss.as.naming.context.NamespaceContextSelector;
 import org.jboss.as.server.deployment.reflect.ClassIndex;
 import org.jboss.invocation.InterceptorFactory;
@@ -61,8 +60,7 @@ public class ComponentConfiguration {
     private final ModuleLoader moduleLoader;
     private final ClassLoader moduleClassLoader;
 
-    // jsr-236 all chained context handle factories
-    private final ChainedContextHandleFactory allChainedConcurrentContextHandleFactory;
+    private final ConcurrentContext concurrentContext;
 
     private ComponentCreateServiceFactory componentCreateServiceFactory = ComponentCreateServiceFactory.BASIC;
 
@@ -97,7 +95,7 @@ public class ComponentConfiguration {
         this.classIndex = classIndex;
         this.moduleClassLoader = moduleClassLoader;
         this.moduleLoader = moduleLoader;
-        this.allChainedConcurrentContextHandleFactory = new ChainedContextHandleFactory(ContextHandleFactory.Type.ALL_CHAINED);
+        this.concurrentContext = new ConcurrentContext(getApplicationName(),getModuleName(),getComponentName());
     }
 
     /**
@@ -465,11 +463,7 @@ public class ComponentConfiguration {
         return interceptorContextKeys;
     }
 
-    /**
-     * @return the chained context handle factory with all concurrent (jsr 236) contexts.
-     */
-    public ChainedContextHandleFactory getAllChainedContextHandleFactory() {
-        return allChainedConcurrentContextHandleFactory;
+    public ConcurrentContext getConcurrentContext() {
+        return concurrentContext;
     }
-
 }

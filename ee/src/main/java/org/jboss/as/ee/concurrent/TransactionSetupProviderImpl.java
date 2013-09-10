@@ -24,10 +24,15 @@ package org.jboss.as.ee.concurrent;
 import org.glassfish.enterprise.concurrent.spi.TransactionHandle;
 import org.glassfish.enterprise.concurrent.spi.TransactionSetupProvider;
 import org.jboss.as.ee.EeLogger;
+import org.jboss.as.ee.EeMessages;
+import org.jboss.as.ee.concurrent.service.ConcurrentServiceNames;
+import org.jboss.as.server.CurrentServiceContainer;
+import org.jboss.msc.service.ServiceController;
 
 import javax.enterprise.concurrent.ManagedTask;
 import javax.transaction.Transaction;
 import javax.transaction.TransactionManager;
+import java.io.ObjectStreamException;
 
 /**
  * The transaction setup provider handles transaction suspend/resume.
@@ -36,7 +41,7 @@ import javax.transaction.TransactionManager;
  */
 public class TransactionSetupProviderImpl implements TransactionSetupProvider {
 
-    private final TransactionManager transactionManager;
+    private final transient TransactionManager transactionManager;
 
     /**
      * @param transactionManager
@@ -81,5 +86,15 @@ public class TransactionSetupProviderImpl implements TransactionSetupProvider {
         public Transaction getTransaction() {
             return transaction;
         }
+    }
+
+    // serialization
+
+    private Object readResolve() throws ObjectStreamException {
+        final ServiceController<?> serviceController = CurrentServiceContainer.getServiceContainer().getService(ConcurrentServiceNames.TRANSACTION_SETUP_PROVIDER_SERVICE_NAME);
+        if(serviceController == null) {
+            throw EeMessages.MESSAGES.transactionSetupProviderServiceNotInstalled();
+        }
+        return serviceController.getValue();
     }
 }

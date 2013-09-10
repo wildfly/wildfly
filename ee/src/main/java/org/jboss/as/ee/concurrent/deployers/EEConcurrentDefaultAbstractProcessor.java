@@ -37,11 +37,11 @@ import java.util.Collection;
 import java.util.List;
 
 /**
- * The abtsract {@link org.jboss.as.server.deployment.DeploymentUnitProcessor} which sets up the default concurrent managed objects for each EE component in the deployment unit.
+ * The abstract {@link org.jboss.as.server.deployment.DeploymentUnitProcessor} which sets up the default concurrent managed objects for each EE component in the deployment unit.
  *
  * @author Eduardo Martins
  */
-abstract class EEConcurrentAbstractProcessor implements DeploymentUnitProcessor {
+abstract class EEConcurrentDefaultAbstractProcessor implements DeploymentUnitProcessor {
 
     @Override
     public void deploy(DeploymentPhaseContext phaseContext) throws DeploymentUnitProcessingException {
@@ -49,38 +49,22 @@ abstract class EEConcurrentAbstractProcessor implements DeploymentUnitProcessor 
         final DeploymentUnit deploymentUnit = phaseContext.getDeploymentUnit();
 
         final EEModuleDescription eeModuleDescription = deploymentUnit.getAttachment(Attachments.EE_MODULE_DESCRIPTION);
-        final Collection<ComponentDescription> componentDescriptions = eeModuleDescription.getComponentDescriptions();
-        if (componentDescriptions == null || componentDescriptions.isEmpty()) {
+        if(eeModuleDescription == null) {
             return;
         }
-
-        // install the default concurrent managed object services and the interceptor configurator for each component
-        for (ComponentDescription componentDescription : componentDescriptions) {
-            if (componentDescription.getNamingMode() == ComponentNamingMode.NONE) {
-                // skip components without namespace
-                continue;
-            }
-            processComponentDescription(componentDescription);
+        if (DeploymentTypeMarker.isType(DeploymentType.WAR, deploymentUnit)) {
+            addBindingsConfigurations("java:module/", eeModuleDescription.getBindingConfigurations());
         }
 
-        // add the jndi bindings
-        if (DeploymentTypeMarker.isType(DeploymentType.WAR, deploymentUnit)) {
-            processWarDeploymentUnit(deploymentUnit);
-            addBindingsConfigurations("java:module/", eeModuleDescription.getBindingConfigurations());
+        final Collection<ComponentDescription> componentDescriptions = eeModuleDescription.getComponentDescriptions();
+        if (componentDescriptions == null) {
+            return;
         }
         for (ComponentDescription componentDescription : componentDescriptions) {
             if (componentDescription.getNamingMode() == ComponentNamingMode.CREATE) {
                 addBindingsConfigurations("java:comp/", componentDescription.getBindingConfigurations());
             }
         }
-    }
-
-    void processComponentDescription(ComponentDescription componentDescription) {
-
-    }
-
-    void processWarDeploymentUnit(DeploymentUnit deploymentUnit) {
-
     }
 
     abstract void addBindingsConfigurations(String bindingNamePrefix, List<BindingConfiguration> bindingConfigurations);
