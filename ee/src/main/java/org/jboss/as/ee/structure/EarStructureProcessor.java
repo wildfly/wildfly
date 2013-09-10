@@ -25,6 +25,7 @@ package org.jboss.as.ee.structure;
 import static org.jboss.as.ee.EeMessages.MESSAGES;
 
 import java.io.Closeable;
+import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashSet;
@@ -257,7 +258,7 @@ public class EarStructureProcessor implements DeploymentUnitProcessor {
      */
     private ResourceRoot createResourceRoot(final DeploymentUnit deploymentUnit, final VirtualFile file, final boolean markAsSubDeployment, final boolean explodeDuringMount) throws IOException {
         final boolean war = file.getName().toLowerCase(Locale.ENGLISH).endsWith(WAR_EXTENSION);
-        final Closeable closable = file.isFile() ? mount(file, explodeDuringMount) : null;
+        final Closeable closable = file.isFile() ? mount(file, explodeDuringMount) : exportExplodedWar(war, file, deploymentUnit);
         final MountHandle mountHandle = new MountHandle(closable);
         final ResourceRoot resourceRoot = new ResourceRoot(file, mountHandle);
         deploymentUnit.addToAttachmentList(Attachments.RESOURCE_ROOTS, resourceRoot);
@@ -268,6 +269,19 @@ public class EarStructureProcessor implements DeploymentUnitProcessor {
             resourceRoot.putAttachment(Attachments.INDEX_RESOURCE_ROOT, false);
         }
         return resourceRoot;
+    }
+
+    private Closeable exportExplodedWar(final boolean war, final VirtualFile file, final DeploymentUnit deploymentUnit) throws IOException {
+        if (isExplodedWarInArchiveEar(war, file, deploymentUnit)) {
+            File warContent = file.getPhysicalFile();
+            VFSUtils.recursiveCopy(file, warContent.getParentFile());
+            return VFS.mountReal(warContent, file);
+        }
+        return null;
+    }
+
+    private boolean isExplodedWarInArchiveEar(final boolean war, final VirtualFile file, final DeploymentUnit deploymentUnit) {
+        return war && !file.isFile() && deploymentUnit.hasAttachment(Attachments.DEPLOYMENT_CONTENTS) && deploymentUnit.getAttachment(Attachments.DEPLOYMENT_CONTENTS).isFile();
     }
 
     public void undeploy(DeploymentUnit context) {
