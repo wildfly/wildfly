@@ -1,0 +1,102 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<!--
+  ~ JBoss, Home of Professional Open Source.
+  ~ Copyright 2013, Red Hat, Inc., and individual contributors
+  ~ as indicated by the @author tags. See the copyright.txt file in the
+  ~ distribution for a full listing of individual contributors.
+  ~
+  ~ This is free software; you can redistribute it and/or modify it
+  ~ under the terms of the GNU Lesser General Public License as
+  ~ published by the Free Software Foundation; either version 2.1 of
+  ~ the License, or (at your option) any later version.
+  ~
+  ~ This software is distributed in the hope that it will be useful,
+  ~ but WITHOUT ANY WARRANTY; without even the implied warranty of
+  ~ MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
+  ~ Lesser General Public License for more details.
+  ~
+  ~ You should have received a copy of the GNU Lesser General Public
+  ~ License along with this software; if not, write to the Free
+  ~ Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
+  ~ 02110-1301 USA, or see the FSF site: http://www.fsf.org.
+  -->
+
+<job id="flow" xmlns="http://xmlns.jcp.org/xml/ns/javaee" version="1.0">
+    <properties>
+        <property name="job-prop" value="job-prop"/>
+        <property name="job-prop-2" value="job-prop-2"/>
+    </properties>
+    <listeners>
+        <listener ref="L1">
+            <properties>
+                <property name="listener-prop" value="listener-prop"/>
+                <property name="reference-job-prop" value="#{jobProperties['job-prop']}"/>
+                <property name="reference-job-param" value="#{jobParameters['job-param']}"/>
+                <property name="reference-system-property" value="#{systemProperties['java.version']}"/>
+            </properties>
+        </listener>
+        <listener ref="L2"/>
+    </listeners>
+
+
+    <flow id="flow1" next="step4">
+        <step id="step1" next="step2">
+            <properties>
+                <property name="step-prop" value="step-prop"/>
+                <!-- same property name as in job, to test property resolution precedence -->
+                <property name="job-prop-2" value="step-prop-2"/>
+            </properties>
+            <batchlet ref="batchlet1">
+                <properties>
+                    <property name="reference-step-prop" value="step-prop"/>
+                </properties>
+            </batchlet>
+        </step>
+
+        <step id="step3">
+            <batchlet ref="batchlet1"/>
+            <end on="*" exit-status="done"/>
+        </step>
+
+        <step id="step2">
+            <batchlet ref="batchlet1"/>
+            <stop on="xyzz" exit-status="stopped" restart="false"/>
+            <!-- should not reach here -->
+            <fail on="abcd" exit-status="failed"/>
+            <!-- should not reach here -->
+            <end on="12345" exit-status="done"/>
+            <!-- should not reach here -->
+            <next on="aaa" to="step1"/>
+            <!-- should not reach here -->
+            <next on="*" to="decision1"/>
+        </step>
+
+        <decision id="decision1" ref="decider1">
+            <properties>
+                <property name="decision-prop" value="decision-prop"/>
+                <property name="reference-job-prop" value="#{jobProperties['job-prop']}"/>
+                <property name="reference-step-prop" value="#{jobProperties['step-prop']}"/>
+                <property name="reference-system-prop" value="#{systemProperties['java.version']}"/>
+                <property name="reference-job-param" value="#{jobParameters['job-param']}"/>
+            </properties>
+            <next on="aaa" to="step1"/>
+            <!-- should not reach here -->
+            <next on="next" to="step3"/>
+            <!-- "next" is the value returned from Decider1.decide() -->
+            <end on="*" exit-status="done"/>
+        </decision>
+    </flow>
+
+    <step id="step4">
+        <batchlet ref="batchlet1">
+            <properties>
+                <property name="batchlet-prop" value="batchlet-prop"/>
+                <property name="reference-job-prop" value="#{jobProperties['job-prop']}"/>
+                <property name="reference-system-prop" value="#{systemProperties['java.version']}"/>
+                <property name="reference-job-param" value="#{jobParameters['job-param']}"/>
+            </properties>
+        </batchlet>
+    </step>
+
+</job>
