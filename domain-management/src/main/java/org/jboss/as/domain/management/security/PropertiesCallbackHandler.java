@@ -47,7 +47,9 @@ import javax.security.sasl.AuthorizeCallback;
 import javax.security.sasl.RealmCallback;
 
 import org.jboss.as.domain.management.AuthMechanism;
+import org.jboss.as.domain.management.SecurityRealm;
 import org.jboss.msc.service.Service;
+import org.jboss.msc.service.ServiceName;
 import org.jboss.msc.service.StartContext;
 import org.jboss.msc.service.StartException;
 import org.jboss.sasl.callback.DigestHashCallback;
@@ -60,9 +62,9 @@ import org.jboss.sasl.util.UsernamePasswordHashUtil;
  * @author <a href="mailto:darran.lofthouse@jboss.com">Darran Lofthouse</a>
  */
 public class PropertiesCallbackHandler extends UserPropertiesFileLoader implements Service<CallbackHandlerService>,
-CallbackHandlerService, CallbackHandler {
+        CallbackHandlerService, CallbackHandler {
 
-    public static final String SERVICE_SUFFIX = "properties_authentication";
+    private static final String SERVICE_SUFFIX = "properties_authentication";
 
     private static UsernamePasswordHashUtil hashUtil = null;
 
@@ -243,6 +245,16 @@ CallbackHandlerService, CallbackHandler {
             }
         }
         return hashUtil;
+    }
+
+    public static final class ServiceUtil {
+
+        private ServiceUtil() {
+        }
+
+        public static ServiceName createServiceName(final String realmName) {
+            return SecurityRealm.ServiceUtil.createServiceName(realmName).append(SERVICE_SUFFIX);
+        }
     }
 
 }

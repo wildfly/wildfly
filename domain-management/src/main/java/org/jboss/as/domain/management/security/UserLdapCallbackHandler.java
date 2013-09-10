@@ -48,8 +48,10 @@ import javax.security.sasl.AuthorizeCallback;
 import javax.security.sasl.RealmCallback;
 
 import org.jboss.as.domain.management.AuthMechanism;
+import org.jboss.as.domain.management.SecurityRealm;
 import org.jboss.as.domain.management.connections.ConnectionManager;
 import org.jboss.msc.service.Service;
+import org.jboss.msc.service.ServiceName;
 import org.jboss.msc.service.StartContext;
 import org.jboss.msc.service.StartException;
 import org.jboss.msc.service.StopContext;
@@ -63,7 +65,7 @@ import org.jboss.sasl.callback.VerifyPasswordCallback;
  */
 public class UserLdapCallbackHandler implements Service<CallbackHandlerService>, CallbackHandlerService, CallbackHandler {
 
-    public static final String SERVICE_SUFFIX = "ldap";
+    private static final String SERVICE_SUFFIX = "ldap";
 
     public static final String DEFAULT_USER_DN = "dn";
 
@@ -268,6 +270,17 @@ public class UserLdapCallbackHandler implements Service<CallbackHandlerService>,
             } catch (Exception ignored) {
             }
         }
+    }
+
+    public static final class ServiceUtil {
+
+        private ServiceUtil() {
+        }
+
+        public static ServiceName createServiceName(final String realmName) {
+            return SecurityRealm.ServiceUtil.createServiceName(realmName).append(SERVICE_SUFFIX);
+        }
+
     }
 
 }

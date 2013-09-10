@@ -34,7 +34,6 @@ import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.ServiceVerificationHandler;
 import org.jboss.as.domain.management.SSLIdentity;
-import org.jboss.as.domain.management.security.SecurityRealmService;
 import org.jboss.dmr.ModelNode;
 import org.jboss.msc.service.ServiceBuilder;
 import org.jboss.msc.service.ServiceController;
@@ -70,7 +69,7 @@ public class LdapConnectionAddHandler extends AbstractAddStepHandler {
         final LdapConnectionManagerService connectionManagerService = new LdapConnectionManagerService(resolvedModel);
 
         ServiceBuilder<LdapConnectionManagerService> sb = serviceTarget.addService(
-                LdapConnectionManagerService.BASE_SERVICE_NAME.append(name), connectionManagerService).setInitialMode(
+                LdapConnectionManagerService.ServiceUtil.createServiceName(name), connectionManagerService).setInitialMode(
                 ServiceController.Mode.ON_DEMAND);
 
         if (verificationHandler != null) {
@@ -78,9 +77,8 @@ public class LdapConnectionAddHandler extends AbstractAddStepHandler {
         }
 
         if (resolvedModel.hasDefined(SECURITY_REALM)) {
-            sb.addDependency(
-                    SecurityRealmService.BASE_SERVICE_NAME.append(resolvedModel.require(SECURITY_REALM).asString(), "ssl"),
-                    SSLIdentity.class, connectionManagerService.getSSLIdentityInjector());
+            SSLIdentity.ServiceUtil.addDependency(sb, connectionManagerService.getSSLIdentityInjector(),
+                    resolvedModel.require(SECURITY_REALM).asString(), false);
         }
 
         ServiceController<LdapConnectionManagerService> sc = sb.install();

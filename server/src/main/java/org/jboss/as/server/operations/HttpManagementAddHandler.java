@@ -28,11 +28,11 @@ import static org.jboss.as.server.mgmt.HttpManagementResourceDefinition.INTERFAC
 import static org.jboss.as.server.mgmt.HttpManagementResourceDefinition.SECURE_SOCKET_BINDING;
 import static org.jboss.as.server.mgmt.HttpManagementResourceDefinition.SECURITY_REALM;
 import static org.jboss.as.server.mgmt.HttpManagementResourceDefinition.SOCKET_BINDING;
+import io.undertow.server.ListenerRegistry;
 
 import java.util.Arrays;
 import java.util.List;
 
-import io.undertow.server.ListenerRegistry;
 import org.jboss.as.controller.AbstractAddStepHandler;
 import org.jboss.as.controller.AttributeDefinition;
 import org.jboss.as.controller.ControlledProcessStateService;
@@ -43,11 +43,12 @@ import org.jboss.as.controller.RunningMode;
 import org.jboss.as.controller.ServiceVerificationHandler;
 import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
 import org.jboss.as.domain.http.server.ConsoleMode;
-import org.jboss.as.domain.management.security.SecurityRealmService;
+import org.jboss.as.domain.management.SecurityRealm;
 import org.jboss.as.network.NetworkInterfaceBinding;
 import org.jboss.as.network.SocketBinding;
 import org.jboss.as.network.SocketBindingManager;
 import org.jboss.as.network.SocketBindingManagerImpl;
+import org.jboss.as.remoting.HttpListenerRegistryService;
 import org.jboss.as.remoting.RemotingHttpUpgradeService;
 import org.jboss.as.remoting.RemotingServices;
 import org.jboss.as.remoting.management.ManagementRemotingServices;
@@ -59,15 +60,14 @@ import org.jboss.as.server.Services;
 import org.jboss.as.server.mgmt.HttpManagementResourceDefinition;
 import org.jboss.as.server.mgmt.UndertowHttpManagementService;
 import org.jboss.as.server.mgmt.domain.HttpManagement;
-import org.jboss.as.remoting.HttpListenerRegistryService;
 import org.jboss.as.server.services.net.NetworkInterfaceService;
 import org.jboss.dmr.ModelNode;
 import org.jboss.msc.service.ServiceBuilder;
 import org.jboss.msc.service.ServiceController;
 import org.jboss.msc.service.ServiceName;
 import org.jboss.msc.service.ServiceTarget;
-import org.xnio.OptionMap;
 import org.wildfly.security.manager.WildFlySecurityManager;
+import org.xnio.OptionMap;
 
 /**
  * A handler that activates the HTTP management API on a Server.
@@ -211,10 +211,10 @@ public class HttpManagementAddHandler extends AbstractAddStepHandler {
             }
         }
 
-        ServiceName realmSvcName = null;
+        String securityRealm = null;
         final ModelNode realmNode = SECURITY_REALM.resolveModelAttribute(context, model);
         if (realmNode.isDefined()) {
-            realmSvcName = SecurityRealmService.BASE_SERVICE_NAME.append(realmNode.asString());
+            securityRealm = realmNode.asString();
         } else {
             ServerLogger.ROOT_LOGGER.httpManagementInterfaceIsUnsecured();
         }
@@ -247,8 +247,8 @@ public class HttpManagementAddHandler extends AbstractAddStepHandler {
             }
         }
 
-        if (realmSvcName != null) {
-            undertowBuilder.addDependency(realmSvcName, SecurityRealmService.class, undertowService.getSecurityRealmInjector());
+        if (securityRealm != null) {
+            SecurityRealm.ServiceUtil.addDependency(undertowBuilder, undertowService.getSecurityRealmInjector(), securityRealm, false);
         }
 
         if (verificationHandler != null) {
@@ -265,7 +265,7 @@ public class HttpManagementAddHandler extends AbstractAddStepHandler {
 
 
             ServiceName tmpDirPath = ServiceName.JBOSS.append("server", "path", "jboss.server.temp.dir");
-            RemotingServices.installSecurityServices(serviceTarget, ManagementRemotingServices.HTTP_CONNECTOR, realmSvcName, null, tmpDirPath, verificationHandler, newControllers);
+            RemotingServices.installSecurityServices(serviceTarget, ManagementRemotingServices.HTTP_CONNECTOR, securityRealm, null, tmpDirPath, verificationHandler, newControllers);
             NativeManagementServices.installRemotingServicesIfNotInstalled(serviceTarget, hostName, verificationHandler, null, context.getServiceRegistry(false));
             RemotingHttpUpgradeService.installServices(serviceTarget, ManagementRemotingServices.HTTP_CONNECTOR, ManagementRemotingServices.HTTP_CONNECTOR, ManagementRemotingServices.MANAGEMENT_ENDPOINT, OptionMap.EMPTY, verificationHandler, newControllers);
         }

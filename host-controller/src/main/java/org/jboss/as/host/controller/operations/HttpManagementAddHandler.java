@@ -23,10 +23,10 @@
 package org.jboss.as.host.controller.operations;
 
 import static org.jboss.as.host.controller.HostControllerLogger.AS_ROOT_LOGGER;
+import io.undertow.server.ListenerRegistry;
 
 import java.util.List;
 
-import io.undertow.server.ListenerRegistry;
 import org.jboss.as.controller.AbstractAddStepHandler;
 import org.jboss.as.controller.AttributeDefinition;
 import org.jboss.as.controller.ControlledProcessStateService;
@@ -38,15 +38,15 @@ import org.jboss.as.controller.ServiceVerificationHandler;
 import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
 import org.jboss.as.domain.controller.LocalHostControllerInfo;
 import org.jboss.as.domain.http.server.ConsoleMode;
-import org.jboss.as.domain.management.security.SecurityRealmService;
+import org.jboss.as.domain.management.SecurityRealm;
 import org.jboss.as.host.controller.DomainModelControllerService;
 import org.jboss.as.host.controller.HostControllerEnvironment;
 import org.jboss.as.host.controller.resources.HttpManagementResourceDefinition;
 import org.jboss.as.network.NetworkInterfaceBinding;
+import org.jboss.as.remoting.HttpListenerRegistryService;
 import org.jboss.as.remoting.RemotingHttpUpgradeService;
 import org.jboss.as.remoting.management.ManagementRemotingServices;
 import org.jboss.as.server.mgmt.UndertowHttpManagementService;
-import org.jboss.as.remoting.HttpListenerRegistryService;
 import org.jboss.as.server.services.net.NetworkInterfaceService;
 import org.jboss.dmr.ModelNode;
 import org.jboss.msc.service.ServiceBuilder;
@@ -145,10 +145,8 @@ public class HttpManagementAddHandler extends AbstractAddStepHandler {
                 .addInjection(service.getPortInjector(), port)
                 .addInjection(service.getSecurePortInjector(), securePort);
 
-        ServiceName realmSvcName = null;
         if (securityRealm != null) {
-            realmSvcName = SecurityRealmService.BASE_SERVICE_NAME.append(securityRealm);
-            builder.addDependency(realmSvcName, SecurityRealmService.class, service.getSecurityRealmInjector());
+            SecurityRealm.ServiceUtil.addDependency(builder, service.getSecurityRealmInjector(), securityRealm, false);
         } else {
             AS_ROOT_LOGGER.noSecurityRealmDefined();
         }
@@ -164,7 +162,7 @@ public class HttpManagementAddHandler extends AbstractAddStepHandler {
 
             ServiceName serverCallbackService = ServiceName.JBOSS.append("host", "controller", "server-inventory", "callback");
             ServiceName tmpDirPath = ServiceName.JBOSS.append("server", "path", "jboss.domain.temp.dir");
-            ManagementRemotingServices.installSecurityServices(serviceTarget, ManagementRemotingServices.HTTP_CONNECTOR, realmSvcName, serverCallbackService, tmpDirPath, verificationHandler, newControllers);
+            ManagementRemotingServices.installSecurityServices(serviceTarget, ManagementRemotingServices.HTTP_CONNECTOR, securityRealm, serverCallbackService, tmpDirPath, verificationHandler, newControllers);
 
             NativeManagementServices.installRemotingServicesIfNotInstalled(serviceTarget, hostControllerInfo.getLocalHostName(), verificationHandler, null, serviceRegistry,onDemand);
             RemotingHttpUpgradeService.installServices(serviceTarget, ManagementRemotingServices.HTTP_CONNECTOR, ManagementRemotingServices.HTTP_CONNECTOR, ManagementRemotingServices.MANAGEMENT_ENDPOINT, OptionMap.EMPTY, verificationHandler, newControllers);

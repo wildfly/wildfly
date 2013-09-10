@@ -23,10 +23,10 @@
 package org.wildfly.extension.undertow;
 
 import io.undertow.server.ListenerRegistry;
+
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.domain.management.SecurityRealm;
-import org.jboss.as.domain.management.security.SecurityRealmService;
 import org.jboss.dmr.ModelNode;
 import org.jboss.msc.service.ServiceBuilder;
 import org.jboss.msc.service.ServiceName;
@@ -57,6 +57,6 @@ public class HttpsListenerAdd extends AbstractListenerAdd {
         serviceBuilder.addDependency(HttpListenerAdd.REGISTRY_SERVICE_NAME, ListenerRegistry.class, ((HttpListenerService) service).getHttpListenerRegistry());
         final String securityRealm = HttpsListenerResourceDefinition.SECURITY_REALM.resolveModelAttribute(context, model).asString();
 
-        serviceBuilder.addDependency(SecurityRealmService.BASE_SERVICE_NAME.append(securityRealm), SecurityRealm.class, ((HttpsListenerService) service).getSecurityRealm());
+        SecurityRealm.ServiceUtil.addDependency(serviceBuilder, ((HttpsListenerService) service).getSecurityRealm(), securityRealm, false);
     }
 }

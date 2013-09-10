@@ -29,6 +29,7 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 
+import org.jboss.as.domain.management.SecurityRealm;
 import org.jboss.as.domain.management.plugin.AuthenticationPlugIn;
 import org.jboss.as.domain.management.plugin.AuthorizationPlugIn;
 import org.jboss.as.domain.management.plugin.Credential;
@@ -37,9 +38,12 @@ import org.jboss.modules.Module;
 import org.jboss.modules.ModuleIdentifier;
 import org.jboss.modules.ModuleLoadException;
 import org.jboss.msc.service.Service;
+import org.jboss.msc.service.ServiceBuilder;
+import org.jboss.msc.service.ServiceName;
 import org.jboss.msc.service.StartContext;
 import org.jboss.msc.service.StartException;
 import org.jboss.msc.service.StopContext;
+import org.jboss.msc.value.InjectedValue;
 
 /**
  * Service responsible for loading plug-ins as needed.
@@ -51,7 +55,7 @@ import org.jboss.msc.service.StopContext;
  */
 public class PlugInLoaderService implements Service<PlugInLoaderService> {
 
-    public static final String SERVICE_SUFFIX = "plug-in-loader";
+    private static final String SERVICE_SUFFIX = "plug-in-loader";
 
     private final List<String> plugInNames;
     private final Map<String, List<PlugInProvider>> cachedProviders = new HashMap<String, List<PlugInProvider>>();
@@ -162,6 +166,24 @@ public class PlugInLoaderService implements Service<PlugInLoaderService> {
         }
 
         return response;
+    }
+
+    public static final class ServiceUtil {
+
+        private ServiceUtil() {
+        }
+
+        public static ServiceName createServiceName(final String realmName) {
+            return SecurityRealm.ServiceUtil.createServiceName(realmName).append(SERVICE_SUFFIX);
+        }
+
+        public static ServiceBuilder<?> addDependency(ServiceBuilder<?> sb, InjectedValue<PlugInLoaderService> injector,
+                String realmName, boolean optional) {
+            ServiceBuilder.DependencyType type = optional ? ServiceBuilder.DependencyType.OPTIONAL : ServiceBuilder.DependencyType.REQUIRED;
+            sb.addDependency(type, createServiceName(realmName), PlugInLoaderService.class, injector);
+
+            return sb;
+        }
     }
 
 }

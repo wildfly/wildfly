@@ -30,6 +30,7 @@ import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.PathElement;
 import org.jboss.as.controller.registry.Resource;
+import org.jboss.as.domain.management.SecurityRealm;
 import org.jboss.dmr.ModelNode;
 import org.jboss.msc.service.ServiceController;
 import org.jboss.msc.service.ServiceName;
@@ -62,7 +63,7 @@ public class ManagementUtil {
     static ServiceController<?> getSecurityRealmService(final OperationContext context, final ModelNode operation, final boolean forUpdate) {
         final String realmName = getSecurityRealmName(operation);
         ServiceRegistry registry = context.getServiceRegistry(forUpdate);
-        ServiceName svcName = SecurityRealmService.BASE_SERVICE_NAME.append(realmName);
+        ServiceName svcName = SecurityRealm.ServiceUtil.createServiceName(realmName);
         return registry.getService(svcName);
     }
 
@@ -113,7 +114,7 @@ public class ManagementUtil {
     private static UserDomainCallbackHandler getUserDomainCallbackHandler(final OperationContext context, final ModelNode operation) {
         final String realmName = getSecurityRealmName(operation);
         ServiceRegistry registry = context.getServiceRegistry(true);
-        ServiceName svcName = SecurityRealmService.BASE_SERVICE_NAME.append(realmName).append(UserDomainCallbackHandler.SERVICE_SUFFIX);
+        ServiceName svcName = UserDomainCallbackHandler.ServiceUtil.createServiceName(realmName);
         ServiceController<?> sc = registry.getService(svcName);
         return sc == null ? null : UserDomainCallbackHandler.class.cast(sc.getValue());
     }

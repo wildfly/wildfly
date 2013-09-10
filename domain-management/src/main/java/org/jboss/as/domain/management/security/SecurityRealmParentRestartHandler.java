@@ -28,6 +28,7 @@ import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.RestartParentResourceHandlerBase;
 import org.jboss.as.controller.ServiceVerificationHandler;
 import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
+import org.jboss.as.domain.management.SecurityRealm;
 import org.jboss.dmr.ModelNode;
 import org.jboss.msc.service.ServiceController;
 import org.jboss.msc.service.ServiceName;
@@ -67,6 +68,6 @@ abstract class SecurityRealmParentRestartHandler extends RestartParentResourceHa
     @Override
     protected ServiceName getParentServiceName(PathAddress parentAddress) {
         final String realmName = parentAddress.getLastElement().getValue();
-        return SecurityRealmService.BASE_SERVICE_NAME.append(realmName);
+        return SecurityRealm.ServiceUtil.createServiceName(realmName);
     }
 }

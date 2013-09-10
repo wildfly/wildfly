@@ -46,7 +46,9 @@ import javax.security.sasl.RealmCallback;
 
 import org.jboss.as.core.security.ServerSecurityManager;
 import org.jboss.as.domain.management.AuthMechanism;
+import org.jboss.as.domain.management.SecurityRealm;
 import org.jboss.msc.service.Service;
+import org.jboss.msc.service.ServiceName;
 import org.jboss.msc.service.StartContext;
 import org.jboss.msc.service.StartException;
 import org.jboss.msc.service.StopContext;
@@ -60,7 +62,7 @@ import org.jboss.sasl.callback.VerifyPasswordCallback;
  */
 public class JaasCallbackHandler implements Service<CallbackHandlerService>, CallbackHandlerService, CallbackHandler {
 
-    public static final String SERVICE_SUFFIX = "jaas";
+    private static final String SERVICE_SUFFIX = "jaas";
 
     private static final Map<String, String> configurationOptions;
 
@@ -221,6 +223,16 @@ public class JaasCallbackHandler implements Service<CallbackHandlerService>, Cal
 
     public CallbackHandlerService getValue() throws IllegalStateException, IllegalArgumentException {
         return this;
+    }
+
+    public static final class ServiceUtil {
+
+        private ServiceUtil() {
+        }
+
+        public static ServiceName createServiceName(final String realmName) {
+            return SecurityRealm.ServiceUtil.createServiceName(realmName).append(SERVICE_SUFFIX);
+        }
     }
 
 }
