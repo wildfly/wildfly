@@ -100,6 +100,7 @@ public abstract class EJBContextImpl implements javax.ejb.EJBContext, Serializab
 
 
     public UserTransaction getUserTransaction() throws IllegalStateException {
+        AllowedMethodsInformation.checkAllowed(MethodType.GET_USER_TRANSACTION);
         return getComponent().getUserTransaction();
     }
 

@@ -37,6 +37,7 @@ import org.jboss.as.ee.metadata.MethodAnnotationAggregator;
 import org.jboss.as.ee.metadata.RuntimeAnnotationInformation;
 import org.jboss.as.ejb3.component.EJBComponentDescription;
 import org.jboss.as.ejb3.component.MethodIntf;
+import org.jboss.as.ejb3.component.messagedriven.MessageDrivenComponentDescription;
 import org.jboss.as.ejb3.deployment.EjbDeploymentAttachmentKeys;
 import org.jboss.as.ejb3.security.EJBMethodSecurityAttribute;
 import org.jboss.as.ejb3.security.EjbJaccConfigurator;
@@ -113,11 +114,11 @@ public class MethodPermissionsMergingProcessor extends AbstractMergingProcessor<
     }
 
     @Override
-    protected void handleDeploymentDescriptor(final DeploymentUnit deploymentUnit, final DeploymentReflectionIndex deploymentReflectionIndex, final Class<?> componentClass, final EJBComponentDescription componentConfiguration) throws DeploymentUnitProcessingException {
+    protected void handleDeploymentDescriptor(final DeploymentUnit deploymentUnit, final DeploymentReflectionIndex deploymentReflectionIndex, final Class<?> componentClass, final EJBComponentDescription componentDescription) throws DeploymentUnitProcessingException {
 
         //Add the configurator that calculates JACC permissions
         //TODO: should this be elsewhere?
-        componentConfiguration.getConfigurators().add(new EjbJaccConfigurator());
+        componentDescription.getConfigurators().add(new EjbJaccConfigurator());
 
         //DO NOT USE componentConfiguration.getDescriptorData()
         //It will return null if there is no <enterprise-beans/> declaration even if there is an assembly descriptor entry
@@ -129,29 +130,30 @@ public class MethodPermissionsMergingProcessor extends AbstractMergingProcessor<
 
                 //handle exclude-list
 
-                final ExcludeListMetaData excludeList = assemblyDescriptor.getExcludeListByEjbName(componentConfiguration.getEJBName());
+                final ExcludeListMetaData excludeList = assemblyDescriptor.getExcludeListByEjbName(componentDescription.getEJBName());
                 if (excludeList != null && excludeList.getMethods() != null) {
                     for (final MethodMetaData method : excludeList.getMethods()) {
                         final String methodName = method.getMethodName();
-                        final MethodIntf methodIntf = this.getMethodIntf(method.getMethodIntf());
+                        final MethodIntf defaultMethodIntf = (componentDescription instanceof MessageDrivenComponentDescription) ? MethodIntf.MESSAGE_ENDPOINT : MethodIntf.BEAN;
+                        final MethodIntf methodIntf = this.getMethodIntf(method.getMethodIntf(), defaultMethodIntf);
                         if (methodName.equals("*")) {
-                            componentConfiguration.getDescriptorMethodPermissions().setAttribute(methodIntf, null, EJBMethodSecurityAttribute.denyAll());
+                            componentDescription.getDescriptorMethodPermissions().setAttribute(methodIntf, null, EJBMethodSecurityAttribute.denyAll());
                         } else {
 
                             final MethodParametersMetaData methodParams = method.getMethodParams();
                             // update the session bean description with the tx attribute info
                             if (methodParams == null) {
-                                componentConfiguration.getDescriptorMethodPermissions().setAttribute(methodIntf, EJBMethodSecurityAttribute.denyAll(), methodName);
+                                componentDescription.getDescriptorMethodPermissions().setAttribute(methodIntf, EJBMethodSecurityAttribute.denyAll(), methodName);
                             } else {
 
-                                componentConfiguration.getDescriptorMethodPermissions().setAttribute(methodIntf, EJBMethodSecurityAttribute.denyAll(), null, methodName, this.getMethodParams(methodParams));
+                                componentDescription.getDescriptorMethodPermissions().setAttribute(methodIntf, EJBMethodSecurityAttribute.denyAll(), null, methodName, this.getMethodParams(methodParams));
                             }
                         }
                     }
                 }
 
                 //now handle method permissions
-                final MethodPermissionsMetaData methodPermissions = assemblyDescriptor.getMethodPermissionsByEjbName(componentConfiguration.getEJBName());
+                final MethodPermissionsMetaData methodPermissions = assemblyDescriptor.getMethodPermissionsByEjbName(componentDescription.getEJBName());
                 if (methodPermissions != null) {
                     for (final MethodPermissionMetaData methodPermissionMetaData : methodPermissions) {
 
@@ -165,24 +167,25 @@ public class MethodPermissionsMergingProcessor extends AbstractMergingProcessor<
                                 ejbMethodSecurityMetaData = EJBMethodSecurityAttribute.rolesAllowed(methodPermissionMetaData.getRoles());
                             }
                             final String methodName = method.getMethodName();
-                            final MethodIntf methodIntf = this.getMethodIntf(method.getMethodIntf());
+                            final MethodIntf defaultMethodIntf = (componentDescription instanceof MessageDrivenComponentDescription) ? MethodIntf.MESSAGE_ENDPOINT : MethodIntf.BEAN;
+                            final MethodIntf methodIntf = this.getMethodIntf(method.getMethodIntf(), defaultMethodIntf);
                             if (methodName.equals("*")) {
-                                final EJBMethodSecurityAttribute existingRoles = componentConfiguration.getDescriptorMethodPermissions().getAttributeStyle1(methodIntf, null);
+                                final EJBMethodSecurityAttribute existingRoles = componentDescription.getDescriptorMethodPermissions().getAttributeStyle1(methodIntf, null);
                                 ejbMethodSecurityMetaData = mergeExistingRoles(ejbMethodSecurityMetaData, existingRoles);
-                                componentConfiguration.getDescriptorMethodPermissions().setAttribute(methodIntf, null, ejbMethodSecurityMetaData);
+                                componentDescription.getDescriptorMethodPermissions().setAttribute(methodIntf, null, ejbMethodSecurityMetaData);
                             } else {
 
                                 final MethodParametersMetaData methodParams = method.getMethodParams();
                                 // update the session bean description with the tx attribute info
                                 if (methodParams == null) {
 
-                                    final EJBMethodSecurityAttribute existingRoles = componentConfiguration.getDescriptorMethodPermissions().getAttributeStyle2(methodIntf, methodName);
+                                    final EJBMethodSecurityAttribute existingRoles = componentDescription.getDescriptorMethodPermissions().getAttributeStyle2(methodIntf, methodName);
                                     ejbMethodSecurityMetaData = mergeExistingRoles(ejbMethodSecurityMetaData, existingRoles);
-                                    componentConfiguration.getDescriptorMethodPermissions().setAttribute(methodIntf, ejbMethodSecurityMetaData, methodName);
+                                    componentDescription.getDescriptorMethodPermissions().setAttribute(methodIntf, ejbMethodSecurityMetaData, methodName);
                                 } else {
-                                    final EJBMethodSecurityAttribute existingRoles = componentConfiguration.getDescriptorMethodPermissions().getAttributeStyle3(methodIntf, null, methodName, this.getMethodParams(methodParams));
+                                    final EJBMethodSecurityAttribute existingRoles = componentDescription.getDescriptorMethodPermissions().getAttributeStyle3(methodIntf, null, methodName, this.getMethodParams(methodParams));
                                     ejbMethodSecurityMetaData = mergeExistingRoles(ejbMethodSecurityMetaData, existingRoles);
-                                    componentConfiguration.getDescriptorMethodPermissions().setAttribute(methodIntf, ejbMethodSecurityMetaData, null, methodName, this.getMethodParams(methodParams));
+                                    componentDescription.getDescriptorMethodPermissions().setAttribute(methodIntf, ejbMethodSecurityMetaData, null, methodName, this.getMethodParams(methodParams));
                                 }
                             }
                         }

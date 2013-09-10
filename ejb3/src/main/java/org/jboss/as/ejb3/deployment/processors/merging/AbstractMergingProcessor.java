@@ -104,9 +104,9 @@ public abstract class AbstractMergingProcessor<T extends EJBComponentDescription
     protected abstract void handleDeploymentDescriptor(final DeploymentUnit deploymentUnit, final DeploymentReflectionIndex deploymentReflectionIndex, final Class<?> componentClass, final T description) throws DeploymentUnitProcessingException;
 
 
-    protected MethodIntf getMethodIntf(MethodInterfaceType viewType) {
+    protected MethodIntf getMethodIntf(final MethodInterfaceType viewType, final MethodIntf defaultMethodIntf) {
         if (viewType == null) {
-            return MethodIntf.BEAN;
+            return defaultMethodIntf;
         }
         switch (viewType) {
             case Home:
@@ -124,7 +124,7 @@ public abstract class AbstractMergingProcessor<T extends EJBComponentDescription
             case MessageEndpoint:
                 return MethodIntf.MESSAGE_ENDPOINT;
         }
-        return MethodIntf.BEAN;
+        return defaultMethodIntf;
     }
 
 
