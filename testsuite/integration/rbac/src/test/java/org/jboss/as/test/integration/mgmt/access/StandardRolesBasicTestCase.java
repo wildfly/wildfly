@@ -35,6 +35,7 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.REA
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.REMOVE;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.RESULT;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SUCCESS;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.USERNAME;
 import static org.jboss.as.test.integration.management.util.ModelUtil.createOpNode;
 import static org.jboss.as.test.integration.management.rbac.RbacUtil.ADMINISTRATOR_USER;
 import static org.jboss.as.test.integration.management.rbac.RbacUtil.AUDITOR_USER;
@@ -55,10 +56,10 @@ import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.container.test.api.RunAsClient;
 import org.jboss.arquillian.junit.Arquillian;
 import org.jboss.as.arquillian.api.ServerSetup;
-import org.jboss.as.controller.client.ModelControllerClient;
 import org.jboss.as.test.integration.management.rbac.Outcome;
 import org.jboss.as.test.integration.management.rbac.RbacUtil;
 import org.jboss.as.test.integration.management.rbac.UserRolesMappingServerSetupTask;
+import org.jboss.as.test.integration.management.interfaces.ManagementInterface;
 import org.jboss.dmr.ModelNode;
 import org.jboss.shrinkwrap.api.Archive;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
@@ -73,10 +74,7 @@ import org.junit.runner.RunWith;
  *
  * @author Brian Stansberry (c) 2013 Red Hat Inc.
  */
-@RunWith(Arquillian.class)
-@RunAsClient
-@ServerSetup(UserRolesMappingServerSetupTask.StandardUsersSetup.class)
-public class StandardRolesBasicTestCase extends AbstractRbacTestCase {
+public abstract class StandardRolesBasicTestCase extends AbstractManagementInterfaceRbacTestCase {
 
     private static final String DEPLOYMENT_1 = "deployment=war-example.war";
     private static final String DEPLOYMENT_2 = "deployment=rbac.txt";
@@ -124,94 +122,129 @@ public class StandardRolesBasicTestCase extends AbstractRbacTestCase {
 
     @Test
     public void testMonitor() throws Exception {
-        ModelControllerClient client = getClientForUser(MONITOR_USER);
+        ManagementInterface client = getClientForUser(MONITOR_USER);
+        whoami(client, MONITOR_USER);
         checkStandardReads(client);
         readResource(client, MANAGEMENT_REALM, Outcome.HIDDEN);
         checkSensitiveAttribute(client, false);
         runGC(client, Outcome.UNAUTHORIZED);
+        if (this instanceof JmxInterfaceStandardRolesBasicTestCase) {
+            return; // the 'add' operation is not implemented in JmxManagementInterface
+        }
         addDeployment2(client, Outcome.UNAUTHORIZED);
         addPath(client, Outcome.UNAUTHORIZED);
     }
 
     @Test
     public void testOperator() throws Exception {
-        ModelControllerClient client = getClientForUser(OPERATOR_USER);
+        ManagementInterface client = getClientForUser(OPERATOR_USER);
+        whoami(client, OPERATOR_USER);
         checkStandardReads(client);
         readResource(client, MANAGEMENT_REALM, Outcome.HIDDEN);
         checkSensitiveAttribute(client, false);
         runGC(client, Outcome.SUCCESS);
+        if (this instanceof JmxInterfaceStandardRolesBasicTestCase) {
+            return; // the 'add' operation is not implemented in JmxManagementInterface
+        }
         addDeployment2(client, Outcome.UNAUTHORIZED);
         addPath(client, Outcome.UNAUTHORIZED);
     }
 
     @Test
     public void testMaintainer() throws Exception {
-        ModelControllerClient client = getClientForUser(MAINTAINER_USER);
+        ManagementInterface client = getClientForUser(MAINTAINER_USER);
+        whoami(client, MAINTAINER_USER);
         checkStandardReads(client);
         readResource(client, MANAGEMENT_REALM, Outcome.HIDDEN);
         checkSensitiveAttribute(client, false);
         runGC(client, Outcome.SUCCESS);
+        if (this instanceof JmxInterfaceStandardRolesBasicTestCase) {
+            return; // the 'add' operation is not implemented in JmxManagementInterface
+        }
         addDeployment2(client, Outcome.SUCCESS);
         addPath(client, Outcome.SUCCESS);
     }
 
     @Test
     public void testDeployer() throws Exception {
-        ModelControllerClient client = getClientForUser(DEPLOYER_USER);
+        ManagementInterface client = getClientForUser(DEPLOYER_USER);
+        whoami(client, DEPLOYER_USER);
         checkStandardReads(client);
         readResource(client, MANAGEMENT_REALM, Outcome.HIDDEN);
         checkSensitiveAttribute(client, false);
         runGC(client, Outcome.UNAUTHORIZED);
+        if (this instanceof JmxInterfaceStandardRolesBasicTestCase) {
+            return; // the 'add' operation is not implemented in JmxManagementInterface
+        }
         addDeployment2(client, Outcome.SUCCESS);
         addPath(client, Outcome.UNAUTHORIZED);
     }
 
     @Test
     public void testAdministrator() throws Exception {
-        ModelControllerClient client = getClientForUser(ADMINISTRATOR_USER);
+        ManagementInterface client = getClientForUser(ADMINISTRATOR_USER);
+        whoami(client, ADMINISTRATOR_USER);
         checkStandardReads(client);
         readResource(client, MANAGEMENT_REALM, Outcome.SUCCESS);
         checkSensitiveAttribute(client, true);
         runGC(client, Outcome.SUCCESS);
+        if (this instanceof JmxInterfaceStandardRolesBasicTestCase) {
+            return; // the 'add' operation is not implemented in JmxManagementInterface
+        }
         addDeployment2(client, Outcome.SUCCESS);
         addPath(client, Outcome.SUCCESS);
     }
 
     @Test
     public void testAuditor() throws Exception {
-        ModelControllerClient client = getClientForUser(AUDITOR_USER);
+        ManagementInterface client = getClientForUser(AUDITOR_USER);
+        whoami(client, AUDITOR_USER);
         checkStandardReads(client);
         readResource(client, MANAGEMENT_REALM, Outcome.SUCCESS);
         checkSensitiveAttribute(client, true);
         runGC(client, Outcome.UNAUTHORIZED);
+        if (this instanceof JmxInterfaceStandardRolesBasicTestCase) {
+            return; // the 'add' operation is not implemented in JmxManagementInterface
+        }
         addDeployment2(client, Outcome.UNAUTHORIZED);
         addPath(client, Outcome.UNAUTHORIZED);
     }
 
     @Test
     public void testSuperUser() throws Exception {
-        ModelControllerClient client = getClientForUser(SUPERUSER_USER);
+        ManagementInterface client = getClientForUser(SUPERUSER_USER);
+        whoami(client, SUPERUSER_USER);
         checkStandardReads(client);
         readResource(client, MANAGEMENT_REALM, Outcome.SUCCESS);
         checkSensitiveAttribute(client, true);
         runGC(client, Outcome.SUCCESS);
+        if (this instanceof JmxInterfaceStandardRolesBasicTestCase) {
+            return; // the 'add' operation is not implemented in JmxManagementInterface
+        }
         addDeployment2(client, Outcome.SUCCESS);
         addPath(client, Outcome.SUCCESS);
     }
 
-    private static void checkStandardReads(ModelControllerClient client) throws IOException {
+    private static void whoami(ManagementInterface client, String expectedUsername) throws IOException {
+        ModelNode op = createOpNode(null, "whoami");
+        ModelNode result = RbacUtil.executeOperation(client, op, Outcome.SUCCESS);
+        String returnedUsername = result.get(RESULT, "identity", USERNAME).asString();
+        assertEquals(expectedUsername, returnedUsername);
+    }
+
+    private static void checkStandardReads(ManagementInterface client) throws IOException {
         readResource(client, null, Outcome.SUCCESS);
         readResource(client, DEPLOYMENT_1, Outcome.SUCCESS);
         readResource(client, HTTP_BINDING, Outcome.SUCCESS);
     }
 
-    private static ModelNode readResource(ModelControllerClient client, String address, Outcome expectedOutcome) throws IOException {
+    private static ModelNode readResource(ManagementInterface client, String address, Outcome expectedOutcome) throws IOException {
         ModelNode op = createOpNode(address, READ_RESOURCE_OPERATION);
 
         return RbacUtil.executeOperation(client, op, expectedOutcome);
     }
 
-    private static ModelNode readAttribute(ModelControllerClient client, String address, String attributeName,
+    private static ModelNode readAttribute(ManagementInterface client, String address, String attributeName,
                                            Outcome expectedOutcome) throws IOException {
         ModelNode op = createOpNode(address, READ_ATTRIBUTE_OPERATION);
         op.get(NAME).set(attributeName);
@@ -219,7 +252,7 @@ public class StandardRolesBasicTestCase extends AbstractRbacTestCase {
         return RbacUtil.executeOperation(client, op, expectedOutcome);
     }
 
-    private static void checkSensitiveAttribute(ModelControllerClient client, boolean expectSuccess) throws IOException {
+    private static void checkSensitiveAttribute(ManagementInterface client, boolean expectSuccess) throws IOException {
         ModelNode correct = new ModelNode();
         if (expectSuccess) {
             correct.set("sa");
@@ -232,12 +265,12 @@ public class StandardRolesBasicTestCase extends AbstractRbacTestCase {
         assertEquals(correct, attrValue);
     }
 
-    private static void runGC(ModelControllerClient client, Outcome expectedOutcome) throws IOException {
+    private static void runGC(ManagementInterface client, Outcome expectedOutcome) throws IOException {
         ModelNode op = createOpNode(MEMORY_MBEAN, "gc");
         RbacUtil.executeOperation(client, op, expectedOutcome);
     }
 
-    private static void addDeployment2(ModelControllerClient client, Outcome expectedOutcome) throws IOException {
+    private static void addDeployment2(ManagementInterface client, Outcome expectedOutcome) throws IOException {
         ModelNode op = createOpNode(DEPLOYMENT_2, ADD);
         op.get(ENABLED).set(false);
         ModelNode content = op.get(CONTENT).add();
@@ -246,7 +279,7 @@ public class StandardRolesBasicTestCase extends AbstractRbacTestCase {
         RbacUtil.executeOperation(client, op, expectedOutcome);
     }
 
-    private static void addPath(ModelControllerClient client, Outcome expectedOutcome) throws IOException {
+    private static void addPath(ManagementInterface client, Outcome expectedOutcome) throws IOException {
         ModelNode op = createOpNode(TEST_PATH, ADD);
         op.get(PATH).set("/");
         RbacUtil.executeOperation(client, op, expectedOutcome);
