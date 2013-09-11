@@ -22,6 +22,7 @@
 
 package org.jboss.as.clustering.infinispan;
 
+import java.net.URL;
 import java.net.UnknownHostException;
 import java.util.Properties;
 
@@ -169,7 +170,7 @@ public interface InfinispanMessages {
      * @return IllegalStateException instance.
      */
     @Message(id = 10381, value = "Failed to parse %s")
-    IllegalStateException failedToParse(@Cause Throwable cause, String resourceName);
+    IllegalStateException failedToParse(@Cause Throwable cause, URL url);
 
     /**
      * Creates an exception indicating a singleton resource already exists.
@@ -215,5 +216,4 @@ public interface InfinispanMessages {
      */
     @Message(id = 10387, value = "Failed to invoke operation: %s")
     OperationFailedException failedToInvokeOperation(@Cause Throwable cause, String operation);
-
 }
