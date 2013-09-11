@@ -40,6 +40,7 @@ import static org.junit.Assert.fail;
 import java.io.IOException;
 
 import org.jboss.as.controller.client.ModelControllerClient;
+import org.jboss.as.test.integration.management.interfaces.ManagementInterface;
 import org.jboss.dmr.ModelNode;
 
 /**
@@ -76,6 +77,15 @@ public class RbacUtil {
     public static ModelNode executeOperation(ModelControllerClient client, ModelNode operation, Outcome expectedOutcome)
         throws IOException {
         ModelNode result = client.execute(operation);
+        return checkOperationResult(operation, result, expectedOutcome);
+    }
+
+    public static ModelNode executeOperation(ManagementInterface client, ModelNode operation, Outcome expectedOutcome) throws IOException {
+        ModelNode result = client.execute(operation);
+        return checkOperationResult(operation, result, expectedOutcome);
+    }
+
+    public static ModelNode checkOperationResult(ModelNode operation, ModelNode result, Outcome expectedOutcome) {
         String outcome = result.get(OUTCOME).asString();
         switch (expectedOutcome) {
             case SUCCESS:
