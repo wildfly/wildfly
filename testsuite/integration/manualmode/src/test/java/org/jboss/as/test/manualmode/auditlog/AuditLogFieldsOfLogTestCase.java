@@ -58,23 +58,23 @@ import org.xnio.IoUtils;
 
 /**
  * @author: Ondrej Lukas
- * 
- * Test that fields of Audit log have right content
+ *
+ *          Test that fields of Audit log have right content
  */
 @RunWith(Arquillian.class)
 @RunAsClient
 public class AuditLogFieldsOfLogTestCase {
-	
-	public static final String CONTAINER = "default-jbossas";
-	private static final String FORMATTER = "formatter";
+
+    public static final String CONTAINER = "default-jbossas";
+    private static final String FORMATTER = "formatter";
     private static final String JSON_FORMATTER = "json-formatter";
     private static final String SYSLOG_HANDLER_NAME = "audit-test-syslog-handler";
     final int PORT = 9276;
-	
-	@ArquillianResource
+
+    @ArquillianResource
     private ContainerController container;
 
-    ManagementClient managementClient;    
+    ManagementClient managementClient;
     private File file;
     private File syslogFile;
     private PathAddress auditLogConfigAddress;
@@ -84,15 +84,15 @@ public class AuditLogFieldsOfLogTestCase {
     private static SyslogServerIF server;
     private static BlockingQueue<String> queue;
     private static final int ADJUSTED_SECOND = TimeoutUtil.adjust(1000);
-    
+
     @Test
     public void testAuditLoggingFields() throws Exception {
-    	container.start(CONTAINER);
-    	if (file.exists()){
+        container.start(CONTAINER);
+        if (file.exists()) {
             file.delete();
-        }     
+        }
         Assert.assertTrue(makeOneLog());
-        
+
         List<ModelNode> logs = readFile(file, 1);
         ModelNode log = logs.get(0);
         Assert.assertEquals("core", log.get("type").asString());
@@ -101,17 +101,17 @@ public class AuditLogFieldsOfLogTestCase {
         Assert.assertTrue(log.get("version").isDefined());
         Assert.assertEquals("IAmAdmin", log.get("user").asString());
         Assert.assertFalse(log.get("domainUUID").isDefined());
-        Assert.assertEquals("NATIVE",log.get("access").asString());
+        Assert.assertEquals("NATIVE", log.get("access").asString());
         Assert.assertTrue(log.get("remote-address").isDefined());
         Assert.assertEquals("true", log.get("success").asString());
         List<ModelNode> operations = log.get("ops").asList();
         Assert.assertEquals(1, operations.size());
-        
-        if (syslogFile.exists()){
-        	syslogFile.delete();
-        	server.getConfig().removeAllEventHandlers();
-            server.getConfig()
-                    .addEventHandler(new BlockedFileSyslogServerEventHandler(queue, syslogFile.getAbsolutePath(), false));
+
+        if (syslogFile.exists()) {
+            syslogFile.delete();
+            server.getConfig().removeAllEventHandlers();
+            server.getConfig().addEventHandler(
+                    new BlockedFileSyslogServerEventHandler(queue, syslogFile.getAbsolutePath(), false));
         }
         Assert.assertTrue(makeOneLog());
         queue.poll(15 * ADJUSTED_SECOND, TimeUnit.MILLISECONDS);
@@ -123,141 +123,121 @@ public class AuditLogFieldsOfLogTestCase {
         Assert.assertTrue(log.get("version").isDefined());
         Assert.assertEquals("IAmAdmin", syslogLog.get("user").asString());
         Assert.assertFalse(syslogLog.get("domainUUID").isDefined());
-        Assert.assertEquals("NATIVE",syslogLog.get("access").asString());
+        Assert.assertEquals("NATIVE", syslogLog.get("access").asString());
         Assert.assertTrue(syslogLog.get("remote-address").isDefined());
         Assert.assertEquals("true", syslogLog.get("success").asString());
         List<ModelNode> syslogOperations = syslogLog.get("ops").asList();
         Assert.assertEquals(1, syslogOperations.size());
-        
+
     }
-        
+
     private boolean makeOneLog() throws IOException {
-    	ModelNode op = Util.getWriteAttributeOperation(
-                auditLogConfigAddress,
-                AuditLogLoggerResourceDefinition.LOG_BOOT.getName(),
-                new ModelNode(true));
-    	ModelNode result = managementClient.getControllerClient().execute(op);
-    	return SUCCESS.equals(result.get(OUTCOME).asString());
+        ModelNode op = Util.getWriteAttributeOperation(auditLogConfigAddress,
+                AuditLogLoggerResourceDefinition.LOG_BOOT.getName(), new ModelNode(true));
+        ModelNode result = managementClient.getControllerClient().execute(op);
+        return SUCCESS.equals(result.get(OUTCOME).asString());
     }
-    
+
     @Before
     public void beforeTest() throws Exception {
-    	file = new File(System.getProperty("jboss.home"));
+        file = new File(System.getProperty("jboss.home"));
         file = new File(file, "standalone");
         file = new File(file, "data");
         file = new File(file, "audit-log.log");
-        if (file.exists()){
+        if (file.exists()) {
             file.delete();
         }
-        
+
         syslogFile = new File(System.getProperty("jboss.home"));
         syslogFile = new File(syslogFile, "standalone");
         syslogFile = new File(syslogFile, "data");
         syslogFile = new File(syslogFile, "syslog-audit-log.log");
-        if (syslogFile.exists()){
-        	syslogFile.delete();
+        if (syslogFile.exists()) {
+            syslogFile.delete();
         }
-        
+
         // start and set syslog server
         server = SyslogServer.getInstance("udp");
         server.getConfig().setPort(PORT);
         queue = new LinkedBlockingQueue<String>();
-        server.getConfig()
-                .addEventHandler(new BlockedFileSyslogServerEventHandler(queue, syslogFile.getAbsolutePath(), false));
+        server.getConfig().addEventHandler(new BlockedFileSyslogServerEventHandler(queue, syslogFile.getAbsolutePath(), false));
         SyslogServer.getThreadedInstance("udp");
-    	
+
         // Start the server
         container.start(CONTAINER);
         final ModelControllerClient client = TestSuiteEnvironment.getModelControllerClient();
-        managementClient = new ManagementClient(client, TestSuiteEnvironment.getServerAddress(), TestSuiteEnvironment.getServerPort(), "http-remoting");
-        
+        managementClient = new ManagementClient(client, TestSuiteEnvironment.getServerAddress(),
+                TestSuiteEnvironment.getServerPort(), "http-remoting");
+
         ModelNode op;
         ModelNode result;
-        
-        mgmtRealmConfigAddress = PathAddress.pathAddress(
-        		PathElement.pathElement(CORE_SERVICE, MANAGEMENT),
-        		PathElement.pathElement(SECURITY_REALM, "ManagementRealm"),
-        		PathElement.pathElement(AUTHENTICATION, LOCAL));
-        op = Util.getWriteAttributeOperation(mgmtRealmConfigAddress,
-                "default-user",
-                new ModelNode("IAmAdmin"));        
-        result = client.execute(op);
-        
-        auditLogConfigAddress = PathAddress.pathAddress(
-                CoreManagementResourceDefinition.PATH_ELEMENT,
-                AccessAuditResourceDefinition.PATH_ELEMENT,
-                AuditLogLoggerResourceDefinition.PATH_ELEMENT);
 
-        op = Util.getWriteAttributeOperation(
-                auditLogConfigAddress,
-                AuditLogLoggerResourceDefinition.ENABLED.getName(),
+        mgmtRealmConfigAddress = PathAddress.pathAddress(PathElement.pathElement(CORE_SERVICE, MANAGEMENT),
+                PathElement.pathElement(SECURITY_REALM, "ManagementRealm"), PathElement.pathElement(AUTHENTICATION, LOCAL));
+        op = Util.getWriteAttributeOperation(mgmtRealmConfigAddress, "default-user", new ModelNode("IAmAdmin"));
+        result = client.execute(op);
+
+        auditLogConfigAddress = PathAddress.pathAddress(CoreManagementResourceDefinition.PATH_ELEMENT,
+                AccessAuditResourceDefinition.PATH_ELEMENT, AuditLogLoggerResourceDefinition.PATH_ELEMENT);
+
+        op = Util.getWriteAttributeOperation(auditLogConfigAddress, AuditLogLoggerResourceDefinition.ENABLED.getName(),
                 new ModelNode(true));
         result = client.execute(op);
         Assert.assertEquals(result.get("failure-description").asString(), SUCCESS, result.get(OUTCOME).asString());
-        
-        
+
         ModelNode compositeOp = new ModelNode();
         compositeOp.get(OP).set(COMPOSITE);
         compositeOp.get(OP_ADDR).setEmptyList();
-        ModelNode steps = compositeOp.get(STEPS);        
-        syslogHandlerAddress = PathAddress.pathAddress(
-        		PathElement.pathElement(CORE_SERVICE, MANAGEMENT),
-        		PathElement.pathElement(ACCESS, AUDIT),
-        		PathElement.pathElement(SYSLOG_HANDLER, SYSLOG_HANDLER_NAME));
+        ModelNode steps = compositeOp.get(STEPS);
+        syslogHandlerAddress = PathAddress.pathAddress(PathElement.pathElement(CORE_SERVICE, MANAGEMENT),
+                PathElement.pathElement(ACCESS, AUDIT), PathElement.pathElement(SYSLOG_HANDLER, SYSLOG_HANDLER_NAME));
         op = Util.createAddOperation(syslogHandlerAddress);
         op.get(FORMATTER).set(JSON_FORMATTER);
-        op.get(SYSLOG_FORMAT).set("RFC5424");       
+        op.get(SYSLOG_FORMAT).set("RFC5424");
         steps.add(op);
         op = new ModelNode();
-        PathAddress syslogProtocol = PathAddress.pathAddress(
-        		syslogHandlerAddress,
-        		PathElement.pathElement(PROTOCOL, UDP));
+        PathAddress syslogProtocol = PathAddress.pathAddress(syslogHandlerAddress, PathElement.pathElement(PROTOCOL, UDP));
         op = Util.createAddOperation(syslogProtocol);
         op.get("port").set(PORT);
         op.get("host").set("localhost");
         steps.add(op);
         result = client.execute(compositeOp);
         Assert.assertEquals(result.get("failure-description").asString(), SUCCESS, result.get(OUTCOME).asString());
-        
-        addSyslogHandler = PathAddress.pathAddress(auditLogConfigAddress,
-        		PathElement.pathElement(HANDLER, SYSLOG_HANDLER_NAME));
+
+        addSyslogHandler = PathAddress.pathAddress(auditLogConfigAddress, PathElement.pathElement(HANDLER, SYSLOG_HANDLER_NAME));
         op = Util.createAddOperation(addSyslogHandler);
         result = client.execute(op);
         Assert.assertEquals(result.get("failure-description").asString(), SUCCESS, result.get(OUTCOME).asString());
-        
+
         container.stop(CONTAINER);
         Thread.sleep(1000);
         while (managementClient.isServerInRunningState()) {
             Thread.sleep(50);
-        }        
+        }
     }
-    
+
     @After
     public void afterTest() throws Exception {
-    	// stop syslog server
+        // stop syslog server
         SyslogServer.shutdown();
-    	
+
         final ModelControllerClient client = TestSuiteEnvironment.getModelControllerClient();
-    	ModelNode op = Util.getWriteAttributeOperation(
-                auditLogConfigAddress,
-                AuditLogLoggerResourceDefinition.ENABLED.getName(),
+        ModelNode op = Util.getWriteAttributeOperation(auditLogConfigAddress, AuditLogLoggerResourceDefinition.ENABLED.getName(),
                 new ModelNode(false));
         client.execute(op);
-        op = Util.getWriteAttributeOperation(mgmtRealmConfigAddress,
-                "default-user",
-                new ModelNode("$local"));        
+        op = Util.getWriteAttributeOperation(mgmtRealmConfigAddress, "default-user", new ModelNode("$local"));
         client.execute(op);
-        
+
         op = Util.getResourceRemoveOperation(addSyslogHandler);
-        client.execute(op);        
+        client.execute(op);
         op = Util.getResourceRemoveOperation(syslogHandlerAddress);
         client.execute(op);
-        
+
         if (file.exists()) {
-        	file.delete();
+            file.delete();
         }
         if (syslogFile.exists()) {
-        	syslogFile.delete();
+            syslogFile.delete();
         }
         try {
             // Stop the container
@@ -266,7 +246,7 @@ public class AuditLogFieldsOfLogTestCase {
             IoUtils.safeClose(client);
         }
     }
-    
+
     private final Pattern DATE_STAMP_PATTERN = Pattern.compile("\\d\\d\\d\\d-\\d\\d-\\d\\d \\d\\d:\\d\\d:\\d\\d - \\{");
 
     protected List<ModelNode> readFile(File file, int expectedRecords) throws IOException {
@@ -283,7 +263,8 @@ public class AuditLogFieldsOfLogTestCase {
                     writer = new StringWriter();
                     writer.append("{");
                 } else {
-                	if (writer != null) writer.append("\n" + line);
+                    if (writer != null)
+                        writer.append("\n" + line);
                 }
                 line = reader.readLine();
             }
