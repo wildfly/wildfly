@@ -137,7 +137,7 @@ public abstract class CacheAdd extends AbstractAddStepHandler {
         try (InputStream input = url.openStream()) {
             return parser.parse(input);
         } catch (IOException e) {
-            throw new IllegalStateException(String.format("Failed to parse %s", url), e);
+            throw InfinispanMessages.MESSAGES.failedToParse(e, url);
         }
     }
 
