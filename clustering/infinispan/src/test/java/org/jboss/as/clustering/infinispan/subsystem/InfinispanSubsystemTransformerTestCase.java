@@ -66,7 +66,7 @@ import org.junit.Test;
  */
 
 //@RunWith(BMUnitRunner.class)
-@Ignore("Subsystem testing framework uses incorrect subsystem dependencies for old versions")
+@Ignore("WFLY-2048 Subsystem testing framework uses incorrect subsystem dependencies for old versions")
 public class InfinispanSubsystemTransformerTestCase extends OperationTestCaseBase {
 
     @Override
