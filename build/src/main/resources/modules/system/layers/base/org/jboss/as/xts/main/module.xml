@@ -33,6 +33,8 @@
 
     <dependencies>
         <module name="javax.api"/>
+        <module name="javax.transaction.api"/>
+        <module name="javax.ejb.api"/>
         <module name="org.jboss.as.ee"/>
         <module name="org.jboss.msc"/>
         <module name="org.jboss.as.controller"/>
