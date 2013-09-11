@@ -79,6 +79,7 @@ public abstract class StandardRolesBasicTestCase extends AbstractManagementInter
     private static final String DEPLOYMENT_1 = "deployment=war-example.war";
     private static final String DEPLOYMENT_2 = "deployment=rbac.txt";
     private static final byte[] DEPLOYMENT_2_CONTENT = "CONTENT".getBytes(Charset.defaultCharset());
+    private static final String AUTHORIZATION = "core-service=management/access=authorization";
     private static final String MANAGEMENT_REALM = "core-service=management/security-realm=ManagementRealm";
     private static final String HTTP_BINDING = "socket-binding-group=standard-sockets/socket-binding=http";
     private static final String MEMORY_MBEAN = "core-service=platform-mbean/type=memory";
@@ -125,6 +126,7 @@ public abstract class StandardRolesBasicTestCase extends AbstractManagementInter
         ManagementInterface client = getClientForUser(MONITOR_USER);
         whoami(client, MONITOR_USER);
         checkStandardReads(client);
+        readResource(client, AUTHORIZATION, Outcome.HIDDEN);
         readResource(client, MANAGEMENT_REALM, Outcome.HIDDEN);
         checkSensitiveAttribute(client, false);
         runGC(client, Outcome.UNAUTHORIZED);
@@ -140,6 +142,7 @@ public abstract class StandardRolesBasicTestCase extends AbstractManagementInter
         ManagementInterface client = getClientForUser(OPERATOR_USER);
         whoami(client, OPERATOR_USER);
         checkStandardReads(client);
+        readResource(client, AUTHORIZATION, Outcome.HIDDEN);
         readResource(client, MANAGEMENT_REALM, Outcome.HIDDEN);
         checkSensitiveAttribute(client, false);
         runGC(client, Outcome.SUCCESS);
@@ -155,6 +158,7 @@ public abstract class StandardRolesBasicTestCase extends AbstractManagementInter
         ManagementInterface client = getClientForUser(MAINTAINER_USER);
         whoami(client, MAINTAINER_USER);
         checkStandardReads(client);
+        readResource(client, AUTHORIZATION, Outcome.HIDDEN);
         readResource(client, MANAGEMENT_REALM, Outcome.HIDDEN);
         checkSensitiveAttribute(client, false);
         runGC(client, Outcome.SUCCESS);
@@ -170,6 +174,7 @@ public abstract class StandardRolesBasicTestCase extends AbstractManagementInter
         ManagementInterface client = getClientForUser(DEPLOYER_USER);
         whoami(client, DEPLOYER_USER);
         checkStandardReads(client);
+        readResource(client, AUTHORIZATION, Outcome.HIDDEN);
         readResource(client, MANAGEMENT_REALM, Outcome.HIDDEN);
         checkSensitiveAttribute(client, false);
         runGC(client, Outcome.UNAUTHORIZED);
@@ -185,6 +190,7 @@ public abstract class StandardRolesBasicTestCase extends AbstractManagementInter
         ManagementInterface client = getClientForUser(ADMINISTRATOR_USER);
         whoami(client, ADMINISTRATOR_USER);
         checkStandardReads(client);
+        readResource(client, AUTHORIZATION, Outcome.SUCCESS);
         readResource(client, MANAGEMENT_REALM, Outcome.SUCCESS);
         checkSensitiveAttribute(client, true);
         runGC(client, Outcome.SUCCESS);
@@ -200,6 +206,7 @@ public abstract class StandardRolesBasicTestCase extends AbstractManagementInter
         ManagementInterface client = getClientForUser(AUDITOR_USER);
         whoami(client, AUDITOR_USER);
         checkStandardReads(client);
+        readResource(client, AUTHORIZATION, Outcome.SUCCESS);
         readResource(client, MANAGEMENT_REALM, Outcome.SUCCESS);
         checkSensitiveAttribute(client, true);
         runGC(client, Outcome.UNAUTHORIZED);
@@ -215,6 +222,7 @@ public abstract class StandardRolesBasicTestCase extends AbstractManagementInter
         ManagementInterface client = getClientForUser(SUPERUSER_USER);
         whoami(client, SUPERUSER_USER);
         checkStandardReads(client);
+        readResource(client, AUTHORIZATION, Outcome.SUCCESS);
         readResource(client, MANAGEMENT_REALM, Outcome.SUCCESS);
         checkSensitiveAttribute(client, true);
         runGC(client, Outcome.SUCCESS);

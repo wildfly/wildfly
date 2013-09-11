@@ -111,6 +111,9 @@ public abstract class AbstractHostScopedRolesTestCase extends AbstractRbacTestCa
         checkRootRead(client, MASTER, null, Outcome.SUCCESS, MONITOR_USER);
         checkRootRead(client, MASTER, MASTER_A, Outcome.SUCCESS, MONITOR_USER);
         checkRootRead(client, SLAVE, SLAVE_B, Outcome.HIDDEN, MONITOR_USER);
+        readResource(client, AUTHORIZATION, null, null, Outcome.HIDDEN, MONITOR_USER);
+        readResource(client, AUTHORIZATION, MASTER, MASTER_A, Outcome.HIDDEN, MONITOR_USER);
+        readResource(client, AUTHORIZATION, SLAVE, SLAVE_B, Outcome.HIDDEN, MONITOR_USER);
         checkSecurityDomainRead(client, null, null, Outcome.HIDDEN, MONITOR_USER);
         checkSecurityDomainRead(client, MASTER, MASTER_A, Outcome.HIDDEN, MONITOR_USER);
         checkSecurityDomainRead(client, SLAVE, SLAVE_B, Outcome.HIDDEN, MONITOR_USER);
@@ -133,6 +136,9 @@ public abstract class AbstractHostScopedRolesTestCase extends AbstractRbacTestCa
         checkRootRead(client, MASTER, null, Outcome.SUCCESS, OPERATOR_USER);
         checkRootRead(client, MASTER, MASTER_A, Outcome.SUCCESS, OPERATOR_USER);
         checkRootRead(client, SLAVE, SLAVE_B, Outcome.HIDDEN, OPERATOR_USER);
+        readResource(client, AUTHORIZATION, null, null, Outcome.HIDDEN, OPERATOR_USER);
+        readResource(client, AUTHORIZATION, MASTER, MASTER_A, Outcome.HIDDEN, OPERATOR_USER);
+        readResource(client, AUTHORIZATION, SLAVE, SLAVE_B, Outcome.HIDDEN, OPERATOR_USER);
         checkSecurityDomainRead(client, null, null, Outcome.HIDDEN, OPERATOR_USER);
         checkSecurityDomainRead(client, MASTER, MASTER_A, Outcome.HIDDEN, OPERATOR_USER);
         checkSecurityDomainRead(client, SLAVE, SLAVE_B, Outcome.HIDDEN, OPERATOR_USER);
@@ -155,6 +161,9 @@ public abstract class AbstractHostScopedRolesTestCase extends AbstractRbacTestCa
         checkRootRead(client, MASTER, null, Outcome.SUCCESS, MAINTAINER_USER);
         checkRootRead(client, MASTER, MASTER_A, Outcome.SUCCESS, MAINTAINER_USER);
         checkRootRead(client, SLAVE, SLAVE_B, Outcome.HIDDEN, MAINTAINER_USER);
+        readResource(client, AUTHORIZATION, null, null, Outcome.HIDDEN, MAINTAINER_USER);
+        readResource(client, AUTHORIZATION, MASTER, MASTER_A, Outcome.HIDDEN, MAINTAINER_USER);
+        readResource(client, AUTHORIZATION, SLAVE, SLAVE_B, Outcome.HIDDEN, MAINTAINER_USER);
         checkSecurityDomainRead(client, null, null, Outcome.HIDDEN, MAINTAINER_USER);
         checkSecurityDomainRead(client, MASTER, MASTER_A, Outcome.HIDDEN, MAINTAINER_USER);
         checkSecurityDomainRead(client, SLAVE, SLAVE_B, Outcome.HIDDEN, MAINTAINER_USER);
@@ -177,6 +186,9 @@ public abstract class AbstractHostScopedRolesTestCase extends AbstractRbacTestCa
         checkRootRead(client, MASTER, null, Outcome.SUCCESS, DEPLOYER_USER);
         checkRootRead(client, MASTER, MASTER_A, Outcome.SUCCESS, DEPLOYER_USER);
         checkRootRead(client, SLAVE, SLAVE_B, Outcome.HIDDEN, DEPLOYER_USER);
+        readResource(client, AUTHORIZATION, null, null, Outcome.HIDDEN, DEPLOYER_USER);
+        readResource(client, AUTHORIZATION, MASTER, MASTER_A, Outcome.HIDDEN, DEPLOYER_USER);
+        readResource(client, AUTHORIZATION, SLAVE, SLAVE_B, Outcome.HIDDEN, DEPLOYER_USER);
         checkSecurityDomainRead(client, null, null, Outcome.HIDDEN, DEPLOYER_USER);
         checkSecurityDomainRead(client, MASTER, MASTER_A, Outcome.HIDDEN, DEPLOYER_USER);
         checkSecurityDomainRead(client, SLAVE, SLAVE_B, Outcome.HIDDEN, DEPLOYER_USER);
@@ -199,6 +211,9 @@ public abstract class AbstractHostScopedRolesTestCase extends AbstractRbacTestCa
         checkRootRead(client, MASTER, null, Outcome.SUCCESS, ADMINISTRATOR_USER);
         checkRootRead(client, MASTER, MASTER_A, Outcome.SUCCESS, ADMINISTRATOR_USER);
         checkRootRead(client, SLAVE, SLAVE_B, Outcome.HIDDEN, ADMINISTRATOR_USER);
+        readResource(client, AUTHORIZATION, null, null, Outcome.HIDDEN, ADMINISTRATOR_USER);
+        readResource(client, AUTHORIZATION, MASTER, MASTER_A, Outcome.SUCCESS, ADMINISTRATOR_USER);
+        readResource(client, AUTHORIZATION, SLAVE, SLAVE_B, Outcome.HIDDEN, ADMINISTRATOR_USER);
         checkSecurityDomainRead(client, null, null, Outcome.HIDDEN, ADMINISTRATOR_USER);
         checkSecurityDomainRead(client, MASTER, MASTER_A, Outcome.SUCCESS, ADMINISTRATOR_USER);
         checkSecurityDomainRead(client, SLAVE, SLAVE_B, Outcome.HIDDEN, ADMINISTRATOR_USER);
@@ -221,6 +236,9 @@ public abstract class AbstractHostScopedRolesTestCase extends AbstractRbacTestCa
         checkRootRead(client, MASTER, null, Outcome.SUCCESS, AUDITOR_USER);
         checkRootRead(client, MASTER, MASTER_A, Outcome.SUCCESS, AUDITOR_USER);
         checkRootRead(client, SLAVE, SLAVE_B, Outcome.HIDDEN, AUDITOR_USER);
+        readResource(client, AUTHORIZATION, null, null, Outcome.HIDDEN, AUDITOR_USER);
+        readResource(client, AUTHORIZATION, MASTER, MASTER_A, Outcome.SUCCESS, AUDITOR_USER);
+        readResource(client, AUTHORIZATION, SLAVE, SLAVE_B, Outcome.HIDDEN, AUDITOR_USER);
         checkSecurityDomainRead(client, null, null, Outcome.HIDDEN, AUDITOR_USER);
         checkSecurityDomainRead(client, MASTER, MASTER_A, Outcome.SUCCESS, AUDITOR_USER);
         checkSecurityDomainRead(client, SLAVE, SLAVE_B, Outcome.HIDDEN, AUDITOR_USER);
@@ -243,6 +261,9 @@ public abstract class AbstractHostScopedRolesTestCase extends AbstractRbacTestCa
         checkRootRead(client, MASTER, null, Outcome.SUCCESS, SUPERUSER_USER);
         checkRootRead(client, MASTER, MASTER_A, Outcome.SUCCESS, SUPERUSER_USER);
         checkRootRead(client, SLAVE, SLAVE_B, Outcome.HIDDEN, SUPERUSER_USER);
+        readResource(client, AUTHORIZATION, null, null, Outcome.HIDDEN, SUPERUSER_USER);
+        readResource(client, AUTHORIZATION, MASTER, MASTER_A, Outcome.SUCCESS, SUPERUSER_USER);
+        readResource(client, AUTHORIZATION, SLAVE, SLAVE_B, Outcome.HIDDEN, SUPERUSER_USER);
         checkSecurityDomainRead(client, null, null, Outcome.HIDDEN, SUPERUSER_USER);
         checkSecurityDomainRead(client, MASTER, MASTER_A, Outcome.SUCCESS, SUPERUSER_USER);
         checkSecurityDomainRead(client, SLAVE, SLAVE_B, Outcome.HIDDEN, SUPERUSER_USER);

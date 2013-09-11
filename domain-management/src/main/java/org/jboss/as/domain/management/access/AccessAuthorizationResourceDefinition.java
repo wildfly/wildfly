@@ -44,7 +44,9 @@ import org.jboss.as.controller.SimpleAttributeDefinitionBuilder;
 import org.jboss.as.controller.SimpleListAttributeDefinition;
 import org.jboss.as.controller.SimpleResourceDefinition;
 import org.jboss.as.controller.access.CombinationPolicy;
+import org.jboss.as.controller.access.management.AccessConstraintDefinition;
 import org.jboss.as.controller.access.management.DelegatingConfigurableAuthorizer;
+import org.jboss.as.controller.access.management.SensitiveTargetAccessConstraintDefinition;
 import org.jboss.as.controller.access.management.WritableAuthorizerConfiguration;
 import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
 import org.jboss.as.controller.operations.validation.EnumValidator;
@@ -133,12 +135,14 @@ public class AccessAuthorizationResourceDefinition extends SimpleResourceDefinit
 
     private final boolean isDomain;
     private final boolean isHostController;
+    private final List<AccessConstraintDefinition> accessConstraints;
 
     private AccessAuthorizationResourceDefinition(DelegatingConfigurableAuthorizer configurableAuthorizer, boolean domain, boolean hostController) {
         super(PATH_ELEMENT, DomainManagementResolver.getResolver("core.access-control"));
         this.configurableAuthorizer = configurableAuthorizer;
         isDomain = domain;
         isHostController = hostController;
+        this.accessConstraints = SensitiveTargetAccessConstraintDefinition.ACCESS_CONTROL.wrapAsList();
     }
 
     @Override
@@ -195,6 +199,11 @@ public class AccessAuthorizationResourceDefinition extends SimpleResourceDefinit
             resourceRegistration.registerOperationHandler(AccessAuthorizationDomainSlaveConfigHandler.DEFINITION,
                     new AccessAuthorizationDomainSlaveConfigHandler(configurableAuthorizer));
         }
+    }
+
+    @Override
+    public List<AccessConstraintDefinition> getAccessConstraints() {
+        return accessConstraints;
     }
 
     private static Resource createResource() {

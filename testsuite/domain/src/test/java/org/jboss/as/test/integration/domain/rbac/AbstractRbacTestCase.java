@@ -60,6 +60,7 @@ import org.junit.AfterClass;
  */
 public abstract class AbstractRbacTestCase {
 
+    protected static final String AUTHORIZATION = "core-service=management/access=authorization";
     protected static final String DEPLOYMENT_1 = "deployment=war-example.war";
     protected static final String DEPLOYMENT_2 = "deployment=rbac.txt";
     protected static final byte[] DEPLOYMENT_2_CONTENT = "CONTENT".getBytes(Charset.defaultCharset());
