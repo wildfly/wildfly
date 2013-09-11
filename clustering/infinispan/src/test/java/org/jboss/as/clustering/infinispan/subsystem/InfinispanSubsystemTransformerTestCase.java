@@ -66,7 +66,6 @@ import org.junit.Test;
  */
 
 //@RunWith(BMUnitRunner.class)
-@Ignore("WFLY-2048 Subsystem testing framework uses incorrect subsystem dependencies for old versions")
 public class InfinispanSubsystemTransformerTestCase extends OperationTestCaseBase {
 
     @Override
@@ -90,6 +89,7 @@ public class InfinispanSubsystemTransformerTestCase extends OperationTestCaseBas
                 .setSubsystemXml(getSubsystemXml());
         builder.createLegacyKernelServicesBuilder(null, controllerVersion, version)
             .addMavenResourceURL("org.jboss.as:jboss-as-clustering-infinispan:" + controllerVersion.getMavenGavVersion())
+            .addMavenResourceURL("org.infinispan:infinispan-core:5.2.6.Final")
             //TODO storing the model triggers the weirdness mentioned in SubsystemTestDelegate.LegacyKernelServiceInitializerImpl.install()
             //which is strange since it should be loading it all from the current jboss modules
             //Also this works in several other tests
@@ -127,6 +127,7 @@ public class InfinispanSubsystemTransformerTestCase extends OperationTestCaseBas
         ModelVersion version_1_3_0 = ModelVersion.create(1, 3, 0);
         builder.createLegacyKernelServicesBuilder(null, controllerVersion, version_1_3_0)
             .addMavenResourceURL("org.jboss.as:jboss-as-clustering-infinispan:" + controllerVersion.getMavenGavVersion())
+            .addMavenResourceURL("org.infinispan:infinispan-core:5.2.6.Final")
             //TODO storing the model triggers the weirdness mentioned in SubsystemTestDelegate.LegacyKernelServiceInitializerImpl.install()
             //which is strange since it should be loading it all from the current jboss modules
             //Also this works in several other tests
@@ -135,7 +136,7 @@ public class InfinispanSubsystemTransformerTestCase extends OperationTestCaseBas
         KernelServices mainServices = builder.build();
         KernelServices legacyServices = mainServices.getLegacyServices(version_1_3_0);
         Assert.assertNotNull(legacyServices);
-        Assert.assertTrue("main services did not boot", mainServices.isSuccessfulBoot()); ;
+        Assert.assertTrue("main services did not boot", mainServices.isSuccessfulBoot());
         Assert.assertTrue(legacyServices.isSuccessfulBoot());
 
         List<ModelNode> xmlOps = builder.parseXmlResource("infinispan-transformer_1_4-expressions.xml");
@@ -149,7 +150,10 @@ public class InfinispanSubsystemTransformerTestCase extends OperationTestCaseBas
         // create builder for current subsystem version
         KernelServicesBuilder builder = createKernelServicesBuilder(AdditionalInitialization.MANAGEMENT);
         builder.createLegacyKernelServicesBuilder(null, ModelTestControllerVersion.MASTER, version140)
-                .addMavenResourceURL("org.jboss.as:jboss-as-clustering-infinispan:7.2.0.Final");
+                .addMavenResourceURL("org.jboss.as:jboss-as-clustering-infinispan:7.2.0.Final")
+                .addMavenResourceURL("org.infinispan:infinispan-core:5.3.0.Final")
+                .addMavenResourceURL("org.infinispan:infinispan-cachestore-jdbc:5.3.0.Final");
+
 
         KernelServices mainServices = builder.build();
         KernelServices legacyServices = mainServices.getLegacyServices(version140);
