@@ -31,7 +31,7 @@ package org.jboss.as.controller.access.constraint;
  */
 public class SensitivityClassification extends AbstractSensitivity {
 
-    public static final SensitivityClassification ACCESS_CONTROL = new SensitivityClassification("access-control", false, true, true);
+    public static final SensitivityClassification ACCESS_CONTROL = new SensitivityClassification("access-control", true, true, true);
     public static final SensitivityClassification CREDENTIAL = new SensitivityClassification("credential", false, true, true);
     public static final SensitivityClassification DOMAIN_CONTROLLER = new SensitivityClassification("domain-controller", false, false, true);
     public static final SensitivityClassification DOMAIN_NAMES = new SensitivityClassification("domain-names", false, false, true);
