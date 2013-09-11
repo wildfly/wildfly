@@ -117,8 +117,14 @@ public class ManagementPermissionAuthorizer implements Authorizer {
     @Override
     public AuthorizationResult authorizeJmxOperation(Caller caller, Environment callEnvironment, JmxAction action) {
         Set<String> roles = jmxPermissionFactory.getUserRoles(caller, null, FAKE_JMX_ACTION, (TargetResource) null);
-        if (jmxPermissionFactory.isNonFacadeMBeansSensitive() || action.getImpact() == Impact.EXTRA_SENSITIVE) {
+        if (action.getImpact() == Impact.EXTRA_SENSITIVE) {
             return authorize(roles, StandardRole.SUPERUSER, StandardRole.ADMINISTRATOR);
+        } else if (jmxPermissionFactory.isNonFacadeMBeansSensitive()) {
+            if (action.getImpact() == Impact.READ_ONLY) {
+                return authorize(roles, StandardRole.SUPERUSER, StandardRole.ADMINISTRATOR, StandardRole.AUDITOR);
+            } else {
+                return authorize(roles, StandardRole.SUPERUSER, StandardRole.ADMINISTRATOR);
+            }
         } else {
             if (action.getImpact() == Impact.READ_ONLY) {
                 //Everybody can read mbeans when not sensitive

@@ -41,6 +41,7 @@ public class JmxRbacEnabledTestCase extends JmxRbacTestCase {
         switch (standardRole) {
         case SUPERUSER:
         case ADMINISTRATOR:
+        case AUDITOR:
             return true;
         default:
             return false;
