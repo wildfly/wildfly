@@ -169,4 +169,8 @@ public interface WebLogger extends BasicLogger {
     @LogMessage(level = INFO)
     @Message(id = 18227, value = "Could not load class designated by HandlesTypes [%s].")
     void cannotLoadDesignatedHandleTypes(ClassInfo classInfo, @Cause Exception e);
+
+    @LogMessage(level = WARN)
+    @Message(id = 18228, value = "Shutting down the session manager while there are still requests being processed after waiting for %s milliseconds")
+    void shutdownTimeoutExpired(long timeout);
 }

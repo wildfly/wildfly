@@ -406,6 +406,8 @@ public class DistributableSessionManager<O extends OutgoingDistributableSessionD
         if (container instanceof Lifecycle) {
             ((Lifecycle) container).removeLifecycleListener(this);
         }
+        // Max time (milliseconds) to acquire all the remaining permits on the ValveLock before shutting down.
+        final long stop_timeout = Long.getLong("jboss.web.session.manager.stop.timeout", -1L);
 
         // Handle re-entrance
         if (this.semaphore.tryAcquire()) {
@@ -413,7 +415,12 @@ public class DistributableSessionManager<O extends OutgoingDistributableSessionD
                 log.debug("Closing off LockingValve");
 
                 // Acquire all remaining permits, shutting off locking valve
-                this.semaphore.acquire(TOTAL_PERMITS - 1);
+                if(stop_timeout < 0) {
+                    this.semaphore.acquire(TOTAL_PERMITS - 1);
+                } else if(!this.semaphore.tryAcquire(TOTAL_PERMITS - 1, stop_timeout, TimeUnit.MILLISECONDS)) {
+                    WebLogger.WEB_SESSION_LOGGER.shutdownTimeoutExpired(stop_timeout);
+                    this.semaphore.release();
+                }
             } catch (InterruptedException e) {
                 Thread.currentThread().interrupt();
                 this.semaphore.release();
