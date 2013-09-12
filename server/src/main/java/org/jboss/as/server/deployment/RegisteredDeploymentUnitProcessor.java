@@ -39,7 +39,7 @@ public final class RegisteredDeploymentUnitProcessor implements Comparable<Regis
     @Override
     public int compareTo(final RegisteredDeploymentUnitProcessor o) {
         final int rel = Integer.signum(priority - o.priority);
-        return rel == 0 ? processor.getClass().getName().compareTo(o.getClass().getName()) : rel;
+        return rel == 0 ? processor.getClass().getName().compareTo(o.processor.getClass().getName()) : rel;
     }
 
     public int getPriority() {
