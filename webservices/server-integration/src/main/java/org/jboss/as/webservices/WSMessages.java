@@ -175,4 +175,7 @@ public interface WSMessages {
     @Message(id = 15595, value = "Unable to get URL for: %s")
     DeploymentUnitProcessingException cannotGetURLForDescriptor(@Cause Throwable cause, String resourcePath);
 
+    @Message(id = 15603, value = "Unable to get servlet metadata for servletLink: %s in portComponet : %s")
+    DeploymentUnitProcessingException cannotGetServletMD(String seveltLink, String portComponent);
+
 }

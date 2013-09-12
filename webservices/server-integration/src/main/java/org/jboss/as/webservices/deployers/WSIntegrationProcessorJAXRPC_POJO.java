@@ -33,6 +33,7 @@ import org.jboss.as.server.deployment.DeploymentPhaseContext;
 import org.jboss.as.server.deployment.DeploymentUnit;
 import org.jboss.as.server.deployment.DeploymentUnitProcessingException;
 import org.jboss.as.server.deployment.DeploymentUnitProcessor;
+import org.jboss.as.webservices.WSMessages;
 import org.jboss.as.webservices.metadata.model.JAXRPCDeployment;
 import org.jboss.as.webservices.metadata.model.POJOEndpoint;
 import org.jboss.metadata.web.jboss.JBossWebMetaData;
@@ -67,7 +68,7 @@ public final class WSIntegrationProcessorJAXRPC_POJO implements DeploymentUnitPr
         return getJaxwsPojos(unit).size() > 0;
     }
 
-    private static void createJaxrpcDeployment(final DeploymentUnit unit, final WebservicesMetaData webservicesMD, final JBossWebMetaData jbossWebMD) {
+    private static void createJaxrpcDeployment(final DeploymentUnit unit, final WebservicesMetaData webservicesMD, final JBossWebMetaData jbossWebMD) throws DeploymentUnitProcessingException {
         final JAXRPCDeployment jaxrpcDeployment = getJaxrpcDeployment(unit);
 
         for (final WebserviceDescriptionMetaData wsDescriptionMD : webservicesMD.getWebserviceDescriptions()) {
@@ -78,9 +79,12 @@ public final class WSIntegrationProcessorJAXRPC_POJO implements DeploymentUnitPr
         }
     }
 
-    private static POJOEndpoint newPojoEndpoint(final PortComponentMetaData portComponentMD, final JBossWebMetaData jbossWebMD) {
+    private static POJOEndpoint newPojoEndpoint(final PortComponentMetaData portComponentMD, final JBossWebMetaData jbossWebMD) throws DeploymentUnitProcessingException{
         final String endpointName = portComponentMD.getServletLink();
         final ServletMetaData servletMD = getServletForName(jbossWebMD, endpointName);
+        if (servletMD == null) {
+            throw WSMessages.MESSAGES.cannotGetServletMD(endpointName, portComponentMD.getPortComponentName());
+        }
         final String endpointClassName = getEndpointClassName(servletMD);
         final String urlPattern = getUrlPattern(endpointName, jbossWebMD);
 

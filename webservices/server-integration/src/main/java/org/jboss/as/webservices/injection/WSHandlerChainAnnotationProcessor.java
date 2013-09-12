@@ -51,6 +51,7 @@ import org.jboss.as.server.deployment.DeploymentUnitProcessingException;
 import org.jboss.as.server.deployment.DeploymentUnitProcessor;
 import org.jboss.as.server.deployment.EjbDeploymentMarker;
 import org.jboss.as.server.deployment.module.ResourceRoot;
+import org.jboss.as.webservices.WSLogger;
 import org.jboss.jandex.AnnotationInstance;
 import org.jboss.jandex.AnnotationTarget;
 import org.jboss.jandex.ClassInfo;
@@ -131,6 +132,8 @@ public final class WSHandlerChainAnnotationProcessor implements DeploymentUnitPr
             final Set<String> endpointHandlers = getHandlers(is);
             if (endpointHandlers.size() > 0) {
                 mapping.registerEndpointHandlers(endpointClass, endpointHandlers);
+            } else {
+                WSLogger.ROOT_LOGGER.invalidHandlerChainFile(handlerChainConfigFile);
             }
         } catch (final IOException e) {
             throw new DeploymentUnitProcessingException(e);
@@ -161,14 +164,14 @@ public final class WSHandlerChainAnnotationProcessor implements DeploymentUnitPr
 
     private static Set<String> getHandlers(final InputStream is) throws IOException {
         final Set<String> retVal = new HashSet<String>();
-
         final UnifiedHandlerChainsMetaData handlerChainsUMDM = UnifiedHandlerChainsMetaDataParser.parse(is);
-        for (final UnifiedHandlerChainMetaData handlerChainUMDM : handlerChainsUMDM.getHandlerChains()) {
-            for (final UnifiedHandlerMetaData handlerUMDM : handlerChainUMDM.getHandlers()) {
-                retVal.add(handlerUMDM.getHandlerClass());
+        if (handlerChainsUMDM != null) {
+            for (final UnifiedHandlerChainMetaData handlerChainUMDM : handlerChainsUMDM.getHandlerChains()) {
+                for (final UnifiedHandlerMetaData handlerUMDM : handlerChainUMDM.getHandlers()) {
+                    retVal.add(handlerUMDM.getHandlerClass());
+                }
             }
         }
-
         return retVal;
     }
 

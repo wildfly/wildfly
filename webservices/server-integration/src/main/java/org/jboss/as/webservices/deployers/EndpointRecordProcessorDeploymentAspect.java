@@ -55,22 +55,19 @@ public final class EndpointRecordProcessorDeploymentAspect extends AbstractDeplo
 
     @Override
     public void start(final Deployment dep) {
-       final int size = processors.size();
-       for (final Endpoint ep : dep.getService().getEndpoints()) {
-          List<RecordProcessor> processorList = new Vector<RecordProcessor>(size);
-          if (processors != null) {
-             for (RecordProcessor pr : processors) {
+        final int size = processors.size();
+        for (final Endpoint ep : dep.getService().getEndpoints()) {
+            List<RecordProcessor> processorList = new Vector<RecordProcessor>(size);
+            for (RecordProcessor pr : processors) {
                 try {
-                   RecordProcessor clone = (RecordProcessor)pr.clone();
-                   processorList.add(clone);
+                    RecordProcessor clone = (RecordProcessor) pr.clone();
+                    processorList.add(clone);
+                } catch (final CloneNotSupportedException ex) {
+                    throw new RuntimeException(ex);
                 }
-                catch (final CloneNotSupportedException ex) {
-                   throw new RuntimeException(ex);
-                }
-             }
-          }
-          ep.setRecordProcessors(processorList);
-       }
+            }
+            ep.setRecordProcessors(processorList);
+        }
     }
 
     public void stop(final Deployment dep) {
