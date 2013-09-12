@@ -14,6 +14,16 @@ import org.jboss.as.controller.access.constraint.ScopingConstraint;
 public interface AuthorizerConfiguration {
 
     /**
+     * Gets the policy for combining access control permissions when the configuration grants the user
+     * more than one type of permission for a given action. For example, in the standard WildFly access
+     * control system, a user may map to more than one role. This property would control how the permissions
+     * associated with those roles should be combined to make access control decisions.
+     *
+     * @return  the combination policy. Will not be {@code null}.
+     */
+    CombinationPolicy getPermissionCombinationPolicy();
+
+    /**
      * Gets whether the authorizer uses a role-based authorization mechanism.
      *
      * @return {@code true} if a role-based mechanism is used; {@code false} if not

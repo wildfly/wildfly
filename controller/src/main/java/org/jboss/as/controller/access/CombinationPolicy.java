@@ -20,19 +20,31 @@
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
 
-package org.jboss.as.controller.access.permission;
+package org.jboss.as.controller.access;
 
 /**
  * Policy for combining multiple permissions.
  */
 public enum CombinationPolicy {
 
-    /** If multiple permissions with the same action exist, if any of them are implied,
-     * the overall collection is implied. */
-    PERMISSIVE,
-//    /** If multiple permissions with the same action exist, only if all of them are implied is
-//     * the overall collection is implied. */
+    /** If multiple permissions for the same action exist, if any of them allow the action
+     * the action should be allowed. */
+    PERMISSIVE("permissive"),
+//    /** If multiple permissions with the same action exist, the action should be allowed only if all of them
+//     * allow the action. */
 //    RESTRICTIVE,
-    /** Reject any attempt to create a combined set of permissions. */
-    REJECTING
+    /** If multiple permissions for the same action exist an exception should be thrown and the action should not
+     * be allowed. */
+    REJECTING("rejecting");
+
+    private final String toString;
+
+    private CombinationPolicy(String toString) {
+        this.toString = toString;
+    }
+
+    @Override
+    public String toString() {
+        return toString;
+    }
 }

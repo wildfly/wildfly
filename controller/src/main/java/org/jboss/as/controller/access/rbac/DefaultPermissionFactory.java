@@ -54,7 +54,7 @@ import org.jboss.as.controller.access.constraint.SensitiveTargetConstraint;
 import org.jboss.as.controller.access.constraint.SensitiveVaultExpressionConstraint;
 import org.jboss.as.controller.access.constraint.ServerGroupEffectConstraint;
 import org.jboss.as.controller.access.permission.CombinationManagementPermission;
-import org.jboss.as.controller.access.permission.CombinationPolicy;
+import org.jboss.as.controller.access.CombinationPolicy;
 import org.jboss.as.controller.access.permission.JmxPermissionFactory;
 import org.jboss.as.controller.access.permission.ManagementPermission;
 import org.jboss.as.controller.access.permission.ManagementPermissionCollection;
@@ -70,7 +70,6 @@ import org.jboss.as.controller.access.permission.SimpleManagementPermission;
 public class DefaultPermissionFactory implements PermissionFactory, JmxPermissionFactory, AuthorizerConfiguration.ScopedRoleListener {
 
     private static final PermissionCollection NO_PERMISSIONS = new NoPermissionsCollection();
-    private final CombinationPolicy combinationPolicy;
     private final RoleMapper roleMapper;
     private final SortedSet<ConstraintFactory> constraintFactories = new TreeSet<ConstraintFactory>();
     private final Map<String, ManagementPermissionCollection> permissionsByRole = new HashMap<String, ManagementPermissionCollection>();
@@ -79,14 +78,19 @@ public class DefaultPermissionFactory implements PermissionFactory, JmxPermissio
     private PermsHolder permsHolder;
     private boolean rolePermissionsConfigured;
 
-    public DefaultPermissionFactory(CombinationPolicy combinationPolicy, RoleMapper roleMapper, AuthorizerConfiguration authorizerConfiguration) {
-        this(combinationPolicy, roleMapper, getStandardConstraintFactories(), authorizerConfiguration);
+    /**
+     * Creates a new {@code DefaultPermissionFactory}
+     * @param roleMapper  the role mapper. Cannot be {@code null}
+     * @param authorizerConfiguration the configuration for the {@link org.jboss.as.controller.access.Authorizer} that
+     *                                is using this factory. Cannot be {@code null}
+     */
+    public DefaultPermissionFactory(RoleMapper roleMapper, AuthorizerConfiguration authorizerConfiguration) {
+        this(roleMapper, getStandardConstraintFactories(), authorizerConfiguration);
     }
 
     /** Only for testing use, other than the delegation from the primary constructor */
-    DefaultPermissionFactory(CombinationPolicy combinationPolicy, RoleMapper roleMapper,
+    DefaultPermissionFactory(RoleMapper roleMapper,
                              Set<ConstraintFactory> constraintFactories, AuthorizerConfiguration authorizerConfiguration) {
-        this.combinationPolicy = combinationPolicy;
         this.roleMapper = roleMapper;
         this.constraintFactories.addAll(constraintFactories);
         this.authorizerConfiguration = authorizerConfiguration;
@@ -108,7 +112,7 @@ public class DefaultPermissionFactory implements PermissionFactory, JmxPermissio
     }
 
     public boolean isNonFacadeMBeansSensitive() {
-        return authorizerConfiguration != null && authorizerConfiguration.isNonFacadeMBeansSensitive();
+        return authorizerConfiguration.isNonFacadeMBeansSensitive();
     }
 
     private PermissionCollection getUserPermissions(Set<String> roles) {
@@ -117,6 +121,7 @@ public class DefaultPermissionFactory implements PermissionFactory, JmxPermissio
         if (result != null) {
             return result;
         }
+        final CombinationPolicy combinationPolicy = authorizerConfiguration.getPermissionCombinationPolicy();
         ManagementPermissionCollection simple = null;
         Map<Action.ActionEffect, CombinationManagementPermission> combined = null;
         for (String roleName : roles) {

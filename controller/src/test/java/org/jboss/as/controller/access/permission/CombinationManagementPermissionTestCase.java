@@ -30,6 +30,7 @@ import static org.junit.Assert.fail;
 import java.security.Permission;
 
 import org.jboss.as.controller.access.Action;
+import org.jboss.as.controller.access.CombinationPolicy;
 import org.jboss.as.controller.access.constraint.Constraint;
 import org.junit.Test;
 

@@ -2249,10 +2249,12 @@ public class ManagementXml {
         Map<String, Map<String, Set<String>>> configuredAccessConstraints = getConfiguredAccessConstraints(accessAuthorization);
         boolean hasUseRealmRoles = accessAuthorizationDefined && accessAuthorization.hasDefined(AccessAuthorizationResourceDefinition.USE_REALM_ROLES.getName());
         boolean hasProvider = accessAuthorizationDefined && accessAuthorization.hasDefined(AccessAuthorizationResourceDefinition.PROVIDER.getName());
+        boolean hasCombinationPolicy = accessAuthorizationDefined && accessAuthorization.hasDefined(AccessAuthorizationResourceDefinition.PERMISSION_COMBINATION_POLICY.getName());
         ModelNode auditLog = management.hasDefined(ACCESS) ? management.get(ACCESS, AUDIT) : new ModelNode();
 
         if (!hasSecurityRealm && !hasConnection && !hasInterface && !hasServerGroupRoles
-              && !hasHostRoles && !hasRoleMapping && configuredAccessConstraints.size() == 0 && !hasProvider && !hasUseRealmRoles && !auditLog.isDefined()) {
+              && !hasHostRoles && !hasRoleMapping && configuredAccessConstraints.size() == 0
+                && !hasProvider && !hasCombinationPolicy && !hasUseRealmRoles && !auditLog.isDefined()) {
             return;
         }
 
@@ -2291,14 +2293,17 @@ public class ManagementXml {
         Map<String, Map<String, Set<String>>> configuredAccessConstraints = getConfiguredAccessConstraints(accessAuthorization);
         boolean hasUseRealmRoles = accessAuthorization.hasDefined(AccessAuthorizationResourceDefinition.USE_REALM_ROLES.getName());
         boolean hasProvider = accessAuthorization.hasDefined(AccessAuthorizationResourceDefinition.PROVIDER.getName());
+        boolean hasCombinationPolicy = accessAuthorization.hasDefined(AccessAuthorizationResourceDefinition.PERMISSION_COMBINATION_POLICY.getName());
 
-        if (!hasProvider && !hasUseRealmRoles && !hasServerGroupRoles && !hasHostRoles && !hasRoleMapping && configuredAccessConstraints.size() == 0) {
+        if (!hasProvider && !hasUseRealmRoles && !hasCombinationPolicy && !hasServerGroupRoles && !hasHostRoles
+                && !hasRoleMapping && configuredAccessConstraints.size() == 0) {
             return;
         }
 
         writer.writeStartElement(Element.ACCESS_CONTROL.getLocalName());
 
         AccessAuthorizationResourceDefinition.PROVIDER.marshallAsAttribute(accessAuthorization, writer);
+        AccessAuthorizationResourceDefinition.PERMISSION_COMBINATION_POLICY.marshallAsAttribute(accessAuthorization, writer);
 
         if (hasServerGroupRoles) {
             ModelNode serverGroupRoles = accessAuthorization.get(SERVER_GROUP_SCOPED_ROLE);

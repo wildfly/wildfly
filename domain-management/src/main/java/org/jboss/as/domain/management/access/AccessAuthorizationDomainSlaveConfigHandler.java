@@ -30,6 +30,7 @@ import org.jboss.as.controller.OperationStepHandler;
 import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.SimpleOperationDefinitionBuilder;
 import org.jboss.as.controller.access.management.DelegatingConfigurableAuthorizer;
+import org.jboss.as.controller.access.management.WritableAuthorizerConfiguration;
 import org.jboss.as.controller.registry.OperationEntry;
 import org.jboss.as.domain.management._private.DomainManagementResolver;
 import org.jboss.dmr.ModelNode;
@@ -62,11 +63,14 @@ public class AccessAuthorizationDomainSlaveConfigHandler implements OperationSte
         context.addStep(new OperationStepHandler() {
             @Override
             public void execute(OperationContext context, ModelNode operation) throws OperationFailedException {
+                WritableAuthorizerConfiguration authorizerConfiguration = configurableAuthorizer.getWritableAuthorizerConfiguration();
 
                 ModelNode provider = AccessAuthorizationResourceDefinition.PROVIDER.resolveModelAttribute(context, model);
                 AccessAuthorizationProviderWriteAttributeHander.updateAuthorizer(provider, configurableAuthorizer);
                 boolean useRealmRoles = AccessAuthorizationResourceDefinition.USE_REALM_ROLES.resolveModelAttribute(context, model).asBoolean();
-                configurableAuthorizer.getWritableAuthorizerConfiguration().setUseRealmRoles(useRealmRoles);
+                authorizerConfiguration.setUseRealmRoles(useRealmRoles);
+                ModelNode combinationPolicy = AccessAuthorizationResourceDefinition.PERMISSION_COMBINATION_POLICY.resolveModelAttribute(context, model);
+                AccessAuthorizationCombinationPolicyWriteAttributeHandler.updateAuthorizer(combinationPolicy, authorizerConfiguration);
 
                 context.completeStep(OperationContext.RollbackHandler.NOOP_ROLLBACK_HANDLER);
             }

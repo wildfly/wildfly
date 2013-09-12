@@ -103,6 +103,7 @@ public enum Attribute {
     PASSWORD("password"),
     PATH("path"),
     PATTERN("pattern"),
+    PERMISSION_COMBINATION_POLICY("permission-combination-policy"),
     PLAIN_TEXT("plain-text"),
     PORT("port"),
     PORT_OFFSET("port-offset"),
