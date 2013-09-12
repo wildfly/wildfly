@@ -31,11 +31,12 @@ import java.util.TreeSet;
 
 import org.jboss.as.controller.ControllerMessages;
 import org.jboss.as.controller.access.Action;
+import org.jboss.as.controller.access.CombinationPolicy;
 import org.jboss.as.controller.access.constraint.Constraint;
 
 /**
  * A {@link ManagementPermission} that combines multiple underlying permissions according
- * to a {@link CombinationPolicy}.
+ * to a {@link org.jboss.as.controller.access.CombinationPolicy}.
  *
  * @author Brian Stansberry (c) 2013 Red Hat Inc.
  */

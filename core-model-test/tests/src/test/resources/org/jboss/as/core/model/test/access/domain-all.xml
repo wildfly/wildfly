@@ -1,7 +1,7 @@
 <?xml version='1.0' encoding='UTF-8'?>
 <domain xmlns="urn:jboss:domain:2.0">
     <management>
-        <access-control>
+        <access-control provider="rbac" permission-combination-policy="rejecting">
             <server-group-scoped-roles>
                 <role name="a" base-role="Deployer">
                     <server-group name="main-server-group"/>

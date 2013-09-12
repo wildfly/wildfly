@@ -43,6 +43,7 @@ import org.jboss.as.controller.SimpleAttributeDefinition;
 import org.jboss.as.controller.SimpleAttributeDefinitionBuilder;
 import org.jboss.as.controller.SimpleListAttributeDefinition;
 import org.jboss.as.controller.SimpleResourceDefinition;
+import org.jboss.as.controller.access.CombinationPolicy;
 import org.jboss.as.controller.access.management.DelegatingConfigurableAuthorizer;
 import org.jboss.as.controller.access.management.WritableAuthorizerConfiguration;
 import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
@@ -95,6 +96,12 @@ public class AccessAuthorizationResourceDefinition extends SimpleResourceDefinit
             .setWrapXmlList(false)
             .build();
 
+    public static final SimpleAttributeDefinition PERMISSION_COMBINATION_POLICY =
+            new SimpleAttributeDefinitionBuilder(ModelDescriptionConstants.PERMISSION_COMBINATION_POLICY, ModelType.STRING, true)
+            .setDefaultValue(new ModelNode(CombinationPolicy.PERMISSIVE.toString()))
+            .setValidator(new EnumValidator<CombinationPolicy>(CombinationPolicy.class, true, false))
+            .build();
+
     public static final SimpleAttributeDefinition PROVIDER = new SimpleAttributeDefinitionBuilder(ModelDescriptionConstants.PROVIDER, ModelType.STRING, true)
             .setDefaultValue(new ModelNode(Provider.SIMPLE.toString()))
             .setValidator(new EnumValidator<Provider>(Provider.class, true, false))
@@ -104,7 +111,7 @@ public class AccessAuthorizationResourceDefinition extends SimpleResourceDefinit
             .setDefaultValue(new ModelNode(false))
             .setAllowExpression(true).build();
 
-    public static final List<AttributeDefinition> ATTRIBUTES = Arrays.<AttributeDefinition>asList(PROVIDER, USE_REALM_ROLES);
+    public static final List<AttributeDefinition> ATTRIBUTES = Arrays.<AttributeDefinition>asList(PROVIDER, USE_REALM_ROLES, PERMISSION_COMBINATION_POLICY);
 
     public static AccessAuthorizationResourceDefinition forDomain(DelegatingConfigurableAuthorizer configurableAuthorizer) {
         return new AccessAuthorizationResourceDefinition(configurableAuthorizer, true, false);
@@ -148,6 +155,8 @@ public class AccessAuthorizationResourceDefinition extends SimpleResourceDefinit
             WritableAuthorizerConfiguration authorizerConfiguration = configurableAuthorizer.getWritableAuthorizerConfiguration();
             resourceRegistration.registerReadWriteAttribute(USE_REALM_ROLES, null, new AccessAuthorizationUseRealmRolesWriteAttributeHandler(authorizerConfiguration));
             resourceRegistration.registerReadWriteAttribute(PROVIDER, null, new AccessAuthorizationProviderWriteAttributeHander(configurableAuthorizer));
+            resourceRegistration.registerReadWriteAttribute(PERMISSION_COMBINATION_POLICY, null,
+                    new AccessAuthorizationCombinationPolicyWriteAttributeHandler(authorizerConfiguration));
         }
     }
 

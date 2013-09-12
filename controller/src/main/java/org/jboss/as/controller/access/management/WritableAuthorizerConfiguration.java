@@ -34,6 +34,7 @@ import java.util.WeakHashMap;
 import org.jboss.as.controller.access.Authorizer;
 import org.jboss.as.controller.access.AuthorizerConfiguration;
 import org.jboss.as.controller.access.Caller;
+import org.jboss.as.controller.access.CombinationPolicy;
 import org.jboss.as.controller.access.rbac.StandardRBACAuthorizer;
 
 /**
@@ -46,6 +47,7 @@ public class WritableAuthorizerConfiguration implements AuthorizerConfiguration 
 
     private volatile Map<String, RoleMappingImpl> roleMappings = new HashMap<String, RoleMappingImpl>();
     private final Map<Object, RoleMappingImpl> removedRoles = new WeakHashMap<Object, RoleMappingImpl>();
+    private volatile CombinationPolicy combinationPolicy = CombinationPolicy.PERMISSIVE;
     private volatile boolean useRealmRoles;
     private volatile boolean nonFacadeMBeansSensitive;
     private volatile Authorizer.AuthorizerDescription authorizerDescription;
@@ -88,8 +90,18 @@ public class WritableAuthorizerConfiguration implements AuthorizerConfiguration 
     }
 
     @Override
+    public CombinationPolicy getPermissionCombinationPolicy() {
+        return combinationPolicy;
+    }
+
+    @Override
     public boolean isRoleBased() {
         return authorizerDescription.isRoleBased();
+    }
+
+    @Override
+    public boolean isMapUsingRealmRoles() {
+        return useRealmRoles;
     }
 
     @Override
@@ -227,8 +239,9 @@ public class WritableAuthorizerConfiguration implements AuthorizerConfiguration 
         return new MappingPrincipalImpl(principalType, name, realm);
     }
 
-    public boolean isMapUsingRealmRoles() {
-        return useRealmRoles;
+    public void setPermissionCombinationPolicy(CombinationPolicy combinationPolicy) {
+        assert combinationPolicy != null : "combinationPolicy is null";
+        this.combinationPolicy = combinationPolicy;
     }
 
     public void setUseRealmRoles(final boolean useRealmRoles) {

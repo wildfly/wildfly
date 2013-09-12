@@ -1165,7 +1165,12 @@ public class DomainXml extends CommonXml {
                     ModelNode op = Util.getWriteAttributeOperation(accAuthzAddr, AccessAuthorizationResourceDefinition.PROVIDER.getName(), provider);
 
                     list.add(op);
-                } else {
+                } else if (attribute == Attribute.PERMISSION_COMBINATION_POLICY) {
+                    ModelNode provider = AccessAuthorizationResourceDefinition.PERMISSION_COMBINATION_POLICY.parse(value, reader);
+                    ModelNode op = Util.getWriteAttributeOperation(accAuthzAddr, AccessAuthorizationResourceDefinition.PERMISSION_COMBINATION_POLICY.getName(), provider);
+
+                    list.add(op);
+                } else{
                     throw unexpectedAttribute(reader, i);
                 }
             }

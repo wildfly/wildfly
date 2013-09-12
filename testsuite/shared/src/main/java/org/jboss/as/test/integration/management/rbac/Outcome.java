@@ -33,5 +33,7 @@ public enum Outcome {
     /** Request failed with a failure description indicating it authorization failed */
     UNAUTHORIZED,
     /** Request failed with a failure description indicating the target resource was not found */
-    HIDDEN
+    HIDDEN,
+    /** Request failed with some other failure description */
+    FAILED
 }

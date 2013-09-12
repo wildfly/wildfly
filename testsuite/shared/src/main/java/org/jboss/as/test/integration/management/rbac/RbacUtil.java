@@ -95,7 +95,7 @@ public class RbacUtil {
                     fail(result.get(FAILURE_DESCRIPTION).asString());
                 }
                 break;
-            case UNAUTHORIZED:
+            case UNAUTHORIZED: {
                 if (!FAILED.equals(outcome)) {
                     fail("Didn't fail: " + result.asString());
                 }
@@ -103,7 +103,8 @@ public class RbacUtil {
                     fail("Incorrect failure type: " + result.asString());
                 }
                 break;
-            case HIDDEN:
+            }
+            case HIDDEN: {
                 if (!FAILED.equals(outcome)) {
                     fail("Didn't fail: " + result.asString());
                 }
@@ -112,6 +113,18 @@ public class RbacUtil {
                     fail("Incorrect failure type: " + result.asString());
                 }
                 break;
+            }
+            case FAILED: {
+                if (!FAILED.equals(outcome)) {
+                    fail("Didn't fail: " + result.asString());
+                }
+                String failureDesc = result.get(FAILURE_DESCRIPTION).asString();
+                if (failureDesc.contains("14807") || failureDesc.contains("14883")
+                        || failureDesc.contains("13456")) {
+                    fail("Incorrect failure type: " + result.asString());
+                }
+                break;
+            }
             default:
                 throw new IllegalStateException();
         }
