@@ -35,12 +35,15 @@ import org.jboss.as.server.deployment.DeploymentPhaseContext;
 import org.jboss.as.server.deployment.DeploymentUnit;
 import org.jboss.as.server.deployment.DeploymentUnitProcessingException;
 import org.jboss.as.server.deployment.DeploymentUnitProcessor;
+import org.jboss.as.server.deployment.module.ResourceRoot;
 import org.jboss.as.txn.service.TxnServices;
 import org.jboss.modules.Module;
 import org.jboss.msc.inject.CastingInjector;
 import org.jboss.msc.service.ServiceBuilder;
 import org.jboss.msc.service.ServiceTarget;
 import org.jboss.msc.value.ImmediateValue;
+import org.jboss.vfs.VirtualFile;
+import org.wildfly.extension.batch._private.BatchLogger;
 import org.wildfly.extension.batch.services.BatchServiceNames;
 import org.wildfly.jberet.BatchEnvironmentFactory;
 import org.wildfly.jberet.services.BatchEnvironmentService;
@@ -54,29 +57,38 @@ public class BatchEnvironmentProcessor implements DeploymentUnitProcessor {
     public void deploy(DeploymentPhaseContext phaseContext) throws DeploymentUnitProcessingException {
         final DeploymentUnit deploymentUnit = phaseContext.getDeploymentUnit();
         // Can't use batch without CDI
-        if (deploymentUnit.hasAttachment(Attachments.MODULE) && WeldDeploymentMarker.isWeldDeployment(deploymentUnit)) {
-            // Get the class loader
-            final Module module = deploymentUnit.getAttachment(Attachments.MODULE);
-            final ClassLoader moduleClassLoader = module.getClassLoader();
+        if (deploymentUnit.hasAttachment(Attachments.MODULE) && deploymentUnit.hasAttachment(Attachments.DEPLOYMENT_ROOT)) {
+            if (WeldDeploymentMarker.isWeldDeployment(deploymentUnit)) {
+                // Get the class loader
+                final Module module = deploymentUnit.getAttachment(Attachments.MODULE);
+                final ClassLoader moduleClassLoader = module.getClassLoader();
 
-            final ServiceTarget serviceTarget = phaseContext.getServiceTarget();
+                final ServiceTarget serviceTarget = phaseContext.getServiceTarget();
 
-            final BatchEnvironmentService service = new BatchEnvironmentService();
-            // Add the service to the factory
-            BatchEnvironmentFactory.getInstance().add(moduleClassLoader, service);
+                final BatchEnvironmentService service = new BatchEnvironmentService();
+                // Add the service to the factory
+                BatchEnvironmentFactory.getInstance().add(moduleClassLoader, service);
 
-            final ServiceBuilder<BatchEnvironment> serviceBuilder = serviceTarget.addService(BatchServiceNames.batchDeploymentServiceName(deploymentUnit), service);
-            serviceBuilder.addDependency(BatchServiceNames.BATCH_SERVICE_NAME, Properties.class, service.getPropertiesInjector());
-            serviceBuilder.addDependency(TxnServices.JBOSS_TXN_USER_TRANSACTION, UserTransaction.class, service.getUserTransactionInjector());
-            serviceBuilder.addDependency(ConcurrentServiceNames.DEFAULT_MANAGED_EXECUTOR_SERVICE_SERVICE_NAME, ExecutorService.class, service.getExecutorServiceInjector());
+                final ServiceBuilder<BatchEnvironment> serviceBuilder = serviceTarget.addService(BatchServiceNames.batchDeploymentServiceName(deploymentUnit), service);
+                serviceBuilder.addDependency(BatchServiceNames.BATCH_SERVICE_NAME, Properties.class, service.getPropertiesInjector());
+                serviceBuilder.addDependency(TxnServices.JBOSS_TXN_USER_TRANSACTION, UserTransaction.class, service.getUserTransactionInjector());
+                serviceBuilder.addDependency(ConcurrentServiceNames.DEFAULT_MANAGED_EXECUTOR_SERVICE_SERVICE_NAME, ExecutorService.class, service.getExecutorServiceInjector());
 
-            // Set the class loader
-            service.getClassLoaderInjector().setValue(new ImmediateValue<ClassLoader>(moduleClassLoader));
+                // Set the class loader
+                service.getClassLoaderInjector().setValue(new ImmediateValue<ClassLoader>(moduleClassLoader));
 
-            // Add the bean manager
-            serviceBuilder.addDependency(BatchServiceNames.beanManagerServiceName(deploymentUnit), new CastingInjector<BeanManager>(service.getBeanManagerInjector(), BeanManager.class));
+                // Add the bean manager
+                serviceBuilder.addDependency(BatchServiceNames.beanManagerServiceName(deploymentUnit), new CastingInjector<BeanManager>(service.getBeanManagerInjector(), BeanManager.class));
 
-            serviceBuilder.install();
+                serviceBuilder.install();
+            } else {
+                final ResourceRoot root = deploymentUnit.getAttachment(Attachments.DEPLOYMENT_ROOT);
+                final VirtualFile dir = root.getRoot().getChild("META-INF/batch-jobs");
+                if (dir.exists() && !dir.getChildren().isEmpty()) {
+                    BatchLogger.LOGGER.cdiNotEnabled();
+                }
+
+            }
         }
         // TODO (jrp) could produce NPE with the BatchEnvironment if the MODULE wasn't attached
     }
@@ -91,5 +103,4 @@ public class BatchEnvironmentProcessor implements DeploymentUnitProcessor {
             BatchEnvironmentFactory.getInstance().remove(moduleClassLoader);
         }
     }
-
 }
