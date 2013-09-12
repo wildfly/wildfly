@@ -2892,6 +2892,7 @@
             <xs:element name="constraints" type="constraintsType" minOccurs="0"/>
         </xs:sequence>
         <xs:attribute name="provider" type="access-control-providerType" use="optional" default="simple"/>
+        <xs:attribute name="permission-combination-policy" type="permission-combination-policyType" use="optional" default="permissive"/>
     </xs:complexType>
 
     <xs:simpleType name="access-control-providerType">
@@ -2911,6 +2912,42 @@
                     <xs:documentation>
                         <![CDATA[
                         WildFly's standard Role Based Access Control implementation.
+                        ]]>
+                    </xs:documentation>
+                </xs:annotation>
+            </xs:enumeration>
+        </xs:restriction>
+    </xs:simpleType>
+
+    <xs:simpleType name="permission-combination-policyType">
+        <xs:annotation>
+            <xs:documentation>
+                <![CDATA[
+                  The policy for combining access control permissions when the configuration grants the user
+                  more than one type of permission for a given action. For example, in the standard WildFly role based
+                  access control system, a user may map to more than one role. This attribute would control how the permissions
+                   associated with those roles should be combined to make access control decisions.
+                        ]]>
+            </xs:documentation>
+        </xs:annotation>
+        <xs:restriction base="xs:token">
+            <xs:enumeration value="permissive">
+                <xs:annotation>
+                    <xs:documentation>
+                        <![CDATA[
+                        If multiple permissions for the same action exist, if any of them allow the action,
+                        the action is allowed.
+                        ]]>
+                    </xs:documentation>
+                </xs:annotation>
+            </xs:enumeration>
+            <xs:enumeration value="rejecting">
+                <xs:annotation>
+                    <xs:documentation>
+                        <![CDATA[
+                        If multiple permissions for the same action exist an exception should be thrown and the action
+                        should not be allowed. This value indicates that creating multiple permissions (e.g. by
+                        mapping a user to multiple roles) should be treated as a configuration error.
                         ]]>
                     </xs:documentation>
                 </xs:annotation>

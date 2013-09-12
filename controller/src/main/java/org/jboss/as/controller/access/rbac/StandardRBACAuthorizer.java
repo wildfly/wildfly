@@ -28,7 +28,6 @@ import java.util.Set;
 import org.jboss.as.controller.access.AuthorizerConfiguration;
 import org.jboss.as.controller.access.Caller;
 import org.jboss.as.controller.access.Environment;
-import org.jboss.as.controller.access.permission.CombinationPolicy;
 import org.jboss.as.controller.access.permission.ManagementPermissionAuthorizer;
 
 /**
@@ -72,7 +71,7 @@ public final class StandardRBACAuthorizer extends ManagementPermissionAuthorizer
 
     public static StandardRBACAuthorizer create(AuthorizerConfiguration configuration, final RoleMapper roleMapper) {
         final RunAsRoleMapper runAsRoleMapper = new RunAsRoleMapper(roleMapper);
-        final DefaultPermissionFactory permissionFactory = new DefaultPermissionFactory(CombinationPolicy.PERMISSIVE,
+        final DefaultPermissionFactory permissionFactory = new DefaultPermissionFactory(
                 runAsRoleMapper, configuration);
         return new StandardRBACAuthorizer(configuration, permissionFactory, runAsRoleMapper);
     }

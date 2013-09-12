@@ -39,14 +39,16 @@ import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.ProcessType;
 import org.jboss.as.controller.SimpleResourceDefinition;
 import org.jboss.as.controller.access.Action;
+import org.jboss.as.controller.access.AuthorizerConfiguration;
 import org.jboss.as.controller.access.Caller;
+import org.jboss.as.controller.access.CombinationPolicy;
 import org.jboss.as.controller.access.Environment;
 import org.jboss.as.controller.access.TargetAttribute;
 import org.jboss.as.controller.access.TargetResource;
 import org.jboss.as.controller.access.constraint.Constraint;
 import org.jboss.as.controller.access.constraint.ConstraintFactory;
 import org.jboss.as.controller.access.management.AccessConstraintDefinition;
-import org.jboss.as.controller.access.permission.CombinationPolicy;
+import org.jboss.as.controller.access.management.WritableAuthorizerConfiguration;
 import org.jboss.as.controller.descriptions.NonResolvingResourceDescriptionResolver;
 import org.jboss.as.controller.registry.ManagementResourceRegistration;
 import org.jboss.dmr.ModelNode;
@@ -65,6 +67,16 @@ public class DefaultPermissionFactoryTestCase {
         }
     });
 
+    private static final AuthorizerConfiguration PERMISSIVE;
+    private static final AuthorizerConfiguration REJECTING;
+
+    static {
+        PERMISSIVE = new WritableAuthorizerConfiguration(StandardRBACAuthorizer.AUTHORIZER_DESCRIPTION);
+        WritableAuthorizerConfiguration rejecting = new WritableAuthorizerConfiguration(StandardRBACAuthorizer.AUTHORIZER_DESCRIPTION);
+        rejecting.setPermissionCombinationPolicy(CombinationPolicy.REJECTING);
+        REJECTING = rejecting;
+    }
+
     private Caller caller;
     private Environment environment;
 
@@ -78,88 +90,88 @@ public class DefaultPermissionFactoryTestCase {
 
     @Test
     public void testSingleRoleRejectingCombinationPolicy() {
-        testResourceSingleRole(CombinationPolicy.REJECTING, StandardRole.MONITOR, StandardRole.MONITOR, true);
-        testResourceSingleRole(CombinationPolicy.REJECTING, StandardRole.MONITOR, StandardRole.OPERATOR, false);
+        testResourceSingleRole(REJECTING, StandardRole.MONITOR, StandardRole.MONITOR, true);
+        testResourceSingleRole(REJECTING, StandardRole.MONITOR, StandardRole.OPERATOR, false);
 
-        testAttributeSingleRole(CombinationPolicy.REJECTING, StandardRole.MONITOR, StandardRole.MONITOR, true);
-        testAttributeSingleRole(CombinationPolicy.REJECTING, StandardRole.MONITOR, StandardRole.OPERATOR, false);
+        testAttributeSingleRole(REJECTING, StandardRole.MONITOR, StandardRole.MONITOR, true);
+        testAttributeSingleRole(REJECTING, StandardRole.MONITOR, StandardRole.OPERATOR, false);
     }
 
     @Test
     public void testSingleRolePermissiveCombinationPolicy() {
-        testResourceSingleRole(CombinationPolicy.PERMISSIVE, StandardRole.MONITOR, StandardRole.MONITOR, true);
-        testResourceSingleRole(CombinationPolicy.PERMISSIVE, StandardRole.MONITOR, StandardRole.OPERATOR, false);
+        testResourceSingleRole(PERMISSIVE, StandardRole.MONITOR, StandardRole.MONITOR, true);
+        testResourceSingleRole(PERMISSIVE, StandardRole.MONITOR, StandardRole.OPERATOR, false);
 
-        testAttributeSingleRole(CombinationPolicy.PERMISSIVE, StandardRole.MONITOR, StandardRole.MONITOR, true);
-        testAttributeSingleRole(CombinationPolicy.PERMISSIVE, StandardRole.MONITOR, StandardRole.OPERATOR, false);
+        testAttributeSingleRole(PERMISSIVE, StandardRole.MONITOR, StandardRole.MONITOR, true);
+        testAttributeSingleRole(PERMISSIVE, StandardRole.MONITOR, StandardRole.OPERATOR, false);
     }
 
     @Test
     public void testSingleUserRoleMoreAllowedRoles() {
-        testResource(CombinationPolicy.PERMISSIVE, new StandardRole[] {StandardRole.MONITOR},
+        testResource(PERMISSIVE, new StandardRole[] {StandardRole.MONITOR},
                 new StandardRole[] {StandardRole.MONITOR, StandardRole.ADMINISTRATOR}, true);
-        testResource(CombinationPolicy.PERMISSIVE, new StandardRole[] {StandardRole.MONITOR},
+        testResource(PERMISSIVE, new StandardRole[] {StandardRole.MONITOR},
                 new StandardRole[] {StandardRole.OPERATOR, StandardRole.ADMINISTRATOR}, false);
 
-        testAttribute(CombinationPolicy.PERMISSIVE, new StandardRole[]{StandardRole.MONITOR},
+        testAttribute(PERMISSIVE, new StandardRole[]{StandardRole.MONITOR},
                 new StandardRole[]{StandardRole.MONITOR, StandardRole.ADMINISTRATOR}, true);
-        testAttribute(CombinationPolicy.PERMISSIVE, new StandardRole[]{StandardRole.MONITOR},
+        testAttribute(PERMISSIVE, new StandardRole[]{StandardRole.MONITOR},
                 new StandardRole[]{StandardRole.OPERATOR, StandardRole.ADMINISTRATOR}, false);
     }
 
     @Test
     public void testMoreUserRolesSingleAllowedRole() {
-        testResource(CombinationPolicy.PERMISSIVE, new StandardRole[] {StandardRole.MONITOR, StandardRole.OPERATOR},
+        testResource(PERMISSIVE, new StandardRole[] {StandardRole.MONITOR, StandardRole.OPERATOR},
                 new StandardRole[] {StandardRole.MONITOR}, true);
-        testResource(CombinationPolicy.PERMISSIVE, new StandardRole[] {StandardRole.MONITOR, StandardRole.OPERATOR},
+        testResource(PERMISSIVE, new StandardRole[] {StandardRole.MONITOR, StandardRole.OPERATOR},
                 new StandardRole[] {StandardRole.OPERATOR}, true);
-        testResource(CombinationPolicy.PERMISSIVE, new StandardRole[] {StandardRole.MONITOR, StandardRole.OPERATOR},
+        testResource(PERMISSIVE, new StandardRole[] {StandardRole.MONITOR, StandardRole.OPERATOR},
                 new StandardRole[] {StandardRole.ADMINISTRATOR}, false);
 
-        testAttribute(CombinationPolicy.PERMISSIVE, new StandardRole[]{StandardRole.MONITOR, StandardRole.OPERATOR},
+        testAttribute(PERMISSIVE, new StandardRole[]{StandardRole.MONITOR, StandardRole.OPERATOR},
                 new StandardRole[]{StandardRole.MONITOR}, true);
-        testAttribute(CombinationPolicy.PERMISSIVE, new StandardRole[]{StandardRole.MONITOR, StandardRole.OPERATOR},
+        testAttribute(PERMISSIVE, new StandardRole[]{StandardRole.MONITOR, StandardRole.OPERATOR},
                 new StandardRole[]{StandardRole.OPERATOR}, true);
-        testAttribute(CombinationPolicy.PERMISSIVE, new StandardRole[]{StandardRole.MONITOR, StandardRole.OPERATOR},
+        testAttribute(PERMISSIVE, new StandardRole[]{StandardRole.MONITOR, StandardRole.OPERATOR},
                 new StandardRole[]{StandardRole.ADMINISTRATOR}, false);
     }
 
     @Test
     public void testMoreUserRolesMoreAllowedRoles() {
-        testResource(CombinationPolicy.PERMISSIVE, new StandardRole[] {StandardRole.MONITOR, StandardRole.OPERATOR},
+        testResource(PERMISSIVE, new StandardRole[] {StandardRole.MONITOR, StandardRole.OPERATOR},
                 new StandardRole[] {StandardRole.MONITOR, StandardRole.OPERATOR}, true);
-        testResource(CombinationPolicy.PERMISSIVE, new StandardRole[] {StandardRole.MONITOR, StandardRole.OPERATOR},
+        testResource(PERMISSIVE, new StandardRole[] {StandardRole.MONITOR, StandardRole.OPERATOR},
                 new StandardRole[] {StandardRole.OPERATOR, StandardRole.ADMINISTRATOR}, true);
-        testResource(CombinationPolicy.PERMISSIVE, new StandardRole[] {StandardRole.MONITOR, StandardRole.OPERATOR},
+        testResource(PERMISSIVE, new StandardRole[] {StandardRole.MONITOR, StandardRole.OPERATOR},
                 new StandardRole[] {StandardRole.ADMINISTRATOR, StandardRole.AUDITOR}, false);
 
-        testAttribute(CombinationPolicy.PERMISSIVE, new StandardRole[] {StandardRole.MONITOR, StandardRole.OPERATOR},
+        testAttribute(PERMISSIVE, new StandardRole[] {StandardRole.MONITOR, StandardRole.OPERATOR},
                 new StandardRole[] {StandardRole.MONITOR, StandardRole.OPERATOR}, true);
-        testAttribute(CombinationPolicy.PERMISSIVE, new StandardRole[] {StandardRole.MONITOR, StandardRole.OPERATOR},
+        testAttribute(PERMISSIVE, new StandardRole[] {StandardRole.MONITOR, StandardRole.OPERATOR},
                 new StandardRole[] {StandardRole.OPERATOR, StandardRole.ADMINISTRATOR}, true);
-        testAttribute(CombinationPolicy.PERMISSIVE, new StandardRole[] {StandardRole.MONITOR, StandardRole.OPERATOR},
+        testAttribute(PERMISSIVE, new StandardRole[] {StandardRole.MONITOR, StandardRole.OPERATOR},
                 new StandardRole[] {StandardRole.ADMINISTRATOR, StandardRole.AUDITOR}, false);
     }
 
-    private void testResourceSingleRole(CombinationPolicy combinationPolicy, StandardRole userRole, StandardRole allowedRole,
+    private void testResourceSingleRole(AuthorizerConfiguration authorizerConfiguration, StandardRole userRole, StandardRole allowedRole,
                                         boolean accessExpectation) {
-        testResource(combinationPolicy, new StandardRole[] {userRole}, new StandardRole[] {allowedRole}, accessExpectation);
+        testResource(authorizerConfiguration, new StandardRole[] {userRole}, new StandardRole[] {allowedRole}, accessExpectation);
     }
 
-    private void testAttributeSingleRole(CombinationPolicy combinationPolicy, StandardRole userRole, StandardRole allowedRole,
+    private void testAttributeSingleRole(AuthorizerConfiguration authorizerConfiguration, StandardRole userRole, StandardRole allowedRole,
                                          boolean accessExpectation) {
-        testAttribute(combinationPolicy, new StandardRole[] {userRole}, new StandardRole[] {allowedRole}, accessExpectation);
+        testAttribute(authorizerConfiguration, new StandardRole[] {userRole}, new StandardRole[] {allowedRole}, accessExpectation);
     }
 
-    private void testResource(CombinationPolicy combinationPolicy,
+    private void testResource(AuthorizerConfiguration authorizerConfiguration,
                               StandardRole[] userRoles,
                               StandardRole[] allowedRoles,
                               boolean accessExpectation) {
 
         ConstraintFactory constraintFactory = new TestConstraintFactory(allowedRoles);
         TestRoleMapper roleMapper = new TestRoleMapper(userRoles);
-        DefaultPermissionFactory permissionFactory = new DefaultPermissionFactory(combinationPolicy, roleMapper,
-                Collections.singleton(constraintFactory), null);
+        DefaultPermissionFactory permissionFactory = new DefaultPermissionFactory(roleMapper,
+                Collections.singleton(constraintFactory), authorizerConfiguration);
 
         Action action = new Action(null, null, EnumSet.of(Action.ActionEffect.ADDRESS));
         TargetResource targetResource = TargetResource.forStandalone(PathAddress.EMPTY_ADDRESS, ROOT_RR, null);
@@ -172,15 +184,15 @@ public class DefaultPermissionFactoryTestCase {
         }
     }
 
-    private void testAttribute(CombinationPolicy combinationPolicy,
+    private void testAttribute(AuthorizerConfiguration authorizerConfiguration,
                                StandardRole[] userRoles,
                                StandardRole[] allowedRoles,
                                boolean accessExpectation) {
 
         ConstraintFactory constraintFactory = new TestConstraintFactory(allowedRoles);
         TestRoleMapper roleMapper = new TestRoleMapper(userRoles);
-        DefaultPermissionFactory permissionFactory = new DefaultPermissionFactory(combinationPolicy, roleMapper,
-                Collections.singleton(constraintFactory), null);
+        DefaultPermissionFactory permissionFactory = new DefaultPermissionFactory(roleMapper,
+                Collections.singleton(constraintFactory), authorizerConfiguration);
 
         Action action = new Action(null, null, EnumSet.of(Action.ActionEffect.ADDRESS));
         TargetResource targetResource = TargetResource.forStandalone(PathAddress.EMPTY_ADDRESS, ROOT_RR, null);
@@ -202,31 +214,31 @@ public class DefaultPermissionFactoryTestCase {
 
         DefaultPermissionFactory permissionFactory = null;
         try {
-            permissionFactory = new DefaultPermissionFactory(CombinationPolicy.REJECTING, new TestRoleMapper(),
-                    Collections.<ConstraintFactory>emptySet(), null);
+            permissionFactory = new DefaultPermissionFactory(new TestRoleMapper(),
+                    Collections.<ConstraintFactory>emptySet(), REJECTING);
             permissionFactory.getUserPermissions(caller, environment, action, targetResource);
         } catch (Exception e) {
             fail();
         }
 
         try {
-            permissionFactory = new DefaultPermissionFactory(CombinationPolicy.REJECTING,
-                    new TestRoleMapper(StandardRole.MONITOR), Collections.<ConstraintFactory>emptySet(), null);
+            permissionFactory = new DefaultPermissionFactory(
+                    new TestRoleMapper(StandardRole.MONITOR), Collections.<ConstraintFactory>emptySet(), REJECTING);
             permissionFactory.getUserPermissions(caller, environment, action, targetResource);
         } catch (Exception e) {
             fail();
         }
 
-        permissionFactory = new DefaultPermissionFactory(CombinationPolicy.REJECTING,
-                new TestRoleMapper(StandardRole.MONITOR, StandardRole.DEPLOYER), null);
+        permissionFactory = new DefaultPermissionFactory(
+                new TestRoleMapper(StandardRole.MONITOR, StandardRole.DEPLOYER), REJECTING);
         try {
             permissionFactory.getUserPermissions(caller, environment, action, targetResource);
             fail();
         } catch (Exception e) { /* expected */ }
 
-        permissionFactory = new DefaultPermissionFactory(CombinationPolicy.REJECTING,
+        permissionFactory = new DefaultPermissionFactory(
                 new TestRoleMapper(StandardRole.MONITOR, StandardRole.DEPLOYER, StandardRole.AUDITOR),
-                Collections.<ConstraintFactory>emptySet(), null);
+                Collections.<ConstraintFactory>emptySet(), REJECTING);
         try {
             permissionFactory.getUserPermissions(caller, environment, action, targetResource);
             fail();
