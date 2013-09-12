@@ -19,31 +19,31 @@
  * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
-
 package org.jboss.as.xts.jandex;
 
 import org.jboss.as.server.deployment.DeploymentUnit;
 import org.jboss.as.xts.XTSException;
-import org.jboss.jandex.AnnotationInstance;
 
 /**
- * @author paul.robinson@redhat.com, 2012-02-06
+ * @author <a href="mailto:gytis@redhat.com">Gytis Trikleris</a>
  */
 public class OldCompensatableAnnotation {
 
-    public static final String COMPENSATABLE_ANNOTATION = "org.jboss.narayana.txframework.api.annotation.transaction.Compensatable";
+    public static final String[] COMPENSATABLE_ANNOTATIONS = {
+            "org.jboss.narayana.txframework.api.annotation.transaction.Compensatable"
+    };
 
     private OldCompensatableAnnotation() {
     }
 
-
-    public static OldCompensatableAnnotation build(DeploymentUnit unit, String endpoint) throws XTSException {
-
-        final AnnotationInstance annotationInstance = JandexHelper.getAnnotation(unit, endpoint, COMPENSATABLE_ANNOTATION);
-        if (annotationInstance == null) {
-            return null;
+    public static OldCompensatableAnnotation build(final DeploymentUnit unit, final String endpoint) throws XTSException {
+        for (final String annotation : COMPENSATABLE_ANNOTATIONS) {
+            if (JandexHelper.getAnnotation(unit, endpoint, annotation) != null) {
+                return new OldCompensatableAnnotation();
+            }
         }
 
-        return new OldCompensatableAnnotation();
+        return null;
     }
+
 }

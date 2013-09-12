@@ -23,28 +23,38 @@ package org.jboss.as.xts.jandex;
 
 import org.jboss.as.server.deployment.DeploymentUnit;
 import org.jboss.as.xts.XTSException;
+import org.jboss.jandex.AnnotationInstance;
 
 /**
  * @author <a href="mailto:gytis@redhat.com">Gytis Trikleris</a>
- * @author <a href="mailto:paul.robinson@redhat.com">Paul Robinson</a>
  */
-public class TransactionalAnnotation {
+public class OldTransactionalAnnotation {
+
+    private final BridgeType bridgeType;
 
     public static final String[] TRANSACTIONAL_ANNOTATIONS = {
-            "javax.ejb.TransactionAttribute",
-            "javax.transaction.Transactional",
+            "org.jboss.narayana.txframework.api.annotation.transaction.Transactional",
     };
 
-    private TransactionalAnnotation() {
+    private OldTransactionalAnnotation(final BridgeType bridgeType) {
+        this.bridgeType = bridgeType;
     }
 
-    public static TransactionalAnnotation build(DeploymentUnit unit, String endpoint) throws XTSException {
+    public static OldTransactionalAnnotation build(final DeploymentUnit unit, final String endpoint) throws XTSException {
         for (final String annotation : TRANSACTIONAL_ANNOTATIONS) {
-            if (JandexHelper.getAnnotation(unit, endpoint, annotation) != null) {
-                return new TransactionalAnnotation();
+            final AnnotationInstance annotationInstance = JandexHelper.getAnnotation(unit, endpoint, annotation);
+
+            if (annotationInstance != null) {
+                final BridgeType bridgeType = BridgeType.build(annotationInstance);
+                return new OldTransactionalAnnotation(bridgeType);
             }
         }
 
         return null;
     }
+
+    public BridgeType getBridgeType() {
+        return bridgeType;
+    }
+
 }

@@ -19,31 +19,36 @@
  * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
-
 package org.jboss.as.xts.jandex;
 
 import org.jboss.as.server.deployment.DeploymentUnit;
 import org.jboss.as.xts.XTSException;
-import org.jboss.jandex.AnnotationInstance;
 
 /**
- * @author paul.robinson@redhat.com, 2012-02-06
+ * @author <a href="mailto:gytis@redhat.com">Gytis Trikleris</a>
+ * @author <a href="mailto:paul.robinson@redhat.com">Paul Robinson</a>
  */
 public class CompensatableAnnotation {
 
-    public static final String COMPENSATABLE_ANNOTATION = "org.jboss.narayana.compensations.api.Compensatable";
+    public static final String[] COMPENSATABLE_ANNOTATIONS = {
+            "org.jboss.narayana.compensations.api.Compensatable",
+            "org.jboss.narayana.compensations.api.CancelOnFailure",
+            "org.jboss.narayana.compensations.api.CompensationScoped",
+            "org.jboss.narayana.compensations.api.TxCompensate",
+            "org.jboss.narayana.compensations.api.TxConfirm",
+            "org.jboss.narayana.compensations.api.TxLogged"
+    };
 
     private CompensatableAnnotation() {
     }
 
-
-    public static CompensatableAnnotation build(DeploymentUnit unit, String endpoint) throws XTSException {
-
-        final AnnotationInstance annotationInstance = JandexHelper.getAnnotation(unit, endpoint, COMPENSATABLE_ANNOTATION);
-        if (annotationInstance == null) {
-            return null;
+    public static CompensatableAnnotation build(final DeploymentUnit unit, final String endpoint) throws XTSException {
+        for (final String annotation : COMPENSATABLE_ANNOTATIONS) {
+            if (JandexHelper.getAnnotation(unit, endpoint, annotation) != null) {
+                return new CompensatableAnnotation();
+            }
         }
 
-        return new CompensatableAnnotation();
+        return null;
     }
 }
