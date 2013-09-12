@@ -59,7 +59,7 @@ if exist "%JBOSS_HOME%\jboss-modules.jar" (
 )
 
 rem Add base package for L&F
-set "JAVA_OPTS=%JAVA_OPTS% -Djboss.modules.system.pkgs=com.sun.java.swing"
+set "JAVA_OPTS=%JAVA_OPTS% -Djboss.modules.system.pkgs=com.sun.java.swing -Dlogging.configuration=file:%JBOSS_HOME%\bin\jboss-cli-logging.properties"
 
 "%JAVA%" %JAVA_OPTS% ^
     -jar "%JBOSS_HOME%\jboss-modules.jar" ^
