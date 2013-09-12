@@ -93,4 +93,8 @@ public class WebServiceAnnotation {
     public String getTargetNamespace() {
         return targetNamespace;
     }
+
+    public boolean isValidDeclaration() {
+        return targetNamespace != null && portName != null;
+    }
 }
