@@ -30,6 +30,7 @@ import org.jboss.as.cli.parsing.arguments.ArgumentValueInitialState;
 import org.jboss.as.cli.parsing.arguments.ArgumentValueState;
 import org.jboss.as.cli.parsing.arguments.ListState;
 import org.jboss.dmr.ModelNode;
+import org.jboss.dmr.ValueExpression;
 
 
 /**
@@ -68,7 +69,11 @@ public interface ArgumentValueConverter {
             }
             ModelNode toSet = null;
             try {
-                toSet = ModelNode.fromString(value);
+                if (value.contains("${") && !(value.startsWith("\"") && value.endsWith("\""))) {
+                    ValueExpression valueExpression = new ValueExpression(value);
+                    toSet = new ModelNode().set(valueExpression);
+                } else
+                    toSet = ModelNode.fromString(value);
             } catch (Exception e) {
                 final ArgumentValueCallbackHandler handler = new ArgumentValueCallbackHandler();
                 StateParser.parse(value, handler, ArgumentValueInitialState.INSTANCE);
