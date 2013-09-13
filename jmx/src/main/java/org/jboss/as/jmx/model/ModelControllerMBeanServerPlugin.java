@@ -102,14 +102,14 @@ public class ModelControllerMBeanServerPlugin extends BaseMBeanServerPlugin {
         if (getHelper(loaderName).resolvePathAddress(loaderName) != null) {
             return SecurityActions.getClassLoader(this.getClass());
         }
-        throw ModelControllerMBeanHelper.createInstanceNotFoundException(loaderName);
+        throw MESSAGES.mbeanNotFound(loaderName);
     }
 
     public ClassLoader getClassLoaderFor(ObjectName mbeanName) throws InstanceNotFoundException {
         if (getHelper(mbeanName).resolvePathAddress(mbeanName) != null) {
             return SecurityActions.getClassLoader(this.getClass());
         }
-        throw ModelControllerMBeanHelper.createInstanceNotFoundException(mbeanName);
+        throw MESSAGES.mbeanNotFound(mbeanName);
     }
 
     public String[] getDomains() {
