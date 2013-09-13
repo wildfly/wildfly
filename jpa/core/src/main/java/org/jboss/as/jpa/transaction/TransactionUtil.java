@@ -45,7 +45,6 @@ public class TransactionUtil {
 
     private static volatile TransactionSynchronizationRegistry transactionSynchronizationRegistry;
     private static volatile TransactionManager transactionManager;
-    private static final String ARJUNA_REAPER_THREAD_NAME = "Transaction Reaper Worker";
 
     public static void setTransactionManager(TransactionManager tm) {
         if (transactionManager == null) {
@@ -188,14 +187,11 @@ public class TransactionUtil {
          * @return
          */
         private boolean safeToClose(int status) {
-            boolean isItSafe = true;
             if (Status.STATUS_COMMITTED != status) {
-                String currentThreadName = currentThread();
-                boolean isBackgroundReaperThread = currentThreadName != null &&
-                        currentThreadName.startsWith(ARJUNA_REAPER_THREAD_NAME);
-                isItSafe = !isBackgroundReaperThread;
+                return !TxUtils.isTransactionManagerTimeoutThread();
             }
-            return isItSafe;
+
+            return true;
         }
     }
 
