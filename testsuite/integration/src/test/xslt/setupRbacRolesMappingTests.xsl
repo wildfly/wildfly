@@ -29,8 +29,10 @@
 
     <xsl:template match="/do:server/do:management/do:access-control/do:role-mapping" priority="100">
         <xsl:copy>
-            <xsl:apply-templates select="node()|@*"/>
             <role name="Monitor">
+                <include>
+                    <group name="Monitor"/>
+                </include>
                 <exclude>
                     <user name="UserMappedToGroupOperatorAndMonitorAndExcludedFromGroupMonitor"/>
                     <user name="UserMappedToGroupMaintainerAndMonitorAndExcludedFromGroupMonitor"/>
@@ -38,15 +40,49 @@
                     <user name="UserMappedToGroupAdministratorAndMonitorAndExcludedFromGroupMonitor"/>
                     <user name="UserMappedToGroupAuditorAndMonitorAndExcludedFromGroupMonitor"/>
                     <user name="UserMappedToGroupSuperUserAndMonitorAndExcludedFromGroupMonitor"/>
+                    <group name="ExcludingGroup"/>
                 </exclude>
+            </role>
+            <role name="Operator">
+                <include>
+                    <group name="Operator"/>
+                </include>
+            </role>
+            <role name="Maintainer">
+                <include>
+                    <group name="Maintainer"/>
+                </include>
+            </role>
+            <role name="Deployer">
+                <include>
+                    <group name="Deployer"/>
+                </include>
+            </role>
+            <role name="Administrator">
+                <include>
+                    <group name="Administrator"/>
+                </include>
+            </role>
+            <role name="Auditor">
+                <include>
+                    <group name="Auditor"/>
+                </include>
+            </role>
+            <role name="SuperUser">
+                <include>
+                    <user name="$local"/>
+                    <group name="SuperUser"/>
+                </include>
             </role>
         </xsl:copy>
     </xsl:template>
 
     <xsl:template match="/do:domain/do:management/do:access-control/do:role-mapping" priority="100">
         <xsl:copy>
-            <xsl:apply-templates select="node()|@*"/>
             <role name="Monitor">
+                <include>
+                    <group name="Monitor"/>
+                </include>
                 <exclude>
                     <user name="UserMappedToGroupOperatorAndMonitorAndExcludedFromGroupMonitor"/>
                     <user name="UserMappedToGroupMaintainerAndMonitorAndExcludedFromGroupMonitor"/>
@@ -54,7 +90,39 @@
                     <user name="UserMappedToGroupAdministratorAndMonitorAndExcludedFromGroupMonitor"/>
                     <user name="UserMappedToGroupAuditorAndMonitorAndExcludedFromGroupMonitor"/>
                     <user name="UserMappedToGroupSuperUserAndMonitorAndExcludedFromGroupMonitor"/>
+                    <group name="ExcludingGroup"/>
                 </exclude>
+            </role>
+            <role name="Operator">
+                <include>
+                    <group name="Operator"/>
+                </include>
+            </role>
+            <role name="Maintainer">
+                <include>
+                    <group name="Maintainer"/>
+                </include>
+            </role>
+            <role name="Deployer">
+                <include>
+                    <group name="Deployer"/>
+                </include>
+            </role>
+            <role name="Administrator">
+                <include>
+                    <group name="Administrator"/>
+                </include>
+            </role>
+            <role name="Auditor">
+                <include>
+                    <group name="Auditor"/>
+                </include>
+            </role>
+            <role name="SuperUser">
+                <include>
+                    <user name="$local"/>
+                    <group name="SuperUser"/>
+                </include>
             </role>
         </xsl:copy>
     </xsl:template>
