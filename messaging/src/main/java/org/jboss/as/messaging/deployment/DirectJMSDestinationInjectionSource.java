@@ -111,28 +111,31 @@ public class DirectJMSDestinationInjectionSource extends InjectionSource {
         this.destinationName = destinationName;
     }
 
-    private String uniqueName(InjectionSource.ResolutionContext context, final String jndiName) {
+    private String uniqueName(InjectionSource.ResolutionContext context) {
+        if (destinationName != null && !destinationName.isEmpty()) {
+            return destinationName;
+        }
+
         StringBuilder uniqueName = new StringBuilder();
         uniqueName.append(context.getApplicationName() + "_");
         uniqueName.append(context.getModuleName() + "_");
         if (context.getComponentName() != null) {
             uniqueName.append(context.getComponentName() + "_");
         }
-        uniqueName.append(jndiName);
+        uniqueName.append(name);
         return uniqueName.toString();
     }
 
     public void getResourceValue(final InjectionSource.ResolutionContext context, final ServiceBuilder<?> serviceBuilder, final DeploymentPhaseContext phaseContext, final Injector<ManagedReferenceFactory> injector) throws DeploymentUnitProcessingException {
         final DeploymentUnit deploymentUnit = phaseContext.getDeploymentUnit();
-        final String uniqueName = destinationName != null ? destinationName : uniqueName(context, name);
-
+        final String uniqueName = uniqueName(context);
         try {
             ServiceName hqServiceName = MessagingServices.getHornetQServiceName(getHornetQServerName());
 
             if (interfaceName.equals(Queue.class.getName())) {
-                startQueue(context, uniqueName, phaseContext.getServiceTarget(), hqServiceName, serviceBuilder, deploymentUnit, injector);
+                startQueue(uniqueName, phaseContext.getServiceTarget(), hqServiceName, serviceBuilder, deploymentUnit, injector);
             } else {
-                startTopic(context, uniqueName, phaseContext.getServiceTarget(), hqServiceName, serviceBuilder, deploymentUnit, injector);
+                startTopic(uniqueName, phaseContext.getServiceTarget(), hqServiceName, serviceBuilder, deploymentUnit, injector);
             }
         } catch (Exception e) {
             throw new DeploymentUnitProcessingException(e);
@@ -144,8 +147,7 @@ public class DirectJMSDestinationInjectionSource extends InjectionSource {
      * that does not allow to build a BindingInfo with the ResolutionContext info, the JMS queue is created *without* any
      * JNDI bindings and handle the JNDI bindings directly by getting the service's JMS queue.
     */
-    private void startQueue(final ResolutionContext context,
-                            final String queueName,
+    private void startQueue(final String queueName,
                             final ServiceTarget serviceTarget,
                             final ServiceName hqServiceName,
                             final ServiceBuilder<?> serviceBuilder,
@@ -168,14 +170,19 @@ public class DirectJMSDestinationInjectionSource extends InjectionSource {
 
         //create the management registration
         final PathElement serverElement = PathElement.pathElement(HORNETQ_SERVER, getHornetQServerName());
-        final PathElement dest = PathElement.pathElement(JMS_QUEUE, destinationName);
+        final PathElement dest = PathElement.pathElement(JMS_QUEUE, queueName);
         deploymentUnit.createDeploymentSubModel(MessagingExtension.SUBSYSTEM_NAME, serverElement);
         PathAddress registration = PathAddress.pathAddress(serverElement, dest);
         MessagingXmlInstallDeploymentUnitProcessor.createDeploymentSubModel(registration, deploymentUnit);
         JMSQueueConfigurationRuntimeHandler.INSTANCE.registerResource(getHornetQServerName(), queueName, destination);
     }
 
-    private void startTopic(ResolutionContext context, String topicName, ServiceTarget serviceTarget, ServiceName hqServiceName, ServiceBuilder<?> serviceBuilder, DeploymentUnit deploymentUnit, Injector<ManagedReferenceFactory> injector) {
+    private void startTopic(String topicName,
+                            ServiceTarget serviceTarget,
+                            ServiceName hqServiceName,
+                            ServiceBuilder<?> serviceBuilder,
+                            DeploymentUnit deploymentUnit,
+                            Injector<ManagedReferenceFactory> injector) {
         ModelNode destination = new ModelNode();
         destination.get(NAME).set(topicName);
         destination.get(ENTRIES).add(name);
@@ -185,7 +192,7 @@ public class DirectJMSDestinationInjectionSource extends InjectionSource {
 
         //create the management registration
         final PathElement serverElement = PathElement.pathElement(HORNETQ_SERVER, getHornetQServerName());
-        final PathElement dest = PathElement.pathElement(JMS_TOPIC, destinationName);
+        final PathElement dest = PathElement.pathElement(JMS_TOPIC, topicName);
         deploymentUnit.createDeploymentSubModel(MessagingExtension.SUBSYSTEM_NAME, serverElement);
         PathAddress registration = PathAddress.pathAddress(serverElement, dest);
         MessagingXmlInstallDeploymentUnitProcessor.createDeploymentSubModel(registration, deploymentUnit);

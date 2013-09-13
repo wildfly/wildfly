@@ -45,8 +45,7 @@ import javax.jms.TopicConnectionFactory;
  */
 @JMSDestinationDefinition(
         name="java:comp/env/myQueue4",
-        interfaceName="javax.jms.Queue",
-        destinationName="myQueue4"
+        interfaceName="javax.jms.Queue"
 )
 @JMSDestinationDefinitions(
         value =  {
