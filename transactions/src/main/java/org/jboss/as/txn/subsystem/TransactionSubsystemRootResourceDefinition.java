@@ -157,6 +157,12 @@ public class TransactionSubsystemRootResourceDefinition extends SimpleResourceDe
             .setFlags(AttributeAccess.Flag.RESTART_JVM)
             .setAlternatives(CommonAttributes.USE_JDBC_STORE)
             .setAllowExpression(false).build();
+    public static final SimpleAttributeDefinition HORNETQ_STORE_ENABLE_ASYNC_IO = new SimpleAttributeDefinitionBuilder(CommonAttributes.HORNETQ_STORE_ENABLE_ASYNC_IO, ModelType.BOOLEAN, true)
+            .setDefaultValue(new ModelNode().set(false))
+            .setFlags(AttributeAccess.Flag.RESTART_JVM)
+            .setXmlName(Attribute.ENABLE_ASYNC_IO.getLocalName())
+            .setAllowExpression(true)
+            .setRequires(CommonAttributes.USEHORNETQSTORE).build();
 
     public static final SimpleAttributeDefinition USE_JDBC_STORE = new SimpleAttributeDefinitionBuilder(CommonAttributes.USE_JDBC_STORE, ModelType.BOOLEAN, true)
                 .setDefaultValue(new ModelNode(false))
@@ -214,10 +220,14 @@ public class TransactionSubsystemRootResourceDefinition extends SimpleResourceDe
         this.registerRuntimeOnly = registerRuntimeOnly;
     }
 
+    // all attributes
     static final AttributeDefinition[] attributes = new AttributeDefinition[] {
             BINDING, STATUS_BINDING, RECOVERY_LISTENER, NODE_IDENTIFIER, PROCESS_ID_UUID, PROCESS_ID_SOCKET_BINDING,
             PROCESS_ID_SOCKET_MAX_PORTS, RELATIVE_TO, PATH, ENABLE_STATISTICS, ENABLE_TSM_STATUS, DEFAULT_TIMEOUT,
-            OBJECT_STORE_RELATIVE_TO, OBJECT_STORE_PATH, JTS, USEHORNETQSTORE
+            OBJECT_STORE_RELATIVE_TO, OBJECT_STORE_PATH, JTS, USEHORNETQSTORE, USE_JDBC_STORE, JDBC_STORE_DATASOURCE,
+            JDBC_ACTION_STORE_DROP_TABLE, JDBC_ACTION_STORE_TABLE_PREFIX, JDBC_COMMUNICATION_STORE_DROP_TABLE,
+            JDBC_COMMUNICATION_STORE_TABLE_PREFIX, JDBC_STATE_STORE_DROP_TABLE, JDBC_STATE_STORE_TABLE_PREFIX,
+            HORNETQ_STORE_ENABLE_ASYNC_IO
     };
 
     static final AttributeDefinition[] ATTRIBUTES_WITH_EXPRESSIONS_AFTER_1_1_0 = new AttributeDefinition[] {
@@ -235,16 +245,11 @@ public class TransactionSubsystemRootResourceDefinition extends SimpleResourceDe
                 JDBC_STATE_STORE_DROP_TABLE, JDBC_STATE_STORE_TABLE_PREFIX
     };
 
-
     @Override
     public void registerAttributes(ManagementResourceRegistration resourceRegistration) {
         // Register all attributes
         OperationStepHandler writeHandler = new ReloadRequiredWriteAttributeHandler(attributes);
         for(final AttributeDefinition def : attributes) {
-            resourceRegistration.registerReadWriteAttribute(def, null, writeHandler);
-        }
-        writeHandler = new ReloadRequiredWriteAttributeHandler(attributes_1_2);
-        for(final AttributeDefinition def : attributes_1_2) {
             resourceRegistration.registerReadWriteAttribute(def, null, writeHandler);
         }
 

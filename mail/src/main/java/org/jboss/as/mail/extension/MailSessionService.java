@@ -144,7 +144,11 @@ public class MailSessionService implements Service<Session> {
         if (customProps!=null&&!customProps.isEmpty()) {
             for (Map.Entry<String, String> prop : customProps.entrySet()) {
                 if (!props.contains(prop.getKey())) {
-                    props.put(getPropKey(protocol,prop.getKey()), prop.getValue());
+                    if (prop.getKey().contains(".")) {
+                        props.put(prop.getKey(), prop.getValue());
+                    } else {
+                        props.put(getPropKey(protocol, prop.getKey()), prop.getValue());
+                    }
                 }
             }
         }

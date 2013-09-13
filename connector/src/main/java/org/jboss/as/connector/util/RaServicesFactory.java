@@ -52,10 +52,10 @@ public class RaServicesFactory {
         createDeploymentService(null, connectorXmlDescriptor, module, serviceTarget, deploymentUnitName, deploymentUnitServiceName, deploymentUnitName,  raxml, null, serviceVerificationHandler);
 
     }
-    public static void createDeploymentService(final ManagementResourceRegistration registration, ConnectorXmlDescriptor connectorXmlDescriptor, Module module, ServiceTarget serviceTarget, final String deploymentUnitName, ServiceName deploymentUnitServiceName, String deployment, ResourceAdapter raxml, final Resource deploymentResource, final ServiceVerificationHandler serviceVerificationHandler) {
+    public static void createDeploymentService(final ManagementResourceRegistration registration, ConnectorXmlDescriptor connectorXmlDescriptor, Module module, ServiceTarget serviceTarget, final String raName, ServiceName deploymentUnitServiceName, String deployment, ResourceAdapter raxml, final Resource deploymentResource, final ServiceVerificationHandler serviceVerificationHandler) {
         // Create the service
-        ServiceName serviceName = ConnectorServices.registerDeployment(deploymentUnitName);
 
+        ServiceName serviceName = ConnectorServices.getDeploymentServiceName(raName,raxml);
         ResourceAdapterXmlDeploymentService service = new ResourceAdapterXmlDeploymentService(connectorXmlDescriptor,
                 raxml, module, deployment, serviceName, deploymentUnitServiceName);
 
@@ -84,7 +84,7 @@ public class RaServicesFactory {
             builder.addListener(ServiceListener.Inheritance.ALL, serviceVerificationHandler);
         }
         if (registration != null && deploymentResource != null) {
-            builder.addListener(new AbstractResourceAdapterDeploymentServiceListener(registration, deploymentUnitName, deploymentResource) {
+            builder.addListener(new AbstractResourceAdapterDeploymentServiceListener(registration, raName, deploymentResource) {
 
                 @Override
                 protected void registerIronjacamar(ServiceController<? extends Object> controller, ManagementResourceRegistration subRegistration, Resource subsystemResource) {

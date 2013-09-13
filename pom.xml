@@ -31,7 +31,7 @@
 
     <groupId>org.jboss.as</groupId>
     <artifactId>jboss-as-parent</artifactId>
-    <version>7.3.0-redhat-SNAPSHOT</version>
+    <version>7.3.0.Final-redhat-SNAPSHOT</version>
 
     <name>JBoss Application Server: Parent Aggregator</name>
     <description>JBoss Application Server: Parent Aggregator</description>
@@ -113,8 +113,8 @@
         <version.log4j>1.2.16</version.log4j>
         <version.net.jcip>1.0-redhat-4</version.net.jcip>
         <version.org.apache.ant>1.8.3</version.org.apache.ant>
-        <version.org.apache.cxf>2.7.6</version.org.apache.cxf>
-        <version.org.apache.cxf.xjcplugins>2.6.1</version.org.apache.cxf.xjcplugins>
+        <version.org.apache.cxf>2.7.6.redhat-2</version.org.apache.cxf>
+        <version.org.apache.cxf.xjcplugins>2.6.1.redhat-1</version.org.apache.cxf.xjcplugins>
         <version.org.apache.felix.configadmin>1.2.8-redhat-2</version.org.apache.felix.configadmin>
         <version.org.apache.felix.log>1.0.0-redhat-2</version.org.apache.felix.log>
         <version.org.apache.james.apache-mime4j>0.6-redhat-2</version.org.apache.james.apache-mime4j>
@@ -148,9 +148,9 @@
         <version.org.hornetq>2.3.5.Final-redhat-2</version.org.hornetq>
         <version.org.infinispan>5.2.7.Final-redhat-1</version.org.infinispan>
         <version.org.jacorb>2.3.2-redhat-4</version.org.jacorb>
-        <version.org.javassist>3.18.1-GA</version.org.javassist>
+        <version.org.javassist>3.18.1-GA-redhat-1</version.org.javassist>
         <version.org.jdom>1.1.2-redhat-2</version.org.jdom>
-        <version.org.jboss.aesh>0.33.8</version.org.jboss.aesh>
+        <version.org.jboss.aesh>0.33.8.redhat-1</version.org.jboss.aesh>
         <version.org.jboss.arquillian.core>1.0.0.Final</version.org.jboss.arquillian.core>
         <version.org.jboss.arquillian.osgi>1.0.3.Final</version.org.jboss.arquillian.osgi>
         <version.org.jboss.as.console>2.0.0.Beta4</version.org.jboss.as.console>
@@ -161,12 +161,12 @@
         <version.org.jboss.jboss-common-core>2.2.17.GA-redhat-2</version.org.jboss.jboss-common-core>
         <version.org.jboss.com.sun.httpserver>1.0.1.Final-redhat-2</version.org.jboss.com.sun.httpserver>
         <version.org.jboss.ejb-client>1.0.23.Final-redhat-1</version.org.jboss.ejb-client>
-        <version.org.jboss.ejb3.ext-api>2.1.0</version.org.jboss.ejb3.ext-api>
+        <version.org.jboss.ejb3.ext-api>2.1.0.redhat-1</version.org.jboss.ejb3.ext-api>
         <version.org.jboss.iiop-client>1.0.0.Final-redhat-2</version.org.jboss.iiop-client>
         <version.org.jboss.invocation>1.1.2.Final-redhat-1</version.org.jboss.invocation>
         <version.org.jboss.ironjacamar>1.0.20.Final-redhat-1</version.org.jboss.ironjacamar>
         <version.org.jboss.jandex>1.0.3.Final-redhat-2</version.org.jboss.jandex>
-        <version.org.jboss.jboss-dmr>1.2.0.Final</version.org.jboss.jboss-dmr>
+        <version.org.jboss.jboss-dmr>1.2.0.Final-redhat-1</version.org.jboss.jboss-dmr>
         <version.org.jboss.jboss-transaction-spi>7.0.0.Final-redhat-2</version.org.jboss.jboss-transaction-spi>
         <version.org.jboss.jbossts>4.17.9.Final-redhat-1</version.org.jboss.jbossts>
         <version.org.jboss.jboss-vfs>3.1.0.Final-redhat-2</version.org.jboss.jboss-vfs>
@@ -234,7 +234,7 @@
         <version.org.jboss.ws.spi>2.2.0.Final-redhat-1</version.org.jboss.ws.spi>
         <version.org.jboss.ws.common>2.2.0.Final-redhat-1</version.org.jboss.ws.common>
         <version.org.jboss.ws.common.tools>1.2.0.Final-redhat-1</version.org.jboss.ws.common.tools>
-        <version.org.jboss.ws.cxf>4.2.0.Final</version.org.jboss.ws.cxf>
+        <version.org.jboss.ws.cxf>4.2.0.Final-redhat-1</version.org.jboss.ws.cxf>
         <version.org.jboss.ws.jbossws-native>4.1.1.Final-redhat-1</version.org.jboss.ws.jbossws-native>
         <version.org.jboss.ws.jaxws-jboss-httpserver-httpspi>1.0.1.GA-redhat-2</version.org.jboss.ws.jaxws-jboss-httpserver-httpspi>
         <version.org.jboss.xb>2.0.3.GA-redhat-2</version.org.jboss.xb>

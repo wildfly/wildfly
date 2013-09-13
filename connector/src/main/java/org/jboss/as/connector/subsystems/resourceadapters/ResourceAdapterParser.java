@@ -48,7 +48,6 @@ import java.util.Map;
 
 import javax.xml.stream.XMLStreamException;
 
-import org.jboss.as.connector.util.ConnectorServices;
 import org.jboss.as.connector.util.ParserException;
 import org.jboss.dmr.ModelNode;
 import org.jboss.jca.common.CommonBundle;
@@ -191,11 +190,6 @@ public class ResourceAdapterParser extends CommonIronJacamarParser {
                         if (id != null) {
                             raAddress.add(RESOURCEADAPTER_NAME, id);
                         } else {
-                            Integer identifier = ConnectorServices.getResourceIdentifier(archiveOrModuleName);
-                            if (identifier != null && identifier != 0) {
-                                archiveOrModuleName = archiveOrModuleName + ConnectorServices.RA_SERVICE_NAME_SEPARATOR + identifier;
-                            }
-
                             raAddress.add(RESOURCEADAPTER_NAME, archiveOrModuleName);
                         }
 

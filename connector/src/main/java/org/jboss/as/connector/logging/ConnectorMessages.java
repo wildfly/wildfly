@@ -530,4 +530,22 @@ public interface ConnectorMessages {
     @Message(id = 10478, value = "Rar are supported only in uncompressed form. Failed to load module for RA [%s]")
     String compressedRarNotSupportedInModuleRA(String moduleName);
 
+    /**
+     * Creates an exception indicating a failure to deploy the datasource because driver is not specified
+     *
+     * @param dsName the datasouerce to be deployed.
+     * @return a {@link DeploymentUnitProcessingException} for the error.
+     */
+    @Message(id = 10479, value = "Failed to deploy datssource %s because driver is not specified")
+    DeploymentUnitProcessingException FailedDeployDriverNotSpecified(String dsName);
+
+    /**
+     * Creates an exception indicating missing rar.
+     *
+     * @param raName - name.
+     * @return a {@link OperationFailedException} for the error.
+     */
+    @Message(id = 10480, value = "RAR '%s' not yet deployed.")
+    OperationFailedException RARNotYetDeployed(String raName);
+
 }

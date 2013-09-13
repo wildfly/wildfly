@@ -18,6 +18,7 @@
         </custom-server>
         <custom-server name="pop3" outbound-socket-binding-ref="mail-pop3">
             <property name="custom_prop" value="some-custom-prop-value"/>
+            <property name="some.fully.qualified.property" value="fully-qualified-prop-name"/>
         </custom-server>
     </mail-session>
     <mail-session debug="true" jndi-name="java:jboss/mail/Custom2">

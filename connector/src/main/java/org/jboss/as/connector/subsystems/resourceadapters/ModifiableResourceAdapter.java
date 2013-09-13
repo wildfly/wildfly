@@ -35,7 +35,7 @@ import org.jboss.msc.service.ServiceName;
 public class ModifiableResourceAdapter extends ResourceAdapterImpl {
 
     private volatile ServiceName raXmlDeploymentServiceName = null;
-
+    private volatile String id = null;
     public ModifiableResourceAdapter(String archive, TransactionSupportEnum transactionSupport, List<CommonConnDef> connectionDefinitions, List<CommonAdminObject> adminObjects, Map<String, String> configProperties, List<String> beanValidationGroups, String bootstrapContext) {
         super(archive, transactionSupport, connectionDefinitions, adminObjects, configProperties, beanValidationGroups, bootstrapContext);
     }
@@ -66,5 +66,13 @@ public class ModifiableResourceAdapter extends ResourceAdapterImpl {
 
     public void setRaXmlDeploymentServiceName(ServiceName raXmlDeploymentServiceName) {
         this.raXmlDeploymentServiceName = raXmlDeploymentServiceName;
+    }
+
+    public String getId() {
+        return id;
+    }
+
+    public void setId(String id) {
+        this.id = id;
     }
 }

@@ -131,6 +131,7 @@ public class MailSubsystem11Test extends AbstractSubsystemBaseTest {
 
         Assert.assertEquals("localhost", properties.get("mail.pop3.host")); //this one should be read out of socket binding
         Assert.assertEquals("some-custom-prop-value", properties.get("mail.pop3.custom_prop")); //this one should be extra property
+        Assert.assertEquals("fully-qualified-prop-name", properties.get("some.fully.qualified.property")); //this one should be extra property
 
     }
 

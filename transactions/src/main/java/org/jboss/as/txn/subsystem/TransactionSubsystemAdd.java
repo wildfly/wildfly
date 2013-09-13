@@ -115,6 +115,8 @@ class TransactionSubsystemAdd extends AbstractBoottimeAddStepHandler {
         for (AttributeDefinition ad : TransactionSubsystemRootResourceDefinition.attributes_1_2) {
             ad.validateAndSet(operation, model);
         }
+
+        TransactionSubsystemRootResourceDefinition.HORNETQ_STORE_ENABLE_ASYNC_IO.validateAndSet(operation, model);
     }
 
     private void populateModelWithObjectStoreConfig(ModelNode operation, ModelNode objectStoreModel) throws OperationFailedException {
@@ -279,6 +281,7 @@ class TransactionSubsystemAdd extends AbstractBoottimeAddStepHandler {
                                             ServiceVerificationHandler verificationHandler,
                                             List<ServiceController<?>> controllers) throws OperationFailedException {
         boolean useHornetqJournalStore = model.hasDefined(USEHORNETQSTORE) && model.get(USEHORNETQSTORE).asBoolean();
+        final boolean enableAsyncIO = TransactionSubsystemRootResourceDefinition.HORNETQ_STORE_ENABLE_ASYNC_IO.resolveModelAttribute(context, model).asBoolean();
         final String objectStorePathRef = TransactionSubsystemRootResourceDefinition.OBJECT_STORE_RELATIVE_TO.resolveModelAttribute(context, model).asString();
         final String objectStorePath = TransactionSubsystemRootResourceDefinition.OBJECT_STORE_PATH.resolveModelAttribute(context, model).asString();
 
@@ -304,7 +307,7 @@ class TransactionSubsystemAdd extends AbstractBoottimeAddStepHandler {
 
         ServiceTarget target = context.getServiceTarget();
         // Configure the ObjectStoreEnvironmentBeans
-        final ArjunaObjectStoreEnvironmentService objStoreEnvironmentService = new ArjunaObjectStoreEnvironmentService(useHornetqJournalStore, objectStorePath, objectStorePathRef, useJdbcStore, dataSourceJndiName, confiBuilder.build());
+        final ArjunaObjectStoreEnvironmentService objStoreEnvironmentService = new ArjunaObjectStoreEnvironmentService(useHornetqJournalStore, enableAsyncIO, objectStorePath, objectStorePathRef, useJdbcStore, dataSourceJndiName, confiBuilder.build());
         ServiceBuilder builder = target.addService(TxnServices.JBOSS_TXN_ARJUNA_OBJECTSTORE_ENVIRONMENT, objStoreEnvironmentService)
                 .addDependency(PathManagerService.SERVICE_NAME, PathManager.class, objStoreEnvironmentService.getPathManagerInjector())
                 .addDependency(TxnServices.JBOSS_TXN_CORE_ENVIRONMENT);

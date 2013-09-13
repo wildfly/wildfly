@@ -392,9 +392,14 @@ public class ExpressionSupportSmokeTestCase extends BuildConfigurationTestBase {
                 }
             }
         } else if (address.size() > 0 && "transactions".equals(address.getLastElement().getValue())
-                &&  "subsystem".equals(address.getLastElement().getKey()) && attrName.contains("jdbc")) {
-            // Ignore jdbc store attributes unless the store is enabled
-            return !resourceNoDefaults.hasDefined("use-jdbc-store") || !resourceNoDefaults.get("use-jdbc-store").asBoolean();
+                &&  "subsystem".equals(address.getLastElement().getKey())) {
+            if (attrName.contains("jdbc")) {
+                // Ignore jdbc store attributes unless jdbc store is enabled
+                return !resourceNoDefaults.hasDefined("use-jdbc-store") || !resourceNoDefaults.get("use-jdbc-store").asBoolean();
+            } else if (attrName.contains("hornetq")) {
+                // Ignore hornetq store attributes unless hornetq store is enabled
+                return !resourceNoDefaults.hasDefined("use-hornetq-store") || !resourceNoDefaults.get("use-hornetq-store").asBoolean();
+            }
         }
 
         return false;

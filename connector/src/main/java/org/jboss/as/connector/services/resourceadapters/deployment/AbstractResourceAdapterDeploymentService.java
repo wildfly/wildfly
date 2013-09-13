@@ -184,9 +184,6 @@ public abstract class AbstractResourceAdapterDeploymentService {
                     SecurityActions.setThreadContextClassLoader(old);
                 }
             }
-            if (value.getRaName() != null && value.getRaServiceName() != null) {
-                ConnectorServices.unregisterResourceAdapter(value.getRaName(), value.getRaServiceName());
-            }
         }
 
     }
