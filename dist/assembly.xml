@@ -11,7 +11,7 @@
     <fileSets>
         <fileSet>
             <directory>../build/target/jboss-as-${project.version}</directory>
-            <outputDirectory>jboss-eap-6.1</outputDirectory>
+            <outputDirectory>${package.finalName}</outputDirectory>
             <excludes>
                 <exclude>**/*.sh</exclude>
                 <exclude>domain/tmp/auth</exclude>
@@ -21,7 +21,7 @@
         </fileSet>
         <fileSet>
             <directory>../build/target/jboss-as-${project.version}</directory>
-            <outputDirectory>jboss-eap-6.1</outputDirectory>
+            <outputDirectory>${package.finalName}</outputDirectory>
             <includes>
                 <include>**/*.sh</include>
             </includes>
@@ -29,7 +29,7 @@
         </fileSet>
          <fileSet>
             <directory>../build/target/jboss-as-${project.version}</directory>
-            <outputDirectory>jboss-eap-6.1</outputDirectory>
+            <outputDirectory>${package.finalName}</outputDirectory>
             <includes>
                 <include>**/*-users.properties</include>
             </includes>
@@ -37,7 +37,7 @@
         </fileSet>
         <fileSet>
             <directory>../build/target/jboss-as-${project.version}</directory>
-            <outputDirectory>jboss-eap-6.1</outputDirectory>
+            <outputDirectory>${package.finalName}</outputDirectory>
             <includes>
                 <include>domain/tmp/auth</include>
                 <include>standalone//tmp/auth</include>

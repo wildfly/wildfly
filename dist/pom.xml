@@ -48,6 +48,9 @@
             <scope>provided</scope>
         </dependency>
     </dependencies>
+    <properties>
+        <package.finalName>jboss-eap-6.2</package.finalName>
+    </properties>
 
     <profiles>
         <profile>
@@ -74,7 +77,7 @@
                                     <descriptors>
                                         <descriptor>assembly.xml</descriptor>
                                     </descriptors>
-                                    <finalName>jboss-eap-6.2</finalName>
+                                    <finalName>${package.finalName}</finalName>
                                     <appendAssemblyId>false</appendAssemblyId>
                                     <outputDirectory>target/</outputDirectory>
                                     <workDirectory>target/assembly/work</workDirectory>
@@ -91,7 +94,7 @@
                                     <descriptors>
                                         <descriptor>assembly-src.xml</descriptor>
                                     </descriptors>
-                                    <finalName>jboss-eap-6.2</finalName>
+                                    <finalName>${package.finalName}</finalName>
                                     <appendAssemblyId>true</appendAssemblyId>
                                     <outputDirectory>target/</outputDirectory>
                                     <workDirectory>target/assembly-src/work</workDirectory>
