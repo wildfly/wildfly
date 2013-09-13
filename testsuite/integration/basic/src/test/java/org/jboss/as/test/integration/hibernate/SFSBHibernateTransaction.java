@@ -66,7 +66,8 @@ public class SFSBHibernateTransaction {
             configuration.getProperties().put(AvailableSettings.JTA_PLATFORM, JBossAppServerJtaPlatform.class);
             configuration.setProperty(Environment.HBM2DDL_AUTO, "create-drop");
             configuration.setProperty(Environment.DATASOURCE, "java:jboss/datasources/ExampleDS");
-            configuration.setProperty("hibernate.listeners.envers.autoRegister", "false");
+// Uncomment the following line when WFLY-2059 is fixed
+//            configuration.setProperty("hibernate.listeners.envers.autoRegister", "false");
 
             // fetch the properties
             Properties properties = new Properties();
