@@ -1414,6 +1414,7 @@ public class ReadResourceDescriptionAccessControlTestCase extends AbstractContro
             checkAttributePermissions(defaultAttributes, ATTR_VAULT, true, false);
             Map<String, ModelNode> exceptionAttributes = checkAttributeAccessControlNames(accessControl.exceptions.get(ONE_A_ADDR), ATTR_NONE, ATTR_VAULT);
             checkAttributePermissions(exceptionAttributes, ATTR_NONE, true, false);
+            checkAttributePermissions(exceptionAttributes, ATTR_VAULT, false, false);
 
             Map<String, Boolean> defaultOps = checkOperationAccessControlNames(accessControl.defaultControl, ADD, REMOVE);
             Assert.assertEquals(false, defaultOps.get(ADD));
@@ -1445,6 +1446,7 @@ public class ReadResourceDescriptionAccessControlTestCase extends AbstractContro
             checkAttributePermissions(defaultAttributes, ATTR_VAULT, true, true);
             Map<String, ModelNode> exceptionAttributes = checkAttributeAccessControlNames(accessControl.exceptions.get(ONE_A_ADDR), ATTR_NONE, ATTR_VAULT);
             checkAttributePermissions(exceptionAttributes, ATTR_NONE, true, true);
+            checkAttributePermissions(exceptionAttributes, ATTR_VAULT, false, false);
 
             Map<String, Boolean> defaultOps = checkOperationAccessControlNames(accessControl.defaultControl, ADD, REMOVE);
             Assert.assertEquals(true, defaultOps.get(ADD));
@@ -1476,6 +1478,7 @@ public class ReadResourceDescriptionAccessControlTestCase extends AbstractContro
             Map<String, ModelNode> defaultAttributes = checkAttributeAccessControlNames(accessControl.defaultControl, ATTR_NONE, ATTR_VAULT);
             checkAttributePermissions(defaultAttributes, ATTR_NONE, true, true);
             checkAttributePermissions(defaultAttributes, ATTR_VAULT, true, true);
+            Assert.assertTrue(accessControl.exceptions.isEmpty());
 
             Map<String, Boolean> defaultOps = checkOperationAccessControlNames(accessControl.defaultControl, ADD, REMOVE);
             Assert.assertEquals(true, defaultOps.get(ADD));

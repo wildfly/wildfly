@@ -161,7 +161,8 @@ public abstract class AbstractControllerTestBase {
     protected DelegatingConfigurableAuthorizer getAuthorizer() {
         return null;
     }
-    class ModelControllerService extends TestModelControllerService {
+
+    protected class ModelControllerService extends TestModelControllerService {
 
         ModelControllerService(final ProcessType processType, final ManagedAuditLogger auditLogger, final DelegatingConfigurableAuthorizer authorizer) {
             super(processType, new EmptyConfigurationPersister(), new ControlledProcessState(true),

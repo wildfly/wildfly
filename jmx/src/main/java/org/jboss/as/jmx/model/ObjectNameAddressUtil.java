@@ -88,6 +88,7 @@ class ObjectNameAddressUtil {
      * Converts the ObjectName to a PathAddress.
      *
      * @param name the ObjectName
+     *
      * @return the PathAddress if it exists in the model, {@code null} otherwise
      */
     static PathAddress resolvePathAddress(final String domain, final Resource rootResource, final ObjectName name) {
@@ -97,7 +98,7 @@ class ObjectNameAddressUtil {
         if (name.equals(ModelControllerMBeanHelper.createRootObjectName(domain))) {
             return PathAddress.EMPTY_ADDRESS;
         }
-        Hashtable<String, String> properties = name.getKeyPropertyList();
+        final Hashtable<String, String> properties = name.getKeyPropertyList();
         return searchPathAddress(PathAddress.EMPTY_ADDRESS, rootResource, properties);
     }
 

@@ -398,13 +398,15 @@ public class ReadResourceDescriptionHandler implements OperationStepHandler {
                 attributes.setEmptyObject();
 
                 if (result.get(READ).asBoolean()) {
-                    for (Property attrProp : nodeDescription.require(ATTRIBUTES).asPropertyList()) {
-                        ModelNode attributeResult = new ModelNode();
-                        Storage storage = Storage.valueOf(attrProp.getValue().get(STORAGE).asString().toUpperCase());
-                        AccessType accessType = AccessType.forName(attrProp.getValue().get(ACCESS_TYPE).asString());
-                        addAttributeAuthorizationResults(attributeResult, attrProp.getName(), authResp, storage == Storage.RUNTIME, accessType);
-                        if (attributeResult.isDefined()) {
-                            attributes.get(attrProp.getName()).set(attributeResult);
+                    if (nodeDescription.hasDefined(ATTRIBUTES)) {
+                        for (Property attrProp : nodeDescription.require(ATTRIBUTES).asPropertyList()) {
+                            ModelNode attributeResult = new ModelNode();
+                            Storage storage = Storage.valueOf(attrProp.getValue().get(STORAGE).asString().toUpperCase());
+                            AccessType accessType = AccessType.forName(attrProp.getValue().get(ACCESS_TYPE).asString());
+                            addAttributeAuthorizationResults(attributeResult, attrProp.getName(), authResp, storage == Storage.RUNTIME, accessType);
+                            if (attributeResult.isDefined()) {
+                                attributes.get(attrProp.getName()).set(attributeResult);
+                            }
                         }
                     }
                     result.get(ATTRIBUTES).set(attributes);
