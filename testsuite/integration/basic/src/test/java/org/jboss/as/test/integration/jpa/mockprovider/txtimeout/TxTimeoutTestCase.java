@@ -56,8 +56,6 @@ public class TxTimeoutTestCase {
 
     private static final String ARCHIVE_NAME = "jpa_txTimeoutTestWithMockProvider";
 
-    // When JBTM-1556 is resolved, consider removing the tx reaper thread name and use the SPI instead.
-    private static final String ARJUNA_REAPER_THREAD_NAME = "Transaction Reaper Worker";
     @Deployment
     public static Archive<?> deploy() {
         JavaArchive persistenceProvider = ShrinkWrap.create(JavaArchive.class, ARCHIVE_NAME + ".jar");
@@ -74,6 +72,8 @@ public class TxTimeoutTestCase {
         EnterpriseArchive ear = ShrinkWrap.create(EnterpriseArchive.class, ARCHIVE_NAME + ".ear");
 
         JavaArchive ejbjar = ShrinkWrap.create(JavaArchive.class, "ejbjar.jar");
+        ejbjar.addPackage("org.jboss.tm");
+
         ejbjar.addAsManifestResource(emptyEjbJar(), "ejb-jar.xml");
         ejbjar.addClasses(TxTimeoutTestCase.class,
                 SFSB1.class
@@ -85,6 +85,11 @@ public class TxTimeoutTestCase {
         JavaArchive lib = ShrinkWrap.create(JavaArchive.class, "lib.jar");
         lib.addClasses(Employee.class, TxTimeoutTestCase.class);
         ear.addAsLibraries(lib, persistenceProvider);
+
+        ear.addAsManifestResource(new StringAsset("<jboss-deployment-structure>" + " <deployment>" + " <dependencies>"
+                + " <module name=\"org.jboss.jboss-transaction-spi\" />"  + " </dependencies>"
+                + " </deployment>" + "</jboss-deployment-structure>"), "jboss-deployment-structure.xml");
+
         return ear;
 
     }
@@ -195,7 +200,7 @@ public class TxTimeoutTestCase {
             System.out.println("ignoring the " + e.getMessage());
         }
         assertFalse("entity manager should not of been closed by the reaper thread", TestEntityManager.getClosedByReaperThread());
-        assertTrue("transaction was canceled by reaper thread", sfsb1.getAfterCompletionThreadName().startsWith(ARJUNA_REAPER_THREAD_NAME));
+        assertTrue("transaction was canceled by reaper thread", sfsb1.isAfterCompletionCalledByTMTimeoutThread());
     }
 
 }
