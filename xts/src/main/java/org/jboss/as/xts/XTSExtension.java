@@ -24,11 +24,20 @@ package org.jboss.as.xts;
 
 import org.jboss.as.controller.Extension;
 import org.jboss.as.controller.ExtensionContext;
+import org.jboss.as.controller.ModelVersion;
+import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.PathElement;
 import org.jboss.as.controller.SubsystemRegistration;
 import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
 import org.jboss.as.controller.descriptions.StandardResourceDescriptionResolver;
 import org.jboss.as.controller.parsing.ExtensionParsingContext;
+import org.jboss.as.controller.transform.TransformationContext;
+import org.jboss.as.controller.transform.description.DiscardAttributeChecker;
+import org.jboss.as.controller.transform.description.RejectAttributeChecker;
+import org.jboss.as.controller.transform.description.ResourceTransformationDescriptionBuilder;
+import org.jboss.as.controller.transform.description.TransformationDescription;
+import org.jboss.as.controller.transform.description.TransformationDescriptionBuilder;
+import org.jboss.dmr.ModelNode;
 
 /**
  * The web services transactions extension.
@@ -61,11 +70,31 @@ public class XTSExtension implements Extension {
                 MANAGEMENT_API_MINOR_VERSION, MANAGEMENT_API_MICRO_VERSION);
         subsystem.registerSubsystemModel(XTSSubsystemDefinition.INSTANCE);
         subsystem.registerXMLElementWriter(parser);
+
+        if (context.isRegisterTransformers()) {
+            registerTransformers1x(subsystem);
+        }
     }
 
     public void initializeParsers(ExtensionParsingContext context) {
         context.setSubsystemXmlMapping(SUBSYSTEM_NAME, Namespace.XTS_1_0.getUriString(), parser);
         context.setSubsystemXmlMapping(SUBSYSTEM_NAME, Namespace.XTS_2_0.getUriString(), parser);
+    }
+
+    private void registerTransformers1x(SubsystemRegistration subsystem) {
+        ResourceTransformationDescriptionBuilder builder =
+                TransformationDescriptionBuilder.Factory.createSubsystemInstance();
+        builder.getAttributeBuilder().setDiscard(new DiscardAttributeChecker.DefaultDiscardAttributeChecker() {
+            @Override
+            protected boolean isValueDiscardable(PathAddress address, String attributeName, ModelNode attributeValue, TransformationContext context) {
+                return attributeValue.isDefined() && attributeValue.equals(XTSSubsystemDefinition.HOST_NAME.getDefaultValue());
+            }
+        }, XTSSubsystemDefinition.HOST_NAME)
+        .addRejectCheck(RejectAttributeChecker.DEFINED, XTSSubsystemDefinition.HOST_NAME)
+        .end();
+
+        TransformationDescription.Tools.register(builder.build(), subsystem, ModelVersion.create(1, 1, 0));
+
     }
 
 
