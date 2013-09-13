@@ -22,6 +22,9 @@
 
 package org.jboss.as.messaging;
 
+import static org.jboss.as.controller.PathAddress.EMPTY_ADDRESS;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.NAME;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP;
 import static org.jboss.as.messaging.MessagingMessages.MESSAGES;
 
 import java.util.HashMap;
@@ -31,7 +34,6 @@ import org.jboss.as.controller.AttributeDefinition;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.OperationStepHandler;
-import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
 import org.jboss.as.controller.registry.Resource;
 import org.jboss.dmr.ModelNode;
@@ -49,16 +51,29 @@ public final class AlternativeAttributeCheckHandler implements OperationStepHand
 
     @Override
     public void execute(OperationContext context, ModelNode operation) throws OperationFailedException {
-        final String attributeName = operation.get(ModelDescriptionConstants.NAME).asString();
+        final String operationName = operation.get(OP).asString();
+        final String attributeName = operation.get(NAME).asString();
+        // when an attribute is undefined, check that an alternative is present
+        // otherwise when an attribute is written, check that there is no alternative
+        boolean alternativeMustBeSet = ModelDescriptionConstants.UNDEFINE_ATTRIBUTE_OPERATION.equals(operationName);
+        checkAlternativeAttribute(context, attributeName, alternativeMustBeSet);
+        context.stepCompleted();
+    }
+
+    private void checkAlternativeAttribute(OperationContext context, String attributeName, boolean alternativeMustBeSet) throws OperationFailedException {
         if (attributeDefinitions.containsKey(attributeName)) {
             AttributeDefinition attr = attributeDefinitions.get(attributeName);
-            final Resource resource = context.readResource(PathAddress.EMPTY_ADDRESS);
-            if(attr.hasAlternative(resource.getModel())) {
-                context.setRollbackOnly();
-                throw new OperationFailedException(new ModelNode().set(MESSAGES.altAttributeAlreadyDefined(attributeName)));
+            final Resource resource = context.readResource(EMPTY_ADDRESS);
+            if (alternativeMustBeSet) {
+                if (!attr.hasAlternative(resource.getModel())) {
+                    throw new OperationFailedException(new ModelNode().set(MESSAGES.undefineAttributeWithoutAlternative(attributeName)));
+                }
+            } else {
+                if (attr.hasAlternative(resource.getModel())) {
+                    throw new OperationFailedException(new ModelNode().set(MESSAGES.altAttributeAlreadyDefined(attributeName)));
+                }
             }
         }
-        context.stepCompleted();
     }
 
     public static void checkAlternatives(ModelNode operation, String attr1, String attr2, boolean acceptNone) throws OperationFailedException {
