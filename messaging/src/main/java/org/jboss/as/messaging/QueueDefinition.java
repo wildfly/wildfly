@@ -129,7 +129,7 @@ public class QueueDefinition extends SimpleResourceDefinition {
                             .build();
                     registry.registerReadOnlyAttribute(readOnlyRuntimeAttr, QueueReadAttributeHandler.RUNTIME_INSTANCE);
                 } else {
-                    registry.registerReadWriteAttribute(attr, null, QueueConfigurationWriteHandler.INSTANCE);
+                    registry.registerReadOnlyAttribute(attr, null);
                 }
             }
         }

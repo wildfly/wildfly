@@ -124,7 +124,7 @@ public class JMSQueueDefinition extends SimpleResourceDefinition {
                 if (deployed) {
                     registry.registerReadOnlyAttribute(attr, JMSQueueConfigurationRuntimeHandler.INSTANCE);
                 } else {
-                    registry.registerReadWriteAttribute(attr, null, JMSQueueConfigurationWriteHandler.INSTANCE);
+                    registry.registerReadOnlyAttribute(attr, null);
                 }
             }
         }
