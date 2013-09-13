@@ -147,8 +147,8 @@
         <version.org.glassfish.javax.el>3.0-b07</version.org.glassfish.javax.el>
         <version.org.glassfish.javax.enterprise.concurrent>1.0</version.org.glassfish.javax.enterprise.concurrent>
         <version.org.glassfish.javax.json>1.0</version.org.glassfish.javax.json>
-        <version.org.hibernate>4.3.0.Beta3</version.org.hibernate>
-        <version.org.hibernate.commons.annotations>4.0.2.Final</version.org.hibernate.commons.annotations>
+        <version.org.hibernate>4.3.0.Beta4</version.org.hibernate>
+        <version.org.hibernate.commons.annotations>4.0.4.Final</version.org.hibernate.commons.annotations>
         <version.org.hibernate.javax.persistence.hibernate-jpa-2.0-api>1.0.1.Final</version.org.hibernate.javax.persistence.hibernate-jpa-2.0-api>
         <version.org.hibernate.validator>5.0.1.Final</version.org.hibernate.validator>
         <version.org.hibernate.javax.persistence.hibernate-jpa-2.1-api>1.0.0.Final</version.org.hibernate.javax.persistence.hibernate-jpa-2.1-api>
@@ -3471,6 +3471,10 @@
                         <groupId>org.jboss.spec.javax.transaction</groupId>
                         <artifactId>jboss-transaction-api_1.2_spec</artifactId>
                     </exclusion>
+                    <exclusion>
+                        <groupId>org.jboss.logging</groupId>
+                        <artifactId>jboss-logging-annotations</artifactId>
+                    </exclusion>
                 </exclusions>
             </dependency>
 
@@ -3490,6 +3494,10 @@
                     <exclusion>
                         <groupId>org.rhq.helpers</groupId>
                         <artifactId>rhq-pluginAnnotations</artifactId>
+                    </exclusion>
+                    <exclusion>
+                        <groupId>org.jboss.logging</groupId>
+                        <artifactId>jboss-logging-annotations</artifactId>
                     </exclusion>
                 </exclusions>
             </dependency>
@@ -3535,6 +3543,10 @@
                         <groupId>org.slf4j</groupId>
                         <artifactId>slf4j-api</artifactId>
                     </exclusion>
+                    <exclusion>
+                        <groupId>org.jboss.logging</groupId>
+                        <artifactId>jboss-logging-annotations</artifactId>
+                    </exclusion>
                 </exclusions>
             </dependency>
 
@@ -3542,6 +3554,12 @@
                <groupId>org.hibernate.common</groupId>
                <artifactId>hibernate-commons-annotations</artifactId>
                <version>${version.org.hibernate.commons.annotations}</version>
+	       <exclusions>
+	           <exclusion>
+                       <groupId>org.jboss.logging</groupId>
+                       <artifactId>jboss-logging-annotations</artifactId>
+                   </exclusion>
+               </exclusions>
             </dependency>
 
             <dependency>
@@ -3584,6 +3602,10 @@
                     <exclusion>
                         <groupId>org.jboss.spec.javax.transaction</groupId>
                         <artifactId>jboss-transaction-api_1.2_spec</artifactId>
+                    </exclusion>
+                    <exclusion>
+                       <groupId>org.jboss.logging</groupId>
+                       <artifactId>jboss-logging-annotations</artifactId>
                     </exclusion>
                 </exclusions>
             </dependency>
