@@ -555,4 +555,15 @@ public interface MessagingMessages {
      */
     @Message(id = 11680, value = "It is not permitted to call this method on injected JMSContext (see JMS 2.0 spec, §12.4.5).")
     IllegalStateRuntimeException callNotPermittedOnInjectedJMSContext();
+
+    /**
+     * A message indicating the alternative attribute represented by the {@code name} parameter can not be undefined as the resource
+     * has not defined any other alternative .
+     *
+     * @param name the attribute name.
+     *
+     * @return the message.
+     */
+    @Message(id = 11681, value = "Attribute (%s) can not been undefined as the resource does not define any alternative to this attribute.")
+    String undefineAttributeWithoutAlternative(String name);
 }

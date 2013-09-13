@@ -116,6 +116,11 @@ public class ConnectionFactoryWriteAttributeHandler extends AbstractWriteAttribu
     }
 
     private void applyOperationToHornetQService(final OperationContext context, String name, String attributeName, ModelNode value, ServiceController<?> hqService) {
+        if(attributeName.equals(Common.CONNECTOR.getName()) ||
+                attributeName.equals(Common.DISCOVERY_GROUP_NAME.getName())) {
+            return;
+        }
+
         HornetQServer server =  HornetQServer.class.cast(hqService.getValue());
         ConnectionFactoryControl control = ConnectionFactoryControl.class.cast(server.getManagementService().getResource(ResourceNames.JMS_CONNECTION_FACTORY + name));
         try {

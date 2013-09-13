@@ -153,6 +153,7 @@ public interface ConnectionFactoryAttributes {
                         }
                     }
                 })
+                .setRestartAllServices()
                 .build();
 
         AttributeDefinition CONSUMER_MAX_RATE = SimpleAttributeDefinitionBuilder.create("consumer-max-rate", INT)
