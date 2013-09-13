@@ -546,4 +546,15 @@ public interface MessagingMessages {
      */
     @Message(id = 11679, value = "The broadcast group '%s' defines reference to nonexistent connector '%s'. Available connectors '%s'.")
     OperationFailedException wrongConnectorRefInBroadCastGroup(final String bgName, final String connectorRef, final Collection<String> presentConnectors);
+
+    /**
+     * A message indicating the alternative attribute represented by the {@code name} parameter can not be undefined as the resource
+     * has not defined any other alternative .
+     *
+     * @param name the attribute name.
+     *
+     * @return the message.
+     */
+    @Message(id = 11681, value = "Attribute (%s) can not been undefined as the resource does not define any alternative to this attribute.")
+    String undefineAttributeWithoutAlternative(String name);
 }

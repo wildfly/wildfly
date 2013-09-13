@@ -127,6 +127,7 @@ public interface ConnectionFactoryAttributes {
         AttributeDefinition CONNECTOR = new SimpleMapAttributeDefinition.Builder(CommonAttributes.CONNECTOR, true)
                 .setAlternatives(CommonAttributes.DISCOVERY_GROUP_NAME)
                 .setAttributeMarshaller(AttributeMarshallers.CONNECTORS_MARSHALLER)
+                .setRestartAllServices()
                 .build();
 
         AttributeDefinition CONSUMER_MAX_RATE = SimpleAttributeDefinitionBuilder.create("consumer-max-rate", INT)
