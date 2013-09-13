@@ -80,7 +80,7 @@ public class VaultTool {
                 if (returnVal != 100)
                     tool.summary();
             } catch (Exception e) {
-                System.err.println("Problem occured:");
+                System.err.println(VaultMessages.MESSAGES.problemOcurred());
                 e.printStackTrace(System.err);
                 System.exit(1);
             }
@@ -95,26 +95,23 @@ public class VaultTool {
             Console console = System.console();
 
             if (console == null) {
-                System.err.println("No console.");
+                System.err.println(VaultMessages.MESSAGES.noConsole());
                 System.exit(1);
             }
 
             Scanner in = new Scanner(System.in);
             while (true) {
-                String commandStr = "Please enter a Digit::   0: Start Interactive Session "
-                        + " 1: Remove Interactive Session " + " 2: Exit";
-
-                System.out.println(commandStr);
+                System.out.println(VaultMessages.MESSAGES.interactiveCommandString());
                 int choice = in.nextInt();
                 switch (choice) {
                     case 0:
-                        System.out.println("Starting an interactive session");
+                        System.out.println(VaultMessages.MESSAGES.startingInteractiveSession());
                         VaultInteractiveSession vsession = new VaultInteractiveSession();
                         tool.setSession(vsession);
                         vsession.start();
                         break;
                     case 1:
-                        System.out.println("Removing the current interactive session");
+                        System.out.println(VaultMessages.MESSAGES.removingInteractiveSession());
                         tool.setSession(null);
                         break;
                     default:
@@ -132,7 +129,7 @@ public class VaultTool {
         try {
             cmdLine = parser.parse(options, args, true);
         } catch (ParseException e) {
-            System.out.println("Problem while parsing command line parameters:");
+            System.out.println(VaultMessages.MESSAGES.problemParsingCommandLineParameters());
             e.printStackTrace(System.err);
             System.exit(2);
         }
@@ -148,19 +145,19 @@ public class VaultTool {
      */
     private void initOptions() {
         options = new Options();
-        options.addOption("k", KEYSTORE_PARAM, true, "Keystore URL");
-        options.addOption("p", KEYSTORE_PASSWORD_PARAM, true, "Keystore password");
-        options.addOption("e", ENC_DIR_PARAM, true, "Directory containing encrypted files");
-        options.addOption("s", SALT_PARAM, true, "8 character salt");
-        options.addOption("i", ITERATION_PARAM, true, "Iteration count");
-        options.addOption("v", ALIAS_PARAM, true, "Vault keystore alias");
-        options.addOption("b", VAULT_BLOCK_PARAM, true, "Vault block");
-        options.addOption("a", ATTRIBUTE_PARAM, true, "Attribute name");
+        options.addOption("k", KEYSTORE_PARAM, true, VaultMessages.MESSAGES.cmdLineKeyStoreURL());
+        options.addOption("p", KEYSTORE_PASSWORD_PARAM, true, VaultMessages.MESSAGES.cmdLineKeyStorePassword());
+        options.addOption("e", ENC_DIR_PARAM, true, VaultMessages.MESSAGES.cmdLineEncryptionDirectory());
+        options.addOption("s", SALT_PARAM, true, VaultMessages.MESSAGES.cmdLineSalt());
+        options.addOption("i", ITERATION_PARAM, true, VaultMessages.MESSAGES.cmdLineIterationCount());
+        options.addOption("v", ALIAS_PARAM, true, VaultMessages.MESSAGES.cmdLineVaultKeyStoreAlias());
+        options.addOption("b", VAULT_BLOCK_PARAM, true, VaultMessages.MESSAGES.cmdLineVaultBlock());
+        options.addOption("a", ATTRIBUTE_PARAM, true, VaultMessages.MESSAGES.cmdLineAttributeName());
 
         OptionGroup og = new OptionGroup();
-        Option x = new Option("x", SEC_ATTR_VALUE_PARAM, true, "Secured attribute value (such as password) to store");
-        Option c = new Option("c", CHECK_SEC_ATTR_EXISTS_PARAM, false, "Check whether the secured attribute already exists in the vault");
-        Option h = new Option("h", HELP_PARAM, false, "Help");
+        Option x = new Option("x", SEC_ATTR_VALUE_PARAM, true, VaultMessages.MESSAGES.cmdLineSecuredAttribute());
+        Option c = new Option("c", CHECK_SEC_ATTR_EXISTS_PARAM, false, VaultMessages.MESSAGES.cmdLineCheckAttribute());
+        Option h = new Option("h", HELP_PARAM, false, VaultMessages.MESSAGES.cmdLineHelp());
         og.addOption(x);
         og.addOption(c);
         og.addOption(h);
@@ -191,10 +188,10 @@ public class VaultTool {
         if (cmdLine.hasOption(CHECK_SEC_ATTR_EXISTS_PARAM)) {
             // check password
             if (nonInteractiveSession.checkSecuredAttribute(vaultBlock, attributeName)) {
-                System.out.println("Password already exists.");
+                System.out.println(VaultMessages.MESSAGES.cmdLineSecuredAttributeAlreadyExists());
                 return 0;
             } else {
-                System.out.println("Password doesn't exist.");
+                System.out.println(VaultMessages.MESSAGES.cmdLineSecuredAttributeDoesNotExist());
                 return 5;
             }
         } else {

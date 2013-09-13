@@ -44,62 +44,62 @@ public class VaultInteractiveSession {
         Console console = System.console();
 
         if (console == null) {
-            System.err.println("No console.");
+            System.err.println(VaultMessages.MESSAGES.noConsole());
             System.exit(1);
         }
 
         while (encDir == null || encDir.length() == 0) {
             encDir = console
-                    .readLine("Enter directory to store encrypted files:");
+                    .readLine(VaultMessages.MESSAGES.enterEncryptionDirectory());
         }
 
         while (keystoreURL == null || keystoreURL.length() == 0) {
-            keystoreURL = console.readLine("Enter Keystore URL:");
+            keystoreURL = console.readLine(VaultMessages.MESSAGES.enterKeyStoreURL());
         }
 
-        char[] keystorePasswd = getSensitiveValue("Enter Keystore password");
+        char[] keystorePasswd = getSensitiveValue(VaultMessages.MESSAGES.enterKeyStorePassword());
 
         try {
             while (salt == null || salt.length() != 8) {
-                salt = console.readLine("Enter 8 character salt:");
+                salt = console.readLine(VaultMessages.MESSAGES.enterSalt());
             }
 
-            String ic = console.readLine("Enter iteration count as a number (Eg: 44):");
+            String ic = console.readLine(VaultMessages.MESSAGES.enterIterationCount());
             iterationCount = Integer.parseInt(ic);
             vaultNISession = new VaultSession(keystoreURL, new String(keystorePasswd), encDir, salt, iterationCount);
 
             while (keystoreAlias == null || keystoreAlias.length() == 0) {
-                keystoreAlias = console.readLine("Enter Keystore Alias:");
+                keystoreAlias = console.readLine(VaultMessages.MESSAGES.enterKeyStoreAlias());
             }
 
-            System.out.println("Initializing Vault");
+            System.out.println(VaultMessages.MESSAGES.initializingVault());
             vaultNISession.startVaultSession(keystoreAlias);
             vaultNISession.vaultConfigurationDisplay();
 
-            System.out.println("Vault is initialized and ready for use");
-            System.out.println("Handshake with Vault complete");
+            System.out.println(VaultMessages.MESSAGES.vaultInitialized());
+            System.out.println(VaultMessages.MESSAGES.handshakeComplete());
 
             VaultInteraction vaultInteraction = new VaultInteraction(vaultNISession);
             vaultInteraction.start();
         } catch (Exception e) {
-            System.out.println("Exception encountered:" + e.getLocalizedMessage());
+            System.out.println(VaultMessages.MESSAGES.exceptionEncountered() + e.getLocalizedMessage());
         }
     }
 
     public static char[] getSensitiveValue(String passwordPrompt) {
         while (true) {
             if (passwordPrompt == null)
-                passwordPrompt = "Enter your password";
+                passwordPrompt = VaultMessages.MESSAGES.enterYourPassword();
 
             Console console = System.console();
 
             char[] passwd = console.readPassword(passwordPrompt + ": ");
-            char[] passwd1 = console.readPassword(passwordPrompt + " again: ");
+            char[] passwd1 = console.readPassword(passwordPrompt + VaultMessages.MESSAGES.passwordAgain());
             boolean noMatch = !Arrays.equals(passwd, passwd1);
             if (noMatch)
-                System.out.println("Values entered don't match");
+                System.out.println(VaultMessages.MESSAGES.passwordsDoNotMatch());
             else {
-                System.out.println("Values match");
+                System.out.println(VaultMessages.MESSAGES.passwordsMatch());
                 return passwd;
             }
         }
