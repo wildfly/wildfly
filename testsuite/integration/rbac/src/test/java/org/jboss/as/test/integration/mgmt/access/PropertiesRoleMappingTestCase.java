@@ -158,6 +158,36 @@ public class PropertiesRoleMappingTestCase extends AbstractRbacTestCase {
     }
 
     @Test
+    public void testOperatorAndMonitorAndExcludingGroup() throws Exception {
+        test("UserMappedToGroupOperatorAndMonitorAndExcludingGroup", OPERATOR_ROLE);
+    }
+
+    @Test
+    public void testMaintainerAndMonitorAndExcludingGroup() throws Exception {
+        test("UserMappedToGroupMaintainerAndMonitorAndExcludingGroup", MAINTAINER_ROLE);
+    }
+
+    @Test
+    public void testDeployerAndMonitorAndExcludingGroup() throws Exception {
+        test("UserMappedToGroupDeployerAndMonitorAndExcludingGroup", DEPLOYER_ROLE);
+    }
+
+    @Test
+    public void testAdministratorAndMonitorAndExcludingGroup() throws Exception {
+        test("UserMappedToGroupAdministratorAndMonitorAndExcludingGroup", ADMINISTRATOR_ROLE);
+    }
+
+    @Test
+    public void testAuditorAndMonitorAndExcludingGroup() throws Exception {
+        test("UserMappedToGroupAuditorAndMonitorAndExcludingGroup", AUDITOR_ROLE);
+    }
+
+    @Test
+    public void testSuperUserAndMonitorAndExcludingGroup() throws Exception {
+        test("UserMappedToGroupSuperUserAndMonitorAndExcludingGroup", SUPERUSER_ROLE);
+    }
+
+    @Test
     public void testRuntimeReconfigurationMonitor() throws Exception {
         testRuntimeReconfiguration("UserMappedToGroupMonitor", MONITOR_ROLE);
     }

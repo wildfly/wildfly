@@ -96,7 +96,7 @@
                                     <includes>
                                         <include>standalone*.xml</include>
                                     </includes>
-                                    <stylesheet>${basedir}/../src/test/xslt/enableManagementGroupsToRolesMapping.xsl</stylesheet>
+                                    <stylesheet>${basedir}/../src/test/xslt/setupRbacRolesMappingTests.xsl</stylesheet>
                                     <outputDir>${basedir}/target/jbossas/standalone/configuration</outputDir>
                                     <fileMappers>
                                         <fileMapper implementation="org.codehaus.plexus.components.io.filemappers.RegExpFileMapper">
@@ -104,15 +104,6 @@
                                             <replacement>properties-role-mapping-</replacement>
                                         </fileMapper>
                                     </fileMappers>
-                                </transformationSet>
-                                <transformationSet>
-                                    <dir>${basedir}/target/jbossas/standalone/configuration</dir>
-                                    <skipDefaultExcludes>true</skipDefaultExcludes>
-                                    <includes>
-                                        <include>*-role-mapping-standalone*.xml</include>
-                                    </includes>
-                                    <stylesheet>${basedir}/../src/test/xslt/setupRbacRolesMappingTests.xsl</stylesheet>
-                                    <outputDir>${basedir}/target/jbossas/standalone/configuration</outputDir>
                                 </transformationSet>
                             </transformationSets>
                         </configuration>
