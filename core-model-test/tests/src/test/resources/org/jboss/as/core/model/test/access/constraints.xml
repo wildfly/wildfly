@@ -2,7 +2,7 @@
 <server xmlns="urn:jboss:domain:2.0">
    <management>
       <access-control provider="rbac">
-         <role-mapping use-realm-roles="true">
+         <role-mapping>
             <role name="Monitor">
                <include>
                   <user realm="ManagementRealm" name="UserOne" />

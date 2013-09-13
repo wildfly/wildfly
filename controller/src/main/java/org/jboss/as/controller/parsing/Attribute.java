@@ -135,7 +135,6 @@ public enum Attribute {
     TRUNCATE("truncate"),
     TYPE("type"),
     URL("url"),
-    USE_REALM_ROLES("use-realm-roles"),
     USER("user"),
     USER_DN("user-dn"),
     USERNAME("username"),

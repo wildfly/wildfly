@@ -511,14 +511,6 @@ public abstract class JmxRbacTestCase extends AbstractControllerTestBase {
                 bootOperations.add(addIncludeUserOp);
             }
 
-            ModelNode enableUseRealmRolesOp = Util.getWriteAttributeOperation(
-                    PathAddress.pathAddress(
-                            CoreManagementResourceDefinition.PATH_ELEMENT,
-                            AccessAuthorizationResourceDefinition.PATH_ELEMENT),
-                    AccessAuthorizationResourceDefinition.USE_REALM_ROLES.getName(),
-                    new ModelNode(true));
-            bootOperations.add(enableUseRealmRolesOp);
-
             ModelNode enableRbacOp = Util.getWriteAttributeOperation(
                     PathAddress.pathAddress(
                             CoreManagementResourceDefinition.PATH_ELEMENT,

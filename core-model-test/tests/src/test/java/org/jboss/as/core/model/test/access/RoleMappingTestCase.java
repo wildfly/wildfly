@@ -53,7 +53,6 @@ import org.jboss.as.core.model.test.TestModelType;
 import org.jboss.as.core.security.AccountPrincipal;
 import org.jboss.as.core.security.GroupPrincipal;
 import org.jboss.as.core.security.RealmPrincipal;
-import org.jboss.as.core.security.RolePrincipal;
 import org.jboss.dmr.ModelNode;
 import org.junit.Before;
 import org.junit.Test;
@@ -93,8 +92,8 @@ public class RoleMappingTestCase extends AbstractCoreModelTest {
         addPrincipal(roleName, MappingType.INCLUDE, PrincipalType.USER, userName, null);
         assertIsCallerInRole(roleName, null, false);
 
-        assertIsCallerInRole(roleName, true, userName, TEST_REALM, false, null);
-        assertIsCallerInRole(roleName, false, OTHER_USER, TEST_REALM, false, null, userName);
+        assertIsCallerInRole(roleName, true, userName, TEST_REALM, null);
+        assertIsCallerInRole(roleName, false, OTHER_USER, TEST_REALM, null, userName);
 
         removeRole(roleName);
     }
@@ -110,9 +109,9 @@ public class RoleMappingTestCase extends AbstractCoreModelTest {
         addPrincipal(roleName, MappingType.INCLUDE, PrincipalType.USER, userName, TEST_REALM);
         assertIsCallerInRole(roleName, null, false);
 
-        assertIsCallerInRole(roleName, true, userName, TEST_REALM, false, null);
-        assertIsCallerInRole(roleName, false, userName, OTHER_REALM, false, null);
-        assertIsCallerInRole(roleName, false, OTHER_USER, TEST_REALM, false, null, userName);
+        assertIsCallerInRole(roleName, true, userName, TEST_REALM, null);
+        assertIsCallerInRole(roleName, false, userName, OTHER_REALM, null);
+        assertIsCallerInRole(roleName, false, OTHER_USER, TEST_REALM, null, userName);
 
         removeRole(roleName);
     }
@@ -131,9 +130,9 @@ public class RoleMappingTestCase extends AbstractCoreModelTest {
         addPrincipal(roleName, MappingType.INCLUDE, PrincipalType.GROUP, groupName, null);
         assertIsCallerInRole(roleName, null, false);
 
-        assertIsCallerInRole(roleName, true, userName, TEST_REALM, false, null, groupName);
-        assertIsCallerInRole(roleName, true, userName, OTHER_REALM, false, null, groupName);
-        assertIsCallerInRole(roleName, false, groupName, TEST_REALM, false, null, userName);
+        assertIsCallerInRole(roleName, true, userName, TEST_REALM, null, groupName);
+        assertIsCallerInRole(roleName, true, userName, OTHER_REALM, null, groupName);
+        assertIsCallerInRole(roleName, false, groupName, TEST_REALM, null, userName);
 
         removeRole(roleName);
     }
@@ -150,9 +149,9 @@ public class RoleMappingTestCase extends AbstractCoreModelTest {
         addPrincipal(roleName, MappingType.INCLUDE, PrincipalType.GROUP, groupName, TEST_REALM);
         assertIsCallerInRole(roleName, null, false);
 
-        assertIsCallerInRole(roleName, true, userName, TEST_REALM, false, null, groupName);
-        assertIsCallerInRole(roleName, false, userName, OTHER_REALM, false, null, groupName);
-        assertIsCallerInRole(roleName, false, groupName, TEST_REALM, false, null, userName);
+        assertIsCallerInRole(roleName, true, userName, TEST_REALM, null, groupName);
+        assertIsCallerInRole(roleName, false, userName, OTHER_REALM, null, groupName);
+        assertIsCallerInRole(roleName, false, groupName, TEST_REALM, null, userName);
 
         removeRole(roleName);
     }
@@ -170,8 +169,8 @@ public class RoleMappingTestCase extends AbstractCoreModelTest {
         addPrincipal(roleName, MappingType.EXCLUDE, PrincipalType.USER, userName, null);
         assertIsCallerInRole(roleName, null, false);
 
-        assertIsCallerInRole(roleName, true, OTHER_USER, TEST_REALM, false, null, groupName);
-        assertIsCallerInRole(roleName, false, userName, TEST_REALM, false, null, groupName);
+        assertIsCallerInRole(roleName, true, OTHER_USER, TEST_REALM, null, groupName);
+        assertIsCallerInRole(roleName, false, userName, TEST_REALM, null, groupName);
 
         removeRole(roleName);
     }
@@ -189,9 +188,9 @@ public class RoleMappingTestCase extends AbstractCoreModelTest {
         addPrincipal(roleName, MappingType.EXCLUDE, PrincipalType.USER, userName, TEST_REALM);
         assertIsCallerInRole(roleName, null, false);
 
-        assertIsCallerInRole(roleName, true, OTHER_USER, TEST_REALM, false, null, groupName);
-        assertIsCallerInRole(roleName, false, userName, TEST_REALM, false, null, groupName);
-        assertIsCallerInRole(roleName, true, userName, OTHER_REALM, false, null, groupName);
+        assertIsCallerInRole(roleName, true, OTHER_USER, TEST_REALM, null, groupName);
+        assertIsCallerInRole(roleName, false, userName, TEST_REALM, null, groupName);
+        assertIsCallerInRole(roleName, true, userName, OTHER_REALM, null, groupName);
 
         removeRole(roleName);
     }
@@ -210,8 +209,8 @@ public class RoleMappingTestCase extends AbstractCoreModelTest {
         addPrincipal(roleName, MappingType.EXCLUDE, PrincipalType.GROUP, outGroupName, null);
         assertIsCallerInRole(roleName, null, false);
 
-        assertIsCallerInRole(roleName, true, userName, TEST_REALM, false, null, inGroupName);
-        assertIsCallerInRole(roleName, false, userName, TEST_REALM, false, null, inGroupName, outGroupName);
+        assertIsCallerInRole(roleName, true, userName, TEST_REALM, null, inGroupName);
+        assertIsCallerInRole(roleName, false, userName, TEST_REALM, null, inGroupName, outGroupName);
 
         removeRole(roleName);
     }
@@ -230,94 +229,9 @@ public class RoleMappingTestCase extends AbstractCoreModelTest {
         addPrincipal(roleName, MappingType.EXCLUDE, PrincipalType.GROUP, outGroupName, TEST_REALM);
         assertIsCallerInRole(roleName, null, false);
 
-        assertIsCallerInRole(roleName, true, userName, TEST_REALM, false, null, inGroupName);
-        assertIsCallerInRole(roleName, false, userName, TEST_REALM, false, null, inGroupName, outGroupName);
-        assertIsCallerInRole(roleName, true, userName, OTHER_REALM, false, null, inGroupName, outGroupName);
-
-        removeRole(roleName);
-    }
-
-    /**
-     * Test role membership based on realm association of a role.
-     */
-    @Test
-    public void testRealmRole() {
-        final String roleName = "TestRoleEight";
-        final String userName = "UserEight";
-
-        assertIsCallerInRole(roleName, null, false);
-
-        assertIsCallerInRole(roleName, true, userName, TEST_REALM, true, null);
-        assertIsCallerInRole(roleName, false, userName, TEST_REALM, false, null);
-    }
-
-    /**
-     * Test where the user is assigned a role by the realm but excluded from the role based on their username.
-     */
-    @Test
-    public void testRealmRoleExcludedUsername() {
-        final String roleName = "TestRoleNine";
-        final String userName = "UserNine";
-        addRole(roleName);
-        addPrincipal(roleName, MappingType.EXCLUDE, PrincipalType.USER, userName, null);
-        assertIsCallerInRole(roleName, null, false);
-
-        assertIsCallerInRole(roleName, false, userName, TEST_REALM, true, null);
-        assertIsCallerInRole(roleName, true, OTHER_USER, TEST_REALM, true, null);
-
-        removeRole(roleName);
-    }
-
-    /**
-     * Same as testRealmRoleExcludedUsername but the exclusion takes into account the realm.
-     */
-    @Test
-    public void testRealmRoleExcludedUsernameAndRealm() {
-        final String roleName = "TestRoleTen";
-        final String userName = "UserTen";
-        addRole(roleName);
-        addPrincipal(roleName, MappingType.EXCLUDE, PrincipalType.USER, userName, TEST_REALM);
-        assertIsCallerInRole(roleName, null, false);
-
-        assertIsCallerInRole(roleName, false, userName, TEST_REALM, true, null);
-        assertIsCallerInRole(roleName, true, userName, OTHER_REALM, true, null);
-        assertIsCallerInRole(roleName, true, OTHER_USER, TEST_REALM, true, null);
-
-        removeRole(roleName);
-    }
-
-    /**
-     * Test where the user is assigned a role by the realm but excluded from the role based on their group membership.
-     */
-    @Test
-    public void testRealmRoleExcludedGroup() {
-        final String roleName = "TestRoleEleven";
-        final String userName = "UserEleven";
-        final String groupName = "GroupEleven";
-        addRole(roleName);
-        addPrincipal(roleName, MappingType.EXCLUDE, PrincipalType.GROUP, groupName, null);
-        assertIsCallerInRole(roleName, null, false);
-
-        assertIsCallerInRole(roleName, false, userName, TEST_REALM, true, null, groupName);
-        assertIsCallerInRole(roleName, true, userName, TEST_REALM, true, null);
-
-        removeRole(roleName);
-    }
-
-    /**
-     * Same as testRealmRoleExcludedGroup but also take into account the realm of the group.
-     */
-    @Test
-    public void testRealmRoleExcludedGroupAndRealm() {
-        final String roleName = "TestRoleTwelve";
-        final String userName = "UserTwelve";
-        final String groupName = "GroupTwelve";
-        addRole(roleName);
-        addPrincipal(roleName, MappingType.EXCLUDE, PrincipalType.GROUP, groupName, TEST_REALM);
-        assertIsCallerInRole(roleName, null, false);
-
-        assertIsCallerInRole(roleName, false, userName, TEST_REALM, true, null, groupName);
-        assertIsCallerInRole(roleName, true, userName, OTHER_REALM, true, null, groupName);
+        assertIsCallerInRole(roleName, true, userName, TEST_REALM, null, inGroupName);
+        assertIsCallerInRole(roleName, false, userName, TEST_REALM, null, inGroupName, outGroupName);
+        assertIsCallerInRole(roleName, true, userName, OTHER_REALM, null, inGroupName, outGroupName);
 
         removeRole(roleName);
     }
@@ -335,9 +249,9 @@ public class RoleMappingTestCase extends AbstractCoreModelTest {
         addRole(roleName);
         ModelNode addedAddress = addPrincipal(roleName, MappingType.INCLUDE, PrincipalType.USER, userName, null);
 
-        assertIsCallerInRole(roleName, true, userName, TEST_REALM, false, null);
-        assertIsCallerInRole(otherRole, true, userName, TEST_REALM, false, otherRole);
-        assertIsCallerInRole(roleName, false, userName, TEST_REALM, false, otherRole);
+        assertIsCallerInRole(roleName, true, userName, TEST_REALM, null);
+        assertIsCallerInRole(otherRole, true, userName, TEST_REALM, otherRole);
+        assertIsCallerInRole(roleName, false, userName, TEST_REALM, otherRole);
 
         removePrincipal(addedAddress);
         removeRole(roleName);
@@ -354,9 +268,9 @@ public class RoleMappingTestCase extends AbstractCoreModelTest {
         addRole(roleName);
         ModelNode addedAddress = addPrincipal(roleName, MappingType.INCLUDE, PrincipalType.USER, userName, null);
 
-        assertIsCallerInRole(roleName, true, userName, TEST_REALM, false, null);
-        assertIsCallerInRole(otherRole, false, userName, TEST_REALM, false, otherRole);
-        assertIsCallerInRole(roleName, true, userName, TEST_REALM, false, otherRole);
+        assertIsCallerInRole(roleName, true, userName, TEST_REALM, null);
+        assertIsCallerInRole(otherRole, false, userName, TEST_REALM, otherRole);
+        assertIsCallerInRole(roleName, true, userName, TEST_REALM, otherRole);
 
         removePrincipal(addedAddress);
         removeRole(roleName);
@@ -420,15 +334,12 @@ public class RoleMappingTestCase extends AbstractCoreModelTest {
     }
 
     private void assertIsCallerInRole(final String roleName, final boolean expectedOutcome, final String userName,
-            final String realm, final boolean addRole, final String runAsRole, final String... groups) {
+            final String realm, final String runAsRole, final String... groups) {
         Subject subject = new Subject();
         Set<Principal> principals = subject.getPrincipals();
         principals.add(new User(userName, realm));
         for (String current : groups) {
             principals.add(new Group(current, realm));
-        }
-        if (addRole) {
-            principals.add(new Role(roleName));
         }
 
         Subject.doAs(subject, new PrivilegedAction<Void>() {
@@ -502,20 +413,6 @@ public class RoleMappingTestCase extends AbstractCoreModelTest {
             return realm;
         }
 
-    }
-
-    private static class Role implements RolePrincipal {
-
-        private final String name;
-
-        private Role(final String name) {
-            this.name = name;
-        }
-
-        @Override
-        public String getName() {
-            return name;
-        }
     }
 
 }

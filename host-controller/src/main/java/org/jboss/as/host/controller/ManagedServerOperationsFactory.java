@@ -76,7 +76,6 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SOC
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SOCKET_BINDING_PORT_OFFSET;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SYSLOG_HANDLER;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SYSTEM_PROPERTY;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.USE_REALM_ROLES;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.VALUE;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.VAULT;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.VAULT_EXPRESSION;
@@ -485,10 +484,6 @@ public final class ManagedServerOperationsFactory {
             if (domainConfig.hasDefined(PROVIDER)) {
                 ModelNode providerOp = Util.getWriteAttributeOperation(baseAddress, PROVIDER, domainConfig.get(PROVIDER));
                 updates.add(providerOp);
-            }
-            if (domainConfig.hasDefined(USE_REALM_ROLES)) {
-                ModelNode realmRolesOp = Util.getWriteAttributeOperation(baseAddress, USE_REALM_ROLES, domainConfig.get(USE_REALM_ROLES));
-                updates.add(realmRolesOp);
             }
 
             addRoleMappings(domainConfig, baseAddress, updates);
