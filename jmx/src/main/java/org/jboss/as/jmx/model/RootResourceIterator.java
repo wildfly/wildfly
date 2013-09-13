@@ -27,10 +27,12 @@ import org.jboss.as.controller.registry.Resource;
 import org.jboss.as.controller.registry.Resource.ResourceEntry;
 
 class RootResourceIterator<T> {
+    private final ResourceAccessControlUtil accessControlUtil;
     private final Resource rootResource;
     private final ResourceAction<T> action;
 
-    RootResourceIterator(final Resource rootResource, final ResourceAction<T> action) {
+    RootResourceIterator(final ResourceAccessControlUtil accessControlUtil, final Resource rootResource, final ResourceAction<T> action) {
+        this.accessControlUtil = accessControlUtil;
         this.rootResource = rootResource;
         this.action = action;
     }
@@ -42,9 +44,11 @@ class RootResourceIterator<T> {
 
     private void doIterate(final Resource current, final PathAddress address) {
         boolean handleChildren = false;
-        if (action != null) {
+
+        if (accessControlUtil.getResourceAccess(address, false).isAccessibleResource()) {
             handleChildren = action.onResource(address);
         }
+
         if (handleChildren) {
             for (String type : current.getChildTypes()) {
                 if (current.hasChildren(type)) {
@@ -58,6 +62,7 @@ class RootResourceIterator<T> {
             }
         }
     }
+
 
     interface ResourceAction<T> {
         boolean onResource(PathAddress address);

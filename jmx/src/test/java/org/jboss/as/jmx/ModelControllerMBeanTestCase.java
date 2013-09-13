@@ -186,6 +186,7 @@ public class ModelControllerMBeanTestCase extends AbstractSubsystemTest {
         Assert.assertEquals(count, objectNames.size());
 
         checkSameMBeans(instances, objectNames);
+
         assertContainsNames(objectNames,
                 LEGACY_ROOT_NAME, LEGACY_INTERFACE_NAME, LEGACY_SOCKET_BINDING_GROUP_NAME, LEGACY_SERVER_SOCKET_BINDING_NAME, LEGACY_SUBSYSTEM_NAME,
                 EXPR_ROOT_NAME, EXPR_INTERFACE_NAME, EXPR_SOCKET_BINDING_GROUP_NAME, EXPR_SERVER_SOCKET_BINDING_NAME, EXPR_SUBSYSTEM_NAME);
@@ -1607,6 +1608,7 @@ public class ModelControllerMBeanTestCase extends AbstractSubsystemTest {
             });
             singleRegistration.registerOperationHandler(ADD, TestChildAdd.INSTANCE, TestChildAdd.INSTANCE);
             singleRegistration.registerOperationHandler(REMOVE, TestChildRemove.INSTANCE, TestChildRemove.INSTANCE);
+            singleRegistration.registerReadOnlyAttribute("attr", null, Storage.CONFIGURATION);
         }
 
         PathElement getChildElement() {
