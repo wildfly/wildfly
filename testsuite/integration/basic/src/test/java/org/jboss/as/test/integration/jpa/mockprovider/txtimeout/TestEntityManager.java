@@ -33,6 +33,7 @@ import java.util.concurrent.atomic.AtomicBoolean;
 import javax.naming.InitialContext;
 import javax.naming.NamingException;
 import javax.sql.DataSource;
+import org.jboss.tm.TxUtils;
 
 /**
  * TestEntityManager
@@ -43,9 +44,6 @@ public class TestEntityManager implements InvocationHandler {
 
     private static AtomicBoolean closedByReaperThread = new AtomicBoolean(false);
     private static final List<String> invocations = Collections.synchronizedList(new ArrayList<String>());
-
-    // When JBTM-1556 is resolved, consider removing the tx reaper thread name and use the SPI instead.
-    private static final String ARJUNA_REAPER_THREAD_NAME = "Transaction Reaper Worker";
 
     @Override
     public Object invoke(Object proxy, Method method, Object[] args) throws Throwable {
@@ -100,8 +98,8 @@ public class TestEntityManager implements InvocationHandler {
 
     private Object close() {
         String currentThreadName = Thread.currentThread().getName();
-        boolean isBackgroundReaperThread = currentThreadName != null &&
-                currentThreadName.startsWith(ARJUNA_REAPER_THREAD_NAME);
+        boolean isBackgroundReaperThread =
+            TxUtils.isTransactionManagerTimeoutThread();
         if (isBackgroundReaperThread) {
             System.out.println("EntityManager closed by tx reaper thread");
             closedByReaperThread.set(true);

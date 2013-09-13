@@ -35,6 +35,8 @@ import javax.transaction.TransactionSynchronizationRegistry;
 
 import org.jboss.ejb3.annotation.TransactionTimeout;
 
+import org.jboss.tm.TxUtils;
+
 /**
  * stateful session bean
  *
@@ -45,7 +47,7 @@ public class SFSB1 {
     @PersistenceContext
     EntityManager entityManager;
 
-    static private String afterCompletionThreadName = null;
+    static private boolean afterCompletionCalledByTMTimeoutThread = false;
 
     @Resource
     TransactionSynchronizationRegistry transactionSynchronizationRegistry;
@@ -78,7 +80,8 @@ public class SFSB1 {
 
                         @Override
                         public void afterCompletion(int status) {
-                            afterCompletionThreadName = Thread.currentThread().getName();
+                            afterCompletionCalledByTMTimeoutThread =
+                                TxUtils.isTransactionManagerTimeoutThread();
                         }
                     });
         }
@@ -117,11 +120,11 @@ public class SFSB1 {
     }
 
     /**
-     * returns the name of the thread that ended the jta transaction used to invoke createEmployeeWaitForTxTimeout
-     * @return thread name
+     * @return true if the afterCompletion synchronization used in
+     * createEmployeeWaitForTxTimeout was called by the transaction
+     * manager handling a transaction timeout, otherwise return false
      */
-    public static String getAfterCompletionThreadName() {
-        return afterCompletionThreadName;
+    public static boolean isAfterCompletionCalledByTMTimeoutThread() {
+        return afterCompletionCalledByTMTimeoutThread;
     }
-
 }
