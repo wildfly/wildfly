@@ -95,18 +95,15 @@ public final class VaultSession {
 
         File f = new File(keystoreURL);
         if (!f.exists()) {
-            throw new Exception("Keystore [" + keystoreURL + "] doesn't exist."
-                    + "\nkeystore could be created: "
-                    + "keytool -genseckey -alias vault -storetype jceks -keyalg AES -keysize 128 -storepass secretsecret -keypass secretsecret -keystore "
-                    + keystoreURL);
+            throw VaultMessages.MESSAGES.keyStoreDoesnotExistWithExample(keystoreURL, keystoreURL);
         } else if (!f.canWrite() || !f.isFile()) {
-            throw new Exception("Keystore [" + keystoreURL + "] is not writable or not a file.");
+            throw VaultMessages.MESSAGES.keyStoreNotWritable(keystoreURL);
         }
     }
 
     protected void validateKeystorePassword() throws Exception {
         if (keystorePassword == null) {
-            throw new Exception("Keystore password has to be specified.");
+            throw VaultMessages.MESSAGES.keyStorePasswordNotSpecified();
         }
     }
 
@@ -120,24 +117,23 @@ public final class VaultSession {
         File d = new File(encryptionDirectory);
         if (!d.exists()) {
             if (!d.mkdirs()) {
-                throw new Exception("Cannot create encryption directory " + d.getAbsolutePath());
+                throw VaultMessages.MESSAGES.cannotCreateEncryptionDirectory(d.getAbsolutePath());
             }
         }
         if (!d.isDirectory()) {
-            throw new Exception("Encryption directory is not a directory or doesn't exist. (" + encryptionDirectory + ")");
+            throw VaultMessages.MESSAGES.encryptionDirectoryDoesNotExist(encryptionDirectory);
         }
     }
 
     protected void validateIterationCount() throws Exception {
         if (iterationCount < 1 && iterationCount > Integer.MAX_VALUE) {
-            throw new Exception("Iteration count has to be withing 1 - " + Integer.MAX_VALUE + ", but is " + iterationCount
-                    + ".");
+            throw VaultMessages.MESSAGES.iterationCountOutOfRange(String.valueOf(iterationCount));
         }
     }
 
     protected void validateSalt() throws Exception {
         if (salt == null || salt.length() != 8) {
-            throw new Exception("Salt has to be exactly 8 characters long.");
+            throw VaultMessages.MESSAGES.saltWrongLength();
         }
     }
 
@@ -173,7 +169,7 @@ public final class VaultSession {
             this.vault.init(getVaultOptionsMap());
             handshake();
         } catch (SecurityVaultException e) {
-            throw new Exception("Exception encountered:" + e.getLocalizedMessage(), e);
+            throw VaultMessages.MESSAGES.securityVaultException(e);
         }
     }
 
@@ -185,7 +181,7 @@ public final class VaultSession {
      */
     public void startVaultSession(String vaultAlias) throws Exception {
         if (vaultAlias == null) {
-            throw new Exception("Vault alias has to be specified.");
+            throw VaultMessages.MESSAGES.vaultAliasNotSpecified();
         }
         this.keystoreMaskedPassword = computeMaskedPassword();
         this.vaultAlias = vaultAlias;
@@ -259,16 +255,9 @@ public final class VaultSession {
      * @param attributeName
      */
     private void attributeCreatedDisplay(String vaultBlock, String attributeName) {
-        System.out.println("Secured attribute value has been stored in vault. ");
-        System.out.println("Please make note of the following:");
-        System.out.println("********************************************");
-        System.out.println("Vault Block:" + vaultBlock);
-        System.out.println("Attribute Name:" + attributeName);
-        System.out.println("Configuration should be done as follows:");
-        System.out.println(securedAttributeConfigurationString(vaultBlock, attributeName));
-        System.out.println("********************************************");
+        System.out.println(VaultMessages.MESSAGES.vaultAttributeCreateDisplay(vaultBlock, attributeName,
+                securedAttributeConfigurationString(vaultBlock, attributeName)));
     }
-
 
     /**
      * Returns configuration string for secured attribute.
@@ -285,7 +274,7 @@ public final class VaultSession {
      * Display info about vault itself in form of AS7 configuration file.
      */
     public void vaultConfigurationDisplay() {
-        System.out.println("Vault Configuration in AS7 config file:");
+        System.out.println(VaultMessages.MESSAGES.vaultConfigurationTitle());
         System.out.println("********************************************");
         System.out.println("...");
         System.out.println("</extensions>");
