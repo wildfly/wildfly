@@ -25,18 +25,12 @@ package org.jboss.as.domain.management.access;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ACCESS;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.AUTHORIZATION;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.INCLUDE;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.MANAGEMENT_INTERFACE;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.NATIVE_REMOTING_INTERFACE;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ROLE_MAPPING;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SECURITY_REALM;
 import static org.jboss.as.domain.management.DomainManagementMessages.MESSAGES;
 
 import java.security.AccessController;
 import java.security.PrivilegedActionException;
 import java.security.PrivilegedExceptionAction;
-import java.util.ArrayList;
-import java.util.HashSet;
-import java.util.List;
 import java.util.Locale;
 import java.util.Set;
 
@@ -49,12 +43,9 @@ import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.PathElement;
 import org.jboss.as.controller.operations.common.Util;
 import org.jboss.as.controller.registry.Resource;
-import org.jboss.as.controller.registry.Resource.ResourceEntry;
 import org.jboss.as.domain.management.CoreManagementResourceDefinition;
 import org.jboss.as.domain.management.access.AccessAuthorizationResourceDefinition.Provider;
-import org.jboss.as.domain.management.security.SecurityRealmResourceDefinition;
 import org.jboss.dmr.ModelNode;
-import org.jboss.dmr.Property;
 
 /**
  * An {@link OperationStepHandler} to be executed at the end of stage MODEL to identify SOME situations where configuration
@@ -81,9 +72,9 @@ public class RbacSanityCheckOperation implements OperationStepHandler {
          * will allow operations to be executed by remote users, that could mean that RBAC is disabled or at least one config
          * path is identified that potentially allows for role assignment.
          *
-         * Checks to perform: - 1 - Provider if not RBAC no further checking required. 2 - If use-realm-roles is set, identify
-         * realms associated with mgmt interfaces and verify at least one maps groups to roles. 3 - Else iterate role
-         * definitions and verify at least one contains an include.
+         * Checks to perform: -
+         *   1 - Provider if not RBAC no further checking required.
+         *   3 - Else iterate role definitions and verify at least one contains an include.
          *
          * Note: This operation if validating different parts of the model, although the user had access to modify one part they
          * may not have access to the remaining parts - this Operation uses a PrivilegedAction to run as an in-vm client.
@@ -94,8 +85,7 @@ public class RbacSanityCheckOperation implements OperationStepHandler {
                 @Override
                 public Void run() throws OperationFailedException {
                     final ModelChecker checker = new ModelChecker(context, context.readResource(PathAddress.EMPTY_ADDRESS));
-                    if (checker.isRbacEnabled() && (checker.canRealmRolesBeUsed() == false)
-                            && (checker.doRoleMappingsExist() == false)) {
+                    if (checker.isRbacEnabled() && (checker.doRoleMappingsExist() == false)) {
                         throw MESSAGES.inconsistentRbacConfiguration();
                     }
 
@@ -118,11 +108,8 @@ public class RbacSanityCheckOperation implements OperationStepHandler {
      * Add the operation at the end of Stage MODEL if this operation has not already been registered.
      *
      * This operation should be added if any of the following occur: -
-     *   - map-group-to-roles is set to false on an existing security realm.
-     *   - A security realm is removed.
      *   - The authorization configuration is removed from a security realm.
      *   - The rbac provider is changed to rbac.
-     *   - The attribute use-realm-roles is set to false.
      *   - A role is removed.
      *   - An include is removed from a role.
      *   - A management interface is removed.
@@ -160,8 +147,6 @@ public class RbacSanityCheckOperation implements OperationStepHandler {
         private final OperationContext context;
         private final Resource managementResource;
         private ModelNode accessAuthorization;
-        private ModelNode managementInterface;
-        private ModelNode securityRealm;
 
         private ModelChecker(final OperationContext context, final Resource managementResource) {
             this.context = context;
@@ -175,15 +160,6 @@ public class RbacSanityCheckOperation implements OperationStepHandler {
             return Provider.valueOf(value) == Provider.RBAC;
         }
 
-        boolean canRealmRolesBeUsed() throws OperationFailedException {
-            ModelNode accessAuthorization = getAccessAuthorization();
-            if (AccessAuthorizationResourceDefinition.USE_REALM_ROLES.resolveModelAttribute(context, accessAuthorization)
-                    .asBoolean()) {
-                return canRealmsProvideRoles();
-            }
-
-            return false;
-        }
 
         boolean doRoleMappingsExist() throws OperationFailedException {
             Resource authorizationResource = managementResource.getChild(PathElement.pathElement(ACCESS, AUTHORIZATION));
@@ -198,81 +174,6 @@ public class RbacSanityCheckOperation implements OperationStepHandler {
             return false;
         }
 
-        private boolean canRealmsProvideRoles() throws OperationFailedException {
-            String[] possibleRealms = getRealmsInUse();
-            for (String current : possibleRealms) {
-                if (realmProvidesRoles(current)) {
-                    return true;
-                }
-            }
-
-            return false;
-        }
-
-        private boolean realmProvidesRoles(final String realmName) throws OperationFailedException {
-            ModelNode realm = getSecurityRealm(realmName);
-
-            if (realm.isDefined()) {
-                if (SecurityRealmResourceDefinition.MAP_GROUPS_TO_ROLES.resolveModelAttribute(context, realm).asBoolean()) {
-                    Resource realmResource = managementResource.getChild(PathElement.pathElement(SECURITY_REALM, realmName));
-
-                    return realmResource.hasChild(PathElement.pathElement(AUTHORIZATION));
-                }
-            }
-
-            return false;
-        }
-
-        private ModelNode getSecurityRealm(final String realmName) {
-            ModelNode securityRealm = getSecurityRealm();
-            if (securityRealm.isDefined()) {
-                for (Property current : securityRealm.asPropertyList()) {
-                    if (current.getName().equals(realmName)) {
-                        return current.getValue();
-                    }
-                }
-            }
-
-            return new ModelNode();
-        }
-
-        private String[] getRealmsInUse() throws OperationFailedException {
-            HashSet<String> realms = new HashSet<String>();
-
-            ModelNode managementInterface = getManagementInterface();
-            if (managementInterface.isDefined()) {
-                List<Property> interfaces = managementInterface.asPropertyList();
-                for (Property current : interfaces) {
-                    if (current.getName().equals(NATIVE_REMOTING_INTERFACE)) {
-                        /*
-                         * As the native remoting interface is in use we can not narrow down the security realms used so just return them all.
-                         */
-                        return getAllRealmNames();
-                    }
-                    ModelNode value = current.getValue();
-                    if (value.hasDefined(SECURITY_REALM)) {
-                        realms.add(value.require(SECURITY_REALM).asString());
-                    }
-
-                }
-            }
-
-            return realms.toArray(new String[realms.size()]);
-        }
-
-        private String[] getAllRealmNames() throws OperationFailedException {
-            ArrayList<String> realms = new ArrayList<String>();
-
-            ModelNode securityRealm = getSecurityRealm();
-            if (securityRealm.isDefined()) {
-                for (Property current : securityRealm.asPropertyList()) {
-                    realms.add(current.getName());
-                }
-            }
-
-            return realms.toArray(new String[realms.size()]);
-        }
-
         private ModelNode getAccessAuthorization() {
             if (accessAuthorization == null) {
                 PathElement pathElement = PathElement.pathElement(ACCESS, AUTHORIZATION);
@@ -285,32 +186,6 @@ public class RbacSanityCheckOperation implements OperationStepHandler {
             }
 
             return accessAuthorization;
-        }
-
-        private ModelNode getManagementInterface() {
-            if (managementInterface == null) {
-                ModelNode managementInterface = new ModelNode();
-                Set<ResourceEntry> children = managementResource.getChildren(MANAGEMENT_INTERFACE);
-                for (ResourceEntry current : children) {
-                    managementInterface.add(new Property(current.getName(), current.getModel()));
-                }
-                this.managementInterface = managementInterface;
-            }
-
-            return managementInterface;
-        }
-
-        private ModelNode getSecurityRealm() {
-            if (securityRealm == null) {
-                ModelNode securityRealm = new ModelNode();
-                Set<ResourceEntry> children = managementResource.getChildren(SECURITY_REALM);
-                for (ResourceEntry current : children) {
-                    securityRealm.add(new Property(current.getName(), current.getModel()));
-                }
-                this.securityRealm = securityRealm;
-            }
-
-            return securityRealm;
         }
     }
 

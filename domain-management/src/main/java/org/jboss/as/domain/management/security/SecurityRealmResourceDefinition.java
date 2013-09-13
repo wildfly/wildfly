@@ -25,6 +25,7 @@ package org.jboss.as.domain.management.security;
 import java.util.List;
 
 import org.jboss.as.controller.PathElement;
+import org.jboss.as.controller.ReloadRequiredWriteAttributeHandler;
 import org.jboss.as.controller.ResourceDefinition;
 import org.jboss.as.controller.SimpleAttributeDefinition;
 import org.jboss.as.controller.SimpleAttributeDefinitionBuilder;
@@ -69,7 +70,7 @@ public class SecurityRealmResourceDefinition extends SimpleResourceDefinition {
 
     @Override
     public void registerAttributes(ManagementResourceRegistration resourceRegistration) {
-        resourceRegistration.registerReadWriteAttribute(MAP_GROUPS_TO_ROLES, null, SecurityRealmMapGroupsAttributeWriteHandler.INSTANCE);
+        resourceRegistration.registerReadWriteAttribute(MAP_GROUPS_TO_ROLES, null, new ReloadRequiredWriteAttributeHandler(MAP_GROUPS_TO_ROLES));
     }
 
     @Override

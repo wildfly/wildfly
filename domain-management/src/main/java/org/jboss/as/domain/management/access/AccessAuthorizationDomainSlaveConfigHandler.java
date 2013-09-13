@@ -67,8 +67,6 @@ public class AccessAuthorizationDomainSlaveConfigHandler implements OperationSte
 
                 ModelNode provider = AccessAuthorizationResourceDefinition.PROVIDER.resolveModelAttribute(context, model);
                 AccessAuthorizationProviderWriteAttributeHander.updateAuthorizer(provider, configurableAuthorizer);
-                boolean useRealmRoles = AccessAuthorizationResourceDefinition.USE_REALM_ROLES.resolveModelAttribute(context, model).asBoolean();
-                authorizerConfiguration.setUseRealmRoles(useRealmRoles);
                 ModelNode combinationPolicy = AccessAuthorizationResourceDefinition.PERMISSION_COMBINATION_POLICY.resolveModelAttribute(context, model);
                 AccessAuthorizationCombinationPolicyWriteAttributeHandler.updateAuthorizer(combinationPolicy, authorizerConfiguration);
 
