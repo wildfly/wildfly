@@ -437,7 +437,7 @@
         </module-def>
 
         <module-def name="gnu.getopt">
-            <maven-resource group="gnu.getopt" artifact="java-getopt" />
+            <maven-resource group="gnu-getopt" artifact="getopt" />
         </module-def>
 
         <module-def name="javaee.api"/>

@@ -335,8 +335,8 @@
                 </dependency>
 
                 <dependency>
-                    <groupId>gnu.getopt</groupId>
-                    <artifactId>java-getopt</artifactId>
+                    <groupId>gnu-getopt</groupId>
+                    <artifactId>getopt</artifactId>
                 </dependency>
 
                 <dependency>
