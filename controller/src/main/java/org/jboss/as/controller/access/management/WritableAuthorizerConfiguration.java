@@ -244,10 +244,6 @@ public class WritableAuthorizerConfiguration implements AuthorizerConfiguration 
         this.combinationPolicy = combinationPolicy;
     }
 
-    public void setUseRealmRoles(final boolean useRealmRoles) {
-        this.useRealmRoles = useRealmRoles;
-    }
-
     void setNonFacadeMBeansSensitive(boolean nonFacadeMBeansSensitive) {
         this.nonFacadeMBeansSensitive = nonFacadeMBeansSensitive;
     }

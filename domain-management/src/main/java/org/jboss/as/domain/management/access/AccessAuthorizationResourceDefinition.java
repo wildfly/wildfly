@@ -109,11 +109,7 @@ public class AccessAuthorizationResourceDefinition extends SimpleResourceDefinit
             .setValidator(new EnumValidator<Provider>(Provider.class, true, false))
             .build();
 
-    public static final SimpleAttributeDefinition USE_REALM_ROLES = new SimpleAttributeDefinitionBuilder(ModelDescriptionConstants.USE_REALM_ROLES, ModelType.BOOLEAN, false)
-            .setDefaultValue(new ModelNode(false))
-            .setAllowExpression(true).build();
-
-    public static final List<AttributeDefinition> ATTRIBUTES = Arrays.<AttributeDefinition>asList(PROVIDER, USE_REALM_ROLES, PERMISSION_COMBINATION_POLICY);
+    public static final List<AttributeDefinition> ATTRIBUTES = Arrays.<AttributeDefinition>asList(PROVIDER, PERMISSION_COMBINATION_POLICY);
 
     public static AccessAuthorizationResourceDefinition forDomain(DelegatingConfigurableAuthorizer configurableAuthorizer) {
         return new AccessAuthorizationResourceDefinition(configurableAuthorizer, true, false);
@@ -157,7 +153,6 @@ public class AccessAuthorizationResourceDefinition extends SimpleResourceDefinit
             });
         } else {
             WritableAuthorizerConfiguration authorizerConfiguration = configurableAuthorizer.getWritableAuthorizerConfiguration();
-            resourceRegistration.registerReadWriteAttribute(USE_REALM_ROLES, null, new AccessAuthorizationUseRealmRolesWriteAttributeHandler(authorizerConfiguration));
             resourceRegistration.registerReadWriteAttribute(PROVIDER, null, new AccessAuthorizationProviderWriteAttributeHander(configurableAuthorizer));
             resourceRegistration.registerReadWriteAttribute(PERMISSION_COMBINATION_POLICY, null,
                     new AccessAuthorizationCombinationPolicyWriteAttributeHandler(authorizerConfiguration));

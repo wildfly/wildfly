@@ -2994,16 +2994,6 @@
         <xs:sequence>
             <xs:element name="role" type="roleType" minOccurs="0" maxOccurs="unbounded" />
         </xs:sequence>
-        <xs:attribute name="use-realm-roles" type="xs:boolean" use="optional" default="false">
-            <xs:annotation>
-                <xs:documentation>
-                    <![CDATA[
-                        It is possible to configure the realms to directly map from a users groups to roles, this attribute enabled
-                        the user of those mapped roles for access control purposes.
-                    ]]>
-                </xs:documentation>
-            </xs:annotation>
-        </xs:attribute>
     </xs:complexType>
 
     <xs:complexType name="roleType">
@@ -3025,9 +3015,8 @@
                         The name of the role, this should either be one of the standard roles or a scoped role.
 
                         A user is added to a role if any of the following are true: -
-                          1 - The realm has assigned the user to role AND use-realm-roles is set to true.
-                          2 - The user is a member of a group listed in the includes element.
-                          3 - The user is explicitly listed in the includes element.
+                          1 - The user is a member of a group listed in the includes element.
+                          2 - The user is explicitly listed in the includes element.
                         AND neither of the following are true: -
                           1 - The user is a member of a group listed in the excludes element.
                           2 - The user is explicitly listed in the groups element.

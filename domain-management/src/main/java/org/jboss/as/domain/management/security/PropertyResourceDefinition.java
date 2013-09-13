@@ -49,7 +49,7 @@ public class PropertyResourceDefinition extends SimpleResourceDefinition {
         super(PathElement.pathElement(ModelDescriptionConstants.PROPERTY),
                 ControllerResolver.getResolver("core.management.security-realm.property"),
                 new SecurityRealmChildAddHandler(true, VALUE),
-                new SecurityRealmChildRemoveHandler(true, false),
+                new SecurityRealmChildRemoveHandler(true),
                 OperationEntry.Flag.RESTART_RESOURCE_SERVICES,
                 OperationEntry.Flag.RESTART_RESOURCE_SERVICES);
     }

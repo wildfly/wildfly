@@ -1757,26 +1757,7 @@ public class ManagementXml {
 
     public static void parseAccessControlRoleMapping(final XMLExtendedStreamReader reader, final ModelNode accContAddr,
             final Namespace expectedNs, final List<ModelNode> list) throws XMLStreamException {
-        int count = reader.getAttributeCount();
-        for (int i = 0; i < count; i++) {
-            final String value = reader.getAttributeValue(i);
-            if (!isNoNamespaceAttribute(reader, i)) {
-                throw unexpectedAttribute(reader, i);
-            } else {
-                final Attribute attribute = Attribute.forName(reader.getAttributeLocalName(i));
-                switch (attribute) {
-                    case USE_REALM_ROLES: {
-                        ModelNode valNode = AccessAuthorizationResourceDefinition.USE_REALM_ROLES.parse(value, reader);
-                        list.add(Util.getWriteAttributeOperation(accContAddr,
-                                AccessAuthorizationResourceDefinition.USE_REALM_ROLES.getName(), valNode));
-                        break;
-                    }
-                    default: {
-                        throw unexpectedAttribute(reader, i);
-                    }
-                }
-            }
-        }
+        ParseUtils.requireNoAttributes(reader);
 
         while (reader.hasNext() && reader.nextTag() != END_ELEMENT) {
             requireNamespace(reader, expectedNs);
@@ -2246,14 +2227,13 @@ public class ManagementXml {
         boolean hasHostRoles = accessAuthorizationDefined && (accessAuthorization.hasDefined(HOST_SCOPED_ROLE) || accessAuthorization.hasDefined(HOST_SCOPED_ROLES));
         boolean hasRoleMapping = accessAuthorizationDefined && accessAuthorization.hasDefined(ROLE_MAPPING);
         Map<String, Map<String, Set<String>>> configuredAccessConstraints = getConfiguredAccessConstraints(accessAuthorization);
-        boolean hasUseRealmRoles = accessAuthorizationDefined && accessAuthorization.hasDefined(AccessAuthorizationResourceDefinition.USE_REALM_ROLES.getName());
         boolean hasProvider = accessAuthorizationDefined && accessAuthorization.hasDefined(AccessAuthorizationResourceDefinition.PROVIDER.getName());
         boolean hasCombinationPolicy = accessAuthorizationDefined && accessAuthorization.hasDefined(AccessAuthorizationResourceDefinition.PERMISSION_COMBINATION_POLICY.getName());
         ModelNode auditLog = management.hasDefined(ACCESS) ? management.get(ACCESS, AUDIT) : new ModelNode();
 
         if (!hasSecurityRealm && !hasConnection && !hasInterface && !hasServerGroupRoles
               && !hasHostRoles && !hasRoleMapping && configuredAccessConstraints.size() == 0
-                && !hasProvider && !hasCombinationPolicy && !hasUseRealmRoles && !auditLog.isDefined()) {
+                && !hasProvider && !hasCombinationPolicy && !auditLog.isDefined()) {
             return;
         }
 
@@ -2290,11 +2270,10 @@ public class ManagementXml {
         boolean hasHostRoles = accessAuthorization.hasDefined(HOST_SCOPED_ROLE) || accessAuthorization.hasDefined(HOST_SCOPED_ROLES);
         boolean hasRoleMapping = accessAuthorization.hasDefined(ROLE_MAPPING);
         Map<String, Map<String, Set<String>>> configuredAccessConstraints = getConfiguredAccessConstraints(accessAuthorization);
-        boolean hasUseRealmRoles = accessAuthorization.hasDefined(AccessAuthorizationResourceDefinition.USE_REALM_ROLES.getName());
         boolean hasProvider = accessAuthorization.hasDefined(AccessAuthorizationResourceDefinition.PROVIDER.getName());
         boolean hasCombinationPolicy = accessAuthorization.hasDefined(AccessAuthorizationResourceDefinition.PERMISSION_COMBINATION_POLICY.getName());
 
-        if (!hasProvider && !hasUseRealmRoles && !hasCombinationPolicy && !hasServerGroupRoles && !hasHostRoles
+        if (!hasProvider && !hasCombinationPolicy && !hasServerGroupRoles && !hasHostRoles
                 && !hasRoleMapping && configuredAccessConstraints.size() == 0) {
             return;
         }
@@ -2318,7 +2297,7 @@ public class ManagementXml {
             }
         }
 
-        if (hasUseRealmRoles || hasRoleMapping) {
+        if (hasRoleMapping) {
             writeRoleMapping(writer, accessAuthorization);
         }
 
@@ -2646,8 +2625,6 @@ public class ManagementXml {
     private static void writeRoleMapping(XMLExtendedStreamWriter writer, ModelNode accessAuthorization)
             throws XMLStreamException {
         writer.writeStartElement(Element.ROLE_MAPPING.getLocalName());
-
-        AccessAuthorizationResourceDefinition.USE_REALM_ROLES.marshallAsAttribute(accessAuthorization, writer);
 
         if (accessAuthorization.hasDefined(ROLE_MAPPING)) {
             ModelNode roleMappings = accessAuthorization.get(ROLE_MAPPING);
