@@ -26,7 +26,6 @@ import org.jboss.as.controller.Extension;
 import org.jboss.as.controller.ExtensionContext;
 import org.jboss.as.controller.SubsystemRegistration;
 import org.jboss.as.controller.parsing.ExtensionParsingContext;
-import org.jboss.as.controller.registry.ManagementResourceRegistration;
 
 public class BatchSubsystemExtension implements Extension {
 
@@ -51,8 +50,7 @@ public class BatchSubsystemExtension implements Extension {
     public void initialize(ExtensionContext context) {
         final SubsystemRegistration subsystem = context.registerSubsystem(BatchSubsystemDefinition.NAME,
                 MANAGEMENT_API_MAJOR_VERSION, MANAGEMENT_API_MINOR_VERSION, MANAGEMENT_API_MICRO_VERSION);
-        final ManagementResourceRegistration registration = subsystem.registerSubsystemModel(BatchSubsystemDefinition.INSTANCE);
-
+        subsystem.registerSubsystemModel(BatchSubsystemDefinition.INSTANCE);
         subsystem.registerXMLElementWriter(BatchSubsystemParser.INSTANCE);
     }
 }

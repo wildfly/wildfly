@@ -39,6 +39,7 @@
         <module name="org.jberet.jberet-core" services="import"/>
         <module name="org.jboss.as.controller"/>
         <module name="org.jboss.as.ee"/>
+        <module name="org.jboss.as.threads"/>
         <module name="org.jboss.as.server"/>
         <module name="org.jboss.as.transactions"/>
         <module name="org.jboss.logging"/>

@@ -23,7 +23,6 @@
 package org.wildfly.extension.batch;
 
 import java.util.List;
-import java.util.Properties;
 
 import org.jboss.as.controller.AbstractBoottimeAddStepHandler;
 import org.jboss.as.controller.OperationContext;
@@ -33,13 +32,9 @@ import org.jboss.as.server.AbstractDeploymentChainStep;
 import org.jboss.as.server.DeploymentProcessorTarget;
 import org.jboss.as.server.deployment.Phase;
 import org.jboss.dmr.ModelNode;
-import org.jboss.msc.service.ServiceBuilder;
 import org.jboss.msc.service.ServiceController;
-import org.jboss.msc.service.ServiceTarget;
 import org.wildfly.extension.batch.deployment.BatchDependencyProcessor;
 import org.wildfly.extension.batch.deployment.BatchEnvironmentProcessor;
-import org.wildfly.extension.batch.services.BatchPropertiesService;
-import org.wildfly.extension.batch.services.BatchServiceNames;
 
 /**
  * Handler responsible for adding the subsystem resource to the model.
@@ -53,8 +48,7 @@ class BatchSubsystemAdd extends AbstractBoottimeAddStepHandler {
 
     @Override
     protected void populateModel(final ModelNode operation, final ModelNode model) throws OperationFailedException {
-        // TODO (jrp) is there a way to validate the JNDI name?
-        BatchSubsystemDefinition.JOB_REPOSITORY.validateAndSet(operation, model);
+        model.setEmptyObject();
     }
 
     @Override
@@ -77,19 +71,5 @@ class BatchSubsystemAdd extends AbstractBoottimeAddStepHandler {
 
             }
         }, OperationContext.Stage.RUNTIME);
-
-        final String jobRepositoryType = BatchSubsystemDefinition.JOB_REPOSITORY.resolveModelAttribute(context, model).asString();
-
-        // Create the BatchEnvironment
-        final BatchPropertiesService service = new BatchPropertiesService();
-        if (BatchSubsystemDefinition.IN_MEMORY.equals(jobRepositoryType)) {
-            service.addProperty("job-repository-type", jobRepositoryType);
-        } else {
-            service.addProperty("job-repository-type", "jdbc");
-            service.addProperty("datasource-jndi", jobRepositoryType);
-        }
-        final ServiceTarget serviceTarget = context.getServiceTarget();
-        final ServiceBuilder<Properties> builder = serviceTarget.addService(BatchServiceNames.BATCH_SERVICE_NAME, service);
-        newControllers.add(builder.install());
     }
 }

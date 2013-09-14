@@ -22,52 +22,27 @@
 
 package org.wildfly.extension.batch;
 
-import static javax.xml.stream.XMLStreamConstants.END_ELEMENT;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SUBSYSTEM;
 
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collection;
-import java.util.LinkedHashMap;
-import java.util.List;
-import javax.xml.stream.XMLStreamException;
-import javax.xml.stream.XMLStreamWriter;
-
-import org.jboss.as.controller.AttributeDefinition;
-import org.jboss.as.controller.DefaultAttributeMarshaller;
-import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.PathElement;
-import org.jboss.as.controller.PersistentResourceDefinition;
-import org.jboss.as.controller.PersistentResourceXMLDescription;
-import org.jboss.as.controller.PersistentResourceXMLDescription.PersistentResourceXMLBuilder;
 import org.jboss.as.controller.ReloadRequiredRemoveStepHandler;
-import org.jboss.as.controller.ReloadRequiredWriteAttributeHandler;
-import org.jboss.as.controller.SimpleAttributeDefinition;
-import org.jboss.as.controller.SimpleAttributeDefinitionBuilder;
+import org.jboss.as.controller.SimpleResourceDefinition;
 import org.jboss.as.controller.descriptions.StandardResourceDescriptionResolver;
 import org.jboss.as.controller.operations.common.GenericSubsystemDescribeHandler;
-import org.jboss.as.controller.operations.common.Util;
-import org.jboss.as.controller.operations.validation.StringLengthValidator;
-import org.jboss.as.controller.parsing.ParseUtils;
 import org.jboss.as.controller.registry.ManagementResourceRegistration;
-import org.jboss.dmr.ModelNode;
-import org.jboss.dmr.ModelType;
-import org.jboss.staxmapper.XMLExtendedStreamReader;
-import org.jboss.staxmapper.XMLExtendedStreamWriter;
-import org.wildfly.extension.batch._private.BatchLogger;
+import org.jboss.as.threads.ThreadFactoryResolver;
+import org.jboss.as.threads.ThreadFactoryResourceDefinition;
+import org.jboss.as.threads.ThreadsServices;
+import org.jboss.as.threads.UnboundedQueueThreadPoolResourceDefinition;
+import org.wildfly.extension.batch.services.BatchServiceNames;
 
-public class BatchSubsystemDefinition extends PersistentResourceDefinition {
+public class BatchSubsystemDefinition extends SimpleResourceDefinition {
 
     /**
      * The name of our subsystem within the model.
      */
     public static final String NAME = "batch";
     static final PathElement SUBSYSTEM_PATH = PathElement.pathElement(SUBSYSTEM, NAME);
-
-    static final String DATASOURCE = "datasource";
-    static final String IN_MEMORY = "in-memory";
-    static final String JDBC = "jdbc";
-    static final String JNDI_NAME = "jndi-name";
     private static final String RESOURCE_NAME = BatchSubsystemExtension.class.getPackage().getName() + ".LocalDescriptions";
 
 
@@ -76,44 +51,18 @@ public class BatchSubsystemDefinition extends PersistentResourceDefinition {
         return new StandardResourceDescriptionResolver(prefix, RESOURCE_NAME, BatchSubsystemExtension.class.getClassLoader(), true, false);
     }
 
-    public static final SimpleAttributeDefinition JOB_REPOSITORY =
-            SimpleAttributeDefinitionBuilder.create("job-repository", ModelType.STRING, true)
-                    .setAllowExpression(true)
-                    .setDefaultValue(new ModelNode(IN_MEMORY))
-                    .setAttributeMarshaller(new DefaultAttributeMarshaller() {
-                        @Override
-                        public void marshallAsElement(final AttributeDefinition attribute, final ModelNode resourceModel, final boolean marshallDefault, final XMLStreamWriter writer) throws XMLStreamException {
-                            if (isMarshallable(attribute, resourceModel, marshallDefault)) {
-                                writer.writeStartElement(attribute.getName());
-                                if (resourceModel.hasDefined(attribute.getName())) {
-                                    final String value = resourceModel.get(attribute.getName()).asString();
-                                    if (IN_MEMORY.equals(value)) {
-                                        writer.writeStartElement(value);
-                                        writer.writeEndElement();
-                                    } else {
-                                        writer.writeStartElement(JDBC);
-                                        writer.writeStartElement(DATASOURCE);
-                                        writer.writeAttribute(JNDI_NAME, value);
-                                        writer.writeEndElement();
-                                        writer.writeEndElement();
-                                    }
-                                } else {
-                                    writer.writeStartElement(IN_MEMORY);
-                                    writer.writeEndElement();
-                                }
-                                writer.writeEndElement();
-                            }
-                        }
-                    })
-                    .setValidator(new StringLengthValidator(1, true, true))
-                    .build();
-
-   static final Collection<AttributeDefinition> ATTRIBUTES = Arrays.asList((AttributeDefinition) JOB_REPOSITORY);
+    static StandardResourceDescriptionResolver getResourceDescriptionResolver(final String... prefixes) {
+        final StringBuilder prefix = new StringBuilder(NAME);
+        for (String p : prefixes) {
+            prefix.append('.').append(p);
+        }
+        return new StandardResourceDescriptionResolver(prefix.toString(), RESOURCE_NAME, BatchSubsystemExtension.class.getClassLoader(), true, false);
+    }
 
     public static final BatchSubsystemDefinition INSTANCE = new BatchSubsystemDefinition();
 
     private BatchSubsystemDefinition() {
-        super(SUBSYSTEM_PATH, getResourceDescriptionResolver(null), BatchSubsystemAdd.INSTANCE,
+        super(SUBSYSTEM_PATH, getResourceDescriptionResolver((String) null), BatchSubsystemAdd.INSTANCE,
                 ReloadRequiredRemoveStepHandler.INSTANCE);
     }
 
@@ -124,84 +73,32 @@ public class BatchSubsystemDefinition extends PersistentResourceDefinition {
     }
 
     @Override
-    public void registerAttributes(ManagementResourceRegistration resourceRegistration) {
-        resourceRegistration.registerReadWriteAttribute(JOB_REPOSITORY, null, new ReloadRequiredWriteAttributeHandler(JOB_REPOSITORY));
+    public void registerChildren(final ManagementResourceRegistration resourceRegistration) {
+        super.registerChildren(resourceRegistration);
+        // thread-pool resource
+        final UnboundedQueueThreadPoolResourceDefinition threadPoolResource = UnboundedQueueThreadPoolResourceDefinition.create(
+                PathElement.pathElement(BatchConstants.THREAD_POOL, BatchConstants.THREAD_POOL_NAME),
+                BatchThreadFactoryResolver.INSTANCE, BatchServiceNames.BASE_BATCH_THREAD_POOL_NAME, false); // TODO (jrp) verify false value
+        resourceRegistration.registerSubModel(threadPoolResource);
+
+        // thread-factory resource
+        final ThreadFactoryResourceDefinition threadFactoryResource = new ThreadFactoryResourceDefinition();
+        resourceRegistration.registerSubModel(threadFactoryResource);
+
+        resourceRegistration.registerSubModel(JobRepositoryDefinition.IN_MEMORY);
     }
 
-    @Override
-    public Collection<AttributeDefinition> getAttributes() {
-        return ATTRIBUTES;
-    }
 
-    // TODO (jrp) use switch for string comparison
-    static class BatchResourceXMLDescription extends PersistentResourceXMLDescription {
+    private static class BatchThreadFactoryResolver extends ThreadFactoryResolver.SimpleResolver {
+        static final BatchThreadFactoryResolver INSTANCE = new BatchThreadFactoryResolver();
 
-        protected BatchResourceXMLDescription(final PersistentResourceDefinition resourceDefinition, final String xmlElementName, final String xmlWrapperElement, final LinkedHashMap<String, AttributeDefinition> attributes, final List<PersistentResourceXMLDescription> children, final boolean useValueAsElementName, final boolean noAddOperation, final AdditionalOperationsGenerator additionalOperationsGenerator) {
-            super(resourceDefinition, xmlElementName, xmlWrapperElement, attributes, children, useValueAsElementName, noAddOperation, additionalOperationsGenerator);
+        private BatchThreadFactoryResolver() {
+            super(ThreadsServices.FACTORY);
         }
 
         @Override
-        public void parse(final XMLExtendedStreamReader reader, final PathAddress parentAddress, final List<ModelNode> list) throws XMLStreamException {
-            final ModelNode subsystemAdd = Util.createAddOperation(PathAddress.pathAddress(SUBSYSTEM_PATH));
-
-            while (reader.hasNext() && reader.nextTag() != END_ELEMENT) {
-                final Namespace namespace = Namespace.forUri(reader.getNamespaceURI());
-                if (namespace == Namespace.BATCH_1_0) {
-                    final String localName = reader.getLocalName();
-                    if (JOB_REPOSITORY.getXmlName().equals(localName)) {
-                        parseJobRepository(reader, subsystemAdd);
-                    } else {
-                        throw ParseUtils.unexpectedElement(reader);
-                    }
-                } else {
-                    throw ParseUtils.unexpectedElement(reader);
-                }
-            }
-            ParseUtils.requireNoContent(reader);
-            list.add(subsystemAdd);
-        }
-
-        private void parseJobRepository(final XMLExtendedStreamReader reader, final ModelNode operation) throws XMLStreamException {
-            while (reader.hasNext() && reader.nextTag() != END_ELEMENT) {
-                final String localName = reader.getLocalName();
-                final String value;
-                if (IN_MEMORY.equals(localName)) {
-                    value = IN_MEMORY;
-                } else if (JDBC.equals(localName)) {
-                    if (reader.hasNext() && reader.nextTag() != END_ELEMENT) {
-                        value = ParseUtils.readStringAttributeElement(reader, JNDI_NAME);
-                    } else {
-                        throw ParseUtils.unexpectedElement(reader);
-                    }
-                } else {
-                    throw ParseUtils.unexpectedElement(reader);
-                }
-                BatchSubsystemDefinition.JOB_REPOSITORY.parseAndSetParameter(value, operation, reader);
-                BatchLogger.LOGGER.tracef("Configured batch job repository type is %s", value);
-            }
-        }
-
-        @Override
-        public void persist(final XMLExtendedStreamWriter writer, final ModelNode model, final String namespaceURI) throws XMLStreamException {
-            JOB_REPOSITORY.marshallAsElement(model, true, writer);
-        }
-    }
-
-    static class BatchResourceXMLBuilder extends PersistentResourceXMLBuilder {
-
-        protected BatchResourceXMLBuilder(final PersistentResourceDefinition definition) {
-            super(definition);
-        }
-
-        static BatchResourceXMLBuilder builder(final PersistentResourceDefinition definition) {
-            return new BatchResourceXMLBuilder(definition);
-        }
-
-        @Override
-        public PersistentResourceXMLDescription build() {
-            return new BatchResourceXMLDescription(resourceDefinition, xmlElementName, xmlWrapperElement,
-                    attributes, new ArrayList<PersistentResourceXMLDescription>(), useValueAsElementName, noAddOperation,
-                    additionalOperationsGenerator);
+        protected String getThreadGroupName(String threadPoolName) {
+            return "batch-" + threadPoolName;
         }
     }
 }
