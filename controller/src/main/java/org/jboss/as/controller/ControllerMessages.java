@@ -2717,5 +2717,14 @@ public interface ControllerMessages {
     @Message(id = 13474, value = "Can only create child audit logger for main audit logger")
     IllegalStateException canOnlyCreateChildAuditLoggerForMainAuditLogger();
 
+    @Message(id = 13475, value = "Permission denied")
+    String permissionDenied();
+
+    @Message(id = 13476, value = "Cannot add a Permission to a readonly PermissionCollection")
+    SecurityException permissionCollectionIsReadOnly();
+
+    @Message(id = 13477, value = "Incompatible permission type %s")
+    IllegalArgumentException incompatiblePermissionType(Class<?> clazz);
+
     // 13499 IS END OF 134xx SERIES USABLE FOR NON-LOGGER MESSAGES
 }

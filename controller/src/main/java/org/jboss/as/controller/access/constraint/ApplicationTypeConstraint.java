@@ -125,10 +125,11 @@ public class ApplicationTypeConstraint extends AllowAllowNotConstraint {
             ApplicationTypeConfig existing = typeConfigs.get(key);
             if (existing == null) {
                 typeConfigs.put(key, applicationTypeConfig);
-            } else if (!existing.isCompatibleWith(applicationTypeConfig)) {
-                // Programming error -- ApplicationTypeConfigs with same key have been created with
+            } else {
+                // Check for programming error -- ApplicationTypeConfigs with same key created with
                 // differing default settings
-                throw new IllegalStateException("incompatible ApplicationTypeConfig");
+                assert existing.isCompatibleWith(applicationTypeConfig)
+                        : "incompatible " + applicationTypeConfig.getClass().getSimpleName();
             }
         }
 

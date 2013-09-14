@@ -132,10 +132,11 @@ public class SensitiveTargetConstraint extends AllowAllowNotConstraint {
             SensitivityClassification existing = sensitivities.get(key);
             if (existing == null) {
                 sensitivities.put(key, sensitivity);
-            } else if (!existing.isCompatibleWith(sensitivity)) {
-                // Programming error -- sensitivities with same key have been created with
+            } else {
+                // Check for programming error -- SensitivityClassification with same key created with
                 // differing default settings
-                throw new IllegalStateException("incompatible Sensitivity");
+                assert existing.isCompatibleWith(sensitivity)
+                        : "incompatible " + sensitivity.getClass().getSimpleName();
             }
         }
 

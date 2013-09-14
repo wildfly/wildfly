@@ -29,6 +29,7 @@ import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
 
+import org.jboss.as.controller.ControllerMessages;
 import org.jboss.as.controller.access.Action;
 
 /**
@@ -49,7 +50,7 @@ public class ManagementPermissionCollection extends PermissionCollection {
     @Override
     public void add(Permission permission) {
         if (isReadOnly()) {
-            throw new SecurityException("attempt to add a Permission to a readonly PermissionCollection");
+            throw ControllerMessages.MESSAGES.permissionCollectionIsReadOnly();
         }
 
         if (type.equals(permission.getClass())) {
@@ -58,7 +59,7 @@ public class ManagementPermissionCollection extends PermissionCollection {
                 permissions.put(mperm.getActionEffect(), mperm);
             }
         } else {
-            throw new IllegalArgumentException("incompatible permission type " + permission.getClass());
+            throw ControllerMessages.MESSAGES.incompatiblePermissionType(permission.getClass());
         }
     }
 
