@@ -66,6 +66,6 @@ public class BatchEnvironmentFactory {
     }
 
     public BatchEnvironmentService remove(final ClassLoader cl) {
-        return services.remove(WildFlySecurityManager.getCurrentContextClassLoaderPrivileged());
+        return services.remove(cl);
     }
 }

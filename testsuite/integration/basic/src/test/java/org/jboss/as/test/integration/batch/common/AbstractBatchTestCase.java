@@ -72,7 +72,7 @@ public abstract class AbstractBatchTestCase {
     }
 
     protected static String performCall(final String url) throws ExecutionException, IOException, TimeoutException {
-        return HttpRequest.get(url, 10, TimeUnit.SECONDS);
+        return HttpRequest.get(url, 10, TimeUnit.MINUTES); // TODO (jrp) way to long only set for debugging
     }
 
     public static class UrlBuilder {

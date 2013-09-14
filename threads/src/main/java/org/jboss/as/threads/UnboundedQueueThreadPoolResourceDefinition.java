@@ -45,13 +45,17 @@ public class UnboundedQueueThreadPoolResourceDefinition extends SimpleResourceDe
     }
     public static UnboundedQueueThreadPoolResourceDefinition create(String type, ThreadFactoryResolver threadFactoryResolver,
                                                  ServiceName serviceNameBase, boolean registerRuntimeOnly) {
+        return create(PathElement.pathElement(type), threadFactoryResolver, serviceNameBase, registerRuntimeOnly);
+    }
+    public static UnboundedQueueThreadPoolResourceDefinition create(PathElement path, ThreadFactoryResolver threadFactoryResolver,
+                                                                    ServiceName serviceNameBase, boolean registerRuntimeOnly) {
         UnboundedQueueThreadPoolAdd addHandler = new UnboundedQueueThreadPoolAdd(threadFactoryResolver, serviceNameBase);
-        return new UnboundedQueueThreadPoolResourceDefinition(type, addHandler, serviceNameBase, registerRuntimeOnly);
+        return new UnboundedQueueThreadPoolResourceDefinition(path, addHandler, serviceNameBase, registerRuntimeOnly);
     }
 
-    private UnboundedQueueThreadPoolResourceDefinition(String type, UnboundedQueueThreadPoolAdd addHandler,
+    private UnboundedQueueThreadPoolResourceDefinition(PathElement path, UnboundedQueueThreadPoolAdd addHandler,
                                                  ServiceName serviceNameBase, boolean registerRuntimeOnly) {
-        super(PathElement.pathElement(type),
+        super(path,
                 new ThreadPoolResourceDescriptionResolver(CommonAttributes.UNBOUNDED_QUEUE_THREAD_POOL, ThreadsExtension.RESOURCE_NAME,
                 ThreadsExtension.class.getClassLoader()),
                 addHandler, new UnboundedQueueThreadPoolRemove(addHandler));

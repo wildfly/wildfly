@@ -31,5 +31,10 @@
         <job-repository>
             <in-memory/>
         </job-repository>
+
+        <thread-pool>
+            <max-threads count="10"/>
+            <keepalive-time time="100" unit="milliseconds"/>
+        </thread-pool>
     </subsystem>
 </config>

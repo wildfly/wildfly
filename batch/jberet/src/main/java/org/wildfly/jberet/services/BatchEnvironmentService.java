@@ -22,8 +22,15 @@
 
 package org.wildfly.jberet.services;
 
+import java.util.Collection;
+import java.util.List;
 import java.util.Properties;
+import java.util.concurrent.Callable;
+import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Future;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.TimeoutException;
 import javax.enterprise.inject.spi.BeanManager;
 import javax.transaction.UserTransaction;
 
@@ -35,6 +42,7 @@ import org.jboss.msc.service.StartException;
 import org.jboss.msc.service.StopContext;
 import org.jboss.msc.value.InjectedValue;
 import org.wildfly.jberet.WildFlyArtifactFactory;
+import org.wildfly.security.manager.WildFlySecurityManager;
 
 /**
  * @author <a href="mailto:jperkins@redhat.com">James R. Perkins</a>
@@ -97,9 +105,9 @@ public class BatchEnvironmentService implements Service<BatchEnvironment> {
         WildFlyBatchEnvironment(final ClassLoader classLoader, final BeanManager beanManager,
                                 final ExecutorService executorService, final UserTransaction userTransaction,
                                 final Properties properties) {
-            artifactFactory = new WildFlyArtifactFactory(beanManager);
             this.classLoader = classLoader;
-            this.executorService = executorService;
+            artifactFactory = new WildFlyArtifactFactory(beanManager, classLoader);
+            this.executorService = new WrappedExecutorService(executorService, classLoader);
             this.userTransaction = userTransaction;
             this.properties = properties;
         }
@@ -127,6 +135,129 @@ public class BatchEnvironmentService implements Service<BatchEnvironment> {
         @Override
         public Properties getBatchConfigurationProperties() {
             return properties;
+        }
+    }
+
+    private static class WrappedExecutorService implements ExecutorService {
+        private final ExecutorService delegate;
+        private final ClassLoader classLoader;
+
+        private WrappedExecutorService(final ExecutorService delegate, final ClassLoader classLoader) {
+            this.delegate = delegate;
+            this.classLoader = classLoader;
+        }
+
+        @Override
+        public void shutdown() {
+            delegate.shutdown();
+        }
+
+        @Override
+        public List<Runnable> shutdownNow() {
+            return delegate.shutdownNow();
+        }
+
+        @Override
+        public boolean isShutdown() {
+            return delegate.isShutdown();
+        }
+
+        @Override
+        public boolean isTerminated() {
+            return delegate.isTerminated();
+        }
+
+        @Override
+        public boolean awaitTermination(final long timeout, final TimeUnit unit) throws InterruptedException {
+            return delegate.awaitTermination(timeout, unit);
+        }
+
+        @Override
+        public <T> Future<T> submit(final Callable<T> task) {
+            final ClassLoader current = WildFlySecurityManager.getCurrentContextClassLoaderPrivileged();
+            try {
+                WildFlySecurityManager.setCurrentContextClassLoaderPrivileged(classLoader);
+                return delegate.submit(task);
+            } finally {
+                WildFlySecurityManager.setCurrentContextClassLoaderPrivileged(current);
+            }
+        }
+
+        @Override
+        public <T> Future<T> submit(final Runnable task, final T result) {
+            final ClassLoader current = WildFlySecurityManager.getCurrentContextClassLoaderPrivileged();
+            try {
+                WildFlySecurityManager.setCurrentContextClassLoaderPrivileged(classLoader);
+                return delegate.submit(task, result);
+            } finally {
+                WildFlySecurityManager.setCurrentContextClassLoaderPrivileged(current);
+            }
+        }
+
+        @Override
+        public Future<?> submit(final Runnable task) {
+            final ClassLoader current = WildFlySecurityManager.getCurrentContextClassLoaderPrivileged();
+            try {
+                WildFlySecurityManager.setCurrentContextClassLoaderPrivileged(classLoader);
+                return delegate.submit(task);
+            } finally {
+                WildFlySecurityManager.setCurrentContextClassLoaderPrivileged(current);
+            }
+        }
+
+        @Override
+        public <T> List<Future<T>> invokeAll(final Collection<? extends Callable<T>> tasks) throws InterruptedException {
+            final ClassLoader current = WildFlySecurityManager.getCurrentContextClassLoaderPrivileged();
+            try {
+                WildFlySecurityManager.setCurrentContextClassLoaderPrivileged(classLoader);
+                return delegate.invokeAll(tasks);
+            } finally {
+                WildFlySecurityManager.setCurrentContextClassLoaderPrivileged(current);
+            }
+        }
+
+        @Override
+        public <T> List<Future<T>> invokeAll(final Collection<? extends Callable<T>> tasks, final long timeout, final TimeUnit unit) throws InterruptedException {
+            final ClassLoader current = WildFlySecurityManager.getCurrentContextClassLoaderPrivileged();
+            try {
+                WildFlySecurityManager.setCurrentContextClassLoaderPrivileged(classLoader);
+                return delegate.invokeAll(tasks, timeout, unit);
+            } finally {
+                WildFlySecurityManager.setCurrentContextClassLoaderPrivileged(current);
+            }
+        }
+
+        @Override
+        public <T> T invokeAny(final Collection<? extends Callable<T>> tasks) throws InterruptedException, ExecutionException {
+            final ClassLoader current = WildFlySecurityManager.getCurrentContextClassLoaderPrivileged();
+            try {
+                WildFlySecurityManager.setCurrentContextClassLoaderPrivileged(classLoader);
+                return delegate.invokeAny(tasks);
+            } finally {
+                WildFlySecurityManager.setCurrentContextClassLoaderPrivileged(current);
+            }
+        }
+
+        @Override
+        public <T> T invokeAny(final Collection<? extends Callable<T>> tasks, final long timeout, final TimeUnit unit) throws InterruptedException, ExecutionException, TimeoutException {
+            final ClassLoader current = WildFlySecurityManager.getCurrentContextClassLoaderPrivileged();
+            try {
+                WildFlySecurityManager.setCurrentContextClassLoaderPrivileged(classLoader);
+                return delegate.invokeAny(tasks, timeout, unit);
+            } finally {
+                WildFlySecurityManager.setCurrentContextClassLoaderPrivileged(current);
+            }
+        }
+
+        @Override
+        public void execute(final Runnable command) {
+            final ClassLoader current = WildFlySecurityManager.getCurrentContextClassLoaderPrivileged();
+            try {
+                WildFlySecurityManager.setCurrentContextClassLoaderPrivileged(classLoader);
+                delegate.execute(command);
+            } finally {
+                WildFlySecurityManager.setCurrentContextClassLoaderPrivileged(current);
+            }
         }
     }
 }

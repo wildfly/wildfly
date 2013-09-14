@@ -53,6 +53,10 @@
         </dependency>
         <dependency>
             <groupId>org.wildfly</groupId>
+            <artifactId>wildfly-threads</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.wildfly</groupId>
             <artifactId>wildfly-transactions</artifactId>
         </dependency>
 

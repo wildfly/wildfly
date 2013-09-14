@@ -24,4 +24,12 @@
     <job-repository>
         <in-memory/>
     </job-repository>
+
+    <thread-pool>
+        <max-threads count="10"/>
+        <keepalive-time time="100" unit="milliseconds"/>
+        <thread-factory name="batch"/>
+    </thread-pool>
+
+    <thread-factory name="batch" group-name="batch" priority="5" thread-name-pattern="%i-%g"/>
 </subsystem>
