@@ -31,6 +31,7 @@ import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.OperationStepHandler;
 import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.access.management.WritableAuthorizerConfiguration;
+import org.jboss.as.controller.registry.Resource;
 import org.jboss.dmr.ModelNode;
 
 /**
@@ -54,9 +55,12 @@ public class RoleMappingAdd implements OperationStepHandler {
 
     @Override
     public void execute(OperationContext context, ModelNode operation) throws OperationFailedException {
-        context.createResource(PathAddress.EMPTY_ADDRESS);
+        Resource resource = context.createResource(PathAddress.EMPTY_ADDRESS);
         PathAddress address = PathAddress.pathAddress(operation.get(OP_ADDR));
         final String roleName = address.getLastElement().getValue().toUpperCase();
+
+        ModelNode model = resource.getModel();
+        RoleMappingResourceDefinition.INCLUDE_ALL.validateAndSet(operation, model);
 
         registerRuntimeAdd(context, roleName);
 
@@ -70,9 +74,17 @@ public class RoleMappingAdd implements OperationStepHandler {
             public void execute(OperationContext context, ModelNode operation) throws OperationFailedException {
                 if (context.isBooting()) {
                     authorizerConfiguration.addRoleMappingImmediate(roleName);
+
                 } else {
                     authorizerConfiguration.addRoleMapping(roleName);
                 }
+
+                ModelNode model = context.readResource(PathAddress.EMPTY_ADDRESS).getModel();
+                boolean includeAll = RoleMappingResourceDefinition.INCLUDE_ALL.resolveModelAttribute(context, model).asBoolean();
+                if (includeAll) {
+                    authorizerConfiguration.setRoleMappingIncludeAll(roleName, includeAll);
+                }
+
                 registerRollbackHandler(context, roleName);
             }
         }, Stage.RUNTIME);

@@ -25,6 +25,7 @@ package org.jboss.as.domain.management.access;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ACCESS;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.AUTHORIZATION;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.INCLUDE;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.INCLUDE_ALL;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ROLE_MAPPING;
 import static org.jboss.as.domain.management.DomainManagementMessages.MESSAGES;
 
@@ -166,6 +167,11 @@ public class RbacSanityCheckOperation implements OperationStepHandler {
             Set<String> roleNames = authorizationResource.getChildrenNames(ROLE_MAPPING);
             for (String current : roleNames) {
                 Resource roleResource = authorizationResource.getChild(PathElement.pathElement(ROLE_MAPPING, current));
+                ModelNode roleModel = roleResource.getModel();
+                if (roleModel.get(INCLUDE_ALL).isDefined() && roleModel.require(INCLUDE_ALL).asBoolean()) {
+                    return true;
+                }
+
                 if (roleResource.getChildren(INCLUDE).size() > 0) {
                     return true;
                 }

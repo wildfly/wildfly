@@ -213,6 +213,11 @@ public class WritableAuthorizerConfiguration implements AuthorizerConfiguration 
         return false;
     }
 
+    public void setRoleMappingIncludeAll(final String roleName, final boolean includeAll) {
+        RoleMappingImpl role = roleMappings.get(roleName);
+        role.setIncludeAll(includeAll);
+    }
+
     public boolean addRoleMappingPrincipal(final String roleName, final PrincipalType principalType, final MatchType matchType,
                                            final String name, final String realm, final boolean immediate) {
         RoleMappingImpl role = roleMappings.get(roleName);
@@ -270,6 +275,7 @@ public class WritableAuthorizerConfiguration implements AuthorizerConfiguration 
     private static final class RoleMappingImpl implements RoleMapping {
 
         private final String name;
+        private boolean includeAll;
         private volatile HashSet<MappingPrincipal> includes = new HashSet<MappingPrincipal>();
         private volatile HashSet<MappingPrincipal> excludes = new HashSet<MappingPrincipal>();
 
@@ -316,6 +322,14 @@ public class WritableAuthorizerConfiguration implements AuthorizerConfiguration 
             } finally {
                 setSet(set, matchType, false);
             }
+        }
+
+        private void setIncludeAll(final boolean includeAll) {
+            this.includeAll = includeAll;
+        }
+
+        public boolean includeAllAuthedUsers() {
+            return includeAll;
         }
 
         private synchronized boolean removePrincipal(final MappingPrincipal principal, final MatchType matchType) {
