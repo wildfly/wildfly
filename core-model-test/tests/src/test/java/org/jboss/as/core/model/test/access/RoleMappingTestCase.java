@@ -26,6 +26,7 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ACC
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ADD;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.AUTHORIZATION;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.CORE_SERVICE;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.INCLUDE_ALL;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.MANAGEMENT;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.NAME;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP;
@@ -88,7 +89,7 @@ public class RoleMappingTestCase extends AbstractCoreModelTest {
     public void testIncludeByUsername() {
         final String roleName = "TestRoleOne"; // Use a unique role for each test, a failure to clean up should not affect other tests.
         final String userName = "UserOne";
-        addRole(roleName);
+        addRole(roleName, false);
         addPrincipal(roleName, MappingType.INCLUDE, PrincipalType.USER, userName, null);
         assertIsCallerInRole(roleName, null, false);
 
@@ -105,7 +106,7 @@ public class RoleMappingTestCase extends AbstractCoreModelTest {
     public void testIncludeByUsernameAndRealm() {
         final String roleName = "TestRoleTwo";
         final String userName = "UserTwo";
-        addRole(roleName);
+        addRole(roleName, false);
         addPrincipal(roleName, MappingType.INCLUDE, PrincipalType.USER, userName, TEST_REALM);
         assertIsCallerInRole(roleName, null, false);
 
@@ -126,7 +127,7 @@ public class RoleMappingTestCase extends AbstractCoreModelTest {
         final String roleName = "TestRoleThree";
         final String userName = "UserThree";
         final String groupName = "GroupThree";
-        addRole(roleName);
+        addRole(roleName, false);
         addPrincipal(roleName, MappingType.INCLUDE, PrincipalType.GROUP, groupName, null);
         assertIsCallerInRole(roleName, null, false);
 
@@ -145,7 +146,7 @@ public class RoleMappingTestCase extends AbstractCoreModelTest {
         final String roleName = "TestRoleFour";
         final String userName = "UserFour";
         final String groupName = "GroupFour";
-        addRole(roleName);
+        addRole(roleName, false);
         addPrincipal(roleName, MappingType.INCLUDE, PrincipalType.GROUP, groupName, TEST_REALM);
         assertIsCallerInRole(roleName, null, false);
 
@@ -164,7 +165,7 @@ public class RoleMappingTestCase extends AbstractCoreModelTest {
         final String roleName = "TestRoleFive";
         final String userName = "UserFive";
         final String groupName = "GroupFive";
-        addRole(roleName);
+        addRole(roleName, false);
         addPrincipal(roleName, MappingType.INCLUDE, PrincipalType.GROUP, groupName, null);
         addPrincipal(roleName, MappingType.EXCLUDE, PrincipalType.USER, userName, null);
         assertIsCallerInRole(roleName, null, false);
@@ -183,7 +184,7 @@ public class RoleMappingTestCase extends AbstractCoreModelTest {
         final String roleName = "TestRoleFive";
         final String userName = "UserFive";
         final String groupName = "GroupFive";
-        addRole(roleName);
+        addRole(roleName, false);
         addPrincipal(roleName, MappingType.INCLUDE, PrincipalType.GROUP, groupName, null);
         addPrincipal(roleName, MappingType.EXCLUDE, PrincipalType.USER, userName, TEST_REALM);
         assertIsCallerInRole(roleName, null, false);
@@ -204,7 +205,7 @@ public class RoleMappingTestCase extends AbstractCoreModelTest {
         final String userName = "UserSix";
         final String inGroupName = "GroupSix_In";
         final String outGroupName = "GroupSix_Out";
-        addRole(roleName);
+        addRole(roleName, false);
         addPrincipal(roleName, MappingType.INCLUDE, PrincipalType.GROUP, inGroupName, null);
         addPrincipal(roleName, MappingType.EXCLUDE, PrincipalType.GROUP, outGroupName, null);
         assertIsCallerInRole(roleName, null, false);
@@ -224,7 +225,7 @@ public class RoleMappingTestCase extends AbstractCoreModelTest {
         final String userName = "UserSeven";
         final String inGroupName = "GroupSeven_In";
         final String outGroupName = "GroupSeven_Out";
-        addRole(roleName);
+        addRole(roleName, false);
         addPrincipal(roleName, MappingType.INCLUDE, PrincipalType.GROUP, inGroupName, null);
         addPrincipal(roleName, MappingType.EXCLUDE, PrincipalType.GROUP, outGroupName, TEST_REALM);
         assertIsCallerInRole(roleName, null, false);
@@ -246,7 +247,7 @@ public class RoleMappingTestCase extends AbstractCoreModelTest {
         final String roleName = "SUPERUSER";
         final String otherRole = "OPERATOR";
         final String userName = "UserThirteen";
-        addRole(roleName);
+        addRole(roleName, false);
         ModelNode addedAddress = addPrincipal(roleName, MappingType.INCLUDE, PrincipalType.USER, userName, null);
 
         assertIsCallerInRole(roleName, true, userName, TEST_REALM, null);
@@ -265,7 +266,7 @@ public class RoleMappingTestCase extends AbstractCoreModelTest {
         final String roleName = "OPERATOR";
         final String otherRole = "MONITOR";
         final String userName = "UserFourteen";
-        addRole(roleName);
+        addRole(roleName, false);
         ModelNode addedAddress = addPrincipal(roleName, MappingType.INCLUDE, PrincipalType.USER, userName, null);
 
         assertIsCallerInRole(roleName, true, userName, TEST_REALM, null);
@@ -276,10 +277,64 @@ public class RoleMappingTestCase extends AbstractCoreModelTest {
         removeRole(roleName);
     }
 
-    private void addRole(final String roleName) {
+    /**
+     * Test that an authenticated user is assigned a role where include-all = true.
+     */
+    @Test
+    public void testIncludeAll() {
+        final String roleName = "TestRoleEight"; // Use a unique role for each test, a failure to clean up should not affect other tests.
+        final String userName = "UserEight";
+        addRole(roleName, true);
+        assertIsCallerInRole(roleName, null, false);
+
+        assertIsCallerInRole(roleName, true, userName, TEST_REALM, null);
+
+        removeRole(roleName);
+    }
+
+    /**
+     * Test that a user matched to a role by include-all is not assigned the role if their username is in the exclude list.
+     */
+    @Test
+    public void testIncludeAll_ExcludeByUsername() {
+        final String roleName = "TestRoleNine";
+        final String userName = "UserNine";
+        final String groupName = "GroupNine";
+        addRole(roleName, true);
+        addPrincipal(roleName, MappingType.EXCLUDE, PrincipalType.USER, userName, null);
+        assertIsCallerInRole(roleName, null, false);
+
+        assertIsCallerInRole(roleName, true, OTHER_USER, TEST_REALM, null, groupName);
+        assertIsCallerInRole(roleName, false, userName, TEST_REALM, null, groupName);
+
+        removeRole(roleName);
+    }
+
+    /**
+     * Test that a user matched to a role by include-all is not assigned the role if their group is in the exclude list.
+     */
+    @Test
+    public void testIncludeAll_ExcludeByGroup() {
+        final String roleName = "TestRoleTen";
+        final String userName = "UserTen";
+        final String groupName = "GroupTen";
+        addRole(roleName, true);
+        addPrincipal(roleName, MappingType.EXCLUDE, PrincipalType.GROUP, groupName, null);
+        assertIsCallerInRole(roleName, null, false);
+
+        assertIsCallerInRole(roleName, true, userName, TEST_REALM, null);
+        assertIsCallerInRole(roleName, false, userName, TEST_REALM, null, groupName);
+
+        removeRole(roleName);
+    }
+
+    private void addRole(final String roleName, boolean includeAll) {
         ModelNode operation = new ModelNode();
         operation.get(OP_ADDR).add(CORE_SERVICE, MANAGEMENT).add(ACCESS, AUTHORIZATION).add(ROLE_MAPPING, roleName);
         operation.get(OP).set(ADD);
+        if (includeAll) {
+            operation.get(INCLUDE_ALL).set(true);
+        }
 
         ModelNode response = kernelServices.executeOperation(operation);
         assertEquals(SUCCESS, response.get(OUTCOME).asString());
