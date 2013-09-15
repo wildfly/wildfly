@@ -25,8 +25,6 @@ package org.jboss.as.domain.management.security.adduser;
 import static org.jboss.as.domain.management.DomainManagementMessages.MESSAGES;
 import static org.jboss.as.domain.management.security.adduser.AddUser.NEW_LINE;
 
-import org.jboss.as.domain.management.security.adduser.AddUser.RealmMode;
-
 /**
  * State to prompt the user to choose the name of the realm.
  *
@@ -60,26 +58,37 @@ public class PromptRealmState implements State {
          * Prompt for realm.
          */
         String existingRealm = stateValues.getRealm();
-        theConsole.printf(MESSAGES.realmPrompt(existingRealm == null ? "" : existingRealm));
-        if (stateValues.getRealmMode() == RealmMode.DISCOVERED || stateValues.getRealmMode() == RealmMode.USER_SUPPLIED) {
-            theConsole.printf(" : ");
-            theConsole.printf(NEW_LINE);
-            return new PromptNewUserState(theConsole, stateValues);
-        } else {
-            String temp = theConsole.readLine(" : ");
-            if (temp == null) {
-                /*
-                 * This will return user to the command prompt so add a new line to ensure the command prompt is on the next
-                 * line.
-                 */
-                theConsole.printf(NEW_LINE);
-                return null;
-            }
-            if (temp.length() > 0 || stateValues.getRealm() == null) {
-                stateValues.setRealm(temp);
-            }
+        if (existingRealm == null) {
+            existingRealm = "";
+        }
 
-            return new ValidateRealmState(theConsole, stateValues);
+        switch (stateValues.getRealmMode()) {
+            case DISCOVERED:
+                theConsole.printf(MESSAGES.discoveredRealm(existingRealm));
+                theConsole.printf(NEW_LINE);
+
+                return new PromptNewUserState(theConsole, stateValues);
+            case USER_SUPPLIED:
+                theConsole.printf(MESSAGES.userSuppliedRealm(existingRealm));
+                theConsole.printf(NEW_LINE);
+
+                return new PromptNewUserState(theConsole, stateValues);
+            default:
+                theConsole.printf(MESSAGES.realmPrompt(existingRealm));
+                String temp = theConsole.readLine(" : ");
+                if (temp == null) {
+                    /*
+                     * This will return user to the command prompt so add a new line to ensure the command prompt is on the next
+                     * line.
+                     */
+                    theConsole.printf(NEW_LINE);
+                    return null;
+                }
+                if (temp.length() > 0 || stateValues.getRealm() == null) {
+                    stateValues.setRealm(temp);
+                }
+
+                return new ValidateRealmState(theConsole, stateValues);
         }
     }
 

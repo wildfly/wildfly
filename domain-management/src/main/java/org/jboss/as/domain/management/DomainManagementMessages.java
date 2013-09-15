@@ -896,5 +896,23 @@ public interface DomainManagementMessages {
     @Message(id = Message.NONE, value = "Are you sure you want to set the realm to '%s'")
     String realmConfirmation(final String chosenRealm);
 
+    /**
+     * Display password requirements and the command line argument option to modify these restrictions
+     */
+    @Message(id = Message.NONE, value = "Password requirements are listed below. To modify these restrictions edit the add-user.properties configuration file.")
+    String passwordRequirements();
+
+    /**
+     * Message stating command line supplied realm name in use.
+     */
+    @Message(id = Message.NONE, value = "Using realm '%s' as specified on the command line.")
+    String userSuppliedRealm(final String realmName);
+
+    /**
+     * Message stating discovered realm name in use.
+     */
+    @Message(id = Message.NONE, value = "Using realm '%s' as discovered from the existing property files.")
+    String discoveredRealm(final String realmName);
+
     //PUT YOUR NUMBERED MESSAGES ABOVE THE id=NONE ones!
 }
