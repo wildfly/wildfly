@@ -13,15 +13,15 @@
                   <group realm="ApplicationRealm" name="GroupTwo" />
                </exclude>
             </role>
-            <role name="Operator">
+            <role name="Operator" include-all="true">
                <include>
-                  <user name="UserThree" />
+                  <user alias="inc-one" name="UserThree" />
                   <group name="GroupThree" />
                </include>
             </role>
             <role name="Maintainer">
                <exclude>
-                  <user name="UserFour" />
+                  <user alias="excl-one" name="UserFour" />
                   <group name="GroupFour" />
                </exclude>
             </role>

@@ -118,13 +118,19 @@ public class StandardRoleMapper implements RoleMapper {
             }
 
             for (AuthorizerConfiguration.RoleMapping current : rolesToCheck.values()) {
-                AuthorizerConfiguration.MappingPrincipal inclusion = current.isIncluded(caller);
-                if (inclusion != null) {
+                boolean includeAll = current.includeAllAuthedUsers();
+                AuthorizerConfiguration.MappingPrincipal inclusion = includeAll == false ? current.isIncluded(caller) : null;
+                if (includeAll || inclusion != null) {
                     AuthorizerConfiguration.MappingPrincipal exclusion = current.isExcluded(caller);
                     if (exclusion == null) {
                         if (traceEnabled) {
-                            ACCESS_LOGGER.tracef("User '%s' assiged role '%s' due to match on inclusion %s", caller.getName(),
-                                    current.getName(), inclusion);
+                            if (includeAll) {
+                                ACCESS_LOGGER.tracef("User '%s' assiged role '%s' due to include-all set on role.", caller.getName(),
+                                        current.getName());
+                            } else {
+                                ACCESS_LOGGER.tracef("User '%s' assiged role '%s' due to match on inclusion %s", caller.getName(),
+                                        current.getName(), inclusion);
+                            }
                         }
                         mappedRoles.add(current.getName());
                     } else {

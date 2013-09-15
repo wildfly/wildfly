@@ -50,6 +50,7 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.PLAIN_TEXT;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.PROPERTIES;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.REALM;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ROLE_MAPPING;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SECRET;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SECURITY_REALM;
@@ -104,6 +105,7 @@ import org.jboss.as.domain.management.access.ApplicationClassificationConfigReso
 import org.jboss.as.domain.management.access.ApplicationClassificationTypeResourceDefinition;
 import org.jboss.as.domain.management.access.HostScopedRolesResourceDefinition;
 import org.jboss.as.domain.management.access.PrincipalResourceDefinition;
+import org.jboss.as.domain.management.access.RoleMappingResourceDefinition;
 import org.jboss.as.domain.management.access.SensitivityClassificationTypeResourceDefinition;
 import org.jboss.as.domain.management.access.SensitivityResourceDefinition;
 import org.jboss.as.domain.management.access.ServerGroupScopedRoleResourceDefinition;
@@ -1750,8 +1752,9 @@ public class ManagementXml {
             }
         }
 
-        if (addressFound == false)
+        if (addressFound == false) {
             throw missingRequired(reader, Collections.singleton(Attribute.NAME));
+        }
 
         requireNoContent(reader);
     }
@@ -1773,13 +1776,39 @@ public class ManagementXml {
 
     private static void parseRole(final XMLExtendedStreamReader reader, final ModelNode address, final Namespace expectedNs,
             final List<ModelNode> list) throws XMLStreamException {
-        ParseUtils.requireSingleAttribute(reader, NAME);
-        String name = reader.getAttributeValue(0);
-        ModelNode addr = address.clone().add(ROLE_MAPPING, name);
         final ModelNode add = new ModelNode();
+        list.add(add);
+        String name = null;
+
+        final int count = reader.getAttributeCount();
+        for (int i = 0; i < count; i++) {
+            final String value = reader.getAttributeValue(i);
+            if (!isNoNamespaceAttribute(reader, i)) {
+                throw unexpectedAttribute(reader, i);
+            } else {
+                final Attribute attribute = Attribute.forName(reader.getAttributeLocalName(i));
+                switch (attribute) {
+                    case NAME:
+                        name = value;
+                        break;
+                    case INCLUDE_ALL: {
+                        RoleMappingResourceDefinition.INCLUDE_ALL.parseAndSetParameter(value, add, reader);
+                        break;
+                    }
+                    default: {
+                        throw unexpectedAttribute(reader, i);
+                    }
+                }
+            }
+        }
+
+        if (name == null) {
+            throw missingRequired(reader, Collections.singleton(Attribute.NAME));
+        }
+
+        ModelNode addr = address.clone().add(ROLE_MAPPING, name);
         add.get(OP_ADDR).set(addr);
         add.get(OP).set(ADD);
-        list.add(add);
 
         while (reader.hasNext() && reader.nextTag() != END_ELEMENT) {
             requireNamespace(reader, expectedNs);
@@ -1827,6 +1856,7 @@ public class ManagementXml {
 
     private static void parsePrincipal(final XMLExtendedStreamReader reader, final ModelNode address, final String type,
             final Namespace expectedNs, final List<ModelNode> list) throws XMLStreamException {
+        String alias = null;
         String realm = null;
         String name = null;
 
@@ -1842,6 +1872,10 @@ public class ManagementXml {
             } else {
                 final Attribute attribute = Attribute.forName(reader.getAttributeLocalName(i));
                 switch (attribute) {
+                    case ALIAS: {
+                        alias = value;
+                        break;
+                    }
                     case NAME: {
                         name = value;
                         PrincipalResourceDefinition.NAME.parseAndSetParameter(value, addOp, reader);
@@ -1863,12 +1897,16 @@ public class ManagementXml {
             throw ParseUtils.missingRequired(reader, Collections.singleton(Attribute.NAME));
         }
 
-        String addrValue = type + "-" + name + (realm != null ? "@" + realm : "");
+        String addrValue = alias == null ? generateAlias(type, name, realm) : alias;
         ModelNode addAddr = address.clone().add(addrValue);
         addOp.get(OP_ADDR).set(addAddr);
         list.add(addOp);
 
         ParseUtils.requireNoContent(reader);
+    }
+
+    private static String generateAlias(final String type, final String name, final String realm) {
+        return type + "-" + name + (realm != null ? "@" + realm : "");
     }
 
     public static void parseAccessControlConstraints(final XMLExtendedStreamReader reader, final ModelNode accAuthzAddr, final Namespace expectedNs,
@@ -2627,6 +2665,7 @@ public class ManagementXml {
             throws XMLStreamException {
         writer.writeStartElement(Element.ROLE_MAPPING.getLocalName());
 
+
         if (accessAuthorization.hasDefined(ROLE_MAPPING)) {
             ModelNode roleMappings = accessAuthorization.get(ROLE_MAPPING);
 
@@ -2634,6 +2673,7 @@ public class ManagementXml {
                 writer.writeStartElement(Element.ROLE.getLocalName());
                 writeAttribute(writer, Attribute.NAME, variable.getName());
                 ModelNode role = variable.getValue();
+                RoleMappingResourceDefinition.INCLUDE_ALL.marshallAsAttribute(role, writer);
                 if (role.hasDefined(INCLUDE)) {
                     writeIncludeExclude(writer, Element.INCLUDE.getLocalName(), role.get(INCLUDE));
                 }
@@ -2659,17 +2699,28 @@ public class ManagementXml {
         writer.writeStartElement(elementName);
         for (Property current : list) {
             // The names where only arbitrary to allow unique referencing.
-            writePrincipal(writer, current.getValue());
+            writePrincipal(writer, current.getName(), current.getValue());
         }
 
         writer.writeEndElement();
     }
 
-    private static void writePrincipal(XMLExtendedStreamWriter writer, ModelNode principal) throws XMLStreamException {
+    private static void writePrincipal(XMLExtendedStreamWriter writer, String alias, ModelNode principal) throws XMLStreamException {
         String elementName = principal.require(TYPE).asString().equalsIgnoreCase(GROUP) ? Element.GROUP.getLocalName() : Element.USER.getLocalName();
         writer.writeStartElement(elementName);
+
+        String realm = principal.get(REALM).isDefined() ? principal.require(REALM).asString() : null;
+        String name = principal.require(NAME).asString();
+
+        String expectedAlias = generateAlias(elementName, name, realm);
+        if (alias.equals(expectedAlias)==false) {
+            writeAttribute(writer, Attribute.ALIAS, alias);
+        }
+
         PrincipalResourceDefinition.REALM.marshallAsAttribute(principal, writer);
+
         PrincipalResourceDefinition.NAME.marshallAsAttribute(principal, writer);
+
         writer.writeEndElement();
     }
 

@@ -27,12 +27,16 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ROL
 
 import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.PathElement;
+import org.jboss.as.controller.SimpleAttributeDefinition;
+import org.jboss.as.controller.SimpleAttributeDefinitionBuilder;
 import org.jboss.as.controller.SimpleResourceDefinition;
 import org.jboss.as.controller.access.management.DelegatingConfigurableAuthorizer;
 import org.jboss.as.controller.access.management.WritableAuthorizerConfiguration;
+import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
 import org.jboss.as.controller.registry.ManagementResourceRegistration;
 import org.jboss.as.domain.management._private.DomainManagementResolver;
 import org.jboss.dmr.ModelNode;
+import org.jboss.dmr.ModelType;
 
 /**
  * A {@link org.jboss.as.controller.ResourceDefinition} representing an individual role mapping.
@@ -42,6 +46,10 @@ import org.jboss.dmr.ModelNode;
 public class RoleMappingResourceDefinition extends SimpleResourceDefinition {
 
     public static final String PATH_KEY = ROLE_MAPPING;
+
+    public static final SimpleAttributeDefinition INCLUDE_ALL = new SimpleAttributeDefinitionBuilder(ModelDescriptionConstants.INCLUDE_ALL, ModelType.BOOLEAN, true)
+            .setDefaultValue(new ModelNode(false))
+            .build();
 
     private final DelegatingConfigurableAuthorizer authorizer;
 
@@ -54,6 +62,12 @@ public class RoleMappingResourceDefinition extends SimpleResourceDefinition {
 
     public static SimpleResourceDefinition create(final DelegatingConfigurableAuthorizer authorizer) {
         return new RoleMappingResourceDefinition(authorizer);
+    }
+
+    @Override
+    public void registerAttributes(ManagementResourceRegistration resourceRegistration) {
+        WritableAuthorizerConfiguration authorizerConfiguration = authorizer.getWritableAuthorizerConfiguration();
+        resourceRegistration.registerReadWriteAttribute(INCLUDE_ALL, null, new RoleIncludeAllWriteAttributeHander(authorizerConfiguration));
     }
 
     @Override

@@ -119,6 +119,13 @@ public interface AuthorizerConfiguration {
         String getName();
 
         /**
+         * Get whether all authenticated users should be included in this role provided they do not match on the excludes of the role.
+         *
+         * @return true if all authenticated users should be granted this role.
+         */
+        boolean includeAllAuthedUsers();
+
+        /**
          * Gets whether the caller matches the role mapping's inclusion rules.
          *
          * @param caller the caller

@@ -154,6 +154,7 @@ public class ModelDescriptionConstants {
     public static final String IGNORED_RESOURCE_TYPE = "ignored-resource-type";
     public static final String IN_SERIES = "in-series";
     public static final String INCLUDE = "include";
+    public static final String INCLUDE_ALL = "include-all";
     public static final String INCLUDES = "includes";
     public static final String INCLUDE_ALIASES = "include-aliases";
     public static final String INCLUDE_DATE = "include-date";

@@ -2940,6 +2940,16 @@
                 </xs:documentation>
             </xs:annotation>
         </xs:attribute>
+        <xs:attribute name="include-all" type="xs:boolean" use="optional" default="false">
+            <xs:annotation>
+                <xs:documentation>
+                    <![CDATA[
+                        If set to true all authenticated users will be granted this role provided that they
+                        have not been matched to the exclude list.
+                    ]]>
+                </xs:documentation>
+            </xs:annotation>
+        </xs:attribute>
     </xs:complexType>
 
     <xs:complexType name="include-excludeType">
@@ -2967,8 +2977,42 @@
                 ]]>
             </xs:documentation>
         </xs:annotation>
-        <xs:attribute name="realm" type="xs:string" use="optional" />
-        <xs:attribute name="name" type="xs:string" use="required" />
+        <xs:attribute name="alias" type="xs:string" use="optional">
+            <xs:annotation>
+                <xs:documentation>
+                    <![CDATA[
+                        If you are editing the XML configuration directly you do not need to be adding
+                        this attribute and in general you should not be adding this attribute.
+
+                        When the management tools are used to add include and exclude definitions for
+                        groups and users the name used in the address is an arbitrary String, this attribute
+                        is used when non-standard forms of the address are used so that it can be persisted
+                        and the model will be consistent when it is reloaded.
+
+                        But as in the first sentence, if you are questioning if you should use this attribute
+                        yourself - DON'T.
+                    ]]>
+                </xs:documentation>
+            </xs:annotation>
+        </xs:attribute>
+        <xs:attribute name="realm" type="xs:string" use="optional">
+            <xs:annotation>
+                <xs:documentation>
+                    <![CDATA[
+                        The name of the realm the user used to authenticate.
+                    ]]>
+                </xs:documentation>
+            </xs:annotation>
+        </xs:attribute>
+        <xs:attribute name="name" type="xs:string" use="required">
+            <xs:annotation>
+                <xs:documentation>
+                    <![CDATA[
+                        The name of the principal.
+                    ]]>
+                </xs:documentation>
+            </xs:annotation>
+        </xs:attribute>
     </xs:complexType>
 
     <xs:complexType name="server-group-scoped-rolesType">

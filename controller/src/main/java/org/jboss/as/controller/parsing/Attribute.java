@@ -79,6 +79,7 @@ public enum Attribute {
     HTTP("http"),
     HTTPS("https"),
     IGNORE_UNUSED_CONFIG("ignore-unused-configuration"),
+    INCLUDE_ALL("include-all"),
     INCLUDE_DATE("include-date"),
     INITIAL_CONTEXT_FACTORY("initial-context-factory"),
     INTERFACE("interface"),
