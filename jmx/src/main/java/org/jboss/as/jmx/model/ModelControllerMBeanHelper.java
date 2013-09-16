@@ -55,6 +55,7 @@ import javax.management.ObjectName;
 import javax.management.QueryExp;
 import javax.management.ReflectionException;
 
+import org.jboss.as.controller.ExpressionResolver;
 import org.jboss.as.controller.ModelController;
 import org.jboss.as.controller.ModelController.OperationTransactionControl;
 import org.jboss.as.controller.PathAddress;
@@ -76,6 +77,8 @@ import org.jboss.dmr.ModelNode;
 public class ModelControllerMBeanHelper {
 
     static final String CLASS_NAME = ModelController.class.getName();
+    private static final String AUTHORIZED_ERROR = "JBAS013456";
+
     private final boolean standalone;
     private final ModelController controller;
     private final ResourceAccessControlUtil accessControlUtil;
@@ -312,6 +315,12 @@ public class ModelControllerMBeanHelper {
         ModelNode result = execute(op);
         String error = getFailureDescription(result);
         if (error != null) {
+            //Since read-resource-description does not know the parameters of the operation, i.e. if a vault expression is used or not,
+            //check the error code
+            //TODO add a separate authorize step where we check ourselves that the operation will pass authorization?
+            if (isVaultExpression(attribute.getValue()) && error.contains(AUTHORIZED_ERROR)) {
+                throw MESSAGES.notAuthorizedToWriteAttribute(attributeName);
+            }
             throw new InvalidAttributeValueException(error);
         }
     }
@@ -431,6 +440,16 @@ public class ModelControllerMBeanHelper {
         ModelNode result = execute(op);
         String error = getFailureDescription(result);
         if (error != null) {
+            if (error.contains(AUTHORIZED_ERROR)) {
+                for (Object param : params) {
+                    //Since read-resource-description does not know the parameters of the operation, i.e. if a vault expression is used or not,
+                    //check the error code
+                    //TODO add a separate authorize step where we check ourselves that the operation will pass authorization?
+                    if (isVaultExpression(param)) {
+                        throw MESSAGES.notAuthorizedToExecuteOperation(operationName);
+                    }
+                }
+            }
             throw new ReflectionException(null, error);
         }
 
@@ -479,6 +498,17 @@ public class ModelControllerMBeanHelper {
 
     private boolean isExcludeAddress(PathAddress pathAddress) {
         return pathAddress.equals(CORE_SERVICE_PLATFORM_MBEAN);
+    }
+
+    private boolean isVaultExpression(Object value) {
+        if (value != null && value.getClass() == String.class){
+            String valueString = (String)value;
+            if (ExpressionResolver.EXPRESSION_PATTERN.matcher(valueString).matches()) {
+                return TypeConverters.VAULT_PATTERN.matcher(valueString).matches();
+            }
+
+        }
+        return false;
     }
 
     public static ObjectName createRootObjectName(String domain) {
