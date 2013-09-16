@@ -27,9 +27,8 @@ import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
-import java.io.File;
+
 import java.io.IOException;
-import java.io.InputStream;
 import java.util.List;
 import java.util.Set;
 
@@ -38,46 +37,24 @@ import javax.security.auth.callback.Callback;
 import javax.security.auth.callback.NameCallback;
 import javax.security.sasl.RealmCallback;
 
-import org.apache.directory.api.ldap.model.entry.DefaultEntry;
-import org.apache.directory.api.ldap.model.ldif.LdifEntry;
-import org.apache.directory.api.ldap.model.ldif.LdifReader;
-import org.apache.directory.api.ldap.model.schema.SchemaManager;
-import org.apache.directory.server.core.api.CoreSession;
-import org.apache.directory.server.core.api.DirectoryService;
-import org.apache.directory.server.core.api.partition.Partition;
-import org.apache.directory.server.core.factory.DefaultDirectoryServiceFactory;
-import org.apache.directory.server.core.factory.DirectoryServiceFactory;
-import org.apache.directory.server.core.factory.PartitionFactory;
-import org.apache.directory.server.ldap.LdapServer;
-import org.apache.directory.server.protocol.shared.transport.TcpTransport;
-import org.apache.directory.server.protocol.shared.transport.Transport;
 import org.jboss.as.domain.management.AuthMechanism;
 import org.jboss.as.domain.management.AuthorizingCallbackHandler;
 import org.jboss.as.domain.management.SecurityRealm;
 import org.jboss.as.domain.management.connections.ConnectionManager;
 import org.jboss.as.domain.management.connections.ldap.LdapConnectionManagerService;
-import org.jboss.as.domain.management.security.operations.OutboundConnectionAddBuilder;
 import org.jboss.as.domain.management.security.operations.SecurityRealmAddBuilder;
 import org.jboss.dmr.ModelNode;
 import org.jboss.sasl.callback.VerifyPasswordCallback;
-import org.junit.AfterClass;
-import org.junit.BeforeClass;
 import org.junit.Test;
 
 /**
  * A test case to test authentication against an LDAP server.
  *
- * This initial test starts it's own LDAP server to authenticate against, this will be evolved further so the LDAP server can be
- * started once for a suite of test cases.
+ * @see LdapTestSuite
  *
  * @author <a href="mailto:darran.lofthouse@jboss.com">Darran Lofthouse</a>
  */
-public class LdapAuthenticationTestCase extends SecurityRealmTestBase {
-
-    private static final String HOST_NAME = "localhost";
-    private static int LDAP_PORT = 11389;
-    private static final String DIRECTORY_NAME = "Test Service";
-    private static final String CONNECTION_NAME = "TestConnection";
+public class LdapAuthenticationSuiteTest extends BaseLdapSuiteTest {
 
     private static final String ADVANCED_REALM = "AdvancedRealm";
 
@@ -89,72 +66,6 @@ public class LdapAuthenticationTestCase extends SecurityRealmTestBase {
     private static final String USER_ONE_PASSWORD = "one_password";
     private static final String USER_TWO = "user_two";
     private static final String USER_TWO_PASSWORD = "two_password";
-
-    private static File workingDir;
-    private static DirectoryService directoryService;
-    private static LdapServer ldapServer;
-
-    @BeforeClass
-    public static void startLdapServer() throws Exception {
-        createWorkingDir();
-        DirectoryServiceFactory dsf = new DefaultDirectoryServiceFactory();
-        dsf.init(DIRECTORY_NAME);
-        directoryService = dsf.getDirectoryService();
-        directoryService.getChangeLog().setEnabled(false);
-        SchemaManager schemaManager = directoryService.getSchemaManager();
-
-        PartitionFactory pf = dsf.getPartitionFactory();
-        Partition p = pf.createPartition(schemaManager, "simple", "dc=simple,dc=wildfly,dc=org", 1000, workingDir);
-        pf.addIndex(p, "uid", 5);
-        pf.addIndex(p, "departmentNumber", 5);
-        p.initialize();
-        directoryService.addPartition(p);
-
-        CoreSession adminSession = directoryService.getAdminSession();
-        InputStream ldifInput = LdapAuthenticationTestCase.class.getResourceAsStream("simple-partition.ldif");
-        LdifReader ldifReader = new LdifReader(ldifInput);
-        for (LdifEntry ldifEntry : ldifReader) {
-            adminSession.add(new DefaultEntry(schemaManager, ldifEntry.getEntry()));
-        }
-        ldifReader.close();
-        ldifInput.close();
-
-        ldapServer = new LdapServer();
-        ldapServer.setServiceName("DefaultLDAP");
-        Transport ldap = new TcpTransport( "0.0.0.0", LDAP_PORT, 3, 5 );
-        ldapServer.addTransports(ldap);
-        ldapServer.setDirectoryService(directoryService);
-        ldapServer.start();
-
-        System.out.println("Started");
-    }
-
-    private static void createWorkingDir() throws IOException {
-        if (workingDir == null) {
-            if (workingDir == null) {
-                workingDir = new File(".");
-                workingDir = new File(workingDir, "target");
-                workingDir = new File(workingDir, "apacheds_working").getCanonicalFile();
-                if (!workingDir.exists()) {
-                    workingDir.mkdirs();
-                }
-            }
-        }
-        for (File current : workingDir.listFiles()) {
-          current.delete();
-        }
-    }
-
-    @AfterClass
-    public static void stopLdapServer() throws Exception {
-        if (ldapServer != null) {
-            ldapServer.stop();
-        }
-        if (directoryService != null) {
-            directoryService.shutdown();
-        }
-        workingDir = null;
-    }
 
     @Test
     public void testConnection() throws Exception {
@@ -314,11 +225,6 @@ public class LdapAuthenticationTestCase extends SecurityRealmTestBase {
 
     @Override
     protected void addBootOperations(List<ModelNode> bootOperations) throws Exception {
-        bootOperations.add(OutboundConnectionAddBuilder.builder(CONNECTION_NAME)
-                .setUrl("ldap://" + HOST_NAME + ":" + LDAP_PORT)
-                .setSearchDn("uid=wildfly,dc=simple,dc=wildfly,dc=org")
-                .setSearchCredential("wildfly_password")
-                .build());
         // The super implementation of this method calls initialiseRealm for the realm
         // being used for testing, however the connection to the LDAP server should be
         // defined here.

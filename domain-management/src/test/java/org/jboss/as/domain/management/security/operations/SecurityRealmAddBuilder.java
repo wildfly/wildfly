@@ -47,6 +47,7 @@ public class SecurityRealmAddBuilder {
     private final ModelNode realmAddress;
     private boolean mapGroupsToRoles = true;
     private AuthenticationBuilder authentication;
+    private AuthorizationBuilder authorization;
 
     private final List<ModelNode> additionalSteps = new ArrayList<ModelNode>();
 
@@ -74,6 +75,16 @@ public class SecurityRealmAddBuilder {
         return authentication;
     }
 
+    public AuthorizationBuilder authorization() {
+        if (authorization == null) {
+            authorization = new AuthorizationBuilder(this);
+        }
+        // May have wasted instantiating it but it will also check this is not built.
+        authorization.assertNotBuilt();
+
+        return authorization;
+    }
+
     public ModelNode build() {
         assertNotBuilt();
         buildChildren();
@@ -94,6 +105,9 @@ public class SecurityRealmAddBuilder {
     private void buildChildren() {
         if (authentication != null && authentication.isBuilt() == false) {
             authentication.build();
+        }
+        if (authorization != null && authorization.isBuilt() == false) {
+            authorization.build();
         }
     }
 

@@ -45,6 +45,7 @@
                 <configuration>
                     <includes>
                         <include>**/*TestCase.java</include>
+                        <include>**/*TestSuite.java</include>
                     </includes>
                     <enableAssertions>false</enableAssertions>
                     

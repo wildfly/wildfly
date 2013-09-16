@@ -77,11 +77,11 @@ public abstract class SecurityRealmTestBase extends ManagementControllerTestBase
         initialiseRealm(builder);
         bootOperations.add(builder.build());
 
-        /*
+
         for (ModelNode current : bootOperations) {
             System.out.println(current.toString());
         }
-        */
+
     }
 
     protected abstract void initialiseRealm(SecurityRealmAddBuilder builder) throws Exception;
