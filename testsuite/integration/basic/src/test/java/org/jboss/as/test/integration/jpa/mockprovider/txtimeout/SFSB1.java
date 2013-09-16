@@ -23,6 +23,7 @@
 package org.jboss.as.test.integration.jpa.mockprovider.txtimeout;
 
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.CountDownLatch;
 
 import javax.annotation.Resource;
 import javax.ejb.Stateful;
@@ -47,7 +48,7 @@ public class SFSB1 {
     @PersistenceContext
     EntityManager entityManager;
 
-    static private boolean afterCompletionCalledByTMTimeoutThread = false;
+    private boolean afterCompletionCalledByTMTimeoutThread = false;
 
     @Resource
     TransactionSynchronizationRegistry transactionSynchronizationRegistry;
@@ -65,6 +66,7 @@ public class SFSB1 {
         System.out.println("org.jboss.as.test.integration.jpa.mockprovider.txtimeout.createEmployeeWaitForTxTimeout " +
                 "entered, will wait for tx time out to occur");
         Employee emp = new Employee();
+        final CountDownLatch latch = new CountDownLatch(1);
 
         emp.setId(id);
         emp.setAddress(address);
@@ -83,6 +85,7 @@ public class SFSB1 {
                         public void afterCompletion(int status) {
                             afterCompletionCalledByTMTimeoutThread =
                                 TxUtils.isTransactionManagerTimeoutThread();
+                            latch.countDown();
                         }
                     });
         }
@@ -113,6 +116,17 @@ public class SFSB1 {
             }
             System.out.println("org.jboss.as.test.integration.jpa.mockprovider.txtimeout.createEmployeeWaitForTxTimeout waiting for tx to timeout");
         }
+
+        // We can only reach this point if the transaction rolled back in
+        // which case the synchonization must be called
+        // (unless there is a crash). Wait for the callback (but not longer
+        // than 1 second which is plenty of time for
+        // the TM to proecces any synchronizations):
+        try {
+            latch.await(1, TimeUnit.SECONDS);
+        } catch (InterruptedException e) {
+            // ignore
+        }
     }
 
     public Employee getEmployeeNoTX(int id) {
@@ -124,7 +138,7 @@ public class SFSB1 {
      * createEmployeeWaitForTxTimeout was called by the transaction
      * manager handling a transaction timeout, otherwise return false
      */
-    public static boolean isAfterCompletionCalledByTMTimeoutThread() {
+    public boolean isAfterCompletionCalledByTMTimeoutThread() {
         return afterCompletionCalledByTMTimeoutThread;
     }
 }
