@@ -815,6 +815,14 @@
             <extract-native-jar group="org.hornetq" artifact="hornetq-native"/>
         </module-def>
 
+        <module-def name="org.hornetq.protocol.amqp">
+            <maven-resource group="org.hornetq" artifact="hornetq-amqp-protocol"/>
+        </module-def>
+
+        <module-def name="org.hornetq.protocol.stomp">
+            <maven-resource group="org.hornetq" artifact="hornetq-stomp-protocol"/>
+        </module-def>
+
         <module-def name="org.hornetq.ra">
             <maven-resource group="org.hornetq" artifact="hornetq-ra"/>
         </module-def>

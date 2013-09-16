@@ -46,6 +46,8 @@ public class ConfigurationAttributesTestCase extends AttributesTestBase {
         UNSUPPORTED_HORNETQ_CONFIG_PROPERTIES.add("securityInvalidationInterval");
         UNSUPPORTED_HORNETQ_CONFIG_PROPERTIES.add("name");
         UNSUPPORTED_HORNETQ_CONFIG_PROPERTIES.add("maskPassword");
+        // messaging protocols are automatically resolved by HornetQ using a ServiceLoader
+        UNSUPPORTED_HORNETQ_CONFIG_PROPERTIES.add("resolveProtocols");
 
         //stuff we arent bothered about
         KNOWN_ATTRIBUTES = new TreeSet<String>();

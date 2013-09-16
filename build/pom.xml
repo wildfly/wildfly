@@ -799,6 +799,11 @@
 
                 <dependency>
                     <groupId>org.hornetq</groupId>
+                    <artifactId>hornetq-amqp-protocol</artifactId>
+                </dependency>
+
+                <dependency>
+                    <groupId>org.hornetq</groupId>
                     <artifactId>hornetq-commons</artifactId>
                 </dependency>
 
@@ -835,6 +840,11 @@
                 <dependency>
                     <groupId>org.hornetq</groupId>
                     <artifactId>hornetq-server</artifactId>
+                </dependency>
+
+                <dependency>
+                    <groupId>org.hornetq</groupId>
+                    <artifactId>hornetq-stomp-protocol</artifactId>
                 </dependency>
 
                 <dependency>
