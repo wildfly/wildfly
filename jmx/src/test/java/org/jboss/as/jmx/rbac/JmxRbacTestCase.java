@@ -36,13 +36,13 @@ import java.util.concurrent.TimeUnit;
 import javax.management.Attribute;
 import javax.management.AttributeList;
 import javax.management.InstanceNotFoundException;
+import javax.management.JMRuntimeException;
 import javax.management.MBeanServer;
 import javax.management.Notification;
 import javax.management.NotificationFilter;
 import javax.management.NotificationListener;
 import javax.management.ObjectInstance;
 import javax.management.ObjectName;
-import javax.management.RuntimeMBeanException;
 import javax.security.auth.Subject;
 
 import org.jboss.as.controller.CompositeOperationHandler;
@@ -268,22 +268,22 @@ public abstract class JmxRbacTestCase extends AbstractControllerTestBase {
                         try {
                             server.getObjectInstance(OBJECT_NAME);
                             Assert.fail();
-                        } catch (RuntimeMBeanException expected) {
+                        } catch (JMRuntimeException expected) {
                         }
                         try {
                             server.isRegistered(OBJECT_NAME);
                             Assert.fail();
-                        } catch (RuntimeMBeanException expected) {
+                        } catch (JMRuntimeException expected) {
                         }
                         try {
                             server.getMBeanInfo(OBJECT_NAME);
                             Assert.fail();
-                        } catch (RuntimeMBeanException expected) {
+                        } catch (JMRuntimeException expected) {
                         }
                         try {
                             server.isInstanceOf(OBJECT_NAME,BeanMBean.class.getName());
                             Assert.fail();
-                        } catch (RuntimeMBeanException expected) {
+                        } catch (JMRuntimeException expected) {
                         }
                     }
 
@@ -296,12 +296,12 @@ public abstract class JmxRbacTestCase extends AbstractControllerTestBase {
                         try {
                             server.getAttribute(OBJECT_NAME, "Attr");
                             Assert.fail();
-                        } catch (RuntimeMBeanException expected) {
+                        } catch (JMRuntimeException expected) {
                         }
                         try {
                             server.getAttributes(OBJECT_NAME, new String[] {"Attr"});
                             Assert.fail();
-                        } catch (RuntimeMBeanException expected) {
+                        } catch (JMRuntimeException expected) {
                         }
                     }
                     if (canWrite) {
@@ -311,12 +311,12 @@ public abstract class JmxRbacTestCase extends AbstractControllerTestBase {
                         try {
                             server.setAttribute(OBJECT_NAME, new Attribute("Attr", new Integer(10)));
                             Assert.fail();
-                        } catch (RuntimeMBeanException expected) {
+                        } catch (JMRuntimeException expected) {
                         }
                         try {
                             server.setAttributes(OBJECT_NAME, new AttributeList(Collections.singletonList(new Attribute("Attr", new Integer(10)))));
                             Assert.fail();
-                        } catch (RuntimeMBeanException expected) {
+                        } catch (JMRuntimeException expected) {
                         }
                     }
 
@@ -333,22 +333,22 @@ public abstract class JmxRbacTestCase extends AbstractControllerTestBase {
                         try {
                             server.createMBean(Bean.class.getName(), OBJECT_NAME2);
                             Assert.fail();
-                        } catch (RuntimeMBeanException expected) {
+                        } catch (JMRuntimeException expected) {
                         }
                         try {
                             server.createMBean(Bean.class.getName(), OBJECT_NAME2, new Object[0], new String[0]);
                             Assert.fail();
-                        } catch (RuntimeMBeanException expected) {
+                        } catch (JMRuntimeException expected) {
                         }
                         try {
                             server.registerMBean(new Bean(), OBJECT_NAME2);
                             Assert.fail();
-                        } catch (RuntimeMBeanException expected) {
+                        } catch (JMRuntimeException expected) {
                         }
                         try {
                             server.unregisterMBean(OBJECT_NAME);
                             Assert.fail();
-                        } catch (RuntimeMBeanException expected) {
+                        } catch (JMRuntimeException expected) {
                         }
                     }
 
@@ -361,12 +361,12 @@ public abstract class JmxRbacTestCase extends AbstractControllerTestBase {
                         try {
                             server.addNotificationListener(OBJECT_NAME, listener, listener, new Object());
                             Assert.fail();
-                        } catch (RuntimeMBeanException expected) {
+                        } catch (JMRuntimeException expected) {
                         }
                         try {
                             server.removeNotificationListener(OBJECT_NAME, listener);
                             Assert.fail();
-                        } catch (RuntimeMBeanException expected) {
+                        } catch (JMRuntimeException expected) {
                         }
                     }
 
@@ -396,37 +396,37 @@ public abstract class JmxRbacTestCase extends AbstractControllerTestBase {
                         try {
                             Assert.assertNotNull(server.deserialize(OBJECT_NAME, bytes));
                             Assert.fail();
-                        } catch (RuntimeMBeanException expected) {
+                        } catch (JMRuntimeException expected) {
                         }
                         try {
                             Assert.assertNotNull(server.deserialize(Bean.class.getName(), bytes));
                             Assert.fail();
-                        } catch (RuntimeMBeanException expected) {
+                        } catch (JMRuntimeException expected) {
                         }
                         try {
                             server.getClassLoader(OBJECT_NAME);
                             Assert.fail();
-                        } catch (RuntimeMBeanException expected) {
+                        } catch (JMRuntimeException expected) {
                         }
                         try {
                             server.getClassLoaderRepository();
                             Assert.fail();
-                        } catch (RuntimeMBeanException expected) {
+                        } catch (JMRuntimeException expected) {
                         }
                         try {
                             server.getClassLoaderFor(OBJECT_NAME);
                             Assert.fail();
-                        } catch (RuntimeMBeanException expected) {
+                        } catch (JMRuntimeException expected) {
                         }
                         try {
                             server.instantiate(Bean.class.getName());
                             Assert.fail();
-                        } catch (RuntimeMBeanException expected) {
+                        } catch (JMRuntimeException expected) {
                         }
                         try {
                             server.instantiate(Bean.class.getName(), new Object[0], new String[0]);
                             Assert.fail();
-                        } catch (RuntimeMBeanException expected) {
+                        } catch (JMRuntimeException expected) {
                         }
                     }
 
@@ -437,7 +437,7 @@ public abstract class JmxRbacTestCase extends AbstractControllerTestBase {
                         try {
                             server.invoke(OBJECT_NAME_MODEL, "info", new Object[0], new String[0]);
                             Assert.fail();
-                        } catch (RuntimeMBeanException expected) {
+                        } catch (JMRuntimeException expected) {
                         }
                     }
                     if (canWrite) {
@@ -449,22 +449,22 @@ public abstract class JmxRbacTestCase extends AbstractControllerTestBase {
                         try {
                             server.invoke(OBJECT_NAME, "method", new Object[0], new String[0]);
                             Assert.fail();
-                        } catch (RuntimeMBeanException expected) {
+                        } catch (JMRuntimeException expected) {
                         }
                         try {
                             server.invoke(OBJECT_NAME_MODEL, "action", new Object[0], new String[0]);
                             Assert.fail();
-                        } catch (RuntimeMBeanException expected) {
+                        } catch (JMRuntimeException expected) {
                         }
                         try {
                             server.invoke(OBJECT_NAME_MODEL, "actionInfo", new Object[0], new String[0]);
                             Assert.fail();
-                        } catch (RuntimeMBeanException expected) {
+                        } catch (JMRuntimeException expected) {
                         }
                         try {
                             server.invoke(OBJECT_NAME_MODEL, "unknown", new Object[0], new String[0]);
                             Assert.fail();
-                        } catch (RuntimeMBeanException expected) {
+                        } catch (JMRuntimeException expected) {
                         }
                     }
 
