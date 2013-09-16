@@ -326,7 +326,7 @@ class DomainApiHandler implements ManagementHttpHandler {
         }
 
         if (response.hasDefined(OUTCOME) && FAILED.equals(response.get(OUTCOME).asString())) {
-            status = INTERNAL_SERVER_ERROR;
+            status = getErrorResponseCode(response.asString());
         }
 
         boolean pretty = dmr.hasDefined("json.pretty") && dmr.get("json.pretty").asBoolean();
@@ -540,6 +540,17 @@ class DomainApiHandler implements ManagementHttpHandler {
     public void stop(HttpServer httpServer) {
         httpServer.removeContext(DOMAIN_API_CONTEXT);
         modelController = null;
+    }
+
+    private static int getErrorResponseCode(String failureMsg) {
+        // WFLY-2037. This is very hacky; better would be something like an internal failure-http-code that
+        // is set on the response from the OperationFailedException and stripped from non-HTTP interfaces.
+        // But this will do for now.
+        int result = INTERNAL_SERVER_ERROR;
+        if (failureMsg != null && failureMsg.contains("JBAS013456")) {
+            result = FORBIDDEN;
+        }
+        return result;
     }
 
 }

@@ -1017,7 +1017,12 @@ final class OperationContextImpl extends AbstractOperationContext {
     private void authorize(boolean allAttributes, Set<Action.ActionEffect> actionEffects) {
         AuthorizationResult accessResult = authorize(activeStep.operationId, activeStep.operation, false, ADDRESS);
         if (accessResult.getDecision() == AuthorizationResult.Decision.DENY) {
-            throw ControllerMessages.MESSAGES.managementResourceNotFound(activeStep.address);
+            if (activeStep.address.size() > 0) {
+                throw ControllerMessages.MESSAGES.managementResourceNotFound(activeStep.address);
+            } else {
+                // WFLY-2037 -- the root resource isn't hidden; if we hit this it means the user isn't authorized
+                throw ControllerMessages.MESSAGES.unauthorized(activeStep.operationId.name, activeStep.address, accessResult.getExplanation());
+            }
         }
         AuthorizationResult authResult = authorize(activeStep.operationId, activeStep.operation, allAttributes, actionEffects);
         if (authResult.getDecision() == AuthorizationResult.Decision.DENY) {
