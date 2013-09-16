@@ -244,7 +244,7 @@
         <version.org.jgroups>3.2.12.Final-redhat-1</version.org.jgroups>
         <version.org.kohsuke.rngom>201103-redhat-2</version.org.kohsuke.rngom>
         <version.org.mockito>1.9.5</version.org.mockito>
-        <version.org.opensaml.opensaml>2.5.3</version.org.opensaml.opensaml>
+        <version.org.opensaml.opensaml>2.5.3.redhat-2</version.org.opensaml.opensaml>
         <version.org.opensaml.openws>1.4.4.redhat-2</version.org.opensaml.openws>
         <version.org.opensaml.xmltooling>1.3.4.redhat-1</version.org.opensaml.xmltooling>
         <version.org.picketbox>4.0.17.SP2-redhat-2</version.org.picketbox>
