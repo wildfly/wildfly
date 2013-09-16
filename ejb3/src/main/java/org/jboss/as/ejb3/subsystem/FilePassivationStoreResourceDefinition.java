@@ -44,21 +44,21 @@ public class FilePassivationStoreResourceDefinition extends PassivationStoreReso
                     .setXmlName(EJB3SubsystemXMLAttribute.RELATIVE_TO.getLocalName())
                     .setDefaultValue(new ModelNode().set(NonClusteredBackingCacheEntryStoreSource.DEFAULT_RELATIVE_TO))
                     .setAllowExpression(true)
-                    .setFlags(AttributeAccess.Flag.RESTART_NONE)
+                    .setFlags(AttributeAccess.Flag.RESTART_ALL_SERVICES)
                     .build();
     public static final SimpleAttributeDefinition GROUPS_PATH =
             new SimpleAttributeDefinitionBuilder(EJB3SubsystemModel.GROUPS_PATH, ModelType.STRING, true)
                     .setXmlName(EJB3SubsystemXMLAttribute.GROUPS_PATH.getLocalName())
                     .setDefaultValue(new ModelNode().set(NonClusteredBackingCacheEntryStoreSource.DEFAULT_GROUP_DIRECTORY_NAME))
                     .setAllowExpression(true)
-                    .setFlags(AttributeAccess.Flag.RESTART_NONE)
+                    .setFlags(AttributeAccess.Flag.RESTART_ALL_SERVICES)
                     .build();
     public static final SimpleAttributeDefinition SESSIONS_PATH =
             new SimpleAttributeDefinitionBuilder(EJB3SubsystemModel.SESSIONS_PATH, ModelType.STRING, true)
                     .setXmlName(EJB3SubsystemXMLAttribute.SESSIONS_PATH.getLocalName())
                     .setDefaultValue(new ModelNode().set(NonClusteredBackingCacheEntryStoreSource.DEFAULT_SESSION_DIRECTORY_NAME))
                     .setAllowExpression(true)
-                    .setFlags(AttributeAccess.Flag.RESTART_NONE)
+                    .setFlags(AttributeAccess.Flag.RESTART_ALL_SERVICES)
                     .build();
     public static final SimpleAttributeDefinition SUBDIRECTORY_COUNT =
             new SimpleAttributeDefinitionBuilder(EJB3SubsystemModel.SUBDIRECTORY_COUNT, ModelType.LONG, true)
@@ -66,7 +66,7 @@ public class FilePassivationStoreResourceDefinition extends PassivationStoreReso
                     .setDefaultValue(new ModelNode().set(NonClusteredBackingCacheEntryStoreSource.DEFAULT_SUBDIRECTORY_COUNT))
                     .setAllowExpression(true)
                     .setValidator(new IntRangeValidator(1, Integer.MAX_VALUE, true, true))
-                    .setFlags(AttributeAccess.Flag.RESTART_NONE)
+                    .setFlags(AttributeAccess.Flag.RESTART_ALL_SERVICES)
                     .build();
 
     private static final AttributeDefinition[] ATTRIBUTES = {IDLE_TIMEOUT, IDLE_TIMEOUT_UNIT, MAX_SIZE, RELATIVE_TO, GROUPS_PATH, SESSIONS_PATH, SUBDIRECTORY_COUNT};
