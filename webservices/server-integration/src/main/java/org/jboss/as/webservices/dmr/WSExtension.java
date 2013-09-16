@@ -34,12 +34,14 @@ import org.jboss.as.controller.Extension;
 import org.jboss.as.controller.ExtensionContext;
 import org.jboss.as.controller.ModelVersion;
 import org.jboss.as.controller.PathElement;
+import org.jboss.as.controller.ReloadRequiredRemoveStepHandler;
 import org.jboss.as.controller.ReloadRequiredWriteAttributeHandler;
 import org.jboss.as.controller.ResourceBuilder;
 import org.jboss.as.controller.ResourceDefinition;
 import org.jboss.as.controller.SubsystemRegistration;
 import org.jboss.as.controller.descriptions.StandardResourceDescriptionResolver;
 import org.jboss.as.controller.parsing.ExtensionParsingContext;
+import org.jboss.as.controller.registry.ManagementResourceRegistration;
 import org.jboss.as.controller.transform.description.RejectAttributeChecker;
 import org.jboss.as.controller.transform.description.ResourceTransformationDescriptionBuilder;
 import org.jboss.as.controller.transform.description.TransformationDescription;
@@ -87,44 +89,52 @@ public final class WSExtension implements Extension {
         // ws subsystem
         ResourceBuilder propertyResource = ResourceBuilder.Factory.create(PROPERTY_PATH, getResourceDescriptionResolver(Constants.PROPERTY))
                 .setAddOperation(PropertyAdd.INSTANCE)
-                .setRemoveOperation(PropertyRemove.INSTANCE)
+                .setRemoveOperation(ReloadRequiredRemoveStepHandler.INSTANCE)
                 .addReadWriteAttribute(Attributes.VALUE, null, new ReloadRequiredWriteAttributeHandler(Attributes.VALUE));
 
 
-        ResourceBuilder handlerBuilder = ResourceBuilder.Factory.create(HANDLER_PATH, getResourceDescriptionResolver("handler"))
+        ResourceBuilder handlerBuilder = ResourceBuilder.Factory.create(HANDLER_PATH, getResourceDescriptionResolver(HANDLER))
                 .setAddOperation(HandlerAdd.INSTANCE)
-                .setRemoveOperation(HandlerRemove.INSTANCE)
+                .setRemoveOperation(ReloadRequiredRemoveStepHandler.INSTANCE)
                 .addReadWriteAttribute(Attributes.CLASS, null, new ReloadRequiredWriteAttributeHandler(Attributes.CLASS));
 
         ResourceBuilder preHandler = ResourceBuilder.Factory.create(PRE_HANDLER_CHAIN_PATH, getResourceDescriptionResolver(Constants.PRE_HANDLER_CHAIN))
                 .setAddOperation(HandlerChainAdd.INSTANCE)
-                .setRemoveOperation(HandlerChainRemove.INSTANCE)
+                .setRemoveOperation(ReloadRequiredRemoveStepHandler.INSTANCE)
                 .addReadWriteAttribute(Attributes.PROTOCOL_BINDINGS, null, new ReloadRequiredWriteAttributeHandler(Attributes.PROTOCOL_BINDINGS))
                 .pushChild(handlerBuilder).pop();
 
         ResourceBuilder postHandler = ResourceBuilder.Factory.create(POST_HANDLER_CHAIN_PATH, getResourceDescriptionResolver(Constants.POST_HANDLER_CHAIN))
                 .setAddOperation(HandlerChainAdd.INSTANCE)
-                .setRemoveOperation(HandlerChainRemove.INSTANCE)
+                .setRemoveOperation(ReloadRequiredRemoveStepHandler.INSTANCE)
                 .addReadWriteAttribute(Attributes.PROTOCOL_BINDINGS, null, new ReloadRequiredWriteAttributeHandler(Attributes.PROTOCOL_BINDINGS))
                 .pushChild(handlerBuilder).pop();
 
-        ResourceDefinition subsystemResource = ResourceBuilder.Factory.createSubsystemRoot(SUBSYSTEM_PATH, getResourceDescriptionResolver(), WSSubsystemAdd.INSTANCE, WSSubsystemRemove.INSTANCE)
-                .addReadWriteAttribute(Attributes.WSDL_HOST, null, new WSSubsystemAttributeChangeHandler(Attributes.WSDL_HOST))
-                .addReadWriteAttribute(Attributes.WSDL_PORT, null, new WSSubsystemAttributeChangeHandler(Attributes.WSDL_PORT))
-                .addReadWriteAttribute(Attributes.WSDL_SECURE_PORT, null, new WSSubsystemAttributeChangeHandler(Attributes.WSDL_SECURE_PORT))
-                .addReadWriteAttribute(Attributes.MODIFY_WSDL_ADDRESS, null, new WSSubsystemAttributeChangeHandler(Attributes.MODIFY_WSDL_ADDRESS))
-                .pushChild(ENDPOINT_CONFIG_PATH, EndpointConfigAdd.INSTANCE, EndpointConfigRemove.INSTANCE)
+        ResourceDefinition epConfigsDef = ResourceBuilder.Factory.create(ENDPOINT_CONFIG_PATH, getResourceDescriptionResolver(ENDPOINT_CONFIG))
+                .setAddOperation(EndpointConfigAdd.INSTANCE)
+                .setRemoveOperation(ReloadRequiredRemoveStepHandler.INSTANCE)
                 .pushChild(propertyResource).pop()
                 .pushChild(preHandler).pop()
                 .pushChild(postHandler).pop()
-                .pop()
-                .pushChild(CLIENT_CONFIG_PATH, ClientConfigAdd.INSTANCE, ClientConfigRemove.INSTANCE)
-                .pushChild(propertyResource).pop()
-                .pushChild(preHandler).pop()
-                .pushChild(postHandler).pop()
-                .pop()
                 .build();
-        subsystem.registerSubsystemModel(subsystemResource);
+
+        ResourceDefinition clConfigsDef = ResourceBuilder.Factory.create(CLIENT_CONFIG_PATH, getResourceDescriptionResolver(CLIENT_CONFIG))
+              .setAddOperation(ClientConfigAdd.INSTANCE)
+              .setRemoveOperation(ReloadRequiredRemoveStepHandler.INSTANCE)
+              .pushChild(propertyResource).pop()
+              .pushChild(preHandler).pop()
+              .pushChild(postHandler).pop()
+              .build();
+
+        ResourceDefinition subsystemResource = ResourceBuilder.Factory.createSubsystemRoot(SUBSYSTEM_PATH, getResourceDescriptionResolver(), WSSubsystemAdd.INSTANCE, WSSubsystemRemove.INSTANCE)
+                .addReadWriteAttribute(Attributes.WSDL_HOST, null, new ReloadRequiredWriteAttributeHandler(Attributes.WSDL_HOST))
+                .addReadWriteAttribute(Attributes.WSDL_PORT, null, new ReloadRequiredWriteAttributeHandler(Attributes.WSDL_PORT))
+                .addReadWriteAttribute(Attributes.WSDL_SECURE_PORT, null, new ReloadRequiredWriteAttributeHandler(Attributes.WSDL_SECURE_PORT))
+                .addReadWriteAttribute(Attributes.MODIFY_WSDL_ADDRESS, null, new ReloadRequiredWriteAttributeHandler(Attributes.MODIFY_WSDL_ADDRESS))
+                .build();
+        ManagementResourceRegistration subsystemRegistration = subsystem.registerSubsystemModel(subsystemResource);
+        subsystemRegistration.registerSubModel(epConfigsDef);
+        subsystemRegistration.registerSubModel(clConfigsDef);
 
         if (registerRuntimeOnly) {
             subsystem.registerDeploymentModel(ResourceBuilder.Factory.create(SUBSYSTEM_PATH, getResourceDescriptionResolver("deployment"))

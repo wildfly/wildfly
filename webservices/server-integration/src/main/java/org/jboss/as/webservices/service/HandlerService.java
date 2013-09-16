@@ -1,6 +1,6 @@
 /*
  * JBoss, Home of Professional Open Source.
- * Copyright 2012, Red Hat, Inc., and individual contributors
+ * Copyright 2013, Red Hat, Inc., and individual contributors
  * as indicated by the @author tags. See the copyright.txt file in the
  * distribution for a full listing of individual contributors.
  *
@@ -26,55 +26,45 @@ import org.jboss.msc.service.StartContext;
 import org.jboss.msc.service.StartException;
 import org.jboss.msc.service.StopContext;
 import org.jboss.msc.value.InjectedValue;
-import org.jboss.wsf.spi.management.ServerConfig;
-import org.jboss.wsf.spi.metadata.config.ClientConfig;
-
-import java.util.List;
+import org.jboss.wsf.spi.metadata.j2ee.serviceref.UnifiedHandlerChainMetaData;
+import org.jboss.wsf.spi.metadata.j2ee.serviceref.UnifiedHandlerMetaData;
 
 /**
- * WS server config service.
+ * A service for setting a handler into the handler-chain of an endpoint / client config.
  *
- * @author paul.robinson@jboss.com
+ * @author <a href="mailto:alessio.soldano@jboss.com">Alessio Soldano</a>
  */
-public final class ClientConfigService implements Service<List<ClientConfig>> {
+public final class HandlerService implements Service<UnifiedHandlerMetaData> {
 
-    private InjectedValue<ServerConfig> serverConfig = new InjectedValue<ServerConfig>();
+    private InjectedValue<UnifiedHandlerChainMetaData> handlerChain = new InjectedValue<UnifiedHandlerChainMetaData>();
+    private final String handlerName;
+    private final String handlerClass;
+    private volatile UnifiedHandlerMetaData handler;
 
-    private String configName;
-
-    public ClientConfigService(String configName) {
-        this.configName = configName;
+    public HandlerService(String handlerName, String handlerClass) {
+        this.handlerName = handlerName;
+        this.handlerClass = handlerClass;
     }
 
     @Override
-    public List<ClientConfig> getValue() {
-        return serverConfig.getValue().getClientConfigs();
+    public UnifiedHandlerMetaData getValue() {
+        return handler;
     }
 
     @Override
     public void start(final StartContext context) throws StartException {
-
-        ClientConfig clientConfig = new ClientConfig();
-        clientConfig.setConfigName(configName);
-        serverConfig.getValue().addClientConfig(clientConfig);
+        final UnifiedHandlerMetaData handler = new UnifiedHandlerMetaData();
+        handler.setHandlerName(handlerName);
+        handler.setHandlerClass(handlerClass);
+        handlerChain.getValue().addHandler(handler);
     }
 
     @Override
     public void stop(final StopContext context) {
-
-        ClientConfig target = null;
-        for (ClientConfig clConfig : serverConfig.getValue().getClientConfigs()) {
-            if (clConfig.getConfigName().equals(configName)) {
-                target = clConfig;
-            }
-        }
-        if (target != null) {
-            serverConfig.getValue().getClientConfigs().remove(target);
-        }
+        handlerChain.getValue().getHandlers().remove(handler);
     }
 
-    public InjectedValue<ServerConfig> getServerConfig() {
-
-        return serverConfig;
+    public InjectedValue<UnifiedHandlerChainMetaData> getHandlerChain() {
+        return handlerChain;
     }
 }

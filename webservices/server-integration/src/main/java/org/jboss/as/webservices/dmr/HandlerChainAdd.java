@@ -23,13 +23,10 @@ package org.jboss.as.webservices.dmr;
 
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
 import static org.jboss.as.webservices.WSMessages.MESSAGES;
-import static org.jboss.as.webservices.dmr.Constants.POST_HANDLER_CHAIN;
-import static org.jboss.as.webservices.dmr.Constants.PRE_HANDLER_CHAIN;
+import static org.jboss.as.webservices.dmr.Constants.ENDPOINT_CONFIG;
+import static org.jboss.as.webservices.dmr.Constants.HANDLER_CHAIN;
 import static org.jboss.as.webservices.dmr.Constants.PROTOCOL_BINDINGS;
-import static org.jboss.as.webservices.dmr.PackageUtils.getConfigs;
-import static org.jboss.as.webservices.dmr.PackageUtils.getServerConfig;
 
-import java.util.LinkedList;
 import java.util.List;
 
 import org.jboss.as.controller.AbstractAddStepHandler;
@@ -38,11 +35,14 @@ import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.PathElement;
 import org.jboss.as.controller.ServiceVerificationHandler;
+import org.jboss.as.webservices.service.HandlerChainService;
+import org.jboss.as.webservices.util.WSServices;
 import org.jboss.dmr.ModelNode;
+import org.jboss.msc.service.ServiceBuilder;
 import org.jboss.msc.service.ServiceController;
-import org.jboss.wsf.spi.management.ServerConfig;
-import org.jboss.wsf.spi.metadata.config.CommonConfig;
-import org.jboss.wsf.spi.metadata.j2ee.serviceref.UnifiedHandlerChainMetaData;
+import org.jboss.msc.service.ServiceName;
+import org.jboss.msc.service.ServiceTarget;
+import org.jboss.wsf.spi.metadata.config.AbstractCommonConfig;
 
 /**
  * @author <a href="mailto:ropalka@redhat.com">Richard Opalka</a>
@@ -66,8 +66,8 @@ final class HandlerChainAdd extends AbstractAddStepHandler {
 
     @Override
     protected void performRuntime(final OperationContext context, final ModelNode operation, final ModelNode model, final ServiceVerificationHandler verificationHandler, final List<ServiceController<?>> newControllers) throws OperationFailedException {
-        final ServerConfig config = getServerConfig(context);
-        if (config != null) {
+        //modify the runtime if we're booting, otherwise set reload required and leave the runtime unchanged
+        if (context.isBooting()) {
             final String protocolBindings = getAttributeValue(operation, PROTOCOL_BINDINGS);
             final PathAddress address = PathAddress.pathAddress(operation.require(OP_ADDR));
             final PathElement confElem = address.getElement(address.size() - 2);
@@ -75,47 +75,21 @@ final class HandlerChainAdd extends AbstractAddStepHandler {
             final String configName = confElem.getValue();
             final String handlerChainType = address.getElement(address.size() - 1).getKey();
             final String handlerChainId = address.getElement(address.size() - 1).getValue();
-            for (final CommonConfig commonConfig : getConfigs(config, configType)) {
-                if (configName.equals(commonConfig.getConfigName())) {
-                    List<UnifiedHandlerChainMetaData> handlerChains;
-                    if (PRE_HANDLER_CHAIN.equals(handlerChainType)) {
-                        handlerChains = commonConfig.getPreHandlerChains();
-                        if (handlerChains == null) {
-                            handlerChains = new LinkedList<UnifiedHandlerChainMetaData>();
-                            commonConfig.setPreHandlerChains(handlerChains);
-                        }
-                    } else if (POST_HANDLER_CHAIN.equals(handlerChainType)) {
-                        handlerChains = commonConfig.getPostHandlerChains();
-                        if (handlerChains == null) {
-                            handlerChains = new LinkedList<UnifiedHandlerChainMetaData>();
-                            commonConfig.setPostHandlerChains(handlerChains);
-                        }
-                    } else {
-                        throw MESSAGES.wrongHandlerChainType(handlerChainType, PRE_HANDLER_CHAIN, POST_HANDLER_CHAIN);
-                    }
-                    UnifiedHandlerChainMetaData handlerChain = getChain(handlerChains, handlerChainId);
-                    if (handlerChain != null) {
-                        throw MESSAGES.multipleHandlerChainsWithSameId(handlerChainType, handlerChainId, configName);
-                    }
-                    handlerChain = new UnifiedHandlerChainMetaData();
-                    handlerChain.setId(handlerChainId);
-                    handlerChain.setProtocolBindings(protocolBindings);
-                    handlerChains.add(handlerChain);
-                    if (!context.isBooting()) {
-                        context.reloadRequired();
-                    }
-                    return;
-                }
-            }
-            throw MESSAGES.missingConfig(configName);
-        }
-    }
 
-    private static UnifiedHandlerChainMetaData getChain(final List<UnifiedHandlerChainMetaData> handlerChains, final String handlerChainId) {
-        for (final UnifiedHandlerChainMetaData handlerChain : handlerChains) {
-            if (handlerChainId.equals(handlerChain.getId())) { return handlerChain; }
+            final HandlerChainService<AbstractCommonConfig> service = new HandlerChainService<AbstractCommonConfig>(handlerChainType, handlerChainId, protocolBindings);
+            final ServiceTarget target = context.getServiceTarget();
+            final ServiceName configServiceName = ((ENDPOINT_CONFIG.equals(configType) ? WSServices.ENDPOINT_CONFIG_SERVICE : WSServices.CLIENT_CONFIG_SERVICE)).append(configName);
+            if (context.getServiceRegistry(false).getService(configServiceName) == null) {
+                throw MESSAGES.missingConfig(configName);
+            }
+
+            final ServiceName handlerChainServiceName = configServiceName.append(HANDLER_CHAIN).append(handlerChainId);
+            final ServiceBuilder<?> handlerChainServiceBuilder = target.addService(handlerChainServiceName, service);
+            handlerChainServiceBuilder.addDependency(configServiceName, AbstractCommonConfig.class, service.getAbstractCommonConfig());
+            handlerChainServiceBuilder.setInitialMode(ServiceController.Mode.ACTIVE).install();
+        } else {
+            context.reloadRequired();
         }
-        return null;
     }
 
     private static String getAttributeValue(final ModelNode node, final String propertyName) {
