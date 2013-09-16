@@ -24,6 +24,8 @@ package org.jboss.as.test.manualmode.ws;
 import java.io.IOException;
 import java.net.HttpURLConnection;
 import java.net.URL;
+import java.util.concurrent.ExecutionException;
+
 import javax.xml.namespace.QName;
 import javax.xml.ws.Service;
 import org.jboss.arquillian.container.test.api.ContainerController;
@@ -117,12 +119,27 @@ public class ReloadWSDLPublisherTestCase {
     }
 
     private void reloadServer(ManagementClient managementClient, int timeout) throws Exception {
-        ModelNode reload = new ModelNode();
-        reload.get(OP).set("reload");
-        ModelNode result = managementClient.getControllerClient().execute(reload);
-        managementClient.close();
-        Assert.assertEquals("success", result.get(ClientConstants.OUTCOME).asString());
+        executeReload(managementClient.getControllerClient());
         waitForLiveServerToReload(timeout);
+    }
+
+    private void executeReload(ModelControllerClient client) throws IOException {
+        ModelNode operation = new ModelNode();
+        operation.get(OP_ADDR).setEmptyList();
+        operation.get(OP).set("reload");
+        try {
+            ModelNode result = client.execute(operation);
+            Assert.assertEquals("success", result.get(ClientConstants.OUTCOME).asString());
+        } catch(IOException e) {
+            final Throwable cause = e.getCause();
+            if (cause instanceof ExecutionException) {
+                // ignore, this might happen if the channel gets closed before we got the response
+            } else {
+                throw e;
+            }
+        } finally {
+            client.close();
+        }
     }
 
     private void waitForLiveServerToReload(int timeout) throws Exception {
