@@ -54,7 +54,7 @@ public class PatchXml {
     private static final PatchXml_1_0 XML1_0 = new PatchXml_1_0();
     private static final RollbackPatchXml_1_0 ROLLBACK_1_0 = new RollbackPatchXml_1_0();
     private static final XMLInputFactory INPUT_FACTORY = XMLInputFactory.newInstance();
-    private static final XMLOutputFactory OUTPUT_FACTORY = XMLOutputFactory.newFactory();
+    private static final XMLOutputFactory OUTPUT_FACTORY = XMLOutputFactory.newInstance();
 
     static {
         MAPPER.registerRootElement(new QName(Namespace.PATCH_1_0.getNamespace(), PatchXml_1_0.Element.PATCH.name), XML1_0);

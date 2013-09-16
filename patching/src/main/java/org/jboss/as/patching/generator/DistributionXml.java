@@ -51,7 +51,7 @@ class DistributionXml {
     private static final XMLMapper MAPPER = XMLMapper.Factory.create();
     private static final DistributionXml_1_0 INSTANCE = new DistributionXml_1_0();
     private static final XMLInputFactory INPUT_FACTORY = XMLInputFactory.newInstance();
-    private static final XMLOutputFactory OUTPUT_FACTORY = XMLOutputFactory.newFactory();
+    private static final XMLOutputFactory OUTPUT_FACTORY = XMLOutputFactory.newInstance();
     private static final QName ROOT_ELEMENT = new QName(Namespace.DISTRIBUTION_1_0.getNamespace(), "distribution");
 
     static {
