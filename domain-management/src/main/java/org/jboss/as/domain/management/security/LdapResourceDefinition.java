@@ -42,7 +42,7 @@ import org.jboss.dmr.ModelType;
  *
  *  @author <a href="mailto:Flemming.Harms@gmail.com">Flemming Harms</a>
  */
-public class LdapResourceDefinition extends SimpleResourceDefinition {
+public abstract class LdapResourceDefinition extends SimpleResourceDefinition {
     public static final SimpleAttributeDefinition CONNECTION = new SimpleAttributeDefinitionBuilder(ModelDescriptionConstants.CONNECTION, ModelType.STRING, false)
         .setValidator(new StringLengthValidator(1, Integer.MAX_VALUE, false, false)).setFlags(AttributeAccess.Flag.RESTART_RESOURCE_SERVICES).build();
 
