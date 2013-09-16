@@ -111,15 +111,15 @@ public class StandaloneAccessControlTestCase extends AbstractCoreModelTest {
                 pathElement(CONSTRAINT, VAULT_EXPRESSION));
         result = ModelTestUtils.checkOutcome(
                 kernelServices.executeOperation(
-                        Util.getReadAttributeOperation(vaultAddress, SensitivityResourceDefinition.CONFIGURED_REQUIRES_ADDRESSABLE.getName())));
+                        Util.getReadAttributeOperation(vaultAddress, SensitivityResourceDefinition.CONFIGURED_REQUIRES_READ.getName())));
         checkResultExists(result, new ModelNode(false));
         //Now undefine it and check again
         ModelTestUtils.checkOutcome(
                 kernelServices.executeOperation(
-                        Util.getUndefineAttributeOperation(vaultAddress, SensitivityResourceDefinition.CONFIGURED_REQUIRES_ADDRESSABLE.getName())));
+                        Util.getUndefineAttributeOperation(vaultAddress, SensitivityResourceDefinition.CONFIGURED_REQUIRES_READ.getName())));
         result = ModelTestUtils.checkOutcome(
                 kernelServices.executeOperation(
-                        Util.getReadAttributeOperation(vaultAddress, SensitivityResourceDefinition.CONFIGURED_REQUIRES_ADDRESSABLE.getName())));
+                        Util.getReadAttributeOperation(vaultAddress, SensitivityResourceDefinition.CONFIGURED_REQUIRES_READ.getName())));
         checkResultExists(result, new ModelNode());
 
         //Application classification

@@ -2024,11 +2024,6 @@ public class ManagementXml {
                         type = value;
                         break;
                     }
-                    case REQUIRES_ADDRESSABLE: {
-                        values.put(SensitivityResourceDefinition.CONFIGURED_REQUIRES_ADDRESSABLE.getName(),
-                                SensitivityResourceDefinition.CONFIGURED_REQUIRES_ADDRESSABLE.parse(value, reader));
-                        break;
-                    }
                     case REQUIRES_READ: {
                         values.put(SensitivityResourceDefinition.CONFIGURED_REQUIRES_READ.getName(),
                                 SensitivityResourceDefinition.CONFIGURED_REQUIRES_READ.parse(value, reader));
@@ -2038,6 +2033,13 @@ public class ManagementXml {
                         values.put(SensitivityResourceDefinition.CONFIGURED_REQUIRES_WRITE.getName(),
                                 SensitivityResourceDefinition.CONFIGURED_REQUIRES_WRITE.parse(value, reader));
                         break;
+                    }
+                    case REQUIRES_ADDRESSABLE: {
+                        if (!vault) {
+                            values.put(SensitivityResourceDefinition.CONFIGURED_REQUIRES_ADDRESSABLE.getName(),
+                                SensitivityResourceDefinition.CONFIGURED_REQUIRES_ADDRESSABLE.parse(value, reader));
+                            break;
+                        }
                     }
                     default: {
                         throw unexpectedAttribute(reader, i);
@@ -2580,8 +2582,7 @@ public class ManagementXml {
 
         if (constraint.hasDefined(VAULT_EXPRESSION)) {
             ModelNode classification = constraint.require(VAULT_EXPRESSION);
-            if (classification.hasDefined(SensitivityResourceDefinition.CONFIGURED_REQUIRES_ADDRESSABLE.getName())
-                    || classification.hasDefined(SensitivityResourceDefinition.CONFIGURED_REQUIRES_WRITE.getName())
+            if (classification.hasDefined(SensitivityResourceDefinition.CONFIGURED_REQUIRES_WRITE.getName())
                     || classification.hasDefined(SensitivityResourceDefinition.CONFIGURED_REQUIRES_READ.getName())) {
                 configuredConstraints.put(SensitivityResourceDefinition.VAULT_ELEMENT.getKey(),
                         Collections.<String, Set<String>> emptyMap());
@@ -2731,7 +2732,6 @@ public class ManagementXml {
             writer.writeEmptyElement(Element.VAULT_EXPRESSION_SENSITIVITY.getLocalName());
             ModelNode model = accessAuthorization.get(SensitivityResourceDefinition.VAULT_ELEMENT.getKey(),
                     SensitivityResourceDefinition.VAULT_ELEMENT.getValue());
-            SensitivityResourceDefinition.CONFIGURED_REQUIRES_ADDRESSABLE.marshallAsAttribute(model, writer);
             SensitivityResourceDefinition.CONFIGURED_REQUIRES_READ.marshallAsAttribute(model, writer);
             SensitivityResourceDefinition.CONFIGURED_REQUIRES_WRITE.marshallAsAttribute(model, writer);
         }

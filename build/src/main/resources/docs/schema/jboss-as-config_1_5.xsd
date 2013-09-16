@@ -3148,13 +3148,6 @@
                 ]]>
             </xs:documentation>
         </xs:annotation>
-        <xs:attribute name="requires-addressable" type="xs:boolean">
-            <xs:annotation>
-                <xs:documentation>
-                    Configuration of if a classification's addressability is sensitive
-                </xs:documentation>
-            </xs:annotation>
-        </xs:attribute>
         <xs:attribute name="requires-read" type="xs:boolean">
             <xs:annotation>
                 <xs:documentation>
@@ -3207,7 +3200,27 @@
     <xs:complexType name="typed-sensitivityType">
         <xs:complexContent>
             <xs:extension base="base-sensitivityType">
-                <xs:attribute name="name" type="xs:string" use="required"/>
+                <xs:attribute name="requires-addressable" type="xs:boolean">
+                    <xs:annotation>
+                        <xs:documentation>
+                            Configuration of if a classification's addressability is sensitive
+                        </xs:documentation>
+                    </xs:annotation>
+                </xs:attribute>
+                <xs:attribute name="name" type="xs:string" use="required">
+                    <xs:annotation>
+                        <xs:documentation>
+                            The name of the constraint, must be unique for each name
+                        </xs:documentation>
+                    </xs:annotation>
+                </xs:attribute>
+                <xs:attribute name="type" type="xs:string" use="required">
+                    <xs:annotation>
+                        <xs:documentation>
+                            'core' or the name of the subsystem defining the constraint
+                        </xs:documentation>
+                    </xs:annotation>
+                </xs:attribute>
             </xs:extension>
         </xs:complexContent>
     </xs:complexType>
