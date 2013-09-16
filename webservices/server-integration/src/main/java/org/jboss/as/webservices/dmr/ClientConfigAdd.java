@@ -30,7 +30,7 @@ import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.ServiceVerificationHandler;
-import org.jboss.as.webservices.service.ClientConfigService;
+import org.jboss.as.webservices.service.ConfigService;
 import org.jboss.as.webservices.util.WSServices;
 import org.jboss.dmr.ModelNode;
 import org.jboss.msc.service.ServiceBuilder;
@@ -64,21 +64,19 @@ final class ClientConfigAdd extends AbstractAddStepHandler {
 
     @Override
     protected void performRuntime(final OperationContext context, final ModelNode operation, final ModelNode model, final ServiceVerificationHandler verificationHandler, final List<ServiceController<?>> newControllers) throws OperationFailedException {
+      //if modify the runtime if we're booting, otherwise set reload required and leave the runtime unchanged
+      if (context.isBooting()) {
+         final PathAddress address = PathAddress.pathAddress(operation.require(OP_ADDR));
+         final String name = address.getLastElement().getValue();
+         final ConfigService clientConfigService = new ConfigService(name, true);
+         final ServiceTarget target = context.getServiceTarget();
+         final ServiceBuilder<?> clientServiceBuilder = target.addService(WSServices.CLIENT_CONFIG_SERVICE.append(name), clientConfigService);
 
-        final PathAddress address = PathAddress.pathAddress(operation.require(OP_ADDR));
-        final String name = address.getLastElement().getValue();
-
-        final ClientConfigService clientConfigService = new ClientConfigService(name);
-        final ServiceTarget target = context.getServiceTarget();
-        final ServiceBuilder<?> clientServiceBuilder = target.addService(WSServices.CLIENT_CONFIG_SERVICE.append(name), clientConfigService);
-
-        clientServiceBuilder.addDependency(WSServices.CONFIG_SERVICE, ServerConfig.class, clientConfigService.getServerConfig());
-
-        clientServiceBuilder.setInitialMode(ServiceController.Mode.ACTIVE).install();
-
-        if (!context.isBooting()) {
-            context.reloadRequired();
-        }
+         clientServiceBuilder.addDependency(WSServices.CONFIG_SERVICE, ServerConfig.class, clientConfigService.getServerConfig());
+         clientServiceBuilder.setInitialMode(ServiceController.Mode.ACTIVE).install();
+      } else {
+         context.reloadRequired();
+      }
     }
 
 }

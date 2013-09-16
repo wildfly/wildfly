@@ -37,6 +37,7 @@ public final class WSServices {
     public static final ServiceName WS_SERVICE = ServiceName.JBOSS.append("ws");
     public static final ServiceName CONFIG_SERVICE = WS_SERVICE.append("config");
     public static final ServiceName CLIENT_CONFIG_SERVICE = WS_SERVICE.append("client-config");
+    public static final ServiceName ENDPOINT_CONFIG_SERVICE = WS_SERVICE.append("endpoint-config");
     public static final ServiceName MODEL_SERVICE = WS_SERVICE.append("model");
     public static final ServiceName ENDPOINT_SERVICE = WS_SERVICE.append("endpoint");
     public static final ServiceName ENDPOINT_PUBLISH_SERVICE = WS_SERVICE.append("endpoint-publish");
