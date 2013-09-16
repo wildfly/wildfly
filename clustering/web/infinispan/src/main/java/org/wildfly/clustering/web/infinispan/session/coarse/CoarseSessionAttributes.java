@@ -23,8 +23,11 @@ package org.wildfly.clustering.web.infinispan.session.coarse;
 
 import java.util.Map;
 
+import org.jboss.as.clustering.marshalling.MarshalledValue;
+import org.jboss.as.clustering.marshalling.MarshallingContext;
 import org.wildfly.clustering.web.infinispan.CacheMutator;
 import org.wildfly.clustering.web.infinispan.Mutator;
+import org.wildfly.clustering.web.infinispan.session.SessionAttributeMarshaller;
 import org.wildfly.clustering.web.session.SessionAttributes;
 
 /**
@@ -32,25 +35,24 @@ import org.wildfly.clustering.web.session.SessionAttributes;
  * @author Paul Ferraro
  */
 public class CoarseSessionAttributes extends CoarseImmutableSessionAttributes implements SessionAttributes {
-    private final Map<String, Object> attributes;
     private final Mutator mutator;
 
-    public CoarseSessionAttributes(Map<String, Object> attributes, Mutator mutator) {
-        super(attributes);
-        this.attributes = attributes;
+    public CoarseSessionAttributes(MarshalledValue<Map<String, Object>, MarshallingContext> attributes, SessionAttributeMarshaller<Map<String, Object>, MarshalledValue<Map<String, Object>, MarshallingContext>> marshaller, Mutator mutator) {
+        super(attributes, marshaller);
         this.mutator = mutator;
     }
 
     @Override
     public Object removeAttribute(String name) {
-        Object value = this.attributes.remove(name);
+        Object value = this.getAttributes().remove(name);
         this.mutator.mutate();
         return value;
     }
 
     @Override
     public Object setAttribute(String name, Object value) {
-        Object old = (value != null) ? this.attributes.put(name, value) : this.attributes.remove(name);
+        Map<String, Object> attributes = this.getAttributes();
+        Object old = (value != null) ? attributes.put(name, value) : attributes.remove(name);
         this.mutator.mutate();
         return old;
     }

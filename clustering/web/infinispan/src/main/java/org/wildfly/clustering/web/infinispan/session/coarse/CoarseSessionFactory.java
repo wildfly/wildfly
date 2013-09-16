@@ -74,9 +74,8 @@ public class CoarseSessionFactory<L> implements SessionFactory<CoarseSessionEntr
         CoarseSessionCacheEntry<L> cacheEntry = entry.getCacheEntry();
         SessionMetaData metaData = cacheEntry.getMetaData();
         MarshalledValue<Map<String, Object>, MarshallingContext> value = entry.getAttributes();
-        Map<String, Object> map = this.marshaller.read(value);
         Mutator attributesMutator = metaData.isNew() ? Mutator.PASSIVE : new CacheMutator<>(this.attributesCache, this.invoker, new SessionAttributesCacheKey(id), value, Flag.SKIP_LOCKING);
-        SessionAttributes attributes = new CoarseSessionAttributes(map, attributesMutator);
+        SessionAttributes attributes = new CoarseSessionAttributes(value, this.marshaller, attributesMutator);
         Mutator sessionMutator = metaData.isNew() ? Mutator.PASSIVE : new CacheMutator<>(this.sessionCache, this.invoker, id, cacheEntry);
         return new InfinispanSession<>(id, metaData, attributes, cacheEntry.getLocalContext(), this.localContextFactory, this.context, sessionMutator, this);
     }
@@ -86,8 +85,7 @@ public class CoarseSessionFactory<L> implements SessionFactory<CoarseSessionEntr
         CoarseSessionCacheEntry<L> cacheEntry = entry.getCacheEntry();
         ImmutableSessionMetaData metaData = cacheEntry.getMetaData();
         MarshalledValue<Map<String, Object>, MarshallingContext> value = entry.getAttributes();
-        Map<String, Object> map = this.marshaller.read(value);
-        ImmutableSessionAttributes attributes = new CoarseImmutableSessionAttributes(map);
+        ImmutableSessionAttributes attributes = new CoarseImmutableSessionAttributes(value, this.marshaller);
         return new InfinispanImmutableSession(id, metaData, attributes, this.context);
     }
 
