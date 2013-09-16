@@ -22,12 +22,10 @@
 
 package org.wildfly.jberet;
 
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ConcurrentMap;
 
 import org.jberet.spi.BatchEnvironment;
-import org.wildfly.jberet.services.BatchEnvironmentService;
 import org.wildfly.security.manager.WildFlySecurityManager;
 
 /**
@@ -35,7 +33,7 @@ import org.wildfly.security.manager.WildFlySecurityManager;
  */
 public class BatchEnvironmentFactory {
 
-    private final Map<ClassLoader, BatchEnvironmentService> services = Collections.synchronizedMap(new HashMap<ClassLoader, BatchEnvironmentService>());
+    private final ConcurrentMap<ClassLoader, BatchEnvironment> environments = new ConcurrentHashMap<ClassLoader, BatchEnvironment>();
 
     private static class Holder {
         static final BatchEnvironmentFactory INSTANCE = new BatchEnvironmentFactory();
@@ -50,22 +48,22 @@ public class BatchEnvironmentFactory {
     }
 
     public BatchEnvironment getBatchEnvironment(final ClassLoader cl) {
-        return services.get(cl).getValue();
+        return environments.get(cl);
     }
 
-    public void add(final BatchEnvironmentService batchEnvironmentService) {
-        add(WildFlySecurityManager.getCurrentContextClassLoaderPrivileged(), batchEnvironmentService);
+    public void add(final BatchEnvironment batchEnvironment) {
+        add(WildFlySecurityManager.getCurrentContextClassLoaderPrivileged(), batchEnvironment);
     }
 
-    public void add(final ClassLoader cl, final BatchEnvironmentService batchEnvironmentService) {
-        services.put(cl, batchEnvironmentService);
+    public void add(final ClassLoader cl, final BatchEnvironment batchEnvironment) {
+        environments.putIfAbsent(cl, batchEnvironment);
     }
 
-    public BatchEnvironmentService remove() {
+    public BatchEnvironment remove() {
         return remove(WildFlySecurityManager.getCurrentContextClassLoaderPrivileged());
     }
 
-    public BatchEnvironmentService remove(final ClassLoader cl) {
-        return services.remove(cl);
+    public BatchEnvironment remove(final ClassLoader cl) {
+        return environments.remove(cl);
     }
 }

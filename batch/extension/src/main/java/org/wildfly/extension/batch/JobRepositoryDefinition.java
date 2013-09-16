@@ -22,17 +22,22 @@
 
 package org.wildfly.extension.batch;
 
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 import java.util.Properties;
+import java.util.Set;
 
-import org.jboss.as.controller.AbstractBoottimeAddStepHandler;
+import org.jboss.as.controller.AbstractAddStepHandler;
 import org.jboss.as.controller.AttributeDefinition;
 import org.jboss.as.controller.OperationContext;
+import org.jboss.as.controller.OperationContext.ResultHandler;
+import org.jboss.as.controller.OperationContext.Stage;
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.OperationStepHandler;
+import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.PathElement;
 import org.jboss.as.controller.ReloadRequiredRemoveStepHandler;
 import org.jboss.as.controller.ServiceVerificationHandler;
@@ -40,17 +45,20 @@ import org.jboss.as.controller.SimpleAttributeDefinition;
 import org.jboss.as.controller.SimpleAttributeDefinitionBuilder;
 import org.jboss.as.controller.SimpleResourceDefinition;
 import org.jboss.as.controller.operations.validation.StringLengthValidator;
+import org.jboss.as.controller.registry.Resource;
+import org.jboss.as.controller.registry.Resource.ResourceEntry;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.ModelType;
 import org.jboss.msc.service.ServiceBuilder;
 import org.jboss.msc.service.ServiceController;
 import org.jboss.msc.service.ServiceTarget;
+import org.wildfly.extension.batch._private.BatchMessages;
 import org.wildfly.extension.batch.services.BatchPropertiesService;
 import org.wildfly.extension.batch.services.BatchServiceNames;
 
 public class JobRepositoryDefinition extends SimpleResourceDefinition {
 
-    static final String NAME = "job-repository";
+    public static final String NAME = "job-repository";
 
     // TODO (jrp) should this be moved into a JDBC def?
     public static final SimpleAttributeDefinition JNDI_NAME = SimpleAttributeDefinitionBuilder.create("jndi-name", ModelType.STRING, false)
@@ -91,7 +99,7 @@ public class JobRepositoryDefinition extends SimpleResourceDefinition {
         this.attributes = Collections.unmodifiableCollection(attributes);
     }
 
-    abstract static class JobRepositoryAdd extends AbstractBoottimeAddStepHandler {
+    abstract static class JobRepositoryAdd extends AbstractAddStepHandler {
 
         private static final AttributeDefinition[] EMPTY = {};
 
@@ -106,6 +114,30 @@ public class JobRepositoryDefinition extends SimpleResourceDefinition {
         }
 
         @Override
+        protected void populateModel(final OperationContext context, final ModelNode operation, final Resource resource) throws OperationFailedException {
+            super.populateModel(context, operation, resource);
+
+            // Validate that only one job-repository exists
+            context.addStep(new OperationStepHandler() {
+                @Override
+                public void execute(final OperationContext context, final ModelNode operation) throws OperationFailedException {
+                    final Set<ResourceEntry> jobRepositoryResources = context.readResourceFromRoot(PathAddress.pathAddress(BatchSubsystemDefinition.SUBSYSTEM_PATH)).getChildren(NAME);
+                    // Validate that the model has one and only one job-repository
+                    if (jobRepositoryResources.isEmpty()) {
+                        throw BatchMessages.MESSAGES.jobRepositoryRequired();
+                    } else if (jobRepositoryResources.size() > 1) {
+                        final List<String> found = new ArrayList<String>(jobRepositoryResources.size());
+                        for (ResourceEntry entry : jobRepositoryResources) {
+                            found.add(entry.getName());
+                        }
+                        throw BatchMessages.MESSAGES.multipleJobRepositoriesNotAllowed(found);
+                    }
+                    context.completeStep(ResultHandler.NOOP_RESULT_HANDLER);
+                }
+            }, Stage.MODEL);
+        }
+
+        @Override
         protected void populateModel(final ModelNode operation, final ModelNode model) throws OperationFailedException {
             for (AttributeDefinition attribute : attributes) {
                 attribute.validateAndSet(operation, model);
@@ -113,9 +145,7 @@ public class JobRepositoryDefinition extends SimpleResourceDefinition {
         }
 
         @Override
-        public void performBoottime(OperationContext context, ModelNode operation, ModelNode model,
-                                    ServiceVerificationHandler verificationHandler, List<ServiceController<?>> newControllers)
-                throws OperationFailedException {
+        protected void performRuntime(final OperationContext context, final ModelNode operation, final ModelNode model, final ServiceVerificationHandler verificationHandler, final List<ServiceController<?>> newControllers) throws OperationFailedException {
 
             // Create the BatchEnvironment
             final BatchPropertiesService service = new BatchPropertiesService();
