@@ -24,10 +24,12 @@ package org.wildfly.jberet;
 
 import java.util.Properties;
 import java.util.concurrent.ExecutorService;
+import javax.naming.NamingException;
 import javax.transaction.UserTransaction;
 
 import org.jberet.spi.ArtifactFactory;
 import org.jberet.spi.BatchEnvironment;
+import org.jberet.spi.ThreadContextSetup;
 
 /**
  * @author <a href="mailto:jperkins@redhat.com">James R. Perkins</a>
@@ -63,5 +65,15 @@ public class DelegatingBatchEnvironment implements BatchEnvironment {
     @Override
     public Properties getBatchConfigurationProperties() {
         return delegate.getBatchConfigurationProperties();
+    }
+
+    @Override
+    public ThreadContextSetup getThreadContextSetup() {
+        return delegate.getThreadContextSetup();
+    }
+
+    @Override
+    public <T> T lookup(final String name) throws NamingException {
+        return delegate.lookup(name);
     }
 }

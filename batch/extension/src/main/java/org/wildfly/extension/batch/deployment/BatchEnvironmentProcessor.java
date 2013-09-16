@@ -44,7 +44,6 @@ import org.jboss.msc.value.ImmediateValue;
 import org.jboss.vfs.VirtualFile;
 import org.wildfly.extension.batch._private.BatchLogger;
 import org.wildfly.extension.batch.services.BatchServiceNames;
-import org.wildfly.jberet.BatchEnvironmentFactory;
 import org.wildfly.jberet.services.BatchEnvironmentService;
 
 /**
@@ -65,8 +64,6 @@ public class BatchEnvironmentProcessor implements DeploymentUnitProcessor {
                 final ServiceTarget serviceTarget = phaseContext.getServiceTarget();
 
                 final BatchEnvironmentService service = new BatchEnvironmentService();
-                // Add the service to the factory
-                BatchEnvironmentFactory.getInstance().add(moduleClassLoader, service);
 
                 final ServiceBuilder<BatchEnvironment> serviceBuilder = serviceTarget.addService(BatchServiceNames.batchDeploymentServiceName(deploymentUnit), service);
                 serviceBuilder.addDependency(BatchServiceNames.BATCH_SERVICE_NAME, Properties.class, service.getPropertiesInjector());
@@ -96,12 +93,5 @@ public class BatchEnvironmentProcessor implements DeploymentUnitProcessor {
 
     @Override
     public void undeploy(DeploymentUnit context) {
-        if (context.hasAttachment(Attachments.MODULE)) {
-            // Get the class loader
-            final Module module = context.getAttachment(Attachments.MODULE);
-            final ClassLoader moduleClassLoader = module.getClassLoader();
-            // Remove the service to the factory
-            BatchEnvironmentFactory.getInstance().remove(moduleClassLoader);
-        }
     }
 }
