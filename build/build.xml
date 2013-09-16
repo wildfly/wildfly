@@ -1373,6 +1373,9 @@
             <maven-resource group="org.osgi" artifact="org.osgi.core"/>
         </module-def>
 
+        <module-def name="org.picketlink">
+        </module-def>
+
         <module-def name="org.picketlink.common">
             <maven-resource group="org.picketlink" artifact="picketlink-common"/>
         </module-def>
