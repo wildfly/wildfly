@@ -72,7 +72,6 @@ public class TxTimeoutTestCase {
         EnterpriseArchive ear = ShrinkWrap.create(EnterpriseArchive.class, ARCHIVE_NAME + ".ear");
 
         JavaArchive ejbjar = ShrinkWrap.create(JavaArchive.class, "ejbjar.jar");
-        ejbjar.addPackage("org.jboss.tm");
 
         ejbjar.addAsManifestResource(emptyEjbJar(), "ejb-jar.xml");
         ejbjar.addClasses(TxTimeoutTestCase.class,
@@ -85,11 +84,7 @@ public class TxTimeoutTestCase {
         JavaArchive lib = ShrinkWrap.create(JavaArchive.class, "lib.jar");
         lib.addClasses(Employee.class, TxTimeoutTestCase.class);
         ear.addAsLibraries(lib, persistenceProvider);
-
-        ear.addAsManifestResource(new StringAsset("<jboss-deployment-structure>" + " <deployment>" + " <dependencies>"
-                + " <module name=\"org.jboss.jboss-transaction-spi\" />"  + " </dependencies>"
-                + " </deployment>" + "</jboss-deployment-structure>"), "jboss-deployment-structure.xml");
-
+        ear.addAsManifestResource(new StringAsset("Dependencies: org.jboss.jboss-transaction-spi export \n"), "MANIFEST.MF");
         return ear;
 
     }
