@@ -146,10 +146,10 @@ public interface ImmutableManagementResourceRegistration {
     AttributeAccess getAttributeAccess(PathAddress address, String attributeName);
 
     /**
-     * Get the names of the operations for a node
+     * Get the names of the types of children for a node
      *
      * @param address the address, relative to this node
-     * @return the operation names. If there are none an empty set is returned
+     * @return the child type names. If there are none an empty set is returned
      * @throws SecurityException if the caller does not have {@link #ACCESS_PERMISSION}
      */
     Set<String> getChildNames(PathAddress address);
