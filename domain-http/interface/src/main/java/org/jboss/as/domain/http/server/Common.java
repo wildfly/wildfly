@@ -58,6 +58,7 @@ public class Common {
 
     static void sendError(HttpServerExchange exchange, boolean isGet, boolean encode, String msg) {
 
+        final int errorCode = getErrorResponseCode(msg);
 
         if(encode) {
 
@@ -71,7 +72,7 @@ public class Common {
 
                 exchange.getResponseHeaders().put(Headers.CONTENT_TYPE, APPLICATION_DMR_ENCODED+ ";" + UTF_8);
                 exchange.getResponseHeaders().put(Headers.CONTENT_LENGTH, String.valueOf(bytes.length));
-                exchange.setResponseCode(500);
+                exchange.setResponseCode(errorCode);
 
                 exchange.getResponseSender().send(new String(bytes), IoCallback.END_EXCHANGE);
 
@@ -85,10 +86,21 @@ public class Common {
             byte[] bytes = msg.getBytes();
             exchange.getResponseHeaders().put(Headers.CONTENT_TYPE, TEXT_PLAIN + ";" + UTF_8);
             exchange.getResponseHeaders().put(Headers.CONTENT_LENGTH, String.valueOf(bytes.length));
-            exchange.setResponseCode(500);
+            exchange.setResponseCode(errorCode);
 
             exchange.getResponseSender().send(msg, IoCallback.END_EXCHANGE);
         }
+    }
+
+    private static int getErrorResponseCode(String failureMsg) {
+        // WFLY-2037. This is very hacky; better would be something like an internal failure-http-code that
+        // is set on the response from the OperationFailedException and stripped from non-HTTP interfaces.
+        // But this will do for now.
+        int result = 500;
+        if (failureMsg != null && failureMsg.contains("JBAS013456")) {
+            result = 403;
+        }
+        return result;
     }
 
 }
