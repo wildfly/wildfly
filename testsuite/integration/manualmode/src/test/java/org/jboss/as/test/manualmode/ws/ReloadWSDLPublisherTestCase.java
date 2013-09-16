@@ -21,12 +21,22 @@
  */
 package org.jboss.as.test.manualmode.ws;
 
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.NAME;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.READ_ATTRIBUTE_OPERATION;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.RESULT;
+import static org.junit.Assert.fail;
+
 import java.io.IOException;
 import java.net.HttpURLConnection;
 import java.net.URL;
+import java.util.concurrent.ExecutionException;
+
 import javax.servlet.http.HttpServletResponse;
 import javax.xml.namespace.QName;
 import javax.xml.ws.Service;
+
 import org.jboss.arquillian.container.test.api.ContainerController;
 import org.jboss.arquillian.container.test.api.Deployer;
 import org.jboss.arquillian.container.test.api.Deployment;
@@ -37,18 +47,12 @@ import org.jboss.arquillian.test.api.ArquillianResource;
 import org.jboss.as.arquillian.container.ManagementClient;
 import org.jboss.as.controller.client.ModelControllerClient;
 import org.jboss.as.controller.client.helpers.ClientConstants;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.NAME;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.READ_ATTRIBUTE_OPERATION;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.RESULT;
 import org.jboss.as.test.shared.TestSuiteEnvironment;
 import org.jboss.dmr.ModelNode;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.spec.WebArchive;
 import org.junit.After;
 import org.junit.Assert;
-import static org.junit.Assert.fail;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -119,12 +123,27 @@ public class ReloadWSDLPublisherTestCase {
     }
 
     private void reloadServer(ManagementClient managementClient, long timeout) throws Exception {
-        ModelNode reload = new ModelNode();
-        reload.get(OP).set("reload");
-        ModelNode result = managementClient.getControllerClient().execute(reload);
-        managementClient.close();
-        Assert.assertEquals("success", result.get(ClientConstants.OUTCOME).asString());
+        executeReload(managementClient.getControllerClient());
         waitForLiveServerToReload(timeout);
+    }
+
+    private void executeReload(ModelControllerClient client) throws IOException {
+        ModelNode operation = new ModelNode();
+        operation.get(OP_ADDR).setEmptyList();
+        operation.get(OP).set("reload");
+        try {
+            ModelNode result = client.execute(operation);
+            Assert.assertEquals("success", result.get(ClientConstants.OUTCOME).asString());
+        } catch(IOException e) {
+            final Throwable cause = e.getCause();
+            if (cause instanceof ExecutionException) {
+                // ignore, this might happen if the channel gets closed before we got the response
+            } else {
+                throw e;
+            }
+        } finally {
+            client.close();
+        }
     }
 
     private void waitForLiveServerToReload(long timeout) throws Exception {
