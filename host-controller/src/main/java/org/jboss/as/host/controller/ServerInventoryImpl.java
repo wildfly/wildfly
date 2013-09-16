@@ -39,6 +39,7 @@ import java.nio.charset.Charset;
 import java.security.NoSuchAlgorithmException;
 import java.security.SecureRandom;
 import java.util.Collection;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
@@ -633,7 +634,7 @@ public class ServerInventoryImpl implements ServerInventory {
                         ((PasswordCallback) current).setPassword(password.toCharArray());
                     } else if (current instanceof VerifyPasswordCallback) {
                         VerifyPasswordCallback vpc = (VerifyPasswordCallback) current;
-                        vpc.setVerified(password.equals(vpc.getPassword()));
+                        vpc.setVerified(Arrays.equals(password.getBytes(UTF_8), vpc.getPassword().getBytes(UTF_8)));
                     } else if (current instanceof DigestHashCallback) {
                         DigestHashCallback dhc = (DigestHashCallback) current;
                         try {
