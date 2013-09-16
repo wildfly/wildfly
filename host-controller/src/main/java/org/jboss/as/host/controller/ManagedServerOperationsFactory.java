@@ -502,7 +502,7 @@ public final class ManagedServerOperationsFactory {
                     ModelNode address = baseAddress.clone().add(CONSTRAINT, VAULT_EXPRESSION);
                     ModelNode ve = constraints.get(VAULT_EXPRESSION);
                     // No add for this one; need to write attributes
-                    for (AttributeDefinition ad : SensitivityResourceDefinition.getWritableAttributeDefinitions()) {
+                    for (AttributeDefinition ad : SensitivityResourceDefinition.getWritableVaultAttributeDefinitions()) {
                         String attr = ad.getName();
                         if (ve.hasDefined(attr)) {
                             updates.add(Util.getWriteAttributeOperation(address, attr, ve.get(attr)));

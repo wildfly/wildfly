@@ -58,7 +58,7 @@ public class AccessConstraintResources {
     public static final Resource SENSITIVITY_RESOURCE = new SensitivityClassificationResource();
     // Vault Expression Resource
     public static final PathElement VAULT_PATH_ELEMENT = PathElement.pathElement(CONSTRAINT, VAULT_EXPRESSION);
-    public static final Resource VAULT_RESOURCE = SensitivityResourceDefinition.createResource(VaultExpressionSensitivityConfig.INSTANCE, VAULT_PATH_ELEMENT);
+    public static final Resource VAULT_RESOURCE = SensitivityResourceDefinition.createResource(VaultExpressionSensitivityConfig.INSTANCE, VAULT_PATH_ELEMENT, false);
 
     private static volatile Map<String, Map<String, SensitivityClassification>> classifications;
     private static volatile Map<String, Map<String, ApplicationTypeConfig>> applicationTypes;

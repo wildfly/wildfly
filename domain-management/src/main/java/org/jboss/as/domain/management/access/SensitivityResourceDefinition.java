@@ -92,45 +92,60 @@ public class SensitivityResourceDefinition extends SimpleResourceDefinition {
 //            .setAllowExpression(true)
             .build();
 
-    public static List<AttributeDefinition> getWritableAttributeDefinitions() {
-        return Arrays.asList((AttributeDefinition) CONFIGURED_REQUIRES_ADDRESSABLE,
-                (AttributeDefinition) CONFIGURED_REQUIRES_READ,
+    public static List<AttributeDefinition> getWritableVaultAttributeDefinitions() {
+        return Arrays.asList((AttributeDefinition) CONFIGURED_REQUIRES_READ,
                 (AttributeDefinition) CONFIGURED_REQUIRES_WRITE);
     }
 
-    private SensitivityResourceDefinition(PathElement pathElement, ResourceDescriptionResolver resolver) {
+    private final boolean includeAddressable;
+
+    private SensitivityResourceDefinition(PathElement pathElement, ResourceDescriptionResolver resolver, boolean includeAddressable) {
         super(pathElement, resolver);
+        this.includeAddressable = includeAddressable;
     }
 
     static SensitivityResourceDefinition createSensitivityClassification() {
-        return new SensitivityResourceDefinition(PATH_ELEMENT, DomainManagementResolver.getResolver("core.access-control.constraint.sensitivity-classification-config"));
+        return new SensitivityResourceDefinition(PATH_ELEMENT, DomainManagementResolver.getResolver("core.access-control.constraint.sensitivity-classification-config"), true);
     }
 
     static SensitivityResourceDefinition createVaultExpressionConfiguration() {
-        return new SensitivityResourceDefinition(VAULT_ELEMENT, DomainManagementResolver.getResolver("core.access-control.constraint.vault-expression-sensitivity"));
+        return new SensitivityResourceDefinition(VAULT_ELEMENT, DomainManagementResolver.getResolver("core.access-control.constraint.vault-expression-sensitivity"), false);
     }
 
     static ResourceEntry createResource(AbstractSensitivity classification, String type, String name) {
-        return createResource(classification, PathElement.pathElement(type, name));
+        return createResource(classification, PathElement.pathElement(type, name), true);
     }
 
-    static ResourceEntry createResource(AbstractSensitivity classification, PathElement pathElement) {
-        return new SensitivityClassificationResource(pathElement, classification);
+    static ResourceEntry createResource(AbstractSensitivity classification, PathElement pathElement, boolean includeAddressable) {
+        return new SensitivityClassificationResource(pathElement, classification, includeAddressable);
     }
 
     @Override
     public void registerAttributes(ManagementResourceRegistration resourceRegistration) {
-        resourceRegistration.registerReadOnlyAttribute(DEFAULT_REQUIRES_ADDRESSABLE, SensitivityClassificationReadAttributeHandler.INSTANCE);
-        resourceRegistration.registerReadOnlyAttribute(DEFAULT_REQUIRES_READ, SensitivityClassificationReadAttributeHandler.INSTANCE);
-        resourceRegistration.registerReadOnlyAttribute(DEFAULT_REQUIRES_WRITE, SensitivityClassificationReadAttributeHandler.INSTANCE);
-        resourceRegistration.registerReadWriteAttribute(CONFIGURED_REQUIRES_ADDRESSABLE, SensitivityClassificationReadAttributeHandler.INSTANCE, SensitivityClassificationWriteAttributeHandler.INSTANCE);
-        resourceRegistration.registerReadWriteAttribute(CONFIGURED_REQUIRES_READ, SensitivityClassificationReadAttributeHandler.INSTANCE, SensitivityClassificationWriteAttributeHandler.INSTANCE);
-        resourceRegistration.registerReadWriteAttribute(CONFIGURED_REQUIRES_WRITE, SensitivityClassificationReadAttributeHandler.INSTANCE, SensitivityClassificationWriteAttributeHandler.INSTANCE);
+        OperationStepHandler read = includeAddressable ? SensitivityClassificationReadAttributeHandler.ADDRESSABLE_INSTANCE : SensitivityClassificationReadAttributeHandler.NON_ADDRESSABLE_INSTANCE;
+        OperationStepHandler write = includeAddressable ? SensitivityClassificationWriteAttributeHandler.ADDRESSABLE_INSTANCE : SensitivityClassificationWriteAttributeHandler.NON_ADDRESSABLE_INSTANCE;
+        if (includeAddressable) {
+            resourceRegistration.registerReadOnlyAttribute(DEFAULT_REQUIRES_ADDRESSABLE, read);
+        }
+        resourceRegistration.registerReadOnlyAttribute(DEFAULT_REQUIRES_READ, read);
+        resourceRegistration.registerReadOnlyAttribute(DEFAULT_REQUIRES_WRITE, read);
+        if (includeAddressable) {
+            resourceRegistration.registerReadWriteAttribute(CONFIGURED_REQUIRES_ADDRESSABLE, read, write);
+        }
+        resourceRegistration.registerReadWriteAttribute(CONFIGURED_REQUIRES_READ, SensitivityClassificationReadAttributeHandler.ADDRESSABLE_INSTANCE, write);
+        resourceRegistration.registerReadWriteAttribute(CONFIGURED_REQUIRES_WRITE, SensitivityClassificationReadAttributeHandler.ADDRESSABLE_INSTANCE, write);
     }
 
     private static class SensitivityClassificationReadAttributeHandler implements OperationStepHandler {
 
-        static final SensitivityClassificationReadAttributeHandler INSTANCE = new SensitivityClassificationReadAttributeHandler();
+        static final SensitivityClassificationReadAttributeHandler ADDRESSABLE_INSTANCE = new SensitivityClassificationReadAttributeHandler(true);
+        static final SensitivityClassificationReadAttributeHandler NON_ADDRESSABLE_INSTANCE = new SensitivityClassificationReadAttributeHandler(false);
+
+        private final boolean includeAddressable;
+
+        public SensitivityClassificationReadAttributeHandler(boolean includeAddressable) {
+            this.includeAddressable = includeAddressable;
+        }
 
         @Override
         public void execute(OperationContext context, ModelNode operation) throws OperationFailedException {
@@ -138,13 +153,13 @@ public class SensitivityResourceDefinition extends SimpleResourceDefinition {
             final SensitivityClassificationResource resource = (SensitivityClassificationResource)context.readResource(PathAddress.EMPTY_ADDRESS);
             final AbstractSensitivity classification = resource.classification;
             Boolean result = null;
-            if (attribute.equals(DEFAULT_REQUIRES_ADDRESSABLE.getName())) {
+            if (attribute.equals(DEFAULT_REQUIRES_ADDRESSABLE.getName()) && includeAddressable) {
                 result = classification.isDefaultRequiresAccessPermission();
             } else if (attribute.equals(DEFAULT_REQUIRES_READ.getName())) {
                 result = classification.isDefaultRequiresReadPermission();
             } else if (attribute.equals(DEFAULT_REQUIRES_WRITE.getName())) {
                 result = classification.isDefaultRequiresWritePermission();
-            } else if (attribute.equals(CONFIGURED_REQUIRES_ADDRESSABLE.getName())) {
+            } else if (attribute.equals(CONFIGURED_REQUIRES_ADDRESSABLE.getName()) && includeAddressable) {
                 result = classification.getConfiguredRequiresAccessPermission();
             } else if (attribute.equals(CONFIGURED_REQUIRES_READ.getName())) {
                 result = classification.getConfiguredRequiresReadPermission();
@@ -165,15 +180,21 @@ public class SensitivityResourceDefinition extends SimpleResourceDefinition {
 
     private static class SensitivityClassificationWriteAttributeHandler implements OperationStepHandler {
 
-        static final SensitivityClassificationWriteAttributeHandler INSTANCE = new SensitivityClassificationWriteAttributeHandler();
+        static final SensitivityClassificationWriteAttributeHandler ADDRESSABLE_INSTANCE = new SensitivityClassificationWriteAttributeHandler(true);
+        static final SensitivityClassificationWriteAttributeHandler NON_ADDRESSABLE_INSTANCE = new SensitivityClassificationWriteAttributeHandler(false);
 
+        private final boolean includeAddressable;
+
+        SensitivityClassificationWriteAttributeHandler(boolean includeAddressable){
+            this.includeAddressable = includeAddressable;
+        }
         @Override
         public void execute(OperationContext context, ModelNode operation) throws OperationFailedException {
             final String attribute = operation.require(NAME).asString();
             final ModelNode value = operation.require(VALUE);
             final SensitivityClassificationResource resource = (SensitivityClassificationResource)context.readResourceForUpdate(PathAddress.EMPTY_ADDRESS);
             final AbstractSensitivity classification = resource.classification;
-            if (attribute.equals(CONFIGURED_REQUIRES_ADDRESSABLE.getName())) {
+            if (attribute.equals(CONFIGURED_REQUIRES_ADDRESSABLE.getName()) && includeAddressable) {
                 classification.setConfiguredRequiresAccessPermission(readValue(context, value, CONFIGURED_REQUIRES_ADDRESSABLE));
             } else if (attribute.equals(CONFIGURED_REQUIRES_READ.getName())) {
                 classification.setConfiguredRequiresReadPermission(readValue(context, value, CONFIGURED_REQUIRES_READ));
@@ -196,19 +217,25 @@ public class SensitivityResourceDefinition extends SimpleResourceDefinition {
 
     private static class SensitivityClassificationResource extends AbstractClassificationResource {
         private final AbstractSensitivity classification;
+        private final boolean includeAddressable;
 
-        SensitivityClassificationResource(PathElement pathElement, AbstractSensitivity classification) {
+        SensitivityClassificationResource(PathElement pathElement, AbstractSensitivity classification, boolean includeAddressable) {
             super(pathElement);
             this.classification = classification;
+            this.includeAddressable = includeAddressable;
         }
 
         @Override
         public ModelNode getModel() {
             ModelNode model = new ModelNode();
-            model.get(DEFAULT_REQUIRES_ADDRESSABLE.getName()).set(classification.isDefaultRequiresAccessPermission());
+            if (includeAddressable) {
+                model.get(DEFAULT_REQUIRES_ADDRESSABLE.getName()).set(classification.isDefaultRequiresAccessPermission());
+            }
             model.get(DEFAULT_REQUIRES_READ.getName()).set(classification.isDefaultRequiresReadPermission());
             model.get(DEFAULT_REQUIRES_WRITE.getName()).set(classification.isDefaultRequiresWritePermission());
-            model.get(CONFIGURED_REQUIRES_ADDRESSABLE.getName()).set(getBoolean(classification.getConfiguredRequiresAccessPermission()));
+            if (includeAddressable) {
+                model.get(CONFIGURED_REQUIRES_ADDRESSABLE.getName()).set(getBoolean(classification.getConfiguredRequiresAccessPermission()));
+            }
             model.get(CONFIGURED_REQUIRES_READ.getName()).set(getBoolean(classification.getConfiguredRequiresReadPermission()));
             model.get(CONFIGURED_REQUIRES_WRITE.getName()).set(getBoolean(classification.getConfiguredRequiresWritePermission()));
             return model;
@@ -218,10 +245,11 @@ public class SensitivityResourceDefinition extends SimpleResourceDefinition {
         public void writeModel(ModelNode newModel) {
 
             // Called on a slave host controller during boot
-
-            if (newModel.hasDefined(CONFIGURED_REQUIRES_ADDRESSABLE.getName())) {
-                boolean b = newModel.get(CONFIGURED_REQUIRES_ADDRESSABLE.getName()).asBoolean();
-                classification.setConfiguredRequiresAccessPermission(b);
+            if (includeAddressable) {
+                if (newModel.hasDefined(CONFIGURED_REQUIRES_ADDRESSABLE.getName())) {
+                    boolean b = newModel.get(CONFIGURED_REQUIRES_ADDRESSABLE.getName()).asBoolean();
+                    classification.setConfiguredRequiresAccessPermission(b);
+                }
             }
             if (newModel.hasDefined(CONFIGURED_REQUIRES_READ.getName())) {
                 boolean b = newModel.get(CONFIGURED_REQUIRES_READ.getName()).asBoolean();

@@ -788,7 +788,7 @@
         </xs:annotation>
         <xs:complexContent>
             <xs:extension base="base-audit-log-formatterType">
-		        <xs:attribute name="compact" type="xs:boolean" default="false">
+    	        <xs:attribute name="compact" type="xs:boolean" default="false">
 		            <xs:annotation>
 		               <xs:documentation>
 		                   If true will format the JSON on one line. There may still be
@@ -3234,13 +3234,6 @@
                 ]]>
             </xs:documentation>
         </xs:annotation>
-        <xs:attribute name="requires-addressable" type="xs:boolean">
-          <xs:annotation>
-             <xs:documentation>
-                Configuration of if a classification's addressability is sensitive
-             </xs:documentation>
-          </xs:annotation>
-        </xs:attribute>
         <xs:attribute name="requires-read" type="xs:boolean">
           <xs:annotation>
              <xs:documentation>
@@ -3286,6 +3279,13 @@
         </xs:annotation>
         <xs:complexContent>
             <xs:extension base="base-sensitivityType">
+                <xs:attribute name="requires-addressable" type="xs:boolean">
+                      <xs:annotation>
+                         <xs:documentation>
+                            Configuration of if a classification's addressability is sensitive
+                         </xs:documentation>
+                      </xs:annotation>
+                  </xs:attribute>
                 <xs:attribute name="name" type="xs:string" use="required">
                   <xs:annotation>
                      <xs:documentation>
