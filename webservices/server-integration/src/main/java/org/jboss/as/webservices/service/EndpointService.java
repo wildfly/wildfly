@@ -227,6 +227,7 @@ public final class EndpointService implements Service<Endpoint> {
         builder.addDependency(DependencyType.OPTIONAL, MBEAN_SERVER_NAME,
                 MBeanServer.class,
                 service.getMBeanServerInjector());
+        builder.addDependency(DependencyType.REQUIRED, WSServices.CONFIG_SERVICE);
         builder.setInitialMode(Mode.ACTIVE);
         builder.install();
     }

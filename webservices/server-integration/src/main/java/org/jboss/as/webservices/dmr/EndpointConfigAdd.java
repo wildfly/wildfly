@@ -22,7 +22,6 @@
 package org.jboss.as.webservices.dmr;
 
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
-import static org.jboss.as.webservices.dmr.PackageUtils.getServerConfig;
 
 import java.util.List;
 
@@ -31,14 +30,18 @@ import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.ServiceVerificationHandler;
+import org.jboss.as.webservices.service.ConfigService;
+import org.jboss.as.webservices.util.WSServices;
 import org.jboss.dmr.ModelNode;
+import org.jboss.msc.service.ServiceBuilder;
 import org.jboss.msc.service.ServiceController;
+import org.jboss.msc.service.ServiceTarget;
 import org.jboss.wsf.spi.management.ServerConfig;
-import org.jboss.wsf.spi.metadata.config.EndpointConfig;
 
 /**
  * @author <a href="ema@redhat.com">Jim Ma</a>
  * @author <a href="mailto:ropalka@redhat.com">Richard Opalka</a>
+ * @author <a href="mailto:alessio.soldano@jboss.com">Alessio Soldano</a>
  */
 final class EndpointConfigAdd extends AbstractAddStepHandler {
 
@@ -57,23 +60,24 @@ final class EndpointConfigAdd extends AbstractAddStepHandler {
     protected void rollbackRuntime(final OperationContext context, final ModelNode operation, final ModelNode model, final List<ServiceController<?>> controllers) {
         super.rollbackRuntime(context, operation, model, controllers);
         if (!context.isBooting()) {
-            context.revertReloadRequired();
+           context.revertReloadRequired();
         }
     }
 
     @Override
     protected void performRuntime(final OperationContext context, final ModelNode operation, final ModelNode model, final ServiceVerificationHandler verificationHandler, final List<ServiceController<?>> newControllers) throws OperationFailedException {
-        final ServerConfig config = getServerConfig(context);
-        if (config != null) {
-            final PathAddress address = PathAddress.pathAddress(operation.require(OP_ADDR));
-            final String name = address.getLastElement().getValue();
+        //if modify the runtime if we're booting, otherwise set reload required and leave the runtime unchanged
+        if (context.isBooting()) {
+           final PathAddress address = PathAddress.pathAddress(operation.require(OP_ADDR));
+           final String name = address.getLastElement().getValue();
+           final ConfigService endpointConfigService = new ConfigService(name, false);
+           final ServiceTarget target = context.getServiceTarget();
+           final ServiceBuilder<?> clientServiceBuilder = target.addService(WSServices.ENDPOINT_CONFIG_SERVICE.append(name), endpointConfigService);
 
-            EndpointConfig endpointConfig = new EndpointConfig();
-            endpointConfig.setConfigName(name);
-            config.addEndpointConfig(endpointConfig);
-            if (!context.isBooting()) {
-                context.reloadRequired();
-            }
+           clientServiceBuilder.addDependency(WSServices.CONFIG_SERVICE, ServerConfig.class, endpointConfigService.getServerConfig());
+           clientServiceBuilder.setInitialMode(ServiceController.Mode.ACTIVE).install();
+        } else {
+           context.reloadRequired();
         }
     }
 
