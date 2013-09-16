@@ -56,6 +56,7 @@ import org.jboss.as.controller.PathElement;
 import org.jboss.as.controller.ProcessType;
 import org.jboss.as.controller.RunningMode;
 import org.jboss.as.controller.RunningModeControl;
+import org.jboss.as.controller.SimpleAttributeDefinition;
 import org.jboss.as.controller.SimpleAttributeDefinitionBuilder;
 import org.jboss.as.controller.SimpleOperationDefinitionBuilder;
 import org.jboss.as.controller.SimpleResourceDefinition;
@@ -75,6 +76,7 @@ import org.jboss.as.controller.operations.global.GlobalOperationHandlers;
 import org.jboss.as.controller.persistence.NullConfigurationPersister;
 import org.jboss.as.controller.registry.AttributeAccess;
 import org.jboss.as.controller.registry.ManagementResourceRegistration;
+import org.jboss.as.controller.registry.OperationEntry.Flag;
 import org.jboss.as.controller.registry.Resource;
 import org.jboss.as.controller.services.path.PathManagerService;
 import org.jboss.as.controller.services.path.PathResourceDefinition;
@@ -182,7 +184,7 @@ public class JmxFacadeRbacEnabledTestCase extends AbstractControllerTestBase {
             final boolean writable, final boolean executable, final SensitiveTargetAccessConstraintDefinition...sensitivityConstraints) throws Exception {
         ChildResourceDefinition oneChild = new ChildResourceDefinition(ONE, sensitivityConstraints);
         oneChild.addAttribute("attr1");
-        oneChild.addOperation("test", true, false);
+        oneChild.addOperation("test", true, false, null);
         rootRegistration.registerSubModel(oneChild);
         Resource resourceA = Resource.Factory.create();
         resourceA.getModel().get("attr1").set("test-a");
@@ -251,7 +253,7 @@ public class JmxFacadeRbacEnabledTestCase extends AbstractControllerTestBase {
             final boolean writable, final boolean executable, final SensitiveTargetAccessConstraintDefinition...sensitivityConstraints) throws Exception {
         ChildResourceDefinition oneChild = new ChildResourceDefinition(ONE);
         oneChild.addAttribute("attr1", sensitivityConstraints);
-        oneChild.addOperation("test", true, false);
+        oneChild.addOperation("test", true, false, null);
         rootRegistration.registerSubModel(oneChild);
         Resource resourceA = Resource.Factory.create();
         resourceA.getModel().get("attr1").set("test-a");
@@ -283,7 +285,7 @@ public class JmxFacadeRbacEnabledTestCase extends AbstractControllerTestBase {
             final boolean writable, final boolean executable, final SensitiveTargetAccessConstraintDefinition...sensitivityConstraints) throws Exception {
         ChildResourceDefinition oneChild = new ChildResourceDefinition(ONE);
         oneChild.addAttribute("attr1");
-        oneChild.addOperation("test", true, false, sensitivityConstraints);
+        oneChild.addOperation("test", true, false, null, sensitivityConstraints);
         rootRegistration.registerSubModel(oneChild);
         Resource resourceA = Resource.Factory.create();
         resourceA.getModel().get("attr1").set("test-a");
@@ -454,7 +456,7 @@ public class JmxFacadeRbacEnabledTestCase extends AbstractControllerTestBase {
         PathElement pathElement = wildcard ? ONE : ONE_A;
         ChildResourceDefinition oneChild = new ChildResourceDefinition(pathElement, sensitivityConstraints);
         oneChild.addAttribute("attr1");
-        oneChild.addOperation("test", true, false);
+        oneChild.addOperation("test", true, false, null);
         rootRegistration.registerSubModel(oneChild);
 
         Subject subject = standardRole == null ? null :
@@ -481,25 +483,51 @@ public class JmxFacadeRbacEnabledTestCase extends AbstractControllerTestBase {
 
     @Test
     public void testReadVaultExpressionsNoReadAsMonitor() throws Exception {
-        checkReadVaultExpressionNoAccess(StandardRole.MONITOR, false);
+        checkReadVaultExpressionReadSensitive(StandardRole.MONITOR, false);
     }
 
     @Test
     public void testReadVaultExpressionsNoReadAsMaintainer() throws Exception {
-        checkReadVaultExpressionNoAccess(StandardRole.MAINTAINER, false);
+        checkReadVaultExpressionReadSensitive(StandardRole.MAINTAINER, false);
     }
 
     @Test
     public void testReadVaultExpressionsNoReadAsAdministrator() throws Exception {
-        checkReadVaultExpressionNoAccess(StandardRole.ADMINISTRATOR, true);
+        checkReadVaultExpressionReadSensitive(StandardRole.ADMINISTRATOR, true);
     }
 
-    private void checkReadVaultExpressionNoAccess(final StandardRole standardRole, final boolean readable) throws Exception {
-        VaultExpressionSensitivityConfig.INSTANCE.setConfiguredRequiresAccessPermission(true);
+    private void checkReadVaultExpressionReadSensitive(final StandardRole standardRole, final boolean readable) throws Exception {
+        VaultExpressionSensitivityConfig.INSTANCE.setConfiguredRequiresAccessPermission(false);
         VaultExpressionSensitivityConfig.INSTANCE.setConfiguredRequiresReadPermission(true);
         VaultExpressionSensitivityConfig.INSTANCE.setConfiguredRequiresWritePermission(false);
         try {
-            checkReadVaultExpression(standardRole, readable);
+            ChildResourceDefinition oneChild = new ChildResourceDefinition(ONE);
+            oneChild.addAttribute("attr1");
+            oneChild.addOperation("test", true, false, null);
+            rootRegistration.registerSubModel(oneChild);
+            Resource resourceA = Resource.Factory.create();
+            resourceA.getModel().get("attr1").set("test-a");
+            rootResource.registerChild(ONE_A, resourceA);
+            Resource resourceB = Resource.Factory.create();
+            resourceB.getModel().get("attr1").set("${VAULT::AA::bb::cc}");
+            rootResource.registerChild(ONE_B, resourceB);
+
+            Subject subject = standardRole == null ? null :
+                new Subject(true, Collections.singleton(new RealmUser(roleToUserName(standardRole))), Collections.emptySet(), Collections.emptySet());
+            Subject.doAs(subject, new PrivilegedExceptionAction<Void>() {
+                @Override
+                public Void run() throws Exception {
+                    Assert.assertEquals("test-a", server.getAttribute(ONE_A_NAME, "attr1"));
+                    try {
+                        Assert.assertEquals("${VAULT::AA::bb::cc}", server.getAttribute(ONE_B_NAME, "attr1"));
+                        Assert.assertTrue(readable);
+                    } catch (JMRuntimeException e) {
+                        Assert.assertFalse(readable);
+                    }
+
+                    return null;
+                }
+            });
         } finally {
             VaultExpressionSensitivityConfig.INSTANCE.setConfiguredRequiresAccessPermission(null);
             VaultExpressionSensitivityConfig.INSTANCE.setConfiguredRequiresReadPermission(null);
@@ -507,34 +535,168 @@ public class JmxFacadeRbacEnabledTestCase extends AbstractControllerTestBase {
         }
     }
 
-    private void checkReadVaultExpression(final StandardRole standardRole, final boolean readable) throws Exception {
-        ChildResourceDefinition oneChild = new ChildResourceDefinition(ONE);
-        oneChild.addAttribute("attr1");
-        oneChild.addOperation("test", true, false);
-        rootRegistration.registerSubModel(oneChild);
-        Resource resourceA = Resource.Factory.create();
-        resourceA.getModel().get("attr1").set("test-a");
-        rootResource.registerChild(ONE_A, resourceA);
-        Resource resourceB = Resource.Factory.create();
-        resourceB.getModel().get("attr1").set("${VAULT::AA::bb::cc}");
-        rootResource.registerChild(ONE_B, resourceB);
+    @Test
+    public void testWriteVaultExpressionsWriteSensitiveAsMonitor() throws Exception {
+        checkWriteVaultExpressionWriteSensitive(StandardRole.MONITOR, false);
+    }
 
-        Subject subject = standardRole == null ? null :
-            new Subject(true, Collections.singleton(new RealmUser(roleToUserName(standardRole))), Collections.emptySet(), Collections.emptySet());
-        Subject.doAs(subject, new PrivilegedExceptionAction<Void>() {
-            @Override
-            public Void run() throws Exception {
-                Assert.assertEquals("test-a", server.getAttribute(ONE_A_NAME, "attr1"));
-                try {
-                    Assert.assertEquals("${VAULT::AA::bb::cc}", server.getAttribute(ONE_B_NAME, "attr1"));
-                    Assert.assertTrue(readable);
-                } catch (JMRuntimeException e) {
-                    Assert.assertFalse(readable);
+    @Test
+    public void testWriteVaultExpressionsWriteSensitiveAsMaintainer() throws Exception {
+        checkWriteVaultExpressionWriteSensitive(StandardRole.MAINTAINER, false);
+    }
+
+    @Test
+    public void testWriteVaultExpressionsWriteSensitiveAsAdministrator() throws Exception {
+        checkWriteVaultExpressionWriteSensitive(StandardRole.ADMINISTRATOR, true);
+    }
+
+    private void checkWriteVaultExpressionWriteSensitive(final StandardRole standardRole, final boolean writable) throws Exception {
+        VaultExpressionSensitivityConfig.INSTANCE.setConfiguredRequiresAccessPermission(false);
+        VaultExpressionSensitivityConfig.INSTANCE.setConfiguredRequiresReadPermission(true);
+        VaultExpressionSensitivityConfig.INSTANCE.setConfiguredRequiresWritePermission(true);
+        try {
+            ChildResourceDefinition oneChild = new ChildResourceDefinition(ONE);
+            oneChild.addAttribute("attr1");
+            oneChild.addOperation("test", true, false, null);
+            rootRegistration.registerSubModel(oneChild);
+            Resource resourceA = Resource.Factory.create();
+            resourceA.getModel().get("attr1").set("test-a");
+            rootResource.registerChild(ONE_A, resourceA);
+
+            Subject subject = standardRole == null ? null :
+                new Subject(true, Collections.singleton(new RealmUser(roleToUserName(standardRole))), Collections.emptySet(), Collections.emptySet());
+            Subject.doAs(subject, new PrivilegedExceptionAction<Void>() {
+                @Override
+                public Void run() throws Exception {
+                    try {
+                        server.setAttribute(ONE_A_NAME, new Attribute("attr1", "${VAULT::AA::bb::cc}"));
+                        Assert.assertTrue(writable);
+                    } catch (JMRuntimeException e) {
+                        Assert.assertFalse(writable);
+                    }
+
+                    return null;
                 }
+            });
+        } finally {
+            VaultExpressionSensitivityConfig.INSTANCE.setConfiguredRequiresAccessPermission(null);
+            VaultExpressionSensitivityConfig.INSTANCE.setConfiguredRequiresReadPermission(null);
+            VaultExpressionSensitivityConfig.INSTANCE.setConfiguredRequiresWritePermission(null);
+        }
+    }
 
-                return null;
-            }
-        });
+    @Test
+    public void testOperationVaultExpressionWriteSensitiveAsMonitor() throws Exception {
+        checkOperationVaultExpressionWriteSensitive(StandardRole.MONITOR, false, false);
+    }
+
+    @Test
+    public void testOperationVaultExpressionWriteSensitiveAsMaintainer() throws Exception {
+        checkOperationVaultExpressionWriteSensitive(StandardRole.MAINTAINER, true, false);
+    }
+
+    @Test
+    public void testOperationVaultExpressionWriteSensitiveAsAdministrator() throws Exception {
+        checkOperationVaultExpressionWriteSensitive(StandardRole.ADMINISTRATOR, true, true);
+    }
+
+    private void checkOperationVaultExpressionWriteSensitive(final StandardRole standardRole, final boolean executable, final boolean executableVault) throws Exception {
+        VaultExpressionSensitivityConfig.INSTANCE.setConfiguredRequiresAccessPermission(false);
+        VaultExpressionSensitivityConfig.INSTANCE.setConfiguredRequiresReadPermission(true);
+        VaultExpressionSensitivityConfig.INSTANCE.setConfiguredRequiresWritePermission(true);
+        try {
+            ChildResourceDefinition oneChild = new ChildResourceDefinition(ONE);
+            oneChild.addAttribute("attr1");
+            oneChild.addOperation("test", false, false, new SimpleAttributeDefinition[] {
+                    new SimpleAttributeDefinitionBuilder("param1", ModelType.STRING)
+                    .setAllowExpression(true)
+                    .build()
+            });
+            rootRegistration.registerSubModel(oneChild);
+            Resource resourceA = Resource.Factory.create();
+            resourceA.getModel().get("attr1").set("test-a");
+            rootResource.registerChild(ONE_A, resourceA);
+
+            Subject subject = standardRole == null ? null :
+                new Subject(true, Collections.singleton(new RealmUser(roleToUserName(standardRole))), Collections.emptySet(), Collections.emptySet());
+            Subject.doAs(subject, new PrivilegedExceptionAction<Void>() {
+                @Override
+                public Void run() throws Exception {
+                    try {
+                        server.invoke(ONE_A_NAME, "test", new Object[] {"stuff"}, new String[] {String.class.getName()});
+                        Assert.assertTrue(executable);
+                    } catch (JMRuntimeException e) {
+                        Assert.assertFalse(executable);
+                    }
+                    try {
+                        server.invoke(ONE_A_NAME, "test", new Object[] {"${VAULT::AA::bb::cc}"}, new String[] {String.class.getName()});
+                        Assert.assertTrue(executableVault);
+                    } catch (JMRuntimeException e) {
+                        Assert.assertFalse(executableVault);
+                    }
+                    return null;
+                }
+            });
+        } finally {
+            VaultExpressionSensitivityConfig.INSTANCE.setConfiguredRequiresAccessPermission(null);
+            VaultExpressionSensitivityConfig.INSTANCE.setConfiguredRequiresReadPermission(null);
+            VaultExpressionSensitivityConfig.INSTANCE.setConfiguredRequiresWritePermission(null);
+        }
+    }
+
+    //These three are the same for different roles
+    @Test
+    public void testAddVaultWriteSensitiveFixedResourceAsMonitor() throws Exception {
+        checkAddVaultSensitive(StandardRole.MONITOR, false);
+    }
+
+    @Test
+    public void testAddVaultWriteSensitiveFixedResourceAsMaintainer() throws Exception {
+        checkAddVaultSensitive(StandardRole.MAINTAINER, false);
+    }
+
+    @Test
+    public void testAddVaultWriteSensitiveFixedResourceAsAdministrator() throws Exception {
+        checkAddVaultSensitive(StandardRole.ADMINISTRATOR, true);
+    }
+
+    private void checkAddVaultSensitive(final StandardRole standardRole, final boolean  executable) throws Exception {
+        VaultExpressionSensitivityConfig.INSTANCE.setConfiguredRequiresAccessPermission(false);
+        VaultExpressionSensitivityConfig.INSTANCE.setConfiguredRequiresReadPermission(true);
+        VaultExpressionSensitivityConfig.INSTANCE.setConfiguredRequiresWritePermission(true);
+        try {
+
+            PathElement pathElement = ONE_A;
+            ChildResourceDefinition oneChild = new ChildResourceDefinition(pathElement);
+            oneChild.addAttribute("attr1");
+            oneChild.addOperation("test", true, false, null);
+            rootRegistration.registerSubModel(oneChild);
+
+            Subject subject = standardRole == null ? null :
+                new Subject(true, Collections.singleton(new RealmUser(roleToUserName(standardRole))), Collections.emptySet(), Collections.emptySet());
+            Subject.doAs(subject, new PrivilegedExceptionAction<Void>() {
+                @Override
+                public Void run() throws Exception {
+                    Assert.assertFalse(server.queryNames(null, null).contains(ONE_A_NAME));
+                    try {
+                        String add = "addOneA";
+                        Object[] params = new String[]{"${VAULT::AA::bb::cc}"};
+                        String[] sig = new String[] {String.class.getName()};
+                        server.invoke(ROOT_NAME, add, params, sig);
+                        Assert.assertTrue(executable);
+                        Assert.assertTrue(server.queryNames(null, null).contains(ONE_A_NAME));
+                    } catch (JMRuntimeException e) {
+                        Assert.assertFalse(executable);
+                    }
+
+                    return null;
+                }
+            });
+        } finally {
+            VaultExpressionSensitivityConfig.INSTANCE.setConfiguredRequiresAccessPermission(false);
+            VaultExpressionSensitivityConfig.INSTANCE.setConfiguredRequiresReadPermission(true);
+            VaultExpressionSensitivityConfig.INSTANCE.setConfiguredRequiresWritePermission(true);
+        }
     }
 
     private SensitiveTargetAccessConstraintDefinition createSensitivityConstraint(String name, boolean access, boolean read, boolean write) {
@@ -688,18 +850,11 @@ public class JmxFacadeRbacEnabledTestCase extends AbstractControllerTestBase {
             if (constraints != null) {
                 builder.setAccessConstraints(constraints);
             }
+            builder.setAllowExpression(true);
             attributes.add(builder.build());
         }
 
-//        void addReadOnlyAttribute(String name, AccessConstraintDefinition...constraints) {
-//            SimpleAttributeDefinitionBuilder builder = new SimpleAttributeDefinitionBuilder(name, ModelType.STRING);
-//            if (constraints != null) {
-//                builder.setAccessConstraints(constraints);
-//            }
-//            readOnlyAttributes.add(builder.build());
-//        }
-
-        void addOperation(String name, boolean readOnly, boolean runtimeOnly, AccessConstraintDefinition...constraints) {
+        void addOperation(String name, boolean readOnly, boolean runtimeOnly, SimpleAttributeDefinition[] parameters, AccessConstraintDefinition...constraints) {
             SimpleOperationDefinitionBuilder builder = new SimpleOperationDefinitionBuilder(name, new NonResolvingResourceDescriptionResolver());
             if (constraints != null) {
                 builder.setAccessConstraints(constraints);
@@ -709,6 +864,11 @@ public class JmxFacadeRbacEnabledTestCase extends AbstractControllerTestBase {
             }
             if (runtimeOnly) {
                 builder.setRuntimeOnly();
+            }
+            if (parameters != null) {
+                for (SimpleAttributeDefinition param : parameters) {
+                    builder.addParameter(param);
+                }
             }
             operations.add(builder.build());
         }
@@ -727,7 +887,12 @@ public class JmxFacadeRbacEnabledTestCase extends AbstractControllerTestBase {
         public void registerOperations(ManagementResourceRegistration resourceRegistration) {
             super.registerOperations(resourceRegistration);
             for (OperationDefinition op : operations) {
-                resourceRegistration.registerOperationHandler(op, TestOperationStepHandler.INSTANCE);
+                if (op.getFlags().contains(Flag.READ_ONLY)) {
+                    resourceRegistration.registerOperationHandler(op, TestOperationStepHandler.READ_ONLY_INSTANCE);
+                } else {
+                    resourceRegistration.registerOperationHandler(op, TestOperationStepHandler.READ_WRITE_INSTANCE);
+                }
+
             }
         }
 
@@ -738,10 +903,22 @@ public class JmxFacadeRbacEnabledTestCase extends AbstractControllerTestBase {
     }
 
     private static class TestOperationStepHandler implements OperationStepHandler {
-        static final TestOperationStepHandler INSTANCE = new TestOperationStepHandler();
+        static final TestOperationStepHandler READ_ONLY_INSTANCE = new TestOperationStepHandler(true);
+        static final TestOperationStepHandler READ_WRITE_INSTANCE = new TestOperationStepHandler(false);
+
+        private final boolean readOnly;
+
+        public TestOperationStepHandler(boolean readOnly) {
+            this.readOnly = readOnly;
+        }
 
         @Override
         public void execute(OperationContext context, ModelNode operation) throws OperationFailedException {
+            if (readOnly) {
+                context.readResource(PathAddress.EMPTY_ADDRESS);
+            } else {
+                context.readResourceForUpdate(PathAddress.EMPTY_ADDRESS);
+            }
             context.stepCompleted();
         }
     }

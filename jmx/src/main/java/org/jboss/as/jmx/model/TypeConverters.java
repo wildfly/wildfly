@@ -33,6 +33,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.regex.Pattern;
+
 import javax.management.openmbean.ArrayType;
 import javax.management.openmbean.CompositeData;
 import javax.management.openmbean.CompositeDataSupport;
@@ -54,7 +55,7 @@ import org.jboss.dmr.Property;
  */
 class TypeConverters {
 
-    private static final Pattern VAULT_PATTERN = Pattern.compile("\\$\\{VAULT::.*::.*::.*\\}");
+    static final Pattern VAULT_PATTERN = Pattern.compile("\\$\\{VAULT::.*::.*::.*\\}");
 
     private static final SimpleTypeConverter BIG_DECIMAL_NO_EXPR = new SimpleTypeConverter(BigDecimalValueAccessor.INSTANCE, false);
     private static final SimpleTypeConverter BIG_DECIMAL_EXPR = new SimpleTypeConverter(BigDecimalValueAccessor.INSTANCE, true);
