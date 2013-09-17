@@ -1,6 +1,6 @@
 /*
  * JBoss, Home of Professional Open Source.
- * Copyright 2011, Red Hat, Inc., and individual contributors
+ * Copyright 2013, Red Hat, Inc., and individual contributors
  * as indicated by the @author tags. See the copyright.txt file in the
  * distribution for a full listing of individual contributors.
  *
@@ -19,52 +19,35 @@
  * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
+
 package org.jboss.as.cli.parsing.arguments;
 
 import org.jboss.as.cli.CommandFormatException;
 import org.jboss.as.cli.parsing.CharacterHandler;
 import org.jboss.as.cli.parsing.DefaultParsingState;
+import org.jboss.as.cli.parsing.GlobalCharacterHandlers;
 import org.jboss.as.cli.parsing.ParsingContext;
-import org.jboss.as.cli.parsing.QuotesState;
 import org.jboss.as.cli.parsing.WordCharacterHandler;
 
 /**
- *
  * @author Alexey Loubyansky
+ *
  */
-public class ArgumentValueState extends DefaultParsingState {
+public class ExpressionValueState extends DefaultParsingState {
 
-    public static final String ID = "ARG_VALUE";
+    public static final String ID = "EXPR_VALUE";
 
-    public static final ArgumentValueState INSTANCE = new ArgumentValueState();
+    public static final ExpressionValueState INSTANCE = new ExpressionValueState();
 
-    public ArgumentValueState() {
+    public ExpressionValueState() {
         super(ID);
-        setEnterHandler(new CharacterHandler(){
+        setEnterHandler(GlobalCharacterHandlers.CONTENT_CHARACTER_HANDLER);
+        setDefaultHandler(WordCharacterHandler.IGNORE_LB_ESCAPE_ON);
+        putHandler('}', new CharacterHandler(){
             @Override
             public void handle(ParsingContext ctx) throws CommandFormatException {
-                final char ch = ctx.getCharacter();
-                switch(ch) {
-                    case '"':
-                        ctx.enterState(QuotesState.QUOTES_EXCLUDED);
-                        break;
-                    case '$':
-                        ctx.enterState(ExpressionValueState.INSTANCE);
-                        break;
-                    case '{':
-                        break;
-                    default:
-                        ctx.getCallbackHandler().character(ctx);
-                }
+                ctx.getCallbackHandler().character(ctx);
+                ctx.leaveState();
             }});
-        setDefaultHandler(WordCharacterHandler.IGNORE_LB_ESCAPE_ON);
-        enterState('=', NameValueSeparatorState.INSTANCE);
-        enterState(',', ListItemSeparatorState.INSTANCE);
-        enterState('[', new ListState(this));
-        enterState('"', QuotesState.QUOTES_INCLUDED);
-        leaveState(']');
-        enterState('{', this);
-        leaveState('}');
-        enterState('$', ExpressionValueState.INSTANCE);
     }
 }
