@@ -121,7 +121,7 @@ public class JmxAuditLogFieldsOfLogTestCase {
         container.start(CONTAINER);
         final ModelControllerClient client = TestSuiteEnvironment.getModelControllerClient();
         managementClient = new ManagementClient(client, TestSuiteEnvironment.getServerAddress(),
-                TestSuiteEnvironment.getServerPort(), "http-remoting");
+                TestSuiteEnvironment.getServerPort());
 
         ModelNode op;
         ModelNode result;
@@ -184,7 +184,7 @@ public class JmxAuditLogFieldsOfLogTestCase {
 
     private MBeanServerConnection setupAndGetConnection() throws Exception {
         String urlString = System.getProperty("jmx.service.url",
-                "service:jmx:http-remoting-jmx://" + managementClient.getMgmtAddress() + ":" + managementClient.getMgmtPort());
+                "service:jmx:remoting-jmx://" + managementClient.getMgmtAddress() + ":" + managementClient.getMgmtPort());
         JMXServiceURL serviceURL = new JMXServiceURL(urlString);
         connector = JMXConnectorFactory.connect(serviceURL, null);
         return connector.getMBeanServerConnection();

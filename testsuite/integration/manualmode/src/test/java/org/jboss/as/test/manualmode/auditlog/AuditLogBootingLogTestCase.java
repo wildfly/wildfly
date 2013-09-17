@@ -132,7 +132,7 @@ public class AuditLogBootingLogTestCase {
         container.start(CONTAINER);
         final ModelControllerClient client = TestSuiteEnvironment.getModelControllerClient();
         managementClient = new ManagementClient(client, TestSuiteEnvironment.getServerAddress(),
-                TestSuiteEnvironment.getServerPort(), "http-remoting");
+                TestSuiteEnvironment.getServerPort());
 
         ModelNode op;
         ModelNode result;

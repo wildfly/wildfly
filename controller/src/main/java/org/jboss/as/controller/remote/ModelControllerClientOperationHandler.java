@@ -31,7 +31,6 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OPE
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OUTCOME;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.USER;
 
-import javax.security.auth.Subject;
 import java.io.DataInput;
 import java.io.IOException;
 import java.security.AccessController;
@@ -40,6 +39,8 @@ import java.security.PrivilegedAction;
 import java.security.PrivilegedActionException;
 import java.security.PrivilegedExceptionAction;
 import java.util.Collection;
+
+import javax.security.auth.Subject;
 
 import org.jboss.as.controller.ModelController;
 import org.jboss.as.controller.client.impl.ModelControllerProtocol;
@@ -130,7 +131,7 @@ public class ModelControllerClientOperationHandler implements ManagementRequestH
                                 for (Principal principal : principals) {
                                     if (principal instanceof InetAddressPrincipal) {
                                         //TODO decide if we should use the remoting principal or not
-                                        copySubject.getPrincipals().add(new InetAddressPrincipal(((InetAddressPrincipal)principal).getInetAddress()));
+                                        copySubject.getPrincipals().add(new org.jboss.as.controller.security.InetAddressPrincipal(((InetAddressPrincipal)principal).getInetAddress()));
                                         break;
                                     }
                                 }
