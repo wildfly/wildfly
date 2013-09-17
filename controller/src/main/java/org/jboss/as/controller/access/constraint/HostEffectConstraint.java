@@ -22,6 +22,7 @@
 
 package org.jboss.as.controller.access.constraint;
 
+import java.util.Collection;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Set;
@@ -48,7 +49,7 @@ public class HostEffectConstraint extends AbstractConstraint implements Constrai
 
     private final boolean user;
     private final boolean global;
-    private volatile Set<String> specific = new LinkedHashSet<String>();
+    private final HostsHolder hostsHolder;
     private final boolean readOnly;
     private final HostEffectConstraint readOnlyConstraint;
 
@@ -58,13 +59,14 @@ public class HostEffectConstraint extends AbstractConstraint implements Constrai
         this.global = true;
         this.readOnly = false;
         this.readOnlyConstraint = null;
+        this.hostsHolder = new HostsHolder();
     }
 
     private HostEffectConstraint(Set<String> allowed) {
         super();
         this.user = false;
         this.global = false;
-        specific.addAll(allowed);
+        this.hostsHolder = new HostsHolder(allowed);
         this.readOnly = false;
         this.readOnlyConstraint = null;
     }
@@ -73,20 +75,20 @@ public class HostEffectConstraint extends AbstractConstraint implements Constrai
         super();
         this.user = true;
         this.global = false;
-        specific.addAll(allowed);
+        this.hostsHolder = new HostsHolder(allowed);
         this.readOnly = false;
-        this.readOnlyConstraint = new HostEffectConstraint(allowed, true);
+        this.readOnlyConstraint = new HostEffectConstraint(this.hostsHolder, true);
     }
 
     /**
      * Creates the constraint the standard constraint will return from {@link #getOutofScopeReadConstraint()}
      * Only call from {@link HostEffectConstraint#HostEffectConstraint(java.util.List)}
      */
-    private HostEffectConstraint(List<String> allowed, boolean readOnly) {
+    private HostEffectConstraint(HostsHolder hostsHolder, boolean readOnly) {
         super();
         this.user = true;
         this.global = false;
-        specific.addAll(allowed);
+        this.hostsHolder = hostsHolder;
         this.readOnly = readOnly;
         this.readOnlyConstraint = null;
     }
@@ -94,8 +96,7 @@ public class HostEffectConstraint extends AbstractConstraint implements Constrai
     public void setAllowedHosts(List<String> allowed) {
         assert !global : "constraint is global";
         assert readOnlyConstraint != null : "invalid cast";
-        this.specific = new LinkedHashSet<String>(allowed);
-        this.readOnlyConstraint.setAllowedHosts(allowed);
+        this.hostsHolder.specific = new LinkedHashSet<String>(allowed);
     }
 
     @Override
@@ -110,7 +111,7 @@ public class HostEffectConstraint extends AbstractConstraint implements Constrai
                         boolean anyMatch = anyMatch(hec);
                         if (!anyMatch) ControllerLogger.ACCESS_LOGGER.tracef("read-only host constraint violated " +
                                 "for action %s due to no match between hosts %s and allowed hosts %s",
-                                actionEffect, hec.specific, specific);
+                                actionEffect, hec.hostsHolder.specific, hostsHolder.specific);
                         return !anyMatch;
                     }
                 } else if (!global) {
@@ -122,10 +123,10 @@ public class HostEffectConstraint extends AbstractConstraint implements Constrai
                     } else {
                         if (actionEffect == Action.ActionEffect.WRITE_RUNTIME || actionEffect == Action.ActionEffect.WRITE_CONFIG) {
                             //  Writes must not effect other groups
-                            boolean containsAll = specific.containsAll(hec.specific);
+                            boolean containsAll = hostsHolder.specific.containsAll(hec.hostsHolder.specific);
                             if (!containsAll) {
                                 ControllerLogger.ACCESS_LOGGER.tracef("host constraint violated for action %s due to " +
-                                        "mismatch of hosts %s vs hosts %s", actionEffect, hec.specific, specific);
+                                        "mismatch of hosts %s vs hosts %s", actionEffect, hec.hostsHolder.specific, hostsHolder.specific);
                             }
                             return !containsAll;
                         } else {
@@ -133,7 +134,7 @@ public class HostEffectConstraint extends AbstractConstraint implements Constrai
                             boolean anyMatch = anyMatch(hec);
                             if (!anyMatch) ControllerLogger.ACCESS_LOGGER.tracef("host constraint violated " +
                                     "for action %s due to no match between hosts %s and allowed hosts %s",
-                                    actionEffect, hec.specific, specific);
+                                    actionEffect, hec.hostsHolder.specific, hostsHolder.specific);
                             return !anyMatch;
                         }
                     } // else fall through
@@ -149,8 +150,8 @@ public class HostEffectConstraint extends AbstractConstraint implements Constrai
     private boolean anyMatch(HostEffectConstraint hec) {
 
         boolean matched = false;
-        for (String ourGroup : specific) {
-            if (hec.specific.contains(ourGroup)) {
+        for (String ourGroup : hostsHolder.specific) {
+            if (hec.hostsHolder.specific.contains(ourGroup)) {
                 matched = true;
                 break;
             }
@@ -182,6 +183,16 @@ public class HostEffectConstraint extends AbstractConstraint implements Constrai
     public Constraint getOutofScopeReadConstraint() {
         assert readOnlyConstraint != null : "invalid cast";
         return readOnlyConstraint;
+    }
+
+    private static class HostsHolder {
+        private volatile Set<String> specific = new LinkedHashSet<String>();
+        private HostsHolder() {
+            // no-op
+        }
+        private HostsHolder(Collection<String> hosts) {
+            this.specific.addAll(hosts);
+        }
     }
 
     private static class Factory extends AbstractConstraintFactory implements ScopingConstraintFactory {
