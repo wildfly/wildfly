@@ -33,6 +33,7 @@ import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.PathElement;
 import org.jboss.as.controller.ProxyController;
 import org.jboss.as.controller.ResourceDefinition;
+import org.jboss.as.controller.access.management.AccessConstraintUtilizationRegistry;
 import org.jboss.as.controller.descriptions.DescriptionProvider;
 import org.jboss.as.controller.descriptions.OverrideDescriptionProvider;
 
@@ -473,6 +474,21 @@ public interface ManagementResourceRegistration extends ImmutableManagementResou
          * @throws SecurityException if the caller does not have {@link ImmutableManagementResourceRegistration#ACCESS_PERMISSION}
          */
         public static ManagementResourceRegistration create(final DescriptionProvider rootModelDescriptionProvider) {
+            return create(rootModelDescriptionProvider, null);
+        }
+
+        /**
+         * Create a new root model node registration.
+         *
+         * @param rootModelDescriptionProvider the model description provider for the root model node
+         * @param constraintUtilizationRegistry registry for recording access constraints. Can be {@code null} if
+         *                                      tracking access constraint usage is not supported
+         * @return the new root model node registration
+         *
+         * @throws SecurityException if the caller does not have {@link ImmutableManagementResourceRegistration#ACCESS_PERMISSION}
+         */
+        public static ManagementResourceRegistration create(final DescriptionProvider rootModelDescriptionProvider,
+                                                            AccessConstraintUtilizationRegistry constraintUtilizationRegistry) {
             if (rootModelDescriptionProvider == null) {
                 throw MESSAGES.nullVar("rootModelDescriptionProvider");
             }
@@ -503,7 +519,7 @@ public interface ManagementResourceRegistration extends ImmutableManagementResou
                     //  no-op
                 }
             };
-            return new ConcreteResourceRegistration(null, null, rootResourceDefinition, false);
+            return new ConcreteResourceRegistration(null, null, rootResourceDefinition, constraintUtilizationRegistry, false);
         }
 
         /**
@@ -515,10 +531,25 @@ public interface ManagementResourceRegistration extends ImmutableManagementResou
          * @throws SecurityException if the caller does not have {@link ImmutableManagementResourceRegistration#ACCESS_PERMISSION}
          */
         public static ManagementResourceRegistration create(final ResourceDefinition resourceDefinition) {
+            return create(resourceDefinition, null);
+        }
+
+        /**
+         * Create a new root model node registration.
+         *
+         * @param resourceDefinition the facotry for the model description provider for the root model node
+         * @param constraintUtilizationRegistry registry for recording access constraints. Can be {@code null} if
+         *                                      tracking access constraint usage is not supported
+         * @return the new root model node registration
+         *
+         * @throws SecurityException if the caller does not have {@link ImmutableManagementResourceRegistration#ACCESS_PERMISSION}
+         */
+        public static ManagementResourceRegistration create(final ResourceDefinition resourceDefinition,
+                                                            AccessConstraintUtilizationRegistry constraintUtilizationRegistry) {
             if (resourceDefinition == null) {
                 throw MESSAGES.nullVar("rootModelDescriptionProviderFactory");
             }
-            ConcreteResourceRegistration resourceRegistration = new ConcreteResourceRegistration(null, null, resourceDefinition, false);
+            ConcreteResourceRegistration resourceRegistration = new ConcreteResourceRegistration(null, null, resourceDefinition, constraintUtilizationRegistry, false);
             resourceDefinition.registerAttributes(resourceRegistration);
             resourceDefinition.registerOperations(resourceRegistration);
             resourceDefinition.registerChildren(resourceRegistration);

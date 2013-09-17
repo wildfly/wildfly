@@ -58,12 +58,14 @@ abstract class AbstractResourceRegistration implements ManagementResourceRegistr
 
     private final String valueString;
     private final NodeSubregistry parent;
+    private final PathAddress pathAddress;
     private RootInvocation rootInvocation;
 
     AbstractResourceRegistration(final String valueString, final NodeSubregistry parent) {
         checkPermission();
         this.valueString = valueString;
         this.parent = parent;
+        this.pathAddress = parent == null ? PathAddress.EMPTY_ADDRESS : parent.getPathAddress(valueString);
     }
 
     static void checkPermission() {
@@ -486,7 +488,9 @@ abstract class AbstractResourceRegistration implements ManagementResourceRegistr
         throw ControllerMessages.MESSAGES.resourceRegistrationIsNotAnAlias();
     }
 
-
+    PathAddress getPathAddress() {
+        return pathAddress;
+    }
 
     private static class RootInvocation {
         final AbstractResourceRegistration root;

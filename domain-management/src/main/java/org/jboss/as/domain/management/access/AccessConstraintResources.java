@@ -41,6 +41,7 @@ import org.jboss.as.controller.access.constraint.ApplicationTypeConstraint;
 import org.jboss.as.controller.access.constraint.SensitiveTargetConstraint;
 import org.jboss.as.controller.access.constraint.SensitivityClassification;
 import org.jboss.as.controller.access.constraint.VaultExpressionSensitivityConfig;
+import org.jboss.as.controller.access.management.AccessConstraintUtilizationRegistry;
 import org.jboss.as.controller.registry.Resource;
 
 /**
@@ -52,13 +53,18 @@ public class AccessConstraintResources {
 
     // Application Classification Resource
     public static final PathElement APPLICATION_PATH_ELEMENT = PathElement.pathElement(CONSTRAINT, APPLICATION_CLASSIFICATION);
-    public static final Resource APPLICATION_RESOURCE = new ApplicationClassificationResource();
+    public static Resource getApplicationConfigResource(AccessConstraintUtilizationRegistry registry) {
+        return new ApplicationClassificationResource(registry);
+    }
     // Sensitivity Classification Resource
     public static final PathElement SENSITIVITY_PATH_ELEMENT = PathElement.pathElement(CONSTRAINT, SENSITIVITY_CLASSIFICATION);
-    public static final Resource SENSITIVITY_RESOURCE = new SensitivityClassificationResource();
+    public static Resource getSensitivityResource(AccessConstraintUtilizationRegistry registry) {
+        return new SensitivityClassificationResource(registry);
+    }
+
     // Vault Expression Resource
     public static final PathElement VAULT_PATH_ELEMENT = PathElement.pathElement(CONSTRAINT, VAULT_EXPRESSION);
-    public static final Resource VAULT_RESOURCE = SensitivityResourceDefinition.createResource(VaultExpressionSensitivityConfig.INSTANCE, VAULT_PATH_ELEMENT, false);
+    public static final Resource VAULT_RESOURCE = SensitivityResourceDefinition.createVaultExpressionResource(VaultExpressionSensitivityConfig.INSTANCE, VAULT_PATH_ELEMENT);
 
     private static volatile Map<String, Map<String, SensitivityClassification>> classifications;
     private static volatile Map<String, Map<String, ApplicationTypeConfig>> applicationTypes;
@@ -106,8 +112,11 @@ public class AccessConstraintResources {
 
         private static final Set<String> CHILD_TYPES = Collections.singleton(TYPE);
 
-        private ApplicationClassificationResource() {
+        private final AccessConstraintUtilizationRegistry registry;
+
+        private ApplicationClassificationResource(AccessConstraintUtilizationRegistry registry) {
           super(APPLICATION_PATH_ELEMENT);
+            this.registry = registry;
         }
 
         @Override
@@ -121,7 +130,7 @@ public class AccessConstraintResources {
                 Map<String, Map<String, ApplicationTypeConfig>> applicationTypes = getApplicationClassifications();
                 Map<String, ApplicationTypeConfig> byName = applicationTypes.get(name);
                 if (byName != null) {
-                    return ApplicationClassificationTypeResourceDefinition.createResource(byName, type, name);
+                    return ApplicationClassificationTypeResourceDefinition.createResource(byName, name, registry);
                 }
             }
             return null;
@@ -142,7 +151,8 @@ public class AccessConstraintResources {
                 Map<String, Map<String, ApplicationTypeConfig>> applicationTypes = getApplicationClassifications();
                 Set<ResourceEntry> children = new HashSet<ResourceEntry>();
                 for (Map.Entry<String, Map<String, ApplicationTypeConfig>> entry : applicationTypes.entrySet()) {
-                    children.add(ApplicationClassificationTypeResourceDefinition.createResource(entry.getValue(), childType, entry.getKey()));
+                    children.add(ApplicationClassificationTypeResourceDefinition.createResource(entry.getValue(),
+                            entry.getKey(), registry));
                 }
                 return children;
             }
@@ -154,9 +164,11 @@ public class AccessConstraintResources {
     private static class SensitivityClassificationResource extends AbstractClassificationResource {
 
         private static final Set<String> CHILD_TYPES = Collections.singleton(TYPE);
+        private final AccessConstraintUtilizationRegistry registry;
 
-        private SensitivityClassificationResource() {
+        private SensitivityClassificationResource(AccessConstraintUtilizationRegistry registry) {
             super(SENSITIVITY_PATH_ELEMENT);
+            this.registry = registry;
         }
 
         @Override
@@ -170,7 +182,7 @@ public class AccessConstraintResources {
                 Map<String, Map<String, SensitivityClassification>> classifications = getSensitivityClassifications();
                 Map<String, SensitivityClassification> byName = classifications.get(name);
                 if (byName != null) {
-                    return SensitivityClassificationTypeResourceDefinition.createResource(byName, type, name);
+                    return SensitivityClassificationTypeResourceDefinition.createResource(byName, type, name, registry);
                 }
             }
             return null;
@@ -192,7 +204,7 @@ public class AccessConstraintResources {
                 Set<ResourceEntry> children = new HashSet<ResourceEntry>();
                 for (Map.Entry<String, Map<String, SensitivityClassification>> entry : classifications.entrySet()) {
                     children.add(SensitivityClassificationTypeResourceDefinition.createResource(entry.getValue(), childType,
-                            entry.getKey()));
+                            entry.getKey(), registry));
                 }
                 return children;
             }

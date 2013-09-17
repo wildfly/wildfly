@@ -35,6 +35,7 @@ import java.util.Properties;
 import java.util.Set;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.Executors;
+import java.util.concurrent.TimeUnit;
 
 import org.jboss.as.controller.AbstractControllerService;
 import org.jboss.as.controller.AttributeDefinition;
@@ -104,7 +105,7 @@ public class ServerControllerUnitTestCase {
         final ServiceBuilder<ModelController> builder = target.addService(Services.JBOSS_SERVER_CONTROLLER, svc);
         builder.install();
 
-        svc.latch.await();
+        svc.latch.await(20, TimeUnit.SECONDS);
         this.controller = svc.getValue();
 
     }

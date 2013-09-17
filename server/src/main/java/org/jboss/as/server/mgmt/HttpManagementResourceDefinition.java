@@ -25,6 +25,8 @@ package org.jboss.as.server.mgmt;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.HTTP_INTERFACE;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.MANAGEMENT_INTERFACE;
 
+import java.util.List;
+
 import org.jboss.as.controller.AttributeDefinition;
 import org.jboss.as.controller.ModelVersion;
 import org.jboss.as.controller.PathElement;
@@ -33,6 +35,7 @@ import org.jboss.as.controller.SimpleAttributeDefinition;
 import org.jboss.as.controller.SimpleAttributeDefinitionBuilder;
 import org.jboss.as.controller.SimpleResourceDefinition;
 import org.jboss.as.controller.access.constraint.SensitivityClassification;
+import org.jboss.as.controller.access.management.AccessConstraintDefinition;
 import org.jboss.as.controller.access.management.SensitiveTargetAccessConstraintDefinition;
 import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
 import org.jboss.as.controller.operations.validation.IntRangeValidator;
@@ -58,7 +61,7 @@ public class HttpManagementResourceDefinition extends SimpleResourceDefinition {
 
     public static final SimpleAttributeDefinition SECURITY_REALM = new SimpleAttributeDefinitionBuilder(ModelDescriptionConstants.SECURITY_REALM, ModelType.STRING, true)
                 .setValidator(new StringLengthValidator(1, Integer.MAX_VALUE, true, false))
-                .addAccessConstraint(new SensitiveTargetAccessConstraintDefinition(SensitivityClassification.SECURITY_REALM))
+                .addAccessConstraint(new SensitiveTargetAccessConstraintDefinition(SensitivityClassification.SECURITY_REALM_REF))
                 .build();
 
     public static final SimpleAttributeDefinition INTERFACE = new SimpleAttributeDefinitionBuilder(ModelDescriptionConstants.INTERFACE, ModelType.STRING, false)
@@ -107,11 +110,14 @@ public class HttpManagementResourceDefinition extends SimpleResourceDefinition {
 
     public static final HttpManagementResourceDefinition INSTANCE = new HttpManagementResourceDefinition();
 
+    private final List<AccessConstraintDefinition> accessConstraints;
+
     private HttpManagementResourceDefinition() {
         super(RESOURCE_PATH,
                 ServerDescriptions.getResourceDescriptionResolver("core.management.http-interface"),
                 HttpManagementAddHandler.INSTANCE, HttpManagementRemoveHandler.INSTANCE,
                 OperationEntry.Flag.RESTART_NONE, OperationEntry.Flag.RESTART_NONE);
+        this.accessConstraints = SensitiveTargetAccessConstraintDefinition.MANAGEMENT_INTERFACES.wrapAsList();
     }
 
     @Override
@@ -119,5 +125,10 @@ public class HttpManagementResourceDefinition extends SimpleResourceDefinition {
         for (AttributeDefinition attr : ATTRIBUTE_DEFINITIONS) {
             resourceRegistration.registerReadWriteAttribute(attr, null, HttpManagementWriteAttributeHandler.INSTANCE);
         }
+    }
+
+    @Override
+    public List<AccessConstraintDefinition> getAccessConstraints() {
+        return accessConstraints;
     }
 }

@@ -415,7 +415,8 @@ class TestModelControllerService extends ModelTestModelControllerService {
             Resource managementResource = Resource.Factory.create();
             rootResource.registerChild(PathElement.pathElement(ModelDescriptionConstants.CORE_SERVICE, ModelDescriptionConstants.MANAGEMENT), managementResource);
             rootResource.registerChild(PathElement.pathElement(ModelDescriptionConstants.CORE_SERVICE, ModelDescriptionConstants.SERVICE_CONTAINER), Resource.Factory.create());
-            managementResource.registerChild(PathElement.pathElement(ModelDescriptionConstants.ACCESS, ModelDescriptionConstants.AUTHORIZATION), AccessAuthorizationResourceDefinition.RESOURCE);
+            managementResource.registerChild(PathElement.pathElement(ModelDescriptionConstants.ACCESS, ModelDescriptionConstants.AUTHORIZATION),
+                    AccessAuthorizationResourceDefinition.createResource(authorizer.getWritableAuthorizerConfiguration()));
             rootResource.registerChild(ServerEnvironmentResourceDescription.RESOURCE_PATH, Resource.Factory.create());
             pathManagerService.addPathManagerResources(rootResource);
         }

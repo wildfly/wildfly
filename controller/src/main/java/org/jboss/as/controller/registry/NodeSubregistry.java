@@ -31,9 +31,11 @@ import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.atomic.AtomicReferenceFieldUpdater;
 
+import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.PathElement;
 import org.jboss.as.controller.ProxyController;
 import org.jboss.as.controller.ResourceDefinition;
+import org.jboss.as.controller.access.management.AccessConstraintUtilizationRegistry;
 import org.jboss.as.controller.descriptions.DescriptionProvider;
 
 /**
@@ -52,14 +54,16 @@ final class NodeSubregistry {
 
     private final String keyName;
     private final ConcreteResourceRegistration parent;
+    private final AccessConstraintUtilizationRegistry constraintUtilizationRegistry;
     @SuppressWarnings( { "unused" })
     private volatile Map<String, AbstractResourceRegistration> childRegistries;
 
     private static final AtomicMapFieldUpdater<NodeSubregistry, String, AbstractResourceRegistration> childRegistriesUpdater = AtomicMapFieldUpdater.newMapUpdater(AtomicReferenceFieldUpdater.newUpdater(NodeSubregistry.class, Map.class, "childRegistries"));
 
-    NodeSubregistry(final String keyName, final ConcreteResourceRegistration parent) {
+    NodeSubregistry(final String keyName, final ConcreteResourceRegistration parent, AccessConstraintUtilizationRegistry constraintUtilizationRegistry) {
         this.keyName = keyName;
         this.parent = parent;
+        this.constraintUtilizationRegistry = constraintUtilizationRegistry;
         childRegistriesUpdater.clear(this);
     }
 
@@ -76,7 +80,7 @@ final class NodeSubregistry {
     }
 
     ManagementResourceRegistration register(final String elementValue, final ResourceDefinition provider, boolean runtimeOnly) {
-        final AbstractResourceRegistration newRegistry = new ConcreteResourceRegistration(elementValue, this, provider, runtimeOnly);
+        final AbstractResourceRegistration newRegistry = new ConcreteResourceRegistration(elementValue, this, provider, constraintUtilizationRegistry, runtimeOnly);
         final AbstractResourceRegistration existingRegistry = childRegistriesUpdater.putIfAbsent(this, elementValue, newRegistry);
         if (existingRegistry != null) {
             throw MESSAGES.nodeAlreadyRegistered(getLocationString(), elementValue);
@@ -315,6 +319,10 @@ final class NodeSubregistry {
                 childRegistry.getProxyControllers(iterator, controllers);
             }
         }
+    }
+
+    PathAddress getPathAddress(String valueString) {
+        return parent.getPathAddress().append(PathElement.pathElement(keyName, valueString));
     }
 
     /**
