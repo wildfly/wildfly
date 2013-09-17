@@ -54,7 +54,7 @@ public class PropertyValueState extends DefaultParsingState {
         for(int i = 0; i < listEnd.length; ++i) {
             putHandler(listEnd[i], GlobalCharacterHandlers.LEAVE_STATE_HANDLER);
         }
-        enterState('"', QuotesState.QUOTES_INCLUDED);
+        enterState('"', QuotesState.QUOTES_INCLUDED_KEEP_ESCAPES);
         enterState('[', new DefaultStateWithEndCharacter("BRACKETS", ']', true, true, enterStateHandlers));
         enterState('(', new DefaultStateWithEndCharacter("PARENTHESIS", ')', true, true, enterStateHandlers));
         enterState('{', new DefaultStateWithEndCharacter("BRACES", '}', true, true, enterStateHandlers));
