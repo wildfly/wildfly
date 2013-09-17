@@ -390,7 +390,7 @@ public interface JmxMessages {
     @Message(id = 11361, value = "Not authorized to write attribute: '%s'")
     JMRuntimeException notAuthorizedToWriteAttribute(String attributeName);
 
-    @Message(id = 11362, value = "Not authorized to write attribute: '%s'")
+    @Message(id = 11362, value = "Not authorized to read attribute: '%s'")
     JMRuntimeException notAuthorizedToReadAttribute(String attributeName);
 
     @Message(id = 11363, value = "Not authorized to invoke operation: '%s'")
