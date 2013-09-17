@@ -5,20 +5,45 @@ import org.jboss.as.threads.ThreadsServices;
 import org.jboss.msc.service.ServiceName;
 
 /**
+ * Service names for the batch subsystem.
+ *
  * @author <a href="mailto:jperkins@redhat.com">James R. Perkins</a>
  */
 public class BatchServiceNames {
 
-    public static final ServiceName BATCH_SERVICE_NAME = ServiceName.JBOSS.append("batch");
+    /**
+     * The default service name batch properties
+     */
+    public static final ServiceName BATCH_PROPERTIES = ServiceName.JBOSS.append("batch").append("properties");
 
-    public static final ServiceName BASE_BATCH_THREAD_POOL_NAME = ThreadsServices.EXECUTOR.append("base");
+    /**
+     * The default service name fo the thread-pool
+     */
+    public static final ServiceName BASE_BATCH_THREAD_POOL_NAME = ThreadsServices.EXECUTOR.append("batch");
 
+    /**
+     * The defined name for the thread-pool, e.g. thread-pool=batch.
+     */
     public static final ServiceName BATCH_THREAD_POOL_NAME = BASE_BATCH_THREAD_POOL_NAME.append("batch");
 
+    /**
+     * Creates a service name for the deployment unit to define the service.
+     *
+     * @param deploymentUnit the deployment unit to create the service name for
+     *
+     * @return the service name
+     */
     public static ServiceName batchDeploymentServiceName(final DeploymentUnit deploymentUnit) {
         return deploymentUnit.getServiceName().append("batch");
     }
 
+    /**
+     * Creates the service name used for the bean manager on the deployment.
+     *
+     * @param deploymentUnit the deployment unit to create the service name for
+     *
+     * @return the service name
+     */
     public static ServiceName beanManagerServiceName(final DeploymentUnit deploymentUnit) {
         return deploymentUnit.getServiceName().append("beanmanager");
     }

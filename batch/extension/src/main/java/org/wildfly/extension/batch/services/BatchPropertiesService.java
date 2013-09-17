@@ -8,10 +8,13 @@ import org.jboss.msc.service.StartException;
 import org.jboss.msc.service.StopContext;
 
 /**
+ * A service for adding default properties for the {@link javax.batch.operations.JobOperator JobOperator}.
+ *
  * @author <a href="mailto:jperkins@redhat.com">James R. Perkins</a>
  */
 public class BatchPropertiesService implements Service<Properties> {
-    private Properties properties = new Properties();
+    private final Properties properties = new Properties();
+
     @Override
     public void start(final StartContext context) throws StartException {
     }
@@ -26,6 +29,14 @@ public class BatchPropertiesService implements Service<Properties> {
         return properties;
     }
 
+    /**
+     * Adds a property to the global properties for the {@link javax.batch.operations.JobOperator JobOperator}.
+     *
+     * @param key   the key of the property
+     * @param value the value of the property
+     *
+     * @return the previous value of the property or {@code null} if there was not one
+     */
     public synchronized Object addProperty(final String key, final String value) {
         return properties.setProperty(key, value);
     }

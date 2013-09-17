@@ -116,15 +116,14 @@ class BatchSubsystemParser implements XMLStreamConstants, XMLElementReader<List<
             // The value is the job repository type
             final String value = model.get(JobRepositoryDefinition.NAME).asProperty().getName();
             // TODO (jrp) find a cleaner way to do this
-            if (JobRepositoryDefinition.IN_MEMORY.getPathElement().getValue().equals(value)) {
-                writer.writeStartElement(Element.IN_MEMORY.getLocalName());
-                writer.writeEndElement();
-            } else if (JobRepositoryDefinition.JDBC.getPathElement().getValue().equals(value)) {
+            if (JobRepositoryDefinition.JDBC.getPathElement().getValue().equals(value)) {
                 writer.writeStartElement(Element.JDBC.getLocalName());
                 JobRepositoryDefinition.JNDI_NAME.marshallAsAttribute(model.get(JobRepositoryDefinition.NAME), writer);
                 writer.writeEndElement();
             } else {
-                // TODO (jrp) throw exception as one should definitely be defined
+                // Write in-memory by default
+                writer.writeStartElement(Element.IN_MEMORY.getLocalName());
+                writer.writeEndElement();
             }
             // End job-repository
             writer.writeEndElement();
@@ -136,7 +135,13 @@ class BatchSubsystemParser implements XMLStreamConstants, XMLElementReader<List<
             if (model.hasDefined(BatchConstants.THREAD_FACTORY)) {
                 threadsParser.writeThreadFactory(writer, model.get(BatchConstants.THREAD_FACTORY).asProperty());
             }
-        } // TODO (jrp) throw an exception if not defined
+        } else {
+            // Should always be defined, but write in-memory by default
+            writer.writeStartElement(JobRepositoryDefinition.NAME);
+            writer.writeStartElement(Element.IN_MEMORY.getLocalName());
+            writer.writeEndElement();
+            writer.writeEndElement();
+        }
 
         writer.writeEndElement();
     }

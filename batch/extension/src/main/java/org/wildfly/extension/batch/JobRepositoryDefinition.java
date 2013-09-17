@@ -44,6 +44,7 @@ import org.jboss.as.controller.ServiceVerificationHandler;
 import org.jboss.as.controller.SimpleAttributeDefinition;
 import org.jboss.as.controller.SimpleAttributeDefinitionBuilder;
 import org.jboss.as.controller.SimpleResourceDefinition;
+import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
 import org.jboss.as.controller.operations.validation.StringLengthValidator;
 import org.jboss.as.controller.registry.Resource;
 import org.jboss.as.controller.registry.Resource.ResourceEntry;
@@ -60,7 +61,7 @@ public class JobRepositoryDefinition extends SimpleResourceDefinition {
 
     public static final String NAME = "job-repository";
 
-    // TODO (jrp) should this be moved into a JDBC def?
+    // TODO (jrp) should this be moved into a JDBC def? Will be decided on when JDBC is implemented
     public static final SimpleAttributeDefinition JNDI_NAME = SimpleAttributeDefinitionBuilder.create("jndi-name", ModelType.STRING, false)
             .setAllowExpression(true)
             .setValidator(new StringLengthValidator(0, false, true))
@@ -103,14 +104,12 @@ public class JobRepositoryDefinition extends SimpleResourceDefinition {
 
         private static final AttributeDefinition[] EMPTY = {};
 
-        private final AttributeDefinition[] attributes;
-
         protected JobRepositoryAdd() {
             this(EMPTY);
         }
 
         protected JobRepositoryAdd(AttributeDefinition... attributes) {
-            this.attributes = attributes;
+            super(attributes);
         }
 
         @Override
@@ -121,7 +120,9 @@ public class JobRepositoryDefinition extends SimpleResourceDefinition {
             context.addStep(new OperationStepHandler() {
                 @Override
                 public void execute(final OperationContext context, final ModelNode operation) throws OperationFailedException {
-                    final Set<ResourceEntry> jobRepositoryResources = context.readResourceFromRoot(PathAddress.pathAddress(BatchSubsystemDefinition.SUBSYSTEM_PATH)).getChildren(NAME);
+                    final PathAddress address = PathAddress.pathAddress(operation.get(ModelDescriptionConstants.OP_ADDR));
+                    final PathAddress parent = address.subAddress(0, address.size() - 1);
+                    final Set<ResourceEntry> jobRepositoryResources = context.readResourceFromRoot(parent).getChildren(NAME);
                     // Validate that the model has one and only one job-repository
                     if (jobRepositoryResources.isEmpty()) {
                         throw BatchMessages.MESSAGES.jobRepositoryRequired();
@@ -138,20 +139,13 @@ public class JobRepositoryDefinition extends SimpleResourceDefinition {
         }
 
         @Override
-        protected void populateModel(final ModelNode operation, final ModelNode model) throws OperationFailedException {
-            for (AttributeDefinition attribute : attributes) {
-                attribute.validateAndSet(operation, model);
-            }
-        }
-
-        @Override
         protected void performRuntime(final OperationContext context, final ModelNode operation, final ModelNode model, final ServiceVerificationHandler verificationHandler, final List<ServiceController<?>> newControllers) throws OperationFailedException {
 
             // Create the BatchEnvironment
             final BatchPropertiesService service = new BatchPropertiesService();
             addProperties(context, model, service);
             final ServiceTarget serviceTarget = context.getServiceTarget();
-            final ServiceBuilder<Properties> builder = serviceTarget.addService(BatchServiceNames.BATCH_SERVICE_NAME, service);
+            final ServiceBuilder<Properties> builder = serviceTarget.addService(BatchServiceNames.BATCH_PROPERTIES, service);
             newControllers.add(builder.install());
         }
 
