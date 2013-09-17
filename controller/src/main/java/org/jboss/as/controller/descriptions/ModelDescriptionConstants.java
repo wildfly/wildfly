@@ -50,6 +50,7 @@ public class ModelDescriptionConstants {
     public static final String APPCLIENT = "appclient";
     public static final String APPLICATION = "application";
     public static final String APPLICATION_CLASSIFICATION = "application-classification";
+    public static final String APPLIES_TO = "applies-to";
     public static final String ARCHIVE = "archive";
     public static final String ATTRIBUTE = "attribute";
     public static final String ATTRIBUTES = "attributes";
@@ -102,6 +103,7 @@ public class ModelDescriptionConstants {
     public static final String DEPRECATED = "deprecated";
     public static final String DESCRIBE = "describe";
     public static final String DESCRIPTION = "description";
+    public static final String DETAILS = "details";
     public static final String DESTINATION_ADDRESS = "destination-address";
     public static final String DESTINATION_PORT = "destination-port";
     public static final String DIRECTORY = "directory";
@@ -119,6 +121,7 @@ public class ModelDescriptionConstants {
     public static final String DUMP_SERVICES = "dump-services";
     public static final String ENABLE = "enable";
     public static final String ENABLED = "enabled";
+    public static final String ENTIRE_RESOURCE = "entire-resource";
     public static final String EXECUTE = "execute";
     public static final String EXCEPTIONS = "exceptions";
     public static final String EXCLUDE = "exclude";

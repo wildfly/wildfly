@@ -231,7 +231,9 @@ public abstract class AbstractControllerService implements Service<ModelControll
         final ServiceContainer container = serviceController.getServiceContainer();
         final ServiceTarget target = context.getChildTarget();
         final ExecutorService executorService = injectedExecutorService.getOptionalValue();
-        ManagementResourceRegistration rootResourceRegistration = rootDescriptionProvider != null ? ManagementResourceRegistration.Factory.create(rootDescriptionProvider) : ManagementResourceRegistration.Factory.create(rootResourceDefinition);
+        ManagementResourceRegistration rootResourceRegistration = rootDescriptionProvider != null
+                ? ManagementResourceRegistration.Factory.create(rootDescriptionProvider, authorizer.getWritableAuthorizerConfiguration())
+                : ManagementResourceRegistration.Factory.create(rootResourceDefinition, authorizer.getWritableAuthorizerConfiguration());
         final ModelControllerImpl controller = new ModelControllerImpl(container, target,
                 rootResourceRegistration,
                 new ContainerStateMonitor(container),

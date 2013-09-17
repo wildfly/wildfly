@@ -24,6 +24,7 @@ package org.jboss.as.test.integration.domain.suites;
 
 import org.jboss.as.test.integration.domain.management.util.DomainTestSupport;
 import org.jboss.as.test.integration.domain.management.util.JBossAsManagedConfiguration;
+import org.jboss.as.test.integration.domain.rbac.AccessConstraintUtilizationTestCase;
 import org.jboss.as.test.integration.domain.rbac.SimpleProviderHostScopedRolesTestCase;
 import org.jboss.as.test.integration.domain.rbac.SimpleProviderServerGroupScopedRolesTestCase;
 import org.jboss.as.test.integration.domain.rbac.SimpleProviderStandardRolesTestCase;
@@ -40,6 +41,7 @@ import org.junit.runners.Suite;
  */
 @RunWith(Suite.class)
 @Suite.SuiteClasses ({
+        AccessConstraintUtilizationTestCase.class,
         SimpleProviderHostScopedRolesTestCase.class,
         SimpleProviderServerGroupScopedRolesTestCase.class,
         SimpleProviderStandardRolesTestCase.class

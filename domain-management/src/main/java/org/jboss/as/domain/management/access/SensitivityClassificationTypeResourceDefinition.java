@@ -31,6 +31,7 @@ import java.util.Set;
 import org.jboss.as.controller.PathElement;
 import org.jboss.as.controller.SimpleResourceDefinition;
 import org.jboss.as.controller.access.constraint.SensitivityClassification;
+import org.jboss.as.controller.access.management.AccessConstraintUtilizationRegistry;
 import org.jboss.as.controller.registry.ManagementResourceRegistration;
 import org.jboss.as.controller.registry.Resource.ResourceEntry;
 import org.jboss.as.domain.management._private.DomainManagementResolver;
@@ -47,12 +48,9 @@ public class SensitivityClassificationTypeResourceDefinition extends SimpleResou
         super(PATH_ELEMENT, DomainManagementResolver.getResolver("core.access-control.constraint.sensitivity-classification-type"));
     }
 
-    static ResourceEntry createResource(Map<String, SensitivityClassification> classificationsByType, String type, String name) {
-        return createResource(classificationsByType, PathElement.pathElement(type, name));
-    }
-
-    static ResourceEntry createResource(Map<String, SensitivityClassification> classificationsByType, PathElement pathElement) {
-        return new SensitivityClassificationResource(pathElement, classificationsByType);
+    static ResourceEntry createResource(Map<String, SensitivityClassification> classificationsByType,
+                                        String type, String name, AccessConstraintUtilizationRegistry registry) {
+        return new SensitivityClassificationResource(PathElement.pathElement(type, name), classificationsByType, registry);
     }
 
     @Override
@@ -63,10 +61,14 @@ public class SensitivityClassificationTypeResourceDefinition extends SimpleResou
     private static class SensitivityClassificationResource extends AbstractClassificationResource {
         private static final Set<String> CHILD_TYPES = Collections.singleton(CLASSIFICATION);
         private final Map<String, SensitivityClassification> classificationsByName;
+        private final AccessConstraintUtilizationRegistry registry;
 
-        SensitivityClassificationResource(PathElement pathElement, Map<String, SensitivityClassification> classificationsByType) {
+        SensitivityClassificationResource(PathElement pathElement, Map<String,
+                SensitivityClassification> classificationsByType,
+                                          AccessConstraintUtilizationRegistry registry) {
             super(pathElement);
             this.classificationsByName = classificationsByType;
+            this.registry = registry;
         }
 
         @Override
@@ -80,7 +82,9 @@ public class SensitivityClassificationTypeResourceDefinition extends SimpleResou
             if (type.equals(CLASSIFICATION)) {
                 SensitivityClassification classification = classificationsByName.get(name);
                 if (classification != null) {
-                    return SensitivityResourceDefinition.createResource(classification, type, name);
+                    String classificationType = getPathElement().getValue();
+                    return SensitivityResourceDefinition.createSensitivityClassificationResource(classification,
+                            classificationType, name, registry);
                 }
             }
             return null;
@@ -98,8 +102,10 @@ public class SensitivityClassificationTypeResourceDefinition extends SimpleResou
         public Set<ResourceEntry> getChildren(String childType) {
             if (childType.equals(CLASSIFICATION)) {
                 Set<ResourceEntry> entries = new HashSet<ResourceEntry>();
+                String classificationType = getPathElement().getValue();
                 for (Map.Entry<String, SensitivityClassification> entry : classificationsByName.entrySet()) {
-                    entries.add(SensitivityResourceDefinition.createResource(entry.getValue(), childType, entry.getKey()));
+                    entries.add(SensitivityResourceDefinition.createSensitivityClassificationResource(entry.getValue(),
+                            classificationType, entry.getKey(), registry));
                 }
                 return entries;
             }

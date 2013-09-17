@@ -35,6 +35,7 @@ import org.jboss.as.controller.SimpleAttributeDefinitionBuilder;
 import org.jboss.as.controller.SimpleResourceDefinition;
 import org.jboss.as.controller.access.CombinationPolicy;
 import org.jboss.as.controller.access.management.AccessConstraintDefinition;
+import org.jboss.as.controller.access.management.AccessConstraintUtilizationRegistry;
 import org.jboss.as.controller.access.management.DelegatingConfigurableAuthorizer;
 import org.jboss.as.controller.access.management.SensitiveTargetAccessConstraintDefinition;
 import org.jboss.as.controller.access.management.WritableAuthorizerConfiguration;
@@ -54,7 +55,6 @@ import org.jboss.dmr.ModelType;
 public class AccessAuthorizationResourceDefinition extends SimpleResourceDefinition {
 
     public static final PathElement PATH_ELEMENT = PathElement.pathElement(ACCESS, AUTHORIZATION);
-    public static final Resource RESOURCE = createResource();
 
     public enum Provider {
         SIMPLE("simple"),
@@ -168,10 +168,10 @@ public class AccessAuthorizationResourceDefinition extends SimpleResourceDefinit
         return accessConstraints;
     }
 
-    private static Resource createResource() {
+    public static Resource createResource(AccessConstraintUtilizationRegistry registry) {
         Resource accessControlRoot =  Resource.Factory.create();
-        accessControlRoot.registerChild(AccessConstraintResources.APPLICATION_PATH_ELEMENT, AccessConstraintResources.APPLICATION_RESOURCE);
-        accessControlRoot.registerChild(AccessConstraintResources.SENSITIVITY_PATH_ELEMENT, AccessConstraintResources.SENSITIVITY_RESOURCE);
+        accessControlRoot.registerChild(AccessConstraintResources.APPLICATION_PATH_ELEMENT, AccessConstraintResources.getApplicationConfigResource(registry));
+        accessControlRoot.registerChild(AccessConstraintResources.SENSITIVITY_PATH_ELEMENT, AccessConstraintResources.getSensitivityResource(registry));
         accessControlRoot.registerChild(AccessConstraintResources.VAULT_PATH_ELEMENT, AccessConstraintResources.VAULT_RESOURCE);
         return accessControlRoot;
     }

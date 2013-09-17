@@ -108,7 +108,7 @@ public class QueueDefinition extends SimpleResourceDefinition {
                 removeHandler);
         this.registerRuntimeOnly = registerRuntimeOnly;
         this.runtimeOnly = runtimeOnly;
-        if (runtimeOnly) {
+        if (!runtimeOnly) {
             ApplicationTypeConfig atc = new ApplicationTypeConfig(MessagingExtension.SUBSYSTEM_NAME, path);
             accessConstraints = new ApplicationTypeAccessConstraintDefinition(atc).wrapAsList();
         } else {

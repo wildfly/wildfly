@@ -21,6 +21,7 @@
  */
 package org.jboss.as.domain.management.access;
 
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.APPLIES_TO;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.CLASSIFICATION;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.CONSTRAINT;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.NAME;
@@ -32,7 +33,9 @@ import static org.jboss.as.controller.parsing.Attribute.REQUIRES_WRITE;
 
 import java.util.Arrays;
 import java.util.Collections;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 
 import org.jboss.as.controller.AttributeDefinition;
@@ -45,6 +48,9 @@ import org.jboss.as.controller.SimpleAttributeDefinition;
 import org.jboss.as.controller.SimpleAttributeDefinitionBuilder;
 import org.jboss.as.controller.SimpleResourceDefinition;
 import org.jboss.as.controller.access.constraint.AbstractSensitivity;
+import org.jboss.as.controller.access.management.AccessConstraintKey;
+import org.jboss.as.controller.access.management.AccessConstraintUtilization;
+import org.jboss.as.controller.access.management.AccessConstraintUtilizationRegistry;
 import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
 import org.jboss.as.controller.descriptions.ResourceDescriptionResolver;
 import org.jboss.as.controller.registry.ManagementResourceRegistration;
@@ -98,26 +104,30 @@ public class SensitivityResourceDefinition extends SimpleResourceDefinition {
     }
 
     private final boolean includeAddressable;
+    private final boolean registerUtilization;
 
-    private SensitivityResourceDefinition(PathElement pathElement, ResourceDescriptionResolver resolver, boolean includeAddressable) {
+    private SensitivityResourceDefinition(PathElement pathElement, ResourceDescriptionResolver resolver,
+                                          boolean includeAddressable, boolean registerUtilization) {
         super(pathElement, resolver);
         this.includeAddressable = includeAddressable;
+        this.registerUtilization = registerUtilization;
     }
 
     static SensitivityResourceDefinition createSensitivityClassification() {
-        return new SensitivityResourceDefinition(PATH_ELEMENT, DomainManagementResolver.getResolver("core.access-control.constraint.sensitivity-classification-config"), true);
+        return new SensitivityResourceDefinition(PATH_ELEMENT, DomainManagementResolver.getResolver("core.access-control.constraint.sensitivity-classification-config"), true, true);
     }
 
     static SensitivityResourceDefinition createVaultExpressionConfiguration() {
-        return new SensitivityResourceDefinition(VAULT_ELEMENT, DomainManagementResolver.getResolver("core.access-control.constraint.vault-expression-sensitivity"), false);
+        return new SensitivityResourceDefinition(VAULT_ELEMENT, DomainManagementResolver.getResolver("core.access-control.constraint.vault-expression-sensitivity"), false, false);
     }
 
-    static ResourceEntry createResource(AbstractSensitivity classification, String type, String name) {
-        return createResource(classification, PathElement.pathElement(type, name), true);
+    static ResourceEntry createVaultExpressionResource(AbstractSensitivity classification, PathElement pathElement) {
+        return new SensitivityClassificationResource(pathElement, classification);
     }
 
-    static ResourceEntry createResource(AbstractSensitivity classification, PathElement pathElement, boolean includeAddressable) {
-        return new SensitivityClassificationResource(pathElement, classification, includeAddressable);
+    static ResourceEntry createSensitivityClassificationResource(AbstractSensitivity classification, String classificationType, String name,
+                                                                 AccessConstraintUtilizationRegistry registry) {
+        return new SensitivityClassificationResource(PathElement.pathElement(ModelDescriptionConstants.CLASSIFICATION, name), classification, classificationType, registry);
     }
 
     @Override
@@ -136,6 +146,13 @@ public class SensitivityResourceDefinition extends SimpleResourceDefinition {
         resourceRegistration.registerReadWriteAttribute(CONFIGURED_REQUIRES_WRITE, SensitivityClassificationReadAttributeHandler.ADDRESSABLE_INSTANCE, write);
     }
 
+    @Override
+    public void registerChildren(ManagementResourceRegistration resourceRegistration) {
+        if (registerUtilization) {
+            resourceRegistration.registerSubModel(new AccessConstraintAppliesToResourceDefinition());
+        }
+    }
+
     private static class SensitivityClassificationReadAttributeHandler implements OperationStepHandler {
 
         static final SensitivityClassificationReadAttributeHandler ADDRESSABLE_INSTANCE = new SensitivityClassificationReadAttributeHandler(true);
@@ -152,7 +169,7 @@ public class SensitivityResourceDefinition extends SimpleResourceDefinition {
             final String attribute = operation.require(NAME).asString();
             final SensitivityClassificationResource resource = (SensitivityClassificationResource)context.readResource(PathAddress.EMPTY_ADDRESS);
             final AbstractSensitivity classification = resource.classification;
-            Boolean result = null;
+            Boolean result;
             if (attribute.equals(DEFAULT_REQUIRES_ADDRESSABLE.getName()) && includeAddressable) {
                 result = classification.isDefaultRequiresAccessPermission();
             } else if (attribute.equals(DEFAULT_REQUIRES_READ.getName())) {
@@ -217,12 +234,25 @@ public class SensitivityResourceDefinition extends SimpleResourceDefinition {
 
     private static class SensitivityClassificationResource extends AbstractClassificationResource {
         private final AbstractSensitivity classification;
+        private final AccessConstraintUtilizationRegistry registry;
         private final boolean includeAddressable;
+        private final String classificationType;
 
-        SensitivityClassificationResource(PathElement pathElement, AbstractSensitivity classification, boolean includeAddressable) {
+        SensitivityClassificationResource(PathElement pathElement, AbstractSensitivity classification) {
             super(pathElement);
             this.classification = classification;
-            this.includeAddressable = includeAddressable;
+            this.includeAddressable = false;
+            this.registry = null;
+            this.classificationType = null;
+        }
+
+        SensitivityClassificationResource(PathElement pathElement, AbstractSensitivity classification,
+                                          String classificationType, AccessConstraintUtilizationRegistry registry) {
+            super(pathElement);
+            this.classification = classification;
+            this.includeAddressable = true;
+            this.registry = registry;
+            this.classificationType = classificationType;
         }
 
         @Override
@@ -276,23 +306,55 @@ public class SensitivityResourceDefinition extends SimpleResourceDefinition {
 
         @Override
         public Set<String> getChildTypes() {
-            return Collections.emptySet();
+            return registry == null ? Collections.<String>emptySet() : Collections.singleton(APPLIES_TO);
         }
 
 
         @Override
         ResourceEntry getChildEntry(String type, String name) {
+            if (registry != null && APPLIES_TO.equals(type)) {
+                Map<PathAddress, AccessConstraintUtilization> utilizations = getAccessConstraintUtilizations();
+                for (AccessConstraintUtilization acu : utilizations.values()) {
+                    if (name.equals(acu.getPathAddress().toCLIStyleString())) {
+                        return AccessConstraintAppliesToResourceDefinition.createResource(acu);
+                    }
+                }
+            }
             return null;
         }
 
         @Override
         public Set<String> getChildrenNames(String type) {
+            if (registry != null && APPLIES_TO.equals(type)) {
+                Map<PathAddress, AccessConstraintUtilization> utilizations = getAccessConstraintUtilizations();
+                Set<String> result = new HashSet<String>();
+                for (PathAddress pa : utilizations.keySet()) {
+                    result.add(pa.toCLIStyleString());
+                }
+                return result;
+            }
             return Collections.emptySet();
         }
 
         @Override
         public Set<ResourceEntry> getChildren(String childType) {
+            if (registry != null && APPLIES_TO.equals(childType)) {
+                Map<PathAddress, AccessConstraintUtilization> utilizations = getAccessConstraintUtilizations();
+                Set<ResourceEntry> result = new HashSet<ResourceEntry>();
+                for (AccessConstraintUtilization acu : utilizations.values()) {
+                    result.add(AccessConstraintAppliesToResourceDefinition.createResource(acu));
+                }
+                return result;
+            }
             return Collections.emptySet();
+        }
+
+        private Map<PathAddress, AccessConstraintUtilization> getAccessConstraintUtilizations() {
+            boolean core = ModelDescriptionConstants.CORE.equals(classificationType);
+            AccessConstraintKey key =
+                    new AccessConstraintKey(ModelDescriptionConstants.SENSITIVITY_CLASSIFICATION,
+                            core, core ? null : classificationType, getPathElement().getValue());
+            return registry.getAccessConstraintUtilizations(key);
         }
 
     }
