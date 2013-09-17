@@ -99,7 +99,8 @@ public class RbacUtil {
                 if (!FAILED.equals(outcome)) {
                     fail("Didn't fail: " + result.asString());
                 }
-                if (!result.get(FAILURE_DESCRIPTION).asString().contains("13456")) {
+                if (!result.get(FAILURE_DESCRIPTION).asString().contains("13456") && !result.asString().contains("11360")
+                        && !result.asString().contains("11361")  && !result.asString().contains("11362")  && !result.asString().contains("11363")) {
                     fail("Incorrect failure type: " + result.asString());
                 }
                 break;
