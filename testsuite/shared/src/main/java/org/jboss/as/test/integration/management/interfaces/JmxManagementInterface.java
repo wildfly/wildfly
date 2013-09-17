@@ -49,6 +49,7 @@ import java.util.Set;
 
 import javax.management.Attribute;
 import javax.management.JMException;
+import javax.management.JMRuntimeException;
 import javax.management.MBeanAttributeInfo;
 import javax.management.MBeanInfo;
 import javax.management.MBeanServerConnection;
@@ -119,10 +120,10 @@ public class JmxManagementInterface implements ManagementInterface {
         MBeanServerConnection connection = getConnection();
 
         Object result = null;
-        JMException exception = null;
+        JMRuntimeException exception = null;
         try {
             result = connection.getAttribute(objectName, name);
-        } catch (JMException e) {
+        } catch (JMRuntimeException e) {
             exception = e;
         } catch (Exception e) {
             throw new RuntimeException(e);
@@ -134,10 +135,10 @@ public class JmxManagementInterface implements ManagementInterface {
         MBeanServerConnection connection = getConnection();
 
         Attribute attribute = new Attribute(name, value);
-        JMException exception = null;
+        JMRuntimeException exception = null;
         try {
             connection.setAttribute(objectName, attribute);
-        } catch (JMException e) {
+        } catch (JMRuntimeException e) {
             exception = e;
         } catch (Exception e) {
             throw new RuntimeException(e);
@@ -149,10 +150,10 @@ public class JmxManagementInterface implements ManagementInterface {
         MBeanServerConnection connection = getConnection();
 
         Object result = null;
-        JMException exception = null;
+        JMRuntimeException exception = null;
         try {
             result = connection.invoke(objectName, name, null, null);
-        } catch (JMException e) {
+        } catch (JMRuntimeException e) {
             exception = e;
         } catch (Exception e) {
             throw new RuntimeException(e);
@@ -164,22 +165,24 @@ public class JmxManagementInterface implements ManagementInterface {
         MBeanServerConnection connection = getConnection();
         ModelNode attributes = null;
         ModelNode headers = null;
-        JMException exception = null;
+        Exception exception = null;
         try {
             MBeanInfo mBeanInfo = connection.getMBeanInfo(objectName);
             MBeanAttributeInfo[] attributeInfos = mBeanInfo.getAttributes();
             ModelNode[] data = modelNodeAttributesInfo(attributeInfos, objectName);
             attributes = data[0];
             headers = data[1];
-        } catch (JMException e) {
-            exception = e;
         } catch (Exception e) {
-            throw new RuntimeException(e);
+            if (e instanceof JMException || e instanceof JMRuntimeException) {
+                exception = e;
+            } else {
+                throw new RuntimeException(e);
+            }
         }
         return modelNodeResult(attributes, exception, headers);
     }
 
-    private ModelNode[] modelNodeAttributesInfo(MBeanAttributeInfo[] attributeInfos, ObjectName objectName) throws IOException, JMException {
+    private ModelNode[] modelNodeAttributesInfo(MBeanAttributeInfo[] attributeInfos, ObjectName objectName) throws Exception {
         MBeanServerConnection connection = getConnection();
         ModelNode attributes = new ModelNode();
         ModelNode filtered = new ModelNode().setEmptyList();
@@ -194,13 +197,13 @@ public class JmxManagementInterface implements ManagementInterface {
                 } catch (UnsupportedOperationException e) {
                     // happens for some attributes that are represented as a Tabular***; let's just ignore them
                 }
-            } catch (JMException e) {
+            } catch (Exception e) {
                 // see RbacUtil.checkOperationResult for error codes
                 // TODO could possibly use MBeanAttributeInfo#isReadable instead of error codes, but it's currently broken
                 String message = e.getMessage();
-                if (message.contains("14807") || message.contains("14883") || message.contains("11340")) {
+                if (message.contains("14807") || message.contains("14883")) {
                     throw e;
-                } else if (message.contains("13456")) {
+                } else if (message.contains("13456") || message.contains("11362")) {
                     filtered.add(JmxInterfaceStringUtils.toDashCase(attributeName));
                 } else {
                     throw new RuntimeException(e);
@@ -214,11 +217,11 @@ public class JmxManagementInterface implements ManagementInterface {
         return new ModelNode[]{attributes, headers};
     }
 
-    private ModelNode modelNodeResult(Object result, JMException exception) {
+    private ModelNode modelNodeResult(Object result, Exception exception) {
         return modelNodeResult(result, exception, null);
     }
 
-    private ModelNode modelNodeResult(Object result, JMException exception, ModelNode headers) {
+    private ModelNode modelNodeResult(Object result, Exception exception, ModelNode headers) {
         ModelNode root = new ModelNode();
         if (exception == null) {
             root.get(OUTCOME).set(SUCCESS);
