@@ -31,8 +31,6 @@ import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
-import org.jboss.as.controller.registry.AttributeAccess;
-import org.jboss.as.controller.registry.ManagementResourceRegistration;
 import org.jboss.dmr.ModelNode;
 
 /**
@@ -43,7 +41,6 @@ import org.jboss.dmr.ModelNode;
 class GarbageCollectorMXBeanAttributeHandler extends AbstractPlatformMBeanAttributeHandler {
 
     static final GarbageCollectorMXBeanAttributeHandler INSTANCE = new GarbageCollectorMXBeanAttributeHandler();
-
 
 
     private GarbageCollectorMXBeanAttributeHandler() {
@@ -68,12 +65,12 @@ class GarbageCollectorMXBeanAttributeHandler extends AbstractPlatformMBeanAttrib
             throw PlatformMBeanMessages.MESSAGES.unknownGarbageCollector(gcName);
         }
 
-        if (PlatformMBeanUtil.JVM_MAJOR_VERSION > 6 && PlatformMBeanConstants.OBJECT_NAME.equals(name)) {
+        if (PlatformMBeanUtil.JVM_MAJOR_VERSION > 6 && PlatformMBeanConstants.OBJECT_NAME.getName().equals(name)) {
             final String objName = PlatformMBeanUtil.getObjectNameStringWithNameKey(ManagementFactory.GARBAGE_COLLECTOR_MXBEAN_DOMAIN_TYPE, gcName);
             context.getResult().set(objName);
         } else if (ModelDescriptionConstants.NAME.equals(name)) {
             context.getResult().set(escapeMBeanName(gcMBean.getName()));
-        } else if (PlatformMBeanConstants.VALID.equals(name)) {
+        } else if (PlatformMBeanConstants.VALID.getName().equals(name)) {
             context.getResult().set(gcMBean.isValid());
         } else if (PlatformMBeanConstants.MEMORY_POOL_NAMES.equals(name)) {
             final ModelNode result = context.getResult();
@@ -85,8 +82,8 @@ class GarbageCollectorMXBeanAttributeHandler extends AbstractPlatformMBeanAttrib
             context.getResult().set(gcMBean.getCollectionCount());
         } else if (PlatformMBeanConstants.COLLECTION_TIME.equals(name)) {
             context.getResult().set(gcMBean.getCollectionTime());
-        } else if (PlatformMBeanConstants.GARBAGE_COLLECTOR_READ_ATTRIBUTES.contains(name)
-                || PlatformMBeanConstants.GARBAGE_COLLECTOR_METRICS.contains(name)) {
+        } else if (GarbageCollectorResourceDefinition.GARBAGE_COLLECTOR_READ_ATTRIBUTES.contains(name)
+                || GarbageCollectorResourceDefinition.GARBAGE_COLLECTOR_METRICS.contains(name)) {
             // Bug
             throw PlatformMBeanMessages.MESSAGES.badReadAttributeImpl4(name);
         } else {
@@ -102,21 +99,5 @@ class GarbageCollectorMXBeanAttributeHandler extends AbstractPlatformMBeanAttrib
         // Shouldn't happen; the global handler should reject
         throw unknownAttribute(operation);
 
-    }
-
-    @Override
-    protected void register(ManagementResourceRegistration registration) {
-
-        if (PlatformMBeanUtil.JVM_MAJOR_VERSION > 6) {
-            registration.registerReadOnlyAttribute(PlatformMBeanConstants.OBJECT_NAME, this, AttributeAccess.Storage.RUNTIME);
-        }
-
-        for (String attribute : PlatformMBeanConstants.GARBAGE_COLLECTOR_READ_ATTRIBUTES) {
-            registration.registerReadOnlyAttribute(attribute, this, AttributeAccess.Storage.RUNTIME);
-        }
-
-        for (String attribute : PlatformMBeanConstants.GARBAGE_COLLECTOR_METRICS) {
-            registration.registerMetric(attribute, this);
-        }
     }
 }

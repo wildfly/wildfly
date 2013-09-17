@@ -29,8 +29,6 @@ import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
 import org.jboss.as.controller.operations.validation.ModelTypeValidator;
 import org.jboss.as.controller.operations.validation.ParametersValidator;
-import org.jboss.as.controller.registry.AttributeAccess;
-import org.jboss.as.controller.registry.ManagementResourceRegistration;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.ModelType;
 
@@ -55,10 +53,10 @@ class ThreadMXBeanAttributeHandler extends AbstractPlatformMBeanAttributeHandler
         final String name = operation.require(ModelDescriptionConstants.NAME).asString();
 
         try {
-            if ((PlatformMBeanUtil.JVM_MAJOR_VERSION > 6 && PlatformMBeanConstants.OBJECT_NAME.equals(name))
-                    || PlatformMBeanConstants.THREADING_READ_ATTRIBUTES.contains(name)
-                    || PlatformMBeanConstants.THREADING_READ_WRITE_ATTRIBUTES.contains(name)
-                    || PlatformMBeanConstants.THREADING_METRICS.contains(name)) {
+            if ((PlatformMBeanUtil.JVM_MAJOR_VERSION > 6 && PlatformMBeanConstants.OBJECT_NAME.getName().equals(name))
+                    || ThreadResourceDefinition.THREADING_READ_ATTRIBUTES.contains(name)
+                    || ThreadResourceDefinition.THREADING_READ_WRITE_ATTRIBUTES.contains(name)
+                    || ThreadResourceDefinition.THREADING_METRICS.contains(name)) {
                 storeResult(name, context.getResult());
             } else {
                 // Shouldn't happen; the global handler should reject
@@ -80,11 +78,13 @@ class ThreadMXBeanAttributeHandler extends AbstractPlatformMBeanAttributeHandler
         try {
             if (PlatformMBeanConstants.THREAD_CONTENTION_MONITORING_ENABLED.equals(name)) {
                 enabledValidator.validate(operation);
+                context.getServiceRegistry(true); //to trigger auth
                 ManagementFactory.getThreadMXBean().setThreadContentionMonitoringEnabled(operation.require(ModelDescriptionConstants.VALUE).asBoolean());
             } else if (PlatformMBeanConstants.THREAD_CPU_TIME_ENABLED.equals(name)) {
                 enabledValidator.validate(operation);
+                context.getServiceRegistry(true); //to trigger auth
                 ManagementFactory.getThreadMXBean().setThreadCpuTimeEnabled(operation.require(ModelDescriptionConstants.VALUE).asBoolean());
-            } else if (PlatformMBeanConstants.THREADING_READ_WRITE_ATTRIBUTES.contains(name)) {
+            } else if (ThreadResourceDefinition.THREADING_READ_WRITE_ATTRIBUTES.contains(name)) {
                 // Bug
                 throw PlatformMBeanMessages.MESSAGES.badWriteAttributeImpl4(name);
             } else {
@@ -99,29 +99,9 @@ class ThreadMXBeanAttributeHandler extends AbstractPlatformMBeanAttributeHandler
 
     }
 
-    @Override
-    protected void register(ManagementResourceRegistration registration) {
-
-        if (PlatformMBeanUtil.JVM_MAJOR_VERSION > 6) {
-            registration.registerReadOnlyAttribute(PlatformMBeanConstants.OBJECT_NAME, this, AttributeAccess.Storage.RUNTIME);
-        }
-
-        for (String attribute : PlatformMBeanConstants.THREADING_READ_WRITE_ATTRIBUTES) {
-            registration.registerReadWriteAttribute(attribute, this, this, AttributeAccess.Storage.RUNTIME);
-        }
-
-        for (String attribute : PlatformMBeanConstants.THREADING_READ_ATTRIBUTES) {
-            registration.registerReadOnlyAttribute(attribute, this, AttributeAccess.Storage.RUNTIME);
-        }
-
-        for (String attribute : PlatformMBeanConstants.THREADING_METRICS) {
-            registration.registerMetric(attribute, this);
-        }
-    }
-
     static void storeResult(final String name, final ModelNode store) {
 
-        if (PlatformMBeanUtil.JVM_MAJOR_VERSION > 6 && PlatformMBeanConstants.OBJECT_NAME.equals(name)) {
+        if (PlatformMBeanUtil.JVM_MAJOR_VERSION > 6 && PlatformMBeanConstants.OBJECT_NAME.getName().equals(name)) {
             store.set(ManagementFactory.THREAD_MXBEAN_NAME);
         } else if (PlatformMBeanConstants.THREAD_COUNT.equals(name)) {
             store.set(ManagementFactory.getThreadMXBean().getThreadCount());
@@ -154,9 +134,9 @@ class ThreadMXBeanAttributeHandler extends AbstractPlatformMBeanAttributeHandler
             store.set(ManagementFactory.getThreadMXBean().isObjectMonitorUsageSupported());
         } else if (PlatformMBeanConstants.SYNCHRONIZER_USAGE_SUPPORTED.equals(name)) {
             store.set(ManagementFactory.getThreadMXBean().isSynchronizerUsageSupported());
-        } else if (PlatformMBeanConstants.THREADING_READ_ATTRIBUTES.contains(name)
-                || PlatformMBeanConstants.THREADING_READ_WRITE_ATTRIBUTES.contains(name)
-                || PlatformMBeanConstants.THREADING_METRICS.contains(name)) {
+        } else if (ThreadResourceDefinition.THREADING_READ_ATTRIBUTES.contains(name)
+                || ThreadResourceDefinition.THREADING_READ_WRITE_ATTRIBUTES.contains(name)
+                || ThreadResourceDefinition.THREADING_METRICS.contains(name)) {
             // Bug
             throw PlatformMBeanMessages.MESSAGES.badReadAttributeImpl11(name);
         }

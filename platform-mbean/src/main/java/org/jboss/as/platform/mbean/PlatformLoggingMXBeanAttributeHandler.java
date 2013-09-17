@@ -25,8 +25,6 @@ package org.jboss.as.platform.mbean;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
-import org.jboss.as.controller.registry.AttributeAccess;
-import org.jboss.as.controller.registry.ManagementResourceRegistration;
 import org.jboss.dmr.ModelNode;
 
 /**
@@ -53,7 +51,7 @@ class PlatformLoggingMXBeanAttributeHandler extends AbstractPlatformMBeanAttribu
 
         final String name = operation.require(ModelDescriptionConstants.NAME).asString();
 
-        if (PlatformMBeanConstants.OBJECT_NAME.equals(name)) {
+        if (PlatformMBeanConstants.OBJECT_NAME.getName().equals(name)) {
             context.getResult().set(PlatformMBeanConstants.PLATFORM_LOGGING_MXBEAN_NAME);
         } else if (PlatformMBeanConstants.LOGGER_NAMES.equals(name)) {
             String[] names = (String[]) PlatformMBeanUtil.getMBeanAttribute(PlatformMBeanConstants.PLATFORM_LOGGING_OBJECT_NAME, "LoggerNames");
@@ -80,13 +78,13 @@ class PlatformLoggingMXBeanAttributeHandler extends AbstractPlatformMBeanAttribu
 
     }
 
-    @Override
+    /*
     protected void register(ManagementResourceRegistration registration) {
 
-        registration.registerReadOnlyAttribute(PlatformMBeanConstants.OBJECT_NAME, this, AttributeAccess.Storage.RUNTIME);
+        registration.registerReadOnlyAttribute(PlatformMBeanConstants.OBJECT_NAME, this);
 
         for (String attribute : PlatformMBeanConstants.LOGGING_READ_ATTRIBUTES) {
             registration.registerReadOnlyAttribute(attribute, this, AttributeAccess.Storage.RUNTIME);
         }
-    }
+    }*/
 }

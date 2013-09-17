@@ -23,12 +23,12 @@
 package org.jboss.as.platform.mbean;
 
 import java.lang.management.ManagementFactory;
-import java.util.Locale;
 
 import org.jboss.as.controller.OperationContext;
+import org.jboss.as.controller.OperationDefinition;
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.OperationStepHandler;
-import org.jboss.as.controller.descriptions.DescriptionProvider;
+import org.jboss.as.controller.SimpleOperationDefinitionBuilder;
 import org.jboss.dmr.ModelNode;
 
 /**
@@ -36,9 +36,13 @@ import org.jboss.dmr.ModelNode;
  *
  * @author Brian Stansberry (c) 2011 Red Hat Inc.
  */
-public class MemoryMXBeanGCHandler implements OperationStepHandler, DescriptionProvider {
+public class MemoryMXBeanGCHandler implements OperationStepHandler {
 
     public static final MemoryMXBeanGCHandler INSTANCE = new MemoryMXBeanGCHandler();
+    static final OperationDefinition DEFINITION = new SimpleOperationDefinitionBuilder(PlatformMBeanConstants.GC, PlatformMBeanDescriptions.getResolver(PlatformMBeanConstants.MEMORY))
+            .setRuntimeOnly()
+            .build();
+
 
     private MemoryMXBeanGCHandler() {
 
@@ -58,10 +62,5 @@ public class MemoryMXBeanGCHandler implements OperationStepHandler, DescriptionP
             }
         }, OperationContext.Stage.RUNTIME);
         context.stepCompleted();
-    }
-
-    @Override
-    public ModelNode getModelDescription(Locale locale) {
-        return PlatformMBeanDescriptions.getDescriptionOnlyOperation(locale, "gc", PlatformMBeanConstants.MEMORY);
     }
 }

@@ -26,13 +26,13 @@ import static org.jboss.as.platform.mbean.PlatformMBeanUtil.escapeMBeanName;
 
 import java.lang.management.ManagementFactory;
 import java.lang.management.MemoryPoolMXBean;
-import java.util.Locale;
 
 import org.jboss.as.controller.OperationContext;
+import org.jboss.as.controller.OperationDefinition;
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.OperationStepHandler;
 import org.jboss.as.controller.PathAddress;
-import org.jboss.as.controller.descriptions.DescriptionProvider;
+import org.jboss.as.controller.SimpleOperationDefinitionBuilder;
 import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
 import org.jboss.dmr.ModelNode;
 
@@ -41,9 +41,12 @@ import org.jboss.dmr.ModelNode;
  *
  * @author Brian Stansberry (c) 2011 Red Hat Inc.
  */
-public class MemoryPoolMXBeanResetPeakUsageHandler implements OperationStepHandler, DescriptionProvider {
+public class MemoryPoolMXBeanResetPeakUsageHandler implements OperationStepHandler{
 
-    public static final MemoryPoolMXBeanResetPeakUsageHandler INSTANCE = new MemoryPoolMXBeanResetPeakUsageHandler();
+    static final MemoryPoolMXBeanResetPeakUsageHandler INSTANCE = new MemoryPoolMXBeanResetPeakUsageHandler();
+    static final OperationDefinition DEFINITION = new SimpleOperationDefinitionBuilder("reset-peak-usage", PlatformMBeanDescriptions.getResolver(PlatformMBeanConstants.MEMORY_POOL))
+            .setRuntimeOnly()
+            .build();
 
     private MemoryPoolMXBeanResetPeakUsageHandler() {
 
@@ -59,11 +62,6 @@ public class MemoryPoolMXBeanResetPeakUsageHandler implements OperationStepHandl
         }
 
         context.completeStep(OperationContext.RollbackHandler.NOOP_ROLLBACK_HANDLER);
-    }
-
-    @Override
-    public ModelNode getModelDescription(Locale locale) {
-        return PlatformMBeanDescriptions.getDescriptionOnlyOperation(locale, "reset-peak-usage", PlatformMBeanConstants.MEMORY_POOL);
     }
 
     private MemoryPoolMXBean getMemoryPoolMXBean(ModelNode operation) throws OperationFailedException {
