@@ -21,7 +21,19 @@
 */
 package org.jboss.as.domain.http.server;
 
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.*;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.COMPOSITE;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.FAILED;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.HOST;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OPERATION_HEADERS;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OUTCOME;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.READ_OPERATION_DESCRIPTION_OPERATION;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.READ_OPERATION_NAMES_OPERATION;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.READ_RESOURCE_DESCRIPTION_OPERATION;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.READ_RESOURCE_OPERATION;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.RESULT;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SUCCESS;
 import static org.jboss.as.domain.http.server.DomainUtil.writeResponse;
 import static org.jboss.as.domain.http.server.HttpServerLogger.ROOT_LOGGER;
 import static org.jboss.as.domain.http.server.HttpServerMessages.MESSAGES;
@@ -123,7 +135,7 @@ class DomainApiHandler implements HttpHandler {
             }
         } catch (Exception e) {
             ROOT_LOGGER.debugf("Unable to construct ModelNode '%s'", e.getMessage());
-            Common.sendError(exchange, get, false, e.getLocalizedMessage());
+            Common.sendError(exchange, false, e.getLocalizedMessage());
             return;
         }
 
@@ -131,7 +143,7 @@ class DomainApiHandler implements HttpHandler {
             @Override
             void doSendResponse(final ModelNode response) {
                 if (response.hasDefined(OUTCOME) && FAILED.equals(response.get(OUTCOME).asString())) {
-                    Common.sendError(exchange, get, encode, response.get(FAILURE_DESCRIPTION).asString());
+                    Common.sendError(exchange, encode, response);
                     return;
                 }
                 writeResponse(exchange, 200, response, operationParameterBuilder.build());
@@ -167,7 +179,7 @@ class DomainApiHandler implements HttpHandler {
             }
         } catch (Throwable t) {
             ROOT_LOGGER.modelRequestError(t);
-            Common.sendError(exchange, get, encode, t.getLocalizedMessage());
+            Common.sendError(exchange, encode, t.getLocalizedMessage());
             return;
         }
 
