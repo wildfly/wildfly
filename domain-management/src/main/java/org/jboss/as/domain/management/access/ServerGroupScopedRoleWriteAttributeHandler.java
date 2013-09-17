@@ -67,15 +67,16 @@ class ServerGroupScopedRoleWriteAttributeHandler extends AbstractWriteAttributeH
         final String roleName = PathAddress.pathAddress(operation.require(ModelDescriptionConstants.OP_ADDR)).getLastElement().getValue();
         ServerGroupEffectConstraint constraint = constraintMap.get(roleName);
 
-        // null means the resource shouldn't exist and we should have failed in Stage.MODEL
-        assert constraint != null : "unknown role " + roleName;
+        // null could happen if the role was removed in a later step in a composite. unlikely but possible
+        if (constraint != null)  {
 
-        List<String> serverGroups = new ArrayList<String>();
-        for (ModelNode group : resolvedValue.asList()) {
-            serverGroups.add(group.asString());
+            List<String> serverGroups = new ArrayList<String>();
+            for (ModelNode group : resolvedValue.asList()) {
+                serverGroups.add(group.asString());
+            }
+
+            constraint.setAllowedGroups(serverGroups);
         }
-
-        constraint.setAllowedGroups(serverGroups);
     }
 
 
