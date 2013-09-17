@@ -32,7 +32,6 @@ import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.OperationStepHandler;
 import org.jboss.as.controller.operations.validation.ParametersValidator;
 import org.jboss.as.controller.operations.validation.StringLengthValidator;
-import org.jboss.as.controller.registry.ManagementResourceRegistration;
 import org.jboss.dmr.ModelNode;
 
 /**
@@ -67,8 +66,6 @@ abstract class AbstractPlatformMBeanAttributeHandler implements OperationStepHan
     protected abstract void executeReadAttribute (OperationContext context, ModelNode operation) throws OperationFailedException;
 
     protected abstract void executeWriteAttribute (OperationContext context, ModelNode operation) throws OperationFailedException;
-
-    protected abstract void register(ManagementResourceRegistration registration);
 
     protected static OperationFailedException unknownAttribute(final ModelNode operation) {
         return PlatformMBeanMessages.MESSAGES.unknownAttribute(operation.require(NAME).asString());

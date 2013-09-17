@@ -44,7 +44,7 @@ public class RuntimeMXBeanReadResourceHandler implements OperationStepHandler {
 
         final ModelNode result = context.getResult();
 
-        for (String attribute : PlatformMBeanConstants.RUNTIME_READ_ATTRIBUTES) {
+        for (String attribute : RuntimeResourceDefinition.RUNTIME_READ_ATTRIBUTES) {
             final ModelNode store = result.get(attribute);
             try {
                 RuntimeMXBeanAttributeHandler.storeResult(attribute, store);
@@ -55,7 +55,7 @@ public class RuntimeMXBeanReadResourceHandler implements OperationStepHandler {
             }
         }
 
-        for (String attribute : PlatformMBeanConstants.RUNTIME_METRICS) {
+        for (String attribute : RuntimeResourceDefinition.RUNTIME_METRICS) {
             final ModelNode store = result.get(attribute);
             try {
                 RuntimeMXBeanAttributeHandler.storeResult(attribute, store);
@@ -66,8 +66,8 @@ public class RuntimeMXBeanReadResourceHandler implements OperationStepHandler {
             }
         }
         if (PlatformMBeanUtil.JVM_MAJOR_VERSION > 6) {
-            final ModelNode store = result.get(PlatformMBeanConstants.OBJECT_NAME);
-            RuntimeMXBeanAttributeHandler.storeResult(PlatformMBeanConstants.OBJECT_NAME, store);
+            final ModelNode store = result.get(PlatformMBeanConstants.OBJECT_NAME.getName());
+            RuntimeMXBeanAttributeHandler.storeResult(PlatformMBeanConstants.OBJECT_NAME.getName(), store);
         }
 
         context.stepCompleted();

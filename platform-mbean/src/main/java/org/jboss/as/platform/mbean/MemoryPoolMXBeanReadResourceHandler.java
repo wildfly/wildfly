@@ -52,7 +52,7 @@ public class MemoryPoolMXBeanReadResourceHandler implements OperationStepHandler
 
         final ModelNode result = context.getResult();
 
-        for (String attribute : PlatformMBeanConstants.MEMORY_POOL_READ_ATTRIBUTES) {
+        for (String attribute : MemoryPoolResourceDefinition.MEMORY_POOL_READ_ATTRIBUTES) {
             final ModelNode store = result.get(attribute);
             try {
                 MemoryPoolMXBeanAttributeHandler.storeResult(attribute, store, memoryPoolMXBean, memPoolName);
@@ -61,7 +61,7 @@ public class MemoryPoolMXBeanReadResourceHandler implements OperationStepHandler
             }
         }
 
-        for (String attribute : PlatformMBeanConstants.MEMORY_POOL_READ_WRITE_ATTRIBUTES) {
+        for (String attribute : MemoryPoolResourceDefinition.MEMORY_POOL_READ_WRITE_ATTRIBUTES) {
             final ModelNode store = result.get(attribute);
             try {
                 MemoryPoolMXBeanAttributeHandler.storeResult(attribute, store, memoryPoolMXBean, memPoolName);
@@ -70,7 +70,7 @@ public class MemoryPoolMXBeanReadResourceHandler implements OperationStepHandler
             }
         }
 
-        for (String attribute : PlatformMBeanConstants.MEMORY_POOL_METRICS) {
+        for (String attribute : MemoryPoolResourceDefinition.MEMORY_POOL_METRICS) {
             final ModelNode store = result.get(attribute);
             try {
                 MemoryPoolMXBeanAttributeHandler.storeResult(attribute, store, memoryPoolMXBean, memPoolName);
@@ -79,8 +79,8 @@ public class MemoryPoolMXBeanReadResourceHandler implements OperationStepHandler
             }
         }
         if (PlatformMBeanUtil.JVM_MAJOR_VERSION > 6) {
-            final ModelNode store = result.get(PlatformMBeanConstants.OBJECT_NAME);
-            MemoryPoolMXBeanAttributeHandler.storeResult(PlatformMBeanConstants.OBJECT_NAME, store, memoryPoolMXBean, memPoolName);
+            final ModelNode store = result.get(PlatformMBeanConstants.OBJECT_NAME.getName());
+            MemoryPoolMXBeanAttributeHandler.storeResult(PlatformMBeanConstants.OBJECT_NAME.getName(), store, memoryPoolMXBean, memPoolName);
         }
 
         context.stepCompleted();

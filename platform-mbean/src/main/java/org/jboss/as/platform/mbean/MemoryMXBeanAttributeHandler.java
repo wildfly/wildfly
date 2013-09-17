@@ -28,8 +28,6 @@ import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
 import org.jboss.as.controller.operations.validation.ModelTypeValidator;
-import org.jboss.as.controller.registry.AttributeAccess;
-import org.jboss.as.controller.registry.ManagementResourceRegistration;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.ModelType;
 
@@ -51,7 +49,7 @@ class MemoryMXBeanAttributeHandler extends AbstractPlatformMBeanAttributeHandler
 
         final String name = operation.require(ModelDescriptionConstants.NAME).asString();
 
-        if (PlatformMBeanUtil.JVM_MAJOR_VERSION > 6 && PlatformMBeanConstants.OBJECT_NAME.equals(name)) {
+        if (PlatformMBeanUtil.JVM_MAJOR_VERSION > 6 && PlatformMBeanConstants.OBJECT_NAME.getName().equals(name)) {
             context.getResult().set(ManagementFactory.MEMORY_MXBEAN_NAME);
         } else if (PlatformMBeanConstants.OBJECT_PENDING_FINALIZATION_COUNT.equals(name)) {
             context.getResult().set(ManagementFactory.getMemoryMXBean().getObjectPendingFinalizationCount());
@@ -63,8 +61,8 @@ class MemoryMXBeanAttributeHandler extends AbstractPlatformMBeanAttributeHandler
             context.getResult().set(mu);
         } else if (PlatformMBeanConstants.VERBOSE.equals(name)) {
             context.getResult().set(ManagementFactory.getMemoryMXBean().isVerbose());
-        } else if (PlatformMBeanConstants.MEMORY_METRICS.contains(name)
-                || PlatformMBeanConstants.MEMORY_READ_WRITE_ATTRIBUTES.contains(name)) {
+        } else if (MemoryResourceDefinition.MEMORY_METRICS.contains(name)
+                || MemoryResourceDefinition.MEMORY_READ_WRITE_ATTRIBUTES.contains(name)) {
             // Bug
             throw PlatformMBeanMessages.MESSAGES.badReadAttributeImpl6(name);
         } else {
@@ -79,8 +77,9 @@ class MemoryMXBeanAttributeHandler extends AbstractPlatformMBeanAttributeHandler
 
         final String name = operation.require(ModelDescriptionConstants.NAME).asString();
         if (PlatformMBeanConstants.VERBOSE.equals(name)) {
+            context.getServiceRegistry(true); //to trigger auth
             ManagementFactory.getMemoryMXBean().setVerbose(operation.require(ModelDescriptionConstants.VALUE).asBoolean());
-        } else if (PlatformMBeanConstants.MEMORY_READ_WRITE_ATTRIBUTES.contains(name)) {
+        } else if (MemoryResourceDefinition.MEMORY_READ_WRITE_ATTRIBUTES.contains(name)) {
             // Bug
             throw PlatformMBeanMessages.MESSAGES.badWriteAttributeImpl2(name);
         } else {
@@ -88,21 +87,5 @@ class MemoryMXBeanAttributeHandler extends AbstractPlatformMBeanAttributeHandler
             throw unknownAttribute(operation);
         }
 
-    }
-
-    @Override
-    protected void register(ManagementResourceRegistration registration) {
-
-        if (PlatformMBeanUtil.JVM_MAJOR_VERSION > 6) {
-            registration.registerReadOnlyAttribute(PlatformMBeanConstants.OBJECT_NAME, this, AttributeAccess.Storage.RUNTIME);
-        }
-
-        for (String attribute : PlatformMBeanConstants.MEMORY_METRICS) {
-            registration.registerMetric(attribute, this);
-        }
-
-        for (String attribute : PlatformMBeanConstants.MEMORY_READ_WRITE_ATTRIBUTES) {
-            registration.registerReadWriteAttribute(attribute, this, this, AttributeAccess.Storage.RUNTIME);
-        }
     }
 }

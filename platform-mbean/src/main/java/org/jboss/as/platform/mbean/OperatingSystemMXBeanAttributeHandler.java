@@ -27,8 +27,6 @@ import java.lang.management.ManagementFactory;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
-import org.jboss.as.controller.registry.AttributeAccess;
-import org.jboss.as.controller.registry.ManagementResourceRegistration;
 import org.jboss.dmr.ModelNode;
 
 /**
@@ -50,9 +48,9 @@ class OperatingSystemMXBeanAttributeHandler extends AbstractPlatformMBeanAttribu
         final String name = operation.require(ModelDescriptionConstants.NAME).asString();
 
         try {
-            if ((PlatformMBeanUtil.JVM_MAJOR_VERSION > 6 && PlatformMBeanConstants.OBJECT_NAME.equals(name))
-                    || PlatformMBeanConstants.OPERATING_SYSTEM_READ_ATTRIBUTES.contains(name)
-                    || PlatformMBeanConstants.OPERATING_SYSTEM_METRICS.contains(name)) {
+            if ((PlatformMBeanUtil.JVM_MAJOR_VERSION > 6 && PlatformMBeanConstants.OBJECT_NAME.getName().equals(name))
+                    || OperatingSystemResourceDefinition.OPERATING_SYSTEM_READ_ATTRIBUTES.contains(name)
+                    || OperatingSystemResourceDefinition.OPERATING_SYSTEM_METRICS.contains(name)) {
                 storeResult(name, context.getResult());
             } else {
                 // Shouldn't happen; the global handler should reject
@@ -66,31 +64,14 @@ class OperatingSystemMXBeanAttributeHandler extends AbstractPlatformMBeanAttribu
 
     @Override
     protected void executeWriteAttribute(OperationContext context, ModelNode operation) throws OperationFailedException {
-
         // Shouldn't happen; the global handler should reject
         throw unknownAttribute(operation);
 
     }
 
-    @Override
-    protected void register(ManagementResourceRegistration registration) {
-
-        if (PlatformMBeanUtil.JVM_MAJOR_VERSION > 6) {
-            registration.registerReadOnlyAttribute(PlatformMBeanConstants.OBJECT_NAME, this, AttributeAccess.Storage.RUNTIME);
-        }
-
-        for (String attribute : PlatformMBeanConstants.OPERATING_SYSTEM_READ_ATTRIBUTES) {
-            registration.registerReadOnlyAttribute(attribute, this, AttributeAccess.Storage.RUNTIME);
-        }
-
-        for (String attribute : PlatformMBeanConstants.OPERATING_SYSTEM_METRICS) {
-            registration.registerMetric(attribute, this);
-        }
-    }
-
     static void storeResult(final String name, final ModelNode store) {
 
-        if (PlatformMBeanUtil.JVM_MAJOR_VERSION > 6 && PlatformMBeanConstants.OBJECT_NAME.equals(name)) {
+        if (PlatformMBeanUtil.JVM_MAJOR_VERSION > 6 && PlatformMBeanConstants.OBJECT_NAME.getName().equals(name)) {
             store.set(ManagementFactory.OPERATING_SYSTEM_MXBEAN_NAME);
         } else if (ModelDescriptionConstants.NAME.equals(name)) {
             store.set(ManagementFactory.getOperatingSystemMXBean().getName());
@@ -102,8 +83,8 @@ class OperatingSystemMXBeanAttributeHandler extends AbstractPlatformMBeanAttribu
             store.set(ManagementFactory.getOperatingSystemMXBean().getAvailableProcessors());
         } else if (PlatformMBeanConstants.SYSTEM_LOAD_AVERAGE.equals(name)) {
             store.set(ManagementFactory.getOperatingSystemMXBean().getSystemLoadAverage());
-        } else if (PlatformMBeanConstants.OPERATING_SYSTEM_READ_ATTRIBUTES.contains(name)
-                    || PlatformMBeanConstants.OPERATING_SYSTEM_METRICS.contains(name)) {
+        } else if (OperatingSystemResourceDefinition.OPERATING_SYSTEM_READ_ATTRIBUTES.contains(name)
+                || OperatingSystemResourceDefinition.OPERATING_SYSTEM_METRICS.contains(name)) {
             // Bug
             throw PlatformMBeanMessages.MESSAGES.badReadAttributeImpl8(name);
         }

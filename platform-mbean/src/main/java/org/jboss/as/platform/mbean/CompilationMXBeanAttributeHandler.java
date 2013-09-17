@@ -22,13 +22,14 @@
 
 package org.jboss.as.platform.mbean;
 
+import static org.jboss.as.platform.mbean.CompilationResourceDefinition.COMPILATION_METRICS;
+import static org.jboss.as.platform.mbean.CompilationResourceDefinition.COMPILATION_READ_ATTRIBUTES;
+
 import java.lang.management.ManagementFactory;
 
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
-import org.jboss.as.controller.registry.AttributeAccess;
-import org.jboss.as.controller.registry.ManagementResourceRegistration;
 import org.jboss.dmr.ModelNode;
 
 /**
@@ -50,9 +51,9 @@ class CompilationMXBeanAttributeHandler extends AbstractPlatformMBeanAttributeHa
         final String name = operation.require(ModelDescriptionConstants.NAME).asString();
 
         try {
-            if ((PlatformMBeanUtil.JVM_MAJOR_VERSION > 6 && PlatformMBeanConstants.OBJECT_NAME.equals(name))
-                    || PlatformMBeanConstants.COMPILATION_READ_ATTRIBUTES.contains(name)
-                    || PlatformMBeanConstants.COMPILATION_METRICS.contains(name)) {
+            if ((PlatformMBeanUtil.JVM_MAJOR_VERSION > 6 && PlatformMBeanConstants.OBJECT_NAME.getName().equals(name))
+                    || COMPILATION_READ_ATTRIBUTES.contains(name)
+                    || COMPILATION_METRICS.contains(name)) {
                 storeResult(name, context.getResult());
             } else {
                 // Shouldn't happen; the global handler should reject
@@ -65,7 +66,7 @@ class CompilationMXBeanAttributeHandler extends AbstractPlatformMBeanAttributeHa
     }
 
     static void storeResult(final String attributeName, final ModelNode store) throws OperationFailedException {
-        if (PlatformMBeanUtil.JVM_MAJOR_VERSION > 6 && PlatformMBeanConstants.OBJECT_NAME.equals(attributeName)) {
+        if (PlatformMBeanUtil.JVM_MAJOR_VERSION > 6 && PlatformMBeanConstants.OBJECT_NAME.getName().equals(attributeName)) {
             store.set(ManagementFactory.COMPILATION_MXBEAN_NAME);
         } else if (ModelDescriptionConstants.NAME.equals(attributeName)) {
             store.set(ManagementFactory.getCompilationMXBean().getName());
@@ -73,10 +74,11 @@ class CompilationMXBeanAttributeHandler extends AbstractPlatformMBeanAttributeHa
             store.set(ManagementFactory.getCompilationMXBean().isCompilationTimeMonitoringSupported());
         } else if (PlatformMBeanConstants.TOTAL_COMPILATION_TIME.equals(attributeName)) {
             store.set(ManagementFactory.getCompilationMXBean().getTotalCompilationTime());
-        } else if (PlatformMBeanConstants.COMPILATION_READ_ATTRIBUTES.contains(attributeName)
-                    || PlatformMBeanConstants.COMPILATION_METRICS.contains(attributeName)) {
-            // Bug
-            throw PlatformMBeanMessages.MESSAGES.badReadAttributeImpl3(attributeName);
+        } else {
+            if (COMPILATION_READ_ATTRIBUTES.contains(attributeName)|| COMPILATION_METRICS.contains(attributeName)) {
+                // Bug
+                throw PlatformMBeanMessages.MESSAGES.badReadAttributeImpl3(attributeName);
+            }
         }
     }
 
@@ -86,21 +88,5 @@ class CompilationMXBeanAttributeHandler extends AbstractPlatformMBeanAttributeHa
         // Shouldn't happen; the global handler should reject
         throw unknownAttribute(operation);
 
-    }
-
-    @Override
-    protected void register(ManagementResourceRegistration registration) {
-
-        if (PlatformMBeanUtil.JVM_MAJOR_VERSION > 6) {
-            registration.registerReadOnlyAttribute(PlatformMBeanConstants.OBJECT_NAME, this, AttributeAccess.Storage.RUNTIME);
-        }
-
-        for (String attribute : PlatformMBeanConstants.COMPILATION_READ_ATTRIBUTES) {
-            registration.registerReadOnlyAttribute(attribute, this, AttributeAccess.Storage.RUNTIME);
-        }
-
-        for (String attribute : PlatformMBeanConstants.COMPILATION_METRICS) {
-            registration.registerMetric(attribute, this);
-        }
     }
 }

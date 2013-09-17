@@ -620,7 +620,7 @@ public class PlatformMBeanResourceUnitTestCase {
             Assert.assertEquals(FAILED, response.get(OUTCOME).asString());
             return response.get(FAILURE_DESCRIPTION);
         } else {
-            Assert.assertEquals(SUCCESS, response.get(OUTCOME).asString());
+            Assert.assertEquals(response.get(FAILURE_DESCRIPTION).asString(),SUCCESS, response.get(OUTCOME).asString());
             return response.get(RESULT);
         }
     }
