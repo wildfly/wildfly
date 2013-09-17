@@ -25,31 +25,22 @@ package org.wildfly.extension.batch;
 import java.util.HashMap;
 import java.util.Map;
 
-import org.jboss.as.controller.AttributeDefinition;
-
 /**
  * @author <a href="mailto:jperkins@redhat.com">James R. Perkins</a>
  */
-public enum Element {
+enum Element {
 
-    UNKNOWN((String) null),
+    UNKNOWN(null),
     JDBC("jdbc"),
     JOB_REPOSITORY("job-repository"),
     IN_MEMORY("in-memory"),
-    THREAD_FACTORY("thread-factory"),
+    THREAD_FACTORY(BatchConstants.THREAD_FACTORY),
     THREAD_POOL(BatchConstants.THREAD_POOL);
 
     private final String name;
-    private final AttributeDefinition definition;
 
     Element(final String name) {
         this.name = name;
-        this.definition = null;
-    }
-
-    Element(final AttributeDefinition definition) {
-        this.name = definition.getXmlName();
-        this.definition = definition;
     }
 
     /**
@@ -59,14 +50,6 @@ public enum Element {
      */
     public String getLocalName() {
         return name;
-    }
-
-    public boolean hasDefinition() {
-        return definition != null;
-    }
-
-    public AttributeDefinition getDefinition() {
-        return definition;
     }
 
     private static final Map<String, Element> MAP;

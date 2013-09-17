@@ -22,6 +22,8 @@
 
 package org.wildfly.extension.batch.deployment;
 
+import org.jboss.as.ee.structure.DeploymentType;
+import org.jboss.as.ee.structure.DeploymentTypeMarker;
 import org.jboss.as.server.deployment.Attachments;
 import org.jboss.as.server.deployment.DeploymentPhaseContext;
 import org.jboss.as.server.deployment.DeploymentUnit;
@@ -48,6 +50,12 @@ public class BatchDependencyProcessor implements DeploymentUnitProcessor {
     @Override
     public void deploy(DeploymentPhaseContext phaseContext) throws DeploymentUnitProcessingException {
         final DeploymentUnit deploymentUnit = phaseContext.getDeploymentUnit();
+        // Section 10.7 of JSR 352 discusses valid packaging types, of which it appears EAR should be one. It seems
+        // though that it's of no real use as 10.5 and 10.6 seem to indicate it must be in META-INF/batch-jobs of a JAR
+        // and WEB-INF/classes/META-INF/batch-jobs of a WAR.
+        if (DeploymentTypeMarker.isType(DeploymentType.EAR, deploymentUnit)) {
+            return;
+        }
         final ModuleSpecification moduleSpecification = deploymentUnit.getAttachment(Attachments.MODULE_SPECIFICATION);
         final ModuleLoader moduleLoader = Module.getBootModuleLoader();
 

@@ -34,11 +34,9 @@
     <dependencies>
         <module name="javax.api"/>
         <module name="javaee.api"/>
-        <module name="javax.xml.bind.api"/>
         <module name="javax.transaction.api"/>
         <module name="org.jboss.jts"/>
         <module name="org.jboss.marshalling"/>
-        <module name="org.jboss.narayana.txframework"/>
         <module name="org.jboss.logging"/>
         <module name="com.h2database.h2" optional="true"/>
 

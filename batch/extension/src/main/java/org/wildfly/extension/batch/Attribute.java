@@ -25,32 +25,19 @@ package org.wildfly.extension.batch;
 import java.util.HashMap;
 import java.util.Map;
 
-import org.jboss.as.controller.AttributeDefinition;
-
 /**
  * @author <a href="mailto:jperkins@redhat.com">James R. Perkins</a>
  */
-public enum Attribute {
+enum Attribute {
 
     UNKNOWN((String) null),
     JNDI_NAME("jndi-name"),
     NAME("name");
 
     private final String name;
-    private final AttributeDefinition definition;
-
-    Attribute(final AttributeDefinition definition) {
-        if (definition == null) {
-            this.name = null;
-        } else {
-            this.name = definition.getXmlName();
-        }
-        this.definition = definition;
-    }
 
     Attribute(final String name) {
         this.name = name;
-        this.definition = null;
     }
 
     /**
@@ -60,10 +47,6 @@ public enum Attribute {
      */
     public String getLocalName() {
         return name;
-    }
-
-    public AttributeDefinition getDefinition() {
-        return definition;
     }
 
     private static final Map<String, Attribute> MAP;

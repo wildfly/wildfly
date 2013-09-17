@@ -30,6 +30,8 @@ import javax.transaction.UserTransaction;
 import org.jberet.spi.BatchEnvironment;
 import org.jboss.as.ee.component.EEModuleDescription;
 import org.jboss.as.ee.naming.InjectedEENamespaceContextSelector;
+import org.jboss.as.ee.structure.DeploymentType;
+import org.jboss.as.ee.structure.DeploymentTypeMarker;
 import org.jboss.as.ee.weld.WeldDeploymentMarker;
 import org.jboss.as.server.deployment.Attachments;
 import org.jboss.as.server.deployment.DeploymentPhaseContext;
@@ -56,6 +58,12 @@ public class BatchEnvironmentProcessor implements DeploymentUnitProcessor {
     @Override
     public void deploy(DeploymentPhaseContext phaseContext) throws DeploymentUnitProcessingException {
         final DeploymentUnit deploymentUnit = phaseContext.getDeploymentUnit();
+        // Section 10.7 of JSR 352 discusses valid packaging types, of which it appears EAR should be one. It seems
+        // though that it's of no real use as 10.5 and 10.6 seem to indicate it must be in META-INF/batch-jobs of a JAR
+        // and WEB-INF/classes/META-INF/batch-jobs of a WAR.
+        if (DeploymentTypeMarker.isType(DeploymentType.EAR, deploymentUnit)) {
+            return;
+        }
         // Can't use batch without CDI
         if (deploymentUnit.hasAttachment(Attachments.MODULE) && deploymentUnit.hasAttachment(Attachments.DEPLOYMENT_ROOT)) {
             if (WeldDeploymentMarker.isWeldDeployment(deploymentUnit)) {
@@ -70,7 +78,7 @@ public class BatchEnvironmentProcessor implements DeploymentUnitProcessor {
                 final BatchEnvironmentService service = new BatchEnvironmentService(namespaceContextSelector);
 
                 final ServiceBuilder<BatchEnvironment> serviceBuilder = serviceTarget.addService(BatchServiceNames.batchDeploymentServiceName(deploymentUnit), service);
-                serviceBuilder.addDependency(BatchServiceNames.BATCH_SERVICE_NAME, Properties.class, service.getPropertiesInjector());
+                serviceBuilder.addDependency(BatchServiceNames.BATCH_PROPERTIES, Properties.class, service.getPropertiesInjector());
                 serviceBuilder.addDependency(TxnServices.JBOSS_TXN_USER_TRANSACTION, UserTransaction.class, service.getUserTransactionInjector());
                 serviceBuilder.addDependency(BatchServiceNames.BATCH_THREAD_POOL_NAME, ExecutorService.class, service.getExecutorServiceInjector());
 
@@ -83,14 +91,14 @@ public class BatchEnvironmentProcessor implements DeploymentUnitProcessor {
                 serviceBuilder.install();
             } else {
                 final ResourceRoot root = deploymentUnit.getAttachment(Attachments.DEPLOYMENT_ROOT);
-                final VirtualFile dir = root.getRoot().getChild("META-INF/batch-jobs");
-                if (dir.exists() && !dir.getChildren().isEmpty()) {
+                final VirtualFile jobXmlFile = root.getRoot().getChild("META-INF/batch.xml");
+                final VirtualFile batchJobsDir = root.getRoot().getChild("META-INF/batch-jobs");
+                if (jobXmlFile.exists() || (batchJobsDir.exists() && !batchJobsDir.getChildren().isEmpty())) {
                     BatchLogger.LOGGER.cdiNotEnabled();
                 }
 
             }
         }
-        // TODO (jrp) could produce NPE with the BatchEnvironment if the MODULE wasn't attached
     }
 
     @Override
