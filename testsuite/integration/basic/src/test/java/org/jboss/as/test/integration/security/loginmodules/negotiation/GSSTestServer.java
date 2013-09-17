@@ -51,7 +51,7 @@ import org.jboss.security.auth.callback.UsernamePasswordHandler;
 
 /**
  * A sample server application for testing Kerberos identity propagation.
- * 
+ *
  * @author Josef Cacek
  */
 public class GSSTestServer implements ServerSetupTask, Runnable {
@@ -66,10 +66,9 @@ public class GSSTestServer implements ServerSetupTask, Runnable {
 
     /**
      * Starts instance of this {@link GSSTestServer} in the new Thread.
-     * 
-     * @param managementClient
-     * @param containerId
-     * @throws Exception
+     *
+     * {@inheritDoc}
+     *
      * @see org.jboss.as.arquillian.api.ServerSetupTask#setup(org.jboss.as.arquillian.container.ManagementClient,
      *      java.lang.String)
      */
@@ -88,7 +87,7 @@ public class GSSTestServer implements ServerSetupTask, Runnable {
         final Socket socket = new Socket();
         try {
             LOGGER.debug("Waiting for the GSSTestServer.");
-            socket.connect(new InetSocketAddress(InetAddress.getLocalHost(), GSSTestConstants.PORT), 20 * ADJUSTED_SECOND);
+            socket.connect(new InetSocketAddress(InetAddress.getByName(null), GSSTestConstants.PORT), 20 * ADJUSTED_SECOND);
             LOGGER.debug("GSSTestServer is up");
         } finally {
             try {
@@ -102,10 +101,9 @@ public class GSSTestServer implements ServerSetupTask, Runnable {
 
     /**
      * Stops instance on this {@link GSSTestServer}.
-     * 
-     * @param managementClient
-     * @param containerId
-     * @throws Exception
+     *
+     * {@inheritDoc}
+     *
      * @see org.jboss.as.arquillian.api.ServerSetupTask#tearDown(org.jboss.as.arquillian.container.ManagementClient,
      *      java.lang.String)
      */
@@ -114,7 +112,7 @@ public class GSSTestServer implements ServerSetupTask, Runnable {
     }
 
     /**
-     * 
+     *
      * @see java.lang.Runnable#run()
      */
     public void run() {
@@ -135,8 +133,8 @@ public class GSSTestServer implements ServerSetupTask, Runnable {
     /**
      * The Main. It sends stop command to a running {@link GSSTestServer} instance when the first argument provided is "stop",
      * otherwise it starts a new server instance.
-     * 
-     * @param args
+     *
+     * @param args  the args. Use "stop" in args[0] to stop an existing server
      */
     public static void main(String[] args) {
         if (args.length > 0 && "stop".equals(args[0])) {
@@ -162,7 +160,7 @@ public class GSSTestServer implements ServerSetupTask, Runnable {
         // Create an unbound socket
         final Socket socket = new Socket();
         try {
-            socket.connect(new InetSocketAddress(InetAddress.getLocalHost(), GSSTestConstants.PORT),
+            socket.connect(new InetSocketAddress(InetAddress.getByName(null), GSSTestConstants.PORT),
                     GSSTestConstants.SOCKET_TIMEOUT);
             DataOutputStream dos = new DataOutputStream(socket.getOutputStream());
             dos.writeInt(GSSTestConstants.CMD_STOP);
@@ -181,7 +179,7 @@ public class GSSTestServer implements ServerSetupTask, Runnable {
 
     /**
      * Authenticates the server in Kerberos KDC and starts the {@link ServerAction} instance as the authenticated subject.
-     * 
+     *
      * @throws LoginException
      * @throws PrivilegedActionException
      * @throws IOException
@@ -206,7 +204,7 @@ public class GSSTestServer implements ServerSetupTask, Runnable {
 
     /**
      * A ServerAction which creates a ServerSocket and waits for clients. It sends back the authenticated client name.
-     * 
+     *
      * @author Josef Cacek
      */
     private class ServerAction implements PrivilegedAction<String> {
