@@ -44,7 +44,7 @@ public class ThreadMXBeanReadResourceHandler implements OperationStepHandler {
 
         final ModelNode result = context.getResult();
 
-        for (String attribute : PlatformMBeanConstants.THREADING_READ_ATTRIBUTES) {
+        for (String attribute : ThreadResourceDefinition.THREADING_READ_ATTRIBUTES) {
             final ModelNode store = result.get(attribute);
             try {
                 ThreadMXBeanAttributeHandler.storeResult(attribute, store);
@@ -55,7 +55,7 @@ public class ThreadMXBeanReadResourceHandler implements OperationStepHandler {
             }
         }
 
-        for (String attribute : PlatformMBeanConstants.THREADING_READ_WRITE_ATTRIBUTES) {
+        for (String attribute : ThreadResourceDefinition.THREADING_READ_WRITE_ATTRIBUTES) {
             final ModelNode store = result.get(attribute);
             try {
                 ThreadMXBeanAttributeHandler.storeResult(attribute, store);
@@ -66,7 +66,7 @@ public class ThreadMXBeanReadResourceHandler implements OperationStepHandler {
             }
         }
 
-        for (String attribute : PlatformMBeanConstants.THREADING_METRICS) {
+        for (String attribute : ThreadResourceDefinition.THREADING_METRICS) {
             final ModelNode store = result.get(attribute);
             try {
                 ThreadMXBeanAttributeHandler.storeResult(attribute, store);
@@ -78,8 +78,8 @@ public class ThreadMXBeanReadResourceHandler implements OperationStepHandler {
         }
 
         if (PlatformMBeanUtil.JVM_MAJOR_VERSION > 6) {
-            final ModelNode store = result.get(PlatformMBeanConstants.OBJECT_NAME);
-            ThreadMXBeanAttributeHandler.storeResult(PlatformMBeanConstants.OBJECT_NAME, store);
+            final ModelNode store = result.get(PlatformMBeanConstants.OBJECT_NAME.getName());
+            ThreadMXBeanAttributeHandler.storeResult(PlatformMBeanConstants.OBJECT_NAME.getName(), store);
         }
 
         context.stepCompleted();

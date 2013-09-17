@@ -30,8 +30,6 @@ import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
-import org.jboss.as.controller.registry.AttributeAccess;
-import org.jboss.as.controller.registry.ManagementResourceRegistration;
 import org.jboss.dmr.ModelNode;
 
 /**
@@ -58,17 +56,17 @@ public class BufferPoolMXBeanAttributeHandler extends AbstractPlatformMBeanAttri
 
         final String name = operation.require(ModelDescriptionConstants.NAME).asString();
 
-        if (PlatformMBeanConstants.OBJECT_NAME.equals(name)) {
+        if (PlatformMBeanConstants.OBJECT_NAME.getName().equals(name)) {
             context.getResult().set(objectName.toString());
         } else if (ModelDescriptionConstants.NAME.equals(name)) {
             context.getResult().set(PlatformMBeanUtil.getMBeanAttribute(objectName, "Name").toString());
         } else if (PlatformMBeanConstants.COUNT.equals(name)) {
             context.getResult().set(Long.class.cast(PlatformMBeanUtil.getMBeanAttribute(objectName, "Count")));
-        } else if (PlatformMBeanConstants.MEMORY_USED.equals(name)) {
+        } else if (PlatformMBeanConstants.MEMORY_USED_NAME.equals(name)) {
             context.getResult().set(Long.class.cast(PlatformMBeanUtil.getMBeanAttribute(objectName, "MemoryUsed")));
         } else if (PlatformMBeanConstants.TOTAL_CAPACITY.equals(name)) {
             context.getResult().set(Long.class.cast(PlatformMBeanUtil.getMBeanAttribute(objectName, "TotalCapacity")));
-        } else if (PlatformMBeanConstants.BUFFER_POOL_METRICS.contains(name)) {
+        } else if (BufferPoolResourceDefinition.BUFFER_POOL_METRICS.contains(name)) {
             // Bug
             throw PlatformMBeanMessages.MESSAGES.badReadAttributeImpl1(name);
         } else {
@@ -84,19 +82,5 @@ public class BufferPoolMXBeanAttributeHandler extends AbstractPlatformMBeanAttri
         // Shouldn't happen; the global handler should reject
         throw unknownAttribute(operation);
 
-    }
-
-    @Override
-    protected void register(ManagementResourceRegistration registration) {
-
-        registration.registerReadOnlyAttribute(PlatformMBeanConstants.OBJECT_NAME, this, AttributeAccess.Storage.RUNTIME);
-
-        for (String attribute : PlatformMBeanConstants.BUFFER_POOL_READ_ATTRIBUTES) {
-            registration.registerReadOnlyAttribute(attribute, this, AttributeAccess.Storage.RUNTIME);
-        }
-
-        for (String attribute : PlatformMBeanConstants.BUFFER_POOL_METRICS) {
-            registration.registerMetric(attribute, this);
-        }
     }
 }

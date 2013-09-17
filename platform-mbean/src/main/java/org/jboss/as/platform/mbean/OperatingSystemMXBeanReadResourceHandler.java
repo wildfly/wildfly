@@ -44,7 +44,7 @@ public class OperatingSystemMXBeanReadResourceHandler implements OperationStepHa
 
         final ModelNode result = context.getResult();
 
-        for (String attribute : PlatformMBeanConstants.OPERATING_SYSTEM_READ_ATTRIBUTES) {
+        for (String attribute : OperatingSystemResourceDefinition.OPERATING_SYSTEM_READ_ATTRIBUTES) {
             final ModelNode store = result.get(attribute);
             try {
                 OperatingSystemMXBeanAttributeHandler.storeResult(attribute, store);
@@ -55,7 +55,7 @@ public class OperatingSystemMXBeanReadResourceHandler implements OperationStepHa
             }
         }
 
-        for (String attribute : PlatformMBeanConstants.OPERATING_SYSTEM_METRICS) {
+        for (String attribute : OperatingSystemResourceDefinition.OPERATING_SYSTEM_METRICS) {
             final ModelNode store = result.get(attribute);
             try {
                 OperatingSystemMXBeanAttributeHandler.storeResult(attribute, store);
@@ -67,8 +67,8 @@ public class OperatingSystemMXBeanReadResourceHandler implements OperationStepHa
         }
 
         if (PlatformMBeanUtil.JVM_MAJOR_VERSION > 6) {
-            final ModelNode store = result.get(PlatformMBeanConstants.OBJECT_NAME);
-            OperatingSystemMXBeanAttributeHandler.storeResult(PlatformMBeanConstants.OBJECT_NAME, store);
+            final ModelNode store = result.get(PlatformMBeanConstants.OBJECT_NAME.getName());
+            OperatingSystemMXBeanAttributeHandler.storeResult(PlatformMBeanConstants.OBJECT_NAME.getName(), store);
         }
 
         context.stepCompleted();

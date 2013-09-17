@@ -44,7 +44,7 @@ public class CompilationMXBeanReadResourceHandler implements OperationStepHandle
 
         final ModelNode result = context.getResult();
 
-        for (String attribute : PlatformMBeanConstants.COMPILATION_READ_ATTRIBUTES) {
+        for (String attribute : CompilationResourceDefinition.COMPILATION_READ_ATTRIBUTES) {
             final ModelNode store = result.get(attribute);
             try {
                 CompilationMXBeanAttributeHandler.storeResult(attribute, store);
@@ -53,7 +53,7 @@ public class CompilationMXBeanReadResourceHandler implements OperationStepHandle
             }
         }
 
-        for (String attribute : PlatformMBeanConstants.COMPILATION_METRICS) {
+        for (String attribute : CompilationResourceDefinition.COMPILATION_METRICS) {
             final ModelNode store = result.get(attribute);
             try {
                 CompilationMXBeanAttributeHandler.storeResult(attribute, store);
@@ -63,8 +63,8 @@ public class CompilationMXBeanReadResourceHandler implements OperationStepHandle
         }
 
         if (PlatformMBeanUtil.JVM_MAJOR_VERSION > 6) {
-            final ModelNode store = result.get(PlatformMBeanConstants.OBJECT_NAME);
-            CompilationMXBeanAttributeHandler.storeResult(PlatformMBeanConstants.OBJECT_NAME, store);
+            final ModelNode store = result.get(PlatformMBeanConstants.OBJECT_NAME.getName());
+            CompilationMXBeanAttributeHandler.storeResult(PlatformMBeanConstants.OBJECT_NAME.getName(), store);
         }
 
         context.stepCompleted();

@@ -22,6 +22,9 @@
 
 package org.jboss.as.platform.mbean;
 
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.CORE_SERVICE;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.PLATFORM_MBEAN;
+
 import java.lang.management.ManagementFactory;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -31,8 +34,13 @@ import java.util.List;
 import javax.management.MalformedObjectNameException;
 import javax.management.ObjectName;
 
+import org.jboss.as.controller.AttributeDefinition;
 import org.jboss.as.controller.PathElement;
+import org.jboss.as.controller.SimpleAttributeDefinition;
+import org.jboss.as.controller.SimpleAttributeDefinitionBuilder;
+import org.jboss.as.controller.client.helpers.MeasurementUnit;
 import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
+import org.jboss.dmr.ModelType;
 
 /**
  * Constants used in this module.
@@ -67,7 +75,10 @@ public class PlatformMBeanConstants {
 
     public static final List<String> BASE_TYPES;
 
-    public static final String OBJECT_NAME = "object-name";
+    static SimpleAttributeDefinition OBJECT_NAME = SimpleAttributeDefinitionBuilder.create("object-name", ModelType.STRING, true)
+            .setStorageRuntime()
+            .build();
+
 
     // ClassLoadingMXBean
     public static final String TOTAL_LOADED_CLASS_COUNT = "total-loaded-class-count";
@@ -75,39 +86,15 @@ public class PlatformMBeanConstants {
     public static final String UNLOADED_CLASS_COUNT = "unloaded-class-count";
     public static final String VERBOSE = "verbose";
 
-    public static final List<String> CLASSLOADING_METRICS = Arrays.asList(
-        TOTAL_LOADED_CLASS_COUNT, LOADED_CLASS_COUNT, UNLOADED_CLASS_COUNT
-    );
-
-    public static final List<String> CLASSLOADING_READ_WRITE_ATTRIBUTES = Arrays.asList(
-        VERBOSE
-    );
-
     // CompilationMXBean
     public static final String COMPILATION_TIME_MONITORING_SUPPORTED = "compilation-time-monitoring-supported";
     public static final String TOTAL_COMPILATION_TIME = "total-compilation-time";
 
-    public static final List<String> COMPILATION_READ_ATTRIBUTES = Arrays.asList(
-        ModelDescriptionConstants.NAME, COMPILATION_TIME_MONITORING_SUPPORTED
-    );
-
-    public static final List<String> COMPILATION_METRICS = Arrays.asList(
-        TOTAL_COMPILATION_TIME
-    );
 
     // GarbageCollectorMXBean
-    public static final String VALID = "valid";
     public static final String MEMORY_POOL_NAMES = "memory-pool-names";
     public static final String COLLECTION_COUNT = "collection-count";
     public static final String COLLECTION_TIME = "collection-time";
-
-    public static final List<String> GARBAGE_COLLECTOR_READ_ATTRIBUTES = Arrays.asList(
-        ModelDescriptionConstants.NAME, VALID, MEMORY_POOL_NAMES
-    );
-
-    public static final List<String> GARBAGE_COLLECTOR_METRICS = Arrays.asList(
-        COLLECTION_COUNT, COLLECTION_TIME
-    );
 
     // MemoryMXBean
     public static final String OBJECT_PENDING_FINALIZATION_COUNT = "object-pending-finalization-count";
@@ -116,24 +103,25 @@ public class PlatformMBeanConstants {
     public static final String GC = "gc";
 
     public static final String INIT = "init";
+    static SimpleAttributeDefinition MEMORY_INIT = SimpleAttributeDefinitionBuilder.create(INIT, ModelType.LONG, true)
+            .setStorageRuntime()
+            .setMeasurementUnit(MeasurementUnit.BYTES)
+            .build();
     public static final String USED = "used";
+    static SimpleAttributeDefinition MEMORY_USED = SimpleAttributeDefinitionBuilder.create(USED, ModelType.LONG, true)
+            .setStorageRuntime()
+            .setMeasurementUnit(MeasurementUnit.BYTES)
+            .build();
     public static final String COMMITTED = "committed";
+    static SimpleAttributeDefinition MEMORY_COMMITTED = SimpleAttributeDefinitionBuilder.create(COMMITTED, ModelType.LONG, true)
+            .setStorageRuntime()
+            .setMeasurementUnit(MeasurementUnit.BYTES)
+            .build();
     public static final String MAX = "max";
-
-
-    public static final List<String> MEMORY_METRICS = Arrays.asList(
-        OBJECT_PENDING_FINALIZATION_COUNT, HEAP_MEMORY_USAGE, NON_HEAP_MEMORY_USAGE
-    );
-
-    public static final List<String> MEMORY_READ_WRITE_ATTRIBUTES = Arrays.asList(
-        VERBOSE
-    );
-
-    // MemoryManagerMXBean
-
-    public static final List<String> MEMORY_MANAGER_READ_ATTRIBUTES = Arrays.asList(
-        ModelDescriptionConstants.NAME, VALID, MEMORY_POOL_NAMES
-    );
+    static SimpleAttributeDefinition MEMORY_MAX = SimpleAttributeDefinitionBuilder.create(MAX, ModelType.LONG, true)
+            .setStorageRuntime()
+            .setMeasurementUnit(MeasurementUnit.BYTES)
+            .build();
 
     // MemoryPoolMXBean
     public static final String TYPE = "type";
@@ -152,34 +140,12 @@ public class PlatformMBeanConstants {
 
     public static final String RESET_PEAK_USAGE = "reset-peak-usage";
 
-    public static final List<String> MEMORY_POOL_READ_ATTRIBUTES = Arrays.asList(
-        ModelDescriptionConstants.NAME, TYPE, VALID, MEMORY_MANAGER_NAMES, USAGE_THRESHOLD_SUPPORTED,
-        COLLECTION_USAGE_THRESHOLD_SUPPORTED
-    );
-
-    public static final List<String> MEMORY_POOL_METRICS = Arrays.asList(
-        USAGE, PEAK_USAGE, USAGE_THRESHOLD_EXCEEDED, USAGE_THRESHOLD_COUNT, COLLECTION_USAGE_THRESHOLD_EXCEEDED,
-        COLLECTION_USAGE_THRESHOLD_COUNT, COLLECTION_USAGE
-    );
-
-    public static final List<String> MEMORY_POOL_READ_WRITE_ATTRIBUTES = Arrays.asList(
-        USAGE_THRESHOLD, COLLECTION_USAGE_THRESHOLD
-    );
-
 
     // OperatingSystemMXBean
     public static final String ARCH = "arch";
     public static final String VERSION = "version";
     public static final String AVAILABLE_PROCESSORS = "available-processors";
     public static final String SYSTEM_LOAD_AVERAGE = "system-load-average";
-
-    public static final List<String> OPERATING_SYSTEM_READ_ATTRIBUTES = Arrays.asList(
-        ModelDescriptionConstants.NAME, ARCH, VERSION
-    );
-
-    public static final List<String> OPERATING_SYSTEM_METRICS = Arrays.asList(
-        AVAILABLE_PROCESSORS, SYSTEM_LOAD_AVERAGE
-    );
 
     // RuntimeMXBean
     public static final String VM_NAME = "vm-name";
@@ -197,16 +163,6 @@ public class PlatformMBeanConstants {
     public static final String UPTIME = "uptime";
     public static final String START_TIME = "start-time";
     public static final String SYSTEM_PROPERTIES = "system-properties";
-
-    public static final List<String> RUNTIME_READ_ATTRIBUTES = Arrays.asList(
-        ModelDescriptionConstants.NAME, VM_NAME, VM_VENDOR, VM_VERSION, SPEC_NAME, SPEC_VENDOR, SPEC_VERSION,
-        MANAGEMENT_SPEC_VERSION, CLASS_PATH, LIBRARY_PATH, BOOT_CLASS_PATH_SUPPORTED, BOOT_CLASS_PATH,
-        INPUT_ARGUMENTS, START_TIME, SYSTEM_PROPERTIES
-    );
-
-    public static final List<String> RUNTIME_METRICS = Arrays.asList(
-        UPTIME
-    );
 
 
     // ThreadMXBean
@@ -264,32 +220,10 @@ public class PlatformMBeanConstants {
     public static final String LOCKED_STACK_DEPTH = "locked-stack-depth";
     public static final String LOCKED_STACK_FRAME = "locked-stack-frame";
 
-    public static final List<String> THREADING_READ_ATTRIBUTES = Arrays.asList(
-        ALL_THREAD_IDS, THREAD_CONTENTION_MONITORING_SUPPORTED, THREAD_CPU_TIME_SUPPORTED, CURRENT_THREAD_CPU_TIME_SUPPORTED,
-        OBJECT_MONITOR_USAGE_SUPPORTED, SYNCHRONIZER_USAGE_SUPPORTED
-    );
-
-    public static final List<String> THREADING_METRICS = Arrays.asList(
-        THREAD_COUNT, PEAK_THREAD_COUNT, TOTAL_STARTED_THREAD_COUNT, DAEMON_THREAD_COUNT,
-        CURRENT_THREAD_CPU_TIME, CURRENT_THREAD_USER_TIME
-    );
-
-    public static final List<String> THREADING_READ_WRITE_ATTRIBUTES = Arrays.asList(
-        THREAD_CONTENTION_MONITORING_ENABLED, THREAD_CPU_TIME_ENABLED
-    );
-
     // BufferPoolMXBean
     public static final String COUNT = "count";
-    public static final String MEMORY_USED = "memory-used";
+    public static final String MEMORY_USED_NAME = "memory-used";
     public static final String TOTAL_CAPACITY = "total-capacity";
-
-    public static final List<String> BUFFER_POOL_READ_ATTRIBUTES = Arrays.asList(
-        ModelDescriptionConstants.NAME
-    );
-
-    public static final List<String> BUFFER_POOL_METRICS = Arrays.asList(
-        COUNT, MEMORY_USED, TOTAL_CAPACITY
-    );
 
     // PlatformLoggingMXBean
 
@@ -343,6 +277,15 @@ public class PlatformMBeanConstants {
             throw new IllegalStateException(PLATFORM_LOGGING_MXBEAN_NAME + " somehow isn't a legal object name???");
         }
     }
+
+    static final PathElement PLATFORM_MBEAN_PATH = PathElement.pathElement(CORE_SERVICE, PLATFORM_MBEAN);
+    //read attributes
+    static AttributeDefinition NAME = SimpleAttributeDefinitionBuilder.create(ModelDescriptionConstants.NAME, ModelType.STRING, true)
+            .setStorageRuntime()
+            .build();
+    static AttributeDefinition VALID = SimpleAttributeDefinitionBuilder.create(ModelDescriptionConstants.VALID, ModelType.BOOLEAN, false)
+                    .setStorageRuntime()
+                    .build();
 
     private PlatformMBeanConstants() {
         // prevent instantiation

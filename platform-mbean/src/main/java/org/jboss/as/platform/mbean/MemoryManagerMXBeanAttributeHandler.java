@@ -31,8 +31,6 @@ import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
-import org.jboss.as.controller.registry.AttributeAccess;
-import org.jboss.as.controller.registry.ManagementResourceRegistration;
 import org.jboss.dmr.ModelNode;
 
 /**
@@ -66,12 +64,12 @@ public class MemoryManagerMXBeanAttributeHandler extends AbstractPlatformMBeanAt
             throw PlatformMBeanMessages.MESSAGES.unknownMemoryManager(mmName);
         }
 
-        if (PlatformMBeanUtil.JVM_MAJOR_VERSION > 6 && PlatformMBeanConstants.OBJECT_NAME.equals(name)) {
+        if (PlatformMBeanUtil.JVM_MAJOR_VERSION > 6 && PlatformMBeanConstants.OBJECT_NAME.getName().equals(name)) {
             final String objName = PlatformMBeanUtil.getObjectNameStringWithNameKey(ManagementFactory.MEMORY_MANAGER_MXBEAN_DOMAIN_TYPE, mmName);
             context.getResult().set(objName);
         } else if (ModelDescriptionConstants.NAME.equals(name)) {
             context.getResult().set(escapeMBeanName(memoryManagerMXBean.getName()));
-        } else if (PlatformMBeanConstants.VALID.equals(name)) {
+        } else if (PlatformMBeanConstants.VALID.getName().equals(name)) {
             context.getResult().set(memoryManagerMXBean.isValid());
         } else if (PlatformMBeanConstants.MEMORY_POOL_NAMES.equals(name)) {
             final ModelNode result = context.getResult();
@@ -79,7 +77,7 @@ public class MemoryManagerMXBeanAttributeHandler extends AbstractPlatformMBeanAt
             for (String pool : memoryManagerMXBean.getMemoryPoolNames()) {
                 result.add(escapeMBeanName(pool));
             }
-        } else if (PlatformMBeanConstants.MEMORY_MANAGER_READ_ATTRIBUTES.contains(name)) {
+        } else if (MemoryManagerResourceDefinition.MEMORY_MANAGER_READ_ATTRIBUTES.contains(name)) {
             // Bug
             throw PlatformMBeanMessages.MESSAGES.badReadAttributeImpl5(name);
         } else {
@@ -95,17 +93,5 @@ public class MemoryManagerMXBeanAttributeHandler extends AbstractPlatformMBeanAt
         // Shouldn't happen; the global handler should reject
         throw unknownAttribute(operation);
 
-    }
-
-    @Override
-    protected void register(ManagementResourceRegistration registration) {
-
-        if (PlatformMBeanUtil.JVM_MAJOR_VERSION > 6) {
-            registration.registerReadOnlyAttribute(PlatformMBeanConstants.OBJECT_NAME, this, AttributeAccess.Storage.RUNTIME);
-        }
-
-        for (String attribute : PlatformMBeanConstants.MEMORY_MANAGER_READ_ATTRIBUTES) {
-            registration.registerMetric(attribute, this);
-        }
     }
 }

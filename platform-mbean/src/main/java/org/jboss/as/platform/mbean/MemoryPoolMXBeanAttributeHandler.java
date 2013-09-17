@@ -33,8 +33,6 @@ import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
 import org.jboss.as.controller.operations.validation.LongRangeValidator;
 import org.jboss.as.controller.operations.validation.ParametersValidator;
-import org.jboss.as.controller.registry.AttributeAccess;
-import org.jboss.as.controller.registry.ManagementResourceRegistration;
 import org.jboss.dmr.ModelNode;
 
 /**
@@ -59,10 +57,10 @@ public class MemoryPoolMXBeanAttributeHandler extends AbstractPlatformMBeanAttri
         final String name = operation.require(ModelDescriptionConstants.NAME).asString();
 
         try {
-            if ((PlatformMBeanUtil.JVM_MAJOR_VERSION > 6 && PlatformMBeanConstants.OBJECT_NAME.equals(name))
-                    || PlatformMBeanConstants.MEMORY_POOL_READ_ATTRIBUTES.contains(name)
-                    || PlatformMBeanConstants.MEMORY_POOL_READ_WRITE_ATTRIBUTES.contains(name)
-                    || PlatformMBeanConstants.MEMORY_POOL_METRICS.contains(name)) {
+            if ((PlatformMBeanUtil.JVM_MAJOR_VERSION > 6 && PlatformMBeanConstants.OBJECT_NAME.getName().equals(name))
+                    || MemoryPoolResourceDefinition.MEMORY_POOL_READ_ATTRIBUTES.contains(name)
+                    || MemoryPoolResourceDefinition.MEMORY_POOL_READ_WRITE_ATTRIBUTES.contains(name)
+                    || MemoryPoolResourceDefinition.MEMORY_POOL_METRICS.contains(name)) {
                 MemoryPoolMXBean memoryPoolMXBean = getMemoryPoolMXBean(memPoolName);
                 storeResult(name, context.getResult(), memoryPoolMXBean, memPoolName);
             } else {
@@ -85,12 +83,14 @@ public class MemoryPoolMXBeanAttributeHandler extends AbstractPlatformMBeanAttri
 
         try {
             if (PlatformMBeanConstants.USAGE_THRESHOLD.equals(name)) {
+                context.getServiceRegistry(true); //to trigger auth
                 usageValidator.validate(operation);
                 memoryPoolMXBean.setUsageThreshold(operation.require(ModelDescriptionConstants.VALUE).asLong());
             } else if (PlatformMBeanConstants.COLLECTION_USAGE_THRESHOLD.equals(name)) {
+                context.getServiceRegistry(true); //to trigger auth
                 usageValidator.validate(operation);
                 memoryPoolMXBean.setCollectionUsageThreshold(operation.require(ModelDescriptionConstants.VALUE).asLong());
-            } else if (PlatformMBeanConstants.MEMORY_POOL_READ_WRITE_ATTRIBUTES.contains(name)) {
+            } else if (MemoryPoolResourceDefinition.MEMORY_POOL_READ_WRITE_ATTRIBUTES.contains(name)) {
                 // Bug
                 throw PlatformMBeanMessages.MESSAGES.badWriteAttributeImpl3(name);
             } else {
@@ -105,29 +105,9 @@ public class MemoryPoolMXBeanAttributeHandler extends AbstractPlatformMBeanAttri
 
     }
 
-    @Override
-    protected void register(ManagementResourceRegistration registration) {
-
-        if (PlatformMBeanUtil.JVM_MAJOR_VERSION > 6) {
-            registration.registerReadOnlyAttribute(PlatformMBeanConstants.OBJECT_NAME, this, AttributeAccess.Storage.RUNTIME);
-        }
-
-        for (String attribute : PlatformMBeanConstants.MEMORY_POOL_READ_ATTRIBUTES) {
-            registration.registerReadOnlyAttribute(attribute, this, AttributeAccess.Storage.RUNTIME);
-        }
-
-        for (String attribute : PlatformMBeanConstants.MEMORY_POOL_READ_WRITE_ATTRIBUTES) {
-            registration.registerReadWriteAttribute(attribute, this, this, AttributeAccess.Storage.RUNTIME);
-        }
-
-        for (String attribute : PlatformMBeanConstants.MEMORY_POOL_METRICS) {
-            registration.registerMetric(attribute, this);
-        }
-    }
-
     static void storeResult(final String name, final ModelNode store, final MemoryPoolMXBean memoryPoolMXBean, final String memPoolName) {
 
-        if (PlatformMBeanUtil.JVM_MAJOR_VERSION > 6 && PlatformMBeanConstants.OBJECT_NAME.equals(name)) {
+        if (PlatformMBeanUtil.JVM_MAJOR_VERSION > 6 && PlatformMBeanConstants.OBJECT_NAME.getName().equals(name)) {
             final String objName = PlatformMBeanUtil.getObjectNameStringWithNameKey(ManagementFactory.MEMORY_POOL_MXBEAN_DOMAIN_TYPE, memPoolName);
             store.set(objName);
         } else if (ModelDescriptionConstants.NAME.equals(name)) {
@@ -140,7 +120,7 @@ public class MemoryPoolMXBeanAttributeHandler extends AbstractPlatformMBeanAttri
         } else if (PlatformMBeanConstants.PEAK_USAGE.equals(name)) {
             final ModelNode usage = PlatformMBeanUtil.getDetypedMemoryUsage(memoryPoolMXBean.getPeakUsage());
             store.set(usage);
-        } else if (PlatformMBeanConstants.VALID.equals(name)) {
+        } else if (PlatformMBeanConstants.VALID.getName().equals(name)) {
             store.set(memoryPoolMXBean.isValid());
         } else if (PlatformMBeanConstants.MEMORY_MANAGER_NAMES.equals(name)) {
             store.setEmptyList();
@@ -166,9 +146,9 @@ public class MemoryPoolMXBeanAttributeHandler extends AbstractPlatformMBeanAttri
         } else if (PlatformMBeanConstants.COLLECTION_USAGE.equals(name)) {
             final ModelNode usage = PlatformMBeanUtil.getDetypedMemoryUsage(memoryPoolMXBean.getCollectionUsage());
             store.set(usage);
-        } else if (PlatformMBeanConstants.MEMORY_POOL_READ_ATTRIBUTES.contains(name)
-                || PlatformMBeanConstants.MEMORY_POOL_READ_WRITE_ATTRIBUTES.contains(name)
-                || PlatformMBeanConstants.MEMORY_POOL_METRICS.contains(name)) {
+        } else if (MemoryPoolResourceDefinition.MEMORY_POOL_READ_ATTRIBUTES.contains(name)
+                || MemoryPoolResourceDefinition.MEMORY_POOL_READ_WRITE_ATTRIBUTES.contains(name)
+                || MemoryPoolResourceDefinition.MEMORY_POOL_METRICS.contains(name)) {
             // Bug
             throw PlatformMBeanMessages.MESSAGES.badReadAttributeImpl7(name);
         }

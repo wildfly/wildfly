@@ -29,15 +29,10 @@ import java.util.Map;
 import java.util.Random;
 import java.util.TreeMap;
 
-import org.jboss.as.controller.AttributeDefinition;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
-import org.jboss.as.controller.SimpleAttributeDefinitionBuilder;
 import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
-import org.jboss.as.controller.registry.AttributeAccess;
-import org.jboss.as.controller.registry.ManagementResourceRegistration;
 import org.jboss.dmr.ModelNode;
-import org.jboss.dmr.ModelType;
 
 /**
  * Handles read-attribute and write-attribute for the resource representing {@link java.lang.management.RuntimeMXBean}.
@@ -47,10 +42,6 @@ import org.jboss.dmr.ModelType;
 public class RuntimeMXBeanAttributeHandler extends AbstractPlatformMBeanAttributeHandler {
 
     public static RuntimeMXBeanAttributeHandler INSTANCE = new RuntimeMXBeanAttributeHandler();
-
-    static final AttributeDefinition OBJECT_NAME = SimpleAttributeDefinitionBuilder.create(PlatformMBeanConstants.OBJECT_NAME, ModelType.STRING)
-            .setStorageRuntime()
-            .build();
 
     private RuntimeMXBeanAttributeHandler() {
 
@@ -62,9 +53,9 @@ public class RuntimeMXBeanAttributeHandler extends AbstractPlatformMBeanAttribut
         final String name = operation.require(ModelDescriptionConstants.NAME).asString();
 
         try {
-            if ((PlatformMBeanUtil.JVM_MAJOR_VERSION > 6 && PlatformMBeanConstants.OBJECT_NAME.equals(name))
-                    || PlatformMBeanConstants.RUNTIME_READ_ATTRIBUTES.contains(name)
-                    || PlatformMBeanConstants.RUNTIME_METRICS.contains(name)) {
+            if ((PlatformMBeanUtil.JVM_MAJOR_VERSION > 6 && PlatformMBeanConstants.OBJECT_NAME.getName().equals(name))
+                    || RuntimeResourceDefinition.RUNTIME_READ_ATTRIBUTES.contains(name)
+                    || RuntimeResourceDefinition.RUNTIME_METRICS.contains(name)) {
                 storeResult(name, context.getResult());
             } else {
                 // Shouldn't happen; the global handler should reject
@@ -86,25 +77,9 @@ public class RuntimeMXBeanAttributeHandler extends AbstractPlatformMBeanAttribut
 
     }
 
-    @Override
-    protected void register(ManagementResourceRegistration registration) {
-
-        if (PlatformMBeanUtil.JVM_MAJOR_VERSION > 6) {
-            registration.registerReadOnlyAttribute(OBJECT_NAME, this);
-        }
-
-        for (String attribute : PlatformMBeanConstants.RUNTIME_READ_ATTRIBUTES) {
-            registration.registerReadOnlyAttribute(attribute, this, AttributeAccess.Storage.RUNTIME);
-        }
-
-        for (String attribute : PlatformMBeanConstants.RUNTIME_METRICS) {
-            registration.registerMetric(attribute, this);
-        }
-    }
-
     static void storeResult(final String name, final ModelNode store) {
 
-        if (PlatformMBeanUtil.JVM_MAJOR_VERSION > 6 && PlatformMBeanConstants.OBJECT_NAME.equals(name)) {
+        if (PlatformMBeanUtil.JVM_MAJOR_VERSION > 6 && PlatformMBeanConstants.OBJECT_NAME.getName().equals(name)) {
             store.set(ManagementFactory.RUNTIME_MXBEAN_NAME);
         } else if (ModelDescriptionConstants.NAME.equals(name)) {
            String runtimeName;
@@ -161,8 +136,8 @@ public class RuntimeMXBeanAttributeHandler extends AbstractPlatformMBeanAttribut
                     propNode.set(prop.getValue());
                 }
             }
-        } else if (PlatformMBeanConstants.RUNTIME_READ_ATTRIBUTES.contains(name)
-                || PlatformMBeanConstants.RUNTIME_METRICS.contains(name)) {
+        } else if (RuntimeResourceDefinition.RUNTIME_READ_ATTRIBUTES.contains(name)
+                || RuntimeResourceDefinition.RUNTIME_METRICS.contains(name)) {
             // Bug
             throw PlatformMBeanMessages.MESSAGES.badReadAttributeImpl10(name);
         }
