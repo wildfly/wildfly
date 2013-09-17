@@ -21,6 +21,10 @@
 */
 package org.jboss.as.domain.http.server;
 
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OUTCOME;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SUCCESS;
+import static org.jboss.as.domain.http.server.HttpServerLogger.ROOT_LOGGER;
+
 import java.io.BufferedInputStream;
 import java.io.FileInputStream;
 import java.io.InputStream;
@@ -39,11 +43,6 @@ import org.jboss.as.controller.client.OperationMessageHandler;
 import org.jboss.dmr.ModelNode;
 import org.xnio.IoUtils;
 import org.xnio.streams.ChannelOutputStream;
-
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.FAILURE_DESCRIPTION;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OUTCOME;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SUCCESS;
-import static org.jboss.as.domain.http.server.HttpServerLogger.ROOT_LOGGER;
 
 /**
  *
@@ -79,13 +78,13 @@ class DomainApiUploadHandler implements HttpHandler {
                     operation.addInputStream(in);
                     response = modelController.execute(dmr, OperationMessageHandler.logging, ModelController.OperationTransactionControl.COMMIT, operation.build());
                     if (!response.get(OUTCOME).asString().equals(SUCCESS)){
-                        Common.sendError(exchange, false, false, response.get(FAILURE_DESCRIPTION).asString());
+                        Common.sendError(exchange, false, response);
                         return;
                     }
                 } catch (Throwable t) {
                     // TODO Consider draining input stream
                     ROOT_LOGGER.uploadError(t);
-                    Common.sendError(exchange, false, false, t.getLocalizedMessage());
+                    Common.sendError(exchange, false, t.getLocalizedMessage());
                     return;
                 } finally {
                     IoUtils.safeClose(in);
@@ -96,7 +95,7 @@ class DomainApiUploadHandler implements HttpHandler {
                 return; //Ignore later files
             }
         }
-        Common.sendError(exchange, false, false, "No file found"); //TODO i18n
+        Common.sendError(exchange, false, "No file found"); //TODO i18n
     }
 
     static void writeResponse(HttpServerExchange exchange, ModelNode response, String contentType) {

@@ -29,6 +29,8 @@ import org.jboss.dmr.ModelNode;
 
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
+import java.io.PrintWriter;
+import java.io.StringWriter;
 
 import static io.undertow.server.handlers.ResponseCodeHandler.HANDLE_404;
 
@@ -54,12 +56,18 @@ public class Common {
 
 
     static String UTF_8 = "utf-8";
-    static final String GMT = "GMT";
 
-    static void sendError(HttpServerExchange exchange, boolean isGet, boolean encode, String msg) {
+    static void sendError(HttpServerExchange exchange, boolean encode, String msg) {
+        int errorCode = getErrorResponseCode(msg);
+        sendError(exchange, encode, new ModelNode(msg), errorCode);
+    }
 
-        final int errorCode = getErrorResponseCode(msg);
+    static void sendError(HttpServerExchange exchange, boolean encode, ModelNode msg) {
+        int errorCode = getErrorResponseCode(msg.asString());
+        sendError(exchange, encode, msg, errorCode);
+    }
 
+    private static void sendError(HttpServerExchange exchange, boolean encode, ModelNode msg, int errorCode) {
         if(encode) {
 
             try {
@@ -78,17 +86,28 @@ public class Common {
 
             } catch (IOException e) {
                 // fallback, should not happen
-                sendError(exchange, isGet, false, msg);
+                sendError(exchange, false, msg);
             }
 
         }
         else {
-            byte[] bytes = msg.getBytes();
+            StringWriter stringWriter = new StringWriter();
+            final PrintWriter print = new PrintWriter(stringWriter);
+            try {
+                msg.writeJSONString(print, false);
+            } finally {
+                print.flush();
+                stringWriter.flush();
+                print.close();
+            }
+
+            String msgString = stringWriter.toString();
+            byte[] bytes = msgString.getBytes();
             exchange.getResponseHeaders().put(Headers.CONTENT_TYPE, TEXT_PLAIN + ";" + UTF_8);
             exchange.getResponseHeaders().put(Headers.CONTENT_LENGTH, String.valueOf(bytes.length));
             exchange.setResponseCode(errorCode);
 
-            exchange.getResponseSender().send(msg, IoCallback.END_EXCHANGE);
+            exchange.getResponseSender().send(msgString, IoCallback.END_EXCHANGE);
         }
     }
 
