@@ -28,12 +28,17 @@ import java.lang.reflect.Method;
 import javax.annotation.Resource;
 import javax.ejb.TimerService;
 import javax.ejb.spi.HandleDelegate;
+import javax.enterprise.concurrent.ContextService;
+import javax.enterprise.concurrent.ManagedExecutorService;
+import javax.enterprise.concurrent.ManagedScheduledExecutorService;
+import javax.enterprise.concurrent.ManagedThreadFactory;
 import javax.enterprise.inject.spi.InjectionPoint;
 import javax.naming.Context;
 import javax.naming.InitialContext;
 import javax.naming.NamingException;
 
 import org.jboss.as.ee.component.EEModuleDescription;
+import org.jboss.as.ee.concurrent.service.ConcurrentServiceNames;
 import org.jboss.as.naming.deployment.ContextNames;
 import org.jboss.as.naming.deployment.ContextNames.BindInfo;
 import org.jboss.as.weld.WeldLogger;
@@ -69,6 +74,14 @@ public class WeldResourceInjectionServices extends AbstractResourceInjectionServ
             } else if (TIMER_SERVICE_CLASS_NAME.equals(type.getName())) {
                 WeldLogger.ROOT_LOGGER.injectionTypeNotValue(TimerService.class, injectionPoint.getMember());
                 return proposedName;
+            } else if (ContextService.class.getName().equals(type.getName())) {
+                return ConcurrentServiceNames.DEFAULT_CONTEXT_SERVICE_JNDI_NAME;
+            }  else if (ManagedExecutorService.class.getName().equals(type.getName())) {
+                return ConcurrentServiceNames.DEFAULT_MANAGED_EXECUTOR_SERVICE_JNDI_NAME;
+            }  else if (ManagedScheduledExecutorService.class.getName().equals(type.getName())) {
+                return ConcurrentServiceNames.DEFAULT_MANAGED_SCHEDULED_EXECUTOR_SERVICE_JNDI_NAME;
+            }  else if (ManagedThreadFactory.class.getName().equals(type.getName())) {
+                return ConcurrentServiceNames.DEFAULT_MANAGED_THREAD_FACTORY_JNDI_NAME;
             }
         }
         return proposedName;
