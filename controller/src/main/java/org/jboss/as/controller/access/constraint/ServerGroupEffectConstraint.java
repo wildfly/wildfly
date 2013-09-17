@@ -22,6 +22,7 @@
 
 package org.jboss.as.controller.access.constraint;
 
+import java.util.Collection;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Set;
@@ -50,7 +51,7 @@ public class ServerGroupEffectConstraint extends AbstractConstraint implements C
     private final boolean user;
     private final boolean global;
     private final boolean unassigned;
-    private volatile Set<String> specific = new LinkedHashSet<String>();
+    private final GroupsHolder groupsHolder;
     private final boolean readOnly;
     private final ServerGroupEffectConstraint readOnlyConstraint;
 
@@ -60,6 +61,7 @@ public class ServerGroupEffectConstraint extends AbstractConstraint implements C
         this.unassigned = true;
         this.readOnly = false;
         this.readOnlyConstraint = null;
+        this.groupsHolder = new GroupsHolder();
     }
 
     private ServerGroupEffectConstraint(final boolean user) {
@@ -68,13 +70,14 @@ public class ServerGroupEffectConstraint extends AbstractConstraint implements C
         this.unassigned = false;
         this.readOnly = false;
         this.readOnlyConstraint = null;
+        this.groupsHolder = new GroupsHolder();
     }
 
     private ServerGroupEffectConstraint(Set<String> allowed) {
         this.user = false;
         this.global = false;
         this.unassigned = false;
-        specific.addAll(allowed);
+        this.groupsHolder = new GroupsHolder(allowed);
         this.readOnly = false;
         this.readOnlyConstraint = null;
     }
@@ -83,20 +86,20 @@ public class ServerGroupEffectConstraint extends AbstractConstraint implements C
         this.user = true;
         this.global = false;
         this.unassigned = false;
-        specific.addAll(allowed);
+        this.groupsHolder = new GroupsHolder(allowed);
         this.readOnly = false;
-        this.readOnlyConstraint = new ServerGroupEffectConstraint(allowed, true);
+        this.readOnlyConstraint = new ServerGroupEffectConstraint(groupsHolder, true);
     }
 
     /**
      * Creates the constraint the standard constraint will return from {@link #getOutofScopeReadConstraint()}
      * Only call from {@link ServerGroupEffectConstraint#ServerGroupEffectConstraint(java.util.List)}
      */
-    private ServerGroupEffectConstraint(List<String> allowed, boolean readOnly) {
+    private ServerGroupEffectConstraint(GroupsHolder groupsHolder, boolean readOnly) {
         this.user = true;
         this.global = false;
         this.unassigned = false;
-        specific.addAll(allowed);
+        this.groupsHolder = groupsHolder;
         this.readOnly = readOnly;
         this.readOnlyConstraint = null;
     }
@@ -104,8 +107,7 @@ public class ServerGroupEffectConstraint extends AbstractConstraint implements C
     public void setAllowedGroups(List<String> allowed) {
         assert !global : "constraint is global";
         assert readOnlyConstraint != null : "invalid cast";
-        this.specific = new LinkedHashSet<String>(allowed);
-        this.readOnlyConstraint.setAllowedGroups(allowed);
+        this.groupsHolder.specific = new LinkedHashSet<String>(allowed);
     }
 
     @Override
@@ -120,7 +122,7 @@ public class ServerGroupEffectConstraint extends AbstractConstraint implements C
                         boolean anyMatch = anyMatch(sgec);
                         if (!anyMatch) ControllerLogger.ACCESS_LOGGER.tracef("read-only server-group constraint violated " +
                                 "for action %s due to no match between groups %s and allowed groups %s",
-                                actionEffect, sgec.specific, specific);
+                                actionEffect, sgec.groupsHolder.specific, groupsHolder.specific);
                         return !anyMatch;
                     }
                 } else if (!global) {
@@ -132,10 +134,10 @@ public class ServerGroupEffectConstraint extends AbstractConstraint implements C
                     } else if (!sgec.unassigned) {
                         if (actionEffect == Action.ActionEffect.WRITE_RUNTIME || actionEffect == Action.ActionEffect.WRITE_CONFIG) {
                             //  Writes must not effect other groups
-                            boolean containsAll = specific.containsAll(sgec.specific);
+                            boolean containsAll = groupsHolder.specific.containsAll(sgec.groupsHolder.specific);
                             if (!containsAll) {
                                 ControllerLogger.ACCESS_LOGGER.tracef("server-group constraint violated for action %s due to " +
-                                        "mismatch of groups %s vs allowed %s", actionEffect, sgec.specific, specific);
+                                        "mismatch of groups %s vs allowed %s", actionEffect, sgec.groupsHolder.specific, groupsHolder.specific);
                             }
                             return !containsAll;
                         } else {
@@ -143,7 +145,7 @@ public class ServerGroupEffectConstraint extends AbstractConstraint implements C
                             boolean anyMatch = anyMatch(sgec);
                             if (!anyMatch) ControllerLogger.ACCESS_LOGGER.tracef("server-group constraint violated " +
                                     "for action %s due to no match between groups %s and allowed groups %s",
-                                    actionEffect, sgec.specific, specific);
+                                    actionEffect, sgec.groupsHolder.specific, groupsHolder.specific);
                             return !anyMatch;
                         }
                     } // else fall through
@@ -159,8 +161,8 @@ public class ServerGroupEffectConstraint extends AbstractConstraint implements C
     private boolean anyMatch(ServerGroupEffectConstraint sgec) {
 
         boolean matched = false;
-        for (String ourGroup : specific) {
-            if (sgec.specific.contains(ourGroup)) {
+        for (String ourGroup : groupsHolder.specific) {
+            if (sgec.groupsHolder.specific.contains(ourGroup)) {
                 matched = true;
                 break;
             }
@@ -191,6 +193,16 @@ public class ServerGroupEffectConstraint extends AbstractConstraint implements C
     public Constraint getOutofScopeReadConstraint() {
         assert readOnlyConstraint != null : "invalid cast";
         return readOnlyConstraint;
+    }
+
+    private static class GroupsHolder {
+        private volatile Set<String> specific = new LinkedHashSet<String>();
+        private GroupsHolder() {
+          // no-op
+        }
+        private GroupsHolder(Collection<String> groups) {
+            this.specific.addAll(groups);
+        }
     }
 
     private static class Factory extends AbstractConstraintFactory implements ScopingConstraintFactory {
