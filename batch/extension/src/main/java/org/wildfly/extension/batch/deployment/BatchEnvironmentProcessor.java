@@ -28,6 +28,8 @@ import javax.enterprise.inject.spi.BeanManager;
 import javax.transaction.UserTransaction;
 
 import org.jberet.spi.BatchEnvironment;
+import org.jboss.as.ee.component.EEModuleDescription;
+import org.jboss.as.ee.naming.InjectedEENamespaceContextSelector;
 import org.jboss.as.ee.weld.WeldDeploymentMarker;
 import org.jboss.as.server.deployment.Attachments;
 import org.jboss.as.server.deployment.DeploymentPhaseContext;
@@ -63,14 +65,14 @@ public class BatchEnvironmentProcessor implements DeploymentUnitProcessor {
 
                 final ServiceTarget serviceTarget = phaseContext.getServiceTarget();
 
-                final BatchEnvironmentService service = new BatchEnvironmentService();
+                final EEModuleDescription moduleDescription = deploymentUnit.getAttachment(org.jboss.as.ee.component.Attachments.EE_MODULE_DESCRIPTION);
+                final InjectedEENamespaceContextSelector namespaceContextSelector = moduleDescription.getNamespaceContextSelector();
+                final BatchEnvironmentService service = new BatchEnvironmentService(namespaceContextSelector);
 
                 final ServiceBuilder<BatchEnvironment> serviceBuilder = serviceTarget.addService(BatchServiceNames.batchDeploymentServiceName(deploymentUnit), service);
                 serviceBuilder.addDependency(BatchServiceNames.BATCH_SERVICE_NAME, Properties.class, service.getPropertiesInjector());
                 serviceBuilder.addDependency(TxnServices.JBOSS_TXN_USER_TRANSACTION, UserTransaction.class, service.getUserTransactionInjector());
                 serviceBuilder.addDependency(BatchServiceNames.BATCH_THREAD_POOL_NAME, ExecutorService.class, service.getExecutorServiceInjector());
-                // TODO (jrp) remove this, but it's only one that currently works
-                // serviceBuilder.addDependency(ConcurrentServiceNames.DEFAULT_MANAGED_EXECUTOR_SERVICE_SERVICE_NAME, ExecutorService.class, service.getExecutorServiceInjector());
 
                 // Set the class loader
                 service.getClassLoaderInjector().setValue(new ImmediateValue<ClassLoader>(moduleClassLoader));

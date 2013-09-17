@@ -75,6 +75,10 @@
             <artifactId>jboss-msc</artifactId>
         </dependency>
         <dependency>
+            <groupId>org.wildfly</groupId>
+            <artifactId>wildfly-ee</artifactId>
+        </dependency>
+        <dependency>
             <groupId>org.wildfly.security</groupId>
             <artifactId>wildfly-security-manager</artifactId>
         </dependency>

@@ -36,6 +36,8 @@
         <module name="javaee.api"/>
         <module name="javax.transaction.api"/>
         <module name="org.jberet.jberet-core" services="import"/>
+        <module name="org.jboss.as.ee"/>
+        <module name="org.jboss.as.naming"/>
         <module name="org.jboss.logging"/>
         <module name="org.jboss.msc"/>
         <module name="org.wildfly.security.manager"/>

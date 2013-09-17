@@ -32,7 +32,8 @@ import javax.transaction.UserTransaction;
 import org.jberet.spi.ArtifactFactory;
 import org.jberet.spi.BatchEnvironment;
 import org.jberet.spi.ThreadContextSetup;
-import org.jberet.spi.ThreadContextSetup.TearDownHandle;
+import org.jboss.as.ee.naming.InjectedEENamespaceContextSelector;
+import org.jboss.as.naming.context.NamespaceContextSelector;
 import org.jboss.msc.service.Service;
 import org.jboss.msc.service.StartContext;
 import org.jboss.msc.service.StartException;
@@ -53,13 +54,18 @@ public class BatchEnvironmentService implements Service<BatchEnvironment> {
     private final InjectedValue<Properties> propertiesInjector = new InjectedValue<Properties>();
     private final InjectedValue<UserTransaction> userTransactionInjector = new InjectedValue<UserTransaction>();
 
+    private final InjectedEENamespaceContextSelector namespaceContextSelector;
     private volatile BatchEnvironment batchEnvironment;
+
+    public BatchEnvironmentService(final InjectedEENamespaceContextSelector namespaceContextSelector) {
+        this.namespaceContextSelector = namespaceContextSelector;
+    }
 
     @Override
     public void start(final StartContext context) throws StartException {
         final BatchEnvironment batchEnvironment = new WildFlyBatchEnvironment(classLoaderInjector.getOptionalValue(),
                 beanManagerInjector.getOptionalValue(), executorServiceInjector.getValue(),
-                userTransactionInjector.getValue(), propertiesInjector.getValue());
+                userTransactionInjector.getValue(), propertiesInjector.getValue(), namespaceContextSelector);
         // Add the service to the factory
         BatchEnvironmentFactory.getInstance().add(classLoaderInjector.getValue(), batchEnvironment);
         this.batchEnvironment = batchEnvironment;
@@ -105,16 +111,18 @@ public class BatchEnvironmentService implements Service<BatchEnvironment> {
         private final Properties properties;
         private final ClassLoader classLoader;
         private final ThreadContextSetup threadContextSetup;
+        private final InjectedEENamespaceContextSelector namespaceContextSelector;
 
         WildFlyBatchEnvironment(final ClassLoader classLoader, final BeanManager beanManager,
                                 final ExecutorService executorService, final UserTransaction userTransaction,
-                                final Properties properties) {
+                                final Properties properties, final InjectedEENamespaceContextSelector namespaceContextSelector) {
             this.classLoader = classLoader;
             artifactFactory = new WildFlyArtifactFactory(beanManager);
             this.executorService = executorService;
             this.userTransaction = userTransaction;
             this.properties = properties;
             this.threadContextSetup = new ClassLoaderThreadContextSetup(classLoader);
+            this.namespaceContextSelector = namespaceContextSelector;
         }
 
         @Override
@@ -149,12 +157,11 @@ public class BatchEnvironmentService implements Service<BatchEnvironment> {
 
         @Override
         public <T> T lookup(final String name) throws NamingException {
-            // TODO (jrp) use the correct naming context see NamespaceContextSelector
-            final TearDownHandle handle = threadContextSetup.setup();
+            NamespaceContextSelector.pushCurrentSelector(namespaceContextSelector);
             try {
                 return InitialContext.doLookup(name);
             } finally {
-                handle.tearDown();
+                NamespaceContextSelector.popCurrentSelector();
             }
         }
     }
