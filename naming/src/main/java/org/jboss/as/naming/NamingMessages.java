@@ -483,4 +483,62 @@ public interface NamingMessages {
      */
     @Message(id = 11876, value = "Binding type %s requires attributed named %s defined")
     OperationFailedException bindingTypeRequiresAttributeDefined(BindingType bindingType, String attributeName);
+
+    /**
+     * Creates an exception indicating the url context could not be found.
+     *
+     * @param referenceName the reference name.
+     *
+     * @return a {@link NamingException} for the error.
+     */
+    @Message(id = 11877, value = "The url '%s' could not be resolved. The Context.URL_PKG_PREFIXES is not specified, empty or factory cannot be loaded.")
+    NameNotFoundException noURLContextFactory(String url);
+
+    /**
+     * Creates exception indicating that parameter must be defined.
+     *
+     * @param attributeName attribute name.
+     *
+     * @return a {@link OperationFailedException} for the error.
+     */
+    @Message(id = 11878, value = "Attribute '%s' must be defined.")
+    OperationFailedException attributeMustBeDefined(String attributeName);
+
+    /**
+     * Creates exception indicating that certain class must implement interface.
+     *
+     * @param className - name of the class.
+     * @param interfaceName - name of the interface.
+     * @return a {@link OperationFailedException} for the error.
+     */
+    @Message(id = 11879, value = "Class '%s' does not implement interface '%s'.")
+    OperationFailedException requireSpecificInterface(String className, String interfaceName);
+
+    /**
+     * Creates exception indicating that certain class must have no-arg constructor.
+     *
+     * @param className - name of the class.
+     * @return a {@link OperationFailedException} for the error.
+     */
+    @Message(id = 11880, value = "Class '%s' does not have no argument constructor.")
+    OperationFailedException requireNoArgConstructor(String className);
+
+    /**
+     * Creates exception indicating AS could not load certain class.
+     *
+     * @param className - name of the class.
+     * @param error - reason of failure.
+     * @return a {@link OperationFailedException} for the error.
+     */
+    @Message(id = 11881, value = "Can not load class '%s'.")
+    OperationFailedException cannottLoadClass(String className, @Cause Throwable cause);
+
+    /**
+     * Creates exception indicating that attribute entry is a duplicate.
+     *
+     * @param entry - name of entry.
+     * @return a {@link OperationFailedException} for the error.
+     */
+    @Message(id = 11882, value = "Entry '%s' is a duplicate.")
+    OperationFailedException duplicateEntry(String entry);
 }

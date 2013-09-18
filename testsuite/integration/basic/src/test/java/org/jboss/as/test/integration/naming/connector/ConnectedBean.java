@@ -52,7 +52,7 @@ public class ConnectedBean implements ConnectedBeanInterface {
             connection = connector.getMBeanServerConnection();
         } finally {
             if (connector != null) {
-                IoUtils.safeClose(connector);
+                connector.close();
             }
         }
     }

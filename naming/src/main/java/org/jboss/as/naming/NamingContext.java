@@ -31,6 +31,7 @@ import static org.jboss.as.naming.util.NamingUtils.notAContextException;
 
 import java.util.Arrays;
 import java.util.Hashtable;
+import java.util.Map;
 
 import javax.naming.Binding;
 import javax.naming.CannotProceedException;
@@ -52,7 +53,9 @@ import javax.naming.spi.ResolveResult;
 
 import org.jboss.as.naming.JndiPermission.Action;
 import org.jboss.as.naming.context.ObjectFactoryBuilder;
+import org.jboss.as.naming.util.DefaultNameParserResolver;
 import org.jboss.as.naming.util.NameParser;
+import org.jboss.as.naming.util.NameParserResolver;
 import org.wildfly.security.manager.WildFlySecurityManager;
 
 /**
@@ -64,10 +67,14 @@ import org.wildfly.security.manager.WildFlySecurityManager;
 public class NamingContext implements EventContext {
 
     private static final RuntimePermission SET_ACTIVE_NAMING_STORE = new RuntimePermission("org.jboss.as.naming.SET_ACTIVE_NAMING_STORE");
+    private static final RuntimePermission SET_PARSER_MAP = new RuntimePermission("org.jboss.as.naming.SET_PARSER_MAP");
+    private static final RuntimePermission SET_PARSER_RESOLVER = new RuntimePermission("org.jboss.as.naming.SET_PARSER_RESOLVER");
     /*
      * The active naming store to use for any context created without a name store.
      */
     private static volatile NamingStore ACTIVE_NAMING_STORE = new InMemoryNamingStore();
+    private static volatile Map<String, javax.naming.NameParser> PARSER_MAP = null;
+    private static volatile NameParserResolver PARSER_RESOLVER = new DefaultNameParserResolver();
 
     /**
      * Set the active naming store
@@ -79,6 +86,20 @@ public class NamingContext implements EventContext {
             System.getSecurityManager().checkPermission(SET_ACTIVE_NAMING_STORE);
         }
         ACTIVE_NAMING_STORE = namingStore;
+    }
+
+    public static void setParserMap(Map<String, javax.naming.NameParser> map){
+        if(WildFlySecurityManager.isChecking()) {
+            System.getSecurityManager().checkPermission(SET_PARSER_MAP);
+        }
+        PARSER_MAP = map;
+    }
+
+    public static void setParserResolver(NameParserResolver parserMatcher){
+        if(WildFlySecurityManager.isChecking()) {
+            System.getSecurityManager().checkPermission(SET_PARSER_RESOLVER);
+        }
+        PARSER_RESOLVER = parserMatcher;
     }
 
     private static final String PACKAGE_PREFIXES = "org.jboss.as.naming.interfaces";
@@ -196,7 +217,6 @@ public class NamingContext implements EventContext {
         }
 
         final Name absoluteName = getAbsoluteName(name);
-
         Object result;
         try {
             result = namingStore.lookup(absoluteName,dereference);
@@ -423,13 +443,13 @@ public class NamingContext implements EventContext {
     }
 
     /** {@inheritDoc} */
-    public NameParser getNameParser(Name name) throws NamingException {
-        return NameParser.INSTANCE;
+    public javax.naming.NameParser getNameParser(Name name) throws NamingException {
+        return PARSER_RESOLVER.findNameParser(name, PARSER_MAP, NameParser.INSTANCE);
     }
 
     /** {@inheritDoc} */
-    public NameParser getNameParser(String name) throws NamingException {
-        return NameParser.INSTANCE;
+    public javax.naming.NameParser getNameParser(String name) throws NamingException {
+        return PARSER_RESOLVER.findNameParser(name, PARSER_MAP, NameParser.INSTANCE);
     }
 
     /** {@inheritDoc} */
@@ -538,6 +558,7 @@ public class NamingContext implements EventContext {
                 linkResult = new InitialContext().lookup(referenceName);
             }
         } catch (Throwable t) {
+
             throw MESSAGES.cannotDeferenceObject(t);
         }
         return linkResult;

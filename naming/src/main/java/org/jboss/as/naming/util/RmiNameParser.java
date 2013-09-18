@@ -22,27 +22,45 @@
 
 package org.jboss.as.naming.util;
 
+import java.util.Enumeration;
+import java.util.Properties;
+
 import javax.naming.CompositeName;
+import javax.naming.CompoundName;
 import javax.naming.Name;
+import javax.naming.NameParser;
 import javax.naming.NamingException;
 
 /**
- * Name parser used by the NamingContext instances.  Relies on composite name instances.
+ * @author baranowb
  *
- * @author John E. Bailey
  */
-public class NameParser implements javax.naming.NameParser {
+public class RmiNameParser implements NameParser {
 
-    public static final NameParser INSTANCE = new NameParser();
+    private static final String REPLACE_TO = "//";
+    private static final String REPLACE_WITH = "\\\\/\\\\/";
+    private static final Properties SYNTAX;
+    static {
+        SYNTAX = new Properties();
+        SYNTAX.put("jndi.syntax.direction", "left_to_right");
+        SYNTAX.put("jndi.syntax.ignorecase", "false");
+        SYNTAX.put("jndi.syntax.separator", "/");
+        SYNTAX.put("jndi.syntax.escape", "\\");
+    }
 
-    /**
-     * Parse the string name into a {@code javax.naming.Name} instance.
-     *
-     * @param name The name to parse
-     * @return The parsed name.
-     * @throws NamingException
-     */
+    @Override
     public Name parse(String name) throws NamingException {
-        return new CompositeName(name);
+        name = name.replaceFirst(REPLACE_TO, REPLACE_WITH);
+        CompoundName tempName = new CompoundName(name, SYNTAX);
+        return new FlyName(tempName.getAll());
+    }
+
+    private class FlyName extends CompositeName {
+
+        private static final long serialVersionUID = -1460841804550306348L;
+
+        public FlyName(Enumeration<String> comps) {
+            super(comps);
+        }
     }
 }
