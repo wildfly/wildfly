@@ -25,7 +25,6 @@ package org.jboss.as.ee.structure;
 import static org.jboss.as.ee.EeMessages.MESSAGES;
 
 import java.io.Closeable;
-import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashSet;
@@ -258,7 +257,7 @@ public class EarStructureProcessor implements DeploymentUnitProcessor {
      */
     private ResourceRoot createResourceRoot(final DeploymentUnit deploymentUnit, final VirtualFile file, final boolean markAsSubDeployment, final boolean explodeDuringMount) throws IOException {
         final boolean war = file.getName().toLowerCase(Locale.ENGLISH).endsWith(WAR_EXTENSION);
-        final Closeable closable = file.isFile() ? mount(file, explodeDuringMount) : exportExplodedWar(war, file);
+        final Closeable closable = file.isFile() ? mount(file, explodeDuringMount) : null;
         final MountHandle mountHandle = new MountHandle(closable);
         final ResourceRoot resourceRoot = new ResourceRoot(file, mountHandle);
         deploymentUnit.addToAttachmentList(Attachments.RESOURCE_ROOTS, resourceRoot);
@@ -270,16 +269,6 @@ public class EarStructureProcessor implements DeploymentUnitProcessor {
         }
         return resourceRoot;
     }
-
-    private Closeable exportExplodedWar(final boolean war, final VirtualFile file) throws IOException {
-        if (war && !file.isFile()) {
-            File warContent = file.getPhysicalFile();
-            VFSUtils.recursiveCopy(file, warContent.getParentFile());
-            return VFS.mountReal(warContent, file);
-        }
-        return null;
-    }
-
 
     public void undeploy(DeploymentUnit context) {
         final List<ResourceRoot> children = context.removeAttachment(Attachments.RESOURCE_ROOTS);
