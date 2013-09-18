@@ -95,6 +95,9 @@ public class WebExtension extends AbstractLegacyExtension {
     static final SensitiveTargetAccessConstraintDefinition WEB_CONNECTOR_CONSTRAINT = new SensitiveTargetAccessConstraintDefinition(
             new SensitivityClassification(SUBSYSTEM_NAME, "web-connector", true, false, false));
 
+    static final SensitiveTargetAccessConstraintDefinition WEB_VALVE_CONSTRAINT = new SensitiveTargetAccessConstraintDefinition(
+            new SensitivityClassification(SUBSYSTEM_NAME, "web-valve", true, false, false));
+
     public WebExtension() {
         super(extensionName, SUBSYSTEM_NAME);
     }
