@@ -137,6 +137,7 @@ public class LoggingSubsystemParser implements XMLStreamConstants, XMLElementRea
                 case LOGGING_1_0:
                 case LOGGING_1_1:
                 case LOGGING_1_2:
+                case LOGGING_1_3:
                 case LOGGING_2_0: {
                     final Element element = Element.forName(reader.getLocalName());
                     switch (element) {
@@ -190,7 +191,8 @@ public class LoggingSubsystemParser implements XMLStreamConstants, XMLElementRea
                             parseLoggingProfilesElement(reader, address, operations);
                             break;
                         case FORMATTER:
-                            if (namespace == Namespace.LOGGING_1_0 || namespace == Namespace.LOGGING_1_1 || namespace == Namespace.LOGGING_1_2)
+                            if (namespace == Namespace.LOGGING_1_0 || namespace == Namespace.LOGGING_1_1 ||
+                                    namespace == Namespace.LOGGING_1_2 || namespace == Namespace.LOGGING_1_3)
                                 throw unexpectedElement(reader);
                             parseFormatter(reader, address, formatterOperations, formatterNames);
                             break;
@@ -1192,7 +1194,8 @@ public class LoggingSubsystemParser implements XMLStreamConstants, XMLElementRea
                     break;
                 }
                 case FORMATTER:
-                    if (namespace == Namespace.LOGGING_1_2)
+                    if (namespace == Namespace.LOGGING_1_0 || namespace == Namespace.LOGGING_1_1 ||
+                            namespace == Namespace.LOGGING_1_2 || namespace == Namespace.LOGGING_1_3)
                         throw unexpectedElement(reader);
                     parseFormatter(reader, profileAddress, formatterOperations, formatterNames);
                     break;
