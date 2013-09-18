@@ -1199,7 +1199,8 @@ public class LoggingSubsystemParser implements XMLStreamConstants, XMLElementRea
                     break;
                 }
                 case FORMATTER:
-                    if (namespace == Namespace.LOGGING_1_2)
+                    if (namespace == Namespace.LOGGING_1_0 || namespace == Namespace.LOGGING_1_1 ||
+                            namespace == Namespace.LOGGING_1_2 || namespace == Namespace.LOGGING_1_3)
                         throw unexpectedElement(reader);
                     parseFormatter(reader, profileAddress, formatterOperations, formatterNames);
                     break;
