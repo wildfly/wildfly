@@ -37,4 +37,7 @@
         </external-context>
     </bindings>
     <remote-naming/>
+    <parsing resolver-class="org.jboss.as.naming.util.DefaultNameParserResolver">
+    	<mapping value="default" class="org.jboss.as.naming.util.NameParser"/>
+    </parsing>
 </subsystem>

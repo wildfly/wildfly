@@ -22,8 +22,12 @@
 
 package org.jboss.as.controller;
 
+import java.lang.reflect.Method;
+import java.util.Collections;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Locale;
+import java.util.Map;
 import java.util.ResourceBundle;
 
 import javax.xml.stream.Location;
@@ -89,6 +93,18 @@ public abstract class MapAttributeDefinition extends AttributeDefinition {
                                      final Boolean nullSignificant, final AttributeAccess.Flag... flags) {
         super(name, xmlName, null, ModelType.OBJECT, allowNull, allowExpression, null, corrector, new MapValidator(elementValidator, allowNull, minSize, maxSize), false,
                 alternatives, requires, attributeMarshaller, resourceOnly, deprecated, accessConstraints, nullSignificant, flags);
+        this.elementValidator = elementValidator;
+    }
+
+    protected MapAttributeDefinition(final String name, final String xmlName, final ModelNode defaultValue,
+            final boolean allowNull, boolean allowExpression, final int minSize, final int maxSize,
+            final ParameterCorrector corrector, final ParameterValidator elementValidator, final String[] alternatives,
+            final String[] requires, final AttributeMarshaller attributeMarshaller, final boolean resourceOnly,
+            final DeprecationData deprecated, final AccessConstraintDefinition[] accessConstraints,
+            final Boolean nullSignificant, final AttributeAccess.Flag... flags) {
+        super(name, xmlName, defaultValue, ModelType.OBJECT, allowNull, allowExpression, null, corrector, new MapValidator(
+                elementValidator, allowNull, minSize, maxSize), false, alternatives, requires, attributeMarshaller,
+                resourceOnly, deprecated, accessConstraints, nullSignificant, flags);
         this.elementValidator = elementValidator;
     }
 
@@ -246,6 +262,40 @@ public abstract class MapAttributeDefinition extends AttributeDefinition {
      */
     protected ModelNode convertParameterElementExpressions(ModelNode parameterElementValue) {
         return isAllowExpression() ? convertStringExpression(parameterElementValue) : parameterElementValue;
+    }
+
+    private static final Map<Class<?>, Class<?>> WRAPPERS_TO_PRIMITIVES;
+    static {
+        Map<Class<?>, Class<?>> tmp = new HashMap<Class<?>, Class<?>>();
+        tmp.put(Boolean.class, boolean.class);
+        tmp.put(Byte.class, byte.class);
+        tmp.put(Character.class, char.class);
+        tmp.put(Double.class, double.class);
+        tmp.put(Float.class, float.class);
+        tmp.put(Integer.class, int.class);
+        tmp.put(Long.class, long.class);
+        tmp.put(Short.class, short.class);
+        WRAPPERS_TO_PRIMITIVES = Collections.unmodifiableMap(tmp);
+    }
+
+    protected static ModelNode convertToModel(Map<String, ? extends Object> value) {
+        if (value == null || value.size() == 0) {
+            return null;
+        }
+        final ModelNode model = new ModelNode();
+        Class valueClass = value.values().iterator().next().getClass();
+        if (WRAPPERS_TO_PRIMITIVES.containsKey(valueClass))
+            valueClass = WRAPPERS_TO_PRIMITIVES.get(valueClass);
+        try {
+            Method addMethod = model.getClass().getMethod("add", String.class, valueClass);
+            for (String key : value.keySet())
+                addMethod.invoke(model, key, value.get(key));
+        } catch (Exception e) {
+            // this is dev time error
+            throw new IllegalArgumentException("Can not convert, ModelNode does not support value of '" + valueClass.getName()
+                    + "' type.", e);
+        }
+        return model;
     }
 
     public static final ParameterCorrector LIST_TO_MAP_CORRECTOR = new ParameterCorrector() {

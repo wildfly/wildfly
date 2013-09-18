@@ -41,8 +41,9 @@
             </xs:documentation>
         </xs:annotation>
         <xs:all>
-            <xs:element name="bindings" type="bindingsType" minOccurs="0" maxOccurs="1"/>
-            <xs:element name="remote-naming" type="remote-namingType" minOccurs="0" maxOccurs="1" />
+        	<xs:element name="bindings" type="bindingsType" minOccurs="0" maxOccurs="1" />
+        	<xs:element name="remote-naming" type="remote-namingType" minOccurs="0" maxOccurs="1" />
+        	<xs:element name="parsing" type="parsingType" maxOccurs="1" minOccurs="0"></xs:element>
         </xs:all>
     </xs:complexType>
 
@@ -199,4 +200,16 @@
         </xs:attribute>
     </xs:complexType>
 
+
+    <xs:complexType name="parsingType">
+    	<xs:sequence maxOccurs="unbounded" minOccurs="1">
+    		<xs:element name="mapping" type="mappingType"></xs:element>
+    	</xs:sequence>
+    	<xs:attribute name="resolver-class" type="xs:string"></xs:attribute>
+    </xs:complexType>
+
+    <xs:complexType name="mappingType">
+    	<xs:attribute name="value" type="xs:string"></xs:attribute>
+    	<xs:attribute name="class" type="xs:string"></xs:attribute>
+    </xs:complexType>
 </xs:schema>

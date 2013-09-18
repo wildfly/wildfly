@@ -36,7 +36,8 @@ public enum NamingSubsystemXMLAttribute {
     MODULE("module"),
     NAME("name"),
     TYPE("type"),
-    VALUE("value"),;
+    VALUE("value"),
+    RESOLVER_CLASS("resolver-class"),;
 
     private final String name;
 

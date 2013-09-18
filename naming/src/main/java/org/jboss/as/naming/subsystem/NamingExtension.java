@@ -25,6 +25,8 @@ package org.jboss.as.naming.subsystem;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SUBSYSTEM;
 import static org.jboss.as.naming.subsystem.NamingSubsystemModel.BINDING_TYPE;
 import static org.jboss.as.naming.subsystem.NamingSubsystemModel.ENVIRONMENT;
+import static org.jboss.as.naming.subsystem.NamingSubsystemModel.RESOLVER_CLASS;
+import static org.jboss.as.naming.subsystem.NamingSubsystemModel.RESOLVER_MAPPING;
 
 import org.jboss.as.controller.Extension;
 import org.jboss.as.controller.ExtensionContext;
@@ -118,6 +120,13 @@ public class NamingExtension implements Extension {
                     .setDiscard(DiscardAttributeChecker.UNDEFINED, ENVIRONMENT)
                     .addRejectCheck(new BindingType11RejectChecker(), BINDING_TYPE)
                     .end();
+
+            builder.getAttributeBuilder()
+                    .addRejectCheck(RejectAttributeChecker.DEFINED , RESOLVER_MAPPING)
+                    .addRejectCheck(RejectAttributeChecker.DEFINED , RESOLVER_CLASS)
+                    .setDiscard(DiscardAttributeChecker.UNDEFINED, RESOLVER_MAPPING)
+                    .setDiscard(DiscardAttributeChecker.UNDEFINED, RESOLVER_CLASS);
+
             TransformationDescription.Tools.register(builder.build(), subsystem, VERSION_1_1_0);
 
             // register 1.2.0 and 1.3.0 transformer
@@ -126,6 +135,13 @@ public class NamingExtension implements Extension {
                     .getAttributeBuilder()
                     .addRejectCheck(new BindingType11RejectChecker(), BINDING_TYPE)
                     .end();
+
+            builder.getAttributeBuilder()
+            .addRejectCheck(RejectAttributeChecker.DEFINED , RESOLVER_MAPPING)
+            .addRejectCheck(RejectAttributeChecker.DEFINED , RESOLVER_CLASS)
+            .setDiscard(DiscardAttributeChecker.UNDEFINED, RESOLVER_MAPPING)
+            .setDiscard(DiscardAttributeChecker.UNDEFINED, RESOLVER_CLASS);
+
             TransformationDescription.Tools.register(builder.build(), subsystem, VERSION_1_2_0);
             TransformationDescription.Tools.register(builder.build(), subsystem, VERSION_1_3_0);
         }

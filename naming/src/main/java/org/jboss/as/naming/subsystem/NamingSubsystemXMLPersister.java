@@ -22,6 +22,8 @@
 
 package org.jboss.as.naming.subsystem;
 
+import java.util.List;
+
 import javax.xml.stream.XMLStreamException;
 
 import org.jboss.as.controller.persistence.SubsystemMarshallingContext;
@@ -36,8 +38,11 @@ import static org.jboss.as.naming.subsystem.NamingSubsystemModel.EXTERNAL_CONTEX
 import static org.jboss.as.naming.subsystem.NamingSubsystemModel.LOOKUP;
 import static org.jboss.as.naming.subsystem.NamingSubsystemModel.OBJECT_FACTORY;
 import static org.jboss.as.naming.subsystem.NamingSubsystemModel.REMOTE_NAMING;
+import static org.jboss.as.naming.subsystem.NamingSubsystemModel.RESOLVER_CLASS;
+import static org.jboss.as.naming.subsystem.NamingSubsystemModel.RESOLVER_MAPPING;
 import static org.jboss.as.naming.subsystem.NamingSubsystemModel.SERVICE;
 import static org.jboss.as.naming.subsystem.NamingSubsystemModel.SIMPLE;
+
 
 /**
  * @author Eduardo Martins
@@ -58,7 +63,6 @@ public class NamingSubsystemXMLPersister implements XMLElementWriter<SubsystemMa
         context.startSubsystemElement(NamingExtension.NAMESPACE_2_0, false);
 
         ModelNode model = context.getModelNode();
-
         // bindings
         if (model.hasDefined(BINDING)) {
             writer.writeStartElement(NamingSubsystemXMLElement.BINDINGS.getLocalName());
@@ -73,6 +77,14 @@ public class NamingSubsystemXMLPersister implements XMLElementWriter<SubsystemMa
             if (service.has(REMOTE_NAMING)) {
                 writer.writeEmptyElement(REMOTE_NAMING);
             }
+        }
+
+        if (model.hasDefined(RESOLVER_CLASS)) {
+            final String resolverClass = model.get(RESOLVER_CLASS).asString();
+            writer.writeStartElement(NamingSubsystemXMLElement.PARSING.getLocalName());
+            writer.writeAttribute(NamingSubsystemXMLAttribute.RESOLVER_CLASS.getLocalName(), resolverClass);
+            this.writeResolverMappings(writer,model.get(RESOLVER_MAPPING));
+            writer.writeEndElement();
         }
         // write the subsystem end element
         writer.writeEndElement();
@@ -135,4 +147,20 @@ public class NamingSubsystemXMLPersister implements XMLElementWriter<SubsystemMa
         writer.writeEndElement();
     }
 
+    private void writeResolverMappings(XMLExtendedStreamWriter writer, ModelNode modelNode) throws XMLStreamException {
+        if(modelNode == null || !modelNode.isDefined())
+            return;
+
+        List<Property> bindings = modelNode.asPropertyList();
+        for(Property p:bindings){
+            this.writeMapping(writer,p);
+        }
+    }
+
+    private void writeMapping(XMLExtendedStreamWriter writer, Property p) throws XMLStreamException {
+        writer.writeStartElement(NamingSubsystemXMLElement.MAPPING.getLocalName());
+        writer.writeAttribute(NamingSubsystemXMLAttribute.VALUE.getLocalName(), p.getName());
+        writer.writeAttribute(NamingSubsystemXMLAttribute.CLASS.getLocalName(), p.getValue().asString());
+        writer.writeEndElement();
+    }
 }
