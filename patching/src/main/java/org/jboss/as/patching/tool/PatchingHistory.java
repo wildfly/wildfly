@@ -35,7 +35,7 @@ import java.util.NoSuchElementException;
 
 import org.jboss.as.patching.Constants;
 import org.jboss.as.patching.PatchingException;
-import org.jboss.as.patching.installation.InstallationManager;
+import org.jboss.as.patching.installation.InstalledIdentity;
 import org.jboss.as.patching.installation.PatchableTarget;
 import org.jboss.as.patching.installation.PatchableTarget.TargetInfo;
 import org.jboss.as.patching.management.PatchManagementMessages;
@@ -71,6 +71,8 @@ public interface PatchingHistory {
          * @return  map of patch element ids by layer names they are applied to
          */
         Map<String,String> getLayerPatches();
+        Map<String,String> getAddOnPatches();
+
     }
 
     public interface Iterator extends java.util.Iterator<Entry> {
@@ -140,21 +142,21 @@ public interface PatchingHistory {
 
         private Factory() {}
 
-        public static ModelNode getHistory(InstallationManager installedImage, PatchableTarget.TargetInfo info) throws PatchingException {
+        public static ModelNode getHistory(InstalledIdentity installedImage, PatchableTarget.TargetInfo info) throws PatchingException {
             final ModelNode result = new ModelNode();
             result.setEmptyList();
             fillHistoryIn(installedImage, info, result);
             return result;
         }
 
-        public static Iterator iterator(final InstallationManager mgr, final PatchableTarget.TargetInfo info) {
+        public static Iterator iterator(final InstalledIdentity mgr, final PatchableTarget.TargetInfo info) {
             if(info == null) {
                 throw new IllegalArgumentException("target info is null");
             }
             return new IteratorImpl(info, mgr);
         }
 
-        public static PatchingHistory getHistory(final InstallationManager mgr) {
+        public static PatchingHistory getHistory(final InstalledIdentity mgr) {
             if(mgr == null) {
                 throw new IllegalStateException("installedImage is null");
             }
@@ -208,7 +210,7 @@ public interface PatchingHistory {
                 this.patchIndex = patchIndex;
             }
 
-            IteratorState(InstallationManager mgr) throws PatchingException {
+            IteratorState(InstalledIdentity mgr) throws PatchingException {
                 if(mgr == null) {
                     throw new IllegalArgumentException("Installation manager is null.");
                 }
@@ -222,14 +224,14 @@ public interface PatchingHistory {
         }
 
         private static final class IteratorImpl extends IteratorState implements Iterator {
-            private final InstallationManager mgr;
+            private final InstalledIdentity mgr;
 
-            private IteratorImpl(InstallationManager mgr) throws PatchingException {
+            private IteratorImpl(InstalledIdentity mgr) throws PatchingException {
                 super(mgr);
                 this.mgr = mgr;
             }
 
-            private IteratorImpl(TargetInfo info, InstallationManager mgr) {
+            private IteratorImpl(TargetInfo info, InstalledIdentity mgr) {
                 super(info);
                 this.mgr = mgr;
             }
@@ -239,7 +241,7 @@ public interface PatchingHistory {
                 return hasNext(mgr, this);
             }
 
-            private static boolean hasNext(InstallationManager mgr, IteratorState state) {
+            private static boolean hasNext(InstalledIdentity mgr, IteratorState state) {
                 // current info hasn't been initialized yet
                 if(state.patchIndex < 0) {
                     if(BASE.equals(state.currentInfo.getCumulativePatchID())) {
@@ -301,7 +303,7 @@ public interface PatchingHistory {
                 return next(mgr, this);
             }
 
-            private static Entry next(final InstallationManager mgr, IteratorState state) {
+            private static Entry next(final InstalledIdentity mgr, IteratorState state) {
 
                 String patchId = nextPatchIdForCurrentInfo(state);
                 if(patchId == null) { // current info is exhausted, try moving to the next CP
@@ -347,6 +349,7 @@ public interface PatchingHistory {
                 return new Entry() {
                     String appliedAt;
                     Map<String,String> layerPatches;
+                    Map<String,String> addOnPatches;
 
                     @Override
                     public String getPatchId() {
@@ -375,12 +378,20 @@ public interface PatchingHistory {
                     @Override
                     public Map<String, String> getLayerPatches() {
                         if(layerPatches == null) {
-                            loadLayerPatches();
+                            loadLayerPatches(false);
                         }
                         return layerPatches;
                     }
 
-                    private void loadLayerPatches() {
+                    @Override
+                    public Map<String, String> getAddOnPatches() {
+                        if(addOnPatches == null) {
+                            loadLayerPatches(true);
+                        }
+                        return addOnPatches;
+                    }
+
+                    private void loadLayerPatches(boolean addons) {
                         final File patchDir = mgr.getInstalledImage().getPatchHistoryDir(entryPatchId);
                         if(patchDir.exists()) {
                             final File patchXml = new File(patchDir, "patch.xml");
@@ -389,7 +400,9 @@ public interface PatchingHistory {
                                     Patch patch = ((PatchBuilder)PatchXml.parse(patchXml)).build();
                                     layerPatches = new HashMap<String, String>();
                                     for(PatchElement e : patch.getElements()) {
-                                        layerPatches.put(e.getProvider().getName(), e.getId());
+                                        if (e.getProvider().isAddOn() == addons) {
+                                            layerPatches.put(e.getProvider().getName(), e.getId());
+                                        }
                                     }
                                 } catch (Exception e) {
                                     e.printStackTrace(); // TODO
@@ -422,7 +435,7 @@ public interface PatchingHistory {
                 throw new UnsupportedOperationException();
             }
 
-            private static boolean existsOnDisk(InstallationManager mgr, String id) {
+            private static boolean existsOnDisk(InstalledIdentity mgr, String id) {
                 try {
                     assertExistsOnDisk(mgr, id);
                     return true;
@@ -431,7 +444,7 @@ public interface PatchingHistory {
                 }
             }
 
-            private static void assertExistsOnDisk(InstallationManager mgr, String id) throws NoSuchElementException {
+            private static void assertExistsOnDisk(InstalledIdentity mgr, String id) throws NoSuchElementException {
                 final File historyDir = mgr.getInstalledImage().getPatchHistoryDir(id);
                 if(!historyDir.exists()) {
                     throw new NoSuchElementException(PatchManagementMessages.MESSAGES.noPatchHistory(historyDir.getAbsolutePath()));
@@ -497,7 +510,7 @@ public interface PatchingHistory {
                 return entry;
             }
 
-            private static Entry nextCP(InstallationManager mgr, IteratorState state) {
+            private static Entry nextCP(InstalledIdentity mgr, IteratorState state) {
                 while(hasNext(mgr, state)) {
                     final Entry entry = next(mgr, state);
                     if(state.type == Patch.PatchType.CUMULATIVE) {
@@ -512,7 +525,7 @@ public interface PatchingHistory {
          * Goes back in rollback history adding the patch id and it's application timestamp
          * to the resulting list.
          */
-        private static void fillHistoryIn(InstallationManager installedImage, PatchableTarget.TargetInfo info, ModelNode result) throws PatchingException {
+        private static void fillHistoryIn(InstalledIdentity installedImage, PatchableTarget.TargetInfo info, ModelNode result) throws PatchingException {
             final Iterator i = iterator(installedImage, info);
             while(i.hasNext()) {
                 final Entry next = i.next();

@@ -26,12 +26,14 @@ package org.jboss.as.patching.runner;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
+import java.util.EnumSet;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
 import org.jboss.as.patching.metadata.ContentItem;
 import org.jboss.as.patching.metadata.ContentModification;
+import org.jboss.as.patching.metadata.ModificationType;
 
 /**
  * Utility class to auto resolve conflicts when rolling back/invalidating patches.
@@ -44,6 +46,9 @@ import org.jboss.as.patching.metadata.ContentModification;
  * @author Emanuel Muckenhuber
  */
 class PatchingTasks {
+
+    static final EnumSet<ModificationType> ALL_MODIFICATIONS = EnumSet.allOf(ModificationType.class);
+    static final EnumSet<ModificationType> ALL_BUT_MODIFY = EnumSet.of(ModificationType.ADD, ModificationType.REMOVE);
 
     /**
      * Process multiple patches for rollback, trying to determine the current and target state for this applying this combination.
@@ -118,6 +123,25 @@ class PatchingTasks {
                 if (!Arrays.equals(backupItem, originalTarget)) {
                     definition.addConflict(contentEntry);
                 }
+            }
+        }
+    }
+
+    static void addMissingModifications(final String patchId, Collection<ContentModification> modifications, final Map<Location, ContentTaskDefinition> definitions, final ContentItemFilter filter) {
+        for (final ContentModification modification : modifications) {
+
+            final ContentItem item = modification.getItem();
+            // Check if we accept the item
+            if (!filter.accepts(item)) {
+                continue;
+            }
+
+            final Location location = new Location(item);
+            final ContentEntry contentEntry = new ContentEntry(patchId, modification);
+            ContentTaskDefinition definition = definitions.get(location);
+            if (definition == null) {
+                definition = new ContentTaskDefinition(location, contentEntry);
+                definitions.put(location, definition);
             }
         }
     }

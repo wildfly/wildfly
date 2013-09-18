@@ -15,6 +15,7 @@ import java.util.List;
 import java.util.Map;
 
 import org.jboss.as.patching.Constants;
+import org.jboss.as.patching.DirectoryStructure;
 import org.jboss.as.patching.IoUtils;
 import org.jboss.as.patching.PatchLogger;
 import org.jboss.as.patching.PatchMessages;
@@ -34,6 +35,7 @@ import org.jboss.as.patching.metadata.PatchXml;
 import org.jboss.as.patching.metadata.RollbackPatch;
 import org.jboss.as.patching.metadata.UpgradeCondition;
 import org.jboss.as.patching.tool.ContentVerificationPolicy;
+import org.jboss.as.patching.tool.PatchingHistory;
 import org.jboss.as.patching.tool.PatchingResult;
 
 /**
@@ -144,6 +146,11 @@ class IdentityPatchRunner implements InstallationManager.ModificationCompletionC
         final IdentityPatchContext.PatchEntry identityEntry = context.getIdentityEntry();
         apply(patchId, patch.getModifications(), identityEntry.getDefinitions());
         identityEntry.apply(patchId, patchType);
+
+        // Port forward missing module changes
+        if (patchType == Patch.PatchType.CUMULATIVE) {
+            portForward(patch, context);
+        }
 
         // We need the resulting version for rollback
         if (patchType == Patch.PatchType.CUMULATIVE) {
@@ -405,6 +412,61 @@ class IdentityPatchRunner implements InstallationManager.ModificationCompletionC
     static void checkState(final PatchableTarget.TargetInfo o, final PatchableTarget.TargetInfo n) {
         assert n.getPatchIDs().equals(o.getPatchIDs());
         assert n.getCumulativePatchID().equals(o.getCumulativePatchID());
+    }
+
+    /**
+     * Port forward missing module changes for each layer.
+     *
+     * @param patch   the current patch
+     * @param context the patch context
+     * @throws PatchingException
+     * @throws IOException
+     * @throws XMLStreamException
+     */
+    void portForward(final Patch patch, IdentityPatchContext context) throws PatchingException, IOException, XMLStreamException {
+        assert patch.getIdentity().getPatchType() == Patch.PatchType.CUMULATIVE;
+
+        final PatchingHistory history = context.getHistory();
+        for (final PatchElement element : patch.getElements()) {
+
+            final PatchElementProvider provider = element.getProvider();
+            final String name = provider.getName();
+            final boolean addOn = provider.isAddOn();
+
+            final IdentityPatchContext.PatchEntry target = context.resolveForElement(element);
+            final String cumulativePatchID = target.getCumulativePatchID();
+            if (Constants.BASE.equals(cumulativePatchID)) {
+                continue;
+            }
+
+            boolean found = false;
+            final PatchingHistory.Iterator iterator = history.iterator();
+            while (iterator.hasNextCP()) {
+                final PatchingHistory.Entry entry = iterator.nextCP();
+                final String patchId = addOn ? entry.getAddOnPatches().get(name) : entry.getLayerPatches().get(name);
+
+                if (patchId != null && patchId.equals(cumulativePatchID)) {
+                    final Patch original = loadPatchInformation(entry.getPatchId(), installedImage);
+                    for (final PatchElement originalElement : original.getElements()) {
+                        if (name.equals(originalElement.getProvider().getName())
+                                && addOn == originalElement.getProvider().isAddOn()) {
+                            PatchingTasks.addMissingModifications(cumulativePatchID, originalElement.getModifications(), target.getDefinitions(), ContentItemFilter.ALL_BUT_MISC);
+                        }
+                    }
+                    // Record a loader to have access to the current modules
+                    final DirectoryStructure structure = target.getDirectoryStructure();
+                    final File modulesRoot = structure.getModulePatchDirectory(patchId);
+                    final File bundlesRoot = structure.getBundlesPatchDirectory(patchId);
+                    final PatchContentLoader loader = PatchContentLoader.create(null, bundlesRoot, modulesRoot);
+                    context.recordContentLoader(patchId, loader);
+                    found = true;
+                    break;
+                }
+            }
+            if (!found) {
+                throw new PatchingException("failed to find patch history entry for " + cumulativePatchID);
+            }
+        }
     }
 
     /**
