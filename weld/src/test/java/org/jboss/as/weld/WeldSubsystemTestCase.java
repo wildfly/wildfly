@@ -23,10 +23,19 @@ package org.jboss.as.weld;
 
 import java.io.IOException;
 
+import org.jboss.as.controller.ModelVersion;
+import org.jboss.as.controller.PathAddress;
+import org.jboss.as.model.test.FailedOperationTransformationConfig;
+import org.jboss.as.model.test.ModelTestControllerVersion;
+import org.jboss.as.model.test.ModelTestUtils;
 import org.jboss.as.subsystem.test.AbstractSubsystemBaseTest;
+import org.jboss.as.subsystem.test.AdditionalInitialization;
+import org.jboss.as.subsystem.test.KernelServices;
+import org.jboss.as.subsystem.test.KernelServicesBuilder;
+import org.junit.Assert;
+import org.junit.Test;
 
 /**
- *
  * @author <a href="kabir.khan@jboss.com">Kabir Khan</a>
  */
 public class WeldSubsystemTestCase extends AbstractSubsystemBaseTest {
@@ -37,8 +46,54 @@ public class WeldSubsystemTestCase extends AbstractSubsystemBaseTest {
 
     @Override
     protected String getSubsystemXml() throws IOException {
-        //This is just copied from standalone.xml testing more combinations would be good
-        return
-            "<subsystem xmlns=\"urn:jboss:domain:weld:2.0\" require-bean-descriptor=\"false\" non-portable-mode=\"false\" />";
+        return readResource("subsystem.xml");
     }
+
+    @Test
+    public void testSubsystem10() throws Exception {
+        standardSubsystemTest("subsystem_1_0.xml", false);
+    }
+
+    @Test
+    public void testTransformersAS712() throws Exception {
+        testTransformers10(ModelTestControllerVersion.V7_1_2_FINAL);
+    }
+
+    @Test
+    public void testTransformersAS713() throws Exception {
+        testTransformers10(ModelTestControllerVersion.V7_1_3_FINAL);
+    }
+
+    /*@Test //not ready yet in testing framework
+    public void testTransformersAS72() throws Exception {
+        testTransformers10(ModelTestControllerVersion.V7_2_0_FINAL);
+    }*/
+
+
+    private void testTransformers10(ModelTestControllerVersion controllerVersion) throws Exception {
+        ModelVersion modelVersion = ModelVersion.create(1, 0, 0);
+        KernelServicesBuilder builder = createKernelServicesBuilder(AdditionalInitialization.MANAGEMENT);
+
+        //which is why we need to include the jboss-as-controller artifact.
+        builder.createLegacyKernelServicesBuilder(AdditionalInitialization.MANAGEMENT, controllerVersion, modelVersion)
+                .addMavenResourceURL("org.jboss.as:jboss-as-weld:" + controllerVersion.getMavenGavVersion())
+                .addMavenResourceURL("org.jboss.as:jboss-as-controller:" + controllerVersion.getMavenGavVersion())
+                .skipReverseControllerCheck()
+                .dontPersistXml();
+
+        KernelServices mainServices = builder.build();
+        Assert.assertTrue(mainServices.isSuccessfulBoot());
+        Assert.assertTrue(mainServices.getLegacyServices(modelVersion).isSuccessfulBoot());
+        ModelTestUtils.checkFailedTransformedBootOperations(mainServices, modelVersion, parse(getSubsystemXml("subsystem.xml")),
+                new FailedOperationTransformationConfig()
+                        .addFailedAttribute(
+                                PathAddress.pathAddress(WeldExtension.PATH_SUBSYSTEM),
+                                new FailedOperationTransformationConfig.NewAttributesConfig(
+                                        WeldResourceDefinition.NON_PORTABLE_MODE_ATTRIBUTE,
+                                        WeldResourceDefinition.REQUIRE_BEAN_DESCRIPTOR_ATTRIBUTE
+                                )
+                        )
+        );
+    }
+
 }
