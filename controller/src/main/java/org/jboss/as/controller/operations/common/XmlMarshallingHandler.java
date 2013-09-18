@@ -33,6 +33,7 @@ import org.jboss.as.controller.OperationStepHandler;
 import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.SimpleOperationDefinition;
 import org.jboss.as.controller.SimpleOperationDefinitionBuilder;
+import org.jboss.as.controller.access.management.SensitiveTargetAccessConstraintDefinition;
 import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
 import org.jboss.as.controller.descriptions.common.ControllerResolver;
 import org.jboss.as.controller.persistence.ConfigurationPersister;
@@ -47,9 +48,10 @@ import org.jboss.dmr.ModelType;
  */
 public class XmlMarshallingHandler implements OperationStepHandler{
 
-    private static final String OPERATION_NAME = "read-config-as-xml";
+    private static final String OPERATION_NAME = ModelDescriptionConstants.READ_CONFIG_AS_XML_OPERATION;
 
     public static final SimpleOperationDefinition DEFINITION = new SimpleOperationDefinitionBuilder(OPERATION_NAME,ControllerResolver.getResolver())
+            .addAccessConstraint(SensitiveTargetAccessConstraintDefinition.READ_WHOLE_CONFIG)
             .setReplyType(ModelType.STRING)
             .setReadOnly()
             .setRuntimeOnly()
