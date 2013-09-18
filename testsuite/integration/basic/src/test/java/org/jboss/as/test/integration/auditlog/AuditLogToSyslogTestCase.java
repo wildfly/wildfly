@@ -44,6 +44,7 @@ import org.jboss.as.arquillian.api.ServerSetupTask;
 import org.jboss.as.arquillian.container.ManagementClient;
 import org.jboss.as.controller.client.ModelControllerClient;
 import org.jboss.as.controller.client.OperationBuilder;
+import org.jboss.as.test.integration.logging.syslogserver.UDPSyslogServerConfig;
 import org.jboss.as.test.integration.security.common.BlockedFileSyslogServerEventHandler;
 import org.jboss.as.test.shared.TimeoutUtil;
 import org.jboss.dmr.ModelNode;
@@ -52,6 +53,7 @@ import org.jboss.shrinkwrap.api.spec.WebArchive;
 import org.junit.Assert;
 import org.junit.Test;
 import org.junit.runner.RunWith;
+import org.productivity.java.syslog4j.SyslogConstants;
 import org.productivity.java.syslog4j.server.SyslogServer;
 import org.productivity.java.syslog4j.server.SyslogServerIF;
 import org.xnio.IoUtils;
@@ -184,13 +186,17 @@ public class AuditLogToSyslogTestCase {
                 logFile.delete();
             }
 
+            // clear created server instances (TCP/UDP)
+            SyslogServer.shutdown();
             // start and set syslog server
-            server = SyslogServer.getInstance("udp");
-            server.getConfig().setPort(PORT);
+            final UDPSyslogServerConfig config = new UDPSyslogServerConfig();
+            config.setPort(PORT);
+            config.setUseStructuredData(true);
             queue = new LinkedBlockingQueue<String>();
-            server.getConfig()
-                    .addEventHandler(new BlockedFileSyslogServerEventHandler(queue, logFile.getAbsolutePath(), false));
-            SyslogServer.getThreadedInstance("udp");
+            config.addEventHandler(new BlockedFileSyslogServerEventHandler(queue, logFile.getAbsolutePath(), false));
+            server = SyslogServer.createInstance(UDP, config);
+            // start syslog server
+            SyslogServer.getThreadedInstance(SyslogConstants.UDP);
 
             ModelNode op;
 
@@ -240,6 +246,8 @@ public class AuditLogToSyslogTestCase {
         public void tearDown(ManagementClient managementClient, String containerId) throws Exception {
             // stop syslog server
             SyslogServer.shutdown();
+            server.setThread(null);
+            server.getConfig().removeAllEventHandlers();
 
             ModelNode op;
 
