@@ -22,11 +22,16 @@
 
 package org.jboss.as.web;
 
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
+
 import org.jboss.as.controller.AttributeDefinition;
 import org.jboss.as.controller.ModelOnlyResourceDefinition;
 import org.jboss.as.controller.SimpleAttributeDefinition;
 import org.jboss.as.controller.SimpleAttributeDefinitionBuilder;
 import org.jboss.as.controller.StringListAttributeDefinition;
+import org.jboss.as.controller.access.management.AccessConstraintDefinition;
 import org.jboss.as.controller.access.management.SensitiveTargetAccessConstraintDefinition;
 import org.jboss.as.controller.operations.validation.IntRangeValidator;
 import org.jboss.as.controller.operations.validation.StringLengthValidator;
@@ -165,6 +170,13 @@ public class WebConnectorDefinition extends ModelOnlyResourceDefinition {
     };
     static final WebConnectorDefinition INSTANCE = new WebConnectorDefinition();
 
+    private static final List<AccessConstraintDefinition> ACCESS_CONSTRAINTS;
+    static {
+        List<AccessConstraintDefinition> constraints = new ArrayList<AccessConstraintDefinition>();
+        constraints.add(WebExtension.WEB_CONNECTOR_CONSTRAINT);
+        ACCESS_CONSTRAINTS = Collections.unmodifiableList(constraints);
+    }
+
     private WebConnectorDefinition() {
         super(WebExtension.CONNECTOR_PATH,
                 WebExtension.getResourceDescriptionResolver(Constants.CONNECTOR),
@@ -178,4 +190,8 @@ public class WebConnectorDefinition extends ModelOnlyResourceDefinition {
         connectors.registerReadOnlyAttribute(NAME, null);
     }
 
+    @Override
+    public List<AccessConstraintDefinition> getAccessConstraints() {
+        return ACCESS_CONSTRAINTS;
+    }
 }
