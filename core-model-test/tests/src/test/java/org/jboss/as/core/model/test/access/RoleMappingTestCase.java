@@ -37,6 +37,7 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.REM
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.RESULT;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ROLE_MAPPING;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SUCCESS;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.FAILED;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.TYPE;
 import static org.jboss.as.domain.management.ModelDescriptionConstants.IS_CALLER_IN_ROLE;
 import static org.junit.Assert.assertEquals;
@@ -47,6 +48,7 @@ import java.util.Set;
 
 import javax.security.auth.Subject;
 
+import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
 import org.jboss.as.core.model.test.AbstractCoreModelTest;
 import org.jboss.as.core.model.test.KernelServices;
@@ -328,6 +330,58 @@ public class RoleMappingTestCase extends AbstractCoreModelTest {
         removeRole(roleName);
     }
 
+    /*
+     * Duplicate Handling
+     *
+     * Tests to verify that the add operations successfully detect duplicate include/exclude definitions.
+     */
+
+    public void testDuplicateUserComplete() {
+        final String roleName = "TestRoleEleven";
+        final String userName = "UserEleven";
+
+        addRole(roleName, false);
+        addPrincipal(roleName, MappingType.INCLUDE, PrincipalType.USER, userName, TEST_REALM);
+        addPrincipal(roleName, MappingType.INCLUDE, PrincipalType.USER, userName, TEST_REALM, true);
+    }
+
+    public void testDuplicateUserRealmLess() {
+        final String roleName = "TestRoleTwelve";
+        final String userName = "UserTwelve";
+
+        addRole(roleName, false);
+        addPrincipal(roleName, MappingType.INCLUDE, PrincipalType.USER, userName, null);
+        addPrincipal(roleName, MappingType.INCLUDE, PrincipalType.USER, userName, TEST_REALM);
+        addPrincipal(roleName, MappingType.INCLUDE, PrincipalType.USER, userName, null, true);
+
+        addPrincipal(roleName, MappingType.EXCLUDE, PrincipalType.USER, userName, TEST_REALM);
+        addPrincipal(roleName, MappingType.EXCLUDE, PrincipalType.USER, userName, null);
+        addPrincipal(roleName, MappingType.EXCLUDE, PrincipalType.USER, userName, null, true);
+    }
+
+    public void testDuplicateGroupComplete() {
+        final String roleName = "TestRoleThirteen";
+        final String groupName = "UserThirteen";
+
+        addRole(roleName, false);
+        addPrincipal(roleName, MappingType.EXCLUDE, PrincipalType.GROUP, groupName, TEST_REALM);
+        addPrincipal(roleName, MappingType.EXCLUDE, PrincipalType.GROUP, groupName, TEST_REALM, true);
+    }
+
+    public void testDuplicateGroupRealmLess() {
+        final String roleName = "TestRoleFourteen";
+        final String groupName = "UserFourteen";
+
+        addRole(roleName, false);
+        addPrincipal(roleName, MappingType.EXCLUDE, PrincipalType.GROUP, groupName, null);
+        addPrincipal(roleName, MappingType.EXCLUDE, PrincipalType.GROUP, groupName, TEST_REALM);
+        addPrincipal(roleName, MappingType.EXCLUDE, PrincipalType.GROUP, groupName, null, true);
+
+        addPrincipal(roleName, MappingType.INCLUDE, PrincipalType.GROUP, groupName, TEST_REALM);
+        addPrincipal(roleName, MappingType.INCLUDE, PrincipalType.GROUP, groupName, null);
+        addPrincipal(roleName, MappingType.INCLUDE, PrincipalType.GROUP, groupName, null, true);
+    }
+
     private void addRole(final String roleName, boolean includeAll) {
         ModelNode operation = new ModelNode();
         operation.get(OP_ADDR).add(CORE_SERVICE, MANAGEMENT).add(ACCESS, AUTHORIZATION).add(ROLE_MAPPING, roleName);
@@ -341,6 +395,10 @@ public class RoleMappingTestCase extends AbstractCoreModelTest {
     }
 
     private ModelNode addPrincipal(final String roleName, final MappingType mappingType, final PrincipalType principalType, final String name, final String realm) {
+        return addPrincipal(roleName, mappingType, principalType, name, realm, false);
+    }
+
+    private ModelNode addPrincipal(final String roleName, final MappingType mappingType, final PrincipalType principalType, final String name, final String realm, boolean expectFailure) {
         ModelNode operation = new ModelNode();
         operation.get(OP_ADDR).add(CORE_SERVICE, MANAGEMENT).add(ACCESS, AUTHORIZATION).add(ROLE_MAPPING, roleName).add(mappingType.toString(), uniqueCount++);
         operation.get(OP).set(ADD);
@@ -351,7 +409,11 @@ public class RoleMappingTestCase extends AbstractCoreModelTest {
         }
 
         ModelNode response = kernelServices.executeOperation(operation);
-        assertEquals(SUCCESS, response.get(OUTCOME).asString());
+        if (expectFailure) {
+            assertEquals(FAILED, response.get(OUTCOME).asString());
+        } else {
+            assertEquals(SUCCESS, response.get(OUTCOME).asString());
+        }
 
         return operation.get(OP_ADDR);
     }
