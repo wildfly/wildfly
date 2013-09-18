@@ -33,7 +33,6 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
-import static org.junit.Assert.fail;
 
 import java.io.IOException;
 
@@ -56,6 +55,7 @@ import org.jboss.as.arquillian.api.ServerSetupTask;
 import org.jboss.as.arquillian.container.ManagementClient;
 import org.jboss.as.test.integration.common.jms.JMSOperations;
 import org.jboss.as.test.integration.common.jms.JMSOperationsProvider;
+import org.jboss.as.test.shared.TimeoutUtil;
 import org.jboss.dmr.ModelNode;
 import org.jboss.logging.Logger;
 import org.jboss.shrinkwrap.api.Archive;
@@ -88,6 +88,8 @@ public class MDBTestCase {
     @ArquillianResource
     private ManagementClient managementClient;
 
+    private static final int TIMEOUT = TimeoutUtil.adjust(2000);
+
     static class JmsQueueSetup implements ServerSetupTask {
 
         private JMSOperations jmsAdminOperations;
@@ -114,6 +116,7 @@ public class MDBTestCase {
         final JavaArchive ejbJar = ShrinkWrap.create(JavaArchive.class, "mdb.jar")
                 .addPackage(MDBWithDeliveryActiveAnnotation.class.getPackage())
                 .addPackage(JMSOperations.class.getPackage())
+                .addClass(TimeoutUtil.class)
                 .addAsManifestResource(MDBWithDeliveryActiveAnnotation.class.getPackage(), "jboss-ejb3.xml", "jboss-ejb3.xml")
                 .addAsManifestResource(new StringAsset("Dependencies: org.jboss.as.controller-client, org.jboss.dmr \n"), "MANIFEST.MF");
         logger.info(ejbJar.toString(true));
@@ -151,14 +154,14 @@ public class MDBTestCase {
 
             // the MDB did not reply to the message because its delivery is not active
             MessageConsumer consumer = session.createConsumer(replyQueue);
-            Message reply = consumer.receive(500);
+            Message reply = consumer.receive(TIMEOUT);
             assertNull(reply);
 
             executeMDBOperation(mdbName, "start-delivery");
             assertMDBDeliveryIsActive(mdbName, true);
 
             // the message was delivered to the MDB which replied
-            reply = consumer.receive(500);
+            reply = consumer.receive(TIMEOUT);
             assertNotNull(reply);
             assertEquals(message.getJMSMessageID(), reply.getJMSCorrelationID());
 
@@ -171,7 +174,7 @@ public class MDBTestCase {
             producer.send(message);
 
             // the MDB did not reply to the message because its delivery is not active
-            reply = consumer.receive(500);
+            reply = consumer.receive(TIMEOUT);
             assertNull(reply);
         } finally {
             if (connection != null) {
