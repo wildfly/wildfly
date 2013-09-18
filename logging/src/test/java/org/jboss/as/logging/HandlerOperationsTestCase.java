@@ -77,7 +77,7 @@ public class HandlerOperationsTestCase extends AbstractOperationsTestCase {
         testPeriodicRotatingFileHandler(kernelServices, PROFILE);
 
         testSizeRotatingFileHandler(kernelServices, null);
-        testPeriodicRotatingFileHandler(kernelServices, PROFILE);
+        testSizeRotatingFileHandler(kernelServices, PROFILE);
     }
 
     @Test
@@ -430,12 +430,14 @@ public class HandlerOperationsTestCase extends AbstractOperationsTestCase {
 
         testWrite(kernelServices, address, SizeRotatingHandlerResourceDefinition.MAX_BACKUP_INDEX, 20);
         testWrite(kernelServices, address, SizeRotatingHandlerResourceDefinition.ROTATE_SIZE, "50m");
+        testWrite(kernelServices, address, SizeRotatingHandlerResourceDefinition.ROTATE_ON_BOOT, true);
 
         // Undefine attributes
         testUndefineCommonAttributes(kernelServices, address);
         testUndefine(kernelServices, address, CommonAttributes.APPEND);
         testUndefine(kernelServices, address, CommonAttributes.AUTOFLUSH);
         testUndefine(kernelServices, address, SizeRotatingHandlerResourceDefinition.MAX_BACKUP_INDEX);
+        testUndefine(kernelServices, address, SizeRotatingHandlerResourceDefinition.ROTATE_ON_BOOT);
 
         // Clean-up
         executeOperation(kernelServices, SubsystemOperations.createRemoveOperation(address));
