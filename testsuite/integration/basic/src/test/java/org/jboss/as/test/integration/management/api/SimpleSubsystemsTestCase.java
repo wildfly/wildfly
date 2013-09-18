@@ -53,11 +53,6 @@ public class SimpleSubsystemsTestCase extends ContainerResourceMgmtTestBase {
     }
 
     @Test
-    public void testWeld() throws Exception {
-        testSimpleSubsystem("weld");
-    }
-
-    @Test
     public void testPojo() throws Exception {
         testSimpleSubsystem("pojo");
     }
