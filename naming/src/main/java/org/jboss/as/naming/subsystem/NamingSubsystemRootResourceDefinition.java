@@ -40,6 +40,7 @@ public class NamingSubsystemRootResourceDefinition extends SimpleResourceDefinit
     public static final NamingSubsystemRootResourceDefinition INSTANCE = new NamingSubsystemRootResourceDefinition();
 
     static final SimpleOperationDefinition JNDI_VIEW = new SimpleOperationDefinitionBuilder(JndiViewOperation.OPERATION_NAME, NamingExtension.getResourceDescriptionResolver(NamingExtension.SUBSYSTEM_NAME))
+            .addAccessConstraint(NamingExtension.JNDI_VIEW_CONSTRAINT)
             .withFlag(OperationEntry.Flag.RUNTIME_ONLY)
             .build();
 
