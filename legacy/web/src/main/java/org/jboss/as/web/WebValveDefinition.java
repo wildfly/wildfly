@@ -24,6 +24,10 @@
 
 package org.jboss.as.web;
 
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
+
 import org.jboss.as.controller.AttributeDefinition;
 import org.jboss.as.controller.ModelOnlyResourceDefinition;
 import org.jboss.as.controller.OperationDefinition;
@@ -32,6 +36,7 @@ import org.jboss.as.controller.ReloadRequiredRemoveStepHandler;
 import org.jboss.as.controller.SimpleAttributeDefinition;
 import org.jboss.as.controller.SimpleAttributeDefinitionBuilder;
 import org.jboss.as.controller.SimpleOperationDefinitionBuilder;
+import org.jboss.as.controller.access.management.AccessConstraintDefinition;
 import org.jboss.as.controller.operations.validation.StringLengthValidator;
 import org.jboss.as.controller.registry.AttributeAccess;
 import org.jboss.as.controller.registry.ManagementResourceRegistration;
@@ -86,6 +91,13 @@ public class WebValveDefinition extends ModelOnlyResourceDefinition {
 
     protected static final WebValveDefinition INSTANCE = new WebValveDefinition();
 
+    private static final List<AccessConstraintDefinition> ACCESS_CONSTRAINTS;
+    static {
+        List<AccessConstraintDefinition> constraints = new ArrayList<AccessConstraintDefinition>();
+        constraints.add(WebExtension.WEB_VALVE_CONSTRAINT);
+        ACCESS_CONSTRAINTS = Collections.unmodifiableList(constraints);
+    }
+
     private WebValveDefinition() {
         super(WebExtension.VALVE_PATH,
                 WebExtension.getResourceDescriptionResolver(Constants.VALVE),
@@ -103,4 +115,8 @@ public class WebValveDefinition extends ModelOnlyResourceDefinition {
         container.registerOperationHandler(REMOVE_PARAM, ReloadRequiredRemoveStepHandler.INSTANCE);
     }
 
+    @Override
+    public List<AccessConstraintDefinition> getAccessConstraints() {
+        return ACCESS_CONSTRAINTS;
+    }
 }
