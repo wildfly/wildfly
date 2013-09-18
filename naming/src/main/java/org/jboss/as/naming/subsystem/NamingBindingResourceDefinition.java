@@ -22,6 +22,8 @@
 
 package org.jboss.as.naming.subsystem;
 
+import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 
 import org.jboss.as.controller.AttributeDefinition;
@@ -33,9 +35,7 @@ import org.jboss.as.controller.ReloadRequiredWriteAttributeHandler;
 import org.jboss.as.controller.SimpleAttributeDefinition;
 import org.jboss.as.controller.SimpleAttributeDefinitionBuilder;
 import org.jboss.as.controller.SimpleResourceDefinition;
-import org.jboss.as.controller.access.constraint.ApplicationTypeConfig;
 import org.jboss.as.controller.access.management.AccessConstraintDefinition;
-import org.jboss.as.controller.access.management.ApplicationTypeAccessConstraintDefinition;
 import org.jboss.as.controller.operations.validation.EnumValidator;
 import org.jboss.as.controller.registry.AttributeAccess;
 import org.jboss.as.controller.registry.ManagementResourceRegistration;
@@ -94,14 +94,18 @@ public class NamingBindingResourceDefinition extends SimpleResourceDefinition {
     static final AttributeDefinition[] ATTRIBUTES = {BINDING_TYPE, VALUE, TYPE, CLASS, MODULE, LOOKUP, ENVIRONMENT, CACHE};
 
 
-    private final List<AccessConstraintDefinition> accessConstraints;
+    private static final List<AccessConstraintDefinition> ACCESS_CONSTRAINTS;
+    static {
+        List<AccessConstraintDefinition> constraints =  new ArrayList<AccessConstraintDefinition>();
+        constraints.add(NamingExtension.NAMING_BINDING_APPLICATION_CONSTRAINT);
+        constraints.add(NamingExtension.NAMING_BINDING_SENSITIVITY_CONSTRAINT);
+        ACCESS_CONSTRAINTS = Collections.unmodifiableList(constraints);
+    }
 
     private NamingBindingResourceDefinition() {
         super(NamingSubsystemModel.BINDING_PATH,
                 NamingExtension.getResourceDescriptionResolver(NamingSubsystemModel.BINDING),
                 NamingBindingAdd.INSTANCE, NamingBindingRemove.INSTANCE);
-        ApplicationTypeConfig atc = new ApplicationTypeConfig(NamingExtension.SUBSYSTEM_NAME, NamingSubsystemModel.BINDING);
-        accessConstraints = new ApplicationTypeAccessConstraintDefinition(atc).wrapAsList();
     }
 
     @Override
@@ -114,7 +118,7 @@ public class NamingBindingResourceDefinition extends SimpleResourceDefinition {
 
     @Override
     public List<AccessConstraintDefinition> getAccessConstraints() {
-        return accessConstraints;
+        return ACCESS_CONSTRAINTS;
     }
 
     private static class WriteAttributeHandler extends ReloadRequiredWriteAttributeHandler {

@@ -31,7 +31,9 @@ import org.jboss.as.controller.ExtensionContext;
 import org.jboss.as.controller.ModelVersion;
 import org.jboss.as.controller.PathElement;
 import org.jboss.as.controller.SubsystemRegistration;
+import org.jboss.as.controller.access.constraint.ApplicationTypeConfig;
 import org.jboss.as.controller.access.constraint.SensitivityClassification;
+import org.jboss.as.controller.access.management.ApplicationTypeAccessConstraintDefinition;
 import org.jboss.as.controller.access.management.SensitiveTargetAccessConstraintDefinition;
 import org.jboss.as.controller.descriptions.ResourceDescriptionResolver;
 import org.jboss.as.controller.descriptions.StandardResourceDescriptionResolver;
@@ -71,8 +73,13 @@ public class NamingExtension implements Extension {
     public static final ModelVersion VERSION_1_2_0 = ModelVersion.create(1, 2, 0);
 
     static final SensitiveTargetAccessConstraintDefinition JNDI_VIEW_CONSTRAINT = new SensitiveTargetAccessConstraintDefinition(
-            new SensitivityClassification(NamingExtension.SUBSYSTEM_NAME, "jndi-view", false, true, true));
+            new SensitivityClassification(SUBSYSTEM_NAME, "jndi-view", false, true, true));
 
+    static final SensitiveTargetAccessConstraintDefinition NAMING_BINDING_SENSITIVITY_CONSTRAINT = new SensitiveTargetAccessConstraintDefinition(
+            new SensitivityClassification(SUBSYSTEM_NAME, "naming-binding", false, false, false));
+
+    static final ApplicationTypeAccessConstraintDefinition NAMING_BINDING_APPLICATION_CONSTRAINT = new ApplicationTypeAccessConstraintDefinition(
+            new ApplicationTypeConfig(NamingExtension.SUBSYSTEM_NAME, NamingSubsystemModel.BINDING));
 
 
     public static ResourceDescriptionResolver getResourceDescriptionResolver(final String keyPrefix) {
