@@ -89,7 +89,7 @@ import org.jboss.weld.injection.spi.EjbInjectionServices;
 import org.jboss.weld.injection.spi.JaxwsInjectionServices;
 import org.jboss.weld.injection.spi.JpaInjectionServices;
 import org.jboss.weld.injection.spi.ResourceInjectionServices;
-import org.jboss.weld.resources.DefaultResourceLoader;
+import org.jboss.weld.resources.spi.ResourceLoader;
 import org.jipijapa.plugin.spi.PersistenceUnitMetadata;
 
 /**
@@ -98,12 +98,6 @@ import org.jipijapa.plugin.spi.PersistenceUnitMetadata;
  * @author Stuart Douglas
  */
 public class WeldDeploymentProcessor implements DeploymentUnitProcessor {
-
-    private final boolean nonPortableMode;
-
-    public WeldDeploymentProcessor(boolean nonPortableMode) {
-        this.nonPortableMode = nonPortableMode;
-    }
 
     @Override
     public void deploy(DeploymentPhaseContext phaseContext) throws DeploymentUnitProcessingException {
@@ -235,7 +229,7 @@ public class WeldDeploymentProcessor implements DeploymentUnitProcessor {
 
         final WeldBootstrapService weldBootstrapService = new WeldBootstrapService(deployment, Environments.EE_INJECT, deploymentUnit.getName());
 
-        installBootstrapConfigurationService(deployment);
+        installBootstrapConfigurationService(deployment, parent);
 
         weldBootstrapService.addWeldService(EjbInjectionServices.class, ejbInjectionServices);
         weldBootstrapService.addWeldService(ResourceInjectionServices.class, resourceInjectionServices);
@@ -324,8 +318,10 @@ public class WeldDeploymentProcessor implements DeploymentUnitProcessor {
         return weldTransactionServiceName;
     }
 
-    private void installBootstrapConfigurationService(WeldDeployment deployment) {
-        deployment.getServices().add(BootstrapConfiguration.class, new FileBasedBootstrapConfiguration(DefaultResourceLoader.INSTANCE) {
+    private void installBootstrapConfigurationService(WeldDeployment deployment, DeploymentUnit parentDeploymentUnit) {
+        final boolean nonPortableMode = parentDeploymentUnit.getAttachment(WeldConfiguration.ATTACHMENT_KEY).isNonPortableMode();
+        final ResourceLoader resourceLoader = deployment.getServices().get(ResourceLoader.class);
+        deployment.getServices().add(BootstrapConfiguration.class, new FileBasedBootstrapConfiguration(resourceLoader) {
             @Override
             public boolean isNonPortableModeEnabled() {
                 return nonPortableMode;

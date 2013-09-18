@@ -258,6 +258,7 @@ public enum Phase {
     public static final int PARSE_EJB_SESSION_BEAN_DD                   = 0x1200;
     // create and attach the component description out of EJB annotations
     public static final int PARSE_EJB_APPLICATION_EXCEPTION_ANNOTATION  = 0x1901;
+    public static final int PARSE_WELD_CONFIGURATION                    = 0x1C01;
     public static final int PARSE_WEB_COMPONENTS                        = 0x1F00;
     public static final int PARSE_WEB_MERGE_METADATA                    = 0x2000;
     public static final int PARSE_OSGI_COMPONENTS                       = 0x2010;
