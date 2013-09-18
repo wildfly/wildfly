@@ -16,6 +16,7 @@ import org.jboss.as.server.deployment.DeploymentUnitProcessor;
 import org.jboss.as.server.deployment.annotation.CompositeIndex;
 import org.jboss.as.weld.deployment.WeldAttachments;
 import org.jboss.as.weld.discovery.AnnotationType;
+import org.jboss.as.weld.util.Utils;
 
 /**
  * Deployment processor that finds implicit bean archives (as defined by the CDI spec). If the deployment unit contains any such
@@ -31,6 +32,10 @@ public class WeldImplicitDeploymentProcessor implements DeploymentUnitProcessor 
         final DeploymentUnit deploymentUnit = phaseContext.getDeploymentUnit();
 
         if (WeldDeploymentMarker.isWeldDeployment(deploymentUnit)) {
+            return;
+        }
+        if (Utils.getRootDeploymentUnit(deploymentUnit).getAttachment(WeldConfiguration.ATTACHMENT_KEY).isRequireBeanDescriptor()) {
+            // if running in the require-bean-descriptor mode then bean archives are found by BeansXmlProcessor
             return;
         }
 

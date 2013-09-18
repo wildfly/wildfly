@@ -90,12 +90,6 @@ public class BeanArchiveProcessor implements DeploymentUnitProcessor {
 
     private static final DotName EXTENSION_NAME = DotName.createSimple(Extension.class.getName());
 
-    private final boolean requireBeanDescriptor;
-
-    public BeanArchiveProcessor(boolean requireBeanDescriptor) {
-        this.requireBeanDescriptor = requireBeanDescriptor;
-    }
-
     @Override
     public void deploy(DeploymentPhaseContext phaseContext) throws DeploymentUnitProcessingException {
         final DeploymentUnit deploymentUnit = phaseContext.getDeploymentUnit();
@@ -195,7 +189,7 @@ public class BeanArchiveProcessor implements DeploymentUnitProcessor {
         }
     }
 
-    private class ResourceRootHandler {
+    private static class ResourceRootHandler {
         private final DeploymentUnit deploymentUnit;
         private final Module module;
         private final Map<ResourceRoot, Index> indexes;
@@ -205,6 +199,7 @@ public class BeanArchiveProcessor implements DeploymentUnitProcessor {
         private final ResourceRoot classesResourceRoot;
         private final ExplicitBeanArchiveMetadataContainer explicitBeanArchives;
         private final Set<AnnotationType> beanDefiningAnnotations;
+        private final boolean requireBeanDescriptor;
 
         private ResourceRootHandler(DeploymentUnit deploymentUnit, Components components, Map<ResourceRoot, Index> indexes) {
             this.deploymentUnit = deploymentUnit;
@@ -216,6 +211,7 @@ public class BeanArchiveProcessor implements DeploymentUnitProcessor {
             this.deploymentResourceRoot = deploymentUnit.getAttachment(Attachments.DEPLOYMENT_ROOT);
             this.classesResourceRoot = deploymentUnit.getAttachment(WeldAttachments.CLASSES_RESOURCE_ROOT);
             this.beanDefiningAnnotations = getRootDeploymentUnit(deploymentUnit).getAttachment(WeldAttachments.BEAN_DEFINING_ANNOTATIONS);
+            this.requireBeanDescriptor = getRootDeploymentUnit(deploymentUnit).getAttachment(WeldConfiguration.ATTACHMENT_KEY).isRequireBeanDescriptor();
         }
 
         private void handleResourceRoot(Map<ResourceRoot, BeanDeploymentArchiveImpl> bdaMap, ResourceRoot resourceRoot) throws DeploymentUnitProcessingException {
