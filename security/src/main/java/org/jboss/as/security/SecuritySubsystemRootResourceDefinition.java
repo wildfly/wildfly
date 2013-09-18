@@ -36,6 +36,8 @@ import org.jboss.as.controller.ServiceVerificationHandler;
 import org.jboss.as.controller.SimpleAttributeDefinition;
 import org.jboss.as.controller.SimpleAttributeDefinitionBuilder;
 import org.jboss.as.controller.SimpleResourceDefinition;
+import org.jboss.as.controller.access.constraint.SensitivityClassification;
+import org.jboss.as.controller.access.management.SensitiveTargetAccessConstraintDefinition;
 import org.jboss.as.controller.registry.ManagementResourceRegistration;
 import org.jboss.as.naming.ServiceBasedNamingStore;
 import org.jboss.as.naming.deployment.ContextNames;
@@ -73,8 +75,12 @@ import org.jboss.security.plugins.mapping.JBossMappingManager;
  */
 public class SecuritySubsystemRootResourceDefinition extends SimpleResourceDefinition {
 
+    static final SensitiveTargetAccessConstraintDefinition SECURITY_MISC_SENSITIVITY = new SensitiveTargetAccessConstraintDefinition(
+            new SensitivityClassification(SecurityExtension.SUBSYSTEM_NAME, "security-misc", false, true, true));
+
     static final SecuritySubsystemRootResourceDefinition INSTANCE = new SecuritySubsystemRootResourceDefinition();
     static final SimpleAttributeDefinition DEEP_COPY_SUBJECT_MODE = new SimpleAttributeDefinitionBuilder(Constants.DEEP_COPY_SUBJECT_MODE, ModelType.BOOLEAN, true)
+                    .setAccessConstraints(SECURITY_MISC_SENSITIVITY)
                     .setDefaultValue(new ModelNode(false))
                     .setAllowExpression(true)
                     .build();
