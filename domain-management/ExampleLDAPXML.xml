@@ -1,0 +1,34 @@
+
+
+  <authentication>
+    <ldap connection="..." base-dn="..." recursive="..." user-dn="..." allow-empty-passwords="...">
+      <username-filter attribute="..." />
+      <advanced-filter filter="..." />
+    </ldap>
+  </authentication>
+
+  <authorization>
+    <ldap connection="..." >
+      <username-to-dn  force="...">  <!-- force causes any dn conversion during authentication to be ignored. -->
+        <username-is-dn />
+        <username-filter base-dn="..." recursive="..." attribute="..." />
+        <advanced-filter base-dn="..." recursive="..." filter="..." />
+      </username-to-dn>
+      <group-search group-name="simple/dn"  <!-- Should simple group names be used or the distinguished names? -->
+                    iterative="..." <!-- Search if loaded group is also a member of another group. -->    
+                    group-dn-attribute="..." <!-- The attribute on the group object that is it's distinguished name. -->
+                    group-name-attribute="..." <!-- The attribute on the group object that is it's simple name. -->
+      >
+        <group-to-principal search-by="dn/simple" 
+                            base-dn="..."   <!-- Groups may be under a different DN to the user. -->
+                            recursive="..." <!-- Search one level or traverse hierarchy -->                            
+        >
+          <membership-filter principal-attribute="..."  <!-- Attribute on the group object that references the principal. -->
+          />
+        </group-to-principal>
+        <principal-to-group search-by="dn/simple" <!-- Is the group-attribute a simple group name or it's dn? -->
+                            group-attribute="..." <!-- Attribute on the principal that references the group -->
+        />        
+      </group-search>
+    </ldap>
+  </authorization>
