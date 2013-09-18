@@ -46,10 +46,13 @@ import org.jboss.as.controller.parsing.ExtensionParsingContext;
 import org.jboss.as.controller.registry.ManagementResourceRegistration;
 import org.jboss.as.controller.services.path.PathResourceDefinition;
 import org.jboss.as.controller.services.path.ResolvePathHandler;
+import org.jboss.as.controller.transform.description.DiscardAttributeChecker.DiscardAttributeValueChecker;
+import org.jboss.as.controller.transform.description.RejectAttributeChecker;
 import org.jboss.as.controller.transform.description.ResourceTransformationDescriptionBuilder;
 import org.jboss.as.controller.transform.description.TransformationDescription;
 import org.jboss.as.controller.transform.description.TransformationDescriptionBuilder;
 import org.jboss.as.logging.stdio.LogContextStdioContextSelector;
+import org.jboss.dmr.ModelNode;
 import org.jboss.logmanager.ClassLoaderLogContextSelector;
 import org.jboss.logmanager.LogContext;
 import org.jboss.logmanager.ThreadLocalLogContextSelector;
@@ -207,6 +210,10 @@ public class LoggingExtension implements Extension {
     private static TransformationDescription get1_2_0_1_3_0Description() {
         final ResourceTransformationDescriptionBuilder subsystemBuilder = TransformationDescriptionBuilder.Factory.createSubsystemInstance();
         // TODO WFLY-1807 add 2.0.0 stuff
+        subsystemBuilder.getAttributeBuilder()
+                .setDiscard(new DiscardAttributeValueChecker(new ModelNode(false)), SizeRotatingHandlerResourceDefinition.ROTATE_ON_BOOT)
+                .addRejectCheck(RejectAttributeChecker.DEFINED, SizeRotatingHandlerResourceDefinition.ROTATE_ON_BOOT)
+                .end();
         return subsystemBuilder.build();
     }
 
@@ -257,6 +264,7 @@ public class LoggingExtension implements Extension {
             COMMON_ATTRIBUTE_NAMES.put(AsyncHandlerResourceDefinition.QUEUE_LENGTH.getName(), "logging.async-handler");
             COMMON_ATTRIBUTE_NAMES.put(PathResourceDefinition.RELATIVE_TO.getName(), null);
             COMMON_ATTRIBUTE_NAMES.put(SizeRotatingHandlerResourceDefinition.ROTATE_SIZE.getName(), "logging.size-rotating-file-handler");
+            COMMON_ATTRIBUTE_NAMES.put(SizeRotatingHandlerResourceDefinition.ROTATE_ON_BOOT.getName(), "logging.size-rotating-file-handler");
             COMMON_ATTRIBUTE_NAMES.put(AsyncHandlerResourceDefinition.SUBHANDLERS.getName(), "logging.async-handler");
             COMMON_ATTRIBUTE_NAMES.put(PeriodicHandlerResourceDefinition.SUFFIX.getName(), "logging.periodic-rotating-file-handler");
             COMMON_ATTRIBUTE_NAMES.put(ConsoleHandlerResourceDefinition.TARGET.getName(), "logging.console-handler");
