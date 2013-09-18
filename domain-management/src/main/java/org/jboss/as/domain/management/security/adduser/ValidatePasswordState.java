@@ -97,12 +97,12 @@ public class ValidatePasswordState extends AbstractValidationState {
     private State confirmWeakPassword(PasswordCheckResult result) {
         if (stateValues.getOptions().isConfirmWarning()) {
             theConsole.printf(result.getMessage());
-            theConsole.printf(MESSAGES.sureToSetPassword(stateValues.getPassword()));
+            theConsole.printf(MESSAGES.sureToSetPassword());
             theConsole.printf(NEW_LINE);
             return ValidatePasswordState.this;
         } else {
             String message = result.getMessage();
-            String prompt = MESSAGES.sureToSetPassword(stateValues.getPassword());
+            String prompt = MESSAGES.sureToSetPassword();
             State noState = new PromptNewUserState(theConsole, stateValues);
             return new ConfirmationChoice(theConsole, message, prompt, this, noState);
         }
