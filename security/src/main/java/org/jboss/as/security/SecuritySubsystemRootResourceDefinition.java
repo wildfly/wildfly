@@ -76,12 +76,12 @@ import org.wildfly.security.manager.WildFlySecurityManager;
  */
 public class SecuritySubsystemRootResourceDefinition extends SimpleResourceDefinition {
 
-    static final SensitiveTargetAccessConstraintDefinition SECURITY_MISC_SENSITIVITY = new SensitiveTargetAccessConstraintDefinition(
-            new SensitivityClassification(SecurityExtension.SUBSYSTEM_NAME, "security-misc", false, true, true));
+    static final SensitiveTargetAccessConstraintDefinition MISC_SECURITY_SENSITIVITY = new SensitiveTargetAccessConstraintDefinition(
+            new SensitivityClassification(SecurityExtension.SUBSYSTEM_NAME, "misc-security", false, true, true));
 
     static final SecuritySubsystemRootResourceDefinition INSTANCE = new SecuritySubsystemRootResourceDefinition();
     static final SimpleAttributeDefinition DEEP_COPY_SUBJECT_MODE = new SimpleAttributeDefinitionBuilder(Constants.DEEP_COPY_SUBJECT_MODE, ModelType.BOOLEAN, true)
-                    .setAccessConstraints(SECURITY_MISC_SENSITIVITY)
+                    .setAccessConstraints(MISC_SECURITY_SENSITIVITY)
                     .setDefaultValue(new ModelNode(false))
                     .setAllowExpression(true)
                     .build();
