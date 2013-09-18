@@ -748,6 +748,9 @@ public interface DomainManagementMessages {
     @Message(id = 15286, value = "Invalid response. (Valid responses are A, a, B, b, C or c)")
     String invalidChoiceUpdateUserResponse();
 
+    @Message(id = 15287, value = "Role '%s' already contains an %s for type=%s, name=%s, realm=%s.")
+    OperationFailedException duplicateIncludeExclude(String roleName, String incExcl, String type, String name, String realm);
+
     /*
      * Logging IDs 15200 to 15299 are reserved for domain management, the file DomainManagementLogger also contains messages in
      * this range commencing 15200.
@@ -949,6 +952,8 @@ public interface DomainManagementMessages {
      */
     @Message(id = Message.NONE, value = "Using realm '%s' as discovered from the existing property files.")
     String discoveredRealm(final String realmName);
+
+
 
     //PUT YOUR NUMBERED MESSAGES ABOVE THE id=NONE ones!
 }
