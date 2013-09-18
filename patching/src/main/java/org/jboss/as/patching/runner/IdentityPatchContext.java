@@ -44,6 +44,7 @@ import org.jboss.as.patching.metadata.RollbackPatch;
 import org.jboss.as.patching.metadata.impl.IdentityImpl;
 import org.jboss.as.patching.metadata.impl.PatchElementImpl;
 import org.jboss.as.patching.tool.ContentVerificationPolicy;
+import org.jboss.as.patching.tool.PatchingHistory;
 import org.jboss.as.patching.tool.PatchingResult;
 
 /**
@@ -62,6 +63,7 @@ class IdentityPatchContext implements PatchContentProvider {
     private final ContentVerificationPolicy contentPolicy;
     private final InstallationManager.InstallationModification modification;
     private final Map<String, PatchContentLoader> contentLoaders = new HashMap<String, PatchContentLoader>();
+    private final PatchingHistory history;
 
     // TODO initialize layers in the correct order
     private final Map<String, PatchEntry> layers = new LinkedHashMap<String, PatchEntry>();
@@ -95,6 +97,7 @@ class IdentityPatchContext implements PatchContentProvider {
         this.contentPolicy = contentPolicy;
         this.modification = modification;
         this.installedImage = installedImage;
+        this.history = PatchingHistory.Factory.getHistory(modification.getUnmodifiedInstallationState());
 
         if (backup != null) {
             this.miscBackup = new File(backup, PatchContentLoader.MISC);
@@ -151,6 +154,15 @@ class IdentityPatchContext implements PatchContentProvider {
      */
     InstallationManager.InstallationModification getModification() {
         return modification;
+    }
+
+    /**
+     * Get the patch history.
+     *
+     * @return the history
+     */
+    PatchingHistory getHistory() {
+        return history;
     }
 
     /**

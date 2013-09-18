@@ -33,6 +33,8 @@ import java.io.IOException;
 import java.util.Arrays;
 
 import org.jboss.as.patching.PatchingException;
+import org.jboss.as.patching.installation.InstalledIdentity;
+import org.jboss.as.patching.runner.PatchingAssert;
 import org.junit.Assert;
 import org.junit.Test;
 
@@ -230,5 +232,145 @@ public class BasicHistoryUnitTestCase extends AbstractPatchingTest {
         apply(step1);
         rollback(step1);
     }
+
+    @Test
+    public void testBasicIncrementalPatch() throws Exception {
+
+        final PatchingTestBuilder builder = createDefaultBuilder();
+
+        final byte[] moduleHashOne = new byte[20];
+        final byte[] moduleHashTwo = new byte[20];
+
+        final PatchingTestStepBuilder cp1 = builder.createStepBuilder();
+        cp1.setPatchId("CP1")
+                .upgradeIdentity(PRODUCT_VERSION, PRODUCT_VERSION)
+                .upgradeElement("base-CP1", "base", false)
+                .addModuleWithRandomContent("org.jboss.test", moduleHashOne)
+        ;
+        // Apply CP1
+        apply(cp1);
+
+        final PatchingTestStepBuilder cp2 = builder.createStepBuilder();
+        cp2.setPatchId("CP2")
+                .upgradeIdentity(PRODUCT_VERSION, PRODUCT_VERSION)
+                .upgradeElement("base-CP2", "base", false)
+                .addModuleWithRandomContent("org.jboss.test.two", moduleHashTwo)
+        ;
+        // Apply CP2
+        apply(cp2);
+
+        InstalledIdentity identity = loadInstallationManager();
+        PatchStepAssertions.assertModule("base-CP2", identity.getLayer("base"), "org.jboss.test", "main");
+        PatchStepAssertions.assertModule("base-CP2", identity.getLayer("base"), "org.jboss.test.two", "main");
+
+        final PatchingTestStepBuilder cp3 = builder.createStepBuilder();
+        cp3.setPatchId("CP3")
+                .upgradeIdentity(PRODUCT_VERSION, PRODUCT_VERSION)
+                .upgradeElement("base-CP3", "base", false)
+                .removeModule("org.jboss.test.two", "main", moduleHashTwo)
+        ;
+        // Apply CP2
+        apply(cp3);
+
+        identity = loadInstallationManager();
+        PatchStepAssertions.assertModule("base-CP3", identity.getLayer("base"), "org.jboss.test", "main");
+        PatchStepAssertions.assertModule("base-CP3", identity.getLayer("base"), "org.jboss.test.two", "main");
+
+        rollback(cp3);
+
+        identity = loadInstallationManager();
+        PatchStepAssertions.assertModule("base-CP2", identity.getLayer("base"), "org.jboss.test", "main");
+        PatchStepAssertions.assertModule("base-CP2", identity.getLayer("base"), "org.jboss.test.two", "main");
+
+        rollback(cp2);
+
+        identity = loadInstallationManager();
+        PatchStepAssertions.assertModule("base-CP1", identity.getLayer("base"), "org.jboss.test", "main");
+
+        rollback(cp1);
+    }
+
+    @Test
+    public void testIncrementalLayersPatch() throws Exception {
+
+        final PatchingTestBuilder builder = createDefaultBuilder("layer-2", "layer-1", "base");
+
+        final byte[] moduleHashOne = new byte[20];
+        final byte[] moduleHashTwo = new byte[20];
+        final byte[] moduleHashThree = new byte[20];
+        final byte[] moduleHashFour = new byte[20];
+        final byte[] moduleHashFive = new byte[20];
+        final byte[] moduleHashSix = new byte[20];
+
+        final PatchingTestStepBuilder cp1 = builder.createStepBuilder();
+        cp1.setPatchId("CP1")
+                .upgradeIdentity(PRODUCT_VERSION, PRODUCT_VERSION)
+                .upgradeElement("base-CP1", "base", false)
+                .addModuleWithRandomContent("org.jboss.test", moduleHashOne)
+        ;
+        // Apply CP1
+        apply(cp1);
+
+        final PatchingTestStepBuilder cp2 = builder.createStepBuilder();
+        cp2.setPatchId("CP2")
+                .upgradeIdentity(PRODUCT_VERSION, PRODUCT_VERSION)
+                .upgradeElement("layer-1-CP1", "layer-1", false)
+                .addModuleWithRandomContent("org.jboss.test.two", moduleHashTwo)
+        ;
+        // Apply CP2
+        apply(cp2);
+
+        final PatchingTestStepBuilder cp3 = builder.createStepBuilder();
+        cp3.setPatchId("CP3")
+                .upgradeIdentity(PRODUCT_VERSION, PRODUCT_VERSION)
+                .upgradeElement("layer-2-CP1", "layer-2", false)
+                .removeModule("org.jboss.test.three", "main", moduleHashThree)
+        ;
+        // Apply CP2
+        apply(cp3);
+
+        final PatchingTestStepBuilder cp4 = builder.createStepBuilder();
+        cp4.setPatchId("CP4")
+                .upgradeIdentity(PRODUCT_VERSION, PRODUCT_VERSION)
+                .upgradeElement("base-CP2", "base", false)
+                .addModuleWithRandomContent("org.jboss.test.four", moduleHashFour)
+        ;
+        // Apply CP4
+        apply(cp4);
+
+        InstalledIdentity identity = loadInstallationManager();
+        PatchStepAssertions.assertModule("base-CP2", identity.getLayer("base"), "org.jboss.test", "main");
+        PatchStepAssertions.assertModule("base-CP2", identity.getLayer("base"), "org.jboss.test.four", "main");
+
+        final PatchingTestStepBuilder cp5 = builder.createStepBuilder();
+        cp5.setPatchId("CP5")
+                .upgradeIdentity(PRODUCT_VERSION, PRODUCT_VERSION)
+                .upgradeElement("base-CP3", "base", false)
+                .updateModuleWithRandomContent("org.jboss.test.four", moduleHashFour, null)
+                .getParent()
+                .upgradeElement("layer-1-CP2", "layer-1", false)
+                .addModuleWithRandomContent("org.jboss.test.five", moduleHashFive)
+                .getParent()
+                .upgradeElement("layer-2-CP2", "layer-2", false)
+                .addModuleWithRandomContent("org.jboss.test.six", moduleHashSix)
+        ;
+        // Apply CP4
+        apply(cp5);
+
+        identity = loadInstallationManager();
+        PatchStepAssertions.assertModule("base-CP3", identity.getLayer("base"), "org.jboss.test", "main");
+        PatchStepAssertions.assertModule("base-CP3", identity.getLayer("base"), "org.jboss.test.four", "main");
+        PatchStepAssertions.assertModule("layer-1-CP2", identity.getLayer("layer-1"), "org.jboss.test.two", "main");
+        PatchStepAssertions.assertModule("layer-1-CP2", identity.getLayer("layer-1"), "org.jboss.test.five", "main");
+        PatchStepAssertions.assertModule("layer-2-CP2", identity.getLayer("layer-2"), "org.jboss.test.three", "main");
+        PatchStepAssertions.assertModule("layer-2-CP2", identity.getLayer("layer-2"), "org.jboss.test.six", "main");
+
+        rollback(cp5);
+        rollback(cp4);
+        rollback(cp3);
+        rollback(cp2);
+        rollback(cp1);
+    }
+
 
 }

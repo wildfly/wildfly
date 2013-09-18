@@ -67,12 +67,7 @@ abstract class AbstractModuleTask extends AbstractPatchingTask<ModuleItem> {
     }
 
     protected byte[] notFound(final ModuleItem contentItem) throws IOException{
-        // Make sure the target exists
-        if (description.getModificationType() == ModificationType.ADD) {
-            return NO_CONTENT;
-        } else {
-            throw new FileNotFoundException(contentItem.toString() + " " + description.getModificationType());
-        }
+        return NO_CONTENT;
     }
 
     static ModuleItem createContentItem(final ModuleItem original, final byte[] contentHash) {
