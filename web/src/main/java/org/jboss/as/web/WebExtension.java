@@ -105,6 +105,9 @@ public class WebExtension implements Extension {
     static final SensitiveTargetAccessConstraintDefinition WEB_CONNECTOR_CONSTRAINT = new SensitiveTargetAccessConstraintDefinition(
             new SensitivityClassification(SUBSYSTEM_NAME, "web-connector", true, false, false));
 
+    static final SensitiveTargetAccessConstraintDefinition WEB_VALVE_CONSTRAINT = new SensitiveTargetAccessConstraintDefinition(
+            new SensitivityClassification(SUBSYSTEM_NAME, "web-valve", true, false, false));
+
     private static final int MANAGEMENT_API_MAJOR_VERSION = 1;
     private static final int MANAGEMENT_API_MINOR_VERSION = 3;
     private static final int MANAGEMENT_API_MICRO_VERSION = 0;
