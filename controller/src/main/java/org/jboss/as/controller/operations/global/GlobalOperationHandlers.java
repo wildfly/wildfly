@@ -494,7 +494,7 @@ public class GlobalOperationHandlers {
             }
 
             if (aliasEntry == null) {
-                if (resource.hasChildren(childType)) {
+                if (resource != null && resource.hasChildren(childType)) {
                     set.addAll(resource.getChildrenNames(childType));
                 }
             } else {
@@ -502,7 +502,7 @@ public class GlobalOperationHandlers {
                 PathAddress target = aliasEntry.convertToTargetAddress(addr.append(element));
                 PathAddress targetParent = target.subAddress(0, target.size() - 1);
                 Resource parentResource = context.readResourceFromRoot(targetParent);
-                if (parentResource.hasChildren(target.getLastElement().getKey())) {
+                if (parentResource != null && parentResource.hasChildren(target.getLastElement().getKey())) {
                     set.add(element.getValue());
                 }
             }
