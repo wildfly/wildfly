@@ -37,6 +37,8 @@
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-surefire-plugin</artifactId>
                 <configuration>
+                    <!-- fork for each each test class -->
+                    <forkMode>always</forkMode>
                     <systemPropertyVariables>
                         <jbossas.version>${project.parent.version}</jbossas.version>
                         <jboss.home.dir>${jboss.home.dir}</jboss.home.dir>
