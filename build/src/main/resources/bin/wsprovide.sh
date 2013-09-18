@@ -58,7 +58,7 @@ fi
 #JAVA_OPTS="-classic -Xdebug -Xnoagent -Djava.compiler=NONE -agentlib:jdwp=transport=dt_socket,address=8787,server=y,suspend=y $JAVA_OPTS"
 
 # Setup JBoss sepecific properties
-JAVA_OPTS="$JAVA_OPTS"
+JAVA_OPTS="$JAVA_OPTS -Dprogram.name=wsprovide.sh"
 
 # For Cygwin, switch paths to Windows format before running java
 if $cygwin; then
