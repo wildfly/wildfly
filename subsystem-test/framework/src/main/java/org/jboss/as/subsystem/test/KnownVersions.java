@@ -89,6 +89,9 @@ class KnownVersions {
         addSubsystemVersion(map, "xts", "1.1.0", CORE_MODEL_7_1_3);
         addSubsystemVersion(map, "web", "1.1.0", CORE_MODEL_7_1_2);
         addSubsystemVersion(map, "web", "1.1.1", CORE_MODEL_7_1_3);
+        addSubsystemVersion(map, "weld", "1.0.0", CORE_MODEL_7_1_2);
+        addSubsystemVersion(map, "weld", "1.0.0", CORE_MODEL_7_1_3);
+        addSubsystemVersion(map, "weld", "1.0.0", CORE_MODEL_7_2_0);
         addSubsystemVersion(map, "webservices", "1.1.0", CORE_MODEL_7_1_3);
 
         KNOWN_SUBSYSTEM_VERSIONS = Collections.unmodifiableMap(map);

@@ -36,20 +36,20 @@ import org.jboss.dmr.ModelType;
  * @author Jozef Hartinger
  *
  */
-public class WeldResourceDefinition extends SimpleResourceDefinition {
+class WeldResourceDefinition extends SimpleResourceDefinition {
 
-    public static final WeldResourceDefinition INSTANCE = new WeldResourceDefinition();
+    static final WeldResourceDefinition INSTANCE = new WeldResourceDefinition();
 
-    public static final String REQUIRE_BEAN_DESCRIPTOR_ATTRIBUTE_NAME = "require-bean-descriptor";
-    public static final String NON_PORTABLE_MODE_ATTRIBUTE_NAME = "non-portable-mode";
+    static final String REQUIRE_BEAN_DESCRIPTOR_ATTRIBUTE_NAME = "require-bean-descriptor";
+    static final String NON_PORTABLE_MODE_ATTRIBUTE_NAME = "non-portable-mode";
 
-    public static final SimpleAttributeDefinition REQUIRE_BEAN_DESCRIPTOR_ATTRIBUTE =
+    static final SimpleAttributeDefinition REQUIRE_BEAN_DESCRIPTOR_ATTRIBUTE =
             new SimpleAttributeDefinitionBuilder(REQUIRE_BEAN_DESCRIPTOR_ATTRIBUTE_NAME, ModelType.BOOLEAN, true)
             .setAllowExpression(true)
             .setDefaultValue(new ModelNode(false))
             .build();
 
-    public static final SimpleAttributeDefinition NON_PORTABLE_MODE_ATTRIBUTE =
+    static final SimpleAttributeDefinition NON_PORTABLE_MODE_ATTRIBUTE =
             new SimpleAttributeDefinitionBuilder(NON_PORTABLE_MODE_ATTRIBUTE_NAME, ModelType.BOOLEAN, true)
             .setAllowExpression(true)
             .setDefaultValue(new ModelNode(false))
