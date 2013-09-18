@@ -22,7 +22,12 @@
 
 package org.jboss.as.domain.management.access;
 
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ADDRESS;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.EXCLUDE;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.INCLUDE;
 import static org.jboss.as.domain.management.DomainManagementMessages.MESSAGES;
+
+import java.util.List;
 
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationContext.RollbackHandler;
@@ -32,7 +37,10 @@ import org.jboss.as.controller.OperationStepHandler;
 import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.access.AuthorizerConfiguration;
 import org.jboss.as.controller.access.management.WritableAuthorizerConfiguration;
+import org.jboss.as.controller.access.management.WritableAuthorizerConfiguration.MatchType;
+import org.jboss.as.controller.registry.Resource;
 import org.jboss.dmr.ModelNode;
+import org.jboss.dmr.Property;
 
 /**
  * A {@link OperationStepHandler} for adding principals to the include / exclude list.
@@ -61,7 +69,6 @@ public class PrincipalAdd implements OperationStepHandler {
     public void execute(OperationContext context, ModelNode operation) throws OperationFailedException {
         ModelNode model = context.createResource(PathAddress.EMPTY_ADDRESS).getModel();
 
-        // TODO - Somewhere we need to check that these 3 values combined are unique.
         PrincipalResourceDefinition.TYPE.validateAndSet(operation, model);
         PrincipalResourceDefinition.REALM.validateAndSet(operation, model);
         PrincipalResourceDefinition.NAME.validateAndSet(operation, model);
@@ -71,9 +78,59 @@ public class PrincipalAdd implements OperationStepHandler {
         final String realm = PrincipalResourceDefinition.getRealm(context, model);
         final String name = PrincipalResourceDefinition.getName(context, model);
 
+        PathAddress completeAddress = PathAddress.pathAddress(operation.get(ADDRESS));
+        PathAddress roleAddress = completeAddress.subAddress(0, completeAddress.size() - 1);
+        validateUniqueness(context, roleName, roleAddress, principalType, realm, name);
+
         registerRuntimeAdd(context, roleName, principalType, name, realm);
 
         context.stepCompleted();
+    }
+
+    private void validateUniqueness(final OperationContext context, final String roleName, final PathAddress roleAddress,
+            final AuthorizerConfiguration.PrincipalType principalType, final String realm, final String name)
+            throws OperationFailedException {
+        Resource roleResource = context.readResourceFromRoot(roleAddress);
+        ModelNode model = Resource.Tools.readModel(roleResource);
+
+        int matchesFound = 0;
+        for (Property current : getIncludeExclude(model)) {
+            if (matches(context, current.getValue(), principalType, realm, name)) {
+                if (++matchesFound > 1) {
+                    throw MESSAGES.duplicateIncludeExclude(roleName, matchType.toString(), principalType.toString(), name,
+                            realm != null ? realm : "undefined");
+                }
+            }
+        }
+    }
+
+    private boolean matches(final OperationContext context, final ModelNode value,
+            final AuthorizerConfiguration.PrincipalType principalType, final String realm, final String name)
+            throws OperationFailedException {
+        final AuthorizerConfiguration.PrincipalType valuePrincipalType = PrincipalResourceDefinition.getPrincipalType(context,
+                value);
+        if (principalType != valuePrincipalType) {
+            return false;
+        }
+        final String valueName = PrincipalResourceDefinition.getName(context, value);
+        if (name.equals(valueName) == false) {
+            return false;
+        }
+        final String valueRealm = PrincipalResourceDefinition.getRealm(context, value);
+        if ((realm == null && valueRealm != null) ||
+                (realm != null && realm.equals(valueRealm) == false)) {
+            return false;
+        }
+
+        return true;
+    }
+
+    private List<Property> getIncludeExclude(final ModelNode model) {
+        if (matchType == MatchType.INCLUDE) {
+            return model.get(INCLUDE).asPropertyList();
+        } else {
+            return model.get(EXCLUDE).asPropertyList();
+        }
     }
 
     private void registerRuntimeAdd(final OperationContext context, final String roleName, final AuthorizerConfiguration.PrincipalType principalType,
