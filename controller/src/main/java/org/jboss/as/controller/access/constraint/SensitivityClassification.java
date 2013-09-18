@@ -40,6 +40,7 @@ public class SensitivityClassification extends AbstractSensitivity {
     public static final SensitivityClassification MANAGEMENT_INTERFACES = new SensitivityClassification("management-interfaces", false, false, true);
     public static final SensitivityClassification MODULE_LOADING = new SensitivityClassification("module-loading", false, false, true);
     public static final SensitivityClassification PATCHING = new SensitivityClassification("patching", false, false, true);
+    public static final SensitivityClassification READ_WHOLE_CONFIG = new SensitivityClassification("read-whole-config", false, true, true);
     public static final SensitivityClassification SECURITY_REALM = new SensitivityClassification("security-realm", true, true, true);
     public static final SensitivityClassification SECURITY_REALM_REF = new SensitivityClassification("security-realm-ref", true, true, true);
     public static final SensitivityClassification SECURITY_DOMAIN = new SensitivityClassification("security-domain", true, true, true);
