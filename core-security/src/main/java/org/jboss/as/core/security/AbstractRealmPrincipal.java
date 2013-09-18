@@ -75,7 +75,7 @@ abstract class AbstractRealmPrincipal extends SecurityRealmPrincipal implements 
     }
 
     private boolean equals(AbstractRealmPrincipal user) {
-        return this == user ? true : super.equals(user) && realm.equals(user.realm);
+        return (this == user ? true : super.equals(user)) && (realm == null ? user.realm == null : realm.equals(user.realm));
     }
 
 }
