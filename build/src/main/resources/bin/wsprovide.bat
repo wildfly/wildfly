@@ -17,6 +17,8 @@ if "x%JAVA_HOME%" == "x" (
 )
 set JBOSS_HOME=%DIRNAME%\..
 
+set "JAVA_OPTS=%JAVA_OPTS% -Dprogram.name=wsprovide.bat"
+
 rem Execute the command
 "%JAVA%" %JAVA_OPTS% ^
     -jar "%JBOSS_HOME%\jboss-modules.jar" ^
