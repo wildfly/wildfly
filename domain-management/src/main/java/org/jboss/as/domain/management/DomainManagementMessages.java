@@ -755,12 +755,10 @@ public interface DomainManagementMessages {
     /**
      * A prompt to double check the user is really sure they want to set password.
      *
-     * @param password - The new password.
-     *
      * @return a {@link String} for the message.
      */
-    @Message(id = Message.NONE, value = "Are you sure you want to set password '%s' yes/no?")
-    String sureToSetPassword(String password);
+    @Message(id = Message.NONE, value = "Are you sure you want to use the password entered yes/no?")
+    String sureToSetPassword();
 
     /**
      * Instructions for the {@link org.jboss.as.domain.management.security.adduser.AddUser.CommandLineArgument#USAGE} command line argument.
