@@ -2726,5 +2726,9 @@ public interface ControllerMessages {
     @Message(id = 13477, value = "Incompatible permission type %s")
     IllegalArgumentException incompatiblePermissionType(Class<?> clazz);
 
+
+    @Message(id = 13478, value = "Management resource '%s' not found")
+    String managementResourceNotFoundMessage(PathAddress pathAddress);
+
     // 13499 IS END OF 134xx SERIES USABLE FOR NON-LOGGER MESSAGES
 }
