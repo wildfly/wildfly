@@ -24,16 +24,13 @@ package org.jboss.as.host.controller.parsing;
 
 import static javax.xml.stream.XMLStreamConstants.END_ELEMENT;
 import static org.jboss.as.controller.ControllerMessages.MESSAGES;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ACCESS;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ADD;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.AUTHORIZATION;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.CORE_SERVICE;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.DIRECTORY_GROUPING;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.DISCOVERY_OPTION;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.DISCOVERY_OPTIONS;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.DOMAIN_CONTROLLER;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.HOST;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.HOST_SCOPED_ROLES;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.HTTP_INTERFACE;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.IGNORED_RESOURCES;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.IGNORED_RESOURCE_TYPE;
@@ -58,9 +55,7 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SOC
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.STATIC_DISCOVERY;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SYSTEM_PROPERTY;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.USERNAME;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.VALUE;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.VAULT;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.WRITE_ATTRIBUTE_OPERATION;
 import static org.jboss.as.controller.parsing.Namespace.DOMAIN_1_0;
 import static org.jboss.as.controller.parsing.ParseUtils.isNoNamespaceAttribute;
 import static org.jboss.as.controller.parsing.ParseUtils.missingRequired;
@@ -89,7 +84,6 @@ import org.jboss.as.controller.parsing.Element;
 import org.jboss.as.controller.parsing.Namespace;
 import org.jboss.as.controller.parsing.ParseUtils;
 import org.jboss.as.controller.persistence.ModelMarshallingContext;
-import org.jboss.as.domain.management.access.AccessAuthorizationResourceDefinition;
 import org.jboss.as.domain.management.parsing.AuditLogXml;
 import org.jboss.as.domain.management.parsing.ManagementXml;
 import org.jboss.as.host.controller.HostControllerMessages;
@@ -1881,64 +1875,9 @@ public class HostXml extends CommonXml {
         }
 
         @Override
-        public void parseAccessControl(final XMLExtendedStreamReader reader, final ModelNode address, final Namespace expectedNs,
-                                       final List<ModelNode> list) throws XMLStreamException {
-            ParseUtils.requireNoAttributes(reader);
-            ModelNode accAuthzAddr = address.clone().add(ACCESS, AUTHORIZATION);
-            while (reader.hasNext() && reader.nextTag() != END_ELEMENT) {
-                requireNamespace(reader, expectedNs);
-                final Element element = Element.forName(reader.getLocalName());
-                if (element == Element.HOST_SCOPED_ROLES) {
-                    parseHostScopedRoles(reader, accAuthzAddr, expectedNs, list);
-                } else {
-                    throw unexpectedElement(reader);
-                }
-            }
-        }
-
-        @Override
         protected void parseAuditLog(XMLExtendedStreamReader reader, ModelNode address, Namespace expectedNs, List<ModelNode> list)
                 throws XMLStreamException {
             auditLogDelegate.parseAuditLog(reader, address, expectedNs, list);
-        }
-
-        private void parseHostScopedRoles(XMLExtendedStreamReader reader, ModelNode address, Namespace expectedNs, List<ModelNode> list) throws XMLStreamException {
-            ParseUtils.requireNoAttributes(reader);
-
-            ModelNode op = new ModelNode();
-            op.get(OP).set(WRITE_ATTRIBUTE_OPERATION);
-            op.get(OP_ADDR).set(address);
-            op.get(NAME).set(AccessAuthorizationResourceDefinition.HOST_SCOPED_ROLES.getName());
-            list.add(op);
-
-            boolean found = false;
-            while (reader.hasNext() && reader.nextTag() != END_ELEMENT) {
-                requireNamespace(reader, expectedNs);
-                final Element element = Element.forName(reader.getLocalName());
-                if (element == Element.ROLE) {
-                    found = true;
-                    String value = ParseUtils.readStringAttributeElement(reader, Attribute.NAME.getLocalName());
-                    ModelNode valNode = AccessAuthorizationResourceDefinition.HOST_SCOPED_ROLES.parse(value, reader);
-                    op.get(VALUE).add(valNode);
-                } else {
-                    throw unexpectedElement(reader);
-                }
-            }
-
-            if (!found) {
-                throw missingRequired(reader, EnumSet.of(Element.ROLE));
-            }
-        }
-
-        @Override
-        protected void writeAccessControl(XMLExtendedStreamWriter writer, ModelNode accessControl) throws XMLStreamException {
-            if (accessControl.isDefined() && accessControl.hasDefined(HOST_SCOPED_ROLES)) {
-                writer.writeStartElement(Element.ACCESS_CONTROL.getLocalName());
-                writer.writeStartElement(Element.HOST_SCOPED_ROLES.getLocalName());
-                AccessAuthorizationResourceDefinition.HOST_SCOPED_ROLES.marshallAsElement(accessControl, writer);
-                writer.writeEndElement();
-                writer.writeEndElement();
-            }
         }
 
         @Override

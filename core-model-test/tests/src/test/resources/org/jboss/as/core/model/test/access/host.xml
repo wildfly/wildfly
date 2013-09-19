@@ -13,12 +13,6 @@
                 <socket interface="management" port="${jboss.management.native.port:9999}"/>
             </native-interface>
         </management-interfaces>
-        <access-control>
-            <host-scoped-roles>
-                <role name="c"/>
-                <role name="d"/>
-            </host-scoped-roles>
-        </access-control>
     </management>
 
     <domain-controller>
