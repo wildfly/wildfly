@@ -24,24 +24,14 @@ package org.jboss.as.domain.management.access;
 
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ACCESS;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.AUTHORIZATION;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ROLE;
 
 import java.util.Arrays;
 import java.util.List;
 
-import javax.xml.stream.XMLStreamException;
-import javax.xml.stream.XMLStreamWriter;
-
 import org.jboss.as.controller.AttributeDefinition;
-import org.jboss.as.controller.AttributeMarshaller;
-import org.jboss.as.controller.ListAttributeDefinition;
-import org.jboss.as.controller.OperationContext;
-import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.PathElement;
-import org.jboss.as.controller.ReloadRequiredWriteAttributeHandler;
 import org.jboss.as.controller.SimpleAttributeDefinition;
 import org.jboss.as.controller.SimpleAttributeDefinitionBuilder;
-import org.jboss.as.controller.SimpleListAttributeDefinition;
 import org.jboss.as.controller.SimpleResourceDefinition;
 import org.jboss.as.controller.access.CombinationPolicy;
 import org.jboss.as.controller.access.management.AccessConstraintDefinition;
@@ -50,8 +40,6 @@ import org.jboss.as.controller.access.management.SensitiveTargetAccessConstraint
 import org.jboss.as.controller.access.management.WritableAuthorizerConfiguration;
 import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
 import org.jboss.as.controller.operations.validation.EnumValidator;
-import org.jboss.as.controller.parsing.Attribute;
-import org.jboss.as.controller.parsing.Element;
 import org.jboss.as.controller.registry.ManagementResourceRegistration;
 import org.jboss.as.controller.registry.Resource;
 import org.jboss.as.domain.management._private.DomainManagementResolver;
@@ -83,20 +71,6 @@ public class AccessAuthorizationResourceDefinition extends SimpleResourceDefinit
             return toString;
         }
     }
-
-    public static final ListAttributeDefinition HOST_SCOPED_ROLES = SimpleListAttributeDefinition.Builder.of(ModelDescriptionConstants.HOST_SCOPED_ROLES,
-            new SimpleAttributeDefinitionBuilder(ROLE, ModelType.STRING)
-                    .setAttributeMarshaller(new AttributeMarshaller() {
-                        @Override
-                        public void marshallAsElement(AttributeDefinition attribute, ModelNode resourceModel, boolean marshallDefault, XMLStreamWriter writer) throws XMLStreamException {
-                            writer.writeEmptyElement(Element.ROLE.getLocalName());
-                            writer.writeAttribute(Attribute.NAME.getLocalName(), resourceModel.asString());
-                        }
-                    }).build())
-            .setMinSize(1)
-            .setAllowNull(true)
-            .setWrapXmlList(false)
-            .build();
 
     public static final SimpleAttributeDefinition PERMISSION_COMBINATION_POLICY =
             new SimpleAttributeDefinitionBuilder(ModelDescriptionConstants.PERMISSION_COMBINATION_POLICY, ModelType.STRING, true)
@@ -144,14 +118,7 @@ public class AccessAuthorizationResourceDefinition extends SimpleResourceDefinit
     @Override
     public void registerAttributes(ManagementResourceRegistration resourceRegistration) {
         super.registerAttributes(resourceRegistration);
-        if (isHostController) {
-            resourceRegistration.registerReadWriteAttribute(HOST_SCOPED_ROLES, null, new ReloadRequiredWriteAttributeHandler(HOST_SCOPED_ROLES) {
-                @Override
-                protected boolean applyUpdateToRuntime(OperationContext context, ModelNode operation, String attributeName, ModelNode resolvedValue, ModelNode currentValue, HandbackHolder<Void> voidHandback) throws OperationFailedException {
-                    return !context.isBooting();
-                }
-            });
-        } else {
+        if (!isHostController) {
             WritableAuthorizerConfiguration authorizerConfiguration = configurableAuthorizer.getWritableAuthorizerConfiguration();
             resourceRegistration.registerReadWriteAttribute(PROVIDER, null, new AccessAuthorizationProviderWriteAttributeHander(configurableAuthorizer));
             resourceRegistration.registerReadWriteAttribute(PERMISSION_COMBINATION_POLICY, null,
