@@ -37,7 +37,7 @@ import javax.naming.Context;
 import javax.naming.NamingEnumeration;
 import javax.naming.directory.Attribute;
 import javax.naming.directory.Attributes;
-import javax.naming.directory.InitialDirContext;
+import javax.naming.directory.DirContext;
 import javax.naming.directory.SearchControls;
 import javax.naming.directory.SearchResult;
 import javax.security.auth.callback.Callback;
@@ -63,7 +63,7 @@ import org.jboss.sasl.callback.VerifyPasswordCallback;
  *
  * @author <a href="mailto:darran.lofthouse@jboss.com">Darran Lofthouse</a>
  */
-public class UserLdapCallbackHandler implements Service<CallbackHandlerService>, CallbackHandlerService, CallbackHandler {
+public class UserLdapCallbackHandler implements Service<CallbackHandlerService>, CallbackHandlerService {
 
     private static final String SERVICE_SUFFIX = "ldap";
 
@@ -77,9 +77,11 @@ public class UserLdapCallbackHandler implements Service<CallbackHandlerService>,
     private final boolean recursive;
     private final String userDn;
     private final boolean allowEmptyPassword;
+    private final boolean shareConnection;
     protected final int searchTimeLimit = 10000; // TODO - Maybe make configurable.
 
-    public UserLdapCallbackHandler(String baseDn, String userNameAttribute, String advancedFilter, boolean recursive, String userDn, boolean allowEmptyPassword) {
+    public UserLdapCallbackHandler(String baseDn, String userNameAttribute, String advancedFilter, boolean recursive,
+                                   String userDn, boolean allowEmptyPassword, boolean shareConnection) {
         this.baseDn = baseDn;
         if (userNameAttribute == null && advancedFilter == null) {
             throw MESSAGES.oneOfRequired(USERNAME_ATTRIBUTE, ADVANCED_FILTER);
@@ -89,6 +91,7 @@ public class UserLdapCallbackHandler implements Service<CallbackHandlerService>,
         this.recursive = recursive;
         this.userDn = userDn;
         this.allowEmptyPassword = allowEmptyPassword;
+        this.shareConnection = shareConnection;
     }
 
     /*
@@ -112,7 +115,7 @@ public class UserLdapCallbackHandler implements Service<CallbackHandlerService>,
     }
 
     public CallbackHandler getCallbackHandler(Map<String, Object> sharedState) {
-        return this;
+        return new LdapCallbackHandler(sharedState);
     }
 
     /*
@@ -142,121 +145,139 @@ public class UserLdapCallbackHandler implements Service<CallbackHandlerService>,
      *  CallbackHandler Method
      */
 
-    public void handle(Callback[] callbacks) throws IOException, UnsupportedCallbackException {
-        if (callbacks.length == 1 && callbacks[0] instanceof AuthorizeCallback) {
-            AuthorizeCallback acb = (AuthorizeCallback) callbacks[0];
-            String authenticationId = acb.getAuthenticationID();
-            String authorizationId = acb.getAuthorizationID();
-            boolean authorized = authenticationId.equals(authorizationId);
-            if (authorized == false) {
-                SECURITY_LOGGER.tracef(
-                        "Checking 'AuthorizeCallback', authorized=false, authenticationID=%s, authorizationID=%s.",
-                        authenticationId, authorizationId);
-            }
-            acb.setAuthorized(authorized);
+    private class LdapCallbackHandler implements CallbackHandler {
 
-            return;
+        private final Map<String, Object> sharedState;
+
+        private LdapCallbackHandler(final Map<String, Object> sharedState) {
+            this.sharedState = sharedState;
         }
 
-        ConnectionManager connectionManager = this.connectionManager.getValue();
-        String username = null;
-        VerifyPasswordCallback verifyPasswordCallback = null;
-
-        for (Callback current : callbacks) {
-            if (current instanceof NameCallback) {
-                username = ((NameCallback) current).getDefaultName();
-            } else if (current instanceof RealmCallback) {
-                // TODO - Nothing at the moment
-            } else if (current instanceof VerifyPasswordCallback) {
-                verifyPasswordCallback = (VerifyPasswordCallback) current;
-            } else {
-                throw new UnsupportedCallbackException(current);
-            }
-        }
-
-        if (username == null || username.length() == 0) {
-            SECURITY_LOGGER.trace("No username or 0 length username supplied.");
-            throw MESSAGES.noUsername();
-        }
-        if (verifyPasswordCallback == null) {
-            SECURITY_LOGGER.trace("No password supplied.");
-            throw MESSAGES.noPassword();
-        }
-        String password = verifyPasswordCallback.getPassword();
-        if (password == null || (allowEmptyPassword == false && password.length() == 0)) {
-            SECURITY_LOGGER.trace("No password or 0 length password supplied.");
-            throw MESSAGES.noPassword();
-        }
-
-        InitialDirContext searchContext = null;
-        InitialDirContext userContext = null;
-        NamingEnumeration<SearchResult> searchEnumeration = null;
-        try {
-            // 1 - Obtain Connection to LDAP
-            searchContext = (InitialDirContext) connectionManager.getConnection();
-            // 2 - Search to identify the DN of the user connecting
-            SearchControls searchControls = new SearchControls();
-            if (recursive) {
-                SECURITY_LOGGER.trace("Performing recursive search");
-                searchControls.setSearchScope(SearchControls.SUBTREE_SCOPE);
-            } else {
-                SECURITY_LOGGER.trace("Performing single level search");
-                searchControls.setSearchScope(SearchControls.ONELEVEL_SCOPE);
-            }
-            searchControls.setReturningAttributes(new String[]{userDn});
-            searchControls.setTimeLimit(searchTimeLimit);
-
-            Object[] filterArguments = new Object[] { username };
-            String filter = usernameAttribute != null ? "(" + usernameAttribute + "={0})" : advancedFilter;
-            SECURITY_LOGGER.tracef("Searching for user '%s' using filter '%s'.", username, filter);
-
-            searchEnumeration = searchContext.search(baseDn, filter, filterArguments, searchControls);
-            if (searchEnumeration.hasMore() == false) {
-                SECURITY_LOGGER.tracef("User '%s' not found in directory.", username);
-                throw MESSAGES.userNotFoundInDirectory(username);
-            }
-
-            String distinguishedUserDN = null;
-
-            SearchResult result = searchEnumeration.next();
-            Attributes attributes = result.getAttributes();
-            if (attributes != null) {
-                Attribute dn = attributes.get(userDn);
-                if (dn != null) {
-                    distinguishedUserDN = (String) dn.get();
+        public void handle(Callback[] callbacks) throws IOException, UnsupportedCallbackException {
+            if (callbacks.length == 1 && callbacks[0] instanceof AuthorizeCallback) {
+                AuthorizeCallback acb = (AuthorizeCallback) callbacks[0];
+                String authenticationId = acb.getAuthenticationID();
+                String authorizationId = acb.getAuthorizationID();
+                boolean authorized = authenticationId.equals(authorizationId);
+                if (authorized == false) {
+                    SECURITY_LOGGER.tracef(
+                            "Checking 'AuthorizeCallback', authorized=false, authenticationID=%s, authorizationID=%s.",
+                            authenticationId, authorizationId);
                 }
+                acb.setAuthorized(authorized);
+
+                return;
             }
-            if (distinguishedUserDN == null) {
-                if (result.isRelative() == true) {
-                    distinguishedUserDN = result.getName() + ("".equals(baseDn) ? "" : "," + baseDn);
+
+            ConnectionManager connectionManager = UserLdapCallbackHandler.this.connectionManager.getValue();
+            VerifyPasswordCallback verifyPasswordCallback = null;
+            String username = null;
+
+            for (Callback current : callbacks) {
+                if (current instanceof NameCallback) {
+                    username = ((NameCallback) current).getDefaultName();
+                } else if (current instanceof RealmCallback) {
+                    // TODO - Nothing at the moment
+                } else if (current instanceof VerifyPasswordCallback) {
+                    verifyPasswordCallback = (VerifyPasswordCallback) current;
                 } else {
-                    String name = result.getName();
-                    SECURITY_LOGGER.tracef("Can't follow referral for authentication: %s", name);
-                    throw MESSAGES.nameNotFound(name);
+                    throw new UnsupportedCallbackException(current);
                 }
             }
-            SECURITY_LOGGER.tracef("DN '%s' found for user '%s'", distinguishedUserDN, username);
 
-            // 3 - Connect as user once their DN is identified
+            if (username == null || username.length() == 0) {
+                SECURITY_LOGGER.trace("No username or 0 length username supplied.");
+                throw MESSAGES.noUsername();
+            }
+            if (verifyPasswordCallback == null) {
+                SECURITY_LOGGER.trace("No password supplied.");
+                throw MESSAGES.noPassword();
+            }
+            String password = verifyPasswordCallback.getPassword();
+            if (password == null || (allowEmptyPassword == false && password.length() == 0)) {
+                SECURITY_LOGGER.trace("No password or 0 length password supplied.");
+                throw MESSAGES.noPassword();
+            }
+
+            DirContext searchContext = null;
+            DirContext userContext = null;
+            NamingEnumeration<SearchResult> searchEnumeration = null;
             try {
-                userContext = (InitialDirContext) connectionManager.getConnection(distinguishedUserDN, password);
-                if (userContext != null) {
-                    SECURITY_LOGGER.tracef("Password verified for user '%s'", username);
-                    verifyPasswordCallback.setVerified(true);
+                // 1 - Obtain Connection to LDAP
+                searchContext = (DirContext) connectionManager.getConnection();
+                // 2 - Search to identify the DN of the user connecting
+                SearchControls searchControls = new SearchControls();
+                if (recursive) {
+                    SECURITY_LOGGER.trace("Performing recursive search");
+                    searchControls.setSearchScope(SearchControls.SUBTREE_SCOPE);
+                } else {
+                    SECURITY_LOGGER.trace("Performing single level search");
+                    searchControls.setSearchScope(SearchControls.ONELEVEL_SCOPE);
                 }
-            } catch (Exception e) {
-                SECURITY_LOGGER.tracef("Password verification failed for user '%s'", username);
-                verifyPasswordCallback.setVerified(false);
-            }
+                searchControls.setReturningAttributes(new String[] { userDn });
+                searchControls.setTimeLimit(searchTimeLimit);
 
-        } catch (Exception e) {
-            SECURITY_LOGGER.trace("Unable to verify identity.", e);
-            throw MESSAGES.cannotPerformVerification(e);
-        } finally {
-            safeClose(searchEnumeration);
-            safeClose(searchContext);
-            safeClose(userContext);
+                Object[] filterArguments = new Object[] { username };
+                String filter = usernameAttribute != null ? "(" + usernameAttribute + "={0})" : advancedFilter;
+                SECURITY_LOGGER.tracef("Searching for user '%s' using filter '%s'.", username, filter);
+
+                searchEnumeration = searchContext.search(baseDn, filter, filterArguments, searchControls);
+                if (searchEnumeration.hasMore() == false) {
+                    SECURITY_LOGGER.tracef("User '%s' not found in directory.", username);
+                    throw MESSAGES.userNotFoundInDirectory(username);
+                }
+
+                String distinguishedUserDN = null;
+
+                SearchResult result = searchEnumeration.next();
+                Attributes attributes = result.getAttributes();
+                if (attributes != null) {
+                    Attribute dn = attributes.get(userDn);
+                    if (dn != null) {
+                        distinguishedUserDN = (String) dn.get();
+                    }
+                }
+                if (distinguishedUserDN == null) {
+                    if (result.isRelative() == true) {
+                        distinguishedUserDN = result.getName() + ("".equals(baseDn) ? "" : "," + baseDn);
+                    } else {
+                        String name = result.getName();
+                        SECURITY_LOGGER.tracef("Can't follow referral for authentication: %s", name);
+                        throw MESSAGES.nameNotFound(name);
+                    }
+                }
+                SECURITY_LOGGER.tracef("DN '%s' found for user '%s'", distinguishedUserDN, username);
+
+                // 3 - Connect as user once their DN is identified
+                try {
+                    userContext = (DirContext) connectionManager.getConnection(distinguishedUserDN, password);
+                    if (userContext != null) {
+                        SECURITY_LOGGER.tracef("Password verified for user '%s'", username);
+                        verifyPasswordCallback.setVerified(true);
+                    }
+                } catch (Exception e) {
+                    SECURITY_LOGGER.tracef("Password verification failed for user '%s'", username);
+                    verifyPasswordCallback.setVerified(false);
+                }
+
+            } catch (Exception e) {
+                SECURITY_LOGGER.trace("Unable to verify identity.", e);
+                throw MESSAGES.cannotPerformVerification(e);
+            } finally {
+                UserLdapCallbackHandler.this.safeClose(searchEnumeration);
+                safeClose(verifyPasswordCallback, searchContext);
+                UserLdapCallbackHandler.this.safeClose(userContext);
+            }
         }
+
+        private void safeClose(final VerifyPasswordCallback vpc, final DirContext context) {
+            if (shareConnection && context != null && vpc != null && vpc.isVerified()) {
+                sharedState.put(DirContext.class.getName(), context);
+            } else {
+                UserLdapCallbackHandler.this.safeClose(context);
+            }
+        }
+
     }
 
     private void safeClose(Context context) {

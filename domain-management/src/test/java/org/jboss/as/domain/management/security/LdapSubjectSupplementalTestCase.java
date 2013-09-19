@@ -23,7 +23,9 @@ package org.jboss.as.domain.management.security;
 
 import java.io.IOException;
 import java.security.Principal;
+import java.util.Collections;
 import java.util.HashSet;
+import java.util.Map;
 import java.util.Set;
 
 import javax.security.auth.Subject;
@@ -32,10 +34,12 @@ import org.junit.Assert;
 
 import org.jboss.as.core.security.RealmGroup;
 import org.jboss.as.core.security.RealmUser;
+import org.jboss.as.domain.management.security.LdapSubjectSupplementalService.LdapSubjectSupplemental;
 import org.junit.Test;
 
 public class LdapSubjectSupplementalTestCase {
 
+    private static Map<String, Object> sharedState = Collections.emptyMap();
 
     @Test
     public void testLdapRole() throws IOException {
@@ -43,7 +47,7 @@ public class LdapSubjectSupplementalTestCase {
         HashSet<Principal> principalSet = new HashSet<Principal>();
         principalSet.add(realmUser);
         Subject subject = new Subject(false,principalSet,new HashSet<Object>(),new HashSet<Object>());
-        TestLdapSubjectSupplemental subjectSupplemental = new TestLdapSubjectSupplemental(false, null, null, null,"", null, null, 0, null);
+        SubjectSupplemental subjectSupplemental = new TestLdapSubjectSupplemental(false, null, null, null,"", null, null, 0, null).getSubjectSupplemental(sharedState);
         subjectSupplemental.supplementSubject(subject);
         Set<Principal> principals = subject.getPrincipals();
         Assert.assertTrue(principals.contains(new RealmGroup("cn=admin,ou=groups,dc=jboss,dc=org")));
@@ -57,7 +61,7 @@ public class LdapSubjectSupplementalTestCase {
         HashSet<Principal> principalSet = new HashSet<Principal>();
         principalSet.add(realmUser);
         Subject subject = new Subject(false,principalSet,new HashSet<Object>(),new HashSet<Object>());
-        TestLdapSubjectSupplemental subjectSupplemental = new TestLdapSubjectSupplemental(false, null, null, null, "", null, "=([^,]+)", 0, null);
+        SubjectSupplemental subjectSupplemental = new TestLdapSubjectSupplemental(false, null, null, null, "", null, "=([^,]+)", 0, null).getSubjectSupplemental(sharedState);
         subjectSupplemental.supplementSubject(subject);
         Set<Principal> principals = subject.getPrincipals();
         Assert.assertTrue(principals.contains(new RealmGroup("=admin")));
@@ -71,7 +75,7 @@ public class LdapSubjectSupplementalTestCase {
         HashSet<Principal> principalSet = new HashSet<Principal>();
         principalSet.add(realmUser);
         Subject subject = new Subject(false,principalSet,new HashSet<Object>(),new HashSet<Object>());
-        TestLdapSubjectSupplemental subjectSupplemental = new TestLdapSubjectSupplemental(false, null, null, null,"", null, "=([^,]+)", 1, null);
+        SubjectSupplemental subjectSupplemental = new TestLdapSubjectSupplemental(false, null, null, null,"", null, "=([^,]+)", 1, null).getSubjectSupplemental(sharedState);
         subjectSupplemental.supplementSubject(subject);
         Set<Principal> principals = subject.getPrincipals();
         Assert.assertTrue(principals.contains(new RealmGroup("admin")));
@@ -80,21 +84,21 @@ public class LdapSubjectSupplementalTestCase {
 
         //Test with a empty regular expressions
         subject = new Subject(false,principalSet,new HashSet<Object>(),new HashSet<Object>());
-        subjectSupplemental = new TestLdapSubjectSupplemental(false, null, null,null, "", null, "", 1, null);
+        subjectSupplemental = new TestLdapSubjectSupplemental(false, null, null,null, "", null, "", 1, null).getSubjectSupplemental(sharedState);
         subjectSupplemental.supplementSubject(subject);
         principals = subject.getPrincipals();
         Assert.assertEquals(1, principals.size());
 
       //Test with a rubbish regular expressions
         subject = new Subject(false,principalSet,new HashSet<Object>(),new HashSet<Object>());
-        subjectSupplemental = new TestLdapSubjectSupplemental(false, null, null,null, "", null, "{[]]]]]", 1, null);
+        subjectSupplemental = new TestLdapSubjectSupplemental(false, null, null,null, "", null, "{[]]]]]", 1, null).getSubjectSupplemental(sharedState);
         subjectSupplemental.supplementSubject(subject);
         principals = subject.getPrincipals();
         Assert.assertEquals(1, principals.size());
 
       //Test with a group higher then the actual groups returned by the regular expressions
         subject = new Subject(false,principalSet,new HashSet<Object>(),new HashSet<Object>());
-        subjectSupplemental = new TestLdapSubjectSupplemental(false, null, null, null, "", null, "=([^,]+)", 9, null);
+        subjectSupplemental = new TestLdapSubjectSupplemental(false, null, null, null, "", null, "=([^,]+)", 9, null).getSubjectSupplemental(sharedState);
         subjectSupplemental.supplementSubject(subject);
         principals = subject.getPrincipals();
         Assert.assertEquals(1, principals.size());
@@ -106,7 +110,7 @@ public class LdapSubjectSupplementalTestCase {
         HashSet<Principal> principalSet = new HashSet<Principal>();
         principalSet.add(realmUser);
         Subject subject = new Subject(false,principalSet,new HashSet<Object>(),new HashSet<Object>());
-        TestLdapSubjectSupplemental subjectSupplemental = new TestLdapSubjectSupplemental(false, null, null, null, "", null, "=([^,]+)", 1, "{0}-{2}");
+        SubjectSupplemental subjectSupplemental = new TestLdapSubjectSupplemental(false, null, null, null, "", null, "=([^,]+)", 1, "{0}-{2}").getSubjectSupplemental(sharedState);
         subjectSupplemental.supplementSubject(subject);
         Set<Principal> principals = subject.getPrincipals();
         Assert.assertTrue(principals.contains(new RealmGroup("admin-jboss")));
@@ -115,14 +119,14 @@ public class LdapSubjectSupplementalTestCase {
 
         //test with empty result pattern
         subject = new Subject(false,principalSet,new HashSet<Object>(),new HashSet<Object>());
-        subjectSupplemental = new TestLdapSubjectSupplemental(false, null, null,null, "", null, "=([^,]+)", 1, "");
+        subjectSupplemental = new TestLdapSubjectSupplemental(false, null, null,null, "", null, "=([^,]+)", 1, "").getSubjectSupplemental(sharedState);
         subjectSupplemental.supplementSubject(subject);
         principals = subject.getPrincipals();
         Assert.assertEquals(1, principals.size());
 
         //test with one result pattern
         subject = new Subject(false,principalSet,new HashSet<Object>(),new HashSet<Object>());
-        subjectSupplemental = new TestLdapSubjectSupplemental(false, null, null, null,"", null, "=([^,]+)", 1, "{0}");
+        subjectSupplemental = new TestLdapSubjectSupplemental(false, null, null, null,"", null, "=([^,]+)", 1, "{0}").getSubjectSupplemental(sharedState);
         subjectSupplemental.supplementSubject(subject);
         principals = subject.getPrincipals();
         Assert.assertTrue(principals.contains(new RealmGroup("admin")));
@@ -131,32 +135,39 @@ public class LdapSubjectSupplementalTestCase {
 
         //test with result pattern that use a higher number of elements
         subject = new Subject(false,principalSet,new HashSet<Object>(),new HashSet<Object>());
-        subjectSupplemental = new TestLdapSubjectSupplemental(false, null, null, null,"", null, "=([^,]+)", 1, "{9}");
+        subjectSupplemental = new TestLdapSubjectSupplemental(false, null, null, null,"", null, "=([^,]+)", 1, "{9}").getSubjectSupplemental(sharedState);
         subjectSupplemental.supplementSubject(subject);
         principals = subject.getPrincipals();
         Assert.assertEquals(1, principals.size());
 
       //test with result pattern with fixed pattern
         subject = new Subject(false,principalSet,new HashSet<Object>(),new HashSet<Object>());
-        subjectSupplemental = new TestLdapSubjectSupplemental(false, null, null,null, "", null, "=([^,]+)", 1, "test");
+        subjectSupplemental = new TestLdapSubjectSupplemental(false, null, null,null, "", null, "=([^,]+)", 1, "test").getSubjectSupplemental(sharedState);
         subjectSupplemental.supplementSubject(subject);
         principals = subject.getPrincipals();
         Assert.assertEquals(1, principals.size());
     }
 
 
-    private class TestLdapSubjectSupplemental extends LdapSubjectSupplemental {
+    private class TestLdapSubjectSupplemental extends LdapSubjectSupplementalService {
         public TestLdapSubjectSupplemental(boolean recursive, String groupsDn, String baseDn, String userDn, String userNameAttribute, String advancedFilter, String pattern, int groups, String resultPattern) {
-            super(recursive,groupsDn,baseDn,userDn,userNameAttribute,advancedFilter,pattern,groups,resultPattern,true);
+            super(recursive,groupsDn,baseDn,userDn,userNameAttribute,advancedFilter,pattern,groups,resultPattern,true, false);
         }
 
         @Override
-        protected Set<String> searchLdap(String username) {
-            HashSet<String> ldapRoles = new HashSet<String>();
-            ldapRoles.add("cn=admin,ou=groups,dc=jboss,dc=org");
-            ldapRoles.add("cn=emeaadmin,ou=groups,dc=jboss,dc=org");
-            return ldapRoles;
+        public SubjectSupplemental getSubjectSupplemental(Map<String, Object> sharedState) {
+            // TODO Auto-generated method stub
+            return new LdapSubjectSupplemental(sharedState) {
+                @Override
+                protected Set<String> searchLdap(String username) {
+                    HashSet<String> ldapRoles = new HashSet<String>();
+                    ldapRoles.add("cn=admin,ou=groups,dc=jboss,dc=org");
+                    ldapRoles.add("cn=emeaadmin,ou=groups,dc=jboss,dc=org");
+                    return ldapRoles;
+                }
+            };
         }
+
     }
 
 }

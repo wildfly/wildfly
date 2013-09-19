@@ -117,6 +117,7 @@ public class SecurityRealmAddHandler implements OperationStepHandler {
         final ServiceName realmServiceName = SecurityRealm.ServiceUtil.createServiceName(realmName);
         ServiceBuilder<?> realmBuilder = serviceTarget.addService(realmServiceName, securityRealmService);
 
+        final boolean shareLdapConnections = shareLdapConnection(context, authentication, authorization);
         ModelNode authTruststore = null;
         if (plugIns != null) {
             addPlugInLoaderService(realmName, plugIns, serviceTarget, newControllers);
@@ -137,7 +138,7 @@ public class SecurityRealmAddHandler implements OperationStepHandler {
             if (authentication.hasDefined(JAAS)) {
                 addJaasService(context, authentication.require(JAAS), realmName, serviceTarget, newControllers, context.isNormalServer(), realmBuilder, injectorSet.injector());
             } else if (authentication.hasDefined(LDAP)) {
-                addLdapService(context, authentication.require(LDAP), realmName, serviceTarget, newControllers, realmBuilder, injectorSet.injector());
+                addLdapService(context, authentication.require(LDAP), realmName, serviceTarget, newControllers, realmBuilder, injectorSet.injector(), shareLdapConnections);
             } else if (authentication.hasDefined(PLUG_IN)) {
                 addPlugInAuthenticationService(context, authentication.require(PLUG_IN), realmName, securityRealmService, serviceTarget, newControllers, realmBuilder, injectorSet.injector());
             } else if (authentication.hasDefined(PROPERTIES)) {
@@ -152,7 +153,7 @@ public class SecurityRealmAddHandler implements OperationStepHandler {
             } else if (authorization.hasDefined(PLUG_IN)) {
                 addPlugInAuthorizationService(context, authorization.require(PLUG_IN), realmName, serviceTarget, newControllers, realmBuilder, securityRealmService.getSubjectSupplementalInjector());
             } else if (authorization.hasDefined(LDAP)) {
-                addLdapAuthorizationService(context, authorization.require(LDAP), realmServiceName,realmName, serviceTarget, newControllers, realmBuilder, securityRealmService.getSubjectSupplementalInjector());
+                addLdapAuthorizationService(context, authorization.require(LDAP), realmServiceName,realmName, serviceTarget, newControllers, realmBuilder, securityRealmService.getSubjectSupplementalInjector(), shareLdapConnections);
             }
         }
 
@@ -175,6 +176,21 @@ public class SecurityRealmAddHandler implements OperationStepHandler {
         if (newControllers != null) {
             newControllers.add(sc);
         }
+    }
+
+    private boolean shareLdapConnection(final OperationContext context, final ModelNode authentication,
+            final ModelNode authorization) throws OperationFailedException {
+        if (authentication == null || authorization == null || authentication.hasDefined(LDAP) == false
+                || authorization.hasDefined(LDAP) == false) {
+            return false;
+        }
+
+        String authConnectionManager = LdapAuthenticationResourceDefinition.CONNECTION.resolveModelAttribute(context,
+                authentication.require(LDAP)).asString();
+        String authzConnectionManager = LdapAuthorizationResourceDefinition.CONNECTION.resolveModelAttribute(context,
+                authorization.require(LDAP)).asString();
+
+        return authConnectionManager.equals(authzConnectionManager);
     }
 
     private ServiceName addPlugInLoaderService(String realmName, ModelNode plugInModel,
@@ -231,7 +247,7 @@ public class SecurityRealmAddHandler implements OperationStepHandler {
     }
 
     private void addLdapService(OperationContext context, ModelNode ldap, String realmName, ServiceTarget serviceTarget,
-            List<ServiceController<?>> newControllers, ServiceBuilder<?> realmBuilder, Injector<CallbackHandlerService> injector) throws OperationFailedException {
+            List<ServiceController<?>> newControllers, ServiceBuilder<?> realmBuilder, Injector<CallbackHandlerService> injector, boolean shareConnection) throws OperationFailedException {
         ServiceName ldapServiceName = UserLdapCallbackHandler.ServiceUtil.createServiceName(realmName);
 
         final String baseDn = LdapAuthenticationResourceDefinition.BASE_DN.resolveModelAttribute(context, ldap).asString();
@@ -242,7 +258,7 @@ public class SecurityRealmAddHandler implements OperationStepHandler {
         final boolean recursive = LdapAuthenticationResourceDefinition.RECURSIVE.resolveModelAttribute(context, ldap).asBoolean();
         final boolean allowEmptyPasswords = LdapAuthenticationResourceDefinition.ALLOW_EMPTY_PASSWORDS.resolveModelAttribute(context, ldap).asBoolean();
         final String userDn = LdapAuthenticationResourceDefinition.USER_DN.resolveModelAttribute(context, ldap).asString();
-        UserLdapCallbackHandler ldapCallbackHandler = new UserLdapCallbackHandler(baseDn, usernameAttribute, advancedFilter, recursive, userDn, allowEmptyPasswords);
+        UserLdapCallbackHandler ldapCallbackHandler = new UserLdapCallbackHandler(baseDn, usernameAttribute, advancedFilter, recursive, userDn, allowEmptyPasswords, shareConnection);
 
         ServiceBuilder<?> ldapBuilder = serviceTarget.addService(ldapServiceName, ldapCallbackHandler);
         String connectionManager = LdapAuthenticationResourceDefinition.CONNECTION.resolveModelAttribute(context, ldap).asString();
@@ -372,8 +388,8 @@ public class SecurityRealmAddHandler implements OperationStepHandler {
 
     private void addLdapAuthorizationService(OperationContext context, ModelNode ldap, ServiceName realmServiceName, String realmName, ServiceTarget serviceTarget,
             List<ServiceController<?>> newControllers, ServiceBuilder<?> realmBuilder,
-            InjectedValue<SubjectSupplementalService> injector) throws OperationFailedException {
-        ServiceName ldapServiceName = realmServiceName.append(LdapSubjectSupplemental.SERVICE_SUFFIX);
+            InjectedValue<SubjectSupplementalService> injector, boolean shareConnection) throws OperationFailedException {
+        ServiceName ldapServiceName = realmServiceName.append(LdapSubjectSupplementalService.SERVICE_SUFFIX);
 
         final String baseDn = LdapAuthorizationResourceDefinition.BASE_DN.resolveModelAttribute(context, ldap).asString();
         ModelNode node = LdapAuthorizationResourceDefinition.USERNAME.resolveModelAttribute(context, ldap);
@@ -389,7 +405,8 @@ public class SecurityRealmAddHandler implements OperationStepHandler {
         final int group = groupNode.isDefined() ? LdapAuthorizationResourceDefinition.GROUP.resolveModelAttribute(context, ldap).asInt() : 0;
         final ModelNode resultPatternNode = LdapAuthorizationResourceDefinition.RESULT_PATTERN.resolveModelAttribute(context, ldap);
         final String resultPattern = resultPatternNode.isDefined() ? resultPatternNode.asString(): null;
-        LdapSubjectSupplemental ldapSubjectHandler = new LdapSubjectSupplemental(recursive,rolesDn,baseDn,userDn,usernameAttribute,advancedFilter,pattern,group,resultPattern,reverseGroup);
+        LdapSubjectSupplementalService ldapSubjectHandler = new LdapSubjectSupplementalService(recursive, rolesDn, baseDn,
+                userDn, usernameAttribute, advancedFilter, pattern, group, resultPattern, reverseGroup, shareConnection);
 
         ServiceBuilder<?> ldapBuilder = serviceTarget.addService(ldapServiceName, ldapSubjectHandler);
         String connectionManager = LdapAuthorizationResourceDefinition.CONNECTION.resolveModelAttribute(context, ldap).asString();
