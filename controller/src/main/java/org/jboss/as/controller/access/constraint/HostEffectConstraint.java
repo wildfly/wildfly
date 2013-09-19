@@ -103,15 +103,17 @@ public class HostEffectConstraint extends AbstractConstraint implements Constrai
     public boolean violates(Constraint other, Action.ActionEffect actionEffect) {
         if (other instanceof HostEffectConstraint) {
             HostEffectConstraint hec = (HostEffectConstraint) other;
+            Set<String> ourSpecific = hostsHolder.specific;
+            Set<String> hecSpecific = hec.hostsHolder.specific;
             if (user) {
                 assert !hec.user : "illegal comparison";
                 if (readOnly) {
                     // Allow global or any matching server group
                     if (!hec.global) {
-                        boolean anyMatch = anyMatch(hec);
+                        boolean anyMatch = anyMatch(ourSpecific, hecSpecific);
                         if (!anyMatch) ControllerLogger.ACCESS_LOGGER.tracef("read-only host constraint violated " +
                                 "for action %s due to no match between hosts %s and allowed hosts %s",
-                                actionEffect, hec.hostsHolder.specific, hostsHolder.specific);
+                                actionEffect, hecSpecific, ourSpecific);
                         return !anyMatch;
                     }
                 } else if (!global) {
@@ -123,18 +125,18 @@ public class HostEffectConstraint extends AbstractConstraint implements Constrai
                     } else {
                         if (actionEffect == Action.ActionEffect.WRITE_RUNTIME || actionEffect == Action.ActionEffect.WRITE_CONFIG) {
                             //  Writes must not effect other groups
-                            boolean containsAll = hostsHolder.specific.containsAll(hec.hostsHolder.specific);
+                            boolean containsAll = ourSpecific.containsAll(hecSpecific);
                             if (!containsAll) {
                                 ControllerLogger.ACCESS_LOGGER.tracef("host constraint violated for action %s due to " +
-                                        "mismatch of hosts %s vs hosts %s", actionEffect, hec.hostsHolder.specific, hostsHolder.specific);
+                                        "mismatch of hosts %s vs hosts %s", actionEffect, hecSpecific, ourSpecific);
                             }
                             return !containsAll;
                         } else {
                             // Reads ok as long as one of our groups match
-                            boolean anyMatch = anyMatch(hec);
+                            boolean anyMatch = anyMatch(ourSpecific, hecSpecific);
                             if (!anyMatch) ControllerLogger.ACCESS_LOGGER.tracef("host constraint violated " +
                                     "for action %s due to no match between hosts %s and allowed hosts %s",
-                                    actionEffect, hec.hostsHolder.specific, hostsHolder.specific);
+                                    actionEffect, hecSpecific, ourSpecific);
                             return !anyMatch;
                         }
                     } // else fall through
@@ -147,14 +149,18 @@ public class HostEffectConstraint extends AbstractConstraint implements Constrai
         return false;
     }
 
-    private boolean anyMatch(HostEffectConstraint hec) {
+    private boolean anyMatch(Set<String> ourSpecific, Set<String> hecSpecific) {
 
         boolean matched = false;
-        for (String ourGroup : hostsHolder.specific) {
-            if (hec.hostsHolder.specific.contains(ourGroup)) {
+        for (String ourGroup : ourSpecific) {
+            if (hecSpecific.contains(ourGroup)) {
                 matched = true;
                 break;
             }
+        }
+        if (!matched) {
+            // WFLY-2089
+            matched = hecSpecific.size() == 1 && hecSpecific.contains("*");
         }
         return matched;
     }
