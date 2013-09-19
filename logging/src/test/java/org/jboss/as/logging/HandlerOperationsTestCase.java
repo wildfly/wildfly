@@ -77,7 +77,7 @@ public class HandlerOperationsTestCase extends AbstractOperationsTestCase {
         testPeriodicRotatingFileHandler(kernelServices, PROFILE);
 
         testSizeRotatingFileHandler(kernelServices, null);
-        testPeriodicRotatingFileHandler(kernelServices, PROFILE);
+        testSizeRotatingFileHandler(kernelServices, PROFILE);
     }
 
     @Test

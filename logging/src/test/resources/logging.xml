@@ -84,7 +84,7 @@
         <suffix value=".yyyy-MM-dd"/>
     </periodic-rotating-file-handler>
 
-    <size-rotating-file-handler name="sizeLogger">
+    <size-rotating-file-handler name="sizeLogger" rotate-on-boot="true">
         <level name="DEBUG"/>
         <encoding value="UTF-8"/>
         <filter-spec value="all(levelChange(DEBUG),match(&quot;JBAS+\\d&quot;))"/>

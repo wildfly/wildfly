@@ -196,7 +196,9 @@ public class LoggingExtension implements Extension {
 
 
     private void registerTransformers1_2_0(SubsystemRegistration subsystem) {
-        TransformationDescription.Tools.register(get1_2_0_1_3_0Description(), subsystem, ModelVersion.create(1, 2, 0));
+        final ResourceTransformationDescriptionBuilder subsystemBuilder = TransformationDescriptionBuilder.Factory.createSubsystemInstance();
+        SizeRotatingHandlerResourceDefinition.addTransformers_1_2(subsystemBuilder);
+        TransformationDescription.Tools.register(subsystemBuilder.build(), subsystem, ModelVersion.create(1, 2, 0));
     }
 
 
@@ -257,6 +259,7 @@ public class LoggingExtension implements Extension {
             COMMON_ATTRIBUTE_NAMES.put(AsyncHandlerResourceDefinition.QUEUE_LENGTH.getName(), "logging.async-handler");
             COMMON_ATTRIBUTE_NAMES.put(PathResourceDefinition.RELATIVE_TO.getName(), null);
             COMMON_ATTRIBUTE_NAMES.put(SizeRotatingHandlerResourceDefinition.ROTATE_SIZE.getName(), "logging.size-rotating-file-handler");
+            COMMON_ATTRIBUTE_NAMES.put(SizeRotatingHandlerResourceDefinition.ROTATE_ON_BOOT.getName(), "logging.size-rotating-file-handler");
             COMMON_ATTRIBUTE_NAMES.put(AsyncHandlerResourceDefinition.SUBHANDLERS.getName(), "logging.async-handler");
             COMMON_ATTRIBUTE_NAMES.put(PeriodicHandlerResourceDefinition.SUFFIX.getName(), "logging.periodic-rotating-file-handler");
             COMMON_ATTRIBUTE_NAMES.put(ConsoleHandlerResourceDefinition.TARGET.getName(), "logging.console-handler");

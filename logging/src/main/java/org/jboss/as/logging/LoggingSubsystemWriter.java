@@ -56,6 +56,7 @@ import static org.jboss.as.logging.PeriodicHandlerResourceDefinition.SUFFIX;
 import static org.jboss.as.logging.RootLoggerResourceDefinition.ROOT_LOGGER_ATTRIBUTE_NAME;
 import static org.jboss.as.logging.RootLoggerResourceDefinition.ROOT_LOGGER_PATH_NAME;
 import static org.jboss.as.logging.SizeRotatingHandlerResourceDefinition.MAX_BACKUP_INDEX;
+import static org.jboss.as.logging.SizeRotatingHandlerResourceDefinition.ROTATE_ON_BOOT;
 import static org.jboss.as.logging.SizeRotatingHandlerResourceDefinition.ROTATE_SIZE;
 import static org.jboss.as.logging.SizeRotatingHandlerResourceDefinition.SIZE_ROTATING_FILE_HANDLER;
 import static org.jboss.as.logging.SyslogHandlerResourceDefinition.APP_NAME;
@@ -271,6 +272,7 @@ public class LoggingSubsystemWriter implements XMLStreamConstants, XMLElementWri
         writer.writeAttribute(HANDLER_NAME.getXmlName(), name);
         AUTOFLUSH.marshallAsAttribute(model, writer);
         ENABLED.marshallAsAttribute(model, false, writer);
+        ROTATE_ON_BOOT.marshallAsAttribute(model, false, writer);
         writeCommonHandler(writer, model);
         FILE.marshallAsElement(model, writer);
         ROTATE_SIZE.marshallAsElement(model, writer);
