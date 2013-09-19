@@ -71,6 +71,7 @@ import static org.jboss.as.logging.CommonAttributes.REPLACEMENT;
 import static org.jboss.as.logging.CommonAttributes.REPLACE_ALL;
 import static org.jboss.as.logging.RootLoggerResourceDefinition.ROOT_LOGGER_PATH_NAME;
 import static org.jboss.as.logging.RootLoggerResourceDefinition.ROOT_LOGGER_ATTRIBUTE_NAME;
+import static org.jboss.as.logging.SizeRotatingHandlerResourceDefinition.ROTATE_ON_BOOT;
 import static org.jboss.as.logging.SizeRotatingHandlerResourceDefinition.ROTATE_SIZE;
 import static org.jboss.as.logging.SizeRotatingHandlerResourceDefinition.SIZE_ROTATING_FILE_HANDLER;
 import static org.jboss.as.logging.AsyncHandlerResourceDefinition.SUBHANDLERS;
@@ -146,7 +147,8 @@ public class LoggingSubsystemParser implements XMLStreamConstants, XMLElementRea
             switch (namespace) {
                 case LOGGING_1_0:
                 case LOGGING_1_1:
-                case LOGGING_1_2: {
+                case LOGGING_1_2:
+                case LOGGING_1_3: {
                     final Element element = Element.forName(reader.getLocalName());
                     switch (element) {
                         case LOGGER: {
@@ -254,36 +256,26 @@ public class LoggingSubsystemParser implements XMLStreamConstants, XMLElementRea
         final EnumSet<Element> encountered = EnumSet.noneOf(Element.class);
         final Namespace namespace = Namespace.forUri(reader.getNamespaceURI());
         while (reader.hasNext() && reader.nextTag() != END_ELEMENT) {
-            switch (namespace) {
-                case LOGGING_1_0:
-                case LOGGING_1_1:
-                case LOGGING_1_2: {
-                    final Element element = Element.forName(reader.getLocalName());
-                    if (!encountered.add(element)) {
-                        throw duplicateNamedElement(reader, reader.getLocalName());
-                    }
-                    switch (element) {
-                        case LEVEL: {
-                            LEVEL.parseAndSetParameter(readStringAttributeElement(reader, "name"), op, reader);
-                            break;
-                        }
-                        case HANDLERS: {
-                            parseHandlersElement(op.get(HANDLERS.getName()), reader);
-                            break;
-                        }
-                        case FILTER_SPEC:
-                        case FILTER: {
-                            parseFilter(namespace, op, reader);
-                            break;
-                        }
-                        default:
-                            throw unexpectedElement(reader);
-                    }
+            final Element element = Element.forName(reader.getLocalName());
+            if (!encountered.add(element)) {
+                throw duplicateNamedElement(reader, reader.getLocalName());
+            }
+            switch (element) {
+                case LEVEL: {
+                    LEVEL.parseAndSetParameter(readStringAttributeElement(reader, "name"), op, reader);
                     break;
                 }
-                default: {
-                    throw unexpectedElement(reader);
+                case HANDLERS: {
+                    parseHandlersElement(op.get(HANDLERS.getName()), reader);
+                    break;
                 }
+                case FILTER_SPEC:
+                case FILTER: {
+                    parseFilter(namespace, op, reader);
+                    break;
+                }
+                default:
+                    throw unexpectedElement(reader);
             }
         }
         list.add(op);
@@ -380,37 +372,27 @@ public class LoggingSubsystemParser implements XMLStreamConstants, XMLElementRea
         final EnumSet<Element> encountered = EnumSet.noneOf(Element.class);
         final Namespace namespace = Namespace.forUri(reader.getNamespaceURI());
         while (reader.hasNext() && reader.nextTag() != END_ELEMENT) {
-            switch (namespace) {
-                case LOGGING_1_0:
-                case LOGGING_1_1:
-                case LOGGING_1_2: {
-                    final Element element = Element.forName(reader.getLocalName());
-                    if (encountered.contains(element)) {
-                        throw duplicateNamedElement(reader, reader.getLocalName());
-                    }
-                    encountered.add(element);
-                    switch (element) {
-                        case FILTER_SPEC:
-                        case FILTER: {
-                            parseFilter(namespace, node, reader);
-                            break;
-                        }
-                        case LEVEL: {
-                            LEVEL.parseAndSetParameter(readStringAttributeElement(reader, "name"), node, reader);
-                            break;
-                        }
-                        case HANDLERS: {
-                            parseHandlersElement(node.get(HANDLERS.getName()), reader);
-                            break;
-                        }
-                        default:
-                            throw unexpectedElement(reader);
-                    }
+            final Element element = Element.forName(reader.getLocalName());
+            if (encountered.contains(element)) {
+                throw duplicateNamedElement(reader, reader.getLocalName());
+            }
+            encountered.add(element);
+            switch (element) {
+                case FILTER_SPEC:
+                case FILTER: {
+                    parseFilter(namespace, node, reader);
                     break;
                 }
-                default: {
-                    throw unexpectedElement(reader);
+                case LEVEL: {
+                    LEVEL.parseAndSetParameter(readStringAttributeElement(reader, "name"), node, reader);
+                    break;
                 }
+                case HANDLERS: {
+                    parseHandlersElement(node.get(HANDLERS.getName()), reader);
+                    break;
+                }
+                default:
+                    throw unexpectedElement(reader);
             }
         }
         list.add(node);
@@ -784,6 +766,12 @@ public class LoggingSubsystemParser implements XMLStreamConstants, XMLElementRea
                     }
                     ENABLED.parseAndSetParameter(value, node, reader);
                     break;
+                case ROTATE_ON_BOOT:
+                    if (namespace == Namespace.LOGGING_1_0 || namespace == Namespace.LOGGING_1_1 || namespace == Namespace.LOGGING_1_2) {
+                        throw unexpectedAttribute(reader, i);
+                    }
+                    ROTATE_ON_BOOT.parseAndSetParameter(value, node, reader);
+                    break;
                 default:
                     throw unexpectedAttribute(reader, i);
             }
@@ -975,20 +963,10 @@ public class LoggingSubsystemParser implements XMLStreamConstants, XMLElementRea
         if (reader.nextTag() != START_ELEMENT) {
             throw new XMLStreamException(MESSAGES.missingRequiredNestedFilterElement(), reader.getLocation());
         }
-        switch (Namespace.forUri(reader.getNamespaceURI())) {
-            case LOGGING_1_0:
-            case LOGGING_1_1:
-            case LOGGING_1_2: {
-                final Element element = Element.forName(reader.getLocalName());
-                switch (element) {
-                    case PATTERN_FORMATTER: {
-                        formatterSpec = parsePatternFormatterElement(reader);
-                        break;
-                    }
-                    default: {
-                        throw unexpectedElement(reader);
-                    }
-                }
+        final Element element = Element.forName(reader.getLocalName());
+        switch (element) {
+            case PATTERN_FORMATTER: {
+                formatterSpec = parsePatternFormatterElement(reader);
                 break;
             }
             default: {
@@ -1066,24 +1044,14 @@ public class LoggingSubsystemParser implements XMLStreamConstants, XMLElementRea
 
         // Elements
         while (reader.hasNext() && reader.nextTag() != END_ELEMENT) {
-            switch (Namespace.forUri(reader.getNamespaceURI())) {
-                case LOGGING_1_0:
-                case LOGGING_1_1:
-                case LOGGING_1_2: {
-                    final Element element = Element.forName(reader.getLocalName());
-                    switch (element) {
-                        case HANDLER: {
-                            node.add(readStringAttributeElement(reader, "name"));
-                            break;
-                        }
-                        default:
-                            throw unexpectedElement(reader);
-                    }
+            final Element element = Element.forName(reader.getLocalName());
+            switch (element) {
+                case HANDLER: {
+                    node.add(readStringAttributeElement(reader, "name"));
                     break;
                 }
-                default: {
+                default:
                     throw unexpectedElement(reader);
-                }
             }
         }
     }
@@ -1510,6 +1478,7 @@ public class LoggingSubsystemParser implements XMLStreamConstants, XMLElementRea
         writer.writeAttribute(HANDLER_NAME.getXmlName(), name);
         AUTOFLUSH.marshallAsAttribute(node, writer);
         ENABLED.marshallAsAttribute(node, false, writer);
+        ROTATE_ON_BOOT.marshallAsAttribute(node, false, writer);
         writeCommonHandler(writer, node);
         FILE.marshallAsElement(node, writer);
         ROTATE_SIZE.marshallAsElement(node, writer);

@@ -55,6 +55,7 @@ enum Attribute {
     RELATIVE_TO(PathResourceDefinition.RELATIVE_TO),
     REPLACEMENT(CommonAttributes.REPLACEMENT),
     REPLACE_ALL(CommonAttributes.REPLACE_ALL),
+    ROTATE_ON_BOOT(SizeRotatingHandlerResourceDefinition.ROTATE_ON_BOOT),
     ROTATE_SIZE(SizeRotatingHandlerResourceDefinition.ROTATE_SIZE),
     SUFFIX(PeriodicHandlerResourceDefinition.SUFFIX),
     SYSLOG_TYPE("syslog-type"),

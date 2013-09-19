@@ -63,7 +63,7 @@ public class HandlerOperationsTestCase extends AbstractOperationsTestCase {
         testPeriodicRotatingFileHandler(kernelServices, PROFILE);
 
         testSizeRotatingFileHandler(kernelServices, null);
-        testPeriodicRotatingFileHandler(kernelServices, PROFILE);
+        testSizeRotatingFileHandler(kernelServices, PROFILE);
     }
 
     private void testAsyncHandler(final KernelServices kernelServices, final String profileName) throws Exception {

@@ -238,6 +238,7 @@
         <xs:attribute name="autoflush" type="xs:boolean" use="optional" default="true"/>
         <xs:attribute name="name" type="xs:string" use="required"/>
         <xs:attribute name="enabled" type="xs:boolean" use="optional" default="true"/>
+        <xs:attribute name="rotate-on-boot" type="xs:boolean" use="optional" default="false"/>
     </xs:complexType>
 
     <xs:complexType name="asyncHandlerType">
