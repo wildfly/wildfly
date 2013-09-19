@@ -32,6 +32,7 @@ import javax.naming.InitialContext;
 import javax.naming.spi.ObjectFactory;
 
 import org.jboss.as.controller.AbstractAddStepHandler;
+import org.jboss.as.controller.AttributeDefinition;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.PathAddress;
@@ -58,7 +59,6 @@ import org.jboss.msc.service.ServiceTarget;
 import org.jboss.msc.value.ImmediateValue;
 import org.wildfly.security.manager.WildFlySecurityManager;
 
-import static org.jboss.as.naming.subsystem.NamingSubsystemModel.BINDING_TYPE;
 import static org.jboss.as.naming.subsystem.NamingSubsystemModel.TYPE;
 
 /**
@@ -378,24 +378,9 @@ public class NamingBindingAdd extends AbstractAddStepHandler {
 
     @Override
     protected void populateModel(ModelNode operation, ModelNode model) throws OperationFailedException {
-        final BindingType type = BindingType.forName(operation.require(BINDING_TYPE).asString());
-        NamingBindingResourceDefinition.BINDING_TYPE.validateAndSet(operation, model);
-        if (type == BindingType.SIMPLE) {
-            NamingBindingResourceDefinition.VALUE.validateAndSet(operation, model);
-            NamingBindingResourceDefinition.TYPE.validateAndSet(operation, model);
-        } else if (type == BindingType.OBJECT_FACTORY) {
-            NamingBindingResourceDefinition.MODULE.validateAndSet(operation, model);
-            NamingBindingResourceDefinition.CLASS.validateAndSet(operation, model);
-            NamingBindingResourceDefinition.ENVIRONMENT.validateAndSet(operation, model);
-        } else if (type == BindingType.EXTERNAL_CONTEXT) {
-            NamingBindingResourceDefinition.MODULE.validateAndSet(operation, model);
-            NamingBindingResourceDefinition.CLASS.validateAndSet(operation, model);
-            NamingBindingResourceDefinition.CACHE.validateAndSet(operation, model);
-            NamingBindingResourceDefinition.ENVIRONMENT.validateAndSet(operation, model);
-        } else if (type == BindingType.LOOKUP) {
-            NamingBindingResourceDefinition.LOOKUP.validateAndSet(operation, model);
-        } else {
-            throw NamingMessages.MESSAGES.unknownBindingType(type.toString());
+        for (AttributeDefinition attr : NamingBindingResourceDefinition.ATTRIBUTES) {
+            attr.validateAndSet(operation, model);
         }
+        NamingBindingResourceDefinition.validateResourceModel(model);
     }
 }

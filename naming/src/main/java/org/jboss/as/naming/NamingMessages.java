@@ -32,6 +32,7 @@ import javax.naming.NamingException;
 
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.naming.deployment.JndiName;
+import org.jboss.as.naming.subsystem.BindingType;
 import org.jboss.as.server.deployment.DeploymentUnitProcessingException;
 import org.jboss.logging.Messages;
 import org.jboss.logging.annotations.Cause;
@@ -473,4 +474,13 @@ public interface NamingMessages {
      */
     @Message(id = 11875, value = "Resource lookup for injection failed: %s")
     RuntimeException resourceLookupForInjectionFailed(String jndiName, @Cause Throwable cause);
+
+    /**
+     * Creates an exception indicating that a required attribute is not defined.
+     * @param bindingType
+     * @param attributeName
+     * @return
+     */
+    @Message(id = 11876, value = "Binding type %s requires attributed named %s defined")
+    OperationFailedException bindingTypeRequiresAttributeDefined(BindingType bindingType, String attributeName);
 }
