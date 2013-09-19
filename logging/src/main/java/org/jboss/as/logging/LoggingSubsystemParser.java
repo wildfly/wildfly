@@ -72,6 +72,7 @@ import static org.jboss.as.logging.PeriodicHandlerResourceDefinition.SUFFIX;
 import static org.jboss.as.logging.RootLoggerResourceDefinition.ROOT_LOGGER_ATTRIBUTE_NAME;
 import static org.jboss.as.logging.RootLoggerResourceDefinition.ROOT_LOGGER_PATH_NAME;
 import static org.jboss.as.logging.SizeRotatingHandlerResourceDefinition.MAX_BACKUP_INDEX;
+import static org.jboss.as.logging.SizeRotatingHandlerResourceDefinition.ROTATE_ON_BOOT;
 import static org.jboss.as.logging.SizeRotatingHandlerResourceDefinition.ROTATE_SIZE;
 import static org.jboss.as.logging.SizeRotatingHandlerResourceDefinition.SIZE_ROTATING_FILE_HANDLER;
 import static org.jboss.as.logging.SyslogHandlerResourceDefinition.APP_NAME;
@@ -754,6 +755,13 @@ public class LoggingSubsystemParser implements XMLStreamConstants, XMLElementRea
                         throw unexpectedAttribute(reader, i);
                     }
                     ENABLED.parseAndSetParameter(value, operation, reader);
+                    break;
+                case ROTATE_ON_BOOT:
+                    if (namespace == Namespace.LOGGING_1_0 || namespace == Namespace.LOGGING_1_1 ||
+                            namespace == Namespace.LOGGING_1_2) {
+                        throw unexpectedAttribute(reader, i);
+                    }
+                    ROTATE_ON_BOOT.parseAndSetParameter(value, operation, reader);
                     break;
                 default:
                     throw unexpectedAttribute(reader, i);
