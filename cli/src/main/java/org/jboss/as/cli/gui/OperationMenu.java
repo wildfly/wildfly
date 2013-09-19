@@ -116,10 +116,18 @@ public class OperationMenu extends JPopupMenu {
             }
         }
 
+        private boolean isNoArgOperation(ModelNode requestProperties) {
+            // add operation has implicit 'name' param
+            if (opName.equals("add")) return false;
+
+            return (requestProperties == null) || (!requestProperties.isDefined()) || requestProperties.asList().isEmpty();
+        }
+
         public void actionPerformed(ActionEvent ae) {
             JTextComponent cmdText = cliGuiCtx.getCommandLine().getCmdText();
             ModelNode requestProperties = opDescription.get("result", "request-properties");
-            if ((requestProperties == null) || (!requestProperties.isDefined()) || requestProperties.asList().isEmpty()) {
+
+            if (isNoArgOperation(requestProperties)) {
                 cmdText.setText(addressPath + ":" + opName);
                 cmdText.requestFocus();
                 return;
