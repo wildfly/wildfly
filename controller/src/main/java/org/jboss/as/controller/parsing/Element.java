@@ -75,7 +75,10 @@ public enum Element {
     FS_EXPLODED("fs-exploded"),
 
     GROUP("group"),
+    GROUP_SEARCH("group-search"),
+    GROUP_TO_PRINCIPAL("group-to-principal"),
     GROUPS_FILTER("groups-filter"),
+
 
     HANDLER("handler"),
     HANDLERS("handlers"),
@@ -113,6 +116,7 @@ public enum Element {
     MANAGEMENT("management"),
     MANAGEMENT_CLIENT_CONTENT("management-client-content"),
     MANAGEMENT_INTERFACES("management-interfaces"),
+    MEMBERSHIP_FILTER("membership-filter"),
     MULTICAST("multicast"),
 
     NAME("name"),
@@ -133,6 +137,7 @@ public enum Element {
     PLUG_IN("plug-in"),
     PLUG_INS("plug-ins"),
     POINT_TO_POINT("point-to-point"),
+    PRINCIPAL_TO_GROUP("principal-to-group"),
     PROFILE("profile"),
     PROFILES("profiles"),
     PROPERTY("property"),
@@ -179,6 +184,8 @@ public enum Element {
     UP("up"),
     USER("user"),
     USERNAME_FILTER("username-filter"),
+    USERNAME_IS_DN("username-is-dn"),
+    USERNAME_TO_DN("username-to-dn"),
     USERS("users"),
 
     VARIABLE("variable"),

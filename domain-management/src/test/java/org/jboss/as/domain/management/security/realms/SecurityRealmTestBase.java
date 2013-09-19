@@ -76,12 +76,6 @@ public abstract class SecurityRealmTestBase extends ManagementControllerTestBase
         SecurityRealmAddBuilder builder = SecurityRealmAddBuilder.builder(TEST_REALM);
         initialiseRealm(builder);
         bootOperations.add(builder.build());
-
-
-        for (ModelNode current : bootOperations) {
-            System.out.println(current.toString());
-        }
-
     }
 
     protected abstract void initialiseRealm(SecurityRealmAddBuilder builder) throws Exception;

@@ -22,75 +22,60 @@
 
 package org.jboss.as.domain.management.security;
 
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ADVANCED_FILTER;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.USERNAME_ATTRIBUTE;
-import static org.jboss.as.domain.management.DomainManagementLogger.ROOT_LOGGER;
-import static org.jboss.as.domain.management.DomainManagementMessages.MESSAGES;
-
 import java.io.IOException;
 import java.security.Principal;
 import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
+import java.util.Stack;
 
 import javax.naming.Context;
-import javax.naming.NamingEnumeration;
 import javax.naming.NamingException;
-import javax.naming.directory.Attribute;
-import javax.naming.directory.Attributes;
 import javax.naming.directory.DirContext;
-import javax.naming.directory.SearchControls;
-import javax.naming.directory.SearchResult;
 import javax.security.auth.Subject;
 
 import org.jboss.as.core.security.RealmGroup;
 import org.jboss.as.core.security.RealmUser;
+import org.jboss.as.domain.management.SecurityRealm;
 import org.jboss.as.domain.management.connections.ConnectionManager;
+import org.jboss.as.domain.management.security.BaseLdapGroupSearchResource.GroupName;
+import org.jboss.msc.inject.Injector;
 import org.jboss.msc.service.Service;
+import org.jboss.msc.service.ServiceName;
 import org.jboss.msc.service.StartContext;
 import org.jboss.msc.service.StartException;
 import org.jboss.msc.service.StopContext;
 import org.jboss.msc.value.InjectedValue;
 
 /**
+ * A {@link SubjectSupplemental} for loading a users groups from LDAP.
  *
  * @author <a href="mailto:flemming.harms@gmail.com">Flemming Harms</a>
+ * @author <a href="mailto:darran.lofthouse@jboss.com">Darran Lofthouse</a>
  */
 public class LdapSubjectSupplementalService implements Service<SubjectSupplementalService>, SubjectSupplementalService {
-    public static final String SERVICE_SUFFIX = "ldap-authorization";
-    protected final int searchTimeLimit = 10000; // TODO - Maybe make configurable.
-    private final InjectedValue<ConnectionManager> connectionManager = new InjectedValue<ConnectionManager>();
-    private final boolean recursive;
-    private final String groupsDn;
-    private final String baseDn;
-    private final String usernameAttribute;
-    private final String advancedFilter;
-    private final String pattern;
-    private final int group;
-    private final String resultPattern;
-    private final Boolean reverseGroupMember;
-    private final String userDn;
-    private final String userFilter;
-    private final boolean shareConnection;
 
-    public LdapSubjectSupplementalService(boolean recursive, String groupsDn, String baseDn, String userDn,String userNameAttribute, String advancedFilter, String pattern, int groups, String resultPattern, Boolean reverseGroupMember, boolean shareConnection) {
-        this.recursive = recursive;
-        this.groupsDn = groupsDn;
-        this.baseDn = baseDn;
-        this.userDn = userDn;
-        this.pattern = pattern;
-        this.group = groups;
-        this.resultPattern = resultPattern;
-        this.reverseGroupMember = reverseGroupMember;
-        if (userNameAttribute == null && advancedFilter == null) {
-            throw MESSAGES.oneOfRequired(USERNAME_ATTRIBUTE, ADVANCED_FILTER);
-        }
-        this.usernameAttribute = userNameAttribute;
-        this.advancedFilter = advancedFilter;
-        this.userFilter = "(" + usernameAttribute + "={0})";
+    private final InjectedValue<ConnectionManager> connectionManager = new InjectedValue<ConnectionManager>();
+    private final InjectedValue<LdapUserSearcher> userSearcherInjector = new InjectedValue<LdapUserSearcher>();
+    private final InjectedValue<LdapGroupSearcher> groupSearcherInjector = new InjectedValue<LdapGroupSearcher>();
+
+    private LdapUserSearcher userSearcher;
+    private LdapGroupSearcher groupSearcher;
+
+    protected final int searchTimeLimit = 10000; // TODO - Maybe make configurable.
+
+    private final String realmName;
+    private final boolean shareConnection;
+    private final boolean forceUserDnSearch;
+    private final boolean iterative;
+    private final GroupName groupName;
+
+    public LdapSubjectSupplementalService(final String realmName, final boolean shareConnection, final boolean forceUserDnSearch, final boolean iterative, final GroupName groupName) {
+        this.realmName = realmName;
         this.shareConnection = shareConnection;
+        this.forceUserDnSearch = forceUserDnSearch;
+        this.iterative = iterative;
+        this.groupName = groupName;
     }
 
     /*
@@ -102,16 +87,27 @@ public class LdapSubjectSupplementalService implements Service<SubjectSupplement
     }
 
     public void start(StartContext context) throws StartException {
+        userSearcher = userSearcherInjector.getOptionalValue();
+        groupSearcher = groupSearcherInjector.getValue();
     }
 
     public void stop(StopContext context) {
+
     }
 
     /*
      *  Access to Injectors
      */
-    public InjectedValue<ConnectionManager> getConnectionManagerInjector() {
+    public Injector<ConnectionManager> getConnectionManagerInjector() {
         return connectionManager;
+    }
+
+    public Injector<LdapUserSearcher> getLdapUserSearcherInjector() {
+        return userSearcherInjector;
+    }
+
+    public Injector<LdapGroupSearcher> getLdapGroupSearcherInjector() {
+        return groupSearcherInjector;
     }
 
     /*
@@ -128,7 +124,10 @@ public class LdapSubjectSupplementalService implements Service<SubjectSupplement
 
     public class LdapSubjectSupplemental implements SubjectSupplemental {
 
+        private final Set<LdapEntry> searchedPerformed = new HashSet<LdapEntry>();
         private final Map<String, Object> sharedState;
+
+        private DirContext dirContext = null;
 
         protected LdapSubjectSupplemental(final Map<String, Object> sharedState) {
             this.sharedState = sharedState;
@@ -140,11 +139,64 @@ public class LdapSubjectSupplementalService implements Service<SubjectSupplement
         public void supplementSubject(Subject subject) throws IOException {
             Set<RealmUser> users = subject.getPrincipals(RealmUser.class);
             Set<Principal> principals = subject.getPrincipals();
-            // In general we expect exactly one RealmUser, however we could cope with multiple
-            // identities so load the groups for them all.
-            for (RealmUser current : users) {
-                principals.addAll(getGroups(current));
+
+            try {
+                dirContext = getSearchContext();
+
+                // In general we expect exactly one RealmUser, however we could cope with multiple
+                // identities so load the groups for them all.
+                for (RealmUser current : users) {
+                    principals.addAll(loadGroups(current));
+                }
+
+            } catch (Exception e) {
+                if (e instanceof IOException) {
+                    throw (IOException) e;
+                }
+                throw new IOException(e);
+            } finally {
+                safeClose(dirContext);
+                dirContext = null;
             }
+        }
+
+        private Set<RealmGroup> loadGroups(RealmUser user) throws IOException, NamingException {
+            LdapEntry entry = null;
+            if (forceUserDnSearch == false && sharedState.containsKey(LdapEntry.class.getName())) {
+                entry = (LdapEntry) sharedState.get(LdapEntry.class.getName());
+            }
+            if (entry == null || user.getName().equals(entry.getSimpleName())==false) {
+                entry = userSearcher.userSearch(dirContext, user.getName());
+            }
+
+            return loadGroups(entry);
+        }
+
+        private Set<RealmGroup> loadGroups(LdapEntry entry) throws IOException, NamingException {
+            Set<RealmGroup> realmGroups = new HashSet<RealmGroup>();
+
+            Stack<LdapEntry[]> entries = new Stack<LdapEntry[]>();
+            entries.push(loadGroupEntries(entry));
+            while (entries.isEmpty() == false) {
+                LdapEntry[] found = entries.pop();
+                for (LdapEntry current : found) {
+                    realmGroups.add(new RealmGroup(realmName, groupName == GroupName.SIMPLE ? current.getSimpleName() : current
+                            .getDistinguishedName()));
+                    if (iterative) {
+                     entries.push(loadGroupEntries(current));
+                    }
+                }
+            }
+
+            return realmGroups;
+        }
+
+        private LdapEntry[] loadGroupEntries(LdapEntry entry) throws IOException, NamingException {
+            if (searchedPerformed.add(entry)==false) {
+                return new LdapEntry[0];
+            }
+
+            return groupSearcher.groupSearch(dirContext, entry);
         }
 
         private DirContext getSearchContext() throws Exception {
@@ -158,165 +210,6 @@ public class LdapSubjectSupplementalService implements Service<SubjectSupplement
             return searchContext;
         }
 
-        protected SearchControls createSearchControl() {
-            // 2 - Search to identify the DN of the user connecting
-            SearchControls searchControls = new SearchControls();
-            if (recursive) {
-                searchControls.setSearchScope(SearchControls.SUBTREE_SCOPE);
-            } else {
-                searchControls.setSearchScope(SearchControls.ONELEVEL_SCOPE);
-            }
-            searchControls.setReturningAttributes(new String[] { groupsDn });
-            searchControls.setTimeLimit(searchTimeLimit);
-            return searchControls;
-        }
-
-        private String getDistinguishedName(DirContext searchContext, SearchControls searchControls,
-                Object[] filterArguments) throws NamingException, IOException {
-            String distinguishedUserDN = (String) filterArguments[0];
-            if ((!reverseGroupMember) && (usernameAttribute != null)) {
-                NamingEnumeration<SearchResult> searchEnumeration = searchContext.search(baseDn, userFilter, filterArguments,
-                        searchControls);
-                if (searchEnumeration.hasMore() == true) {
-                    SearchResult result = searchEnumeration.next();
-                    if (userDn == null || userDn.equalsIgnoreCase("dn")) {
-                        distinguishedUserDN = result.getNameInNamespace();
-                    } else {
-                        Attributes attributes = result.getAttributes();
-                        if (attributes != null) {
-                            Attribute dn = attributes.get(userDn);
-                            if (dn != null) {
-                                distinguishedUserDN = (String) dn.get();
-                            } else {
-                                ROOT_LOGGER.failedRetrieveLdapAttribute(userDn);
-                            }
-                        }
-                    }
-                }
-            }
-            return distinguishedUserDN;
-        }
-
-        private String[] createSearchFilter(DirContext searchContext, SearchControls searchControls, String username)
-                throws NamingException, IOException {
-            String userDN = getDistinguishedName(searchContext, searchControls, new Object[] { username });
-            String[] filter = new String[2];
-            if (reverseGroupMember) {
-                filter[0] = userFilter;
-                filter[1] = userDN;
-            } else {
-                filter[0] = advancedFilter != null ? advancedFilter : "(member={0})";
-                filter[1] = userDN;
-            }
-            return filter;
-        }
-
-        protected Set<String> searchLdap(String username) {
-            Set<String> userNames = new HashSet<String>();
-            // 1 - Obtain Connection to LDAP
-            DirContext searchContext = null;
-            NamingEnumeration<SearchResult> searchEnumeration = null;
-            try {
-                searchContext = getSearchContext();
-                SearchControls searchControls = createSearchControl();
-                String[] filter = createSearchFilter(searchContext, searchControls, username);
-                Object[] filterArguments = new Object[] { filter[1] };
-
-                searchEnumeration = searchContext.search(baseDn, filter[0], filterArguments, searchControls);
-                while (searchEnumeration.hasMore()) {
-                    SearchResult result = searchEnumeration.next();
-                    if (groupsDn.equalsIgnoreCase("dn")) {
-                        userNames.add(result.getNameInNamespace());
-                    } else {
-                        Attributes attributes = result.getAttributes();
-                        if (attributes != null) {
-                            Attribute dn = attributes.get(groupsDn);
-                            if (dn != null) {
-                                NamingEnumeration<?> group = dn.getAll();
-                                while (group.hasMore()) {
-                                    userNames.add(group.next().toString());
-                                }
-                            } else {
-                                ROOT_LOGGER.failedRetrieveLdapAttribute(groupsDn);
-                            }
-                        } else {
-                            ROOT_LOGGER.failedRetrieveLdapAttribute(groupsDn);
-                        }
-                    }
-                }
-            } catch (Exception e) {
-                ROOT_LOGGER.failedRetrieveLdapGroups(e);
-            } finally {
-                safeClose(searchEnumeration);
-                safeClose(searchContext);
-            }
-
-            return userNames;
-        }
-
-        private Set<RealmGroup> getGroups(RealmUser user) {
-            Set<RealmGroup> response = new HashSet<RealmGroup>();
-            try {
-                HashSet<String> ldapGroups = (HashSet<String>) searchLdap(user.getName());
-                ROOT_LOGGER.trace("Retrieved groups [" + user.getName() + "] :");
-                for (String group : ldapGroups) {
-                    if (pattern != null) {
-                        Pattern compilePattern = Pattern.compile(pattern);
-                        Matcher ldapGroupMatch = compilePattern.matcher(group);
-                        if (ldapGroupMatch.groupCount() > 0) {
-                            String parsedGroup = replaceGroups(ldapGroupMatch);
-                            if (parsedGroup.length() > 0) {
-                                response.add(new RealmGroup(parsedGroup));
-                            }
-                        }
-                    } else {
-                        ROOT_LOGGER.trace("   group:" + group);
-                        response.add(new RealmGroup(group));
-                    }
-                }
-            } catch (Exception e) {
-                ROOT_LOGGER.failedRetrieveLdapGroups(e);
-            }
-            return response;
-        }
-
-        private String replaceGroups(Matcher ldapGroupss) {
-            String parsedLdapGroups = new String();
-            Pattern rPattern = Pattern.compile("(\\{)(.+?)(\\})");
-            if (resultPattern != null) {
-                Matcher resultMatch = rPattern.matcher(resultPattern);
-                boolean foundGroupMatch = false;
-                StringBuffer sb = new StringBuffer();
-                while (resultMatch.find()) {
-                    foundGroupMatch = true;
-                    try {
-                        ldapGroupss.reset();
-                        int elementNo = Integer.parseInt(resultMatch.group(2));
-                        for (int i = 0; i <= elementNo; i++) {
-                            ldapGroupss.find();
-                        }
-                        resultMatch.appendReplacement(sb, ldapGroupss.group(group));
-
-                    } catch (Exception e) {
-                        ROOT_LOGGER.failedRetrieveMatchingLdapGroups(e);
-                        throw new IllegalStateException(e); // make sure we bail out to prevent return value is not set with
-                                                            // incorrect data
-                    }
-                }
-                resultMatch.appendTail(sb);
-                parsedLdapGroups = sb.toString();
-                if (!foundGroupMatch) {
-                    ROOT_LOGGER.failedRetrieveMatchingGroups();
-                    parsedLdapGroups = ""; // better reset the return value then sent back rubbish
-                }
-            } else {
-                if (ldapGroupss.find()) {
-                    parsedLdapGroups = ldapGroupss.group(group);
-                }
-            }
-            return parsedLdapGroups;
-        }
-
     }
 
     private void safeClose(Context context) {
@@ -328,12 +221,18 @@ public class LdapSubjectSupplementalService implements Service<SubjectSupplement
         }
     }
 
-    private void safeClose(NamingEnumeration ne) {
-        if (ne != null) {
-            try {
-                ne.close();
-            } catch (Exception ignored) {
-            }
+    public static final class ServiceUtil {
+
+        private static final String SERVICE_SUFFIX = "ldap-authorization";
+
+        private ServiceUtil() {
         }
+
+        public static ServiceName createServiceName(final String realmName) {
+            return SecurityRealm.ServiceUtil.createServiceName(realmName).append(SERVICE_SUFFIX);
+        }
+
     }
+
+
 }

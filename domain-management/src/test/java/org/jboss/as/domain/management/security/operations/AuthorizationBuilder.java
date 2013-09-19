@@ -21,6 +21,9 @@
  */
 package org.jboss.as.domain.management.security.operations;
 
+import java.util.ArrayList;
+import java.util.List;
+
 import org.jboss.dmr.ModelNode;
 
 /**
@@ -34,7 +37,7 @@ public class AuthorizationBuilder {
     private boolean built = false;
 
     private AuthorizationBuilderChild childBuilder;
-    private ModelNode childStep;
+    private final List<ModelNode> additionalSteps = new ArrayList<ModelNode>();
 
     AuthorizationBuilder(final SecurityRealmAddBuilder parent) {
         this.parent = parent;
@@ -58,21 +61,19 @@ public class AuthorizationBuilder {
         return parent.getRealmAddress();
     }
 
-    AuthorizationBuilder setChildStep(final ModelNode step) {
+    public AuthorizationBuilder addStep(final ModelNode step) {
         assertNotBuilt();
-
-        childStep = step;
+        additionalSteps.add(step);
         return this;
     }
-
 
     public SecurityRealmAddBuilder build() {
         assertNotBuilt();
         buildChildren();
         built = true;
 
-        if (childStep != null) {
-            parent.addStep(childStep);
+        for (ModelNode current : additionalSteps) {
+            parent.addStep(current);
         }
 
         return parent;

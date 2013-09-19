@@ -22,6 +22,8 @@
 
 package org.jboss.as.domain.management.security;
 
+import static org.jboss.as.domain.management.DomainManagementMessages.MESSAGES;
+
 import org.jboss.as.controller.AttributeDefinition;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
@@ -46,9 +48,6 @@ import org.jboss.dmr.ModelType;
  * @author Brian Stansberry (c) 2011 Red Hat Inc.
  */
 public class LdapAuthenticationResourceDefinition extends LdapResourceDefinition {
-
-    public static final SimpleAttributeDefinition CONNECTION = new SimpleAttributeDefinitionBuilder(ModelDescriptionConstants.CONNECTION, ModelType.STRING, false)
-            .setValidator(new StringLengthValidator(1, Integer.MAX_VALUE, false, false)).setFlags(AttributeAccess.Flag.RESTART_RESOURCE_SERVICES).build();
 
     public static final SimpleAttributeDefinition BASE_DN = new SimpleAttributeDefinitionBuilder(ModelDescriptionConstants.BASE_DN, ModelType.STRING, false)
             .setValidator(new StringLengthValidator(1, Integer.MAX_VALUE, false, false))
@@ -107,6 +106,18 @@ public class LdapAuthenticationResourceDefinition extends LdapResourceDefinition
     public void registerAttributes(ManagementResourceRegistration resourceRegistration) {
         SecurityRealmChildWriteAttributeHandler handler = new LdapAuthenticationWriteHandler();
         handler.registerAttributes(resourceRegistration);
+    }
+
+    protected static void validateAttributeCombination(ModelNode operation) throws OperationFailedException {
+        boolean usernameFileDefined = operation.hasDefined(ModelDescriptionConstants.USERNAME_ATTRIBUTE);
+        boolean advancedFilterDefined = operation.hasDefined(ModelDescriptionConstants.ADVANCED_FILTER);
+        if (usernameFileDefined && advancedFilterDefined) {
+            throw MESSAGES.operationFailedOnlyOneOfRequired(ModelDescriptionConstants.USERNAME_ATTRIBUTE,
+                    ModelDescriptionConstants.ADVANCED_FILTER);
+        } else if ((usernameFileDefined || advancedFilterDefined) == false) {
+            throw MESSAGES.operationFailedOneOfRequired(ModelDescriptionConstants.USERNAME_ATTRIBUTE,
+                    ModelDescriptionConstants.ADVANCED_FILTER);
+        }
     }
 
     private static class LdapAuthenticationWriteHandler extends SecurityRealmChildWriteAttributeHandler {

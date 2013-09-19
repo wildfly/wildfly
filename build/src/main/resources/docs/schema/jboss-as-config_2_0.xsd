@@ -601,7 +601,7 @@
             <xs:extension base="baseLdapAuthType">
 		        <xs:choice>
 		            <xs:element name="username-filter">
-		                <xs:complexType>
+		                <xs:complexType>                        
 		                    <xs:attribute name="attribute" type="xs:string" use="required">
 		                        <xs:annotation>
 		                            <xs:documentation>
@@ -614,7 +614,7 @@
 		                </xs:complexType>
 		            </xs:element>
 		            <xs:element name="advanced-filter">
-		                <xs:complexType>
+		                <xs:complexType>                        
 		                    <xs:attribute name="filter" type="xs:string" use="required">
 		                        <xs:annotation>
 		                            <xs:documentation>
@@ -708,7 +708,14 @@
                 <xs:complexType>
                     <xs:complexContent>
                         <xs:extension base="baseLdapSearchType">
-                            <xs:attribute name="attribute" type="xs:string" use="required">
+                            <xs:attribute name="user-dn-attribute" type="xs:string" use="optional" default="dn">
+                                <xs:annotation>
+                                    <xs:documentation>
+                                        The attribute on the user entry which is their distinguished name.
+                                    </xs:documentation>
+                                </xs:annotation>
+                            </xs:attribute>
+                            <xs:attribute name="attribute" type="xs:string" use="optional" default="uid">
                                 <xs:annotation>
                                     <xs:documentation>
                                         The name of the attribute to search for the user, this filter will then perform a
@@ -716,12 +723,21 @@
                                     </xs:documentation>
                                 </xs:annotation>
                             </xs:attribute>
+                        </xs:extension>
+                    </xs:complexContent>
                 </xs:complexType>
             </xs:element>
             <xs:element name="advanced-filter">
                 <xs:complexType>
                     <xs:complexContent>
                         <xs:extension base="baseLdapSearchType">
+                            <xs:attribute name="user-dn-attribute" type="xs:string" use="optional" default="dn">
+                                <xs:annotation>
+                                    <xs:documentation>
+                                        The attribute on the user entry which is their distinguished name.
+                                    </xs:documentation>
+                                </xs:annotation>
+                            </xs:attribute>
                             <xs:attribute name="filter" type="xs:string" use="required">
                                 <xs:annotation>
                                     <xs:documentation>
@@ -732,16 +748,20 @@
                                     </xs:documentation>
                                 </xs:annotation>
                             </xs:attribute>
+                        </xs:extension>
+                     </xs:complexContent>
                 </xs:complexType>
             </xs:element>
         </xs:choice>
-        <xs:attribute name="force" type="xs:boolean" default="force">
+        <xs:attribute name="force" type="xs:boolean" default="false">
             <xs:annotation>
                 <xs:documentation>
-                    If the username was already converted to a distinguished name during authentication this attribute forces the search to be repeated
+                    If the username was already converted to a distinguished name during authentication this attribute forces
+                    the search to be repeated
                     before loading group information.
 
-                    This would most likely be required if a different LDAP server was being used to load group information as was used for authentication.
+                    This would most likely be required if a different LDAP server
+                    was being used to load group information as was used for authentication.
                 </xs:documentation>
             </xs:annotation>
         </xs:attribute>
@@ -750,7 +770,7 @@
     <xs:simpleType name="groupMode">
         <xs:restriction base="xs:string">
             <xs:enumeration value="SIMPLE" />
-            <xs:enumeration value="DN" />
+            <xs:enumeration value="DISTINGUISHED_NAME" />
         </xs:restriction>
     </xs:simpleType>
 
@@ -778,7 +798,7 @@
                             <xs:sequence>
                                 <xs:element name="membership-filter" type="membershipFilterType" minOccurs="1" />
                             </xs:sequence>
-                            <xs:attribute name="search-by" type="groupMode" default="DN">
+                            <xs:attribute name="search-by" type="groupMode" default="DISTINGUISHED_NAME">
                                 <xs:annotation>
                                     <xs:documentation>
                                         Should searching use the simple name or distinguished name of the principal.
@@ -796,14 +816,6 @@
                     </xs:documentation>
                 </xs:annotation>
                 <xs:complexType>
-                    <xs:attribute name="search-by" type="groupMode" default="DN">
-                        <xs:annotation>
-                            <xs:documentation>
-                                Is the group name referenced by the principal the simple name or the distinguished name of the
-                                group.
-                            </xs:documentation>
-                        </xs:annotation>
-                    </xs:attribute>
                     <xs:attribute name="group-attribute" type="xs:string" default="memberOf">
                         <xs:annotation>
                             <xs:documentation>

@@ -51,6 +51,7 @@ public class ModelDescriptionConstants {
     public static final String APPLICATION = "application";
     public static final String APPLICATION_CLASSIFICATION = "application-classification";
     public static final String ARCHIVE = "archive";
+    public static final String ATTRIBUTE = "attribute";
     public static final String ATTRIBUTES = "attributes";
     public static final String ATTRIBUTES_ONLY = "attributes-only";
     public static final String AUDIT = "audit";
@@ -134,11 +135,18 @@ public class ModelDescriptionConstants {
     public static final String FILTER = "filter";
     public static final String FIXED_PORT = "fixed-port";
     public static final String FIXED_SOURCE_PORT = "fixed-source-port";
+    public static final String FORCE = "force";
     public static final String FORMATTER = "formatter";
     public static final String FULL_REPLACE_DEPLOYMENT = "full-replace-deployment";
     public static final String GRACEFUL_SHUTDOWN_TIMEOUT = "graceful-shutdown-timeout";
     public static final String GROUP = "group";
+    public static final String GROUP_ATTRIBUTE = "group-attribute";
+    public static final String GROUP_DN_ATTRIBUTE = "group-dn-attribute";
+    public static final String GROUP_NAME_ATTRIBUTE = "group-name-attribute";
     public static final String GROUPS_DN = "groups-dn";
+    public static final String GROUP_NAME = "group-name";
+    public static final String GROUP_SEARCH = "group-search";
+    public static final String GROUP_TO_PRINCIPAL = "group-to-principal";
     public static final String HANDLER = "handler";
     public static final String HASH = "hash";
     public static final String HEAD_COMMENT_ALLOWED = "head-comment-allowed";
@@ -171,6 +179,7 @@ public class ModelDescriptionConstants {
     public static final String INITIAL_SERVER_GROUPS = "initial-server-groups";
     public static final String INPUT_STREAM_INDEX = "input-stream-index";
     public static final String INTERFACE = "interface";
+    public static final String ITERATIVE = "iterative";
     public static final String JAAS = "jaas";
     public static final String JSON_FORMATTER = "json-formatter";
     public static final String JVM = "jvm";
@@ -239,6 +248,8 @@ public class ModelDescriptionConstants {
     public static final String PLATFORM_MBEAN = "platform-mbean";
     public static final String PORT = "port";
     public static final String PORT_OFFSET = "port-offset";
+    public static final String PRINCIPAL_ATTRIBUTE = "principal-attribute";
+    public static final String PRINCIPAL_TO_GROUP = "principal-to-group";
     public static final String PRIORITY = "priority";
     public static final String PROBLEM = "problem";
     public static final String PROCESS_TYPE = "process-type";
@@ -308,6 +319,7 @@ public class ModelDescriptionConstants {
     public static final String SCHEMA_LOCATION = "schema-location";
     public static final String SCHEMA_LOCATIONS = "schema-locations";
     public static final String SEARCH_CREDENTIAL = "search-credential";
+    public static final String SEARCH_BY = "search-by";
     public static final String SEARCH_DN = "search-dn";
     public static final String SECRET = "secret";
     public static final String SECURE_PORT = "secure-port";
@@ -379,8 +391,12 @@ public class ModelDescriptionConstants {
     public static final String USE_CURRENT_SERVER_CONFIG = "use-current-server-config";
     public static final String USER = "user";
     public static final String USER_DN = "user-dn";
+    public static final String USER_DN_ATTRIBUTE = "user-dn-attribute";
     public static final String USERNAME = "username";
     public static final String USERNAME_ATTRIBUTE = "username-attribute";
+    public static final String USERNAME_IS_DN = "username-is-dn";
+    public static final String USERNAME_FILTER = "username-filter";
+    public static final String USERNAME_TO_DN = "username-to-dn";
     public static final String USERS = "users";
     public static final String VALIDATE_OPERATION = "validate-operation";
     public static final String VALID = "valid";

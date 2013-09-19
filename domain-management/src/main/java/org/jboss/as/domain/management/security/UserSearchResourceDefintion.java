@@ -1,6 +1,6 @@
 /*
  * JBoss, Home of Professional Open Source.
- * Copyright 2012, Red Hat, Inc., and individual contributors
+ * Copyright 2013, Red Hat, Inc., and individual contributors
  * as indicated by the @author tags. See the copyright.txt file in the
  * distribution for a full listing of individual contributors.
  *
@@ -19,37 +19,46 @@
  * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
-
 package org.jboss.as.domain.management.security;
 
-import org.jboss.as.controller.OperationStepHandler;
-import org.jboss.as.controller.PathElement;
+import org.jboss.as.controller.AttributeDefinition;
+import org.jboss.as.controller.ResourceDefinition;
 import org.jboss.as.controller.SimpleAttributeDefinition;
 import org.jboss.as.controller.SimpleAttributeDefinitionBuilder;
-import org.jboss.as.controller.SimpleResourceDefinition;
 import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
-import org.jboss.as.controller.descriptions.ResourceDescriptionResolver;
+import org.jboss.as.controller.descriptions.common.ControllerResolver;
 import org.jboss.as.controller.operations.validation.StringLengthValidator;
 import org.jboss.as.controller.registry.AttributeAccess;
-import org.jboss.as.controller.registry.OperationEntry.Flag;
+import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.ModelType;
 
 /**
- * {@link ResourceDefinition} for a management security realm's LDAP-based Authentication / Authorization resource.
+ * A {@link org.jboss.as.controller.ResourceDefinition} for standard searches for a users distinguished name.
  *
- *  @author <a href="mailto:Flemming.Harms@gmail.com">Flemming Harms</a>
- *  @author <a href="mailto:darran.lofthouse@jboss.com">Darran Lofthouse</a>
+ * @author <a href="mailto:darran.lofthouse@jboss.com">Darran Lofthouse</a>
  */
-public abstract class LdapResourceDefinition extends SimpleResourceDefinition {
+public class UserSearchResourceDefintion extends BaseLdapUserSearchResource {
 
-    public static final SimpleAttributeDefinition CONNECTION = new SimpleAttributeDefinitionBuilder(ModelDescriptionConstants.CONNECTION, ModelType.STRING, false)
+    public static final SimpleAttributeDefinition ATTRIBUTE = new SimpleAttributeDefinitionBuilder(ModelDescriptionConstants.ATTRIBUTE, ModelType.STRING, false)
             .setValidator(new StringLengthValidator(1, Integer.MAX_VALUE, false, false))
+            .setDefaultValue(new ModelNode("uid"))
+            .setAllowExpression(true)
             .setFlags(AttributeAccess.Flag.RESTART_RESOURCE_SERVICES)
             .build();
 
-    public LdapResourceDefinition(PathElement pathElement, ResourceDescriptionResolver descriptionResolver,
-            OperationStepHandler addHandler, OperationStepHandler removeHandler, Flag addRestartLevel, Flag removeRestartLevel) {
-        super(pathElement, descriptionResolver, addHandler, removeHandler, addRestartLevel, removeRestartLevel);
+    private static final AttributeDefinition[] ATTRIBUTE_DEFINITIONS = {FORCE, BASE_DN, RECURSIVE, USER_DN_ATTRIBUTE, ATTRIBUTE};
+
+    public static final ResourceDefinition INSTANCE = new UserSearchResourceDefintion();
+
+    private UserSearchResourceDefintion() {
+        super(UserSearchType.USERNAME_FILTER,
+                ControllerResolver.getResolver("core.management.security-realm.authorization.ldap.user-search.username-filter"),
+                new SecurityRealmChildAddHandler(false, ATTRIBUTE_DEFINITIONS), new SecurityRealmChildRemoveHandler(false));
+    }
+
+    @Override
+    public AttributeDefinition[] getAttributeDefinitions() {
+        return ATTRIBUTE_DEFINITIONS;
     }
 
 }
