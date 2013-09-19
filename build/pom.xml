@@ -1011,9 +1011,9 @@
                 </dependency>
 
                 <dependency>
-                    <groupId>org.jboss.as</groupId>
-                    <artifactId>jboss-as-console</artifactId>
-                    <classifier>resources</classifier>
+		    <groupId>org.jboss.hal</groupId>
+                    <artifactId>release-stream</artifactId>                    
+		    <classifier>resources</classifier>
                 </dependency>
 
                 <dependency>
