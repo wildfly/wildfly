@@ -22,6 +22,7 @@
 
 package org.jboss.as.logging;
 
+import java.util.Comparator;
 import java.util.logging.Handler;
 
 import org.jboss.as.controller.AttributeDefinition;
@@ -31,6 +32,7 @@ import org.jboss.as.controller.SimpleOperationDefinition;
 import org.jboss.as.controller.SimpleOperationDefinitionBuilder;
 import org.jboss.as.controller.services.path.ResolvePathHandler;
 import org.jboss.as.controller.registry.ManagementResourceRegistration;
+import org.jboss.as.logging.logmanager.PropertySorter.DefaultPropertySorter;
 
 /**
  * @author <a href="mailto:jperkins@redhat.com">James R. Perkins</a>
@@ -49,7 +51,7 @@ abstract class AbstractFileHandlerDefinition extends AbstractHandlerDefinition {
     protected AbstractFileHandlerDefinition(final PathElement path, final Class<? extends Handler> type,
                                             final ResolvePathHandler resolvePathHandler,
                                             final AttributeDefinition... attributes) {
-        super(path, type, attributes);
+        super(path, type,new DefaultPropertySorter(FileNameLastComparator.INSTANCE), attributes);
         this.resolvePathHandler = resolvePathHandler;
     }
 
@@ -59,5 +61,29 @@ abstract class AbstractFileHandlerDefinition extends AbstractHandlerDefinition {
         registration.registerOperationHandler(CHANGE_FILE, HandlerOperations.CHANGE_FILE);
         if (resolvePathHandler != null)
             registration.registerOperationHandler(resolvePathHandler.getOperationDefinition(), resolvePathHandler);
+    }
+
+    private static class FileNameLastComparator implements Comparator<String> {
+        static final FileNameLastComparator INSTANCE = new FileNameLastComparator();
+        static final int EQUAL = 0;
+        static final int GREATER = 1;
+        static final int LESS = -1;
+
+        private final String filePropertyName = CommonAttributes.FILE.getPropertyName();
+
+        @Override
+        public int compare(final String o1, final String o2) {
+            if (o1.equals(o2)) {
+                return EQUAL;
+            }
+            // File should always be last
+            if (filePropertyName.equals(o1)) {
+                return GREATER;
+            }
+            if (filePropertyName.equals(o2)) {
+                return LESS;
+            }
+            return o1.compareTo(o2);
+        }
     }
 }
