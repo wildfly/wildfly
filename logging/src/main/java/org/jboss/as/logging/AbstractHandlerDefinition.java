@@ -25,7 +25,6 @@ package org.jboss.as.logging;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ADD;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.DISABLE;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ENABLE;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.WRITE_ATTRIBUTE_OPERATION;
 import static org.jboss.as.logging.CommonAttributes.ENABLED;
 import static org.jboss.as.logging.CommonAttributes.ENCODING;
 import static org.jboss.as.logging.CommonAttributes.FILTER;
@@ -49,6 +48,7 @@ import org.jboss.as.controller.registry.ManagementResourceRegistration;
 import org.jboss.as.controller.transform.description.DiscardAttributeChecker;
 import org.jboss.as.controller.transform.description.RejectAttributeChecker;
 import org.jboss.as.controller.transform.description.ResourceTransformationDescriptionBuilder;
+import org.jboss.as.logging.logmanager.PropertySorter;
 
 /**
  * @author <a href="mailto:tomaz.cerar@redhat.com">Tomaz Cerar</a>
@@ -89,18 +89,26 @@ abstract class AbstractHandlerDefinition extends SimpleResourceDefinition {
     private final OperationStepHandler writeHandler;
     private final AttributeDefinition[] writableAttributes;
     private final AttributeDefinition[] readOnlyAttributes;
+    private final PropertySorter propertySorter;
 
     protected AbstractHandlerDefinition(final PathElement path,
                                         final Class<? extends Handler> type,
                                         final AttributeDefinition[] attributes) {
-        this(path, type, attributes, null, attributes);
+        this(path, type, PropertySorter.NO_OP, attributes);
+    }
+
+    protected AbstractHandlerDefinition(final PathElement path,
+                                        final Class<? extends Handler> type,
+                                        final PropertySorter propertySorter,
+                                        final AttributeDefinition[] attributes) {
+        this(path, type, propertySorter, attributes, null, attributes);
     }
 
     protected AbstractHandlerDefinition(final PathElement path,
                                         final Class<? extends Handler> type,
                                         final AttributeDefinition[] attributes,
                                         final ConfigurationProperty<?>... constructionProperties) {
-        this(path, type, attributes, null, attributes, constructionProperties);
+        this(path, type, PropertySorter.NO_OP, attributes, null, attributes, constructionProperties);
     }
 
     protected AbstractHandlerDefinition(final PathElement path,
@@ -109,13 +117,24 @@ abstract class AbstractHandlerDefinition extends SimpleResourceDefinition {
                                         final AttributeDefinition[] readOnlyAttributes,
                                         final AttributeDefinition[] writableAttributes,
                                         final ConfigurationProperty<?>... constructionProperties) {
+        this(path, type, PropertySorter.NO_OP, addAttributes, readOnlyAttributes, writableAttributes, constructionProperties);
+    }
+
+    protected AbstractHandlerDefinition(final PathElement path,
+                                        final Class<? extends Handler> type,
+                                        final PropertySorter propertySorter,
+                                        final AttributeDefinition[] addAttributes,
+                                        final AttributeDefinition[] readOnlyAttributes,
+                                        final AttributeDefinition[] writableAttributes,
+                                        final ConfigurationProperty<?>... constructionProperties) {
         super(path,
                 HANDLER_RESOLVER,
-                new HandlerOperations.HandlerAddOperationStepHandler(type, addAttributes, constructionProperties),
+                new HandlerOperations.HandlerAddOperationStepHandler(propertySorter, type, addAttributes, constructionProperties),
                 HandlerOperations.REMOVE_HANDLER);
         this.writableAttributes = writableAttributes;
-        writeHandler = new HandlerOperations.LogHandlerWriteAttributeHandler(this.writableAttributes);
+        writeHandler = new HandlerOperations.LogHandlerWriteAttributeHandler(propertySorter, this.writableAttributes);
         this.readOnlyAttributes = readOnlyAttributes;
+        this.propertySorter = propertySorter;
     }
 
     @Override
@@ -150,7 +169,7 @@ abstract class AbstractHandlerDefinition extends SimpleResourceDefinition {
                 .setDeprecated(ModelVersion.create(1, 2, 0))
                 .setParameters(writableAttributes)
                 .build();
-        registration.registerOperationHandler(updateProperties, new HandlerOperations.HandlerUpdateOperationStepHandler(writableAttributes));
+        registration.registerOperationHandler(updateProperties, new HandlerOperations.HandlerUpdateOperationStepHandler(propertySorter, writableAttributes));
     }
 
     /**
