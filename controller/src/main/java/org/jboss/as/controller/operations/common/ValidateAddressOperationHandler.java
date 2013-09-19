@@ -21,11 +21,14 @@
  */
 package org.jboss.as.controller.operations.common;
 
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.PROBLEM;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.READ_RESOURCE_OPERATION;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.VALID;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.VALUE;
 
+import java.util.Collections;
 import java.util.Iterator;
 
 import org.jboss.as.controller.ControllerMessages;
@@ -37,6 +40,9 @@ import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.PathElement;
 import org.jboss.as.controller.SimpleAttributeDefinitionBuilder;
 import org.jboss.as.controller.SimpleOperationDefinitionBuilder;
+import org.jboss.as.controller.access.Action.ActionEffect;
+import org.jboss.as.controller.access.AuthorizationResult;
+import org.jboss.as.controller.access.AuthorizationResult.Decision;
 import org.jboss.as.controller.descriptions.common.ControllerResolver;
 import org.jboss.as.controller.registry.ImmutableManagementResourceRegistration;
 import org.jboss.as.controller.registry.Resource;
@@ -79,6 +85,7 @@ public class ValidateAddressOperationHandler implements OperationStepHandler {
 
             // Check if the registration is a proxy and dispatch directly
             final ImmutableManagementResourceRegistration registration = context.getResourceRegistration().getSubModel(current);
+
             if(registration != null && registration.isRemote()) {
 
                 // If the target is a registered proxy return immediately
@@ -111,7 +118,20 @@ public class ValidateAddressOperationHandler implements OperationStepHandler {
                 return;
             }
         }
-        context.getResult().get(VALID).set(true);
+
+        if (authorize(context, current, operation).getDecision() == Decision.DENY) {
+            context.getResult().get(VALID).set(false);
+            context.getResult().get(PROBLEM).set(ControllerMessages.MESSAGES.managementResourceNotFoundMessage(current));
+        } else {
+            context.getResult().get(VALID).set(true);
+        }
         context.stepCompleted();
+    }
+
+    private AuthorizationResult authorize(OperationContext context, PathAddress address, ModelNode operation) {
+        ModelNode authOp = operation.clone();
+        authOp.get(OP).set(READ_RESOURCE_OPERATION);
+        authOp.get(OP_ADDR).set(address.toModelNode());
+        return context.authorize(authOp, Collections.singleton(ActionEffect.ADDRESS));
     }
 }
