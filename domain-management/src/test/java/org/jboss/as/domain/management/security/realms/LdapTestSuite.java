@@ -55,7 +55,9 @@ import org.junit.runners.Suite;
  */
 @RunWith(Suite.class)
 @Suite.SuiteClasses({
-    LdapAuthenticationSuiteTest.class
+    LdapAuthenticationSuiteTest.class,
+    GroupToPrincipalLdapSuiteTest.class,
+    PrincipalToGroupLdapSuiteTest.class
 })
 public class LdapTestSuite {
 

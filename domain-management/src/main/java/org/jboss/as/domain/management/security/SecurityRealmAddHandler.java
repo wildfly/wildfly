@@ -21,17 +21,24 @@
  */
 package org.jboss.as.domain.management.security;
 
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ADVANCED_FILTER;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.AUTHENTICATION;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.AUTHORIZATION;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.GROUP_SEARCH;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.GROUP_TO_PRINCIPAL;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.JAAS;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.LDAP;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.LOCAL;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.PRINCIPAL_TO_GROUP;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.PROPERTIES;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SECRET;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SERVER_IDENTITY;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SSL;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.TRUSTSTORE;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.USER;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.USERNAME_FILTER;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.USERNAME_IS_DN;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.USERNAME_TO_DN;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.USERS;
 import static org.jboss.as.domain.management.ModelDescriptionConstants.KEYSTORE_PATH;
 import static org.jboss.as.domain.management.ModelDescriptionConstants.PASSWORD;
@@ -57,10 +64,12 @@ import org.jboss.as.domain.management.CallbackHandlerFactory;
 import org.jboss.as.domain.management.SSLIdentity;
 import org.jboss.as.domain.management.SecurityRealm;
 import org.jboss.as.domain.management.connections.ldap.LdapConnectionManagerService;
+import org.jboss.as.domain.management.security.BaseLdapGroupSearchResource.GroupName;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.ModelType;
 import org.jboss.dmr.Property;
 import org.jboss.msc.inject.Injector;
+import org.jboss.msc.service.Service;
 import org.jboss.msc.service.ServiceBuilder;
 import org.jboss.msc.service.ServiceController;
 import org.jboss.msc.service.ServiceController.Mode;
@@ -153,7 +162,7 @@ public class SecurityRealmAddHandler implements OperationStepHandler {
             } else if (authorization.hasDefined(PLUG_IN)) {
                 addPlugInAuthorizationService(context, authorization.require(PLUG_IN), realmName, serviceTarget, newControllers, realmBuilder, securityRealmService.getSubjectSupplementalInjector());
             } else if (authorization.hasDefined(LDAP)) {
-                addLdapAuthorizationService(context, authorization.require(LDAP), realmServiceName,realmName, serviceTarget, newControllers, realmBuilder, securityRealmService.getSubjectSupplementalInjector(), shareLdapConnections);
+                addLdapAuthorizationService(context, authorization.require(LDAP), realmName, serviceTarget, newControllers, realmBuilder, securityRealmService.getSubjectSupplementalInjector(), shareLdapConnections);
             }
         }
 
@@ -386,40 +395,97 @@ public class SecurityRealmAddHandler implements OperationStepHandler {
         SubjectSupplementalService.ServiceUtil.addDependency(realmBuilder, injector, plugInServiceName, false);
     }
 
-    private void addLdapAuthorizationService(OperationContext context, ModelNode ldap, ServiceName realmServiceName, String realmName, ServiceTarget serviceTarget,
-            List<ServiceController<?>> newControllers, ServiceBuilder<?> realmBuilder,
+    private void addLdapAuthorizationService(OperationContext context, ModelNode ldap, String realmName, ServiceTarget serviceTarget,
+            List<ServiceController<?>> controllers, ServiceBuilder<?> realmBuilder,
             InjectedValue<SubjectSupplementalService> injector, boolean shareConnection) throws OperationFailedException {
-        ServiceName ldapServiceName = realmServiceName.append(LdapSubjectSupplementalService.SERVICE_SUFFIX);
 
-        final String baseDn = LdapAuthorizationResourceDefinition.BASE_DN.resolveModelAttribute(context, ldap).asString();
-        ModelNode node = LdapAuthorizationResourceDefinition.USERNAME.resolveModelAttribute(context, ldap);
-        final String usernameAttribute = node.isDefined() ? node.asString() : null;
-        node = LdapAuthorizationResourceDefinition.ADVANCED_FILTER.resolveModelAttribute(context, ldap);
-        final String advancedFilter = node.isDefined() ? node.asString() : null;
-        final boolean recursive = LdapAuthorizationResourceDefinition.RECURSIVE.resolveModelAttribute(context, ldap).asBoolean();
-        final boolean reverseGroup = LdapAuthorizationResourceDefinition.REVERSE_GROUP.resolveModelAttribute(context, ldap).asBoolean();
-        final String rolesDn = LdapAuthorizationResourceDefinition.GROUPS_DN.resolveModelAttribute(context, ldap).asString();
-        final String pattern = LdapAuthorizationResourceDefinition.PATTERN.resolveModelAttribute(context, ldap).asString();
-        final String userDn = LdapAuthorizationResourceDefinition.USER_DN.resolveModelAttribute(context,ldap).asString();
-        ModelNode groupNode = LdapAuthorizationResourceDefinition.GROUP.resolveModelAttribute(context, ldap);
-        final int group = groupNode.isDefined() ? LdapAuthorizationResourceDefinition.GROUP.resolveModelAttribute(context, ldap).asInt() : 0;
-        final ModelNode resultPatternNode = LdapAuthorizationResourceDefinition.RESULT_PATTERN.resolveModelAttribute(context, ldap);
-        final String resultPattern = resultPatternNode.isDefined() ? resultPatternNode.asString(): null;
-        LdapSubjectSupplementalService ldapSubjectHandler = new LdapSubjectSupplementalService(recursive, rolesDn, baseDn,
-                userDn, usernameAttribute, advancedFilter, pattern, group, resultPattern, reverseGroup, shareConnection);
+        ServiceName ldapName = LdapSubjectSupplementalService.ServiceUtil.createServiceName(realmName);
 
-        ServiceBuilder<?> ldapBuilder = serviceTarget.addService(ldapServiceName, ldapSubjectHandler);
-        String connectionManager = LdapAuthorizationResourceDefinition.CONNECTION.resolveModelAttribute(context, ldap).asString();
+        Service<LdapUserSearcher> userSearcherService = null;
+        boolean forceUserDnSearch = false;
 
-        LdapConnectionManagerService.ServiceUtil.addDependency(ldapBuilder, ldapSubjectHandler.getConnectionManagerInjector(), connectionManager, false);
+        if (ldap.hasDefined(USERNAME_TO_DN)) {
+            ModelNode usernameToDn = ldap.require(USERNAME_TO_DN);
+            if (usernameToDn.hasDefined(USERNAME_IS_DN)) {
+                ModelNode usernameIsDn = usernameToDn.require(USERNAME_IS_DN);
+                forceUserDnSearch = UserIsDnResourceDefintion.FORCE.resolveModelAttribute(context, usernameIsDn).asBoolean();
 
-        final ServiceController<?> serviceController = ldapBuilder.setInitialMode(ON_DEMAND)
-                .install();
-        if(newControllers != null) {
-            newControllers.add(serviceController);
+                userSearcherService = LdapUserSearcherService.createForUsernameIsDn();
+            } else if (usernameToDn.hasDefined(USERNAME_FILTER)) {
+                ModelNode usernameFilter = usernameToDn.require(USERNAME_FILTER);
+                forceUserDnSearch = UserSearchResourceDefintion.FORCE.resolveModelAttribute(context, usernameFilter).asBoolean();
+                String baseDn = UserSearchResourceDefintion.BASE_DN.resolveModelAttribute(context, usernameFilter).asString();
+                boolean recursive =  UserSearchResourceDefintion.RECURSIVE.resolveModelAttribute(context, usernameFilter).asBoolean();
+                String userDnAttribute = UserSearchResourceDefintion.USER_DN_ATTRIBUTE.resolveModelAttribute(context, usernameFilter).asString();
+                String usernameAttribute = UserSearchResourceDefintion.ATTRIBUTE.resolveModelAttribute(context, usernameFilter).asString();
+
+                userSearcherService = LdapUserSearcherService.createForUsernameFilter(baseDn, recursive, userDnAttribute, usernameAttribute);
+            } else if (usernameToDn.hasDefined(ADVANCED_FILTER)) {
+                ModelNode advancedFilter = usernameToDn.require(ADVANCED_FILTER);
+                forceUserDnSearch = AdvancedUserSearchResourceDefintion.FORCE.resolveModelAttribute(context, advancedFilter).asBoolean();
+                String baseDn = AdvancedUserSearchResourceDefintion.BASE_DN.resolveModelAttribute(context, advancedFilter).asString();
+                boolean recursive =  AdvancedUserSearchResourceDefintion.RECURSIVE.resolveModelAttribute(context, advancedFilter).asBoolean();
+                String userDnAttribute = AdvancedUserSearchResourceDefintion.USER_DN_ATTRIBUTE.resolveModelAttribute(context, advancedFilter).asString();
+                String filter = AdvancedUserSearchResourceDefintion.FILTER.resolveModelAttribute(context, advancedFilter).asString();
+
+                userSearcherService = LdapUserSearcherService.createForAdvancedFilter(baseDn, recursive, userDnAttribute, filter);
+            }
         }
 
-        SubjectSupplementalService.ServiceUtil.addDependency(realmBuilder, injector, ldapServiceName, false);
+        if (userSearcherService != null) {
+            ServiceName userSearcherName = LdapUserSearcher.ServiceUtil.createServiceName(realmName);
+            ServiceController<LdapUserSearcher> userSearcherController = serviceTarget
+                    .addService(userSearcherName, userSearcherService).setInitialMode(ON_DEMAND).install();
+            controllers.add(userSearcherController);
+        }
+
+        ModelNode groupSearch = ldap.require(GROUP_SEARCH);
+        Service<LdapGroupSearcher> groupSearcherService = null;
+        boolean iterative = false;
+        GroupName groupName = GroupName.DISTINGUISHED_NAME;
+        if (groupSearch.hasDefined(GROUP_TO_PRINCIPAL)) {
+            ModelNode groupToPrincipal = groupSearch.require(GROUP_TO_PRINCIPAL);
+            String baseDn = GroupToPrincipalResourceDefinition.BASE_DN.resolveModelAttribute(context, groupToPrincipal).asString();
+            String groupDnAttribute = GroupToPrincipalResourceDefinition.GROUP_DN_ATTRIBUTE.resolveModelAttribute(context, groupToPrincipal).asString();
+            groupName = GroupName.valueOf(GroupToPrincipalResourceDefinition.GROUP_NAME.resolveModelAttribute(context, groupToPrincipal).asString());
+            String groupNameAttribute = GroupToPrincipalResourceDefinition.GROUP_NAME_ATTRIBUTE.resolveModelAttribute(context, groupToPrincipal).asString();
+            iterative = GroupToPrincipalResourceDefinition.ITERATIVE.resolveModelAttribute(context, groupToPrincipal).asBoolean();
+            String principalAttribute = GroupToPrincipalResourceDefinition.PRINCIPAL_ATTRIBUTE.resolveModelAttribute(context, groupToPrincipal).asString();
+            boolean recursive = GroupToPrincipalResourceDefinition.RECURSIVE.resolveModelAttribute(context, groupToPrincipal).asBoolean();
+            GroupName searchBy = GroupName.valueOf(GroupToPrincipalResourceDefinition.SEARCH_BY.resolveModelAttribute(context, groupToPrincipal).asString());
+
+            groupSearcherService = LdapGroupSearcherService.createForGroupToPrincipal(baseDn, groupDnAttribute, groupNameAttribute, principalAttribute, recursive, searchBy);
+        } else {
+            ModelNode principalToGroup = groupSearch.require(PRINCIPAL_TO_GROUP);
+            String groupAttribute = PrincipalToGroupResourceDefinition.GROUP_ATTRIBUTE.resolveModelAttribute(context, principalToGroup).asString();
+            String groupDnAttribute = PrincipalToGroupResourceDefinition.GROUP_DN_ATTRIBUTE.resolveModelAttribute(context, principalToGroup).asString();
+            groupName = GroupName.valueOf(PrincipalToGroupResourceDefinition.GROUP_NAME.resolveModelAttribute(context, principalToGroup).asString());
+            String groupNameAttribute = PrincipalToGroupResourceDefinition.GROUP_NAME_ATTRIBUTE.resolveModelAttribute(context, principalToGroup).asString();
+            iterative = PrincipalToGroupResourceDefinition.ITERATIVE.resolveModelAttribute(context, principalToGroup).asBoolean();
+
+            groupSearcherService = LdapGroupSearcherService.createForPrincipalToGroup(groupAttribute, groupNameAttribute);
+        }
+
+
+        ServiceName groupSearcherName = LdapGroupSearcher.ServiceUtil.createServiceName(realmName);
+        ServiceController<LdapGroupSearcher> groupSearcherController = serviceTarget
+                .addService(groupSearcherName, groupSearcherService).setInitialMode(ON_DEMAND).install();
+        controllers.add(groupSearcherController);
+
+        String connectionName = LdapAuthorizationResourceDefinition.CONNECTION.resolveModelAttribute(context, ldap).asString();
+
+        LdapSubjectSupplementalService service = new LdapSubjectSupplementalService(realmName, shareConnection, forceUserDnSearch, iterative, groupName);
+        ServiceBuilder<SubjectSupplementalService> ldapBuilder = serviceTarget.addService(ldapName, service)
+                .setInitialMode(ON_DEMAND);
+        LdapConnectionManagerService.ServiceUtil.addDependency(ldapBuilder, service.getConnectionManagerInjector(), connectionName, false);
+        if (userSearcherService != null) {
+            LdapUserSearcher.ServiceUtil.addDependency(ldapBuilder, service.getLdapUserSearcherInjector(), realmName, false);
+        }
+        LdapGroupSearcher.ServiceUtil.addDependency(ldapBuilder, service.getLdapGroupSearcherInjector(), realmName, false);
+
+        controllers.add(ldapBuilder.install());
+
+        SubjectSupplementalService.ServiceUtil.addDependency(realmBuilder, injector, ldapName, false);
     }
 
     private void addSSLService(OperationContext context, ModelNode ssl, ModelNode trustStore, String realmName,

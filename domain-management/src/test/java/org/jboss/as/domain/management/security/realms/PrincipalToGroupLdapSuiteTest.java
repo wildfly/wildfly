@@ -24,15 +24,14 @@ package org.jboss.as.domain.management.security.realms;
 import org.jboss.as.domain.management.security.operations.SecurityRealmAddBuilder;
 
 /**
- * A test suite test to test LDAP based group assignment where groups contain the 'member' attribute referencing the users and
- * groups that are members.
+ * A test suite test to test LDAP based group assignment where principals contain the memberOf attribute referencing the groups
+ * that they are a member of.
  *
  * @author <a href="mailto:darran.lofthouse@jboss.com">Darran Lofthouse</a>
  */
-public class GroupToPrincipalLdapSuiteTest extends LdapGroupAssignmentBaseSuiteTest {
+public class PrincipalToGroupLdapSuiteTest extends LdapGroupAssignmentBaseSuiteTest {
 
-    private static final String BASE_DN = "ou=users,dc=group-to-principal,dc=wildfly,dc=org";
-    private static final String GROUPS_DN = "ou=groups,dc=group-to-principal,dc=wildfly,dc=org";
+    private static final String BASE_DN = "ou=users,dc=principal-to-group,dc=wildfly,dc=org";
     private static final String USERNAME_FILTER = "uid";
 
     @Override
@@ -50,11 +49,8 @@ public class GroupToPrincipalLdapSuiteTest extends LdapGroupAssignmentBaseSuiteT
         .setRecursive(false)
         .setAttribute(USERNAME_FILTER)
         .build()
-        .groupToPrincipal()
-        .setBaseDn(GROUPS_DN)
-        .setPrincipalAttribute("uniqueMember")
+        .principalToGroup()
         .setIterative(true)
-        .setRecursive(true)
         .build()
         .build().build();
     }

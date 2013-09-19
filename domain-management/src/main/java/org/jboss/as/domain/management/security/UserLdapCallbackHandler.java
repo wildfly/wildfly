@@ -254,6 +254,7 @@ public class UserLdapCallbackHandler implements Service<CallbackHandlerService>,
                     if (userContext != null) {
                         SECURITY_LOGGER.tracef("Password verified for user '%s'", username);
                         verifyPasswordCallback.setVerified(true);
+                        sharedState.put(LdapEntry.class.getName(), new LdapEntry(username, distinguishedUserDN));
                     }
                 } catch (Exception e) {
                     SECURITY_LOGGER.tracef("Password verification failed for user '%s'", username);

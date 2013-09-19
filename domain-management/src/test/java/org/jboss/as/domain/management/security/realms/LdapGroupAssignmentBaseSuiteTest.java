@@ -87,7 +87,7 @@ public abstract class LdapGroupAssignmentBaseSuiteTest extends BaseLdapSuiteTest
      */
     @Test
     public void testTestUserSix() throws Exception {
-        verifyGroupMembership("TestUserSix", "passwordSix", "GroupSix", "GroupOne");
+        verifyGroupMembership("TestUserSix", "passwordSix", "GroupSix", "GroupTwo");
     }
 
 }

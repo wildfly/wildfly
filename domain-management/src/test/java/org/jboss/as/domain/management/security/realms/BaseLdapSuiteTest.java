@@ -31,6 +31,7 @@ import java.security.Principal;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
@@ -108,7 +109,7 @@ public abstract class BaseLdapSuiteTest extends SecurityRealmTestBase {
     protected void verifyGroupMembership(final String userName, final String password, final String... groups) throws Exception {
         Set<RealmGroup> groupPrincipals = getUsersGroups(userName, password);
         assertEquals("Number of groups", groups.length, groupPrincipals.size());
-        Collection<String> expectedGroups = Arrays.asList(groups);
+        Collection<String> expectedGroups = new HashSet<String>(Arrays.asList(groups));
         for (RealmGroup current : groupPrincipals) {
             assertTrue(String.format("User not expected to be in group '%s'", current.getName()),
                     expectedGroups.remove(current.getName()));

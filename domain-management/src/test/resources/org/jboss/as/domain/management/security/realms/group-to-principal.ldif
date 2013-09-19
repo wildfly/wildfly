@@ -50,15 +50,25 @@ sn: Test User Four
 uid: TestUserFour
 userPassword: passwordFour
 
+dn: uid=cycleUser,ou=users,dc=group-to-principal,dc=wildfly,dc=org
+objectClass: top
+objectClass: inetOrgPerson
+objectClass: uidObject
+objectClass: person
+objectClass: organizationalPerson
+cn: Cycle User
+sn: Cycle User
+uid: cycleUser
+userPassword: passwordCycle
+
 dn: uid=CycleGroupA,ou=groups,dc=group-to-principal,dc=wildfly,dc=org
 objectClass: top
 objectClass: groupOfUniqueNames
 objectClass: uidObject
 cn: Cycle Group A
 uid: CycleGroupA
-uniqueMember: uid=cycleUser,ou=users,dc=group-to=principal,dc=wildfly,dc=org
-uniqueMember: uid=CycleGroupC,ou=groups,dc=group-to-principal,dc=wildfly,dc=
- org
+uniqueMember: uid=cycleUser,ou=users,dc=group-to-principal,dc=wildfly,dc=org
+uniqueMember: uid=CycleGroupC,ou=groups,dc=group-to-principal,dc=wildfly,dc=org
 
 dn: uid=CycleGroupB,ou=groups,dc=group-to-principal,dc=wildfly,dc=org
 objectClass: top
@@ -67,6 +77,14 @@ objectClass: uidObject
 cn: Cycle Group B
 uid: CycleGroupB
 uniqueMember: uid=CycleGroupA,ou=groups,dc=group-to-principal,dc=wildfly,dc=org
+
+dn: uid=CycleGroupC,ou=groups,dc=group-to-principal,dc=wildfly,dc=org
+objectClass: top
+objectClass: groupOfUniqueNames
+objectClass: uidObject
+cn: Cycle Group C
+uid: CycleGroupC
+uniqueMember: uid=CycleGroupB,ou=groups,dc=group-to-principal,dc=wildfly,dc=org
 
 dn: uid=TestUserSix,ou=users,dc=group-to-principal,dc=wildfly,dc=org
 objectClass: top
@@ -79,17 +97,6 @@ sn: Test User Six
 uid: TestUserSix
 userPassword: passwordSix
 
-dn: uid=cycleUser,ou=users,dc=group-to-principal,dc=wildfly,dc=org
-objectClass: top
-objectClass: inetOrgPerson
-objectClass: uidObject
-objectClass: person
-objectClass: organizationalPerson
-cn: Cycle User
-sn: Cycle User
-uid: cycleUser
-userPassword: passwordCycle
-
 dn: uid=TestUserOne,ou=users,dc=group-to-principal,dc=wildfly,dc=org
 objectClass: top
 objectClass: inetOrgPerson
@@ -100,14 +107,6 @@ cn: Test User One
 sn: Test User One
 uid: TestUserOne
 userPassword: passwordOne
-
-dn: uid=CycleGroupC,ou=groups,dc=group-to-principal,dc=wildfly,dc=org
-objectClass: top
-objectClass: groupOfUniqueNames
-objectClass: uidObject
-cn: Cycle Group C
-uid: CycleGroupC
-uniqueMember: uid=dummyUser,ou=users,dc=group-to-principal,dc=wildfly,dc=org
 
 dn: uid=GroupThree,ou=groups,dc=group-to-principal,dc=wildfly,dc=org
 objectClass: top

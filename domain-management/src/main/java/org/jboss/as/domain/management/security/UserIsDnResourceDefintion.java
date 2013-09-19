@@ -1,6 +1,6 @@
 /*
  * JBoss, Home of Professional Open Source.
- * Copyright 2012, Red Hat, Inc., and individual contributors
+ * Copyright 2013, Red Hat, Inc., and individual contributors
  * as indicated by the @author tags. See the copyright.txt file in the
  * distribution for a full listing of individual contributors.
  *
@@ -23,29 +23,29 @@
 package org.jboss.as.domain.management.security;
 
 import org.jboss.as.controller.AttributeDefinition;
-import org.jboss.as.controller.PathElement;
-import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
+import org.jboss.as.controller.ResourceDefinition;
 import org.jboss.as.controller.descriptions.common.ControllerResolver;
-import org.jboss.as.controller.registry.OperationEntry;
 
 /**
- * {@link org.jboss.as.controller.ResourceDefinition} for a management security realm's properties-file-based authorization resource.
+ * A {@link org.jboss.as.controller.ResourceDefinition} for user searches where the
+ * supplied name is the users DN.
  *
  * @author <a href="mailto:darran.lofthouse@jboss.com">Darran Lofthouse</a>
  */
-public class PropertiesAuthorizationResourceDefinition extends PropertiesFileResourceDefinition {
+public class UserIsDnResourceDefintion extends BaseLdapUserSearchResource {
 
-    public static final AttributeDefinition[] ATTRIBUTE_DEFINITIONS = { PATH, RELATIVE_TO };
+    private static final AttributeDefinition[] ATTRIBUTE_DEFINITIONS = { FORCE };
 
-    public PropertiesAuthorizationResourceDefinition() {
-        super(PathElement.pathElement(ModelDescriptionConstants.AUTHORIZATION, ModelDescriptionConstants.PROPERTIES),
-                ControllerResolver.getResolver("core.management.security-realm.authorization.properties"),
-                new SecurityRealmChildAddHandler(false, ATTRIBUTE_DEFINITIONS), new SecurityRealmChildRemoveHandler(false),
-                OperationEntry.Flag.RESTART_RESOURCE_SERVICES, OperationEntry.Flag.RESTART_RESOURCE_SERVICES);
+    public static final ResourceDefinition INSTANCE = new UserIsDnResourceDefintion();
+
+    private UserIsDnResourceDefintion() {
+        super(UserSearchType.USERNAME_IS_DN,
+              ControllerResolver.getResolver("core.management.security-realm.authorization.ldap.user-search.username-to-dn"),
+              new SecurityRealmChildAddHandler(false, ATTRIBUTE_DEFINITIONS), new SecurityRealmChildRemoveHandler(false));
     }
 
     @Override
-    protected AttributeDefinition[] getAttributeDefinitions() {
+    public AttributeDefinition[] getAttributeDefinitions() {
         return ATTRIBUTE_DEFINITIONS;
     }
 
