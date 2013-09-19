@@ -356,7 +356,7 @@
           -->
 
         <module-def name="org.jboss.as.console" slot="eap">
-            <maven-resource-with-classifier group="org.jboss.as" artifact="jboss-as-console" classifier="resources"/>
+            <maven-resource-with-classifier group="org.jboss.hal" artifact="release-stream" classifier="resources"/>
         </module-def>
 
         <module-def name="org.jboss.as.domain-http-error-context" slot="eap"/>
@@ -1004,9 +1004,9 @@
         <module-def name="org.jboss.as.transactions">
             <maven-resource group="org.jboss.as" artifact="jboss-as-transactions"/>
         </module-def>
-    	
+
     	<module-def name="org.jboss.as.vault-tool" />
-        
+
     	<module-def name="org.jboss.as.version">
             <maven-resource group="org.jboss.as" artifact="jboss-as-version"/>
         </module-def>
@@ -1237,7 +1237,7 @@
 
         <module-def name="org.jboss.ws.cxf.jbossws-cxf-transports-udp">
             <maven-resource group="org.jboss.ws.cxf" artifact="jbossws-cxf-transports-udp"/>
-        </module-def> 
+        </module-def>
 
         <module-def name="org.jboss.ws.jaxws-client">
             <maven-resource group="org.jboss.ws.cxf" artifact="jbossws-cxf-client"/>

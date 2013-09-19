@@ -913,8 +913,8 @@
                 </dependency>
 
                 <dependency>
-                    <groupId>org.jboss.as</groupId>
-                    <artifactId>jboss-as-console</artifactId>
+                    <groupId>org.jboss.hal</groupId>
+                    <artifactId>release-stream</artifactId>
                     <classifier>resources</classifier>
                 </dependency>
 
@@ -1879,7 +1879,7 @@
             </properties>
         </profile>
 
-        <!-- 
+        <!--
         <profile>
             <id>release</id>
             <activation>
@@ -1947,7 +1947,7 @@
                                 </configuration>
                             </execution>
                         </executions>
-                        
+
                     </plugin>
                 </plugins>
             </build>
