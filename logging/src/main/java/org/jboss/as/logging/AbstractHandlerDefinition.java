@@ -52,6 +52,7 @@ import org.jboss.as.controller.registry.ManagementResourceRegistration;
 import org.jboss.as.controller.transform.description.DiscardAttributeChecker;
 import org.jboss.as.controller.transform.description.RejectAttributeChecker;
 import org.jboss.as.controller.transform.description.ResourceTransformationDescriptionBuilder;
+import org.jboss.as.logging.logmanager.PropertySorter;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.ModelType;
 
@@ -131,18 +132,26 @@ abstract class AbstractHandlerDefinition extends SimpleResourceDefinition {
     private final OperationStepHandler writeHandler;
     private final AttributeDefinition[] writableAttributes;
     private final AttributeDefinition[] readOnlyAttributes;
+    private final PropertySorter propertySorter;
 
     protected AbstractHandlerDefinition(final PathElement path,
                                         final Class<? extends Handler> type,
                                         final AttributeDefinition[] attributes) {
-        this(path, type, attributes, null, attributes);
+        this(path, type, PropertySorter.NO_OP, attributes);
+    }
+
+    protected AbstractHandlerDefinition(final PathElement path,
+                                        final Class<? extends Handler> type,
+                                        final PropertySorter propertySorter,
+                                        final AttributeDefinition[] attributes) {
+        this(path, type, propertySorter, attributes, null, attributes);
     }
 
     protected AbstractHandlerDefinition(final PathElement path,
                                         final Class<? extends Handler> type,
                                         final AttributeDefinition[] attributes,
                                         final ConfigurationProperty<?>... constructionProperties) {
-        this(path, type, attributes, null, attributes, constructionProperties);
+        this(path, type, PropertySorter.NO_OP, attributes, null, attributes, constructionProperties);
     }
 
     protected AbstractHandlerDefinition(final PathElement path,
@@ -151,13 +160,24 @@ abstract class AbstractHandlerDefinition extends SimpleResourceDefinition {
                                         final AttributeDefinition[] readOnlyAttributes,
                                         final AttributeDefinition[] writableAttributes,
                                         final ConfigurationProperty<?>... constructionProperties) {
+        this(path, type, PropertySorter.NO_OP, addAttributes, readOnlyAttributes, writableAttributes, constructionProperties);
+    }
+
+    protected AbstractHandlerDefinition(final PathElement path,
+                                        final Class<? extends Handler> type,
+                                        final PropertySorter propertySorter,
+                                        final AttributeDefinition[] addAttributes,
+                                        final AttributeDefinition[] readOnlyAttributes,
+                                        final AttributeDefinition[] writableAttributes,
+                                        final ConfigurationProperty<?>... constructionProperties) {
         super(path,
                 HANDLER_RESOLVER,
-                new HandlerOperations.HandlerAddOperationStepHandler(type, addAttributes, constructionProperties),
+                new HandlerOperations.HandlerAddOperationStepHandler(propertySorter, type, addAttributes, constructionProperties),
                 HandlerOperations.REMOVE_HANDLER);
         this.writableAttributes = writableAttributes;
-        writeHandler = new HandlerOperations.LogHandlerWriteAttributeHandler(this.writableAttributes);
+        writeHandler = new HandlerOperations.LogHandlerWriteAttributeHandler(propertySorter, this.writableAttributes);
         this.readOnlyAttributes = readOnlyAttributes;
+        this.propertySorter = propertySorter;
     }
 
     @Override
@@ -192,7 +212,7 @@ abstract class AbstractHandlerDefinition extends SimpleResourceDefinition {
                 .setDeprecated(ModelVersion.create(1, 2, 0))
                 .setParameters(writableAttributes)
                 .build();
-        registration.registerOperationHandler(updateProperties, new HandlerOperations.HandlerUpdateOperationStepHandler(writableAttributes));
+        registration.registerOperationHandler(updateProperties, new HandlerOperations.HandlerUpdateOperationStepHandler(propertySorter, writableAttributes));
     }
 
     /**
@@ -209,29 +229,29 @@ abstract class AbstractHandlerDefinition extends SimpleResourceDefinition {
         // Add default operation transformers
         return handlerBuilder
                 .getAttributeBuilder()
-                    // discard level="ALL"
-                    .setDiscard(Transformers1_1_0.LEVEL_ALL_DISCARD_CHECKER, LEVEL)
-                    // Strip console color from format patterns
-                    .setValueConverter(Transformers1_1_0.CONSOLE_COLOR_CONVERTER, FORMATTER)
-                    // Discard named formatters
-                    .setDiscard(DiscardAttributeChecker.UNDEFINED, NAMED_FORMATTER)
-                    .addRejectCheck(RejectAttributeChecker.DEFINED, NAMED_FORMATTER)
-                     // Discard undefined filter-spec, else convert the value and rename to "filter"
-                    .setDiscard(DiscardAttributeChecker.UNDEFINED, FILTER_SPEC)
-                    .setValueConverter(Transformers1_1_0.FILTER_SPEC_CONVERTER, FILTER_SPEC)
-                    .addRename(FILTER_SPEC, FILTER.getName())
-                    // Discard 'enabled' if undefined or true, else reject
-                    .setDiscard(Transformers1_1_0.DISCARD_ENABLED, ENABLED)
-                    .addRejectCheck(RejectAttributeChecker.DEFINED, ENABLED)
-                    // Standard expression rejection
-                    .addRejectCheck(RejectAttributeChecker.SIMPLE_EXPRESSIONS, DEFAULT_ATTRIBUTES)
-                    .addRejectCheck(RejectAttributeChecker.SIMPLE_EXPRESSIONS, LEGACY_ATTRIBUTES)
-                    .end()
+                        // discard level="ALL"
+                .setDiscard(Transformers1_1_0.LEVEL_ALL_DISCARD_CHECKER, LEVEL)
+                        // Strip console color from format patterns
+                .setValueConverter(Transformers1_1_0.CONSOLE_COLOR_CONVERTER, FORMATTER)
+                        // Discard named formatters
+                .setDiscard(DiscardAttributeChecker.UNDEFINED, NAMED_FORMATTER)
+                .addRejectCheck(RejectAttributeChecker.DEFINED, NAMED_FORMATTER)
+                        // Discard undefined filter-spec, else convert the value and rename to "filter"
+                .setDiscard(DiscardAttributeChecker.UNDEFINED, FILTER_SPEC)
+                .setValueConverter(Transformers1_1_0.FILTER_SPEC_CONVERTER, FILTER_SPEC)
+                .addRename(FILTER_SPEC, FILTER.getName())
+                        // Discard 'enabled' if undefined or true, else reject
+                .setDiscard(Transformers1_1_0.DISCARD_ENABLED, ENABLED)
+                .addRejectCheck(RejectAttributeChecker.DEFINED, ENABLED)
+                        // Standard expression rejection
+                .addRejectCheck(RejectAttributeChecker.SIMPLE_EXPRESSIONS, DEFAULT_ATTRIBUTES)
+                .addRejectCheck(RejectAttributeChecker.SIMPLE_EXPRESSIONS, LEGACY_ATTRIBUTES)
+                .end()
                 .addOperationTransformationOverride(ADD)
-                    .setCustomOperationTransformer(LoggingOperationTransformer.INSTANCE)
-                    .inheritResourceAttributeDefinitions()
-                    .end()
-                // Discard 'name' as legacy slaves didn't store it in resources
+                .setCustomOperationTransformer(LoggingOperationTransformer.INSTANCE)
+                .inheritResourceAttributeDefinitions()
+                .end()
+                        // Discard 'name' as legacy slaves didn't store it in resources
                 .setCustomResourceTransformer(new LoggingResourceTransformer(NAME));
     }
 }

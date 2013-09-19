@@ -50,11 +50,14 @@ import java.util.logging.Handler;
 import org.apache.log4j.Appender;
 import org.jboss.as.controller.AttributeDefinition;
 import org.jboss.as.controller.OperationContext;
+import org.jboss.as.controller.OperationContext.ResultHandler;
+import org.jboss.as.controller.OperationContext.Stage;
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.OperationStepHandler;
 import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.registry.Resource;
 import org.jboss.as.logging.logmanager.Log4jAppenderHandler;
+import org.jboss.as.logging.logmanager.PropertySorter;
 import org.jboss.as.logging.resolvers.ModelNodeResolver;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.Property;
@@ -86,13 +89,15 @@ final class HandlerOperations {
      */
     static class HandlerUpdateOperationStepHandler extends LoggingOperations.LoggingUpdateOperationStepHandler {
         private final AttributeDefinition[] attributes;
+        private final PropertySorter propertySorter;
 
         protected HandlerUpdateOperationStepHandler() {
-            this.attributes = null;
+            this(PropertySorter.NO_OP);
         }
 
-        protected HandlerUpdateOperationStepHandler(final AttributeDefinition... attributes) {
+        protected HandlerUpdateOperationStepHandler(final PropertySorter propertySorter, final AttributeDefinition... attributes) {
             this.attributes = attributes;
+            this.propertySorter = propertySorter;
         }
 
         @Override
@@ -138,6 +143,10 @@ final class HandlerOperations {
                 }
             }
             performRuntime(context, configuration, name, model);
+
+            // It's important that properties are written in the correct order, reorder the properties if
+            // needed before the commit.
+            addOrderPropertiesStep(context, propertySorter, configuration);
         }
 
         public void performRuntime(final OperationContext context, final HandlerConfiguration configuration, final String name, final ModelNode model) throws OperationFailedException {
@@ -152,14 +161,16 @@ final class HandlerOperations {
         private final String[] constructionProperties;
         private final AttributeDefinition[] attributes;
         private final Class<? extends Handler> type;
+        private final PropertySorter propertySorter;
 
         protected HandlerAddOperationStepHandler(final Class<? extends Handler> type, final AttributeDefinition[] attributes) {
             this.type = type;
             this.constructionProperties = null;
             this.attributes = attributes;
+            this.propertySorter = PropertySorter.NO_OP;
         }
 
-        protected HandlerAddOperationStepHandler(final Class<? extends Handler> type, final AttributeDefinition[] attributes, final ConfigurationProperty<?>... constructionProperties) {
+        protected HandlerAddOperationStepHandler(final PropertySorter propertySorter, final Class<? extends Handler> type, final AttributeDefinition[] attributes, final ConfigurationProperty<?>... constructionProperties) {
             this.type = type;
             this.attributes = attributes;
             final List<String> names = new ArrayList<String>();
@@ -167,6 +178,7 @@ final class HandlerOperations {
                 names.add(prop.getPropertyName());
             }
             this.constructionProperties = names.toArray(new String[names.size()]);
+            this.propertySorter = propertySorter;
         }
 
         @Override
@@ -241,6 +253,10 @@ final class HandlerOperations {
                 if (!skip)
                     handleProperty(attribute, context, model, logContextConfiguration, configuration);
             }
+
+            // It's important that properties are written in the correct order, reorder the properties if
+            // needed before the commit.
+            addOrderPropertiesStep(context, propertySorter, configuration);
         }
 
         protected HandlerConfiguration createHandlerConfiguration(final String className,
@@ -294,9 +310,15 @@ final class HandlerOperations {
      * A default log handler write attribute step handler.
      */
     static class LogHandlerWriteAttributeHandler extends LoggingOperations.LoggingWriteAttributeHandler {
+        private final PropertySorter propertySorter;
 
         protected LogHandlerWriteAttributeHandler(final AttributeDefinition... attributes) {
+            this(PropertySorter.NO_OP, attributes);
+        }
+
+        protected LogHandlerWriteAttributeHandler(final PropertySorter propertySorter, final AttributeDefinition... attributes) {
             super(attributes);
+            this.propertySorter = propertySorter;
         }
 
         @Override
@@ -353,6 +375,10 @@ final class HandlerOperations {
                         }
                     }
                 }
+
+                // It's important that properties are written in the correct order, reorder the properties if
+                // needed before the commit.
+                addOrderPropertiesStep(context, propertySorter, configuration);
             }
             return restartRequired;
         }
@@ -389,7 +415,7 @@ final class HandlerOperations {
     /**
      * A step handler to remove a handler
      */
-    static final OperationStepHandler CHANGE_LEVEL = new HandlerUpdateOperationStepHandler(LEVEL);
+    static final OperationStepHandler CHANGE_LEVEL = new HandlerUpdateOperationStepHandler(PropertySorter.NO_OP, LEVEL);
 
     /**
      * A step handler to remove a handler
@@ -476,7 +502,7 @@ final class HandlerOperations {
     /**
      * Changes the file for a file handler.
      */
-    static final OperationStepHandler CHANGE_FILE = new HandlerUpdateOperationStepHandler(FILE);
+    static final OperationStepHandler CHANGE_FILE = new HandlerUpdateOperationStepHandler(PropertySorter.NO_OP, FILE);
 
     static final LoggingOperations.LoggingUpdateOperationStepHandler ENABLE_HANDLER = new LoggingOperations.LoggingUpdateOperationStepHandler() {
         @Override
@@ -825,4 +851,16 @@ final class HandlerOperations {
         }
     }
 
+    private static void addOrderPropertiesStep(final OperationContext context, final PropertySorter propertySorter, final PropertyConfigurable configuration) {
+        if (propertySorter.isReorderRequired(configuration)) {
+            context.addStep(new OperationStepHandler() {
+                @Override
+                public void execute(final OperationContext context, final ModelNode operation) throws OperationFailedException {
+                    propertySorter.sort(configuration);
+                    // Nothing to really rollback, properties are only reordered
+                    context.completeStep(ResultHandler.NOOP_RESULT_HANDLER);
+                }
+            }, Stage.RUNTIME);
+        }
+    }
 }
