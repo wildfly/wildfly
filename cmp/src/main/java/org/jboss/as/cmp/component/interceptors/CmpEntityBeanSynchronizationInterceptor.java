@@ -58,13 +58,17 @@ public class CmpEntityBeanSynchronizationInterceptor extends EntityBeanSynchroni
             }
         }
 
+        // invoking the method first that the scheduleSync is set after the method
+        // this is to set the DB-sync flag after the entity might in state 'dirty' after invocation
+        Object retObject = super.processInvocation(context);
+
         // now it's ready and can be scheduled for the synchronization
         final Transaction transaction = component.getTransactionManager().getTransaction();
         if (TxUtils.isActive(transaction)) {
             entityContext.getTxAssociation().scheduleSync(transaction, instance.getEjbContext());
         }
 
-        return super.processInvocation(context);
+        return retObject;
     }
 
     public static final InterceptorFactory FACTORY = new ComponentInstanceInterceptorFactory() {
