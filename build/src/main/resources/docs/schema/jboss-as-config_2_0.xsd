@@ -186,7 +186,6 @@
                         </xs:complexType>
                     </xs:element>
                     <xs:element name="management-interfaces" type="host-management-interfacesType" minOccurs="1"/>
-                    <xs:element name="access-control" type="host-access-controlType" minOccurs="0"/>
                 </xs:sequence>
             </xs:extension>
         </xs:complexContent>
@@ -2955,19 +2954,6 @@
         </xs:restriction>
     </xs:simpleType>
 
-    <xs:complexType name="host-access-controlType">
-        <xs:annotation>
-            <xs:documentation>
-                <![CDATA[
-                   Contains the access control configuration for an individual host.
-                ]]>
-            </xs:documentation>
-        </xs:annotation>
-        <xs:sequence>
-            <xs:element name="host-scoped-roles" type="host-roles-addType" minOccurs="0"/>
-        </xs:sequence>
-    </xs:complexType>
-
     <xs:complexType name="server-access-controlType">
         <xs:annotation>
             <xs:documentation>
@@ -3124,20 +3110,6 @@
         </xs:annotation>
         <xs:choice>
             <xs:element name="role" type="host-scoped-roleType" minOccurs="1" maxOccurs="unbounded"/>
-        </xs:choice>
-    </xs:complexType>
-
-    <xs:complexType name="host-roles-addType">
-        <xs:annotation>
-            <xs:documentation>
-                <![CDATA[
-                   Domain-wide host scoped roles to which this host should be added
-                   as a valid host
-                ]]>
-            </xs:documentation>
-        </xs:annotation>
-        <xs:choice>
-            <xs:element name="role" type="namedType" minOccurs="1" maxOccurs="unbounded"/>
         </xs:choice>
     </xs:complexType>
 
