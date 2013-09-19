@@ -114,15 +114,17 @@ public class ServerGroupEffectConstraint extends AbstractConstraint implements C
     public boolean violates(Constraint other, Action.ActionEffect actionEffect) {
         if (other instanceof ServerGroupEffectConstraint) {
             ServerGroupEffectConstraint sgec = (ServerGroupEffectConstraint) other;
+            Set<String> ourSpecific = groupsHolder.specific;
+            Set<String> sgecSpecific = sgec.groupsHolder.specific;
             if (user) {
                 assert !sgec.user : "illegal comparison";
                 if (readOnly) {
                     // Allow global or any matching server group
                     if (!sgec.global) {
-                        boolean anyMatch = anyMatch(sgec);
+                        boolean anyMatch = anyMatch(ourSpecific, sgecSpecific);
                         if (!anyMatch) ControllerLogger.ACCESS_LOGGER.tracef("read-only server-group constraint violated " +
                                 "for action %s due to no match between groups %s and allowed groups %s",
-                                actionEffect, sgec.groupsHolder.specific, groupsHolder.specific);
+                                actionEffect, sgecSpecific, ourSpecific);
                         return !anyMatch;
                     }
                 } else if (!global) {
@@ -134,18 +136,18 @@ public class ServerGroupEffectConstraint extends AbstractConstraint implements C
                     } else if (!sgec.unassigned) {
                         if (actionEffect == Action.ActionEffect.WRITE_RUNTIME || actionEffect == Action.ActionEffect.WRITE_CONFIG) {
                             //  Writes must not effect other groups
-                            boolean containsAll = groupsHolder.specific.containsAll(sgec.groupsHolder.specific);
+                            boolean containsAll = ourSpecific.containsAll(sgecSpecific);
                             if (!containsAll) {
                                 ControllerLogger.ACCESS_LOGGER.tracef("server-group constraint violated for action %s due to " +
-                                        "mismatch of groups %s vs allowed %s", actionEffect, sgec.groupsHolder.specific, groupsHolder.specific);
+                                        "mismatch of groups %s vs allowed %s", actionEffect, sgecSpecific, ourSpecific);
                             }
                             return !containsAll;
                         } else {
                             // Reads ok as long as one of our groups match
-                            boolean anyMatch = anyMatch(sgec);
+                            boolean anyMatch = anyMatch(ourSpecific, sgecSpecific);
                             if (!anyMatch) ControllerLogger.ACCESS_LOGGER.tracef("server-group constraint violated " +
                                     "for action %s due to no match between groups %s and allowed groups %s",
-                                    actionEffect, sgec.groupsHolder.specific, groupsHolder.specific);
+                                    actionEffect, sgecSpecific, ourSpecific);
                             return !anyMatch;
                         }
                     } // else fall through
@@ -158,15 +160,20 @@ public class ServerGroupEffectConstraint extends AbstractConstraint implements C
         return false;
     }
 
-    private boolean anyMatch(ServerGroupEffectConstraint sgec) {
+    private boolean anyMatch(Set<String> ourSpecific, Set<String> sgecSpecific) {
 
         boolean matched = false;
-        for (String ourGroup : groupsHolder.specific) {
-            if (sgec.groupsHolder.specific.contains(ourGroup)) {
+        for (String ourGroup : ourSpecific) {
+            if (sgecSpecific.contains(ourGroup)) {
                 matched = true;
                 break;
             }
         }
+        if (!matched) {
+            // WFLY-2089
+            matched = sgecSpecific.size() == 1 && sgecSpecific.contains("*");
+        }
+
         return matched;
     }
 

@@ -43,6 +43,7 @@ import org.jboss.as.controller.PathElement;
 import org.jboss.as.controller.ProcessType;
 import org.jboss.as.controller.SimpleAttributeDefinition;
 import org.jboss.as.controller.SimpleAttributeDefinitionBuilder;
+import org.jboss.as.controller.UnauthorizedException;
 import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
 import org.jboss.as.controller.operations.validation.StringLengthValidator;
 import org.jboss.as.controller.registry.AliasEntry;
@@ -339,6 +340,8 @@ public class GlobalOperationHandlers {
         private void safeExecute(final PathAddress address, final PathAddress base, final OperationContext context) {
             try {
                 execute(address, base, context);
+            } catch (UnauthorizedException e) {
+                // equivalent to the resource not existing
             } catch (NoSuchResourceException e) {
                 // ignore to ensure we don't leak the resource
             }
