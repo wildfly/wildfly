@@ -32,14 +32,17 @@
                 <path name="com/ibm/jvm"/>
                 <path name="com/ibm/jvm/io"/>
                 <path name="com/ibm/jvm/util"/>
-                <path name="com/ibm/match"/>
+                <path name="com/ibm/math"/>
                 <path name="com/ibm/misc"/>
+                <path name="com/ibm/misc/resources"/>
                 <path name="com/ibm/net"/>
                 <path name="com/ibm/nio"/>
                 <path name="com/ibm/nio/ch"/>
                 <path name="com/ibm/security/auth"/>
-                <path name="com/ibm/security/bootstrap"/>
+                <path name="com/ibm/security/auth/callback"/>
+                <path name="com/ibm/security/auth/login"/>
                 <path name="com/ibm/security/auth/module"/>
+                <path name="com/ibm/security/bootstrap"/>
                 <path name="com/ibm/security/util"/>
             </paths>
         </system>
