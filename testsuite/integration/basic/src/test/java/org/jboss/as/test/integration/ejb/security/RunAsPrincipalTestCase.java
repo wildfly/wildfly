@@ -23,15 +23,23 @@ package org.jboss.as.test.integration.ejb.security;
 
 import javax.ejb.EJBAccessException;
 import javax.naming.InitialContext;
+import org.hamcrest.CoreMatchers;
+import org.jboss.arquillian.container.test.api.Deployer;
 
 import org.jboss.arquillian.container.test.api.Deployment;
+import org.jboss.arquillian.container.test.api.OperateOnDeployment;
 import org.jboss.arquillian.junit.Arquillian;
+import org.jboss.arquillian.test.api.ArquillianResource;
 import org.jboss.as.arquillian.api.ServerSetup;
 import org.jboss.as.test.categories.CommonCriteria;
 import org.jboss.as.test.integration.ejb.security.runasprincipal.Caller;
 import org.jboss.as.test.integration.ejb.security.runasprincipal.CallerWithIdentity;
-import org.jboss.as.test.integration.ejb.security.runasprincipal.SingletonCallerBean;
+import org.jboss.as.test.integration.ejb.security.runasprincipal.SingletonBean;
+import org.jboss.as.test.integration.ejb.security.runasprincipal.StatelessBBean;
 import org.jboss.as.test.integration.ejb.security.runasprincipal.WhoAmI;
+import org.jboss.as.test.integration.ejb.security.runasprincipal.transitive.SimpleSingletonBean;
+import org.jboss.as.test.integration.ejb.security.runasprincipal.transitive.SingletonStartupBean;
+import org.jboss.as.test.integration.ejb.security.runasprincipal.transitive.StatelessSingletonUseBean;
 import org.jboss.as.test.integration.security.common.AbstractSecurityDomainSetup;
 import org.jboss.as.test.shared.integration.ejb.security.Util;
 import org.jboss.logging.Logger;
@@ -59,21 +67,46 @@ import org.junit.runner.RunWith;
 public class RunAsPrincipalTestCase  {
 
     private static final Logger log = Logger.getLogger(RunAsPrincipalTestCase.class);
+    private static final String STARTUP_SINGLETON_DEPLOYMENT = "startup-transitive-singleton";
+    private static final String DEPLOYMENT = "runasprincipal-test";
 
-    @Deployment
-    public static Archive<?> runAsDeployment() {
+    @ArquillianResource
+    public Deployer deployer;
+
+    @Deployment(name = STARTUP_SINGLETON_DEPLOYMENT, managed = false, testable = false)
+    public static Archive<?> runAsStartupTransitiveDeployment() {
         // using JavaArchive doesn't work, because of a bug in Arquillian, it only deploys wars properly
-        final WebArchive war = ShrinkWrap.create(WebArchive.class, "runasprincipal-test.war")
-                .addPackage(WhoAmI.class.getPackage())
+        final WebArchive war = ShrinkWrap.create(WebArchive.class, STARTUP_SINGLETON_DEPLOYMENT + ".war")
+                .addClass(WhoAmI.class)
+                .addClass(StatelessBBean.class)
+                .addClass(SingletonStartupBean.class)
+                .addPackage(Assert.class.getPackage())
                 .addClass(Util.class)
                 .addClass(Entry.class)
                 .addClass(RunAsPrincipalTestCase.class)
                 .addClass(Base64.class)
                 .addClasses(AbstractSecurityDomainSetup.class, EjbSecurityDomainSetup.class)
                 .addAsWebInfResource(RunAsPrincipalTestCase.class.getPackage(), "jboss-ejb3.xml", "jboss-ejb3.xml")
-                .addAsManifestResource(new StringAsset("Dependencies: org.jboss.as.controller-client,org.jboss.dmr\n"),"MANIFEST.MF");
+                .addAsManifestResource(new StringAsset("Dependencies: org.jboss.as.controller-client,org.jboss.dmr\n"), "MANIFEST.MF");
         war.addPackage(CommonCriteria.class.getPackage());
-        log.info(war.toString(true));
+        return war;
+    }
+
+    @Deployment
+    public static Archive<?> runAsDeployment() {
+        // using JavaArchive doesn't work, because of a bug in Arquillian, it only deploys wars properly
+        final WebArchive war = ShrinkWrap.create(WebArchive.class, DEPLOYMENT + ".war")
+                .addPackage(WhoAmI.class.getPackage())
+                .addClass(SimpleSingletonBean.class)
+                .addClass(StatelessSingletonUseBean.class)
+                .addClass(Util.class)
+                .addClass(Entry.class)
+                .addClass(RunAsPrincipalTestCase.class)
+                .addClass(Base64.class)
+                .addClasses(AbstractSecurityDomainSetup.class, EjbSecurityDomainSetup.class)
+                .addAsWebInfResource(RunAsPrincipalTestCase.class.getPackage(), "jboss-ejb3.xml", "jboss-ejb3.xml")
+                .addAsManifestResource(new StringAsset("Dependencies: org.jboss.as.controller-client,org.jboss.dmr\n"), "MANIFEST.MF");
+        war.addPackage(CommonCriteria.class.getPackage());
         return war;
     }
 
@@ -82,11 +115,15 @@ public class RunAsPrincipalTestCase  {
     }
 
     private WhoAmI lookupSingleCallerWithIdentity() throws Exception {
-        return (WhoAmI)new InitialContext().lookup("java:module/" + SingletonCallerBean.class.getSimpleName() + "!" + WhoAmI.class.getName());
+        return (WhoAmI)new InitialContext().lookup("java:module/" + SingletonBean.class.getSimpleName() + "!" + WhoAmI.class.getName());
     }
 
     private WhoAmI lookupCaller() throws Exception {
         return (WhoAmI)new InitialContext().lookup("java:module/" + Caller.class.getSimpleName() + "!" + WhoAmI.class.getName());
+    }
+
+    private WhoAmI lookupSingletonUseBeanWithIdentity() throws Exception {
+        return (WhoAmI) new InitialContext().lookup("java:module/" + StatelessSingletonUseBean.class.getSimpleName() + "!" + WhoAmI.class.getName());
     }
 
     @Test
@@ -104,12 +141,12 @@ public class RunAsPrincipalTestCase  {
     }
 
     @Test
-    public void testSingletonSecurity() throws Exception {
+    public void testSingletonPostconstructSecurity() throws Exception {
         SecurityClient client = SecurityClientFactory.getSecurityClient();
         client.setSimple("user1", "password1");
         client.login();
         try {
-            WhoAmI bean =  lookupSingleCallerWithIdentity();
+            WhoAmI bean = lookupSingleCallerWithIdentity();
             String actual = bean.getCallerPrincipal();
             Assert.assertEquals("Helloween", actual);
         } finally {
@@ -141,5 +178,48 @@ public class RunAsPrincipalTestCase  {
         } finally {
             client.logout();
         }
+    }
+
+    @Test
+    @OperateOnDeployment(STARTUP_SINGLETON_DEPLOYMENT)
+    public void testStartupSingletonPostconstructSecurityNotPropagating() {
+        try {
+            deployer.deploy(STARTUP_SINGLETON_DEPLOYMENT);
+            Assert.fail("Deployment should fail");
+        } catch (Exception dex) {
+            Throwable t = checkEjbException(dex);
+            log.info("Expected deployment error because the Singleton has nosecurity context per itself", dex.getCause());
+            Assert.assertThat(t.getMessage(), t.getMessage(), CoreMatchers.containsString("JBAS014502"));
+        } finally {
+            deployer.undeploy(STARTUP_SINGLETON_DEPLOYMENT);
+        }
+    }
+
+    @Test
+    public void testSingletonPostconstructSecurityNotPropagating() throws Exception {
+        SecurityClient client = SecurityClientFactory.getSecurityClient();
+        client.setSimple("user1", "password1");
+        client.login();
+        try {
+            WhoAmI bean = lookupSingletonUseBeanWithIdentity(); //To load the singleton
+            bean.getCallerPrincipal();
+            Assert.fail("Deployment should fail");
+        } catch (Exception dex) {
+            Throwable t = checkEjbException(dex);
+            log.info("Expected deployment error because the Singleton has nosecurity context per itself", dex.getCause());
+            Assert.assertThat(t.getMessage(), t.getMessage(), CoreMatchers.containsString("JBAS014502"));
+        } finally {
+            client.logout();
+        }
+    }
+
+    private Throwable checkEjbException(Throwable ex) {
+        if (ex instanceof EJBAccessException) {
+            return ex;
+        }
+        if (ex.getCause() != null) {
+            return checkEjbException(ex.getCause());
+        }
+        return ex;
     }
 }

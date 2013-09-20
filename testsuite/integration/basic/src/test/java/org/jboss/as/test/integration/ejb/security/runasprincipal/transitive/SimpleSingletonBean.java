@@ -18,15 +18,13 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston,
  * MA 02110-1301  USA
  */
-package org.jboss.as.test.integration.ejb.security.runasprincipal;
+package org.jboss.as.test.integration.ejb.security.runasprincipal.transitive;
 
-import javax.annotation.security.RolesAllowed;
-import javax.annotation.security.RunAs;
+import javax.annotation.PostConstruct;
 import javax.ejb.EJB;
 import javax.ejb.Remote;
 import javax.ejb.Singleton;
-import javax.ejb.Startup;
-import org.jboss.ejb3.annotation.RunAsPrincipal;
+import org.jboss.as.test.integration.ejb.security.runasprincipal.WhoAmI;
 import org.jboss.ejb3.annotation.SecurityDomain;
 
 /**
@@ -34,17 +32,22 @@ import org.jboss.ejb3.annotation.SecurityDomain;
  * @author <a href="mailto:ehugonne@redhat.com">Emmanuel Hugonnet</a> (c) 2013 Red Hat, inc.
  */
 @Singleton
-@Startup
 @Remote(WhoAmI.class)
-@RolesAllowed("Users")
-@RunAs("Admin")
-@RunAsPrincipal("Helloween")
 @SecurityDomain("other")
-public class SingletonCallerBean implements WhoAmI {
-     @EJB(beanName = "StatelessBBean")
+public class SimpleSingletonBean implements WhoAmI {
+
+    @EJB(beanName = "StatelessBBean")
     private WhoAmI beanB;
 
-    public String getCallerPrincipal() {
-        return beanB.getCallerPrincipal();
+    private String principal;
+
+    @PostConstruct
+    public void init() {
+        principal = beanB.getCallerPrincipal();
     }
+
+    public String getCallerPrincipal() {
+        return principal;
+    }
+
 }
