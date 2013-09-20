@@ -78,6 +78,21 @@ import org.jboss.security.javaee.SecurityHelperFactory;
  */
 public class SimpleSecurityManager implements ServerSecurityManager {
     private ThreadLocalStack<SecurityContext> contexts = new ThreadLocalStack<SecurityContext>();
+    /**
+     * Indicates if we propagate previous SecurityContext informations to the current one or not.
+     * This was introduced for WFLY-981 where we wanted to have a clean SecurityContext using only the Singleton EJB security
+     * configuration and not what it might have 'inherited' in the execution stack during a Postconstruct method call.
+     * @see org.jboss.as.ejb3.security.NonPropagatingSecurityContextInterceptorFactory
+     */
+    private boolean propagate = true;
+
+    public SimpleSecurityManager() {
+    }
+
+    public SimpleSecurityManager(SimpleSecurityManager delegate) {
+        this.securityManagement = delegate.securityManagement;
+        this.propagate = false;
+    }
 
     private ISecurityManagement securityManagement = null;
 
@@ -269,7 +284,7 @@ public class SimpleSecurityManager implements ServerSecurityManager {
         final SecurityContext previous = SecurityContextAssociation.getSecurityContext();
         contexts.push(previous);
         SecurityContext current = establishSecurityContext(securityDomain);
-        if (previous != null) {
+        if (propagate && previous != null) {
             current.setSubjectInfo(getSubjectInfo(previous));
             current.setIncomingRunAs(previous.getOutgoingRunAs());
         }
@@ -318,7 +333,7 @@ public class SimpleSecurityManager implements ServerSecurityManager {
         final SecurityContext previous = SecurityContextAssociation.getSecurityContext();
         contexts.push(previous);
         SecurityContext current = establishSecurityContext(securityDomain);
-        if (previous != null) {
+        if (propagate &&  previous != null) {
             current.setSubjectInfo(getSubjectInfo(previous));
             current.setIncomingRunAs(previous.getOutgoingRunAs());
         }
@@ -354,7 +369,7 @@ public class SimpleSecurityManager implements ServerSecurityManager {
         if (runAs != null) {
             RunAs runAsIdentity = new RunAsIdentity(runAs, runAsPrincipal, extraRoles);
             context.setOutgoingRunAs(runAsIdentity);
-        } else if (previous != null && previous.getOutgoingRunAs() != null) {
+        } else if (propagate && previous != null && previous.getOutgoingRunAs() != null) {
             // Ensure the propagation continues.
             context.setOutgoingRunAs(previous.getOutgoingRunAs());
         }

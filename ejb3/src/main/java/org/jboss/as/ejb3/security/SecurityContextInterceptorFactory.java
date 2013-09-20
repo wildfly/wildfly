@@ -31,6 +31,7 @@ import org.jboss.as.core.security.ServerSecurityManager;
 import org.jboss.as.ee.component.Component;
 import org.jboss.as.ee.component.ComponentInterceptorFactory;
 import org.jboss.as.ejb3.component.EJBComponent;
+import org.jboss.as.security.service.SimpleSecurityManager;
 import org.jboss.invocation.Interceptor;
 import org.jboss.invocation.InterceptorFactoryContext;
 import org.jboss.metadata.javaee.spec.SecurityRolesMetaData;
@@ -43,9 +44,15 @@ public class SecurityContextInterceptorFactory extends ComponentInterceptorFacto
     private static final String DEFAULT_DOMAIN = "other";
 
     private final boolean securityRequired;
+    private final boolean propagateSecurity;
 
     public SecurityContextInterceptorFactory(final boolean securityRequired) {
+        this(securityRequired, true);
+    }
+
+    public SecurityContextInterceptorFactory(final boolean securityRequired, final boolean propagateSecurity) {
         this.securityRequired = securityRequired;
+        this.propagateSecurity = propagateSecurity;
     }
 
     @Override
@@ -54,7 +61,12 @@ public class SecurityContextInterceptorFactory extends ComponentInterceptorFacto
             throw MESSAGES.unexpectedComponent(component, EJBComponent.class);
         }
         final EJBComponent ejbComponent = (EJBComponent) component;
-        final ServerSecurityManager securityManager = ejbComponent.getSecurityManager();
+        final ServerSecurityManager securityManager;
+        if(propagateSecurity) {
+            securityManager = ejbComponent.getSecurityManager();
+        } else {
+            securityManager = new SimpleSecurityManager((SimpleSecurityManager) ejbComponent.getSecurityManager());
+        }
         final EJBSecurityMetaData securityMetaData = ejbComponent.getSecurityMetaData();
         String securityDomain =  securityMetaData.getSecurityDomain();
         if (securityDomain == null) {
