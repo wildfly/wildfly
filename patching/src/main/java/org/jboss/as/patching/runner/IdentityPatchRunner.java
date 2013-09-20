@@ -581,11 +581,15 @@ class IdentityPatchRunner implements InstallationManager.ModificationCompletionC
     }
 
     static File createTempDir() throws PatchingException {
+        return createTempDir(TEMP_DIR);
+    }
+
+    static File createTempDir(final File parent) throws PatchingException {
         File workDir = null;
         int count = 0;
         while (workDir == null || workDir.exists()) {
             count++;
-            workDir = new File(TEMP_DIR, DIRECTORY_SUFFIX + count);
+            workDir = new File(parent == null ? TEMP_DIR : parent, DIRECTORY_SUFFIX + count);
         }
         if (!workDir.mkdirs()) {
             throw new PatchingException(PatchMessages.MESSAGES.cannotCreateDirectory(workDir.getAbsolutePath()));

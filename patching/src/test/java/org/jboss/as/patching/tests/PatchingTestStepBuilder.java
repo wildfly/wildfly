@@ -22,6 +22,8 @@
 
 package org.jboss.as.patching.tests;
 
+import static org.jboss.as.patching.runner.TestUtils.randomString;
+
 import java.io.File;
 
 import org.jboss.as.patching.metadata.Builder;
@@ -38,10 +40,13 @@ class PatchingTestStepBuilder extends AbstractPatchTestBuilder<PatchingTestStepB
     private String patchId;
     private final PatchBuilder builder;
     private final PatchingTestBuilder testBuilder;
+    private final File root;
 
     public PatchingTestStepBuilder(PatchingTestBuilder testBuilder) {
         this.testBuilder = testBuilder;
         this.builder = PatchBuilder.create();
+        this.root = new File(testBuilder.getRoot(), randomString());
+        this.root.mkdir();
     }
 
     @Override
@@ -50,7 +55,7 @@ class PatchingTestStepBuilder extends AbstractPatchTestBuilder<PatchingTestStepB
     }
 
     protected File getPatchDir() {
-        return testBuilder.getRoot();
+        return root;
     }
 
     public PatchingTestStepBuilder setPatchId(String id) {

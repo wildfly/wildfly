@@ -29,6 +29,7 @@ import static org.jboss.as.patching.Constants.MODULES;
 import static org.jboss.as.patching.IoUtils.mkdir;
 import static org.jboss.as.patching.runner.TestUtils.randomString;
 
+import javax.xml.stream.XMLStreamException;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
@@ -141,16 +142,9 @@ public class AbstractPatchingTest {
         } catch (IOException e) {
             throw new PatchingException(e);
         }
-        FileOutputStream os = null;
-        try {
-            os = new FileOutputStream(new File(builder.getPatchDir(), PatchXml.PATCH_XML));
-            PatchXml.marshal(os, patch);
-        } catch (Exception e) {
-            throw new PatchingException(e);
-        } finally {
-            IoUtils.safeClose(os);
-        }
-        //
+        // Write patch
+        writePatch(builder.getPatchDir(), patch);
+        // Create the patch tool and apply the patch
         final PatchTool patchTool = PatchTool.Factory.create(installationManager);
         final PatchingResult result = patchTool.applyPatch(builder.getPatchDir(), verificationPolicy);
         result.commit();
@@ -188,6 +182,18 @@ public class AbstractPatchingTest {
             throw new PatchingException(e);
         }
         return result;
+    }
+
+    protected static void writePatch(final File patchRoot, final Patch patch) throws PatchingException {
+        FileOutputStream os = null;
+        try {
+            os = new FileOutputStream(new File(patchRoot, PatchXml.PATCH_XML));
+            PatchXml.marshal(os, patch);
+        } catch (Exception e) {
+            throw new PatchingException(e);
+        } finally {
+            IoUtils.safeClose(os);
+        }
     }
 
     private static void installLayer(File baseDir, File layerConf, boolean excludeBase, String... layers) throws IOException {

@@ -48,7 +48,6 @@ import org.jboss.staxmapper.XMLMapper;
 public class PatchXml {
 
     public static final String PATCH_XML = "patch.xml";
-    public static final String ROLLBACK_XML = "rollback.xml";
 
     private static final XMLMapper MAPPER = XMLMapper.Factory.create();
     private static final PatchXml_1_0 XML1_0 = new PatchXml_1_0();
@@ -65,6 +64,7 @@ public class PatchXml {
 
         PATCH_1_0("urn:jboss:patch:1.0"),
         ROLLBACK_1_0("urn:jboss:patch:rollback:1.0"),
+        PATCH_BUNDLE_1_0("urn:jboss:patch:bundle:1.0"),
         UNKNOWN(null),
         ;
 
