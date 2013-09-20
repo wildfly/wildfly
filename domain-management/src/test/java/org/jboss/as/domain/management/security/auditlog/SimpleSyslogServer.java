@@ -75,7 +75,7 @@ public abstract class SimpleSyslogServer implements Runnable {
 
     static SimpleSyslogServer createTls(int port, boolean octetCounting, File keystorePath, String keystorePassword, File clientCertPath, String clientCertPwd) throws IOException, GeneralSecurityException {
         KeyManager[] keyManagers;
-        final KeyManagerFactory kmf = KeyManagerFactory.getInstance("SunX509");
+        final KeyManagerFactory kmf = KeyManagerFactory.getInstance(KeyManagerFactory.getDefaultAlgorithm());
         final FileInputStream in = new FileInputStream(keystorePath);
         try {
             final KeyStore ks = KeyStore.getInstance("JKS");
