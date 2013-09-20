@@ -46,5 +46,7 @@
         <module name="org.jboss.remoting3"/>
         <module name="org.jboss.staxmapper"/>
         <module name="org.jboss.threads"/>
+        <!-- Needed to load up com.ibm.security.auth.PolicyFile as part of rbac on IBM JDK -->
+        <module name="ibm.jdk" export="true" optional="true"/>
     </dependencies>
 </module>
