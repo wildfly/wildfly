@@ -25,14 +25,12 @@ package org.jboss.as.patching.runner;
 import static org.jboss.as.patching.IoUtils.NO_CONTENT;
 
 import java.io.File;
-import java.io.FileNotFoundException;
 import java.io.IOException;
 
 import org.jboss.as.patching.HashUtils;
 import org.jboss.as.patching.PatchLogger;
 import org.jboss.as.patching.metadata.BundleItem;
 import org.jboss.as.patching.metadata.ContentType;
-import org.jboss.as.patching.metadata.ModificationType;
 import org.jboss.as.patching.metadata.ModuleItem;
 
 /**
