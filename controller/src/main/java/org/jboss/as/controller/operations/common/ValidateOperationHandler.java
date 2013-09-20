@@ -21,11 +21,15 @@
 */
 package org.jboss.as.controller.operations.common;
 
+import static org.jboss.as.controller.ControllerMessages.MESSAGES;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.FAILURE_DESCRIPTION;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.HOST;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OPERATION_HEADERS;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SERVER;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.VALIDATE_OPERATION;
+
+import java.util.Collections;
 
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationContext.Stage;
@@ -38,6 +42,9 @@ import org.jboss.as.controller.ProxyOperationAddressTranslator;
 import org.jboss.as.controller.SimpleAttributeDefinition;
 import org.jboss.as.controller.SimpleAttributeDefinitionBuilder;
 import org.jboss.as.controller.SimpleOperationDefinitionBuilder;
+import org.jboss.as.controller.access.Action.ActionEffect;
+import org.jboss.as.controller.access.AuthorizationResult;
+import org.jboss.as.controller.access.AuthorizationResult.Decision;
 import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
 import org.jboss.as.controller.descriptions.common.ControllerResolver;
 import org.jboss.as.controller.operations.validation.OperationValidator;
@@ -52,8 +59,8 @@ import org.jboss.dmr.ModelType;
  */
 public class ValidateOperationHandler implements OperationStepHandler {
 
-    public static ValidateOperationHandler INSTANCE = new ValidateOperationHandler(false);
-    public static ValidateOperationHandler SLAVE_HC_INSTANCE = new ValidateOperationHandler(true);
+    public static final ValidateOperationHandler INSTANCE = new ValidateOperationHandler(false);
+    public static final ValidateOperationHandler SLAVE_HC_INSTANCE = new ValidateOperationHandler(true);
 
     private static final SimpleAttributeDefinition VALUE = new SimpleAttributeDefinitionBuilder(ModelDescriptionConstants.VALUE, ModelType.OBJECT)
             .setAllowNull(false)
@@ -99,7 +106,7 @@ public class ValidateOperationHandler implements OperationStepHandler {
         for (PathElement element : addr) {
             proxyAddr = proxyAddr.append(element);
             ImmutableManagementResourceRegistration reg = context.getResourceRegistration().getSubModel(proxyAddr);
-            if (reg.isRemote()) {
+            if (reg != null && reg.isRemote()) {
                 translator = element.getKey().equals(SERVER) ? ProxyOperationAddressTranslator.SERVER : ProxyOperationAddressTranslator.HOST;
                 proxyReg = reg;
                 break;
@@ -112,7 +119,7 @@ public class ValidateOperationHandler implements OperationStepHandler {
             proxyOp.get(VALUE.getName(), OP_ADDR).set(translator.translateAddress(addr).toModelNode());
             final ModelNode result = new ModelNode();
 
-            context.addStep(result, proxyOp, proxyReg.getOperationHandler(PathAddress.EMPTY_ADDRESS, VALIDATE_OPERATION), Stage.IMMEDIATE);
+            context.addStep(result, proxyOp, proxyReg.getOperationHandler(PathAddress.EMPTY_ADDRESS, VALIDATE_OPERATION), Stage.MODEL, true);
             context.completeStep(new OperationContext.RollbackHandler() {
 
                 @Override
@@ -122,11 +129,22 @@ public class ValidateOperationHandler implements OperationStepHandler {
             });
         } else {
             try {
-                new OperationValidator(context.getResourceRegistration(), false, false).validateOperation(op);
+                if (authorize(context, op, operation).getDecision() == Decision.DENY) {
+                    context.getFailureDescription().set(MESSAGES.managementResourceNotFoundMessage(addr));
+                } else {
+                    new OperationValidator(context.getResourceRegistration(), false, false).validateOperation(op);
+                }
             } catch (IllegalArgumentException e) {
                 context.getFailureDescription().set(e.getMessage());
             }
             context.completeStep(OperationContext.RollbackHandler.NOOP_ROLLBACK_HANDLER);
         }
     }
+
+
+    private AuthorizationResult authorize(OperationContext context, ModelNode authOp, ModelNode opWithHeaders) {
+        authOp.get(OPERATION_HEADERS).set(opWithHeaders.get(OPERATION_HEADERS));
+        return context.authorize(authOp, Collections.singleton(ActionEffect.ADDRESS));
+    }
+
 }
