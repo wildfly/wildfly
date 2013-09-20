@@ -354,7 +354,7 @@ public class BasicHistoryUnitTestCase extends AbstractPatchingTest {
                 .upgradeElement("layer-2-CP2", "layer-2", false)
                 .addModuleWithRandomContent("org.jboss.test.six", moduleHashSix)
         ;
-        // Apply CP4
+        // Apply CP5
         apply(cp5);
 
         identity = loadInstallationManager();
