@@ -183,7 +183,7 @@ public class SyslogAuditLogHandler extends AuditLogHandler {
                     final SSLContext context = SSLContext.getInstance("TLS");
                     KeyManager[] keyManagers = null;
                     if (tlsClientCertStorePath != null){
-                        final KeyManagerFactory kmf = KeyManagerFactory.getInstance("SunX509");
+                        final KeyManagerFactory kmf = KeyManagerFactory.getInstance(KeyManagerFactory.getDefaultAlgorithm());
                         final FileInputStream in = new FileInputStream(pathManager.resolveRelativePathEntry(tlsClientCertStorePath, tlsClientCertStoreRelativeTo));
                         try {
                             final KeyStore ks = KeyStore.getInstance("JKS");
