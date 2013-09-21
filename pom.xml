@@ -123,7 +123,7 @@
         <version.org.apache.ant>1.8.2</version.org.apache.ant>
         <version.org.apache.cxf>2.7.6</version.org.apache.cxf>
         <version.org.apache.cxf.xjcplugins>2.6.1</version.org.apache.cxf.xjcplugins>
-        <version.org.apache.ds>2.0.0-M15</version.org.apache.ds>               
+        <version.org.apache.ds>2.0.0-M7</version.org.apache.ds>               
         <version.org.apache.httpcomponents.httpclient>4.2.1</version.org.apache.httpcomponents.httpclient>
         <version.org.apache.httpcomponents.httpcore>4.2.1</version.org.apache.httpcomponents.httpcore>
         <version.org.apache.james.apache-mime4j>0.6</version.org.apache.james.apache-mime4j>        

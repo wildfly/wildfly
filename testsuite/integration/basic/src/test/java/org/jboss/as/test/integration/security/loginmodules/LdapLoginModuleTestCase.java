@@ -78,7 +78,7 @@ import org.junit.runner.RunWith;
 
 /**
  * A LdapLoginModuleTestCase.
- * 
+ *
  * @author Josef Cacek
  */
 @RunWith(Arquillian.class)
@@ -110,7 +110,7 @@ public class LdapLoginModuleTestCase {
 
     /**
      * Creates {@link WebArchive} with the {@link OKServlet}.
-     * 
+     *
      * @return
      * @throws SQLException
      */
@@ -121,7 +121,7 @@ public class LdapLoginModuleTestCase {
 
     /**
      * Creates {@link WebArchive} with the {@link OKServlet}.
-     * 
+     *
      * @return
      * @throws SQLException
      */
@@ -132,7 +132,7 @@ public class LdapLoginModuleTestCase {
 
     /**
      * Test ldap protocol.
-     * 
+     *
      * @throws Exception
      */
     @Test
@@ -143,7 +143,7 @@ public class LdapLoginModuleTestCase {
 
     /**
      * Test ldaps protocol.
-     * 
+     *
      * @throws Exception
      */
     @Test
@@ -156,7 +156,7 @@ public class LdapLoginModuleTestCase {
 
     /**
      * Tests access to the given web application URL.
-     * 
+     *
      * @param webAppURL
      * @throws Exception
      */
@@ -182,7 +182,7 @@ public class LdapLoginModuleTestCase {
 
     /**
      * Creates Web application for given security domain testing.
-     * 
+     *
      * @param securityDomain
      * @return
      */
@@ -217,14 +217,14 @@ public class LdapLoginModuleTestCase {
 
     /**
      * A {@link ServerSetupTask} instance which creates security domains for this test case.
-     * 
+     *
      * @author Josef Cacek
      */
     static class SecurityDomainsSetup extends AbstractSecurityDomainsServerSetupTask {
 
         /**
          * Returns SecurityDomains configuration for this testcase.
-         * 
+         *
          * @see org.jboss.as.test.integration.security.common.AbstractSecurityDomainsServerSetupTask#getSecurityDomains()
          */
         @Override
@@ -266,7 +266,7 @@ public class LdapLoginModuleTestCase {
             //            moduleOptions.put("userRolesCtxDNAttributeName","");
 
             //Name of the attribute containing the user roles. If not specified, this defaults to roles.
-            //            moduleOptions.put("roleAttributeID","");            
+            //            moduleOptions.put("roleAttributeID","");
 
             // Flag indicating whether the roleAttributeID contains the fully distinguished name of a role object, or the role name. The role name is taken from the value of the roleNameAttributeId attribute of the context name by the distinguished name.
             //If true, the role attribute represents the distinguished name of a role object. If false, the role name is taken from the value of roleAttributeID. The default is false.
@@ -308,20 +308,20 @@ public class LdapLoginModuleTestCase {
      * A server setup task which configures and starts LDAP server.
      */
     //@formatter:off
-    @CreateDS( 
+    @CreateDS(
         name = "JBossDS",
         partitions =
         {
             @CreatePartition(
                 name = "jboss",
                 suffix = "dc=jboss,dc=org",
-                contextEntry = @ContextEntry( 
+                contextEntry = @ContextEntry(
                     entryLdif =
                         "dn: dc=jboss,dc=org\n" +
                         "dc: jboss\n" +
                         "objectClass: top\n" +
                         "objectClass: domain\n\n" ),
-                indexes = 
+                indexes =
                 {
                     @CreateIndex( attribute = "objectClass" ),
                     @CreateIndex( attribute = "dc" ),
@@ -329,14 +329,14 @@ public class LdapLoginModuleTestCase {
                 })
         },
         additionalInterceptors = { KeyDerivationInterceptor.class })
-    @CreateLdapServer ( 
-        transports = 
+    @CreateLdapServer (
+        transports =
         {
-            @CreateTransport( protocol = "LDAP",  port = LDAP_PORT, address = "0.0.0.0" ), 
-            @CreateTransport( protocol = "LDAPS", port = LDAPS_PORT, address = "0.0.0.0" ) 
+            @CreateTransport( protocol = "LDAP",  port = LDAP_PORT, address = "0.0.0.0" ),
+            @CreateTransport( protocol = "LDAPS", port = LDAPS_PORT, address = "0.0.0.0" )
         },
 //        keyStore="localhost-ldap.jks",
-        certificatePassword="secret")            
+        certificatePassword="secret")
     //@formatter:on
     static class LDAPServerSetupTask implements ServerSetupTask {
 
@@ -345,7 +345,7 @@ public class LdapLoginModuleTestCase {
 
         /**
          * Creates directory services, starts LDAP server and KDCServer
-         * 
+         *
          * @param managementClient
          * @param containerId
          * @throws Exception
@@ -378,7 +378,7 @@ public class LdapLoginModuleTestCase {
 
         /**
          * Fixes bind address in the CreateTransport annotation.
-         * 
+         *
          * @param createLdapServer
          */
         private void fixTransportAddress(ManagedCreateLdapServer createLdapServer, String address) {
@@ -392,7 +392,7 @@ public class LdapLoginModuleTestCase {
 
         /**
          * Stops LDAP server and KDCServer and shuts down the directory service.
-         * 
+         *
          * @param managementClient
          * @param containerId
          * @throws Exception
