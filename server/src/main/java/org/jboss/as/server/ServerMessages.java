@@ -675,4 +675,6 @@ public interface ServerMessages {
     @Message(id = 18785, value = "There is already a deployment called %s with the same runtime name %s")
     OperationFailedException runtimeNameMustBeUnique(String existingDeployment, String runtimename);
 
+    @Message(id = 18786, value = "Multiple deployment unit processors registered with priority %s and class %s")
+    IllegalStateException duplicateDeploymentUnitProcessor(int priority, Class aClass);
 }

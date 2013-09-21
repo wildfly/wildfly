@@ -202,8 +202,16 @@ public enum Phase {
     public static final int STRUCTURE_WAR                               = 0x0900;
     public static final int STRUCTURE_CONTENT_OVERRIDE                  = 0x0950;
     public static final int STRUCTURE_EAR_DEPLOYMENT_INIT               = 0x0A00;
-    public static final int STRUCTURE_REGISTER_JBOSS_ALL_XML_PARSER     = 0x0A10;
-    public static final int STRUCTURE_PARSE_JBOSS_ALL_XML               = 0x0A20;
+    public static final int STRUCTURE_REGISTER_JBOSS_ALL_APPCLIENT      = 0x0A10;
+    public static final int STRUCTURE_REGISTER_JBOSS_ALL_EE_APP         = 0x0A11;
+    public static final int STRUCTURE_REGISTER_JBOSS_ALL_EJB            = 0x0A12;
+    public static final int STRUCTURE_REGISTER_JBOSS_ALL_JPA            = 0x0A13;
+    public static final int STRUCTURE_REGISTER_JBOSS_ALL_WEB            = 0x0A14;
+    public static final int STRUCTURE_REGISTER_JBOSS_ALL_DEPLOYMENT_DEPS= 0x0A15;
+    public static final int STRUCTURE_REGISTER_JBOSS_ALL_STRUCTURE_1_0  = 0x0A16;
+    public static final int STRUCTURE_REGISTER_JBOSS_ALL_STRUCTURE_1_1  = 0x0A17;
+    public static final int STRUCTURE_REGISTER_JBOSS_ALL_STRUCTURE_1_2  = 0x0A18;
+    public static final int STRUCTURE_PARSE_JBOSS_ALL_XML               = 0x0AE0;
     public static final int STRUCTURE_EAR_APP_XML_PARSE                 = 0x0B00;
     public static final int STRUCTURE_JBOSS_EJB_CLIENT_XML_PARSE        = 0x0C00;
     public static final int STRUCTURE_EJB_EAR_APPLICATION_NAME          = 0x0D00;
@@ -302,6 +310,7 @@ public enum Phase {
     public static final int PARSE_DSXML_DEPLOYMENT                      = 0x4500;
     public static final int PARSE_MESSAGING_XML_RESOURCES               = 0x4600;
     public static final int PARSE_DESCRIPTOR_LIFECYCLE_METHOD_RESOLUTION = 0x4700;
+    public static final int PARSE_JSF_MANAGED_BEANS                     = 0x4900;
 
     // REGISTER
     public static final int REGISTER_BUNDLE_INSTALL                     = 0x0100;
