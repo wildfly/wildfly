@@ -57,7 +57,12 @@ public class DeployerChainAddHandler implements OperationStepHandler {
 
     public static void addDeploymentProcessor(final String subsystemName, Phase phase, int priority, DeploymentUnitProcessor processor) {
         final EnumMap<Phase, Set<RegisteredDeploymentUnitProcessor>> deployerMap = INSTANCE.deployerMap;
-        deployerMap.get(phase).add(new RegisteredDeploymentUnitProcessor(priority, processor, subsystemName));
+        Set<RegisteredDeploymentUnitProcessor> registeredDeploymentUnitProcessors = deployerMap.get(phase);
+        RegisteredDeploymentUnitProcessor registeredDeploymentUnitProcessor = new RegisteredDeploymentUnitProcessor(priority, processor, subsystemName);
+        if(registeredDeploymentUnitProcessors.contains(registeredDeploymentUnitProcessor)) {
+            throw ServerMessages.MESSAGES.duplicateDeploymentUnitProcessor(priority, processor.getClass());
+        }
+        registeredDeploymentUnitProcessors.add(registeredDeploymentUnitProcessor);
     }
 
     static ModelNode OPERATION = new ModelNode();
