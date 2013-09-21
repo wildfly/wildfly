@@ -50,7 +50,7 @@ public class DeploymentDependenciesProcessor implements DeploymentUnitProcessor 
     private static final QName ROOT_1_0 = new QName(DeploymentDependenciesParserV_1_0.NAMESPACE_1_0, "jboss-deployment-dependencies");
 
     public static void registerJBossXMLParsers() {
-        DeployerChainAddHandler.addDeploymentProcessor(ServerService.SERVER_NAME, Phase.STRUCTURE, Phase.STRUCTURE_REGISTER_JBOSS_ALL_XML_PARSER, new JBossAllXmlParserRegisteringProcessor<DeploymentDependencies>(ROOT_1_0, DeploymentDependencies.ATTACHMENT_KEY, DeploymentDependenciesParserV_1_0.INSTANCE));
+        DeployerChainAddHandler.addDeploymentProcessor(ServerService.SERVER_NAME, Phase.STRUCTURE, Phase.STRUCTURE_REGISTER_JBOSS_ALL_DEPLOYMENT_DEPS, new JBossAllXmlParserRegisteringProcessor<DeploymentDependencies>(ROOT_1_0, DeploymentDependencies.ATTACHMENT_KEY, DeploymentDependenciesParserV_1_0.INSTANCE));
     }
 
     @Override
