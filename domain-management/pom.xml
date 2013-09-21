@@ -34,6 +34,10 @@
 
     <groupId>org.wildfly</groupId>
     <artifactId>wildfly-domain-management</artifactId>
+    
+    <properties>
+        <version.org.apache.ds>2.0.0-M15</version.org.apache.ds>
+    </properties>
 
     <name>WildFly: Domain Management</name>
 
@@ -61,6 +65,7 @@
         <dependency>
             <groupId>org.apache.directory.server</groupId>
             <artifactId>apacheds-all</artifactId>
+            <version>${version.org.apache.ds}</version>
             <scope>test</scope>                                            
         </dependency>    
     

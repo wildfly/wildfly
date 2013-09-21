@@ -44,7 +44,7 @@ import org.apache.directory.shared.util.Unicode;
 
 /**
  * Hotfix for ApacheDS IPv6 issue <a href="https://issues.apache.org/jira/browse/DIRAPI-125">DIRAPI-125</a>.
- * 
+ *
  * @author <a href="mailto:dev@directory.apache.org">Apache Directory Project</a>
  * @author Josef Cacek
  */
@@ -112,7 +112,7 @@ public class LdapUrl {
 
     /**
      * Parse a LdapUrl.
-     * 
+     *
      * @param chars The chars containing the URL
      * @throws org.apache.directory.shared.ldap.model.exception.LdapURLEncodingException If the URL is invalid
      */
@@ -243,7 +243,7 @@ public class LdapUrl {
 
     /**
      * Create a new LdapUrl from a String after having parsed it.
-     * 
+     *
      * @param string TheString that contains the LdapUrl
      * @throws LdapURLEncodingException If the String does not comply with RFC 2255
      */
@@ -270,7 +270,7 @@ public class LdapUrl {
      * &lt;toplabel&gt; ::= &lt;alpha&gt; | &lt;alpha&gt; *[ &lt;alphadigit&gt; | "-" ] &lt;alphadigit&gt;<br>
      * &lt;hostnumber&gt; ::= &lt;digits&gt; "." &lt;digits&gt; "." &lt;digits&gt; "." &lt;digits&gt;
      * </p>
-     * 
+     *
      * @param chars The buffer to parse
      * @param pos The current position in the byte buffer
      * @return The new position in the byte buffer, or -1 if the rule does not apply to the byte buffer TODO check that the
@@ -403,7 +403,7 @@ public class LdapUrl {
      * &lt;digit&gt; ::= 0 | 1 | 2 | 3 | 4 | 5 | 6 | 7 | 8 | 9
      * </p>
      * The port must be between 0 and 65535.
-     * 
+     *
      * @param chars The buffer to parse
      * @param pos The current position in the byte buffer
      * @return The new position in the byte buffer, or -1 if the rule does not apply to the byte buffer
@@ -436,7 +436,7 @@ public class LdapUrl {
      * <p>
      * &lt;hostport&gt; ::= &lt;host&gt; ':' &lt;port&gt;
      * </p>
-     * 
+     *
      * @param chars The char array to parse
      * @param pos The current position in the byte buffer
      * @return The new position in the byte buffer, or -1 if the rule does not apply to the byte buffer
@@ -470,7 +470,7 @@ public class LdapUrl {
 
     /**
      * Converts the specified string to byte array of ASCII characters.
-     * 
+     *
      * @param data the string to be encoded
      * @return The string as a byte array.
      * @throws org.apache.directory.shared.ldap.model.exception.UrlDecoderException if encoding is not supported
@@ -491,7 +491,7 @@ public class LdapUrl {
     /**
      * From commons-codec. Decodes an array of URL safe 7-bit characters into an array of original bytes. Escaped characters are
      * converted back to their original representation.
-     * 
+     *
      * @param bytes array of URL safe characters
      * @return array of original bytes
      * @throws UrlDecoderException Thrown if URL decoding is unsuccessful
@@ -530,7 +530,7 @@ public class LdapUrl {
     /**
      * From commons-httpclients. Unescape and decode a given string regarded as an escaped string with the default protocol
      * charset.
-     * 
+     *
      * @param escaped a string
      * @return the unescaped string
      * @throws LdapUriException if the string cannot be decoded (invalid)
@@ -546,7 +546,7 @@ public class LdapUrl {
 
     /**
      * Parse a string and check that it complies with RFC 2253. Here, we will just call the Dn parser to do the job.
-     * 
+     *
      * @param chars The char array to be checked
      * @param pos the starting position
      * @return -1 if the char array does not contains a Dn
@@ -573,7 +573,7 @@ public class LdapUrl {
 
     /**
      * Parse the following rule :
-     * 
+     *
      * <pre>
      * oid ::= numericOid | descr
      * descr ::= keystring
@@ -581,8 +581,8 @@ public class LdapUrl {
      * leadkeychar ::= [a-zA-Z]
      * keychar ::= [a-zA-Z0-0-]
      * numericOid ::= number 1*( DOT number )
-     * number ::= 0 | [1-9][0-9]* 
-     * 
+     * number ::= 0 | [1-9][0-9]*
+     *
      * @param attribute
      * @throws LdapURLEncodingException
      */
@@ -596,7 +596,7 @@ public class LdapUrl {
 
     /**
      * Parse the attributes part
-     * 
+     *
      * @param chars The char array to be checked
      * @param pos the starting position
      * @return -1 if the char array does not contains attributes
@@ -690,7 +690,7 @@ public class LdapUrl {
 
     /**
      * Parse the filter part. We will use the FilterParserImpl class
-     * 
+     *
      * @param chars The char array to be checked
      * @param pos the starting position
      * @return -1 if the char array does not contains a filter
@@ -722,7 +722,7 @@ public class LdapUrl {
 
     /**
      * Parse the scope part.
-     * 
+     *
      * @param chars The char array to be checked
      * @param pos the starting position
      * @return -1 if the char array does not contains a scope
@@ -785,10 +785,10 @@ public class LdapUrl {
 
     /**
      * Parse extensions and critical extensions.
-     * 
+     *
      * The grammar is : extensions ::= extension [ ',' extension ]* extension ::= [ '!' ] ( token | ( 'x-' | 'X-' ) token ) ) [
      * '=' exvalue ]
-     * 
+     *
      * @param chars The char array to be checked
      * @param pos the starting position
      * @return -1 if the char array does not contains valid extensions or critical extensions
@@ -880,37 +880,37 @@ public class LdapUrl {
 
     /**
      * Encode a String to avoid special characters.
-     * 
-     * 
+     *
+     *
      * RFC 4516, section 2.1. (Percent-Encoding)
-     * 
+     *
      * A generated LDAP URL MUST consist only of the restricted set of characters included in one of the following three
      * productions defined in [RFC3986]:
-     * 
+     *
      * <reserved> <unreserved> <pct-encoded>
-     * 
+     *
      * Implementations SHOULD accept other valid UTF-8 strings [RFC3629] as input. An octet MUST be encoded using the
      * percent-encoding mechanism described in section 2.1 of [RFC3986] in any of these situations:
-     * 
+     *
      * The octet is not in the reserved set defined in section 2.2 of [RFC3986] or in the unreserved set defined in section 2.3
      * of [RFC3986].
-     * 
+     *
      * It is the single Reserved character '?' and occurs inside a <dn>, <filter>, or other element of an LDAP URL.
-     * 
+     *
      * It is a comma character ',' that occurs inside an <exvalue>.
-     * 
-     * 
+     *
+     *
      * RFC 3986, section 2.2 (Reserved Characters)
-     * 
+     *
      * reserved = gen-delims / sub-delims gen-delims = ":" / "/" / "?" / "#" / "[" / "]" / "@" sub-delims = "!" / "$" / "&" /
      * "'" / "(" / ")" / "*" / "+" / "," / ";" / "="
-     * 
-     * 
+     *
+     *
      * RFC 3986, section 2.3 (Unreserved Characters)
-     * 
+     *
      * unreserved = ALPHA / DIGIT / "-" / "." / "_" / "~"
-     * 
-     * 
+     *
+     *
      * @param url The String to encode
      * @param doubleEncode Set if we need to encode the comma
      * @return An encoded string
@@ -1057,7 +1057,7 @@ public class LdapUrl {
 
     /**
      * Get a string representation of a LdapUrl.
-     * 
+     *
      * @return A LdapUrl string
      * @see LdapUrl#forceScopeRendering
      */
@@ -1176,9 +1176,9 @@ public class LdapUrl {
 
     /**
      * Gets the extension.
-     * 
+     *
      * @param type the extension type, case-insensitive
-     * 
+     *
      * @return Returns the extension, null if this URL does not contain such an extension.
      */
     public Extension getExtension(String type) {
@@ -1192,9 +1192,9 @@ public class LdapUrl {
 
     /**
      * Gets the extension value.
-     * 
+     *
      * @param type the extension type, case-insensitive
-     * 
+     *
      * @return Returns the extension value, null if this URL does not contain such an extension or if the extension value is
      *         null.
      */
@@ -1230,7 +1230,7 @@ public class LdapUrl {
 
     /**
      * Returns the scope, one of {@link SearchScope#OBJECT}, {@link SearchScope#ONELEVEL} or {@link SearchScope#SUBTREE}.
-     * 
+     *
      * @return Returns the scope.
      */
     public SearchScope getScope() {
@@ -1307,7 +1307,7 @@ public class LdapUrl {
 
     /**
      * Sets the scheme. Must be "ldap://" or "ldaps://", otherwise "ldap://" is assumed as default.
-     * 
+     *
      * @param scheme the new scheme
      */
     public void setScheme(String scheme) {
@@ -1321,7 +1321,7 @@ public class LdapUrl {
 
     /**
      * Sets the host.
-     * 
+     *
      * @param host the new host
      */
     public void setHost(String host) {
@@ -1330,7 +1330,7 @@ public class LdapUrl {
 
     /**
      * Sets the port. Must be between 1 and 65535, otherwise -1 is assumed as default.
-     * 
+     *
      * @param port the new port
      */
     public void setPort(int port) {
@@ -1343,7 +1343,7 @@ public class LdapUrl {
 
     /**
      * Sets the dn.
-     * 
+     *
      * @param dn the new dn
      */
     public void setDn(Dn dn) {
@@ -1352,7 +1352,7 @@ public class LdapUrl {
 
     /**
      * Sets the attributes, null removes all existing attributes.
-     * 
+     *
      * @param attributes the new attributes
      */
     public void setAttributes(List<String> attributes) {
@@ -1366,7 +1366,7 @@ public class LdapUrl {
     /**
      * Sets the scope. Must be one of {@link SearchScope#OBJECT}, {@link SearchScope#ONELEVEL} or {@link SearchScope#SUBTREE},
      * otherwise {@link SearchScope#OBJECT} is assumed as default.
-     * 
+     *
      * @param scope the new scope
      */
     public void setScope(int scope) {
@@ -1380,7 +1380,7 @@ public class LdapUrl {
     /**
      * Sets the scope. Must be one of {@link SearchScope#OBJECT}, {@link SearchScope#ONELEVEL} or {@link SearchScope#SUBTREE},
      * otherwise {@link SearchScope#OBJECT} is assumed as default.
-     * 
+     *
      * @param scope the new scope
      */
     public void setScope(SearchScope scope) {
@@ -1393,7 +1393,7 @@ public class LdapUrl {
 
     /**
      * Sets the filter.
-     * 
+     *
      * @param filter the new filter
      */
     public void setFilter(String filter) {
@@ -1403,7 +1403,7 @@ public class LdapUrl {
     /**
      * If set to true forces the toString method to render the scope regardless of optional nature. Use this when you want
      * explicit search URL scope rendering.
-     * 
+     *
      * @param forceScopeRendering the forceScopeRendering to set
      */
     public void setForceScopeRendering(boolean forceScopeRendering) {
@@ -1412,7 +1412,7 @@ public class LdapUrl {
 
     /**
      * An inner bean to hold extension information.
-     * 
+     *
      * @author <a href="mailto:dev@directory.apache.org">Apache Directory Project</a>
      */
     public static class Extension {
@@ -1422,7 +1422,7 @@ public class LdapUrl {
 
         /**
          * Creates a new instance of Extension.
-         * 
+         *
          * @param isCritical true for critical extension
          * @param type the extension type
          * @param value the extension value
@@ -1436,7 +1436,7 @@ public class LdapUrl {
 
         /**
          * Checks if is critical.
-         * 
+         *
          * @return true, if is critical
          */
         public boolean isCritical() {
@@ -1445,7 +1445,7 @@ public class LdapUrl {
 
         /**
          * Sets the critical flag.
-         * 
+         *
          * @param critical the new critical flag
          */
         public void setCritical(boolean critical) {
@@ -1454,7 +1454,7 @@ public class LdapUrl {
 
         /**
          * Gets the type.
-         * 
+         *
          * @return the type
          */
         public String getType() {
@@ -1463,7 +1463,7 @@ public class LdapUrl {
 
         /**
          * Sets the type.
-         * 
+         *
          * @param type the new type
          */
         public void setType(String type) {
@@ -1472,7 +1472,7 @@ public class LdapUrl {
 
         /**
          * Gets the value.
-         * 
+         *
          * @return the value
          */
         public String getValue() {
@@ -1481,7 +1481,7 @@ public class LdapUrl {
 
         /**
          * Sets the value.
-         * 
+         *
          * @param value the new value
          */
         public void setValue(String value) {
