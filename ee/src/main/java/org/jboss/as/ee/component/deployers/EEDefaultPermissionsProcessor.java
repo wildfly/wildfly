@@ -51,10 +51,15 @@ public final class EEDefaultPermissionsProcessor implements DeploymentUnitProces
 
     static {
         final Permissions permissions = new Permissions();
+        permissions.add(new JndiPermission("java:comp", LOOKUP, LIST, LIST_BINDINGS));
         permissions.add(new JndiPermission("java:comp/-", LOOKUP, LIST, LIST_BINDINGS));
+        permissions.add(new JndiPermission("java:module", LOOKUP, LIST, LIST_BINDINGS));
         permissions.add(new JndiPermission("java:module/-", LOOKUP, LIST, LIST_BINDINGS));
+        permissions.add(new JndiPermission("java:app", LOOKUP, LIST, LIST_BINDINGS));
         permissions.add(new JndiPermission("java:app/-", LOOKUP, LIST, LIST_BINDINGS));
+        permissions.add(new JndiPermission("java:global", LOOKUP));
         permissions.add(new JndiPermission("java:global/-", LOOKUP));
+        permissions.add(new JndiPermission("java:jboss", LOOKUP));
         permissions.add(new JndiPermission("java:jboss/-", LOOKUP));
         permissions.add(new JndiPermission("java:/-", LOOKUP));
         DEFAULT_PERMISSIONS = permissions;
