@@ -45,6 +45,7 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.WRI
 
 import java.io.File;
 import java.io.IOException;
+import java.util.concurrent.ExecutionException;
 
 import javax.security.auth.callback.CallbackHandler;
 
@@ -215,8 +216,13 @@ public class SlaveHostControllerAuthenticationTestCase {
         op.get(OP).set("reload");
         op.get(OP_ADDR).add(HOST, "slave");
         op.get(ADMIN_ONLY).set(false);
-        domainSlaveClient.execute(new OperationBuilder(op).build());
-
+        try {
+            domainSlaveClient.execute(new OperationBuilder(op).build());
+        } catch(IOException e) {
+            if (!(e.getCause() instanceof ExecutionException)) {
+                throw e;
+            } // else ignore, this might happen if the channel gets closed before we got the response
+        }
         // Wait until host is reloaded
         readHostControllerStatus(domainSlaveClient, TIMEOUT);
     }
