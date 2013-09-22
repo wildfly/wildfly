@@ -176,7 +176,7 @@ public interface DeploymentScannerLogger extends BasicLogger {
     @Message(id = 15010, value = "The deployment scanner found a directory named %1$s that was not inside a directory whose " +
             "name ends with .ear, .jar, .rar, .sar or .war. This is likely the result of unzipping an " +
             "archive directly inside the %2$s directory, which is a user error. " +
-            "The %1$s directory will not be scanned for deployments, but it is possible that the scanner may" +
+            "The %1$s directory will not be scanned for deployments, but it is possible that the scanner may " +
             "find other files from the unzipped archive and attempt to deploy them, leading to errors.")
     void invalidExplodedDeploymentDirectory(String fileName, String deploymentDir);
 
