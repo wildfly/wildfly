@@ -37,6 +37,7 @@ import org.jboss.as.controller.access.AuthorizerConfiguration;
 import org.jboss.as.controller.access.Caller;
 import org.jboss.as.controller.access.CombinationPolicy;
 import org.jboss.as.controller.access.rbac.StandardRBACAuthorizer;
+import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
 
 /**
  * Standard {@link AuthorizerConfiguration} implementation that also exposes mutator APIs for use by
@@ -315,6 +316,14 @@ public class WritableAuthorizerConfiguration implements AuthorizerConfiguration,
         Map<PathAddress, AccessConstraintUtilization> map = getAccessConstraintUtilizations(key, true);
         AccessConstraintUtilizationImpl acu = (AccessConstraintUtilizationImpl) map.get(address);
         if (acu == null) {
+            // WFLY-1819. Validate that ApplicationTypeConfig.DEPLOYMENT isn't misused
+            // A bit hacky, but this is as good a control point for this as any.
+            if (key.isCore() && ApplicationTypeAccessConstraintDefinition.DEPLOYMENT.getName().equals(key.getName())
+                    && ApplicationTypeAccessConstraintDefinition.DEPLOYMENT.getType().equals(key.getType())) {
+                assert !address.toString().contains(ModelDescriptionConstants.SUBSYSTEM)
+                        : "Invalid use of " + key + " in a subsystem; reserved for core use";
+            }
+
             acu = new AccessConstraintUtilizationImpl(key, address);
             map.put(address, acu);
         }
