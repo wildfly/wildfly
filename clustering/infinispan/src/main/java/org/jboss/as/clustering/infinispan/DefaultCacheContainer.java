@@ -61,26 +61,6 @@ public class DefaultCacheContainer extends AbstractDelegatingEmbeddedCacheManage
         return this.defaultCacheName;
     }
 
-    /**
-     * {@inheritDoc}
-     * @see org.infinispan.manager.EmbeddedCacheManager#defineConfiguration(java.lang.String, org.infinispan.config.Configuration)
-     */
-    @Deprecated
-    @Override
-    public org.infinispan.config.Configuration defineConfiguration(String cacheName, org.infinispan.config.Configuration configurationOverride) {
-        return this.cm.defineConfiguration(this.getCacheName(cacheName), configurationOverride);
-    }
-
-    /**
-     * {@inheritDoc}
-     * @see org.infinispan.manager.EmbeddedCacheManager#defineConfiguration(java.lang.String, java.lang.String, org.infinispan.config.Configuration)
-     */
-    @Deprecated
-    @Override
-    public org.infinispan.config.Configuration defineConfiguration(String cacheName, String templateCacheName, org.infinispan.config.Configuration configurationOverride) {
-        return this.cm.defineConfiguration(this.getCacheName(cacheName), this.getCacheName(templateCacheName), configurationOverride);
-    }
-
     @Override
     public Configuration defineConfiguration(String cacheName, Configuration configuration) {
         return this.cm.defineConfiguration(this.getCacheName(cacheName), configuration);
