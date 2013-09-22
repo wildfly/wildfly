@@ -52,13 +52,13 @@ import org.infinispan.configuration.cache.StoreConfigurationBuilder;
 import org.infinispan.configuration.parsing.ConfigurationBuilderHolder;
 import org.infinispan.configuration.parsing.ParserRegistry;
 import org.infinispan.eviction.EvictionStrategy;
-import org.infinispan.loaders.jdbc.configuration.AbstractJdbcStoreConfigurationBuilder;
-import org.infinispan.loaders.jdbc.configuration.JdbcBinaryStoreConfigurationBuilder;
-import org.infinispan.loaders.jdbc.configuration.JdbcMixedStoreConfigurationBuilder;
-import org.infinispan.loaders.jdbc.configuration.JdbcStringBasedStoreConfigurationBuilder;
-import org.infinispan.loaders.jdbc.configuration.TableManipulationConfigurationBuilder;
-import org.infinispan.loaders.remote.configuration.RemoteCacheStoreConfigurationBuilder;
 import org.infinispan.manager.EmbeddedCacheManager;
+import org.infinispan.persistence.jdbc.configuration.AbstractJdbcStoreConfigurationBuilder;
+import org.infinispan.persistence.jdbc.configuration.JdbcBinaryStoreConfigurationBuilder;
+import org.infinispan.persistence.jdbc.configuration.JdbcMixedStoreConfigurationBuilder;
+import org.infinispan.persistence.jdbc.configuration.JdbcStringBasedStoreConfigurationBuilder;
+import org.infinispan.persistence.jdbc.configuration.TableManipulationConfigurationBuilder;
+import org.infinispan.persistence.remote.configuration.RemoteStoreConfigurationBuilder;
 import org.infinispan.transaction.LockingMode;
 import org.infinispan.transaction.tm.BatchModeTransactionManager;
 import org.infinispan.util.concurrent.IsolationLevel;
@@ -613,7 +613,7 @@ public abstract class CacheAdd extends AbstractAddStepHandler {
             builder.dataSource().jndiUrl(datasource);
             return builder;
         } else if (storeKey.equals(ModelKeys.REMOTE_STORE)) {
-            final RemoteCacheStoreConfigurationBuilder builder = persistenceBuilder.addStore(RemoteCacheStoreConfigurationBuilder.class);
+            final RemoteStoreConfigurationBuilder builder = persistenceBuilder.addStore(RemoteStoreConfigurationBuilder.class);
             for (ModelNode server : store.require(ModelKeys.REMOTE_SERVERS).asList()) {
                 String outboundSocketBinding = server.get(ModelKeys.OUTBOUND_SOCKET_BINDING).asString();
                 Injector<OutboundSocketBinding> injector = new SimpleInjector<OutboundSocketBinding>() {
@@ -727,7 +727,7 @@ public abstract class CacheAdd extends AbstractAddStepHandler {
         }
     }
 
-    private abstract class SimpleInjector<I> implements Injector<I> {
+    abstract class SimpleInjector<I> implements Injector<I> {
         @Override
         public void uninject() {
             // Do nothing

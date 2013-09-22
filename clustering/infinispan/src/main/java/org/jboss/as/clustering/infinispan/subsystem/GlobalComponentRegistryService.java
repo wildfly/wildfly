@@ -1,6 +1,7 @@
 package org.jboss.as.clustering.infinispan.subsystem;
 
 import org.infinispan.factories.GlobalComponentRegistry;
+import org.infinispan.manager.EmbeddedCacheManager;
 import org.jboss.as.clustering.infinispan.CacheContainer;
 import org.jboss.msc.service.Service;
 import org.jboss.msc.service.ServiceName;
@@ -15,6 +16,7 @@ public class GlobalComponentRegistryService implements Service<GlobalComponentRe
     }
 
     private final Value<CacheContainer> manager;
+    private volatile GlobalComponentRegistry registry;
 
     public GlobalComponentRegistryService(Value<CacheContainer> manager) {
         this.manager = manager;
@@ -22,16 +24,24 @@ public class GlobalComponentRegistryService implements Service<GlobalComponentRe
 
     @Override
     public GlobalComponentRegistry getValue() {
-        return this.manager.getValue().getGlobalComponentRegistry();
+        return this.registry;
     }
 
     @Override
     public void start(StartContext context) {
-        this.getValue().start();
+        this.registry = this.manager.getValue().getGlobalComponentRegistry();
+        this.registry.start();
     }
 
     @Override
     public void stop(StopContext context) {
-        this.getValue().stop();
+        EmbeddedCacheManager manager = this.manager.getValue();
+        // If a cache was not started via the CacheService, it may still be running.
+        // If so, let the EmbeddedCacheManagerService stop the GlobalComponentRegistry.
+        for (String cacheName: manager.getCacheNames()) {
+            if (manager.isRunning(cacheName)) return;
+        }
+        this.registry.stop();
+        this.registry = null;
     }
 }
