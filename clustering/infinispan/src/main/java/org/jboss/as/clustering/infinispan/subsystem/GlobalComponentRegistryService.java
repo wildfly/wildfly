@@ -40,6 +40,7 @@ public class GlobalComponentRegistryService implements Service<GlobalComponentRe
     }
 
     private final Value<CacheContainer> container;
+    private volatile GlobalComponentRegistry registry;
 
     public GlobalComponentRegistryService(Value<CacheContainer> container) {
         this.container = container;
@@ -47,16 +48,22 @@ public class GlobalComponentRegistryService implements Service<GlobalComponentRe
 
     @Override
     public GlobalComponentRegistry getValue() {
-        return this.container.getValue().getGlobalComponentRegistry();
+        return this.registry;
     }
 
     @Override
     public void start(StartContext context) {
-        this.container.getValue().getGlobalComponentRegistry().start();
+        this.registry = this.container.getValue().getGlobalComponentRegistry();
+        this.registry.start();
     }
 
     @Override
     public void stop(StopContext context) {
-        this.container.getValue().getGlobalComponentRegistry().stop();
+        CacheContainer container = this.container.getValue();
+        for (String cacheName: container.getCacheNames()) {
+            if (container.isRunning(cacheName)) return;
+        }
+        this.registry.stop();
+        this.registry = null;
     }
 }
