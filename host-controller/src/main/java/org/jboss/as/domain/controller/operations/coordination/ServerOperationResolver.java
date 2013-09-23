@@ -572,7 +572,6 @@ public class ServerOperationResolver {
                     return getServerSystemPropertyOperations(operation, address, Level.HOST, domain, null, host);
                 }
                 case CORE_SERVICE: {
-                    // TODO does server need to know about change?
                     return resolveCoreServiceOperations(operation, address, domain, host);
                 }
                 case INTERFACE: {
@@ -839,9 +838,10 @@ public class ServerOperationResolver {
                         newAddr = newAddr.append(PathElement.pathElement(LOGGER, address.getElement(2).getValue()));
                         op.get(OP_ADDR).set(newAddr.toModelNode());
                     }
+                    return Collections.singletonMap(getAllRunningServers(host, localHostName, serverProxies), op);
                 }
-                return Collections.singletonMap(getAllRunningServers(host, localHostName, serverProxies), op);
             }
+            // TODO does server need to know about other changes?
         }
         return Collections.emptyMap();
     }
