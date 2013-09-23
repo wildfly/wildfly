@@ -52,14 +52,18 @@ public final class PropertyService<T extends AbstractCommonConfig> implements Se
     @Override
     public void start(final StartContext context) throws StartException {
         final AbstractCommonConfig commonConfig = abstractCommonConfig.getValue();
-        commonConfig.setProperty(propName, propValue);
+        synchronized (commonConfig) {  //JBWS-3707
+            commonConfig.setProperty(propName, propValue);
+        }
     }
 
     @Override
     public void stop(final StopContext context) {
         final AbstractCommonConfig commonConfig = abstractCommonConfig.getValue();
-        if (commonConfig.getProperties().containsKey(propName)) {
-            commonConfig.getProperties().remove(propName);
+        synchronized (commonConfig) {  //JBWS-3707
+            if (commonConfig.getProperties().containsKey(propName)) {
+                commonConfig.getProperties().remove(propName);
+            }
         }
     }
 

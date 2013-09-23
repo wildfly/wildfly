@@ -56,12 +56,18 @@ public final class HandlerService implements Service<UnifiedHandlerMetaData> {
         final UnifiedHandlerMetaData handler = new UnifiedHandlerMetaData();
         handler.setHandlerName(handlerName);
         handler.setHandlerClass(handlerClass);
-        handlerChain.getValue().addHandler(handler);
+        final UnifiedHandlerChainMetaData chain = handlerChain.getValue();
+        synchronized (chain) { //JBWS-3707
+            chain.addHandler(handler);
+        }
     }
 
     @Override
     public void stop(final StopContext context) {
-        handlerChain.getValue().getHandlers().remove(handler);
+        final UnifiedHandlerChainMetaData chain = handlerChain.getValue();
+        synchronized (chain) { //JBWS-3707
+            chain.getHandlers().remove(handler);
+        }
     }
 
     public InjectedValue<UnifiedHandlerChainMetaData> getHandlerChain() {
