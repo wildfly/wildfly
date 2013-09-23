@@ -21,13 +21,13 @@
  */
 
 package org.jboss.as.controller.operations.global;
-
 import static org.jboss.as.controller.ControllerMessages.MESSAGES;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ACCESS_CONTROL;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OPERATION_HEADERS;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.READ_CHILDREN_NAMES_OPERATION;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.READ_RESOURCE_OPERATION;
+import static org.jboss.as.controller.operations.global.GlobalOperationAttributes.CHILD_TYPE;
 
 import java.util.EnumSet;
 import java.util.Map;
@@ -58,7 +58,7 @@ import org.jboss.dmr.ModelType;
 public class ReadChildrenNamesHandler implements OperationStepHandler {
 
     static final OperationDefinition DEFINITION = new SimpleOperationDefinitionBuilder(READ_CHILDREN_NAMES_OPERATION, ControllerResolver.getResolver("global"))
-            .setParameters(GlobalOperationHandlers.CHILD_TYPE)
+            .setParameters(CHILD_TYPE)
             .setReadOnly()
             .setRuntimeOnly()
             .setReplyType(ModelType.LIST)
@@ -71,7 +71,7 @@ public class ReadChildrenNamesHandler implements OperationStepHandler {
     public void execute(OperationContext context, ModelNode operation) throws OperationFailedException {
 
         final PathAddress address = PathAddress.pathAddress(operation.get(OP_ADDR));
-        final String childType = GlobalOperationHandlers.CHILD_TYPE.resolveModelAttribute(context, operation).asString();
+        final String childType = CHILD_TYPE.resolveModelAttribute(context, operation).asString();
         final Resource resource = context.readResource(PathAddress.EMPTY_ADDRESS, false);
         ImmutableManagementResourceRegistration registry = context.getResourceRegistration();
         Map<String, Set<String>> childAddresses = GlobalOperationHandlers.getChildAddresses(context, address, registry, resource, childType);

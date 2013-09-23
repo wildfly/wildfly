@@ -21,7 +21,6 @@
  */
 
 package org.jboss.as.controller.operations.global;
-
 import static org.jboss.as.controller.ControllerMessages.MESSAGES;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ACCESS_CONTROL;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.FAILURE_DESCRIPTION;
@@ -30,12 +29,12 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.READ_CHILDREN_RESOURCES_OPERATION;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.READ_RESOURCE_OPERATION;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.RESULT;
-import static org.jboss.as.controller.operations.global.GlobalOperationHandlers.CHILD_TYPE;
-import static org.jboss.as.controller.operations.global.GlobalOperationHandlers.INCLUDE_DEFAULTS;
-import static org.jboss.as.controller.operations.global.GlobalOperationHandlers.INCLUDE_RUNTIME;
-import static org.jboss.as.controller.operations.global.GlobalOperationHandlers.PROXIES;
-import static org.jboss.as.controller.operations.global.GlobalOperationHandlers.RECURSIVE;
-import static org.jboss.as.controller.operations.global.GlobalOperationHandlers.RECURSIVE_DEPTH;
+import static org.jboss.as.controller.operations.global.GlobalOperationAttributes.CHILD_TYPE;
+import static org.jboss.as.controller.operations.global.GlobalOperationAttributes.INCLUDE_DEFAULTS;
+import static org.jboss.as.controller.operations.global.GlobalOperationAttributes.INCLUDE_RUNTIME;
+import static org.jboss.as.controller.operations.global.GlobalOperationAttributes.PROXIES;
+import static org.jboss.as.controller.operations.global.GlobalOperationAttributes.RECURSIVE;
+import static org.jboss.as.controller.operations.global.GlobalOperationAttributes.RECURSIVE_DEPTH;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -77,16 +76,16 @@ public class ReadChildrenResourcesHandler implements OperationStepHandler {
     public void execute(OperationContext context, ModelNode operation) throws OperationFailedException {
 
         final PathAddress address = PathAddress.pathAddress(operation.get(OP_ADDR));
-        final String childType = GlobalOperationHandlers.CHILD_TYPE.resolveModelAttribute(context, operation).asString();
+        final String childType = CHILD_TYPE.resolveModelAttribute(context, operation).asString();
 
         // Build up the op we're going to repeatedly execute
         final ModelNode readOp = new ModelNode();
         readOp.get(OP).set(READ_RESOURCE_OPERATION);
-        GlobalOperationHandlers.INCLUDE_RUNTIME.validateAndSet(operation, readOp);
-        GlobalOperationHandlers.RECURSIVE.validateAndSet(operation, readOp);
-        GlobalOperationHandlers.RECURSIVE_DEPTH.validateAndSet(operation, readOp);
-        GlobalOperationHandlers.PROXIES.validateAndSet(operation, readOp);
-        GlobalOperationHandlers.INCLUDE_DEFAULTS.validateAndSet(operation, readOp);
+        INCLUDE_RUNTIME.validateAndSet(operation, readOp);
+        RECURSIVE.validateAndSet(operation, readOp);
+        RECURSIVE_DEPTH.validateAndSet(operation, readOp);
+        PROXIES.validateAndSet(operation, readOp);
+        INCLUDE_DEFAULTS.validateAndSet(operation, readOp);
 
         final Map<PathElement, ModelNode> resources = new HashMap<PathElement, ModelNode>();
 

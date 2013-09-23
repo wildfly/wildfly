@@ -21,7 +21,6 @@
  */
 
 package org.jboss.as.controller.operations.global;
-
 import static org.jboss.as.controller.ControllerMessages.MESSAGES;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ACCESS_CONTROL;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ATTRIBUTES;
@@ -32,12 +31,12 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.READ_ATTRIBUTE_OPERATION;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.READ_RESOURCE_OPERATION;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.RESULT;
-import static org.jboss.as.controller.operations.global.GlobalOperationHandlers.INCLUDE_ALIASES;
-import static org.jboss.as.controller.operations.global.GlobalOperationHandlers.INCLUDE_DEFAULTS;
-import static org.jboss.as.controller.operations.global.GlobalOperationHandlers.INCLUDE_RUNTIME;
-import static org.jboss.as.controller.operations.global.GlobalOperationHandlers.PROXIES;
-import static org.jboss.as.controller.operations.global.GlobalOperationHandlers.RECURSIVE;
-import static org.jboss.as.controller.operations.global.GlobalOperationHandlers.RECURSIVE_DEPTH;
+import static org.jboss.as.controller.operations.global.GlobalOperationAttributes.INCLUDE_ALIASES;
+import static org.jboss.as.controller.operations.global.GlobalOperationAttributes.INCLUDE_DEFAULTS;
+import static org.jboss.as.controller.operations.global.GlobalOperationAttributes.INCLUDE_RUNTIME;
+import static org.jboss.as.controller.operations.global.GlobalOperationAttributes.PROXIES;
+import static org.jboss.as.controller.operations.global.GlobalOperationAttributes.RECURSIVE;
+import static org.jboss.as.controller.operations.global.GlobalOperationAttributes.RECURSIVE_DEPTH;
 
 import java.util.Collections;
 import java.util.EnumSet;

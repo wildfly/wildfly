@@ -63,7 +63,7 @@ import org.wildfly.security.manager.WildFlySecurityManager;
 public class ReadAttributeHandler extends GlobalOperationHandlers.AbstractMultiTargetHandler implements OperationStepHandler {
 
     public static final OperationDefinition DEFINITION = new SimpleOperationDefinitionBuilder(READ_ATTRIBUTE_OPERATION, ControllerResolver.getResolver("global"))
-            .setParameters(GlobalOperationHandlers.NAME, GlobalOperationHandlers.INCLUDE_DEFAULTS)
+            .setParameters(GlobalOperationAttributes.NAME, GlobalOperationAttributes.INCLUDE_DEFAULTS)
             .setReadOnly()
             .setRuntimeOnly()
             .setReplyType(ModelType.OBJECT)
@@ -80,8 +80,8 @@ public class ReadAttributeHandler extends GlobalOperationHandlers.AbstractMultiT
     }
 
     ReadAttributeHandler(FilteredData filteredData, OperationStepHandler overrideHandler) {
-        validator.registerValidator(GlobalOperationHandlers.NAME.getName(), new StringLengthValidator(1));
-        validator.registerValidator(GlobalOperationHandlers.INCLUDE_DEFAULTS.getName(), new ModelTypeValidator(ModelType.BOOLEAN, true));
+        validator.registerValidator(GlobalOperationAttributes.NAME.getName(), new StringLengthValidator(1));
+        validator.registerValidator(GlobalOperationAttributes.INCLUDE_DEFAULTS.getName(), new ModelTypeValidator(ModelType.BOOLEAN, true));
         assert overrideHandler == null || filteredData != null : "overrideHandler only supported with filteredData";
         this.filteredData = filteredData;
         this.overrideHandler = overrideHandler;
@@ -114,8 +114,8 @@ public class ReadAttributeHandler extends GlobalOperationHandlers.AbstractMultiT
 
     private void doExecuteInternal(OperationContext context, ModelNode operation) throws OperationFailedException {
         validator.validate(operation);
-        final String attributeName = operation.require(GlobalOperationHandlers.NAME.getName()).asString();
-        final boolean defaults = operation.get(GlobalOperationHandlers.INCLUDE_DEFAULTS.getName()).asBoolean(true);
+        final String attributeName = operation.require(GlobalOperationAttributes.NAME.getName()).asString();
+        final boolean defaults = operation.get(GlobalOperationAttributes.INCLUDE_DEFAULTS.getName()).asBoolean(true);
 
         final ImmutableManagementResourceRegistration registry = context.getResourceRegistration();
         final AttributeAccess attributeAccess = registry.getAttributeAccess(PathAddress.EMPTY_ADDRESS, attributeName);
