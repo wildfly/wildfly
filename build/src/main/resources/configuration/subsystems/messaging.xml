@@ -49,7 +49,7 @@
                    <?REDISTRIBUTION-DELAY?>
 
                    <max-size-bytes>10485760</max-size-bytes>
-                   <address-full-policy>BLOCK</address-full-policy>
+                   <address-full-policy>PAGE</address-full-policy>
                    <page-size-bytes>2097152</page-size-bytes>
                    <message-counter-history-day-limit>10</message-counter-history-day-limit>
                </address-setting>
