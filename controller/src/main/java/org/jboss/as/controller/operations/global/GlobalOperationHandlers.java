@@ -43,11 +43,7 @@ import org.jboss.as.controller.OperationStepHandler;
 import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.PathElement;
 import org.jboss.as.controller.ProcessType;
-import org.jboss.as.controller.SimpleAttributeDefinition;
-import org.jboss.as.controller.SimpleAttributeDefinitionBuilder;
 import org.jboss.as.controller.UnauthorizedException;
-import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
-import org.jboss.as.controller.operations.validation.StringLengthValidator;
 import org.jboss.as.controller.registry.AliasEntry;
 import org.jboss.as.controller.registry.ImmutableManagementResourceRegistration;
 import org.jboss.as.controller.registry.ManagementResourceRegistration;
@@ -62,58 +58,6 @@ import org.jboss.dmr.ModelType;
  */
 public class GlobalOperationHandlers {
 
-    /*
-   ************** Shared parameter definitions ***************
-    */
-
-    static final SimpleAttributeDefinition RECURSIVE = new SimpleAttributeDefinitionBuilder(ModelDescriptionConstants.RECURSIVE, ModelType.BOOLEAN)
-            .setAllowNull(true)
-            .setDefaultValue(new ModelNode(false))
-            .build();
-
-    static final SimpleAttributeDefinition RECURSIVE_DEPTH = new SimpleAttributeDefinitionBuilder(ModelDescriptionConstants.RECURSIVE_DEPTH, ModelType.INT)
-            .setAllowNull(true)
-            .setDefaultValue(new ModelNode(0))
-            .build();
-
-    static final SimpleAttributeDefinition PROXIES = new SimpleAttributeDefinitionBuilder(ModelDescriptionConstants.PROXIES, ModelType.BOOLEAN)
-            .setAllowNull(true)
-            .setDefaultValue(new ModelNode(false))
-            .build();
-
-    static final SimpleAttributeDefinition INCLUDE_RUNTIME = new SimpleAttributeDefinitionBuilder(ModelDescriptionConstants.INCLUDE_RUNTIME, ModelType.BOOLEAN)
-            .setAllowNull(true)
-            .setDefaultValue(new ModelNode(false))
-            .build();
-
-    static final SimpleAttributeDefinition INCLUDE_DEFAULTS = new SimpleAttributeDefinitionBuilder(ModelDescriptionConstants.INCLUDE_DEFAULTS, ModelType.BOOLEAN)
-            .setAllowNull(true)
-            .setDefaultValue(new ModelNode(true))
-            .build();
-
-    static final SimpleAttributeDefinition INCLUDE_ALIASES = new SimpleAttributeDefinitionBuilder(ModelDescriptionConstants.INCLUDE_ALIASES, ModelType.BOOLEAN)
-            .setAllowNull(true)
-            .setDefaultValue(new ModelNode(false))
-            .build();
-
-    static final SimpleAttributeDefinition NAME = new SimpleAttributeDefinitionBuilder(ModelDescriptionConstants.NAME, ModelType.STRING)
-            .setValidator(new StringLengthValidator(1))
-            .setAllowNull(false)
-            .build();
-
-    static final SimpleAttributeDefinition LOCALE = new SimpleAttributeDefinitionBuilder(ModelDescriptionConstants.LOCALE, ModelType.STRING)
-            .setAllowNull(true)
-            .build();
-
-    static final SimpleAttributeDefinition CHILD_TYPE = new SimpleAttributeDefinitionBuilder(ModelDescriptionConstants.CHILD_TYPE, ModelType.STRING)
-            .setValidator(new StringLengthValidator(1))
-            .setAllowNull(false)
-            .build();
-
-    static final SimpleAttributeDefinition VALUE = new SimpleAttributeDefinitionBuilder(ModelDescriptionConstants.VALUE, ModelType.STRING)
-            .setValidator(new StringLengthValidator(1))
-            .setAllowNull(true)
-            .build();
 
     /*
     ************** Operation definitions ***************
@@ -541,10 +485,10 @@ public class GlobalOperationHandlers {
     }
 
     static Locale getLocale(OperationContext context, final ModelNode operation) throws OperationFailedException {
-        if (!operation.hasDefined(LOCALE.getName())) {
+        if (!operation.hasDefined(GlobalOperationAttributes.LOCALE.getName())) {
             return null;
         }
-        String unparsed = normalizeLocale(operation.get(LOCALE.getName()).asString());
+        String unparsed = normalizeLocale(operation.get(GlobalOperationAttributes.LOCALE.getName()).asString());
         int len = unparsed.length();
         if (len != 2 && len != 5 && len < 7) {
             reportInvalidLocaleFormat(context, unparsed);

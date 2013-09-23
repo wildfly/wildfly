@@ -22,6 +22,9 @@
 
 package org.jboss.as.controller.operations.global;
 
+import static org.jboss.as.controller.operations.global.GlobalOperationAttributes.NAME;
+import static org.jboss.as.controller.operations.global.GlobalOperationAttributes.VALUE;
+
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationDefinition;
 import org.jboss.as.controller.OperationFailedException;
@@ -37,7 +40,7 @@ import org.jboss.dmr.ModelNode;
 public class UndefineAttributeHandler extends WriteAttributeHandler {
 
     static final OperationDefinition DEFINITION = new SimpleOperationDefinitionBuilder(ModelDescriptionConstants.UNDEFINE_ATTRIBUTE_OPERATION, ControllerResolver.getResolver("global"))
-            .setParameters(GlobalOperationHandlers.NAME)
+            .setParameters(NAME)
             .setRuntimeOnly()
             .build();
 
@@ -46,7 +49,7 @@ public class UndefineAttributeHandler extends WriteAttributeHandler {
     @Override
     public void execute(final OperationContext context, final ModelNode original) throws OperationFailedException {
         final ModelNode operation = original.clone();
-        operation.get(GlobalOperationHandlers.VALUE.getName()).set(new ModelNode());
+        operation.get(VALUE.getName()).set(new ModelNode());
         super.execute(context, operation);
     }
 

@@ -21,14 +21,13 @@
  */
 
 package org.jboss.as.controller.operations.global;
-
 import static org.jboss.as.controller.ControllerMessages.MESSAGES;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.READ_ONLY;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.READ_OPERATION_DESCRIPTION_OPERATION;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.RESTART_REQUIRED;
-import static org.jboss.as.controller.operations.global.GlobalOperationHandlers.NAME;
-import static org.jboss.as.controller.operations.global.GlobalOperationHandlers.LOCALE;
+import static org.jboss.as.controller.operations.global.GlobalOperationAttributes.LOCALE;
+import static org.jboss.as.controller.operations.global.GlobalOperationAttributes.NAME;
 
 import java.util.Set;
 
