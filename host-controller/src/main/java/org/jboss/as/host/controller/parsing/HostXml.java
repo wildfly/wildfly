@@ -85,6 +85,7 @@ import org.jboss.as.host.controller.HostControllerMessages;
 import org.jboss.as.host.controller.ignored.IgnoredDomainTypeResourceDefinition;
 import org.jboss.as.host.controller.model.host.HostResourceDefinition;
 import org.jboss.as.host.controller.operations.HostModelRegistrationHandler;
+import org.jboss.as.host.controller.operations.RemoteDomainControllerAddHandler;
 import org.jboss.as.host.controller.resources.HttpManagementResourceDefinition;
 import org.jboss.as.host.controller.resources.NativeManagementResourceDefinition;
 import org.jboss.as.host.controller.resources.ServerConfigResourceDefinition;
@@ -145,7 +146,7 @@ public class HostXml extends CommonXml {
         writer.writeStartElement(Element.HOST.getLocalName());
 
         if (modelNode.hasDefined(NAME)) {
-            writeAttribute(writer, Attribute.NAME, modelNode.get(NAME).asString());
+            HostResourceDefinition.NAME.marshallAsAttribute(modelNode, writer);
         }
 
         writer.writeDefaultNamespace(Namespace.CURRENT.getUriString());
@@ -831,8 +832,12 @@ public class HostXml extends CommonXml {
             case DOMAIN_1_2:
                 parseRemoteDomainControllerAttributes_1_0(reader, address, list);
                 break;
-            default:
+            case DOMAIN_1_3:
+            case DOMAIN_1_4:
                 parseRemoteDomainControllerAttributes_1_3(reader, address, list);
+                break;
+            default:
+                parseRemoteDomainControllerAttributes_1_5(reader, address, list);
                 break;
         }
 
@@ -975,6 +980,80 @@ public class HostXml extends CommonXml {
             update.get(USERNAME).set(username);
         }
         list.add(update);
+    }
+
+    private boolean parseRemoteDomainControllerAttributes_1_5(final XMLExtendedStreamReader reader, final ModelNode address,
+            final List<ModelNode> list) throws XMLStreamException {
+
+        final ModelNode update = new ModelNode();
+        update.get(OP_ADDR).set(address);
+        update.get(OP).set("write-remote-domain-controller");
+
+        // Handle attributes
+        String host = null;
+        ModelNode port = null;
+        String securityRealm = null;
+        String username = null;
+        boolean requireDiscoveryOptions = false;
+        final int count = reader.getAttributeCount();
+        for (int i = 0; i < count; i++) {
+            final String value = reader.getAttributeValue(i);
+            if (!isNoNamespaceAttribute(reader, i)) {
+                throw unexpectedAttribute(reader, i);
+            } else {
+                final Attribute attribute = Attribute.forName(reader.getAttributeLocalName(i));
+                switch (attribute) {
+                    case HOST: {
+                        host = value;
+                        break;
+                    }
+                    case PORT: {
+                        port = parsePossibleExpression(value);
+                        if(port.getType() != ModelType.EXPRESSION) {
+                            try {
+                                Integer portNo = Integer.valueOf(value);
+                                if (portNo.intValue() < 1) {
+                                    throw MESSAGES.invalidPort(attribute.getLocalName(), value, reader.getLocation());
+                                }
+                            }catch(NumberFormatException e) {
+                                throw MESSAGES.invalidPort(attribute.getLocalName(), value, reader.getLocation());
+                            }
+                        }
+                        break;
+                    }
+                    case SECURITY_REALM: {
+                        securityRealm = value;
+                        break;
+                    }
+                    case USERNAME: {
+                        username = value;
+                        break;
+                    }
+                    case ADMIN_ONLY_POLICY: {
+                        RemoteDomainControllerAddHandler.ADMIN_ONLY_POLICY.parseAndSetParameter(value, update, reader);
+                        break;
+                    }
+                    default:
+                        throw unexpectedAttribute(reader, i);
+                }
+            }
+        }
+
+        // Different from parseRemoteDomainControllerAttributes_1_3
+        if ((host == null) || (port == null)) {
+            requireDiscoveryOptions = true;
+        } else {
+            update.get(HOST).set(parsePossibleExpression(host));
+            update.get(PORT).set(port);
+        }
+        if (securityRealm != null) {
+            update.get(SECURITY_REALM).set(securityRealm);
+        }
+        if (username != null) {
+            update.get(USERNAME).set(username);
+        }
+        list.add(update);
+        return requireDiscoveryOptions;
     }
 
     private void parseIgnoredResource(final XMLExtendedStreamReader reader, final ModelNode address,
@@ -1316,18 +1395,12 @@ public class HostXml extends CommonXml {
         } else if (modelNode.hasDefined(REMOTE)) {
             writer.writeStartElement(Element.REMOTE.getLocalName());
             final ModelNode remote = modelNode.get(REMOTE);
-            if (remote.has(HOST)) {
-                writeAttribute(writer, Attribute.HOST, remote.get(HOST).asString());
-            }
-            if (remote.has(PORT)) {
-                writeAttribute(writer, Attribute.PORT, remote.get(PORT).asString());
-            }
-            if (remote.hasDefined(SECURITY_REALM)) {
-                writeAttribute(writer, Attribute.SECURITY_REALM, remote.require(SECURITY_REALM).asString());
-            }
-            if (remote.hasDefined(USERNAME)) {
-                writeAttribute(writer,  Attribute.USERNAME, remote.require(USERNAME).asString());
-            }
+            RemoteDomainControllerAddHandler.HOST.marshallAsAttribute(remote, writer);
+            RemoteDomainControllerAddHandler.PORT.marshallAsAttribute(remote, writer);
+            RemoteDomainControllerAddHandler.SECURITY_REALM.marshallAsAttribute(remote, writer);
+            RemoteDomainControllerAddHandler.USERNAME.marshallAsAttribute(remote, writer);
+            RemoteDomainControllerAddHandler.ADMIN_ONLY_POLICY.marshallAsAttribute(remote, writer);
+
             if (ignoredResources != null) {
                 writeIgnoredResources(writer, ignoredResources);
             }

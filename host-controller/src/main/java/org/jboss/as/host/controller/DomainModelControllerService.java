@@ -101,6 +101,7 @@ import org.jboss.as.host.controller.mgmt.MasterDomainControllerOperationHandlerS
 import org.jboss.as.host.controller.mgmt.ServerToHostOperationHandlerFactoryService;
 import org.jboss.as.host.controller.mgmt.ServerToHostProtocolHandler;
 import org.jboss.as.host.controller.mgmt.SlaveHostPinger;
+import org.jboss.as.host.controller.model.host.AdminOnlyDomainConfigPolicy;
 import org.jboss.as.host.controller.operations.LocalHostControllerInfoImpl;
 import org.jboss.as.host.controller.operations.StartServersHandler;
 import org.jboss.as.process.CommandLineConstants;
@@ -431,32 +432,30 @@ public class DomainModelControllerService extends AbstractControllerService impl
                     serverInventory = getFuture(inventoryFuture);
 
                     if (hostControllerInfo.getRemoteDomainControllerHost() != null) {
-                        Future<MasterDomainControllerClient> clientFuture = RemoteDomainConnectionService.install(serviceTarget,
-                                getValue(), extensionRegistry,
-                                hostControllerInfo,
-                                environment.getProductConfig(),
-                                hostControllerInfo.getRemoteDomainControllerSecurityRealm(),
-                                remoteFileRepository,
-                                ignoredRegistry);
-                        MasterDomainControllerClient masterDomainControllerClient = getFuture(clientFuture);
-                        //Registers us with the master and gets down the master copy of the domain model to our DC
-                        //TODO make sure that the RDCS checks env.isUseCachedDC, and if true falls through to that
-                        // BES 2012/02/04 Comment ^^^ implies the semantic is to use isUseCachedDC as a fallback to
-                        // a failure to connect as opposed to being an instruction to not connect at all. I believe
-                        // the current impl is the latter. Don't change this without a discussion first, as the
-                        // current semantic is a reasonable one.
-                        try {
-                            masterDomainControllerClient.register();
-                        } catch (Exception e) {
-                            //We could not connect to the host
-                            ROOT_LOGGER.cannotConnectToMaster(e);
-                            System.exit(ExitCodes.HOST_CONTROLLER_ABORT_EXIT_CODE);
-                        }
+                        connectToDomainMaster(serviceTarget, currentRunningMode);
                     } else if (currentRunningMode != RunningMode.ADMIN_ONLY) {
                             // Invalid configuration; no way to get the domain config
                             ROOT_LOGGER.noDomainControllerConfigurationProvided(currentRunningMode,
                                     CommandLineConstants.ADMIN_ONLY, RunningMode.ADMIN_ONLY);
                             System.exit(ExitCodes.HOST_CONTROLLER_ABORT_EXIT_CODE);
+                    } else {
+                        // We're in admin-only mode. See how we handle access control config
+                        switch (hostControllerInfo.getAdminOnlyDomainConfigPolicy()) {
+                            case ALLOW_NO_CONFIG:
+                                // our current setup is good
+                                break;
+                            case FETCH_FROM_MASTER:
+                                connectToDomainMaster(serviceTarget, currentRunningMode);
+                                break;
+                            default:
+                                // Invalid configuration; no way to get the domain config
+                                ROOT_LOGGER.noAccessControlConfigurationAvailable(currentRunningMode,
+                                        ModelDescriptionConstants.ADMIN_ONLY_POLICY,
+                                        AdminOnlyDomainConfigPolicy.REQUIRE_LOCAL_CONFIG,
+                                        CommandLineConstants.ADMIN_ONLY, currentRunningMode);
+                                System.exit(ExitCodes.HOST_CONTROLLER_ABORT_EXIT_CODE);
+                                break;
+                        }
                     }
 
                 } else {
@@ -552,6 +551,42 @@ public class DomainModelControllerService extends AbstractControllerService impl
                 ROOT_LOGGER.unsuccessfulBoot();
                 System.exit(ExitCodes.HOST_CONTROLLER_ABORT_EXIT_CODE);
             }
+        }
+    }
+
+    private void connectToDomainMaster(ServiceTarget serviceTarget, RunningMode currentRunningMode) {
+        Future<MasterDomainControllerClient> clientFuture = RemoteDomainConnectionService.install(serviceTarget,
+                getValue(), extensionRegistry,
+                hostControllerInfo,
+                environment.getProductConfig(),
+                hostControllerInfo.getRemoteDomainControllerSecurityRealm(),
+                remoteFileRepository,
+                ignoredRegistry,
+                currentRunningMode);
+        MasterDomainControllerClient masterDomainControllerClient = getFuture(clientFuture);
+        //Registers us with the master and gets down the master copy of the domain model to our DC
+        //TODO make sure that the RDCS checks env.isUseCachedDC, and if true falls through to that
+        // BES 2012/02/04 Comment ^^^ implies the semantic is to use isUseCachedDC as a fallback to
+        // a failure to connect as opposed to being an instruction to not connect at all. I believe
+        // the current impl is the latter. Don't change this without a discussion first, as the
+        // current semantic is a reasonable one.
+        try {
+            if (currentRunningMode == RunningMode.ADMIN_ONLY) {
+                masterDomainControllerClient.fetchDomainWideConfiguration();
+            } else {
+                masterDomainControllerClient.register();
+            }
+        } catch (Exception e) {
+            //We could not connect to the host
+            ROOT_LOGGER.cannotConnectToMaster(e);
+            if (currentRunningMode == RunningMode.ADMIN_ONLY) {
+                ROOT_LOGGER.fetchConfigFromDomainMasterFailed(currentRunningMode,
+                        ModelDescriptionConstants.ADMIN_ONLY_POLICY,
+                        AdminOnlyDomainConfigPolicy.REQUIRE_LOCAL_CONFIG,
+                        CommandLineConstants.ADMIN_ONLY);
+
+            }
+            System.exit(ExitCodes.HOST_CONTROLLER_ABORT_EXIT_CODE);
         }
     }
 

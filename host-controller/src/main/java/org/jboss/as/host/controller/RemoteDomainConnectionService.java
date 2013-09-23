@@ -52,6 +52,7 @@ import javax.security.sasl.SaslException;
 
 import org.jboss.as.controller.HashUtil;
 import org.jboss.as.controller.ModelController;
+import org.jboss.as.controller.RunningMode;
 import org.jboss.as.controller.client.ModelControllerClient;
 import org.jboss.as.controller.client.Operation;
 import org.jboss.as.controller.client.OperationAttachments;
@@ -133,6 +134,7 @@ public class RemoteDomainConnectionService implements MasterDomainControllerClie
     private final LocalHostControllerInfo localHostInfo;
     private final RemoteFileRepository remoteFileRepository;
     private final IgnoredDomainResourceRegistry ignoredDomainResourceRegistry;
+    private final RunningMode runningMode;
 
     /** Used to invoke ModelController ops on the master */
     private volatile ModelControllerClient masterProxy;
@@ -150,7 +152,8 @@ public class RemoteDomainConnectionService implements MasterDomainControllerClie
     private RemoteDomainConnectionService(final ModelController controller, final ExtensionRegistry extensionRegistry,
                                           final LocalHostControllerInfo localHostControllerInfo, final ProductConfig productConfig,
                                           final RemoteFileRepository remoteFileRepository,
-                                          final IgnoredDomainResourceRegistry ignoredDomainResourceRegistry){
+                                          final IgnoredDomainResourceRegistry ignoredDomainResourceRegistry,
+                                          final RunningMode runningMode){
         this.controller = controller;
         this.extensionRegistry = extensionRegistry;
         this.productConfig = productConfig;
@@ -158,14 +161,16 @@ public class RemoteDomainConnectionService implements MasterDomainControllerClie
         this.remoteFileRepository = remoteFileRepository;
         remoteFileRepository.setRemoteFileRepositoryExecutor(remoteFileRepositoryExecutor);
         this.ignoredDomainResourceRegistry = ignoredDomainResourceRegistry;
+        this.runningMode = runningMode;
     }
 
     public static Future<MasterDomainControllerClient> install(final ServiceTarget serviceTarget, final ModelController controller, final ExtensionRegistry extensionRegistry,
                                                                final LocalHostControllerInfo localHostControllerInfo, final ProductConfig productConfig,
                                                                final String securityRealm, final RemoteFileRepository remoteFileRepository,
-                                                               final IgnoredDomainResourceRegistry ignoredDomainResourceRegistry) {
+                                                               final IgnoredDomainResourceRegistry ignoredDomainResourceRegistry,
+                                                               final RunningMode currentRunningMode) {
         RemoteDomainConnectionService service = new RemoteDomainConnectionService(controller, extensionRegistry, localHostControllerInfo,
-                productConfig, remoteFileRepository, ignoredDomainResourceRegistry);
+                productConfig, remoteFileRepository, ignoredDomainResourceRegistry, currentRunningMode);
         ServiceBuilder<MasterDomainControllerClient> builder = serviceTarget.addService(MasterDomainControllerClient.SERVICE_NAME, service)
                 .addDependency(ManagementRemotingServices.MANAGEMENT_ENDPOINT, Endpoint.class, service.endpointInjector)
                 .setInitialMode(ServiceController.Mode.ACTIVE);
@@ -224,6 +229,16 @@ public class RemoteDomainConnectionService implements MasterDomainControllerClie
     /** {@inheritDoc} */
     public synchronized void unregister() {
         StreamUtils.safeClose(connection);
+    }
+
+    @Override
+    public void fetchDomainWideConfiguration() {
+        try {
+            //TODO implement fetchDomainWideConfiguration
+            throw new UnsupportedOperationException();
+        } finally {
+            StreamUtils.safeClose(connection);
+        }
     }
 
     /** {@inheritDoc} */
@@ -311,7 +326,7 @@ public class RemoteDomainConnectionService implements MasterDomainControllerClie
                 public void registrationComplete(ManagementChannelHandler handler) {
                     //
                 }
-            });
+            }, runningMode);
             // Setup the management channel handler
             handler = connection.getChannelHandler();
         } catch (Exception e) {

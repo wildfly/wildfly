@@ -26,6 +26,7 @@ import java.io.IOException;
 
 import org.jboss.as.controller.RunningMode;
 import org.jboss.as.controller.client.helpers.domain.ServerStatus;
+import org.jboss.as.host.controller.model.host.AdminOnlyDomainConfigPolicy;
 import org.jboss.as.host.controller.model.jvm.JvmType;
 import org.jboss.as.server.ServerState;
 import org.jboss.dmr.ModelNode;
@@ -452,6 +453,24 @@ public interface HostControllerLogger extends BasicLogger {
     @Message(id=16577, value = "Failed to apply domain-wide configuration from master host controller. " +
             "Operation outcome: %s. Failure description %s")
     void failedToApplyDomainConfig(String outcome, ModelNode failureDescription);
+
+    @LogMessage(level = Level.ERROR)
+    @Message(id = 16578, value = "The host cannot start because it was started in running mode '%s' with no access " +
+            "to a local copy of the domain wide configuration policy, the '%s' attribute was set to '%s' and the " +
+            "domain wide configuration policy could not be obtained from the Domain Controller host. Startup will be " +
+            "aborted. Use the '%s' command line argument to start if you need to start without connecting to " +
+            "a domain controller connection.")
+    void fetchConfigFromDomainMasterFailed(RunningMode currentRunningMode, String policyAttribute,
+                                               AdminOnlyDomainConfigPolicy policy,
+                                               String cachedDcCmdLineArg);
+
+    @LogMessage(level = Level.ERROR)
+    @Message(id = 16579, value = "The host cannot start because it was started in running mode '%s' with no access " +
+            "to a local copy of the domain wide configuration policy, and the '%s' attribute was set to '%s'. Startup " +
+            "will be aborted. Use the '%s' command line argument to start in running mode '%s'.")
+    void noAccessControlConfigurationAvailable(RunningMode currentRunningMode, String policyAttribute,
+                                               AdminOnlyDomainConfigPolicy policy,
+                                               String cachedDcCmdLineArg, RunningMode desiredRunningMode);
 
 
 

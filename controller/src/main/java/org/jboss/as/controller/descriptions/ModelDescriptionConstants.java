@@ -39,6 +39,7 @@ public class ModelDescriptionConstants {
     public static final String ADD = "add";
     public static final String ADDRESS = "address";
     public static final String ADMIN_ONLY = "admin-only";
+    public static final String ADMIN_ONLY_POLICY = "admin-only-policy";
     public static final String ADVANCED_FILTER = "advanced-filter";
     public static final String ALLOWED = "allowed";
     public static final String ALLOW_EMPTY_PASSWORDS = "allow-empty-passwords";

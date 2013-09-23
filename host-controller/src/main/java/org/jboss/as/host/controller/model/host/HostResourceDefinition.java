@@ -77,6 +77,7 @@ import org.jboss.as.host.controller.operations.HostSpecifiedInterfaceRemoveHandl
 import org.jboss.as.host.controller.operations.HostXmlMarshallingHandler;
 import org.jboss.as.host.controller.operations.IsMasterHandler;
 import org.jboss.as.host.controller.operations.LocalHostControllerInfoImpl;
+import org.jboss.as.host.controller.operations.RemoteDomainControllerAddHandler;
 import org.jboss.as.host.controller.operations.ResolveExpressionOnHostHandler;
 import org.jboss.as.host.controller.operations.StartServersHandler;
 import org.jboss.as.host.controller.resources.HttpManagementResourceDefinition;
@@ -170,7 +171,14 @@ public class HostResourceDefinition extends SimpleResourceDefinition {
     public static final ObjectTypeAttributeDefinition DC_LOCAL = new ObjectTypeAttributeDefinition.Builder(ModelDescriptionConstants.LOCAL)
             .build();
 
-    public static final ObjectTypeAttributeDefinition DC_REMOTE = new ObjectTypeAttributeDefinition.Builder(ModelDescriptionConstants.REMOTE, REMOTE_DC_HOST, REMOTE_DC_PORT)
+    public static final ObjectTypeAttributeDefinition DC_REMOTE = new ObjectTypeAttributeDefinition.Builder(
+                ModelDescriptionConstants.REMOTE,
+                RemoteDomainControllerAddHandler.HOST,
+                RemoteDomainControllerAddHandler.PORT,
+                RemoteDomainControllerAddHandler.USERNAME,
+                RemoteDomainControllerAddHandler.SECURITY_REALM,
+                RemoteDomainControllerAddHandler.SECURITY_REALM,
+                RemoteDomainControllerAddHandler.ADMIN_ONLY_POLICY)
             .build();
 
     public static final ObjectTypeAttributeDefinition DOMAIN_CONTROLLER = new ObjectTypeAttributeDefinition.Builder(ModelDescriptionConstants.DOMAIN_CONTROLLER, DC_LOCAL, DC_REMOTE)

@@ -106,11 +106,20 @@ public class HostControllerRegistrationHandler implements ManagementRequestHandl
     public ManagementRequestHandler<?, ?> resolveHandler(final RequestHandlerChain handlers, final ManagementRequestHeader header) {
         final byte operationId = header.getOperationId();
         switch (operationId) {
-            case DomainControllerProtocol.REGISTER_HOST_CONTROLLER_REQUEST:
+            case DomainControllerProtocol.REGISTER_HOST_CONTROLLER_REQUEST: {
                 // Start the registration process
-                final RegistrationContext context = new RegistrationContext(domainController.getExtensionRegistry().getTransformerRegistry());
+                final RegistrationContext context =
+                        new RegistrationContext(domainController.getExtensionRegistry().getTransformerRegistry(), true);
                 context.activeOperation = handlers.registerActiveOperation(header.getBatchId(), context, context);
                 return new InitiateRegistrationHandler();
+            }
+            case DomainControllerProtocol.FETCH_DOMAIN_CONFIGURATION_REQUEST: {
+                // Start the fetch the domain model process
+                final RegistrationContext context =
+                        new RegistrationContext(domainController.getExtensionRegistry().getTransformerRegistry(), false);
+                context.activeOperation = handlers.registerActiveOperation(header.getBatchId(), context, context);
+                return new InitiateRegistrationHandler();
+            }
             case DomainControllerProtocol.REQUEST_SUBSYSTEM_VERSIONS:
                 // register the subsystem versions
                 return new RegisterSubsystemVersionsHandler();
@@ -282,8 +291,9 @@ public class HostControllerRegistrationHandler implements ManagementRequestHandl
     private class RegistrationContext implements ModelController.OperationTransactionControl, ActiveOperation.CompletedCallback<Void> {
 
         private final TransformerRegistry transformerRegistry;
-        private String hostName;
-        private HostInfo hostInfo;
+        private final boolean registerOnCompletion;
+        private volatile String hostName;
+        private volatile HostInfo hostInfo;
         private ManagementRequestContext<RegistrationContext> responseChannel;
 
         private volatile IOTask<?> task;
@@ -292,8 +302,10 @@ public class HostControllerRegistrationHandler implements ManagementRequestHandl
         private ActiveOperation<Void, RegistrationContext> activeOperation;
         private final AtomicBoolean completed = new AtomicBoolean();
 
-        private RegistrationContext(TransformerRegistry transformerRegistry) {
+        private RegistrationContext(TransformerRegistry transformerRegistry,
+                                    boolean registerOnCompletion) {
             this.transformerRegistry = transformerRegistry;
+            this.registerOnCompletion = registerOnCompletion;
         }
 
         private synchronized void initialize(final String hostName, final ModelNode hostInfo, final ManagementRequestContext<RegistrationContext> responseChannel) {
@@ -323,7 +335,12 @@ public class HostControllerRegistrationHandler implements ManagementRequestHandl
                 transaction.rollback();
             } else {
                 try {
-                    registerHost(transaction, result);
+                    if (registerOnCompletion) {
+                        registerHost(transaction, result);
+                    } else {
+                        // Host just wanted the model; didn't register
+                        sendResultToHost(transaction, result);
+                    }
                 } catch (SlaveRegistrationException e) {
                     failed(e.getErrorCode(), e.getErrorMessage());
                 } catch (Exception e) {
@@ -431,16 +448,7 @@ public class HostControllerRegistrationHandler implements ManagementRequestHandl
          */
         void registerHost(final ModelController.OperationTransaction transaction, final ModelNode result) throws SlaveRegistrationException {
             //
-            final Boolean registered = executeBlocking(new IOTask<Boolean>() {
-                @Override
-                void sendMessage(final FlushableDataOutput output) throws IOException {
-                    sendResponse(output, DomainControllerProtocol.PARAM_OK, result);
-                }
-            });
-            if(! registered) {
-                transaction.rollback();
-                return;
-            }
+            if (sendResultToHost(transaction, result)) return;
             synchronized (this) {
                 Long pingPongId = hostInfo.getRemoteConnectionId();
                 // Register the slave
@@ -454,6 +462,20 @@ public class HostControllerRegistrationHandler implements ManagementRequestHandl
                 }
             }
             DOMAIN_LOGGER.registeredRemoteSlaveHost(hostName, hostInfo.getPrettyProductName());
+        }
+
+        private boolean sendResultToHost(ModelController.OperationTransaction transaction, final ModelNode result) {
+            final Boolean registered = executeBlocking(new IOTask<Boolean>() {
+                @Override
+                void sendMessage(final FlushableDataOutput output) throws IOException {
+                    sendResponse(output, DomainControllerProtocol.PARAM_OK, result);
+                }
+            });
+            if(! registered) {
+                transaction.rollback();
+                return true;
+            }
+            return false;
         }
 
         void completeRegistration(final ManagementRequestContext<RegistrationContext> responseChannel, boolean commit) {
