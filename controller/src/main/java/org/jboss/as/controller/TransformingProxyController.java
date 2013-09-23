@@ -69,13 +69,13 @@ public interface TransformingProxyController extends ProxyController {
 
     public static class Factory {
 
-        public static TransformingProxyController create(final ManagementChannelHandler channelAssociation, final Transformers transformers, final PathAddress pathAddress, final ProxyOperationAddressTranslator addressTranslator) {
+        public static TransformingProxyController create(final ManagementChannelHandler channelAssociation, final Transformers transformers, final PathAddress pathAddress, final ProxyOperationAddressTranslator addressTranslator, final boolean validateAddresses) {
             final TransactionalProtocolClient client = TransactionalProtocolHandlers.createClient(channelAssociation);
-            return create(client, transformers, pathAddress, addressTranslator);
+            return create(client, transformers, pathAddress, addressTranslator, validateAddresses);
         }
 
-        public static TransformingProxyController create(final TransactionalProtocolClient client, final Transformers transformers, final PathAddress pathAddress, final ProxyOperationAddressTranslator addressTranslator) {
-            final RemoteProxyController proxy = RemoteProxyController.create(client, pathAddress, addressTranslator);
+        public static TransformingProxyController create(final TransactionalProtocolClient client, final Transformers transformers, final PathAddress pathAddress, final ProxyOperationAddressTranslator addressTranslator, final boolean validateAddresses) {
+            final RemoteProxyController proxy = RemoteProxyController.create(client, pathAddress, addressTranslator, validateAddresses);
             final Transformers delegating = new Transformers() {
                 @Override
                 public TransformationTarget getTarget() {

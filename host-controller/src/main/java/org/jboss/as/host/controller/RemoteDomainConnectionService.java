@@ -33,6 +33,8 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SUC
 import static org.jboss.as.host.controller.HostControllerLogger.ROOT_LOGGER;
 import static org.jboss.as.host.controller.HostControllerMessages.MESSAGES;
 
+import javax.net.ssl.SSLHandshakeException;
+import javax.security.sasl.SaslException;
 import java.io.DataInput;
 import java.io.File;
 import java.io.IOException;
@@ -46,9 +48,6 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.ThreadFactory;
-
-import javax.net.ssl.SSLHandshakeException;
-import javax.security.sasl.SaslException;
 
 import org.jboss.as.controller.HashUtil;
 import org.jboss.as.controller.ModelController;
@@ -560,6 +559,7 @@ public class RemoteDomainConnectionService implements MasterDomainControllerClie
             return Integer.getInteger(name, defaultValue);
         } else {
             return AccessController.doPrivileged( new PrivilegedAction<Integer>() {
+
                 @Override
                 public Integer run() {
                     return Integer.getInteger(name, defaultValue);
@@ -567,5 +567,4 @@ public class RemoteDomainConnectionService implements MasterDomainControllerClie
             });
         }
     }
-
 }

@@ -24,15 +24,19 @@ package org.jboss.as.test.integration.domain.rbac;
 
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ADD;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.BASE_ROLE;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.CHILD_TYPE;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.HOST;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.HOSTS;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.READ_CHILDREN_RESOURCES_OPERATION;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.REMOVE;
 import static org.jboss.as.test.integration.management.util.ModelUtil.createOpNode;
 
 import java.io.IOException;
 
+import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.client.ModelControllerClient;
 import org.jboss.as.controller.client.helpers.domain.DomainClient;
+import org.jboss.as.controller.operations.common.Util;
 import org.jboss.as.test.integration.management.rbac.Outcome;
 import org.jboss.as.test.integration.management.rbac.RbacUtil;
 import org.jboss.dmr.ModelNode;
@@ -126,6 +130,8 @@ public abstract class AbstractHostScopedRolesTestCase extends AbstractRbacTestCa
         addPath(client, Outcome.UNAUTHORIZED, MONITOR_USER);
         addJvm(client, HOST, MASTER, Outcome.UNAUTHORIZED, MONITOR_USER);
         addJvm(client, HOST, SLAVE, Outcome.HIDDEN, MONITOR_USER);
+
+        testHostScopedRoleCanReadHostChildResources(client, MONITOR_USER);
     }
 
     @Test
@@ -151,6 +157,8 @@ public abstract class AbstractHostScopedRolesTestCase extends AbstractRbacTestCa
         addPath(client, Outcome.UNAUTHORIZED, OPERATOR_USER);
         addJvm(client, HOST, MASTER, Outcome.UNAUTHORIZED, OPERATOR_USER);
         addJvm(client, HOST, SLAVE, Outcome.HIDDEN, OPERATOR_USER);
+
+        testHostScopedRoleCanReadHostChildResources(client, OPERATOR_USER);
     }
 
     @Test
@@ -176,6 +184,8 @@ public abstract class AbstractHostScopedRolesTestCase extends AbstractRbacTestCa
         addPath(client, Outcome.UNAUTHORIZED, MAINTAINER_USER);
         addJvm(client, HOST, MASTER, Outcome.SUCCESS, MAINTAINER_USER);
         addJvm(client, HOST, SLAVE, Outcome.HIDDEN, MAINTAINER_USER);
+
+        testHostScopedRoleCanReadHostChildResources(client, MAINTAINER_USER);
     }
 
     @Test
@@ -201,6 +211,8 @@ public abstract class AbstractHostScopedRolesTestCase extends AbstractRbacTestCa
         addPath(client, Outcome.UNAUTHORIZED, DEPLOYER_USER);
         addJvm(client, HOST, MASTER, Outcome.UNAUTHORIZED, DEPLOYER_USER);
         addJvm(client, HOST, SLAVE, Outcome.HIDDEN, DEPLOYER_USER);
+
+        testHostScopedRoleCanReadHostChildResources(client, DEPLOYER_USER);
     }
 
     @Test
@@ -226,6 +238,8 @@ public abstract class AbstractHostScopedRolesTestCase extends AbstractRbacTestCa
         addPath(client, Outcome.UNAUTHORIZED, ADMINISTRATOR_USER);
         addJvm(client, HOST, MASTER, Outcome.SUCCESS, ADMINISTRATOR_USER);
         addJvm(client, HOST, SLAVE, Outcome.HIDDEN, ADMINISTRATOR_USER);
+
+        testHostScopedRoleCanReadHostChildResources(client, ADMINISTRATOR_USER);
     }
 
     @Test
@@ -251,6 +265,8 @@ public abstract class AbstractHostScopedRolesTestCase extends AbstractRbacTestCa
         addPath(client, Outcome.UNAUTHORIZED, AUDITOR_USER);
         addJvm(client, HOST, MASTER, Outcome.UNAUTHORIZED, AUDITOR_USER);
         addJvm(client, HOST, SLAVE, Outcome.HIDDEN, AUDITOR_USER);
+
+        testHostScopedRoleCanReadHostChildResources(client, AUDITOR_USER);
     }
 
     @Test
@@ -276,5 +292,16 @@ public abstract class AbstractHostScopedRolesTestCase extends AbstractRbacTestCa
         addPath(client, Outcome.UNAUTHORIZED, SUPERUSER_USER);
         addJvm(client, HOST, MASTER, Outcome.SUCCESS, SUPERUSER_USER);
         addJvm(client, HOST, SLAVE, Outcome.HIDDEN, SUPERUSER_USER);
+
+        testHostScopedRoleCanReadHostChildResources(client, SUPERUSER_USER);
+    }
+
+    private void testHostScopedRoleCanReadHostChildResources(ModelControllerClient client, String... roles) throws Exception {
+        ModelNode op = Util.createOperation(READ_CHILDREN_RESOURCES_OPERATION, PathAddress.EMPTY_ADDRESS);
+        op.get(CHILD_TYPE).set(HOST);
+        configureRoles(op, roles);
+        System.out.println("host scoped read host child resources result for " + roles[0]);
+        System.out.println(RbacUtil.executeOperation(client, op, Outcome.SUCCESS));
+        //RbacUtil.executeOperation(client, op, Outcome.SUCCESS);
     }
 }

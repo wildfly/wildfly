@@ -289,7 +289,7 @@ public class DomainModelControllerService extends AbstractControllerService impl
         hostRegistrationMap.put(hostName, new HostRegistration(remoteConnectionId, handler, pinger));
 
         // Create the proxy controller
-        final TransformingProxyController hostControllerClient = TransformingProxyController.Factory.create(handler, transformers, addr, ProxyOperationAddressTranslator.HOST);
+        final TransformingProxyController hostControllerClient = TransformingProxyController.Factory.create(handler, transformers, addr, ProxyOperationAddressTranslator.HOST, true);
 
         modelNodeRegistration.registerProxyController(pe, hostControllerClient);
         hostProxies.put(hostName, hostControllerClient);

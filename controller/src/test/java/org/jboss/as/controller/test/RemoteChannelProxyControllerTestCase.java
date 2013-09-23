@@ -78,7 +78,7 @@ public class RemoteChannelProxyControllerTestCase extends AbstractProxyControlle
 
         final Channel clientChannel = channels.getClientChannel();
         final ManagementChannelHandler support = new ManagementChannelHandler(clientChannel, channels.getExecutorService());
-        final RemoteProxyController proxyController = RemoteProxyController.create(support, proxyNodeAddress, ProxyOperationAddressTranslator.SERVER);
+        final RemoteProxyController proxyController = RemoteProxyController.create(support, proxyNodeAddress, ProxyOperationAddressTranslator.SERVER, false);
         clientChannel.addCloseHandler(new CloseHandler<Channel>() {
             @Override
             public void handleClose(Channel closed, IOException exception) {

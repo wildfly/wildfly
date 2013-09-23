@@ -22,6 +22,10 @@
 
 package org.jboss.as.host.controller;
 
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.HOST;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.RUNNING_SERVER;
+import static org.jboss.as.host.controller.HostControllerLogger.ROOT_LOGGER;
+
 import java.io.OutputStream;
 import java.net.InetAddress;
 import java.net.InetSocketAddress;
@@ -33,19 +37,13 @@ import java.util.Map;
 import org.jboss.as.controller.CurrentOperationIdHolder;
 import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.PathElement;
-import org.jboss.as.controller.ProxyController;
 import org.jboss.as.controller.ProxyOperationAddressTranslator;
 import org.jboss.as.controller.TransformingProxyController;
 import org.jboss.as.controller.client.helpers.domain.ServerStatus;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.HOST;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.RUNNING_SERVER;
-
 import org.jboss.as.controller.remote.TransactionalProtocolClient;
 import org.jboss.as.controller.remote.TransactionalProtocolHandlers;
 import org.jboss.as.controller.transform.TransformationTarget;
 import org.jboss.as.controller.transform.Transformers;
-import static org.jboss.as.host.controller.HostControllerLogger.ROOT_LOGGER;
-
 import org.jboss.as.network.NetworkUtils;
 import org.jboss.as.process.ProcessControllerClient;
 import org.jboss.as.protocol.mgmt.ManagementChannelHandler;
@@ -150,7 +148,7 @@ class ManagedServer {
         this.protocolClient = new ManagedServerProxy(this, address);
         this.proxyController = TransformingProxyController.Factory.create(protocolClient,
                                 Transformers.Factory.create(transformationTarget),
-                                address, ProxyOperationAddressTranslator.SERVER);
+                                address, ProxyOperationAddressTranslator.SERVER, true);
     }
 
     /**
