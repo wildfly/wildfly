@@ -84,7 +84,10 @@ final class PropertyAdd extends AbstractAddStepHandler {
             final ServiceName propertyServiceName = getPropertyServiceName(configServiceName, propertyName);
             final ServiceBuilder<?> propertyServiceBuilder = target.addService(propertyServiceName, service);
             propertyServiceBuilder.addDependency(configServiceName, AbstractCommonConfig.class, service.getAbstractCommonConfig());
-            propertyServiceBuilder.setInitialMode(ServiceController.Mode.ACTIVE).install();
+            ServiceController<?> controller = propertyServiceBuilder.setInitialMode(ServiceController.Mode.ACTIVE).install();
+            if (newControllers != null) {
+                newControllers.add(controller);
+            }
         } else {
             context.reloadRequired();
         }

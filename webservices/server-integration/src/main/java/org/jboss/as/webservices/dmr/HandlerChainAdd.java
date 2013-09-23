@@ -85,7 +85,10 @@ final class HandlerChainAdd extends AbstractAddStepHandler {
             final ServiceTarget target = context.getServiceTarget();
             final ServiceBuilder<?> handlerChainServiceBuilder = target.addService(handlerChainServiceName, service);
             handlerChainServiceBuilder.addDependency(configServiceName, AbstractCommonConfig.class, service.getAbstractCommonConfig());
-            handlerChainServiceBuilder.setInitialMode(ServiceController.Mode.ACTIVE).install();
+            ServiceController<?> controller = handlerChainServiceBuilder.setInitialMode(ServiceController.Mode.ACTIVE).install();
+            if (newControllers != null) {
+                newControllers.add(controller);
+            }
         } else {
             context.reloadRequired();
         }

@@ -78,7 +78,10 @@ final class ClientConfigAdd extends AbstractAddStepHandler {
          final ServiceTarget target = context.getServiceTarget();
          final ServiceBuilder<?> clientServiceBuilder = target.addService(serviceName, clientConfigService);
 
-         clientServiceBuilder.setInitialMode(ServiceController.Mode.ACTIVE).install();
+         ServiceController<?> controller = clientServiceBuilder.setInitialMode(ServiceController.Mode.ACTIVE).install();
+         if (newControllers != null) {
+             newControllers.add(controller);
+         }
       } else {
          context.reloadRequired();
       }
