@@ -25,8 +25,8 @@ package org.jboss.as.controller.operations.global;
 import static org.jboss.as.controller.ControllerMessages.MESSAGES;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
-import static org.jboss.as.controller.operations.global.GlobalOperationHandlers.NAME;
-import static org.jboss.as.controller.operations.global.GlobalOperationHandlers.VALUE;
+import static org.jboss.as.controller.operations.global.GlobalOperationAttributes.NAME;
+import static org.jboss.as.controller.operations.global.GlobalOperationAttributes.VALUE;
 
 import org.jboss.as.controller.ControllerMessages;
 import org.jboss.as.controller.OperationContext;
@@ -61,13 +61,13 @@ public class WriteAttributeHandler implements OperationStepHandler {
     private ParametersValidator nameValidator = new ParametersValidator();
 
     WriteAttributeHandler() {
-        nameValidator.registerValidator(GlobalOperationHandlers.NAME.getName(), new StringLengthValidator(1));
+        nameValidator.registerValidator(NAME.getName(), new StringLengthValidator(1));
     }
 
     @Override
     public void execute(OperationContext context, ModelNode operation) throws OperationFailedException {
         nameValidator.validate(operation);
-        final String attributeName = operation.require(GlobalOperationHandlers.NAME.getName()).asString();
+        final String attributeName = operation.require(NAME.getName()).asString();
         final AttributeAccess attributeAccess = context.getResourceRegistration().getAttributeAccess(PathAddress.EMPTY_ADDRESS, attributeName);
         if (attributeAccess == null) {
             throw new OperationFailedException(new ModelNode().set(MESSAGES.unknownAttribute(attributeName)));

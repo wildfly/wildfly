@@ -38,11 +38,11 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.RES
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.RESULT;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.STORAGE;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.WRITE;
-import static org.jboss.as.controller.operations.global.GlobalOperationHandlers.INCLUDE_ALIASES;
-import static org.jboss.as.controller.operations.global.GlobalOperationHandlers.LOCALE;
-import static org.jboss.as.controller.operations.global.GlobalOperationHandlers.PROXIES;
-import static org.jboss.as.controller.operations.global.GlobalOperationHandlers.RECURSIVE;
-import static org.jboss.as.controller.operations.global.GlobalOperationHandlers.RECURSIVE_DEPTH;
+import static org.jboss.as.controller.operations.global.GlobalOperationAttributes.INCLUDE_ALIASES;
+import static org.jboss.as.controller.operations.global.GlobalOperationAttributes.LOCALE;
+import static org.jboss.as.controller.operations.global.GlobalOperationAttributes.PROXIES;
+import static org.jboss.as.controller.operations.global.GlobalOperationAttributes.RECURSIVE;
+import static org.jboss.as.controller.operations.global.GlobalOperationAttributes.RECURSIVE_DEPTH;
 
 import java.util.ArrayList;
 import java.util.Collections;
