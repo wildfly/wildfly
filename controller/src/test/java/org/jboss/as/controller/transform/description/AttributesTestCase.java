@@ -31,8 +31,10 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.WRI
 
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Locale;
 import java.util.Map;
+import java.util.Set;
 
 import org.jboss.as.controller.ExpressionResolver;
 import org.jboss.as.controller.ModelVersion;
@@ -136,7 +138,7 @@ public class AttributesTestCase {
         TransformationDescription.Tools.register(builder.build(), transformersSubRegistration);
 
         dontRejectChecker.called = false;
-        rejectAttributeChecker.rejected = false;
+        rejectAttributeChecker.clear();;
         final Resource resource = transformResource();
         Assert.assertNotNull(resource);
         final Resource toto = resource.getChild(PATH);
@@ -146,24 +148,32 @@ public class AttributesTestCase {
         //TODO this could be done if 'slave' is >= 7.2.0
         Assert.assertTrue(model.hasDefined("reject"));
         Assert.assertTrue(dontRejectChecker.called);
-        Assert.assertTrue(rejectAttributeChecker.rejected);
+        Set<String> rejections = rejectAttributeChecker.getRejections();
+        Assert.assertEquals(1, rejections.size());
+        Assert.assertTrue(rejections.contains("reject"));
 
         dontRejectChecker.called = false;
-        rejectAttributeChecker.rejected = false;
+        rejectAttributeChecker.clear();;
         ModelNode add = Util.createAddOperation(PathAddress.pathAddress(PATH));
         add.get("reject").setExpression("${expr}");
         OperationTransformer.TransformedOperation transformedAdd = transformOperation(add);
         Assert.assertTrue(transformedAdd.rejectOperation(success()));
         Assert.assertTrue(dontRejectChecker.called);
-        Assert.assertTrue(rejectAttributeChecker.rejected);
+        rejections = rejectAttributeChecker.getRejections();
+        Assert.assertEquals(1, rejections.size());
+        Assert.assertTrue(rejections.contains("reject"));
+
 
         dontRejectChecker.called = false;
-        rejectAttributeChecker.rejected = false;
+        rejectAttributeChecker.clear();
         ModelNode write = Util.getWriteAttributeOperation(PathAddress.pathAddress(PATH), "reject", new ModelNode().setExpression("${expr}"));
         OperationTransformer.TransformedOperation transformedWrite = transformOperation(write);
         Assert.assertTrue(transformedWrite.rejectOperation(success()));
         Assert.assertTrue(dontRejectChecker.called);
-        Assert.assertTrue(rejectAttributeChecker.rejected);
+        rejections = rejectAttributeChecker.getRejections();
+        Assert.assertEquals(1, rejections.size());
+        Assert.assertTrue(rejections.contains("reject"));
+
     }
 
     @Test
@@ -507,7 +517,6 @@ public class AttributesTestCase {
         Map<String,String> renames = new HashMap<String, String>();
         renames.put("one", "uno");
         renames.put("two", "dos");
-        renames.put("three", "TRES");
 
         CustomRejectExpressionsChecker rejectAttributeChecker = new CustomRejectExpressionsChecker();
         final ResourceTransformationDescriptionBuilder builder = TransformationDescriptionBuilder.Factory.createInstance(PATH);
@@ -538,7 +547,7 @@ public class AttributesTestCase {
         TransformationDescription.Tools.register(builder.build(), transformersSubRegistration);
 
         //Try first with no expressions
-        rejectAttributeChecker.rejected = false;
+        rejectAttributeChecker.clear();
         final Resource resource = transformResource();
         Assert.assertNotNull(resource);
         final Resource toto = resource.getChild(PATH);
@@ -549,7 +558,9 @@ public class AttributesTestCase {
         Assert.assertEquals("UNO", model.get("uno").asString());
         Assert.assertEquals("DOS", model.get("dos").asString());
         Assert.assertEquals("TRES", model.get("tres").asString());
-        Assert.assertFalse(rejectAttributeChecker.rejected);
+        Set<String> rejections = rejectAttributeChecker.getRejections();
+        Assert.assertEquals(0, rejections.size());
+
 
         final ModelNode add = Util.createAddOperation(PathAddress.pathAddress(PATH));
         add.get("one").set("a");
@@ -568,8 +579,8 @@ public class AttributesTestCase {
         Assert.assertEquals("UNO", transAdd.get("uno").asString());
         Assert.assertEquals("DOS", transAdd.get("dos").asString());
         Assert.assertEquals("TRES", transAdd.get("tres").asString());
-        Assert.assertFalse(rejectAttributeChecker.rejected);
-
+        rejections = rejectAttributeChecker.getRejections();
+        Assert.assertEquals(0, rejections.size());
 
         checkWriteOp(Util.getWriteAttributeOperation(PathAddress.pathAddress(PATH), "one", new ModelNode("a")),
                  "uno", new ModelNode("UNO"));
@@ -580,7 +591,8 @@ public class AttributesTestCase {
         checkOpDiscarded(Util.getWriteAttributeOperation(PathAddress.pathAddress(PATH), "four", new ModelNode()));
         checkOpDiscarded(Util.getWriteAttributeOperation(PathAddress.pathAddress(PATH), "five", new ModelNode()));
         checkOpDiscarded(Util.getWriteAttributeOperation(PathAddress.pathAddress(PATH), "six", new ModelNode()));
-        Assert.assertFalse(rejectAttributeChecker.rejected);
+        rejections = rejectAttributeChecker.getRejections();
+        Assert.assertEquals(0, rejections.size());
 
         //Check that expressions get rejected
         resourceModel.clear();
@@ -591,7 +603,7 @@ public class AttributesTestCase {
         resourceModel.get("five");
         resourceModel.get("six");
 
-        rejectAttributeChecker.rejected = false;
+        rejectAttributeChecker.clear();
         final Resource resource2 = transformResource();
         Assert.assertNotNull(resource2);
         final Resource toto2 = resource2.getChild(PATH);
@@ -602,9 +614,11 @@ public class AttributesTestCase {
         Assert.assertEquals("UNO", model2.get("uno").asString());
         Assert.assertEquals("DOS", model2.get("dos").asString());
         Assert.assertEquals("TRES", model2.get("tres").asString());
-        Assert.assertTrue(rejectAttributeChecker.rejected);
+        rejections = rejectAttributeChecker.getRejections();
+        Assert.assertEquals(1, rejections.size());
+        Assert.assertTrue(rejections.contains("one"));
 
-        rejectAttributeChecker.rejected = false;
+        rejectAttributeChecker.clear();
         final ModelNode add2 = Util.createAddOperation(PathAddress.pathAddress(PATH));
         add2.get("one").setExpression("${test}");
         add2.get("two").set("b");
@@ -614,12 +628,16 @@ public class AttributesTestCase {
         add2.get("six");
         final OperationTransformer.TransformedOperation transformedAdd2 = transformOperation(add2);
         Assert.assertTrue(transformedAdd2.rejectOperation(success()));
-        Assert.assertTrue(rejectAttributeChecker.rejected);
+        rejections = rejectAttributeChecker.getRejections();
+        Assert.assertEquals(1, rejections.size());
+        Assert.assertTrue(rejections.contains("one"));
 
-        rejectAttributeChecker.rejected = false;
+        rejectAttributeChecker.clear();;
         OperationTransformer.TransformedOperation write = transformOperation(Util.getWriteAttributeOperation(PathAddress.pathAddress(PATH), "one", new ModelNode().setExpression("${test}")));
         Assert.assertTrue(write.rejectOperation(success()));
-        Assert.assertTrue(rejectAttributeChecker.rejected);
+        rejections = rejectAttributeChecker.getRejections();
+        Assert.assertEquals(1, rejections.size());
+        Assert.assertTrue(rejections.contains("one"));
     }
 
     @Test
@@ -796,18 +814,20 @@ public class AttributesTestCase {
     }
 
     private static class CustomRejectExpressionsChecker implements RejectAttributeChecker {
-        boolean rejected;
+        Map<String, Boolean> rejected = new HashMap<String, Boolean>();
 
         @Override
         public boolean rejectOperationParameter(PathAddress address, String attributeName, ModelNode attributeValue, ModelNode operation,
                 TransformationContext context) {
-            rejected = SIMPLE_EXPRESSIONS.rejectOperationParameter(address, attributeName, attributeValue, operation, context);
+            boolean rejected = SIMPLE_EXPRESSIONS.rejectOperationParameter(address, attributeName, attributeValue, operation, context);
+            this.rejected.put(attributeName, rejected);
             return rejected;
         }
 
         @Override
         public boolean rejectResourceAttribute(PathAddress address, String attributeName, ModelNode attributeValue, TransformationContext context) {
-            rejected = SIMPLE_EXPRESSIONS.rejectResourceAttribute(address, attributeName, attributeValue, context);
+            boolean rejected = SIMPLE_EXPRESSIONS.rejectResourceAttribute(address, attributeName, attributeValue, context);
+            this.rejected.put(attributeName, rejected);
             return rejected;
         }
 
@@ -819,6 +839,20 @@ public class AttributesTestCase {
         @Override
         public String getRejectionLogMessage(Map<String, ModelNode> attributes) {
             return SIMPLE_EXPRESSIONS.getRejectionLogMessage(attributes);
+        }
+
+        void clear() {
+            rejected.clear();
+        }
+
+        Set<String> getRejections() {
+            Set<String> rejections = new HashSet<String>();
+            for (Map.Entry<String, Boolean> entry : rejected.entrySet()) {
+                if (entry.getValue()) {
+                    rejections.add(entry.getKey());
+                }
+            }
+            return rejections;
         }
     }
 

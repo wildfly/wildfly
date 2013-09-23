@@ -65,7 +65,7 @@
                     <includes>
                         <include>**/*TestCase.java</include>
                     </includes>
-                    <enableAssertions>false</enableAssertions>
+                    <enableAssertions>true</enableAssertions>
                 </configuration>
             </plugin>
             <plugin>
