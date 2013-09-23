@@ -453,6 +453,7 @@ public enum Phase {
     public static final int POST_MODULE_SAR_SERVICE_COMPONENT           = 0x2D00;
     public static final int POST_MODULE_UNDERTOW_WEBSOCKETS             = 0x2E00;
     public static final int POST_MODULE_UNDERTOW_HANDLERS               = 0x2F00;
+    public static final int POST_MODULE_WS_SERVICES_DEPS                = 0x3A00;
 
     // INSTALL
     public static final int INSTALL_JACC_POLICY                         = 0x0350;
