@@ -23,9 +23,9 @@ package org.jboss.as.webservices.dmr;
 
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
 import static org.jboss.as.webservices.WSMessages.MESSAGES;
-import static org.jboss.as.webservices.dmr.Constants.ENDPOINT_CONFIG;
-import static org.jboss.as.webservices.dmr.Constants.HANDLER_CHAIN;
 import static org.jboss.as.webservices.dmr.Constants.PROTOCOL_BINDINGS;
+import static org.jboss.as.webservices.dmr.PackageUtils.getConfigServiceName;
+import static org.jboss.as.webservices.dmr.PackageUtils.getHandlerChainServiceName;
 
 import java.util.List;
 
@@ -36,7 +36,6 @@ import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.PathElement;
 import org.jboss.as.controller.ServiceVerificationHandler;
 import org.jboss.as.webservices.service.HandlerChainService;
-import org.jboss.as.webservices.util.WSServices;
 import org.jboss.dmr.ModelNode;
 import org.jboss.msc.service.ServiceBuilder;
 import org.jboss.msc.service.ServiceController;
@@ -76,14 +75,14 @@ final class HandlerChainAdd extends AbstractAddStepHandler {
             final String handlerChainType = address.getElement(address.size() - 1).getKey();
             final String handlerChainId = address.getElement(address.size() - 1).getValue();
 
-            final HandlerChainService<AbstractCommonConfig> service = new HandlerChainService<AbstractCommonConfig>(handlerChainType, handlerChainId, protocolBindings);
-            final ServiceTarget target = context.getServiceTarget();
-            final ServiceName configServiceName = ((ENDPOINT_CONFIG.equals(configType) ? WSServices.ENDPOINT_CONFIG_SERVICE : WSServices.CLIENT_CONFIG_SERVICE)).append(configName);
+            final ServiceName configServiceName = getConfigServiceName(configType, configName);
             if (context.getServiceRegistry(false).getService(configServiceName) == null) {
                 throw MESSAGES.missingConfig(configName);
             }
 
-            final ServiceName handlerChainServiceName = configServiceName.append(HANDLER_CHAIN).append(handlerChainId);
+            final ServiceName handlerChainServiceName = getHandlerChainServiceName(configServiceName, handlerChainId);
+            final HandlerChainService<AbstractCommonConfig> service = new HandlerChainService<AbstractCommonConfig>(handlerChainType, handlerChainId, protocolBindings);
+            final ServiceTarget target = context.getServiceTarget();
             final ServiceBuilder<?> handlerChainServiceBuilder = target.addService(handlerChainServiceName, service);
             handlerChainServiceBuilder.addDependency(configServiceName, AbstractCommonConfig.class, service.getAbstractCommonConfig());
             handlerChainServiceBuilder.setInitialMode(ServiceController.Mode.ACTIVE).install();
@@ -100,5 +99,4 @@ final class HandlerChainAdd extends AbstractAddStepHandler {
     protected void populateModel(final ModelNode operation, final ModelNode model) throws OperationFailedException {
         Attributes.PROTOCOL_BINDINGS.validateAndSet(operation, model);
     }
-
 }

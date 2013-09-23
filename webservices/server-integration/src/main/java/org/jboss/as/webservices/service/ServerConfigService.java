@@ -23,6 +23,8 @@ package org.jboss.as.webservices.service;
 
 import static org.jboss.as.webservices.WSLogger.ROOT_LOGGER;
 
+import java.util.List;
+
 import javax.management.MBeanServer;
 
 import org.jboss.as.server.ServerEnvironment;
@@ -46,7 +48,7 @@ import org.jboss.wsf.spi.management.ServerConfig;
 /**
  * WS server config service.
  *
- * @author alessio.soldano@jboss.com
+ * @author <a href="alessio.soldano@jboss.com">Alessio Soldano</a>
  * @author <a href="mailto:ropalka@redhat.com">Richard Opalka</a>
  */
 public final class ServerConfigService implements Service<ServerConfig> {
@@ -83,10 +85,14 @@ public final class ServerConfigService implements Service<ServerConfig> {
         }
     }
 
-    public static ServiceController<?> install(final ServiceTarget serviceTarget, final ServerConfigImpl serverConfig, final ServiceListener<Object> listener) {
+    public static ServiceController<?> install(final ServiceTarget serviceTarget, final ServerConfigImpl serverConfig,
+            final ServiceListener<Object> listener, final List<ServiceName> dependencies) {
         final ServiceBuilder<ServerConfig> builder = serviceTarget.addService(WSServices.CONFIG_SERVICE, new ServerConfigService(serverConfig));
         builder.addDependency(DependencyType.OPTIONAL, MBEAN_SERVER_NAME, MBeanServer.class, serverConfig.getMBeanServerInjector());
         builder.addDependency(ServerEnvironmentService.SERVICE_NAME, ServerEnvironment.class, serverConfig.getServerEnvironmentInjector());
+        for (ServiceName dep : dependencies) {
+            builder.addDependency(dep);
+        }
         builder.addListener(listener);
         builder.setInitialMode(Mode.ACTIVE);
         ServiceController<?> sc = builder.install();
