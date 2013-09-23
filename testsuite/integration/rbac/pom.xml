@@ -62,7 +62,6 @@
                         </executions>
                         <configuration>
                             <transformationSets>
-                                <!--
                                 <transformationSet>
                                     <dir>${basedir}/target/jbossas/standalone/configuration</dir>
                                     <skipDefaultExcludes>true</skipDefaultExcludes>
@@ -82,7 +81,6 @@
                                         </parameter>
                                     </parameters>
                                 </transformationSet>
-                                -->
                                 <transformationSet>
                                     <dir>${basedir}/target/jbossas/standalone/configuration</dir>
                                     <skipDefaultExcludes>true</skipDefaultExcludes>
