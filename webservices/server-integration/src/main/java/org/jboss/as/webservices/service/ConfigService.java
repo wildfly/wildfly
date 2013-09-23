@@ -25,7 +25,6 @@ import org.jboss.msc.service.Service;
 import org.jboss.msc.service.StartContext;
 import org.jboss.msc.service.StartException;
 import org.jboss.msc.service.StopContext;
-import org.jboss.msc.value.InjectedValue;
 import org.jboss.wsf.spi.management.ServerConfig;
 import org.jboss.wsf.spi.metadata.config.AbstractCommonConfig;
 import org.jboss.wsf.spi.metadata.config.ClientConfig;
@@ -39,14 +38,15 @@ import org.jboss.wsf.spi.metadata.config.EndpointConfig;
  */
 public final class ConfigService implements Service<AbstractCommonConfig> {
 
-    private InjectedValue<ServerConfig> serverConfig = new InjectedValue<ServerConfig>();
+    private final ServerConfig serverConfig;
     private final String configName;
     private final boolean client;
     private volatile AbstractCommonConfig config;
 
-    public ConfigService(String configName, boolean client) {
+    public ConfigService(ServerConfig serverConfig, String configName, boolean client) {
         this.configName = configName;
         this.client = client;
+        this.serverConfig = serverConfig;
     }
 
     @Override
@@ -59,12 +59,12 @@ public final class ConfigService implements Service<AbstractCommonConfig> {
         if (client) {
             ClientConfig clientConfig = new ClientConfig();
             clientConfig.setConfigName(configName);
-            serverConfig.getValue().addClientConfig(clientConfig);
+            serverConfig.addClientConfig(clientConfig);
             config = clientConfig;
         } else {
             EndpointConfig endpointConfig = new EndpointConfig();
             endpointConfig.setConfigName(configName);
-            serverConfig.getValue().addEndpointConfig(endpointConfig);
+            serverConfig.addEndpointConfig(endpointConfig);
             config = endpointConfig;
         }
     }
@@ -72,13 +72,9 @@ public final class ConfigService implements Service<AbstractCommonConfig> {
     @Override
     public void stop(final StopContext context) {
         if (client) {
-            serverConfig.getValue().getClientConfigs().remove(config);
+            serverConfig.getClientConfigs().remove(config);
         } else {
-            serverConfig.getValue().getEndpointConfigs().remove(config);
+            serverConfig.getEndpointConfigs().remove(config);
         }
-    }
-
-    public InjectedValue<ServerConfig> getServerConfig() {
-        return serverConfig;
     }
 }

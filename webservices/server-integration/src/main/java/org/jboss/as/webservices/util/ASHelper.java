@@ -28,6 +28,7 @@ import static org.jboss.as.webservices.util.WSAttachmentKeys.JAXWS_ENDPOINTS_KEY
 import java.util.Collections;
 import java.util.List;
 
+import org.jboss.as.controller.OperationContext;
 import org.jboss.as.server.deployment.AttachmentKey;
 import org.jboss.as.server.deployment.Attachments;
 import org.jboss.as.server.deployment.DeploymentUnit;
@@ -289,6 +290,12 @@ public final class ASHelper {
     @SuppressWarnings("unchecked")
     public static <T> T getMSCService(final ServiceName serviceName, final Class<T> clazz) {
         ServiceController<T> service = (ServiceController<T>)WSServices.getContainerRegistry().getService(serviceName);
+        return service != null ? service.getValue() : null;
+    }
+
+    @SuppressWarnings("unchecked")
+    public static <T> T getMSCService(final ServiceName serviceName, final Class<T> clazz, final OperationContext context) {
+        ServiceController<T> service = (ServiceController<T>)context.getServiceRegistry(false).getService(serviceName);
         return service != null ? service.getValue() : null;
     }
 

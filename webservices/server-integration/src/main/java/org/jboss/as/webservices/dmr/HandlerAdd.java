@@ -24,9 +24,9 @@ package org.jboss.as.webservices.dmr;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
 import static org.jboss.as.webservices.WSMessages.MESSAGES;
 import static org.jboss.as.webservices.dmr.Constants.CLASS;
-import static org.jboss.as.webservices.dmr.Constants.ENDPOINT_CONFIG;
-import static org.jboss.as.webservices.dmr.Constants.HANDLER;
-import static org.jboss.as.webservices.dmr.Constants.HANDLER_CHAIN;
+import static org.jboss.as.webservices.dmr.PackageUtils.getConfigServiceName;
+import static org.jboss.as.webservices.dmr.PackageUtils.getHandlerChainServiceName;
+import static org.jboss.as.webservices.dmr.PackageUtils.getHandlerServiceName;
 
 import java.util.List;
 
@@ -37,7 +37,6 @@ import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.PathElement;
 import org.jboss.as.controller.ServiceVerificationHandler;
 import org.jboss.as.webservices.service.HandlerService;
-import org.jboss.as.webservices.util.WSServices;
 import org.jboss.dmr.ModelNode;
 import org.jboss.msc.service.ServiceBuilder;
 import org.jboss.msc.service.ServiceController;
@@ -80,17 +79,17 @@ final class HandlerAdd extends AbstractAddStepHandler {
 
             final HandlerService service = new HandlerService(handlerName, handlerClass);
             final ServiceTarget target = context.getServiceTarget();
-            final ServiceName configServiceName = ((ENDPOINT_CONFIG.equals(configType) ? WSServices.ENDPOINT_CONFIG_SERVICE : WSServices.CLIENT_CONFIG_SERVICE)).append(configName);
+            final ServiceName configServiceName = getConfigServiceName(configType, configName);
             final ServiceRegistry registry = context.getServiceRegistry(false);
             if (registry.getService(configServiceName) == null) {
                 throw MESSAGES.missingConfig(configName);
             }
-            final ServiceName handlerChainServiceName = configServiceName.append(HANDLER_CHAIN).append(handlerChainId);
+            final ServiceName handlerChainServiceName = getHandlerChainServiceName(configServiceName, handlerChainId);
             if (registry.getService(handlerChainServiceName) == null) {
                 String handlerChainType = address.getElement(address.size() - 2).getKey();
                 throw MESSAGES.missingHandlerChain(configName, handlerChainType, handlerChainId);
             }
-            final ServiceName handlerServiceName = handlerChainServiceName.append(HANDLER).append(handlerName);
+            final ServiceName handlerServiceName = getHandlerServiceName(handlerChainServiceName, handlerName);
 
             final ServiceBuilder<?> handlerServiceBuilder = target.addService(handlerServiceName, service);
             handlerServiceBuilder.addDependency(handlerChainServiceName, UnifiedHandlerChainMetaData.class, service.getHandlerChain());
@@ -104,5 +103,4 @@ final class HandlerAdd extends AbstractAddStepHandler {
     protected void populateModel(final ModelNode operation, final ModelNode model) throws OperationFailedException {
         Attributes.CLASS.validateAndSet(operation, model);
     }
-
 }

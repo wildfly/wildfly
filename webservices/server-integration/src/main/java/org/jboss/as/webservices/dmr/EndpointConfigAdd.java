@@ -22,6 +22,7 @@
 package org.jboss.as.webservices.dmr;
 
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
+import static org.jboss.as.webservices.dmr.PackageUtils.getEndpointConfigServiceName;
 
 import java.util.List;
 
@@ -31,10 +32,12 @@ import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.ServiceVerificationHandler;
 import org.jboss.as.webservices.service.ConfigService;
+import org.jboss.as.webservices.util.ASHelper;
 import org.jboss.as.webservices.util.WSServices;
 import org.jboss.dmr.ModelNode;
 import org.jboss.msc.service.ServiceBuilder;
 import org.jboss.msc.service.ServiceController;
+import org.jboss.msc.service.ServiceName;
 import org.jboss.msc.service.ServiceTarget;
 import org.jboss.wsf.spi.management.ServerConfig;
 
@@ -66,19 +69,21 @@ final class EndpointConfigAdd extends AbstractAddStepHandler {
 
     @Override
     protected void performRuntime(final OperationContext context, final ModelNode operation, final ModelNode model, final ServiceVerificationHandler verificationHandler, final List<ServiceController<?>> newControllers) throws OperationFailedException {
-        //if modify the runtime if we're booting, otherwise set reload required and leave the runtime unchanged
+        //modify the runtime if we're booting, otherwise set reload required and leave the runtime unchanged
         if (context.isBooting()) {
            final PathAddress address = PathAddress.pathAddress(operation.require(OP_ADDR));
            final String name = address.getLastElement().getValue();
-           final ConfigService endpointConfigService = new ConfigService(name, false);
-           final ServiceTarget target = context.getServiceTarget();
-           final ServiceBuilder<?> clientServiceBuilder = target.addService(WSServices.ENDPOINT_CONFIG_SERVICE.append(name), endpointConfigService);
 
-           clientServiceBuilder.addDependency(WSServices.CONFIG_SERVICE, ServerConfig.class, endpointConfigService.getServerConfig());
+           //get the server config object from the ServerConfigService (service installed but not started yet, but the object is fine for our needs here)
+           final ServerConfig serverConfig = ASHelper.getMSCService(WSServices.CONFIG_SERVICE, ServerConfig.class, context);
+           final ServiceName serviceName = getEndpointConfigServiceName(name);
+           final ConfigService endpointConfigService = new ConfigService(serverConfig, name, false);
+
+           final ServiceTarget target = context.getServiceTarget();
+           final ServiceBuilder<?> clientServiceBuilder = target.addService(serviceName, endpointConfigService);
            clientServiceBuilder.setInitialMode(ServiceController.Mode.ACTIVE).install();
         } else {
            context.reloadRequired();
         }
     }
-
 }
