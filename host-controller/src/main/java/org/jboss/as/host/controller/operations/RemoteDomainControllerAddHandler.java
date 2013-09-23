@@ -38,6 +38,7 @@ import org.jboss.as.controller.SimpleOperationDefinitionBuilder;
 import org.jboss.as.controller.access.management.SensitiveTargetAccessConstraintDefinition;
 import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
 import org.jboss.as.controller.extension.ExtensionRegistry;
+import org.jboss.as.controller.operations.validation.EnumValidator;
 import org.jboss.as.controller.operations.validation.IntRangeValidator;
 import org.jboss.as.controller.operations.validation.StringLengthValidator;
 import org.jboss.as.controller.registry.AttributeAccess;
@@ -49,6 +50,7 @@ import org.jboss.as.host.controller.HostControllerConfigurationPersister;
 import org.jboss.as.host.controller.descriptions.HostResolver;
 import org.jboss.as.host.controller.discovery.StaticDiscovery;
 import org.jboss.as.host.controller.ignored.IgnoredDomainResourceRegistry;
+import org.jboss.as.host.controller.model.host.AdminOnlyDomainConfigPolicy;
 import org.jboss.as.repository.ContentRepository;
 import org.jboss.as.repository.HostFileRepository;
 import org.jboss.dmr.ModelNode;
@@ -89,8 +91,15 @@ public class RemoteDomainControllerAddHandler implements OperationStepHandler {
             .setDefaultValue(new ModelNode(false))
             .build();
 
+    public static final SimpleAttributeDefinition ADMIN_ONLY_POLICY = new SimpleAttributeDefinitionBuilder(ModelDescriptionConstants.ADMIN_ONLY_POLICY, ModelType.STRING, true)
+            .setAllowExpression(true)
+            .setFlags(AttributeAccess.Flag.RESTART_JVM)
+            .setValidator(new EnumValidator<AdminOnlyDomainConfigPolicy>(AdminOnlyDomainConfigPolicy.class, true, true))
+            .setDefaultValue(new ModelNode(AdminOnlyDomainConfigPolicy.ALLOW_NO_CONFIG.toString()))
+            .build();
+
     public static final OperationDefinition DEFINITION = new SimpleOperationDefinitionBuilder(OPERATION_NAME, HostResolver.getResolver("host"))
-            .setParameters(PORT, HOST, USERNAME, SECURITY_REALM, IGNORE_UNUSED_CONFIG)
+            .setParameters(PORT, HOST, USERNAME, SECURITY_REALM, IGNORE_UNUSED_CONFIG, ADMIN_ONLY_POLICY)
             .addAccessConstraint(SensitiveTargetAccessConstraintDefinition.DOMAIN_CONTROLLER)
             .build();
 
@@ -135,6 +144,7 @@ public class RemoteDomainControllerAddHandler implements OperationStepHandler {
         HOST.validateAndSet(operation, remoteDC);
         USERNAME.validateAndSet(operation, remoteDC);
         IGNORE_UNUSED_CONFIG.validateAndSet(operation, remoteDC);
+        ADMIN_ONLY_POLICY.validateAndSet(operation, remoteDC);
 
         if (operation.has(SECURITY_REALM.getName())) {
             SECURITY_REALM.validateAndSet(operation, remoteDC);
@@ -181,6 +191,10 @@ public class RemoteDomainControllerAddHandler implements OperationStepHandler {
         }
 
         hostControllerInfo.setRemoteDomainControllerIgnoreUnaffectedConfiguration(IGNORE_UNUSED_CONFIG.resolveModelAttribute(context, remoteDC).asBoolean());
+
+        AdminOnlyDomainConfigPolicy domainConfigPolicy =
+                AdminOnlyDomainConfigPolicy.getPolicy(ADMIN_ONLY_POLICY.resolveModelAttribute(context, remoteDC).asString());
+                        hostControllerInfo.setAdminOnlyDomainConfigPolicy(domainConfigPolicy);
         overallConfigPersister.initializeDomainConfigurationPersister(true);
 
         domainController.initializeSlaveDomainRegistry(rootRegistration, overallConfigPersister.getDomainPersister(), contentRepository, fileRepository,

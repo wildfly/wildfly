@@ -658,6 +658,10 @@ public class ServerGroupAffectedResourceServerConfigOperationsTestCase extends A
                                     }
 
                                     @Override
+                                    public void fetchDomainWideConfiguration() {
+                                    }
+
+                                    @Override
                                     public void register() throws IOException {
                                     }
 

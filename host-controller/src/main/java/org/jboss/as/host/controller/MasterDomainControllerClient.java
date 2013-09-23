@@ -56,6 +56,12 @@ public interface MasterDomainControllerClient extends ModelControllerClient {
     void unregister();
 
     /**
+     * Connect to the remote domain controller and fetch the
+     * domain wide configuration, but do not register as a member of the domain.
+     */
+    void fetchDomainWideConfiguration();
+
+    /**
      * Gets a {@link HostFileRepository} capable of retrieving files from the
      * master domain controller.
      *

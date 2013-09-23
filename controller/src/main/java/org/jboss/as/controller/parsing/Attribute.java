@@ -39,6 +39,7 @@ public enum Attribute {
     SCHEMA_LOCATION("schemaLocation"),
 
     // domain attributes in alpha order
+    ADMIN_ONLY_POLICY("admin-only-policy"),
     ALIAS("alias"),
     ALLOW_EMPTY_PASSWORDS("allow-empty-passwords"),
     ALLOWED_USERS("allowed-users"),

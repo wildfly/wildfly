@@ -575,7 +575,7 @@
             </xs:annotation>
         </xs:attribute>
     </xs:complexType>
-    
+
     <xs:complexType name="baseLdapAuthType" abstract="true">
         <xs:annotation>
             <xs:documentation>
@@ -588,9 +588,9 @@
                     The name of the connection to use to connect to LDAP.
                 </xs:documentation>
             </xs:annotation>
-        </xs:attribute>                    
+        </xs:attribute>
     </xs:complexType>
- 
+
     <xs:complexType name="ldapAuthenticationType">
         <xs:annotation>
             <xs:documentation>
@@ -601,7 +601,7 @@
             <xs:extension base="baseLdapAuthType">
 		        <xs:choice>
 		            <xs:element name="username-filter">
-		                <xs:complexType>                        
+		                <xs:complexType>
 		                    <xs:attribute name="attribute" type="xs:string" use="required">
 		                        <xs:annotation>
 		                            <xs:documentation>
@@ -614,7 +614,7 @@
 		                </xs:complexType>
 		            </xs:element>
 		            <xs:element name="advanced-filter">
-		                <xs:complexType>                        
+		                <xs:complexType>
 		                    <xs:attribute name="filter" type="xs:string" use="required">
 		                        <xs:annotation>
 		                            <xs:documentation>
@@ -647,8 +647,8 @@
                             The name of the attribute which is the users distinguished name.
                         </xs:documentation>
                     </xs:annotation>
-                </xs:attribute>              
-                <xs:attribute name="allow-empty-passwords" type="xs:boolean" default="false">              
+                </xs:attribute>
+                <xs:attribute name="allow-empty-passwords" type="xs:boolean" default="false">
                     <xs:annotation>
                         <xs:documentation>
                             Should users be allowed to supply an empty password?  Some LDAP servers will
@@ -656,7 +656,7 @@
                             even though no password was sent to verify.
                         </xs:documentation>
                     </xs:annotation>
-                </xs:attribute>              
+                </xs:attribute>
 	   		</xs:extension>
         </xs:complexContent>
     </xs:complexType>
@@ -856,8 +856,8 @@
                 </xs:documentation>
             </xs:annotation>
         </xs:attribute>
-    </xs:complexType>  
-    
+    </xs:complexType>
+
     <xs:complexType name="usersAuthenticationType">
         <xs:annotation>
             <xs:documentation>
@@ -1571,7 +1571,67 @@
                 </xs:documentation>
             </xs:annotation>
         </xs:attribute>
+        <xs:attribute name="admin-only-policy" type="admin-only-policyType" default="allow-no-config">
+            <xs:annotation>
+                <xs:documentation>
+                    <![CDATA[
+                    Policy options for how a slave host controller started in 'admin-only' mode and
+                    without the use of the '--cached-dc' startup option should deal with the absence
+                    of a local copy of the domain-wide configuration.
+
+                    This question is particularly relevant when fine grained management operation
+                    authorization scheme is used, as the configuration for management authorization
+                    in a managed domain comes from the domain wide configuration.
+                        ]]>
+                </xs:documentation>
+            </xs:annotation>
+        </xs:attribute>
     </xs:complexType>
+
+    <xs:simpleType name="admin-only-policyType">
+        <xs:restriction base="xs:token">
+            <xs:enumeration value="allow-no-config">
+                <xs:annotation>
+                    <xs:documentation>
+                        <![CDATA[
+                        Allow the host to function without any domain wide configuration.
+
+                        The management authorization configuration system (which is ordinarily
+                        configured according to policies set in the domain wide configuration)
+                        will use default settings, whereby user who can authenticate to the security
+                        realm associated with the management interface to which they connect
+                        will have all permissions.
+                        ]]>
+                    </xs:documentation>
+                </xs:annotation>
+            </xs:enumeration>
+            <xs:enumeration value="fetch-from-master">
+                <xs:annotation>
+                    <xs:documentation>
+                        <![CDATA[
+                        Contact the master host controller to pull down the current domain wide configuration,
+                        but do not actually register with the master as a member of the domain. If the master
+                        cannot be reached, the start of the host controller will fail.
+                        ]]>
+                    </xs:documentation>
+                </xs:annotation>
+            </xs:enumeration>
+            <xs:enumeration value="require-local-config">
+                <xs:annotation>
+                    <xs:documentation>
+                        <![CDATA[
+                        Require the presence of a locally cached copy of the domain wide configuration
+                        policy. If not present, the start of the host controller will fail.
+
+                        The '--cached-dc' startup option is used to indicate to the host controller
+                        process that a locally cached copy of the domain wide configuration
+                        policy should be used.
+                        ]]>
+                    </xs:documentation>
+                </xs:annotation>
+            </xs:enumeration>
+        </xs:restriction>
+    </xs:simpleType>
 
     <xs:complexType name="ignored-resourcesType">
         <xs:annotation>
@@ -3229,7 +3289,7 @@
                     ]]>
                 </xs:documentation>
             </xs:annotation>
-        </xs:attribute>        
+        </xs:attribute>
     </xs:complexType>
 
     <xs:complexType name="include-excludeType">
@@ -3263,35 +3323,35 @@
                     <![CDATA[
                         If you are editing the XML configuration directly you do not need to be adding
                         this attribute and in general you should not be adding this attribute.
-                        
+
                         When the management tools are used to add include and exclude definitions for
                         groups and users the name used in the address is an arbitrary String, this attribute
                         is used when non-standard forms of the address are used so that it can be persisted
                         and the model will be consistent when it is reloaded.
-                        
-                        But as in the first sentence, if you are questioning if you should use this attribute 
-                        yourself - DON'T.                    
-                    ]]>                
-                </xs:documentation>            
-            </xs:annotation>        
+
+                        But as in the first sentence, if you are questioning if you should use this attribute
+                        yourself - DON'T.
+                    ]]>
+                </xs:documentation>
+            </xs:annotation>
         </xs:attribute>
         <xs:attribute name="realm" type="xs:string" use="optional">
             <xs:annotation>
                 <xs:documentation>
                     <![CDATA[
-                        The name of the realm the user used to authenticate.                    
-                    ]]>                
-                </xs:documentation>            
-            </xs:annotation>        
+                        The name of the realm the user used to authenticate.
+                    ]]>
+                </xs:documentation>
+            </xs:annotation>
         </xs:attribute>
         <xs:attribute name="name" type="xs:string" use="required">
             <xs:annotation>
                 <xs:documentation>
                     <![CDATA[
-                        The name of the principal.                    
-                    ]]>                
-                </xs:documentation>            
-            </xs:annotation>        
+                        The name of the principal.
+                    ]]>
+                </xs:documentation>
+            </xs:annotation>
         </xs:attribute>
     </xs:complexType>
 
