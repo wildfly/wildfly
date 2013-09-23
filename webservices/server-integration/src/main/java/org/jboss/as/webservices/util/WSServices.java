@@ -42,7 +42,7 @@ public final class WSServices {
     public static final ServiceName ENDPOINT_SERVICE = WS_SERVICE.append("endpoint");
     public static final ServiceName ENDPOINT_PUBLISH_SERVICE = WS_SERVICE.append("endpoint-publish");
 
-    private static ServiceRegistry registry;
+    private static volatile ServiceRegistry registry;
 
     public static void saveContainerRegistry(ServiceRegistry containerRegistry) {
         registry = containerRegistry;
