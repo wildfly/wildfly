@@ -171,7 +171,7 @@
         <version.org.jboss.ejb-client>2.0.0.Beta3</version.org.jboss.ejb-client>
         <version.org.jboss.ejb3.ext-api>2.1.0</version.org.jboss.ejb3.ext-api>
         <version.org.jboss.iiop-client>1.0.0.Final</version.org.jboss.iiop-client>
-        <version.org.jboss.invocation>1.2.0.Beta3</version.org.jboss.invocation>
+        <version.org.jboss.invocation>1.2.0.Beta4</version.org.jboss.invocation>
         <version.org.jboss.ironjacamar>1.1.0.Final</version.org.jboss.ironjacamar>
         <version.org.jboss.jandex>1.1.0.Alpha1</version.org.jboss.jandex>
         <version.org.jboss.jboss-dmr>1.2.0.Final</version.org.jboss.jboss-dmr>
@@ -253,7 +253,7 @@
         <version.org.slf4j>1.7.2</version.org.slf4j>
         <version.org.eclipse.aether>0.9.0.M3</version.org.eclipse.aether>
         <version.org.testng>6.1.1</version.org.testng>
-        <version.org.wildfly.security.manager>1.0.0.Beta2</version.org.wildfly.security.manager>
+        <version.org.wildfly.security.manager>1.0.0.Beta3</version.org.wildfly.security.manager>
         <version.org.yaml.snakeyaml>1.8</version.org.yaml.snakeyaml>
         <version.osgi>5.0.0</version.osgi>
         <version.sun.jaxb>2.2.5.jboss-1</version.sun.jaxb>
