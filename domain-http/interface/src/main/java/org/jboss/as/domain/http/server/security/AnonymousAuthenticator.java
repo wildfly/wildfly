@@ -30,8 +30,6 @@ import javax.security.auth.Subject;
 import org.jboss.as.core.security.RealmUser;
 import org.jboss.com.sun.net.httpserver.Authenticator;
 import org.jboss.com.sun.net.httpserver.HttpExchange;
-import org.jboss.com.sun.net.httpserver.HttpExchange.AttributeScope;
-import org.jboss.com.sun.net.httpserver.HttpPrincipal;
 
 /**
  * Simple authenticator to set current user to anonymous@anonymous for all requests.
@@ -49,22 +47,13 @@ public class AnonymousAuthenticator extends Authenticator {
      */
     @Override
     public Result authenticate(final HttpExchange exchange) {
-        Subject subject = (Subject) exchange.getAttribute(Subject.class.getName(), AttributeScope.CONNECTION);
-
-        if (subject != null) {
-            Set<HttpPrincipal> httpPrincipals = subject.getPrincipals(HttpPrincipal.class);
-            if (httpPrincipals.size() > 0) {
-                return new Success(httpPrincipals.iterator().next());
-            }
-        }
-
-        HttpPrincipal principal = new HttpPrincipal(ANONYMOUS, ANONYMOUS);
+        SubjectHttpPrincipal principal = new SubjectHttpPrincipal(ANONYMOUS, ANONYMOUS);
         RealmUser realmUser = new RealmUser(ANONYMOUS);
-        subject = new Subject();
+        Subject subject = new Subject();
         Set<Principal> principals = subject.getPrincipals();
         principals.add(principal);
         principals.add(realmUser);
-        exchange.setAttribute(Subject.class.getName(), subject, AttributeScope.CONNECTION);
+        principal.setSubject(subject);
 
         return new Authenticator.Success(principal);
     }

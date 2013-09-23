@@ -35,8 +35,8 @@ import org.jboss.as.controller.security.AccessMechanismPrincipal;
 import org.jboss.as.controller.security.InetAddressPrincipal;
 import org.jboss.as.core.security.AccessMechanism;
 import org.jboss.com.sun.net.httpserver.HttpExchange;
-import org.jboss.com.sun.net.httpserver.HttpExchange.AttributeScope;
 import org.jboss.com.sun.net.httpserver.HttpHandler;
+import org.jboss.com.sun.net.httpserver.HttpPrincipal;
 
 /**
  * Handler to ensure that the Subject for the authenticated user is associated for this request.
@@ -53,10 +53,15 @@ public class SubjectAssociationHandler implements HttpHandler {
 
     @Override
     public void handle(final HttpExchange exchange) throws IOException {
-        final Subject subject = (Subject) exchange.getAttribute(Subject.class.getName(), AttributeScope.CONNECTION);
+        HttpPrincipal principal = exchange.getPrincipal();
+        final Subject subject;
+        if (principal instanceof SubjectHttpPrincipal) {
+            subject = ((SubjectHttpPrincipal) principal).getSubject();
+        } else {
+            subject = null;
+        }
         Subject useSubject = null;
         if (subject != null) {
-
             //TODO find a better place for this https://issues.jboss.org/browse/WFLY-1852
             PrivilegedAction<Subject> copyAction = new PrivilegedAction<Subject>() {
                 @Override

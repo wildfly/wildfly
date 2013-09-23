@@ -67,16 +67,6 @@ public class ClientCertAuthenticator extends Authenticator {
      */
     @Override
     public Result authenticate(HttpExchange exchange) {
-        Subject subject = (Subject) exchange.getAttribute(Subject.class.getName(), AttributeScope.CONNECTION);
-        // If we have a cached Subject with a HttpPrincipal this connection is already authenticated so no further action
-        // required.
-        if (subject != null) {
-            Set<HttpPrincipal> httpPrincipals = subject.getPrincipals(HttpPrincipal.class);
-            if (httpPrincipals.size() > 0) {
-                return new Success(httpPrincipals.iterator().next());
-            }
-        }
-
         Result response = null;
         if (exchange instanceof HttpsExchange) {
             HttpsExchange httpsExch = (HttpsExchange) exchange;
@@ -85,7 +75,7 @@ public class ClientCertAuthenticator extends Authenticator {
                 try {
                     Principal p = session.getPeerPrincipal();
 
-                    response = new Success(new HttpPrincipal(p.getName(), realm));
+                    response = new Success(new SubjectHttpPrincipal(p.getName(), realm));
 
                 } catch (SSLPeerUnverifiedException e) {
                 }
@@ -96,15 +86,14 @@ public class ClientCertAuthenticator extends Authenticator {
             if (response instanceof Success) {
                 // For this method to have been called a Subject with HttpPrincipal was not found within the HttpExchange so now
                 // create a new one.
-                HttpPrincipal principal = ((Success) response).getPrincipal();
+                SubjectHttpPrincipal principal = (SubjectHttpPrincipal) ((Success) response).getPrincipal();
 
                 try {
                     Collection<Principal> principalCol = new HashSet<Principal>();
                     principalCol.add(principal);
                     SubjectUserInfo userInfo = securityRealm.getAuthorizingCallbackHandler(AuthenticationMechanism.CLIENT_CERT)
                             .createSubjectUserInfo(principalCol);
-                    exchange.setAttribute(Subject.class.getName(), userInfo.getSubject(), AttributeScope.CONNECTION);
-
+                    principal.setSubject(userInfo.getSubject());
                 } catch (IOException e) {
                     ROOT_LOGGER.debug("Unable to create SubjectUserInfo", e);
                     response = new Authenticator.Failure(INTERNAL_SERVER_ERROR);

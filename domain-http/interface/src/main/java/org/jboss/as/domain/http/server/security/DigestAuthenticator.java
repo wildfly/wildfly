@@ -97,16 +97,6 @@ public class DigestAuthenticator extends Authenticator {
 
     @Override
     public Result authenticate(HttpExchange httpExchange) {
-        Subject subject = (Subject) httpExchange.getAttribute(Subject.class.getName(), AttributeScope.CONNECTION);
-        // If we have a cached Subject with a HttpPrincipal this connection is already authenticated so no further action
-        // required.
-        if (subject != null) {
-            Set<HttpPrincipal> httpPrincipals = subject.getPrincipals(HttpPrincipal.class);
-            if (httpPrincipals.size() > 0) {
-                return new Success(httpPrincipals.iterator().next());
-            }
-        }
-
         callbackHandler.set(securityRealm.getAuthorizingCallbackHandler(AuthenticationMechanism.DIGEST));
         try {
             return _authenticate(httpExchange);
@@ -126,7 +116,7 @@ public class DigestAuthenticator extends Authenticator {
                 try {
                     Principal p = session.getPeerPrincipal();
 
-                    response = new Success(new HttpPrincipal(p.getName(), realmName));
+                    response = new Success(new SubjectHttpPrincipal(p.getName(), realmName));
                 } catch (SSLPeerUnverifiedException e) {
                 }
             }
@@ -139,14 +129,13 @@ public class DigestAuthenticator extends Authenticator {
         if (response instanceof Success) {
             // For this method to have been called a Subject with HttpPrincipal was not found within the HttpExchange so now
             // create a new one.
-            HttpPrincipal principal = ((Success) response).getPrincipal();
+            SubjectHttpPrincipal principal = (SubjectHttpPrincipal) ((Success) response).getPrincipal();
 
             try {
                 Collection<Principal> principalCol = new HashSet<Principal>();
                 principalCol.add(principal);
                 SubjectUserInfo userInfo = callbackHandler.get().createSubjectUserInfo(principalCol);
-                httpExchange.setAttribute(Subject.class.getName(), userInfo.getSubject(), AttributeScope.CONNECTION);
-
+                principal.setSubject(userInfo.getSubject());
             } catch (IOException e) {
                 ROOT_LOGGER.debug("Unable to create SubjectUserInfo", e);
                 response = new Authenticator.Failure(INTERNAL_SERVER_ERROR);
@@ -272,7 +261,7 @@ public class DigestAuthenticator extends Authenticator {
             byte[] actualResponse = challengeParameters.get(RESPONSE).getBytes();
 
             if (MessageDigest.isEqual(expectedResponse, actualResponse)) {
-                return new HttpPrincipal(challengeParameters.get(USERNAME), challengeParameters.get(REALM));
+                return new SubjectHttpPrincipal(challengeParameters.get(USERNAME), challengeParameters.get(REALM));
             }
 
         } catch (NoSuchAlgorithmException e) {

@@ -21,10 +21,10 @@
  */
 package org.jboss.as.domain.http.server.security;
 
-import static org.jboss.as.domain.management.RealmConfigurationConstants.VERIFY_PASSWORD_CALLBACK_SUPPORTED;
 import static org.jboss.as.domain.http.server.Constants.INTERNAL_SERVER_ERROR;
 import static org.jboss.as.domain.http.server.HttpServerLogger.ROOT_LOGGER;
 import static org.jboss.as.domain.http.server.HttpServerMessages.MESSAGES;
+import static org.jboss.as.domain.management.RealmConfigurationConstants.VERIFY_PASSWORD_CALLBACK_SUPPORTED;
 
 import java.io.IOException;
 import java.security.Principal;
@@ -32,11 +32,9 @@ import java.util.Arrays;
 import java.util.Collection;
 import java.util.HashSet;
 import java.util.Map;
-import java.util.Set;
 
 import javax.net.ssl.SSLPeerUnverifiedException;
 import javax.net.ssl.SSLSession;
-import javax.security.auth.Subject;
 import javax.security.auth.callback.Callback;
 import javax.security.auth.callback.NameCallback;
 import javax.security.auth.callback.PasswordCallback;
@@ -48,7 +46,6 @@ import org.jboss.as.domain.management.AuthorizingCallbackHandler;
 import org.jboss.as.domain.management.SecurityRealm;
 import org.jboss.com.sun.net.httpserver.Authenticator;
 import org.jboss.com.sun.net.httpserver.HttpExchange;
-import org.jboss.com.sun.net.httpserver.HttpExchange.AttributeScope;
 import org.jboss.com.sun.net.httpserver.HttpPrincipal;
 import org.jboss.com.sun.net.httpserver.HttpsExchange;
 import org.jboss.sasl.callback.VerifyPasswordCallback;
@@ -77,16 +74,6 @@ public class BasicAuthenticator extends org.jboss.com.sun.net.httpserver.BasicAu
 
     @Override
     public Result authenticate(HttpExchange httpExchange) {
-        Subject subject = (Subject) httpExchange.getAttribute(Subject.class.getName(), AttributeScope.CONNECTION);
-        // If we have a cached Subject with a HttpPrincipal this connection is already authenticated so no further action
-        // required.
-        if (subject != null) {
-            Set<HttpPrincipal> httpPrincipals = subject.getPrincipals(HttpPrincipal.class);
-            if (httpPrincipals.size() > 0) {
-                return new Success(httpPrincipals.iterator().next());
-            }
-        }
-
         callbackHandler.set(securityRealm.getAuthorizingCallbackHandler(AuthenticationMechanism.PLAIN));
         try {
             return _authenticate(httpExchange);
@@ -106,7 +93,7 @@ public class BasicAuthenticator extends org.jboss.com.sun.net.httpserver.BasicAu
                 try {
                     Principal p = session.getPeerPrincipal();
 
-                    response = new Success(new HttpPrincipal(p.getName(), realm));
+                    response = new Success(new SubjectHttpPrincipal(p.getName(), realm));
                 } catch (SSLPeerUnverifiedException e) {
                 }
             }
@@ -116,16 +103,20 @@ public class BasicAuthenticator extends org.jboss.com.sun.net.httpserver.BasicAu
         }
 
         if (response instanceof Success) {
+            HttpPrincipal existingPrincipal = ((Success) response).getPrincipal();
+            SubjectHttpPrincipal replacementPrincipal = new SubjectHttpPrincipal(existingPrincipal.getName(), existingPrincipal.getName());
             // For this method to have been called a Subject with HttpPrincipal was not found within the HttpExchange so now
             // create a new one.
-            HttpPrincipal principal = ((Success) response).getPrincipal();
+            SubjectHttpPrincipal principal = (SubjectHttpPrincipal) ((Success) response).getPrincipal();
 
             try {
                 Collection<Principal> principalCol = new HashSet<Principal>();
                 principalCol.add(principal);
                 SubjectUserInfo userInfo = callbackHandler.get().createSubjectUserInfo(principalCol);
-                httpExchange.setAttribute(Subject.class.getName(), userInfo.getSubject(), AttributeScope.CONNECTION);
 
+                replacementPrincipal.setSubject(userInfo.getSubject());
+
+                return new Success(replacementPrincipal);
             } catch (IOException e) {
                 ROOT_LOGGER.debug("Unable to create SubjectUserInfo", e);
                 response = new Authenticator.Failure(INTERNAL_SERVER_ERROR);
