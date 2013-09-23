@@ -677,7 +677,7 @@ public class RemoteDomainConnectionService implements MasterDomainControllerClie
         private final RemoteProxyController remoteProxy;
 
         public TransactionalDomainControllerClient(ManagementChannelHandler handler) {
-            remoteProxy = RemoteProxyController.create(handler, PathAddress.EMPTY_ADDRESS, ProxyOperationAddressTranslator.NOOP);
+            remoteProxy = RemoteProxyController.create(handler, PathAddress.EMPTY_ADDRESS, ProxyOperationAddressTranslator.NOOP, false);
 
         }
 

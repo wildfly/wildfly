@@ -21,6 +21,8 @@
 */
 package org.jboss.as.controller.test;
 
+import java.io.IOException;
+
 import org.jboss.as.controller.ModelController;
 import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.ProxyController;
@@ -33,8 +35,6 @@ import org.jboss.as.protocol.mgmt.support.ManagementChannelInitialization;
 import org.jboss.remoting3.Channel;
 import org.jboss.remoting3.CloseHandler;
 import org.junit.After;
-
-import java.io.IOException;
 
 /**
  * @author <a href="kabir.khan@jboss.com">Kabir Khan</a>
@@ -77,7 +77,7 @@ public class RemoteChannelProxyControllerTestCase extends AbstractProxyControlle
 
         final Channel clientChannel = channels.getClientChannel();
         final ManagementChannelHandler support = new ManagementChannelHandler(clientChannel, channels.getExecutorService());
-        final RemoteProxyController proxyController = RemoteProxyController.create(support, proxyNodeAddress, ProxyOperationAddressTranslator.SERVER);
+        final RemoteProxyController proxyController = RemoteProxyController.create(support, proxyNodeAddress, ProxyOperationAddressTranslator.SERVER, false);
         clientChannel.addCloseHandler(new CloseHandler<Channel>() {
             @Override
             public void handleClose(Channel closed, IOException exception) {

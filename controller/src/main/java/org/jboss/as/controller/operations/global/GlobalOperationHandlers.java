@@ -25,7 +25,9 @@ import static org.jboss.as.controller.ControllerMessages.MESSAGES;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
 
+import java.util.Collections;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Iterator;
 import java.util.LinkedHashSet;
 import java.util.Locale;
@@ -112,11 +114,30 @@ public class GlobalOperationHandlers {
             .setAllowNull(true)
             .build();
 
+    private static final Set<String> GLOBAL_READ_OPERATION_NAMES;
+    static {
+        Set<String> set = new HashSet<String>();
+        set.add(ReadResourceHandler.DEFINITION.getName());
+        set.add(ReadAttributeHandler.DEFINITION.getName());
+        set.add(ReadResourceDescriptionHandler.DEFINITION.getName());
+        set.add(ReadChildrenNamesHandler.DEFINITION.getName());
+        set.add(ReadChildrenTypesHandler.DEFINITION.getName());
+        set.add(ReadChildrenResourcesHandler.DEFINITION.getName());
+        set.add(ReadOperationNamesHandler.DEFINITION.getName());
+        set.add(ReadOperationDescriptionHandler.DEFINITION.getName());
+        set.add(ReadResourceDescriptionHandler.CheckResourceAccessHandler.DEFINITION.getName());
+        GLOBAL_READ_OPERATION_NAMES = Collections.unmodifiableSet(set);
+    }
+
+    public static boolean isGlobalReadOperation(String operationName) {
+        return GLOBAL_READ_OPERATION_NAMES.contains(operationName);
+    }
+
     public static void registerGlobalOperations(ManagementResourceRegistration root, ProcessType processType) {
         root.registerOperationHandler(org.jboss.as.controller.operations.global.ReadResourceHandler.DEFINITION,
-                                      org.jboss.as.controller.operations.global.ReadResourceHandler.INSTANCE, true);
+                org.jboss.as.controller.operations.global.ReadResourceHandler.INSTANCE, true);
         root.registerOperationHandler(org.jboss.as.controller.operations.global.ReadAttributeHandler.DEFINITION,
-                                      org.jboss.as.controller.operations.global.ReadAttributeHandler.INSTANCE, true);
+                org.jboss.as.controller.operations.global.ReadAttributeHandler.INSTANCE, true);
         root.registerOperationHandler(ReadResourceDescriptionHandler.DEFINITION, ReadResourceDescriptionHandler.INSTANCE, true);
         root.registerOperationHandler(ReadChildrenNamesHandler.DEFINITION, ReadChildrenNamesHandler.INSTANCE, true);
         root.registerOperationHandler(ReadChildrenTypesHandler.DEFINITION, ReadChildrenTypesHandler.INSTANCE, true);
