@@ -37,5 +37,6 @@
         <module name="org.jboss.classfilewriter"/>
         <module name="org.jboss.logging"/>
         <module name="org.jboss.marshalling"/>
+        <module name="org.wildfly.security.manager"/>
     </dependencies>
 </module>

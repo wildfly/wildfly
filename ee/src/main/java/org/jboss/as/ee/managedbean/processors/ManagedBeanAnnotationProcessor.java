@@ -46,16 +46,15 @@ import org.jboss.as.server.deployment.DeploymentUnit;
 import org.jboss.as.server.deployment.DeploymentUnitProcessingException;
 import org.jboss.as.server.deployment.DeploymentUnitProcessor;
 import org.jboss.as.server.deployment.annotation.CompositeIndex;
-import org.wildfly.security.manager.AccessCheckingInterceptor;
+import org.jboss.invocation.AccessCheckingInterceptor;
 import org.jboss.invocation.ContextClassLoaderInterceptor;
 import org.jboss.invocation.ImmediateInterceptorFactory;
-import org.jboss.invocation.PrivilegedInterceptor;
+import org.jboss.invocation.PrivilegedWithCombinerInterceptor;
 import org.jboss.jandex.AnnotationInstance;
 import org.jboss.jandex.AnnotationTarget;
 import org.jboss.jandex.AnnotationValue;
 import org.jboss.jandex.ClassInfo;
 import org.jboss.jandex.DotName;
-import org.wildfly.security.manager.WildFlySecurityManager;
 
 import static org.jboss.as.ee.EeLogger.ROOT_LOGGER;
 import static org.jboss.as.ee.EeMessages.MESSAGES;
@@ -119,9 +118,7 @@ public class ManagedBeanAnnotationProcessor implements DeploymentUnitProcessor {
                     configuration.addClientInterceptor(associatingInterceptorFactory, InterceptorOrder.Client.ASSOCIATING_INTERCEPTOR);
                     configuration.addClientPreDestroyInterceptor(new ManagedBeanDestroyInterceptorFactory(contextKey), InterceptorOrder.ClientPreDestroy.INSTANCE_DESTROY);
                     final ClassLoader classLoader = componentConfiguration.getModuleClassLoader();
-                    if(WildFlySecurityManager.isChecking()) {
-                        configuration.addViewInterceptor(PrivilegedInterceptor.getFactory(), InterceptorOrder.View.PRIVILEGED_INTERCEPTOR);
-                    }
+                    configuration.addViewInterceptor(PrivilegedWithCombinerInterceptor.getFactory(), InterceptorOrder.View.PRIVILEGED_INTERCEPTOR);
                     configuration.addViewInterceptor(AccessCheckingInterceptor.getFactory(), InterceptorOrder.View.CHECKING_INTERCEPTOR);
                     configuration.addViewInterceptor(new ImmediateInterceptorFactory(new ContextClassLoaderInterceptor(classLoader)), InterceptorOrder.View.TCCL_INTERCEPTOR);
                 }
