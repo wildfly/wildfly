@@ -24,8 +24,8 @@ package org.jboss.as.webservices.dmr;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.VALUE;
 import static org.jboss.as.webservices.WSMessages.MESSAGES;
-import static org.jboss.as.webservices.dmr.Constants.ENDPOINT_CONFIG;
-import static org.jboss.as.webservices.dmr.Constants.PROPERTY;
+import static org.jboss.as.webservices.dmr.PackageUtils.getConfigServiceName;
+import static org.jboss.as.webservices.dmr.PackageUtils.getPropertyServiceName;
 
 import java.util.List;
 
@@ -36,7 +36,6 @@ import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.PathElement;
 import org.jboss.as.controller.ServiceVerificationHandler;
 import org.jboss.as.webservices.service.PropertyService;
-import org.jboss.as.webservices.util.WSServices;
 import org.jboss.dmr.ModelNode;
 import org.jboss.msc.service.ServiceBuilder;
 import org.jboss.msc.service.ServiceController;
@@ -77,12 +76,12 @@ final class PropertyAdd extends AbstractAddStepHandler {
 
             final PropertyService<AbstractCommonConfig> service = new PropertyService<AbstractCommonConfig>(propertyName, propertyValue);
             final ServiceTarget target = context.getServiceTarget();
-            final ServiceName configServiceName = ((ENDPOINT_CONFIG.equals(configType) ? WSServices.ENDPOINT_CONFIG_SERVICE : WSServices.CLIENT_CONFIG_SERVICE)).append(configName);
+            final ServiceName configServiceName = getConfigServiceName(configType, configName);
             if (context.getServiceRegistry(false).getService(configServiceName) == null) {
                 throw MESSAGES.missingConfig(configName);
             }
 
-            final ServiceName propertyServiceName = configServiceName.append(PROPERTY).append(propertyName);
+            final ServiceName propertyServiceName = getPropertyServiceName(configServiceName, propertyName);
             final ServiceBuilder<?> propertyServiceBuilder = target.addService(propertyServiceName, service);
             propertyServiceBuilder.addDependency(configServiceName, AbstractCommonConfig.class, service.getAbstractCommonConfig());
             propertyServiceBuilder.setInitialMode(ServiceController.Mode.ACTIVE).install();

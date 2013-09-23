@@ -27,14 +27,18 @@ import static org.jboss.as.webservices.dmr.Constants.WSDL_PORT;
 import static org.jboss.as.webservices.dmr.Constants.WSDL_SECURE_PORT;
 
 import java.net.UnknownHostException;
+import java.util.ArrayList;
 import java.util.List;
 
 import org.jboss.as.controller.AbstractBoottimeAddStepHandler;
 import org.jboss.as.controller.AttributeDefinition;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
+import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.ProcessType;
 import org.jboss.as.controller.ServiceVerificationHandler;
+import org.jboss.as.controller.registry.Resource;
+import org.jboss.as.controller.registry.Resource.ResourceEntry;
 import org.jboss.as.server.AbstractDeploymentChainStep;
 import org.jboss.as.server.DeploymentProcessorTarget;
 import org.jboss.as.webservices.config.ServerConfigImpl;
@@ -42,6 +46,7 @@ import org.jboss.as.webservices.service.ServerConfigService;
 import org.jboss.as.webservices.util.ModuleClassLoaderProvider;
 import org.jboss.dmr.ModelNode;
 import org.jboss.msc.service.ServiceController;
+import org.jboss.msc.service.ServiceName;
 import org.jboss.msc.service.ServiceTarget;
 
 /**
@@ -75,11 +80,11 @@ class WSSubsystemAdd extends AbstractBoottimeAddStepHandler {
         ServiceTarget serviceTarget = context.getServiceTarget();
         if (appclient && model.hasDefined(WSDL_HOST)) {
             ServerConfigImpl serverConfig = createServerConfig(model, true, context);
-            newControllers.add(ServerConfigService.install(serviceTarget, serverConfig, verificationHandler));
+            newControllers.add(ServerConfigService.install(serviceTarget, serverConfig, verificationHandler, getServerConfigDependencies(context)));
         }
         if (!appclient) {
             ServerConfigImpl serverConfig = createServerConfig(model, false, context);
-            newControllers.add(ServerConfigService.install(serviceTarget, serverConfig, verificationHandler));
+            newControllers.add(ServerConfigService.install(serviceTarget, serverConfig, verificationHandler, getServerConfigDependencies(context)));
         }
     }
 
@@ -101,6 +106,41 @@ class WSSubsystemAdd extends AbstractBoottimeAddStepHandler {
             config.setWebServiceSecurePort(Attributes.WSDL_SECURE_PORT.resolveModelAttribute(context, configuration).asInt());
         }
         return config;
+    }
+
+    /**
+     * Process the model to figure out the name of the services the server config services has to depend on
+     *
+     */
+    private static List<ServiceName> getServerConfigDependencies(OperationContext context) {
+        final List<ServiceName> serviceNames = new ArrayList<ServiceName>();
+        final Resource subsystemResource = context.readResourceFromRoot(PathAddress.pathAddress(WSExtension.SUBSYSTEM_PATH));
+        readConfigServiceNames(serviceNames, subsystemResource, Constants.CLIENT_CONFIG);
+        readConfigServiceNames(serviceNames, subsystemResource, Constants.ENDPOINT_CONFIG);
+        return serviceNames;
+    }
+
+    private static void readConfigServiceNames(List<ServiceName> serviceNames, Resource subsystemResource, String configType) {
+        for (ResourceEntry re : subsystemResource.getChildren(configType)) {
+            ServiceName configServiceName = Constants.CLIENT_CONFIG.equals(configType) ? PackageUtils
+                    .getClientConfigServiceName(re.getName()) : PackageUtils.getEndpointConfigServiceName(re.getName());
+            serviceNames.add(configServiceName);
+            readHandlerChainServiceNames(serviceNames, re, Constants.PRE_HANDLER_CHAIN, configServiceName);
+            readHandlerChainServiceNames(serviceNames, re, Constants.POST_HANDLER_CHAIN, configServiceName);
+            for (String propertyName : re.getChildrenNames(Constants.PROPERTY)) {
+                serviceNames.add(PackageUtils.getPropertyServiceName(configServiceName, propertyName));
+            }
+        }
+    }
+
+    private static void readHandlerChainServiceNames(List<ServiceName> serviceNames, Resource configResource, String chainType, ServiceName configServiceName) {
+        for (ResourceEntry re : configResource.getChildren(chainType)) {
+            ServiceName handlerChainServiceName = PackageUtils.getHandlerChainServiceName(configServiceName, re.getName());
+            serviceNames.add(handlerChainServiceName);
+            for (String handlerName : re.getChildrenNames(Constants.HANDLER)) {
+                serviceNames.add(PackageUtils.getHandlerServiceName(handlerChainServiceName, handlerName));
+            }
+        }
     }
 
 }
