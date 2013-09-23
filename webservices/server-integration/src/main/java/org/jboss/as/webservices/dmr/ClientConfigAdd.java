@@ -35,6 +35,7 @@ import org.jboss.as.webservices.service.ConfigService;
 import org.jboss.as.webservices.util.ASHelper;
 import org.jboss.as.webservices.util.WSServices;
 import org.jboss.dmr.ModelNode;
+import org.jboss.msc.service.ServiceBuilder;
 import org.jboss.msc.service.ServiceController;
 import org.jboss.msc.service.ServiceName;
 import org.jboss.msc.service.ServiceTarget;
