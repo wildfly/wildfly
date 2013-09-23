@@ -23,8 +23,8 @@ package org.jboss.as.webservices.service;
 
 import static org.jboss.as.webservices.WSMessages.MESSAGES;
 
-import java.util.LinkedList;
 import java.util.List;
+import java.util.concurrent.CopyOnWriteArrayList;
 
 import org.jboss.msc.service.Service;
 import org.jboss.msc.service.StartContext;
@@ -63,18 +63,18 @@ public final class HandlerChainService<T extends AbstractCommonConfig> implement
         final AbstractCommonConfig commonConfig = abstractCommonConfig.getValue();
         List<UnifiedHandlerChainMetaData> handlerChains;
         if ("pre-handler-chain".equals(handlerChainType)) {
-            synchronized (commonConfig) {
+            synchronized (commonConfig) { //JBWS-3707
                 handlerChains = commonConfig.getPreHandlerChains();
                 if (handlerChains == null) {
-                    handlerChains = new LinkedList<UnifiedHandlerChainMetaData>();
+                    handlerChains = new CopyOnWriteArrayList<UnifiedHandlerChainMetaData>();
                     commonConfig.setPreHandlerChains(handlerChains);
                 }
             }
         } else if ("post-handler-chain".equals(handlerChainType)) {
-            synchronized (commonConfig) {
+            synchronized (commonConfig) { //JBWS-3707
                 handlerChains = commonConfig.getPostHandlerChains();
                 if (handlerChains == null) {
-                    handlerChains = new LinkedList<UnifiedHandlerChainMetaData>();
+                    handlerChains = new CopyOnWriteArrayList<UnifiedHandlerChainMetaData>();
                     commonConfig.setPostHandlerChains(handlerChains);
                 }
             }
