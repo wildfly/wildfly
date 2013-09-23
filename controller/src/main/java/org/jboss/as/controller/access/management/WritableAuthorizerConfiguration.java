@@ -31,11 +31,13 @@ import java.util.Map;
 import java.util.Set;
 import java.util.WeakHashMap;
 
+import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.access.Authorizer;
 import org.jboss.as.controller.access.AuthorizerConfiguration;
 import org.jboss.as.controller.access.Caller;
 import org.jboss.as.controller.access.CombinationPolicy;
 import org.jboss.as.controller.access.rbac.StandardRBACAuthorizer;
+import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
 
 /**
  * Standard {@link AuthorizerConfiguration} implementation that also exposes mutator APIs for use by
@@ -43,10 +45,12 @@ import org.jboss.as.controller.access.rbac.StandardRBACAuthorizer;
  *
  * @author Brian Stansberry (c) 2013 Red Hat Inc.
  */
-public class WritableAuthorizerConfiguration implements AuthorizerConfiguration {
+public class WritableAuthorizerConfiguration implements AuthorizerConfiguration, AccessConstraintUtilizationRegistry {
 
     private volatile Map<String, RoleMappingImpl> roleMappings = new HashMap<String, RoleMappingImpl>();
     private final Map<Object, RoleMappingImpl> removedRoles = new WeakHashMap<Object, RoleMappingImpl>();
+    private final Map<AccessConstraintKey, Map<PathAddress, AccessConstraintUtilization>> accessConstraintUtilization =
+            new HashMap<AccessConstraintKey, Map<PathAddress, AccessConstraintUtilization>>();
     private volatile CombinationPolicy combinationPolicy = CombinationPolicy.PERMISSIVE;
     private volatile boolean useRealmRoles;
     private volatile boolean nonFacadeMBeansSensitive;
@@ -260,6 +264,70 @@ public class WritableAuthorizerConfiguration implements AuthorizerConfiguration 
 
     private static String getOfficialForm(String roleName) {
         return roleName == null ? null : roleName.toUpperCase(Locale.ENGLISH);
+    }
+
+    @Override
+    public synchronized Map<PathAddress, AccessConstraintUtilization> getAccessConstraintUtilizations(AccessConstraintKey accessConstraintKey) {
+        Map<PathAddress, AccessConstraintUtilization> result = getAccessConstraintUtilizations(accessConstraintKey, false);
+        return result == null ? Collections.<PathAddress, AccessConstraintUtilization>emptyMap() : Collections.unmodifiableMap(result);
+    }
+
+    private Map<PathAddress, AccessConstraintUtilization> getAccessConstraintUtilizations(AccessConstraintKey constraintKey,
+                                                                             boolean addIfNull) {
+        Map<PathAddress, AccessConstraintUtilization> result = accessConstraintUtilization.get(constraintKey);
+        if (result == null && addIfNull) {
+            result = new HashMap<PathAddress, AccessConstraintUtilization>();
+            accessConstraintUtilization.put(constraintKey, result);
+        }
+        return result;
+    }
+
+    @Override
+    public synchronized void registerAccessConstraintResourceUtilization(AccessConstraintKey key, PathAddress address) {
+        AccessConstraintUtilizationImpl acu = getAccessConstraintUtilizationImpl(key, address);
+        acu.setResourceConstrained(true);
+    }
+
+    @Override
+    public synchronized void registerAccessConstraintAttributeUtilization(AccessConstraintKey key,
+                                                             PathAddress address, String attribute) {
+        AccessConstraintUtilizationImpl acu = getAccessConstraintUtilizationImpl(key, address);
+        acu.addAttribute(attribute);
+
+    }
+
+    @Override
+    public synchronized void registerAccessConstraintOperationUtilization(AccessConstraintKey key,
+                                                             PathAddress address, String operation) {
+        AccessConstraintUtilizationImpl acu = getAccessConstraintUtilizationImpl(key, address);
+        acu.addOperation(operation);
+
+    }
+
+    @Override
+    public synchronized void unregisterAccessConstraintUtilizations(PathAddress address) {
+        for (Map<PathAddress, AccessConstraintUtilization> map : accessConstraintUtilization.values()) {
+            map.remove(address);
+        }
+    }
+
+    private AccessConstraintUtilizationImpl getAccessConstraintUtilizationImpl(AccessConstraintKey key,
+                                                                               PathAddress address) {
+        Map<PathAddress, AccessConstraintUtilization> map = getAccessConstraintUtilizations(key, true);
+        AccessConstraintUtilizationImpl acu = (AccessConstraintUtilizationImpl) map.get(address);
+        if (acu == null) {
+            // WFLY-1819. Validate that ApplicationTypeConfig.DEPLOYMENT isn't misused
+            // A bit hacky, but this is as good a control point for this as any.
+            if (key.isCore() && ApplicationTypeAccessConstraintDefinition.DEPLOYMENT.getName().equals(key.getName())
+                    && ApplicationTypeAccessConstraintDefinition.DEPLOYMENT.getType().equals(key.getType())) {
+                assert !address.toString().contains(ModelDescriptionConstants.SUBSYSTEM)
+                        : "Invalid use of " + key + " in a subsystem; reserved for core use";
+            }
+
+            acu = new AccessConstraintUtilizationImpl(key, address);
+            map.put(address, acu);
+        }
+        return acu;
     }
 
     /**
@@ -501,4 +569,5 @@ public class WritableAuthorizerConfiguration implements AuthorizerConfiguration 
             this.canonicalRoles = Collections.unmodifiableSet(canonicalRoles);
         }
     }
+
 }

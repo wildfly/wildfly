@@ -33,7 +33,7 @@ public interface DomainControllerProtocol extends ModelControllerProtocol {
     byte REGISTER_HOST_CONTROLLER_REQUEST = 0x51;
     byte UNREGISTER_HOST_CONTROLLER_REQUEST = 0x53;
     byte GET_FILE_REQUEST = 0x55;
-    byte IS_ACTIVE_REQUEST = 0x57;
+    byte FETCH_DOMAIN_CONFIGURATION_REQUEST = 0x57;
     byte COMPLETE_HOST_CONTROLLER_REGISTRATION = 0x58;
     byte REQUEST_SUBSYSTEM_VERSIONS = 0x59;
 

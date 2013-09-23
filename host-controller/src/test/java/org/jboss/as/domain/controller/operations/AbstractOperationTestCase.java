@@ -584,7 +584,7 @@ public abstract class AbstractOperationTestCase {
     Resource createRootResource() {
         final Resource rootResource = Resource.Factory.create();
 
-        CoreManagementResourceDefinition.registerDomainResource(rootResource);
+        CoreManagementResourceDefinition.registerDomainResource(rootResource, null);
 
         final Resource host = Resource.Factory.create();
         final Resource serverOneConfig = Resource.Factory.create();

@@ -29,6 +29,7 @@ import org.jboss.as.controller.ControlledProcessState;
 import org.jboss.as.domain.controller.LocalHostControllerInfo;
 import org.jboss.as.host.controller.HostControllerEnvironment;
 import org.jboss.as.host.controller.discovery.DiscoveryOption;
+import org.jboss.as.host.controller.model.host.AdminOnlyDomainConfigPolicy;
 
 /**
  * Default implementation of {@link LocalHostControllerInfo}.
@@ -41,21 +42,20 @@ public class LocalHostControllerInfoImpl implements LocalHostControllerInfo {
     private final HostControllerEnvironment hostEnvironment;
 
     private final String localHostName;
-    private boolean master;
-    private String nativeManagementInterface;
-    private int nativeManagementPort;
+    private volatile boolean master;
+    private volatile String nativeManagementInterface;
+    private volatile int nativeManagementPort;
 
-    private String remoteDcHost;
-    private int remoteDcPort;
-    private String remoteDCUser;
-    private String remoteSecurityRealm;
-    private List<DiscoveryOption> remoteDiscoveryOptions = new ArrayList<DiscoveryOption>();
-    private boolean remoteIgnoreUnaffectedConfiguration;
-    private String httpManagementInterface;
-    private int httpManagementPort;
-    private int httpManagementSecurePort;
-    private String nativeManagementSecurityRealm;
-    private String httpManagementSecurityRealm;
+    private volatile String remoteDCUser;
+    private volatile String remoteSecurityRealm;
+    private volatile List<DiscoveryOption> remoteDiscoveryOptions = new ArrayList<DiscoveryOption>();
+    private volatile boolean remoteIgnoreUnaffectedConfiguration;
+    private volatile String httpManagementInterface;
+    private volatile int httpManagementPort;
+    private volatile int httpManagementSecurePort;
+    private volatile String nativeManagementSecurityRealm;
+    private volatile String httpManagementSecurityRealm;
+    private volatile AdminOnlyDomainConfigPolicy adminOnlyDomainConfigPolicy = AdminOnlyDomainConfigPolicy.ALLOW_NO_CONFIG;
 
     /** Constructor solely for test cases */
     public LocalHostControllerInfoImpl(final ControlledProcessState processState, final String localHostName) {
@@ -118,6 +118,7 @@ public class LocalHostControllerInfoImpl implements LocalHostControllerInfo {
         return httpManagementSecurityRealm;
     }
 
+    @Override
     public String getRemoteDomainControllerUsername() {
         return remoteDCUser;
     }
@@ -126,12 +127,22 @@ public class LocalHostControllerInfoImpl implements LocalHostControllerInfo {
         return remoteSecurityRealm;
     }
 
+    @Override
     public List<DiscoveryOption> getRemoteDomainControllerDiscoveryOptions() {
         return remoteDiscoveryOptions;
     }
 
+    @Override
     public boolean isRemoteDomainControllerIgnoreUnaffectedConfiguration() {
         return remoteIgnoreUnaffectedConfiguration;
+    }
+
+    public AdminOnlyDomainConfigPolicy getAdminOnlyDomainConfigPolicy() {
+        return adminOnlyDomainConfigPolicy;
+    }
+
+    void setAdminOnlyDomainConfigPolicy(AdminOnlyDomainConfigPolicy adminOnlyDomainConfigPolicy) {
+        this.adminOnlyDomainConfigPolicy = adminOnlyDomainConfigPolicy;
     }
 
     void setMasterDomainController(boolean master) {
@@ -164,14 +175,6 @@ public class LocalHostControllerInfoImpl implements LocalHostControllerInfo {
 
     void setHttpManagementSecurityRealm(String httpManagementSecurityRealm) {
         this.httpManagementSecurityRealm = httpManagementSecurityRealm;
-    }
-
-    void setRemoteDomainControllerHost(String host) {
-        remoteDcHost = host;
-    }
-
-    void setRemoteDomainControllerPort(int port) {
-        remoteDcPort = port;
     }
 
     void setRemoteDomainControllerUsername(String userName) {

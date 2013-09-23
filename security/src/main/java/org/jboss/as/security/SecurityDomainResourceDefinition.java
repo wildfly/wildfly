@@ -119,7 +119,6 @@ class SecurityDomainResourceDefinition extends SimpleResourceDefinition {
                 .setRuntimeOnly()
                 .setReplyType(ModelType.LIST)
                 .setReplyValueType(ModelType.STRING)
-                .addAccessConstraint(SensitiveTargetAccessConstraintDefinition.SECURITY_DOMAIN)
                 .build();
 
 
@@ -158,7 +157,6 @@ class SecurityDomainResourceDefinition extends SimpleResourceDefinition {
                 .setEntryType(OperationEntry.EntryType.PUBLIC)
                 .setRuntimeOnly()
                 .addParameter(new SimpleAttributeDefinition(Constants.PRINCIPAL_ARGUMENT, ModelType.STRING, true))
-                .addAccessConstraint(SensitiveTargetAccessConstraintDefinition.SECURITY_DOMAIN)
                 .build();
 
         @Override

@@ -32,6 +32,8 @@ import java.util.Set;
 import org.jboss.as.controller.PathElement;
 import org.jboss.as.controller.SimpleResourceDefinition;
 import org.jboss.as.controller.access.constraint.ApplicationTypeConfig;
+import org.jboss.as.controller.access.management.AccessConstraintUtilizationRegistry;
+import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
 import org.jboss.as.controller.registry.ManagementResourceRegistration;
 import org.jboss.as.controller.registry.Resource.ResourceEntry;
 import org.jboss.as.domain.management._private.DomainManagementResolver;
@@ -53,12 +55,10 @@ public class ApplicationClassificationTypeResourceDefinition extends SimpleResou
     }
 
 
-    static ResourceEntry createResource(Map<String, ApplicationTypeConfig> classificationsByType, String type, String name) {
-        return createResource(classificationsByType, PathElement.pathElement(type, name));
-    }
-
-    static ResourceEntry createResource(Map<String, ApplicationTypeConfig> classificationsByType, PathElement pathElement) {
-        return new ApplicationTypeResource(pathElement, classificationsByType);
+    static ResourceEntry createResource(Map<String, ApplicationTypeConfig> classificationsByType,
+                                        String name, AccessConstraintUtilizationRegistry registry) {
+        return new ApplicationTypeResource(PathElement.pathElement(ModelDescriptionConstants.TYPE, name),
+                classificationsByType, registry);
     }
 
     @Override
@@ -69,10 +69,13 @@ public class ApplicationClassificationTypeResourceDefinition extends SimpleResou
     private static class ApplicationTypeResource extends AbstractClassificationResource {
         private static final Set<String> CHILD_TYPES = Collections.singleton(CLASSIFICATION);
         private final Map<String, ApplicationTypeConfig> applicationClassificationsByName;
+        private final AccessConstraintUtilizationRegistry registry;
 
-        ApplicationTypeResource(PathElement pathElement, Map<String, ApplicationTypeConfig> classificationsByType) {
+        ApplicationTypeResource(PathElement pathElement, Map<String, ApplicationTypeConfig> classificationsByType,
+                                AccessConstraintUtilizationRegistry registry) {
             super(pathElement);
             this.applicationClassificationsByName = classificationsByType;
+            this.registry = registry;
         }
 
         @Override
@@ -86,7 +89,9 @@ public class ApplicationClassificationTypeResourceDefinition extends SimpleResou
             if (type.equals(CLASSIFICATION)) {
                 ApplicationTypeConfig classification = applicationClassificationsByName.get(name);
                 if (classification != null) {
-                    return ApplicationClassificationConfigResourceDefinition.createResource(classification, type, name);
+                    String classificationType = getPathElement().getValue();
+                    return ApplicationClassificationConfigResourceDefinition.createResource(classification,
+                            classificationType, name, registry);
                 }
             }
             return null;
@@ -105,7 +110,7 @@ public class ApplicationClassificationTypeResourceDefinition extends SimpleResou
             if (childType.equals(CLASSIFICATION)) {
                 Set<ResourceEntry> entries = new HashSet<ResourceEntry>();
                 for (Map.Entry<String, ApplicationTypeConfig> entry : applicationClassificationsByName.entrySet()) {
-                    entries.add(ApplicationClassificationConfigResourceDefinition.createResource(entry.getValue(), childType, entry.getKey()));
+                    entries.add(ApplicationClassificationConfigResourceDefinition.createResource(entry.getValue(), childType, entry.getKey(), registry));
                 }
                 return entries;
             }

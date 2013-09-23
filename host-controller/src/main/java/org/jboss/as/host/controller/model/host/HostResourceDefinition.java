@@ -172,7 +172,8 @@ public class HostResourceDefinition extends SimpleResourceDefinition {
                 RemoteDomainControllerAddHandler.USERNAME,
                 RemoteDomainControllerAddHandler.SECURITY_REALM,
                 RemoteDomainControllerAddHandler.SECURITY_REALM,
-                RemoteDomainControllerAddHandler.IGNORE_UNUSED_CONFIG)
+                RemoteDomainControllerAddHandler.IGNORE_UNUSED_CONFIG,
+                RemoteDomainControllerAddHandler.ADMIN_ONLY_POLICY)
             .build();
 
     public static final ObjectTypeAttributeDefinition DOMAIN_CONTROLLER = new ObjectTypeAttributeDefinition.Builder(ModelDescriptionConstants.DOMAIN_CONTROLLER, DC_LOCAL, DC_REMOTE)

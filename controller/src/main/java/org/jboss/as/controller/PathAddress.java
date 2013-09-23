@@ -375,4 +375,26 @@ public class PathAddress implements Iterable<PathElement> {
     public String toString() {
         return toModelNode().toString();
     }
+
+    public String toCLIStyleString() {
+        return toString('=');
+    }
+
+    public String toHttpStyleString() {
+        return toString('/');
+    }
+
+    private String toString(char keyValSeparator) {
+        if (pathAddressList.size() == 0) {
+            return "/";
+        }
+        StringBuilder sb = new StringBuilder();
+        for (PathElement pe : pathAddressList) {
+            sb.append('/');
+            sb.append(pe.getKey());
+            sb.append(keyValSeparator);
+            sb.append(pe.getValue());
+        }
+        return sb.toString();
+    }
 }

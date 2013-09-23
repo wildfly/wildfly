@@ -92,7 +92,7 @@ public class HostScopedRolesTestCase extends AbstractCoreModelTest {
                         rootResource.registerChild(PathElement.pathElement(ModelDescriptionConstants.CORE_SERVICE,
                                 ModelDescriptionConstants.MANAGEMENT), management);
                         management.registerChild(PathElement.pathElement(ModelDescriptionConstants.ACCESS,
-                                ModelDescriptionConstants.AUTHORIZATION), AccessAuthorizationResourceDefinition.RESOURCE);
+                                ModelDescriptionConstants.AUTHORIZATION), AccessAuthorizationResourceDefinition.createResource(null));
                     }
                 }, null)
                 .build();

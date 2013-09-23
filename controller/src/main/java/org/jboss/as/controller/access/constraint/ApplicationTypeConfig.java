@@ -94,6 +94,17 @@ public class ApplicationTypeConfig {
         this.configuredApplication = configuredApplication;
     }
 
+    @Override
+    public int hashCode() {
+        return getKey().hashCode();
+    }
+
+    @Override
+    public boolean equals(Object obj) {
+        return obj instanceof ApplicationTypeConfig
+                && getKey().equals(((ApplicationTypeConfig)obj).getKey());
+    }
+
     Key getKey() {
         return new Key();
     }

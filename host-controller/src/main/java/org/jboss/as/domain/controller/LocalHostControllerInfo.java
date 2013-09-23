@@ -113,7 +113,6 @@ public interface LocalHostControllerInfo {
      */
     List<DiscoveryOption> getRemoteDomainControllerDiscoveryOptions();
 
-
     /**
      * Gets whether we are set up to automatically ignore configuration from the DC
      * which does not apply to our servers.

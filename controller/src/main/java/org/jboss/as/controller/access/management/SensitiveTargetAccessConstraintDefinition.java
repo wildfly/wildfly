@@ -22,9 +22,6 @@
 
 package org.jboss.as.controller.access.management;
 
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.CORE;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.TYPE;
-
 import java.util.Collections;
 import java.util.List;
 import java.util.Locale;
@@ -32,6 +29,7 @@ import java.util.Locale;
 import org.jboss.as.controller.access.constraint.ConstraintFactory;
 import org.jboss.as.controller.access.constraint.SensitiveTargetConstraint;
 import org.jboss.as.controller.access.constraint.SensitivityClassification;
+import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
 import org.jboss.dmr.ModelNode;
 
 /**
@@ -63,9 +61,12 @@ public class SensitiveTargetAccessConstraintDefinition implements AccessConstrai
     public static final SensitiveTargetAccessConstraintDefinition SYSTEM_PROPERTY = new SensitiveTargetAccessConstraintDefinition(SensitivityClassification.SYSTEM_PROPERTY);
 
     private final SensitivityClassification sensitivity;
+    private final AccessConstraintKey key;
 
     public SensitiveTargetAccessConstraintDefinition(SensitivityClassification sensitivity) {
         this.sensitivity = sensitivity;
+        this.key = new AccessConstraintKey(ModelDescriptionConstants.SENSITIVITY_CLASSIFICATION, sensitivity.isCore(),
+                sensitivity.getSubsystem(), sensitivity.getName());
         SensitiveTargetConstraint.FACTORY.addSensitivity(sensitivity);
     }
 
@@ -74,10 +75,8 @@ public class SensitiveTargetAccessConstraintDefinition implements AccessConstrai
     }
 
     @Override
-    public ModelNode getModelDescription(Locale locale) {
-        ModelNode result = new ModelNode();
-        result.get(TYPE).set(sensitivity.isCore() ? CORE : sensitivity.getSubsystem());
-        return result;
+    public ModelNode getModelDescriptionDetails(Locale locale) {
+        return null;
     }
 
     @Override
@@ -91,8 +90,40 @@ public class SensitiveTargetAccessConstraintDefinition implements AccessConstrai
     }
 
     @Override
-    public Type getType() {
-        return Type.SENSITIVE;
+    public String getType() {
+        return ModelDescriptionConstants.SENSITIVE;
+    }
+
+    @Override
+    public boolean isCore() {
+        return sensitivity.isCore();
+    }
+
+    @Override
+    public String getSubsystemName() {
+        return sensitivity.isCore() ? null : sensitivity.getSubsystem();
+    }
+
+    @Override
+    public AccessConstraintKey getKey() {
+        return key;
+    }
+
+    @Override
+    public String getDescription(Locale locale) {
+        //TODO implement getDescription
+        return null;
+    }
+
+    @Override
+    public int hashCode() {
+        return sensitivity.hashCode();
+    }
+
+    @Override
+    public boolean equals(Object obj) {
+        return obj instanceof SensitiveTargetAccessConstraintDefinition
+                && sensitivity.equals(((SensitiveTargetAccessConstraintDefinition)obj).sensitivity);
     }
 
     public List<AccessConstraintDefinition> wrapAsList() {

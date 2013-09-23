@@ -22,9 +22,6 @@
 
 package org.jboss.as.controller.access.management;
 
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.CORE;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.TYPE;
-
 import java.util.Collections;
 import java.util.List;
 import java.util.Locale;
@@ -32,6 +29,7 @@ import java.util.Locale;
 import org.jboss.as.controller.access.constraint.ApplicationTypeConfig;
 import org.jboss.as.controller.access.constraint.ApplicationTypeConstraint;
 import org.jboss.as.controller.access.constraint.ConstraintFactory;
+import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
 import org.jboss.dmr.ModelNode;
 
 /**
@@ -46,17 +44,18 @@ public class ApplicationTypeAccessConstraintDefinition implements AccessConstrai
     public static final List<AccessConstraintDefinition> DEPLOYMENT_AS_LIST = DEPLOYMENT.wrapAsList();
 
     private final ApplicationTypeConfig applicationTypeConfig;
+    private final AccessConstraintKey key;
 
     public ApplicationTypeAccessConstraintDefinition(ApplicationTypeConfig applicationTypeConfig) {
         this.applicationTypeConfig = applicationTypeConfig;
+        this.key = new AccessConstraintKey(ModelDescriptionConstants.APPLICATION_CLASSIFICATION, applicationTypeConfig.isCore(),
+                applicationTypeConfig.getSubsystem(), applicationTypeConfig.getName());
         ApplicationTypeConstraint.FACTORY.addApplicationTypeConfig(applicationTypeConfig);
     }
 
     @Override
-    public ModelNode getModelDescription(Locale locale) {
-        ModelNode result = new ModelNode();
-        result.get(TYPE).set(applicationTypeConfig.isCore() ? CORE : applicationTypeConfig.getSubsystem());
-        return result;
+    public ModelNode getModelDescriptionDetails(Locale locale) {
+        return null;
     }
 
     @Override
@@ -74,8 +73,40 @@ public class ApplicationTypeAccessConstraintDefinition implements AccessConstrai
     }
 
     @Override
-    public Type getType() {
-        return Type.APPLICATION;
+    public String getType() {
+        return ModelDescriptionConstants.APPLICATION;
+    }
+
+    @Override
+    public boolean isCore() {
+        return applicationTypeConfig.isCore();
+    }
+
+    @Override
+    public String getSubsystemName() {
+        return applicationTypeConfig.isCore() ? null : applicationTypeConfig.getSubsystem();
+    }
+
+    @Override
+    public AccessConstraintKey getKey() {
+        return key;
+    }
+
+    @Override
+    public String getDescription(Locale locale) {
+        // TODO
+        return null;
+    }
+
+    @Override
+    public int hashCode() {
+        return applicationTypeConfig.hashCode();
+    }
+
+    @Override
+    public boolean equals(Object obj) {
+        return obj instanceof ApplicationTypeAccessConstraintDefinition
+                && applicationTypeConfig.equals(((ApplicationTypeAccessConstraintDefinition)obj).applicationTypeConfig);
     }
 
     public List<AccessConstraintDefinition> wrapAsList() {
