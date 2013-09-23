@@ -123,6 +123,7 @@ import org.wildfly.extension.undertow.security.AuditNotificationReceiver;
 import org.wildfly.extension.undertow.security.JAASIdentityManagerImpl;
 import org.wildfly.extension.undertow.security.SecurityContextAssociationHandler;
 import org.wildfly.extension.undertow.security.SecurityContextThreadSetupAction;
+import org.wildfly.extension.undertow.security.WildflySecurityManagerPrivilegedHandler;
 
 import javax.servlet.Filter;
 import javax.servlet.Servlet;
@@ -700,6 +701,7 @@ public class UndertowDeploymentInfoService implements Service<DeploymentInfo> {
 
             d.addSecurityRoles(mergedMetaData.getSecurityRoleNames());
 
+            d.addOuterHandlerChainWrapper(WildflySecurityManagerPrivilegedHandler.wrapper());
 
             Map<String, Set<String>> principalVersusRolesMap = mergedMetaData.getPrincipalVersusRolesMap();
             d.addThreadSetupAction(new SecurityContextThreadSetupAction(securityDomain, securityDomainContextValue.getValue(), principalVersusRolesMap));
