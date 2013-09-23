@@ -46,8 +46,8 @@ public class ServiceContainerEndpointRegistry implements EndpointRegistry {
                 String contextPath = sname.getParent().getSimpleName().substring(8);
                 String endpointName = sname.getSimpleName();
                 final StringBuilder name = new StringBuilder(Endpoint.SEPID_DOMAIN + ":");
-                name.append(Endpoint.SEPID_PROPERTY_CONTEXT + "=" + contextPath + ",");
-                name.append(Endpoint.SEPID_PROPERTY_ENDPOINT + "=" + endpointName);
+                name.append(Endpoint.SEPID_PROPERTY_CONTEXT + "=").append(contextPath).append(",");
+                name.append(Endpoint.SEPID_PROPERTY_ENDPOINT + "=").append(endpointName);
                 endpoints.add(ObjectNameFactory.create(name.toString()));
             }
         }
