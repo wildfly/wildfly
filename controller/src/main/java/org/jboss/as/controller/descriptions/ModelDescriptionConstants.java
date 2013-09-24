@@ -137,6 +137,9 @@ public class ModelDescriptionConstants {
     public static final String FILE = "file";
     public static final String FILE_HANDLER = "file-handler";
     public static final String FILTER = "filter";
+    public static final String FILTERED_ATTRIBUTES = "filtered-attributes";
+    public static final String FILTERED_CHILDREN_TYPES = "filtered-children-types";
+    public static final String FILTERED_OPERATIONS = "filtered-operations";
     public static final String FIXED_PORT = "fixed-port";
     public static final String FIXED_SOURCE_PORT = "fixed-source-port";
     public static final String FORCE = "force";
@@ -384,6 +387,7 @@ public class ModelDescriptionConstants {
     public static final String UDP = "udp";
     public static final String UNDEFINE_ATTRIBUTE_OPERATION = "undefine-attribute";
     public static final String UNDEPLOY = "undeploy";
+    public static final String UNREADABLE_CHILDREN = "unreadable-children";
     public static final String UPLOAD_DEPLOYMENT_BYTES = "upload-deployment-bytes";
     public static final String UPLOAD_DEPLOYMENT_URL = "upload-deployment-url";
     public static final String UPLOAD_DEPLOYMENT_STREAM = "upload-deployment-stream";
