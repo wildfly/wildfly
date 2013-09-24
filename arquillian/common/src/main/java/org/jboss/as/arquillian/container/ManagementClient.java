@@ -37,6 +37,7 @@ import java.net.URISyntaxException;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Set;
+
 import javax.management.Attribute;
 import javax.management.AttributeList;
 import javax.management.AttributeNotFoundException;
@@ -186,11 +187,14 @@ public class ManagementClient implements AutoCloseable, Closeable {
             return SUCCESS.equals(rsp.get(OUTCOME).asString())
                     && !CONTROLLER_PROCESS_STATE_STARTING.equals(rsp.get(RESULT).asString())
                     && !CONTROLLER_PROCESS_STATE_STOPPING.equals(rsp.get(RESULT).asString());
-        } catch (Throwable ignored) {
+        } catch (RuntimeException rte) {
+            throw rte;
+        } catch (IOException ex) {
             return false;
         }
     }
 
+    @Override
     public void close() {
         try {
             getControllerClient().close();
