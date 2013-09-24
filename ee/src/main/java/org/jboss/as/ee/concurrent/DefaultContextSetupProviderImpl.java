@@ -45,12 +45,12 @@ public class DefaultContextSetupProviderImpl implements ContextSetupProvider {
 
     @Override
     public org.glassfish.enterprise.concurrent.spi.ContextHandle saveContext(ContextService contextService) {
-        return getConcurrentContext().getAllChainedContextHandleFactory().saveContext(contextService, null);
+        return getConcurrentContext().saveContext(contextService, null);
     }
 
     @Override
     public org.glassfish.enterprise.concurrent.spi.ContextHandle saveContext(ContextService contextService, Map<String, String> contextObjectProperties) {
-        return getConcurrentContext().getAllChainedContextHandleFactory().saveContext(contextService, contextObjectProperties);
+        return getConcurrentContext().saveContext(contextService, contextObjectProperties);
     }
 
     @Override

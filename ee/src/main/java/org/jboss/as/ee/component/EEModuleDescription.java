@@ -32,6 +32,7 @@ import java.util.List;
 import java.util.Map;
 
 import org.jboss.as.ee.component.interceptors.InterceptorClassDescription;
+import org.jboss.as.ee.concurrent.ConcurrentContext;
 import org.jboss.as.ee.naming.InjectedEENamespaceContextSelector;
 import org.jboss.msc.service.ServiceName;
 
@@ -70,6 +71,8 @@ public final class EEModuleDescription implements ResourceInjectionTarget {
 
     private ServiceName defaultClassIntrospectorServiceName = ReflectiveClassIntrospector.SERVICE_NAME;
 
+    private final ConcurrentContext concurrentContext;
+
     /**
      * Construct a new instance.
      *
@@ -83,6 +86,7 @@ public final class EEModuleDescription implements ResourceInjectionTarget {
         this.moduleName = moduleName;
         this.earApplicationName = earApplicationName;
         this.appClient = appClient;
+        this.concurrentContext = new ConcurrentContext(getApplicationName(),getModuleName(),null);
     }
 
     /**
@@ -299,5 +303,9 @@ public final class EEModuleDescription implements ResourceInjectionTarget {
 
     public Map<String, InterceptorEnvironment> getInterceptorEnvironment() {
         return interceptorEnvironment;
+    }
+
+    public ConcurrentContext getConcurrentContext() {
+        return concurrentContext;
     }
 }

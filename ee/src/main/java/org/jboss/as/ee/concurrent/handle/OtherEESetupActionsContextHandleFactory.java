@@ -21,33 +21,37 @@
  */
 package org.jboss.as.ee.concurrent.handle;
 
+import org.jboss.as.ee.EeLogger;
 import org.jboss.as.ee.EeMessages;
-import org.wildfly.security.manager.WildFlySecurityManager;
+import org.jboss.as.server.deployment.SetupAction;
 
 import javax.enterprise.concurrent.ContextService;
 import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
+import java.util.Collections;
+import java.util.LinkedList;
+import java.util.List;
 import java.util.Map;
 
 /**
- * A context handle factory which is responsible for saving and setting proper classloading context.
+ * The context handle factory responsible for setting EE setup actions in the invocation context.
  *
  * @author Eduardo Martins
  */
-public class ClassLoaderContextHandleFactory implements ContextHandleFactory {
+public class OtherEESetupActionsContextHandleFactory implements ContextHandleFactory {
 
-    public static final String NAME = "CLASSLOADER";
+    public static final String NAME = "EE_SETUP_ACTIONS";
 
-    private final ClassLoader classLoader;
+    private final List<SetupAction> setupActions;
 
-    public ClassLoaderContextHandleFactory(ClassLoader classLoader) {
-        this.classLoader = classLoader;
+    public OtherEESetupActionsContextHandleFactory(List<SetupAction> setupActions) {
+        this.setupActions = setupActions;
     }
 
     @Override
     public ContextHandle saveContext(ContextService contextService, Map<String, String> contextObjectProperties) {
-        return new ClassLoaderContextHandle(classLoader);
+        return new OtherEESetupActionsContextHandle(setupActions);
     }
 
     @Override
@@ -57,7 +61,7 @@ public class ClassLoaderContextHandleFactory implements ContextHandleFactory {
 
     @Override
     public int getChainPriority() {
-        return 100;
+        return 400;
     }
 
     @Override
@@ -66,32 +70,49 @@ public class ClassLoaderContextHandleFactory implements ContextHandleFactory {
 
     @Override
     public ContextHandle readHandle(ObjectInputStream in) throws IOException, ClassNotFoundException {
-        return new ClassLoaderContextHandle(classLoader);
+        return new OtherEESetupActionsContextHandle(setupActions);
     }
 
-    private static class ClassLoaderContextHandle implements ContextHandle {
+    private static class OtherEESetupActionsContextHandle implements ContextHandle {
 
-        private final ClassLoader classLoader;
-        private ClassLoader previous;
+        private final List<SetupAction> setupActions;
+        private LinkedList<SetupAction> resetActions;
 
-        private ClassLoaderContextHandle(ClassLoader classLoader) {
-            this.classLoader = classLoader;
-        }
-
-        @Override
-        public void setup() throws IllegalStateException {
-            previous = WildFlySecurityManager.getCurrentContextClassLoaderPrivileged();
-            WildFlySecurityManager.setCurrentContextClassLoaderPrivileged(classLoader);
-        }
-
-        @Override
-        public void reset() {
-            WildFlySecurityManager.setCurrentContextClassLoaderPrivileged(previous);
+        private OtherEESetupActionsContextHandle(List<SetupAction> setupActions) {
+            this.setupActions = setupActions;
         }
 
         @Override
         public String getFactoryName() {
             return NAME;
+        }
+
+        @Override
+        public void setup() throws IllegalStateException {
+            resetActions = new LinkedList<>();
+            try {
+                for (SetupAction setupAction : this.setupActions) {
+                    setupAction.setup(Collections.<String, Object>emptyMap());
+                    resetActions.addFirst(setupAction);
+                }
+            } catch (Error | RuntimeException e) {
+                reset();
+                throw e;
+            }
+        }
+
+        @Override
+        public void reset() {
+            if(resetActions != null) {
+                for (SetupAction resetAction : this.resetActions) {
+                    try {
+                        resetAction.teardown(Collections.<String, Object>emptyMap());
+                    } catch (Throwable e) {
+                        EeLogger.ROOT_LOGGER.debug("failed to teardown action",e);
+                    }
+                }
+                resetActions = null;
+            }
         }
 
         // serialization

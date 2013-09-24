@@ -19,25 +19,43 @@
  * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
-package org.jboss.as.ee.concurrent.deployers;
+package org.jboss.as.ee.concurrent.service;
 
-import org.jboss.as.ee.component.BindingConfiguration;
-import org.jboss.as.ee.component.ServiceInjectionSource;
-import org.jboss.as.ee.concurrent.service.ConcurrentServiceNames;
-import org.jboss.as.ee.concurrent.service.ContextServiceService;
-
-import java.util.List;
+import org.jboss.as.ee.EeMessages;
+import org.jboss.as.ee.concurrent.ConcurrentContext;
+import org.jboss.msc.service.Service;
+import org.jboss.msc.service.StartContext;
+import org.jboss.msc.service.StartException;
+import org.jboss.msc.service.StopContext;
 
 /**
- * The {@link org.jboss.as.server.deployment.DeploymentUnitProcessor} which sets up the default concurrent service for each EE component in the deployment unit.
- *
+ * A service holding a concurrent context.
  * @author Eduardo Martins
  */
-public class EEConcurrentDefaultContextServiceProcessor extends EEConcurrentDefaultAbstractProcessor {
+public class ConcurrentContextService implements Service<ConcurrentContext> {
 
-    @Override
-    void addBindingsConfigurations(String bindingNamePrefix, List<BindingConfiguration> bindingConfigurations) {
-        bindingConfigurations.add(new BindingConfiguration(bindingNamePrefix + "DefaultContextService", new ServiceInjectionSource(ConcurrentServiceNames.DEFAULT_CONTEXT_SERVICE_SERVICE_NAME, ContextServiceService.SERVICE_VALUE_TYPE)));
+    private final ConcurrentContext concurrentContext;
+    private volatile boolean started;
+
+    public ConcurrentContextService(ConcurrentContext concurrentContext) {
+        this.concurrentContext = concurrentContext;
     }
 
+    @Override
+    public void start(StartContext context) throws StartException {
+        started = true;
+    }
+
+    @Override
+    public void stop(StopContext context) {
+        started = false;
+    }
+
+    @Override
+    public ConcurrentContext getValue() throws IllegalStateException, IllegalArgumentException {
+        if(!started) {
+            throw EeMessages.MESSAGES.serviceNotStarted();
+        }
+        return concurrentContext;
+    }
 }

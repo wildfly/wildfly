@@ -27,6 +27,9 @@ import org.jboss.as.ejb3.context.CurrentInvocationContext;
 import org.jboss.invocation.InterceptorContext;
 
 import javax.enterprise.concurrent.ContextService;
+import java.io.IOException;
+import java.io.ObjectInputStream;
+import java.io.ObjectOutputStream;
 import java.util.Map;
 
 /**
@@ -34,6 +37,8 @@ import java.util.Map;
  * @author Eduardo Martins
  */
 public class EJBContextHandleFactory implements ContextHandleFactory {
+
+    public static final String NAME = "EJB";
 
     public static final EJBContextHandleFactory INSTANCE = new EJBContextHandleFactory();
 
@@ -46,16 +51,36 @@ public class EJBContextHandleFactory implements ContextHandleFactory {
     }
 
     @Override
-    public Type getType() {
-        return Type.EJB;
+    public String getName() {
+        return NAME;
+    }
+
+    @Override
+    public int getChainPriority() {
+        return 500;
+    }
+
+    @Override
+    public void writeHandle(ContextHandle contextHandle, ObjectOutputStream out) throws IOException {
+        out.writeObject(contextHandle);
+    }
+
+    @Override
+    public ContextHandle readHandle(ObjectInputStream in) throws IOException, ClassNotFoundException {
+        return (ContextHandle) in.readObject();
     }
 
     private static class EJBContextHandle implements ContextHandle {
 
-        private final InterceptorContext interceptorContext;
+        private final transient InterceptorContext interceptorContext;
 
         private EJBContextHandle() {
             interceptorContext = CurrentInvocationContext.get();
+        }
+
+        @Override
+        public String getFactoryName() {
+            return NAME;
         }
 
         @Override
