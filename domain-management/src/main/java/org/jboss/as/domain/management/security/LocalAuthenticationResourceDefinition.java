@@ -61,7 +61,7 @@ public class LocalAuthenticationResourceDefinition extends SimpleResourceDefinit
     public LocalAuthenticationResourceDefinition() {
         super(PathElement.pathElement(ModelDescriptionConstants.AUTHENTICATION, ModelDescriptionConstants.LOCAL),
                 ControllerResolver.getResolver("core.management.security-realm.authentication.local"),
-                new SecurityRealmChildAddHandler(true, ATTRIBUTE_DEFINITIONS), new SecurityRealmChildRemoveHandler(true),
+                new SecurityRealmChildAddHandler(true, false, ATTRIBUTE_DEFINITIONS), new SecurityRealmChildRemoveHandler(true),
                 OperationEntry.Flag.RESTART_RESOURCE_SERVICES, OperationEntry.Flag.RESTART_RESOURCE_SERVICES);
     }
 

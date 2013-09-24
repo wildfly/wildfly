@@ -51,7 +51,7 @@ public class PropertiesAuthenticationResourceDefinition extends PropertiesFileRe
     public PropertiesAuthenticationResourceDefinition() {
         super(PathElement.pathElement(ModelDescriptionConstants.AUTHENTICATION, ModelDescriptionConstants.PROPERTIES),
                 ControllerResolver.getResolver("core.management.security-realm.authentication.properties"),
-                new SecurityRealmChildAddHandler(true, ATTRIBUTE_DEFINITIONS), new SecurityRealmChildRemoveHandler(true),
+                new SecurityRealmChildAddHandler(true, false, ATTRIBUTE_DEFINITIONS), new SecurityRealmChildRemoveHandler(true),
                 OperationEntry.Flag.RESTART_RESOURCE_SERVICES, OperationEntry.Flag.RESTART_RESOURCE_SERVICES);
     }
 

@@ -53,7 +53,7 @@ public class UserSearchResourceDefintion extends BaseLdapUserSearchResource {
     private UserSearchResourceDefintion() {
         super(UserSearchType.USERNAME_FILTER,
                 ControllerResolver.getResolver("core.management.security-realm.authorization.ldap.user-search.username-filter"),
-                new SecurityRealmChildAddHandler(false, ATTRIBUTE_DEFINITIONS), new SecurityRealmChildRemoveHandler(false));
+                new SecurityRealmChildAddHandler(false, false, ATTRIBUTE_DEFINITIONS), new SecurityRealmChildRemoveHandler(false));
     }
 
     @Override

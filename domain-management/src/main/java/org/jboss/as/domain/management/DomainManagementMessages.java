@@ -751,10 +751,22 @@ public interface DomainManagementMessages {
     @Message(id = 15287, value = "Role '%s' already contains an %s for type=%s, name=%s, realm=%s.")
     OperationFailedException duplicateIncludeExclude(String roleName, String incExcl, String type, String name, String realm);
 
+    /**
+     * Error message if more than one authorization configuration is defined.
+     *
+     * @param realmName the name of the security realm
+     * @param configurations the set of configurations .
+     *
+     * @return an {@link OperationFailedException} for the error.
+     */
+    @Message(id = 15288, value = "Configuration for security realm '%s' includes multiple authorization configurations (%s). Only one is allowed")
+    OperationFailedException multipleAuthorizationConfigurationsDefined(String realmName, Set<String> configurations);
+
     /*
      * Logging IDs 15200 to 15299 are reserved for domain management, the file DomainManagementLogger also contains messages in
      * this range commencing 15200.
      */
+
     /**
      * A prompt to double check the user is really sure they want to set password.
      *

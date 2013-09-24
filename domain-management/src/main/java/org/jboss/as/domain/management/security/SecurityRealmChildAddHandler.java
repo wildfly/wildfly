@@ -37,10 +37,12 @@ import org.jboss.dmr.ModelNode;
 public class SecurityRealmChildAddHandler extends SecurityRealmParentRestartHandler {
 
     private final boolean validateAuthentication;
+    private final boolean validateAuthorization;
     private final AttributeDefinition[] attributeDefinitions;
 
-    public SecurityRealmChildAddHandler(boolean validateAuthentication, AttributeDefinition... attributeDefinitions) {
+    public SecurityRealmChildAddHandler(boolean validateAuthentication, boolean validateAuthorization, AttributeDefinition... attributeDefinitions) {
         this.validateAuthentication = validateAuthentication;
+        this.validateAuthorization = validateAuthorization;
         this.attributeDefinitions = attributeDefinitions == null ? new AttributeDefinition[0] : attributeDefinitions;
     }
 
@@ -53,9 +55,15 @@ public class SecurityRealmChildAddHandler extends SecurityRealmParentRestartHand
             attr.validateAndSet(operation, model);
         }
 
-        if (validateAuthentication && !context.isBooting()) {
-            ModelNode validationOp = AuthenticationValidatingHandler.createOperation(operation);
-            context.addStep(validationOp, AuthenticationValidatingHandler.INSTANCE, OperationContext.Stage.MODEL);
-        } // else we know the SecurityRealmAddHandler is part of this overall set of ops and it added AuthenticationValidatingHandler
+        if (!context.isBooting()) {
+            if (validateAuthentication) {
+                ModelNode validationOp = AuthenticationValidatingHandler.createOperation(operation);
+                context.addStep(validationOp, AuthenticationValidatingHandler.INSTANCE, OperationContext.Stage.MODEL);
+            }
+            if (validateAuthorization) {
+                ModelNode validationOp = AuthorizationValidatingHandler.createOperation(operation);
+                context.addStep(validationOp, AuthorizationValidatingHandler.INSTANCE, OperationContext.Stage.MODEL);
+            }
+        } // else we know the SecurityRealmAddHandler is part of this overall set of ops and it added the handlers.
     }
 }

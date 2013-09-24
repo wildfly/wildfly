@@ -93,9 +93,11 @@ public class SecurityRealmAddHandler implements OperationStepHandler {
         ModelNode model = context.createResource(PathAddress.EMPTY_ADDRESS).getModel();
         SecurityRealmResourceDefinition.MAP_GROUPS_TO_ROLES.validateAndSet(operation, model);
 
-        // Add a step validating that we have the correct authentication child resources
+        // Add a step validating that we have the correct authentication and authorization child resources
         ModelNode validationOp = AuthenticationValidatingHandler.createOperation(operation);
         context.addStep(validationOp, AuthenticationValidatingHandler.INSTANCE, OperationContext.Stage.MODEL);
+        validationOp = AuthorizationValidatingHandler.createOperation(operation);
+        context.addStep(validationOp, AuthorizationValidatingHandler.INSTANCE, OperationContext.Stage.MODEL);
 
         context.addStep(new OperationStepHandler() {
             @Override

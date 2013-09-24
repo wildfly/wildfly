@@ -43,14 +43,13 @@ public class LdapAuthorizationResourceDefinition extends LdapResourceDefinition 
     public LdapAuthorizationResourceDefinition() {
         super(PathElement.pathElement(ModelDescriptionConstants.AUTHORIZATION, ModelDescriptionConstants.LDAP),
                 ControllerResolver.getResolver("core.management.security-realm.authorization.ldap"),
-                new SecurityRealmChildAddHandler(false, ATTRIBUTE_DEFINITIONS), new SecurityRealmChildRemoveHandler(true),
+                new SecurityRealmChildAddHandler(false, true, ATTRIBUTE_DEFINITIONS), new SecurityRealmChildRemoveHandler(true),
                 OperationEntry.Flag.RESTART_RESOURCE_SERVICES, OperationEntry.Flag.RESTART_RESOURCE_SERVICES);
     }
 
 
     @Override
     public void registerChildren(ManagementResourceRegistration resourceRegistration) {
-        // TODO - The combinations here will need to be verified.
         resourceRegistration.registerSubModel(UserIsDnResourceDefintion.INSTANCE);
         resourceRegistration.registerSubModel(UserSearchResourceDefintion.INSTANCE);
         resourceRegistration.registerSubModel(AdvancedUserSearchResourceDefintion.INSTANCE);

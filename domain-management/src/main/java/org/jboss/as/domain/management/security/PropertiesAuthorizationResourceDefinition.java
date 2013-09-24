@@ -40,7 +40,7 @@ public class PropertiesAuthorizationResourceDefinition extends PropertiesFileRes
     public PropertiesAuthorizationResourceDefinition() {
         super(PathElement.pathElement(ModelDescriptionConstants.AUTHORIZATION, ModelDescriptionConstants.PROPERTIES),
                 ControllerResolver.getResolver("core.management.security-realm.authorization.properties"),
-                new SecurityRealmChildAddHandler(false, ATTRIBUTE_DEFINITIONS), new SecurityRealmChildRemoveHandler(false),
+                new SecurityRealmChildAddHandler(false, true, ATTRIBUTE_DEFINITIONS), new SecurityRealmChildRemoveHandler(false),
                 OperationEntry.Flag.RESTART_RESOURCE_SERVICES, OperationEntry.Flag.RESTART_RESOURCE_SERVICES);
     }
 
