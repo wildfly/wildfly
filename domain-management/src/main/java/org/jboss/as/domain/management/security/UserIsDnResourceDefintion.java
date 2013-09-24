@@ -25,6 +25,7 @@ package org.jboss.as.domain.management.security;
 import org.jboss.as.controller.AttributeDefinition;
 import org.jboss.as.controller.ResourceDefinition;
 import org.jboss.as.controller.descriptions.common.ControllerResolver;
+import org.jboss.as.domain.management.security.LdapAuthorizationResourceDefinition.LdapAuthorizationChildAddHandler;
 
 /**
  * A {@link org.jboss.as.controller.ResourceDefinition} for user searches where the
@@ -41,7 +42,7 @@ public class UserIsDnResourceDefintion extends BaseLdapUserSearchResource {
     private UserIsDnResourceDefintion() {
         super(UserSearchType.USERNAME_IS_DN,
               ControllerResolver.getResolver("core.management.security-realm.authorization.ldap.user-search.username-to-dn"),
-              new SecurityRealmChildAddHandler(false, false, ATTRIBUTE_DEFINITIONS), new SecurityRealmChildRemoveHandler(false));
+              new LdapAuthorizationChildAddHandler(false, ATTRIBUTE_DEFINITIONS), LdapAuthorizationResourceDefinition.REMOVE_INSTANCE);
     }
 
     @Override

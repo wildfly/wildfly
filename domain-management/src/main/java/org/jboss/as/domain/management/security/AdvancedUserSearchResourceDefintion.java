@@ -29,6 +29,7 @@ import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
 import org.jboss.as.controller.descriptions.common.ControllerResolver;
 import org.jboss.as.controller.operations.validation.StringLengthValidator;
 import org.jboss.as.controller.registry.AttributeAccess;
+import org.jboss.as.domain.management.security.LdapAuthorizationResourceDefinition.LdapAuthorizationChildAddHandler;
 import org.jboss.dmr.ModelType;
 
 /**
@@ -51,7 +52,7 @@ public class AdvancedUserSearchResourceDefintion extends BaseLdapUserSearchResou
     private AdvancedUserSearchResourceDefintion() {
         super(UserSearchType.ADVANCED_FILTER,
                 ControllerResolver.getResolver("core.management.security-realm.authorization.ldap.user-search.advanced-filter"),
-                new SecurityRealmChildAddHandler(false, false, ATTRIBUTE_DEFINITIONS), new SecurityRealmChildRemoveHandler(false));
+                new LdapAuthorizationChildAddHandler(false, ATTRIBUTE_DEFINITIONS), LdapAuthorizationResourceDefinition.REMOVE_INSTANCE);
     }
 
     @Override
