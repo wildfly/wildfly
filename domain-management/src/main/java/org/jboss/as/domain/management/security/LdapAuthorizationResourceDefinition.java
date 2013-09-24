@@ -23,12 +23,24 @@
 package org.jboss.as.domain.management.security;
 
 
+import java.util.HashSet;
+import java.util.Set;
+
 import org.jboss.as.controller.AttributeDefinition;
+import org.jboss.as.controller.OperationContext;
+import org.jboss.as.controller.OperationContext.Stage;
+import org.jboss.as.controller.OperationFailedException;
+import org.jboss.as.controller.OperationStepHandler;
+import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.PathElement;
 import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
 import org.jboss.as.controller.descriptions.common.ControllerResolver;
+import org.jboss.as.controller.operations.common.Util;
 import org.jboss.as.controller.registry.ManagementResourceRegistration;
 import org.jboss.as.controller.registry.OperationEntry;
+import org.jboss.as.controller.registry.Resource;
+import org.jboss.as.domain.management.DomainManagementMessages;
+import org.jboss.dmr.ModelNode;
 
 /**
  * {@link ResourceDefinition} for a management security realm's LDAP-based Authorization resource.
@@ -40,10 +52,13 @@ public class LdapAuthorizationResourceDefinition extends LdapResourceDefinition 
 
     private static final AttributeDefinition[] ATTRIBUTE_DEFINITIONS = { CONNECTION };
 
+    private static final LdapAuthorizationValidatingHandler VALIDATION_INSTANCE = new LdapAuthorizationValidatingHandler();
+    static final LdapAuthorizationChildRemoveHandler REMOVE_INSTANCE = new LdapAuthorizationChildRemoveHandler();
+
     public LdapAuthorizationResourceDefinition() {
         super(PathElement.pathElement(ModelDescriptionConstants.AUTHORIZATION, ModelDescriptionConstants.LDAP),
                 ControllerResolver.getResolver("core.management.security-realm.authorization.ldap"),
-                new SecurityRealmChildAddHandler(false, true, ATTRIBUTE_DEFINITIONS), new SecurityRealmChildRemoveHandler(true),
+                new LdapAuthorizationChildAddHandler(true, ATTRIBUTE_DEFINITIONS), new SecurityRealmChildRemoveHandler(true),
                 OperationEntry.Flag.RESTART_RESOURCE_SERVICES, OperationEntry.Flag.RESTART_RESOURCE_SERVICES);
     }
 
@@ -62,6 +77,81 @@ public class LdapAuthorizationResourceDefinition extends LdapResourceDefinition 
     public void registerAttributes(ManagementResourceRegistration resourceRegistration) {
         SecurityRealmChildWriteAttributeHandler handler = new SecurityRealmChildWriteAttributeHandler(ATTRIBUTE_DEFINITIONS);
         handler.registerAttributes(resourceRegistration);
+    }
+
+    /**
+     * Creates an operations that targets the valiadating handler.
+     *
+     * @param operationToValidate the operation that this handler will validate
+     * @return  the validation operation
+     */
+    private static ModelNode createOperation(final ModelNode operationToValidate) {
+        PathAddress pa = PathAddress.pathAddress(operationToValidate.require(ModelDescriptionConstants.OP_ADDR));
+        PathAddress realmPA = null;
+        for (int i = pa.size() - 1; i > 0; i--) {
+            PathElement pe = pa.getElement(i);
+            if (ModelDescriptionConstants.AUTHORIZATION.equals(pe.getKey()) && ModelDescriptionConstants.LDAP.equals(pe.getValue())) {
+                realmPA = pa.subAddress(0, i + 1);
+                break;
+            }
+        }
+        assert realmPA != null : "operationToValidate did not have an address that included a " + ModelDescriptionConstants.AUTHORIZATION + "=" + ModelDescriptionConstants.LDAP;
+        return Util.getEmptyOperation("validate-authorization", realmPA.toModelNode());
+    }
+
+    static class LdapAuthorizationChildAddHandler extends SecurityRealmChildAddHandler {
+
+        public LdapAuthorizationChildAddHandler(boolean validateAuthorization, AttributeDefinition[] attributeDefinitions) {
+            super(false, validateAuthorization, attributeDefinitions);
+        }
+
+        @Override
+        protected void updateModel(OperationContext context, ModelNode operation) throws OperationFailedException {
+            super.updateModel(context, operation);
+
+            ModelNode validateOp = createOperation(operation);
+            context.addStep(validateOp, VALIDATION_INSTANCE, Stage.MODEL);
+        }
+    }
+
+    static class LdapAuthorizationChildRemoveHandler implements OperationStepHandler {
+
+        private LdapAuthorizationChildRemoveHandler() {
+        }
+
+        @Override
+        public void execute(OperationContext context, ModelNode operation) throws OperationFailedException {
+            context.removeResource(PathAddress.EMPTY_ADDRESS);
+
+            ModelNode validateOp = createOperation(operation);
+            context.addStep(validateOp, VALIDATION_INSTANCE, Stage.MODEL);
+        }
+    }
+
+    private static class LdapAuthorizationValidatingHandler implements OperationStepHandler {
+
+        @Override
+        public void execute(OperationContext context, ModelNode operation) throws OperationFailedException {
+            final Resource resource = context.readResource(PathAddress.EMPTY_ADDRESS);
+            Set<String> children = resource.getChildrenNames(ModelDescriptionConstants.USERNAME_TO_DN);
+            if (children.size() > 1) {
+                String realmName = ManagementUtil.getSecurityRealmName(operation);
+                Set<String> invalid = new HashSet<String>(children);
+                throw DomainManagementMessages.MESSAGES.multipleUsernameToDnConfigurationsDefined(realmName, invalid);
+            }
+            children = resource.getChildrenNames(ModelDescriptionConstants.GROUP_SEARCH);
+            if (children.size() == 0) {
+                String realmName = ManagementUtil.getSecurityRealmName(operation);
+                throw DomainManagementMessages.MESSAGES.noGroupSearchDefined(realmName);
+            } else if (children.size() > 1) {
+                String realmName = ManagementUtil.getSecurityRealmName(operation);
+                Set<String> invalid = new HashSet<String>(children);
+                throw DomainManagementMessages.MESSAGES.multipleGroupSearchConfigurationsDefined(realmName, invalid);
+            }
+
+            context.stepCompleted();
+
+        }
     }
 
 }

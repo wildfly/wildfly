@@ -752,6 +752,38 @@ public interface DomainManagementMessages {
     @Message(id = 15288, value = "Configuration for security realm '%s' includes multiple authorization configurations (%s). Only one is allowed")
     OperationFailedException multipleAuthorizationConfigurationsDefined(String realmName, Set<String> configurations);
 
+    /**
+     * Error message if more than one username-to-dn resource is defined.
+     *
+     * @param realmName the name of the security realm
+     * @param configurations the set of configurations .
+     *
+     * @return an {@link OperationFailedException} for the error.
+     */
+    @Message(id = 15289, value = "Configuration for security realm '%s' includes multiple username-to-dn resources within the authorization=ldap resource (%s). Only one is allowed")
+    OperationFailedException multipleUsernameToDnConfigurationsDefined(String realmName, Set<String> configurations);
+
+    /**
+     * Error message if no group-search resource is defined.
+     *
+     * @param realmName the name of the security realm
+     *
+     * @return an {@link OperationFailedException} for the error.
+     */
+    @Message(id = 15290, value = "Configuration for security realm '%s' does not contain any group-search resource within the authorization=ldap resource.")
+    OperationFailedException noGroupSearchDefined(String realmName);
+
+    /**
+     * Error message if more than one group-search resource is defined.
+     *
+     * @param realmName the name of the security realm
+     * @param configurations the set of configurations .
+     *
+     * @return an {@link OperationFailedException} for the error.
+     */
+    @Message(id = 15291, value = "Configuration for security realm '%s' includes multiple group-search resources within the authorization=ldap resource (%s). Only one is allowed")
+    OperationFailedException multipleGroupSearchConfigurationsDefined(String realmName, Set<String> configurations);
+
     /*
      * Logging IDs 15200 to 15299 are reserved for domain management, the file DomainManagementLogger also contains messages in
      * this range commencing 15200.

@@ -30,6 +30,7 @@ import org.jboss.as.controller.descriptions.common.ControllerResolver;
 import org.jboss.as.controller.operations.validation.EnumValidator;
 import org.jboss.as.controller.operations.validation.StringLengthValidator;
 import org.jboss.as.controller.registry.AttributeAccess;
+import org.jboss.as.domain.management.security.LdapAuthorizationResourceDefinition.LdapAuthorizationChildAddHandler;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.ModelType;
 
@@ -72,7 +73,7 @@ public class GroupToPrincipalResourceDefinition extends BaseLdapGroupSearchResou
     private GroupToPrincipalResourceDefinition() {
         super(GroupSearchType.GROUP_TO_PRINCIPAL,
                 ControllerResolver.getResolver("core.management.security-realm.authorization.ldap.group-search.group-to-principal"),
-                new SecurityRealmChildAddHandler(false, false, ATTRIBUTE_DEFINITIONS), new SecurityRealmChildRemoveHandler(false));
+                new LdapAuthorizationChildAddHandler(false, ATTRIBUTE_DEFINITIONS), LdapAuthorizationResourceDefinition.REMOVE_INSTANCE);
     }
 
     @Override
