@@ -28,6 +28,8 @@ import java.lang.reflect.ParameterizedType;
 import java.lang.reflect.Type;
 
 import javax.enterprise.inject.spi.InjectionPoint;
+import javax.jws.WebService;
+import javax.xml.ws.Service;
 import javax.xml.ws.WebServiceRef;
 
 import org.jboss.as.naming.ManagedReferenceFactory;
@@ -35,9 +37,12 @@ import org.jboss.as.server.deployment.DeploymentUnit;
 import org.jboss.as.server.deployment.DeploymentUnitProcessingException;
 import org.jboss.as.webservices.webserviceref.WSRefAnnotationWrapper;
 import org.jboss.as.webservices.webserviceref.WebServiceReferences;
+import org.jboss.as.weld.WeldMessages;
 import org.jboss.as.weld.util.ResourceInjectionUtilities;
 import org.jboss.weld.injection.spi.JaxwsInjectionServices;
 import org.jboss.weld.injection.spi.ResourceReferenceFactory;
+import org.jboss.weld.logging.BeanLogger;
+import org.jboss.weld.util.reflection.Reflections;
 
 /**
  * @author Stuart Douglas
@@ -54,9 +59,10 @@ public class WeldJaxwsInjectionServices implements JaxwsInjectionServices {
     public <T> ResourceReferenceFactory<T> registerWebServiceRefInjectionPoint(final InjectionPoint injectionPoint) {
 
         WebServiceRef annotation = getResourceAnnotated(injectionPoint).getAnnotation(WebServiceRef.class);
-        if(annotation == null) {
-            return null;
+        if (annotation == null) {
+            throw WeldMessages.MESSAGES.annotationNotFound(WebServiceRef.class, injectionPoint.getMember());
         }
+        validateWebServiceRefInjectionPoint(injectionPoint, annotation);
         try {
             ManagedReferenceFactory factory = WebServiceReferences.createWebServiceFactory(deploymentUnit, classNameFromType(injectionPoint.getType()), new WSRefAnnotationWrapper(annotation), (AnnotatedElement) injectionPoint.getMember(), getBindingName(injectionPoint, annotation));
             return new ManagedReferenceFactoryToResourceReferenceFactoryAdapter<>(factory);
@@ -80,6 +86,16 @@ public class WeldJaxwsInjectionServices implements JaxwsInjectionServices {
        } else {
            return type.toString();
        }
+    }
+
+    private void validateWebServiceRefInjectionPoint(InjectionPoint ip, WebServiceRef annotation) {
+        Class<?> rawType = Reflections.getRawType(ip.getType());
+        if (Service.class.isAssignableFrom(rawType)) {
+            return;
+        }
+        if (!rawType.isAnnotationPresent(WebService.class)) {
+            throw BeanLogger.LOG.invalidResourceProducerType(ip.getAnnotated(), annotation.value());
+        }
     }
 
     @Override
