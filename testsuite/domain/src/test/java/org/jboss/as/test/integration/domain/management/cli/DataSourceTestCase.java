@@ -60,7 +60,7 @@ public class DataSourceTestCase extends AbstractCliTestBase {
 
     @Before
     public void init() {
-         profileNames = CLITestSuite.serverProfiles.keySet().toArray(new String[] {});
+         profileNames = CLITestSuite.serverProfiles.keySet().toArray(new String[CLITestSuite.serverProfiles.size()]);
     }
 
     @Test

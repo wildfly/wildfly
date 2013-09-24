@@ -89,17 +89,24 @@ public class DomainLifecycleUtil {
     private final JBossAsManagedConfiguration configuration;
     private final DomainControllerClientConfig clientConfiguration;
     private final PathAddress address;
+    private final boolean closeClientConfig;
 
     public DomainLifecycleUtil(final JBossAsManagedConfiguration configuration) throws IOException {
-        this(configuration, DomainControllerClientConfig.create());
+        this(configuration, DomainControllerClientConfig.create(), true);
     }
 
     public DomainLifecycleUtil(final JBossAsManagedConfiguration configuration, final DomainControllerClientConfig clientConfiguration) {
+        this(configuration, clientConfiguration, false);
+    }
+
+    private DomainLifecycleUtil(final JBossAsManagedConfiguration configuration,
+                                final DomainControllerClientConfig clientConfiguration, final boolean closeClientConfig) {
         assert configuration != null : "configuration is null";
         assert clientConfiguration != null : "clientConfiguration is null";
         this.configuration = configuration;
         this.clientConfiguration = clientConfiguration;
         this.address = PathAddress.pathAddress(PathElement.pathElement(ModelDescriptionConstants.HOST, configuration.getHostName()));
+        this.closeClientConfig = closeClientConfig;
     }
 
     public JBossAsManagedConfiguration getConfiguration() {
@@ -291,7 +298,8 @@ public class DomainLifecycleUtil {
     /**
      * Stop and wait for the process to exit.
      */
-    public void stop() {
+    public synchronized void stop() {
+        RuntimeException toThrow = null;
         try {
             if (process != null) {
                 process.stop();
@@ -299,7 +307,7 @@ public class DomainLifecycleUtil {
                 process = null;
             }
         } catch (Exception e) {
-            throw new RuntimeException("Could not stop container", e);
+            toThrow = new RuntimeException("Could not stop container", e);
         } finally {
             closeConnection();
             final ExecutorService exec = executor;
@@ -307,6 +315,19 @@ public class DomainLifecycleUtil {
                 exec.shutdownNow();
                 executor = null;
             }
+            if (closeClientConfig) {
+                try {
+                    clientConfiguration.close();
+                } catch (Exception e) {
+                    if (toThrow == null) {
+                        toThrow = new RuntimeException("Could not stop client configuration", e);
+                    }
+                }
+            }
+        }
+
+        if (toThrow != null) {
+            throw toThrow;
         }
     }
 

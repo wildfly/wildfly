@@ -51,11 +51,11 @@ import static java.security.AccessController.doPrivileged;
  */
 public class DomainControllerClientConfig implements Closeable {
 
-    private static final String ENDPOINT_NAME = "mgmt-endpoint";
+    private static final String ENDPOINT_NAME = "domain-client-mgmt-endpoint";
 
     private static final AtomicInteger executorCount = new AtomicInteger();
     static ExecutorService createDefaultExecutor() {
-        final ThreadGroup group = new ThreadGroup("mgmt-client-thread");
+        final ThreadGroup group = new ThreadGroup("domain-mgmt-client-thread");
         final ThreadFactory threadFactory = new JBossThreadFactory(group, Boolean.FALSE, null, "%G " + executorCount.incrementAndGet() + "-%t", null, null, doPrivileged(GetAccessControlContextAction.getInstance()));
         return new ThreadPoolExecutor(4, 4, 30L, TimeUnit.SECONDS, new LinkedBlockingQueue<Runnable>(256), threadFactory);
     }

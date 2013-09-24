@@ -27,7 +27,7 @@ import static org.jboss.as.network.NetworkUtils.formatPossibleIpv6Address;
  */
 class TestControllerUtils implements Closeable {
 
-    private static final String ENDPOINT_NAME = "mgmt-endpoint";
+    private static final String ENDPOINT_NAME = "respawn-client-mgmt-endpoint";
 
     private static final AtomicInteger executorCount = new AtomicInteger();
     static ExecutorService createDefaultExecutor() {
