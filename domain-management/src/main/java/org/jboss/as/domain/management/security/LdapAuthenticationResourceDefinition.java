@@ -148,7 +148,7 @@ public class LdapAuthenticationResourceDefinition extends LdapResourceDefinition
     private static class LdapAuthenticationAddHandler extends SecurityRealmChildAddHandler {
 
         private LdapAuthenticationAddHandler() {
-            super(true, ATTRIBUTE_DEFINITIONS);
+            super(true, false, ATTRIBUTE_DEFINITIONS);
         }
 
         @Override

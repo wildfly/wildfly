@@ -37,7 +37,7 @@ public class PlugInAuthorizationResourceDefinition extends AbstractPlugInAuthRes
     public PlugInAuthorizationResourceDefinition() {
         super(PathElement.pathElement(ModelDescriptionConstants.AUTHORIZATION, ModelDescriptionConstants.PLUG_IN),
                 ControllerResolver.getResolver("core.management.security-realm.authorization.plug-in"),
-                new SecurityRealmChildAddHandler(true, NAME), new SecurityRealmChildRemoveHandler(false),
+                new SecurityRealmChildAddHandler(false, true, NAME), new SecurityRealmChildRemoveHandler(false),
                 OperationEntry.Flag.RESTART_RESOURCE_SERVICES, OperationEntry.Flag.RESTART_RESOURCE_SERVICES);
     }
 

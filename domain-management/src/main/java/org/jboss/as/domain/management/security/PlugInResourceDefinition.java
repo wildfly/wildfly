@@ -39,7 +39,7 @@ public class PlugInResourceDefinition extends SimpleResourceDefinition {
     public PlugInResourceDefinition() {
         super(PathElement.pathElement(PLUG_IN),
                 ControllerResolver.getResolver("core.management.security-realm.plug-in"),
-                new SecurityRealmChildAddHandler(true),
+                new SecurityRealmChildAddHandler(false, false),
                 new SecurityRealmChildRemoveHandler(true), OperationEntry.Flag.RESTART_NONE,
                 OperationEntry.Flag.RESTART_RESOURCE_SERVICES);
     }
