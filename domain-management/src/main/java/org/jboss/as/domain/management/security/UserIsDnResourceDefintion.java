@@ -41,7 +41,7 @@ public class UserIsDnResourceDefintion extends BaseLdapUserSearchResource {
     private UserIsDnResourceDefintion() {
         super(UserSearchType.USERNAME_IS_DN,
               ControllerResolver.getResolver("core.management.security-realm.authorization.ldap.user-search.username-to-dn"),
-              new SecurityRealmChildAddHandler(false, ATTRIBUTE_DEFINITIONS), new SecurityRealmChildRemoveHandler(false));
+              new SecurityRealmChildAddHandler(false, false, ATTRIBUTE_DEFINITIONS), new SecurityRealmChildRemoveHandler(false));
     }
 
     @Override

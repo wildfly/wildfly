@@ -51,7 +51,7 @@ public class AdvancedUserSearchResourceDefintion extends BaseLdapUserSearchResou
     private AdvancedUserSearchResourceDefintion() {
         super(UserSearchType.ADVANCED_FILTER,
                 ControllerResolver.getResolver("core.management.security-realm.authorization.ldap.user-search.advanced-filter"),
-                new SecurityRealmChildAddHandler(false, ATTRIBUTE_DEFINITIONS), new SecurityRealmChildRemoveHandler(false));
+                new SecurityRealmChildAddHandler(false, false, ATTRIBUTE_DEFINITIONS), new SecurityRealmChildRemoveHandler(false));
     }
 
     @Override

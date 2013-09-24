@@ -39,7 +39,7 @@ public class XmlAuthenticationResourceDefinition extends SimpleResourceDefinitio
     public XmlAuthenticationResourceDefinition() {
         super(PathElement.pathElement(ModelDescriptionConstants.AUTHENTICATION, ModelDescriptionConstants.USERS),
                 ControllerResolver.getResolver("core.management.security-realm.authentication.xml"),
-                new SecurityRealmChildAddHandler(true),
+                new SecurityRealmChildAddHandler(true, false),
                 new SecurityRealmChildRemoveHandler(true),
                 OperationEntry.Flag.RESTART_RESOURCE_SERVICES,
                 OperationEntry.Flag.RESTART_RESOURCE_SERVICES);

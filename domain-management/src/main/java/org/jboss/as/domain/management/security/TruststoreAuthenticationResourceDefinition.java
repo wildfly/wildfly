@@ -44,7 +44,7 @@ public class TruststoreAuthenticationResourceDefinition extends SimpleResourceDe
     public TruststoreAuthenticationResourceDefinition() {
         super(PathElement.pathElement(ModelDescriptionConstants.AUTHENTICATION, ModelDescriptionConstants.TRUSTSTORE),
                 ControllerResolver.getResolver("core.management.security-realm.authentication.truststore"),
-                new SecurityRealmChildAddHandler(true, ATTRIBUTE_DEFINITIONS),
+                new SecurityRealmChildAddHandler(true, false, ATTRIBUTE_DEFINITIONS),
                 new SecurityRealmChildRemoveHandler(true),
                 OperationEntry.Flag.RESTART_RESOURCE_SERVICES,
                 OperationEntry.Flag.RESTART_RESOURCE_SERVICES);
