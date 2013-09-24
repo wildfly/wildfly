@@ -378,7 +378,7 @@ public interface NamingMessages {
     @Message(id = 11863, value = "Invalid name for context binding %s")
     DeploymentUnitProcessingException invalidNameForContextBinding(String name);
 
-    @Message(id = 11864, value = "Invaliding binding name %s, name must start with one of %s")
+    @Message(id = 11864, value = "Invalid binding name %s, name must start with one of %s")
     OperationFailedException invalidNamespaceForBinding(String name, String namespaces);
 
     /**
