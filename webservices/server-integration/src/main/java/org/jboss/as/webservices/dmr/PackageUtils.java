@@ -22,17 +22,17 @@
 
 package org.jboss.as.webservices.dmr;
 
-import java.util.Collection;
-import java.util.Collections;
+import static org.jboss.as.webservices.dmr.Constants.ENDPOINT_CONFIG;
+import static org.jboss.as.webservices.dmr.Constants.HANDLER;
+import static org.jboss.as.webservices.dmr.Constants.HANDLER_CHAIN;
+import static org.jboss.as.webservices.dmr.Constants.PROPERTY;
 
-import org.jboss.as.controller.OperationContext;
 import org.jboss.as.webservices.util.WSServices;
-import org.jboss.msc.service.ServiceController;
-import org.jboss.wsf.spi.management.ServerConfig;
-import org.jboss.wsf.spi.metadata.config.CommonConfig;
+import org.jboss.msc.service.ServiceName;
 
 /**
  * @author <a href="mailto:ropalka@redhat.com">Richard Opalka</a>
+ * @author <a href="mailto:alessio.soldano@jboss.com">Alessio Soldano</a>
  */
 final class PackageUtils {
 
@@ -40,19 +40,32 @@ final class PackageUtils {
         // forbidden instantiation
     }
 
-    static ServerConfig getServerConfig(final OperationContext context) {
-        final ServiceController<?> configService = context.getServiceRegistry(true).getService(WSServices.CONFIG_SERVICE);
-        return configService != null ? (ServerConfig)configService.getValue() : null;
+    static ServiceName getEndpointConfigServiceName(String configName) {
+        return WSServices.ENDPOINT_CONFIG_SERVICE.append(configName);
     }
 
-    static Collection<? extends CommonConfig> getConfigs(ServerConfig serverConfig, String confType) {
-        if (Constants.ENDPOINT_CONFIG.equals(confType)) {
-            return serverConfig.getEndpointConfigs();
-        } else if (Constants.CLIENT_CONFIG.equals(confType)) {
-            return serverConfig.getClientConfigs();
-        } else {
-            return Collections.emptyList();
-        }
+    static ServiceName getClientConfigServiceName(String configName) {
+        return WSServices.CLIENT_CONFIG_SERVICE.append(configName);
+    }
+
+    static ServiceName getConfigServiceName(final String configType, final String configName) {
+        return (ENDPOINT_CONFIG.equals(configType) ? getEndpointConfigServiceName(configName) : getClientConfigServiceName(configName));
+    }
+
+    static ServiceName getHandlerChainServiceName(final String configType, final String configName, final String handlerChainId) {
+        return getHandlerChainServiceName(getConfigServiceName(configType, configName), handlerChainId);
+    }
+
+    static ServiceName getHandlerChainServiceName(final ServiceName configServiceName, final String handlerChainId) {
+        return configServiceName.append(HANDLER_CHAIN).append(handlerChainId);
+    }
+
+    static ServiceName getHandlerServiceName(final ServiceName handlerChainServiceName, final String handlerName) {
+        return handlerChainServiceName.append(HANDLER).append(handlerName);
+    }
+
+    static ServiceName getPropertyServiceName(final ServiceName configServiceName, final String propertyName) {
+        return configServiceName.append(PROPERTY).append(propertyName);
     }
 
 }

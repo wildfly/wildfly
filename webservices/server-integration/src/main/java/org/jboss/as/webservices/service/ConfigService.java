@@ -1,6 +1,6 @@
 /*
  * JBoss, Home of Professional Open Source.
- * Copyright 2012, Red Hat, Inc., and individual contributors
+ * Copyright 2013, Red Hat, Inc., and individual contributors
  * as indicated by the @author tags. See the copyright.txt file in the
  * distribution for a full listing of individual contributors.
  *
@@ -25,56 +25,56 @@ import org.jboss.msc.service.Service;
 import org.jboss.msc.service.StartContext;
 import org.jboss.msc.service.StartException;
 import org.jboss.msc.service.StopContext;
-import org.jboss.msc.value.InjectedValue;
 import org.jboss.wsf.spi.management.ServerConfig;
+import org.jboss.wsf.spi.metadata.config.AbstractCommonConfig;
 import org.jboss.wsf.spi.metadata.config.ClientConfig;
-
-import java.util.List;
+import org.jboss.wsf.spi.metadata.config.EndpointConfig;
 
 /**
- * WS server config service.
+ * A service for setting a ws client / endpoint config.
  *
  * @author paul.robinson@jboss.com
+ * @author <a href="mailto:alessio.soldano@jboss.com">Alessio Soldano</a>
  */
-public final class ClientConfigService implements Service<List<ClientConfig>> {
+public final class ConfigService implements Service<AbstractCommonConfig> {
 
-    private InjectedValue<ServerConfig> serverConfig = new InjectedValue<ServerConfig>();
+    private final ServerConfig serverConfig;
+    private final String configName;
+    private final boolean client;
+    private volatile AbstractCommonConfig config;
 
-    private String configName;
-
-    public ClientConfigService(String configName) {
+    public ConfigService(ServerConfig serverConfig, String configName, boolean client) {
         this.configName = configName;
+        this.client = client;
+        this.serverConfig = serverConfig;
     }
 
     @Override
-    public List<ClientConfig> getValue() {
-        return serverConfig.getValue().getClientConfigs();
+    public AbstractCommonConfig getValue() {
+        return config;
     }
 
     @Override
     public void start(final StartContext context) throws StartException {
-
-        ClientConfig clientConfig = new ClientConfig();
-        clientConfig.setConfigName(configName);
-        serverConfig.getValue().addClientConfig(clientConfig);
+        if (client) {
+            ClientConfig clientConfig = new ClientConfig();
+            clientConfig.setConfigName(configName);
+            serverConfig.addClientConfig(clientConfig);
+            config = clientConfig;
+        } else {
+            EndpointConfig endpointConfig = new EndpointConfig();
+            endpointConfig.setConfigName(configName);
+            serverConfig.addEndpointConfig(endpointConfig);
+            config = endpointConfig;
+        }
     }
 
     @Override
     public void stop(final StopContext context) {
-
-        ClientConfig target = null;
-        for (ClientConfig clConfig : serverConfig.getValue().getClientConfigs()) {
-            if (clConfig.getConfigName().equals(configName)) {
-                target = clConfig;
-            }
+        if (client) {
+            serverConfig.getClientConfigs().remove(config);
+        } else {
+            serverConfig.getEndpointConfigs().remove(config);
         }
-        if (target != null) {
-            serverConfig.getValue().getClientConfigs().remove(target);
-        }
-    }
-
-    public InjectedValue<ServerConfig> getServerConfig() {
-
-        return serverConfig;
     }
 }

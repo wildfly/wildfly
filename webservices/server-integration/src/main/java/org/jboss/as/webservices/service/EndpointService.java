@@ -194,6 +194,7 @@ public final class EndpointService implements Service<Endpoint> {
         builder.addDependency(DependencyType.REQUIRED,
                 SecurityDomainService.SERVICE_NAME.append(getDeploymentSecurityDomainName(endpoint)),
                 SecurityDomainContext.class, service.getSecurityDomainContextInjector());
+        builder.addDependency(DependencyType.REQUIRED, WSServices.CONFIG_SERVICE);
         builder.addDependency(DependencyType.OPTIONAL, MBEAN_SERVER_NAME, MBeanServer.class, service.getMBeanServerInjector());
         builder.setInitialMode(Mode.ACTIVE);
         builder.install();
