@@ -22,6 +22,8 @@
 
 package org.jboss.as.domain.management.security;
 
+import java.util.List;
+
 import org.jboss.as.controller.ControllerMessages;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
@@ -31,6 +33,7 @@ import org.jboss.as.controller.registry.Resource;
 import org.jboss.as.domain.management.SecurityRealm;
 import org.jboss.dmr.ModelNode;
 import org.jboss.msc.service.ServiceName;
+import org.jboss.msc.service.ServiceRegistry;
 
 /**
  * Handler to remove security realm definitions and remove the service.
@@ -76,22 +79,15 @@ public class SecurityRealmRemoveHandler implements OperationStepHandler {
     }
 
     protected void removeServices(final OperationContext context, final String realmName, final ModelNode model) throws OperationFailedException {
-
-        // KISS -- just remove every possible service; don't analyze model to see which were configured
+        // KISS -- Just remove the service and all child services.
         ServiceName realmServiceName = SecurityRealm.ServiceUtil.createServiceName(realmName);
-        context.removeService(realmServiceName);
-        context.removeService(realmServiceName.append(SecretIdentityService.ServiceUtil.createServiceName(realmName)));
-        context.removeService(realmServiceName.append(ClientCertCallbackHandler.ServiceUtil.createServiceName(realmName)));
-        context.removeService(realmServiceName.append(SSLIdentityService.ServiceUtil.createServiceName(realmName)));
-        context.removeService(realmServiceName.append(FileKeystore.ServiceUtil.createKeystoreServiceName(realmName)));
-        context.removeService(realmServiceName.append(FileKeystore.ServiceUtil.createTrusttoreServiceName(realmName)));
-        context.removeService(realmServiceName.append(UserDomainCallbackHandler.ServiceUtil.createServiceName(realmName)));
-        context.removeService(realmServiceName.append(PropertiesCallbackHandler.ServiceUtil.createServiceName(realmName)));
-        context.removeService(realmServiceName.append(UserLdapCallbackHandler.ServiceUtil.createServiceName(realmName)));
-        // TODO - Need a more reliable way of ensuring this list is up to date.
-        context.removeService(realmServiceName.append(PlugInLoaderService.ServiceUtil.createServiceName(realmName)));
-        context.removeService(realmServiceName.append(PlugInAuthenticationCallbackHandler.ServiceUtil.createServiceName(realmName)));
-        context.removeService(realmServiceName.append(PlugInSubjectSupplemental.ServiceUtil.createServiceName(realmName)));
+        ServiceRegistry serviceRegistry = context.getServiceRegistry(false);
+        List<ServiceName> allNames = serviceRegistry.getServiceNames();
+        for (ServiceName current : allNames) {
+            if (realmServiceName.isParentOf(current)) {
+                context.removeService(current);
+            }
+        }
     }
 
     protected void recoverServices(OperationContext context, final String realmName, ModelNode model) {
