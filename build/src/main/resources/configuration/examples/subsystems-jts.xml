@@ -3,6 +3,7 @@
 <config>
    <subsystems>
       <subsystem>configuration/subsystems/logging.xml</subsystem>
+      <subsystem>configuration/subsystems/batch.xml</subsystem>
       <subsystem>configuration/subsystems/datasources.xml</subsystem>
       <subsystem>configuration/subsystems/deployment-scanner.xml</subsystem>
       <subsystem>configuration/subsystems/ee.xml</subsystem>

@@ -1287,6 +1287,16 @@
       </licenses>
     </dependency>
     <dependency>
+        <groupId>org.jberet</groupId>
+        <artifactId>jberet-core</artifactId>
+        <licenses>
+            <license>
+                <name>Eclipse Public License, Version 1.0</name>
+                <url>http://www.eclipse.org/legal/epl-v10.html</url>
+            </license>
+        </licenses>
+    </dependency>
+    <dependency>
       <groupId>org.jboss</groupId>
       <artifactId>jandex</artifactId>
       <licenses>
@@ -2801,6 +2811,16 @@
           <url>http://repository.jboss.org/licenses/lgpl-2.1.txt</url>
         </license>
       </licenses>
+    </dependency>
+    <dependency>
+        <groupId>org.jboss.spec.javax.batch</groupId>
+        <artifactId>jboss-batch-api_1.0_spec</artifactId>
+        <licenses>
+            <license>
+                <name>Apache Software License, Version 2.0</name>
+                <url>http://repository.jboss.org/licenses/apache-2.0.txt</url>
+            </license>
+        </licenses>
     </dependency>
     <dependency>
       <groupId>org.jboss.spec.javax.ejb</groupId>

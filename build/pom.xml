@@ -754,7 +754,7 @@
                 <!-- JSR-236 RI -->
                 <dependency>
                     <groupId>org.glassfish</groupId>
-                    <artifactId>javax.enterprise.concurrent</artifactId>                    
+                    <artifactId>javax.enterprise.concurrent</artifactId>
                 </dependency>
 
                 <dependency>
@@ -893,6 +893,11 @@
                 </dependency>
 
                 <dependency>
+                    <groupId>org.jberet</groupId>
+                    <artifactId>jberet-core</artifactId>
+                </dependency>
+
+                <dependency>
                     <groupId>org.jboss.common</groupId>
                     <artifactId>jboss-common-beans</artifactId>
                 </dependency>
@@ -1014,6 +1019,16 @@
 		    <groupId>org.jboss.hal</groupId>
                     <artifactId>release-stream</artifactId>                    
 		    <classifier>resources</classifier>
+                </dependency>
+
+                <dependency>
+                    <groupId>org.wildfly</groupId>
+                    <artifactId>wildfly-batch</artifactId>
+                </dependency>
+
+                <dependency>
+                    <groupId>org.wildfly</groupId>
+                    <artifactId>wildfly-jberet</artifactId>
                 </dependency>
 
                 <dependency>
@@ -1620,6 +1635,11 @@
                 <dependency>
                     <groupId>org.jboss.spec.javax.annotation</groupId>
                     <artifactId>jboss-annotations-api_1.2_spec</artifactId>
+                </dependency>
+
+                <dependency>
+                    <groupId>org.jboss.spec.javax.batch</groupId>
+                    <artifactId>jboss-batch-api_1.0_spec</artifactId>
                 </dependency>
 
                 <dependency>

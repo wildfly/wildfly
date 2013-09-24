@@ -352,6 +352,7 @@ public enum Phase {
     public static final int DEPENDENCIES_JSF                            = 0x1800;
     public static final int DEPENDENCIES_BUNDLE                         = 0x1900;
     public static final int DEPENDENCIES_BUNDLE_CONTEXT_BINDING         = 0x1A00;
+    public static final int DEPENDENCIES_BATCH                          = 0x1B00;
     //these must be last, and in this specific order
     public static final int DEPENDENCIES_APPLICATION_CLIENT             = 0x2000;
     public static final int DEPENDENCIES_VISIBLE_MODULES                = 0x2100;
@@ -454,6 +455,7 @@ public enum Phase {
     public static final int POST_MODULE_SAR_SERVICE_COMPONENT           = 0x2D00;
     public static final int POST_MODULE_UNDERTOW_WEBSOCKETS             = 0x2E00;
     public static final int POST_MODULE_UNDERTOW_HANDLERS               = 0x2F00;
+    public static final int POST_MODULE_BATCH_ENVIRONMENT               = 0x3100;
 
     // INSTALL
     public static final int INSTALL_JACC_POLICY                         = 0x0350;
