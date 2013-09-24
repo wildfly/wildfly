@@ -72,15 +72,16 @@ public class DomainControllerMigrationTestCase {
     private static String slaveAddress = System.getProperty("jboss.test.host.slave.address");
     private static final String DEPLOYMENT_NAME = "SimpleServlet.war";
 
+    private static DomainControllerClientConfig domainControllerClientConfig;
     private static DomainLifecycleUtil[] hostUtils = new DomainLifecycleUtil[3];
 
     private static File warFile;
 
     @BeforeClass
     public static void setupDomain() throws Exception {
-        final DomainControllerClientConfig config = DomainControllerClientConfig.create();
+        domainControllerClientConfig = DomainControllerClientConfig.create();
         for (int k = 0; k<3; k++) {
-            hostUtils[k] = new DomainLifecycleUtil(getHostConfiguration(k+1), config);
+            hostUtils[k] = new DomainLifecycleUtil(getHostConfiguration(k+1), domainControllerClientConfig);
             hostUtils[k].start();
         }
 
@@ -94,9 +95,21 @@ public class DomainControllerMigrationTestCase {
     }
 
     @AfterClass
-    public static void shutdownDomain() {
-        hostUtils[1].stop();
-        hostUtils[2].stop();
+    public static void shutdownDomain() throws IOException {
+        try {
+            int i = 0;
+            for (; i < hostUtils.length; i++) {
+                try {
+                    hostUtils[i].stop();
+                } catch (Exception e) {
+                    log.error("Failed closing host util " + i, e);
+                }
+            }
+        } finally {
+            if (domainControllerClientConfig != null) {
+                domainControllerClientConfig.close();
+            }
+        }
 
         Assert.assertTrue(warFile.delete());
     }

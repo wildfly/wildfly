@@ -161,9 +161,8 @@ public class ExpressionSupportSmokeTestCase extends BuildConfigurationTestBase {
         hostProps = hostProps == null ? "" : hostProps;
         config.setHostCommandLineProperties(hostProps + "\n-Djboss.unsupported.fail-boot-on-runtime-failure=true");
 
-        final DomainLifecycleUtil utils = new DomainLifecycleUtil(config);
-        utils.start(); // Start
-        this.domainMasterLifecycleUtil = utils;
+        domainMasterLifecycleUtil = new DomainLifecycleUtil(config);
+        domainMasterLifecycleUtil.start(); // Start
 
         conflicts = noSimple = noSimpleCollection = noComplexList = noComplexProperty = noObject = noComplexProperty =
                 supportedUndefined = simple = simpleCollection = object = complexProperty = complexList = 0;
