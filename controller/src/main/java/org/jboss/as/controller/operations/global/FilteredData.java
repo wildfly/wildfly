@@ -22,6 +22,10 @@
 
 package org.jboss.as.controller.operations.global;
 
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.FILTERED_ATTRIBUTES;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.FILTERED_CHILDREN_TYPES;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.UNREADABLE_CHILDREN;
+
 import java.util.HashSet;
 import java.util.LinkedHashMap;
 import java.util.Map;
@@ -114,7 +118,7 @@ class FilteredData {
                     }
                 }
                 if (attrs.asInt() > 0) {
-                    item.get("filtered-attributes").set(attrs);
+                    item.get(FILTERED_ATTRIBUTES).set(attrs);
                 }
                 ModelNode children = new ModelNode().setEmptyList();
                 if (rd.children != null) {
@@ -123,7 +127,7 @@ class FilteredData {
                     }
                 }
                 if (children.asInt() > 0) {
-                    item.get("unreadable-children").set(children);
+                    item.get(UNREADABLE_CHILDREN).set(children);
                 }
                 ModelNode childTypes = new ModelNode().setEmptyList();
                 if (rd.childTypes != null) {
@@ -135,7 +139,7 @@ class FilteredData {
                     }
                 }
                 if (childTypes.asInt() > 0) {
-                    item.get("filtered-children-types").set(childTypes);
+                    item.get(FILTERED_CHILDREN_TYPES).set(childTypes);
                 }
                 result.add(item);
             }
