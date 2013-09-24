@@ -35,6 +35,7 @@ import org.jboss.as.server.deployment.DeploymentUnit;
 import org.jboss.as.server.deployment.DeploymentUnitProcessingException;
 import org.jboss.as.webservices.webserviceref.WSRefAnnotationWrapper;
 import org.jboss.as.webservices.webserviceref.WebServiceReferences;
+import org.jboss.as.weld.util.ResourceInjectionUtilities;
 import org.jboss.weld.injection.spi.JaxwsInjectionServices;
 import org.jboss.weld.injection.spi.ResourceReferenceFactory;
 
@@ -57,11 +58,18 @@ public class WeldJaxwsInjectionServices implements JaxwsInjectionServices {
             return null;
         }
         try {
-            ManagedReferenceFactory factory = WebServiceReferences.createWebServiceFactory(deploymentUnit, classNameFromType(injectionPoint.getType()), new WSRefAnnotationWrapper(annotation), (AnnotatedElement) injectionPoint.getMember(), annotation.name());
+            ManagedReferenceFactory factory = WebServiceReferences.createWebServiceFactory(deploymentUnit, classNameFromType(injectionPoint.getType()), new WSRefAnnotationWrapper(annotation), (AnnotatedElement) injectionPoint.getMember(), getBindingName(injectionPoint, annotation));
             return new ManagedReferenceFactoryToResourceReferenceFactoryAdapter<>(factory);
         } catch (DeploymentUnitProcessingException e) {
             throw new RuntimeException(e);
         }
+    }
+
+    private String getBindingName(final InjectionPoint injectionPoint, WebServiceRef annotation) {
+        if (!annotation.name().isEmpty()) {
+            return annotation.name();
+        }
+        return injectionPoint.getMember().getDeclaringClass().getName() + "/" + ResourceInjectionUtilities.getPropertyName(injectionPoint.getMember());
     }
 
     private String classNameFromType(final Type type) {

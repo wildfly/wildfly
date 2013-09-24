@@ -18,6 +18,7 @@ package org.jboss.as.weld.util;
 
 import java.beans.Introspector;
 import java.lang.reflect.Field;
+import java.lang.reflect.Member;
 import java.lang.reflect.Method;
 
 import javax.annotation.Resource;
@@ -79,6 +80,13 @@ public class ResourceInjectionUtilities {
             return Introspector.decapitalize(methodName.substring(3));
         }
         return null;
+    }
+
+    public static String getPropertyName(Member member) {
+        if (member instanceof Method) {
+            return getPropertyName((Method) member);
+        }
+        return member.getName();
     }
 
     public static Annotated getResourceAnnotated(InjectionPoint injectionPoint) {
