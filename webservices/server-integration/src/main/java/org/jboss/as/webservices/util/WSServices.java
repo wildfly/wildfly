@@ -44,6 +44,8 @@ public final class WSServices {
 
     private static volatile ServiceRegistry registry;
 
+    // FIXME - Storing the registry in a static prevents multiple containers and leads to bugs.
+    // It also indicates a problem with service lifecycle.
     public static void saveContainerRegistry(ServiceRegistry containerRegistry) {
         registry = containerRegistry;
     }
