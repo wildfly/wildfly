@@ -21,8 +21,6 @@
  */
 package org.jboss.as.appclient.subsystem;
 
-import static org.jboss.as.appclient.logging.AppClientMessages.MESSAGES;
-
 import java.io.File;
 import java.io.IOException;
 import java.net.MalformedURLException;
@@ -54,6 +52,8 @@ import org.jboss.stdio.NullInputStream;
 import org.jboss.stdio.SimpleStdioContextSelector;
 import org.jboss.stdio.StdioContext;
 import org.wildfly.security.manager.WildFlySecurityManager;
+
+import static org.jboss.as.appclient.logging.AppClientMessages.MESSAGES;
 
 /**
  * The application client entry point
@@ -336,7 +336,8 @@ public final class Main {
     private static final class ParsedOptions {
         ServerEnvironment environment;
         List<String> clientArguments;
-        String hostUrl = "remote://localhost:4447";
+        // by default we use http upgrade support of the Undertow web server
+        String hostUrl = "http-remoting://localhost:8080";
         String propertiesFile;
     }
 }
