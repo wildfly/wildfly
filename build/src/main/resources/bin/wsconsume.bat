@@ -4,9 +4,9 @@
 @if "%OS%" == "Windows_NT"  setlocal
 
 set DIRNAME=.\
-if "%OS%" == "Windows_NT" set DIRNAME=%~dp0%
+if "%OS%" == "Windows_NT" set "DIRNAME=%~dp0%"
 set PROGNAME=run.bat
-if "%OS%" == "Windows_NT" set PROGNAME=%~nx0%
+if "%OS%" == "Windows_NT" set "PROGNAME=%~nx0%"
 
 if "x%JAVA_HOME%" == "x" (
   set  JAVA=java
@@ -15,7 +15,7 @@ if "x%JAVA_HOME%" == "x" (
 ) else (
   set "JAVA=%JAVA_HOME%\bin\java"
 )
-set JBOSS_HOME=%DIRNAME%\..
+set "JBOSS_HOME=%DIRNAME%\.."
 
 set "JAVA_OPTS=%JAVA_OPTS% -Dprogram.name=wsconsume.bat"
 
