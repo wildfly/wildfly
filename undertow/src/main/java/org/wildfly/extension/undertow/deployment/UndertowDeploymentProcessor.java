@@ -217,6 +217,10 @@ public class UndertowDeploymentProcessor implements DeploymentUnitProcessor {
                 .setOverlays(warMetaData.getOverlays())
                 .setExpressionFactoryWrappers(deploymentUnit.getAttachmentList(ExpressionFactoryWrapper.ATTACHMENT_KEY))
                 .setPredicatedHandlers(deploymentUnit.getAttachment(UndertowHandlersDeploymentProcessor.PREDICATED_HANDLERS))
+                .setInitialHandlerChainWrappers(deploymentUnit.getAttachmentList(UndertowHandlerWrapperDeploymentProcessor.UNDERTOW_INITIAL_HANDLER_CHAIN_WRAPPERS))
+                .setInnerHandlerChainWrappers(deploymentUnit.getAttachmentList(UndertowHandlerWrapperDeploymentProcessor.UNDERTOW_INNER_HANDLER_CHAIN_WRAPPERS))
+                .setOuterHandlerChainWrappers(deploymentUnit.getAttachmentList(UndertowHandlerWrapperDeploymentProcessor.UNDERTOW_OUTER_HANDLER_CHAIN_WRAPPERS))
+                .setThreadSetupActions(deploymentUnit.getAttachmentList(UndertowThreadSetupActionDeploymentProcessor.UNDERTOW_THREAD_SETUP_ACTIONS))
                 .setExplodedDeployment(ExplodedDeploymentMarker.isExplodedDeployment(deploymentUnit))
                 .createUndertowDeploymentInfoService();
 

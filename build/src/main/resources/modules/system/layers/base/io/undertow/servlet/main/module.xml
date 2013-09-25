@@ -40,6 +40,5 @@
         <module name="org.jboss.logging"/>
         <module name="io.undertow.core" />
         <module name="org.jboss.xnio"/>
-        <module name="org.wildfly.mod_cluster.undertow" services="export" export="true" optional="true"/>
     </dependencies>
 </module>
