@@ -185,6 +185,10 @@ public class UndertowDeploymentInfoService implements Service<DeploymentInfo> {
     private final Set<VirtualFile> overlays;
     private final List<ExpressionFactoryWrapper> expressionFactoryWrappers;
     private final List<PredicatedHandler> predicatedHandlers;
+    private final List<HandlerWrapper> initialHandlerChainWrappers;
+    private final List<HandlerWrapper> innerHandlerChainWrappers;
+    private final List<HandlerWrapper> outerHandlerChainWrappers;
+    private final List<ThreadSetupAction> threadSetupActions;
     private final boolean explodedDeployment;
 
     private final InjectedValue<UndertowService> undertowService = new InjectedValue<>();
@@ -196,7 +200,7 @@ public class UndertowDeploymentInfoService implements Service<DeploymentInfo> {
     private final InjectedValue<Host> host = new InjectedValue<>();
     private final Map<String, InjectedValue<Executor>> executorsByName = new HashMap<String, InjectedValue<Executor>>();
 
-    private UndertowDeploymentInfoService(final JBossWebMetaData mergedMetaData, final String deploymentName, final TldsMetaData tldsMetaData, final List<TldMetaData> sharedTlds, final Module module, final ScisMetaData scisMetaData, final VirtualFile deploymentRoot, final String jaccContextId, final String securityDomain, final List<ServletContextAttribute> attributes, final String contextPath, final List<SetupAction> setupActions, final Set<VirtualFile> overlays, final List<ExpressionFactoryWrapper> expressionFactoryWrappers, List<PredicatedHandler> predicatedHandlers, boolean explodedDeployment) {
+    private UndertowDeploymentInfoService(final JBossWebMetaData mergedMetaData, final String deploymentName, final TldsMetaData tldsMetaData, final List<TldMetaData> sharedTlds, final Module module, final ScisMetaData scisMetaData, final VirtualFile deploymentRoot, final String jaccContextId, final String securityDomain, final List<ServletContextAttribute> attributes, final String contextPath, final List<SetupAction> setupActions, final Set<VirtualFile> overlays, final List<ExpressionFactoryWrapper> expressionFactoryWrappers, List<PredicatedHandler> predicatedHandlers, List<HandlerWrapper> initialHandlerChainWrappers, List<HandlerWrapper> innerHandlerChainWrappers, List<HandlerWrapper> outerHandlerChainWrappers, List<ThreadSetupAction> threadSetupActions, boolean explodedDeployment) {
         this.mergedMetaData = mergedMetaData;
         this.deploymentName = deploymentName;
         this.tldsMetaData = tldsMetaData;
@@ -212,6 +216,10 @@ public class UndertowDeploymentInfoService implements Service<DeploymentInfo> {
         this.overlays = overlays;
         this.expressionFactoryWrappers = expressionFactoryWrappers;
         this.predicatedHandlers = predicatedHandlers;
+        this.initialHandlerChainWrappers = initialHandlerChainWrappers;
+        this.innerHandlerChainWrappers = innerHandlerChainWrappers;
+        this.outerHandlerChainWrappers = outerHandlerChainWrappers;
+        this.threadSetupActions = threadSetupActions;
         this.explodedDeployment = explodedDeployment;
     }
 
@@ -322,6 +330,29 @@ public class UndertowDeploymentInfoService implements Service<DeploymentInfo> {
                 });
             }
 
+            if (initialHandlerChainWrappers != null) {
+                for (HandlerWrapper handlerWrapper : initialHandlerChainWrappers) {
+                    deploymentInfo.addInitialHandlerChainWrapper(handlerWrapper);
+                }
+            }
+
+            if (innerHandlerChainWrappers != null) {
+                for (HandlerWrapper handlerWrapper : innerHandlerChainWrappers) {
+                    deploymentInfo.addInnerHandlerChainWrapper(handlerWrapper);
+                }
+            }
+
+            if (outerHandlerChainWrappers != null) {
+                for (HandlerWrapper handlerWrapper : outerHandlerChainWrappers) {
+                    deploymentInfo.addOuterHandlerChainWrapper(handlerWrapper);
+                }
+            }
+
+            if (threadSetupActions != null) {
+                for (ThreadSetupAction threadSetupAction : threadSetupActions) {
+                    deploymentInfo.addThreadSetupAction(threadSetupAction);
+                }
+            }
 
             this.deploymentInfo = deploymentInfo;
         } finally {
@@ -1202,6 +1233,10 @@ public class UndertowDeploymentInfoService implements Service<DeploymentInfo> {
         private Set<VirtualFile> overlays;
         private List<ExpressionFactoryWrapper> expressionFactoryWrappers;
         private List<PredicatedHandler> predicatedHandlers;
+        private List<HandlerWrapper> initialHandlerChainWrappers;
+        private List<HandlerWrapper> innerHandlerChainWrappers;
+        private List<HandlerWrapper> outerHandlerChainWrappers;
+        private List<ThreadSetupAction> threadSetupActions;
         private boolean explodedDeployment;
 
         Builder setMergedMetaData(final JBossWebMetaData mergedMetaData) {
@@ -1279,13 +1314,33 @@ public class UndertowDeploymentInfoService implements Service<DeploymentInfo> {
             return this;
         }
 
+        public Builder setInitialHandlerChainWrappers(List<HandlerWrapper> initialHandlerChainWrappers) {
+            this.initialHandlerChainWrappers = initialHandlerChainWrappers;
+            return this;
+        }
+
+        public Builder setInnerHandlerChainWrappers(List<HandlerWrapper> innerHandlerChainWrappers) {
+            this.innerHandlerChainWrappers = innerHandlerChainWrappers;
+            return this;
+        }
+
+        public Builder setOuterHandlerChainWrappers(List<HandlerWrapper> outerHandlerChainWrappers) {
+            this.outerHandlerChainWrappers = outerHandlerChainWrappers;
+            return this;
+        }
+
+        public Builder setThreadSetupActions(List<ThreadSetupAction> threadSetupActions) {
+            this.threadSetupActions = threadSetupActions;
+            return this;
+        }
+
         public Builder setExplodedDeployment(boolean explodedDeployment) {
             this.explodedDeployment = explodedDeployment;
             return this;
         }
 
         public UndertowDeploymentInfoService createUndertowDeploymentInfoService() {
-            return new UndertowDeploymentInfoService(mergedMetaData, deploymentName, tldsMetaData, sharedTlds, module, scisMetaData, deploymentRoot, jaccContextId, securityDomain, attributes, contextPath, setupActions, overlays, expressionFactoryWrappers, predicatedHandlers, explodedDeployment);
+            return new UndertowDeploymentInfoService(mergedMetaData, deploymentName, tldsMetaData, sharedTlds, module, scisMetaData, deploymentRoot, jaccContextId, securityDomain, attributes, contextPath, setupActions, overlays, expressionFactoryWrappers, predicatedHandlers, initialHandlerChainWrappers, innerHandlerChainWrappers, outerHandlerChainWrappers, threadSetupActions, explodedDeployment);
         }
     }
 }
