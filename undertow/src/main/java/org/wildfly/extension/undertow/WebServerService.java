@@ -29,17 +29,29 @@ import org.jboss.msc.service.StartException;
 import org.jboss.msc.service.StopContext;
 
 /**
- *
- * TODO: this is a hack for now
  * @author Stuart Douglas
  */
-@Deprecated
-public class WebServerService implements CommonWebServer, Service<WebServerService> {
+class WebServerService implements CommonWebServer, Service<WebServerService> {
 
+
+    private volatile int httpPort = -1;
+    private volatile int httpsPort = -1;
 
     @Override
     public int getPort(final String protocol, final boolean secure) {
-        return secure ? 8443 : 8080;
+        // TODO: Is relying on "secure" enough of should the protocol be considered too? For example, how would this behave with AJP (or does it not matter)
+        if (secure) {
+            if (httpsPort == -1) {
+                // throw error
+                throw UndertowMessages.MESSAGES.noPortListeningForProtocol(protocol);
+            }
+            return httpsPort;
+        }
+        if (httpPort == -1) {
+            // throw error
+            throw UndertowMessages.MESSAGES.noPortListeningForProtocol(protocol);
+        }
+        return httpPort;
     }
 
     @Override
@@ -49,11 +61,21 @@ public class WebServerService implements CommonWebServer, Service<WebServerServi
 
     @Override
     public void stop(final StopContext context) {
-
+        httpPort = -1;
+        httpsPort = -1;
     }
 
     @Override
     public WebServerService getValue() throws IllegalStateException, IllegalArgumentException {
         return this;
     }
+
+    void setHttpPort(final int port) {
+        this.httpPort = port;
+    }
+
+    void setHttpsPort(final int port) {
+        this.httpsPort = port;
+    }
+
 }

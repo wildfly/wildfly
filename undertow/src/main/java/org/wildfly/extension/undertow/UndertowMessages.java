@@ -22,6 +22,8 @@
 
 package org.wildfly.extension.undertow;
 
+import java.io.File;
+
 import javax.xml.stream.Location;
 import javax.xml.stream.XMLStreamException;
 
@@ -38,8 +40,6 @@ import org.jboss.modules.ModuleIdentifier;
 import org.jboss.msc.service.ServiceName;
 import org.jboss.msc.service.StartException;
 import org.jboss.vfs.VirtualFile;
-
-import java.io.File;
 
 /**
  * This module is using message IDs in the range 17300 - 17699.
@@ -168,4 +168,7 @@ public interface UndertowMessages {
 
     @Message(id = 17349, value = "Could not create log directory: %s")
     StartException couldNotCreateLogDirectory(File directory);
+
+    @Message(id = 17350, value = "Could not find the port number listening for protocol %s")
+    IllegalStateException noPortListeningForProtocol(final String protocol);
 }

@@ -207,6 +207,14 @@ public final class SocketBinding {
         return registry.isRegistered(name);
     }
 
+    /**
+     * Returns the port configured for this socket binding.
+     * <p/>
+     * Note that this method does NOT take into account any port-offset that might have been configured. Use {@link #getAbsolutePort()}
+     * if the port-offset has to be considered.
+     *
+     * @return
+     */
     public int getPort() {
         return port;
     }
