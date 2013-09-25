@@ -1205,11 +1205,6 @@ public class StandaloneXml extends CommonXml {
         }
 
         @Override
-        public void parseOutboundConnections(XMLExtendedStreamReader reader, ModelNode address, Namespace expectedNs, List<ModelNode> list) throws XMLStreamException {
-            throw new UnsupportedOperationException();
-        }
-
-        @Override
         public void parseAccessControl(final XMLExtendedStreamReader reader, final ModelNode address, final Namespace expectedNs,
                                        final List<ModelNode> list) throws XMLStreamException {
             ModelNode accAuthzAddr = address.clone().add(ACCESS, AUTHORIZATION);
