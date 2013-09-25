@@ -29,6 +29,7 @@ import java.util.EnumSet;
 import java.util.Set;
 
 import org.infinispan.Cache;
+import org.infinispan.CacheException;
 import org.infinispan.context.Flag;
 import org.infinispan.remoting.transport.jgroups.SuspectException;
 import org.infinispan.util.concurrent.TimeoutException;
@@ -79,9 +80,10 @@ public class RetryingCacheInvoker implements CacheInvoker {
             // Make sure Flag.FAIL_SILENTLY, if specified, is applied to the last try only
             try {
                 return this.invoker.invoke(cache, operation, (i < this.backOffIntervals.length) ? attemptFlags : allFlags);
-            } catch (TimeoutException e) {
-                exception = e;
-            } catch (SuspectException e) {
+            } catch (CacheException e) {
+                if (!allowRetry(e)) {
+                    throw e;
+                }
                 exception = e;
             }
 
@@ -101,5 +103,11 @@ public class RetryingCacheInvoker implements CacheInvoker {
         }
 
         throw MESSAGES.abortingCacheOperation(exception, Integer.valueOf(this.backOffIntervals.length + 1));
+    }
+
+    private static boolean allowRetry(Throwable e) {
+        if ((e instanceof SuspectException) || (e instanceof TimeoutException)) return true;
+        Throwable cause = e.getCause();
+        return (cause != null) ? allowRetry(cause) : false;
     }
 }
