@@ -36,7 +36,6 @@ import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.Future;
 import java.util.concurrent.atomic.AtomicReference;
 
-import org.jboss.as.controller.ControllerMessages;
 import org.jboss.as.controller.ModelController;
 import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.ProxyController;
@@ -150,10 +149,10 @@ public class RemoteProxyController implements ProxyController {
             // Translate the operation
             final ModelNode translated = translateOperationForProxy(original);
 
-            //Validate the address
-            if (validateAddresses && !validateAddress(translated, messageHandler)) {
-                throw ControllerMessages.MESSAGES.managementResourceNotFound(PathAddress.pathAddress(translated.get(OP_ADDR)));
-            }
+            // Validate the address
+//            if (validateAddresses && !validateAddress(translated, messageHandler)) {
+//                throw ControllerMessages.MESSAGES.managementResourceNotFound(PathAddress.pathAddress(translated.get(OP_ADDR)));
+//            }
 
             // Execute the operation
             futureResult = client.execute(operationListener, translated, messageHandler, attachments);
