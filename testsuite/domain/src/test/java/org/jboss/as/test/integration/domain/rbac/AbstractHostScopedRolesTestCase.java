@@ -27,7 +27,10 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.BAS
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.CHILD_TYPE;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.HOST;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.HOSTS;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.PROXIES;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.READ_CHILDREN_RESOURCES_OPERATION;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.READ_RESOURCE_DESCRIPTION_OPERATION;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.RECURSIVE_DEPTH;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.REMOVE;
 import static org.jboss.as.test.integration.management.util.ModelUtil.createOpNode;
 
@@ -300,8 +303,18 @@ public abstract class AbstractHostScopedRolesTestCase extends AbstractRbacTestCa
         ModelNode op = Util.createOperation(READ_CHILDREN_RESOURCES_OPERATION, PathAddress.EMPTY_ADDRESS);
         op.get(CHILD_TYPE).set(HOST);
         configureRoles(op, roles);
-        System.out.println("host scoped read host child resources result for " + roles[0]);
-        System.out.println(RbacUtil.executeOperation(client, op, Outcome.SUCCESS));
-        //RbacUtil.executeOperation(client, op, Outcome.SUCCESS);
+        //System.out.println("host scoped read host child resources result for " + roles[0]);
+        //System.out.println(RbacUtil.executeOperation(client, op, Outcome.SUCCESS));
+        RbacUtil.executeOperation(client, op, Outcome.SUCCESS);
+
+
+        op = Util.createOperation(READ_RESOURCE_DESCRIPTION_OPERATION, PathAddress.EMPTY_ADDRESS);
+        op.get(RECURSIVE_DEPTH).set(2);
+        op.get(PROXIES).set(true);
+        configureRoles(op, roles);
+        //System.out.println("host scoped :read-resource-description(recursive-depth=1,proxies=true) result for " + roles[0]);
+        //System.out.println(RbacUtil.executeOperation(client, op, Outcome.SUCCESS));
+        RbacUtil.executeOperation(client, op, Outcome.SUCCESS);
+
     }
 }

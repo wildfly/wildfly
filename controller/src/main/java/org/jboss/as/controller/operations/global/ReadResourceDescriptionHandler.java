@@ -77,6 +77,7 @@ import org.jboss.as.controller.descriptions.common.ControllerResolver;
 import org.jboss.as.controller.operations.common.Util;
 import org.jboss.as.controller.operations.validation.EnumValidator;
 import org.jboss.as.controller.registry.AliasEntry;
+import org.jboss.as.controller.registry.AliasStepHandler;
 import org.jboss.as.controller.registry.AttributeAccess;
 import org.jboss.as.controller.registry.AttributeAccess.AccessType;
 import org.jboss.as.controller.registry.AttributeAccess.Storage;
@@ -121,6 +122,16 @@ public class ReadResourceDescriptionHandler implements OperationStepHandler {
             .build();
 
     static final OperationStepHandler INSTANCE = new ReadResourceDescriptionHandler();
+
+    //Placeholder for NoSuchResourceExceptions coming from proxies to remove the child in ReadResourceDescriptionAssemblyHandler
+    private static final ModelNode PROXY_NO_SUCH_RESOURCE;
+    static {
+        //Create something non-used since we cannot
+        ModelNode none = new ModelNode();
+        none.get("no-such-resource").set("no$such$resource");
+        none.protect();
+        PROXY_NO_SUCH_RESOURCE = none;
+    }
 
     private ReadResourceDescriptionHandler() {
     }
@@ -267,13 +278,7 @@ public class ReadResourceDescriptionHandler implements OperationStepHandler {
                     final ModelNode rrRsp = new ModelNode();
                     childResources.put(element, rrRsp);
 
-                    final OperationStepHandler handler = childReg.isRemote() ? childReg.getOperationHandler(PathAddress.EMPTY_ADDRESS, opName) :
-                        new NestedReadResourceDescriptionHandler(new ReadResourceDescriptionAccessControlContext(address, accessControlContext)) {
-                            @Override
-                            public void execute(OperationContext context, ModelNode operation) throws OperationFailedException {
-                                doExecute(context, operation, accessControlContext);
-                            }
-                        };
+                    final OperationStepHandler handler = getRecursiveStepHandler(childReg, opName, accessControlContext, address);
                     context.addStep(rrRsp, rrOp, handler, OperationContext.Stage.MODEL, true);
                 }
                 //Add a "child" => undefined
@@ -296,6 +301,22 @@ public class ReadResourceDescriptionHandler implements OperationStepHandler {
             }
         });
     }
+
+    private OperationStepHandler getRecursiveStepHandler(ImmutableManagementResourceRegistration childReg, String opName, ReadResourceDescriptionAccessControlContext accessControlContext, PathAddress address) {
+        OperationStepHandler overrideHandler = childReg.getOperationHandler(PathAddress.EMPTY_ADDRESS, opName);
+        if (overrideHandler != null && overrideHandler.getClass() == ReadResourceDescriptionHandler.class || overrideHandler.getClass() == AliasStepHandler.class) {
+            // not an override
+            overrideHandler = null;
+        }
+
+        if (overrideHandler != null) {
+            return new NestedReadResourceDescriptionHandler(overrideHandler);
+        } else {
+            return new NestedReadResourceDescriptionHandler(new ReadResourceDescriptionAccessControlContext(address, accessControlContext));
+        }
+    }
+
+
 
     private ImmutableManagementResourceRegistration getResourceRegistrationCheckForAlias(OperationContext context, PathAddress opAddr, ReadResourceDescriptionAccessControlContext accessControlContext) {
         //The direct root registration is only needed if we are doing access-control=true
@@ -520,7 +541,12 @@ public class ReadResourceDescriptionHandler implements OperationStepHandler {
                 final PathElement element = entry.getKey();
                 final ModelNode value = entry.getValue();
                 if (!value.has(FAILURE_DESCRIPTION)) {
-                    nodeDescription.get(CHILDREN, element.getKey(), MODEL_DESCRIPTION, element.getValue()).set(value.get(RESULT));
+                    ModelNode actualValue = value.get(RESULT);
+                    if (actualValue.equals(PROXY_NO_SUCH_RESOURCE)) {
+                        nodeDescription.get(CHILDREN).remove(element.getKey());
+                    } else {
+                        nodeDescription.get(CHILDREN, element.getKey(), MODEL_DESCRIPTION, element.getValue()).set(actualValue);
+                    }
                 } else if (value.hasDefined(FAILURE_DESCRIPTION)) {
                     context.getFailureDescription().set(value.get(FAILURE_DESCRIPTION));
                     break;
@@ -711,11 +737,37 @@ public class ReadResourceDescriptionHandler implements OperationStepHandler {
         }
     }
 
-    private static class NestedReadResourceDescriptionHandler extends ReadResourceDescriptionHandler {
+    private class NestedReadResourceDescriptionHandler extends ReadResourceDescriptionHandler {
         final ReadResourceDescriptionAccessControlContext accessControlContext;
+        final OperationStepHandler overrideStepHandler;
 
-        public NestedReadResourceDescriptionHandler(ReadResourceDescriptionAccessControlContext accessControlContext) {
+        NestedReadResourceDescriptionHandler(ReadResourceDescriptionAccessControlContext accessControlContext) {
             this.accessControlContext = accessControlContext;
+            this.overrideStepHandler = null;
+        }
+
+        NestedReadResourceDescriptionHandler(OperationStepHandler overrideStepHandler) {
+            this.accessControlContext = null;
+            this.overrideStepHandler = overrideStepHandler;
+        }
+
+        @Override
+        public void execute(OperationContext context, ModelNode operation) throws OperationFailedException {
+            if (accessControlContext != null) {
+                doExecute(context, operation, accessControlContext);
+            } else {
+                try {
+                    overrideStepHandler.execute(context, operation);
+                } catch (NoSuchResourceException e){
+                    //Mark it as not accessible so that the assembly handler can remove it
+                    context.getResult().set(PROXY_NO_SUCH_RESOURCE);
+                    context.stepCompleted();
+                } catch (UnauthorizedException e) {
+                    //We were not allowed to read it, the assembly handler should still allow people to see it
+                    context.getResult().set(new ModelNode());
+                    context.stepCompleted();
+                }
+            }
         }
     }
 
