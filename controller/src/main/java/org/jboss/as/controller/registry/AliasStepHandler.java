@@ -36,7 +36,7 @@ import org.jboss.dmr.ModelNode;
  * A handler that simply maps an alias onto a target part of the model.
  *
  */
-class AliasStepHandler implements OperationStepHandler {
+public class AliasStepHandler implements OperationStepHandler {
 
     private final AliasEntry aliasEntry;
 
