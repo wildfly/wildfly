@@ -66,7 +66,7 @@ import java.util.Set;
 import java.util.concurrent.TimeUnit;
 
 import org.jboss.as.clustering.msc.AsynchronousService;
-import org.jboss.as.controller.AbstractAddStepHandler;
+import org.jboss.as.controller.AbstractBoottimeAddStepHandler;
 import org.jboss.as.controller.AttributeDefinition;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
@@ -97,16 +97,20 @@ import org.jboss.msc.value.InjectedValue;
  *
  * @author Jean-Frederic Clere
  * @author Tomaz Cerar
+ * @author Radoslav Husar
  */
-class ModClusterSubsystemAdd extends AbstractAddStepHandler {
+class ModClusterSubsystemAdd extends AbstractBoottimeAddStepHandler {
 
     private static final OperationContext.AttachmentKey<Boolean> SUBSYSTEM_ADD_KEY = OperationContext.AttachmentKey.create(Boolean.class);
 
     static final ModClusterSubsystemAdd INSTANCE = new ModClusterSubsystemAdd();
 
     @Override
-    protected void performRuntime(OperationContext context, ModelNode operation, ModelNode model,
-                                  ServiceVerificationHandler verificationHandler, List<ServiceController<?>> newControllers) throws OperationFailedException {
+    public void performBoottime(OperationContext context, ModelNode operation, ModelNode model, ServiceVerificationHandler verificationHandler, List<ServiceController<?>> newControllers) throws OperationFailedException {
+
+        for (BoottimeHandlerProvider handler : ServiceLoader.load(BoottimeHandlerProvider.class, BoottimeHandlerProvider.class.getClassLoader())) {
+            handler.performBoottime(context, operation, model, verificationHandler, newControllers);
+        }
 
         ServiceTarget target = context.getServiceTarget();
         final ModelNode fullModel = Resource.Tools.readModel(context.readResource(PathAddress.EMPTY_ADDRESS));
@@ -122,8 +126,7 @@ class ModClusterSubsystemAdd extends AbstractAddStepHandler {
         final ServiceBuilder<?> builder = AsynchronousService.addService(target, ContainerEventHandlerService.SERVICE_NAME, service, true, true)
                 .addDependency(SocketBindingManager.SOCKET_BINDING_MANAGER, SocketBindingManager.class, socketBindingManager)
                 .addListener(verificationHandler)
-                .setInitialMode(Mode.ACTIVE)
-        ;
+                .setInitialMode(Mode.ACTIVE);
         final ModelNode bindingRefNode = ADVERTISE_SOCKET.resolveModelAttribute(context, modelConfig);
         final String bindingRef = bindingRefNode.isDefined() ? bindingRefNode.asString() : null;
         if (bindingRef != null) {

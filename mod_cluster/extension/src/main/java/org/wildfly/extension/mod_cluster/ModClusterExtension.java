@@ -44,7 +44,6 @@ import static org.wildfly.extension.mod_cluster.ModClusterSSLResourceDefinition.
 
 import java.util.List;
 import java.util.Map;
-
 import javax.xml.stream.XMLStreamConstants;
 
 import org.jboss.as.controller.Extension;
