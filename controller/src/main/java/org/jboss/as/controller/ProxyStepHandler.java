@@ -144,7 +144,12 @@ public class ProxyStepHandler implements OperationStepHandler {
         if (finalResult != null) {
             // operation failed before it could commit
             context.getResult().set(finalResult.get(RESULT));
-            context.getFailureDescription().set(finalResult.get(FAILURE_DESCRIPTION));
+            ModelNode failureDesc = finalResult.get(FAILURE_DESCRIPTION);
+            OperationFailedRuntimeException stdFailure = translateFailureDescription(failureDesc);
+            if (stdFailure != null) {
+                throw stdFailure;
+            }
+            context.getFailureDescription().set(failureDesc);
             if (finalResult.hasDefined(RESPONSE_HEADERS)) {
                 context.getResponseHeaders().set(finalResult.get(RESPONSE_HEADERS));
             }
@@ -233,6 +238,18 @@ public class ProxyStepHandler implements OperationStepHandler {
                 txRef.get().rollback();
             }
         }
+    }
+
+    private static OperationFailedRuntimeException translateFailureDescription(ModelNode failureDescription) {
+
+        String failureDesc = failureDescription.asString();
+        if (failureDesc.startsWith("JBAS014807")) {
+            return new NoSuchResourceException(failureDesc);
+        }
+        else if (failureDesc.startsWith("JBAS013456")) {
+            return new UnauthorizedException(failureDesc);
+        }
+        return null;
     }
 
 
