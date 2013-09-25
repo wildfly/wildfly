@@ -1,0 +1,21 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<server xmlns="urn:jboss:domain:2.0">
+    <management>
+        <security-realms>
+            <security-realm name="ManagementRealm">
+                <authentication>
+                    <local default-user="$local" />
+                    <ldap connection="LocalLdap" base-dn="ou=users,dc=group-to-principal,dc=wildfly,dc=org">
+                        <username-filter attribute="uid" />
+                    </ldap>
+                </authentication>
+                <authorization map-groups-to-roles="false">
+                    <properties path="mgmt-groups.properties" relative-to="jboss.server.config.dir" />
+                </authorization>
+            </security-realm>
+        </security-realms>
+        <outbound-connections>
+            <ldap name="LocalLdap" url="ldap://localhost:10389" search-dn="uid=wildfly,dc=simple,dc=wildfly,dc=org" search-credential="password1!" />
+        </outbound-connections>
+    </management>
+</server>
