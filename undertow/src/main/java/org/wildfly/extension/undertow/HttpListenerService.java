@@ -32,8 +32,11 @@ import io.undertow.server.ListenerRegistry;
 import io.undertow.server.OpenListener;
 import io.undertow.server.handlers.ChannelUpgradeHandler;
 import io.undertow.server.protocol.http.HttpOpenListener;
+import org.jboss.as.network.SocketBinding;
+import org.jboss.msc.inject.Injector;
 import org.jboss.msc.service.ServiceName;
 import org.jboss.msc.service.StartContext;
+import org.jboss.msc.service.StartException;
 import org.jboss.msc.service.ValueService;
 import org.jboss.msc.value.ImmediateValue;
 import org.jboss.msc.value.InjectedValue;
@@ -53,6 +56,7 @@ public class HttpListenerService extends AbstractListenerService<HttpListenerSer
 
     private final ChannelUpgradeHandler httpUpgradeHandler = new ChannelUpgradeHandler();
     protected final InjectedValue<ListenerRegistry> httpListenerRegistry = new InjectedValue<>();
+    protected final InjectedValue<WebServerService> commonWebServerService = new InjectedValue<>();
 
     static final ServiceName HTTP_UPGRADE_REGISTRY = ServiceName.JBOSS.append("http-upgrade-registry");
 
@@ -70,6 +74,10 @@ public class HttpListenerService extends AbstractListenerService<HttpListenerSer
                 return httpUpgradeHandler;
             }
         });
+    }
+
+    protected Injector<WebServerService> getCommonWebServerInjector() {
+        return this.commonWebServerService;
     }
 
     @Override
@@ -121,5 +129,17 @@ public class HttpListenerService extends AbstractListenerService<HttpListenerSer
 
     protected String getProtocol() {
         return "http";
+    }
+
+    @Override
+    public void start(StartContext context) throws StartException {
+        super.start(context);
+        // update the WebServerService with the http/https port information
+        final SocketBinding socketBinding = this.binding.getValue();
+        if (isSecure()) {
+            commonWebServerService.getValue().setHttpsPort(socketBinding.getAbsolutePort());
+        } else {
+            commonWebServerService.getValue().setHttpPort(socketBinding.getAbsolutePort());
+        }
     }
 }
