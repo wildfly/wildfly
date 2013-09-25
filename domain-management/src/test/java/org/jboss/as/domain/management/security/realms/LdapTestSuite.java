@@ -77,7 +77,6 @@ public class LdapTestSuite {
 
     public static boolean startLdapServer() throws Exception {
         if (initialised == true) {
-            System.out.println("Already Initialised");
             return false;
         }
 
@@ -105,7 +104,6 @@ public class LdapTestSuite {
         ldapServer.setDirectoryService(directoryService);
         ldapServer.start();
 
-        System.out.println("Started");
         initialised=true;
         return true;
     }
