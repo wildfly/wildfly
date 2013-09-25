@@ -39,7 +39,6 @@ import org.jboss.logging.Logger;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.spec.WebArchive;
 import org.junit.Assert;
-import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
@@ -57,9 +56,9 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.*;
 @RunWith(Arquillian.class)
 @RunAsClient
 public class SizeAppenderRestartTestCase {
-    private static Logger log = Logger.getLogger(SizeAppenderRestartTestCase.class);
-    public static final String CONTAINER = "default-jbossas";
-    public static final String DEPLOYMENT = "logging-deployment";
+    private static final Logger log = Logger.getLogger(SizeAppenderRestartTestCase.class);
+    private static final String CONTAINER = "default-jbossas";
+    private static final String DEPLOYMENT = "logging-deployment";
     private static final String FILE_NAME = "sizeAppenderRestartTestCase.log";
     private static final String SIZE_HANDLER_NAME = "sizeAppenderRestartTestCase";
     private static final ModelNode SIZE_HANDLER_ADDRESS = new ModelNode();
@@ -88,6 +87,8 @@ public class SizeAppenderRestartTestCase {
         ROOT_LOGGER_ADDRESS.add(SUBSYSTEM, "logging")
                 .add("root-logger", "ROOT");
 
+        // Remove log files
+        clearLogs(logFile);
         // Start the server
         container.start(CONTAINER);
         Assert.assertTrue("Container is not started", managementClient.isServerInRunningState());
@@ -159,9 +160,11 @@ public class SizeAppenderRestartTestCase {
 
     private long appendTest(String append, URL url) throws Exception {
         final String message = "SizeAppenderRestartTestCase - This is my dummy message which is gonna fill my log file";
-        long fileSize = 0L;
-        // set append attribute & reload server
+        long fileSize;
+        // set append attribute, rotate-on boot and reload server
         ModelNode op = Operations.createWriteAttributeOperation(SIZE_HANDLER_ADDRESS, "append", append);
+        validateResponse(op);
+        op = Operations.createWriteAttributeOperation(SIZE_HANDLER_ADDRESS, "rotate-on-boot", false);
         validateResponse(op);
         restartServer(true);
 
@@ -171,13 +174,19 @@ public class SizeAppenderRestartTestCase {
         for (int i = 0; i < 100; i++) {
             makeLog(message, url);
         }
-        checkLogs(message, true);
+        checkLogs(message);
         fileSize = logFile.length();
         restartServer(false);
 
         // logFile.getParentFile().listFiles().length creates array with length of 3
         int count = 0;
-        for (File f : logFile.getParentFile().listFiles()) {
+        File[] logs = null;
+        try {
+            logs = logFile.getParentFile().listFiles();
+        } catch (NullPointerException npe) {
+            Assert.fail("Failed to find any log file");
+        }
+        for (File f : logs) {
             if (f.getName().contains(logFile.getName())) {
                 count++;
             }
@@ -187,46 +196,38 @@ public class SizeAppenderRestartTestCase {
     }
 
     /*
-     * TODO https://issues.jboss.org/browse/PRODMGT-290
-     * append = true: restart -> logs are appended to same log file, unless it reach rotate-size
-     * <rotate-on-restart> = true:   restart -> log file is rotated, logs are written to new file
-     * <rotate-on-restart> = false:  restart -> same as before
-     * TODO How about combinations: append=true + rotate-on-restart=true etc.???
+     * rotate-on-boot = true:   restart -> log file is rotated, logs are written to new file
      */
     @Test
-    @Ignore
     public void rotateFileOnRestartTest(@ArquillianResource URL url) throws Exception {
-        // set append=false, rotate-on-restart=true & reload server
-        // name of attribute has yet to be resolved
-        String ROTATE_ON_RESTART = "";
         final String oldMessage = "SizeAppenderRestartTestCase - This is old message";
         final String newMessage = "SizeAppenderRestartTestCase - This is new message";
-        long fileSize = 0L;
-        ModelNode op = Operations.createWriteAttributeOperation(SIZE_HANDLER_ADDRESS, "append", false);
-        validateResponse(op);
-        op = Operations.createWriteAttributeOperation(SIZE_HANDLER_ADDRESS, ROTATE_ON_RESTART, true);
+        ModelNode op = Operations.createWriteAttributeOperation(SIZE_HANDLER_ADDRESS, "rotate-on-boot", true);
         validateResponse(op);
         restartServer(true);
 
         // make some logs, remember file size, restart
-        for (int i = 0; i < 100; i++) {
-            makeLog(oldMessage, url);
-        }
-        checkLogs(oldMessage, true);
-        fileSize = logFile.length();
+        makeLog(oldMessage, url);
+        checkLogs(oldMessage);
         restartServer(false);
 
         // make log to new rotated log file
         makeLog(newMessage, url);
-        checkLogs(newMessage, true);
+        checkLogs(newMessage);
 
-        // verify that log file was rotated and size of original file equals to size of rotated file
+        // verify that file was rotated
         int count = 0;
-        for (File file : logFile.getParentFile().listFiles()) {
+        File[] logs = null;
+        try {
+            logs = logFile.getParentFile().listFiles();
+        } catch (NullPointerException npe) {
+            Assert.fail("Failed to find any log file");
+        }
+        for (File file : logs) {
             if (file.getName().contains(logFile.getName())) {
                 count++;
                 if (file.getName().equals(logFile.getName() + ".1")) {
-                    Assert.assertEquals("Size of file after rotation should not differ", fileSize, file.length());
+                    checkLogs(newMessage, false, file);
                     checkLogs(oldMessage, true, file);
                 }
             }
@@ -235,7 +236,7 @@ public class SizeAppenderRestartTestCase {
     }
 
     private void restartServer(boolean deleteLogs) {
-        Assert.assertTrue("Container is not runnig", managementClient.isServerInRunningState());
+        Assert.assertTrue("Container is not running", managementClient.isServerInRunningState());
         // Stop the container
         container.stop(CONTAINER);
         if (deleteLogs) {
@@ -246,8 +247,8 @@ public class SizeAppenderRestartTestCase {
         Assert.assertTrue("Container is not started", managementClient.isServerInRunningState());
     }
 
-    private void checkLogs(final String msg, final boolean expected) throws Exception {
-        checkLogs(msg, expected, logFile);
+    private void checkLogs(final String msg) throws Exception {
+        checkLogs(msg, true, logFile);
     }
 
     /*
@@ -283,40 +284,37 @@ public class SizeAppenderRestartTestCase {
         return ((HttpURLConnection) url.openConnection()).getResponseCode();
     }
 
-    private ModelNode validateResponse(final ModelNode operation) throws Exception {
-        return validateResponse(operation, false);
-    }
 
-    private ModelNode validateResponse(ModelNode operation, boolean validateResult) throws Exception {
-        ModelNode response = null;
+    private void validateResponse(ModelNode operation) throws Exception {
+        ModelNode response;
         log.info(operation.asString());
         response = client.execute(operation);
         log.info(response.asString());
         if (!SUCCESS.equals(response.get(OUTCOME).asString())) {
             Assert.fail(response.get(FAILURE_DESCRIPTION).toString());
         }
-        if (validateResult) {
-            Assert.assertTrue("result exists", response.hasDefined(RESULT));
-        }
-        if (response == null) {
-            Assert.fail("response was null");
-        }
-        return response.get(RESULT);
     }
 
     private void clearLogs(File file) {
-        for (File f : file.getParentFile().listFiles()) {
-            if (f.getName().contains(logFile.getName())) {
-                f.delete();
-                log.info("Deleted: " + f.getAbsolutePath());
-                if (f.exists()) {
-                    Assert.fail("Unable to delete file: " + f.getName());
+        File[] logs = null;
+        try {
+            logs = file.getParentFile().listFiles();
+        } catch (NullPointerException ignore) {
+        }
+        if (logs != null) {
+            for (File f : logs) {
+                if (f.getName().contains(logFile.getName())) {
+                    f.delete();
+                    log.info("Deleted: " + f.getAbsolutePath());
+                    if (f.exists()) {
+                        Assert.fail("Unable to delete file: " + f.getName());
+                    }
                 }
             }
         }
     }
 
-    static File getAbsoluteLogFilePath(final ModelControllerClient client) throws IOException, MgmtOperationException {
+    private static File getAbsoluteLogFilePath(final ModelControllerClient client) throws IOException, MgmtOperationException {
         final ModelNode address = new ModelNode().setEmptyList();
         address.add(PATH, "jboss.server.log.dir");
         final ModelNode op = Operations.createReadAttributeOperation(address, PATH);
@@ -327,13 +325,11 @@ public class SizeAppenderRestartTestCase {
         throw new MgmtOperationException("Failed to read the path resource", op, result);
     }
 
-    static void safeClose(final Closeable closeable) {
+    private static void safeClose(final Closeable closeable) {
         if (closeable != null) try {
             closeable.close();
         } catch (Exception ignore) {
             // ignore
         }
     }
-
 }
-
