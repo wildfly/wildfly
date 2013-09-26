@@ -23,6 +23,7 @@
 package org.jboss.as.test.patching;
 
 import static org.jboss.as.patching.IoUtils.mkdir;
+import static org.jboss.as.patching.IoUtils.newFile;
 import static org.jboss.as.test.patching.PatchingTestUtil.CONTAINER;
 import static org.jboss.as.test.patching.PatchingTestUtil.MODULES_PATH;
 import static org.jboss.as.test.patching.PatchingTestUtil.createPatchXMLFile;
@@ -34,6 +35,7 @@ import static org.junit.Assert.assertTrue;
 import java.io.File;
 import java.io.IOException;
 import java.net.UnknownHostException;
+import java.util.Arrays;
 import java.util.List;
 
 import org.jboss.arquillian.container.test.api.RunAsClient;
@@ -60,6 +62,8 @@ import org.junit.runner.RunWith;
 @RunWith(Arquillian.class)
 @RunAsClient
 public class AgeOutHistoryUnitTestCase extends AbstractPatchingTestCase {
+
+    static final File ROOT = new File(PatchingTestUtil.AS_DISTRIBUTION);
 
     protected ProductConfig productConfig;
     protected ModelControllerClient client;
@@ -187,7 +191,10 @@ public class AgeOutHistoryUnitTestCase extends AbstractPatchingTestCase {
                     new String[]{"oneoff2", "oneoff1", "cp1", "cp0"},
                     new boolean[]{false, false, true, true});
             ageoutHistory(client);
-            assertPatched(client, new String[]{"oneoff2", "oneoff1", "cp1"}, new boolean[]{false, false, true});
+            assertCleanedUp("cp0");
+            assertPatched(client,
+                    new String[]{"oneoff2", "oneoff1", "cp1", "cp0"},
+                    new boolean[]{false, false, true, true});
         } finally {
             controller.stop(CONTAINER);
         }
@@ -218,7 +225,10 @@ public class AgeOutHistoryUnitTestCase extends AbstractPatchingTestCase {
                     new String[]{"oneoff6", "oneoff5", "cp2", "oneoff4", "oneoff3", "cp1", "oneoff2", "oneoff1"},
                     new boolean[]{false, false, true, false, false, true, false, false});
             ageoutHistory(client);
-            assertPatched(client, new String[]{"oneoff6", "oneoff5", "cp2"}, new boolean[]{false, false, true});
+            assertCleanedUp("oneoff1", "oneoff2", "cp1", "oneoff3", "oneoff4");
+            assertPatched(client,
+                    new String[]{"oneoff6", "oneoff5", "cp2", "oneoff4", "oneoff3", "cp1", "oneoff2", "oneoff1"},
+                    new boolean[]{false, false, true, false, false, true, false, false});
         } finally {
             controller.stop(CONTAINER);
         }
@@ -327,4 +337,25 @@ public class AgeOutHistoryUnitTestCase extends AbstractPatchingTestCase {
         }
         return moduleModified.getItem().getContentHash();
     }
+
+    protected void assertCleanedUp(final String... patches) {
+
+        final File base = newFile(PatchingTestUtil.BASE_MODULE_DIRECTORY, "system", "layers", "base");
+        final File overlays = new File(base, ".overlays");
+        for (final String patch : patches) {
+            final File overlay = new File(overlays, patch);
+            Assert.assertFalse(overlay.exists());
+        }
+
+        final File installation = newFile(ROOT, ".installation", "patches");
+        for (final String patch : patches) {
+            final File history = new File(installation, patch);
+            Assert.assertTrue(history.exists());
+            Assert.assertTrue(newFile(history, "patch.xml").exists());
+            Assert.assertTrue(newFile(history, "rollback.xml").exists());
+            Assert.assertEquals(2, history.list().length);
+        }
+
+    }
+
 }
