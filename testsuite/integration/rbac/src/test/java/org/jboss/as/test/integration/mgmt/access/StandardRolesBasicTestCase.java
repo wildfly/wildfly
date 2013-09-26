@@ -27,6 +27,8 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.BYT
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.CONTENT;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ENABLED;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.NAME;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.TYPE;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.USER;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OUTCOME;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.PASSWORD;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.PATH;
@@ -36,7 +38,6 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.REM
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.RESULT;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SUCCESS;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.USERNAME;
-import static org.jboss.as.test.integration.management.util.ModelUtil.createOpNode;
 import static org.jboss.as.test.integration.management.rbac.RbacUtil.ADMINISTRATOR_USER;
 import static org.jboss.as.test.integration.management.rbac.RbacUtil.AUDITOR_USER;
 import static org.jboss.as.test.integration.management.rbac.RbacUtil.DEPLOYER_USER;
@@ -44,6 +45,7 @@ import static org.jboss.as.test.integration.management.rbac.RbacUtil.MAINTAINER_
 import static org.jboss.as.test.integration.management.rbac.RbacUtil.MONITOR_USER;
 import static org.jboss.as.test.integration.management.rbac.RbacUtil.OPERATOR_USER;
 import static org.jboss.as.test.integration.management.rbac.RbacUtil.SUPERUSER_USER;
+import static org.jboss.as.test.integration.management.util.ModelUtil.createOpNode;
 import static org.junit.Assert.assertEquals;
 
 import java.io.ByteArrayInputStream;
@@ -53,13 +55,9 @@ import java.io.UnsupportedEncodingException;
 import java.nio.charset.Charset;
 
 import org.jboss.arquillian.container.test.api.Deployment;
-import org.jboss.arquillian.container.test.api.RunAsClient;
-import org.jboss.arquillian.junit.Arquillian;
-import org.jboss.as.arquillian.api.ServerSetup;
+import org.jboss.as.test.integration.management.interfaces.ManagementInterface;
 import org.jboss.as.test.integration.management.rbac.Outcome;
 import org.jboss.as.test.integration.management.rbac.RbacUtil;
-import org.jboss.as.test.integration.management.rbac.UserRolesMappingServerSetupTask;
-import org.jboss.as.test.integration.management.interfaces.ManagementInterface;
 import org.jboss.dmr.ModelNode;
 import org.jboss.shrinkwrap.api.Archive;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
@@ -67,7 +65,6 @@ import org.jboss.shrinkwrap.api.asset.Asset;
 import org.jboss.shrinkwrap.api.spec.WebArchive;
 import org.junit.After;
 import org.junit.Test;
-import org.junit.runner.RunWith;
 
 /**
  * Basic tests of the standard RBAC roles.
@@ -80,6 +77,7 @@ public abstract class StandardRolesBasicTestCase extends AbstractManagementInter
     private static final String DEPLOYMENT_2 = "deployment=rbac.txt";
     private static final byte[] DEPLOYMENT_2_CONTENT = "CONTENT".getBytes(Charset.defaultCharset());
     private static final String AUTHORIZATION = "core-service=management/access=authorization";
+    private static final String ROLE_MAPPING_BASE = "core-service=management/access=authorization/role-mapping=";
     private static final String MANAGEMENT_REALM = "core-service=management/security-realm=ManagementRealm";
     private static final String HTTP_BINDING = "socket-binding-group=standard-sockets/socket-binding=http";
     private static final String MEMORY_MBEAN = "core-service=platform-mbean/type=memory";
@@ -197,6 +195,8 @@ public abstract class StandardRolesBasicTestCase extends AbstractManagementInter
         if (this instanceof JmxInterfaceStandardRolesBasicTestCase) {
             return; // the 'add' operation is not implemented in JmxManagementInterface
         }
+        modifyAccessibleRoles(client, RbacUtil.MONITOR_ROLE, RbacUtil.OPERATOR_ROLE, RbacUtil.MAINTAINER_ROLE, RbacUtil.ADMINISTRATOR_ROLE, RbacUtil.DEPLOYER_ROLE);
+        modifyInaccessibleRoles(client, RbacUtil.AUDITOR_ROLE, RbacUtil.SUPERUSER_ROLE);
         addDeployment2(client, Outcome.SUCCESS);
         addPath(client, Outcome.SUCCESS);
     }
@@ -213,6 +213,7 @@ public abstract class StandardRolesBasicTestCase extends AbstractManagementInter
         if (this instanceof JmxInterfaceStandardRolesBasicTestCase) {
             return; // the 'add' operation is not implemented in JmxManagementInterface
         }
+        modifyInaccessibleRoles(client, RbacUtil.allStandardRoles());
         addDeployment2(client, Outcome.UNAUTHORIZED);
         addPath(client, Outcome.UNAUTHORIZED);
     }
@@ -229,6 +230,7 @@ public abstract class StandardRolesBasicTestCase extends AbstractManagementInter
         if (this instanceof JmxInterfaceStandardRolesBasicTestCase) {
             return; // the 'add' operation is not implemented in JmxManagementInterface
         }
+        modifyAccessibleRoles(client, RbacUtil.allStandardRoles());
         addDeployment2(client, Outcome.SUCCESS);
         addPath(client, Outcome.SUCCESS);
     }
@@ -301,7 +303,32 @@ public abstract class StandardRolesBasicTestCase extends AbstractManagementInter
             result = getManagementClient().getControllerClient().execute(op);
             assertEquals(result.asString(), SUCCESS, result.get(OUTCOME).asString());
         }
+    }
 
+    private static void modifyAccessibleRoles(ManagementInterface client, String... roleNames) throws IOException {
+        for (String current : roleNames) {
+            addRemoveIncldueForRole(client, current, true);
+        }
+    }
+
+    private static void modifyInaccessibleRoles(ManagementInterface client, String ... roleNames) throws IOException {
+        for (String current : roleNames) {
+            addRemoveIncldueForRole(client, current, false);
+        }
+    }
+
+    private static void addRemoveIncldueForRole(final ManagementInterface client, final String roleName, boolean accessible) throws IOException {
+        String includeAddress = ROLE_MAPPING_BASE + roleName + "/include=temp";
+        ModelNode add = createOpNode(includeAddress, ADD);
+        add.get(NAME).set("temp");
+        add.get(TYPE).set(USER);
+
+        RbacUtil.executeOperation(client, add, accessible ? Outcome.SUCCESS : Outcome.UNAUTHORIZED);
+
+        if (accessible) {
+            ModelNode remove = createOpNode(includeAddress, REMOVE);
+            RbacUtil.executeOperation(client, remove, Outcome.SUCCESS);
+        }
     }
 
 }

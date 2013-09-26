@@ -53,6 +53,7 @@ import org.jboss.as.controller.access.constraint.ScopingConstraint;
 import org.jboss.as.controller.access.constraint.SensitiveTargetConstraint;
 import org.jboss.as.controller.access.constraint.SensitiveVaultExpressionConstraint;
 import org.jboss.as.controller.access.constraint.ServerGroupEffectConstraint;
+import org.jboss.as.controller.access.constraint.TopRoleConstraint;
 import org.jboss.as.controller.access.permission.CombinationManagementPermission;
 import org.jboss.as.controller.access.CombinationPolicy;
 import org.jboss.as.controller.access.permission.JmxPermissionFactory;
@@ -337,6 +338,7 @@ public class DefaultPermissionFactory implements PermissionFactory, JmxPermissio
         result.add(SensitiveTargetConstraint.FACTORY);
         result.add(SensitiveVaultExpressionConstraint.FACTORY);
         result.add(ServerGroupEffectConstraint.FACTORY);
+        result.add(TopRoleConstraint.FACTORY);
         return result;
     }
 
