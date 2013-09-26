@@ -90,18 +90,12 @@ public class ReadResourceDescriptionAccessControlTestCase extends AbstractContro
     private static final PathElement ONE_B = PathElement.pathElement("one", "b");
     private static final PathAddress ONE_ADDR = PathAddress.pathAddress(ONE);
     private static final PathAddress ONE_A_ADDR = PathAddress.pathAddress(ONE_A);
-    private static final PathAddress ONE_B_ADDR = PathAddress.pathAddress(ONE_B);
 
     private static final PathElement TWO = PathElement.pathElement("two");
     private static final PathElement TWO_A = PathElement.pathElement("two", "a");
     private static final PathElement TWO_B = PathElement.pathElement("two", "b");
     private static final PathAddress TWO_ADDR = PathAddress.pathAddress(ONE, TWO);
     private static final PathAddress ONE_A_TWO_A_ADDR = ONE_A_ADDR.append(TWO_A);
-    private static final PathAddress ONE_A_TWO_B_ADDR = ONE_A_ADDR.append(TWO_B);
-    private static final PathAddress ONE_B_TWO_A_ADDR = ONE_B_ADDR.append(TWO_A);
-    private static final PathAddress ONE_B_TWO_B_ADDR = ONE_B_ADDR.append(TWO_B);
-    private static final PathAddress ONE_TWO_ADDR = PathAddress.pathAddress(ONE, TWO);
-
 
     private static final String ATTR_ACCESS_READ_WRITE = "access-read-write";
     private static final String ATTR_READ_WRITE = "read-write";
@@ -1941,19 +1935,6 @@ public class ReadResourceDescriptionAccessControlTestCase extends AbstractContro
         return new ResourceAccessControl(defaultControl, exceptionsMap);
     }
 
-    private Map<String, ModelNode> checkAttributeAccessControlNames(Map<PathAddress, ModelNode> map, String...attributeNames) {
-        Map<String, ModelNode> attributeMap = null;
-        for (ModelNode accessControl : map.values()) {
-            Map<String, ModelNode> currentMap = checkAttributeAccessControlNames(accessControl, attributeNames);
-            if (attributeMap == null) {
-                attributeMap = currentMap;
-            } else {
-                Assert.assertEquals(attributeMap, currentMap);
-            }
-        }
-        return attributeMap;
-    }
-
     private Map<String, ModelNode> checkAttributeAccessControlNames(ModelNode accessControl, String...attributeNames) {
         Map<String, ModelNode> map = new HashMap<String, ModelNode>();
         ModelNode attributes = accessControl.get(ATTRIBUTES);
@@ -1973,19 +1954,6 @@ public class ReadResourceDescriptionAccessControlTestCase extends AbstractContro
         Assert.assertNotNull(attr);
         assertEqualsOrNotDefined(attr, ModelDescriptionConstants.READ, read);
         assertEqualsOrNotDefined(attr, ModelDescriptionConstants.WRITE.toString(), write);
-    }
-
-    private Map<String, Boolean> checkOperationAccessControlNames(Map<PathAddress, ModelNode> map, String...operationNames) {
-        Map<String, Boolean> operationMap = null;
-        for (ModelNode accessControl : map.values()) {
-            Map<String, Boolean> currentMap = checkOperationAccessControlNames(accessControl, operationNames);
-            if (operationMap == null) {
-                operationMap = currentMap;
-            } else {
-                Assert.assertEquals(operationMap, currentMap);
-            }
-        }
-        return operationMap;
     }
 
     private Map<String, Boolean> checkOperationAccessControlNames(ModelNode accessControl, String...operationNames) {

@@ -33,7 +33,6 @@ import org.jboss.as.controller.AbstractAddStepHandler;
 import org.jboss.as.controller.AbstractRemoveStepHandler;
 import org.jboss.as.controller.AttributeDefinition;
 import org.jboss.as.controller.ModelOnlyWriteAttributeHandler;
-import org.jboss.as.controller.OperationDefinition;
 import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.PathElement;
 import org.jboss.as.controller.ProcessType;
@@ -318,7 +317,6 @@ public class AddResourceTestCase extends AbstractControllerTestBase {
     private static class ChildResourceDefinition extends TestResourceDefinition implements ConstrainedResourceDefinition {
         private final List<AccessConstraintDefinition> constraints;
         private final List<AttributeDefinition> attributes = Collections.synchronizedList(new ArrayList<AttributeDefinition>());
-        private final List<OperationDefinition> operations = Collections.synchronizedList(new ArrayList<OperationDefinition>());
 
         ChildResourceDefinition(PathElement element, AccessConstraintDefinition...constraints){
             super(element);
