@@ -46,6 +46,7 @@ import org.jboss.as.ee.component.deployers.EEModuleInitialProcessor;
 import org.jboss.as.ee.component.deployers.EEModuleNameProcessor;
 import org.jboss.as.ee.component.deployers.EarApplicationNameProcessor;
 import org.jboss.as.ee.component.deployers.EarMessageDestinationProcessor;
+import org.jboss.as.ee.component.deployers.ReadOnlyNamingContextsProcessor;
 import org.jboss.as.ee.concurrent.deployers.EEConcurrentContextProcessor;
 import org.jboss.as.ee.naming.InApplicationClientBindingProcessor;
 import org.jboss.as.ee.component.deployers.InterceptorAnnotationProcessor;
@@ -101,14 +102,15 @@ public class EeSubsystemAdd extends AbstractBoottimeAddStepHandler {
     private final GlobalModuleDependencyProcessor moduleDependencyProcessor;
     private final DescriptorPropertyReplacementProcessor specDescriptorPropertyReplacementProcessor;
     private final DescriptorPropertyReplacementProcessor jbossDescriptorPropertyReplacementProcessor;
-
+    private final ReadOnlyNamingContextsProcessor readOnlyNamingContextsProcessor;
 
     public EeSubsystemAdd(final DefaultEarSubDeploymentsIsolationProcessor isolationProcessor,
-                          final GlobalModuleDependencyProcessor moduleDependencyProcessor, final DescriptorPropertyReplacementProcessor specDescriptorPropertyReplacementProcessor, final DescriptorPropertyReplacementProcessor jbossDescriptorPropertyReplacementProcessor) {
+                          final GlobalModuleDependencyProcessor moduleDependencyProcessor, final DescriptorPropertyReplacementProcessor specDescriptorPropertyReplacementProcessor, final DescriptorPropertyReplacementProcessor jbossDescriptorPropertyReplacementProcessor, ReadOnlyNamingContextsProcessor readOnlyNamingContextsProcessor) {
         this.isolationProcessor = isolationProcessor;
         this.moduleDependencyProcessor = moduleDependencyProcessor;
         this.specDescriptorPropertyReplacementProcessor = specDescriptorPropertyReplacementProcessor;
         this.jbossDescriptorPropertyReplacementProcessor = jbossDescriptorPropertyReplacementProcessor;
+        this.readOnlyNamingContextsProcessor = readOnlyNamingContextsProcessor;
     }
 
     protected void populateModel(ModelNode operation, ModelNode model) throws OperationFailedException {
@@ -134,11 +136,13 @@ public class EeSubsystemAdd extends AbstractBoottimeAddStepHandler {
         final boolean earSubDeploymentsIsolated = EeSubsystemRootResource.EAR_SUBDEPLOYMENTS_ISOLATED.resolveModelAttribute(context, model).asBoolean();
         final boolean specDescriptorPropertyReplacement = EeSubsystemRootResource.SPEC_DESCRIPTOR_PROPERTY_REPLACEMENT.resolveModelAttribute(context, model).asBoolean();
         final boolean jbossDescriptorPropertyReplacement = EeSubsystemRootResource.JBOSS_DESCRIPTOR_PROPERTY_REPLACEMENT.resolveModelAttribute(context, model).asBoolean();
+        final boolean readOnlyNamingContexts = EeSubsystemRootResource.READ_ONLY_NAMING_CONTEXTS.resolveModelAttribute(context, model).asBoolean();
 
         moduleDependencyProcessor.setGlobalModules(GlobalModulesDefinition.createModuleList(context, globalModules));
         isolationProcessor.setEarSubDeploymentsIsolated(earSubDeploymentsIsolated);
         specDescriptorPropertyReplacementProcessor.setDescriptorPropertyReplacement(specDescriptorPropertyReplacement);
         jbossDescriptorPropertyReplacementProcessor.setDescriptorPropertyReplacement(jbossDescriptorPropertyReplacement);
+        readOnlyNamingContextsProcessor.setReadOnlyNamingContexts(readOnlyNamingContexts);
 
         context.addStep(new AbstractDeploymentChainStep() {
             protected void execute(DeploymentProcessorTarget processorTarget) {
@@ -164,7 +168,7 @@ public class EeSubsystemAdd extends AbstractBoottimeAddStepHandler {
                 processorTarget.addDeploymentProcessor(EeExtension.SUBSYSTEM_NAME, Phase.STRUCTURE, Phase.STRUCTURE_EE_MODULE_INIT, new EEModuleInitialProcessor(context.getProcessType() == ProcessType.APPLICATION_CLIENT));
                 processorTarget.addDeploymentProcessor(EeExtension.SUBSYSTEM_NAME, Phase.STRUCTURE, Phase.STRUCTURE_EE_RESOURCE_INJECTION_REGISTRY, new ResourceReferenceRegistrySetupProcessor());
                 processorTarget.addDeploymentProcessor(EeExtension.SUBSYSTEM_NAME, Phase.STRUCTURE, Phase.STRUCTURE_GLOBAL_MODULES, moduleDependencyProcessor);
-
+                processorTarget.addDeploymentProcessor(EeExtension.SUBSYSTEM_NAME, Phase.STRUCTURE, Phase.STRUCTURE_EE_READ_ONLY_NAMING_CONTEXTS, readOnlyNamingContextsProcessor);
 
                 processorTarget.addDeploymentProcessor(EeExtension.SUBSYSTEM_NAME, Phase.PARSE, Phase.PARSE_EE_MODULE_NAME, new EEModuleNameProcessor());
                 processorTarget.addDeploymentProcessor(EeExtension.SUBSYSTEM_NAME, Phase.PARSE, Phase.PARSE_EE_ANNOTATIONS, new EEAnnotationProcessor());

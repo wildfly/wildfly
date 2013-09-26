@@ -45,11 +45,15 @@ public final class NamespaceContextInterceptor implements Interceptor {
     public Object processInvocation(final InterceptorContext context) throws Exception {
         NamespaceContextSelector.pushCurrentSelector(selector);
         try {
-            WritableServiceBasedNamingStore.pushOwner(deploymentUnitServiceName);
+            if(deploymentUnitServiceName != null) {
+                WritableServiceBasedNamingStore.pushOwner(deploymentUnitServiceName);
+            }
             try {
                 return context.proceed();
             } finally {
-                WritableServiceBasedNamingStore.popOwner();
+                if(deploymentUnitServiceName != null) {
+                    WritableServiceBasedNamingStore.popOwner();
+                }
             }
         } finally {
             NamespaceContextSelector.popCurrentSelector();

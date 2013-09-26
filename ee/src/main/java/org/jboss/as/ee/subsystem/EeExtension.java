@@ -43,6 +43,7 @@ import org.jboss.as.controller.parsing.ExtensionParsingContext;
 import org.jboss.as.controller.registry.ManagementResourceRegistration;
 import org.jboss.as.controller.transform.TransformationContext;
 import org.jboss.as.controller.transform.description.AttributeConverter;
+import org.jboss.as.controller.transform.description.DiscardAttributeChecker;
 import org.jboss.as.controller.transform.description.RejectAttributeChecker;
 import org.jboss.as.controller.transform.description.ResourceTransformationDescriptionBuilder;
 import org.jboss.as.controller.transform.description.TransformationDescription;
@@ -56,6 +57,7 @@ import org.jboss.dmr.ModelType;
  *
  * @author Weston M. Price
  * @author Emanuel Muckenhuber
+ * @author Eduardo Martins
  */
 public class EeExtension implements Extension {
 
@@ -123,7 +125,9 @@ public class EeExtension implements Extension {
                         EeSubsystemRootResource.JBOSS_DESCRIPTOR_PROPERTY_REPLACEMENT)
                 // Deal with new attributes added to global-modules elements
                 .addRejectCheck(globalModulesRejecterConverter, GlobalModulesDefinition.INSTANCE)
-                .setValueConverter(globalModulesRejecterConverter, GlobalModulesDefinition.INSTANCE);
+                .setValueConverter(globalModulesRejecterConverter, GlobalModulesDefinition.INSTANCE)
+                // acceptable to discard on legacy models which do not support the limitation of functionality
+                .setDiscard(DiscardAttributeChecker.ALWAYS, EeSubsystemRootResource.READ_ONLY_NAMING_CONTEXTS);
 
         builder.rejectChildResource(EESubsystemModel.DEFAULT_CONTEXT_SERVICE_PATH);
         builder.rejectChildResource(EESubsystemModel.DEFAULT_MANAGED_THREAD_FACTORY_PATH);

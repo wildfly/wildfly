@@ -68,7 +68,7 @@ public class EEConcurrentContextProcessor implements DeploymentUnitProcessor {
     private void processModuleDescription(final EEModuleDescription moduleDescription, DeploymentUnit deploymentUnit, DeploymentPhaseContext phaseContext) {
         final ConcurrentContext concurrentContext = moduleDescription.getConcurrentContext();
         // setup context
-        setupConcurrentContext(concurrentContext, deploymentUnit.getAttachment(MODULE).getClassLoader(), moduleDescription.getNamespaceContextSelector(), deploymentUnit, phaseContext.getServiceTarget());
+        setupConcurrentContext(concurrentContext, deploymentUnit.getAttachment(MODULE).getClassLoader(), moduleDescription.getNamespaceContextSelector(), moduleDescription.isReadOnlyNamingContexts(), deploymentUnit, phaseContext.getServiceTarget());
         // add setup action for web modules
         final ConcurrentContextSetupAction setupAction = new ConcurrentContextSetupAction(concurrentContext);
         deploymentUnit.getAttachmentList(Attachments.WEB_SETUP_ACTIONS).add(setupAction);
@@ -80,7 +80,7 @@ public class EEConcurrentContextProcessor implements DeploymentUnitProcessor {
             public void configure(DeploymentPhaseContext context, ComponentDescription description, final ComponentConfiguration configuration) throws DeploymentUnitProcessingException {
                 final ConcurrentContext concurrentContext = configuration.getConcurrentContext();
                 // setup context
-                setupConcurrentContext(concurrentContext, configuration.getModuleClassLoader(), configuration.getNamespaceContextSelector(), deploymentUnit, context.getServiceTarget());
+                setupConcurrentContext(concurrentContext, configuration.getModuleClassLoader(), configuration.getNamespaceContextSelector(), componentDescription.getModuleDescription().isReadOnlyNamingContexts(), deploymentUnit, context.getServiceTarget());
                 // add the interceptor which manages the concurrent context
                 final ConcurrentContextInterceptor interceptor = new ConcurrentContextInterceptor(concurrentContext);
                 final InterceptorFactory interceptorFactory = new ImmediateInterceptorFactory(interceptor);
@@ -96,9 +96,9 @@ public class EEConcurrentContextProcessor implements DeploymentUnitProcessor {
         componentDescription.getConfigurators().add(componentConfigurator);
     }
 
-    private void setupConcurrentContext(ConcurrentContext concurrentContext, ClassLoader moduleClassLoader, NamespaceContextSelector namespaceContextSelector, DeploymentUnit deploymentUnit, ServiceTarget serviceTarget) {
+    private void setupConcurrentContext(ConcurrentContext concurrentContext, ClassLoader moduleClassLoader, NamespaceContextSelector namespaceContextSelector, boolean readOnlyNamingContexts, DeploymentUnit deploymentUnit, ServiceTarget serviceTarget) {
         // add default factories
-        concurrentContext.addFactory(new NamingContextHandleFactory(namespaceContextSelector, deploymentUnit.getServiceName()));
+        concurrentContext.addFactory(new NamingContextHandleFactory(namespaceContextSelector, readOnlyNamingContexts ? null : deploymentUnit.getServiceName()));
         concurrentContext.addFactory(new ClassLoaderContextHandleFactory(moduleClassLoader));
         concurrentContext.addFactory(SecurityContextHandleFactory.INSTANCE);
         concurrentContext.addFactory(new OtherEESetupActionsContextHandleFactory(deploymentUnit.getAttachmentList(Attachments.OTHER_EE_SETUP_ACTIONS)));

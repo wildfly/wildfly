@@ -100,7 +100,7 @@ public class ModuleContextProcessor implements DeploymentUnitProcessor {
         serviceNames.add(ContextNames.GLOBAL_CONTEXT_SERVICE_NAME);
 
         // add the arquillian setup action, so the module namespace is available in arquillian tests
-        final JavaNamespaceSetup setupAction = new JavaNamespaceSetup(selector, deploymentUnit.getServiceName());
+        final JavaNamespaceSetup setupAction = new JavaNamespaceSetup(selector, moduleDescription.isReadOnlyNamingContexts() ? null : deploymentUnit.getServiceName());
         deploymentUnit.addToAttachmentList(SETUP_ACTIONS, setupAction);
         deploymentUnit.addToAttachmentList(org.jboss.as.ee.component.Attachments.WEB_SETUP_ACTIONS, setupAction);
         deploymentUnit.putAttachment(Attachments.JAVA_NAMESPACE_SETUP_ACTION, setupAction);

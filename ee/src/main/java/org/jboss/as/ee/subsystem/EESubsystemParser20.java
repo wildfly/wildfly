@@ -95,6 +95,11 @@ class EESubsystemParser20 implements XMLStreamConstants, XMLElementReader<List<M
                             EeSubsystemRootResource.JBOSS_DESCRIPTOR_PROPERTY_REPLACEMENT.parseAndSetParameter(enabled, eeSubSystem, reader);
                             break;
                         }
+                        case READ_ONLY_NAMING_CONTEXTS: {
+                            final String enabled = parseReadOnlyNamingContexts(reader);
+                            EeSubsystemRootResource.READ_ONLY_NAMING_CONTEXTS.parseAndSetParameter(enabled, eeSubSystem, reader);
+                            break;
+                        }
                         case CONCURRENT: {
                             parseConcurrent(reader, list, subsystemPathAddress);
                             break;
@@ -225,6 +230,18 @@ class EESubsystemParser20 implements XMLStreamConstants, XMLElementReader<List<M
         final String value = reader.getElementText();
         if (value == null || value.trim().isEmpty()) {
             throw MESSAGES.invalidValue(value, Element.JBOSS_DESCRIPTOR_PROPERTY_REPLACEMENT.getLocalName(), reader.getLocation());
+        }
+        return value.trim();
+    }
+
+    static String parseReadOnlyNamingContexts(XMLExtendedStreamReader reader) throws XMLStreamException {
+
+        // we don't expect any attributes for this element.
+        requireNoAttributes(reader);
+
+        final String value = reader.getElementText();
+        if (value == null || value.trim().isEmpty()) {
+            throw MESSAGES.invalidValue(value, Element.READ_ONLY_NAMING_CONTEXTS.getLocalName(), reader.getLocation());
         }
         return value.trim();
     }
