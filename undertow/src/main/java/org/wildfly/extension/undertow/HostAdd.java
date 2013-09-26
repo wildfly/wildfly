@@ -131,7 +131,7 @@ class HostAdd extends AbstractAddStepHandler {
         addCommonHostListenerDeps(context, parent, builder, UndertowExtension.HTTPS_LISTENER_PATH);
 
         builder.addListener(verificationHandler);
-        builder.setInitialMode(Mode.ON_DEMAND);
+        builder.setInitialMode(Mode.PASSIVE);
         return builder.install();
     }
 
