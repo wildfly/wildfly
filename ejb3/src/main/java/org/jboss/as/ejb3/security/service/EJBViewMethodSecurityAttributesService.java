@@ -24,6 +24,7 @@ package org.jboss.as.ejb3.security.service;
 
 import java.lang.reflect.Method;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.IdentityHashMap;
 import java.util.Map;
 
@@ -49,7 +50,7 @@ public class EJBViewMethodSecurityAttributesService implements Service<EJBViewMe
 
     public EJBViewMethodSecurityAttributesService(final String viewClassName, final Map<Method, EJBMethodSecurityAttribute> securityAttributes) {
         this.viewClassName = viewClassName;
-        this.methodSecurityAttributes = Collections.unmodifiableMap(new IdentityHashMap<>(securityAttributes));
+        this.methodSecurityAttributes = Collections.unmodifiableMap(new HashMap<>(securityAttributes));
     }
 
     @Override
