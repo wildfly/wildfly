@@ -32,6 +32,7 @@ import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.ServiceVerificationHandler;
 import org.jboss.as.controller.SimpleAttributeDefinition;
+import org.jboss.as.web.host.CommonWebServer;
 import org.jboss.dmr.ModelNode;
 import org.jboss.msc.service.ServiceBuilder;
 import org.jboss.msc.service.ServiceController;
@@ -66,6 +67,16 @@ class ServerAdd extends AbstractBoottimeAddStepHandler {
         final ServiceController<Server> serviceController = builder.install();
         if (newControllers != null) {
             newControllers.add(serviceController);
+        }
+        WebServerService commonWebServer = new WebServerService();
+        final ServiceController<?> commonServerController = context.getServiceTarget().addService(CommonWebServer.SERVICE_NAME, commonWebServer)
+                .addDependency(serverName, Server.class, commonWebServer.getServerInjectedValue())
+                .install();
+        if (verificationHandler != null) {
+            commonServerController.addListener(verificationHandler);
+        }
+        if (newControllers != null) {
+            newControllers.add(commonServerController);
         }
     }
 }

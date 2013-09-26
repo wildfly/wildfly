@@ -25,6 +25,7 @@ package org.wildfly.extension.undertow;
 import java.util.List;
 
 import io.undertow.Version;
+
 import org.jboss.as.controller.AbstractBoottimeAddStepHandler;
 import org.jboss.as.controller.AttributeDefinition;
 import org.jboss.as.controller.OperationContext;
@@ -106,8 +107,6 @@ class UndertowSubsystemAdd extends AbstractBoottimeAddStepHandler {
         newControllers.add(target.addService(UndertowService.UNDERTOW, new UndertowService(defaultContainer, defaultServer, defaultVirtualHost, instanceId))
                 .setInitialMode(ServiceController.Mode.ACTIVE)
                 .install());
-
-
 
         context.addStep(new AbstractDeploymentChainStep() {
             @Override

@@ -22,16 +22,11 @@
 
 package org.wildfly.extension.undertow;
 
-import java.util.List;
-
 import io.undertow.server.ListenerRegistry;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
-import org.jboss.as.controller.ServiceVerificationHandler;
-import org.jboss.as.web.host.CommonWebServer;
 import org.jboss.dmr.ModelNode;
 import org.jboss.msc.service.ServiceBuilder;
-import org.jboss.msc.service.ServiceController;
 import org.jboss.msc.service.ServiceName;
 
 /**
@@ -56,24 +51,6 @@ public class HttpListenerAdd extends AbstractListenerAdd {
 
     @Override
     void configureAdditionalDependencies(OperationContext context, ServiceBuilder<? extends AbstractListenerService> serviceBuilder, ModelNode model, AbstractListenerService service) throws OperationFailedException {
-        serviceBuilder.addDependency(REGISTRY_SERVICE_NAME, ListenerRegistry.class, ((HttpListenerService)service).getHttpListenerRegistry());
-        // inject the CommonWebServer service
-        serviceBuilder.addDependency(CommonWebServer.SERVICE_NAME, WebServerService.class, ((HttpListenerService)service).getCommonWebServerInjector());
-    }
-
-    @Override
-    protected void performRuntime(OperationContext context, ModelNode operation, ModelNode model, ServiceVerificationHandler verificationHandler, List<ServiceController<?>> newControllers) throws OperationFailedException {
-        super.performRuntime(context, operation, model, verificationHandler, newControllers);
-
-        // install (if not already done by HttpsListenerAdd) CommonWebServer service
-        final ServiceController commonWebServerServiceController = context.getServiceRegistry(true).getService(CommonWebServer.SERVICE_NAME);
-        if (commonWebServerServiceController == null) {
-            final WebServerService webServerService = new WebServerService();
-            final ServiceController serviceController = context.getServiceTarget().addService(CommonWebServer.SERVICE_NAME, webServerService).install();
-            if (verificationHandler != null) {
-                serviceController.addListener(verificationHandler);
-            }
-            newControllers.add(serviceController);
-        }
+        serviceBuilder.addDependency(REGISTRY_SERVICE_NAME, ListenerRegistry.class, ((HttpListenerService) service).getHttpListenerRegistry());
     }
 }

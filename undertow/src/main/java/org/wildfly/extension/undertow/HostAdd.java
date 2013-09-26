@@ -33,6 +33,7 @@ import org.jboss.as.controller.AbstractAddStepHandler;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.PathAddress;
+import org.jboss.as.controller.PathElement;
 import org.jboss.as.controller.ProcessType;
 import org.jboss.as.controller.ServiceVerificationHandler;
 import org.jboss.as.controller.registry.Resource;
@@ -40,6 +41,7 @@ import org.jboss.as.server.mgmt.UndertowHttpManagementService;
 import org.jboss.as.server.mgmt.domain.HttpManagement;
 import org.jboss.as.web.host.WebHost;
 import org.jboss.dmr.ModelNode;
+import org.jboss.dmr.Property;
 import org.jboss.msc.service.ServiceBuilder;
 import org.jboss.msc.service.ServiceController;
 import org.jboss.msc.service.ServiceController.Mode;
@@ -73,16 +75,13 @@ class HostAdd extends AbstractAddStepHandler {
         final ServiceBuilder<Host> builder = context.getServiceTarget().addService(virtualHostServiceName, service)
                 .addDependency(UndertowService.SERVER.append(serverName), Server.class, service.getServerInjection())
                 .addDependency(UndertowService.UNDERTOW, UndertowService.class, service.getUndertowService())
-                .addDependency(accessLog != null ? REQUIRED : OPTIONAL, accessLogServiceName, AccessLogService.class, service.getAccessLogService())
-                .addAliases(WebHost.SERVICE_NAME.append(name));
+                .addDependency(accessLog != null ? REQUIRED : OPTIONAL, accessLogServiceName, AccessLogService.class, service.getAccessLogService());
 
-        if (aliases != null) {
-            for (String alias : aliases) {
-                builder.addAliases(WebHost.SERVICE_NAME.append(alias));
-            }
-        }
         builder.addListener(verificationHandler);
         builder.setInitialMode(Mode.ON_DEMAND);
+
+
+        final ServiceController<WebHost> commonController = addCommonHost(context, verificationHandler, name, aliases, serverName, virtualHostServiceName, parent);
 
         final ServiceController<Host> serviceController = builder.install();
 
@@ -110,7 +109,41 @@ class HostAdd extends AbstractAddStepHandler {
         if (newControllers != null) {
             newControllers.add(serviceController);
             newControllers.add(consoleServiceServiceController);
+            newControllers.add(commonController);
         }
     }
+
+    private ServiceController<WebHost> addCommonHost(OperationContext context, ServiceVerificationHandler verificationHandler, String hostName, List<String> aliases,
+                                                     String serverName, ServiceName virtualHostServiceName, PathAddress parent) {
+        WebHostService service = new WebHostService();
+        final ServiceBuilder<WebHost> builder = context.getServiceTarget().addService(WebHost.SERVICE_NAME.append(hostName), service)
+                .addDependency(UndertowService.SERVER.append(serverName), Server.class, service.getServer())
+                .addDependency(virtualHostServiceName, Host.class, service.getHost());
+
+        if (aliases != null) {
+            for (String alias : aliases) {
+                builder.addAliases(WebHost.SERVICE_NAME.append(alias));
+            }
+        }
+
+        addCommonHostListenerDeps(context, parent, builder, UndertowExtension.HTTP_LISTENER_PATH);
+        addCommonHostListenerDeps(context, parent, builder, UndertowExtension.AJP_LISTENER_PATH);
+        addCommonHostListenerDeps(context, parent, builder, UndertowExtension.HTTPS_LISTENER_PATH);
+
+        builder.addListener(verificationHandler);
+        builder.setInitialMode(Mode.ON_DEMAND);
+        return builder.install();
+    }
+
+    private void addCommonHostListenerDeps(OperationContext context, PathAddress parent, ServiceBuilder<WebHost> builder, final PathElement listenerPath) {
+        ModelNode listeners = Resource.Tools.readModel(context.readResourceFromRoot(parent.append(listenerPath)), 1);
+        if (listeners.isDefined()) {
+            for (Property p : listeners.asPropertyList()) {
+                String listenerName = p.getValue().asProperty().getName();
+                builder.addDependency(UndertowService.LISTENER.append(listenerName));
+            }
+        }
+    }
+
 
 }

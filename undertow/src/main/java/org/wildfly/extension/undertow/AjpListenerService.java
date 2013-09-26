@@ -87,4 +87,9 @@ public class AjpListenerService extends AbstractListenerService<AjpListenerServi
     protected void preStart(final StartContext context) {
 
     }
+
+    @Override
+    protected String getProtocol() {
+        return "ajp";
+    }
 }

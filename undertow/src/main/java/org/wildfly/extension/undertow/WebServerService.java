@@ -22,36 +22,34 @@
 
 package org.wildfly.extension.undertow;
 
+import org.jboss.as.network.SocketBinding;
 import org.jboss.as.web.host.CommonWebServer;
 import org.jboss.msc.service.Service;
 import org.jboss.msc.service.StartContext;
 import org.jboss.msc.service.StartException;
 import org.jboss.msc.service.StopContext;
+import org.jboss.msc.value.InjectedValue;
 
 /**
  * @author Stuart Douglas
  */
 class WebServerService implements CommonWebServer, Service<WebServerService> {
+    private InjectedValue<Server> serverInjectedValue = new InjectedValue<>();
 
-
-    private volatile int httpPort = -1;
-    private volatile int httpsPort = -1;
+    InjectedValue<Server> getServerInjectedValue() {
+        return serverInjectedValue;
+    }
 
     @Override
     public int getPort(final String protocol, final boolean secure) {
-        // TODO: Is relying on "secure" enough of should the protocol be considered too? For example, how would this behave with AJP (or does it not matter)
-        if (secure) {
-            if (httpsPort == -1) {
-                // throw error
-                throw UndertowMessages.MESSAGES.noPortListeningForProtocol(protocol);
+        for (AbstractListenerService listener : serverInjectedValue.getValue().getListeners()) {
+            if (protocol.toLowerCase().contains(listener.getProtocol())) {
+                SocketBinding binding = (SocketBinding) listener.getBinding().getValue();
+                return binding.getAbsolutePort();
             }
-            return httpsPort;
         }
-        if (httpPort == -1) {
-            // throw error
-            throw UndertowMessages.MESSAGES.noPortListeningForProtocol(protocol);
-        }
-        return httpPort;
+        throw UndertowMessages.MESSAGES.noPortListeningForProtocol(protocol);
+
     }
 
     @Override
@@ -61,21 +59,10 @@ class WebServerService implements CommonWebServer, Service<WebServerService> {
 
     @Override
     public void stop(final StopContext context) {
-        httpPort = -1;
-        httpsPort = -1;
     }
 
     @Override
     public WebServerService getValue() throws IllegalStateException, IllegalArgumentException {
         return this;
     }
-
-    void setHttpPort(final int port) {
-        this.httpPort = port;
-    }
-
-    void setHttpsPort(final int port) {
-        this.httpsPort = port;
-    }
-
 }

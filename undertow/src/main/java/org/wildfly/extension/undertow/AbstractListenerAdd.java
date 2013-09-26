@@ -78,7 +78,6 @@ abstract class AbstractListenerAdd extends AbstractAddStepHandler {
                 .addDependency(IOServices.BUFFER_POOL.append(bufferPoolName), Pool.class, service.getBufferPool())
                 .addDependency(UndertowService.SERVER.append(serverName), Server.class, service.getServerService());
 
-
         configureAdditionalDependencies(context, serviceBuilder, model, service);
         serviceBuilder.setInitialMode(enabled ? ServiceController.Mode.ACTIVE : ServiceController.Mode.NEVER);
 
