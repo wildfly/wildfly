@@ -64,8 +64,6 @@ public class RemoveResourceTestCase extends AbstractControllerTestBase {
     private static final PathElement ONE = PathElement.pathElement("one");
     private static final PathElement ONE_A = PathElement.pathElement("one", "a");
     private static final PathElement ONE_B = PathElement.pathElement("one", "b");
-    private static final PathAddress ONE_ADDR = PathAddress.pathAddress(ONE);
-    private static final PathAddress ONE_A_ADDR = PathAddress.pathAddress(ONE_A);
     private static final PathAddress ONE_B_ADDR = PathAddress.pathAddress(ONE_B);
 
     private static final SensitiveTargetAccessConstraintDefinition WRITE_CONSTRAINT = new SensitiveTargetAccessConstraintDefinition(
@@ -235,7 +233,6 @@ public class RemoveResourceTestCase extends AbstractControllerTestBase {
     private static class ChildResourceDefinition extends TestResourceDefinition implements ConstrainedResourceDefinition {
         private final List<AccessConstraintDefinition> constraints;
         private final List<AttributeDefinition> attributes = Collections.synchronizedList(new ArrayList<AttributeDefinition>());
-        private final List<OperationDefinition> operations = Collections.synchronizedList(new ArrayList<OperationDefinition>());
 
         ChildResourceDefinition(PathElement element, AccessConstraintDefinition...constraints){
             super(element);

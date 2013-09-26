@@ -32,7 +32,7 @@ import org.jboss.as.controller.access.Action;
 public interface Constraint {
 
     /**
-     * Gets whether this constraint violates another restraint
+     * Gets whether this constraint violates another constraint
      *
      * @param other the other constraint
      * @param actionEffect the effect being evaluated
