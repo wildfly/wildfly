@@ -28,10 +28,14 @@ import java.util.List;
 import javax.management.JMException;
 import javax.management.MBeanServer;
 
+import org.jboss.as.ejb3.security.service.EJBViewMethodSecurityAttributesService;
 import org.jboss.as.security.plugins.SecurityDomainContext;
 import org.jboss.as.security.service.SecurityDomainService;
 import org.jboss.as.server.deployment.DeploymentUnit;
+import org.jboss.as.webservices.metadata.model.EJBEndpoint;
+import org.jboss.as.webservices.security.EJBMethodSecurityAttributesAdaptor;
 import org.jboss.as.webservices.security.SecurityDomainContextAdaptor;
+import org.jboss.as.webservices.util.ASHelper;
 import org.jboss.as.webservices.util.WSServices;
 import org.jboss.as.webservices.util.WebAppController;
 import org.jboss.metadata.web.jboss.JBossWebMetaData;
@@ -57,6 +61,8 @@ import org.jboss.wsf.spi.deployment.Deployment;
 import org.jboss.wsf.spi.deployment.Endpoint;
 import org.jboss.wsf.spi.management.EndpointRegistry;
 import org.jboss.wsf.spi.metadata.webservices.WebservicesMetaData;
+import org.jboss.wsf.spi.deployment.EndpointType;
+import org.jboss.wsf.spi.security.EJBMethodSecurityAttributeProvider;
 
 /**
  * WS endpoint service; this is meant for setting the lazy deployment time info into the Endpoint (stuff coming from
@@ -75,6 +81,7 @@ public final class EndpointService implements Service<Endpoint> {
     private final InjectedValue<WebAppController> pclWebAppControllerValue = new InjectedValue<WebAppController>();
     private final InjectedValue<EndpointRegistry> endpointRegistryValue = new InjectedValue<EndpointRegistry>();
     private final InjectedValue<MBeanServer> mBeanServerValue = new InjectedValue<MBeanServer>();
+    private final InjectedValue<EJBViewMethodSecurityAttributesService> ejbMethodSecurityAttributeServiceValue = new InjectedValue<EJBViewMethodSecurityAttributesService>();
 
     private EndpointService(final Endpoint endpoint, final ServiceName name) {
         this.endpoint = endpoint;
@@ -100,6 +107,10 @@ public final class EndpointService implements Service<Endpoint> {
         endpoint.setSecurityDomainContext(new SecurityDomainContextAdaptor(securityDomainContextValue.getValue()));
         if (hasWebservicesMD(endpoint)) { //basically JAX-RPC deployments require the PortComponentLinkServlet to be available
             pclWebAppControllerValue.getValue().incrementUsers();
+        }
+        if (EndpointType.JAXWS_EJB3.equals(endpoint.getType())) {
+            final EJBViewMethodSecurityAttributesService ejbMethodSecurityAttributeService = ejbMethodSecurityAttributeServiceValue.getValue();
+            endpoint.addAttachment(EJBMethodSecurityAttributeProvider.class, new EJBMethodSecurityAttributesAdaptor(ejbMethodSecurityAttributeService));
         }
         final List<RecordProcessor> processors = endpoint.getRecordProcessors();
         for (final RecordProcessor processor : processors) {
@@ -208,6 +219,10 @@ public final class EndpointService implements Service<Endpoint> {
         return mBeanServerValue;
     }
 
+    public Injector<EJBViewMethodSecurityAttributesService> getEJBMethodSecurityAttributeServiceInjector() {
+        return ejbMethodSecurityAttributeServiceValue;
+    }
+
     public static void install(final ServiceTarget serviceTarget, final Endpoint endpoint, final DeploymentUnit unit) {
 
         final String propContext = endpoint.getName().getKeyProperty(Endpoint.SEPID_PROPERTY_CONTEXT);
@@ -228,6 +243,10 @@ public final class EndpointService implements Service<Endpoint> {
                 MBeanServer.class,
                 service.getMBeanServerInjector());
         builder.addDependency(DependencyType.REQUIRED, WSServices.CONFIG_SERVICE);
+        if (EndpointType.JAXWS_EJB3.equals(endpoint.getType())) {
+            builder.addDependency(DependencyType.REQUIRED, getEJBViewMethodSecurityAttributesServiceName(unit, endpoint),
+                    EJBViewMethodSecurityAttributesService.class, service.getEJBMethodSecurityAttributeServiceInjector());
+        }
         builder.setInitialMode(Mode.ACTIVE);
         builder.install();
     }
@@ -245,6 +264,15 @@ public final class EndpointService implements Service<Endpoint> {
         String metaDataSecurityDomain = metadata != null ? metadata.getSecurityDomain() : null;
         return metaDataSecurityDomain == null ? SecurityConstants.DEFAULT_APPLICATION_POLICY
             : SecurityUtil.unprefixSecurityDomain(metaDataSecurityDomain.trim());
+    }
+
+    private static ServiceName getEJBViewMethodSecurityAttributesServiceName(final DeploymentUnit unit, final Endpoint endpoint) {
+        for (EJBEndpoint ep : ASHelper.getJaxwsEjbs(unit)) {
+            if (ep.getClassName().equals(endpoint.getTargetBeanName())) {
+                return ep.getEJBViewMethodSecurityAttributesService();
+            }
+        }
+        return null;
     }
 
 }
