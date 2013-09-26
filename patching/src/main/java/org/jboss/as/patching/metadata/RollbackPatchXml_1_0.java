@@ -29,6 +29,7 @@ import static org.jboss.as.controller.parsing.ParseUtils.unexpectedElement;
 import javax.xml.stream.XMLStreamConstants;
 import javax.xml.stream.XMLStreamException;
 import java.io.IOException;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.Map;
@@ -253,6 +254,7 @@ class RollbackPatchXml_1_0 extends PatchXmlUtils implements XMLStreamConstants, 
         final PatchableTarget identity;
         WrappedIdentity(final PatchableTarget identity) {
             super(new org.jboss.as.patching.installation.Identity() {
+
                 @Override
                 public String getVersion() {
                     return null;
@@ -272,7 +274,7 @@ class RollbackPatchXml_1_0 extends PatchXmlUtils implements XMLStreamConstants, 
                 public DirectoryStructure getDirectoryStructure() {
                     return null;
                 }
-            }, null);
+            }, Collections.<String>emptyList(), null);
             this.identity = identity;
         }
 

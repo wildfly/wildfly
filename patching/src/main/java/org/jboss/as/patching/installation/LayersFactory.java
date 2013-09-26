@@ -31,10 +31,13 @@ import java.util.HashSet;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Properties;
 import java.util.Set;
 
+import org.jboss.as.patching.Constants;
 import org.jboss.as.patching.DirectoryStructure;
 import org.jboss.as.patching.PatchMessages;
+import org.jboss.as.patching.runner.PatchUtils;
 import org.jboss.as.version.ProductConfig;
 
 /**
@@ -74,6 +77,9 @@ class LayersFactory {
             }
         };
 
+        final Properties properties = PatchUtils.loadProperties(identity.getDirectoryStructure().getInstallationInfo());
+        final List<String> allPatches = PatchUtils.readRefs(properties, Constants.ALL_PATCHES);
+
         // Step 1 - gather the installed layers data
         final InstalledConfiguration conf = createInstalledConfig(image);
         // Step 2 - process the actual module and bundle roots
@@ -82,7 +88,7 @@ class LayersFactory {
 
         // Step 3 - create the actual config objects
         // Process layers
-        final InstalledIdentityImpl installedIdentity = new InstalledIdentityImpl(identity, image);
+        final InstalledIdentityImpl installedIdentity = new InstalledIdentityImpl(identity, allPatches, image);
         for (final LayerPathConfig layer : processedLayers.getLayers().values()) {
             final String name = layer.name;
             installedIdentity.putLayer(name, createPatchableTarget(name, layer, config.getLayerMetadataDir(name), image));

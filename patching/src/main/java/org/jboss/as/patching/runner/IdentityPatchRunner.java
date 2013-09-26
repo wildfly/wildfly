@@ -124,6 +124,9 @@ class IdentityPatchRunner implements InstallationManager.ModificationCompletionC
             rollback(rollback, context);
         }
 
+        // Add to installed patches list
+        modification.addInstalledPatch(patchId);
+
         // Then apply the current patch
         for (final PatchElement element : patch.getElements()) {
             // Apply the content modifications
@@ -226,6 +229,7 @@ class IdentityPatchRunner implements InstallationManager.ModificationCompletionC
             for (final String rollback : patches) {
                 if (!Constants.BASE.equals(rollback)) {
                     rollback(rollback, context);
+                    modification.removeInstalledPatch(rollback);
                 }
             }
             // Execute the tasks

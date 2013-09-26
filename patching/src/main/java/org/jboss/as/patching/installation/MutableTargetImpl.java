@@ -86,21 +86,25 @@ class MutableTargetImpl implements InstallationManager.MutablePatchingTarget {
         return structure;
     }
 
+    protected Properties getMutableProperties() {
+        return properties;
+    }
+
     protected void persist() throws IOException {
         if (modified) {
             // persist the state for bundles and modules directory
-            persist(cumulativeID, patchIds);
+            persist(cumulativeID, patchIds, properties);
         }
     }
 
     protected void restore() throws IOException {
         if (modified) {
             // persist the state for bundles and modules directory
-            persist(current.getCumulativePatchID(), current.getPatchIDs());
+            persist(current.getCumulativePatchID(), current.getPatchIDs(), current.getProperties());
         }
     }
 
-    private void persist(final String cumulativeID, final List<String> patches) throws IOException {
+    protected void persist(final String cumulativeID, final List<String> patches, final Properties properties) throws IOException {
         assert cumulativeID != null;
 
         // Create the parent

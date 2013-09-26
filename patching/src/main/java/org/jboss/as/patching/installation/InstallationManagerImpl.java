@@ -37,6 +37,11 @@ public class InstallationManagerImpl extends InstallationManager {
     }
 
     @Override
+    public List<String> getAllInstalledPatches() {
+        return installedIdentity.getAllInstalledPatches();
+    }
+
+    @Override
     public Identity getIdentity() {
         return installedIdentity.getIdentity();
     }
@@ -89,7 +94,7 @@ public class InstallationManagerImpl extends InstallationManager {
             final PatchableTarget.TargetInfo identityInfo = identity.loadTargetInfo();
             final InstallationModificationImpl.InstallationState state = load(installedIdentity);
 
-            return new InstallationModificationImpl(identityInfo, identity.getName(), identity.getVersion(), state) {
+            return new InstallationModificationImpl(identityInfo, identity.getName(), identity.getVersion(), installedIdentity.getAllInstalledPatches(), state) {
 
                 @Override
                 public InstalledIdentity getUnmodifiedInstallationState() {
@@ -178,7 +183,7 @@ public class InstallationManagerImpl extends InstallationManager {
             }
         };
 
-        final InstalledIdentityImpl installedIdentity = new InstalledIdentityImpl(identity, installedImage);
+        final InstalledIdentityImpl installedIdentity = new InstalledIdentityImpl(identity, modification.getAllPatches(), installedImage);
         for (final Map.Entry<String, MutableTargetImpl> entry : state.getLayers().entrySet()) {
             final String layerName = entry.getKey();
             final MutableTargetImpl target = entry.getValue();

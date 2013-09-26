@@ -4,6 +4,7 @@ import java.io.File;
 import java.io.IOException;
 import java.util.List;
 
+import org.jboss.as.patching.PatchingException;
 import org.jboss.as.patching.metadata.LayerType;
 import org.jboss.as.patching.metadata.Patch;
 import org.jboss.as.version.ProductConfig;
@@ -62,6 +63,21 @@ public abstract class InstallationManager extends InstalledIdentity {
          * @return the identity version
          */
         String getVersion();
+
+        /**
+         * Add a patch to the installed list.
+         *
+         * @param patchId the patch id
+         */
+        void addInstalledPatch(String patchId) throws PatchingException;
+
+        /**
+         * Remove a patch from the installed list.
+         *
+         * @param patchId the patch id
+         * @throws PatchingException
+         */
+        void removeInstalledPatch(String patchId) throws PatchingException;
 
         /**
          * Get the unmodified state.
