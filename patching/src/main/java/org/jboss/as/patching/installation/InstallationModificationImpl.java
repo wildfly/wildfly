@@ -1,12 +1,18 @@
 package org.jboss.as.patching.installation;
 
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.LinkedHashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.concurrent.atomic.AtomicBoolean;
 
+import org.jboss.as.patching.Constants;
 import org.jboss.as.patching.PatchLogger;
+import org.jboss.as.patching.PatchMessages;
+import org.jboss.as.patching.PatchingException;
 import org.jboss.as.patching.metadata.LayerType;
+import org.jboss.as.patching.runner.PatchUtils;
 
 /**
  * @author Emanuel Muckenhuber
@@ -16,14 +22,17 @@ abstract class InstallationModificationImpl extends MutableTargetImpl implements
     private final String name;
     private final String version;
     private final InstallationState installationState;
+    private final List<String> allPatches;
     private final AtomicBoolean done = new AtomicBoolean();
 
     protected InstallationModificationImpl(final PatchableTarget.TargetInfo identity, final String name,
-                                           final String version, final InstallationState installationState) {
+                                           final String version, final List<String> allPatches,
+                                           final InstallationState installationState) {
         super(identity);
         this.name = name;
         this.version = version;
         this.installationState = installationState;
+        this.allPatches = new ArrayList<String>(allPatches);
     }
 
     @Override
@@ -36,6 +45,26 @@ abstract class InstallationModificationImpl extends MutableTargetImpl implements
     }
 
     @Override
+    public void addInstalledPatch(String patchId) throws PatchingException {
+        if (allPatches.contains(patchId)) {
+            throw PatchMessages.MESSAGES.alreadyApplied(patchId);
+        }
+        allPatches.add(patchId);
+    }
+
+    @Override
+    public void removeInstalledPatch(String patchId) throws PatchingException {
+        if (! allPatches.contains(patchId)) {
+            throw PatchMessages.MESSAGES.cannotRollbackPatch(patchId);
+        }
+        allPatches.remove(patchId);
+    }
+
+    List<String> getAllPatches() {
+        return allPatches;
+    }
+
+    @Override
     public String getName() {
         return name;
     }
@@ -43,6 +72,12 @@ abstract class InstallationModificationImpl extends MutableTargetImpl implements
     @Override
     public String getVersion() {
         return version;
+    }
+
+    @Override
+    protected void persist() throws IOException {
+        getMutableProperties().put(Constants.ALL_PATCHES, PatchUtils.asString(allPatches));
+        super.persist();
     }
 
     boolean setDone() {
@@ -60,7 +95,7 @@ abstract class InstallationModificationImpl extends MutableTargetImpl implements
             throw e;
         }
         try {
-            super.persist();
+            persist();
         } catch (Exception e) {
             installationState.restore();
         }

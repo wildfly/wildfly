@@ -40,6 +40,13 @@ import org.jboss.as.version.ProductConfig;
 public abstract class InstalledIdentity {
 
     /**
+     * Get a list of all installed patches.
+     *
+     * @return the list of all installed patches
+     */
+    public abstract List<String> getAllInstalledPatches();
+
+    /**
      * Get information about the installed identity.
      *
      * @return the identity

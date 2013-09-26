@@ -32,6 +32,7 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
 import org.jboss.as.patching.PatchingException;
@@ -106,7 +107,7 @@ public class PatchBundleUnitTestCase extends AbstractPatchingTest {
 
         final File multiPatch = prepare(builder.getRoot(), cp1, cp2, cp3, cp4, cp5);
         // Create the patch tool and apply the patch
-        InstallationManager mgr = loadInstallationManager();
+        InstallationManager mgr = updateInstallationManager(); // Get installation manager instance for the unit test
         final PatchTool patchTool = PatchTool.Factory.create(mgr);
         final PatchingResult result = patchTool.applyPatch(multiPatch, ContentVerificationPolicy.STRICT);
         result.commit();
@@ -117,6 +118,8 @@ public class PatchBundleUnitTestCase extends AbstractPatchingTest {
         }
 
         mgr = loadInstallationManager();
+
+        Assert.assertEquals(Arrays.asList(new String[] {"CP1", "CP2", "CP3", "CP4", "CP5"}), mgr.getAllInstalledPatches());
 
         PatchStepAssertions.assertModule("base-CP3", mgr.getLayer("base"), "org.jboss.test", "main");
         PatchStepAssertions.assertModule("base-CP3", mgr.getLayer("base"), "org.jboss.test.four", "main");
