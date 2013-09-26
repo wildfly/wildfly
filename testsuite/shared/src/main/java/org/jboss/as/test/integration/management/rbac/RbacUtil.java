@@ -66,9 +66,8 @@ public class RbacUtil {
     public static final String AUDITOR_ROLE = "Auditor";
     public static final String SUPERUSER_ROLE = "SuperUser";
 
-    private static final String ROLE_MAPPING_ADDRESS_BASE = "core-service=management/access=authorization/role-mapping=";
+    public static final String ROLE_MAPPING_ADDRESS_BASE = "core-service=management/access=authorization/role-mapping=";
     private static final String ROLE_MAPPING_USER_INCLUDE_ADDRESS_BASE = "/include=user-";
-    private static final String LOCAL_USER = "$local";
 
     private RbacUtil() {
         // prevent instantiation
@@ -164,4 +163,9 @@ public class RbacUtil {
             header.add(role);
         }
     }
+
+    public static String[] allStandardRoles() {
+        return new String[] {MONITOR_ROLE, OPERATOR_ROLE, MAINTAINER_ROLE, DEPLOYER_ROLE, ADMINISTRATOR_ROLE, AUDITOR_ROLE, SUPERUSER_ROLE};
+    }
+
 }
