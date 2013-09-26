@@ -29,6 +29,7 @@ import org.jboss.msc.service.ServiceName;
  */
 public class Constants {
 
+    public static final String ALL_PATCHES = "installed-patches";
     public static final String BUNDLES = "bundles";
     public static final String CONFLICTS = "conflicts";
     public static final String CUMULATIVE = "cumulative-patch-id";

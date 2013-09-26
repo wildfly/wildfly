@@ -33,6 +33,8 @@ import javax.xml.stream.XMLStreamException;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Properties;
 
 import org.jboss.as.patching.Constants;
@@ -49,6 +51,7 @@ import org.jboss.as.patching.tool.PatchingResult;
 import org.jboss.as.patching.tool.PatchTool;
 import org.jboss.as.version.ProductConfig;
 import org.junit.After;
+import org.junit.Assert;
 import org.junit.Before;
 
 /**
@@ -81,6 +84,11 @@ public class AbstractPatchingTest {
         if (!IoUtils.recursiveDelete(tempDir)) {
             tempDir.deleteOnExit();
         }
+    }
+
+    protected InstallationManager updateInstallationManager() throws IOException {
+        this.installationManager = loadInstallationManager();
+        return installationManager;
     }
 
     protected InstallationManager loadInstallationManager() throws IOException {
@@ -148,6 +156,7 @@ public class AbstractPatchingTest {
         final PatchTool patchTool = PatchTool.Factory.create(installationManager);
         final PatchingResult result = patchTool.applyPatch(builder.getPatchDir(), verificationPolicy);
         result.commit();
+        Assert.assertTrue(installationManager.getAllInstalledPatches().contains(patch.getPatchId()));
         try {
             assertions.after(installation, patch, installationManager);
         } catch (IOException e) {
@@ -176,6 +185,7 @@ public class AbstractPatchingTest {
         final PatchTool patchTool = PatchTool.Factory.create(installationManager);
         final PatchingResult result = patchTool.rollback(patchId, verificationPolicy, false, false);
         result.commit();
+        Assert.assertFalse(installationManager.getAllInstalledPatches().contains(patch.getPatchId()));
         try {
             assertions.after(installation, patch, installationManager);
         } catch (IOException e) {

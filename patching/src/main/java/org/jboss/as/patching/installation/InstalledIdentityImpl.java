@@ -36,12 +36,19 @@ public class InstalledIdentityImpl extends InstalledIdentity {
 
     private final Identity identity;
     private final InstalledImage installedImage;
+    private final List<String> allPatches;
     private final Map<String, Layer> layers = new LinkedHashMap<String, Layer>();
     private final Map<String, AddOn> addOns = new LinkedHashMap<String, AddOn>();
 
-    protected InstalledIdentityImpl(final Identity identity, final InstalledImage installedImage) {
+    protected InstalledIdentityImpl(final Identity identity, final List<String> allPatches, final InstalledImage installedImage) {
         this.identity = identity;
         this.installedImage = installedImage;
+        this.allPatches = Collections.unmodifiableList(allPatches);
+    }
+
+    @Override
+    public List<String> getAllInstalledPatches() {
+        return allPatches;
     }
 
     @Override
