@@ -41,7 +41,7 @@ import org.jboss.security.SecurityContextFactory;
  */
 public final class SecurityDomainContextAdaptor implements org.jboss.wsf.spi.security.SecurityDomainContext {
 
-    private SecurityDomainContext context;
+    private final SecurityDomainContext context;
 
     public SecurityDomainContextAdaptor(SecurityDomainContext context) {
         this.context = context;

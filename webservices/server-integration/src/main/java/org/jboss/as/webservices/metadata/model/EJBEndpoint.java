@@ -25,6 +25,7 @@ import java.util.Set;
 
 import org.jboss.as.ee.component.DeploymentDescriptorEnvironment;
 import org.jboss.as.ejb3.component.session.SessionBeanComponentDescription;
+import org.jboss.as.ejb3.security.service.EJBViewMethodSecurityAttributesService;
 import org.jboss.msc.service.ServiceName;
 
 /**
@@ -73,6 +74,10 @@ public final class EJBEndpoint extends AbstractEndpoint {
 
    public String getTransportGuarantee() {
        return transportGuarantee;
+   }
+
+   public ServiceName getEJBViewMethodSecurityAttributesService() {
+       return EJBViewMethodSecurityAttributesService.getServiceName(ejbMD.getApplicationName(), ejbMD.getModuleName(), ejbMD.getEJBName(), getClassName());
    }
 
 }
