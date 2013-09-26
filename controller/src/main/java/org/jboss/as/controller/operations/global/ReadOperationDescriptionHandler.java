@@ -22,6 +22,8 @@
 
 package org.jboss.as.controller.operations.global;
 import static org.jboss.as.controller.ControllerMessages.MESSAGES;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.EXECUTE;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OPERATION_HEADERS;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.READ_ONLY;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.READ_OPERATION_DESCRIPTION_OPERATION;
@@ -37,8 +39,14 @@ import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.OperationStepHandler;
 import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.ProcessType;
+import org.jboss.as.controller.SimpleAttributeDefinition;
+import org.jboss.as.controller.SimpleAttributeDefinitionBuilder;
 import org.jboss.as.controller.SimpleOperationDefinitionBuilder;
+import org.jboss.as.controller.access.AuthorizationResult;
+import org.jboss.as.controller.access.AuthorizationResult.Decision;
+import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
 import org.jboss.as.controller.descriptions.common.ControllerResolver;
+import org.jboss.as.controller.operations.common.Util;
 import org.jboss.as.controller.registry.ImmutableManagementResourceRegistration;
 import org.jboss.as.controller.registry.OperationEntry;
 import org.jboss.dmr.ModelNode;
@@ -51,6 +59,12 @@ import org.jboss.dmr.ModelType;
  * @author Brian Stansberry (c) 2012 Red Hat Inc.
  */
 public class ReadOperationDescriptionHandler implements OperationStepHandler {
+
+    static final SimpleAttributeDefinition ACCESS_CONTROL = new SimpleAttributeDefinitionBuilder(ModelDescriptionConstants.ACCESS_CONTROL, ModelType.BOOLEAN)
+            .setAllowNull(true)
+            .setDefaultValue(new ModelNode(false))
+            .build();
+
 
     static final OperationDefinition DEFINITION = new SimpleOperationDefinitionBuilder(READ_OPERATION_DESCRIPTION_OPERATION, ControllerResolver.getResolver("global"))
             .setParameters(NAME, LOCALE)
@@ -65,6 +79,7 @@ public class ReadOperationDescriptionHandler implements OperationStepHandler {
     public void execute(OperationContext context, ModelNode operation) throws OperationFailedException {
 
         String operationName = NAME.resolveModelAttribute(context, operation).asString();
+        boolean accessControl = ACCESS_CONTROL.resolveModelAttribute(context, operation).asBoolean();
 
         final ImmutableManagementResourceRegistration registry = context.getResourceRegistration();
         OperationEntry operationEntry = registry.getOperationEntry(PathAddress.EMPTY_ADDRESS, operationName);
@@ -84,6 +99,15 @@ public class ReadOperationDescriptionHandler implements OperationStepHandler {
                 } else if (flags.contains(OperationEntry.Flag.RESTART_JVM)) {
                     result.get(RESTART_REQUIRED).set("jvm");
                 }
+            }
+
+            if (accessControl) {
+                final PathAddress address = PathAddress.pathAddress(operation.require(OP_ADDR));
+                ModelNode operationToCheck = Util.createOperation(operationName, address);
+                operationToCheck.get(OPERATION_HEADERS).set(operation.get(OPERATION_HEADERS));
+                AuthorizationResult authorizationResult = context.authorizeOperation(operationToCheck);
+                result.get(ACCESS_CONTROL.getName(), EXECUTE).set(authorizationResult.getDecision() == Decision.PERMIT);
+
             }
 
             context.getResult().set(result);
