@@ -27,42 +27,72 @@ import java.util.List;
 
 import io.undertow.server.HandlerWrapper;
 import io.undertow.server.HttpHandler;
+import io.undertow.servlet.api.ThreadSetupAction;
 import org.jboss.as.server.deployment.DeploymentPhaseContext;
 import org.jboss.as.server.deployment.DeploymentUnit;
 import org.jboss.as.server.deployment.DeploymentUnitProcessingException;
 import org.wildfly.extension.undertow.deployment.UndertowHandlerWrapperDeploymentProcessor;
+import org.wildfly.extension.undertow.deployment.UndertowThreadSetupActionDeploymentProcessor;
 
 /**
+ * {@link org.jboss.as.server.deployment.DeploymentUnitProcessor} that registers metrics on deployment if mod_cluster
+ * module is loaded.
+ * <p/>
+ * <ul>
+ * <li>{@link RequestCountHttpHandler}</li>
+ * <li>{@link RunningRequestsThreadSetupAction}</li>
+ * <li>{@link BytesReceivedHttpHandler}</li>
+ * <li>{@link BytesSentHttpHandler}</li>
+ * </ul>
+ *
  * @author Radoslav Husar
  * @since 8.0
  */
-public class ModClusterUndertowMetricDeploymentUnitProcessor implements UndertowHandlerWrapperDeploymentProcessor {
+class MetricDeploymentProcessor implements UndertowHandlerWrapperDeploymentProcessor {
 
     @Override
     public void deploy(DeploymentPhaseContext phaseContext) throws DeploymentUnitProcessingException {
         DeploymentUnit deploymentUnit = phaseContext.getDeploymentUnit();
-        List<HandlerWrapper> attachment = deploymentUnit.getAttachment(UndertowHandlerWrapperDeploymentProcessor.UNDERTOW_INITIAL_HANDLER_CHAIN_WRAPPERS);
 
-        if (attachment == null) {
-            attachment = new LinkedList<HandlerWrapper>();
-            deploymentUnit.putAttachment(UndertowHandlerWrapperDeploymentProcessor.UNDERTOW_INITIAL_HANDLER_CHAIN_WRAPPERS, attachment);
+        List<HandlerWrapper> handlerAttachment = deploymentUnit.getAttachment(UndertowHandlerWrapperDeploymentProcessor.UNDERTOW_INITIAL_HANDLER_CHAIN_WRAPPERS);
+
+        if (handlerAttachment == null) {
+            handlerAttachment = new LinkedList<HandlerWrapper>();
+            deploymentUnit.putAttachment(UndertowHandlerWrapperDeploymentProcessor.UNDERTOW_INITIAL_HANDLER_CHAIN_WRAPPERS, handlerAttachment);
         }
 
-        attachment.add(new HandlerWrapper() {
+        // Request count wrapping
+        handlerAttachment.add(new HandlerWrapper() {
             @Override
             public HttpHandler wrap(final HttpHandler handler) {
                 return new RequestCountHttpHandler(handler);
             }
         });
 
-        // Busyness wrapping
-        //.addThreadSetupAction(new RunningRequestsThreadSetupAction())
-
         // Bytes Sent wrapping
-        //.addThreadSetupAction(new BytesSentThreadSetupAction())
+        handlerAttachment.add(new HandlerWrapper() {
+            @Override
+            public HttpHandler wrap(final HttpHandler handler) {
+                return new BytesSentHttpHandler(handler);
+            }
+        });
 
         // Bytes Received wrapping
-        //.addThreadSetupAction(new BytesReceivedThreadSetupAction());
+        handlerAttachment.add(new HandlerWrapper() {
+            @Override
+            public HttpHandler wrap(final HttpHandler handler) {
+                return new BytesReceivedHttpHandler(handler);
+            }
+        });
+
+        // Busyness thread setup actions
+        List<ThreadSetupAction> setupAttachment = deploymentUnit.getAttachment(UndertowThreadSetupActionDeploymentProcessor.UNDERTOW_THREAD_SETUP_ACTIONS);
+
+        if (setupAttachment == null) {
+            setupAttachment = new LinkedList<ThreadSetupAction>();
+            deploymentUnit.putAttachment(UndertowThreadSetupActionDeploymentProcessor.UNDERTOW_THREAD_SETUP_ACTIONS, setupAttachment);
+        }
+        setupAttachment.add(new RunningRequestsThreadSetupAction());
     }
 
     @Override
