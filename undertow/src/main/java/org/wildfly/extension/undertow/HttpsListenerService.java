@@ -56,6 +56,7 @@ public class HttpsListenerService extends HttpListenerService {
     private final InjectedValue<SecurityRealm> securityRealm = new InjectedValue<>();
     private volatile AcceptingChannel<SslConnection> sslServer;
     private final long maxUploadSize;
+    static final String PROTOCOL = "https";
 
     public HttpsListenerService(final String name, String serverName, long maxUploadSize) {
         super(name, serverName, maxUploadSize);
@@ -102,7 +103,7 @@ public class HttpsListenerService extends HttpListenerService {
 
     @Override
     protected String getProtocol() {
-        return "https";
+        return PROTOCOL;
     }
 
 }

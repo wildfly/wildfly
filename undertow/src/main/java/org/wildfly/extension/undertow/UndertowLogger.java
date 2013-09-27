@@ -100,6 +100,10 @@ public interface UndertowLogger extends BasicLogger {
     @Message(id = 17506, value = "Undertow %s stopping")
     void serverStopping(String version);
 
+    @LogMessage(level = WARN)
+    @Message(id = 17507, value = "Secure listener for protocol: '%s' not found! Using non secure port!")
+    void secureListenerNotAvailableForPort(String protocol);
+
     /**
      * Creates an exception indicating the class, represented by the {@code className} parameter, cannot be accessed.
      *
