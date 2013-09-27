@@ -33,7 +33,17 @@
     </management>
 
     <domain-controller>
-       <remote host="${jboss.test.host.master.address}" port="${jboss.domain.master.port:9999}" security-realm="ManagementRealm"/>
+       <remote host="${jboss.test.host.master.address}" port="${jboss.domain.master.port:9999}" security-realm="ManagementRealm">
+            <ignored-resources type="extension">
+                <instance name="org.wildfly.extension.batch"/>
+                <instance name="org.wildfly.extension.io"/>
+                <instance name="org.wildfly.extension.undertow"/>
+            </ignored-resources>
+            <ignored-resources type="profile">
+                <instance name="full-ha"/>
+                <instance name="full-ha-7.2.x"/>
+            </ignored-resources>
+       </remote>       
     </domain-controller>
 
     <interfaces>
@@ -60,7 +70,8 @@
          </jvm>
    	</jvms>
 
+
     <servers>
-        <server name="server-one" group="other-server-group"/>
+        <server name="server-one" group="7.1.3-server-group"/>
     </servers>
 </host>

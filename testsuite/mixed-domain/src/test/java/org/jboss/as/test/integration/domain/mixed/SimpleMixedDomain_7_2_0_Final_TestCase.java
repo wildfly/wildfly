@@ -28,11 +28,11 @@ import org.junit.BeforeClass;
  *
  * @author <a href="kabir.khan@jboss.com">Kabir Khan</a>
  */
-@Version(AsVersion.AS_7_1_3_FINAL)
-public class SimpleMixedDomain_7_1_3_Final_TestCase extends SimpleMixedDomainTest {
+@Version(AsVersion.AS_7_2_0_FINAL)
+public class SimpleMixedDomain_7_2_0_Final_TestCase extends SimpleMixedDomainTest {
 
     @BeforeClass
     public static void beforeClass() {
-        MixedDomainTestSuite.getSupport(MixedDomain_7_1_3_Final_TestSuite.class);
+        MixedDomainTestSuite.getSupport(MixedDomain_7_2_0_Final_TestSuite.class);
     }
 }

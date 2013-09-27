@@ -33,7 +33,7 @@ import org.junit.runners.Suite.SuiteClasses;
  */
 @RunWith(Suite.class)
 @SuiteClasses(value= {SimpleMixedDomain_7_1_3_Final_TestCase.class, MixedDomainDeployment_7_1_3_Final_TestCase.class})
-@Version(AsVersion.V_7_1_3_Final)
+@Version(AsVersion.AS_7_1_3_FINAL)
 public class MixedDomain_7_1_3_Final_TestSuite extends MixedDomainTestSuite {
 
     @BeforeClass

@@ -21,6 +21,7 @@
 */
 package org.jboss.as.remoting;
 
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ADD;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.FAILED;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.IGNORED;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.NAME;
@@ -56,7 +57,6 @@ import org.jboss.as.subsystem.test.AbstractSubsystemBaseTest;
 import org.jboss.as.subsystem.test.KernelServices;
 import org.jboss.as.subsystem.test.KernelServicesBuilder;
 import org.jboss.dmr.ModelNode;
-import org.junit.Ignore;
 import org.junit.Test;
 
 /**
@@ -182,6 +182,7 @@ public class RemotingSubsystemTransformersTestCase extends AbstractSubsystemBase
         checkRejectOutboundConnectionProperty(mainServices, version_1_1, CommonAttributes.REMOTE_OUTBOUND_CONNECTION, "remote-conn1");
         checkRejectOutboundConnectionProperty(mainServices, version_1_1, CommonAttributes.LOCAL_OUTBOUND_CONNECTION, "local-conn1");
         checkRejectOutboundConnectionProperty(mainServices, version_1_1, CommonAttributes.OUTBOUND_CONNECTION, "generic-conn1");
+        checkRejectHttpConnector(mainServices, version_1_1);
     }
 
     private void checkRejectOutboundConnectionProperty(KernelServices mainServices, ModelVersion version, String type, String name) throws OperationFailedException {
@@ -284,6 +285,18 @@ public class RemotingSubsystemTransformersTestCase extends AbstractSubsystemBase
         operation.get(OP_ADDR).set(address);
         operation.get(NAME).set("worker-read-threads");
         operation.get(VALUE).set("${worker.read.threads:5}");
+
+        checkReject(operation, mainServices, version);
+    }
+
+    private void checkRejectHttpConnector(KernelServices mainServices, ModelVersion version) throws OperationFailedException {
+        ModelNode operation = new ModelNode();
+        operation.get(OP).set(ADD);
+        operation.get(CommonAttributes.CONNECTOR_REF).set("test");
+        ModelNode address = new ModelNode();
+        address.add(SUBSYSTEM, RemotingExtension.SUBSYSTEM_NAME);
+        address.add(HttpConnectorResource.PATH.getKey(), "test");
+        operation.get(OP_ADDR).set(address);
 
         checkReject(operation, mainServices, version);
     }

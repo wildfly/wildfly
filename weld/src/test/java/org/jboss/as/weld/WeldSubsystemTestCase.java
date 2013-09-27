@@ -64,10 +64,10 @@ public class WeldSubsystemTestCase extends AbstractSubsystemBaseTest {
         testTransformers10(ModelTestControllerVersion.V7_1_3_FINAL);
     }
 
-    /*@Test //not ready yet in testing framework
+    @Test //not ready yet in testing framework
     public void testTransformersAS72() throws Exception {
         testTransformers10(ModelTestControllerVersion.V7_2_0_FINAL);
-    }*/
+    }
 
 
     private void testTransformers10(ModelTestControllerVersion controllerVersion) throws Exception {
