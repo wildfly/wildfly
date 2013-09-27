@@ -49,6 +49,11 @@
         </dependency>
         <dependency>
             <groupId>org.wildfly</groupId>
+            <artifactId>wildfly-subsystem-test-controller-7.2.0</artifactId>
+            <scope>provided</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.wildfly</groupId>
             <artifactId>wildfly-subsystem-test-framework</artifactId>
         </dependency>
     </dependencies>
