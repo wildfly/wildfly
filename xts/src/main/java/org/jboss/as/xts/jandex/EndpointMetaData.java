@@ -33,21 +33,18 @@ public class EndpointMetaData {
 
     private final TransactionalAnnotation transactionalAnnotation;
     private final CompensatableAnnotation compensatableAnnotation;
-    private final OldTransactionalAnnotation oldTransactionalAnnotation;
     private final OldCompensatableAnnotation oldCompensatableAnnotation;
     private final StatelessAnnotation statelessAnnotation;
     private final WebServiceAnnotation webServiceAnnotation;
 
     private EndpointMetaData(final StatelessAnnotation statelessAnnotation,
             final TransactionalAnnotation transactionalAnnotation, final CompensatableAnnotation compensatableAnnotation,
-            final OldTransactionalAnnotation oldTransactionalAnnotation,
             final OldCompensatableAnnotation oldCompensatableAnnotation,
             final WebServiceAnnotation webServiceAnnotation) {
 
         this.statelessAnnotation = statelessAnnotation;
         this.transactionalAnnotation = transactionalAnnotation;
         this.compensatableAnnotation = compensatableAnnotation;
-        this.oldTransactionalAnnotation = oldTransactionalAnnotation;
         this.oldCompensatableAnnotation = oldCompensatableAnnotation;
         this.webServiceAnnotation = webServiceAnnotation;
     }
@@ -55,13 +52,11 @@ public class EndpointMetaData {
     public static EndpointMetaData build(final DeploymentUnit unit, final String endpoint) throws XTSException {
         final TransactionalAnnotation transactionalAnnotation = TransactionalAnnotation.build(unit, endpoint);
         final CompensatableAnnotation compensatableAnnotation = CompensatableAnnotation.build(unit, endpoint);
-        final OldTransactionalAnnotation oldTransactionalAnnotation = OldTransactionalAnnotation.build(unit, endpoint);
         final OldCompensatableAnnotation oldCompensatableAnnotation = OldCompensatableAnnotation.build(unit, endpoint);
         final StatelessAnnotation statelessAnnotation = StatelessAnnotation.build(unit, endpoint);
         final WebServiceAnnotation webServiceAnnotation = WebServiceAnnotation.build(unit, endpoint);
 
-        return new EndpointMetaData(statelessAnnotation, transactionalAnnotation, compensatableAnnotation,
-                oldTransactionalAnnotation, oldCompensatableAnnotation, webServiceAnnotation);
+        return new EndpointMetaData(statelessAnnotation, transactionalAnnotation, compensatableAnnotation, oldCompensatableAnnotation, webServiceAnnotation);
     }
 
     public WebServiceAnnotation getWebServiceAnnotation() {
@@ -77,21 +72,11 @@ public class EndpointMetaData {
     }
 
     public boolean isBridgeEnabled() {
-        if (transactionalAnnotation != null) {
-            return true;
-        }
-
-        if (oldTransactionalAnnotation != null) {
-            final BridgeType bridgeType = oldTransactionalAnnotation.getBridgeType();
-
-            return (bridgeType.equals(BridgeType.JTA) || bridgeType.equals(BridgeType.DEFAULT));
-        }
-
-        return false;
+        return transactionalAnnotation != null;
     }
 
     public boolean isXTSEnabled() {
         return transactionalAnnotation != null || compensatableAnnotation != null
-                || oldCompensatableAnnotation != null || oldTransactionalAnnotation != null;
+                || oldCompensatableAnnotation != null;
     }
 }
