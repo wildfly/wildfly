@@ -80,6 +80,7 @@ public class DomainTransformers {
     private static void initializeDomainRegistryEAP60(TransformerRegistry registry, ModelVersion modelVersion) {
         TransformersSubRegistration domain = registry.getDomainRegistration(modelVersion);
 
+        //TODO see Brian's comments in https://github.com/wildfly/wildfly/pull/5160
         //Discard the domain level core-service=management resource and its children
         domain.registerSubResource(CoreManagementResourceDefinition.PATH_ELEMENT, true);
 
@@ -101,6 +102,7 @@ public class DomainTransformers {
     private static void initializeDomainRegistry14(TransformerRegistry registry) {
         TransformersSubRegistration domain = registry.getDomainRegistration(VERSION_1_4);
 
+        //TODO see Brian's comments in https://github.com/wildfly/wildfly/pull/5160
         //Discard the domain level core-service=management resource and its children
         domain.registerSubResource(CoreManagementResourceDefinition.PATH_ELEMENT, true);
 

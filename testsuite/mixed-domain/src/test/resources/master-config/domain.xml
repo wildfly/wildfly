@@ -993,12 +993,20 @@
                 <console-handler name="CONSOLE">
                     <level name="INFO"/>
                     <formatter>
+                        <!--  
+                           This does not exist on 7.2.x, use pattern-formatter instead                        
                         <named-formatter name="COLOR-PATTERN"/>
+                         -->
+                        <pattern-formatter pattern="%d{HH:mm:ss,SSS} %-5p [%c] (%t) %s%E%n"/>
                     </formatter>
                 </console-handler>
                 <periodic-rotating-file-handler name="FILE" autoflush="true">
                     <formatter>
+                        <!--  
+                           This does not exist on 7.2.x, use pattern-formatter instead                        
                         <named-formatter name="PATTERN"/>
+                         -->
+                        <pattern-formatter pattern="%d{HH:mm:ss,SSS} %-5p [%c] (%t) %s%E%n"/>
                     </formatter>
                     <file relative-to="jboss.server.log.dir" path="server.log"/>
                     <suffix value=".yyyy-MM-dd"/>
@@ -1029,12 +1037,14 @@
                         <handler name="FILE"/>
                     </handlers>
                 </root-logger>
+                <!--  This does not exist on 7.2.x
                 <formatter name="PATTERN">
                     <pattern-formatter pattern="%d{yyyy-MM-dd HH:mm:ss,SSS} %-5p [%c] (%t) %s%E%n"/>
                 </formatter>
                 <formatter name="COLOR-PATTERN">
                     <pattern-formatter pattern="%K{level}%d{HH:mm:ss,SSS} %-5p [%c] (%t) %s%E%n"/>
                 </formatter>
+                 -->
             </subsystem>
 
             <subsystem xmlns="urn:jboss:domain:datasources:2.0">
@@ -1057,12 +1067,15 @@
             <subsystem xmlns="urn:jboss:domain:ee:2.0">
                 <spec-descriptor-property-replacement>false</spec-descriptor-property-replacement>
                 <jboss-descriptor-property-replacement>true</jboss-descriptor-property-replacement>
+                <!-- 
+                  This does not exist on 7.2.x
                 <concurrent>
                     <default-context-service/>
                     <default-managed-thread-factory/>
                     <default-managed-executor-service hung-task-threshold="60000" core-threads="5" max-threads="25" keepalive-time="5000"/>
                     <default-managed-scheduled-executor-service hung-task-threshold="60000" core-threads="2" keepalive-time="3000"/>
                 </concurrent>
+                -->
             </subsystem>
             <subsystem xmlns="urn:jboss:domain:ejb3:2.0">
                 <session-bean>
@@ -1101,7 +1114,10 @@
                         <file-data-store name="default-file-store" path="timer-service-data" relative-to="jboss.server.data.dir"/>
                     </data-stores>
                 </timer-service>
+                <!-- This does not exist on 7.1.x, use the standard remoting one instead 
                 <remote connector-ref="http-remoting-connector" thread-pool-name="default"/>
+                 -->
+                 <remote connector-ref="remoting-connector" thread-pool-name="default"/>
                 <thread-pools>
                     <thread-pool name="default">
                         <max-threads count="10"/>
@@ -1198,7 +1214,12 @@
                     <protocol type="FD_ALL"/>
                     <protocol type="VERIFY_SUSPECT"/>
                     <protocol type="pbcast.NAKACK2"/>
+                    <!--  
+                        UNICAST3 does not exist in 7.2.x, so use UNICAST2 for these tests
+                        A server not starting is not a problem, it just means it needs to use another profile
                     <protocol type="UNICAST3"/>
+                     -->
+                    <protocol type="UNICAST2"/>
                     <protocol type="pbcast.STABLE"/>
                     <protocol type="pbcast.GMS"/>
                     <protocol type="UFC"/>
@@ -1214,7 +1235,12 @@
                     <protocol type="FD"/>
                     <protocol type="VERIFY_SUSPECT"/>
                     <protocol type="pbcast.NAKACK2"/>
+                    <!--  
+                        UNICAST3 does not exist in 7.2.x, so use UNICAST2 for these tests
+                        A server not starting is not a problem, it just means it needs to use another profile
                     <protocol type="UNICAST3"/>
+                     -->
+                    <protocol type="UNICAST2"/>
                     <protocol type="pbcast.STABLE"/>
                     <protocol type="pbcast.GMS"/>
                     <protocol type="MFC"/>
@@ -1248,7 +1274,10 @@
                         <netty-connector name="netty-throughput" socket-binding="messaging-throughput">
                             <param key="batch-delay" value="50"/>
                         </netty-connector>
+                        <!--
+                        This does not exist on 7.2.x 
                         <servlet-connector name="servlet" socket-binding="http" host="default-host"/>
+                        -->
                         <in-vm-connector name="in-vm" server-id="0"/>
                     </connectors>
                     <acceptors>
@@ -1309,6 +1338,7 @@
                                 <entry name="java:/ConnectionFactory"/>
                             </entries>
                         </connection-factory>
+                        <!-- This does not exist on 7.2.x 
                         <connection-factory name="ServletConnectionFactory">
                             <connectors>
                                 <connector-ref connector-name="servlet"/>
@@ -1317,6 +1347,7 @@
                                 <entry name="java:jboss/exported/jms/ServletConnectionFactory"/>
                             </entries>
                         </connection-factory>
+                        -->
                         <connection-factory name="RemoteConnectionFactory">
                             <connectors>
                                 <connector-ref connector-name="netty"/>
@@ -1356,7 +1387,10 @@
             </subsystem>
             <subsystem xmlns="urn:jboss:domain:pojo:1.0"/>
             <subsystem xmlns="urn:jboss:domain:remoting:2.0">
+                <!-- This does not exist on 7.1.x, set up a standard connector instead 
                 <http-connector name="http-remoting-connector" connector-ref="default" security-realm="ApplicationRealm"/>
+                 -->
+                 <connector name="remoting-connector" socket-binding="remoting" security-realm="ApplicationRealm"/>
             </subsystem>
             <subsystem xmlns="urn:jboss:domain:resource-adapters:2.0"/>
             <subsystem xmlns="urn:jboss:domain:sar:1.0"/>
@@ -1521,6 +1555,29 @@
                 <remote-destination host="localhost" port="25"/>
             </outbound-socket-binding>
         </socket-binding-group>        
+        <socket-binding-group name="full-ha-sockets-7.2.x" default-interface="public">
+            <!-- Needed for server groups using the 'full-ha-7.1.x' profile  -->
+            <socket-binding name="ajp" port="${jboss.ajp.port:8009}"/>
+            <socket-binding name="http" port="${jboss.http.port:8080}"/>
+            <socket-binding name="https" port="${jboss.https.port:8443}"/>
+            <socket-binding name="jacorb" interface="unsecure" port="3528"/>
+            <socket-binding name="jacorb-ssl" interface="unsecure" port="3529"/>
+            <socket-binding name="jgroups-mping" port="0" multicast-address="${jboss.default.multicast.address:230.0.0.4}" multicast-port="45700"/>
+            <socket-binding name="jgroups-tcp" port="7600"/>
+            <socket-binding name="jgroups-tcp-fd" port="57600"/>
+            <socket-binding name="jgroups-udp" port="55200" multicast-address="${jboss.default.multicast.address:230.0.0.4}" multicast-port="45688"/>
+            <socket-binding name="jgroups-udp-fd" port="54200"/>
+            <socket-binding name="messaging" port="5445"/>
+            <socket-binding name="messaging-group" port="0" multicast-address="${jboss.messaging.group.address:231.7.7.7}" multicast-port="${jboss.messaging.group.port:9876}"/>
+            <socket-binding name="messaging-throughput" port="5455"/>
+            <socket-binding name="modcluster" port="0" multicast-address="224.0.1.105" multicast-port="23364"/>
+            <socket-binding name="remoting" port="4447"/>
+            <socket-binding name="txn-recovery-environment" port="4712"/>
+            <socket-binding name="txn-status-manager" port="4713"/>
+            <outbound-socket-binding name="mail-smtp">
+                <remote-destination host="localhost" port="25"/>
+            </outbound-socket-binding>
+        </socket-binding-group>      
     </socket-binding-groups>
     <server-groups>
         <server-group name="main-server-group" profile="full-ha">
@@ -1545,7 +1602,7 @@
             <jvm name="default">
                 <heap size="64m" max-size="512m"/>
             </jvm>
-            <socket-binding-group ref="full-ha-sockets"/>
+            <socket-binding-group ref="full-ha-sockets-7.2.x"/>
         </server-group>
     </server-groups>
 </domain>
