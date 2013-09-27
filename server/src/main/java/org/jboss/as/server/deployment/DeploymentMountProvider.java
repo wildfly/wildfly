@@ -108,7 +108,7 @@ public interface DeploymentMountProvider {
             @Override
             public void start(StartContext context) throws StartException {
                 try {
-                    final JBossThreadFactory threadFactory = new JBossThreadFactory(new ThreadGroup("ServerDeploymentRepository-temp-threads"), Boolean.FALSE, null, "%G - %t", null, null, doPrivileged(GetAccessControlContextAction.getInstance()));
+                    final JBossThreadFactory threadFactory = new JBossThreadFactory(new ThreadGroup("ServerDeploymentRepository-temp-threads"), true, null, "%G - %t", null, null, doPrivileged(GetAccessControlContextAction.getInstance()));
                     tempFileProvider = TempFileProvider.create("temp", Executors.newScheduledThreadPool(2, threadFactory), true);
                 } catch (IOException e) {
                     throw ServerMessages.MESSAGES.failedCreatingTempProvider();
