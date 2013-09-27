@@ -107,7 +107,7 @@ public abstract class SimpleMixedDomainTest  {
     }
 
     private void cleanupKnownDifferencesInModelsForVersioningCheck(ModelNode masterModel, ModelNode slaveModel) {
-        if (version == AsVersion.V_7_1_2_Final || version == AsVersion.V_7_1_3_Final) {
+        if (version == AsVersion.AS_7_1_2_FINAL || version == AsVersion.AS_7_1_3_FINAL) {
             //First get rid of any undefined crap
             cleanUndefinedNodes(masterModel);
             cleanUndefinedNodes(slaveModel);

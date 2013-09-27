@@ -41,8 +41,9 @@ public @interface Version {
     final String EAP = "jboss-eap-";
 
     enum AsVersion {
-        V_7_1_2_Final(AS, "7.1.2.Final"),
-        V_7_1_3_Final(AS, "7.1.3.Final");
+        AS_7_1_2_FINAL(AS, "7.1.2.Final"),
+        AS_7_1_3_FINAL(AS, "7.1.3.Final"),
+        AS_7_2_0_FINAL(AS, "7.2.0.Final");
 
         final String basename;
         final String version;

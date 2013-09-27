@@ -41,6 +41,7 @@
             </ignored-resources>
             <ignored-resources type="profile">
                 <instance name="full-ha"/>
+                <instance name="full-ha-7.2.x"/>
             </ignored-resources>
        </remote>       
     </domain-controller>

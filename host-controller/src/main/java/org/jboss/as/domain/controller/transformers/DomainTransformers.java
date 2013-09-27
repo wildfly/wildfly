@@ -100,6 +100,10 @@ public class DomainTransformers {
 
     private static void initializeDomainRegistry14(TransformerRegistry registry) {
         TransformersSubRegistration domain = registry.getDomainRegistration(VERSION_1_4);
+
+        //Discard the domain level core-service=management resource and its children
+        domain.registerSubResource(CoreManagementResourceDefinition.PATH_ELEMENT, true);
+
         //TODO not sure if these should be handled here for 1.4.0 or if it is better in the tests?
         //Add the domain interface name. This is currently from a read attribute handler but in < 1.4.0 it existed in the model
         domain.registerSubResource(PathElement.pathElement(INTERFACE), AddNameFromAddressResourceTransformer.INSTANCE);

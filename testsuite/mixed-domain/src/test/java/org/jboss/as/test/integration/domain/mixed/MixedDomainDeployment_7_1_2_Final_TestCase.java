@@ -28,7 +28,7 @@ import org.junit.BeforeClass;
  *
  * @author <a href="kabir.khan@jboss.com">Kabir Khan</a>
  */
-@Version(AsVersion.V_7_1_2_Final)
+@Version(AsVersion.AS_7_1_2_FINAL)
 public class MixedDomainDeployment_7_1_2_Final_TestCase extends MixedDomainDeploymentTest {
     @BeforeClass
     public static void beforeClass() {
