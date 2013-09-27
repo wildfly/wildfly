@@ -58,6 +58,8 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 
 /**
+ * This class is also used in the LDAP test cases.
+ *
  * @author Ladislav Thon <lthon@redhat.com>
  */
 @RunWith(Arquillian.class)
