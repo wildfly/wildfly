@@ -25,6 +25,8 @@ import java.io.File;
 
 import org.jboss.as.test.integration.domain.management.util.DomainTestSupport;
 import org.jboss.as.test.integration.domain.management.util.JBossAsManagedConfiguration;
+import org.jboss.as.test.integration.domain.mixed.Version;
+
 
 /**
  *
@@ -38,7 +40,7 @@ public class MixedDomainTestSupport extends DomainTestSupport {
     }
 
 
-    public static MixedDomainTestSupport create(String testClass, String version) throws Exception {
+    public static MixedDomainTestSupport create(String testClass, Version.AsVersion version) throws Exception {
         OldVersionCopier oldVersionCopier = OldVersionCopier.expandOldVersions();
         File dir = oldVersionCopier.getVersionDir(version);
 

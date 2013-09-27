@@ -40,6 +40,7 @@ import java.util.Enumeration;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipFile;
 
+import org.jboss.as.test.integration.domain.mixed.Version;
 import org.xnio.IoUtils;
 
 /**
@@ -64,8 +65,8 @@ public class OldVersionCopier {
         return copier;
     }
 
-    File getVersionDir(String version) {
-        File file = new File(targetOldVersions, "jboss-as-" + version);
+    File getVersionDir(Version.AsVersion version) {
+        File file = new File(targetOldVersions, version.getExpandedDirectoryName());
         if (!file.exists() || !file.isDirectory()) {
             throw new IllegalStateException("Could not find " + file.getAbsolutePath());
         }
