@@ -1497,5 +1497,9 @@
         <delete file="maven-ant-tasks.jar"/>
     </target>
 
-    <target name="all" depends="base, copy-standalone, modules, create-ext-content, copy-client"/>
+    <target name="copy-version" description="copies wildfly-version-xxx.jar to jboss-as-version-xxx.jar to make sure older IDEs still recognise WildFly">
+            <copy file="${org.wildfly:wildfly-version:jar}" tofile="${module.repo.output.dir}/org/jboss/as/version/main/jboss-as-version-${project.version}.jar"/>
+    </target>
+
+    <target name="all" depends="base, copy-standalone, modules, create-ext-content, copy-client, copy-version"/>
 </project>
