@@ -260,6 +260,45 @@ public class OperationParsingTestCase {
         assertEquals("\"   \"", handler.getPropertyValue("another"));
     }
 
+    @Test
+    public void testOperationEscapedQuotesInArgumentValues() throws Exception {
+        DefaultCallbackHandler handler = new DefaultCallbackHandler();
+
+        parse("/subsystem=logging/console-handler=CONSOLE:write-attribute(name=filter-spec, value=\"substituteAll(\\\"JBAS\\\",\\\"DUMMY\\\")\")", handler);
+
+        assertTrue(handler.hasAddress());
+        assertTrue(handler.hasOperationName());
+        assertTrue(handler.hasProperties());
+        assertFalse(handler.endsOnAddressOperationNameSeparator());
+        assertFalse(handler.endsOnPropertyListStart());
+        assertFalse(handler.endsOnPropertySeparator());
+        assertFalse(handler.endsOnPropertyValueSeparator());
+        assertFalse(handler.endsOnNodeSeparator());
+        assertFalse(handler.endsOnNodeTypeNameSeparator());
+        assertFalse(handler.isRequestComplete());
+
+        assertEquals("write-attribute", handler.getOperationName());
+
+        OperationRequestAddress address = handler.getAddress();
+        Iterator<Node> i = address.iterator();
+        assertTrue(i.hasNext());
+        Node node = i.next();
+        assertEquals("subsystem", node.getType());
+        assertEquals("logging", node.getName());
+        assertTrue(i.hasNext());
+        node = i.next();
+        assertEquals("console-handler", node.getType());
+        assertEquals("CONSOLE", node.getName());
+        assertFalse(i.hasNext());
+
+        Set<String> args = handler.getPropertyNames();
+        assertEquals(2, args.size());
+        assertTrue(args.contains("name"));
+        assertEquals("filter-spec", handler.getPropertyValue("name"));
+        assertTrue(args.contains("value"));
+        assertEquals("\"substituteAll(\\\"JBAS\\\",\\\"DUMMY\\\")\"", handler.getPropertyValue("value"));
+    }
+
     protected void parse(String opReq, DefaultCallbackHandler handler) throws CommandFormatException {
         parser.parse(opReq, handler);
     }

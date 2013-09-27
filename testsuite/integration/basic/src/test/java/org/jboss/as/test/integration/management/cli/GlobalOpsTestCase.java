@@ -22,12 +22,12 @@
 package org.jboss.as.test.integration.management.cli;
 
 import org.jboss.as.test.integration.management.base.AbstractCliTestBase;
-import static org.junit.Assert.assertTrue;
 
 import java.net.URL;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.TimeUnit;
+import static org.hamcrest.CoreMatchers.is;
 
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.container.test.api.RunAsClient;
@@ -39,6 +39,8 @@ import org.jboss.shrinkwrap.api.Archive;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.spec.JavaArchive;
 import org.junit.AfterClass;
+import static org.junit.Assert.assertThat;
+import static org.junit.Assert.assertTrue;
 import org.junit.BeforeClass;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -257,5 +259,21 @@ public class GlobalOpsTestCase extends AbstractCliTestBase {
 
         assertTrue(((Map)((Map)map.get("step-1")).get("result")).containsKey("management-major-version"));
 
+    }
+
+    @Test
+    public void testStringValueParsing() throws Exception {
+        cli.sendLine("/subsystem=logging/console-handler=TEST-FILTER:add");
+        CLIOpResult result = cli.readAllAsOpResult();
+        assertTrue(result.isIsOutcomeSuccess());
+        cli.sendLine("/subsystem=logging/console-handler=TEST-FILTER:write-attribute(name=filter-spec, value=\"substituteAll(\\\"JBAS\\\",\\\"DUMMY\\\")\")");
+        result = cli.readAllAsOpResult();
+        assertTrue(result.isIsOutcomeSuccess());
+        cli.sendLine("/subsystem=logging/console-handler=TEST-FILTER:read-resource(recursive=true)");
+        result = cli.readAllAsOpResult();
+        assertTrue(result.isIsOutcomeSuccess());
+        Map<String, Object> resource = result.getResultAsMap();
+        assertTrue(resource.containsKey("filter-spec"));
+        assertThat((String) resource.get("filter-spec"), is("substituteAll(\"JBAS\",\"DUMMY\")"));
     }
 }
