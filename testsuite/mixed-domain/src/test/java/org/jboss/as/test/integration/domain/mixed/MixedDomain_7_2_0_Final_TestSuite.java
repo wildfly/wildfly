@@ -23,16 +23,21 @@ package org.jboss.as.test.integration.domain.mixed;
 
 import org.jboss.as.test.integration.domain.mixed.Version.AsVersion;
 import org.junit.BeforeClass;
+import org.junit.runner.RunWith;
+import org.junit.runners.Suite;
+import org.junit.runners.Suite.SuiteClasses;
 
 /**
  *
  * @author <a href="kabir.khan@jboss.com">Kabir Khan</a>
  */
-@Version(AsVersion.AS_7_1_3_FINAL)
-public class SimpleMixedDomain_7_1_3_Final_TestCase extends SimpleMixedDomainTest {
+@RunWith(Suite.class)
+@SuiteClasses(value= {SimpleMixedDomain_7_2_0_Final_TestCase.class, MixedDomainDeployment_7_2_0_Final_TestCase.class})
+@Version(AsVersion.AS_7_2_0_FINAL)
+public class MixedDomain_7_2_0_Final_TestSuite extends MixedDomainTestSuite {
 
     @BeforeClass
-    public static void beforeClass() {
-        MixedDomainTestSuite.getSupport(MixedDomain_7_1_3_Final_TestSuite.class);
+    public static void initializeDomain() {
+        getSupport(MixedDomain_7_2_0_Final_TestSuite.class);
     }
 }

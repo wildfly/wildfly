@@ -98,6 +98,34 @@ public class Ejb3SubsystemUnitTestCase extends AbstractSubsystemBaseTest {
     }
 
     @Test
+    public void testTransformerAS720() throws Exception {
+        ModelTestControllerVersion controllerVersion = ModelTestControllerVersion.V7_2_0_FINAL;
+        //TODO Update to include the extra stuff needed for 1.2.0
+        String subsystemXml = "transform_1_1_0.xml";   //This has no expressions not understood by 1.1.0
+
+        ModelVersion modelVersion = ModelVersion.create(1, 2, 0); //The old model version
+        //Use the non-runtime version of the extension which will happen on the HC
+        KernelServicesBuilder builder = createKernelServicesBuilder(AdditionalInitialization.MANAGEMENT)
+                .setSubsystemXmlResource(subsystemXml);
+
+        // Add legacy subsystems
+        builder.createLegacyKernelServicesBuilder(null, controllerVersion, modelVersion)
+                .addMavenResourceURL("org.jboss.as:jboss-as-ejb3:" + controllerVersion.getMavenGavVersion())
+                .addMavenResourceURL("org.jboss.as:jboss-as-threads:" + controllerVersion.getMavenGavVersion())
+                .skipReverseControllerCheck()
+                .addOperationValidationResolve("add", PathAddress.pathAddress(PathElement.pathElement(SUBSYSTEM, getMainSubsystemName())))
+                .addOperationValidationResolve("add", PathAddress.pathAddress(PathElement.pathElement(SUBSYSTEM, getMainSubsystemName()), PathElement.pathElement("strict-max-bean-instance-pool")));
+
+        KernelServices mainServices = builder.build();
+        KernelServices legacyServices = mainServices.getLegacyServices(modelVersion);
+        Assert.assertNotNull(mainServices);
+        Assert.assertNotNull(legacyServices);
+        generateLegacySubsystemResourceRegistrationDmr(mainServices, modelVersion);
+
+        checkSubsystemModelTransformation(mainServices, modelVersion, V_1_1_0_FIXER);
+    }
+
+    @Test
     public void testRejectExpressionsAS712() throws Exception {
         testRejectExpressions_1_1_0(ModelTestControllerVersion.V7_1_2_FINAL);
     }

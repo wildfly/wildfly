@@ -41,6 +41,7 @@ import org.jboss.as.controller.transform.ResourceTransformer;
 import org.jboss.as.controller.transform.TransformationTarget;
 import org.jboss.as.controller.transform.TransformerRegistry;
 import org.jboss.as.controller.transform.TransformersSubRegistration;
+import org.jboss.as.domain.management.CoreManagementResourceDefinition;
 
 /**
  * Global transformation rules for the domain, host and server-config model.
@@ -79,6 +80,10 @@ public class DomainTransformers {
     private static void initializeDomainRegistryEAP60(TransformerRegistry registry, ModelVersion modelVersion) {
         TransformersSubRegistration domain = registry.getDomainRegistration(modelVersion);
 
+        //TODO see Brian's comments in https://github.com/wildfly/wildfly/pull/5160
+        //Discard the domain level core-service=management resource and its children
+        domain.registerSubResource(CoreManagementResourceDefinition.PATH_ELEMENT, true);
+
         // Discard all operations to the newly introduced jsf extension
         domain.registerSubResource(JSF_EXTENSION, IGNORED_EXTENSIONS);
 
@@ -96,6 +101,11 @@ public class DomainTransformers {
 
     private static void initializeDomainRegistry14(TransformerRegistry registry) {
         TransformersSubRegistration domain = registry.getDomainRegistration(VERSION_1_4);
+
+        //TODO see Brian's comments in https://github.com/wildfly/wildfly/pull/5160
+        //Discard the domain level core-service=management resource and its children
+        domain.registerSubResource(CoreManagementResourceDefinition.PATH_ELEMENT, true);
+
         //TODO not sure if these should be handled here for 1.4.0 or if it is better in the tests?
         //Add the domain interface name. This is currently from a read attribute handler but in < 1.4.0 it existed in the model
         domain.registerSubResource(PathElement.pathElement(INTERFACE), AddNameFromAddressResourceTransformer.INSTANCE);
