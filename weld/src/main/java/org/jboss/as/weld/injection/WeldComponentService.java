@@ -30,6 +30,7 @@ import java.util.Set;
 
 import javax.enterprise.inject.spi.Bean;
 import javax.enterprise.inject.spi.InjectionTarget;
+import javax.servlet.AsyncListener;
 
 import org.jboss.as.ee.component.ComponentDescription;
 import org.jboss.as.ejb3.component.messagedriven.MessageDrivenComponentDescription;
@@ -42,12 +43,18 @@ import org.jboss.msc.service.StartContext;
 import org.jboss.msc.service.StartException;
 import org.jboss.msc.service.StopContext;
 import org.jboss.msc.value.InjectedValue;
+import org.jboss.weld.annotated.enhanced.EnhancedAnnotatedType;
 import org.jboss.weld.bean.ManagedBean;
 import org.jboss.weld.bean.SessionBean;
 import org.jboss.weld.ejb.spi.EjbDescriptor;
+import org.jboss.weld.injection.producer.BasicInjectionTarget;
 import org.jboss.weld.injection.producer.InjectionTargetService;
+import org.jboss.weld.injection.producer.NonProducibleInjectionTarget;
 import org.jboss.weld.literal.AnyLiteral;
+import org.jboss.weld.logging.UtilLogger;
 import org.jboss.weld.manager.BeanManagerImpl;
+import org.jboss.weld.resources.ClassTransformer;
+import org.jboss.weld.util.Beans;
 import org.wildfly.security.manager.WildFlySecurityManager;
 
 /**
@@ -101,7 +108,7 @@ public class WeldComponentService implements Service<WeldComponentService> {
             beanManager = weldContainer.getValue().getBeanManager(beanDeploymentArchiveId);
 
             for (final Class<?> interceptor : interceptorClasses) {
-                interceptorInjections.put(interceptor, new NonContextualComponentInjectionTarget(interceptor, null, beanManager));
+                interceptorInjections.put(interceptor, createInjectionTarget(interceptor, null, beanManager));
             }
 
             if (ejbName != null) {
@@ -126,7 +133,7 @@ public class WeldComponentService implements Service<WeldComponentService> {
                 }
             }
 
-            NonContextualComponentInjectionTarget injectionTarget = new NonContextualComponentInjectionTarget(componentClass, bean, beanManager);
+            BasicInjectionTarget injectionTarget = createInjectionTarget(componentClass, bean, beanManager);
             if (componentDescription instanceof MessageDrivenComponentDescription || componentDescription instanceof WebComponentDescription) {
                 // fire ProcessInjectionTarget for non-contextual components
                 this.injectionTarget = beanManager.fireProcessInjectionTarget(injectionTarget.getAnnotated(), injectionTarget);
@@ -138,6 +145,23 @@ public class WeldComponentService implements Service<WeldComponentService> {
         } finally {
             WildFlySecurityManager.setCurrentContextClassLoaderPrivileged(cl);
         }
+    }
+
+    private <T> BasicInjectionTarget<T> createInjectionTarget(Class<?> componentClass, Bean<T> bean, BeanManagerImpl beanManager) {
+        EnhancedAnnotatedType<T> type = beanManager.getServices().get(ClassTransformer.class).getEnhancedAnnotatedType((Class<T>) componentClass, beanManager.getId());
+        if (Beans.getBeanConstructor(type) == null) {
+            if (AsyncListener.class.isAssignableFrom(componentClass)) {
+                /*
+                 * AsyncListeners may be CDI-incompatible as long as the application never calls
+                 * javax.servletAsyncContext#createListener(Class) and only instantiates the listener
+                 * itself.
+                 */
+                return new NonProducibleInjectionTarget<>(type, bean, beanManager);
+            } else {
+                throw UtilLogger.LOG.unableToFindConstructor(type);
+            }
+        }
+        return new NonContextualComponentInjectionTarget<>(type, bean, beanManager);
     }
 
     private <T> ManagedBean<T> findManagedBeanForWSComponent(Class<T> definingClass) {

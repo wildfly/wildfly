@@ -23,7 +23,6 @@ import org.jboss.weld.injection.producer.BasicInjectionTarget;
 import org.jboss.weld.injection.producer.LifecycleCallbackInvoker;
 import org.jboss.weld.injection.producer.NoopLifecycleCallbackInvoker;
 import org.jboss.weld.manager.BeanManagerImpl;
-import org.jboss.weld.resources.ClassTransformer;
 
 /**
  * {@link javax.enterprise.inject.spi.InjectionTarget} implementation used for non-contextual EE components such as
@@ -38,11 +37,6 @@ import org.jboss.weld.resources.ClassTransformer;
  * @param <T>
  */
 public class NonContextualComponentInjectionTarget<T> extends BasicInjectionTarget<T> {
-
-    @SuppressWarnings("unchecked")
-    public NonContextualComponentInjectionTarget(Class<?> componentClass, Bean<T> bean, BeanManagerImpl beanManager) {
-        this(beanManager.getServices().get(ClassTransformer.class).getEnhancedAnnotatedType((Class<T>) componentClass, beanManager.getId()), bean, beanManager);
-    }
 
     public NonContextualComponentInjectionTarget(EnhancedAnnotatedType<T> type, Bean<T> bean, BeanManagerImpl beanManager) {
         super(type, bean, beanManager);
