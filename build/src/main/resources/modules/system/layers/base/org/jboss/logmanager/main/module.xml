@@ -28,6 +28,7 @@
     </resources>
 
     <dependencies>
+        <module name="javax.api"/>
         <module name="org.jboss.modules"/>
         <module name="org.jboss.as.logging" services="import"/>
     </dependencies>
