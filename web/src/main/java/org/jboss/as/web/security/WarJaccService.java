@@ -168,8 +168,8 @@ public class WarJaccService extends JaccService<WarMetaData> {
 
                 // !(excluded methods) [JACC 1.1]
                 String excludedString = "!" + getCommaSeparatedString(httpMethods);
-                WebResourcePermission wrp1 = new WebResourcePermission(info.pattern, excludedString);
-                WebUserDataPermission wudp1 = new WebUserDataPermission(info.pattern, excludedString);
+                WebResourcePermission wrp1 = new WebResourcePermission(qurl, excludedString);
+                WebUserDataPermission wudp1 = new WebUserDataPermission(qurl, excludedString);
                 pc.addToUncheckedPolicy(wrp1);
                 pc.addToUncheckedPolicy(wudp1);
             }
@@ -195,7 +195,7 @@ public class WarJaccService extends JaccService<WarMetaData> {
                 final int NUMBER_OF_HTTP_METHODS = 7;
                 // JACC 1.1: create !(httpmethods) in unchecked perms
                 if (httpMethods != null && httpMethods.length != NUMBER_OF_HTTP_METHODS) {
-                    WebResourcePermission wrpUnchecked = new WebResourcePermission(info.pattern, "!"
+                    WebResourcePermission wrpUnchecked = new WebResourcePermission(qurl, "!"
                             + getCommaSeparatedString(httpMethods));
                     pc.addToUncheckedPolicy(wrpUnchecked);
                 }
@@ -232,12 +232,12 @@ public class WarJaccService extends JaccService<WarMetaData> {
                 // If the transport is "NONE", then add an exclusive WebUserDataPermission
                 // with the url pattern and null
                 if ("NONE".equals(transport)) {
-                    WebUserDataPermission wudp1 = new WebUserDataPermission(info.pattern, null);
+                    WebUserDataPermission wudp1 = new WebUserDataPermission(qurl, null);
                     pc.addToUncheckedPolicy(wudp1);
                 } else {
                     // JACC 1.1: Transport is CONFIDENTIAL/INTEGRAL, add a !(http methods)
                     if (httpMethods != null) {
-                        WebUserDataPermission wudpNonNull = new WebUserDataPermission(info.pattern, "!"
+                        WebUserDataPermission wudpNonNull = new WebUserDataPermission(qurl, "!"
                                 + getCommaSeparatedString(httpMethods));
                         pc.addToUncheckedPolicy(wudpNonNull);
                     }
@@ -647,7 +647,6 @@ public class WarJaccService extends JaccService<WarMetaData> {
         /**
          * Get the url pattern with its qualifications
          *
-         * @see WebPermissionMapping#qualifyURLPatterns(org.jboss.metadata.WebMetaData)
          * @return the qualified form of the url pattern
          */
         public String getQualifiedPattern() {
