@@ -41,13 +41,13 @@ import org.wildfly.extension.mod_cluster.ModClusterExtension;
  * @author Radoslav Husar
  * @since 8.0
  */
-public class UndertowModClusterBoottimeHandler implements BoottimeHandlerProvider {
+public class UndertowBoottimeHandler implements BoottimeHandlerProvider {
 
     @Override
     public void performBoottime(OperationContext context, ModelNode operation, ModelNode model, ServiceVerificationHandler verificationHandler, List<ServiceController<?>> newControllers) throws OperationFailedException {
         context.addStep(new AbstractDeploymentChainStep() {
             protected void execute(DeploymentProcessorTarget processorTarget) {
-                processorTarget.addDeploymentProcessor(ModClusterExtension.SUBSYSTEM_NAME, Phase.POST_MODULE, Phase.POST_MODULE_UNDERTOW_MODCLUSTER, new ModClusterUndertowMetricDeploymentUnitProcessor());
+                processorTarget.addDeploymentProcessor(ModClusterExtension.SUBSYSTEM_NAME, Phase.POST_MODULE, Phase.POST_MODULE_UNDERTOW_MODCLUSTER, new MetricDeploymentProcessor());
             }
         }, OperationContext.Stage.RUNTIME);
     }
