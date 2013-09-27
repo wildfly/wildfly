@@ -140,7 +140,7 @@
         <version.org.codehaus.woodstox.woodstox-core-asl>4.2.0-redhat-2</version.org.codehaus.woodstox.woodstox-core-asl>
         <version.org.eclipse.jdt.core.compiler>3.7.2-redhat-1</version.org.eclipse.jdt.core.compiler>
         <version.org.fusesource.jansi>1.9.redhat-3</version.org.fusesource.jansi>
-        <version.org.hibernate>4.2.6.Final</version.org.hibernate>
+        <version.org.hibernate>4.2.6.Final-redhat-1</version.org.hibernate>
         <version.org.hibernate.commons.annotations>4.0.1.Final-redhat-2</version.org.hibernate.commons.annotations>
         <version.org.hibernate.javax.persistence.hibernate-jpa-2.0-api>1.0.1.Final-redhat-2</version.org.hibernate.javax.persistence.hibernate-jpa-2.0-api>
         <version.org.hibernate.validator>4.3.1.Final-redhat-1</version.org.hibernate.validator>
