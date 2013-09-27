@@ -23,25 +23,31 @@
 package org.wildfly.mod_cluster.undertow.metric;
 
 import io.undertow.server.ConduitWrapper;
+import io.undertow.server.HttpHandler;
 import io.undertow.server.HttpServerExchange;
-import io.undertow.servlet.api.ThreadSetupAction;
 import io.undertow.util.ConduitFactory;
 import org.xnio.conduits.StreamSourceConduit;
 
 /**
- * {@link ThreadSetupAction} implementation that counts number of bytes received via
- * {@link BytesReceivedStreamSourceConduit} wrapping.
+ * {@link HttpHandler} implementation that counts number of bytes received via {@link BytesReceivedStreamSourceConduit}
+ * wrapping.
  *
  * @author Radoslav Husar
  * @version Aug 2013
  * @since 8.0
  */
-public class BytesReceivedThreadSetupAction implements ThreadSetupAction {
+public class BytesReceivedHttpHandler implements HttpHandler {
+
+    private final HttpHandler wrappedHandler;
+
+    public BytesReceivedHttpHandler(final HttpHandler handler) {
+        this.wrappedHandler = handler;
+    }
 
     @Override
-    public Handle setup(HttpServerExchange exchange) {
+    public void handleRequest(HttpServerExchange exchange) throws Exception {
 
-        if (exchange == null) return null;
+        if (exchange == null) return;
 
         exchange.addRequestWrapper(new ConduitWrapper<StreamSourceConduit>() {
             @Override
@@ -50,6 +56,7 @@ public class BytesReceivedThreadSetupAction implements ThreadSetupAction {
             }
         });
 
-        return null;
+        wrappedHandler.handleRequest(exchange);
+
     }
 }
