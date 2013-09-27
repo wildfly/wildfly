@@ -33,6 +33,6 @@ public class SimpleMixedDomain_7_1_3_Final_TestCase extends SimpleMixedDomainTes
 
     @BeforeClass
     public static void beforeClass() {
-        MixedDomainTestSuite.getSupport(SimpleMixedDomain_7_1_3_Final_TestCase.class);
+        MixedDomainTestSuite.getSupport(MixedDomain_7_1_3_Final_TestSuite.class);
     }
 }

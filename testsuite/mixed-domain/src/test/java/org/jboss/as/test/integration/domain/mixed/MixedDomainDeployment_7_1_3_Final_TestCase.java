@@ -32,6 +32,11 @@ import org.junit.BeforeClass;
 public class MixedDomainDeployment_7_1_3_Final_TestCase extends MixedDomainDeploymentTest {
     @BeforeClass
     public static void beforeClass() {
-        MixedDomainTestSuite.getSupport(MixedDomainDeployment_7_1_3_Final_TestCase.class);
+        MixedDomainTestSuite.getSupport(MixedDomain_7_1_3_Final_TestSuite.class);
+    }
+
+    @Override
+    String getServerGroupName() {
+        return "7.1.3-server-group";
     }
 }

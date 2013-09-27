@@ -41,6 +41,7 @@ import org.jboss.as.controller.transform.ResourceTransformer;
 import org.jboss.as.controller.transform.TransformationTarget;
 import org.jboss.as.controller.transform.TransformerRegistry;
 import org.jboss.as.controller.transform.TransformersSubRegistration;
+import org.jboss.as.domain.management.CoreManagementResourceDefinition;
 
 /**
  * Global transformation rules for the domain, host and server-config model.
@@ -78,6 +79,9 @@ public class DomainTransformers {
 
     private static void initializeDomainRegistryEAP60(TransformerRegistry registry, ModelVersion modelVersion) {
         TransformersSubRegistration domain = registry.getDomainRegistration(modelVersion);
+
+        //Discard the domain level core-service=management resource and its children
+        domain.registerSubResource(CoreManagementResourceDefinition.PATH_ELEMENT, true);
 
         // Discard all operations to the newly introduced jsf extension
         domain.registerSubResource(JSF_EXTENSION, IGNORED_EXTENSIONS);

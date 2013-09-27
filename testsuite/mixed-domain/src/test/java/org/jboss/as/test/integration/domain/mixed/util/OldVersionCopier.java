@@ -141,9 +141,6 @@ public class OldVersionCopier {
     private void patchModule(File moduleMainDir, URL patchedJar) throws Exception {
         assertTrue(moduleMainDir.exists());
         assertNotNull(patchedJar);
-        if (patchedJar == null) {
-            throw new RuntimeException("Null url");
-        }
         String oldJarName = null;
         for (String fileName : moduleMainDir.list()) {
             if (fileName.endsWith(".jar")) {

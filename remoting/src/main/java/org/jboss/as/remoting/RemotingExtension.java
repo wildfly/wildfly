@@ -110,6 +110,7 @@ public class RemotingExtension implements Extension {
         if (context.isRegisterTransformers()) {
             registerTransformers_1_1(registration);
             registerTransformers_1_2(registration);
+            registerTransformers_1_3(registration);
         }
     }
 
@@ -118,6 +119,8 @@ public class RemotingExtension implements Extension {
         ResourceTransformationDescriptionBuilder builder = ResourceTransformationDescriptionBuilder.Factory.createSubsystemInstance();
         builder.getAttributeBuilder()
                 .addRejectCheck(RejectAttributeChecker.SIMPLE_EXPRESSIONS, RemotingSubsystemRootResource.ATTRIBUTES);
+
+        builder.rejectChildResource(HttpConnectorResource.PATH);
 
         ResourceTransformationDescriptionBuilder connector = builder.addChildResource(ConnectorResource.PATH);
         connector.addChildResource(PropertyResource.PATH).getAttributeBuilder().addRejectCheck(RejectAttributeChecker.SIMPLE_EXPRESSIONS, PropertyResource.VALUE);
