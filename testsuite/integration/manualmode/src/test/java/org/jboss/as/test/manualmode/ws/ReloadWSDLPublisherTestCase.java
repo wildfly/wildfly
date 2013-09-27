@@ -151,13 +151,13 @@ public class ReloadWSDLPublisherTestCase {
         ModelNode operation = new ModelNode();
         operation.get(OP_ADDR).setEmptyList();
         operation.get(OP).set(READ_ATTRIBUTE_OPERATION);
-        operation.get(NAME).set("running-mode");
+        operation.get(NAME).set("server-state");
         while (System.currentTimeMillis() - start < timeout) {
             ModelControllerClient liveClient = ModelControllerClient.Factory.create(
                     TestSuiteEnvironment.getServerAddress(), TestSuiteEnvironment.getServerPort());
             try {
                 ModelNode result = liveClient.execute(operation);
-                if ("NORMAL".equals(result.get(RESULT).asString())) {
+                if ("running".equals(result.get(RESULT).asString())) {
                     return;
                 }
             } catch (IOException e) {
