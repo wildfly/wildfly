@@ -20,14 +20,17 @@
  */
 package org.jboss.as.test.integration.ejb.security.runasprincipal;
 
+import javax.annotation.PostConstruct;
 import javax.annotation.security.RolesAllowed;
 import javax.annotation.security.RunAs;
 import javax.ejb.EJB;
 import javax.ejb.Remote;
 import javax.ejb.Singleton;
 import javax.ejb.Startup;
+import org.jboss.as.test.integration.ejb.security.runasprincipal.WhoAmI;
 import org.jboss.ejb3.annotation.RunAsPrincipal;
 import org.jboss.ejb3.annotation.SecurityDomain;
+import org.junit.Assert;
 
 /**
  *
@@ -40,11 +43,19 @@ import org.jboss.ejb3.annotation.SecurityDomain;
 @RunAsPrincipal("Helloween")
 @RunAs("Admin")
 @SecurityDomain("other")
-public class SingletonCallerBean implements WhoAmI {
+public class SingletonBean implements WhoAmI {
      @EJB(beanName = "StatelessBBean")
     private WhoAmI beanB;
 
+    private String principal;
+
+    @PostConstruct
+    public void init() {
+        principal = beanB.getCallerPrincipal();
+        Assert.assertEquals("Helloween", principal);
+    }
+
     public String getCallerPrincipal() {
-        return beanB.getCallerPrincipal();
+        return principal;
     }
 }
