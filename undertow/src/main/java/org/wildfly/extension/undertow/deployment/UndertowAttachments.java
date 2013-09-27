@@ -1,4 +1,4 @@
-/*
+/**
  * JBoss, Home of Professional Open Source.
  * Copyright 2013, Red Hat, Inc., and individual contributors
  * as indicated by the @author tags. See the copyright.txt file in the
@@ -23,18 +23,28 @@ package org.wildfly.extension.undertow.deployment;
 
 import java.util.List;
 
+import io.undertow.server.HandlerWrapper;
 import io.undertow.servlet.api.ThreadSetupAction;
 import org.jboss.as.server.deployment.AttachmentKey;
-import org.jboss.as.server.deployment.DeploymentUnitProcessor;
 
 /**
- * DUP interface that defines {@link org.jboss.as.server.deployment.AttachmentKey}s for {@link ThreadSetupAction}s.
+ * Class defining {@link AttachmentKey}s for Undertow-specific attachments.
  *
  * @author Radoslav Husar
+ * @version Oct 2013
  * @since 8.0
  */
-public interface UndertowThreadSetupActionDeploymentProcessor extends DeploymentUnitProcessor {
+public final class UndertowAttachments {
 
-    AttachmentKey<List<ThreadSetupAction>> UNDERTOW_THREAD_SETUP_ACTIONS = AttachmentKey.create(List.class);
+    public static final AttachmentKey<List<HandlerWrapper>> UNDERTOW_INITIAL_HANDLER_CHAIN_WRAPPERS = AttachmentKey.create(List.class);
+
+    public static final AttachmentKey<List<HandlerWrapper>> UNDERTOW_INNER_HANDLER_CHAIN_WRAPPERS = AttachmentKey.create(List.class);
+
+    public static final AttachmentKey<List<HandlerWrapper>> UNDERTOW_OUTER_HANDLER_CHAIN_WRAPPERS = AttachmentKey.create(List.class);
+
+    public static final AttachmentKey<List<ThreadSetupAction>> UNDERTOW_THREAD_SETUP_ACTIONS = AttachmentKey.create(List.class);
+
+    private UndertowAttachments() {
+    }
 
 }
