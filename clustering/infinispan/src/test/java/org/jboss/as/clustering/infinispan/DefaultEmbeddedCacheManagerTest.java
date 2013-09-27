@@ -262,9 +262,8 @@ public class DefaultEmbeddedCacheManagerTest {
 
         Set<String> result = this.subject.getCacheNames();
 
-        assertEquals(2, result.size());
+        assertEquals(1, result.size());
         assertTrue(result.contains("other"));
-        assertTrue(result.contains("default"));
     }
 
     @Test
