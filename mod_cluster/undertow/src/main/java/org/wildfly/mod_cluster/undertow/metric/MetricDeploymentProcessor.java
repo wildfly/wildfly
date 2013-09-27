@@ -31,8 +31,8 @@ import io.undertow.servlet.api.ThreadSetupAction;
 import org.jboss.as.server.deployment.DeploymentPhaseContext;
 import org.jboss.as.server.deployment.DeploymentUnit;
 import org.jboss.as.server.deployment.DeploymentUnitProcessingException;
-import org.wildfly.extension.undertow.deployment.UndertowHandlerWrapperDeploymentProcessor;
-import org.wildfly.extension.undertow.deployment.UndertowThreadSetupActionDeploymentProcessor;
+import org.jboss.as.server.deployment.DeploymentUnitProcessor;
+import org.wildfly.extension.undertow.deployment.UndertowAttachments;
 
 /**
  * {@link org.jboss.as.server.deployment.DeploymentUnitProcessor} that registers metrics on deployment if mod_cluster
@@ -48,17 +48,17 @@ import org.wildfly.extension.undertow.deployment.UndertowThreadSetupActionDeploy
  * @author Radoslav Husar
  * @since 8.0
  */
-class MetricDeploymentProcessor implements UndertowHandlerWrapperDeploymentProcessor {
+class MetricDeploymentProcessor implements DeploymentUnitProcessor {
 
     @Override
     public void deploy(DeploymentPhaseContext phaseContext) throws DeploymentUnitProcessingException {
         DeploymentUnit deploymentUnit = phaseContext.getDeploymentUnit();
 
-        List<HandlerWrapper> handlerAttachment = deploymentUnit.getAttachment(UndertowHandlerWrapperDeploymentProcessor.UNDERTOW_INITIAL_HANDLER_CHAIN_WRAPPERS);
+        List<HandlerWrapper> handlerAttachment = deploymentUnit.getAttachment(UndertowAttachments.UNDERTOW_INITIAL_HANDLER_CHAIN_WRAPPERS);
 
         if (handlerAttachment == null) {
             handlerAttachment = new LinkedList<HandlerWrapper>();
-            deploymentUnit.putAttachment(UndertowHandlerWrapperDeploymentProcessor.UNDERTOW_INITIAL_HANDLER_CHAIN_WRAPPERS, handlerAttachment);
+            deploymentUnit.putAttachment(UndertowAttachments.UNDERTOW_INITIAL_HANDLER_CHAIN_WRAPPERS, handlerAttachment);
         }
 
         // Request count wrapping
@@ -86,11 +86,11 @@ class MetricDeploymentProcessor implements UndertowHandlerWrapperDeploymentProce
         });
 
         // Busyness thread setup actions
-        List<ThreadSetupAction> setupAttachment = deploymentUnit.getAttachment(UndertowThreadSetupActionDeploymentProcessor.UNDERTOW_THREAD_SETUP_ACTIONS);
+        List<ThreadSetupAction> setupAttachment = deploymentUnit.getAttachment(UndertowAttachments.UNDERTOW_THREAD_SETUP_ACTIONS);
 
         if (setupAttachment == null) {
             setupAttachment = new LinkedList<ThreadSetupAction>();
-            deploymentUnit.putAttachment(UndertowThreadSetupActionDeploymentProcessor.UNDERTOW_THREAD_SETUP_ACTIONS, setupAttachment);
+            deploymentUnit.putAttachment(UndertowAttachments.UNDERTOW_THREAD_SETUP_ACTIONS, setupAttachment);
         }
         setupAttachment.add(new RunningRequestsThreadSetupAction());
     }
