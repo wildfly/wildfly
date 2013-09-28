@@ -31,7 +31,6 @@ import javax.xml.stream.XMLStreamException;
 
 import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.operations.common.Util;
-import org.jboss.as.ee.concurrent.service.ConcurrentServiceNames;
 import org.jboss.dmr.ModelNode;
 import org.jboss.staxmapper.XMLElementReader;
 import org.jboss.staxmapper.XMLExtendedStreamReader;
@@ -97,6 +96,10 @@ class EESubsystemParser20 implements XMLStreamConstants, XMLElementReader<List<M
                         }
                         case CONCURRENT: {
                             parseConcurrent(reader, list, subsystemPathAddress);
+                            break;
+                        }
+                        case DEFAULT_BINDINGS: {
+                            parseDefaultBindings(reader, list, subsystemPathAddress);
                             break;
                         }
                         default: {
@@ -231,28 +234,11 @@ class EESubsystemParser20 implements XMLStreamConstants, XMLElementReader<List<M
 
     static void parseConcurrent(XMLExtendedStreamReader reader, List<ModelNode> operations, PathAddress subsystemPathAddress) throws XMLStreamException {
         requireNoAttributes(reader);
-        final EnumSet<Element> required = EnumSet.of(Element.DEFAULT_CONTEXT_SERVICE,
-                Element.DEFAULT_MANAGED_THREAD_FACTORY,
-                Element.DEFAULT_MANAGED_EXECUTOR_SERVICE,
-                Element.DEFAULT_MANAGED_SCHEDULED_EXECUTOR_SERVICE);
         while (reader.hasNext() && reader.nextTag() != END_ELEMENT) {
             final Element element = Element.forName(reader.getLocalName());
-            required.remove(element);
             switch (element) {
-                case DEFAULT_CONTEXT_SERVICE: {
-                    parseDefaultContextService(reader, operations, subsystemPathAddress);
-                    break;
-                }
-                case DEFAULT_MANAGED_THREAD_FACTORY: {
-                    parseDefaultManagedThreadFactory(reader, operations, subsystemPathAddress);
-                    break;
-                }
-                case DEFAULT_MANAGED_EXECUTOR_SERVICE: {
-                    parseDefaultManagedExecutorService(reader, operations, subsystemPathAddress);
-                    break;
-                }
-                case DEFAULT_MANAGED_SCHEDULED_EXECUTOR_SERVICE: {
-                    parseDefaultManagedScheduledExecutorService(reader, operations, subsystemPathAddress);
+                case CONTEXT_SERVICES: {
+                    parseContextServices(reader, operations, subsystemPathAddress);
                     break;
                 }
                 case MANAGED_THREAD_FACTORIES: {
@@ -272,83 +258,47 @@ class EESubsystemParser20 implements XMLStreamConstants, XMLElementReader<List<M
                 }
             }
         }
-        if(!required.isEmpty()) {
-            throw missingRequired(reader, required);
+    }
+
+    static void parseContextServices(XMLExtendedStreamReader reader, List<ModelNode> operations, PathAddress subsystemPathAddress) throws XMLStreamException {
+        requireNoAttributes(reader);
+        boolean empty = true;
+        while (reader.hasNext() && reader.nextTag() != END_ELEMENT) {
+            switch (Element.forName(reader.getLocalName())) {
+                case CONTEXT_SERVICE: {
+                    empty = false;
+                    parseContextService(reader, operations, subsystemPathAddress);
+                    break;
+                }
+                default: {
+                    throw unexpectedElement(reader);
+                }
+            }
+        }
+        if(empty) {
+            throw missingRequired(reader,  EnumSet.of(Element.CONTEXT_SERVICE));
         }
     }
 
-    static void parseDefaultContextService(XMLExtendedStreamReader reader, List<ModelNode> operations, PathAddress subsystemPathAddress) throws XMLStreamException {
+    static void parseContextService(XMLExtendedStreamReader reader, List<ModelNode> operations, PathAddress subsystemPathAddress) throws XMLStreamException {
         final ModelNode addOperation = Util.createAddOperation();
         final int count = reader.getAttributeCount();
+        String name = null;
+        final EnumSet<Attribute> required = EnumSet.of(Attribute.NAME, Attribute.JNDI_NAME);
         for (int i = 0; i < count; i++) {
             requireNoNamespaceAttribute(reader, i);
             final String value = reader.getAttributeValue(i);
             final Attribute attribute = Attribute.forName(reader.getAttributeLocalName(i));
+            required.remove(attribute);
             switch (attribute) {
+                case NAME:
+                    name = value.trim();
+                    break;
+                case JNDI_NAME:
+                    ContextServiceResourceDefinition.JNDI_NAME_AD.parseAndSetParameter(value, addOperation, reader);
+                    break;
                 case USE_TRANSACTION_SETUP_PROVIDER:
-                    DefaultContextServiceResourceDefinition.USE_TRANSACTION_SETUP_PROVIDER_AD.parseAndSetParameter(value, addOperation, reader);
-                    break;
-                default:
-                    throw unexpectedAttribute(reader, i);
-            }
-        }
-        requireNoContent(reader);
-        final PathAddress address = subsystemPathAddress.append(EESubsystemModel.DEFAULT_CONTEXT_SERVICE_PATH);
-        addOperation.get(OP_ADDR).set(address.toModelNode());
-        operations.add(addOperation);
-    }
-
-    static void parseDefaultManagedThreadFactory(XMLExtendedStreamReader reader, List<ModelNode> operations, PathAddress subsystemPathAddress) throws XMLStreamException {
-        final ModelNode addOperation = Util.createAddOperation();
-        final int count = reader.getAttributeCount();
-        for (int i = 0; i < count; i++) {
-            requireNoNamespaceAttribute(reader, i);
-            final String value = reader.getAttributeValue(i);
-            final Attribute attribute = Attribute.forName(reader.getAttributeLocalName(i));
-            switch (attribute) {
-                case PRIORITY:
-                    DefaultManagedThreadFactoryResourceDefinition.PRIORITY_AD.parseAndSetParameter(value, addOperation, reader);
-                    break;
-                default:
-                    throw unexpectedAttribute(reader, i);
-            }
-        }
-        requireNoContent(reader);
-        final PathAddress address = subsystemPathAddress.append(EESubsystemModel.DEFAULT_MANAGED_THREAD_FACTORY_PATH);
-        addOperation.get(OP_ADDR).set(address.toModelNode());
-        operations.add(addOperation);
-    }
-
-    static void parseDefaultManagedExecutorService(XMLExtendedStreamReader reader, List<ModelNode> operations, PathAddress subsystemPathAddress) throws XMLStreamException {
-        final ModelNode addOperation = Util.createAddOperation();
-        final int count = reader.getAttributeCount();
-        final EnumSet<Attribute> required = EnumSet.of(Attribute.CORE_THREADS);
-        for (int i = 0; i < count; i++) {
-            requireNoNamespaceAttribute(reader, i);
-            final String value = reader.getAttributeValue(i);
-            final Attribute attribute = Attribute.forName(reader.getAttributeLocalName(i));
-            required.remove(attribute);
-            switch (attribute) {
-                case HUNG_TASK_THRESHOLD:
-                    DefaultManagedExecutorServiceResourceDefinition.HUNG_TASK_THRESHOLD_AD.parseAndSetParameter(value, addOperation, reader);
-                    break;
-                case LONG_RUNNING_TASKS:
-                    DefaultManagedExecutorServiceResourceDefinition.LONG_RUNNING_TASKS_AD.parseAndSetParameter(value, addOperation, reader);
-                    break;
-                case CORE_THREADS:
-                    DefaultManagedExecutorServiceResourceDefinition.CORE_THREADS_AD.parseAndSetParameter(value, addOperation, reader);
-                    break;
-                case MAX_THREADS:
-                    DefaultManagedExecutorServiceResourceDefinition.MAX_THREADS_AD.parseAndSetParameter(value, addOperation, reader);
-                    break;
-                case KEEPALIVE_TIME:
-                    DefaultManagedExecutorServiceResourceDefinition.KEEPALIVE_TIME_AD.parseAndSetParameter(value, addOperation, reader);
-                    break;
-                case QUEUE_LENGTH:
-                    DefaultManagedExecutorServiceResourceDefinition.QUEUE_LENGTH_AD.parseAndSetParameter(value, addOperation, reader);
-                    break;
-                case REJECT_POLICY:
-                    DefaultManagedExecutorServiceResourceDefinition.REJECT_POLICY_AD.parseAndSetParameter(value, addOperation, reader);
+                    ContextServiceResourceDefinition.USE_TRANSACTION_SETUP_PROVIDER_AD.parseAndSetParameter(value, addOperation, reader);
                     break;
                 default:
                     throw unexpectedAttribute(reader, i);
@@ -358,45 +308,7 @@ class EESubsystemParser20 implements XMLStreamConstants, XMLElementReader<List<M
             throw missingRequired(reader, required);
         }
         requireNoContent(reader);
-        final PathAddress address = subsystemPathAddress.append(EESubsystemModel.DEFAULT_MANAGED_EXECUTOR_SERVICE_PATH);
-        addOperation.get(OP_ADDR).set(address.toModelNode());
-        operations.add(addOperation);
-    }
-
-    static void parseDefaultManagedScheduledExecutorService(XMLExtendedStreamReader reader, List<ModelNode> operations, PathAddress subsystemPathAddress) throws XMLStreamException {
-        final ModelNode addOperation = Util.createAddOperation();
-        final int count = reader.getAttributeCount();
-        final EnumSet<Attribute> required = EnumSet.of(Attribute.CORE_THREADS);
-        for (int i = 0; i < count; i++) {
-            requireNoNamespaceAttribute(reader, i);
-            final String value = reader.getAttributeValue(i);
-            final Attribute attribute = Attribute.forName(reader.getAttributeLocalName(i));
-            required.remove(attribute);
-            switch (attribute) {
-                case HUNG_TASK_THRESHOLD:
-                    DefaultManagedScheduledExecutorServiceResourceDefinition.HUNG_TASK_THRESHOLD_AD.parseAndSetParameter(value, addOperation, reader);
-                    break;
-                case LONG_RUNNING_TASKS:
-                    DefaultManagedScheduledExecutorServiceResourceDefinition.LONG_RUNNING_TASKS_AD.parseAndSetParameter(value, addOperation, reader);
-                    break;
-                case CORE_THREADS:
-                    DefaultManagedScheduledExecutorServiceResourceDefinition.CORE_THREADS_AD.parseAndSetParameter(value, addOperation, reader);
-                    break;
-                case KEEPALIVE_TIME:
-                    DefaultManagedScheduledExecutorServiceResourceDefinition.KEEPALIVE_TIME_AD.parseAndSetParameter(value, addOperation, reader);
-                    break;
-                case REJECT_POLICY:
-                    DefaultManagedScheduledExecutorServiceResourceDefinition.REJECT_POLICY_AD.parseAndSetParameter(value, addOperation, reader);
-                    break;
-                default:
-                    throw unexpectedAttribute(reader, i);
-            }
-        }
-        if (!required.isEmpty()) {
-            throw missingRequired(reader, required);
-        }
-        requireNoContent(reader);
-        final PathAddress address = subsystemPathAddress.append(EESubsystemModel.DEFAULT_MANAGED_SCHEDULED_EXECUTOR_SERVICE_PATH);
+        final PathAddress address = subsystemPathAddress.append(EESubsystemModel.CONTEXT_SERVICE, name);
         addOperation.get(OP_ADDR).set(address.toModelNode());
         operations.add(addOperation);
     }
@@ -425,7 +337,7 @@ class EESubsystemParser20 implements XMLStreamConstants, XMLElementReader<List<M
         final ModelNode addOperation = Util.createAddOperation();
         final int count = reader.getAttributeCount();
         String name = null;
-        final EnumSet<Attribute> required = EnumSet.of(Attribute.NAME);
+        final EnumSet<Attribute> required = EnumSet.of(Attribute.NAME, Attribute.JNDI_NAME);
         for (int i = 0; i < count; i++) {
             requireNoNamespaceAttribute(reader, i);
             final String value = reader.getAttributeValue(i);
@@ -434,9 +346,9 @@ class EESubsystemParser20 implements XMLStreamConstants, XMLElementReader<List<M
             switch (attribute) {
                 case NAME:
                     name = value.trim();
-                    if(name.equals(ConcurrentServiceNames.DEFAULT_NAME)) {
-                        throw invalidAttributeValue(reader,i);
-                    }
+                    break;
+                case JNDI_NAME:
+                    ManagedThreadFactoryResourceDefinition.JNDI_NAME_AD.parseAndSetParameter(value, addOperation, reader);
                     break;
                 case CONTEXT_SERVICE:
                     ManagedThreadFactoryResourceDefinition.CONTEXT_SERVICE_AD.parseAndSetParameter(value, addOperation, reader);
@@ -481,7 +393,7 @@ class EESubsystemParser20 implements XMLStreamConstants, XMLElementReader<List<M
         final ModelNode addOperation = Util.createAddOperation();
         final int count = reader.getAttributeCount();
         String name = null;
-        final EnumSet<Attribute> required = EnumSet.of(Attribute.NAME, Attribute.CORE_THREADS);
+        final EnumSet<Attribute> required = EnumSet.of(Attribute.NAME, Attribute.JNDI_NAME, Attribute.CORE_THREADS);
         for (int i = 0; i < count; i++) {
             requireNoNamespaceAttribute(reader, i);
             final String value = reader.getAttributeValue(i);
@@ -490,9 +402,9 @@ class EESubsystemParser20 implements XMLStreamConstants, XMLElementReader<List<M
             switch (attribute) {
                 case NAME:
                     name = value.trim();
-                    if(name.equals(ConcurrentServiceNames.DEFAULT_NAME)) {
-                        throw invalidAttributeValue(reader,i);
-                    }
+                    break;
+                case JNDI_NAME:
+                    ManagedExecutorServiceResourceDefinition.JNDI_NAME_AD.parseAndSetParameter(value, addOperation, reader);
                     break;
                 case CONTEXT_SERVICE:
                     ManagedExecutorServiceResourceDefinition.CONTEXT_SERVICE_AD.parseAndSetParameter(value, addOperation, reader);
@@ -558,7 +470,7 @@ class EESubsystemParser20 implements XMLStreamConstants, XMLElementReader<List<M
         final ModelNode addOperation = Util.createAddOperation();
         final int count = reader.getAttributeCount();
         String name = null;
-        final EnumSet<Attribute> required = EnumSet.of(Attribute.NAME, Attribute.CORE_THREADS);
+        final EnumSet<Attribute> required = EnumSet.of(Attribute.NAME, Attribute.JNDI_NAME, Attribute.CORE_THREADS);
         for (int i = 0; i < count; i++) {
             requireNoNamespaceAttribute(reader, i);
             final String value = reader.getAttributeValue(i);
@@ -567,9 +479,9 @@ class EESubsystemParser20 implements XMLStreamConstants, XMLElementReader<List<M
             switch (attribute) {
                 case NAME:
                     name = value.trim();
-                    if(name.equals(ConcurrentServiceNames.DEFAULT_NAME)) {
-                        throw invalidAttributeValue(reader,i);
-                    }
+                    break;
+                case JNDI_NAME:
+                    ManagedScheduledExecutorServiceResourceDefinition.JNDI_NAME_AD.parseAndSetParameter(value, addOperation, reader);
                     break;
                 case CONTEXT_SERVICE:
                     ManagedScheduledExecutorServiceResourceDefinition.CONTEXT_SERVICE_AD.parseAndSetParameter(value, addOperation, reader);
@@ -601,6 +513,42 @@ class EESubsystemParser20 implements XMLStreamConstants, XMLElementReader<List<M
         }
         requireNoContent(reader);
         final PathAddress address = subsystemPathAddress.append(EESubsystemModel.MANAGED_SCHEDULED_EXECUTOR_SERVICE, name);
+        addOperation.get(OP_ADDR).set(address.toModelNode());
+        operations.add(addOperation);
+    }
+
+    static void parseDefaultBindings(XMLExtendedStreamReader reader, List<ModelNode> operations, PathAddress subsystemPathAddress) throws XMLStreamException {
+        final ModelNode addOperation = Util.createAddOperation();
+        final int count = reader.getAttributeCount();
+        for (int i = 0; i < count; i++) {
+            requireNoNamespaceAttribute(reader, i);
+            final String value = reader.getAttributeValue(i);
+            final Attribute attribute = Attribute.forName(reader.getAttributeLocalName(i));
+            switch (attribute) {
+                case CONTEXT_SERVICE:
+                    DefaultBindingsResourceDefinition.CONTEXT_SERVICE_AD.parseAndSetParameter(value, addOperation, reader);
+                    break;
+                case DATASOURCE:
+                    DefaultBindingsResourceDefinition.DATASOURCE_AD.parseAndSetParameter(value, addOperation, reader);
+                    break;
+                case JMS_CONNECTION_FACTORY:
+                    DefaultBindingsResourceDefinition.JMS_CONNECTION_FACTORY_AD.parseAndSetParameter(value, addOperation, reader);
+                    break;
+                case MANAGED_EXECUTOR_SERVICE:
+                    DefaultBindingsResourceDefinition.MANAGED_EXECUTOR_SERVICE_AD.parseAndSetParameter(value, addOperation, reader);
+                    break;
+                case MANAGED_SCHEDULED_EXECUTOR_SERVICE:
+                    DefaultBindingsResourceDefinition.MANAGED_SCHEDULED_EXECUTOR_SERVICE_AD.parseAndSetParameter(value, addOperation, reader);
+                    break;
+                case MANAGED_THREAD_FACTORY:
+                    DefaultBindingsResourceDefinition.MANAGED_THREAD_FACTORY_AD.parseAndSetParameter(value, addOperation, reader);
+                    break;
+                default:
+                    throw unexpectedAttribute(reader, i);
+            }
+        }
+        requireNoContent(reader);
+        final PathAddress address = subsystemPathAddress.append(EESubsystemModel.DEFAULT_BINDINGS_PATH);
         addOperation.get(OP_ADDR).set(address.toModelNode());
         operations.add(addOperation);
     }

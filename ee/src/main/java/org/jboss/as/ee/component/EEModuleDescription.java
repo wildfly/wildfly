@@ -73,6 +73,8 @@ public final class EEModuleDescription implements ResourceInjectionTarget {
 
     private final ConcurrentContext concurrentContext;
 
+    private final EEDefaultResourceJndiNames defaultResourceJndiNames;
+
     /**
      * Construct a new instance.
      *
@@ -87,6 +89,7 @@ public final class EEModuleDescription implements ResourceInjectionTarget {
         this.earApplicationName = earApplicationName;
         this.appClient = appClient;
         this.concurrentContext = new ConcurrentContext(getApplicationName(),getModuleName(),null);
+        this.defaultResourceJndiNames = new EEDefaultResourceJndiNames();
     }
 
     /**
@@ -307,5 +310,9 @@ public final class EEModuleDescription implements ResourceInjectionTarget {
 
     public ConcurrentContext getConcurrentContext() {
         return concurrentContext;
+    }
+
+    public EEDefaultResourceJndiNames getDefaultResourceJndiNames() {
+        return defaultResourceJndiNames;
     }
 }

@@ -25,6 +25,10 @@ package org.jboss.as.ee.component.deployers;
 import org.jboss.as.ee.beanvalidation.BeanValidationFactoryResourceReferenceProcessor;
 import org.jboss.as.ee.beanvalidation.BeanValidationResourceReferenceProcessor;
 import org.jboss.as.ee.component.Attachments;
+import org.jboss.as.ee.concurrent.deployers.injection.ContextServiceResourceReferenceProcessor;
+import org.jboss.as.ee.concurrent.deployers.injection.ManagedExecutorServiceResourceReferenceProcessor;
+import org.jboss.as.ee.concurrent.deployers.injection.ManagedScheduledExecutorServiceResourceReferenceProcessor;
+import org.jboss.as.ee.concurrent.deployers.injection.ManagedThreadFactoryResourceReferenceProcessor;
 import org.jboss.as.server.deployment.DeploymentPhaseContext;
 import org.jboss.as.server.deployment.DeploymentUnit;
 import org.jboss.as.server.deployment.DeploymentUnitProcessingException;
@@ -45,6 +49,10 @@ public class ResourceReferenceRegistrySetupProcessor implements DeploymentUnitPr
             final EEResourceReferenceProcessorRegistry registry = new EEResourceReferenceProcessorRegistry();
             registry.registerResourceReferenceProcessor(BeanValidationFactoryResourceReferenceProcessor.INSTANCE);
             registry.registerResourceReferenceProcessor(BeanValidationResourceReferenceProcessor.INSTANCE);
+            registry.registerResourceReferenceProcessor(ContextServiceResourceReferenceProcessor.INSTANCE);
+            registry.registerResourceReferenceProcessor(ManagedExecutorServiceResourceReferenceProcessor.INSTANCE);
+            registry.registerResourceReferenceProcessor(ManagedScheduledExecutorServiceResourceReferenceProcessor.INSTANCE);
+            registry.registerResourceReferenceProcessor(ManagedThreadFactoryResourceReferenceProcessor.INSTANCE);
             deploymentUnit.putAttachment(Attachments.RESOURCE_REFERENCE_PROCESSOR_REGISTRY, registry);
         } else{
             deploymentUnit.putAttachment(Attachments.RESOURCE_REFERENCE_PROCESSOR_REGISTRY, deploymentUnit.getParent().getAttachment(Attachments.RESOURCE_REFERENCE_PROCESSOR_REGISTRY));

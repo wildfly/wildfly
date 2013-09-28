@@ -48,6 +48,7 @@ import org.jboss.as.controller.transform.description.ResourceTransformationDescr
 import org.jboss.as.controller.transform.description.TransformationDescription;
 import org.jboss.as.controller.transform.description.TransformationDescriptionBuilder;
 import org.jboss.as.ee.EeMessages;
+import org.jboss.as.ee.component.deployers.DefaultBindingsConfigurationProcessor;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.ModelType;
 
@@ -87,13 +88,11 @@ public class EeExtension implements Extension {
         rootResource.registerOperationHandler(GenericSubsystemDescribeHandler.DEFINITION, GenericSubsystemDescribeHandler.INSTANCE);
 
         // register submodels
-        rootResource.registerSubModel(DefaultContextServiceResourceDefinition.INSTANCE);
-        rootResource.registerSubModel(DefaultManagedThreadFactoryResourceDefinition.INSTANCE);
-        rootResource.registerSubModel(DefaultManagedExecutorServiceResourceDefinition.INSTANCE);
-        rootResource.registerSubModel(DefaultManagedScheduledExecutorServiceResourceDefinition.INSTANCE);
+        rootResource.registerSubModel(ContextServiceResourceDefinition.INSTANCE);
         rootResource.registerSubModel(ManagedThreadFactoryResourceDefinition.INSTANCE);
         rootResource.registerSubModel(ManagedExecutorServiceResourceDefinition.INSTANCE);
         rootResource.registerSubModel(ManagedScheduledExecutorServiceResourceDefinition.INSTANCE);
+        rootResource.registerSubModel(new DefaultBindingsResourceDefinition(new DefaultBindingsConfigurationProcessor()));
 
         subsystem.registerXMLElementWriter(EESubsystemXmlPersister.INSTANCE);
 
@@ -125,13 +124,11 @@ public class EeExtension implements Extension {
                 .addRejectCheck(globalModulesRejecterConverter, GlobalModulesDefinition.INSTANCE)
                 .setValueConverter(globalModulesRejecterConverter, GlobalModulesDefinition.INSTANCE);
 
-        builder.rejectChildResource(EESubsystemModel.DEFAULT_CONTEXT_SERVICE_PATH);
-        builder.rejectChildResource(EESubsystemModel.DEFAULT_MANAGED_THREAD_FACTORY_PATH);
-        builder.rejectChildResource(EESubsystemModel.DEFAULT_MANAGED_EXECUTOR_SERVICE_PATH);
-        builder.rejectChildResource(EESubsystemModel.DEFAULT_MANAGED_SCHEDULED_EXECUTOR_SERVICE_PATH);
+        builder.rejectChildResource(PathElement.pathElement(EESubsystemModel.CONTEXT_SERVICE));
         builder.rejectChildResource(PathElement.pathElement(EESubsystemModel.MANAGED_THREAD_FACTORY));
         builder.rejectChildResource(PathElement.pathElement(EESubsystemModel.MANAGED_EXECUTOR_SERVICE));
         builder.rejectChildResource(PathElement.pathElement(EESubsystemModel.MANAGED_SCHEDULED_EXECUTOR_SERVICE));
+        builder.discardChildResource(EESubsystemModel.DEFAULT_BINDINGS_PATH);
 
         TransformationDescription.Tools.register(builder.build(), subsystem, ModelVersion.create(1, 0, 0));
     }

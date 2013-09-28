@@ -55,68 +55,52 @@ class EESubsystemXmlPersister implements XMLStreamConstants, XMLElementWriter<Su
         EeSubsystemRootResource.SPEC_DESCRIPTOR_PROPERTY_REPLACEMENT.marshallAsElement(eeSubSystem, writer);
         EeSubsystemRootResource.JBOSS_DESCRIPTOR_PROPERTY_REPLACEMENT.marshallAsElement(eeSubSystem, writer);
         writeConcurrentElement(writer,eeSubSystem);
+        writeDefaultBindingsElement(writer,eeSubSystem);
         writer.writeEndElement();
     }
 
     private void writeConcurrentElement(XMLExtendedStreamWriter writer, ModelNode eeSubSystem) throws XMLStreamException {
-        // default resources
-        if (eeSubSystem.hasDefined(EESubsystemModel.SERVICE) && eeSubSystem.get(EESubsystemModel.SERVICE).hasDefined(EESubsystemModel.DEFAULT_CONTEXT_SERVICE)) {
+        boolean started = false;
+        if (eeSubSystem.hasDefined(EESubsystemModel.CONTEXT_SERVICE)) {
             writer.writeStartElement(Element.CONCURRENT.getLocalName());
-            writeDefaultContextService(writer, eeSubSystem.get(EESubsystemModel.SERVICE, EESubsystemModel.DEFAULT_CONTEXT_SERVICE));
-        } else {
-            // EE Concurrent off
-            return;
+            started = true;
+            writeContextServices(writer, eeSubSystem.get(EESubsystemModel.CONTEXT_SERVICE));
         }
-        if (eeSubSystem.hasDefined(EESubsystemModel.SERVICE) && eeSubSystem.get(EESubsystemModel.SERVICE).hasDefined(EESubsystemModel.DEFAULT_MANAGED_THREAD_FACTORY)) {
-            writeDefaultManagedThreadFactory(writer, eeSubSystem.get(EESubsystemModel.SERVICE,EESubsystemModel.DEFAULT_MANAGED_THREAD_FACTORY));
-        }
-        if (eeSubSystem.hasDefined(EESubsystemModel.SERVICE) && eeSubSystem.get(EESubsystemModel.SERVICE).hasDefined(EESubsystemModel.DEFAULT_MANAGED_EXECUTOR_SERVICE)) {
-            writeDefaultManagedExecutorService(writer, eeSubSystem.get(EESubsystemModel.SERVICE, EESubsystemModel.DEFAULT_MANAGED_EXECUTOR_SERVICE));
-        }
-        if (eeSubSystem.hasDefined(EESubsystemModel.SERVICE) && eeSubSystem.get(EESubsystemModel.SERVICE).hasDefined(EESubsystemModel.DEFAULT_MANAGED_SCHEDULED_EXECUTOR_SERVICE)) {
-            writeDefaultManagedScheduledExecutorService(writer, eeSubSystem.get(EESubsystemModel.SERVICE, EESubsystemModel.DEFAULT_MANAGED_SCHEDULED_EXECUTOR_SERVICE));
-        }
-        // user resources
         if (eeSubSystem.hasDefined(EESubsystemModel.MANAGED_THREAD_FACTORY)) {
+            if(!started) {
+                writer.writeStartElement(Element.CONCURRENT.getLocalName());
+                started = true;
+            }
             writeManagedThreadFactories(writer, eeSubSystem.get(EESubsystemModel.MANAGED_THREAD_FACTORY));
         }
         if (eeSubSystem.hasDefined(EESubsystemModel.MANAGED_EXECUTOR_SERVICE)) {
+            if(!started) {
+                writer.writeStartElement(Element.CONCURRENT.getLocalName());
+                started = true;
+            }
             writeManagedExecutorServices(writer, eeSubSystem.get(EESubsystemModel.MANAGED_EXECUTOR_SERVICE));
         }
         if (eeSubSystem.hasDefined(EESubsystemModel.MANAGED_SCHEDULED_EXECUTOR_SERVICE)) {
+            if(!started) {
+                writer.writeStartElement(Element.CONCURRENT.getLocalName());
+                started = true;
+            }
             writeManagedScheduledExecutorServices(writer, eeSubSystem.get(EESubsystemModel.MANAGED_SCHEDULED_EXECUTOR_SERVICE));
         }
-        writer.writeEndElement();
-    }
-
-    private void writeDefaultContextService(final XMLExtendedStreamWriter writer, final ModelNode subModel) throws XMLStreamException {
-        writer.writeStartElement(Element.DEFAULT_CONTEXT_SERVICE.getLocalName());
-        for(SimpleAttributeDefinition ad : DefaultContextServiceResourceDefinition.ATTRIBUTES) {
-            ad.marshallAsAttribute(subModel, writer);
+        if(started) {
+            writer.writeEndElement();
         }
-        writer.writeEndElement();
     }
 
-    private void writeDefaultManagedThreadFactory(final XMLExtendedStreamWriter writer, final ModelNode subModel) throws XMLStreamException {
-        writer.writeStartElement(Element.DEFAULT_MANAGED_THREAD_FACTORY.getLocalName());
-        for(SimpleAttributeDefinition ad : DefaultManagedThreadFactoryResourceDefinition.ATTRIBUTES) {
-            ad.marshallAsAttribute(subModel, writer);
-        }
-        writer.writeEndElement();
-    }
-
-    private void writeDefaultManagedExecutorService(final XMLExtendedStreamWriter writer, final ModelNode subModel) throws XMLStreamException {
-        writer.writeStartElement(Element.DEFAULT_MANAGED_EXECUTOR_SERVICE.getLocalName());
-        for(SimpleAttributeDefinition ad : DefaultManagedExecutorServiceResourceDefinition.ATTRIBUTES) {
-            ad.marshallAsAttribute(subModel, writer);
-        }
-        writer.writeEndElement();
-    }
-
-    private void writeDefaultManagedScheduledExecutorService(final XMLExtendedStreamWriter writer, final ModelNode subModel) throws XMLStreamException {
-        writer.writeStartElement(Element.DEFAULT_MANAGED_SCHEDULED_EXECUTOR_SERVICE.getLocalName());
-        for(SimpleAttributeDefinition ad : DefaultManagedScheduledExecutorServiceResourceDefinition.ATTRIBUTES) {
-            ad.marshallAsAttribute(subModel, writer);
+    private void writeContextServices(final XMLExtendedStreamWriter writer, final ModelNode subModel) throws XMLStreamException {
+        writer.writeStartElement(Element.CONTEXT_SERVICES.getLocalName());
+        for (Property property : subModel.asPropertyList()) {
+            writer.writeStartElement(Element.CONTEXT_SERVICE.getLocalName());
+            writer.writeAttribute(Attribute.NAME.getLocalName(), property.getName());
+            for(SimpleAttributeDefinition ad : ContextServiceResourceDefinition.ATTRIBUTES) {
+                ad.marshallAsAttribute(property.getValue(), writer);
+            }
+            writer.writeEndElement();
         }
         writer.writeEndElement();
     }
@@ -158,6 +142,17 @@ class EESubsystemXmlPersister implements XMLStreamConstants, XMLElementWriter<Su
             writer.writeEndElement();
         }
         writer.writeEndElement();
+    }
+
+    private void writeDefaultBindingsElement(XMLExtendedStreamWriter writer, ModelNode eeSubSystem) throws XMLStreamException {
+        if (eeSubSystem.hasDefined(EESubsystemModel.SERVICE) && eeSubSystem.get(EESubsystemModel.SERVICE).hasDefined(EESubsystemModel.DEFAULT_BINDINGS)) {
+            ModelNode defaultBindingsNode = eeSubSystem.get(EESubsystemModel.SERVICE, EESubsystemModel.DEFAULT_BINDINGS);
+            writer.writeStartElement(Element.DEFAULT_BINDINGS.getLocalName());
+            for(SimpleAttributeDefinition ad : DefaultBindingsResourceDefinition.ATTRIBUTES) {
+                ad.marshallAsAttribute(defaultBindingsNode,writer);
+            }
+            writer.writeEndElement();
+        }
     }
 
 }

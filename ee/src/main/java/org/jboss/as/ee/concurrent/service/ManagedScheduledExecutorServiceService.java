@@ -45,8 +45,6 @@ import java.util.concurrent.TimeUnit;
  */
 public class ManagedScheduledExecutorServiceService extends EEConcurrentAbstractService<ManagedScheduledExecutorServiceAdapter> {
 
-    public static final Class<?> SERVICE_VALUE_TYPE = ManagedScheduledExecutorServiceAdapter.class;
-
     private volatile ManagedScheduledExecutorServiceImpl executorService;
 
     private final String name;
@@ -62,6 +60,7 @@ public class ManagedScheduledExecutorServiceService extends EEConcurrentAbstract
 
     /**
      * @param name
+     * @param jndiName
      * @param hungTaskThreshold
      * @param longRunningTasks
      * @param corePoolSize
@@ -71,8 +70,8 @@ public class ManagedScheduledExecutorServiceService extends EEConcurrentAbstract
      * @param rejectPolicy
      * @see ManagedScheduledExecutorServiceImpl#ManagedScheduledExecutorServiceImpl(String, org.glassfish.enterprise.concurrent.ManagedThreadFactoryImpl, long, boolean, int, long, java.util.concurrent.TimeUnit, long, org.glassfish.enterprise.concurrent.ContextServiceImpl, org.glassfish.enterprise.concurrent.AbstractManagedExecutorService.RejectPolicy)
      */
-    public ManagedScheduledExecutorServiceService(String name, long hungTaskThreshold, boolean longRunningTasks, int corePoolSize, long keepAliveTime, TimeUnit keepAliveTimeUnit, long threadLifeTime, AbstractManagedExecutorService.RejectPolicy rejectPolicy) {
-        super(ConcurrentServiceNames.getManagedScheduledExecutorServiceJndiName(name));
+    public ManagedScheduledExecutorServiceService(String name, String jndiName, long hungTaskThreshold, boolean longRunningTasks, int corePoolSize, long keepAliveTime, TimeUnit keepAliveTimeUnit, long threadLifeTime, AbstractManagedExecutorService.RejectPolicy rejectPolicy) {
+        super(jndiName);
         this.name = name;
         this.managedThreadFactoryInjectedValue = new InjectedValue<>();
         this.hungTaskThreshold = hungTaskThreshold;
@@ -90,7 +89,7 @@ public class ManagedScheduledExecutorServiceService extends EEConcurrentAbstract
         ManagedThreadFactoryImpl managedThreadFactory = managedThreadFactoryInjectedValue.getOptionalValue();
         if(managedThreadFactory == null) {
             // if not injected create one using normal thread priority
-            final String threadFactoryName = ConcurrentServiceNames.DEFAULT_NAME.equals(name) ? "EE-Default-ManagedScheduledExecutorService" : "EE-ManagedScheduledExecutorService-"+name;
+            final String threadFactoryName = "EE-ManagedScheduledExecutorService-"+name;
             managedThreadFactory = new ManagedThreadFactoryImpl(threadFactoryName, null, Thread.NORM_PRIORITY);
         }
         executorService = new ManagedScheduledExecutorServiceImpl(name, managedThreadFactory, hungTaskThreshold, longRunningTasks, corePoolSize, keepAliveTime, keepAliveTimeUnit, threadLifeTime, contextService.getOptionalValue(), rejectPolicy);

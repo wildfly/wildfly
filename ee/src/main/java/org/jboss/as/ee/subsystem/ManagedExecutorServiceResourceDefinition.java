@@ -43,6 +43,7 @@ import org.jboss.dmr.ModelType;
  */
 public class ManagedExecutorServiceResourceDefinition extends SimpleResourceDefinition {
 
+    public static final String JNDI_NAME = "jndi-name";
     public static final String CONTEXT_SERVICE = "context-service";
     public static final String THREAD_FACTORY = "thread-factory";
     public static final String HUNG_TASK_THRESHOLD = "hung-task-threshold";
@@ -52,6 +53,12 @@ public class ManagedExecutorServiceResourceDefinition extends SimpleResourceDefi
     public static final String KEEPALIVE_TIME = "keepalive-time";
     public static final String QUEUE_LENGTH = "queue-length";
     public static final String REJECT_POLICY = "reject-policy";
+
+    public static final SimpleAttributeDefinition JNDI_NAME_AD =
+            new SimpleAttributeDefinitionBuilder(JNDI_NAME, ModelType.STRING, false)
+                    .setAllowExpression(true)
+                    .setFlags(AttributeAccess.Flag.RESTART_RESOURCE_SERVICES)
+                    .build();
 
     public static final SimpleAttributeDefinition CONTEXT_SERVICE_AD =
             new SimpleAttributeDefinitionBuilder(CONTEXT_SERVICE, ModelType.STRING, true)
@@ -122,7 +129,7 @@ public class ManagedExecutorServiceResourceDefinition extends SimpleResourceDefi
                     .build();
 
 
-    static final SimpleAttributeDefinition[] ATTRIBUTES = {CONTEXT_SERVICE_AD, THREAD_FACTORY_AD, HUNG_TASK_THRESHOLD_AD, LONG_RUNNING_TASKS_AD, CORE_THREADS_AD, MAX_THREADS_AD, KEEPALIVE_TIME_AD, QUEUE_LENGTH_AD, REJECT_POLICY_AD};
+    static final SimpleAttributeDefinition[] ATTRIBUTES = {JNDI_NAME_AD, CONTEXT_SERVICE_AD, THREAD_FACTORY_AD, HUNG_TASK_THRESHOLD_AD, LONG_RUNNING_TASKS_AD, CORE_THREADS_AD, MAX_THREADS_AD, KEEPALIVE_TIME_AD, QUEUE_LENGTH_AD, REJECT_POLICY_AD};
 
     public static final ManagedExecutorServiceResourceDefinition INSTANCE = new ManagedExecutorServiceResourceDefinition();
 
