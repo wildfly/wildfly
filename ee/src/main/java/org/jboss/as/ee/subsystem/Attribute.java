@@ -39,7 +39,8 @@ enum Attribute {
     META_INF(GlobalModulesDefinition.META_INF),
 
     // from ee concurrent
-    USE_TRANSACTION_SETUP_PROVIDER(DefaultContextServiceResourceDefinition.USE_TRANSACTION_SETUP_PROVIDER),
+    JNDI_NAME(ContextServiceResourceDefinition.JNDI_NAME),
+    USE_TRANSACTION_SETUP_PROVIDER(ContextServiceResourceDefinition.USE_TRANSACTION_SETUP_PROVIDER),
     CONTEXT_SERVICE(ManagedThreadFactoryResourceDefinition.CONTEXT_SERVICE),
     PRIORITY(ManagedThreadFactoryResourceDefinition.PRIORITY),
     THREAD_FACTORY(ManagedExecutorServiceResourceDefinition.THREAD_FACTORY),
@@ -51,7 +52,13 @@ enum Attribute {
     QUEUE_LENGTH(ManagedExecutorServiceResourceDefinition.QUEUE_LENGTH),
     REJECT_POLICY(ManagedExecutorServiceResourceDefinition.REJECT_POLICY),
 
+    DATASOURCE(DefaultBindingsResourceDefinition.DATASOURCE),
+    JMS_CONNECTION_FACTORY(DefaultBindingsResourceDefinition.JMS_CONNECTION_FACTORY),
+    MANAGED_EXECUTOR_SERVICE(DefaultBindingsResourceDefinition.MANAGED_EXECUTOR_SERVICE),
+    MANAGED_SCHEDULED_EXECUTOR_SERVICE(DefaultBindingsResourceDefinition.MANAGED_SCHEDULED_EXECUTOR_SERVICE),
+    MANAGED_THREAD_FACTORY(DefaultBindingsResourceDefinition.MANAGED_THREAD_FACTORY)
     ;
+
     private final String name;
 
     Attribute(final String name) {

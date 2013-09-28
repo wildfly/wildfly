@@ -23,12 +23,11 @@ package org.jboss.as.ee.subsystem;
 
 import org.jboss.as.controller.AttributeDefinition;
 import org.jboss.as.controller.OperationStepHandler;
-import org.jboss.as.controller.ReloadRequiredRemoveStepHandler;
+import org.jboss.as.controller.PathElement;
 import org.jboss.as.controller.ReloadRequiredWriteAttributeHandler;
 import org.jboss.as.controller.SimpleAttributeDefinition;
 import org.jboss.as.controller.SimpleAttributeDefinitionBuilder;
 import org.jboss.as.controller.SimpleResourceDefinition;
-import org.jboss.as.controller.operations.validation.IntRangeValidator;
 import org.jboss.as.controller.registry.AttributeAccess;
 import org.jboss.as.controller.registry.ManagementResourceRegistration;
 import org.jboss.dmr.ModelNode;
@@ -37,24 +36,30 @@ import org.jboss.dmr.ModelType;
 /**
  * @author Eduardo Martins
  */
-public class DefaultManagedThreadFactoryResourceDefinition extends SimpleResourceDefinition {
+public class ContextServiceResourceDefinition extends SimpleResourceDefinition {
 
-    public static final String PRIORITY = "priority";
+    public static final String JNDI_NAME = "jndi-name";
+    public static final String USE_TRANSACTION_SETUP_PROVIDER = "use-transaction-setup-provider";
 
-    public static final SimpleAttributeDefinition PRIORITY_AD =
-            new SimpleAttributeDefinitionBuilder(PRIORITY, ModelType.INT, true)
+    public static final SimpleAttributeDefinition JNDI_NAME_AD =
+            new SimpleAttributeDefinitionBuilder(JNDI_NAME, ModelType.STRING, false)
                     .setAllowExpression(true)
-                    .setValidator(new IntRangeValidator(Thread.MIN_PRIORITY, Thread.MAX_PRIORITY, true, true))
-                    .setDefaultValue(new ModelNode(Thread.NORM_PRIORITY))
                     .setFlags(AttributeAccess.Flag.RESTART_RESOURCE_SERVICES)
                     .build();
 
-    static final SimpleAttributeDefinition[] ATTRIBUTES = {PRIORITY_AD};
+    public static final SimpleAttributeDefinition USE_TRANSACTION_SETUP_PROVIDER_AD =
+            new SimpleAttributeDefinitionBuilder(USE_TRANSACTION_SETUP_PROVIDER, ModelType.BOOLEAN, true)
+                    .setAllowExpression(true)
+                    .setDefaultValue(new ModelNode(false))
+                    .setFlags(AttributeAccess.Flag.RESTART_RESOURCE_SERVICES)
+                    .build();
 
-    public static final DefaultManagedThreadFactoryResourceDefinition INSTANCE = new DefaultManagedThreadFactoryResourceDefinition();
+    static final SimpleAttributeDefinition[] ATTRIBUTES = {JNDI_NAME_AD, USE_TRANSACTION_SETUP_PROVIDER_AD};
 
-    private DefaultManagedThreadFactoryResourceDefinition() {
-        super(EESubsystemModel.DEFAULT_MANAGED_THREAD_FACTORY_PATH, EeExtension.getResourceDescriptionResolver(EESubsystemModel.DEFAULT_MANAGED_THREAD_FACTORY), DefaultManagedThreadFactoryAdd.INSTANCE, ReloadRequiredRemoveStepHandler.INSTANCE);
+    public static final ContextServiceResourceDefinition INSTANCE = new ContextServiceResourceDefinition();
+
+    private ContextServiceResourceDefinition() {
+        super(PathElement.pathElement(EESubsystemModel.CONTEXT_SERVICE), EeExtension.getResourceDescriptionResolver(EESubsystemModel.CONTEXT_SERVICE), ContextServiceAdd.INSTANCE, ContextServiceRemove.INSTANCE);
     }
 
     @Override

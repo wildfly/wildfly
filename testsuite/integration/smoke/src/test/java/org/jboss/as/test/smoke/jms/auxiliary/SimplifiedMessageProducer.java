@@ -38,7 +38,7 @@ public class SimplifiedMessageProducer {
 
     private static final Logger logger = Logger.getLogger(SimplifiedMessageProducer.class);
 
-    @Resource(name="myCF", lookup="java:comp/DefaultJMSConnectionFactory")
+    @Resource
     private ConnectionFactory defaultConnectionFactory;
 
     @Resource(name = "java:/ConnectionFactory")

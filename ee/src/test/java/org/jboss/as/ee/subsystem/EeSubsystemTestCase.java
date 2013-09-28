@@ -148,10 +148,7 @@ public class EeSubsystemTestCase extends AbstractSubsystemBaseTest {
 
         ModelTestUtils.checkFailedTransformedBootOperations(mainServices, modelVersion, xmlOps, new FailedOperationTransformationConfig()
                 .addFailedAttribute(PathAddress.pathAddress(EeExtension.PATH_SUBSYSTEM), new GlobalModulesConfig())
-                .addFailedAttribute(PathAddress.pathAddress(EeExtension.PATH_SUBSYSTEM).append(EESubsystemModel.DEFAULT_CONTEXT_SERVICE_PATH), REJECTED_RESOURCE)
-                .addFailedAttribute(PathAddress.pathAddress(EeExtension.PATH_SUBSYSTEM).append(EESubsystemModel.DEFAULT_MANAGED_THREAD_FACTORY_PATH), REJECTED_RESOURCE)
-                .addFailedAttribute(PathAddress.pathAddress(EeExtension.PATH_SUBSYSTEM).append(EESubsystemModel.DEFAULT_MANAGED_EXECUTOR_SERVICE_PATH), REJECTED_RESOURCE)
-                .addFailedAttribute(PathAddress.pathAddress(EeExtension.PATH_SUBSYSTEM).append(EESubsystemModel.DEFAULT_MANAGED_SCHEDULED_EXECUTOR_SERVICE_PATH), REJECTED_RESOURCE)
+                .addFailedAttribute(PathAddress.pathAddress(EeExtension.PATH_SUBSYSTEM, PathElement.pathElement(EESubsystemModel.CONTEXT_SERVICE)), REJECTED_RESOURCE)
                 .addFailedAttribute(PathAddress.pathAddress(EeExtension.PATH_SUBSYSTEM, PathElement.pathElement(EESubsystemModel.MANAGED_THREAD_FACTORY)), REJECTED_RESOURCE)
                 .addFailedAttribute(PathAddress.pathAddress(EeExtension.PATH_SUBSYSTEM, PathElement.pathElement(EESubsystemModel.MANAGED_EXECUTOR_SERVICE)), REJECTED_RESOURCE)
                 .addFailedAttribute(PathAddress.pathAddress(EeExtension.PATH_SUBSYSTEM, PathElement.pathElement(EESubsystemModel.MANAGED_SCHEDULED_EXECUTOR_SERVICE)), REJECTED_RESOURCE)
