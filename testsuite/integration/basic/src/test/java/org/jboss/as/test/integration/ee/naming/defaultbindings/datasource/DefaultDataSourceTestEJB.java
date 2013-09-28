@@ -19,25 +19,34 @@
  * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
-package org.jboss.as.ee.concurrent.deployers;
 
-import org.jboss.as.ee.component.BindingConfiguration;
-import org.jboss.as.ee.component.ServiceInjectionSource;
-import org.jboss.as.ee.concurrent.service.ConcurrentServiceNames;
-import org.jboss.as.ee.concurrent.service.ContextServiceService;
+package org.jboss.as.test.integration.ee.naming.defaultbindings.datasource;
 
-import java.util.List;
+import javax.annotation.Resource;
+import javax.ejb.Stateless;
+import javax.naming.InitialContext;
+import javax.sql.DataSource;
 
 /**
- * The {@link org.jboss.as.server.deployment.DeploymentUnitProcessor} which sets up the default concurrent service for each EE component in the deployment unit.
- *
  * @author Eduardo Martins
  */
-public class EEConcurrentDefaultContextServiceProcessor extends EEConcurrentDefaultAbstractProcessor {
+@Stateless
+public class DefaultDataSourceTestEJB {
 
-    @Override
-    void addBindingsConfigurations(String bindingNamePrefix, List<BindingConfiguration> bindingConfigurations) {
-        bindingConfigurations.add(new BindingConfiguration(bindingNamePrefix + "DefaultContextService", new ServiceInjectionSource(ConcurrentServiceNames.DEFAULT_CONTEXT_SERVICE_SERVICE_NAME, ContextServiceService.SERVICE_VALUE_TYPE)));
+    @Resource
+    private DataSource injectedResource;
+
+    /**
+     *
+     * @throws Throwable
+     */
+    public void test() throws Throwable {
+        // check injected resource
+        if(injectedResource == null) {
+            throw new NullPointerException("injected resource");
+        }
+        // checked jndi lookup
+        new InitialContext().lookup("java:comp/DefaultDataSource");
     }
 
 }

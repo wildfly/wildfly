@@ -19,7 +19,7 @@
  * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
-package org.jboss.as.test.integration.weld.ee.concurrency.injection;
+package org.jboss.as.test.integration.ee.naming.defaultbindings.jmsconnectionfactory;
 
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.junit.Arquillian;
@@ -27,39 +27,34 @@ import org.jboss.shrinkwrap.api.Archive;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.asset.StringAsset;
 import org.jboss.shrinkwrap.api.spec.JavaArchive;
-import org.junit.Assert;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
 import javax.inject.Inject;
 
 /**
- * WFLY-1974
  *
- * Tests the EE Concurrency default resources are injected into CDI beans correctly
+ * Test for EE's default data source on a CDI Bean
  *
  * @author Eduardo Martins
  */
 @RunWith(Arquillian.class)
-public class EEConcurrencyInjectionIntoCdiBeanTestCase {
+public class DefaultJMSConnectionFactoryCDITestCase {
 
     @Deployment
     public static Archive<?> deploy() {
         JavaArchive jar = ShrinkWrap.create(JavaArchive.class);
-        jar.addPackage(EEConcurrencyInjectionIntoCdiBeanTestCase.class.getPackage());
+        jar.addClasses(DefaultJMSConnectionFactoryCDITestCase.class, DefaultJMSConnectionFactoryTestCDIBean.class);
         jar.addAsManifestResource(new StringAsset(""), "beans.xml");
         return jar;
     }
 
     @Inject
-    private Bean bean;
+    private DefaultJMSConnectionFactoryTestCDIBean defaultJMSConnectionFactoryTestCDIBean;
 
     @Test
-    public void testEEConcurrencyInjection() {
-        Assert.assertNotNull(bean.getContextService());
-        Assert.assertNotNull(bean.getManagedExecutorService());
-        Assert.assertNotNull(bean.getManagedScheduledExecutorService());
-        Assert.assertNotNull(bean.getManagedThreadFactory());
+    public void testCDI() throws Throwable {
+        defaultJMSConnectionFactoryTestCDIBean.test();
     }
 
 }

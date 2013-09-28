@@ -29,11 +29,11 @@ import org.jboss.as.arquillian.container.ManagementClient;
 import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.PathElement;
 import org.jboss.as.controller.operations.common.Util;
-import org.jboss.as.ee.concurrent.service.ConcurrentServiceNames;
 import org.jboss.as.ee.subsystem.EESubsystemModel;
 import org.jboss.as.ee.subsystem.EeExtension;
 import org.jboss.as.ee.subsystem.ManagedExecutorServiceResourceDefinition;
 import org.jboss.as.ee.subsystem.ManagedScheduledExecutorServiceResourceDefinition;
+import org.jboss.as.ee.subsystem.ManagedThreadFactoryResourceDefinition;
 import org.jboss.dmr.ModelNode;
 import org.jboss.shrinkwrap.api.Archive;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
@@ -77,12 +77,13 @@ public class EEConcurrentManagementTestCase {
         final PathAddress pathAddress = EE_SUBSYSTEM_PATH_ADDRESS.append(EESubsystemModel.MANAGED_THREAD_FACTORY, RESOURCE_NAME);
         // add
         final ModelNode addOperation = Util.createAddOperation(pathAddress);
+        final String jndiName = "java:jboss/ee/concurrency/threadfactory/"+RESOURCE_NAME;
+        addOperation.get(ManagedThreadFactoryResourceDefinition.JNDI_NAME).set(jndiName);
         final ModelNode addResult = managementClient.getControllerClient().execute(addOperation);
         Assert.assertFalse(addResult.get(FAILURE_DESCRIPTION).toString(), addResult.get(FAILURE_DESCRIPTION).isDefined());
-        final String lookupName = ConcurrentServiceNames.getManagedThreadFactoryJndiName(RESOURCE_NAME);
         try {
             // lookup
-            Assert.assertNotNull((ManagedThreadFactory) new InitialContext().lookup(lookupName));
+            Assert.assertNotNull((ManagedThreadFactory) new InitialContext().lookup(jndiName));
         } finally {
             // remove
             final ModelNode removeOperation = Util.createRemoveOperation(pathAddress);
@@ -91,7 +92,7 @@ public class EEConcurrentManagementTestCase {
             Assert.assertFalse(removeResult.get(FAILURE_DESCRIPTION).toString(), removeResult.get(FAILURE_DESCRIPTION)
                     .isDefined());
             try {
-                new InitialContext().lookup(lookupName);
+                new InitialContext().lookup(jndiName);
                 Assert.fail();
             } catch (NameNotFoundException e) {
                 // expected
@@ -104,14 +105,15 @@ public class EEConcurrentManagementTestCase {
         final PathAddress pathAddress = EE_SUBSYSTEM_PATH_ADDRESS.append(EESubsystemModel.MANAGED_EXECUTOR_SERVICE, RESOURCE_NAME);
         // add
         final ModelNode addOperation = Util.createAddOperation(pathAddress);
+        final String jndiName = "java:jboss/ee/concurrency/executor/"+RESOURCE_NAME;
+        addOperation.get(ManagedExecutorServiceResourceDefinition.JNDI_NAME).set(jndiName);
         addOperation.get(ManagedExecutorServiceResourceDefinition.CORE_THREADS).set(2);
         final ModelNode addResult = managementClient.getControllerClient().execute(addOperation);
         Assert.assertFalse(addResult.get(FAILURE_DESCRIPTION).toString(), addResult.get(FAILURE_DESCRIPTION).isDefined());
-        final String lookupName = ConcurrentServiceNames.getManagedExecutorServiceJndiName(RESOURCE_NAME);
 
         try {
             // lookup
-            Assert.assertNotNull((ManagedExecutorService) new InitialContext().lookup(lookupName));
+            Assert.assertNotNull((ManagedExecutorService) new InitialContext().lookup(jndiName));
         } finally {
             // remove
             final ModelNode removeOperation = Util.createRemoveOperation(pathAddress);
@@ -120,7 +122,7 @@ public class EEConcurrentManagementTestCase {
             Assert.assertFalse(removeResult.get(FAILURE_DESCRIPTION).toString(), removeResult.get(FAILURE_DESCRIPTION)
                     .isDefined());
             try {
-                new InitialContext().lookup(lookupName);
+                new InitialContext().lookup(jndiName);
                 Assert.fail();
             } catch (NameNotFoundException e) {
                 // expected
@@ -133,13 +135,14 @@ public class EEConcurrentManagementTestCase {
         final PathAddress pathAddress = EE_SUBSYSTEM_PATH_ADDRESS.append(EESubsystemModel.MANAGED_SCHEDULED_EXECUTOR_SERVICE, RESOURCE_NAME);
         // add
         final ModelNode addOperation = Util.createAddOperation(pathAddress);
+        final String jndiName = "java:jboss/ee/concurrency/scheduledexecutor/"+RESOURCE_NAME;
+        addOperation.get(ManagedScheduledExecutorServiceResourceDefinition.JNDI_NAME).set(jndiName);
         addOperation.get(ManagedScheduledExecutorServiceResourceDefinition.CORE_THREADS).set(2);
         final ModelNode addResult = managementClient.getControllerClient().execute(addOperation);
         Assert.assertFalse(addResult.get(FAILURE_DESCRIPTION).toString(), addResult.get(FAILURE_DESCRIPTION).isDefined());
-        final String lookupName = ConcurrentServiceNames.getManagedScheduledExecutorServiceJndiName(RESOURCE_NAME);
         try {
             // lookup
-            Assert.assertNotNull((ManagedScheduledExecutorService) new InitialContext().lookup(lookupName));
+            Assert.assertNotNull((ManagedScheduledExecutorService) new InitialContext().lookup(jndiName));
         } finally {
             // remove
             final ModelNode removeOperation = Util.createRemoveOperation(pathAddress);
@@ -148,7 +151,7 @@ public class EEConcurrentManagementTestCase {
             Assert.assertFalse(removeResult.get(FAILURE_DESCRIPTION).toString(), removeResult.get(FAILURE_DESCRIPTION)
                     .isDefined());
             try {
-                new InitialContext().lookup(lookupName);
+                new InitialContext().lookup(jndiName);
                 Assert.fail();
             } catch (NameNotFoundException e) {
                 // expected
