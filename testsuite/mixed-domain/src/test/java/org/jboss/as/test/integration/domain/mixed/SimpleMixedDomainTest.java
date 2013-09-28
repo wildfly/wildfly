@@ -21,6 +21,7 @@
 */
 package org.jboss.as.test.integration.domain.mixed;
 
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.CORE_SERVICE;
 import static org.junit.Assert.assertEquals;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.EXTENSION;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.HOST;
@@ -154,6 +155,7 @@ public abstract class SimpleMixedDomainTest  {
         model.remove(SERVER_GROUP);
         model.remove(SOCKET_BINDING_GROUP);
         model.remove(SYSTEM_PROPERTY);
+        model.remove(CORE_SERVICE);
 
         return model;
     }

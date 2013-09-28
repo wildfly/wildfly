@@ -88,7 +88,7 @@ public interface TransformersSubRegistration {
      * @param element the path element
      * @param pathAddressTransformer the path transformation
      * @param resourceTransformer the resource transformer
-     * @param operationTransformert the default operation transformer
+     * @param operationTransformer the default operation transformer
      * @return the transformers sub registration
      */
     TransformersSubRegistration registerSubResource(PathElement element, PathAddressTransformer pathAddressTransformer, ResourceTransformer resourceTransformer, OperationTransformer operationTransformer);
@@ -99,7 +99,7 @@ public interface TransformersSubRegistration {
      * @param element the path element
      * @param pathAddressTransformer the path transformation
      * @param resourceTransformer the resource transformer
-     * @param operationTransformert the default operation transformer
+     * @param operationTransformer the default operation transformer
      * @param inherited {@code true} to make the default operation transformer inherited
      * @return the transformers sub registration
      */
