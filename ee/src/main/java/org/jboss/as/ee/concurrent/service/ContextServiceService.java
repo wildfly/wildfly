@@ -38,8 +38,6 @@ import org.jboss.msc.value.InjectedValue;
  */
 public class ContextServiceService extends EEConcurrentAbstractService<ContextServiceImpl> {
 
-    public static final Class<?> SERVICE_VALUE_TYPE = ContextServiceImpl.class;
-
     private final String name;
     private final InjectedValue<ContextSetupProvider> contextSetupProvider;
     private final InjectedValue<TransactionSetupProvider> transactionSetupProvider;
@@ -48,9 +46,10 @@ public class ContextServiceService extends EEConcurrentAbstractService<ContextSe
 
     /**
      * @param name
+     * @param jndiName
      */
-    public ContextServiceService(String name) {
-        super(ConcurrentServiceNames.getContextServiceJndiName(name));
+    public ContextServiceService(String name, String jndiName) {
+        super(jndiName);
         this.name = name;
         this.contextSetupProvider = new InjectedValue<>();
         this.transactionSetupProvider = new InjectedValue<>();

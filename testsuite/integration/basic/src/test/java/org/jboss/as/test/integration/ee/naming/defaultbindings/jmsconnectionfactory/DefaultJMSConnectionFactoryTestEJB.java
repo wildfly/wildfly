@@ -19,25 +19,34 @@
  * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
-package org.jboss.as.ee.concurrent.deployers;
 
-import org.jboss.as.ee.component.BindingConfiguration;
-import org.jboss.as.ee.component.ServiceInjectionSource;
-import org.jboss.as.ee.concurrent.service.ConcurrentServiceNames;
-import org.jboss.as.ee.concurrent.service.ManagedThreadFactoryService;
+package org.jboss.as.test.integration.ee.naming.defaultbindings.jmsconnectionfactory;
 
-import java.util.List;
+import javax.annotation.Resource;
+import javax.ejb.Stateless;
+import javax.jms.ConnectionFactory;
+import javax.naming.InitialContext;
 
 /**
- * The {@link org.jboss.as.server.deployment.DeploymentUnitProcessor} which sets up the default concurrent managed thread factory for each EE component in the deployment unit.
- *
  * @author Eduardo Martins
  */
-public class EEConcurrentDefaultManagedThreadFactoryProcessor extends EEConcurrentDefaultAbstractProcessor {
+@Stateless
+public class DefaultJMSConnectionFactoryTestEJB {
 
-    @Override
-    void addBindingsConfigurations(String bindingNamePrefix, List<BindingConfiguration> bindingConfigurations) {
-        bindingConfigurations.add(new BindingConfiguration(bindingNamePrefix + "DefaultManagedThreadFactory", new ServiceInjectionSource(ConcurrentServiceNames.DEFAULT_MANAGED_THREAD_FACTORY_SERVICE_NAME, ManagedThreadFactoryService.SERVICE_VALUE_TYPE)));
+    @Resource
+    private ConnectionFactory injectedResource;
+
+    /**
+     *
+     * @throws Throwable
+     */
+    public void test() throws Throwable {
+        // check injected resource
+        if(injectedResource == null) {
+            throw new NullPointerException("injected resource");
+        }
+        // checked jndi lookup
+        new InitialContext().lookup("java:comp/DefaultJMSConnectionFactory");
     }
 
 }
