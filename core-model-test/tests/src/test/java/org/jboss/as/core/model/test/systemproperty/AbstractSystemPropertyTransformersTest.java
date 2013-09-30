@@ -42,8 +42,8 @@ import org.jboss.as.core.model.test.util.StandardServerGroupInitializers;
 import org.jboss.as.core.model.test.util.TransformersTestParameters;
 import org.jboss.as.model.test.FailedOperationTransformationConfig;
 import org.jboss.as.model.test.ModelFixer;
-import org.jboss.as.model.test.ModelTestUtils;
 import org.jboss.as.model.test.ModelTestControllerVersion;
+import org.jboss.as.model.test.ModelTestUtils;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.Property;
 import org.junit.Assert;
@@ -179,16 +179,18 @@ public abstract class AbstractSystemPropertyTransformersTest extends AbstractCor
     }
 
     private ModelNode getExpectedUndefined(ModelVersion modelVersion){
-        if (modelVersion.equals(ModelVersion.create(1, 4, 0))) {
+        if (modelVersion_1_4_0_OrGreater()) {
             return new ModelNode();
-        } else if (modelVersion.equals(ModelVersion.create(1, 2, 0)) || modelVersion.equals(ModelVersion.create(1, 3, 0))) {
-            return new ModelNode(true);
         } else {
-            throw new IllegalStateException("Not known model version " + modelVersion);
+            return new ModelNode(true);
         }
     }
 
     private boolean allowExpressions() {
-        return modelVersion.getMajor() >= 1 && modelVersion.getMinor() >= 4;
+        return modelVersion_1_4_0_OrGreater();
+    }
+
+    private boolean modelVersion_1_4_0_OrGreater() {
+        return ModelVersion.compare(ModelVersion.create(1, 4, 0), modelVersion) >= 0;
     }
 }

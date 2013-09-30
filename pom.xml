@@ -1021,6 +1021,12 @@
 
             <dependency>
                 <groupId>org.wildfly</groupId>
+                <artifactId>wildfly-core-model-test-controller-7.2.0</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+
+            <dependency>
+                <groupId>org.wildfly</groupId>
                 <artifactId>wildfly-ee</artifactId>
                 <version>${project.version}</version>
             </dependency>
