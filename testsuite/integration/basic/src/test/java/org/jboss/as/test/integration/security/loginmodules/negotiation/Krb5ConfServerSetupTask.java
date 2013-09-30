@@ -21,11 +21,12 @@
  */
 package org.jboss.as.test.integration.security.loginmodules.negotiation;
 
+import java.io.ByteArrayOutputStream;
+import java.io.DataOutputStream;
 import java.io.File;
+import java.io.FileOutputStream;
 import java.io.IOException;
-import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 
 import org.apache.commons.io.FileUtils;
@@ -33,7 +34,6 @@ import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang.text.StrSubstitutor;
 import org.apache.directory.server.kerberos.shared.crypto.encryption.KerberosKeyFactory;
 import org.apache.directory.server.kerberos.shared.keytab.Keytab;
-import org.apache.directory.server.kerberos.shared.keytab.KeytabEntry;
 import org.apache.directory.shared.kerberos.KerberosTime;
 import org.apache.directory.shared.kerberos.codec.types.EncryptionType;
 import org.apache.directory.shared.kerberos.components.EncryptionKey;
@@ -143,18 +143,54 @@ public class Krb5ConfServerSetupTask implements ServerSetupTask {
     private void createKeytab(final String principalName, final String passPhrase, final File keytabFile) throws IOException {
         LOGGER.info("Principal name: " + principalName);
         final KerberosTime timeStamp = new KerberosTime();
-        final long principalType = 1L; //KRB5_NT_PRINCIPAL
 
-        final Keytab keytab = Keytab.getInstance();
-        final List<KeytabEntry> entries = new ArrayList<KeytabEntry>();
-        for (Map.Entry<EncryptionType, EncryptionKey> keyEntry : KerberosKeyFactory.getKerberosKeys(principalName, passPhrase)
-                .entrySet()) {
-            final EncryptionKey key = keyEntry.getValue();
-            final byte keyVersion = (byte) key.getKeyVersion();
-            entries.add(new KeytabEntry(principalName, principalType, timeStamp, keyVersion, key));
+        DataOutputStream dos = null;
+        try {
+            dos = new DataOutputStream(new FileOutputStream(keytabFile));
+            dos.write(Keytab.VERSION_52);
+
+            for (Map.Entry<EncryptionType, EncryptionKey> keyEntry : KerberosKeyFactory.getKerberosKeys(principalName,
+                    passPhrase).entrySet()) {
+                final EncryptionKey key = keyEntry.getValue();
+                final byte keyVersion = (byte) key.getKeyVersion();
+                // entries.add(new KeytabEntry(principalName, principalType, timeStamp, keyVersion, key));
+
+                final ByteArrayOutputStream baos = new ByteArrayOutputStream();
+                DataOutputStream entryDos = new DataOutputStream(baos);
+                // handle principal name
+                String[] spnSplit = principalName.split("@");
+                String nameComponent = spnSplit[0];
+                String realm = spnSplit[1];
+
+                String[] nameComponents = nameComponent.split("/");
+                try {
+                    // increment for v1
+                    entryDos.writeShort((short) nameComponents.length);
+                    entryDos.writeUTF(realm);
+                    // write components
+                    for (String component : nameComponents) {
+                        entryDos.writeUTF(component);
+                    }
+
+                    entryDos.writeInt(1); // principal type: KRB5_NT_PRINCIPAL
+                    entryDos.writeInt((int) (timeStamp.getTime() / 1000));
+                    entryDos.write(keyVersion);
+
+                    entryDos.writeShort((short) key.getKeyType().getValue());
+
+                    byte[] data = key.getKeyValue();
+                    entryDos.writeShort((short) data.length);
+                    entryDos.write(data);
+                } finally {
+                    IOUtils.closeQuietly(entryDos);
+                }
+                final byte[] entryBytes = baos.toByteArray();
+                dos.writeInt(entryBytes.length);
+                dos.write(entryBytes);
+            }
+            // } catch (IOException ioe) {
+        } finally {
+            IOUtils.closeQuietly(dos);
         }
-        keytab.setEntries(entries);
-        keytab.write(keytabFile);
     }
-
 }
