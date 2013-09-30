@@ -24,7 +24,6 @@ package org.jboss.as.ejb3.component.entity;
 import java.lang.reflect.Method;
 import java.util.Collections;
 import java.util.Map;
-import java.util.concurrent.atomic.AtomicReference;
 
 import javax.ejb.EJBHome;
 import javax.ejb.EJBLocalHome;
@@ -32,7 +31,6 @@ import javax.ejb.EJBLocalObject;
 import javax.ejb.EJBObject;
 
 import org.jboss.as.ee.component.BasicComponentInstance;
-import org.jboss.as.ee.component.Component;
 import org.jboss.as.ejb3.component.EJBComponent;
 import org.jboss.as.ejb3.component.allowedmethods.AllowedMethodsInformation;
 import org.jboss.as.ejb3.component.entity.entitycache.ReadyEntityCache;
@@ -42,11 +40,9 @@ import org.jboss.as.ejb3.component.pool.PoolConfig;
 import org.jboss.as.ejb3.component.pool.PooledComponent;
 import org.jboss.as.ejb3.pool.Pool;
 import org.jboss.as.ejb3.pool.StatelessObjectFactory;
-import org.jboss.as.naming.ManagedReference;
 import org.jboss.invocation.Interceptor;
 import org.jboss.invocation.InterceptorFactory;
 import org.jboss.invocation.InterceptorFactoryContext;
-import org.jboss.invocation.SimpleInterceptorFactoryContext;
 
 import static org.jboss.as.ejb3.EjbLogger.ROOT_LOGGER;
 import static org.jboss.as.ejb3.EjbMessages.MESSAGES;
@@ -79,6 +75,11 @@ public class EntityBeanComponent extends EJBComponent implements PooledComponent
     private final InterceptorFactory ejbActivate;
     private final InterceptorFactory ejbPassivate;
     private final InterceptorFactory unsetEntityContext;
+    private Interceptor ejbStoreInterceptor;
+    private Interceptor ejbLoadInterceptor;
+    private Interceptor ejbActivateInterceptor;
+    private Interceptor ejbPassivateInterceptor;
+    private Interceptor unsetEntityContextInterceptor;
 
     protected EntityBeanComponent(final EntityBeanComponentCreateService ejbComponentCreateService) {
         super(ejbComponentCreateService);
@@ -127,16 +128,8 @@ public class EntityBeanComponent extends EJBComponent implements PooledComponent
     }
 
     @Override
-    protected BasicComponentInstance instantiateComponentInstance(final AtomicReference<ManagedReference> instanceReference, final Interceptor preDestroyInterceptor, final Map<Method, Interceptor> methodInterceptors, final InterceptorFactoryContext interceptorContext) {
-        return new EntityBeanComponentInstance(this, instanceReference, preDestroyInterceptor, methodInterceptors);
-    }
-
-    protected Interceptor createInterceptor(final InterceptorFactory factory) {
-        if (factory == null)
-            return null;
-        final InterceptorFactoryContext context = new SimpleInterceptorFactoryContext();
-        context.getContextData().put(Component.class, this);
-        return factory.create(context);
+    protected BasicComponentInstance instantiateComponentInstance(final Interceptor preDestroyInterceptor, final Map<Method, Interceptor> methodInterceptors, Map<Object, Object> context) {
+        return new EntityBeanComponentInstance(this, preDestroyInterceptor, methodInterceptors);
     }
 
     public EntityBeanComponentInstance acquireUnAssociatedInstance() {
@@ -145,6 +138,16 @@ public class EntityBeanComponent extends EJBComponent implements PooledComponent
         } else {
             return factory.create();
         }
+    }
+
+    @Override
+    protected void createInterceptors(InterceptorFactoryContext context) {
+        super.createInterceptors(context);
+        ejbStoreInterceptor = ejbStore.create(context);
+        ejbLoadInterceptor = ejbLoad.create(context);
+        ejbActivateInterceptor = ejbActivate.create(context);
+        ejbPassivateInterceptor = ejbPassivate.create(context);
+        unsetEntityContextInterceptor = unsetEntityContext.create(context);
     }
 
     public void releaseEntityBeanInstance(final EntityBeanComponentInstance instance) {
@@ -214,32 +217,32 @@ public class EntityBeanComponent extends EJBComponent implements PooledComponent
         return ejbActivateMethod;
     }
 
-    public InterceptorFactory getEjbStore() {
-        return ejbStore;
+    public Interceptor getEjbStore() {
+        return ejbStoreInterceptor;
     }
 
-    public InterceptorFactory getEjbLoad() {
-        return ejbLoad;
+    public Interceptor getEjbLoad() {
+        return ejbLoadInterceptor;
     }
 
-    public InterceptorFactory getEjbActivate() {
-        return ejbActivate;
+    public Interceptor getEjbActivate() {
+        return ejbActivateInterceptor;
     }
 
     public Method getEjbPassivateMethod() {
         return ejbPassivateMethod;
     }
 
-    public InterceptorFactory getEjbPassivate() {
-        return ejbPassivate;
+    public Interceptor getEjbPassivate() {
+        return ejbPassivateInterceptor;
     }
 
     public Method getUnsetEntityContextMethod() {
         return unsetEntityContextMethod;
     }
 
-    public InterceptorFactory getUnsetEntityContext() {
-        return unsetEntityContext;
+    public Interceptor getUnsetEntityContext() {
+        return unsetEntityContextInterceptor;
     }
 
     public Pool<EntityBeanComponentInstance> getPool() {

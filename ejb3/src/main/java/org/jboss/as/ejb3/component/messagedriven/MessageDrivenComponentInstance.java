@@ -23,13 +23,11 @@ package org.jboss.as.ejb3.component.messagedriven;
 
 import java.lang.reflect.Method;
 import java.util.Map;
-import java.util.concurrent.atomic.AtomicReference;
 
 import org.jboss.as.ee.component.BasicComponent;
 import org.jboss.as.ejb3.component.EjbComponentInstance;
 import org.jboss.as.ejb3.context.EJBContextImpl;
 import org.jboss.as.ejb3.context.MessageDrivenContext;
-import org.jboss.as.naming.ManagedReference;
 import org.jboss.invocation.Interceptor;
 
 /**
@@ -44,8 +42,8 @@ public class MessageDrivenComponentInstance extends EjbComponentInstance {
      *
      * @param component the component
      */
-    public MessageDrivenComponentInstance(final BasicComponent component, final AtomicReference<ManagedReference> instanceReference, final Interceptor preDestroyInterceptor, final Map<Method, Interceptor> methodInterceptors) {
-        super(component, instanceReference, preDestroyInterceptor, methodInterceptors);
+    public MessageDrivenComponentInstance(final BasicComponent component, final Interceptor preDestroyInterceptor, final Map<Method, Interceptor> methodInterceptors) {
+        super(component, preDestroyInterceptor, methodInterceptors);
         this.messageDrivenContext = new MessageDrivenContext(this);
     }
 

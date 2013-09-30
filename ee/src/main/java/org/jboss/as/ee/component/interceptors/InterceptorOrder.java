@@ -97,6 +97,7 @@ public class InterceptorOrder {
         public static final int JPA_SFSB_PRE_CREATE = 0x400;
         public static final int TRANSACTION_INTERCEPTOR = 0x500;
         public static final int JNDI_NAMESPACE_INTERCEPTOR = 0x600;
+        public static final int CREATE_CDI_INTERCEPTORS = 0x0680;
         public static final int INTERCEPTOR_INSTANTIATION_INTERCEPTORS = 0x700;
         public static final int INTERCEPTOR_RESOURCE_INJECTION_INTERCEPTORS = 0x800;
         public static final int INTERCEPTOR_WELD_INJECTION = 0x900;

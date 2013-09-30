@@ -54,15 +54,11 @@ import static org.jboss.as.ejb3.EjbMessages.MESSAGES;
  * @author Stuart Douglas
  */
 public class EntityBeanSynchronizationInterceptor extends AbstractEJBInterceptor {
-
-    private final Object threadLock = new Object();
-    private final OwnableReentrantLock lock = new OwnableReentrantLock();
-
     @Override
     public Object processInvocation(InterceptorContext context) throws Exception {
         final EntityBeanComponent component = getComponent(context, EntityBeanComponent.class);
         final EntityBeanComponentInstance instance = (EntityBeanComponentInstance) context.getPrivateData(ComponentInstance.class);
-
+        final OwnableReentrantLock lock = instance.getLock();
         //we do not synchronize for instances that are not associated with an identity
         if (instance.getPrimaryKey() == null) {
             return context.proceed();
@@ -155,17 +151,17 @@ public class EntityBeanSynchronizationInterceptor extends AbstractEJBInterceptor
         } finally {
             instance.setSynchronizationRegistered(false);
             // release the lock on the SFSB instance
-            this.releaseLock();
+            this.releaseLock(instance);
         }
     }
 
     /**
      * Releases the lock, held by this thread, on the stateful component instance.
      */
-    private void releaseLock() {
-        lock.unlock();
+    private void releaseLock(EntityBeanComponentInstance instance) {
+        instance.getLock().unlock();
         if (ROOT_LOGGER.isTraceEnabled()) {
-            ROOT_LOGGER.trace("Released lock: " + lock);
+            ROOT_LOGGER.tracef("Released lock: %s", instance.getLock());
         }
     }
 
@@ -184,18 +180,18 @@ public class EntityBeanSynchronizationInterceptor extends AbstractEJBInterceptor
             try {
                 CurrentSynchronizationCallback.set(CurrentSynchronizationCallback.CallbackType.BEFORE_COMPLETION);
 
-                synchronized (threadLock) {
+                synchronized (componentInstance.getThreadLock()) {
                     //invoke the EJB store method within the transaction
                     try {
                         if (!componentInstance.isRemoved() && !componentInstance.isDiscarded() && componentInstance.getPrimaryKey() != null) {
                             componentInstance.store();
                         }
                     } catch (Throwable t) {
-                        lock.pushOwner(lockOwner);
+                        componentInstance.getLock().pushOwner(lockOwner);
                         try {
                             handleThrowableInTxSync(componentInstance, t);
                         } finally {
-                            lock.popOwner();
+                            componentInstance.getLock().popOwner();
                         }
                     }
                 }
@@ -207,7 +203,7 @@ public class EntityBeanSynchronizationInterceptor extends AbstractEJBInterceptor
         @Override
         public void afterCompletion(int status) {
             //now release the lock
-            lock.pushOwner(lockOwner);
+            componentInstance.getLock().pushOwner(lockOwner);
             try {
                 final boolean success = status != Status.STATUS_MARKED_ROLLBACK
                         && status != Status.STATUS_ROLLEDBACK &&
@@ -220,7 +216,7 @@ public class EntityBeanSynchronizationInterceptor extends AbstractEJBInterceptor
             } catch (Exception e) {
                 EJB3_LOGGER.exceptionReleasingEntity(e);
             } finally {
-                lock.popOwner();
+                componentInstance.getLock().popOwner();
             }
         }
 
@@ -242,7 +238,7 @@ public class EntityBeanSynchronizationInterceptor extends AbstractEJBInterceptor
                 instance.discard();
             } finally {
                 // release the lock associated with the SFSB instance
-                EntityBeanSynchronizationInterceptor.this.releaseLock();
+                EntityBeanSynchronizationInterceptor.this.releaseLock(instance);
             }
             // throw back an appropriate exception
             if (t instanceof RuntimeException)
