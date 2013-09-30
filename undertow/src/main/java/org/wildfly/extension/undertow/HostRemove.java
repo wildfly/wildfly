@@ -31,6 +31,7 @@ import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.ServiceVerificationHandler;
+import org.jboss.as.web.host.WebHost;
 import org.jboss.dmr.ModelNode;
 import org.jboss.msc.service.ServiceController;
 import org.jboss.msc.service.ServiceName;
@@ -50,6 +51,8 @@ class HostRemove extends AbstractRemoveStepHandler {
         context.removeService(virtualHostServiceName);
         final ServiceName consoleRedirectName = UndertowService.consoleRedirectServiceName(serverName, name);
         context.removeService(consoleRedirectName);
+        final ServiceName commonHostName = WebHost.SERVICE_NAME.append(name);
+        context.removeService(commonHostName);
     }
 
     protected void recoverServices(OperationContext context, ModelNode operation, ModelNode model) throws OperationFailedException {

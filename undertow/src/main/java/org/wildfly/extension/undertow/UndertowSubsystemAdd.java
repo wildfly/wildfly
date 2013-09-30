@@ -35,6 +35,11 @@ import org.jboss.as.server.AbstractDeploymentChainStep;
 import org.jboss.as.server.DeploymentProcessorTarget;
 import org.jboss.as.server.deployment.Phase;
 import org.jboss.as.server.deployment.jbossallxml.JBossAllXmlParserRegisteringProcessor;
+import org.jboss.as.web.common.SharedTldsMetaDataBuilder;
+import org.jboss.dmr.ModelNode;
+import org.jboss.msc.service.ServiceController;
+import org.jboss.msc.service.ServiceTarget;
+import org.jboss.msc.value.ImmediateValue;
 import org.wildfly.extension.undertow.deployment.ELExpressionFactoryProcessor;
 import org.wildfly.extension.undertow.deployment.EarContextRootProcessor;
 import org.wildfly.extension.undertow.deployment.JBossWebParsingDeploymentProcessor;
@@ -53,12 +58,6 @@ import org.wildfly.extension.undertow.deployment.WebJBossAllParser;
 import org.wildfly.extension.undertow.deployment.WebParsingDeploymentProcessor;
 import org.wildfly.extension.undertow.session.DistributableSessionManagerFactoryBuilder;
 import org.wildfly.extension.undertow.session.DistributableSessionManagerFactoryBuilderValue;
-import org.jboss.as.web.common.SharedTldsMetaDataBuilder;
-import org.jboss.as.web.host.CommonWebServer;
-import org.jboss.dmr.ModelNode;
-import org.jboss.msc.service.ServiceController;
-import org.jboss.msc.service.ServiceTarget;
-import org.jboss.msc.value.ImmediateValue;
 
 
 /**
@@ -108,10 +107,6 @@ class UndertowSubsystemAdd extends AbstractBoottimeAddStepHandler {
         newControllers.add(target.addService(UndertowService.UNDERTOW, new UndertowService(defaultContainer, defaultServer, defaultVirtualHost, instanceId))
                 .setInitialMode(ServiceController.Mode.ACTIVE)
                 .install());
-
-        newControllers.add(target.addService(CommonWebServer.SERVICE_NAME, new WebServerService())
-                .install());
-
 
         context.addStep(new AbstractDeploymentChainStep() {
             @Override

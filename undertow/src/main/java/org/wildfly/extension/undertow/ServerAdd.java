@@ -30,9 +30,13 @@ import org.jboss.as.controller.AbstractBoottimeAddStepHandler;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.PathAddress;
+import org.jboss.as.controller.PathElement;
 import org.jboss.as.controller.ServiceVerificationHandler;
 import org.jboss.as.controller.SimpleAttributeDefinition;
+import org.jboss.as.controller.registry.Resource;
+import org.jboss.as.web.host.CommonWebServer;
 import org.jboss.dmr.ModelNode;
+import org.jboss.dmr.Property;
 import org.jboss.msc.service.ServiceBuilder;
 import org.jboss.msc.service.ServiceController;
 import org.jboss.msc.service.ServiceName;
@@ -66,6 +70,35 @@ class ServerAdd extends AbstractBoottimeAddStepHandler {
         final ServiceController<Server> serviceController = builder.install();
         if (newControllers != null) {
             newControllers.add(serviceController);
+        }
+        WebServerService commonWebServer = new WebServerService();
+        final ServiceBuilder<WebServerService> commonServerBuilder = context.getServiceTarget().addService(CommonWebServer.SERVICE_NAME, commonWebServer)
+                .addDependency(serverName, Server.class, commonWebServer.getServerInjectedValue())
+                .setInitialMode(ServiceController.Mode.PASSIVE);
+
+
+        addCommonHostListenerDeps(context, commonServerBuilder, UndertowExtension.HTTP_LISTENER_PATH);
+        addCommonHostListenerDeps(context, commonServerBuilder, UndertowExtension.AJP_LISTENER_PATH);
+        addCommonHostListenerDeps(context, commonServerBuilder, UndertowExtension.HTTPS_LISTENER_PATH);
+
+        final ServiceController<WebServerService> commonServerController = commonServerBuilder.install();
+
+        if (verificationHandler != null) {
+            commonServerController.addListener(verificationHandler);
+        }
+        if (newControllers != null) {
+            newControllers.add(commonServerController);
+        }
+    }
+
+
+    private void addCommonHostListenerDeps(OperationContext context, ServiceBuilder<WebServerService> builder, final PathElement listenerPath) {
+        ModelNode listeners = Resource.Tools.readModel(context.readResource(PathAddress.pathAddress(listenerPath)), 1);
+        if (listeners.isDefined()) {
+            for (Property p : listeners.asPropertyList()) {
+                String listenerName = p.getValue().asProperty().getName();
+                builder.addDependency(UndertowService.LISTENER.append(listenerName));
+            }
         }
     }
 }

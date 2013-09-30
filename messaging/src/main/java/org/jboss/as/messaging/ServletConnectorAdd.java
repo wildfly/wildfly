@@ -57,12 +57,7 @@ public class ServletConnectorAdd extends TransportConfigOperationHandlers.BasicT
         String connectorName = address.getLastElement().getValue();
         String host = ServletConnectorDefinition.HOST.resolveModelAttribute(context, model).asString();
 
-        // that's counter-intuitive but the http-connector will only be created by HornetQ after a reload.
-        // if the hornetq service is already installed, it will not be ready to create the http connector service
-        // because the required connector and acceptor will not be started.
-        if (!HornetQService.isHornetQServiceInstalled(context, operation)) {
-            final ServiceController<Void> serviceController = ServletConnectorService.addService(context.getServiceTarget(), verificationHandler, host, hornetqServerName, connectorName);
-            newControllers.add(serviceController);
-        }
+        final ServiceController<ServletConnectorService> serviceController = ServletConnectorService.addService(context.getServiceTarget(), verificationHandler, host, hornetqServerName, connectorName);
+        newControllers.add(serviceController);
     }
 }

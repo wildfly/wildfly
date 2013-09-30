@@ -22,28 +22,16 @@
 
 package org.wildfly.extension.undertow;
 
-import java.io.File;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
-import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.CopyOnWriteArraySet;
-import javax.servlet.Servlet;
 
 import io.undertow.server.HttpHandler;
 import io.undertow.server.handlers.PathHandler;
-import io.undertow.server.handlers.resource.FileResourceManager;
 import io.undertow.servlet.api.Deployment;
 import io.undertow.servlet.api.DeploymentInfo;
-import io.undertow.servlet.api.DeploymentManager;
-import io.undertow.servlet.api.ServletContainer;
-import io.undertow.servlet.api.ServletInfo;
-import io.undertow.servlet.util.ImmediateInstanceFactory;
-import org.jboss.as.web.host.ServletBuilder;
-import org.jboss.as.web.host.WebDeploymentBuilder;
-import org.jboss.as.web.host.WebDeploymentController;
-import org.jboss.as.web.host.WebHost;
 import org.jboss.msc.service.Service;
 import org.jboss.msc.service.StartContext;
 import org.jboss.msc.service.StartException;
@@ -54,7 +42,7 @@ import org.jboss.msc.value.InjectedValue;
  * @author <a href="mailto:tomaz.cerar@redhat.com">Tomaz Cerar</a> (c) 2013 Red Hat Inc.
  * @author Radoslav Husar
  */
-public class Host implements Service<Host>, WebHost {
+public class Host implements Service<Host> {
     private final PathHandler pathHandler = new PathHandler();
     private volatile HttpHandler rootHandler = pathHandler;
     private final Set<String> allAliases;
@@ -81,18 +69,18 @@ public class Host implements Service<Host>, WebHost {
     @Override
     public void start(StartContext context) throws StartException {
         AccessLogService logService = accessLogService.getOptionalValue();
-        if (logService!=null){
+        if (logService != null) {
             rootHandler = logService.configureAccessLogHandler(pathHandler);
         }
         server.getValue().registerHost(this);
-        UndertowLogger.ROOT_LOGGER.infof("Starting host %s", name);
+        UndertowLogger.ROOT_LOGGER.hostStarting(name);
     }
 
     @Override
     public void stop(StopContext context) {
         server.getValue().unregisterHost(this);
         pathHandler.clearPaths();
-        UndertowLogger.ROOT_LOGGER.infof("Stopping host %s", name);
+        UndertowLogger.ROOT_LOGGER.hostStopping(name);
     }
 
     @Override
@@ -182,68 +170,5 @@ public class Host implements Service<Host>, WebHost {
         return Collections.unmodifiableSet(deployments);
     }
 
-    @Override
-    public WebDeploymentController addWebDeployment(final WebDeploymentBuilder webDeploymentBuilder) throws Exception {
-
-        DeploymentInfo d = new DeploymentInfo();
-        d.setDeploymentName(webDeploymentBuilder.getContextRoot());
-        d.setContextPath(webDeploymentBuilder.getContextRoot());
-        d.setClassLoader(webDeploymentBuilder.getClassLoader());
-        d.setResourceManager(new FileResourceManager(new File(webDeploymentBuilder.getDocumentRoot().getAbsolutePath()), 1024 * 1024));
-        for (ServletBuilder servlet : webDeploymentBuilder.getServlets()) {
-            ServletInfo s;
-            if (servlet.getServlet() == null) {
-                s = new ServletInfo(servlet.getServletName(), (Class<? extends Servlet>) servlet.getServletClass());
-            } else {
-                s = new ServletInfo(servlet.getServletName(), (Class<? extends Servlet>) servlet.getServletClass(), new ImmediateInstanceFactory<>(servlet.getServlet()));
-            }
-            if (servlet.isForceInit()) {
-                s.setLoadOnStartup(1);
-            }
-            s.addMappings(servlet.getUrlMappings());
-            for (Map.Entry<String, String> param : servlet.getInitParams().entrySet()) {
-                s.addInitParam(param.getKey(), param.getValue());
-            }
-            d.addServlet(s);
-        }
-
-        return new WebDeploymentControllerImpl(d);
-    }
-
-    private class WebDeploymentControllerImpl implements WebDeploymentController {
-
-        private final DeploymentInfo deploymentInfo;
-        private volatile DeploymentManager manager;
-
-        private WebDeploymentControllerImpl(final DeploymentInfo deploymentInfo) {
-            this.deploymentInfo = deploymentInfo;
-        }
-
-        @Override
-        public void create() throws Exception {
-            ServletContainer container = getServerInjection().getValue().getServletContainer().getValue().getServletContainer();
-            manager = container.addDeployment(deploymentInfo);
-            manager.deploy();
-        }
-
-        @Override
-        public void start() throws Exception {
-            HttpHandler handler = manager.start();
-            registerDeployment(manager.getDeployment(), handler);
-        }
-
-        @Override
-        public void stop() throws Exception {
-            unregisterDeployment(manager.getDeployment());
-            manager.stop();
-        }
-
-        @Override
-        public void destroy() throws Exception {
-            manager.undeploy();
-            ServletContainer container = getServerInjection().getValue().getServletContainer().getValue().getServletContainer();
-            container.removeDeployment(deploymentInfo);
-        }
-    }
 
 }

@@ -73,7 +73,7 @@ public class MessagingTestCase {
 
         JavaArchive jar = ShrinkWrap.create(JavaArchive.class, "messaging-example.jar");
         jar.addAsManifestResource(new StringAsset("Manifest-Version: 1.0\n" +
-                "Dependencies: org.hornetq\n"), "MANIFEST.MF");
+                "Dependencies: org.hornetq, org.jboss.dmr\n"), "MANIFEST.MF");
         jar.addClass(MessagingTestCase.class);
         return jar;
     }

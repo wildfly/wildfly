@@ -53,8 +53,8 @@ public class HttpListenerService extends AbstractListenerService<HttpListenerSer
 
     private final ChannelUpgradeHandler httpUpgradeHandler = new ChannelUpgradeHandler();
     protected final InjectedValue<ListenerRegistry> httpListenerRegistry = new InjectedValue<>();
-
     static final ServiceName HTTP_UPGRADE_REGISTRY = ServiceName.JBOSS.append("http-upgrade-registry");
+    static final String PROTOCOL = "http";
 
     private final String serverName;
     private final long maxUploadSize;
@@ -119,7 +119,8 @@ public class HttpListenerService extends AbstractListenerService<HttpListenerSer
         return httpListenerRegistry;
     }
 
+    @Override
     protected String getProtocol() {
-        return "http";
+        return PROTOCOL;
     }
 }
