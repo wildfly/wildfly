@@ -49,5 +49,10 @@
             <artifactId>wildfly-core-model-test-controller-7.1.2</artifactId>
             <scope>provided</scope>
         </dependency>
+        <dependency>
+            <groupId>org.wildfly</groupId>
+            <artifactId>wildfly-core-model-test-controller-7.2.0</artifactId>
+            <scope>provided</scope>
+        </dependency>
     </dependencies>
 </project>

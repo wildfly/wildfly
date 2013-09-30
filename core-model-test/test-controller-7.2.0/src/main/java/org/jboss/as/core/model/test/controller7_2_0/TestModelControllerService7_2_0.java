@@ -1,6 +1,6 @@
 /*
-* JBoss, Home of Professional Open Source.
-* Copyright 2011, Red Hat Middleware LLC, and individual contributors
+ * JBoss, Home of Professional Open Source.
+ * Copyright 2012, Red Hat Middleware LLC, and individual contributors
 * as indicated by the @author tags. See the copyright.txt file in the
 * distribution for a full listing of individual contributors.
 *
@@ -19,7 +19,7 @@
 * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
 * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
 */
-package org.jboss.as.core.model.test;
+package org.jboss.as.core.model.test.controller7_2_0;
 
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP;
 
@@ -40,7 +40,6 @@ import org.jboss.as.controller.ProcessType;
 import org.jboss.as.controller.ProxyController;
 import org.jboss.as.controller.RunningMode;
 import org.jboss.as.controller.RunningModeControl;
-import org.jboss.as.controller.audit.AuditLogger;
 import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
 import org.jboss.as.controller.extension.ExtensionRegistry;
 import org.jboss.as.controller.persistence.ExtensibleConfigurationPersister;
@@ -49,12 +48,12 @@ import org.jboss.as.controller.registry.ManagementResourceRegistration;
 import org.jboss.as.controller.registry.Resource;
 import org.jboss.as.controller.services.path.PathManagerService;
 import org.jboss.as.controller.transform.Transformers;
+import org.jboss.as.core.model.test.ModelInitializer;
+import org.jboss.as.core.model.test.TestModelType;
 import org.jboss.as.domain.controller.DomainController;
 import org.jboss.as.domain.controller.LocalHostControllerInfo;
 import org.jboss.as.domain.controller.SlaveRegistrationException;
 import org.jboss.as.domain.controller.resources.DomainRootDefinition;
-import org.jboss.as.domain.management.CoreManagementResourceDefinition;
-import org.jboss.as.domain.management.access.AccessAuthorizationResourceDefinition;
 import org.jboss.as.host.controller.HostControllerConfigurationPersister;
 import org.jboss.as.host.controller.HostControllerEnvironment;
 import org.jboss.as.host.controller.HostModelUtil;
@@ -62,7 +61,6 @@ import org.jboss.as.host.controller.HostModelUtil.HostModelRegistrar;
 import org.jboss.as.host.controller.HostPathManagerService;
 import org.jboss.as.host.controller.HostRunningModeControl;
 import org.jboss.as.host.controller.ignored.IgnoredDomainResourceRegistry;
-import org.jboss.as.host.controller.mgmt.DomainControllerRuntimeIgnoreTransformationEntry;
 import org.jboss.as.host.controller.model.host.HostResourceDefinition;
 import org.jboss.as.host.controller.operations.LocalHostControllerInfoImpl;
 import org.jboss.as.model.test.ModelTestModelControllerService;
@@ -84,12 +82,11 @@ import org.jboss.msc.service.StartContext;
 import org.jboss.msc.service.StartException;
 import org.jboss.msc.service.StopContext;
 import org.jboss.msc.value.InjectedValue;
-
 /**
  *
  * @author <a href="kabir.khan@jboss.com">Kabir Khan</a>
  */
-class TestModelControllerService extends ModelTestModelControllerService {
+class TestModelControllerService7_2_0 extends ModelTestModelControllerService {
 
     private final InjectedValue<ContentRepository> injectedContentRepository = new InjectedValue<ContentRepository>();
     private final TestModelType type;
@@ -101,9 +98,9 @@ class TestModelControllerService extends ModelTestModelControllerService {
     private final ExtensionRegistry extensionRegistry;
     private volatile Initializer initializer;
 
-    TestModelControllerService(ProcessType processType, RunningModeControl runningModeControl, StringConfigurationPersister persister, ModelTestOperationValidatorFilter validateOpsFilter,
+    TestModelControllerService7_2_0(ProcessType processType, RunningModeControl runningModeControl, StringConfigurationPersister persister, ModelTestOperationValidatorFilter validateOpsFilter,
             TestModelType type, ModelInitializer modelInitializer, DelegatingResourceDefinition rootResourceDefinition, ControlledProcessState processState, ExtensionRegistry extensionRegistry) {
-        super(processType, runningModeControl, null, persister, validateOpsFilter, rootResourceDefinition, processState, Controller80x.INSTANCE);
+        super(processType, runningModeControl, null, persister, validateOpsFilter, rootResourceDefinition, processState, Controller72x.INSTANCE);
         this.type = type;
         this.runningModeControl = runningModeControl;
         this.pathManagerService = type == TestModelType.STANDALONE ? new ServerPathManagerService() : new HostPathManagerService();
@@ -131,9 +128,9 @@ class TestModelControllerService extends ModelTestModelControllerService {
         }
     }
 
-    static TestModelControllerService create(ProcessType processType, RunningModeControl runningModeControl, StringConfigurationPersister persister, ModelTestOperationValidatorFilter validateOpsFilter,
+    static TestModelControllerService7_2_0 create(ProcessType processType, RunningModeControl runningModeControl, StringConfigurationPersister persister, ModelTestOperationValidatorFilter validateOpsFilter,
             TestModelType type, ModelInitializer modelInitializer, ExtensionRegistry extensionRegistry) {
-        return new TestModelControllerService(processType, runningModeControl, persister, validateOpsFilter, type, modelInitializer, new DelegatingResourceDefinition(type), new ControlledProcessState(true), extensionRegistry);
+        return new TestModelControllerService7_2_0(processType, runningModeControl, persister, validateOpsFilter, type, modelInitializer, new DelegatingResourceDefinition(type), new ControlledProcessState(true), extensionRegistry);
     }
 
     InjectedValue<ContentRepository> getContentRepositoryInjector(){
@@ -309,10 +306,6 @@ class TestModelControllerService extends ModelTestModelControllerService {
             public void registerRunningServer(ProxyController serverControllerClient) {
             }
 
-            @Override
-            public void registerRemoteHost(String hostName, ManagementChannelHandler handler, Transformers transformers,
-                    Long remoteConnectionId, DomainControllerRuntimeIgnoreTransformationEntry runtimeIgnoreTransformation) throws SlaveRegistrationException {
-            }
 
             @Override
             public void pingRemoteHost(String hostName) {
@@ -371,6 +364,11 @@ class TestModelControllerService extends ModelTestModelControllerService {
                     ExtensionRegistry extensionRegistry, IgnoredDomainResourceRegistry ignoredDomainResourceRegistry,
                     PathManagerService pathManager) {
             }
+
+            @Override
+            public void registerRemoteHost(String hostName, ManagementChannelHandler handler, Transformers transformers,
+                    Long remoteConnectionId) throws SlaveRegistrationException {
+            }
         };
     }
 
@@ -404,10 +402,7 @@ class TestModelControllerService extends ModelTestModelControllerService {
                     vaultReader,
                     extensionRegistry,
                     parallelBoot,
-                    pathManagerService,
-                    null,
-                    authorizer,
-                    AuditLogger.NO_OP_LOGGER));
+                    pathManagerService));
         }
 
         @Override
@@ -416,8 +411,6 @@ class TestModelControllerService extends ModelTestModelControllerService {
             Resource managementResource = Resource.Factory.create();
             rootResource.registerChild(PathElement.pathElement(ModelDescriptionConstants.CORE_SERVICE, ModelDescriptionConstants.MANAGEMENT), managementResource);
             rootResource.registerChild(PathElement.pathElement(ModelDescriptionConstants.CORE_SERVICE, ModelDescriptionConstants.SERVICE_CONTAINER), Resource.Factory.create());
-            managementResource.registerChild(PathElement.pathElement(ModelDescriptionConstants.ACCESS, ModelDescriptionConstants.AUTHORIZATION),
-                    AccessAuthorizationResourceDefinition.createResource(authorizer.getWritableAuthorizerConfiguration()));
             rootResource.registerChild(ServerEnvironmentResourceDescription.RESOURCE_PATH, Resource.Factory.create());
             pathManagerService.addPathManagerResources(rootResource);
         }
@@ -450,9 +443,7 @@ class TestModelControllerService extends ModelTestModelControllerService {
                             null /*vaultReader*/,
                             ignoredRegistry,
                             processState,
-                            pathManagerService,
-                            authorizer,
-                            AuditLogger.NO_OP_LOGGER));
+                            pathManagerService));
         }
 
         @Override
@@ -465,7 +456,7 @@ class TestModelControllerService extends ModelTestModelControllerService {
                         @Override
                         public void registerHostModel(String hostName, ManagementResourceRegistration rootRegistration) {
                         }
-                    },ProcessType.HOST_CONTROLLER, authorizer);
+                    },ProcessType.HOST_CONTROLLER);
 
             HostModelUtil.createHostRegistry(
                     hostName,
@@ -483,9 +474,7 @@ class TestModelControllerService extends ModelTestModelControllerService {
                     null /*vaultReader*/,
                     ignoredRegistry,
                     processState,
-                    pathManagerService,
-                    authorizer,
-                    AuditLogger.NO_OP_LOGGER);
+                    pathManagerService);
         }
     }
 
@@ -503,10 +492,9 @@ class TestModelControllerService extends ModelTestModelControllerService {
             final IgnoredDomainResourceRegistry ignoredRegistry = new IgnoredDomainResourceRegistry(info);
             final ExtensibleConfigurationPersister persister = new NullConfigurationPersister();
             final HostFileRepository hostFIleRepository = createHostFileRepository();
-            final DomainController domainController = new MockDomainController();
 
-            DomainRootDefinition domainDefinition = new DomainRootDefinition(domainController, env, persister, injectedContentRepository.getValue(),
-                    hostFIleRepository, true, info, extensionRegistry, null, pathManagerService, null, authorizer);
+            DomainRootDefinition domainDefinition = new DomainRootDefinition(env, persister, injectedContentRepository.getValue(),
+                    hostFIleRepository, true, info, extensionRegistry, null, pathManagerService);
             domainDefinition.initialize(rootRegistration);
             rootResourceDefinition.setDelegate(domainDefinition);
 
@@ -518,15 +506,12 @@ class TestModelControllerService extends ModelTestModelControllerService {
                         @Override
                         public void registerHostModel(String hostName, ManagementResourceRegistration root) {
                         }
-                    },processType, authorizer);
-
-            CoreManagementResourceDefinition.registerDomainResource(rootResource, null);
-
+                    },processType);
         }
 
     }
 
-    private static class DelegatingResourceDefinition extends ModelTestModelControllerService.DelegatingResourceDefinition {
+    static class DelegatingResourceDefinition extends ModelTestModelControllerService.DelegatingResourceDefinition {
         private final TestModelType type;
 
         public DelegatingResourceDefinition(TestModelType type) {
@@ -555,93 +540,6 @@ class TestModelControllerService extends ModelTestModelControllerService {
                 return;
             }
             super.registerAttributes(resourceRegistration);
-        }
-    }
-
-
-    private static class MockDomainController implements DomainController {
-
-        @Override
-        public RunningMode getCurrentRunningMode() {
-            return null;
-        }
-
-        @Override
-        public LocalHostControllerInfo getLocalHostInfo() {
-            return null;
-        }
-
-        @Override
-        public void registerRemoteHost(String hostName, ManagementChannelHandler handler, Transformers transformers,
-                Long remoteConnectionId, DomainControllerRuntimeIgnoreTransformationEntry runtimeIgnoreTransformation) throws SlaveRegistrationException {
-        }
-
-        @Override
-        public boolean isHostRegistered(String id) {
-            return false;
-        }
-
-        @Override
-        public void unregisterRemoteHost(String id, Long remoteConnectionId) {
-        }
-
-        @Override
-        public void pingRemoteHost(String hostName) {
-        }
-
-        @Override
-        public void registerRunningServer(ProxyController serverControllerClient) {
-        }
-
-        @Override
-        public void unregisterRunningServer(String serverName) {
-        }
-
-        @Override
-        public ModelNode getProfileOperations(String profileName) {
-            return null;
-        }
-
-        @Override
-        public HostFileRepository getLocalFileRepository() {
-            return null;
-        }
-
-        @Override
-        public HostFileRepository getRemoteFileRepository() {
-            return null;
-        }
-
-        @Override
-        public void stopLocalHost() {
-        }
-
-        @Override
-        public void stopLocalHost(int exitCode) {
-        }
-
-        @Override
-        public ExtensionRegistry getExtensionRegistry() {
-            return null;
-        }
-
-        @Override
-        public ExpressionResolver getExpressionResolver() {
-            return null;
-        }
-
-        @Override
-        public void initializeMasterDomainRegistry(ManagementResourceRegistration root,
-                ExtensibleConfigurationPersister configurationPersister, ContentRepository contentRepository,
-                HostFileRepository fileRepository, ExtensionRegistry extensionRegistry, PathManagerService pathManager) {
-        }
-
-        @Override
-        public void initializeSlaveDomainRegistry(ManagementResourceRegistration root,
-                ExtensibleConfigurationPersister configurationPersister, ContentRepository contentRepository,
-                HostFileRepository fileRepository, LocalHostControllerInfo hostControllerInfo,
-                ExtensionRegistry extensionRegistry, IgnoredDomainResourceRegistry ignoredDomainResourceRegistry,
-                PathManagerService pathManager) {
         }
     }
 }

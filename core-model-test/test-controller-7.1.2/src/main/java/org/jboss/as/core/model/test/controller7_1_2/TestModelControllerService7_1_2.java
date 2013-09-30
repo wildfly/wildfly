@@ -74,7 +74,7 @@ class TestModelControllerService7_1_2 extends ModelTestModelControllerService {
     private final ExtensionRegistry extensionRegistry;
     TestModelControllerService7_1_2(ProcessType processType, RunningModeControl runningModeControl, StringConfigurationPersister persister, ModelTestOperationValidatorFilter validateOpsFilter,
             TestModelType type, ModelInitializer modelInitializer, DescriptionProvider rootDescriptionProvider, ControlledProcessState processState, ExtensionRegistry extensionRegistry) {
-        super(processType, runningModeControl, null, persister, validateOpsFilter, rootDescriptionProvider, processState);
+        super(processType, runningModeControl, null, persister, validateOpsFilter, rootDescriptionProvider, processState, Controller71x.INSTANCE);
         this.type = type;
         this.runningModeControl = runningModeControl;
         //this.pathManagerService = type == TestModelType.STANDALONE ? new ServerPathManagerService() : new HostPathManagerService();

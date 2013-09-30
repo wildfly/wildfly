@@ -93,7 +93,7 @@ public class DomainTransformers {
         SocketBindingGroupTransformers.registerTransformers120(domain);
         ServerGroupTransformers.registerTransformers120(domain);
 
-        //Add the domain interface and path name. This is from a read attribute handler but in < 1.4.0 it existed in the model
+        //Add the domain interface and path name. This is currently from a read attribute handler but in < 1.4.0 it existed in the model
         domain.registerSubResource(PathElement.pathElement(INTERFACE), AddNameFromAddressResourceTransformer.INSTANCE);
         domain.registerSubResource(PathElement.pathElement(PATH), AddNameFromAddressResourceTransformer.INSTANCE);
     }
@@ -102,11 +102,6 @@ public class DomainTransformers {
         TransformersSubRegistration domain = registry.getDomainRegistration(VERSION_1_4);
 
         ManagementTransformers.registerTransformersPreRBAC(domain);
-
-        //TODO not sure if these should be handled here for 1.4.0 or if it is better in the tests?
-        //Add the domain interface name. This is currently from a read attribute handler but in < 1.4.0 it existed in the model
-        domain.registerSubResource(PathElement.pathElement(INTERFACE), AddNameFromAddressResourceTransformer.INSTANCE);
-        domain.registerSubResource(PathElement.pathElement(PATH), AddNameFromAddressResourceTransformer.INSTANCE);
     }
 
     private static void initializeDomainRegistry15(TransformerRegistry registry) {
