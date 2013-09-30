@@ -81,6 +81,8 @@ public class ResolvePathHandler implements OperationStepHandler {
     private static final SimpleOperationDefinition DEFAULT_OPERATION_DEFINITION = new SimpleOperationDefinitionBuilder(OPERATION_NAME, new ResolvePathResourceDescriptionResolver(OPERATION_NAME))
             .addParameter(RELATIVE_TO_ONLY)
             .setReplyType(ModelType.STRING)
+            .setReadOnly()
+            .setRuntimeOnly()
             .build();
 
 
