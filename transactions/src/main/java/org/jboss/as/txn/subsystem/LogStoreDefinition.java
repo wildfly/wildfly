@@ -22,11 +22,12 @@
 
 package org.jboss.as.txn.subsystem;
 
+import org.jboss.as.controller.OperationDefinition;
 import org.jboss.as.controller.ReloadRequiredRemoveStepHandler;
 import org.jboss.as.controller.ReloadRequiredWriteAttributeHandler;
 import org.jboss.as.controller.SimpleAttributeDefinition;
+import org.jboss.as.controller.SimpleOperationDefinitionBuilder;
 import org.jboss.as.controller.SimpleResourceDefinition;
-import org.jboss.as.controller.descriptions.DefaultOperationDescriptionProvider;
 import org.jboss.as.controller.registry.ManagementResourceRegistration;
 import org.jboss.as.controller.registry.OperationEntry;
 
@@ -36,6 +37,7 @@ import org.jboss.as.controller.registry.OperationEntry;
 public class LogStoreDefinition extends SimpleResourceDefinition {
     static final SimpleAttributeDefinition[] LOG_STORE_ATTRIBUTE = new SimpleAttributeDefinition[]{
             LogStoreConstants.LOG_STORE_TYPE};
+
 
 
     public LogStoreDefinition(final LogStoreResource resource) {
@@ -49,8 +51,11 @@ public class LogStoreDefinition extends SimpleResourceDefinition {
     @Override
     public void registerOperations(ManagementResourceRegistration resourceRegistration) {
         super.registerOperations(resourceRegistration);
-        DefaultOperationDescriptionProvider probeDesc = new DefaultOperationDescriptionProvider(LogStoreConstants.PROBE, getResourceDescriptionResolver());
-        resourceRegistration.registerOperationHandler(LogStoreConstants.PROBE, LogStoreProbeHandler.INSTANCE, probeDesc);
+        final OperationDefinition probe = new SimpleOperationDefinitionBuilder(LogStoreConstants.PROBE, getResourceDescriptionResolver())
+                                .setRuntimeOnly()
+                                .setReadOnly()
+                                .build();
+        resourceRegistration.registerOperationHandler(probe, LogStoreProbeHandler.INSTANCE);
     }
 
 
