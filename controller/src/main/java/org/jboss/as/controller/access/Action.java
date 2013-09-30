@@ -85,12 +85,13 @@ public final class Action {
             return Collections.emptySet();
         }
         final EnumSet<ActionEffect> result;
-        if (operationEntry.getFlags().contains(OperationEntry.Flag.RUNTIME_ONLY)) {
+        final EnumSet<OperationEntry.Flag> flags = operationEntry.getFlags();
+        if (flags.contains(OperationEntry.Flag.RUNTIME_ONLY)) {
             result = EnumSet.of(ActionEffect.ADDRESS, ActionEffect.READ_RUNTIME);
-            if (!operationEntry.getFlags().contains(OperationEntry.Flag.READ_ONLY)) {
+            if (!flags.contains(OperationEntry.Flag.READ_ONLY)) {
                 result.add(ActionEffect.WRITE_RUNTIME);
             }
-        } else if (operationEntry.getFlags().contains(OperationEntry.Flag.READ_ONLY)) {
+        } else if (flags.contains(OperationEntry.Flag.READ_ONLY)) {
             result = EnumSet.of(ActionEffect.ADDRESS, ActionEffect.READ_CONFIG, ActionEffect.READ_RUNTIME);
         } else {
             result = EnumSet.allOf(ActionEffect.class);

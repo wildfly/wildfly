@@ -25,15 +25,21 @@ package org.jboss.as.controller;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ADD;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.DEPLOYMENT;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.DEPLOYMENT_OVERLAY;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.FULL_REPLACE_DEPLOYMENT;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.GROUP;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.HOST;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.NAME;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.PROFILE;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SERVER;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SERVER_CONFIG;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SERVER_GROUP;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SOCKET_BINDING_GROUP;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.UPLOAD_DEPLOYMENT_BYTES;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.UPLOAD_DEPLOYMENT_STREAM;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.UPLOAD_DEPLOYMENT_URL;
 
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -51,6 +57,10 @@ import org.jboss.dmr.ModelNode;
  * @author Brian Stansberry (c) 2013 Red Hat Inc.
  */
 class HostServerGroupTracker {
+
+    private static final Set<String> UPLOAD_OPS = Collections.unmodifiableSet(
+            new HashSet<String>(Arrays.asList(UPLOAD_DEPLOYMENT_BYTES, UPLOAD_DEPLOYMENT_STREAM,
+                    UPLOAD_DEPLOYMENT_URL)));
 
     static class HostServerGroupEffect implements HostEffect, ServerGroupEffect {
 
@@ -193,6 +203,19 @@ class HostServerGroupTracker {
                 return getDomainEffect(address, firstElement.getValue(), deploymentsToGroups, root);
             } else if (DEPLOYMENT_OVERLAY.equals(type)) {
                 return getDomainEffect(address, firstElement.getValue(), overlaysToGroups, root);
+            }
+        } else {
+            // WFLY-1916 -- need special handling for deployment related ops
+            String opName = operation.require(OP).asString();
+            if (FULL_REPLACE_DEPLOYMENT.equals(opName)) {
+                // The name of the deployment being replaced is what matters
+                if (operation.hasDefined(NAME)) {
+                    return getDomainEffect(address, operation.get(NAME).asString(),
+                            deploymentsToGroups, root);
+                }
+            } else if (UPLOAD_OPS.contains(opName)) {
+                // Treat this like an unmapped deployment
+                return HostServerGroupEffect.forUnassignedDomain(address);
             }
         }
 

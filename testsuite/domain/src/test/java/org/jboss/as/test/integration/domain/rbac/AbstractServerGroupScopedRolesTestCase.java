@@ -24,6 +24,7 @@ package org.jboss.as.test.integration.domain.rbac;
 
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ADD;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.BASE_ROLE;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.BYTES;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.CHILD_TYPE;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.COMPOSITE;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.DEPLOYMENT;
@@ -34,6 +35,7 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.REM
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SERVER_GROUP;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SERVER_GROUPS;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.STEPS;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.UPLOAD_DEPLOYMENT_BYTES;
 import static org.jboss.as.test.integration.management.util.ModelUtil.createOpNode;
 
 import java.io.IOException;
@@ -73,7 +75,7 @@ public abstract class AbstractServerGroupScopedRolesTestCase extends AbstractRba
     private static final String SCOPED_ROLE = "core-service=management/access=authorization/server-group-scoped-role=";
 
     private static final ModelNode WFLY_2089_OP;
-
+    private static final ModelNode WFLY_1916_OP;
     static {
         WFLY_2089_OP = Util.createEmptyOperation(COMPOSITE, PathAddress.EMPTY_ADDRESS);
 
@@ -89,6 +91,11 @@ public abstract class AbstractServerGroupScopedRolesTestCase extends AbstractRba
         steps.add(step3);
 
         WFLY_2089_OP.protect();
+
+        WFLY_1916_OP = Util.createEmptyOperation(UPLOAD_DEPLOYMENT_BYTES, PathAddress.EMPTY_ADDRESS);
+        WFLY_1916_OP.get(BYTES).set(new byte[64]);
+
+        WFLY_1916_OP.protect();
     }
     protected static void setupRoles(DomainClient domainClient) throws IOException {
         for (int i = 0; i < USERS.length; i++) {
@@ -159,6 +166,8 @@ public abstract class AbstractServerGroupScopedRolesTestCase extends AbstractRba
         addJvm(client, HOST, SLAVE, Outcome.UNAUTHORIZED, MONITOR_USER);
 
         testWFLY2089(client, MONITOR_USER);
+
+        testWFLY1916(client, Outcome.UNAUTHORIZED, MONITOR_USER);
     }
 
     @Test
@@ -189,6 +198,8 @@ public abstract class AbstractServerGroupScopedRolesTestCase extends AbstractRba
         addJvm(client, HOST, SLAVE, Outcome.UNAUTHORIZED, OPERATOR_USER);
 
         testWFLY2089(client, OPERATOR_USER);
+
+        testWFLY1916(client, Outcome.SUCCESS, OPERATOR_USER);
     }
 
     @Test
@@ -219,6 +230,8 @@ public abstract class AbstractServerGroupScopedRolesTestCase extends AbstractRba
         addJvm(client, HOST, SLAVE, Outcome.UNAUTHORIZED, MAINTAINER_USER);
 
         testWFLY2089(client, MAINTAINER_USER);
+
+        testWFLY1916(client, Outcome.SUCCESS, MAINTAINER_USER);
     }
 
     @Test
@@ -249,6 +262,8 @@ public abstract class AbstractServerGroupScopedRolesTestCase extends AbstractRba
         addJvm(client, HOST, SLAVE, Outcome.UNAUTHORIZED, DEPLOYER_USER);
 
         testWFLY2089(client, DEPLOYER_USER);
+
+        testWFLY1916(client, Outcome.SUCCESS, DEPLOYER_USER);
     }
 
     @Test
@@ -279,6 +294,8 @@ public abstract class AbstractServerGroupScopedRolesTestCase extends AbstractRba
         addJvm(client, HOST, SLAVE, Outcome.UNAUTHORIZED, ADMINISTRATOR_USER);
 
         testWFLY2089(client, ADMINISTRATOR_USER);
+
+        testWFLY1916(client, Outcome.SUCCESS, ADMINISTRATOR_USER);
     }
 
     @Test
@@ -309,6 +326,8 @@ public abstract class AbstractServerGroupScopedRolesTestCase extends AbstractRba
         addJvm(client, HOST, SLAVE, Outcome.UNAUTHORIZED, AUDITOR_USER);
 
         testWFLY2089(client, AUDITOR_USER);
+
+        testWFLY1916(client, Outcome.UNAUTHORIZED, AUDITOR_USER);
     }
 
     @Test
@@ -339,14 +358,21 @@ public abstract class AbstractServerGroupScopedRolesTestCase extends AbstractRba
         addJvm(client, HOST, SLAVE, Outcome.UNAUTHORIZED, SUPERUSER_USER);
 
         testWFLY2089(client, SUPERUSER_USER);
+
+        testWFLY1916(client, Outcome.SUCCESS, SUPERUSER_USER);
     }
 
 
     private void testWFLY2089(ModelControllerClient client, String... roles) throws Exception {
         ModelNode op = WFLY_2089_OP.clone();
         configureRoles(op, roles);
-        System.out.println("WFLY-2089 result for " + roles[0]);
-        System.out.println(RbacUtil.executeOperation(client, op, Outcome.SUCCESS));
+        RbacUtil.executeOperation(client, op, Outcome.SUCCESS);
 
+    }
+
+    private void testWFLY1916(ModelControllerClient client, Outcome expected, String... roles) throws IOException {
+        ModelNode op = WFLY_1916_OP.clone();
+        configureRoles(op, roles);
+        RbacUtil.executeOperation(client, op, expected);
     }
 }
