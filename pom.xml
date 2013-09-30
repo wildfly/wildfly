@@ -668,6 +668,26 @@
                                 		<ignore></ignore>
                                 	</action>
                                 </pluginExecution>
+                                <pluginExecution>
+                                <pluginExecutionFilter>
+                                    <groupId>
+                                      org.codehaus.mojo
+                                    </groupId>
+                                    <artifactId>
+                                      keytool-maven-plugin
+                                    </artifactId>
+                                    <versionRange>
+                                      [1.2,)
+                                    </versionRange>
+                                    <goals>
+                                      <goal>clean</goal>
+                                      <goal>genkey</goal>
+                                    </goals>
+                                 </pluginExecutionFilter>
+                                 <action>
+                                    <ignore></ignore>
+                                  </action>
+                                </pluginExecution>
                             </pluginExecutions>
                         </lifecycleMappingMetadata>
                     </configuration>
