@@ -205,8 +205,17 @@ public enum Phase {
     public static final int STRUCTURE_WAR                               = 0x0900;
     public static final int STRUCTURE_CONTENT_OVERRIDE                  = 0x0950;
     public static final int STRUCTURE_EAR_DEPLOYMENT_INIT               = 0x0A00;
-    public static final int STRUCTURE_REGISTER_JBOSS_ALL_XML_PARSER     = 0x0A10;
-    public static final int STRUCTURE_PARSE_JBOSS_ALL_XML               = 0x0A20;
+    public static final int STRUCTURE_REGISTER_JBOSS_ALL_APPCLIENT      = 0x0A10;
+    public static final int STRUCTURE_REGISTER_JBOSS_ALL_EE_APP         = 0x0A11;
+    public static final int STRUCTURE_REGISTER_JBOSS_ALL_EJB            = 0x0A12;
+    public static final int STRUCTURE_REGISTER_JBOSS_ALL_JPA            = 0x0A13;
+    public static final int STRUCTURE_REGISTER_JBOSS_ALL_WEB            = 0x0A14;
+    public static final int STRUCTURE_REGISTER_JBOSS_ALL_WELD           = 0x0A15;
+    public static final int STRUCTURE_REGISTER_JBOSS_ALL_DEPLOYMENT_DEPS= 0x0A16;
+    public static final int STRUCTURE_REGISTER_JBOSS_ALL_STRUCTURE_1_0  = 0x0A17;
+    public static final int STRUCTURE_REGISTER_JBOSS_ALL_STRUCTURE_1_1  = 0x0A18;
+    public static final int STRUCTURE_REGISTER_JBOSS_ALL_STRUCTURE_1_2  = 0x0A19;
+    public static final int STRUCTURE_PARSE_JBOSS_ALL_XML               = 0x0AE0;
     public static final int STRUCTURE_EAR_APP_XML_PARSE                 = 0x0B00;
     public static final int STRUCTURE_JBOSS_EJB_CLIENT_XML_PARSE        = 0x0C00;
     public static final int STRUCTURE_EJB_EAR_APPLICATION_NAME          = 0x0D00;
@@ -318,6 +327,7 @@ public enum Phase {
     public static final int PARSE_EE_CONCURRENT_DEFAULT_MANAGED_THREAD_FACTORY              = 0x4801;
     public static final int PARSE_EE_CONCURRENT_DEFAULT_MANAGED_EXECUTOR_SERVICE            = 0x4802;
     public static final int PARSE_EE_CONCURRENT_DEFAULT_MANAGED_SCHEDULED_EXECUTOR_SERVICE  = 0x4803;
+    public static final int PARSE_JSF_MANAGED_BEANS                     = 0x4900;
 
     // REGISTER
     public static final int REGISTER_BUNDLE_INSTALL                     = 0x0100;
@@ -376,7 +386,6 @@ public enum Phase {
     public static final int POST_MODULE_INJECTION_ANNOTATION            = 0x0100;
     public static final int POST_MODULE_REFLECTION_INDEX                = 0x0200;
     public static final int POST_MODULE_WAB_FRAGMENTS                   = 0x0250;
-    public static final int POST_MODULE_JSF_MANAGED_BEANS               = 0x0300;
     public static final int POST_MODULE_INTERCEPTOR_ANNOTATIONS         = 0x0301;
     public static final int POST_MODULE_EJB_BUSINESS_VIEW_ANNOTATION    = 0x0400;
     public static final int POST_MODULE_EJB_HOME_MERGE                  = 0x0401;
@@ -419,6 +428,7 @@ public enum Phase {
     public static final int POST_MODULE_WELD_PORTABLE_EXTENSIONS        = 0x0E00;
     public static final int POST_MODULE_XTS_PORTABLE_EXTENSIONS         = 0x0E10;
     public static final int POST_MODULE_JMS_CDI_EXTENSIONS              = 0x0F00;
+    public static final int POST_MODULE_JMS_DEFINITION_DEPLOYMENT       = 0x0F80;
     // should come before ejb jndi bindings processor
     public static final int POST_MODULE_EJB_IMPLICIT_NO_INTERFACE_VIEW  = 0x1000;
     public static final int POST_MODULE_EJB_JNDI_BINDINGS               = 0x1100;
