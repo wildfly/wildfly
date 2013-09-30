@@ -667,7 +667,7 @@ public class ManagementClient {
 
         private boolean checkConnection(){
             try{
-                this.connection.getMBeanCount();
+                this.connection.getDefaultDomain();
                 return true;
             }catch(IOException ioe){
             }
