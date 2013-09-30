@@ -170,8 +170,11 @@ public class HibernateAnnotationScanner implements Scanner {
                     try {
                         resultClasses.add(pu.getNewTempClassLoader().loadClass(className));
                     } catch (ClassNotFoundException e) {
-                        throw MESSAGES.cannotLoadEntityClass(e, className);
+                        JPA_LOGGER.cannotLoadEntityClass(e, className);
+                    } catch (NoClassDefFoundError e) {
+                        JPA_LOGGER.cannotLoadEntityClass(e, className);
                     }
+
                 }
             }
         }
@@ -238,7 +241,9 @@ public class HibernateAnnotationScanner implements Scanner {
                             result.add(clazz);
                             classesForAnnotation.add(clazz);
                         } catch (ClassNotFoundException e) {
-                            throw MESSAGES.cannotLoadEntityClass(e, className);
+                            JPA_LOGGER.cannotLoadEntityClass(e, className);
+                        } catch (NoClassDefFoundError e) {
+                            JPA_LOGGER.cannotLoadEntityClass(e, className);
                         }
                     }
                 }

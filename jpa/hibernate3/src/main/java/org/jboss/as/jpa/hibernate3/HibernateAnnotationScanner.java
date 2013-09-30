@@ -173,7 +173,9 @@ public class HibernateAnnotationScanner implements Scanner {
                         // TODO:  fix temp classloader (get CFNE on entity class)
                         //result.add(pu.getNewTempClassLoader().loadClass(className));
                     } catch (ClassNotFoundException e) {
-                        throw MESSAGES.cannotLoadEntityClass(e, className);
+                        JPA_LOGGER.cannotLoadEntityClass(e, className);
+                    } catch (NoClassDefFoundError e) {
+                        JPA_LOGGER.cannotLoadEntityClass(e, className);
                     }
                 }
             }
@@ -243,7 +245,9 @@ public class HibernateAnnotationScanner implements Scanner {
                             // TODO:  fix temp classloader (get CFNE on entity class)
                             //result.add(pu.getNewTempClassLoader().loadClass(className));
                         } catch (ClassNotFoundException e) {
-                            throw MESSAGES.cannotLoadEntityClass(e, className);
+                            JPA_LOGGER.tracef("Could not load entity class '%s' with PersistenceUnitInfo.getClassLoader()", className);
+                        } catch (NoClassDefFoundError e) {
+                            JPA_LOGGER.tracef("Could not load entity class '%s' with PersistenceUnitInfo.getClassLoader()", className);
                         }
                     }
                 }

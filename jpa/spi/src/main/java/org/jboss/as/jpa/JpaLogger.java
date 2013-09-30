@@ -137,4 +137,16 @@ public interface JpaLogger extends BasicLogger {
     @LogMessage(level = WARN)
     @Message(id = 11407, value = "Failed to get module attachment for %s")
     void failedToGetModuleAttachment(DeploymentUnit deploymentUnit);
+
+    /**
+     * warn that the entity class could not be loaded with the
+     * {@link javax.persistence.spi.PersistenceUnitInfo#getClassLoader()}.
+     *
+     * @param cause     the cause of the error.
+     * @param className the entity class name.
+     */
+    @LogMessage(level = WARN)
+    @Message(id = 11408, value = "Could not load entity class '%s', ignoring this error and continuing with application deployment")
+    void cannotLoadEntityClass(@Cause Throwable cause, String className);
+
 }
