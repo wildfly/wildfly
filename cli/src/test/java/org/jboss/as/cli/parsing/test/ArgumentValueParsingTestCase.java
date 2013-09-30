@@ -318,6 +318,14 @@ public class ArgumentValueParsingTestCase {
     }
 
     @Test
+    public void testEscapedQuotes() throws Exception {
+        ModelNode value = parse("\"substituteAll(\\\"JBAS\\\",\\\"DUMMY\\\")\"");
+        assertNotNull(value);
+        assertEquals(ModelType.STRING, value.getType());
+        assertEquals("substituteAll(\"JBAS\",\"DUMMY\")", value.asString());
+    }
+
+    @Test
     public void testLoginModules() throws Exception {
         ModelNode value = parse("[{code=Database, flag=required, module-options=[unauthenticatedIdentity=guest," +
                 "dsJndiName=java:jboss/jdbc/ApplicationDS," +
