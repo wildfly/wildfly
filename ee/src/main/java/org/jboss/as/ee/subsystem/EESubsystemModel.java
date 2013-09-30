@@ -34,18 +34,14 @@ public interface EESubsystemModel {
     String SPEC_DESCRIPTOR_PROPERTY_REPLACEMENT = "spec-descriptor-property-replacement";
     String JBOSS_DESCRIPTOR_PROPERTY_REPLACEMENT = "jboss-descriptor-property-replacement";
 
-    String DEFAULT_CONTEXT_SERVICE = "default-context-service";
-    String DEFAULT_MANAGED_THREAD_FACTORY = "default-managed-thread-factory";
-    String DEFAULT_MANAGED_EXECUTOR_SERVICE = "default-managed-executor-service";
-    String DEFAULT_MANAGED_SCHEDULED_EXECUTOR_SERVICE = "default-managed-scheduled-executor-service";
+    String DEFAULT_BINDINGS = "default-bindings";
+
+    String CONTEXT_SERVICE = "context-service";
     String MANAGED_THREAD_FACTORY = "managed-thread-factory";
     String MANAGED_EXECUTOR_SERVICE = "managed-executor-service";
     String MANAGED_SCHEDULED_EXECUTOR_SERVICE = "managed-scheduled-executor-service";
     String SERVICE = "service";
 
-    PathElement DEFAULT_CONTEXT_SERVICE_PATH = PathElement.pathElement(SERVICE,DEFAULT_CONTEXT_SERVICE);
-    PathElement DEFAULT_MANAGED_THREAD_FACTORY_PATH = PathElement.pathElement(SERVICE,DEFAULT_MANAGED_THREAD_FACTORY);
-    PathElement DEFAULT_MANAGED_EXECUTOR_SERVICE_PATH = PathElement.pathElement(SERVICE,DEFAULT_MANAGED_EXECUTOR_SERVICE);
-    PathElement DEFAULT_MANAGED_SCHEDULED_EXECUTOR_SERVICE_PATH = PathElement.pathElement(SERVICE,DEFAULT_MANAGED_SCHEDULED_EXECUTOR_SERVICE);
+    PathElement DEFAULT_BINDINGS_PATH = PathElement.pathElement(SERVICE,DEFAULT_BINDINGS);
 
 }

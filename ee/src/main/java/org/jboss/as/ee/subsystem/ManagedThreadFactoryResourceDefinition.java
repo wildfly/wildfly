@@ -40,8 +40,15 @@ import org.jboss.dmr.ModelType;
  */
 public class ManagedThreadFactoryResourceDefinition extends SimpleResourceDefinition {
 
+    public static final String JNDI_NAME = "jndi-name";
     public static final String CONTEXT_SERVICE = "context-service";
     public static final String PRIORITY = "priority";
+
+    public static final SimpleAttributeDefinition JNDI_NAME_AD =
+            new SimpleAttributeDefinitionBuilder(JNDI_NAME, ModelType.STRING, false)
+                    .setAllowExpression(true)
+                    .setFlags(AttributeAccess.Flag.RESTART_RESOURCE_SERVICES)
+                    .build();
 
     public static final SimpleAttributeDefinition CONTEXT_SERVICE_AD =
             new SimpleAttributeDefinitionBuilder(CONTEXT_SERVICE, ModelType.STRING, true)
@@ -58,7 +65,7 @@ public class ManagedThreadFactoryResourceDefinition extends SimpleResourceDefini
                     .setFlags(AttributeAccess.Flag.RESTART_RESOURCE_SERVICES)
                     .build();
 
-    static final SimpleAttributeDefinition[] ATTRIBUTES = {CONTEXT_SERVICE_AD, PRIORITY_AD};
+    static final SimpleAttributeDefinition[] ATTRIBUTES = {JNDI_NAME_AD, CONTEXT_SERVICE_AD, PRIORITY_AD};
 
     public static final ManagedThreadFactoryResourceDefinition INSTANCE = new ManagedThreadFactoryResourceDefinition();
 

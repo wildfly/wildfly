@@ -19,44 +19,27 @@
  * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
-package org.jboss.as.test.integration.weld.ee.concurrency.injection;
+package org.jboss.as.test.integration.ee.naming.defaultbindings.datasource;
 
 import javax.annotation.Resource;
-import javax.enterprise.concurrent.ContextService;
-import javax.enterprise.concurrent.ManagedExecutorService;
-import javax.enterprise.concurrent.ManagedScheduledExecutorService;
-import javax.enterprise.concurrent.ManagedThreadFactory;
+import javax.sql.DataSource;
 
 /**
  * @author Eduardo Martins
  */
-public class Bean {
+public class DefaultDataSourceTestCDIBean {
 
     @Resource
-    private ContextService contextService;
+    private DataSource injectedResource;
 
-    @Resource
-    private ManagedExecutorService managedExecutorService;
-
-    @Resource
-    private ManagedScheduledExecutorService managedScheduledExecutorService;
-
-    @Resource
-    private ManagedThreadFactory managedThreadFactory;
-
-    public ContextService getContextService() {
-        return contextService;
-    }
-
-    public ManagedExecutorService getManagedExecutorService() {
-        return managedExecutorService;
-    }
-
-    public ManagedScheduledExecutorService getManagedScheduledExecutorService() {
-        return managedScheduledExecutorService;
-    }
-
-    public ManagedThreadFactory getManagedThreadFactory() {
-        return managedThreadFactory;
+    /**
+     *
+     * @throws Throwable
+     */
+    public void test() throws Throwable {
+        // check injected resource
+        if(injectedResource == null) {
+            throw new NullPointerException("injected resource");
+        }
     }
 }
