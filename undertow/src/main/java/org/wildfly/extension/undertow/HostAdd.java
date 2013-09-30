@@ -38,6 +38,7 @@ import org.jboss.as.controller.ServiceVerificationHandler;
 import org.jboss.as.controller.registry.Resource;
 import org.jboss.as.server.mgmt.UndertowHttpManagementService;
 import org.jboss.as.server.mgmt.domain.HttpManagement;
+import org.jboss.as.web.host.CommonWebServer;
 import org.jboss.as.web.host.WebHost;
 import org.jboss.dmr.ModelNode;
 import org.jboss.msc.service.ServiceBuilder;
@@ -73,16 +74,13 @@ class HostAdd extends AbstractAddStepHandler {
         final ServiceBuilder<Host> builder = context.getServiceTarget().addService(virtualHostServiceName, service)
                 .addDependency(UndertowService.SERVER.append(serverName), Server.class, service.getServerInjection())
                 .addDependency(UndertowService.UNDERTOW, UndertowService.class, service.getUndertowService())
-                .addDependency(accessLog != null ? REQUIRED : OPTIONAL, accessLogServiceName, AccessLogService.class, service.getAccessLogService())
-                .addAliases(WebHost.SERVICE_NAME.append(name));
+                .addDependency(accessLog != null ? REQUIRED : OPTIONAL, accessLogServiceName, AccessLogService.class, service.getAccessLogService());
 
-        if (aliases != null) {
-            for (String alias : aliases) {
-                builder.addAliases(WebHost.SERVICE_NAME.append(alias));
-            }
-        }
         builder.addListener(verificationHandler);
         builder.setInitialMode(Mode.ON_DEMAND);
+
+
+        final ServiceController<WebHost> commonController = addCommonHost(context, verificationHandler, name, aliases, serverName, virtualHostServiceName);
 
         final ServiceController<Host> serviceController = builder.install();
 
@@ -110,7 +108,26 @@ class HostAdd extends AbstractAddStepHandler {
         if (newControllers != null) {
             newControllers.add(serviceController);
             newControllers.add(consoleServiceServiceController);
+            newControllers.add(commonController);
         }
     }
 
+    private ServiceController<WebHost> addCommonHost(OperationContext context, ServiceVerificationHandler verificationHandler, String hostName, List<String> aliases,
+                                                     String serverName, ServiceName virtualHostServiceName) {
+        WebHostService service = new WebHostService();
+        final ServiceBuilder<WebHost> builder = context.getServiceTarget().addService(WebHost.SERVICE_NAME.append(hostName), service)
+                .addDependency(UndertowService.SERVER.append(serverName), Server.class, service.getServer())
+                .addDependency(CommonWebServer.SERVICE_NAME)
+                .addDependency(virtualHostServiceName, Host.class, service.getHost());
+
+        if (aliases != null) {
+            for (String alias : aliases) {
+                builder.addAliases(WebHost.SERVICE_NAME.append(alias));
+            }
+        }
+
+        builder.addListener(verificationHandler);
+        builder.setInitialMode(Mode.PASSIVE);
+        return builder.install();
+    }
 }

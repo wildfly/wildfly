@@ -139,6 +139,8 @@ public abstract class AbstractListenerService<T> implements Service<T> {
 
     abstract void stopListening();
 
+    protected abstract String getProtocol();
+
     private static class ListenerBinding implements ManagedBinding {
 
         private final SocketBinding binding;

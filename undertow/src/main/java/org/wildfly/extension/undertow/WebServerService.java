@@ -22,24 +22,58 @@
 
 package org.wildfly.extension.undertow;
 
+import java.util.HashMap;
+import java.util.Map;
+
+import org.jboss.as.network.SocketBinding;
 import org.jboss.as.web.host.CommonWebServer;
 import org.jboss.msc.service.Service;
 import org.jboss.msc.service.StartContext;
 import org.jboss.msc.service.StartException;
 import org.jboss.msc.service.StopContext;
+import org.jboss.msc.value.InjectedValue;
 
 /**
- *
- * TODO: this is a hack for now
  * @author Stuart Douglas
  */
-@Deprecated
-public class WebServerService implements CommonWebServer, Service<WebServerService> {
+class WebServerService implements CommonWebServer, Service<WebServerService> {
+    private InjectedValue<Server> serverInjectedValue = new InjectedValue<>();
 
+    InjectedValue<Server> getServerInjectedValue() {
+        return serverInjectedValue;
+    }
 
+    //todo we need to handle cases when deployments reference listeners/server/host directly
     @Override
     public int getPort(final String protocol, final boolean secure) {
-        return secure ? 8443 : 8080;
+        Map<String, AbstractListenerService> listeners = getListenerMap();
+        AbstractListenerService listener = null;
+        for (String p : listeners.keySet()) {
+            if (protocol.toLowerCase().contains(p)) {
+                listener = listeners.get(p);
+            }
+        }
+        if (listener != null && listener.getProtocol() == HttpListenerService.PROTOCOL && secure) {
+            if (listeners.containsKey(HttpsListenerService.PROTOCOL)) {
+                listener = listeners.get(HttpsListenerService.PROTOCOL);
+            } else {
+                UndertowLogger.ROOT_LOGGER.secureListenerNotAvailableForPort(protocol);
+            }
+        }
+        if (listener != null) {
+            SocketBinding binding = (SocketBinding) listener.getBinding().getValue();
+            return binding.getAbsolutePort();
+        }
+        throw UndertowMessages.MESSAGES.noPortListeningForProtocol(protocol);
+
+    }
+
+    private Map<String, AbstractListenerService> getListenerMap() {
+        HashMap<String, AbstractListenerService> listeners = new HashMap<>();
+        for (AbstractListenerService listener : serverInjectedValue.getValue().getListeners()) {
+            listeners.put(listener.getProtocol(), listener);
+        }
+        return listeners;
     }
 
     @Override
@@ -49,7 +83,6 @@ public class WebServerService implements CommonWebServer, Service<WebServerServi
 
     @Override
     public void stop(final StopContext context) {
-
     }
 
     @Override

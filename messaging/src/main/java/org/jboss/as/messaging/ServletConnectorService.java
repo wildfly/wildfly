@@ -52,7 +52,7 @@ import org.jboss.netty.channel.socket.http.HttpTunnelingServlet;
  *
  * @author <a href="http://jmesnil.net/">Jeff Mesnil</a> (c) 2013 Red Hat inc.
  */
-class ServletConnectorService implements Service<Void> {
+class ServletConnectorService implements Service<ServletConnectorService> {
 
     private final String hornetqServerName;
     private final String connectorName;
@@ -82,7 +82,7 @@ class ServletConnectorService implements Service<Void> {
         return "org.hornetq." + hornetqServerName + "." + connectorName;
     }
 
-    static ServiceController<Void> addService(ServiceTarget serviceTarget,
+    static ServiceController<ServletConnectorService> addService(ServiceTarget serviceTarget,
                                               ServiceVerificationHandler verificationHandler,
                                               String host, String hornetqServerName,
                                               String connectorName) {
@@ -134,8 +134,8 @@ class ServletConnectorService implements Service<Void> {
     }
 
     @Override
-    public Void getValue() throws IllegalStateException {
-        return null;
+    public ServletConnectorService getValue() throws IllegalStateException {
+        return this;
     }
 
     private WebDeploymentBuilder createWebDeployment(String hornetqServerName, String connectorName) throws Exception {
