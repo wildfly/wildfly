@@ -49,4 +49,12 @@ public class WeldApplicationFactory extends ForwardingApplicationFactory {
         return application;
     }
 
+    @Override
+    public void setApplication(final Application application) {
+        synchronized (this) {
+            this.application = null;
+            super.setApplication(application);
+        }
+    }
+
 }
