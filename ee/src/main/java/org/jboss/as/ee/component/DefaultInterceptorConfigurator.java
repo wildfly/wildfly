@@ -24,6 +24,7 @@ import org.jboss.as.server.deployment.reflect.ClassReflectionIndex;
 import org.jboss.as.server.deployment.reflect.ClassReflectionIndexUtil;
 import org.jboss.as.server.deployment.reflect.DeploymentClassIndex;
 import org.jboss.as.server.deployment.reflect.DeploymentReflectionIndex;
+import org.jboss.invocation.ImmediateInterceptorFactory;
 import org.jboss.invocation.InterceptorFactory;
 import org.jboss.invocation.Interceptors;
 import org.jboss.invocation.proxy.MethodIdentifier;
@@ -51,14 +52,13 @@ class DefaultInterceptorConfigurator extends AbstractComponentConfigurator imple
 
         // Module stuff
 
-        final Deque<InterceptorFactory> instantiators = new ArrayDeque<>();
-        final Deque<InterceptorFactory> injectors = new ArrayDeque<>();
-        final Deque<InterceptorFactory> uninjectors = new ArrayDeque<>();
-        final Deque<InterceptorFactory> destructors = new ArrayDeque<>();
+        final Deque<InterceptorFactory> instantiators = new ArrayDeque<InterceptorFactory>();
+        final Deque<InterceptorFactory> injectors = new ArrayDeque<InterceptorFactory>();
+        final Deque<InterceptorFactory> uninjectors = new ArrayDeque<InterceptorFactory>();
+        final Deque<InterceptorFactory> destructors = new ArrayDeque<InterceptorFactory>();
 
 
-        final Map<String, List<InterceptorFactory>> userAroundInvokesByInterceptorClass = new HashMap<>();
-        final Map<String, List<InterceptorFactory>> userAroundConstructsByInterceptorClass = new HashMap<String, List<InterceptorFactory>>();
+        final Map<String, List<InterceptorFactory>> userAroundInvokesByInterceptorClass = new HashMap<String, List<InterceptorFactory>>();
         final Map<String, List<InterceptorFactory>> userAroundTimeoutsByInterceptorClass;
         final Map<String, List<InterceptorFactory>> userPrePassivatesByInterceptorClass;
         final Map<String, List<InterceptorFactory>> userPostActivatesByInterceptorClass;
@@ -68,19 +68,18 @@ class DefaultInterceptorConfigurator extends AbstractComponentConfigurator imple
 
         final Set<MethodIdentifier> timeoutMethods = description.getTimerMethods();
         if (description.isTimerServiceRequired()) {
-            userAroundTimeoutsByInterceptorClass = new HashMap<>();
+            userAroundTimeoutsByInterceptorClass = new HashMap<String, List<InterceptorFactory>>();
         } else {
             userAroundTimeoutsByInterceptorClass = null;
         }
 
         if (description.isPassivationApplicable()) {
-            userPrePassivatesByInterceptorClass = new HashMap<>();
-            userPostActivatesByInterceptorClass = new HashMap<>();
+            userPrePassivatesByInterceptorClass = new HashMap<String, List<InterceptorFactory>>();
+            userPostActivatesByInterceptorClass = new HashMap<String, List<InterceptorFactory>>();
         } else {
             userPrePassivatesByInterceptorClass = null;
             userPostActivatesByInterceptorClass = null;
         }
-
 
         //all interceptors with lifecycle callbacks, in the correct order
         final List<InterceptorDescription> interceptorWithLifecycleCallbacks = new ArrayList<InterceptorDescription>();
@@ -118,8 +117,8 @@ class DefaultInterceptorConfigurator extends AbstractComponentConfigurator imple
                 throw MESSAGES.defaultConstructorNotFoundOnComponent(interceptorClassName, configuration.getComponentClass());
             }
 
-            instantiators.addFirst(new ManagedReferenceInterceptorFactory(new ValueManagedReferenceFactory(new ConstructedValue(constructor, Collections.<Value<?>>emptyList())), contextKey));
-            destructors.addLast(new ManagedReferenceReleaseInterceptorFactory(contextKey));
+            instantiators.addFirst(new ImmediateInterceptorFactory(new ComponentInstantiatorInterceptor(new ValueManagedReferenceFactory(new ConstructedValue(constructor, Collections.<Value<?>>emptyList())), contextKey, false)));
+            destructors.addLast(new ImmediateInterceptorFactory(new ManagedReferenceReleaseInterceptor(contextKey)));
 
             final boolean interceptorHasLifecycleCallbacks = interceptorWithLifecycleCallbacks.contains(interceptorDescription);
 
@@ -162,7 +161,7 @@ class DefaultInterceptorConfigurator extends AbstractComponentConfigurator imple
                     if (methodIdentifier != null) {
                         final Method method = ClassReflectionIndexUtil.findRequiredMethod(deploymentReflectionIndex, clazz, methodIdentifier);
                         if (isNotOverriden(clazz, method, interceptorClass.getModuleClass(), deploymentReflectionIndex)) {
-                            final InterceptorFactory interceptorFactory = new ManagedReferenceLifecycleMethodInterceptorFactory(contextKey, method, changeMethod, lifecycleMethod);
+                            final InterceptorFactory interceptorFactory = new ImmediateInterceptorFactory(new ManagedReferenceLifecycleMethodInterceptor(contextKey, method, changeMethod, lifecycleMethod));
                             List<InterceptorFactory> factories = classMap.get(interceptorClassName);
                             if (factories == null) {
                                 classMap.put(interceptorClassName, factories = new ArrayList<InterceptorFactory>());
@@ -208,7 +207,6 @@ class DefaultInterceptorConfigurator extends AbstractComponentConfigurator imple
         if (!userPostConstruct.isEmpty()) {
             configuration.addPostConstructInterceptor(weaved(userPostConstruct), InterceptorOrder.ComponentPostConstruct.INTERCEPTOR_USER_INTERCEPTORS);
         }
-        configuration.addPostConstructInterceptor(Interceptors.getTerminalInterceptorFactory(), InterceptorOrder.ComponentPostConstruct.TERMINAL_INTERCEPTOR);
 
         // Apply pre-destroy
         if (!uninjectors.isEmpty()) {

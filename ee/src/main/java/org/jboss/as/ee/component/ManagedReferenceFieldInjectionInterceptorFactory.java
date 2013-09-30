@@ -24,8 +24,6 @@ package org.jboss.as.ee.component;
 
 import java.lang.reflect.Field;
 import java.lang.reflect.Modifier;
-import java.util.Map;
-import java.util.concurrent.atomic.AtomicReference;
 
 import org.jboss.as.ee.EeMessages;
 import org.jboss.as.naming.ManagedReference;
@@ -58,46 +56,42 @@ final class ManagedReferenceFieldInjectionInterceptorFactory implements Intercep
     }
 
     public Interceptor create(final InterceptorFactoryContext context) {
-        final Map<Object, Object> contextData = context.getContextData();
-        @SuppressWarnings("unchecked")
-        final AtomicReference<ManagedReference> targetReference = (AtomicReference<ManagedReference>) contextData.get(targetContextKey);
-        final AtomicReference<ManagedReference> valueReference = new AtomicReference<ManagedReference>();
-        contextData.put(valueContextKey, valueReference);
-        return new ManagedReferenceFieldInjectionInterceptor(targetReference, valueReference, factoryValue.getValue(), field, optional);
+        return new ManagedReferenceFieldInjectionInterceptor(targetContextKey, valueContextKey, factoryValue.getValue(), field, optional);
     }
 
     /**
      * An interceptor which constructs and injects a managed reference into a field.  The context key given
-     * for storing the reference should be passed to a {@link org.jboss.as.ee.component.ManagedReferenceReleaseInterceptorFactory} which is run during
+     * for storing the reference should be passed to a {@link ManagedReferenceReleaseInterceptor} which is run during
      * object destruction.
      *
      * @author <a href="mailto:david.lloyd@redhat.com">David M. Lloyd</a>
      */
     static final class ManagedReferenceFieldInjectionInterceptor implements Interceptor {
 
-        private final AtomicReference<ManagedReference> targetReference;
-        private final AtomicReference<ManagedReference> valueReference;
+        private final Object targetKey;
         private final ManagedReferenceFactory factory;
         private final Field field;
         private final boolean optional;
+        private final Object valueContextKey;
 
-        ManagedReferenceFieldInjectionInterceptor(final AtomicReference<ManagedReference> targetReference, final AtomicReference<ManagedReference> valueReference, final ManagedReferenceFactory factory, final Field field, final boolean optional) {
-            this.targetReference = targetReference;
-            this.valueReference = valueReference;
+        ManagedReferenceFieldInjectionInterceptor(final Object targetKey, final Object valueContextKey, final ManagedReferenceFactory factory, final Field field, final boolean optional) {
+            this.targetKey = targetKey;
             this.factory = factory;
             this.field = field;
             this.optional = optional;
+            this.valueContextKey = valueContextKey;
         }
 
         /**
          * {@inheritDoc}
          */
         public Object processInvocation(final InterceptorContext context) throws Exception {
+            ComponentInstance componentInstance = context.getPrivateData(ComponentInstance.class);
             Object target;
             if (Modifier.isStatic(field.getModifiers())) {
                 target = null;
             } else {
-                target = targetReference.get().getInstance();
+                target = ((ManagedReference) componentInstance.getInstanceData(targetKey)).getInstance();
                 if (target == null) {
                     throw MESSAGES.injectionTargetNotFound();
                 }
@@ -110,14 +104,14 @@ final class ManagedReferenceFieldInjectionInterceptorFactory implements Intercep
             }
             boolean ok = false;
             try {
-                valueReference.set(reference);
+                componentInstance.setInstanceData(valueContextKey, reference);
                 field.set(target, reference.getInstance());
                 Object result = context.proceed();
                 ok = true;
                 return result;
             } finally {
                 if (!ok) {
-                    valueReference.set(null);
+                    componentInstance.setInstanceData(valueContextKey, null);
                     reference.release();
                 }
             }

@@ -144,7 +144,7 @@ public class StatefulComponentDescription extends SessionBeanComponentDescriptio
         getConfigurators().addFirst(new ComponentConfigurator() {
             @Override
             public void configure(DeploymentPhaseContext context, ComponentDescription description, ComponentConfiguration configuration) throws DeploymentUnitProcessingException {
-                configuration.addPostConstructInterceptor(StatefulInitMethodInterceptorFactory.INSTANCE, InterceptorOrder.ComponentPostConstruct.SFSB_INIT_METHOD);
+                configuration.addPostConstructInterceptor(StatefulInitMethodInterceptor.INSTANCE, InterceptorOrder.ComponentPostConstruct.SFSB_INIT_METHOD);
             }
         });
     }
@@ -317,7 +317,7 @@ public class StatefulComponentDescription extends SessionBeanComponentDescriptio
                     }
                 } else {
                     // interceptor factory return an interceptor which sets up the session id on component view instance creation
-                    final InterceptorFactory sessionIdGeneratingInterceptorFactory = StatefulComponentSessionIdGeneratingInterceptorFactory.INSTANCE;
+                    final InterceptorFactory sessionIdGeneratingInterceptorFactory = StatefulComponentSessionIdGeneratingInterceptor.FACTORY;
 
                     // add the session id generating interceptor to the start of the *post-construct interceptor chain of the ComponentViewInstance*
                     viewConfiguration.addClientPostConstructInterceptor(sessionIdGeneratingInterceptorFactory, InterceptorOrder.ClientPostConstruct.INSTANCE_CREATE);
@@ -326,7 +326,7 @@ public class StatefulComponentDescription extends SessionBeanComponentDescriptio
                         if ((method.getName().equals("hashCode") && method.getParameterTypes().length == 0) ||
                                 method.getName().equals("equals") && method.getParameterTypes().length == 1 &&
                                         method.getParameterTypes()[0] == Object.class) {
-                            viewConfiguration.addClientInterceptor(method, StatefulIdentityInterceptorFactory.INSTANCE, InterceptorOrder.Client.EJB_EQUALS_HASHCODE);
+                            viewConfiguration.addClientInterceptor(method, StatefulIdentityInterceptor.FACTORY, InterceptorOrder.Client.EJB_EQUALS_HASHCODE);
                         }
                     }
                 }
@@ -337,7 +337,6 @@ public class StatefulComponentDescription extends SessionBeanComponentDescriptio
                 @Override
                 public void configure(DeploymentPhaseContext context, ComponentConfiguration componentConfiguration, ViewDescription description, ViewConfiguration configuration) throws DeploymentUnitProcessingException {
                     // add the instance associating interceptor to the *start of the invocation interceptor chain*
-                    configuration.addClientInterceptor(StatefulComponentIdInterceptor.Factory.INSTANCE, InterceptorOrder.Client.ASSOCIATING_INTERCEPTOR);
                     configuration.addViewInterceptor(StatefulComponentInstanceInterceptor.FACTORY, InterceptorOrder.View.ASSOCIATING_INTERCEPTOR);
                 }
             });

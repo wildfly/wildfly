@@ -25,19 +25,17 @@ package org.jboss.as.ejb3.component.stateful;
 import java.io.ObjectStreamException;
 import java.io.Serializable;
 import java.security.AccessController;
+import java.security.PrivilegedAction;
+import java.util.HashMap;
 import java.util.Map;
-import java.util.concurrent.atomic.AtomicReference;
 
+import org.jboss.as.ee.component.BasicComponentInstance;
 import org.jboss.as.naming.ManagedReference;
-import org.jboss.as.naming.ValueManagedReference;
 import org.jboss.as.server.CurrentServiceContainer;
 import org.jboss.ejb.client.SessionID;
-import org.jboss.invocation.InterceptorFactoryContext;
-import org.jboss.invocation.SimpleInterceptorFactoryContext;
 import org.jboss.msc.service.ServiceContainer;
 import org.jboss.msc.service.ServiceController;
 import org.jboss.msc.service.ServiceName;
-import org.jboss.msc.value.ImmediateValue;
 
 /**
  *
@@ -66,13 +64,13 @@ public class SerializedStatefulSessionComponent implements Serializable {
         ServiceName name = ServiceName.parse(serviceName);
         ServiceController<?> service = currentServiceContainer().getRequiredService(name);
         StatefulSessionComponent component = (StatefulSessionComponent) service.getValue();
-        final InterceptorFactoryContext context = new SimpleInterceptorFactoryContext();
+        final Map<Object, Object> context = new HashMap<Object, Object>();
 
         for(final Map.Entry<Object, Object> entry : serializableInterceptors.entrySet()) {
-            AtomicReference<ManagedReference> referenceReference = new AtomicReference<ManagedReference>(new ValueManagedReference(new ImmediateValue<Object>(entry.getValue())));
-            context.getContextData().put(entry.getKey(), referenceReference);
+            context.put(entry.getKey(), entry.getValue());
         }
-        context.getContextData().put(SessionID.class, sessionID);
+        context.put(SessionID.class, sessionID);
+        context.put(BasicComponentInstance.INSTANCE_KEY, instance);
         return component.constructComponentInstance(instance, false, context);
     }
 

@@ -27,8 +27,6 @@ import org.jboss.as.ee.component.ComponentView;
 import org.jboss.ejb.client.EJBMetaDataImpl;
 import org.jboss.invocation.Interceptor;
 import org.jboss.invocation.InterceptorContext;
-import org.jboss.invocation.InterceptorFactory;
-import org.jboss.invocation.InterceptorFactoryContext;
 import org.jboss.msc.value.InjectedValue;
 
 /**
@@ -36,24 +34,26 @@ import org.jboss.msc.value.InjectedValue;
  *
  * @author Stuart Douglas
  */
-public class EjbMetadataInterceptorFactory implements InterceptorFactory {
+public class EjbMetadataInterceptor implements Interceptor {
 
     private final InjectedValue<ComponentView> homeView = new InjectedValue<ComponentView>();
+    private final Class<?> remoteClass;
+    private final Class<?> homeClass;
+    private final Class<?> pkClass;
+    private final boolean session;
+    private final boolean stateless;
 
-    private final Interceptor interceptor;
-
-    public EjbMetadataInterceptorFactory(final Class<?> remoteClass, final Class<?> homeClass, final Class<?> pkClass, final boolean session, final boolean stateless) {
-        this.interceptor = new Interceptor() {
-            @Override
-            public Object processInvocation(final InterceptorContext context) throws Exception {
-                return new EJBMetaDataImpl(remoteClass, homeClass, pkClass, session, stateless, (EJBHome) homeView.getValue().createInstance().getInstance());
-            }
-        };
+    public EjbMetadataInterceptor(Class<?> remoteClass, Class<?> homeClass, Class<?> pkClass, boolean session, boolean stateless) {
+        this.remoteClass = remoteClass;
+        this.homeClass = homeClass;
+        this.pkClass = pkClass;
+        this.session = session;
+        this.stateless = stateless;
     }
 
     @Override
-    public Interceptor create(final InterceptorFactoryContext context) {
-        return interceptor;
+    public Object processInvocation(final InterceptorContext context) throws Exception {
+        return new EJBMetaDataImpl(EjbMetadataInterceptor.this.remoteClass, EjbMetadataInterceptor.this.homeClass, EjbMetadataInterceptor.this.pkClass, EjbMetadataInterceptor.this.session, EjbMetadataInterceptor.this.stateless, (EJBHome) homeView.getValue().createInstance().getInstance());
     }
 
     public InjectedValue<ComponentView> getHomeView() {

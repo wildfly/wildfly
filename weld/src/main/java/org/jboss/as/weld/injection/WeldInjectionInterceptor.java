@@ -22,17 +22,12 @@
 package org.jboss.as.weld.injection;
 
 import org.jboss.as.ee.component.BasicComponentInstance;
-import org.jboss.as.ee.component.ComponentConfiguration;
+import org.jboss.as.ee.component.ComponentInstance;
 import org.jboss.as.naming.ManagedReference;
 import org.jboss.invocation.Interceptor;
 import org.jboss.invocation.InterceptorContext;
-import org.jboss.invocation.InterceptorFactory;
-import org.jboss.invocation.InterceptorFactoryContext;
 
-import java.util.HashMap;
-import java.util.Map;
 import java.util.Set;
-import java.util.concurrent.atomic.AtomicReference;
 
 /**
  * Class that performs CDI injection and calls initializer methods after resource injection
@@ -42,63 +37,33 @@ import java.util.concurrent.atomic.AtomicReference;
  */
 public class WeldInjectionInterceptor implements Interceptor {
 
-    final AtomicReference<ManagedReference> targetReference;
-    final Map<Class<?>, AtomicReference<ManagedReference>> interceptors;
-    final WeldManagedReferenceFactory managedReferenceFactory;
+    private final WeldManagedReferenceFactory weldManagedReferenceFactory;
+    private final Set<Class<?>> interceptorClasses;
 
-    public WeldInjectionInterceptor(final AtomicReference<ManagedReference> targetReference, final Map<Class<?>, AtomicReference<ManagedReference>> interceptors, final WeldManagedReferenceFactory managedReferenceFactory) {
-        this.targetReference = targetReference;
-        this.interceptors = interceptors;
-        this.managedReferenceFactory = managedReferenceFactory;
+    public WeldInjectionInterceptor(WeldManagedReferenceFactory weldManagedReferenceFactory, Set<Class<?>> interceptorClasses) {
+        this.weldManagedReferenceFactory = weldManagedReferenceFactory;
+        this.interceptorClasses = interceptorClasses;
     }
 
     @Override
     public Object processInvocation(final InterceptorContext context) throws Exception {
-        final ManagedReference managedReference = targetReference.get();
+        ComponentInstance componentInstance = context.getPrivateData(ComponentInstance.class);
+        final ManagedReference managedReference = (ManagedReference) componentInstance.getInstanceData(BasicComponentInstance.INSTANCE_KEY);
         if (managedReference instanceof WeldManagedReference) {
             final WeldManagedReference reference = (WeldManagedReference) managedReference;
-            reference.getInjectionTarget().inject(targetReference.get().getInstance(), reference.getContext());
+            reference.getInjectionTarget().inject(managedReference.getInstance(), reference.getContext());
             //now inject the interceptors
-            for (final Map.Entry<Class<?>, AtomicReference<ManagedReference>> entry : interceptors.entrySet()) {
-                final ManagedReference instance = entry.getValue().get();
+            for (final Class<?> interceptorClass : interceptorClasses) {
+                final ManagedReference instance = (ManagedReference) componentInstance.getInstanceData(interceptorClass);
                 if (instance != null) {
-                    reference.injectInterceptor(entry.getKey(), instance.getInstance());
+                    reference.injectInterceptor(interceptorClass, instance.getInstance());
                 }
             }
-        } else if(managedReferenceFactory != null){
+        } else if(weldManagedReferenceFactory != null){
             //this component was not created by the managed reference factory, this can happen in the case of JSF managed beans
-            final ManagedReference newReference = managedReferenceFactory.injectExistingReference(managedReference);
-            targetReference.set(newReference);
+            final ManagedReference newReference = weldManagedReferenceFactory.injectExistingReference(managedReference);
+            componentInstance.setInstanceData(BasicComponentInstance.INSTANCE_KEY, newReference);
         }
         return context.proceed();
-    }
-
-    public static class Factory implements InterceptorFactory {
-
-        final ComponentConfiguration configuration;
-        final Set<Class<?>> interceptorClasses;
-
-        public Factory(final ComponentConfiguration configuration, final Set<Class<?>> interceptorClasses) {
-            this.configuration = configuration;
-            this.interceptorClasses = interceptorClasses;
-        }
-
-        @Override
-        public Interceptor create(final InterceptorFactoryContext context) {
-            final AtomicReference<ManagedReference> targetReference = (AtomicReference<ManagedReference>) context.getContextData().get(BasicComponentInstance.INSTANCE_KEY);
-            final Map<Class<?>, AtomicReference<ManagedReference>> interceptors = new HashMap<Class<?>, AtomicReference<ManagedReference>>();
-            for (Class<?> clazz : interceptorClasses) {
-                final AtomicReference<ManagedReference> interceptor = (AtomicReference<ManagedReference>) context.getContextData().get(clazz);
-                if(interceptor != null) {
-                    interceptors.put(clazz, interceptor);
-                }
-
-            }
-            WeldManagedReferenceFactory managedReferenceFactory = null;
-            if(configuration.getInstanceFactory() instanceof WeldManagedReferenceFactory) {
-                managedReferenceFactory = (WeldManagedReferenceFactory) configuration.getInstanceFactory();
-            }
-            return new WeldInjectionInterceptor(targetReference, interceptors, managedReferenceFactory);
-        }
     }
 }

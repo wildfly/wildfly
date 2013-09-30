@@ -24,7 +24,7 @@ package org.jboss.as.cmp.component;
 
 import java.lang.reflect.Method;
 import org.jboss.as.cmp.CmpMessages;
-import org.jboss.as.cmp.component.interceptors.CmpEntityBeanEjbCreateMethodInterceptorFactory;
+import org.jboss.as.cmp.component.interceptors.CmpEntityBeanEjbCreateMethodInterceptor;
 import org.jboss.as.cmp.component.interceptors.CmpEntityBeanRemoveInterceptorFactory;
 import org.jboss.as.ee.component.ComponentConfiguration;
 import org.jboss.as.ee.component.ComponentInstance;
@@ -43,7 +43,7 @@ import org.jboss.invocation.InterceptorFactory;
  */
 public class CmpEntityBeanObjectViewConfigurator extends EntityBeanObjectViewConfigurator {
     protected InterceptorFactory getEjbCreateInterceptorFactory() {
-        return CmpEntityBeanEjbCreateMethodInterceptorFactory.INSTANCE;
+        return CmpEntityBeanEjbCreateMethodInterceptor.FACTORY;
     }
 
     protected InterceptorFactory getEjbRemoveInterceptorFactory(final Method remove) {

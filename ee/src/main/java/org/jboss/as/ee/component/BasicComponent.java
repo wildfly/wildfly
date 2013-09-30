@@ -23,15 +23,15 @@
 package org.jboss.as.ee.component;
 
 import java.lang.reflect.Method;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.IdentityHashMap;
 import java.util.Map;
 import java.util.concurrent.atomic.AtomicBoolean;
-import java.util.concurrent.atomic.AtomicReference;
 
 import org.jboss.as.ee.component.interceptors.InvocationType;
 import org.jboss.as.naming.ManagedReference;
-import org.jboss.as.naming.ValueManagedReference;
+import org.jboss.as.naming.ValueManagedReferenceFactory;
 import org.jboss.as.naming.context.NamespaceContextSelector;
 import org.jboss.invocation.Interceptor;
 import org.jboss.invocation.InterceptorContext;
@@ -39,7 +39,6 @@ import org.jboss.invocation.InterceptorFactory;
 import org.jboss.invocation.InterceptorFactoryContext;
 import org.jboss.invocation.SimpleInterceptorFactoryContext;
 import org.jboss.msc.service.ServiceName;
-import org.jboss.msc.service.StopContext;
 import org.jboss.msc.value.ImmediateValue;
 
 import static org.jboss.as.ee.EeMessages.MESSAGES;
@@ -63,6 +62,12 @@ public class BasicComponent implements Component {
     private volatile boolean gate;
     private final AtomicBoolean stopping = new AtomicBoolean();
 
+
+    private Interceptor postConstructInterceptor;
+    private Interceptor preDestroyInterceptor;
+    private Map<Method, Interceptor> interceptorInstanceMap;
+
+
     /**
      * Construct a new instance.
      *
@@ -82,17 +87,20 @@ public class BasicComponent implements Component {
      * {@inheritDoc}
      */
     public ComponentInstance createInstance() {
-        BasicComponentInstance instance = constructComponentInstance(null, true, new SimpleInterceptorFactoryContext());
+        BasicComponentInstance instance = constructComponentInstance(null, true);
         return instance;
     }
 
     /**
      * Wraps an existing object instance in a ComponentInstance, and run the post construct interceptor chain on it.
+     *
      * @param instance The instance to wrap
      * @return The new ComponentInstance
      */
     public ComponentInstance createInstance(Object instance) {
-        BasicComponentInstance obj = constructComponentInstance(new ValueManagedReference(new ImmediateValue<Object>(instance)), true, new SimpleInterceptorFactoryContext());
+
+        BasicComponentInstance obj = constructComponentInstance(new ValueManagedReferenceFactory(new ImmediateValue<Object>(instance)).getReference(), true);
+        obj.constructionFinished();
         return obj;
     }
 
@@ -115,40 +123,33 @@ public class BasicComponent implements Component {
             }
         }
     }
+    /**
+     * Construct the component instance.  Upon return, the object instance should have injections and lifecycle
+     * invocations completed already.
+     *
+     *
+     * @param instance An instance to be wrapped, or null if a new instance should be created
+     * @return the component instance
+     */
+    protected BasicComponentInstance constructComponentInstance(ManagedReference instance, boolean invokePostConstruct) {
+        return constructComponentInstance(instance, invokePostConstruct, Collections.emptyMap());
+    }
 
     /**
      * Construct the component instance.  Upon return, the object instance should have injections and lifecycle
      * invocations completed already.
      *
+     *
      * @param instance An instance to be wrapped, or null if a new instance should be created
      * @return the component instance
      */
-    protected BasicComponentInstance constructComponentInstance(ManagedReference instance, boolean invokePostConstruct, InterceptorFactoryContext context) {
+    protected BasicComponentInstance constructComponentInstance(ManagedReference instance, boolean invokePostConstruct, final Map<Object, Object> context) {
         waitForComponentStart();
-        // Interceptor factory context
-        context.getContextData().put(Component.class, this);
-
-        // Create the post-construct interceptors for the ComponentInstance
-        final Interceptor componentInstancePostConstructInterceptor = this.getPostConstruct().create(context);
-        // create the pre-destroy interceptors
-        final Interceptor componentInstancePreDestroyInterceptor = this.getPreDestroy().create(context);
-
-        @SuppressWarnings("unchecked")
-        final AtomicReference<ManagedReference> instanceReference = (AtomicReference<ManagedReference>) context.getContextData().get(BasicComponentInstance.INSTANCE_KEY);
-
-        instanceReference.set(instance);
-
-        final Map<Method, InterceptorFactory> interceptorFactoryMap = this.getInterceptorFactoryMap();
-        // This is an identity map.  This means that only <b>certain</b> {@code Method} objects will
-        // match - specifically, they must equal the objects provided to the proxy.
-        final IdentityHashMap<Method, Interceptor> interceptorMap = new IdentityHashMap<Method, Interceptor>();
-        for (Method method : interceptorFactoryMap.keySet()) {
-            interceptorMap.put(method, interceptorFactoryMap.get(method).create(context));
-        }
-
         // create the component instance
-        final BasicComponentInstance basicComponentInstance = this.instantiateComponentInstance(instanceReference, componentInstancePreDestroyInterceptor, interceptorMap, context);
-
+        final BasicComponentInstance basicComponentInstance = this.instantiateComponentInstance(preDestroyInterceptor, interceptorInstanceMap, context);
+        if(instance != null) {
+            basicComponentInstance.setInstanceData(BasicComponentInstance.INSTANCE_KEY, instance);
+        }
         if (invokePostConstruct) {
             // now invoke the postconstruct interceptors
             final InterceptorContext interceptorContext = new InterceptorContext();
@@ -158,22 +159,23 @@ public class BasicComponent implements Component {
             interceptorContext.setContextData(new HashMap<String, Object>());
 
             try {
-                componentInstancePostConstructInterceptor.processInvocation(interceptorContext);
+                postConstructInterceptor.processInvocation(interceptorContext);
             } catch (Exception e) {
                 throw MESSAGES.componentConstructionFailure(e);
             }
         }
-        componentInstanceCreated(basicComponentInstance, context);
+        componentInstanceCreated(basicComponentInstance);
         // return the component instance
         return basicComponentInstance;
     }
 
     /**
      * Method that can be overridden to perform setup on the instance after it has been created
+     *
      * @param basicComponentInstance The component instance
-     * @param context The interceptor factory context used to construct the instance
+     *
      */
-    protected void componentInstanceCreated(final BasicComponentInstance basicComponentInstance, final InterceptorFactoryContext context) {
+    protected void componentInstanceCreated(final BasicComponentInstance basicComponentInstance) {
 
     }
 
@@ -181,14 +183,15 @@ public class BasicComponent implements Component {
     /**
      * Responsible for instantiating the {@link BasicComponentInstance}. This method is *not* responsible for
      * handling the post construct activities like injection and lifecycle invocation. That is handled by
-     * {@link #constructComponentInstance(ManagedReference, boolean, InterceptorFactoryContext)}.
+     * {@link #constructComponentInstance(org.jboss.as.naming.ManagedReference, boolean)}.
      * <p/>
      *
      * @return the component instance
      */
-    protected BasicComponentInstance instantiateComponentInstance(final AtomicReference<ManagedReference> instanceReference, final Interceptor preDestroyInterceptor, final Map<Method, Interceptor> methodInterceptors, final InterceptorFactoryContext context) {
+    protected BasicComponentInstance instantiateComponentInstance(final Interceptor preDestroyInterceptor, final Map<Method, Interceptor> methodInterceptors, Map<Object, Object> context) {
         // create and return the component instance
-        return new BasicComponentInstance(this, instanceReference, preDestroyInterceptor, methodInterceptors);
+        return new BasicComponentInstance(this, preDestroyInterceptor, methodInterceptors);
+
     }
 
     /**
@@ -216,22 +219,43 @@ public class BasicComponent implements Component {
     /**
      * {@inheritDoc}
      */
-    public void start() {
-        synchronized (this) {
-            gate = true;
-            notifyAll();
+    public synchronized void start() {
+        final InterceptorFactoryContext context = new SimpleInterceptorFactoryContext();
+        context.getContextData().put(Component.class, this);
+        createInterceptors(context);
+
+
+        this.stopping.set(false);
+        gate = true;
+        notifyAll();
+    }
+
+    protected void createInterceptors(InterceptorFactoryContext context) {
+        // Create the post-construct interceptors for the ComponentInstance
+        postConstructInterceptor = this.postConstruct.create(context);
+        // create the pre-destroy interceptors
+        preDestroyInterceptor = this.getPreDestroy().create(context);
+
+        final Map<Method, InterceptorFactory> interceptorFactoryMap = this.getInterceptorFactoryMap();
+        // This is an identity map.  This means that only <b>certain</b> {@code Method} objects will
+        // match - specifically, they must equal the objects provided to the proxy.
+        final IdentityHashMap<Method, Interceptor> interceptorMap = new IdentityHashMap<Method, Interceptor>();
+        for (Method method : interceptorFactoryMap.keySet()) {
+            interceptorMap.put(method, interceptorFactoryMap.get(method).create(context));
         }
+        this.interceptorInstanceMap = interceptorMap;
     }
 
     /**
      * {@inheritDoc}
-     *
      */
     public void stop() {
         if (stopping.compareAndSet(false, true)) {
             synchronized (this) {
                 gate = false;
-                //this.stopContext = stopContext;
+                this.interceptorInstanceMap = null;
+                this.preDestroyInterceptor = null;
+                this.postConstructInterceptor = null;
             }
             //TODO: only run this if there is no instances
             //TODO: trigger destruction of all component instances
@@ -263,7 +287,6 @@ public class BasicComponent implements Component {
     }
 
     /**
-     *
      * @return The components namespace context selector, or null if it does not have one
      */
     @Override

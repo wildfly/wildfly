@@ -25,16 +25,16 @@ package org.jboss.as.jpa.interceptor;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.concurrent.atomic.AtomicReference;
 
+import org.jboss.as.ee.component.ComponentInstance;
 import org.jboss.as.jpa.container.ExtendedEntityManager;
 import org.jboss.as.jpa.container.CreatedEntityManagers;
 import org.jboss.as.naming.ManagedReference;
-import org.jboss.as.naming.ValueManagedReference;
+import org.jboss.as.naming.ValueManagedReferenceFactory;
+import org.jboss.invocation.ImmediateInterceptorFactory;
 import org.jboss.invocation.Interceptor;
 import org.jboss.invocation.InterceptorContext;
 import org.jboss.invocation.InterceptorFactory;
-import org.jboss.invocation.InterceptorFactoryContext;
 import org.jboss.msc.value.ImmediateValue;
 
 /**
@@ -45,38 +45,25 @@ import org.jboss.msc.value.ImmediateValue;
  */
 public class SFSBCreateInterceptor implements Interceptor {
 
-    private final Map<String, ExtendedEntityManager> entityManagers;
-
-    private SFSBCreateInterceptor(final Map<String, ExtendedEntityManager> entityManagers) {
-        this.entityManagers = entityManagers;
-    }
+    public static final InterceptorFactory FACTORY = new ImmediateInterceptorFactory(new SFSBCreateInterceptor());
 
     @Override
     public Object processInvocation(InterceptorContext interceptorContext) throws Exception {
-        // Get all of the extended persistence contexts in use by the bean (some of which may of been inherited from
-        // other beans).
-
+        ComponentInstance componentInstance = interceptorContext.getPrivateData(ComponentInstance.class);
+        Map<String, ExtendedEntityManager> entityManagers = null;
+        if(componentInstance.getInstanceData(SFSBInvocationInterceptor.CONTEXT_KEY) == null) {
+            // Get all of the extended persistence contexts in use by the bean (some of which may of been inherited from
+            // other beans).
+            entityManagers = new HashMap<String, ExtendedEntityManager>();
+            componentInstance.setInstanceData(SFSBInvocationInterceptor.CONTEXT_KEY, new ValueManagedReferenceFactory(new ImmediateValue<Object>(entityManagers)).getReference());
+        } else {
+            ManagedReference ref = (ManagedReference) componentInstance.getInstanceData(SFSBInvocationInterceptor.CONTEXT_KEY);
+            entityManagers = (Map<String, ExtendedEntityManager>)ref.getInstance();
+        }
         final List<ExtendedEntityManager> ems = CreatedEntityManagers.getDeferredEntityManagers();
         for (ExtendedEntityManager e : ems) {
             entityManagers.put(e.getScopedPuName(), e);
         }
         return interceptorContext.proceed();
-    }
-
-
-    public static class Factory implements InterceptorFactory {
-
-
-        @Override
-        public Interceptor create(final InterceptorFactoryContext context) {
-            HashMap<String, ExtendedEntityManager> entityManagers;
-            if (context.getContextData().containsKey(SFSBInvocationInterceptor.CONTEXT_KEY)) {
-                entityManagers = (HashMap<String, ExtendedEntityManager>) ((AtomicReference<ManagedReference>) context.getContextData().get(SFSBInvocationInterceptor.CONTEXT_KEY)).get().getInstance();
-            } else {
-                entityManagers = new HashMap<String, ExtendedEntityManager>();
-                context.getContextData().put(SFSBInvocationInterceptor.CONTEXT_KEY, new AtomicReference<ManagedReference>(new ValueManagedReference(new ImmediateValue<Object>(entityManagers))));
-            }
-            return new SFSBCreateInterceptor(entityManagers);
-        }
     }
 }

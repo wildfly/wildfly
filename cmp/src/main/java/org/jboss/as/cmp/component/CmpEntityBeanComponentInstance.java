@@ -54,8 +54,8 @@ public class CmpEntityBeanComponentInstance extends EntityBeanComponentInstance 
     private final Logger log;
     private final Interceptor relationshipInterceptor;
 
-    CmpEntityBeanComponentInstance(final BasicComponent component, final AtomicReference<ManagedReference> instanceReference, final Interceptor preDestroyInterceptor, Map<Method, Interceptor> methodInterceptors, final Interceptor relationshipInterceptor) {
-        super(component, instanceReference, preDestroyInterceptor, methodInterceptors);
+    CmpEntityBeanComponentInstance(final BasicComponent component, final Interceptor preDestroyInterceptor, Map<Method, Interceptor> methodInterceptors, final Interceptor relationshipInterceptor) {
+        super(component, preDestroyInterceptor, methodInterceptors);
         log = Logger.getLogger(CmpEntityBeanComponentInstance.class.getName() + "." + component.getComponentName());
         this.relationshipInterceptor = relationshipInterceptor;
     }

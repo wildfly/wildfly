@@ -26,8 +26,10 @@ import javax.transaction.SystemException;
 import javax.transaction.Transaction;
 import javax.transaction.TransactionManager;
 
+import org.jboss.as.ee.component.ComponentInstance;
 import org.jboss.as.ejb3.EjbLogger;
 import org.jboss.as.ejb3.component.EJBComponent;
+import org.jboss.as.ejb3.component.stateful.StatefulSessionComponentInstance;
 import org.jboss.invocation.InterceptorContext;
 
 import static org.jboss.as.ejb3.tx.util.StatusHelper.statusAsString;
@@ -46,11 +48,6 @@ import static org.jboss.as.ejb3.tx.util.StatusHelper.statusAsString;
  * @author <a href="cdewolf@redhat.com">Carlo de Wolf</a>
  */
 public class StatefulBMTInterceptor extends BMTInterceptor {
-
-    /**
-     * The transaction associated with the current instance.
-     */
-    private volatile Transaction transaction;
 
     public StatefulBMTInterceptor(final EJBComponent component) {
         super(component);
@@ -79,20 +76,18 @@ public class StatefulBMTInterceptor extends BMTInterceptor {
         }
     }
 
-    public Transaction getTransaction() {
-        return transaction;
-    }
-
     @Override
     protected Object handleInvocation(final InterceptorContext invocation) throws Exception {
+        final StatefulSessionComponentInstance instance = (StatefulSessionComponentInstance) invocation.getPrivateData(ComponentInstance.class);
+
         TransactionManager tm = getComponent().getTransactionManager();
         assert tm.getTransaction() == null : "can't handle BMT transaction, there is a transaction active";
 
         // Is the instance already associated with a transaction?
-        Transaction tx = transaction;
+        Transaction tx = instance.getTransaction();
         if (tx != null) {
-            transaction = null;
             // then resume that transaction.
+            instance.setTransaction(null);
             tm.resume(tx);
         }
         try {
@@ -103,14 +98,12 @@ public class StatefulBMTInterceptor extends BMTInterceptor {
             checkBadStateful();
             // Is the instance finished with the transaction?
             Transaction newTx = tm.getTransaction();
+            //always set it, even if null
+            instance.setTransaction(newTx);
             if (newTx != null) {
                 // remember the association
-                transaction = newTx;
                 // and suspend it.
                 tm.suspend();
-            } else {
-                // forget any previous associated transaction
-                transaction = null;
             }
         }
     }

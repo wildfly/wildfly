@@ -61,6 +61,7 @@ public class CmpEntityBeanComponent extends EntityBeanComponent {
 
     private final Value<JDBCEntityPersistenceStore> storeManager;
     private final InterceptorFactory relationInterceptorFactory;
+    private volatile Interceptor relationInterceptor;
     private final boolean cmp10;
     private boolean ejbStoreForClean;
 
@@ -77,11 +78,16 @@ public class CmpEntityBeanComponent extends EntityBeanComponent {
         ejbStoreForClean = ejbComponentCreateService.getEntityMetaData().getCmpConfig().isCallEjbStoreOnClean();
     }
 
-    protected BasicComponentInstance instantiateComponentInstance(final AtomicReference<ManagedReference> instanceReference, final Interceptor preDestroyInterceptor, final Map<Method, Interceptor> methodInterceptors, final InterceptorFactoryContext interceptorContext) {
-        final InterceptorFactoryContext context = new SimpleInterceptorFactoryContext();
-        context.getContextData().put(Component.class, this);
-        final Interceptor interceptor = relationInterceptorFactory.create(context);
-        return new CmpEntityBeanComponentInstance(this, instanceReference, preDestroyInterceptor, methodInterceptors, interceptor);
+    @Override
+    protected BasicComponentInstance instantiateComponentInstance(final Interceptor preDestroyInterceptor, final Map<Method, Interceptor> methodInterceptors, Map<Object, Object> context) {
+
+        return new CmpEntityBeanComponentInstance(this, preDestroyInterceptor, methodInterceptors, relationInterceptor);
+    }
+
+    @Override
+    protected void createInterceptors(InterceptorFactoryContext context) {
+        super.createInterceptors(context);
+        this.relationInterceptor = relationInterceptorFactory.create(context);
     }
 
     public void start() {

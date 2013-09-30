@@ -29,16 +29,18 @@ import org.jboss.as.cmp.component.CmpEntityBeanComponent;
 import org.jboss.as.cmp.component.CmpEntityBeanComponentInstance;
 import org.jboss.as.cmp.jdbc.JDBCEntityPersistenceStore;
 import org.jboss.as.ejb3.component.entity.EntityBeanComponentInstance;
-import org.jboss.as.ejb3.component.entity.interceptors.EntityBeanEjbCreateMethodInterceptorFactory;
+import org.jboss.as.ejb3.component.entity.interceptors.EntityBeanEjbCreateMethodInterceptor;
+import org.jboss.invocation.ImmediateInterceptorFactory;
 import org.jboss.invocation.InterceptorContext;
+import org.jboss.invocation.InterceptorFactory;
 import org.jboss.tm.TxUtils;
 
 /**
  * @author John Bailey
  */
-public class CmpEntityBeanEjbCreateMethodInterceptorFactory extends EntityBeanEjbCreateMethodInterceptorFactory {
+public class CmpEntityBeanEjbCreateMethodInterceptor extends EntityBeanEjbCreateMethodInterceptor {
 
-    public static final CmpEntityBeanEjbCreateMethodInterceptorFactory INSTANCE = new CmpEntityBeanEjbCreateMethodInterceptorFactory();
+    public static final InterceptorFactory FACTORY = new ImmediateInterceptorFactory(new CmpEntityBeanEjbCreateMethodInterceptor());
 
     protected Object invokeEjbCreate(final InterceptorContext context, final Method ejbCreate, final EntityBeanComponentInstance instance, final Object[] params) throws Exception {
         final CmpEntityBeanComponentInstance cmpInstance = CmpEntityBeanComponentInstance.class.cast(instance);

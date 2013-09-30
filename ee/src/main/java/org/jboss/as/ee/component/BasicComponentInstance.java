@@ -22,14 +22,15 @@
 
 package org.jboss.as.ee.component;
 
+import java.io.Serializable;
 import java.lang.reflect.Method;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.atomic.AtomicIntegerFieldUpdater;
-import java.util.concurrent.atomic.AtomicReference;
 
+import org.jboss.as.ee.EeMessages;
 import org.jboss.as.ee.component.interceptors.InvocationType;
 import org.jboss.as.naming.ManagedReference;
 import org.jboss.invocation.Interceptor;
@@ -47,10 +48,9 @@ public class BasicComponentInstance implements ComponentInstance {
 
     private static final long serialVersionUID = -8099216228976950066L;
 
-    public static final Object INSTANCE_KEY = new Object();
+    public static final Object INSTANCE_KEY = BasicComponentInstanceKey.class;
 
     private final BasicComponent component;
-    private final AtomicReference<ManagedReference> instanceReference;
     private final Interceptor preDestroy;
     @SuppressWarnings("unused")
     private volatile int done;
@@ -59,15 +59,18 @@ public class BasicComponentInstance implements ComponentInstance {
 
     private transient Map<Method, Interceptor> methodMap;
 
+    private Map<Object, Object> instanceData = new HashMap<Object, Object>();
+
+    private volatile boolean constructionFinished = false;
+
     /**
      * Construct a new instance.
      *
      * @param component the component
      */
-    protected BasicComponentInstance(final BasicComponent component, final AtomicReference<ManagedReference> instanceReference, final Interceptor preDestroyInterceptor, final Map<Method, Interceptor> methodInterceptors) {
+    protected BasicComponentInstance(final BasicComponent component, final Interceptor preDestroyInterceptor, final Map<Method, Interceptor> methodInterceptors) {
         // Associated component
         this.component = component;
-        this.instanceReference = instanceReference;
         this.preDestroy = preDestroyInterceptor;
         this.methodMap = Collections.unmodifiableMap(methodInterceptors);
     }
@@ -83,7 +86,11 @@ public class BasicComponentInstance implements ComponentInstance {
      * {@inheritDoc}
      */
     public Object getInstance() {
-        final ManagedReference managedReference = this.instanceReference.get();
+        ManagedReference managedReference = (ManagedReference) getInstanceData(INSTANCE_KEY);
+        if(managedReference == null) {
+            //can happen if around construct chain returns null
+            return null;
+        }
         return managedReference.getInstance();
     }
 
@@ -111,10 +118,10 @@ public class BasicComponentInstance implements ComponentInstance {
     public final void destroy() {
         if (doneUpdater.compareAndSet(this, 0, 1)) try {
             preDestroy();
-            final ManagedReference reference = instanceReference.get();
-            if (reference != null) {
+            final Object instance = getInstance();
+            if (instance != null) {
                 final InterceptorContext interceptorContext = prepareInterceptorContext();
-                interceptorContext.setTarget(reference.getInstance());
+                interceptorContext.setTarget(instance);
                 interceptorContext.putPrivateData(InvocationType.class, InvocationType.PRE_DESTROY);
                 preDestroy.processInvocation(interceptorContext);
             }
@@ -123,6 +130,23 @@ public class BasicComponentInstance implements ComponentInstance {
         } finally {
             component.finishDestroy();
         }
+    }
+
+    @Override
+    public Object getInstanceData(Object key) {
+        return instanceData.get(key);
+    }
+
+    @Override
+    public void setInstanceData(Object key, Object value) {
+        if(constructionFinished) {
+            throw EeMessages.MESSAGES.instanceDataCanOnlyBeSetDuringConstruction();
+        }
+        instanceData.put(key, value);
+    }
+
+    public void constructionFinished() {
+        this.constructionFinished = true;
     }
 
     /**
@@ -141,7 +165,7 @@ public class BasicComponentInstance implements ComponentInstance {
         return interceptorContext;
     }
 
-    protected AtomicReference<ManagedReference> getInstanceReference() {
-        return instanceReference;
+    private static class BasicComponentInstanceKey implements Serializable {
+
     }
 }

@@ -27,13 +27,12 @@ import java.lang.reflect.Method;
 import javax.ejb.CreateException;
 
 import org.jboss.as.ee.component.interceptors.InvocationType;
-import org.jboss.as.ejb3.component.interceptors.AbstractEJBInterceptor;
 import org.jboss.as.ejb3.component.interceptors.EjbExceptionTransformingInterceptorFactories;
 import org.jboss.as.ejb3.component.interceptors.SessionBeanHomeInterceptorFactory;
+import org.jboss.invocation.ImmediateInterceptorFactory;
 import org.jboss.invocation.Interceptor;
 import org.jboss.invocation.InterceptorContext;
 import org.jboss.invocation.InterceptorFactory;
-import org.jboss.invocation.InterceptorFactoryContext;
 import org.jboss.invocation.Interceptors;
 
 /**
@@ -42,44 +41,40 @@ import org.jboss.invocation.Interceptors;
  *
  * @author Stuart Douglas
  */
-public class StatefulInitMethodInterceptorFactory implements InterceptorFactory {
+public class StatefulInitMethodInterceptor implements Interceptor {
 
 
-    public static final InterceptorFactory INSTANCE = new StatefulInitMethodInterceptorFactory();
+    public static final InterceptorFactory INSTANCE = new ImmediateInterceptorFactory(new StatefulInitMethodInterceptor());
 
-    private StatefulInitMethodInterceptorFactory() {
+    private StatefulInitMethodInterceptor() {
 
     }
 
-
     @Override
-    public Interceptor create(final InterceptorFactoryContext context) {
+    public Object processInvocation(final InterceptorContext context) throws Exception {
         final Method method = SessionBeanHomeInterceptorFactory.INIT_METHOD.get();
         final Object[] params = SessionBeanHomeInterceptorFactory.INIT_PARAMETERS.get();
         //we remove them immediatly, so they are not set for the rest of the invocation
         //TODO: find a better way to handle this
         SessionBeanHomeInterceptorFactory.INIT_METHOD.remove();
         SessionBeanHomeInterceptorFactory.INIT_PARAMETERS.remove();
-        return new AbstractEJBInterceptor() {
-            @Override
-            public Object processInvocation(final InterceptorContext context) throws Exception {
-                if (method != null) {
-                    final InvocationType invocationType = context.getPrivateData(InvocationType.class);
-                    try {
-                        context.putPrivateData(InvocationType.class, InvocationType.SFSB_INIT_METHOD);
-                        method.invoke(context.getTarget(), params);
-                    } catch (InvocationTargetException e) {
-                        if (CreateException.class.isAssignableFrom(e.getCause().getClass())) {
-                            EjbExceptionTransformingInterceptorFactories.setCreateException((CreateException) e.getCause());
-                        }
-                        throw Interceptors.rethrow(e.getCause());
-                    } finally {
-                        context.putPrivateData(InvocationType.class, invocationType);
-                    }
+        if (method != null) {
+            final InvocationType invocationType = context.getPrivateData(InvocationType.class);
+            try {
+                context.putPrivateData(InvocationType.class, InvocationType.SFSB_INIT_METHOD);
+                method.invoke(context.getTarget(), params);
+            } catch (InvocationTargetException e) {
+                if (CreateException.class.isAssignableFrom(e.getCause().getClass())) {
+                    EjbExceptionTransformingInterceptorFactories.setCreateException((CreateException) e.getCause());
                 }
-                return context.proceed();
+                throw Interceptors.rethrow(e.getCause());
+            } finally {
+                context.putPrivateData(InvocationType.class, invocationType);
             }
-        };
+        }
+        return context.proceed();
     }
-
 }
+
+
+
