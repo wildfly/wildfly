@@ -322,7 +322,7 @@ public class InfinispanSessionManager<V, L> implements SessionManager<L>, KeyGen
             // Iterate over sessions in memory
             for (Object key: cache.getAdvancedCache().withFlags(Flag.CACHE_MODE_LOCAL, Flag.SKIP_CACHE_LOAD, Flag.SKIP_LOCKING).keySet()) {
                 // Cache may contain non-string keys, so ignore any others
-                if (key instanceof String) {
+                if (this.accept(key)) {
                     String sessionId = (String) key;
                     Address oldOwner = oldHash.locatePrimaryOwner(sessionId);
                     // If the old owner of this session has left the cache view...
