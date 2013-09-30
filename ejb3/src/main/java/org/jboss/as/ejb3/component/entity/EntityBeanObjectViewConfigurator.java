@@ -39,10 +39,9 @@ import org.jboss.as.ee.component.interceptors.InterceptorOrder;
 import org.jboss.as.ee.component.serialization.WriteReplaceInterface;
 import org.jboss.as.ejb3.EjbMessages;
 import org.jboss.as.ejb3.component.entity.interceptors.EntityBeanAssociatingInterceptor;
-import org.jboss.as.ejb3.component.entity.interceptors.EntityBeanEjbCreateMethodInterceptorFactory;
+import org.jboss.as.ejb3.component.entity.interceptors.EntityBeanEjbCreateMethodInterceptor;
 import org.jboss.as.ejb3.component.entity.interceptors.EntityBeanIdentityInterceptorFactory;
 import org.jboss.as.ejb3.component.entity.interceptors.EntityBeanIsIdenticalInterceptorFactory;
-import org.jboss.as.ejb3.component.entity.interceptors.EntityBeanPrimaryKeyInterceptor;
 import org.jboss.as.server.deployment.DeploymentPhaseContext;
 import org.jboss.as.server.deployment.DeploymentUnitProcessingException;
 import org.jboss.as.server.deployment.reflect.ClassReflectionIndex;
@@ -68,7 +67,6 @@ public class EntityBeanObjectViewConfigurator implements ViewConfigurator {
         final DeploymentReflectionIndex index = context.getDeploymentUnit().getAttachment(org.jboss.as.server.deployment.Attachments.REFLECTION_INDEX);
 
         configuration.addClientPostConstructInterceptor(getEjbCreateInterceptorFactory(), InterceptorOrder.ClientPostConstruct.INSTANCE_CREATE);
-        configuration.addClientInterceptor(EntityBeanPrimaryKeyInterceptor.Factory.INSTANCE, InterceptorOrder.Client.ASSOCIATING_INTERCEPTOR);
         configuration.addViewInterceptor(EntityBeanAssociatingInterceptor.FACTORY, InterceptorOrder.View.ASSOCIATING_INTERCEPTOR);
 
         for (final Method method : configuration.getProxyFactory().getCachedMethods()) {
@@ -150,7 +148,7 @@ public class EntityBeanObjectViewConfigurator implements ViewConfigurator {
     }
 
     protected InterceptorFactory getEjbCreateInterceptorFactory() {
-        return EntityBeanEjbCreateMethodInterceptorFactory.INSTANCE;
+        return EntityBeanEjbCreateMethodInterceptor.INSTANCE;
     }
 
     protected InterceptorFactory getEjbRemoveInterceptorFactory(final Method remove) {

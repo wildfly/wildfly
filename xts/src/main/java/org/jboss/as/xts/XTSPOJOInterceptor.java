@@ -27,7 +27,6 @@ import org.jboss.invocation.ImmediateInterceptorFactory;
 import org.jboss.invocation.Interceptor;
 import org.jboss.invocation.InterceptorContext;
 import org.jboss.invocation.InterceptorFactory;
-import org.jboss.invocation.InterceptorFactoryContext;
 import org.jboss.narayana.txframework.impl.ServiceInvocationMeta;
 import org.jboss.narayana.txframework.impl.handlers.HandlerFactory;
 import org.jboss.narayana.txframework.impl.handlers.ProtocolHandler;
@@ -64,14 +63,5 @@ public class XTSPOJOInterceptor implements Interceptor {
         }
 
         return result;
-    }
-
-
-    public static class Factory implements InterceptorFactory {
-
-        @Override
-        public Interceptor create(final InterceptorFactoryContext context) {
-            return new XTSPOJOInterceptor();
-        }
     }
 }

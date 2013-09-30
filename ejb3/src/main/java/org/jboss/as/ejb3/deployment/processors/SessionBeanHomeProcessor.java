@@ -40,7 +40,7 @@ import org.jboss.as.ee.component.deployers.AbstractComponentConfigProcessor;
 import org.jboss.as.ee.component.interceptors.InterceptorOrder;
 import org.jboss.as.ejb3.component.EJBComponentDescription;
 import org.jboss.as.ejb3.component.EJBViewDescription;
-import org.jboss.as.ejb3.component.interceptors.EjbMetadataInterceptorFactory;
+import org.jboss.as.ejb3.component.interceptors.EjbMetadataInterceptor;
 import org.jboss.as.ejb3.component.interceptors.HomeRemoveInterceptor;
 import org.jboss.as.ejb3.component.interceptors.SessionBeanHomeInterceptorFactory;
 import org.jboss.as.ejb3.component.session.InvalidRemoveExceptionMethodInterceptor;
@@ -53,6 +53,7 @@ import org.jboss.as.server.deployment.DeploymentUnit;
 import org.jboss.as.server.deployment.DeploymentUnitProcessingException;
 import org.jboss.as.server.deployment.annotation.CompositeIndex;
 import org.jboss.as.server.deployment.reflect.DeploymentClassIndex;
+import org.jboss.invocation.ImmediateInterceptorFactory;
 import org.jboss.msc.service.ServiceBuilder;
 
 import static org.jboss.as.ejb3.EjbMessages.MESSAGES;
@@ -126,7 +127,7 @@ public class SessionBeanHomeProcessor extends AbstractComponentConfigProcessor {
                         } catch (ClassNotFoundException e) {
                             throw MESSAGES.failedToLoadViewClassForComponent(e, componentDescription.getComponentName());
                         }
-                        final EjbMetadataInterceptorFactory factory = new EjbMetadataInterceptorFactory(ejbObjectClass, configuration.getViewClass(), null, true, componentDescription instanceof StatelessComponentDescription);
+                        final EjbMetadataInterceptor factory = new EjbMetadataInterceptor(ejbObjectClass, configuration.getViewClass(), null, true, componentDescription instanceof StatelessComponentDescription);
 
                         //add a dependency on the view to create
                         componentConfiguration.getStartDependencies().add(new DependencyConfigurator<ComponentStartService>() {
@@ -137,7 +138,7 @@ public class SessionBeanHomeProcessor extends AbstractComponentConfigProcessor {
                         });
                         //add the interceptor
                         configuration.addClientInterceptor(method, ViewDescription.CLIENT_DISPATCHER_INTERCEPTOR_FACTORY, InterceptorOrder.Client.CLIENT_DISPATCHER);
-                        configuration.addViewInterceptor(method, factory, InterceptorOrder.View.HOME_METHOD_INTERCEPTOR);
+                        configuration.addViewInterceptor(method, new ImmediateInterceptorFactory(factory), InterceptorOrder.View.HOME_METHOD_INTERCEPTOR);
 
                     } else if (method.getName().equals("remove") && method.getParameterTypes().length == 1 && method.getParameterTypes()[0] == Object.class) {
                         configuration.addClientInterceptor(method, ViewDescription.CLIENT_DISPATCHER_INTERCEPTOR_FACTORY, InterceptorOrder.Client.CLIENT_DISPATCHER);

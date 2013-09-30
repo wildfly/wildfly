@@ -20,33 +20,46 @@
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
 
-package org.jboss.as.ee.managedbean.component;
+package org.jboss.as.ee.component;
 
-import org.jboss.as.ee.component.ComponentInstance;
+import static org.jboss.as.ee.EeMessages.MESSAGES;
+
+import org.jboss.as.naming.ManagedReference;
 import org.jboss.invocation.Interceptor;
 import org.jboss.invocation.InterceptorContext;
 
-import java.util.concurrent.atomic.AtomicReference;
-
 /**
- * The interceptor which performs a simple association for managed bean components.
+ * An interceptor which releases a managed reference.
  *
  * @author <a href="mailto:david.lloyd@redhat.com">David M. Lloyd</a>
  */
-public final class ManagedBeanAssociatingInterceptor implements Interceptor {
-    private final AtomicReference<ComponentInstance> componentInstanceReference;
+class ManagedReferenceReleaseInterceptor implements Interceptor {
 
-    public ManagedBeanAssociatingInterceptor(final AtomicReference<ComponentInstance> componentInstanceReference) {
-        this.componentInstanceReference = componentInstanceReference;
+    private final Object contextKey;
+
+    /**
+     * Construct a new instance.
+     *
+     * @param contextKey the context key
+     */
+    public ManagedReferenceReleaseInterceptor(final Object contextKey) {
+        if (contextKey == null) {
+            throw MESSAGES.nullVar("contextKey");
+        }
+        this.contextKey = contextKey;
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     public Object processInvocation(final InterceptorContext context) throws Exception {
-        context.putPrivateData(ComponentInstance.class, componentInstanceReference.get());
         try {
             return context.proceed();
         } finally {
-            context.putPrivateData(ComponentInstance.class, null);
+            final ManagedReference managedReference = (ManagedReference) context.getPrivateData(ComponentInstance.class).getInstanceData(contextKey);
+            if (managedReference != null) {
+                managedReference.release();
+            }
         }
     }
 }

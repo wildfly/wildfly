@@ -45,7 +45,7 @@ import org.jboss.as.ejb3.component.entity.interceptors.EntityBeanHomeMethodInter
 import org.jboss.as.ejb3.component.entity.interceptors.EntityBeanHomeRemoveByHandleInterceptorFactory;
 import org.jboss.as.ejb3.component.entity.interceptors.EntityBeanHomeRemoveInterceptorFactory;
 import org.jboss.as.ejb3.component.interceptors.ComponentTypeIdentityInterceptorFactory;
-import org.jboss.as.ejb3.component.interceptors.EjbMetadataInterceptorFactory;
+import org.jboss.as.ejb3.component.interceptors.EjbMetadataInterceptor;
 import org.jboss.as.server.deployment.Attachments;
 import org.jboss.as.server.deployment.DeploymentPhaseContext;
 import org.jboss.as.server.deployment.DeploymentUnit;
@@ -53,6 +53,7 @@ import org.jboss.as.server.deployment.DeploymentUnitProcessingException;
 import org.jboss.as.server.deployment.reflect.ClassReflectionIndex;
 import org.jboss.as.server.deployment.reflect.DeploymentClassIndex;
 import org.jboss.as.server.deployment.reflect.DeploymentReflectionIndex;
+import org.jboss.invocation.ImmediateInterceptorFactory;
 import org.jboss.metadata.ejb.spec.PersistenceType;
 import org.jboss.msc.service.ServiceBuilder;
 
@@ -137,7 +138,7 @@ public class EntityBeanHomeViewConfigurator implements ViewConfigurator {
                 } catch (ClassNotFoundException e) {
                     throw MESSAGES.failedToLoadViewClassForComponent(e, componentDescription.getComponentName());
                 }
-                final EjbMetadataInterceptorFactory factory = new EjbMetadataInterceptorFactory(ejbObjectClass, configuration.getViewClass(), pkClass, false, false);
+                final EjbMetadataInterceptor factory = new EjbMetadataInterceptor(ejbObjectClass, configuration.getViewClass(), pkClass, false, false);
 
                 //add a dependency on the view to create
                 componentConfiguration.getStartDependencies().add(new DependencyConfigurator<ComponentStartService>() {
@@ -147,7 +148,7 @@ public class EntityBeanHomeViewConfigurator implements ViewConfigurator {
                     }
                 });
                 //add the interceptor
-                configuration.addViewInterceptor(method, factory, InterceptorOrder.View.HOME_METHOD_INTERCEPTOR);
+                configuration.addViewInterceptor(method, new ImmediateInterceptorFactory(factory), InterceptorOrder.View.HOME_METHOD_INTERCEPTOR);
 
             } else if (method.getName().equals("getHomeHandle") && method.getParameterTypes().length == 0) {
                 //handled elsewhere

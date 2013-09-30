@@ -40,7 +40,7 @@ public class StatefulSessionBeanObjectViewConfigurator extends SessionBeanObject
 
     @Override
     protected void handleIsIdenticalMethod(final ComponentConfiguration componentConfiguration, final ViewConfiguration configuration, final DeploymentReflectionIndex index, final Method method) {
-        configuration.addClientInterceptor(method, StatefulIdentityInterceptorFactory.INSTANCE, InterceptorOrder.Client.EJB_EQUALS_HASHCODE);
+        configuration.addClientInterceptor(method, StatefulIdentityInterceptor.FACTORY, InterceptorOrder.Client.EJB_EQUALS_HASHCODE);
     }
 
     @Override

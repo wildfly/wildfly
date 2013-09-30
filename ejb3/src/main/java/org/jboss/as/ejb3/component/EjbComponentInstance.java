@@ -23,12 +23,10 @@ package org.jboss.as.ejb3.component;
 
 import java.lang.reflect.Method;
 import java.util.Map;
-import java.util.concurrent.atomic.AtomicReference;
 
 import org.jboss.as.ee.component.BasicComponent;
 import org.jboss.as.ee.component.BasicComponentInstance;
 import org.jboss.as.ejb3.context.EJBContextImpl;
-import org.jboss.as.naming.ManagedReference;
 import org.jboss.invocation.Interceptor;
 /**
  * @author Stuart Douglas
@@ -43,8 +41,8 @@ public abstract class EjbComponentInstance extends BasicComponentInstance {
      *
      * @param component the component
      */
-    protected EjbComponentInstance(final BasicComponent component, final AtomicReference<ManagedReference> instanceReference, final Interceptor preDestroyInterceptor, final Map<Method, Interceptor> methodInterceptors) {
-        super(component, instanceReference, preDestroyInterceptor, methodInterceptors);
+    protected EjbComponentInstance(final BasicComponent component, final Interceptor preDestroyInterceptor, final Map<Method, Interceptor> methodInterceptors) {
+        super(component, preDestroyInterceptor, methodInterceptors);
     }
 
     @Override

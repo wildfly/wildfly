@@ -24,7 +24,6 @@ package org.jboss.as.ejb3.component.messagedriven;
 import java.lang.reflect.Method;
 import java.util.Map;
 import java.util.concurrent.TimeUnit;
-import java.util.concurrent.atomic.AtomicReference;
 
 import javax.resource.ResourceException;
 import javax.resource.spi.ActivationSpec;
@@ -41,10 +40,8 @@ import org.jboss.as.ejb3.inflow.JBossMessageEndpointFactory;
 import org.jboss.as.ejb3.inflow.MessageEndpointService;
 import org.jboss.as.ejb3.pool.Pool;
 import org.jboss.as.ejb3.pool.StatelessObjectFactory;
-import org.jboss.as.naming.ManagedReference;
 import org.wildfly.security.manager.GetClassLoaderAction;
 import org.jboss.invocation.Interceptor;
-import org.jboss.invocation.InterceptorFactoryContext;
 import org.jboss.jca.core.spi.rar.Endpoint;
 import org.wildfly.security.manager.WildFlySecurityManager;
 
@@ -154,8 +151,8 @@ public class MessageDrivenComponent extends EJBComponent implements PooledCompon
     }
 
     @Override
-    protected BasicComponentInstance instantiateComponentInstance(AtomicReference<ManagedReference> instanceReference, Interceptor preDestroyInterceptor, Map<Method, Interceptor> methodInterceptors, final InterceptorFactoryContext interceptorContext) {
-        return new MessageDrivenComponentInstance(this, instanceReference, preDestroyInterceptor, methodInterceptors);
+    protected BasicComponentInstance instantiateComponentInstance(Interceptor preDestroyInterceptor, Map<Method, Interceptor> methodInterceptors, Map<Object, Object> context) {
+        return new MessageDrivenComponentInstance(this, preDestroyInterceptor, methodInterceptors);
     }
 
     @Override

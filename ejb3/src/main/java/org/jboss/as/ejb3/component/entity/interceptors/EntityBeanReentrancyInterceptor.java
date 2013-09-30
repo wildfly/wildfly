@@ -24,6 +24,7 @@ package org.jboss.as.ejb3.component.entity.interceptors;
 import org.jboss.as.ee.component.Component;
 import org.jboss.as.ee.component.ComponentInstance;
 import org.jboss.as.ee.component.ComponentInstanceInterceptorFactory;
+import org.jboss.as.ejb3.component.entity.EntityBeanComponentInstance;
 import org.jboss.invocation.Interceptor;
 import org.jboss.invocation.InterceptorContext;
 import org.jboss.invocation.InterceptorFactory;
@@ -37,18 +38,18 @@ import static org.jboss.as.ejb3.EjbMessages.MESSAGES;
  */
 public class EntityBeanReentrancyInterceptor implements Interceptor{
 
-    private volatile boolean invocationInProgress = false;
 
     @Override
     public Object processInvocation(final InterceptorContext context) throws Exception {
-        if(invocationInProgress) {
+        EntityBeanComponentInstance instance = (EntityBeanComponentInstance) context.getPrivateData(ComponentInstance.class);
+        if(instance.isInvocationInProgress()) {
             throw MESSAGES.failToReacquireLockForNonReentrant(context.getPrivateData(ComponentInstance.class));
         }
-        invocationInProgress = true;
+        instance.setInvocationInProgress(true);
         try {
             return context.proceed();
         } finally {
-            invocationInProgress = false;
+            instance.setInvocationInProgress(false);
         }
     }
 

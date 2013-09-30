@@ -26,18 +26,15 @@ import java.nio.ByteBuffer;
 import java.security.AccessController;
 import java.security.PrivilegedAction;
 import java.util.Collections;
-import java.util.HashMap;
 import java.util.Map;
 import java.util.Set;
 import java.util.UUID;
-import java.util.concurrent.atomic.AtomicReference;
 
 import javax.ejb.EJBLocalObject;
 import javax.ejb.EJBObject;
 import javax.ejb.TimerService;
 
 import org.jboss.as.ee.component.BasicComponentInstance;
-import org.jboss.as.ee.component.Component;
 import org.jboss.as.ee.component.ComponentInstance;
 import org.jboss.as.ee.component.ComponentView;
 import org.jboss.as.ejb3.cache.Cache;
@@ -72,18 +69,21 @@ import static org.jboss.as.ejb3.EjbMessages.MESSAGES;
  */
 public class StatefulSessionComponent extends SessionBeanComponent implements StatefulObjectFactory<StatefulSessionComponentInstance>, PassivationManager<SessionID, StatefulSessionComponentInstance>, IdentifierFactory<SessionID> {
 
-    public static final Object SESSION_ID_REFERENCE_KEY = new Object();
-
     private final Cache<SessionID, StatefulSessionComponentInstance> cache;
 
     private final InterceptorFactory afterBegin;
+    private Interceptor afterBeginInterceptor;
     private final Method afterBeginMethod;
     private final InterceptorFactory afterCompletion;
+    private Interceptor afterCompletionInterceptor;
     private final Method afterCompletionMethod;
     private final InterceptorFactory beforeCompletion;
+    private Interceptor beforeCompletionInterceptor;
     private final Method beforeCompletionMethod;
     private final InterceptorFactory prePassivate;
+    private Interceptor prePassivateInterceptor;
     private final InterceptorFactory postActivate;
+    private Interceptor postActivateInterceptor;
     private final Map<EJBBusinessMethod, AccessTimeoutDetails> methodAccessTimeouts;
     private final DefaultAccessTimeoutService defaultAccessTimeoutProvider;
     private final ClassLoader loader;
@@ -91,6 +91,7 @@ public class StatefulSessionComponent extends SessionBeanComponent implements St
     private final Map<Integer, MarshallingConfiguration> marshallingConfigurations;
 
     private final InterceptorFactory ejb2XRemoveMethod;
+    private Interceptor ejb2XRemoveMethodInterceptor;
 
     /**
      * Set of context keys for serializable interceptors.
@@ -143,7 +144,12 @@ public class StatefulSessionComponent extends SessionBeanComponent implements St
     }
 
     @Override
-    protected StatefulSessionComponentInstance constructComponentInstance(ManagedReference instance, boolean invokePostConstruct, InterceptorFactoryContext context) {
+    protected StatefulSessionComponentInstance constructComponentInstance(ManagedReference instance, boolean invokePostConstruct) {
+        return (StatefulSessionComponentInstance) super.constructComponentInstance(instance, invokePostConstruct);
+    }
+
+    @Override
+    protected StatefulSessionComponentInstance constructComponentInstance(ManagedReference instance, boolean invokePostConstruct, Map<Object, Object> context) {
         return (StatefulSessionComponentInstance) super.constructComponentInstance(instance, invokePostConstruct, context);
     }
 
@@ -237,13 +243,6 @@ public class StatefulSessionComponent extends SessionBeanComponent implements St
         return defaultAccessTimeoutProvider.getDefaultAccessTimeout();
     }
 
-    protected Interceptor createInterceptor(final InterceptorFactory factory, final InterceptorFactoryContext context) {
-        if (factory == null)
-            return null;
-        context.getContextData().put(Component.class, this);
-        return factory.create(context);
-    }
-
     public SessionID createSession() {
         return this.cache.create().getId();
     }
@@ -262,22 +261,13 @@ public class StatefulSessionComponent extends SessionBeanComponent implements St
     }
 
     @Override
-    protected BasicComponentInstance instantiateComponentInstance(final AtomicReference<ManagedReference> instanceReference, final Interceptor preDestroyInterceptor, final Map<Method, Interceptor> methodInterceptors, final InterceptorFactoryContext interceptorContext) {
-        return new StatefulSessionComponentInstance(this, instanceReference, preDestroyInterceptor, methodInterceptors, interceptorContext);
-    }
-
-    @Override
-    protected void componentInstanceCreated(final BasicComponentInstance basicComponentInstance, final InterceptorFactoryContext context) {
-        final StatefulSessionComponentInstance instance = (StatefulSessionComponentInstance) basicComponentInstance;
-        final Map<Object, Object> serializableInterceptors = new HashMap<Object, Object>();
-        for (final Object key : serialiableInterceptorContextKeys) {
-            @SuppressWarnings("unchecked")
-            final AtomicReference<ManagedReference> data = (AtomicReference<ManagedReference>) context.getContextData().get(key);
-            if (data != null) {
-                serializableInterceptors.put(key, data.get().getInstance());
-            }
+    protected BasicComponentInstance instantiateComponentInstance(final Interceptor preDestroyInterceptor, final Map<Method, Interceptor> methodInterceptors, Map<Object, Object> context) {
+        StatefulSessionComponentInstance instance = new StatefulSessionComponentInstance(this, preDestroyInterceptor, methodInterceptors, context);
+        for(Object key : serialiableInterceptorContextKeys) {
+            instance.setInstanceData(key, context.get(key));
         }
-        instance.setSerializableInterceptors(serializableInterceptors);
+        instance.setInstanceData(BasicComponentInstance.INSTANCE_KEY, context.get(BasicComponentInstance.INSTANCE_KEY));
+        return instance;
     }
 
     /**
@@ -290,16 +280,16 @@ public class StatefulSessionComponent extends SessionBeanComponent implements St
         this.cache.remove(sessionId);
     }
 
-    public InterceptorFactory getAfterBegin() {
-        return afterBegin;
+    public Interceptor getAfterBegin() {
+        return afterBeginInterceptor;
     }
 
-    public InterceptorFactory getAfterCompletion() {
-        return afterCompletion;
+    public Interceptor getAfterCompletion() {
+        return afterCompletionInterceptor;
     }
 
-    public InterceptorFactory getBeforeCompletion() {
-        return beforeCompletion;
+    public Interceptor getBeforeCompletion() {
+        return beforeCompletionInterceptor;
     }
 
     public Method getAfterBeginMethod() {
@@ -314,23 +304,48 @@ public class StatefulSessionComponent extends SessionBeanComponent implements St
         return beforeCompletionMethod;
     }
 
-    public InterceptorFactory getPrePassivate() {
-        return this.prePassivate;
+    public Interceptor getPrePassivate() {
+        return this.prePassivateInterceptor;
     }
 
-    public InterceptorFactory getPostActivate() {
-        return this.postActivate;
+    public Interceptor getPostActivate() {
+        return this.postActivateInterceptor;
     }
 
-    public InterceptorFactory getEjb2XRemoveMethod() {
-        return this.ejb2XRemoveMethod;
+    public Interceptor getEjb2XRemoveMethod() {
+        return this.ejb2XRemoveMethodInterceptor;
     }
 
     @Override
     public void start() {
         getShutDownInterceptorFactory().start();
+
+
         super.start();
         cache.start();
+    }
+
+    @Override
+    protected void createInterceptors(InterceptorFactoryContext context) {
+        super.createInterceptors(context);
+        if(afterBegin != null) {
+            afterBeginInterceptor = afterBegin.create(context);
+        }
+        if(afterCompletion != null) {
+            afterCompletionInterceptor = afterCompletion.create(context);
+        }
+        if(beforeCompletion != null) {
+            beforeCompletionInterceptor = beforeCompletion.create(context);
+        }
+        if(prePassivate != null) {
+            prePassivateInterceptor = prePassivate.create(context);
+        }
+        if(postActivate != null) {
+            postActivateInterceptor = postActivate.create(context);
+        }
+        if(ejb2XRemoveMethod != null) {
+            ejb2XRemoveMethodInterceptor = ejb2XRemoveMethod.create(context);
+        }
     }
 
     @Override
@@ -338,6 +353,13 @@ public class StatefulSessionComponent extends SessionBeanComponent implements St
         getShutDownInterceptorFactory().shutdown();
         super.stop();
         cache.stop();
+
+        afterBeginInterceptor = null;
+        afterCompletionInterceptor = null;
+        beforeCompletionInterceptor = null;
+        prePassivateInterceptor = null;
+        postActivateInterceptor = null;
+        ejb2XRemoveMethodInterceptor = null;
     }
 
     @Override

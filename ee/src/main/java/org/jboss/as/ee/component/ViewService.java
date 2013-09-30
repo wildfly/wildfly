@@ -65,6 +65,10 @@ public final class ViewService implements Service<ComponentView> {
     private final Map<Class<?>, Object> privateData;
     private volatile ComponentView view;
 
+    private volatile Interceptor clientPostConstructInterceptor;
+    private volatile Interceptor clientPreDestroyInterceptor;
+    private volatile Map<Method, Interceptor> clientInterceptors;
+
 
     public ViewService(final ViewConfiguration viewConfiguration) {
         viewClass = viewConfiguration.getViewClass();
@@ -104,6 +108,22 @@ public final class ViewService implements Service<ComponentView> {
         View view = new View(privateData);
         view.initializeInterceptors();
         this.view = view;
+
+        final SimpleInterceptorFactoryContext factoryContext = new SimpleInterceptorFactoryContext();
+        final Component component = view.getComponent();
+        factoryContext.getContextData().put(Component.class, component);
+        factoryContext.getContextData().put(ComponentView.class, view);
+
+        clientPostConstructInterceptor = clientPostConstruct.create(factoryContext);
+        clientPreDestroyInterceptor = clientPreDestroy.create(factoryContext);
+
+        final Map<Method, InterceptorFactory> clientInterceptorFactories = ViewService.this.clientInterceptorFactories;
+        clientInterceptors = new IdentityHashMap<Method, Interceptor>(clientInterceptorFactories.size());
+        for (Method method : clientInterceptorFactories.keySet()) {
+            clientInterceptors.put(method, clientInterceptorFactories.get(method).create(factoryContext));
+        }
+
+
     }
 
     public void stop(final StopContext context) {
@@ -243,24 +263,12 @@ public final class ViewService implements Service<ComponentView> {
     private class DefaultViewInstanceFactory implements ViewInstanceFactory {
 
         public ManagedReference createViewInstance(final ComponentView componentView, final Map<Object, Object> contextData) throws Exception {
-            final SimpleInterceptorFactoryContext factoryContext = new SimpleInterceptorFactoryContext();
-            final Component component = componentView.getComponent();
-            factoryContext.getContextData().put(Component.class, component);
-            factoryContext.getContextData().put(ComponentView.class, componentView);
-            factoryContext.getContextData().putAll(contextData);
-
-            final Interceptor clientPostConstructInterceptor = clientPostConstruct.create(factoryContext);
-            final Interceptor clientPreDestroyInterceptor = clientPreDestroy.create(factoryContext);
-
-            final Map<Method, InterceptorFactory> clientInterceptorFactories = ViewService.this.clientInterceptorFactories;
-            IdentityHashMap<Method, Interceptor> clientEntryPoints = new IdentityHashMap<Method, Interceptor>(clientInterceptorFactories.size());
-            for (Method method : clientInterceptorFactories.keySet()) {
-                clientEntryPoints.put(method, clientInterceptorFactories.get(method).create(factoryContext));
-            }
 
             final Object proxy;
+            final Component component = componentView.getComponent();
+            final ComponentClientInstance instance = new ComponentClientInstance();
             try {
-                proxy = proxyFactory.newInstance(new ProxyInvocationHandler(clientEntryPoints, component, componentView));
+                proxy = proxyFactory.newInstance(new ProxyInvocationHandler(clientInterceptors, instance, componentView));
             } catch (InstantiationException e) {
                 InstantiationError error = new InstantiationError(e.getMessage());
                 Throwable cause = e.getCause();
@@ -276,8 +284,13 @@ public final class ViewService implements Service<ComponentView> {
             InterceptorContext context = new InterceptorContext();
             context.putPrivateData(ComponentView.class, componentView);
             context.putPrivateData(Component.class, component);
+            context.putPrivateData(ComponentClientInstance.class, instance);
             context.setContextData(new HashMap<String, Object>());
+            for(Map.Entry<Object, Object> entry : contextData.entrySet()) {
+                context.putPrivateData(entry.getKey(), entry.getValue());
+            }
             clientPostConstructInterceptor.processInvocation(context);
+            instance.constructionComplete();
 
             return new ManagedReference() {
 

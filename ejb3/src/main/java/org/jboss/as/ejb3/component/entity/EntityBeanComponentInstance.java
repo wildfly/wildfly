@@ -26,7 +26,6 @@ import static org.jboss.as.ejb3.EjbMessages.MESSAGES;
 import java.lang.reflect.Method;
 import java.rmi.RemoteException;
 import java.util.Map;
-import java.util.concurrent.atomic.AtomicReference;
 
 import javax.ejb.EJBLocalObject;
 import javax.ejb.EJBObject;
@@ -38,7 +37,7 @@ import org.jboss.as.ee.component.interceptors.InvocationType;
 import org.jboss.as.ejb3.component.EjbComponentInstance;
 import org.jboss.as.ejb3.context.EntityContextImpl;
 import org.jboss.as.ejb3.timerservice.TimerImpl;
-import org.jboss.as.naming.ManagedReference;
+import org.jboss.as.ejb3.tx.OwnableReentrantLock;
 import org.jboss.invocation.Interceptor;
 import org.jboss.invocation.InterceptorContext;
 
@@ -56,20 +55,27 @@ public class EntityBeanComponentInstance extends EjbComponentInstance {
     private volatile boolean synchronizeRegistered;
     private volatile boolean reloadRequired = false;
 
+
+    private volatile boolean invocationInProgress = false;
+
+    private final Object threadLock = new Object();
+    private final OwnableReentrantLock lock = new OwnableReentrantLock();
+
+
     private final Interceptor ejbStore;
     private final Interceptor ejbActivate;
     private final Interceptor ejbLoad;
     private final Interceptor ejbPassivate;
     private final Interceptor unsetEntityContext;
 
-    protected EntityBeanComponentInstance(final BasicComponent component, final AtomicReference<ManagedReference> instanceReference, final Interceptor preDestroyInterceptor, final Map<Method, Interceptor> methodInterceptors) {
-        super(component, instanceReference, preDestroyInterceptor, methodInterceptors);
+    protected EntityBeanComponentInstance(final BasicComponent component, final Interceptor preDestroyInterceptor, final Map<Method, Interceptor> methodInterceptors) {
+        super(component, preDestroyInterceptor, methodInterceptors);
         final EntityBeanComponent ejbComponent = (EntityBeanComponent) component;
-        this.ejbStore = ejbComponent.createInterceptor(ejbComponent.getEjbStore());
-        this.ejbActivate = ejbComponent.createInterceptor(ejbComponent.getEjbActivate());
-        this.ejbLoad = ejbComponent.createInterceptor(ejbComponent.getEjbLoad());
-        this.ejbPassivate = ejbComponent.createInterceptor(ejbComponent.getEjbPassivate());
-        this.unsetEntityContext = ejbComponent.createInterceptor(ejbComponent.getUnsetEntityContext());
+        this.ejbStore = ejbComponent.getEjbStore();
+        this.ejbActivate = ejbComponent.getEjbActivate();
+        this.ejbLoad = ejbComponent.getEjbLoad();
+        this.ejbPassivate = ejbComponent.getEjbPassivate();
+        this.unsetEntityContext = ejbComponent.getUnsetEntityContext();
     }
 
     @Override
@@ -280,6 +286,22 @@ public class EntityBeanComponentInstance extends EjbComponentInstance {
 
     protected void clearPrimaryKey() {
         this.primaryKey = null;
+    }
+
+    public boolean isInvocationInProgress() {
+        return invocationInProgress;
+    }
+
+    public void setInvocationInProgress(boolean invocationInProgress) {
+        this.invocationInProgress = invocationInProgress;
+    }
+
+    public Object getThreadLock() {
+        return threadLock;
+    }
+
+    public OwnableReentrantLock getLock() {
+        return lock;
     }
 
     /**

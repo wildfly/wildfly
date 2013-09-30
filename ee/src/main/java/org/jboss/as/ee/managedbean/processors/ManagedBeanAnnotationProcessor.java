@@ -35,10 +35,8 @@ import org.jboss.as.ee.component.ViewConfigurator;
 import org.jboss.as.ee.component.ViewDescription;
 import org.jboss.as.ee.component.deployers.EEResourceReferenceProcessorRegistry;
 import org.jboss.as.ee.component.interceptors.InterceptorOrder;
-import org.jboss.as.ee.managedbean.component.ManagedBeanAssociatingInterceptorFactory;
 import org.jboss.as.ee.managedbean.component.ManagedBeanComponentDescription;
-import org.jboss.as.ee.managedbean.component.ManagedBeanCreateInterceptorFactory;
-import org.jboss.as.ee.managedbean.component.ManagedBeanDestroyInterceptorFactory;
+import org.jboss.as.ee.managedbean.component.ManagedBeanCreateInterceptor;
 import org.jboss.as.ee.managedbean.component.ManagedBeanResourceReferenceProcessor;
 import org.jboss.as.server.deployment.Attachments;
 import org.jboss.as.server.deployment.DeploymentPhaseContext;
@@ -112,11 +110,7 @@ public class ManagedBeanAnnotationProcessor implements DeploymentUnitProcessor {
             viewDescription.getConfigurators().addFirst(new ViewConfigurator() {
                 public void configure(final DeploymentPhaseContext context, final ComponentConfiguration componentConfiguration, final ViewDescription description, final ViewConfiguration configuration) throws DeploymentUnitProcessingException {
                     // Add MB association interceptors
-                    final Object contextKey = new Object();
-                    configuration.addClientPostConstructInterceptor(new ManagedBeanCreateInterceptorFactory(contextKey), InterceptorOrder.ClientPostConstruct.INSTANCE_CREATE);
-                    final ManagedBeanAssociatingInterceptorFactory associatingInterceptorFactory = new ManagedBeanAssociatingInterceptorFactory(contextKey);
-                    configuration.addClientInterceptor(associatingInterceptorFactory, InterceptorOrder.Client.ASSOCIATING_INTERCEPTOR);
-                    configuration.addClientPreDestroyInterceptor(new ManagedBeanDestroyInterceptorFactory(contextKey), InterceptorOrder.ClientPreDestroy.INSTANCE_DESTROY);
+                    configuration.addClientPostConstructInterceptor(ManagedBeanCreateInterceptor.FACTORY, InterceptorOrder.ClientPostConstruct.INSTANCE_CREATE);
                     final ClassLoader classLoader = componentConfiguration.getModuleClassLoader();
                     configuration.addViewInterceptor(PrivilegedWithCombinerInterceptor.getFactory(), InterceptorOrder.View.PRIVILEGED_INTERCEPTOR);
                     configuration.addViewInterceptor(AccessCheckingInterceptor.getFactory(), InterceptorOrder.View.CHECKING_INTERCEPTOR);

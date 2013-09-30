@@ -72,4 +72,21 @@ public interface ComponentInstance extends Serializable {
      * a component instance more than one time has no additional effect.
      */
     void destroy();
+
+    /**
+     * Gets some data that was attached to this component instance
+     *
+     * @param key The component data key
+     * @return The attached data
+     */
+    Object getInstanceData(final Object key);
+
+    /**
+     * Attaches some data to this component instance. This should only be used during component construction.
+     *
+     * @param key The key to store the data
+     * @param value The data value
+     */
+    void setInstanceData(final Object key, final Object value);
+
 }

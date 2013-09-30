@@ -21,15 +21,13 @@
  */
 package org.jboss.as.weld.injection;
 
-import java.util.concurrent.atomic.AtomicReference;
-
 import org.jboss.as.ee.component.BasicComponentInstance;
-import org.jboss.as.ee.component.ComponentConfiguration;
+import org.jboss.as.ee.component.ComponentInstance;
 import org.jboss.as.naming.ManagedReference;
+import org.jboss.invocation.ImmediateInterceptorFactory;
 import org.jboss.invocation.Interceptor;
 import org.jboss.invocation.InterceptorContext;
 import org.jboss.invocation.InterceptorFactory;
-import org.jboss.invocation.InterceptorFactoryContext;
 
 /**
  * Class that performs CDI injection and calls initializer methods after resource injection
@@ -39,35 +37,19 @@ import org.jboss.invocation.InterceptorFactoryContext;
  */
 public class WeldInjectionInterceptor implements Interceptor {
 
-    final AtomicReference<ManagedReference> targetReference;
+    public static final InterceptorFactory FACTORY = new ImmediateInterceptorFactory(new WeldInjectionInterceptor());
 
-    public WeldInjectionInterceptor(final AtomicReference<ManagedReference> targetReference) {
-        this.targetReference = targetReference;
+    private WeldInjectionInterceptor() {
+
     }
 
     @Override
     public Object processInvocation(final InterceptorContext context) throws Exception {
         WeldInjectionContext injectionContext = context.getPrivateData(WeldInjectionContext.class);
-        ManagedReference reference = targetReference.get();
-        if (reference == null) {
-            return null;
+        ManagedReference reference = (ManagedReference) context.getPrivateData(ComponentInstance.class).getInstanceData(BasicComponentInstance.INSTANCE_KEY);
+        if (reference != null) {
+            injectionContext.inject(reference.getInstance());
         }
-        injectionContext.inject(reference.getInstance());
         return context.proceed();
-    }
-
-    public static class Factory implements InterceptorFactory {
-
-        final ComponentConfiguration configuration;
-
-        public Factory(final ComponentConfiguration configuration) {
-            this.configuration = configuration;
-        }
-
-        @Override
-        public Interceptor create(final InterceptorFactoryContext context) {
-            final AtomicReference<ManagedReference> targetReference = (AtomicReference<ManagedReference>) context.getContextData().get(BasicComponentInstance.INSTANCE_KEY);
-            return new WeldInjectionInterceptor(targetReference);
-        }
     }
 }

@@ -24,11 +24,9 @@ package org.jboss.as.ejb3.component.stateless;
 
 import java.lang.reflect.Method;
 import java.util.Map;
-import java.util.concurrent.atomic.AtomicReference;
 
 import org.jboss.as.ee.component.BasicComponent;
 import org.jboss.as.ejb3.component.session.SessionBeanComponentInstance;
-import org.jboss.as.naming.ManagedReference;
 import org.jboss.ejb.client.SessionID;
 import org.jboss.invocation.Interceptor;
 
@@ -42,8 +40,8 @@ public class StatelessSessionComponentInstance extends SessionBeanComponentInsta
      *
      * @param component           the component
      */
-    protected StatelessSessionComponentInstance(final BasicComponent component, final AtomicReference<ManagedReference> instanceReference, final Interceptor preDestroyInterceptor, final Map<Method, Interceptor> methodInterceptors) {
-        super(component, instanceReference, preDestroyInterceptor, methodInterceptors);
+    protected StatelessSessionComponentInstance(final BasicComponent component, final Interceptor preDestroyInterceptor, final Map<Method, Interceptor> methodInterceptors) {
+        super(component, preDestroyInterceptor, methodInterceptors);
     }
 
     @Override

@@ -23,14 +23,14 @@
 package org.jboss.as.jpa.interceptor;
 
 import java.util.Map;
-import java.util.concurrent.atomic.AtomicReference;
 
+import org.jboss.as.ee.component.ComponentInstance;
 import org.jboss.as.jpa.container.ExtendedEntityManager;
 import org.jboss.as.naming.ManagedReference;
+import org.jboss.invocation.ImmediateInterceptorFactory;
 import org.jboss.invocation.Interceptor;
 import org.jboss.invocation.InterceptorContext;
 import org.jboss.invocation.InterceptorFactory;
-import org.jboss.invocation.InterceptorFactoryContext;
 
 /**
  * For SFSB life cycle management.
@@ -40,29 +40,22 @@ import org.jboss.invocation.InterceptorFactoryContext;
  */
 public class SFSBDestroyInterceptor implements Interceptor {
 
-    private final Map<String, ExtendedEntityManager> entityManagers;
-
-    private SFSBDestroyInterceptor(final Map<String, ExtendedEntityManager> entityManagers) {
-        this.entityManagers = entityManagers;
-    }
+    public static final InterceptorFactory FACTORY = new ImmediateInterceptorFactory(new SFSBDestroyInterceptor());
 
     @Override
     public Object processInvocation(InterceptorContext interceptorContext) throws Exception {
+        final ComponentInstance componentInstance = interceptorContext.getPrivateData(ComponentInstance.class);
         try {
             return interceptorContext.proceed();
         } finally {
-            for(Map.Entry<String, ExtendedEntityManager> entry : entityManagers.entrySet()) {
-                // close all extended persistence contexts that are referenced by the bean being destroyed
-                entry.getValue().refCountedClose();
+            ManagedReference entityManagerRef = (ManagedReference) componentInstance.getInstanceData(SFSBInvocationInterceptor.CONTEXT_KEY);
+            if(entityManagerRef != null) {
+                Map<String, ExtendedEntityManager> entityManagers = (Map<String, ExtendedEntityManager>) entityManagerRef.getInstance();
+                for(Map.Entry<String, ExtendedEntityManager> entry : entityManagers.entrySet()) {
+                    // close all extended persistence contexts that are referenced by the bean being destroyed
+                    entry.getValue().refCountedClose();
+                }
             }
-        }
-    }
-
-    public static class Factory implements InterceptorFactory {
-
-        @Override
-        public Interceptor create(final InterceptorFactoryContext context) {
-            return new SFSBDestroyInterceptor((Map<String, ExtendedEntityManager>) ((AtomicReference<ManagedReference>) context.getContextData().get(SFSBInvocationInterceptor.CONTEXT_KEY)).get().getInstance());
         }
     }
 }
