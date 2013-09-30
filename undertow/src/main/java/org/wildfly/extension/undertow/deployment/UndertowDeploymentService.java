@@ -76,16 +76,22 @@ public class UndertowDeploymentService implements Service<UndertowDeploymentServ
     }
 
     public void startContext() throws ServletException {
+        final ClassLoader old = Thread.currentThread().getContextClassLoader();
         DeploymentInfo deploymentInfo = deploymentInfoInjectedValue.getValue();
-        StartupContext.setInjectionContainer(webInjectionContainer);
+        Thread.currentThread().setContextClassLoader(deploymentInfo.getClassLoader());
         try {
-            deploymentManager = container.getValue().getServletContainer().addDeployment(deploymentInfo);
-            deploymentManager.deploy();
-            HttpHandler handler = deploymentManager.start();
-            Deployment deployment = deploymentManager.getDeployment();
-            host.getValue().registerDeployment(deployment, handler);
+            StartupContext.setInjectionContainer(webInjectionContainer);
+            try {
+                deploymentManager = container.getValue().getServletContainer().addDeployment(deploymentInfo);
+                deploymentManager.deploy();
+                HttpHandler handler = deploymentManager.start();
+                Deployment deployment = deploymentManager.getDeployment();
+                host.getValue().registerDeployment(deployment, handler);
+            } finally {
+                StartupContext.setInjectionContainer(null);
+            }
         } finally {
-            StartupContext.setInjectionContainer(null);
+            Thread.currentThread().setContextClassLoader(old);
         }
     }
 
@@ -95,18 +101,26 @@ public class UndertowDeploymentService implements Service<UndertowDeploymentServ
     }
 
     public void stopContext() {
-        if (deploymentManager != null) {
-            Deployment deployment = deploymentManager.getDeployment();
-            try {
-                host.getValue().unregisterDeployment(deployment);
-                deploymentManager.stop();
-            } catch (ServletException e) {
-                throw new RuntimeException(e);
+
+        final ClassLoader old = Thread.currentThread().getContextClassLoader();
+        DeploymentInfo deploymentInfo = deploymentInfoInjectedValue.getValue();
+        Thread.currentThread().setContextClassLoader(deploymentInfo.getClassLoader());
+        try {
+            if (deploymentManager != null) {
+                Deployment deployment = deploymentManager.getDeployment();
+                try {
+                    host.getValue().unregisterDeployment(deployment);
+                    deploymentManager.stop();
+                } catch (ServletException e) {
+                    throw new RuntimeException(e);
+                }
+                deploymentManager.undeploy();
+                container.getValue().getServletContainer().removeDeployment(deploymentInfoInjectedValue.getValue());
             }
-            deploymentManager.undeploy();
-            container.getValue().getServletContainer().removeDeployment(deploymentInfoInjectedValue.getValue());
+            recursiveDelete(deploymentInfoInjectedValue.getValue().getTempDir());
+        } finally {
+            Thread.currentThread().setContextClassLoader(old);
         }
-        recursiveDelete(deploymentInfoInjectedValue.getValue().getTempDir());
     }
 
     @Override
