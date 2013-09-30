@@ -31,7 +31,6 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OUT
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.READ_ATTRIBUTE_OPERATION;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.RESPONSE_HEADERS;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.RESULT;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.RUNNING_MODE;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SUCCESS;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.UNDEFINE_ATTRIBUTE_OPERATION;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.VALUE;
@@ -107,8 +106,10 @@ public class ReloadRequiringChangesTestCase {
         ManagementClient managementClient = new ManagementClient(TestSuiteEnvironment.getModelControllerClient(),
                 TestSuiteEnvironment.getServerAddress(), TestSuiteEnvironment.getServerPort());
         
+        ModelControllerClient client = managementClient.getControllerClient();
+        String initialWsdlHost = null;
         try {
-            ModelControllerClient client = managementClient.getControllerClient();
+            initialWsdlHost = getWsdlHost(client);
             
             //change wsdl-host to "foo-host" and reload
             final String hostname = "foo-host";
@@ -120,7 +121,13 @@ public class ReloadRequiringChangesTestCase {
 	        URL wsdlURL = new URL(managementClient.getWebUri().toURL(), '/' + DEPLOYMENT + "/POJOService?wsdl");
 	        checkWsdl(wsdlURL, hostname);
         } finally {
-        	managementClient.close();
+            try {
+                if (initialWsdlHost != null) {
+                    setWsdlHost(client, initialWsdlHost);
+                }
+            } finally {
+                managementClient.close();
+            }
         }
     }
     
@@ -131,8 +138,10 @@ public class ReloadRequiringChangesTestCase {
         ManagementClient managementClient = new ManagementClient(TestSuiteEnvironment.getModelControllerClient(),
                 TestSuiteEnvironment.getServerAddress(), TestSuiteEnvironment.getServerPort());
         
+        ModelControllerClient client = managementClient.getControllerClient();
+        String initialWsdlHost = null;
         try {
-            ModelControllerClient client = managementClient.getControllerClient();
+            initialWsdlHost = getWsdlHost(client);
             
             //change wsdl-host to "my-host" and reload
             final String hostname = "my-host";
@@ -144,7 +153,13 @@ public class ReloadRequiringChangesTestCase {
 	        URL wsdlURL = new URL(managementClient.getWebUri().toURL(), '/' + DEPLOYMENT + "/POJOService?wsdl");
 	        checkWsdl(wsdlURL, hostname);
         } finally {
-        	managementClient.close();
+            try {
+                if (initialWsdlHost != null) {
+                    setWsdlHost(client, initialWsdlHost);
+                }
+            } finally {
+                managementClient.close();
+            }
         }
     }
 
@@ -157,7 +172,21 @@ public class ReloadRequiringChangesTestCase {
             containerController.stop(DEFAULT_JBOSSAS);
         }
     }
-    
+
+    private String getWsdlHost(final ModelControllerClient client) throws Exception {
+        ModelNode op = createOpNode("subsystem=webservices/", READ_ATTRIBUTE_OPERATION);
+        op.get(NAME).set("wsdl-host");
+        final ModelNode result = client.execute(new OperationBuilder(op).build());
+        if (result.hasDefined(OUTCOME) && SUCCESS.equals(result.get(OUTCOME).asString())) {
+            Assert.assertTrue(result.hasDefined(RESULT));
+            return result.get(RESULT).asString();
+        } else if (result.hasDefined(FAILURE_DESCRIPTION)) {
+            throw new Exception(result.get(FAILURE_DESCRIPTION).toString());
+        } else {
+            throw new Exception("Operation not successful; outcome = " + result.get(OUTCOME));
+        }
+    }
+
     private void setWsdlHost(final ModelControllerClient client, final String wsdlHost) throws Exception {
     	ModelNode op;
     	if (wsdlHost != null) {
@@ -228,13 +257,13 @@ public class ReloadRequiringChangesTestCase {
         ModelNode operation = new ModelNode();
         operation.get(OP_ADDR).setEmptyList();
         operation.get(OP).set(READ_ATTRIBUTE_OPERATION);
-        operation.get(NAME).set(RUNNING_MODE);
+        operation.get(NAME).set("server-state");
         while (System.currentTimeMillis() - start < timeout) {
             ModelControllerClient liveClient = ModelControllerClient.Factory.create(
                     TestSuiteEnvironment.getServerAddress(), TestSuiteEnvironment.getServerPort());
             try {
                 ModelNode result = liveClient.execute(operation);
-                if ("NORMAL".equals(result.get(RESULT).asString())) {
+                if ("running".equals(result.get(RESULT).asString())) {
                     return;
                 }
             } catch (IOException e) {
