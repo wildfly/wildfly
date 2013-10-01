@@ -38,7 +38,7 @@ import static org.jboss.logging.Logger.Level.WARN;
  * Date: 05.11.2011
  *
  *
- * 12600-12649
+ * 12610-12649
  *
  * @author Stuart Douglas
  */
@@ -51,26 +51,26 @@ public interface JSFLogger extends BasicLogger {
     JSFLogger ROOT_LOGGER = Logger.getMessageLogger(JSFLogger.class, "org.jboss.as.jsf");
 
     @LogMessage(level = ERROR)
-    @Message(id = 12600, value = "Could not load JSF managed bean class: %s")
+    @Message(id = 12610, value = "Could not load JSF managed bean class: %s")
     void managedBeanLoadFail(String managedBean);
 
     @LogMessage(level = ERROR)
-    @Message(id = 12601, value = "JSF managed bean class %s has no default constructor")
+    @Message(id = 12611, value = "JSF managed bean class %s has no default constructor")
     void managedBeanNoDefaultConstructor(String managedBean);
 
     @LogMessage(level = ERROR)
-    @Message(id = 12602, value = "Failed to parse %s, managed beans defined in this file will not be available")
+    @Message(id = 12612, value = "Failed to parse %s, managed beans defined in this file will not be available")
     void managedBeansConfigParseFailed(VirtualFile facesConfig);
 
     @LogMessage(level = WARN)
-    @Message(id = 12603, value = "Unknown JSF version '%s'.  Default version '%s' will be used instead.")
+    @Message(id = 12613, value = "Unknown JSF version '%s'.  Default version '%s' will be used instead.")
     void unknownJSFVersion(String version, String defaultVersion);
 
     @LogMessage(level = WARN)
-    @Message(id = 12604, value = "JSF version slot '%s' is missing from module %s")
+    @Message(id = 12614, value = "JSF version slot '%s' is missing from module %s")
     void missingJSFModule(String version, String module);
 
     @LogMessage(level = INFO)
-    @Message(id = 12605, value = "Activated the following JSF Implementations: %s")
+    @Message(id = 12615, value = "Activated the following JSF Implementations: %s")
     void activatedJSFImplementations(List target);
 }
