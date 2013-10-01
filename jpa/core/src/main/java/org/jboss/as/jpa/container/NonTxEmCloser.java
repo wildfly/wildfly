@@ -59,7 +59,9 @@ public class NonTxEmCloser {
         if (emStack != null) {
             for (EntityManager entityManager : emStack.values()) {
                 try {
-                    entityManager.close();
+                    if (entityManager.isOpen()) {
+                        entityManager.close();
+                    }
                 } catch (RuntimeException safeToIgnore) {
                     if (ROOT_LOGGER.isTraceEnabled()) {
                         ROOT_LOGGER.trace("Could not close (non-transactional) container managed entity manager." +
