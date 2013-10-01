@@ -231,10 +231,11 @@ public class ASModuleHandler extends CommandHandlerWithHelp {
         // resources required only if we are generating module.xml
         final String resourcePaths = resources.getValue(parsedCmd, !moduleArg.isPresent(parsedCmd));
 
+        final FilenameTabCompleter pathCompleter = Util.isWindows() ? new WindowsFilenameTabCompleter(ctx) : new DefaultFilenameTabCompleter(ctx);
         final String[] resourceArr = (resourcePaths == null) ? new String[0] : resourcePaths.split(PATH_SEPARATOR);
         File[] resourceFiles = new File[resourceArr.length];
         for(int i = 0; i < resourceArr.length; ++i) {
-            final File f = new File(resourceArr[i]);
+            final File f = new File(pathCompleter.translatePath(resourceArr[i]));
             if(!f.exists()) {
                 throw new CommandLineException("Failed to locate " + f.getAbsolutePath());
             }
