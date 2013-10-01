@@ -75,9 +75,15 @@ class TemplateGenerator {
                     appliesToVersion = args[++i];
                 } else if(arg.equals("--std.out")) {
                     stdout = true;
+                } else if (arg.equals("--create-template")) {
+                    continue;
+                } else {
+                    System.err.println(PatchMessages.MESSAGES.argumentExpected(arg));
+                    usage();
+                    return null;
                 }
             } catch (IndexOutOfBoundsException e) {
-                System.err.printf(PatchMessages.MESSAGES.argumentExpected(arg));
+                System.err.println(PatchMessages.MESSAGES.argumentExpected(arg));
                 usage();
                 return null;
             }
