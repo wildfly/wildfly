@@ -68,6 +68,7 @@ public class ServerStartHandler implements OperationStepHandler {
         return new SimpleOperationDefinitionBuilder(name, HostResolver.getResolver("host.server"))
             .setParameters(SERVER, BLOCKING)
             .setReplyType(ModelType.STRING)
+            .setRuntimeOnly()
             .withFlag(OperationEntry.Flag.HOST_CONTROLLER_ONLY)
             .build();
     }
@@ -98,6 +99,9 @@ public class ServerStartHandler implements OperationStepHandler {
         context.addStep(new OperationStepHandler() {
             @Override
             public void execute(OperationContext context, ModelNode operation) throws OperationFailedException {
+                // WFLY-2189 trigger a write-runtime authz check
+                context.getServiceRegistry(true);
+
                 final ServerStatus origStatus = serverInventory.determineServerStatus(serverName);
                 if (origStatus != ServerStatus.STARTED && origStatus != ServerStatus.STARTING) {
                     final ServerStatus status = serverInventory.startServer(serverName, model, blocking);

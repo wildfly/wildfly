@@ -63,6 +63,9 @@ public class ServerStopHandler implements OperationStepHandler {
         context.addStep(new OperationStepHandler() {
             @Override
             public void execute(OperationContext context, ModelNode operation) throws OperationFailedException {
+                // WFLY-2189 trigger a write-runtime authz check
+                context.getServiceRegistry(true);
+
                 final ServerStatus status = serverInventory.stopServer(serverName, -1, blocking);
                 context.getResult().set(status.toString());
                 context.completeStep(OperationContext.RollbackHandler.NOOP_ROLLBACK_HANDLER);
