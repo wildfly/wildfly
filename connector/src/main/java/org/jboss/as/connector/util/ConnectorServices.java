@@ -155,38 +155,26 @@ public class ConnectorServices {
         return serviceName;
     }
 
-    public static synchronized ServiceName getResourceAdapterServiceName(final String raName, final ResourceAdapter raxml) {
-        if (raName == null || raName.trim().isEmpty()) {
-            throw MESSAGES.undefinedVar("RaName");
+    public static synchronized ServiceName getResourceAdapterServiceName(final String id) {
+        if (id == null || id.trim().isEmpty()) {
+            throw MESSAGES.undefinedVar("id");
         }
 
-        ServiceName serviceName = null;
-        ModifiableResourceAdapter ra = (ModifiableResourceAdapter) raxml;
-        if (ra != null && ra.getId() != null) {
-            serviceName = RESOURCE_ADAPTER_SERVICE_PREFIX.append(raName + "_" + ra.getId());
-        } else {
-            serviceName = RESOURCE_ADAPTER_SERVICE_PREFIX.append(raName);
-        }
-        ROOT_LOGGER.tracef("ConnectorServices: getResourceAdapterServiceName(%s, %s) -> %s", raName, raxml, serviceName);
+        ServiceName serviceName = RESOURCE_ADAPTER_SERVICE_PREFIX.append(stripDotRarSuffix(id));
+
+        ROOT_LOGGER.tracef("ConnectorServices: getResourceAdapterServiceName(%s) -> %s", id, serviceName);
         return serviceName;
     }
 
-    /**
-     * Returns the {@link ServiceName}s of the activations of the resource adapter named <code>raName</code>. The returned
-     * service names can be used by other services to add dependency on the resource adapter activations.
-     *
-     * @param raName The resource adapter name
-     * @return
-     */
-    public static synchronized ServiceName getResourceAdapterServiceName(final String raName) {
-        if (raName == null || raName.trim().isEmpty()) {
-            throw MESSAGES.stringParamCannotBeNullOrEmpty("resource adapter name");
-        }
-        //TODO: XXX: this possibly should be removed in favor of method above. But it seems to work as EJB utils use
-        //different registry!
-        final ServiceName service = RESOURCE_ADAPTER_SERVICE_PREFIX.append(raName);
-        ROOT_LOGGER.tracef("ConnectorServices: getResourceAdapterServiceNames(%s) -> %s", raName, service);
-        return service;
+    private static String stripDotRarSuffix(final String raName) {
+       if (raName == null) {
+          return null;
+       }
+       // See RaDeploymentParsingProcessor
+       if (raName.endsWith(".rar"))       {
+         return raName.substring(0, raName.indexOf(".rar"));
+       }
+       return raName;
     }
 
     /**
