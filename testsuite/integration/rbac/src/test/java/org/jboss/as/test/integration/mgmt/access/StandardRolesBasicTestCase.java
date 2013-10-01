@@ -27,8 +27,6 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.BYT
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.CONTENT;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ENABLED;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.NAME;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.TYPE;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.USER;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OUTCOME;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.PASSWORD;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.PATH;
@@ -37,6 +35,9 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.REA
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.REMOVE;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.RESULT;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SUCCESS;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.TYPE;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.UPLOAD_DEPLOYMENT_BYTES;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.USER;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.USERNAME;
 import static org.jboss.as.test.integration.management.rbac.RbacUtil.ADMINISTRATOR_USER;
 import static org.jboss.as.test.integration.management.rbac.RbacUtil.AUDITOR_USER;
@@ -55,6 +56,8 @@ import java.io.UnsupportedEncodingException;
 import java.nio.charset.Charset;
 
 import org.jboss.arquillian.container.test.api.Deployment;
+import org.jboss.as.controller.PathAddress;
+import org.jboss.as.controller.operations.common.Util;
 import org.jboss.as.test.integration.management.interfaces.ManagementInterface;
 import org.jboss.as.test.integration.management.rbac.Outcome;
 import org.jboss.as.test.integration.management.rbac.RbacUtil;
@@ -84,6 +87,13 @@ public abstract class StandardRolesBasicTestCase extends AbstractManagementInter
     private static final String EXAMPLE_DS = "subsystem=datasources/data-source=ExampleDS";
     private static final String TEST_PATH = "path=rbac.test";
 
+    private static final ModelNode WFLY_1916_OP;
+    static {
+        WFLY_1916_OP = Util.createEmptyOperation(UPLOAD_DEPLOYMENT_BYTES, PathAddress.EMPTY_ADDRESS);
+        WFLY_1916_OP.get(BYTES).set(new byte[64]);
+
+        WFLY_1916_OP.protect();
+    }
     @Deployment(testable = false)
     public static Archive<?> getDeployment() {
         final WebArchive war = ShrinkWrap.create(WebArchive.class, "war-example.war");
@@ -133,6 +143,8 @@ public abstract class StandardRolesBasicTestCase extends AbstractManagementInter
         }
         addDeployment2(client, Outcome.UNAUTHORIZED);
         addPath(client, Outcome.UNAUTHORIZED);
+
+        testWFLY1916(client, Outcome.UNAUTHORIZED);
     }
 
     @Test
@@ -149,6 +161,8 @@ public abstract class StandardRolesBasicTestCase extends AbstractManagementInter
         }
         addDeployment2(client, Outcome.UNAUTHORIZED);
         addPath(client, Outcome.UNAUTHORIZED);
+
+        testWFLY1916(client, Outcome.SUCCESS);
     }
 
     @Test
@@ -165,6 +179,8 @@ public abstract class StandardRolesBasicTestCase extends AbstractManagementInter
         }
         addDeployment2(client, Outcome.SUCCESS);
         addPath(client, Outcome.SUCCESS);
+
+        testWFLY1916(client, Outcome.SUCCESS);
     }
 
     @Test
@@ -181,6 +197,8 @@ public abstract class StandardRolesBasicTestCase extends AbstractManagementInter
         }
         addDeployment2(client, Outcome.SUCCESS);
         addPath(client, Outcome.UNAUTHORIZED);
+
+        testWFLY1916(client, Outcome.SUCCESS);
     }
 
     @Test
@@ -199,6 +217,8 @@ public abstract class StandardRolesBasicTestCase extends AbstractManagementInter
         modifyInaccessibleRoles(client, RbacUtil.AUDITOR_ROLE, RbacUtil.SUPERUSER_ROLE);
         addDeployment2(client, Outcome.SUCCESS);
         addPath(client, Outcome.SUCCESS);
+
+        testWFLY1916(client, Outcome.SUCCESS);
     }
 
     @Test
@@ -216,6 +236,8 @@ public abstract class StandardRolesBasicTestCase extends AbstractManagementInter
         modifyInaccessibleRoles(client, RbacUtil.allStandardRoles());
         addDeployment2(client, Outcome.UNAUTHORIZED);
         addPath(client, Outcome.UNAUTHORIZED);
+
+        testWFLY1916(client, Outcome.UNAUTHORIZED);
     }
 
     @Test
@@ -233,6 +255,8 @@ public abstract class StandardRolesBasicTestCase extends AbstractManagementInter
         modifyAccessibleRoles(client, RbacUtil.allStandardRoles());
         addDeployment2(client, Outcome.SUCCESS);
         addPath(client, Outcome.SUCCESS);
+
+        testWFLY1916(client, Outcome.SUCCESS);
     }
 
     private static void whoami(ManagementInterface client, String expectedUsername) throws IOException {
@@ -329,6 +353,11 @@ public abstract class StandardRolesBasicTestCase extends AbstractManagementInter
             ModelNode remove = createOpNode(includeAddress, REMOVE);
             RbacUtil.executeOperation(client, remove, Outcome.SUCCESS);
         }
+    }
+
+    private void testWFLY1916(ManagementInterface client, Outcome expected) throws IOException {
+        ModelNode op = WFLY_1916_OP.clone();
+        RbacUtil.executeOperation(client, op, expected);
     }
 
 }
