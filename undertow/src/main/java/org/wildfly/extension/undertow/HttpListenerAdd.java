@@ -46,7 +46,9 @@ public class HttpListenerAdd extends AbstractListenerAdd {
 
     @Override
     AbstractListenerService<? extends AbstractListenerService> createService(String name, final String serverName, final OperationContext context, ModelNode model, long maxUploadSize) throws OperationFailedException {
-        return new HttpListenerService(name, serverName, maxUploadSize);
+        final boolean certificateForwarding = HttpListenerResourceDefinition.CERTIFICATE_FORWARDING.resolveModelAttribute(context, model).asBoolean();
+
+        return new HttpListenerService(name, serverName, maxUploadSize, certificateForwarding);
     }
 
     @Override

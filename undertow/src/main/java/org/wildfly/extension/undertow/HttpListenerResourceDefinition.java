@@ -22,11 +22,30 @@
 
 package org.wildfly.extension.undertow;
 
+import org.jboss.as.controller.AttributeDefinition;
+import org.jboss.as.controller.SimpleAttributeDefinition;
+import org.jboss.as.controller.SimpleAttributeDefinitionBuilder;
+import org.jboss.as.controller.registry.AttributeAccess;
+import org.jboss.dmr.ModelNode;
+import org.jboss.dmr.ModelType;
+
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.List;
+
 /**
  * @author <a href="mailto:tomaz.cerar@redhat.com">Tomaz Cerar</a> (c) 2012 Red Hat Inc.
  */
 public class HttpListenerResourceDefinition extends AbstractListenerResourceDefinition {
     protected static final HttpListenerResourceDefinition INSTANCE = new HttpListenerResourceDefinition();
+
+
+    protected static final SimpleAttributeDefinition CERTIFICATE_FORWARDING = new SimpleAttributeDefinitionBuilder(Constants.CERTIFICATE_FORWARDING, ModelType.BOOLEAN)
+            .setAllowNull(true)
+            .setFlags(AttributeAccess.Flag.RESTART_ALL_SERVICES)
+            .setDefaultValue(new ModelNode(false))
+            .setAllowExpression(true)
+            .build();
 
 
     private HttpListenerResourceDefinition() {
@@ -36,5 +55,11 @@ public class HttpListenerResourceDefinition extends AbstractListenerResourceDefi
     @Override
     protected AbstractListenerAdd getAddHandler() {
         return new HttpListenerAdd(this);
+    }
+
+    public Collection<AttributeDefinition> getAttributes() {
+        List<AttributeDefinition> attrs = new ArrayList<>(super.getAttributes());
+        attrs.add(CERTIFICATE_FORWARDING);
+        return attrs;
     }
 }
