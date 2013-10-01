@@ -25,12 +25,14 @@ package org.jboss.as.controller;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ADD;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.DEPLOYMENT;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.DEPLOYMENT_OVERLAY;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.DOMAIN_CONTROLLER;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.FULL_REPLACE_DEPLOYMENT;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.GROUP;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.HOST;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.NAME;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.PROFILE;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.REMOTE;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.REMOVE;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SERVER;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SERVER_CONFIG;
@@ -257,6 +259,18 @@ class HostServerGroupTracker {
             requiresMapping = false;
         }
         Set<String> mapped = hostsToGroups.get(host);
+        if (mapped == null) {
+            // Unassigned host. Treat like an unassigned profile or socket-binding-group;
+            // i.e. available to all server group scoped roles.
+            // Except -- WFLY-2085 -- the master HC is not open to all s-g-s-rs
+            Resource hostResource = root.getChild(PathElement.pathElement(HOST, host));
+            if (hostResource != null) {
+                ModelNode dcModel = hostResource.getModel().get(DOMAIN_CONTROLLER);
+                if (!dcModel.hasDefined(REMOTE)) {
+                    mapped = Collections.emptySet(); // prevents returning HostServerGroupEffect.forUnassignedHost(address, host)
+                }
+            }
+        }
         return mapped == null ? HostServerGroupEffect.forUnassignedHost(address, host)
                 : HostServerGroupEffect.forHost(address, mapped, host);
 
