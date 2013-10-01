@@ -72,6 +72,9 @@ public class ServerRestartHandler implements OperationStepHandler {
         context.addStep(new OperationStepHandler() {
             @Override
             public void execute(OperationContext context, ModelNode operation) throws OperationFailedException {
+                // WFLY-2189 trigger a write-runtime authz check
+                context.getServiceRegistry(true);
+
                 final ServerStatus origStatus = serverInventory.determineServerStatus(serverName);
                 if (origStatus != ServerStatus.STARTED) {
                     throw new OperationFailedException(new ModelNode(MESSAGES.cannotRestartServer(serverName, origStatus)));
