@@ -30,6 +30,7 @@ import org.jboss.as.ee.component.EEApplicationClasses;
 import org.jboss.as.ee.component.EEModuleDescription;
 import org.jboss.as.ee.structure.DeploymentType;
 import org.jboss.as.ee.structure.DeploymentTypeMarker;
+import org.jboss.as.ee.weld.WeldDeploymentMarker;
 import org.jboss.as.server.deployment.DeploymentPhaseContext;
 import org.jboss.as.server.deployment.DeploymentUnit;
 import org.jboss.as.server.deployment.DeploymentUnitProcessingException;
@@ -37,7 +38,6 @@ import org.jboss.as.server.deployment.DeploymentUnitProcessor;
 import org.jboss.as.web.common.ExpressionFactoryWrapper;
 import org.jboss.as.web.common.WarMetaData;
 import org.jboss.as.web.common.WebComponentDescription;
-import org.jboss.as.ee.weld.WeldDeploymentMarker;
 import org.jboss.as.weld.WeldLogger;
 import org.jboss.as.weld.webtier.jsp.WeldJspExpressionFactoryWrapper;
 import org.jboss.metadata.javaee.spec.ParamValueMetaData;
@@ -49,6 +49,7 @@ import org.jboss.metadata.web.spec.ListenerMetaData;
 import org.jboss.weld.servlet.ConversationFilter;
 import org.jboss.weld.servlet.WeldInitialListener;
 import org.jboss.weld.servlet.WeldTerminalListener;
+import org.jboss.weld.servlet.api.InitParameters;
 
 /**
  * Deployment processor that integrates weld into the web tier
@@ -136,6 +137,13 @@ public class WebIntegrationProcessor implements DeploymentUnitProcessor {
 
         deploymentUnit.addToAttachmentList(ExpressionFactoryWrapper.ATTACHMENT_KEY, WeldJspExpressionFactoryWrapper.INSTANCE);
 
+        if (webMetaData.getContextParams() == null) {
+            webMetaData.setContextParams(new ArrayList<ParamValueMetaData>());
+        }
+        final List<ParamValueMetaData> contextParams = webMetaData.getContextParams();
+        setupWeldContextIgnores(contextParams, InitParameters.CONTEXT_IGNORE_FORWARD);
+        setupWeldContextIgnores(contextParams, InitParameters.CONTEXT_IGNORE_INCLUDE);
+
         if (webMetaData.getFilterMappings() != null) {
             // register ConversationFilter
             boolean filterMappingFound = false;
@@ -148,6 +156,10 @@ public class WebIntegrationProcessor implements DeploymentUnitProcessor {
 
             if (filterMappingFound) { // otherwise WeldListener will take care of conversation context activation
                 boolean filterFound = false;
+                // register ConversationFilter
+                if (webMetaData.getFilters() == null) {
+                    webMetaData.setFilters(new FiltersMetaData());
+                }
                 for (FilterMetaData filter : webMetaData.getFilters()) {
                     if (CONVERSATION_FILTER_CLASS.equals(filter.getFilterClass())) {
                         filterFound = true;
@@ -155,21 +167,25 @@ public class WebIntegrationProcessor implements DeploymentUnitProcessor {
                     }
                 }
                 if (!filterFound) {
-                    // register ConversationFilter
-                    if (webMetaData.getFilters() == null) {
-                        webMetaData.setFilters(new FiltersMetaData());
-                    }
                     webMetaData.getFilters().add(conversationFilterMetadata);
                     registerAsComponent(CONVERSATION_FILTER_CLASS, module, deploymentUnit, applicationClasses);
-                    List<ParamValueMetaData> contextParams = webMetaData.getContextParams();
-                    if (contextParams == null) {
-                        webMetaData.setContextParams(new ArrayList<ParamValueMetaData>());
-                    }
                     webMetaData.getContextParams().add(CONVERSATION_FILTER_INITIALIZED);
                 }
             }
 
         }
+    }
+
+    private void setupWeldContextIgnores(List<ParamValueMetaData> contextParams, String parameterName) {
+        for (ParamValueMetaData param : contextParams) {
+            if (parameterName.equals(param.getParamName())) {
+                return;
+            }
+        }
+        ParamValueMetaData parameter = new ParamValueMetaData();
+        parameter.setParamName(parameterName);
+        parameter.setParamValue("false");
+        contextParams.add(parameter);
     }
 
     @Override
