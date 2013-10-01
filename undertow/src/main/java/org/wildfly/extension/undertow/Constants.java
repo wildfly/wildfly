@@ -131,4 +131,5 @@ public interface Constants {
     String CONNECTIONS_PER_THREAD = "connections-per-thread";
     String REVERSE_PROXY = "reverse-proxy";
     String MAX_REQUEST_TIME = "max-request-time";
+    String CERTIFICATE_FORWARDING = "certificate-forwarding";
 }
