@@ -123,7 +123,7 @@ public final class ResourceAdapterDeploymentService extends AbstractResourceAdap
         if (raDeployer.checkActivation(cmd, ijmd)) {
             DEPLOYMENT_CONNECTOR_LOGGER.debugf("Activating: %s", deploymentName);
 
-            ServiceName raServiceName = ConnectorServices.getResourceAdapterServiceName(deploymentName,null);
+            ServiceName raServiceName = ConnectorServices.getResourceAdapterServiceName(deploymentName);
             value = new ResourceAdapterDeployment(raDeployment, deploymentName, raServiceName);
 
             managementRepository.getValue().getConnectors().add(value.getDeployment().getConnector());

@@ -101,7 +101,7 @@ public final class ResourceAdapterActivatorService extends AbstractResourceAdapt
         }
 
         String raName = deploymentMD.getDeploymentName();
-        ServiceName raServiceName = ConnectorServices.getResourceAdapterServiceName(raName, null);
+        ServiceName raServiceName = ConnectorServices.getResourceAdapterServiceName(raName);
 
         value = new ResourceAdapterDeployment(deploymentMD, raName, raServiceName);
         registry.getValue().registerResourceAdapterDeployment(value);
