@@ -498,6 +498,7 @@ public enum Phase {
     public static final int INSTALL_SERVLET_INIT_DEPLOYMENT             = 0x1300;
     public static final int INSTALL_JAXRS_DEPLOYMENT                    = 0x1500;
     public static final int INSTALL_JSF_ANNOTATIONS                     = 0x1600;
+    public static final int INSTALL_JSF_VALIDATOR_FACTORY               = 0x1700;
     public static final int INSTALL_JDBC_DRIVER                         = 0x1800;
     public static final int INSTALL_TRANSACTION_BINDINGS                = 0x1900;
     public static final int INSTALL_WELD_DEPLOYMENT                     = 0x1B00;
