@@ -182,7 +182,7 @@ public class PatchGenerator {
         misc.deleteOnExit();
     }
 
-    private static PatchGenerator parse(String[] args) throws IOException {
+    private static PatchGenerator parse(String[] args) throws Exception {
 
         File patchConfig = null;
         File oldFile = null;
@@ -248,6 +248,9 @@ public class PatchGenerator {
                     }
                 } else if (arg.equals("--create-template")) {
                     TemplateGenerator.generate(args);
+                    return null;
+                } else if (arg.equals("--assemble-patch-bundle")) {
+                    PatchBundleGenerator.assemble(args);
                     return null;
                 }
             } catch (IndexOutOfBoundsException e) {
