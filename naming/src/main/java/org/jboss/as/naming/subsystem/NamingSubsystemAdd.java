@@ -32,6 +32,7 @@ import javax.naming.NamingException;
 
 import org.jboss.as.controller.AbstractBoottimeAddStepHandler;
 import org.jboss.as.controller.OperationContext;
+import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.ServiceVerificationHandler;
 import org.jboss.as.naming.NamingContext;
 import org.jboss.as.naming.NamingStore;
@@ -48,6 +49,7 @@ import org.jboss.as.server.CurrentServiceContainer;
 import org.jboss.as.server.DeploymentProcessorTarget;
 import org.jboss.as.server.deployment.Phase;
 import org.jboss.dmr.ModelNode;
+import org.jboss.dmr.Property;
 import org.jboss.msc.service.ServiceContainer;
 import org.jboss.msc.service.ServiceController;
 import org.jboss.msc.service.ServiceTarget;
@@ -62,12 +64,11 @@ public class NamingSubsystemAdd extends AbstractBoottimeAddStepHandler {
 
     static final NamingSubsystemAdd INSTANCE = new NamingSubsystemAdd();
 
-    protected void populateModel(ModelNode operation, ModelNode model) {
-        model.setEmptyObject();
+    public NamingSubsystemAdd() {
+        super(NamingSubsystemRootResourceDefinition.RESOLVER_CLASS,NamingSubsystemRootResourceDefinition.RESOLVER_MAPPING);
     }
 
-    protected void performBoottime(OperationContext context, ModelNode operation, ModelNode model, ServiceVerificationHandler verificationHandler, List<ServiceController<?>> newControllers) {
-
+    protected void performBoottime(OperationContext context, ModelNode operation, ModelNode model, ServiceVerificationHandler verificationHandler, List<ServiceController<?>> newControllers) throws OperationFailedException {
         ROOT_LOGGER.activatingSubsystem();
 
         NamingContext.initializeNamingManager();
@@ -76,7 +77,15 @@ public class NamingSubsystemAdd extends AbstractBoottimeAddStepHandler {
 
         // Create the Naming Service
         final ServiceBasedNamingStore namingStore = new WritableServiceBasedNamingStore(serviceContainer, ContextNames.JAVA_CONTEXT_SERVICE_NAME,target);
-        newControllers.add(target.addService(NamingService.SERVICE_NAME, new NamingService(namingStore))
+        final String resolverClass = NamingSubsystemRootResourceDefinition.RESOLVER_CLASS.resolveModelAttribute(context, model).asString();
+        final List<Property> resolverMappings = NamingSubsystemRootResourceDefinition.RESOLVER_MAPPING.resolveModelAttribute(context, model).asPropertyList();
+        NamingService namingService = null;
+        try {
+            namingService = new NamingService(namingStore, resolverClass, resolverMappings);
+        } catch (Exception e) {
+            throw new OperationFailedException(e);
+        }
+        newControllers.add(target.addService(NamingService.SERVICE_NAME, namingService)
                 .addAliases(ContextNames.JAVA_CONTEXT_SERVICE_NAME)
                 .setInitialMode(ServiceController.Mode.ACTIVE)
                 .addListener(verificationHandler)

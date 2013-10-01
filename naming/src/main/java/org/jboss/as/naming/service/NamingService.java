@@ -22,18 +22,26 @@
 
 package org.jboss.as.naming.service;
 
+import static org.jboss.as.naming.NamingLogger.ROOT_LOGGER;
+import static org.jboss.as.naming.NamingMessages.MESSAGES;
+
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+
+import javax.naming.NameParser;
 import javax.naming.NamingException;
 
 import org.jboss.as.naming.NamingContext;
 import org.jboss.as.naming.NamingStore;
+import org.jboss.as.naming.util.NameParserResolver;
+import org.jboss.dmr.Property;
 import org.jboss.msc.service.Service;
 import org.jboss.msc.service.ServiceName;
 import org.jboss.msc.service.StartContext;
 import org.jboss.msc.service.StartException;
 import org.jboss.msc.service.StopContext;
-
-import static org.jboss.as.naming.NamingLogger.ROOT_LOGGER;
-import static org.jboss.as.naming.NamingMessages.MESSAGES;
 
 /**
  * Service responsible for creating and managing the life-cycle of the Naming Server.
@@ -43,14 +51,21 @@ import static org.jboss.as.naming.NamingMessages.MESSAGES;
 public class NamingService implements Service<NamingStore> {
     public static final ServiceName SERVICE_NAME = ServiceName.JBOSS.append("naming");
     private final NamingStore namingStore;
-
+    private NameParserResolver parserResolver;
+    private Map<String, NameParser> resolverMappings;
     /**
      * Construct a new instance.
      *
      * @param namingStore The naming store.
      */
-    public NamingService(final NamingStore namingStore) {
+    public NamingService(final NamingStore namingStore, final String resolverClass, final List<Property> resolverMappings) throws Exception {
         this.namingStore = namingStore;
+        this.parserResolver = (NameParserResolver) Class.forName(resolverClass).newInstance();
+        this.resolverMappings = new HashMap<String,NameParser>(resolverMappings.size());
+        for(Property p:resolverMappings){
+            this.resolverMappings.put(p.getName(), (NameParser)Class.forName(p.getValue().asString()).newInstance());
+        }
+        this.resolverMappings = Collections.unmodifiableMap(this.resolverMappings);
     }
 
     /**
@@ -63,6 +78,8 @@ public class NamingService implements Service<NamingStore> {
         ROOT_LOGGER.startingService();
         try {
             NamingContext.setActiveNamingStore(namingStore);
+            NamingContext.setParserResolver(parserResolver);
+            NamingContext.setParserMap(this.resolverMappings);
         } catch (Throwable t) {
             throw new StartException(MESSAGES.failedToStart("naming service"), t);
         }

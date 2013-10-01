@@ -29,6 +29,9 @@ import org.jboss.as.controller.PathElement;
  */
 public interface NamingSubsystemModel {
 
+    String RESOLVER_CLASS = "resolver-class";
+    String RESOLVER_MAPPING = "resolver-mapping";
+
     String BINDING = "binding";
     String BINDING_TYPE = "binding-type";
 
@@ -55,6 +58,5 @@ public interface NamingSubsystemModel {
 
     PathElement BINDING_PATH = PathElement.pathElement(BINDING);
     PathElement REMOTE_NAMING_PATH = PathElement.pathElement(SERVICE, REMOTE_NAMING);
-
 
 }
