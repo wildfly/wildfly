@@ -42,7 +42,6 @@ public class AjpListenerResourceDefinition extends AbstractListenerResourceDefin
     protected static final SimpleAttributeDefinition SCHEME = new SimpleAttributeDefinitionBuilder(Constants.SCHEME, ModelType.STRING)
             .setAllowNull(true)
             .setFlags(AttributeAccess.Flag.RESTART_ALL_SERVICES)
-            .setDefaultValue(new ModelNode("http"))
             .setAllowExpression(true)
             .build();
 
