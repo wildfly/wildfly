@@ -21,6 +21,7 @@
  */
 package org.jboss.as.test.smoke.webservices;
 
+import java.io.IOException;
 import java.net.URL;
 import java.util.concurrent.TimeUnit;
 
@@ -33,6 +34,7 @@ import org.jboss.arquillian.junit.Arquillian;
 import org.jboss.arquillian.test.api.ArquillianResource;
 import org.jboss.as.arquillian.api.ContainerResource;
 import org.jboss.as.arquillian.container.ManagementClient;
+import org.jboss.as.controller.client.ModelControllerClient;
 import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
 import org.jboss.as.test.integration.common.HttpRequest;
 import org.jboss.as.webservices.dmr.WSExtension;
@@ -41,7 +43,6 @@ import org.jboss.shrinkwrap.api.Archive;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.spec.WebArchive;
 import org.junit.Assert;
-import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
@@ -75,7 +76,6 @@ public class WSTestCase {
     }
 
     @Test
-    @Ignore("WFLY-2014")
     public void testManagementDescription() throws Exception {
         final ModelNode address = new ModelNode();
         address.add(ModelDescriptionConstants.DEPLOYMENT, "ws-example.war");
@@ -95,20 +95,47 @@ public class WSTestCase {
             Assert.assertTrue(endpoint.hasDefined("class"));
             Assert.assertTrue(endpoint.hasDefined("name"));
             Assert.assertTrue(endpoint.hasDefined("wsdl-url"));
-
-            final URL url = new URL(endpoint.get("wsdl-url").asString());
-            HttpRequest.get(url.toExternalForm(), 10, TimeUnit.SECONDS);
-
-            // Read a metric
-            final ModelNode readAttribute = new ModelNode();
-            readAttribute.get(ModelDescriptionConstants.OP).set(ModelDescriptionConstants.READ_ATTRIBUTE_OPERATION);
-            readAttribute.get(ModelDescriptionConstants.OP_ADDR).set(endpointResult.get(ModelDescriptionConstants.OP_ADDR));
-            readAttribute.get(ModelDescriptionConstants.NAME).set("request-count");
-
-            final ModelNode attribute = managementClient.getControllerClient().execute(operation);
-            Assert.assertEquals(ModelDescriptionConstants.SUCCESS, attribute.get(ModelDescriptionConstants.OUTCOME).asString());
-            Assert.assertTrue(attribute.get("result").asInt() > 0);
+            Assert.assertTrue(endpoint.get("wsdl-url").asString().endsWith("?wsdl"));
         }
+    }
+
+    @Test
+    public void testManagementDescriptionMetrics() throws Exception {
+        final ModelNode address = new ModelNode();
+        address.add(ModelDescriptionConstants.DEPLOYMENT, "ws-example.war");
+        address.add(ModelDescriptionConstants.SUBSYSTEM, WSExtension.SUBSYSTEM_NAME); //EndpointService
+        address.add("endpoint", "*"); // get all endpoints
+
+        final ModelNode operation = new ModelNode();
+        operation.get(ModelDescriptionConstants.OP).set(ModelDescriptionConstants.READ_RESOURCE_OPERATION);
+        operation.get(ModelDescriptionConstants.OP_ADDR).set(address);
+        operation.get(ModelDescriptionConstants.RECURSIVE).set(true);
+
+        final ModelNode result = managementClient.getControllerClient().execute(operation);
+        Assert.assertEquals(ModelDescriptionConstants.SUCCESS, result.get(ModelDescriptionConstants.OUTCOME).asString());
+
+        for (final ModelNode endpointResult : result.get("result").asList()) {
+            final ModelNode endpoint = endpointResult.get("result");
+            // Get the wsdl again to be sure the endpoint has been hit at least once
+            final URL url = new URL(endpoint.get("wsdl-url").asString());
+            HttpRequest.get(url.toExternalForm(), 30, TimeUnit.SECONDS);
+
+            // Read metrics
+            checkCountMetric(endpointResult, managementClient.getControllerClient(), "request-count");
+            checkCountMetric(endpointResult, managementClient.getControllerClient(), "response-count");
+        }
+    }
+    
+    private void checkCountMetric(final ModelNode endpointResult, final ModelControllerClient client, final String metricName) throws IOException {
+    	final ModelNode readAttribute = new ModelNode();
+        readAttribute.get(ModelDescriptionConstants.OP).set(ModelDescriptionConstants.READ_ATTRIBUTE_OPERATION);
+        readAttribute.get(ModelDescriptionConstants.OP_ADDR).set(endpointResult.get(ModelDescriptionConstants.OP_ADDR));
+        readAttribute.get(ModelDescriptionConstants.NAME).set(metricName);
+
+        final ModelNode attribute = client.execute(readAttribute);
+        Assert.assertEquals(ModelDescriptionConstants.SUCCESS, attribute.get(ModelDescriptionConstants.OUTCOME).asString());
+        Assert.assertTrue(attribute.get("result").asString().length() == 1);
+        Assert.assertTrue(attribute.get("result").asInt() > 0);
     }
 
     @Test
@@ -123,6 +150,6 @@ public class WSTestCase {
 
     private String performCall(String params) throws Exception {
         URL url = new URL(this.url.toExternalForm() + "ws-example/" + params);
-        return HttpRequest.get(url.toExternalForm(), 10, TimeUnit.SECONDS);
+        return HttpRequest.get(url.toExternalForm(), 30, TimeUnit.SECONDS);
     }
 }
