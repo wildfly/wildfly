@@ -55,9 +55,9 @@
     </xs:complexType>
     <xs:complexType name="serverType">
         <xs:sequence>
-            <xs:element name="http-listener" type="http-listener-type" minOccurs="0" maxOccurs="1"/>
-            <xs:element name="https-listener" type="https-listener-type" minOccurs="0" maxOccurs="1"/>
-            <xs:element name="ajp-listener" type="ajp-listener-type" minOccurs="0" maxOccurs="1"/>
+            <xs:element name="http-listener" type="http-listener-type" minOccurs="0" maxOccurs="unbounded"/>
+            <xs:element name="https-listener" type="https-listener-type" minOccurs="0" maxOccurs="unbounded"/>
+            <xs:element name="ajp-listener" type="ajp-listener-type" minOccurs="0" maxOccurs="unbounded"/>
             <xs:element name="host" type="hostType" minOccurs="1" maxOccurs="unbounded"/>
         </xs:sequence>
         <xs:attribute name="name" use="required" type="xs:string"/>
@@ -66,6 +66,7 @@
     </xs:complexType>
     <xs:complexType name="http-listener-type">
         <xs:attribute name="name" use="required" type="xs:string"/>
+        <xs:attribute name="certificate-forwarding" type="xs:boolean" default="false" />
         <xs:attribute name="socket-binding" use="required" type="xs:string"/>
         <xs:attribute name="worker" type="xs:string" default="default"/>
         <xs:attribute name="buffer-pool" type="xs:string" default="default"/>
@@ -87,7 +88,7 @@
         <xs:attribute name="worker" type="xs:string" default="default"/>
         <xs:attribute name="buffer-pool" type="xs:string" default="default"/>
         <xs:attribute name="enabled" type="xs:boolean" default="true"/>
-        <xs:attribute name="scheme" type="xs:string" default="http"/>
+        <xs:attribute name="scheme" type="xs:string"/>
         <xs:attribute name="max-post-size" type="xs:long" default="0" />
     </xs:complexType>
     <xs:complexType name="servletContainerType">
