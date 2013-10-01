@@ -1,0 +1,29 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+        "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:h="http://java.sun.com/jsf/html">
+
+<head>
+    <title>Team Registration</title>
+</head>
+<body>
+
+    <h1>Team Registration</h1>
+    <h:form id="register">
+        <div id="nameError">
+            <h:message for="inputName"/>
+        </div>
+        <div id="numberError">
+            <h:message for="inputNumber"/>
+        </div>
+        <div>
+            <h:outputText value="Team name:"/>
+            <h:inputText id="inputName" value="#{team.name}"/>
+            <h:outputText value="Number of people:"/>
+            <h:inputText id="inputNumber" value="#{team.numberOfPeople}"/>
+            <h:commandButton id="registerButton" value="Register" action="confirmation"/>
+        </div>
+    </h:form>
+</body>
+</html>
+
