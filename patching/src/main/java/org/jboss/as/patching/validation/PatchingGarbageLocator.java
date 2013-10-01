@@ -32,9 +32,9 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
+import org.jboss.as.patching.PatchLogger;
 import org.jboss.as.patching.installation.InstallationManager;
 import org.jboss.as.patching.installation.Layer;
-import org.jboss.logging.Logger;
 
 
 /**
@@ -43,7 +43,7 @@ import org.jboss.logging.Logger;
  */
 public class PatchingGarbageLocator implements PatchStateHandler {
 
-    private static final Logger log = Logger.getLogger(PatchingGarbageLocator.class);
+    private static final PatchLogger log = PatchLogger.ROOT_LOGGER;
 
     private static final String OVERLAYS = ".overlays";
 

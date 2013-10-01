@@ -7,7 +7,6 @@ import java.util.Collection;
 import java.util.Collections;
 
 import org.jboss.as.patching.DirectoryStructure;
-import org.jboss.as.patching.PatchLogger;
 import org.jboss.as.patching.installation.InstalledImage;
 import org.jboss.as.patching.metadata.ContentModification;
 import org.jboss.as.patching.metadata.Patch;
@@ -53,7 +52,7 @@ class IdentityRollbackCallback implements IdentityPatchContext.FinalizeCallback 
         final InstalledImage installedImage = directoryStructure.getInstalledImage();
         final File history = installedImage.getPatchHistoryDir(patch.getPatchId());
         if (!recursiveDelete(history)) {
-            PatchLogger.ROOT_LOGGER.cannotDeleteFile(history.getAbsolutePath());
+            context.failedToCleanupDir(history);
         }
         // Cleanup all the recorded rollbacks
         cleanupEntry(context.getLayers());
