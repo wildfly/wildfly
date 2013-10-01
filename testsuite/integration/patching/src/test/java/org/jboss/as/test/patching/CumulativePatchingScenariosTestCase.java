@@ -39,6 +39,7 @@ import static org.jboss.as.test.patching.PatchingTestUtil.CONTAINER;
 import static org.jboss.as.test.patching.PatchingTestUtil.FILE_SEPARATOR;
 import static org.jboss.as.test.patching.PatchingTestUtil.MODULES_PATH;
 import static org.jboss.as.test.patching.PatchingTestUtil.PRODUCT;
+import static org.jboss.as.test.patching.PatchingTestUtil.assertPatchElements;
 import static org.jboss.as.test.patching.PatchingTestUtil.createPatchXMLFile;
 import static org.jboss.as.test.patching.PatchingTestUtil.createZippedPatchFile;
 import static org.jboss.as.test.patching.PatchingTestUtil.randomString;
@@ -310,9 +311,16 @@ public class CumulativePatchingScenariosTestCase extends AbstractPatchingTestCas
         controller.stop(CONTAINER);
 
         controller.start(CONTAINER);
-        Assert.assertFalse("The patch " + oneOffPatchID1 + " should NOT be listed as installed",
-                CliUtilsForPatching.getInstalledPatches().contains(oneOffPatchID1));
-        controller.stop(CONTAINER);
+        try {
+            Assert.assertFalse("The patch " + oneOffPatchID1 + " should NOT be listed as installed",
+                    CliUtilsForPatching.getInstalledPatches().contains(oneOffPatchID1));
+
+            // no patches present
+            assertPatchElements(PatchingTestUtil.BASE_MODULE_DIRECTORY, null, false);
+        } finally {
+            controller.stop(CONTAINER);
+        }
+
     }
 
     /**
@@ -522,12 +530,16 @@ public class CumulativePatchingScenariosTestCase extends AbstractPatchingTestCas
         controller.stop(CONTAINER);
 
         controller.start(CONTAINER);
-        Assert.assertNotEquals("File shouldn't be restored", standaloneConfOrigContent, readFile(standaloneXmlPath));
-        Assert.assertNotEquals("File shouldn't be restored", domainConfOrigContent, readFile(domainXmlPath));
-        Assert.assertNotEquals("File shouldn't be restored", appClientConfOrigContent, readFile(appClientXmlPath));
-        controller.stop(CONTAINER);
+        try {
+            Assert.assertNotEquals("File shouldn't be restored", standaloneConfOrigContent, readFile(standaloneXmlPath));
+            Assert.assertNotEquals("File shouldn't be restored", domainConfOrigContent, readFile(domainXmlPath));
+            Assert.assertNotEquals("File shouldn't be restored", appClientConfOrigContent, readFile(appClientXmlPath));
 
-
+            // no patches present
+            assertPatchElements(PatchingTestUtil.BASE_MODULE_DIRECTORY, null, false);
+        } finally {
+            controller.stop(CONTAINER);
+        }
     }
 
     private void changeDatasource(String filePath) throws Exception {

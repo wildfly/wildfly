@@ -10,6 +10,7 @@ import java.util.Collections;
 import java.util.List;
 import java.util.regex.Pattern;
 
+import org.jboss.as.patching.PatchLogger;
 import org.jboss.as.patching.validation.PatchingGarbageLocator;
 import org.jboss.as.version.ProductConfig;
 import org.jboss.msc.service.Service;
@@ -59,9 +60,15 @@ public class InstallationManagerService implements Service<InstallationManager> 
             final ProductConfig productConfig = this.productConfig.getValue();
             this.manager = load(jbossHome, productConfig);
 
-            if(new File(jbossHome, "cleanup-patching-dirs").exists()) {
-                final PatchingGarbageLocator garbageLocator = PatchingGarbageLocator.getIninitialized(getValue());
-                garbageLocator.deleteInactiveContent();
+            final File cleanupMaker = new File(manager.getInstalledImage().getInstallationMetadata(), "cleanup-patching-dirs");
+            if (cleanupMaker.exists()) {
+                try {
+                    final PatchingGarbageLocator garbageLocator = PatchingGarbageLocator.getIninitialized(getValue());
+                    garbageLocator.deleteInactiveContent();
+                    cleanupMaker.delete();
+                } catch (Exception e) {
+                    PatchLogger.ROOT_LOGGER.debugf(e, "failed to garbage collect changes");
+                }
             }
         } catch (Exception e) {
             throw new StartException(e);

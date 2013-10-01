@@ -46,6 +46,7 @@ import static org.jboss.as.test.patching.PatchingTestUtil.CONTAINER;
 import static org.jboss.as.test.patching.PatchingTestUtil.FILE_SEPARATOR;
 import static org.jboss.as.test.patching.PatchingTestUtil.MODULES_PATH;
 import static org.jboss.as.test.patching.PatchingTestUtil.PRODUCT;
+import static org.jboss.as.test.patching.PatchingTestUtil.assertPatchElements;
 import static org.jboss.as.test.patching.PatchingTestUtil.createPatchXMLFile;
 import static org.jboss.as.test.patching.PatchingTestUtil.createZippedPatchFile;
 import static org.jboss.as.test.patching.PatchingTestUtil.dump;
@@ -211,11 +212,19 @@ public class OverridePreserveTestCase extends AbstractPatchingTestCase {
         controller.stop(CONTAINER);
 
         controller.start(CONTAINER);
-        Assert.assertFalse("The patch " + patchID + " NOT should be listed as installed",
-                CliUtilsForPatching.getInstalledPatches().contains(patchID));
-        Assert.assertEquals("Misc file should not be overridden", file1patchedContent, PatchingTestUtil.readFile(FILE1));
-        Assert.assertEquals("Misc file should be restored", file2modifiedContent, PatchingTestUtil.readFile(FILE2));
-        controller.stop(CONTAINER);
+        try {
+            Assert.assertFalse("The patch " + patchID + " NOT should be listed as installed",
+                    CliUtilsForPatching.getInstalledPatches().contains(patchID));
+            Assert.assertEquals("Misc file should not be overridden", file1patchedContent, PatchingTestUtil.readFile(FILE1));
+            Assert.assertEquals("Misc file should be restored", file2modifiedContent, PatchingTestUtil.readFile(FILE2));
+
+            // no patch overlays present
+            assertPatchElements(PatchingTestUtil.BASE_MODULE_DIRECTORY, null, false);
+
+        } finally {
+            controller.stop(CONTAINER);
+        }
+
     }
 
     /**
@@ -276,11 +285,17 @@ public class OverridePreserveTestCase extends AbstractPatchingTestCase {
         controller.stop(CONTAINER);
 
         controller.start(CONTAINER);
-        Assert.assertFalse("The patch " + patchID + " NOT should be listed as installed",
-                CliUtilsForPatching.getInstalledPatches().contains(patchID));
-        Assert.assertEquals("Misc file should not be overridden", file1patchedContent, PatchingTestUtil.readFile(FILE1));
-        Assert.assertEquals("Misc file should be restored", file2modifiedContent, PatchingTestUtil.readFile(FILE2));
-        controller.stop(CONTAINER);
+        try {
+            Assert.assertFalse("The patch " + patchID + " NOT should be listed as installed",
+                    CliUtilsForPatching.getInstalledPatches().contains(patchID));
+            Assert.assertEquals("Misc file should not be overridden", file1patchedContent, PatchingTestUtil.readFile(FILE1));
+            Assert.assertEquals("Misc file should be restored", file2modifiedContent, PatchingTestUtil.readFile(FILE2));
+
+            // no patches present
+            assertPatchElements(PatchingTestUtil.BASE_MODULE_DIRECTORY, null, false);
+        } finally {
+            controller.stop(CONTAINER);
+        }
     }
 
     /**
@@ -343,11 +358,18 @@ public class OverridePreserveTestCase extends AbstractPatchingTestCase {
         controller.stop(CONTAINER);
 
         controller.start(CONTAINER);
-        Assert.assertFalse("The patch " + patchID + " NOT should be listed as installed",
-                CliUtilsForPatching.getInstalledPatches().contains(patchID));
-        Assert.assertEquals("Misc file should not be overridden", file1modifiedContent, PatchingTestUtil.readFile(FILE1));
-        Assert.assertEquals("Misc file should be restored", file2modifiedContent, PatchingTestUtil.readFile(FILE2));
-        controller.stop(CONTAINER);
+        try {
+            Assert.assertFalse("The patch " + patchID + " NOT should be listed as installed",
+                    CliUtilsForPatching.getInstalledPatches().contains(patchID));
+            Assert.assertEquals("Misc file should not be overridden", file1modifiedContent, PatchingTestUtil.readFile(FILE1));
+            Assert.assertEquals("Misc file should be restored", file2modifiedContent, PatchingTestUtil.readFile(FILE2));
+
+            // no patches present
+            assertPatchElements(PatchingTestUtil.BASE_MODULE_DIRECTORY, null, false);
+
+        } finally {
+            controller.stop(CONTAINER);
+        }
     }
 
     /**
@@ -417,9 +439,17 @@ public class OverridePreserveTestCase extends AbstractPatchingTestCase {
         controller.stop(CONTAINER);
 
         controller.start(CONTAINER);
-        Assert.assertFalse("The patch " + patchID + " NOT should be listed as installed",
-                CliUtilsForPatching.getInstalledPatches().contains(patchID));
-        controller.stop(CONTAINER);
+        try {
+            Assert.assertFalse("The patch " + patchID + " NOT should be listed as installed",
+                    CliUtilsForPatching.getInstalledPatches().contains(patchID));
+
+            // no patches present
+            assertPatchElements(PatchingTestUtil.BASE_MODULE_DIRECTORY, null, false);
+
+        } finally {
+            controller.stop(CONTAINER);
+        }
+
     }
 
 

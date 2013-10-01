@@ -343,9 +343,12 @@ public class PatchingTestUtil {
     }
 
     public static void assertPatchElements(File baseModuleDir, String[] expectedPatchElements) {
+        assertPatchElements(baseModuleDir, expectedPatchElements, isWindows); // Skip this on windows
+    }
 
-        if (isWindows) {
-            return; // Skip this on windows for now
+    public static void assertPatchElements(File baseModuleDir, String[] expectedPatchElements, boolean skipCheck) {
+        if (skipCheck) {
+            return;
         }
 
         File modulesPatchesDir = new File(baseModuleDir, ".overlays");
