@@ -31,6 +31,7 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.HOS
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.NAME;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.PROFILE;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.REMOVE;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SERVER;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SERVER_CONFIG;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SERVER_GROUP;
@@ -156,14 +157,15 @@ class HostServerGroupTracker {
 
     HostServerGroupEffect getHostServerGroupEffects(PathAddress address, ModelNode operation, Resource root) {
 
-        if (address.size() > 0) {
+        final int addrSize = address.size();
+        if (addrSize > 0) {
 
             PathElement firstElement = address.getElement(0);
             String type = firstElement.getKey();
             // Not a switch to ease EAP 6 backport
             if (HOST.equals(type)) {
                 String hostName = firstElement.getValue();
-                if (address.size() > 1) {
+                if (addrSize > 1) {
                     PathElement secondElement = address.getElement(1);
                     String lvlone = secondElement.getKey();
                     if (SERVER_CONFIG.equals(lvlone) || SERVER.equals(lvlone)) {
@@ -198,7 +200,14 @@ class HostServerGroupTracker {
             } else if (SOCKET_BINDING_GROUP.equals(type)) {
                 return getDomainEffect(address, firstElement.getValue(), socketsToGroups, root);
             } else if (SERVER_GROUP.equals(type)) {
-                return HostServerGroupEffect.forServerGroup(address, firstElement.getValue());
+                // WFLY-2190 make add/remove global. So, s-g-s-r can't remove its own server group
+                // and can't add it. This helps the console, but since there ideally would be validation
+                // that all groups mapped to a s-g-s-r actually exist, it's reasonable to say the group
+                // must exist (so no need for an :add) and can't be removed
+                String opName = operation.require(OP).asString();
+                if (addrSize > 1 || (!ADD.equals(opName) && !REMOVE.equals(opName))) {
+                    return HostServerGroupEffect.forServerGroup(address, firstElement.getValue());
+                } // else drop into  HostServerGroupEffect.forGlobal(address);
             } else if (DEPLOYMENT.equals(type)) {
                 return getDomainEffect(address, firstElement.getValue(), deploymentsToGroups, root);
             } else if (DEPLOYMENT_OVERLAY.equals(type)) {
