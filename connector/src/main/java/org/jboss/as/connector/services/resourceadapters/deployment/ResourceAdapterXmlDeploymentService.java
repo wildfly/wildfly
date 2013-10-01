@@ -31,6 +31,7 @@ import java.net.URL;
 import org.jboss.as.connector.metadata.deployment.ResourceAdapterDeployment;
 import org.jboss.as.connector.metadata.xmldescriptors.ConnectorXmlDescriptor;
 import org.jboss.as.connector.services.resourceadapters.ResourceAdapterService;
+import org.jboss.as.connector.subsystems.resourceadapters.ModifiableResourceAdapter;
 import org.jboss.as.connector.util.ConnectorServices;
 import org.jboss.as.naming.WritableServiceBasedNamingStore;
 import org.jboss.jca.common.api.metadata.ironjacamar.IronJacamar;
@@ -119,7 +120,13 @@ public final class ResourceAdapterXmlDeploymentService extends AbstractResourceA
                 unregisterAll(raName);
                 throw MESSAGES.failedToStartRaDeployment(t, raName);
             }
-            ServiceName raServiceName = ConnectorServices.getResourceAdapterServiceName(raName,raxml);
+            String id = ((ModifiableResourceAdapter) raxml).getId();
+            final ServiceName raServiceName;
+            if (id == null || id.trim().isEmpty()) {
+               raServiceName = ConnectorServices.getResourceAdapterServiceName(raName);
+            } else {
+               raServiceName = ConnectorServices.getResourceAdapterServiceName(id);
+            }
 
             value = new ResourceAdapterDeployment(raxmlDeployment, raName, raServiceName);
             managementRepository.getValue().getConnectors().add(value.getDeployment().getConnector());
