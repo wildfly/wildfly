@@ -59,7 +59,7 @@ public class HttpsListenerService extends HttpListenerService {
     static final String PROTOCOL = "https";
 
     public HttpsListenerService(final String name, String serverName, long maxUploadSize) {
-        super(name, serverName, maxUploadSize);
+        super(name, serverName, maxUploadSize, false);
         this.maxUploadSize = maxUploadSize;
     }
 

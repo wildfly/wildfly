@@ -48,7 +48,7 @@ public class UndertowConnectorTestCase {
     @Test
     public void getType() {
         assertSame(Connector.Type.AJP, new UndertowConnector(new AjpListenerService("", "", 0)).getType());
-        assertSame(Connector.Type.HTTP, new UndertowConnector(new HttpListenerService("", "", 0)).getType());
+        assertSame(Connector.Type.HTTP, new UndertowConnector(new HttpListenerService("", "", 0, false)).getType());
         assertSame(Connector.Type.HTTPS, new UndertowConnector(new HttpsListenerService("", "", 0)).getType());
     }
 

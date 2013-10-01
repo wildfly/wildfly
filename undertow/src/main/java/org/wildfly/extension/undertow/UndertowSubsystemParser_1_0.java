@@ -69,12 +69,11 @@ public class UndertowSubsystemParser_1_0 implements XMLStreamConstants, XMLEleme
                         .addAttributes(ServerDefinition.DEFAULT_HOST, ServerDefinition.SERVLET_CONTAINER)
                         .addChild(
                                 builder(AjpListenerResourceDefinition.INSTANCE)
-                                        .addAttributes(AjpListenerResourceDefinition.SCHEME)
-                                        .addAttributes(AjpListenerResourceDefinition.ATTRIBUTES)
+                                        .addAttributes(AjpListenerResourceDefinition.SCHEME, AjpListenerResourceDefinition.BUFFER_POOL, AjpListenerResourceDefinition.ENABLED, AjpListenerResourceDefinition.MAX_POST_SIZE, AjpListenerResourceDefinition.SOCKET_BINDING, AjpListenerResourceDefinition.WORKER)
                         )
                         .addChild(
                                 builder(HttpListenerResourceDefinition.INSTANCE)
-                                        .addAttributes(HttpListenerResourceDefinition.ATTRIBUTES)
+                                        .addAttributes(HttpListenerResourceDefinition.BUFFER_POOL, HttpListenerResourceDefinition.CERTIFICATE_FORWARDING, HttpListenerResourceDefinition.ENABLED, HttpListenerResourceDefinition.MAX_POST_SIZE, HttpListenerResourceDefinition.SOCKET_BINDING, HttpListenerResourceDefinition.WORKER)
                         ).addChild(
                                 builder(HttpsListenerResourceDefinition.INSTANCE)
                                         .addAttributes(HttpsListenerResourceDefinition.INSTANCE.getAttributes())

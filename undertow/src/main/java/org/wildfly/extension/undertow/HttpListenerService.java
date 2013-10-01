@@ -31,6 +31,7 @@ import io.undertow.server.HttpHandler;
 import io.undertow.server.ListenerRegistry;
 import io.undertow.server.OpenListener;
 import io.undertow.server.handlers.ChannelUpgradeHandler;
+import io.undertow.server.handlers.SSLHeaderHandler;
 import io.undertow.server.protocol.http.HttpOpenListener;
 import org.jboss.msc.service.ServiceName;
 import org.jboss.msc.service.StartContext;
@@ -59,7 +60,7 @@ public class HttpListenerService extends AbstractListenerService<HttpListenerSer
     private final String serverName;
     private final long maxUploadSize;
 
-    public HttpListenerService(String name, final String serverName, long maxUploadSize) {
+    public HttpListenerService(String name, final String serverName, long maxUploadSize, boolean certificateForwarding) {
         super(name);
         this.serverName = serverName;
         this.maxUploadSize = maxUploadSize;
@@ -70,6 +71,14 @@ public class HttpListenerService extends AbstractListenerService<HttpListenerSer
                 return httpUpgradeHandler;
             }
         });
+        if(certificateForwarding) {
+            listenerHandlerWrappers.add(new HandlerWrapper() {
+                @Override
+                public HttpHandler wrap(HttpHandler handler) {
+                    return new SSLHeaderHandler(handler);
+                }
+            });
+        }
     }
 
     @Override
