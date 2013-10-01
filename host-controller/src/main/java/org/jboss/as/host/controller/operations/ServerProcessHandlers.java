@@ -44,11 +44,13 @@ public abstract class ServerProcessHandlers implements OperationStepHandler {
 
     public static final OperationDefinition DESTROY_OPERATION = new SimpleOperationDefinitionBuilder("destroy", HostResolver.getResolver("host.server"))
             .setReplyType(ModelType.UNDEFINED)
+            .setRuntimeOnly()
             .withFlag(OperationEntry.Flag.HOST_CONTROLLER_ONLY)
             .build();
 
     public static final OperationDefinition KILL_OPERATION = new SimpleOperationDefinitionBuilder("kill", HostResolver.getResolver("host.server"))
             .setReplyType(ModelType.UNDEFINED)
+            .setRuntimeOnly()
             .withFlag(OperationEntry.Flag.HOST_CONTROLLER_ONLY)
             .build();
 
@@ -63,7 +65,17 @@ public abstract class ServerProcessHandlers implements OperationStepHandler {
         final PathAddress address = PathAddress.pathAddress(operation.require(OP_ADDR));
         final PathElement element = address.getLastElement();
         final String serverName = element.getValue();
-        doExecute(serverName);
+        context.addStep(new OperationStepHandler() {
+            @Override
+            public void execute(OperationContext context, ModelNode operation) throws OperationFailedException {
+                // WFLY-2189 trigger a write-runtime authz check
+                context.getServiceRegistry(true);
+
+                doExecute(serverName);
+                context.completeStep(OperationContext.RollbackHandler.NOOP_ROLLBACK_HANDLER);
+            }
+        }, OperationContext.Stage.RUNTIME);
+
         context.stepCompleted();
     }
 
