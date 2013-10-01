@@ -240,10 +240,11 @@ public class ASModuleHandler extends CommandHandlerWithHelp {
             pathDelimiter = resourceDelimiter.getValue(parsedCmd);
         }
 
+        final FilenameTabCompleter pathCompleter = Util.isWindows() ? new WindowsFilenameTabCompleter(ctx) : new DefaultFilenameTabCompleter(ctx);
         final String[] resourceArr = (resourcePaths == null) ? new String[0] : resourcePaths.split(pathDelimiter);
         File[] resourceFiles = new File[resourceArr.length];
         for(int i = 0; i < resourceArr.length; ++i) {
-            final File f = new File(resourceArr[i]);
+            final File f = new File(pathCompleter.translatePath(resourceArr[i]));
             if(!f.exists()) {
                 throw new CommandLineException("Failed to locate " + f.getAbsolutePath());
             }
