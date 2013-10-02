@@ -496,4 +496,13 @@ public interface NamingMessages {
      */
     @Message(id = 11878, value = "Failed to lookup %s")
     NamingException lookupError(String name);
+
+    /**
+     * Indicates that a service is not started as expected.
+     * @param serviceName
+     * @return
+     */
+    @Message(id = 11879, value = "%s service not started")
+    IllegalStateException serviceNotStarted(ServiceName serviceName);
+
 }

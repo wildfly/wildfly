@@ -345,52 +345,43 @@ public class ExternalContextBindingTestCase {
 
     @Test
     public void testWithActualLDAPContextWithoutCache() throws Exception {
-        InitialContext ctx = null;
-        InitialDirContext ldapContext1 = null;
-        InitialDirContext ldapContext2 = null;
-        try {
-            ctx = new InitialContext();
-            LOGGER.info("looking up java:global/ldap ....");
-            ldapContext1 = (InitialDirContext)ctx.lookup("java:global/ldap");
-            ldapContext2 = (InitialDirContext)ctx.lookup("java:global/ldap");
-            Assert.assertNotNull(ldapContext1);
-            Assert.assertNotNull(ldapContext2);
-            Assert.assertNotSame(ldapContext1, ldapContext2);
-            LOGGER.info("acquired external LDAP context: " + ldapContext1.toString());
-            LdapCtx c = (LdapCtx)ldapContext1.lookup("dc=jboss,dc=org");
-            c = (LdapCtx)c.lookup("ou=People");
-            Attributes attributes = c.getAttributes("uid=jduke");
-            Assert.assertTrue(attributes.get("description").contains("awesome"));
-        } finally {
-            if (ctx != null) {
-                ctx.close();
-            }
-            if(ldapContext1 != null) {
-                ldapContext1.close();
-            }
-            if(ldapContext2 != null) {
-                ldapContext2.close();
-            }
-        }
+        testWithActualLDAPContext(false);
     }
 
     @Test
     public void testWithActualLDAPContextWithCache() throws Exception {
+        testWithActualLDAPContext(true);
+    }
+
+    private void testWithActualLDAPContext(boolean withCache) throws Exception {
         InitialContext ctx = null;
         InitialDirContext ldapContext1 = null;
         InitialDirContext ldapContext2 = null;
         try {
             ctx = new InitialContext();
-            LOGGER.info("looking up java:global/ldap-cache ....");
-            ldapContext1 = (InitialDirContext)ctx.lookup("java:global/ldap-cache");
-            ldapContext2 = (InitialDirContext)ctx.lookup("java:global/ldap-cache");
+            String initialDirContext = withCache ? "java:global/ldap-cache" : "java:global/ldap";
+            LOGGER.info("looking up "+initialDirContext+" ....");
+            ldapContext1 = (InitialDirContext)ctx.lookup(initialDirContext);
+            ldapContext2 = (InitialDirContext)ctx.lookup(initialDirContext);
             Assert.assertNotNull(ldapContext1);
             Assert.assertNotNull(ldapContext2);
-            Assert.assertSame(ldapContext1, ldapContext2);
+            if(withCache) {
+                Assert.assertSame(ldapContext1, ldapContext2);
+            } else {
+                Assert.assertNotSame(ldapContext1, ldapContext2);
+            }
             LOGGER.info("acquired external LDAP context: " + ldapContext1.toString());
             LdapCtx c = (LdapCtx)ldapContext1.lookup("dc=jboss,dc=org");
             c = (LdapCtx)c.lookup("ou=People");
             Attributes attributes = c.getAttributes("uid=jduke");
+            Assert.assertTrue(attributes.get("description").contains("awesome"));
+            // resource injection
+            LookupEjb ejb = (LookupEjb) ctx.lookup("java:module/LookupEjb");
+            Assert.assertNotNull(ejb);
+            c = ejb.getLdapCtx();
+            Assert.assertNotNull(c);
+            c = (LdapCtx)c.lookup("ou=People");
+            attributes = c.getAttributes("uid=jduke");
             Assert.assertTrue(attributes.get("description").contains("awesome"));
         } finally {
             if (ctx != null) {
@@ -404,5 +395,4 @@ public class ExternalContextBindingTestCase {
             }
         }
     }
-
 }

@@ -241,6 +241,7 @@ public enum Phase {
     public static final int STRUCTURE_JMS_CONNECTION_FACTORY_RESOURCE_INJECTION = 0x1C02;
     public static final int STRUCTURE_DEPLOYMENT_DEPENDENCIES           = 0x1D00;
     public static final int STRUCTURE_GLOBAL_MODULES                    = 0x1E00;
+    public static final int STRUCTURE_NAMING_EXTERNAL_CONTEXTS          = 0x1F00;
 
     // PARSE
     public static final int PARSE_EE_MODULE_NAME                        = 0x0100;

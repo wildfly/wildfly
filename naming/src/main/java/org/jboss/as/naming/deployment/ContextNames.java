@@ -29,6 +29,8 @@ import org.jboss.as.naming.ManagedReference;
 import org.jboss.as.naming.ManagedReferenceFactory;
 import org.jboss.as.naming.NamingContext;
 import org.jboss.as.naming.NamingStore;
+import org.jboss.as.naming.context.external.ExternalContexts;
+import org.jboss.as.server.deployment.DeploymentUnit;
 import org.jboss.msc.inject.InjectionException;
 import org.jboss.msc.inject.Injector;
 import org.jboss.msc.service.ServiceBuilder;
@@ -281,9 +283,14 @@ public class ContextNames {
          * @param targetInjector the injector which will receive the lookup result once the builded service starts
          */
         public void setupLookupInjection(final ServiceBuilder<?> serviceBuilder,
-                final Injector<ManagedReferenceFactory> targetInjector) {
-            // set dependency to the binder msc service
-            serviceBuilder.addDependency(getBinderServiceName());
+                final Injector<ManagedReferenceFactory> targetInjector, final DeploymentUnit deploymentUnit) {
+
+            // set dependency to the binder or its parent external context's service name
+            final ExternalContexts externalContexts = deploymentUnit.getAttachment(Attachments.EXTERNAL_CONTEXTS);
+            final ServiceName parentExternalContextServiceName = externalContexts != null ? externalContexts.getParentExternalContext(getBinderServiceName()) : null;
+            final ServiceName dependencyServiceName = parentExternalContextServiceName == null ? getBinderServiceName() : parentExternalContextServiceName;
+            serviceBuilder.addDependency(dependencyServiceName);
+
             // an injector which upon being injected with the naming store, injects a factory - which does the lookup - to the
             // target injector
             final Injector<NamingStore> lookupInjector = new Injector<NamingStore>() {
