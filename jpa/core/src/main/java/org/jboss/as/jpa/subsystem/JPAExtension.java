@@ -117,7 +117,8 @@ public class JPAExtension implements Extension {
 
         ResourceTransformationDescriptionBuilder builder = TransformationDescriptionBuilder.Factory.createSubsystemInstance();
         builder.getAttributeBuilder()
-            .addRejectCheck(RejectAttributeChecker.SIMPLE_EXPRESSIONS, JPADefinition.DEFAULT_DATASOURCE, JPADefinition.DEFAULT_EXTENDEDPERSISTENCE_INHERITANCE)
+            .addRejectCheck(RejectAttributeChecker.SIMPLE_EXPRESSIONS, JPADefinition.DEFAULT_DATASOURCE)
+            .addRejectCheck(RejectAttributeChecker.DEFINED, JPADefinition.DEFAULT_EXTENDEDPERSISTENCE_INHERITANCE)
             .setDiscard(new DiscardAttributeChecker.DiscardAttributeValueChecker(new ModelNode(ExtendedPersistenceInheritance.DEEP.toString())), JPADefinition.DEFAULT_EXTENDEDPERSISTENCE_INHERITANCE)
             .end();
         TransformationDescription.Tools.register(builder.build(), subsystemRegistration, ModelVersion.create(1, 1, 0));
