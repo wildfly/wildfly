@@ -22,22 +22,6 @@
 
 package org.jboss.as.ee.component.deployers;
 
-import static org.jboss.as.ee.EeMessages.MESSAGES;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Locale;
-import java.util.Map;
-import java.util.Set;
-
-import javax.annotation.Resource;
-import javax.annotation.Resources;
-import javax.enterprise.concurrent.ContextService;
-import javax.enterprise.concurrent.ManagedExecutorService;
-import javax.enterprise.concurrent.ManagedScheduledExecutorService;
-import javax.enterprise.concurrent.ManagedThreadFactory;
-
 import org.jboss.as.ee.component.Attachments;
 import org.jboss.as.ee.component.BindingConfiguration;
 import org.jboss.as.ee.component.EEApplicationClasses;
@@ -50,7 +34,6 @@ import org.jboss.as.ee.component.LookupInjectionSource;
 import org.jboss.as.ee.component.MethodInjectionTarget;
 import org.jboss.as.ee.component.OptionalLookupInjectionSource;
 import org.jboss.as.ee.component.ResourceInjectionConfiguration;
-import org.jboss.as.ee.concurrent.service.ConcurrentServiceNames;
 import org.jboss.as.server.deployment.DeploymentPhaseContext;
 import org.jboss.as.server.deployment.DeploymentUnit;
 import org.jboss.as.server.deployment.DeploymentUnitProcessingException;
@@ -64,6 +47,18 @@ import org.jboss.jandex.DotName;
 import org.jboss.jandex.FieldInfo;
 import org.jboss.jandex.MethodInfo;
 import org.jboss.modules.Module;
+
+import javax.annotation.Resource;
+import javax.annotation.Resources;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Locale;
+import java.util.Map;
+import java.util.Set;
+
+import static org.jboss.as.ee.EeMessages.MESSAGES;
 
 /**
  * Deployment processor responsible for analyzing each attached {@link org.jboss.as.ee.component.ComponentDescription} instance to configure
@@ -86,11 +81,6 @@ public class ResourceInjectionAnnotationParsingProcessor implements DeploymentUn
         locations.put("javax.transaction.UserTransaction", "java:jboss/UserTransaction");
         locations.put("javax.transaction.TransactionSynchronizationRegistry", "java:jboss/TransactionSynchronizationRegistry");
         locations.put("org.osgi.framework.BundleContext", "java:jboss/osgi/BundleContext");
-        // ee concurrent
-        locations.put(ContextService.class.getName(), ConcurrentServiceNames.DEFAULT_CONTEXT_SERVICE_JNDI_NAME);
-        locations.put(ManagedThreadFactory.class.getName(), ConcurrentServiceNames.DEFAULT_MANAGED_THREAD_FACTORY_JNDI_NAME);
-        locations.put(ManagedExecutorService.class.getName(), ConcurrentServiceNames.DEFAULT_MANAGED_EXECUTOR_SERVICE_JNDI_NAME);
-        locations.put(ManagedScheduledExecutorService.class.getName(), ConcurrentServiceNames.DEFAULT_MANAGED_SCHEDULED_EXECUTOR_SERVICE_JNDI_NAME);
 
         //we have to be careful with java:comp lookups here
         //as they will not work in entries in application.xml, as there is no comp context availble
@@ -235,7 +225,6 @@ public class ResourceInjectionAnnotationParsingProcessor implements DeploymentUn
         }
         InjectionSource valueSource = null;
         final boolean isEnvEntryType = this.isEnvEntryType(injectionType, module);
-        final boolean isResourceRefType = RESOURCE_REF_ENTRIES.contains(injectionType);
         boolean createBinding = true;
         if (!isEmpty(lookup)) {
             valueSource = new LookupInjectionSource(lookup);
@@ -247,18 +236,21 @@ public class ResourceInjectionAnnotationParsingProcessor implements DeploymentUn
             // then there will be no binding the ENC and that's what is expected by the Java EE 6 spec. Furthermore,
             // if the @Resource is a env-entry binding then the injection target will be optional since in the absence of
             // a env-entry-value, there won't be a binding and effectively no injection. This again is as expected by spec.
-        } else if (!isResourceRefType) {
+        } else {
             //otherwise we just try and handle it
             //if we don't have a value source we will try and inject from a lookup
             //and the user has to configure the value in a deployment descriptor
             final EEResourceReferenceProcessor resourceReferenceProcessor = registry.getResourceReferenceProcessor(injectionType);
             if (resourceReferenceProcessor != null) {
                 valueSource = resourceReferenceProcessor.getResourceReferenceBindingSource();
+                if(valueSource == null) {
+                    createBinding = false;
+                }
+            } else {
+                //handle resource reference types
+                createBinding = false;
+                valueSource = new LookupInjectionSource(localContextName);
             }
-        } else {
-            //handle resource reference types
-            createBinding = false;
-            valueSource = new LookupInjectionSource(localContextName);
         }
 
         final boolean createBindingFinal = createBinding;

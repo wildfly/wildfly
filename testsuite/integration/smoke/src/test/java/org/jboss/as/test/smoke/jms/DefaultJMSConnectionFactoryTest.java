@@ -73,7 +73,7 @@ public class DefaultJMSConnectionFactoryTest {
     @Resource(mappedName = "/queue/myAwesomeQueue")
     private Queue queue;
 
-    @Resource(lookup = "java:comp/DefaultJMSConnectionFactory")
+    @Resource
     private ConnectionFactory factory;
 
     @Deployment

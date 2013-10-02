@@ -36,8 +36,6 @@ import org.jboss.msc.value.InjectedValue;
  */
 public class ManagedThreadFactoryService extends EEConcurrentAbstractService<ManagedThreadFactoryImpl> {
 
-    public static final Class<?> SERVICE_VALUE_TYPE = ManagedThreadFactoryImpl.class;
-
     private volatile ManagedThreadFactoryImpl managedThreadFactory;
 
     private final String name;
@@ -46,11 +44,12 @@ public class ManagedThreadFactoryService extends EEConcurrentAbstractService<Man
 
     /**
      * @param name
+     * @param jndiName
      * @param priority
      * @see ManagedThreadFactoryImpl#ManagedThreadFactoryImpl(String, org.glassfish.enterprise.concurrent.ContextServiceImpl, int)
      */
-    public ManagedThreadFactoryService(String name, int priority) {
-        super(ConcurrentServiceNames.getManagedThreadFactoryJndiName(name));
+    public ManagedThreadFactoryService(String name, String jndiName, int priority) {
+        super(jndiName);
         this.name = name;
         this.contextService = new InjectedValue<>();
         this.priority = priority;
@@ -58,7 +57,7 @@ public class ManagedThreadFactoryService extends EEConcurrentAbstractService<Man
 
     @Override
     void startValue(StartContext context) throws StartException {
-        final String threadFactoryName = ConcurrentServiceNames.DEFAULT_NAME.equals(name) ? "EE-Default-ManagedThreadFactory" : "EE-ManagedThreadFactory-"+name;
+        final String threadFactoryName = "EE-ManagedThreadFactory-"+name;
         managedThreadFactory = new ManagedThreadFactoryImpl(threadFactoryName, contextService.getOptionalValue(), priority);
     }
 

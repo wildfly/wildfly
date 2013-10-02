@@ -47,6 +47,10 @@ public abstract class InjectionSource {
      */
     public abstract void getResourceValue(ResolutionContext resolutionContext, ServiceBuilder<?> serviceBuilder, DeploymentPhaseContext phaseContext, Injector<ManagedReferenceFactory> injector) throws DeploymentUnitProcessingException;
 
+    public boolean isDefaultBinding() {
+        return false;
+    }
+
     /**
      * A resolution context for the injection source.
      */

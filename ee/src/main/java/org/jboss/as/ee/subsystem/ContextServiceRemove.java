@@ -19,24 +19,25 @@
  * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
-package org.jboss.as.ee.concurrent.deployers;
+package org.jboss.as.ee.subsystem;
 
-import org.jboss.as.ee.component.BindingConfiguration;
-import org.jboss.as.ee.component.ServiceInjectionSource;
+import org.jboss.as.controller.ServiceRemoveStepHandler;
 import org.jboss.as.ee.concurrent.service.ConcurrentServiceNames;
-import org.jboss.as.ee.concurrent.service.ManagedScheduledExecutorServiceService;
-
-import java.util.List;
+import org.jboss.msc.service.ServiceName;
 
 /**
- * The {@link org.jboss.as.server.deployment.DeploymentUnitProcessor} which sets up the default concurrent managed scheduled executor service for each EE component in the deployment unit.
- *
  * @author Eduardo Martins
  */
-public class EEConcurrentDefaultManagedScheduledExecutorServiceProcessor extends EEConcurrentDefaultAbstractProcessor {
+public class ContextServiceRemove extends ServiceRemoveStepHandler {
+
+    static final ContextServiceRemove INSTANCE = new ContextServiceRemove();
+
+    private ContextServiceRemove() {
+        super(ContextServiceAdd.INSTANCE);
+    }
 
     @Override
-    void addBindingsConfigurations(String bindingNamePrefix, List<BindingConfiguration> bindingConfigurations) {
-        bindingConfigurations.add(new BindingConfiguration(bindingNamePrefix + "DefaultManagedScheduledExecutorService", new ServiceInjectionSource(ConcurrentServiceNames.DEFAULT_MANAGED_SCHEDULED_EXECUTOR_SERVICE_SERVICE_NAME, ManagedScheduledExecutorServiceService.SERVICE_VALUE_TYPE)));
+    protected ServiceName serviceName(String name) {
+        return ConcurrentServiceNames.getContextServiceServiceName(name);
     }
 }
