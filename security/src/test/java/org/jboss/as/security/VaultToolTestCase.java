@@ -70,7 +70,7 @@ public class VaultToolTestCase {
 
   @Test
   public void testVaultTool() throws IOException, VaultReaderException {
-    // Replaces standard output with a ByteArrayOutputStream to parse the ouput later.
+    // Replaces standard output with a ByteArrayOutputStream to parse the output later.
     System.setOut(new PrintStream(SYSTEM_OUT));
 
     try {
@@ -81,7 +81,7 @@ public class VaultToolTestCase {
     }
     SYSTEM_OUT.flush();
     String ouput = new String(SYSTEM_OUT.toByteArray());
-    String[] outputLines = ouput.split(System.getProperty("line.separator"));
+    String[] outputLines = ouput.split("\n");
 
     String vaultSharedKey = getStoredAttributeSharedKey(outputLines);
     Assert.assertNotNull("VaultTool did not return a line starting with VAULT::", vaultSharedKey);
