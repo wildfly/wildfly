@@ -86,9 +86,6 @@ public class SizeAppenderRestartTestCase {
                 .add("size-rotating-file-handler", SIZE_HANDLER_NAME);
         ROOT_LOGGER_ADDRESS.add(SUBSYSTEM, "logging")
                 .add("root-logger", "ROOT");
-
-        // Remove log files
-        clearLogs(logFile);
         // Start the server
         container.start(CONTAINER);
         Assert.assertTrue("Container is not started", managementClient.isServerInRunningState());
@@ -185,13 +182,7 @@ public class SizeAppenderRestartTestCase {
 
         // logFile.getParentFile().listFiles().length creates array with length of 3
         int count = 0;
-        File[] logs = null;
-        try {
-            logs = logFile.getParentFile().listFiles();
-        } catch (NullPointerException npe) {
-            Assert.fail("Failed to find any log file");
-        }
-        for (File f : logs) {
+        for (File f : listLogFiles()) {
             if (f.getName().contains(logFile.getName())) {
                 count++;
             }
@@ -222,13 +213,7 @@ public class SizeAppenderRestartTestCase {
 
         // verify that file was rotated
         int count = 0;
-        File[] logs = null;
-        try {
-            logs = logFile.getParentFile().listFiles();
-        } catch (NullPointerException npe) {
-            Assert.fail("Failed to find any log file");
-        }
-        for (File file : logs) {
+        for (File file : listLogFiles()) {
             if (file.getName().contains(logFile.getName())) {
                 count++;
                 if (file.getName().equals(logFile.getName() + ".1")) {
@@ -301,19 +286,12 @@ public class SizeAppenderRestartTestCase {
     }
 
     private void clearLogs(File file) {
-        File[] logs = null;
-        try {
-            logs = file.getParentFile().listFiles();
-        } catch (NullPointerException ignore) {
-        }
-        if (logs != null) {
-            for (File f : logs) {
-                if (f.getName().contains(logFile.getName())) {
-                    f.delete();
-                    log.info("Deleted: " + f.getAbsolutePath());
-                    if (f.exists()) {
-                        Assert.fail("Unable to delete file: " + f.getName());
-                    }
+        for (File f : listLogFiles()) {
+            if (f.getName().contains(file.getName())) {
+                f.delete();
+                log.info("Deleted: " + f.getAbsolutePath());
+                if (f.exists()) {
+                    Assert.fail("Unable to delete file: " + f.getName());
                 }
             }
         }
@@ -336,5 +314,11 @@ public class SizeAppenderRestartTestCase {
         } catch (Exception ignore) {
             // ignore
         }
+    }
+
+    private static File[] listLogFiles() {
+        File logDir = logFile.getParentFile();
+        Assert.assertNotNull("Log directory not found", logDir);
+        return logDir.listFiles();
     }
 }
