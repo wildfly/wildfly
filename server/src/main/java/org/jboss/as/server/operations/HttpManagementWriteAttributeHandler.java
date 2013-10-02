@@ -24,13 +24,11 @@ package org.jboss.as.server.operations;
 
 import static org.jboss.as.server.mgmt.HttpManagementResourceDefinition.INTERFACE;
 
-import org.jboss.as.controller.AbstractWriteAttributeHandler;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.OperationStepHandler;
 import org.jboss.as.controller.PathAddress;
-import org.jboss.as.controller.ServiceVerificationHandler;
-import org.jboss.as.controller.registry.Resource;
+import org.jboss.as.controller.ReloadRequiredWriteAttributeHandler;
 import org.jboss.as.server.ServerMessages;
 import org.jboss.as.server.mgmt.HttpManagementResourceDefinition;
 import org.jboss.dmr.ModelNode;
@@ -40,7 +38,7 @@ import org.jboss.dmr.ModelNode;
  *
  * @author Emanuel Muckenhuber
  */
-public class HttpManagementWriteAttributeHandler extends AbstractWriteAttributeHandler<Void> {
+public class HttpManagementWriteAttributeHandler extends ReloadRequiredWriteAttributeHandler{
 
     public static final OperationStepHandler INSTANCE = new HttpManagementWriteAttributeHandler();
 
@@ -71,39 +69,6 @@ public class HttpManagementWriteAttributeHandler extends AbstractWriteAttributeH
         }, OperationContext.Stage.MODEL);
 
         super.execute(context, operation);
-    }
-
-    @Override
-    protected boolean requiresRuntime(OperationContext context) {
-        return !context.isBooting();
-    }
-
-    @Override
-    protected boolean applyUpdateToRuntime(OperationContext context, ModelNode operation, String attributeName, ModelNode resolvedValue, ModelNode currentValue, HandbackHolder<Void> handbackHolder) throws OperationFailedException {
-        final Resource resource = context.readResource(PathAddress.EMPTY_ADDRESS);
-        final ModelNode subModel = resource.getModel();
-        final ServiceVerificationHandler handler = new ServiceVerificationHandler();
-        updateHttpManagementService(context, subModel, handler);
-        context.addStep(handler, OperationContext.Stage.VERIFY);
-
-        return false;
-    }
-
-    @Override
-    protected void revertUpdateToRuntime(final OperationContext context, final ModelNode operation,
-                                         final String attributeName, final ModelNode valueToRestore,
-                                         final ModelNode valueToRevert, final Void handback) throws OperationFailedException {
-        final Resource resource = context.readResource(PathAddress.EMPTY_ADDRESS);
-        final ModelNode subModel = resource.getModel().clone();
-        subModel.get(attributeName).set(valueToRestore);
-        updateHttpManagementService(context, subModel, null);
-    }
-
-
-
-    static void updateHttpManagementService(final OperationContext context, final ModelNode subModel, final ServiceVerificationHandler verificationHandler) throws OperationFailedException {
-        HttpManagementRemoveHandler.removeHttpManagementService(context);
-        HttpManagementAddHandler.installHttpManagementConnector(context, subModel, context.getServiceTarget(), verificationHandler, null, false);
     }
 
 }
