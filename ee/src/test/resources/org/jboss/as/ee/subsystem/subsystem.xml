@@ -7,18 +7,23 @@
 	<spec-descriptor-property-replacement>${test-exp1:false}</spec-descriptor-property-replacement>
 	<jboss-descriptor-property-replacement>${test-exp2:false}</jboss-descriptor-property-replacement>
     <concurrent>
-        <default-context-service use-transaction-setup-provider="${test-exp3:true}"/>
-        <default-managed-thread-factory priority="${test-exp8:1}" />
-        <default-managed-executor-service hung-task-threshold="${test-exp4:60000}" core-threads="${test-exp5:5}" max-threads="${test-exp6:25}" keepalive-time="${test-exp7:5000}" queue-length="${test-exp10:1000000}" reject-policy="${test-exp11:RETRY_ABORT}"/>
-        <default-managed-scheduled-executor-service hung-task-threshold="${test-exp4:60000}" core-threads="${test-exp5:5}" keepalive-time="${test-exp7:5000}" reject-policy="${test-exp11:RETRY_ABORT}"/>
-        <managed-thread-factories>
-            <managed-thread-factory name="${test-exp8:name}" context-service="" priority="${test-exp8:1}" />
-        </managed-thread-factories>
+        <context-services>
+            <context-service name="${test-exp3:name}" jndi-name="${test-exp4:name}" use-transaction-setup-provider="${test-exp5:true}"/>
+        </context-services>
         <managed-executor-services>
-            <managed-executor-service name="${test-exp8:name}" context-service="context-service-name" thread-factory="" hung-task-threshold="${test-exp4:60000}" core-threads="${test-exp5:5}" max-threads="${test-exp6:25}" keepalive-time="${test-exp7:5000}" queue-length="${test-exp10:1000000}" reject-policy="${test-exp11:RETRY_ABORT}"/>
+            <managed-executor-service name="${test-exp3:name}" jndi-name="${test-exp4:name}" context-service="context-service-name" thread-factory="thread-factory-name" hung-task-threshold="${test-exp7:60000}" core-threads="${test-exp8:5}" max-threads="${test-exp9:25}" keepalive-time="${test-exp10:5000}" queue-length="${test-exp11:1000000}" reject-policy="${test-exp12:RETRY_ABORT}"/>
         </managed-executor-services>
         <managed-scheduled-executor-services>
-            <managed-scheduled-executor-service name="${test-exp8:name}" context-service="context-service-name" thread-factory="thread-factory-name" hung-task-threshold="${test-exp4:60000}" core-threads="${test-exp5:5}" keepalive-time="${test-exp7:5000}" reject-policy="${test-exp11:RETRY_ABORT}"/>
+            <managed-scheduled-executor-service name="${test-exp3:name}" jndi-name="${test-exp4:name}" context-service="context-service-name" thread-factory="thread-factory-name" hung-task-threshold="${test-exp7:60000}" core-threads="${test-exp8:5}" keepalive-time="${test-exp10:5000}" reject-policy="${test-exp13:RETRY_ABORT}"/>
         </managed-scheduled-executor-services>
+        <managed-thread-factories>
+            <managed-thread-factory name="${test-exp3:name}" jndi-name="${test-exp4:name}" context-service="context-service-name" priority="${test-exp6:1}" />
+        </managed-thread-factories>
     </concurrent>
+    <default-bindings context-service="${test-exp14:name}"
+                      datasource="${test-exp15:name}"
+                      jms-connection-factory="${test-exp16:name}"
+                      managed-executor-service="${test-exp17:name}"
+                      managed-scheduled-executor-service="${test-exp18:name}"
+                      managed-thread-factory="${test-exp19:name}"/>
 </subsystem>

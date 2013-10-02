@@ -27,15 +27,13 @@ import org.glassfish.enterprise.concurrent.spi.TransactionSetupProvider;
 import org.jboss.as.controller.AbstractBoottimeAddStepHandler;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
+import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.ServiceVerificationHandler;
+import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
 import org.jboss.as.ee.concurrent.DefaultContextSetupProviderImpl;
-import org.jboss.as.ee.concurrent.deployers.EEConcurrentDefaultContextServiceProcessor;
 import org.jboss.as.ee.concurrent.service.ConcurrentServiceNames;
 import org.jboss.as.ee.concurrent.service.ContextServiceService;
 import org.jboss.as.ee.concurrent.service.TransactionSetupProviderService;
-import org.jboss.as.server.AbstractDeploymentChainStep;
-import org.jboss.as.server.DeploymentProcessorTarget;
-import org.jboss.as.server.deployment.Phase;
 import org.jboss.dmr.ModelNode;
 import org.jboss.msc.service.ServiceBuilder;
 import org.jboss.msc.service.ServiceController;
@@ -48,22 +46,24 @@ import java.util.List;
 /**
  * @author Eduardo Martins
  */
-public class DefaultContextServiceAdd extends AbstractBoottimeAddStepHandler {
+public class ContextServiceAdd extends AbstractBoottimeAddStepHandler {
 
-    static final DefaultContextServiceAdd INSTANCE = new DefaultContextServiceAdd();
+    static final ContextServiceAdd INSTANCE = new ContextServiceAdd();
 
-    private DefaultContextServiceAdd() {
-        super(DefaultContextServiceResourceDefinition.ATTRIBUTES);
+    private ContextServiceAdd() {
+        super(ContextServiceResourceDefinition.ATTRIBUTES);
     }
 
     @Override
     protected void performBoottime(OperationContext context, ModelNode operation, ModelNode model, ServiceVerificationHandler verificationHandler, List<ServiceController<?>> newControllers) throws OperationFailedException {
+        final String name = PathAddress.pathAddress(operation.get(ModelDescriptionConstants.ADDRESS)).getLastElement().getValue();
 
-        final boolean useTransactionSetupProvider = DefaultContextServiceResourceDefinition.USE_TRANSACTION_SETUP_PROVIDER_AD.resolveModelAttribute(context, model).asBoolean();
+        final String jndiName = ContextServiceResourceDefinition.JNDI_NAME_AD.resolveModelAttribute(context, model).asString();
+        final boolean useTransactionSetupProvider = ContextServiceResourceDefinition.USE_TRANSACTION_SETUP_PROVIDER_AD.resolveModelAttribute(context, model).asBoolean();
 
         // install the service which manages the default context service
-        final ContextServiceService contextServiceService = new ContextServiceService(ConcurrentServiceNames.DEFAULT_NAME);
-        final ServiceBuilder<ContextServiceImpl> contextServiceServiceBuilder = context.getServiceTarget().addService(ConcurrentServiceNames.DEFAULT_CONTEXT_SERVICE_SERVICE_NAME, contextServiceService)
+        final ContextServiceService contextServiceService = new ContextServiceService(name, jndiName);
+        final ServiceBuilder<ContextServiceImpl> serviceBuilder = context.getServiceTarget().addService(ConcurrentServiceNames.getContextServiceServiceName(name), contextServiceService)
                 .addInjectionValue(contextServiceService.getContextSetupProvider(), new ImmediateValue<ContextSetupProvider>(new DefaultContextSetupProviderImpl()));
         if(useTransactionSetupProvider) {
             // install the transaction setup provider's service
@@ -72,15 +72,17 @@ public class DefaultContextServiceAdd extends AbstractBoottimeAddStepHandler {
                         .addDependency(ServiceName.JBOSS.append("txn", "TransactionManager"), TransactionManager.class, transactionSetupProviderService.getTransactionManagerInjectedValue());
             newControllers.add(transactionSetupServiceBuilder.addListener(verificationHandler).install());
             // add it to deps of context service's service, for injection of its value
-            contextServiceServiceBuilder.addDependency(ConcurrentServiceNames.TRANSACTION_SETUP_PROVIDER_SERVICE_NAME,TransactionSetupProvider.class,contextServiceService.getTransactionSetupProvider());
+            serviceBuilder.addDependency(ConcurrentServiceNames.TRANSACTION_SETUP_PROVIDER_SERVICE_NAME,TransactionSetupProvider.class,contextServiceService.getTransactionSetupProvider());
         }
-        newControllers.add(contextServiceServiceBuilder.addListener(verificationHandler).install());
 
-        // add related DUPs
-        context.addStep(new AbstractDeploymentChainStep() {
-            protected void execute(DeploymentProcessorTarget processorTarget) {
-                processorTarget.addDeploymentProcessor(EeExtension.SUBSYSTEM_NAME, Phase.PARSE, Phase.PARSE_EE_CONCURRENT_DEFAULT_CONTEXT_SERVICE, new EEConcurrentDefaultContextServiceProcessor());
-            }
-        }, OperationContext.Stage.RUNTIME);
+        if (verificationHandler != null) {
+            serviceBuilder.addListener(verificationHandler);
+        }
+        if (newControllers != null) {
+            newControllers.add(
+                    serviceBuilder.install());
+        } else {
+            serviceBuilder.install();
+        }
     }
 }

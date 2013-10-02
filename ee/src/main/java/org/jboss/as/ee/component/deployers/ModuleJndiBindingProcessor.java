@@ -235,7 +235,7 @@ public class
                         throw e;
 
                     BinderService service = (BinderService) registered.getService();
-                    if (!service.getSource().equals(bindingConfiguration.getSource()))
+                    if (!bindingEqual(bindingConfiguration, service))
                         throw MESSAGES.conflictingBinding(bindingName, bindingConfiguration.getSource());
                 } catch (CircularDependencyException e) {
                     throw MESSAGES.circularDependency(bindingName);
@@ -253,14 +253,14 @@ public class
                     serviceBuilder.addListener(serviceVerificationHandler);
                     controller = serviceBuilder.install();
 
-                    service.acquire();
+                    //no need to aquire, ref counts starts at 1
                 } catch (DuplicateServiceException e) {
                     controller = (ServiceController<ManagedReferenceFactory>) CurrentServiceContainer.getServiceContainer().getService(bindInfo.getBinderServiceName());
                     if (controller == null)
                         throw e;
 
                     service = (BinderService) controller.getService();
-                    if (!service.getSource().equals(bindingConfiguration.getSource())) {
+                    if (!bindingEqual(bindingConfiguration, service)) {
                         throw MESSAGES.conflictingBinding(bindingName, bindingConfiguration.getSource());
                     }
                     service.acquire();
@@ -275,6 +275,15 @@ public class
         } else {
             throw MESSAGES.nullBindingName(bindingConfiguration);
         }
+    }
+
+    private boolean bindingEqual(BindingConfiguration bindingConfiguration, BinderService service) {
+        if(service.getSource() == null) {
+            return bindingConfiguration.getSource() == null;
+        } else if(bindingConfiguration.getSource() == null) {
+            return false;
+        }
+        return service.getSource().equals(bindingConfiguration.getSource());
     }
 
     public void undeploy(DeploymentUnit context) {
