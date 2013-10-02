@@ -225,8 +225,7 @@ public class ResourceInjectionAnnotationParsingProcessor implements DeploymentUn
         }
         InjectionSource valueSource = null;
         final boolean isEnvEntryType = this.isEnvEntryType(injectionType, module);
-        final boolean isResourceRefType = annotation.value("name") != null && RESOURCE_REF_ENTRIES.contains(injectionType);
-        boolean createBinding = true;
+        final boolean isResourceRefType = RESOURCE_REF_ENTRIES.contains(injectionType);
         if (!isEmpty(lookup)) {
             valueSource = new LookupInjectionSource(lookup);
         } else if (isEnvEntryType) {
@@ -237,7 +236,7 @@ public class ResourceInjectionAnnotationParsingProcessor implements DeploymentUn
             // then there will be no binding the ENC and that's what is expected by the Java EE 6 spec. Furthermore,
             // if the @Resource is a env-entry binding then the injection target will be optional since in the absence of
             // a env-entry-value, there won't be a binding and effectively no injection. This again is as expected by spec.
-        } else if (!isResourceRefType) {
+        } else {
             //otherwise we just try and handle it
             //if we don't have a value source we will try and inject from a lookup
             //and the user has to configure the value in a deployment descriptor
@@ -245,13 +244,10 @@ public class ResourceInjectionAnnotationParsingProcessor implements DeploymentUn
             if (resourceReferenceProcessor != null) {
                 valueSource = resourceReferenceProcessor.getResourceReferenceBindingSource();
             }
-        } else {
-            //handle resource reference types
-            createBinding = false;
-            valueSource = new LookupInjectionSource(localContextName);
         }
 
-        final boolean createBindingFinal = createBinding;
+        final BindingConfiguration bindingConfiguration = new BindingConfiguration(localContextName, valueSource);
+        classDescription.getBindingConfigurations().add(bindingConfiguration);
 
         // EE.5.2.4
         // Each injection of an object corresponds to a JNDI lookup. Whether a new
@@ -273,11 +269,6 @@ public class ResourceInjectionAnnotationParsingProcessor implements DeploymentUn
             final ResourceInjectionConfiguration injectionConfiguration = targetDescription != null ?
                     new ResourceInjectionConfiguration(targetDescription, injectionSource) : null;
 
-            // TODO: class hierarchies? shared bindings?
-            if (createBindingFinal) {
-                final BindingConfiguration bindingConfiguration = new BindingConfiguration(localContextName, valueSource);
-                classDescription.getBindingConfigurations().add(bindingConfiguration);
-            }
             if (injectionConfiguration != null) {
                 classDescription.addResourceInjection(injectionConfiguration);
             }

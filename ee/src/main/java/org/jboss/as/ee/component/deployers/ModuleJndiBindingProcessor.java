@@ -260,7 +260,7 @@ public class
                         throw e;
 
                     service = (BinderService) controller.getService();
-                    if (!service.getSource().equals(bindingConfiguration.getSource())) {
+                    if (!equals(service.getSource(), bindingConfiguration.getSource())) {
                         throw MESSAGES.conflictingBinding(bindingName, bindingConfiguration.getSource());
                     }
                     service.acquire();
@@ -275,6 +275,10 @@ public class
         } else {
             throw MESSAGES.nullBindingName(bindingConfiguration);
         }
+    }
+
+    public static boolean equals(Object one, Object two) {
+        return one == two || (one != null && one.equals(two));
     }
 
     public void undeploy(DeploymentUnit context) {
