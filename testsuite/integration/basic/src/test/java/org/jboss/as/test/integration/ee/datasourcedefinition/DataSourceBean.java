@@ -47,13 +47,13 @@ public class DataSourceBean {
     /**
      * This should be injected with the same datasource as above, as they both have the same name
      */
-    @Resource(name="java:comp/ds")
+    @Resource(lookup="java:comp/ds")
     private DataSource dataSource2;
 
     @Resource(lookup = "java:app/DataSource")
     private DataSource dataSource3;
 
-    @Resource(name="org.jboss.as.test.integration.ee.datasourcedefinition.DataSourceBean/dataSource3")
+    @Resource(lookup="org.jboss.as.test.integration.ee.datasourcedefinition.DataSourceBean/dataSource3")
     private DataSource dataSource4;
 
 

@@ -41,7 +41,7 @@ public class SimplifiedMessageProducer {
     @Resource
     private ConnectionFactory defaultConnectionFactory;
 
-    @Resource(name = "java:/ConnectionFactory")
+    @Resource(lookup = "java:/ConnectionFactory")
     private ConnectionFactory regularConnectionFactory;
 
     public void sendWithDefaultJMSConnectionFactory(Destination destination, String text) throws Exception {
