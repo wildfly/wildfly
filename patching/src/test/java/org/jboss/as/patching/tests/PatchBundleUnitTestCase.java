@@ -26,6 +26,7 @@ import static org.jboss.as.patching.IoUtils.safeClose;
 import static org.jboss.as.patching.runner.TestUtils.dump;
 import static org.jboss.as.patching.runner.TestUtils.randomString;
 import static org.jboss.as.patching.runner.TestUtils.touch;
+import static org.jboss.as.patching.runner.TestUtils.tree;
 
 import java.io.File;
 import java.io.FileOutputStream;
@@ -215,7 +216,6 @@ public class PatchBundleUnitTestCase extends AbstractPatchingTest {
         touch(existing);
         dump(existing, randomString());
 
-
         final PatchingTestStepBuilder cp1 = builder.createStepBuilder();
         cp1.setPatchId("cp1")
                 .upgradeIdentity(PRODUCT_VERSION, PRODUCT_VERSION)
@@ -244,6 +244,53 @@ public class PatchBundleUnitTestCase extends AbstractPatchingTest {
 
         Assert.assertFalse(builder.hasFile(FILE_ONE));
         Assert.assertFalse(builder.hasFile(FILE_TWO));
+
+    }
+
+    @Test
+    public void testSkipInstalled() throws Exception {
+
+        final PatchingTestBuilder builder = createDefaultBuilder("layer-2", "layer-1", "base");
+
+        final byte[] moduleHashOne = new byte[20];
+        final byte[] moduleHashTwo = new byte[20];
+        final byte[] moduleHashThree = new byte[20];
+
+        final PatchingTestStepBuilder cp1 = builder.createStepBuilder();
+        cp1.setPatchId("CP1")
+                .upgradeIdentity(PRODUCT_VERSION, PRODUCT_VERSION)
+                .upgradeElement("base-CP1", "base", false)
+                .addModuleWithRandomContent("org.jboss.test", moduleHashOne)
+        ;
+        final PatchingTestStepBuilder cp2 = builder.createStepBuilder();
+        cp2.setPatchId("CP2")
+                .upgradeIdentity(PRODUCT_VERSION, PRODUCT_VERSION)
+                .upgradeElement("layer-1-CP1", "layer-1", false)
+                .addModuleWithRandomContent("org.jboss.test.two", moduleHashTwo)
+        ;
+        final PatchingTestStepBuilder cp3 = builder.createStepBuilder();
+        cp3.setPatchId("CP3")
+                .upgradeIdentity(PRODUCT_VERSION, PRODUCT_VERSION)
+                .upgradeElement("layer-2-CP1", "layer-2", false)
+                .removeModule("org.jboss.test.three", "main", moduleHashThree)
+        ;
+
+        apply(cp1);
+        apply(cp2);
+
+        // Prepare multi patch
+        final File multiPatch = prepare(builder.getRoot(), cp1, cp2, cp3);
+
+        // Create the patch tool and apply the patch
+        InstallationManager mgr = updateInstallationManager(); // Get installation manager instance for the unit test
+        final PatchTool patchTool = PatchTool.Factory.create(mgr);
+        final PatchingResult result = patchTool.applyPatch(multiPatch, ContentVerificationPolicy.STRICT);
+        result.commit();
+        try {
+            PatchStepAssertions.APPLY.after(builder.getFile(JBOSS_INSTALLATION), cp3.build(), mgr);
+        } catch (IOException e) {
+            throw new PatchingException(e);
+        }
 
     }
 
