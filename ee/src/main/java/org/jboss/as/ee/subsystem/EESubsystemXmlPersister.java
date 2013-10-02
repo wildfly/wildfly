@@ -66,13 +66,6 @@ class EESubsystemXmlPersister implements XMLStreamConstants, XMLElementWriter<Su
             started = true;
             writeContextServices(writer, eeSubSystem.get(EESubsystemModel.CONTEXT_SERVICE));
         }
-        if (eeSubSystem.hasDefined(EESubsystemModel.MANAGED_THREAD_FACTORY)) {
-            if(!started) {
-                writer.writeStartElement(Element.CONCURRENT.getLocalName());
-                started = true;
-            }
-            writeManagedThreadFactories(writer, eeSubSystem.get(EESubsystemModel.MANAGED_THREAD_FACTORY));
-        }
         if (eeSubSystem.hasDefined(EESubsystemModel.MANAGED_EXECUTOR_SERVICE)) {
             if(!started) {
                 writer.writeStartElement(Element.CONCURRENT.getLocalName());
@@ -86,6 +79,13 @@ class EESubsystemXmlPersister implements XMLStreamConstants, XMLElementWriter<Su
                 started = true;
             }
             writeManagedScheduledExecutorServices(writer, eeSubSystem.get(EESubsystemModel.MANAGED_SCHEDULED_EXECUTOR_SERVICE));
+        }
+        if (eeSubSystem.hasDefined(EESubsystemModel.MANAGED_THREAD_FACTORY)) {
+            if(!started) {
+                writer.writeStartElement(Element.CONCURRENT.getLocalName());
+                started = true;
+            }
+            writeManagedThreadFactories(writer, eeSubSystem.get(EESubsystemModel.MANAGED_THREAD_FACTORY));
         }
         if(started) {
             writer.writeEndElement();
