@@ -59,7 +59,6 @@ public final class VaultSession {
 
     private SecurityVault vault;
     private String vaultAlias;
-    private byte[] handshakeKey;
 
     /**
      * Constructor to create VaultSession.
@@ -96,17 +95,15 @@ public final class VaultSession {
 
         File f = new File(keystoreURL);
         if (!f.exists()) {
-            throw new Exception("Keystore [" + keystoreURL + "] doesn't exist."
-                    + "\nkeystore could be created: keytool -genkey -alias vault -keyalg RSA -keysize 1024  -keystore "
-                    + keystoreURL);
+            throw VaultMessages.MESSAGES.keyStoreDoesnotExistWithExample(keystoreURL, keystoreURL);
         } else if (!f.canWrite() || !f.isFile()) {
-            throw new Exception("Keystore [" + keystoreURL + "] is not writable or not a file.");
+            throw VaultMessages.MESSAGES.keyStoreNotWritable(keystoreURL);
         }
     }
 
     protected void validateKeystorePassword() throws Exception {
         if (keystorePassword == null) {
-            throw new Exception("Keystore password has to be specified.");
+            throw VaultMessages.MESSAGES.keyStorePasswordNotSpecified();
         }
     }
 
@@ -120,24 +117,23 @@ public final class VaultSession {
         File d = new File(encryptionDirectory);
         if (!d.exists()) {
             if (!d.mkdirs()) {
-                throw new Exception("Cannot create encryption directory " + d.getAbsolutePath());
+                throw VaultMessages.MESSAGES.cannotCreateEncryptionDirectory(d.getAbsolutePath());
             }
         }
         if (!d.isDirectory()) {
-            throw new Exception("Encryption directory is not a directory or doesn't exist. (" + encryptionDirectory + ")");
+            throw VaultMessages.MESSAGES.encryptionDirectoryDoesNotExist(encryptionDirectory);
         }
     }
 
     protected void validateIterationCount() throws Exception {
         if (iterationCount < 1 && iterationCount > Integer.MAX_VALUE) {
-            throw new Exception("Iteration count has to be withing 1 - " + Integer.MAX_VALUE + ", but is " + iterationCount
-                    + ".");
+            throw VaultMessages.MESSAGES.iterationCountOutOfRange(String.valueOf(iterationCount));
         }
     }
 
     protected void validateSalt() throws Exception {
         if (salt == null || salt.length() != 8) {
-            throw new Exception("Salt has to be exactly 8 characters long.");
+            throw VaultMessages.MESSAGES.saltWrongLength();
         }
     }
 
@@ -173,7 +169,7 @@ public final class VaultSession {
             this.vault.init(getVaultOptionsMap());
             handshake();
         } catch (SecurityVaultException e) {
-            throw new Exception("Exception encountered:" + e.getLocalizedMessage(), e);
+            throw VaultMessages.MESSAGES.securityVaultException(e);
         }
     }
 
@@ -185,7 +181,7 @@ public final class VaultSession {
      */
     public void startVaultSession(String vaultAlias) throws Exception {
         if (vaultAlias == null) {
-            throw new Exception("Vault alias has to be specified.");
+            throw VaultMessages.MESSAGES.vaultAliasNotSpecified();
         }
         this.keystoreMaskedPassword = computeMaskedPassword();
         this.vaultAlias = vaultAlias;
@@ -206,7 +202,7 @@ public final class VaultSession {
     private void handshake() throws SecurityVaultException {
         Map<String, Object> handshakeOptions = new HashMap<String, Object>();
         handshakeOptions.put(PicketBoxSecurityVault.PUBLIC_CERT, vaultAlias);
-        handshakeKey = vault.handshake(handshakeOptions);
+        vault.handshake(handshakeOptions);
     }
 
     /**
@@ -219,11 +215,8 @@ public final class VaultSession {
      * @return secured attribute configuration
      */
     public String addSecuredAttribute(String vaultBlock, String attributeName, char[] attributeValue) throws Exception {
-        if (handshakeKey == null) {
-            throw new Exception("addSecuredAttribute method has to be called after successful startVaultSession() call.");
-        }
-        vault.store(vaultBlock, attributeName, attributeValue, handshakeKey);
-        return securedAttributeConfigurationString(vaultBlock, attributeName, null);
+        vault.store(vaultBlock, attributeName, attributeValue, null);
+        return securedAttributeConfigurationString(vaultBlock, attributeName);
     }
 
     /**
@@ -238,10 +231,7 @@ public final class VaultSession {
      * @throws Exception
      */
     public void addSecuredAttributeWithDisplay(String vaultBlock, String attributeName, char[] attributeValue) throws Exception {
-        if (handshakeKey == null) {
-            throw new Exception("addSecuredAttribute method has to be called after successful startVaultSession() call.");
-        }
-        vault.store(vaultBlock, attributeName, attributeValue, handshakeKey);
+        vault.store(vaultBlock, attributeName, attributeValue, null);
         attributeCreatedDisplay(vaultBlock, attributeName);
     }
 
@@ -255,9 +245,6 @@ public final class VaultSession {
      * @throws Exception
      */
     public boolean checkSecuredAttribute(String vaultBlock, String attributeName) throws Exception {
-        if (handshakeKey == null) {
-            throw new Exception("checkSecuredAttribute method has to be called after successful startVaultSession() call.");
-        }
         return vault.exists(vaultBlock, attributeName);
     }
 
@@ -268,37 +255,26 @@ public final class VaultSession {
      * @param attributeName
      */
     private void attributeCreatedDisplay(String vaultBlock, String attributeName) {
-        String keyAsString = new String(handshakeKey, CHARSET);
-        System.out.println("Secured attribute value has been stored in vault. ");
-        System.out.println("Please make note of the following:");
-        System.out.println("********************************************");
-        System.out.println("Vault Block:" + vaultBlock);
-        System.out.println("Attribute Name:" + attributeName);
-        System.out.println("Shared Key:" + keyAsString);
-        System.out.println("Configuration should be done as follows:");
-        System.out.println(securedAttributeConfigurationString(vaultBlock, attributeName, keyAsString));
-        System.out.println("********************************************");
+        System.out.println(VaultMessages.MESSAGES.vaultAttributeCreateDisplay(vaultBlock, attributeName,
+                securedAttributeConfigurationString(vaultBlock, attributeName)));
     }
-
 
     /**
      * Returns configuration string for secured attribute.
-     * keyAsString parameter can be null. In this case proper value will be calculated.
      *
      * @param vaultBlock
      * @param attributeName
-     * @param keyAsString
      * @return
      */
-    private String securedAttributeConfigurationString(String vaultBlock, String attributeName, String keyAsString) {
-        return "VAULT::" + vaultBlock + "::" + attributeName + "::" + (keyAsString != null ? keyAsString : new String(handshakeKey, CHARSET));
+    private String securedAttributeConfigurationString(String vaultBlock, String attributeName) {
+        return "VAULT::" + vaultBlock + "::" + attributeName + "::1";
     }
 
     /**
      * Display info about vault itself in form of AS7 configuration file.
      */
     public void vaultConfigurationDisplay() {
-        System.out.println("Vault Configuration in AS7 config file:");
+        System.out.println(VaultMessages.MESSAGES.vaultConfigurationTitle());
         System.out.println("********************************************");
         System.out.println("...");
         System.out.println("</extensions>");
