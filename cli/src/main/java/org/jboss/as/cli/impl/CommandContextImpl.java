@@ -569,7 +569,6 @@ class CommandContextImpl implements CommandContext, ModelControllerClientFactory
                     DefaultBatchedCommand batchedCmd = new DefaultBatchedCommand(op.toString(), request);
                     Batch batch = getBatchManager().getActiveBatch();
                     batch.add(batchedCmd);
-                    printLine("#" + batch.size() + " " + batchedCmd.getCommand());
                 } else {
                     set("OP_REQ", request);
                     try {
@@ -591,7 +590,6 @@ class CommandContextImpl implements CommandContext, ModelControllerClientFactory
                                 BatchedCommand batchedCmd = new DefaultBatchedCommand(line, request);
                                 Batch batch = getBatchManager().getActiveBatch();
                                 batch.add(batchedCmd);
-                                printLine("#" + batch.size() + " " + batchedCmd.getCommand());
                             } catch (CommandFormatException e) {
                                 throw new CommandFormatException("Failed to add to batch '" + line + "'", e);
                             }
