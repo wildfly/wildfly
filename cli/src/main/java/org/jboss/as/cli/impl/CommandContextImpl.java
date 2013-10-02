@@ -615,6 +615,10 @@ class CommandContextImpl implements CommandContext, ModelControllerClientFactory
                     throw new CommandLineException("Unexpected command '" + line + "'. Type 'help --commands' for the list of supported commands.");
                 }
             }
+        } catch(CommandLineException e) {
+            throw e;
+        } catch(Throwable t) {
+            throw new CommandLineException("Failed to handle '" + line + "'", t);
         } finally {
             // so that getArgumentsString() doesn't return this line
             // during the tab-completion of the next command
@@ -626,13 +630,15 @@ class CommandContextImpl implements CommandContext, ModelControllerClientFactory
         exitCode = 0;
         try {
             handle(line);
-        } catch (CommandLineException e) {
+        } catch(Throwable t) {
             final StringBuilder buf = new StringBuilder();
-            buf.append(e.getLocalizedMessage());
-            Throwable t = e.getCause();
-            while(t != null) {
-                buf.append(": ").append(t.getLocalizedMessage());
-                t = t.getCause();
+            buf.append(t.getLocalizedMessage());
+            Throwable t1 = t.getCause();
+            while(t1 != null) {
+                if(t1.getLocalizedMessage() != null) {
+                    buf.append(": ").append(t1.getLocalizedMessage());
+                }
+                t1 = t1.getCause();
             }
             error(buf.toString());
         }
