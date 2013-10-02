@@ -34,8 +34,8 @@ public class PatchHistoryDir extends AbstractArtifact<PatchArtifact.State,PatchH
     public static final PatchHistoryDir INSTANCE = new PatchHistoryDir();
 
     private PatchHistoryDir() {
-        addArtifact(PatchXml.INSTANCE);
-        addArtifact(RollbackXml.INSTANCE);
+        addArtifact(PatchXmlArtifact.INSTANCE);
+        addArtifact(RollbackXmlArtifact.INSTANCE);
     }
 
     public static class State implements Artifact.State {
@@ -46,36 +46,36 @@ public class PatchHistoryDir extends AbstractArtifact<PatchArtifact.State,PatchH
             this.dir = dir;
         }
 
-        private PatchXml.State patchXml;
-        private RollbackXml.State rollbackXml;
-        private AppliedAt.State appliedAt;
+        private PatchXmlArtifact.State patchXml;
+        private RollbackXmlArtifact.State rollbackXml;
+        private AppliedAtArtifact.State appliedAt;
         // TODO configuration dir
 
         public File getDirectory() {
             return dir;
         }
 
-        public RollbackXml.State getRollbackXml() {
+        public RollbackXmlArtifact.State getRollbackXml() {
             return rollbackXml;
         }
 
-        public void setRollbackXml(RollbackXml.State rollbackXml) {
+        public void setRollbackXml(RollbackXmlArtifact.State rollbackXml) {
             this.rollbackXml = rollbackXml;
         }
 
-        public PatchXml.State getPatchXml() {
+        public PatchXmlArtifact.State getPatchXml() {
             return patchXml;
         }
 
-        public void setPatchXml(PatchXml.State patchXml) {
+        public void setPatchXml(PatchXmlArtifact.State patchXml) {
             this.patchXml = patchXml;
         }
 
-        public AppliedAt.State getAppliedAt() {
+        public AppliedAtArtifact.State getAppliedAt() {
             return appliedAt;
         }
 
-        public void setAppliedAt(AppliedAt.State appliedAt) {
+        public void setAppliedAt(AppliedAtArtifact.State appliedAt) {
             this.appliedAt = appliedAt;
         }
 

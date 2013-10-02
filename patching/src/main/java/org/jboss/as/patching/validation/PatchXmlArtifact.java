@@ -28,31 +28,37 @@ import java.io.File;
  * @author Alexey Loubyansky
  *
  */
-public class AppliedAt extends AbstractArtifact<PatchHistoryDir.State, AppliedAt.State> {
+public class PatchXmlArtifact extends AbstractArtifact<PatchHistoryDir.State, PatchXmlArtifact.State> {
 
-    public static final AppliedAt INSTANCE = new AppliedAt();
+    public static final PatchXmlArtifact INSTANCE = new PatchXmlArtifact();
 
-    public static class State implements Artifact.State {
+    private PatchXmlArtifact() {
+        addArtifact(PatchElementArtifact.getInstance());
+    }
 
-        private final File file;
+    public static class State extends XmlFileState {
+
+        private PatchElementArtifact.State patchElements;
 
         State(File file) {
-            this.file = file;
+            super(file);
         }
 
-        @Override
-        public void validate(Context ctx) {
-            // TODO exists, can be parsed
-            file.exists();
+        void setPatchElements(PatchElementArtifact.State elements) {
+            this.patchElements = elements;
+        }
+
+        public PatchElementArtifact.State getPatchElements() {
+            return patchElements;
         }
     }
 
     @Override
     protected State getInitialState(PatchHistoryDir.State historyDir, Context ctx) {
-        State state = historyDir.getAppliedAt();
+        State state = historyDir.getPatchXml();
         if(state == null) {
-            state = new State(new File(historyDir.getDirectory(), "timestamp"));
-            historyDir.setAppliedAt(state);
+            state = new State(new File(historyDir.getDirectory(), "patch.xml"));
+            historyDir.setPatchXml(state);
         }
         return state;
     }

@@ -20,52 +20,32 @@
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
 
-package org.jboss.as.patching.generator;
+package org.jboss.as.patching.validation;
 
-import java.util.Set;
-
-import org.jboss.as.patching.metadata.ContentItem;
-import org.jboss.as.patching.metadata.Patch;
+import java.io.File;
 
 /**
- * @author Emanuel Muckenhuber
+ * @author Alexey Loubyansky
+ *
  */
-public interface PatchElementConfig {
+public class RollbackXmlArtifact extends AbstractArtifact<PatchHistoryDir.State, RollbackXmlArtifact.State> {
 
-    /**
-     * Get the unique patch ID.
-     *
-     * @return the patch id
-     */
-    String getPatchId();
+    public static final RollbackXmlArtifact INSTANCE = new RollbackXmlArtifact();
 
-    /**
-     * Get the patch description.
-     *
-     * @return the patch description
-     */
-    String getDescription();
+    public static class State extends XmlFileState {
 
-    /**
-     * Get the layer name.
-     *
-     * @return the layer name
-     */
-    String getLayerName();
+        State(File file) {
+            super(file);
+        }
+    }
 
-    /**
-     * Get the patch type.
-     *
-     * @return the type of the patch
-     */
-    Patch.PatchType getPatchType();
-
-    /**
-     * Gets the modifications specifically specified in the patch config, if the config doesn't specify
-     * {@link PatchConfig#isGenerateByDiff() generating the modifications by differencing the two distributions}.
-     *
-     * @return the modified content items
-     */
-    Set<ContentItem> getSpecifiedContent();
-
+    @Override
+    protected State getInitialState(PatchHistoryDir.State historyDir, Context ctx) {
+        State state = historyDir.getRollbackXml();
+        if(state == null) {
+            state = new State(new File(historyDir.getDirectory(), "rollback.xml"));
+            historyDir.setRollbackXml(state);
+        }
+        return state;
+    }
 }
