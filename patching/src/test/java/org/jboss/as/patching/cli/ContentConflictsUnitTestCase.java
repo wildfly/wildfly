@@ -285,6 +285,6 @@ public class ContentConflictsUnitTestCase extends AbstractTaskTestCase {
                 buf.append(", ");
             }
         }
-        assertEquals(e.getMessage(), buf.toString());
+        assertEquals(e.getMessage().split(System.getProperty("line.separator"))[0], buf.toString());
     }
 }
