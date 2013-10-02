@@ -89,12 +89,15 @@ public class ClientCompatibilityUnitTestCase {
                     .append(MANAGEMENT_INTERFACE, NATIVE_INTERFACE).toModelNode();
         }
     }
-    */
 
+    // Arquillian requires a deployment to trigger @ServerSetup handling
     @Deployment
-    public static final Archive fakeDeployment() {
+    public static Archive fakeDeployment() {
         return ShrinkWrap.create(JavaArchive.class);
     }
+    */
+
+    private static final String CONTROLLER_ADDRESS = System.getProperty("node0", "localhost");
 
     private static final String WF_CLIENT = "org.wildfly:wildfly-controller-client";
     private static final String AS7_CLIENT = "org.jboss.as:jboss-as-controller-client";
@@ -158,15 +161,15 @@ public class ClientCompatibilityUnitTestCase {
 
     @Test
     public void testCurrent() throws Exception {
-        test(ModelControllerClient.Factory.create("localhost", 9999));
+        test(ModelControllerClient.Factory.create(CONTROLLER_ADDRESS, 9999));
     }
 
     protected void testAS7(final String version) throws Exception {
-        test(createClient(AS7_CLIENT, version, "localhost", 9999));
+        test(createClient(AS7_CLIENT, version, CONTROLLER_ADDRESS, 9999));
     }
 
     protected void testWF(final String version) throws Exception {
-        test(createClient(WF_CLIENT, version, "localhost", 9999));
+        test(createClient(WF_CLIENT, version, CONTROLLER_ADDRESS, 9999));
     }
 
     protected void test(final ModelControllerClient client) throws Exception {
