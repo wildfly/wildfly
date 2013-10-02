@@ -29,9 +29,11 @@ import static java.security.AccessController.doPrivileged;
 
 import java.io.File;
 import java.security.PrivilegedAction;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
+import java.util.regex.Pattern;
 
 import org.jboss.as.cli.CommandContext;
 import org.jboss.as.cli.CommandFormatException;
@@ -81,6 +83,8 @@ public class PatchHandler extends CommandHandlerWithHelp {
     private final ArgumentWithValue preserve;
 
     private final ArgumentWithoutValue distribution;
+    private final ArgumentWithoutValue modulePath;
+    private final ArgumentWithoutValue bundlePath;
 
     public PatchHandler(final CommandContext context) {
         super(PATCH, false);
@@ -198,6 +202,27 @@ public class PatchHandler extends CommandHandlerWithHelp {
                 return false;
             }
         };
+
+        modulePath = new FileSystemPathArgument(this, pathCompleter, "--module-path") {
+            @Override
+            public boolean canAppearNext(CommandContext ctx) throws CommandFormatException {
+                // TODO this is hidden from the tab-completion for now (and also not documented),
+                // although if the argument name is typed in and followed with the '=',
+                // the tab-completion for its value will work
+                return false;
+            }
+        };
+
+        bundlePath = new FileSystemPathArgument(this, pathCompleter, "--bundle-path") {
+            @Override
+            public boolean canAppearNext(CommandContext ctx) throws CommandFormatException {
+                // TODO this is hidden from the tab-completion for now (and also not documented),
+                // although if the argument name is typed in and followed with the '=',
+                // the tab-completion for its value will work
+                return false;
+            }
+        };
+
     }
 
     private boolean canOnlyAppearAfterActions(CommandContext ctx, String... actions) {
@@ -335,13 +360,13 @@ public class PatchHandler extends CommandHandlerWithHelp {
                 target = PatchOperationTarget.createStandalone(ctx.getModelControllerClient());
             }
         } else {
-            final String jbossHome = getJBossHome(ctx.getParsedCommandLine());
+            final ParsedCommandLine args = ctx.getParsedCommandLine();
+            final String jbossHome = getJBossHome(args);
+            final File root = new File(jbossHome);
+            final List<File> modules = getFSArgument(modulePath, args, root, "modules");
+            final List<File> bundles = getFSArgument(bundlePath, args, root, "bundles");
             try {
-                // TODO add separate params for modules and bundle directories
-                final File root = new File(jbossHome);
-                final File modules = new File(root, "modules");
-                final File bundles = new File(root, "bundles");
-                target = PatchOperationTarget.createLocal(root, Collections.singletonList(modules), Collections.singletonList(bundles));
+                target = PatchOperationTarget.createLocal(root, modules, bundles);
             } catch (Exception e) {
                 throw new CommandLineException("Unable to apply patch to local JBOSS_HOME=" + jbossHome, e);
             }
@@ -352,7 +377,7 @@ public class PatchHandler extends CommandHandlerWithHelp {
     private static final String HOME = "JBOSS_HOME";
     private static final String HOME_DIR = "jboss.home.dir";
 
-    private String getJBossHome(ParsedCommandLine args) {
+    private String getJBossHome(final ParsedCommandLine args) {
         final String targetDistro = distribution.getValue(args);
         if(targetDistro != null) {
             return targetDistro;
@@ -375,11 +400,23 @@ public class PatchHandler extends CommandHandlerWithHelp {
         if (resolved == null) {
             throw PatchMessages.MESSAGES.cliFailedToResolveDistribution();
         }
-        final File home = new File(resolved);
-        final File modules = new File(home, "modules");
-        if (! modules.isDirectory()) {         // TODO proper check
-            throw PatchMessages.MESSAGES.cliFailedToResolveDistribution();
-        }
         return resolved;
     }
+
+    private static List<File> getFSArgument(final ArgumentWithoutValue arg, final ParsedCommandLine args, final File root, final String param) {
+        final String value = arg.getValue(args);
+        if (value != null) {
+            final String[] values = value.split(Pattern.quote(File.pathSeparator));
+            if (values.length == 1) {
+                return Collections.singletonList(new File(value));
+            }
+            final List<File> resolved = new ArrayList<File>(values.length);
+            for (final String path : values) {
+                resolved.add(new File(path));
+            }
+            return resolved;
+        }
+        return Collections.singletonList(new File(root, param));
+    }
+
 }
