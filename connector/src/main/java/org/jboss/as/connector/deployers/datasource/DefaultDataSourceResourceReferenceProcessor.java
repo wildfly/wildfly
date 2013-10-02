@@ -60,7 +60,7 @@ public class DefaultDataSourceResourceReferenceProcessor implements DeploymentUn
     private static class DatasourceResourceReferenceProcessor implements EEResourceReferenceProcessor {
 
         private static final String TYPE = DataSource.class.getName();
-        private static final InjectionSource INJECTION_SOURCE = new LookupInjectionSource(DefaultDataSourceBindingProcessor.COMP_DEFAULT_DATASOURCE_JNDI_NAME);
+        private static final InjectionSource INJECTION_SOURCE = new LookupInjectionSource(DefaultDataSourceBindingProcessor.COMP_DEFAULT_DATASOURCE_JNDI_NAME, true);
 
         @Override
         public String getResourceReferenceType() {

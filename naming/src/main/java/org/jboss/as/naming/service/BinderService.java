@@ -64,6 +64,7 @@ public class BinderService implements Service<ManagedReferenceFactory> {
      * @param deploymentServiceName the service name for the related deployment unit
      */
     public BinderService(final String name, Object source, ServiceName deploymentServiceName) {
+
         if (name.startsWith("java:")) {
             //this is an absolute reference
             this.name = name.substring(name.indexOf('/') + 1);

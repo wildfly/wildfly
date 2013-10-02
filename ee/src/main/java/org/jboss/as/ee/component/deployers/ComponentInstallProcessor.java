@@ -265,13 +265,16 @@ public final class ComponentInstallProcessor implements DeploymentUnitProcessor 
                     serviceBuilder.addDependency(bindInfo.getParentContextServiceName(), ServiceBasedNamingStore.class, service.getNamingStoreInjector());
                     serviceBuilder.install();
                 } catch (DuplicateServiceException e) {
-                    ServiceController<ManagedReferenceFactory> registered = (ServiceController<ManagedReferenceFactory>) CurrentServiceContainer.getServiceContainer().getService(bindInfo.getBinderServiceName());
-                    if (registered == null)
-                        throw e;
+                    //default bindings are always overriden
+                    if(bindingConfiguration.getSource().isDefaultBinding()) {
+                        ServiceController<ManagedReferenceFactory> registered = (ServiceController<ManagedReferenceFactory>) CurrentServiceContainer.getServiceContainer().getService(bindInfo.getBinderServiceName());
+                        if (registered == null)
+                            throw e;
 
-                    BinderService service = (BinderService) registered.getService();
-                    if (!service.getSource().equals(bindingConfiguration.getSource()))
-                        throw MESSAGES.conflictingBinding(bindingName, bindingConfiguration.getSource());
+                        BinderService service = (BinderService) registered.getService();
+                        if (!service.getSource().equals(bindingConfiguration.getSource()))
+                            throw MESSAGES.conflictingBinding(bindingName, bindingConfiguration.getSource());
+                    }
                 } catch (CircularDependencyException e) {
                     throw MESSAGES.circularDependency(bindingName);
                 }

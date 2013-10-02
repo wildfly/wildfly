@@ -37,12 +37,18 @@ import org.jboss.msc.service.ServiceBuilder;
  */
 public final class LookupInjectionSource extends InjectionSource {
     private final String lookupName;
+    private final boolean defaultBinding;
 
     public LookupInjectionSource(final String lookupName) {
+        this(lookupName, false);
+    }
+
+    public LookupInjectionSource(final String lookupName, final boolean defaultBinding) {
         if (lookupName == null) {
             throw MESSAGES.nullVar("lookupName");
         }
         this.lookupName = lookupName;
+        this.defaultBinding = defaultBinding;
     }
 
     /**
@@ -84,4 +90,8 @@ public final class LookupInjectionSource extends InjectionSource {
         return lookupName.hashCode();
     }
 
+    @Override
+    public boolean isDefaultBinding() {
+        return defaultBinding;
+    }
 }

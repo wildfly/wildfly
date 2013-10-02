@@ -35,7 +35,7 @@ import javax.enterprise.concurrent.ContextService;
 public class ContextServiceResourceReferenceProcessor implements EEResourceReferenceProcessor {
 
     private static final String TYPE = ContextService.class.getName();
-    private static final LookupInjectionSource injectionSource = new LookupInjectionSource(EEConcurrentDefaultBindingProcessor.COMP_DEFAULT_CONTEXT_SERVICE_JNDI_NAME);
+    private static final LookupInjectionSource injectionSource = new LookupInjectionSource(EEConcurrentDefaultBindingProcessor.COMP_DEFAULT_CONTEXT_SERVICE_JNDI_NAME, true);
 
     public static final ContextServiceResourceReferenceProcessor INSTANCE = new ContextServiceResourceReferenceProcessor();
 

@@ -243,6 +243,9 @@ public class ResourceInjectionAnnotationParsingProcessor implements DeploymentUn
             final EEResourceReferenceProcessor resourceReferenceProcessor = registry.getResourceReferenceProcessor(injectionType);
             if (resourceReferenceProcessor != null) {
                 valueSource = resourceReferenceProcessor.getResourceReferenceBindingSource();
+                if(valueSource == null) {
+                    createBinding = false;
+                }
             } else {
                 //handle resource reference types
                 createBinding = false;

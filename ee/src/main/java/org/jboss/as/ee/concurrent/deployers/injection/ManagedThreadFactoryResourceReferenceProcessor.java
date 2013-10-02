@@ -35,7 +35,7 @@ import javax.enterprise.concurrent.ManagedThreadFactory;
 public class ManagedThreadFactoryResourceReferenceProcessor implements EEResourceReferenceProcessor {
 
     private static final String TYPE = ManagedThreadFactory.class.getName();
-    private static final LookupInjectionSource injectionSource = new LookupInjectionSource(EEConcurrentDefaultBindingProcessor.COMP_DEFAULT_MANAGED_THREAD_FACTORY_JNDI_NAME);
+    private static final LookupInjectionSource injectionSource = new LookupInjectionSource(EEConcurrentDefaultBindingProcessor.COMP_DEFAULT_MANAGED_THREAD_FACTORY_JNDI_NAME, true);
 
     public static final ManagedThreadFactoryResourceReferenceProcessor INSTANCE = new ManagedThreadFactoryResourceReferenceProcessor();
 

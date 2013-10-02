@@ -230,13 +230,17 @@ public class
                     serviceBuilder.addDependency(bindInfo.getParentContextServiceName(), ServiceBasedNamingStore.class, service.getNamingStoreInjector());
                     serviceBuilder.install();
                 } catch (DuplicateServiceException e) {
-                    ServiceController<ManagedReferenceFactory> registered = (ServiceController<ManagedReferenceFactory>) CurrentServiceContainer.getServiceContainer().getService(bindInfo.getBinderServiceName());
-                    if (registered == null)
-                        throw e;
+                    //default bindings are always overriden
+                    //TODO: this needs a bit more thought
+                    if(!bindingConfiguration.getSource().isDefaultBinding()) {
+                        ServiceController<ManagedReferenceFactory> registered = (ServiceController<ManagedReferenceFactory>) CurrentServiceContainer.getServiceContainer().getService(bindInfo.getBinderServiceName());
+                        if (registered == null)
+                            throw e;
 
-                    BinderService service = (BinderService) registered.getService();
-                    if (!service.getSource().equals(bindingConfiguration.getSource()))
-                        throw MESSAGES.conflictingBinding(bindingName, bindingConfiguration.getSource());
+                        BinderService service = (BinderService) registered.getService();
+                        if (!service.getSource().equals(bindingConfiguration.getSource()))
+                            throw MESSAGES.conflictingBinding(bindingName, bindingConfiguration.getSource());
+                    }
                 } catch (CircularDependencyException e) {
                     throw MESSAGES.circularDependency(bindingName);
                 }
@@ -260,8 +264,13 @@ public class
                         throw e;
 
                     service = (BinderService) controller.getService();
-                    if (!service.getSource().equals(bindingConfiguration.getSource())) {
-                        throw MESSAGES.conflictingBinding(bindingName, bindingConfiguration.getSource());
+
+                    //default bindings are always overriden
+                    //TODO: this needs a bit more thought
+                    if(!bindingConfiguration.getSource().isDefaultBinding()) {
+                        if (!service.getSource().equals(bindingConfiguration.getSource())) {
+                            throw MESSAGES.conflictingBinding(bindingName, bindingConfiguration.getSource());
+                        }
                     }
                     service.acquire();
                 }

@@ -60,7 +60,7 @@ public class DefaultJMSConnectionFactoryResourceReferenceProcessor implements De
     private static class JMSConnectionFactoryResourceReferenceProcessor implements EEResourceReferenceProcessor {
 
         private static final String TYPE = ConnectionFactory.class.getName();
-        private static final InjectionSource INJECTION_SOURCE = new LookupInjectionSource(DefaultJMSConnectionFactoryBindingProcessor.COMP_DEFAULT_JMS_CONNECTION_FACTORY);
+        private static final InjectionSource INJECTION_SOURCE = new LookupInjectionSource(DefaultJMSConnectionFactoryBindingProcessor.COMP_DEFAULT_JMS_CONNECTION_FACTORY, true);
 
         @Override
         public String getResourceReferenceType() {
