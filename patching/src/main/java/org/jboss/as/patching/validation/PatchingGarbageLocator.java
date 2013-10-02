@@ -25,6 +25,7 @@ package org.jboss.as.patching.validation;
 
 import java.io.File;
 import java.io.FileFilter;
+import java.io.FilenameFilter;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
@@ -32,6 +33,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
+import org.jboss.as.patching.Constants;
 import org.jboss.as.patching.PatchLogger;
 import org.jboss.as.patching.installation.InstallationManager;
 import org.jboss.as.patching.installation.Layer;
@@ -44,8 +46,14 @@ import org.jboss.as.patching.installation.Layer;
 public class PatchingGarbageLocator implements PatchStateHandler {
 
     private static final PatchLogger log = PatchLogger.ROOT_LOGGER;
+    private static final String OVERLAYS = Constants.OVERLAYS;
 
-    private static final String OVERLAYS = ".overlays";
+    static final FilenameFilter ALL = new FilenameFilter() {
+        @Override
+        public boolean accept(File dir, String name) {
+            return true;
+        }
+    };
 
     public static PatchingGarbageLocator getIninitialized(InstallationManager im) {
         final PatchingGarbageLocator garbageLocator = new PatchingGarbageLocator(im);
@@ -117,26 +125,26 @@ public class PatchingGarbageLocator implements PatchStateHandler {
         List<File> dirs = getInactiveHistory();
         if(!dirs.isEmpty()) {
             for(File dir : dirs) {
-                deleteDir(dir);
+                deleteDir(dir, ALL);
             }
         }
         dirs = getInactiveOverlays();
         if(!dirs.isEmpty()) {
             for(File dir : dirs) {
-                deleteDir(dir);
+                deleteDir(dir, ALL);
             }
         }
     }
 
-    protected static boolean deleteDir(File dir) {
+    protected static boolean deleteDir(File dir, FilenameFilter filter) {
         boolean success = true;
-        final File[] files = dir.listFiles();
+        final File[] files = dir.listFiles(filter);
         if (files != null) {
             for (int i = 0; i < files.length; i++) {
                 File f = files[i];
                 if (f.isDirectory()) {
                     // delete the directory and all of its contents.
-                    if (!deleteDir(f)) {
+                    if (!deleteDir(f, filter)) {
                         success = false;
                         if(log.isDebugEnabled()) {
                             log.debug("Failed to delete dir: " + f.getAbsolutePath());

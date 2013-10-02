@@ -178,4 +178,7 @@ public interface PatchMessages {
     @Message(id = 16857, value = "Cannot rollback. No patches applied.")
     IllegalArgumentException noPatchesApplied();
 
+    @Message(id = 16858, value = "Patch '%s' not found in history.")
+    PatchingException patchNotFoundInHistory(String patchId);
+
 }

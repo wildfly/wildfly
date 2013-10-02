@@ -59,7 +59,7 @@ public class LocalAgeoutHistoryHandler implements OperationStepHandler {
     static final FilenameFilter HISTORY_FILTER = new FilenameFilter() {
         @Override
         public boolean accept(File dir, String name) {
-            if (PatchXml.PATCH_XML.equals(name) || "rollback.xml".equals(name)) {
+            if (PatchXml.PATCH_XML.equals(name) || PatchXml.ROLLBACK_XML.equals(name)) {
                 return false;
             }
             return true;

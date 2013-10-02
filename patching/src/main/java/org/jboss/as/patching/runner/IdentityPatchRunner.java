@@ -468,7 +468,7 @@ class IdentityPatchRunner implements InstallationManager.ModificationCompletionC
                 }
             }
             if (!found) {
-                throw new PatchingException("failed to find patch history entry for " + cumulativePatchID);
+                throw PatchMessages.MESSAGES.patchNotFoundInHistory(cumulativePatchID);
             }
         }
     }
