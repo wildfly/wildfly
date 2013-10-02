@@ -87,6 +87,8 @@ public class PatchHandler extends CommandHandlerWithHelp {
     private final ArgumentWithoutValue modulePath;
     private final ArgumentWithoutValue bundlePath;
 
+    private static final String lineSeparator = getSecurityManager() == null ? getProperty("line.separator") : doPrivileged(new ReadPropertyAction("line.separator"));
+
     public PatchHandler(final CommandContext context) {
         super(PATCH, false);
 
@@ -265,6 +267,7 @@ public class PatchHandler extends CommandHandlerWithHelp {
                 if(conflicts.has(Constants.MISC)) {
                     formatConflictsList(buf, conflicts, title, Constants.MISC);
                 }
+                buf.append(lineSeparator).append("Use the --override or --preserve arguments in order to resolve the conflict.");
                 throw new CommandLineException(buf.toString());
             } else {
                 throw new CommandLineException(Util.getFailureDescription(result));
