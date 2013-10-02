@@ -46,9 +46,6 @@
         <copy todir="target/jbossas-admin-only">
             <fileset dir="target/jbossas"/>
         </copy>
-        <copy todir="target/jbossas-admin-only/modules">
-            <fileset dir="${jboss.dist}/modules"/>
-        </copy>
 
         <!-- Connects back to original host (node0) -->
         <ts.config-as.add-remote-outbound-connection name="jbossas-with-remote-outbound-connection" node="${node0}"
@@ -65,9 +62,6 @@
         <echo message="Copying and configuring instance jbossas-messaging-failover"/>
         <copy todir="target/jbossas-messaging-failover">
             <fileset dir="target/jbossas"/>
-        </copy>
-        <copy todir="target/jbossas-messaging-failover/modules">
-            <fileset dir="${jboss.dist}/modules"/>
         </copy>
         <ts.config-as.add-messaging-failover name="jbossas-messaging-failover"/>
     </target>
