@@ -30,7 +30,7 @@ import org.jboss.as.patching.metadata.PatchElement;
  * @author Alexey Loubyansky
  *
  */
-public class PatchElementArtifact extends ArtifactWithCollectionState<PatchXml.State, PatchElementArtifact.ElementState, PatchElementArtifact.State> {
+public class PatchElementArtifact extends ArtifactWithCollectionState<PatchXmlArtifact.State, PatchElementArtifact.ElementState, PatchElementArtifact.State> {
 
     private static final PatchElementArtifact INSTANCE = new PatchElementArtifact();
 
@@ -112,7 +112,7 @@ public class PatchElementArtifact extends ArtifactWithCollectionState<PatchXml.S
     }
 
     @Override
-    protected State getInitialState(PatchXml.State parent, Context ctx) {
+    protected State getInitialState(PatchXmlArtifact.State parent, Context ctx) {
         State elements = parent.getPatchElements();
         if(elements != null) {
             return elements;
