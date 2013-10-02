@@ -52,7 +52,7 @@ public class BinderService implements Service<ManagedReferenceFactory> {
     private final String name;
     private final InjectedValue<ManagedReferenceFactory> managedReferenceFactory = new InjectedValue<ManagedReferenceFactory>();
     private final Object source;
-    private final AtomicInteger refcnt = new AtomicInteger(0);
+    private final AtomicInteger refcnt = new AtomicInteger(1);
     private ServiceController<?> controller;
     private final ServiceName deploymentServiceName;
 

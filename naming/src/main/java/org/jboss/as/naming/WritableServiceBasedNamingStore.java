@@ -83,7 +83,6 @@ public class WritableServiceBasedNamingStore extends ServiceBasedNamingStore imp
             if (startException != null) {
                 throw startException;
             }
-            binderService.acquire();
         } catch (Exception e) {
             throw namingException("Failed to bind [" + object + "] at location [" + bindName + "]", e);
         }

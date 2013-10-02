@@ -253,7 +253,7 @@ public class
                     serviceBuilder.addListener(serviceVerificationHandler);
                     controller = serviceBuilder.install();
 
-                    service.acquire();
+                    //no need to aquire, ref counts starts at 1
                 } catch (DuplicateServiceException e) {
                     controller = (ServiceController<ManagedReferenceFactory>) CurrentServiceContainer.getServiceContainer().getService(bindInfo.getBinderServiceName());
                     if (controller == null)
