@@ -247,6 +247,10 @@ public class PatchToolImpl implements PatchTool {
         final Iterator<BundledPatch.BundledPatchEntry> iterator = bundledPatch.getPatches().iterator();
         while (iterator.hasNext()) {
             final BundledPatch.BundledPatchEntry entry = iterator.next();
+            // Skip applied patches
+            if (manager.getAllInstalledPatches().contains(entry.getPatchId())) {
+                continue;
+            }
             final File patch = new File(workDir, entry.getPatchPath());
             final FileInputStream is = new FileInputStream(patch);
             try {
