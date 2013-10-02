@@ -51,8 +51,8 @@ public interface DiscardAttributeChecker {
      * Gets whether the given operation parameter can be discarded
      *
      * @param address the address of the operation
-     * @param attributeName the name of the attribute
-     * @param attributeValue the value of the attribute
+     * @param attributeName the name of the operation parameter
+     * @param attributeValue the value of the operation parameter
      * @param operation the operation executed. This is unmodifiable.
      * @param context the context of the transformation
      *
@@ -61,9 +61,9 @@ public interface DiscardAttributeChecker {
     boolean isOperationParameterDiscardable(PathAddress address, String attributeName, ModelNode attributeValue, ModelNode operation, TransformationContext context);
 
     /**
-     * Gets whether the given operation parameter can be discarded
+     * Gets whether the given attribute can be discarded
      *
-     * @param address the address of the operation
+     * @param address the address of the resource
      * @param attributeName the name of the attribute
      * @param attributeValue the value of the attribute
      * @param context the context of the transformation
