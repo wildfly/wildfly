@@ -75,7 +75,8 @@ public class LayeredDistributionTestCase {
     private ContainerController controller;
 
     @ArquillianResource
-    private Deployer deployer;    
+    private Deployer deployer;
+
 
     @Deployment(name = DEPLOYMENT, managed = false, testable = false)
     @TargetsContainer(CONTAINER)
@@ -92,7 +93,6 @@ public class LayeredDistributionTestCase {
     @Test
     @InSequence(-1)
     public void before() throws Exception {
-
         buildLayer(TEST_LAYER);
         buildProductModule(TEST_LAYER);
         buildTestModule(TEST_LAYER);
