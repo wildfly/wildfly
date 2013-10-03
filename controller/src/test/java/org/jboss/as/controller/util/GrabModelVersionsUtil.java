@@ -74,6 +74,10 @@ public class GrabModelVersionsUtil {
         System.out.println("</table>");
 
         System.out.println("----------------");
-        Tools.serializeModeNodeToFile(versions, new File("target/standalone-model-versions-running.dmr"));
+        final File projectDir = Tools.getProjectDirectory();
+        final File target = new File(projectDir, "target");
+        File file = new File(target, "standalone-model-versions-running.dmr");
+
+        Tools.serializeModeNodeToFile(versions, file);
     }
 }

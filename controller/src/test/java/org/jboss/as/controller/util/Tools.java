@@ -48,6 +48,7 @@ import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileReader;
 import java.io.PrintWriter;
+import java.net.URISyntaxException;
 import java.util.List;
 import java.util.Map;
 import java.util.TreeMap;
@@ -178,6 +179,11 @@ public class Tools {
         } finally {
             IoUtils.safeClose(writer);
         }
+    }
+
+    static File getProjectDirectory() throws URISyntaxException {
+        //Try to work around IntilliJ's crappy current directory handling
+        return new File(CompareModelVersionsUtil.class.getProtectionDomain().getCodeSource().getLocation().toURI()).getParentFile().getParentFile();
     }
 
     static ModelNode loadModelNodeFromFile(File file) throws Exception {
