@@ -35,10 +35,10 @@ public class X implements XMBean {
 
     private TransactionManager transactionManager;
 
-    @Resource(name = "java:jboss/mail")
+    @Resource(lookup = "java:jboss/mail")
     private Context context;
 
-    @Resource(name = "java:/TransactionManager")
+    @Resource(lookup = "java:/TransactionManager")
     public void setTransactionManager(TransactionManager transactionManager) {
         this.transactionManager = transactionManager;
     }

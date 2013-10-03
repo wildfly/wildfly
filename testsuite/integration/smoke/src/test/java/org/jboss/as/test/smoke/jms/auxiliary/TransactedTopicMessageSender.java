@@ -43,10 +43,10 @@ public class TransactedTopicMessageSender {
 
     private static final Logger logger = Logger.getLogger(TransactedTopicMessageSender.class);
 
-    @Resource(name = "java:/topic/myAwesomeTopic")
+    @Resource(lookup = "java:/topic/myAwesomeTopic")
     private Topic topic;
 
-    @Resource(name = "java:/ConnectionFactory")
+    @Resource(lookup = "java:/ConnectionFactory")
     private ConnectionFactory factory;
 
     @Resource

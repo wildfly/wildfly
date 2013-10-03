@@ -37,7 +37,7 @@ import javax.sql.DataSource;
 public class SimpleInterceptor
 {
 
-   @Resource (name = "java:jboss/datasources/ExampleDS")
+   @Resource (lookup = "java:jboss/datasources/ExampleDS")
    private DataSource ds;
    
    // an injection-target is configured for this field through ejb-jar.xml

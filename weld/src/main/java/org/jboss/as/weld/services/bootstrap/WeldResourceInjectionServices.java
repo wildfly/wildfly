@@ -21,24 +21,8 @@
  */
 package org.jboss.as.weld.services.bootstrap;
 
-import static org.jboss.as.weld.util.ResourceInjectionUtilities.getResourceAnnotated;
-
-import java.lang.reflect.Method;
-
-import javax.annotation.Resource;
-import javax.ejb.TimerService;
-import javax.ejb.spi.HandleDelegate;
-import javax.enterprise.concurrent.ContextService;
-import javax.enterprise.concurrent.ManagedExecutorService;
-import javax.enterprise.concurrent.ManagedScheduledExecutorService;
-import javax.enterprise.concurrent.ManagedThreadFactory;
-import javax.enterprise.inject.spi.InjectionPoint;
-import javax.naming.Context;
-import javax.naming.InitialContext;
-import javax.naming.NamingException;
-
+import org.jboss.as.ee.component.EEDefaultResourceJndiNames;
 import org.jboss.as.ee.component.EEModuleDescription;
-import org.jboss.as.ee.concurrent.service.ConcurrentServiceNames;
 import org.jboss.as.naming.deployment.ContextNames;
 import org.jboss.as.naming.deployment.ContextNames.BindInfo;
 import org.jboss.as.weld.WeldLogger;
@@ -50,6 +34,17 @@ import org.jboss.weld.injection.spi.ResourceReference;
 import org.jboss.weld.injection.spi.ResourceReferenceFactory;
 import org.jboss.weld.injection.spi.helpers.SimpleResourceReference;
 
+import javax.annotation.Resource;
+import javax.ejb.TimerService;
+import javax.ejb.spi.HandleDelegate;
+import javax.enterprise.inject.spi.InjectionPoint;
+import javax.naming.Context;
+import javax.naming.InitialContext;
+import javax.naming.NamingException;
+import java.lang.reflect.Method;
+
+import static org.jboss.as.weld.util.ResourceInjectionUtilities.getResourceAnnotated;
+
 public class WeldResourceInjectionServices extends AbstractResourceInjectionServices implements ResourceInjectionServices {
 
     private static final String USER_TRANSACTION_LOCATION = "java:comp/UserTransaction";
@@ -58,30 +53,46 @@ public class WeldResourceInjectionServices extends AbstractResourceInjectionServ
     private static final String TIMER_SERVICE_CLASS_NAME = "javax.ejb.TimerService";
     private static final String ORB_CLASS_NAME = "org.omg.CORBA.ORB";
 
+    private static final String EE_CONTEXT_SERVICE_CLASS_NAME = "javax.enterprise.concurrent.ContextService";
+    private static final String EE_DATASOURCE_CLASS_NAME = "javax.sql.DataSource";
+    private static final String EE_JMS_CONNECTION_FACTORY_CLASS_NAME = "javax.jms.ConnectionFactory";
+    private static final String EE_MANAGED_EXECUTOR_SERVICE_CLASS_NAME = "javax.enterprise.concurrent.ManagedExecutorService";
+    private static final String EE_MANAGED_SCHEDULED_EXECUTOR_SERVICE_CLASS_NAME = "javax.enterprise.concurrent.ManagedScheduledExecutorService";
+    private static final String EE_MANAGED_THREAD_FACTORY_CLASS_NAME = "javax.enterprise.concurrent.ManagedThreadFactory";
+
     private final Context context;
 
-    protected static String getEJBResourceName(InjectionPoint injectionPoint, String proposedName) {
+    protected String getEJBResourceName(InjectionPoint injectionPoint, String proposedName) {
         if (injectionPoint.getType() instanceof Class<?>) {
-            Class<?> type = (Class<?>) injectionPoint.getType();
-            if (USER_TRANSACTION_CLASS_NAME.equals(type.getName())) {
+            final Class<?> type = (Class<?>) injectionPoint.getType();
+            final String typeName = type.getName();
+            if (USER_TRANSACTION_CLASS_NAME.equals(typeName)) {
                 return USER_TRANSACTION_LOCATION;
-            } else if (HANDLE_DELEGATE_CLASS_NAME.equals(type.getName())) {
+            } else if (HANDLE_DELEGATE_CLASS_NAME.equals(typeName)) {
                 WeldLogger.ROOT_LOGGER.injectionTypeNotValue(HandleDelegate.class, injectionPoint.getMember());
                 return proposedName;
-            } else if (ORB_CLASS_NAME.equals(type.getName())) {
+            } else if (ORB_CLASS_NAME.equals(typeName)) {
                 WeldLogger.ROOT_LOGGER.injectionTypeNotValue(org.omg.CORBA.ORB.class, injectionPoint.getMember());
                 return proposedName;
-            } else if (TIMER_SERVICE_CLASS_NAME.equals(type.getName())) {
+            } else if (TIMER_SERVICE_CLASS_NAME.equals(typeName)) {
                 WeldLogger.ROOT_LOGGER.injectionTypeNotValue(TimerService.class, injectionPoint.getMember());
                 return proposedName;
-            } else if (ContextService.class.getName().equals(type.getName())) {
-                return ConcurrentServiceNames.DEFAULT_CONTEXT_SERVICE_JNDI_NAME;
-            }  else if (ManagedExecutorService.class.getName().equals(type.getName())) {
-                return ConcurrentServiceNames.DEFAULT_MANAGED_EXECUTOR_SERVICE_JNDI_NAME;
-            }  else if (ManagedScheduledExecutorService.class.getName().equals(type.getName())) {
-                return ConcurrentServiceNames.DEFAULT_MANAGED_SCHEDULED_EXECUTOR_SERVICE_JNDI_NAME;
-            }  else if (ManagedThreadFactory.class.getName().equals(type.getName())) {
-                return ConcurrentServiceNames.DEFAULT_MANAGED_THREAD_FACTORY_JNDI_NAME;
+            } else {
+                // EE default bindings
+                EEDefaultResourceJndiNames eeDefaultResourceJndiNames = moduleDescription.getDefaultResourceJndiNames();
+                if (eeDefaultResourceJndiNames.getContextService() != null && EE_CONTEXT_SERVICE_CLASS_NAME.equals(typeName)) {
+                    return eeDefaultResourceJndiNames.getContextService();
+                } else if (eeDefaultResourceJndiNames.getDataSource() != null && EE_DATASOURCE_CLASS_NAME.equals(typeName)) {
+                    return eeDefaultResourceJndiNames.getDataSource();
+                } else if (eeDefaultResourceJndiNames.getJmsConnectionFactory() != null && EE_JMS_CONNECTION_FACTORY_CLASS_NAME.equals(typeName)) {
+                    return eeDefaultResourceJndiNames.getJmsConnectionFactory();
+                } else if (eeDefaultResourceJndiNames.getManagedExecutorService() != null && EE_MANAGED_EXECUTOR_SERVICE_CLASS_NAME.equals(typeName)) {
+                    return eeDefaultResourceJndiNames.getManagedExecutorService();
+                } else if (eeDefaultResourceJndiNames.getManagedScheduledExecutorService() != null && EE_MANAGED_SCHEDULED_EXECUTOR_SERVICE_CLASS_NAME.equals(typeName)) {
+                    return eeDefaultResourceJndiNames.getManagedScheduledExecutorService();
+                } else if (eeDefaultResourceJndiNames.getManagedThreadFactory() != null && EE_MANAGED_THREAD_FACTORY_CLASS_NAME.equals(typeName)) {
+                    return eeDefaultResourceJndiNames.getManagedThreadFactory();
+                }
             }
         }
         return proposedName;
