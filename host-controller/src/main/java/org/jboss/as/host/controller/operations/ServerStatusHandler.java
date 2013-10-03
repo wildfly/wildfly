@@ -22,17 +22,17 @@
 
 package org.jboss.as.host.controller.operations;
 
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.AUTO_START;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
 import static org.jboss.as.host.controller.HostControllerMessages.MESSAGES;
 
 import org.jboss.as.controller.OperationContext;
-import org.jboss.as.controller.OperationStepHandler;
 import org.jboss.as.controller.OperationFailedException;
+import org.jboss.as.controller.OperationStepHandler;
 import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.PathElement;
 import org.jboss.as.controller.client.helpers.domain.ServerStatus;
 import org.jboss.as.host.controller.ServerInventory;
+import org.jboss.as.host.controller.resources.ServerConfigResourceDefinition;
 import org.jboss.dmr.ModelNode;
 
 /**
@@ -61,12 +61,7 @@ public class ServerStatusHandler implements OperationStepHandler {
         final String serverName = element.getValue();
 
         final ModelNode subModel = context.readResource(PathAddress.EMPTY_ADDRESS, false).getModel();
-        final boolean isStart;
-        if(subModel.hasDefined(AUTO_START)) {
-            isStart = subModel.get(AUTO_START).asBoolean();
-        } else {
-            isStart = true;
-        }
+        final boolean isStart = ServerConfigResourceDefinition.AUTO_START.resolveModelAttribute(context, subModel).asBoolean();
 
         ServerStatus status = serverInventory.determineServerStatus(serverName);
 

@@ -548,13 +548,18 @@ public class DomainLifecycleUtil {
             if (!readAttribute("auto-start", address).resolve().asBoolean()) {
                 continue;
             }
+            // Make sure the server is started before trying to contact it
+            final ServerIdentity id = new ServerIdentity(configuration.getHostName(), group, server);
+            if (!readAttribute("status", address).asString().equals("STARTED")) {
+                result.put(id, ControlledProcessState.State.STARTING);
+                continue;
+            }
 
             address = new ModelNode();
             address.add("host", configuration.getHostName());
             address.add("server", server);
 
             ControlledProcessState.State status = Enum.valueOf(ControlledProcessState.State.class, readAttribute("server-state", address).asString().toUpperCase(Locale.ENGLISH));
-            ServerIdentity id = new ServerIdentity(configuration.getHostName(), group, server);
             result.put(id, status);
         }
 
