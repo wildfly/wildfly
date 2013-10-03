@@ -59,13 +59,17 @@ public class JavaNamespaceSetup implements SetupAction {
     @Override
     public void setup(Map<String, Object> properties) {
         NamespaceContextSelector.pushCurrentSelector(namespaceSelector);
-        WritableServiceBasedNamingStore.pushOwner(deploymentUnitServiceName);
+        if(deploymentUnitServiceName != null) {
+            WritableServiceBasedNamingStore.pushOwner(deploymentUnitServiceName);
+        }
     }
 
     @Override
     public void teardown(Map<String, Object> properties) {
         NamespaceContextSelector.popCurrentSelector();
-        WritableServiceBasedNamingStore.popOwner();
+        if(deploymentUnitServiceName != null) {
+            WritableServiceBasedNamingStore.popOwner();
+        }
     }
 
 }

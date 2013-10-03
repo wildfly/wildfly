@@ -40,6 +40,7 @@
             <xs:element name="ear-subdeployments-isolated" default="false" type="ear-subdeployments-isolatedType" minOccurs="0" maxOccurs="1"/>
             <xs:element name="spec-descriptor-property-replacement" type="descriptor-property-replacementType" minOccurs="0" maxOccurs="1" />
             <xs:element name="jboss-descriptor-property-replacement" type="descriptor-property-replacementType" minOccurs="0" maxOccurs="1" />
+            <xs:element name="read-only-naming-contexts" type="xs:boolean" minOccurs="0" maxOccurs="1" default="false"/>
             <xs:element name="concurrent" type="concurrentType" minOccurs="0" maxOccurs="1" />
         </xs:sequence>
     </xs:complexType>

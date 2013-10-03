@@ -73,6 +73,8 @@ public final class EEModuleDescription implements ResourceInjectionTarget {
 
     private final ConcurrentContext concurrentContext;
 
+    private volatile boolean readOnlyNamingContexts;
+
     /**
      * Construct a new instance.
      *
@@ -307,5 +309,13 @@ public final class EEModuleDescription implements ResourceInjectionTarget {
 
     public ConcurrentContext getConcurrentContext() {
         return concurrentContext;
+    }
+
+    public boolean isReadOnlyNamingContexts() {
+        return readOnlyNamingContexts;
+    }
+
+    public void setReadOnlyNamingContexts(boolean readOnlyNamingContexts) {
+        this.readOnlyNamingContexts = readOnlyNamingContexts;
     }
 }

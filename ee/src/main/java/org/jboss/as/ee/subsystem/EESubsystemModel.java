@@ -33,6 +33,7 @@ public interface EESubsystemModel {
     String EAR_SUBDEPLOYMENTS_ISOLATED = "ear-subdeployments-isolated";
     String SPEC_DESCRIPTOR_PROPERTY_REPLACEMENT = "spec-descriptor-property-replacement";
     String JBOSS_DESCRIPTOR_PROPERTY_REPLACEMENT = "jboss-descriptor-property-replacement";
+    String READ_ONLY_NAMING_CONTEXTS = "read-only-naming-contexts";
 
     String DEFAULT_CONTEXT_SERVICE = "default-context-service";
     String DEFAULT_MANAGED_THREAD_FACTORY = "default-managed-thread-factory";

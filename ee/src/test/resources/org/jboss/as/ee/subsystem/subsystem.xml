@@ -6,6 +6,7 @@
 	<ear-subdeployments-isolated>${test-exp:true}</ear-subdeployments-isolated>
 	<spec-descriptor-property-replacement>${test-exp1:false}</spec-descriptor-property-replacement>
 	<jboss-descriptor-property-replacement>${test-exp2:false}</jboss-descriptor-property-replacement>
+    <read-only-naming-contexts>${test-exp12:true}</read-only-naming-contexts>
     <concurrent>
         <default-context-service use-transaction-setup-provider="${test-exp3:true}"/>
         <default-managed-thread-factory priority="${test-exp8:1}" />
