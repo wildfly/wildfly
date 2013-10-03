@@ -22,12 +22,9 @@
 
 package org.wildfly.extension.batch.deployment;
 
-import org.jboss.as.ee.structure.DeploymentType;
-import org.jboss.as.ee.structure.DeploymentTypeMarker;
 import org.jboss.as.server.deployment.Attachments;
 import org.jboss.as.server.deployment.DeploymentPhaseContext;
 import org.jboss.as.server.deployment.DeploymentUnit;
-import org.jboss.as.server.deployment.DeploymentUnitProcessingException;
 import org.jboss.as.server.deployment.DeploymentUnitProcessor;
 import org.jboss.as.server.deployment.module.ModuleDependency;
 import org.jboss.as.server.deployment.module.ModuleSpecification;
@@ -38,7 +35,7 @@ import org.jboss.modules.ModuleLoader;
 /**
  * Deployment unit processor for javax.batch integration.
  */
-public class BatchDependencyProcessor implements DeploymentUnitProcessor {
+public class BatchDependencyProcessor extends AbstractBatchProcessor implements DeploymentUnitProcessor {
 
     private final ModuleIdentifier batchModule = ModuleIdentifier.create("javax.batch.api");
 
@@ -48,14 +45,7 @@ public class BatchDependencyProcessor implements DeploymentUnitProcessor {
     };
 
     @Override
-    public void deploy(DeploymentPhaseContext phaseContext) throws DeploymentUnitProcessingException {
-        final DeploymentUnit deploymentUnit = phaseContext.getDeploymentUnit();
-        // Section 10.7 of JSR 352 discusses valid packaging types, of which it appears EAR should be one. It seems
-        // though that it's of no real use as 10.5 and 10.6 seem to indicate it must be in META-INF/batch-jobs of a JAR
-        // and WEB-INF/classes/META-INF/batch-jobs of a WAR.
-        if (DeploymentTypeMarker.isType(DeploymentType.EAR, deploymentUnit)) {
-            return;
-        }
+    protected void processDeployment(final DeploymentPhaseContext phaseContext, final DeploymentUnit deploymentUnit) {
         final ModuleSpecification moduleSpecification = deploymentUnit.getAttachment(Attachments.MODULE_SPECIFICATION);
         final ModuleLoader moduleLoader = Module.getBootModuleLoader();
 
