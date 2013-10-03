@@ -23,17 +23,14 @@
 package org.wildfly.jberet.services;
 
 import java.util.Properties;
+import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Future;
 import javax.enterprise.inject.spi.BeanManager;
-import javax.naming.InitialContext;
-import javax.naming.NamingException;
 import javax.transaction.UserTransaction;
 
 import org.jberet.spi.ArtifactFactory;
 import org.jberet.spi.BatchEnvironment;
-import org.jberet.spi.ThreadContextSetup;
-import org.jboss.as.ee.naming.InjectedEENamespaceContextSelector;
-import org.jboss.as.naming.context.NamespaceContextSelector;
 import org.jboss.msc.service.Service;
 import org.jboss.msc.service.StartContext;
 import org.jboss.msc.service.StartException;
@@ -41,6 +38,8 @@ import org.jboss.msc.service.StopContext;
 import org.jboss.msc.value.InjectedValue;
 import org.wildfly.jberet.BatchEnvironmentFactory;
 import org.wildfly.jberet.WildFlyArtifactFactory;
+import org.wildfly.jberet.services.ContextHandle.ChainedContextHandle;
+import org.wildfly.jberet.services.ContextHandle.Handle;
 import org.wildfly.security.manager.WildFlySecurityManager;
 
 /**
@@ -48,24 +47,19 @@ import org.wildfly.security.manager.WildFlySecurityManager;
  */
 public class BatchEnvironmentService implements Service<BatchEnvironment> {
 
-    private final InjectedValue<ClassLoader> classLoaderInjector = new InjectedValue<ClassLoader>();
-    private final InjectedValue<BeanManager> beanManagerInjector = new InjectedValue<BeanManager>();
-    private final InjectedValue<ExecutorService> executorServiceInjector = new InjectedValue<ExecutorService>();
-    private final InjectedValue<Properties> propertiesInjector = new InjectedValue<Properties>();
-    private final InjectedValue<UserTransaction> userTransactionInjector = new InjectedValue<UserTransaction>();
+    private final InjectedValue<ClassLoader> classLoaderInjector = new InjectedValue<>();
+    private final InjectedValue<BeanManager> beanManagerInjector = new InjectedValue<>();
+    private final InjectedValue<ExecutorService> executorServiceInjector = new InjectedValue<>();
+    private final InjectedValue<Properties> propertiesInjector = new InjectedValue<>();
+    private final InjectedValue<UserTransaction> userTransactionInjector = new InjectedValue<>();
 
-    private final InjectedEENamespaceContextSelector namespaceContextSelector;
     private volatile BatchEnvironment batchEnvironment;
-
-    public BatchEnvironmentService(final InjectedEENamespaceContextSelector namespaceContextSelector) {
-        this.namespaceContextSelector = namespaceContextSelector;
-    }
 
     @Override
     public void start(final StartContext context) throws StartException {
         final BatchEnvironment batchEnvironment = new WildFlyBatchEnvironment(classLoaderInjector.getOptionalValue(),
                 beanManagerInjector.getOptionalValue(), executorServiceInjector.getValue(),
-                userTransactionInjector.getValue(), propertiesInjector.getValue(), namespaceContextSelector);
+                userTransactionInjector.getValue(), propertiesInjector.getValue());
         // Add the service to the factory
         BatchEnvironmentFactory.getInstance().add(classLoaderInjector.getValue(), batchEnvironment);
         this.batchEnvironment = batchEnvironment;
@@ -110,19 +104,15 @@ public class BatchEnvironmentService implements Service<BatchEnvironment> {
         private final UserTransaction userTransaction;
         private final Properties properties;
         private final ClassLoader classLoader;
-        private final ThreadContextSetup threadContextSetup;
-        private final InjectedEENamespaceContextSelector namespaceContextSelector;
 
         WildFlyBatchEnvironment(final ClassLoader classLoader, final BeanManager beanManager,
                                 final ExecutorService executorService, final UserTransaction userTransaction,
-                                final Properties properties, final InjectedEENamespaceContextSelector namespaceContextSelector) {
+                                final Properties properties) {
             this.classLoader = classLoader;
             artifactFactory = new WildFlyArtifactFactory(beanManager);
             this.executorService = executorService;
             this.userTransaction = userTransaction;
             this.properties = properties;
-            this.threadContextSetup = new ClassLoaderThreadContextSetup(classLoader);
-            this.namespaceContextSelector = namespaceContextSelector;
         }
 
         @Override
@@ -135,9 +125,57 @@ public class BatchEnvironmentService implements Service<BatchEnvironment> {
             return artifactFactory;
         }
 
-        @Override
+        // @Override
         public ExecutorService getExecutorService() {
             return executorService;
+        }
+
+        @Override
+        public Future<?> submitTask(final Runnable task) {
+            final ContextHandle contextHandle = createContextHandle();
+            return executorService.submit(new Runnable() {
+                @Override
+                public void run() {
+                    final Handle handle = contextHandle.setup();
+                    try {
+                        task.run();
+                    } finally {
+                        handle.tearDown();
+                    }
+                }
+            });
+        }
+
+        @Override
+        public <T> Future<T> submitTask(final Runnable task, final T result) {
+            final ContextHandle contextHandle = createContextHandle();
+            return executorService.submit(new Runnable() {
+                @Override
+                public void run() {
+                    final Handle handle = contextHandle.setup();
+                    try {
+                        task.run();
+                    } finally {
+                        handle.tearDown();
+                    }
+                }
+            }, result);
+        }
+
+        @Override
+        public <T> Future<T> submitTask(final Callable<T> task) {
+            final ContextHandle contextHandle = createContextHandle();
+            return executorService.submit(new Callable<T>() {
+                @Override
+                public T call() throws Exception {
+                    final Handle handle = contextHandle.setup();
+                    try {
+                        return task.call();
+                    } finally {
+                        handle.tearDown();
+                    }
+                }
+            });
         }
 
         @Override
@@ -150,40 +188,12 @@ public class BatchEnvironmentService implements Service<BatchEnvironment> {
             return properties;
         }
 
-        @Override
-        public ThreadContextSetup getThreadContextSetup() {
-            return threadContextSetup;
-        }
-
-        @Override
-        public <T> T lookup(final String name) throws NamingException {
-            NamespaceContextSelector.pushCurrentSelector(namespaceContextSelector);
-            try {
-                return InitialContext.doLookup(name);
-            } finally {
-                NamespaceContextSelector.popCurrentSelector();
-            }
-        }
-    }
-
-    private static class ClassLoaderThreadContextSetup implements ThreadContextSetup {
-
-        private final ClassLoader classLoader;
-
-        public ClassLoaderThreadContextSetup(final ClassLoader classLoader) {
-            this.classLoader = classLoader;
-        }
-
-        @Override
-        public TearDownHandle setup() {
-            final ClassLoader current = WildFlySecurityManager.getCurrentContextClassLoaderPrivileged();
-            WildFlySecurityManager.setCurrentContextClassLoaderPrivileged(classLoader);
-            return new TearDownHandle() {
-                @Override
-                public void tearDown() {
-                    WildFlySecurityManager.setCurrentContextClassLoaderPrivileged(current);
-                }
-            };
+        private ContextHandle createContextHandle() {
+            final ClassLoader tccl = WildFlySecurityManager.getCurrentContextClassLoaderPrivileged();
+            // If the TCCL is null, use the deployments ModuleClassLoader
+            final ClassLoaderContextHandle classLoaderContextHandle = (tccl == null ? new ClassLoaderContextHandle(classLoader) : new ClassLoaderContextHandle(tccl));
+            // Class loader handle must be first so the TCCL is set before the other handles execute
+            return new ChainedContextHandle(classLoaderContextHandle, new NamespaceContextHandle(), new SecurityContextHandle());
         }
     }
 }
