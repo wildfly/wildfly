@@ -55,7 +55,6 @@ import java.util.TreeMap;
 import org.jboss.as.controller.ModelVersion;
 import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.PathElement;
-import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.Property;
 
@@ -126,11 +125,23 @@ public class CompareModelVersionsUtil {
             fromTgt = readInput("l");
         }
 
-        final String fromDirectory;
+        final File fromDirectory;
         if (fromTgt.equals("l")) {
-            fromDirectory = "target/test-classes/legacy-models/";
+            File projectDir = Tools.getProjectDirectory();
+            File legacyModels = new File(projectDir, "target/test-classes/legacy-models".replace('/', File.separatorChar));
+            //A hack to work around the fact that IntelliJ does not copy the .dmr files to the target/test-classes/legacy-models folder,
+            //when doing a Make, and to save its poor users from having to do a maven build.
+            if (!legacyModels.exists()) {
+                legacyModels = new File(projectDir, "src/test/resources/legacy-models".replace('/', File.separatorChar));
+                if (!legacyModels.exists()) {
+                    throw new IllegalStateException("Could not find the legacy-models directory");
+                }
+            }
+            fromDirectory = legacyModels;
+
+
         } else if (fromTgt.equals("t")) {
-            fromDirectory = "target/";
+            fromDirectory = new File(Tools.getProjectDirectory(), "target");
         } else {
             throw new IllegalArgumentException("Please enter 'l' for legacy-models directory or 't' for target directory");
         }
@@ -151,7 +162,7 @@ public class CompareModelVersionsUtil {
         }
 
         System.out.println("Loading legacy model versions for " + version + "....");
-        ModelNode legacyModelVersions = Tools.loadModelNodeFromFile(new File(fromDirectory + "standalone-model-versions-" + version + ".dmr"));
+        ModelNode legacyModelVersions = Tools.loadModelNodeFromFile(new File(fromDirectory, "standalone-model-versions-" + version + ".dmr"));
         System.out.println("Loaded legacy model versions");
 
         System.out.println("Loading model versions for currently running server...");
@@ -164,13 +175,13 @@ public class CompareModelVersionsUtil {
     }
 
     private static void doCompare(ResourceType resourceType,
-            String fromDirectory,
+            File fromDirectory,
             boolean compareDifferentVersions,
             String targetVersion,
             ModelNode legacyModelVersions,
             ModelNode currentModelVersions) throws Exception {
         System.out.println("Loading legacy resource descriptions for " + targetVersion + "....");
-        ModelNode legacyResourceDefinitions = Tools.loadModelNodeFromFile(new File(fromDirectory + resourceType.toString().toLowerCase() + "-resource-definition-" + targetVersion + ".dmr"));
+        ModelNode legacyResourceDefinitions = Tools.loadModelNodeFromFile(new File(fromDirectory, resourceType.toString().toLowerCase() + "-resource-definition-" + targetVersion + ".dmr"));
         System.out.println("Loaded legacy resource descriptions");
 
 

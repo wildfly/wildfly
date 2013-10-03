@@ -415,9 +415,11 @@ final class SubsystemTestDelegate {
                 file.mkdir();
             }
         }
-        PrintWriter pw = new PrintWriter(new File(file, mainSubsystemName + "-" + modelVersion.getMajor() + "." + modelVersion.getMinor() +"."+modelVersion.getMicro()+ ".dmr"));
+        File dmrFile = new File(file, mainSubsystemName + "-" + modelVersion.getMajor() + "." + modelVersion.getMinor() +"."+modelVersion.getMicro()+ ".dmr");
+        PrintWriter pw = new PrintWriter(dmrFile);
         try {
             desc.writeString(pw, false);
+            System.out.println("Written to:" + dmrFile);
         } finally {
             IoUtils.safeClose(pw);
         }

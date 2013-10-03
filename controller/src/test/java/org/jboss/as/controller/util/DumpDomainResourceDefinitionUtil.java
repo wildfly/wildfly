@@ -43,13 +43,18 @@ public class DumpDomainResourceDefinitionUtil {
     public static void main(String[] args) throws Exception {
         ModelNode resourceDefinition = Tools.getCurrentRunningDomainResourceDefinition();
         System.out.println("Dumping domain model....");
-        Tools.serializeModeNodeToFile(resourceDefinition, new File("target/" + ResourceType.DOMAIN.toString().toLowerCase() +
-        		"-resource-definition-running.dmr"));
+
+        final File projectDir = Tools.getProjectDirectory();
+        final File target = new File(projectDir, "target");
+        File file = new File(target, ResourceType.DOMAIN.toString().toLowerCase() + "-resource-definition-running.dmr");
+
+        Tools.serializeModeNodeToFile(resourceDefinition, file);
 
         resourceDefinition = Tools.getCurrentRunningResourceDefinition(PathAddress.pathAddress(PathElement.pathElement(HOST, "master")));
         System.out.println("Dumping host model....");
-        Tools.serializeModeNodeToFile(resourceDefinition, new File("target/" + ResourceType.HOST.toString().toLowerCase() +
-                        "-resource-definition-running.dmr"));
+
+        file = new File(target, ResourceType.HOST.toString().toLowerCase() + "-resource-definition-running.dmr");
+        Tools.serializeModeNodeToFile(resourceDefinition, file);
 
     }
 }

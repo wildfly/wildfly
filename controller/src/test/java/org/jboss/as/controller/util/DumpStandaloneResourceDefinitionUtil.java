@@ -37,7 +37,10 @@ public class DumpStandaloneResourceDefinitionUtil {
 
     public static void main(String[] args) throws Exception {
         ModelNode resourceDefinition = Tools.getCurrentRunningResourceDefinition(PathAddress.EMPTY_ADDRESS);
-        Tools.serializeModeNodeToFile(resourceDefinition, new File("target/" + ResourceType.STANDALONE.toString().toLowerCase() +
-        		"-resource-definition-running.dmr"));
+        final File projectDir = Tools.getProjectDirectory();
+        final File target = new File(projectDir, "target");
+        File file = new File(target, ResourceType.STANDALONE.toString().toLowerCase() + "-resource-definition-running.dmr");
+
+        Tools.serializeModeNodeToFile(resourceDefinition, file);
     }
 }
