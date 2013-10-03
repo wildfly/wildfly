@@ -20,12 +20,12 @@ public class BatchPropertiesService implements Service<Properties> {
     }
 
     @Override
-    public synchronized void stop(final StopContext context) {
+    public void stop(final StopContext context) {
         properties.clear();
     }
 
     @Override
-    public synchronized Properties getValue() throws IllegalStateException, IllegalArgumentException {
+    public Properties getValue() throws IllegalStateException, IllegalArgumentException {
         return properties;
     }
 
@@ -37,7 +37,7 @@ public class BatchPropertiesService implements Service<Properties> {
      *
      * @return the previous value of the property or {@code null} if there was not one
      */
-    public synchronized Object addProperty(final String key, final String value) {
+    public Object addProperty(final String key, final String value) {
         return properties.setProperty(key, value);
     }
 }
