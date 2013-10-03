@@ -474,7 +474,7 @@ public class GenericTypeOperationHandler extends BatchModeCommandHandler {
             final Set<String> keys = headers.keys();
             final SimpleTable table = new SimpleTable(2);
             for(String key : keys) {
-                table.addLine(new String[]{key, headers.get(key).asString()});
+                table.addLine(new String[]{key + ':', headers.get(key).asString()});
             }
             if(buf == null) {
                 buf = new StringBuilder();

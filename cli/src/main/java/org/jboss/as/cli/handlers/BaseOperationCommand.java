@@ -26,6 +26,7 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Set;
 
 import org.jboss.as.cli.CliEvent;
 import org.jboss.as.cli.CliEventListener;
@@ -45,6 +46,7 @@ import org.jboss.as.cli.operation.impl.DefaultCallbackHandler;
 import org.jboss.as.cli.operation.impl.DefaultOperationRequestAddress;
 import org.jboss.as.cli.operation.impl.HeadersCompleter;
 import org.jboss.as.cli.parsing.ParserUtil;
+import org.jboss.as.cli.util.SimpleTable;
 import org.jboss.as.controller.client.ModelControllerClient;
 import org.jboss.dmr.ModelNode;
 
@@ -238,6 +240,21 @@ public abstract class BaseOperationCommand extends CommandHandlerWithHelp implem
     }
 
     protected void handleResponse(CommandContext ctx, ModelNode response, boolean composite) throws CommandLineException {
+        displayResponseHeaders(ctx, response);
+    }
+
+    protected void displayResponseHeaders(CommandContext ctx, ModelNode response) {
+        if(response.has(Util.RESPONSE_HEADERS)) {
+            final ModelNode headers = response.get(Util.RESPONSE_HEADERS);
+            final Set<String> keys = headers.keys();
+            final SimpleTable table = new SimpleTable(2);
+            for (String key : keys) {
+                table.addLine(new String[] { key + ':', headers.get(key).asString() });
+            }
+            final StringBuilder buf = new StringBuilder();
+            table.append(buf, true);
+            ctx.printLine(buf.toString());
+        }
     }
 
     @Override

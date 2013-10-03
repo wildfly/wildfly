@@ -39,6 +39,7 @@ import org.jboss.as.cli.handlers.DefaultFilenameTabCompleter;
 import org.jboss.as.cli.handlers.FilenameTabCompleter;
 import org.jboss.as.cli.handlers.WindowsFilenameTabCompleter;
 import org.jboss.as.cli.impl.ArgumentWithValue;
+import org.jboss.as.cli.impl.ArgumentWithoutValue;
 import org.jboss.as.cli.impl.FileSystemPathArgument;
 import org.jboss.dmr.ModelNode;
 
@@ -49,12 +50,15 @@ import org.jboss.dmr.ModelNode;
 public class BatchRunHandler extends BaseOperationCommand {
 
     private final ArgumentWithValue file;
+    private final ArgumentWithoutValue verbose;
 
     public BatchRunHandler(CommandContext ctx) {
         super(ctx, "batch-run", true);
 
         final FilenameTabCompleter pathCompleter = Util.isWindows() ? new WindowsFilenameTabCompleter(ctx) : new DefaultFilenameTabCompleter(ctx);
         file = new FileSystemPathArgument(this, pathCompleter, "--file");
+
+        verbose = new ArgumentWithoutValue(this, "--verbose", "-v");
     }
 
     /* (non-Javadoc)
@@ -66,7 +70,6 @@ public class BatchRunHandler extends BaseOperationCommand {
         boolean failed = false;
         try {
             super.doHandle(ctx);
-            ctx.printLine("The batch executed successfully");
         } catch(CommandLineException e) {
             failed = true;
             throw e;
@@ -139,5 +142,15 @@ public class BatchRunHandler extends BaseOperationCommand {
         }
 
         throw new CommandFormatException("Without arguments the command can be executed only in the batch mode.");
+    }
+
+    @Override
+    protected void handleResponse(CommandContext ctx, ModelNode response, boolean composite) throws CommandLineException {
+        if(verbose.isPresent(ctx.getParsedCommandLine())) {
+            ctx.printLine(response.toString());
+        } else {
+            ctx.printLine("The batch executed successfully");
+            super.handleResponse(ctx, response, composite);
+        }
     }
 }
