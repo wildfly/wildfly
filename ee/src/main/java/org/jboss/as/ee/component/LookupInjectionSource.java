@@ -84,4 +84,8 @@ public final class LookupInjectionSource extends InjectionSource {
         return lookupName.hashCode();
     }
 
+    public String toString() {
+        return "lookup (" + lookupName + ")";
+    }
+
 }

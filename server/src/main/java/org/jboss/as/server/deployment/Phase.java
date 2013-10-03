@@ -235,7 +235,9 @@ public enum Phase {
     public static final int STRUCTURE_CLASS_PATH                        = 0x1900;
     public static final int STRUCTURE_MODULE_IDENTIFIERS                = 0x1A00;
     public static final int STRUCTURE_EE_MODULE_INIT                    = 0x1B00;
-    public static final int STRUCTURE_EE_RESOURCE_INJECTION_REGISTRY    = 0x1C00;
+    public static final int STRUCTURE_EE_RESOURCE_INJECTION_REGISTRY            = 0x1C00;
+    public static final int STRUCTURE_DATASOURCE_RESOURCE_INJECTION             = 0x1C01;
+    public static final int STRUCTURE_JMS_CONNECTION_FACTORY_RESOURCE_INJECTION = 0x1C02;
     public static final int STRUCTURE_DEPLOYMENT_DEPENDENCIES           = 0x1D00;
     public static final int STRUCTURE_GLOBAL_MODULES                    = 0x1E00;
 
@@ -327,6 +329,7 @@ public enum Phase {
     public static final int PARSE_EE_CONCURRENT_DEFAULT_MANAGED_THREAD_FACTORY              = 0x4801;
     public static final int PARSE_EE_CONCURRENT_DEFAULT_MANAGED_EXECUTOR_SERVICE            = 0x4802;
     public static final int PARSE_EE_CONCURRENT_DEFAULT_MANAGED_SCHEDULED_EXECUTOR_SERVICE  = 0x4803;
+    public static final int PARSE_EE_DEFAULT_BINDINGS_CONFIG            = 0x4880;
     public static final int PARSE_JSF_MANAGED_BEANS                     = 0x4900;
 
     // REGISTER
@@ -484,7 +487,9 @@ public enum Phase {
     public static final int INSTALL_POJO_DEPLOYMENT                     = 0x0A00;
     public static final int INSTALL_RA_XML_DEPLOYMENT                   = 0x0B00;
     public static final int INSTALL_EE_MODULE_CONFIG                    = 0x1101;
-    public static final int INSTALL_JMS_BINDINGS                        = 0x1150;
+    public static final int INSTALL_DEFAULT_BINDINGS_JMS_CONNECTION_FACTORY = 0x1150;
+    public static final int INSTALL_DEFAULT_BINDINGS_EE_CONCURRENCY         = 0x1151;
+    public static final int INSTALL_DEFAULT_BINDINGS_DATASOURCE             = 0x1152;
     public static final int INSTALL_MODULE_JNDI_BINDINGS                = 0x1200;
     public static final int INSTALL_DEPENDS_ON_ANNOTATION               = 0x1210;
 

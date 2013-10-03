@@ -43,10 +43,10 @@ public class TransactedQueueMessageSender {
 
     private static final Logger logger = Logger.getLogger(TransactedQueueMessageSender.class);
 
-    @Resource(name = "java:/queue/myAwesomeQueue")
+    @Resource(lookup = "java:/queue/myAwesomeQueue")
     private Queue queue;
 
-    @Resource(name = "java:/ConnectionFactory")
+    @Resource(lookup = "java:/ConnectionFactory")
     private ConnectionFactory factory;
 
     @Resource

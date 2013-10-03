@@ -33,80 +33,36 @@ public class ConcurrentServiceNames {
     private ConcurrentServiceNames() {
     }
 
-    public static final String DEFAULT_NAME = "";
-
-    public static final String BASE_JNDI_NAME = "java:jboss/ee/concurrent/";
-
-    public static final String CONTEXT_SERVICE_BASE_JNDI_NAME = BASE_JNDI_NAME + "context/";
-
-    public static final String DEFAULT_CONTEXT_SERVICE_JNDI_NAME = BASE_JNDI_NAME + "default/context";
-
-    private static final String MANAGED_THREAD_FACTORY_BASE_JNDI_NAME = BASE_JNDI_NAME + "threadfactory/";
-
-    public static final String DEFAULT_MANAGED_THREAD_FACTORY_JNDI_NAME = BASE_JNDI_NAME + "default/threadfactory";
-
-    private static final String MANAGED_EXECUTOR_SERVICE_BASE_JNDI_NAME = BASE_JNDI_NAME + "executor/";
-
-    public static final String DEFAULT_MANAGED_EXECUTOR_SERVICE_JNDI_NAME = BASE_JNDI_NAME + "default/executor";
-
-    private static final String MANAGED_SCHEDULED_EXECUTOR_SERVICE_BASE_JNDI_NAME = BASE_JNDI_NAME + "scheduledexecutor/";
-
-    public static final String DEFAULT_MANAGED_SCHEDULED_EXECUTOR_SERVICE_JNDI_NAME = BASE_JNDI_NAME + "default/scheduledexecutor";
-
     public static final ServiceName BASE_SERVICE_NAME = ServiceName.JBOSS.append("concurrent", "ee");
 
     private static final ServiceName CONTEXT_BASE_SERVICE_NAME = BASE_SERVICE_NAME.append("context");
 
     private static final ServiceName CONTEXT_SERVICE_BASE_SERVICE_NAME = CONTEXT_BASE_SERVICE_NAME.append("service");
 
-    public static final ServiceName DEFAULT_CONTEXT_SERVICE_SERVICE_NAME = CONTEXT_BASE_SERVICE_NAME.append("defaultservice");
-
     private static final ServiceName MANAGED_THREAD_FACTORY_BASE_SERVICE_NAME = BASE_SERVICE_NAME.append("threadfactory");
-
-    public static final ServiceName DEFAULT_MANAGED_THREAD_FACTORY_SERVICE_NAME = BASE_SERVICE_NAME.append("default").append("threadfactory");
 
     private static final ServiceName MANAGED_EXECUTOR_SERVICE_BASE_SERVICE_NAME = BASE_SERVICE_NAME.append("executor");
 
-    public static final ServiceName DEFAULT_MANAGED_EXECUTOR_SERVICE_SERVICE_NAME = BASE_SERVICE_NAME.append("default").append("executor");
-
     private static final ServiceName MANAGED_SCHEDULED_EXECUTOR_SERVICE_BASE_SERVICE_NAME = BASE_SERVICE_NAME.append("scheduledexecutor");
-
-    public static final ServiceName DEFAULT_MANAGED_SCHEDULED_EXECUTOR_SERVICE_SERVICE_NAME = BASE_SERVICE_NAME.append("default").append("scheduledexecutor");
 
     public static final ServiceName TRANSACTION_SETUP_PROVIDER_SERVICE_NAME = BASE_SERVICE_NAME.append("tsp");
 
     public static final ServiceName CONCURRENT_CONTEXT_BASE_SERVICE_NAME = CONTEXT_BASE_SERVICE_NAME.append("config");
 
-    public static String getContextServiceJndiName(String name) {
-        return DEFAULT_NAME.equals(name) ? DEFAULT_CONTEXT_SERVICE_JNDI_NAME :  CONTEXT_SERVICE_BASE_JNDI_NAME + name;
-    }
-
-    public static String getManagedThreadFactoryJndiName(String name) {
-        return DEFAULT_NAME.equals(name) ? DEFAULT_MANAGED_THREAD_FACTORY_JNDI_NAME :  MANAGED_THREAD_FACTORY_BASE_JNDI_NAME + name;
-    }
-
-    public static String getManagedExecutorServiceJndiName(String name) {
-        return DEFAULT_NAME.equals(name) ? DEFAULT_MANAGED_EXECUTOR_SERVICE_JNDI_NAME : MANAGED_EXECUTOR_SERVICE_BASE_JNDI_NAME + name;
-    }
-
-    public static String getManagedScheduledExecutorServiceJndiName(String name) {
-        return DEFAULT_NAME.equals(name) ? DEFAULT_MANAGED_SCHEDULED_EXECUTOR_SERVICE_JNDI_NAME :  MANAGED_SCHEDULED_EXECUTOR_SERVICE_BASE_JNDI_NAME + name;
-    }
-
     public static ServiceName getContextServiceServiceName(String name) {
-        return DEFAULT_NAME.equals(name) ? DEFAULT_CONTEXT_SERVICE_SERVICE_NAME :  CONTEXT_SERVICE_BASE_SERVICE_NAME.append(name);
+        return CONTEXT_SERVICE_BASE_SERVICE_NAME.append(name);
     }
 
     public static ServiceName getManagedThreadFactoryServiceName(String name) {
-        return DEFAULT_NAME.equals(name) ? DEFAULT_MANAGED_THREAD_FACTORY_SERVICE_NAME :  MANAGED_THREAD_FACTORY_BASE_SERVICE_NAME.append(name);
+        return MANAGED_THREAD_FACTORY_BASE_SERVICE_NAME.append(name);
     }
 
     public static ServiceName getManagedExecutorServiceServiceName(String name) {
-        return DEFAULT_NAME.equals(name) ? DEFAULT_MANAGED_EXECUTOR_SERVICE_SERVICE_NAME :  MANAGED_EXECUTOR_SERVICE_BASE_SERVICE_NAME.append(name);
+        return MANAGED_EXECUTOR_SERVICE_BASE_SERVICE_NAME.append(name);
     }
 
     public static ServiceName getManagedScheduledExecutorServiceServiceName(String name) {
-        return DEFAULT_NAME.equals(name) ? DEFAULT_MANAGED_SCHEDULED_EXECUTOR_SERVICE_SERVICE_NAME :  MANAGED_SCHEDULED_EXECUTOR_SERVICE_BASE_SERVICE_NAME.append(name);
+        return MANAGED_SCHEDULED_EXECUTOR_SERVICE_BASE_SERVICE_NAME.append(name);
     }
 
     public static ServiceName getConcurrentContextServiceName(String app, String module, String component) {
