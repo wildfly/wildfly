@@ -72,9 +72,9 @@ public class ResourceInjectionAnnotationParsingProcessor implements DeploymentUn
 
     private static final DotName RESOURCE_ANNOTATION_NAME = DotName.createSimple(Resource.class.getName());
     private static final DotName RESOURCES_ANNOTATION_NAME = DotName.createSimple(Resources.class.getName());
+    private static final String JAVAX_NAMING_CONTEXT = "javax.naming.Context";
     public static final Map<String, String> FIXED_LOCATIONS;
     public static final Set<String> SIMPLE_ENTRIES;
-    public static final Set<String> RESOURCE_REF_ENTRIES;
 
     static {
         final Map<String, String> locations = new HashMap<String, String>();
@@ -110,17 +110,8 @@ public class ResourceInjectionAnnotationParsingProcessor implements DeploymentUn
         simpleEntries.add("java.lang.String");
         simpleEntries.add("java.lang.Class");
         SIMPLE_ENTRIES = Collections.unmodifiableSet(simpleEntries);
-
-        final Set<String> resourceRefEntries = new HashSet<String>();
-        resourceRefEntries.add("javax.sql.DataSource");
-        resourceRefEntries.add("javax.jms.QueueConnectionFactory");
-        resourceRefEntries.add("javax.jms.TopicConnectionFactory");
-        resourceRefEntries.add("javax.jms.ConnectionFactory");
-        resourceRefEntries.add("javax.mail.Session");
-        resourceRefEntries.add("java.net.URL");
-
-        RESOURCE_REF_ENTRIES = Collections.unmodifiableSet(resourceRefEntries);
     }
+
 
     public void deploy(final DeploymentPhaseContext phaseContext) throws DeploymentUnitProcessingException {
         final DeploymentUnit deploymentUnit = phaseContext.getDeploymentUnit();
@@ -225,9 +216,8 @@ public class ResourceInjectionAnnotationParsingProcessor implements DeploymentUn
         }
         InjectionSource valueSource = null;
         final boolean isEnvEntryType = this.isEnvEntryType(injectionType, module);
-        final boolean isResourceRefType = RESOURCE_REF_ENTRIES.contains(injectionType);
         if (!isEmpty(lookup)) {
-            valueSource = new LookupInjectionSource(lookup);
+            valueSource = JAVAX_NAMING_CONTEXT.equals(injectionType) ? new OptionalLookupInjectionSource(lookup) : new LookupInjectionSource(lookup);
         } else if (isEnvEntryType) {
             // if it's a env-entry type then we do *not* create a BindingConfiguration to bind to the ENC
             // since the binding (value) for env-entry is always driven from a deployment descriptor.
@@ -245,9 +235,6 @@ public class ResourceInjectionAnnotationParsingProcessor implements DeploymentUn
                 valueSource = resourceReferenceProcessor.getResourceReferenceBindingSource();
             }
         }
-
-        final BindingConfiguration bindingConfiguration = new BindingConfiguration(localContextName, valueSource);
-        classDescription.getBindingConfigurations().add(bindingConfiguration);
 
         // EE.5.2.4
         // Each injection of an object corresponds to a JNDI lookup. Whether a new
@@ -268,6 +255,9 @@ public class ResourceInjectionAnnotationParsingProcessor implements DeploymentUn
             final InjectionSource injectionSource = new LookupInjectionSource(localContextName);
             final ResourceInjectionConfiguration injectionConfiguration = targetDescription != null ?
                     new ResourceInjectionConfiguration(targetDescription, injectionSource) : null;
+
+            final BindingConfiguration bindingConfiguration = new BindingConfiguration(localContextName, valueSource);
+            classDescription.getBindingConfigurations().add(bindingConfiguration);
 
             if (injectionConfiguration != null) {
                 classDescription.addResourceInjection(injectionConfiguration);
