@@ -9,6 +9,7 @@ import org.jboss.as.server.deployment.DeploymentUnitProcessingException;
 import org.jboss.as.server.deployment.DeploymentUnitProcessor;
 import org.jboss.as.server.deployment.module.ResourceRoot;
 import org.jboss.vfs.VirtualFile;
+import org.wildfly.extension.batch._private.BatchLogger;
 
 /**
  * @author <a href="mailto:jperkins@redhat.com">James R. Perkins</a>
@@ -20,6 +21,8 @@ public abstract class AbstractBatchProcessor implements DeploymentUnitProcessor 
         final DeploymentUnit deploymentUnit = phaseContext.getDeploymentUnit();
         if (isBatchDeployment(deploymentUnit)) {
             processDeployment(phaseContext, deploymentUnit);
+        } else {
+            BatchLogger.LOGGER.tracef("Deployment '%s' is not a batch deployment. Skipping batch processing", deploymentUnit.getName());
         }
     }
 
