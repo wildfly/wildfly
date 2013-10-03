@@ -52,9 +52,9 @@ import static java.security.AccessController.doPrivileged;
 import static java.util.Collections.emptyMap;
 import static javax.ejb.TransactionAttributeType.REQUIRED;
 import static org.jboss.as.ejb3.EjbLogger.ROOT_LOGGER;
-import static org.jboss.as.ejb3.component.MethodIntf.BEAN;
 
 import static org.jboss.as.ejb3.EjbMessages.MESSAGES;
+import static org.jboss.as.ejb3.component.MethodIntf.MESSAGE_ENDPOINT;
 
 /**
  * @author <a href="mailto:cdewolf@redhat.com">Carlo de Wolf</a>
@@ -124,7 +124,7 @@ public class MessageDrivenComponent extends EJBComponent implements PooledCompon
                 if(isBeanManagedTransaction())
                     return false;
                 // an MDB doesn't expose a real view
-                return getTransactionAttributeType(BEAN, method) == REQUIRED;
+                return getTransactionAttributeType(MESSAGE_ENDPOINT, method) == REQUIRED;
             }
 
             @Override
