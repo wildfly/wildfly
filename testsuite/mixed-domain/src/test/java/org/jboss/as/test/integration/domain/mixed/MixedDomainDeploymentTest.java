@@ -21,7 +21,6 @@
 */
 package org.jboss.as.test.integration.domain.mixed;
 
-import static org.junit.Assert.assertTrue;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ADD;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.COMPOSITE;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.CONTENT;
@@ -40,6 +39,7 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.STE
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.TO_REPLACE;
 import static org.jboss.as.test.integration.domain.management.util.DomainTestSupport.validateResponse;
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 import static org.xnio.IoUtils.safeClose;
 
@@ -82,8 +82,6 @@ public abstract class MixedDomainDeploymentTest {
     private static final ModelNode ROOT_REPLACEMENT_ADDRESS = new ModelNode();
     private static final ModelNode MAIN_SERVER_GROUP_ADDRESS = new ModelNode();
     private static final ModelNode MAIN_SERVER_GROUP_DEPLOYMENT_ADDRESS = new ModelNode();
-    private static final ModelNode OTHER_SERVER_GROUP_ADDRESS = new ModelNode();
-    private static final ModelNode OTHER_SERVER_GROUP_DEPLOYMENT_ADDRESS = new ModelNode();
 
     static {
         ROOT_ADDRESS.setEmptyList();
@@ -97,11 +95,6 @@ public abstract class MixedDomainDeploymentTest {
         MAIN_SERVER_GROUP_DEPLOYMENT_ADDRESS.add(SERVER_GROUP, "main-server-group");
         MAIN_SERVER_GROUP_DEPLOYMENT_ADDRESS.add(DEPLOYMENT, TEST);
         MAIN_SERVER_GROUP_DEPLOYMENT_ADDRESS.protect();
-        OTHER_SERVER_GROUP_ADDRESS.add(SERVER_GROUP, "other-server-group");
-        OTHER_SERVER_GROUP_ADDRESS.protect();
-        OTHER_SERVER_GROUP_DEPLOYMENT_ADDRESS.add(SERVER_GROUP, "other-server-group");
-        OTHER_SERVER_GROUP_DEPLOYMENT_ADDRESS.add(DEPLOYMENT, TEST);
-        OTHER_SERVER_GROUP_DEPLOYMENT_ADDRESS.protect();
     }
 
     private WebArchive webArchive;
@@ -184,7 +177,7 @@ public abstract class MixedDomainDeploymentTest {
         String url = new File(tmpDir, "archives/" + TEST).toURI().toURL().toString();
         ModelNode content = new ModelNode();
         content.get("url").set(url);
-        ModelNode composite = createDeploymentOperation(content, MAIN_SERVER_GROUP_DEPLOYMENT_ADDRESS, OTHER_SERVER_GROUP_DEPLOYMENT_ADDRESS);
+        ModelNode composite = createDeploymentOperation(content, MAIN_SERVER_GROUP_DEPLOYMENT_ADDRESS, getOtherServerGroupDeploymentAddress());
         System.out.println(composite);
         executeOnMaster(composite);
 
@@ -195,7 +188,7 @@ public abstract class MixedDomainDeploymentTest {
     public void testDeploymentViaStream() throws Exception {
         ModelNode content = new ModelNode();
         content.get(INPUT_STREAM_INDEX).set(0);
-        ModelNode composite = createDeploymentOperation(content, MAIN_SERVER_GROUP_DEPLOYMENT_ADDRESS, OTHER_SERVER_GROUP_DEPLOYMENT_ADDRESS);
+        ModelNode composite = createDeploymentOperation(content, MAIN_SERVER_GROUP_DEPLOYMENT_ADDRESS, getOtherServerGroupDeploymentAddress());
         OperationBuilder builder = new OperationBuilder(composite, true);
         builder.addInputStream(webArchive.as(ZipExporter.class).exportAsInputStream());
 
@@ -210,7 +203,7 @@ public abstract class MixedDomainDeploymentTest {
         ModelNode content = new ModelNode();
         content.get("archive").set(true);
         content.get("path").set(new File(tmpDir, "archives/" + TEST).getAbsolutePath());
-        ModelNode composite = createDeploymentOperation(content, MAIN_SERVER_GROUP_DEPLOYMENT_ADDRESS, OTHER_SERVER_GROUP_DEPLOYMENT_ADDRESS);
+        ModelNode composite = createDeploymentOperation(content, MAIN_SERVER_GROUP_DEPLOYMENT_ADDRESS, getOtherServerGroupDeploymentAddress());
         executeOnMaster(composite);
 
         performHttpCall(DomainTestSupport.slaveAddress, 8080);
@@ -221,7 +214,7 @@ public abstract class MixedDomainDeploymentTest {
         ModelNode content = new ModelNode();
         content.get("archive").set(false);
         content.get("path").set(new File(tmpDir, "exploded/" + TEST).getAbsolutePath());
-        ModelNode composite = createDeploymentOperation(content, MAIN_SERVER_GROUP_DEPLOYMENT_ADDRESS, OTHER_SERVER_GROUP_DEPLOYMENT_ADDRESS);
+        ModelNode composite = createDeploymentOperation(content, MAIN_SERVER_GROUP_DEPLOYMENT_ADDRESS, getOtherServerGroupDeploymentAddress());
 
         executeOnMaster(composite);
 
@@ -283,7 +276,7 @@ public abstract class MixedDomainDeploymentTest {
 
         ModelNode content = new ModelNode();
         content.get(INPUT_STREAM_INDEX).set(0);
-        ModelNode op = createDeploymentReplaceOperation(content, MAIN_SERVER_GROUP_ADDRESS, OTHER_SERVER_GROUP_ADDRESS);
+        ModelNode op = createDeploymentReplaceOperation(content, MAIN_SERVER_GROUP_ADDRESS, getOtherServerGroupAddress());
         OperationBuilder builder = new OperationBuilder(op, true);
         builder.addInputStream(webArchive.as(ZipExporter.class).exportAsInputStream());
 
@@ -297,7 +290,7 @@ public abstract class MixedDomainDeploymentTest {
         ModelNode content = new ModelNode();
         content.get(INPUT_STREAM_INDEX).set(0);
         //Just be lazy here and deploy the jsf-test.war with the same name as the other deployments we tried
-        ModelNode composite = createDeploymentOperation(content, MAIN_SERVER_GROUP_DEPLOYMENT_ADDRESS, OTHER_SERVER_GROUP_DEPLOYMENT_ADDRESS);
+        ModelNode composite = createDeploymentOperation(content, MAIN_SERVER_GROUP_DEPLOYMENT_ADDRESS, getOtherServerGroupDeploymentAddress());
         OperationBuilder builder = new OperationBuilder(composite, true);
         builder.addInputStream(jsfTestArchive.as(ZipExporter.class).exportAsInputStream());
 
@@ -307,7 +300,7 @@ public abstract class MixedDomainDeploymentTest {
     }
 
     private void redeployTest() throws IOException {
-        ModelNode op = getEmptyOperation("redeploy", OTHER_SERVER_GROUP_DEPLOYMENT_ADDRESS);
+        ModelNode op = getEmptyOperation("redeploy", getOtherServerGroupDeploymentAddress());
         executeOnMaster(op);
 
         performHttpCall(DomainTestSupport.slaveAddress, 8080);
@@ -315,7 +308,7 @@ public abstract class MixedDomainDeploymentTest {
 
 
     private void undeployTest() throws Exception {
-        ModelNode op = getEmptyOperation("undeploy", OTHER_SERVER_GROUP_DEPLOYMENT_ADDRESS);
+        ModelNode op = getEmptyOperation("undeploy", getOtherServerGroupDeploymentAddress());
         executeOnMaster(op);
 
         // Thread.sleep(1000);
@@ -338,9 +331,9 @@ public abstract class MixedDomainDeploymentTest {
         for (ModelNode deployment : deploymentList) {
             removeDeployment(deployment.asString(), MAIN_SERVER_GROUP_ADDRESS);
         }
-        deploymentList = getDeploymentList(OTHER_SERVER_GROUP_ADDRESS);
+        deploymentList = getDeploymentList(getOtherServerGroupAddress());
         for (ModelNode deployment : deploymentList) {
-            removeDeployment(deployment.asString(), OTHER_SERVER_GROUP_ADDRESS);
+            removeDeployment(deployment.asString(), getOtherServerGroupAddress());
         }
         deploymentList = getDeploymentList(ROOT_ADDRESS);
         for (ModelNode deployment : deploymentList) {
@@ -454,5 +447,20 @@ public abstract class MixedDomainDeploymentTest {
         }
         return op;
     }
+
+    private ModelNode getOtherServerGroupAddress() {
+        ModelNode addr = new ModelNode();
+        addr.add(SERVER_GROUP, getServerGroupName());
+        return addr;
+    }
+
+    private ModelNode getOtherServerGroupDeploymentAddress() {
+        ModelNode addr = new ModelNode();
+        addr.add(SERVER_GROUP, getServerGroupName());
+        addr.add(DEPLOYMENT, TEST);
+        return addr;
+    }
+
+    abstract String getServerGroupName();
 
 }

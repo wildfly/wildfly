@@ -22,7 +22,6 @@
 package org.jboss.as.test.integration.domain.mixed;
 
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.CORE_SERVICE;
-import static org.junit.Assert.assertEquals;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.EXTENSION;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.HOST;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.INCLUDE_RUNTIME;
@@ -39,6 +38,7 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SCH
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SERVER_GROUP;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SOCKET_BINDING_GROUP;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SYSTEM_PROPERTY;
+import static org.junit.Assert.assertEquals;
 
 import java.net.URL;
 import java.net.URLConnection;
@@ -107,11 +107,11 @@ public abstract class SimpleMixedDomainTest  {
     }
 
     private void cleanupKnownDifferencesInModelsForVersioningCheck(ModelNode masterModel, ModelNode slaveModel) {
-        if (version == AsVersion.V_7_1_2_Final || version == AsVersion.V_7_1_3_Final) {
-            //First get rid of any undefined crap
-            cleanUndefinedNodes(masterModel);
-            cleanUndefinedNodes(slaveModel);
+        //First get rid of any undefined crap
+        cleanUndefinedNodes(masterModel);
+        cleanUndefinedNodes(slaveModel);
 
+        if (version == AsVersion.EAP_6_0_0 || version == AsVersion.EAP_6_0_1) {
             if (masterModel.hasDefined(NAMESPACES) && masterModel.get(NAMESPACES).asList().isEmpty()) {
                 if (!slaveModel.hasDefined(NAMESPACES)) {
                     masterModel.remove(NAMESPACES);

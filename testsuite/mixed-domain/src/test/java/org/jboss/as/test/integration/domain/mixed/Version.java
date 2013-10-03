@@ -36,19 +36,41 @@ public @interface Version {
 
     AsVersion value();
 
+    final String AS = "jboss-as-";
+    final String WILDFLY = "wildfly";
+    final String EAP = "jboss-eap-";
+
     enum AsVersion {
-        V_7_1_2_Final("7.1.2.Final"),
-        V_7_1_3_Final("7.1.3.Final");
+        //Here we only test EAP versions
+        EAP_6_0_0(EAP, "6.0.0"),
+        EAP_6_0_1(EAP, "6.0.1"),
+        EAP_6_1_0(EAP, "6.1.0"),
+        EAP_6_1_1(EAP, "6.1.1");
 
-        String version;
+        final String basename;
+        final String version;
 
-        AsVersion(String version){
+        AsVersion(String basename, String version){
+            this.basename = basename;
             this.version = version;
+        }
+
+        public String getBaseName() {
+            return basename;
         }
 
         public String getVersion() {
             return version;
         }
+
+        public String getExpandedDirectoryName() {
+            return basename + version;
+        }
+
+        public String getZipFileName() {
+            return getExpandedDirectoryName() + ".zip";
+        }
     }
+
 
 }

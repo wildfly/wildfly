@@ -57,7 +57,7 @@ public class MixedDomainTestSuite {
         Version.AsVersion version = getVersion(testClass);
         if (support == null) {
             try {
-                final MixedDomainTestSupport testSupport = MixedDomainTestSupport.create(testClass.getSimpleName(), version.getVersion());
+                final MixedDomainTestSupport testSupport = MixedDomainTestSupport.create(testClass.getSimpleName(), version);
                 // Start!
                 testSupport.start();
                 support = testSupport;

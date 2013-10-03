@@ -33,12 +33,16 @@
     </management>
 
     <domain-controller>
-       <remote host="${jboss.test.host.master.address}" port="${jboss.domain.master.port:9999}" security-realm="ManagementRealm"/>
+       <remote host="${jboss.test.host.master.address}" port="${jboss.domain.master.port:9999}" security-realm="ManagementRealm">
+           <ignored-resources type="profile">
+                <instance name="full-ha"/>
+            </ignored-resources>
+       </remote>       
     </domain-controller>
 
     <interfaces>
         <interface name="management">
-           <inet-address value="${jboss.test.host.slave.address}"/>
+            <inet-address value="${jboss.test.host.slave.address}"/>
         </interface>
         <interface name="public">
            <inet-address value="${jboss.test.host.slave.address}"/>
@@ -46,7 +50,7 @@
         <interface name="unsecure">
             <!-- Used for IIOP sockets in the standard configuration.
                  To secure JacORB you need to setup SSL -->
-             <inet-address value="${jboss.test.host.slave.address}"/>
+           <inet-address value="${jboss.test.host.slave.address}"/>
         </interface>
     </interfaces>
 
@@ -61,6 +65,6 @@
    	</jvms>
 
     <servers>
-        <server name="server-one" group="other-server-group"/>
+        <server name="server-one" group="6.0.0-server-group"/>
     </servers>
 </host>

@@ -28,10 +28,15 @@ import org.junit.BeforeClass;
  *
  * @author <a href="kabir.khan@jboss.com">Kabir Khan</a>
  */
-@Version(AsVersion.V_7_1_2_Final)
-public class MixedDomainDeployment_7_1_2_Final_TestCase extends MixedDomainDeploymentTest {
+@Version(AsVersion.EAP_6_0_1)
+public class MixedDomainDeployment_6_0_1_Final_TestCase extends MixedDomainDeploymentTest {
     @BeforeClass
     public static void beforeClass() {
-        MixedDomainTestSuite.getSupport(MixedDomainDeployment_7_1_2_Final_TestCase.class);
+        MixedDomainTestSuite.getSupport(MixedDomain_6_0_1_Final_TestSuite.class);
+    }
+
+    @Override
+    String getServerGroupName() {
+        return "6.0.1-server-group";
     }
 }

@@ -33,7 +33,11 @@
     </management>
 
     <domain-controller>
-       <remote host="${jboss.test.host.master.address}" port="${jboss.domain.master.port:9999}" security-realm="ManagementRealm"/>
+       <remote host="${jboss.test.host.master.address}" port="${jboss.domain.master.port:9999}" security-realm="ManagementRealm">
+           <ignored-resources type="profile">
+                <instance name="full-ha-6.0.x"/>
+            </ignored-resources>
+       </remote>       
     </domain-controller>
 
     <interfaces>
@@ -61,6 +65,6 @@
    	</jvms>
 
     <servers>
-        <server name="server-one" group="other-server-group"/>
+        <server name="server-one" group="6.1.0-server-group"/>
     </servers>
 </host>

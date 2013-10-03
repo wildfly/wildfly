@@ -23,21 +23,21 @@ package org.jboss.as.test.integration.domain.mixed;
 
 import org.jboss.as.test.integration.domain.mixed.Version.AsVersion;
 import org.junit.BeforeClass;
-import org.junit.runner.RunWith;
-import org.junit.runners.Suite;
-import org.junit.runners.Suite.SuiteClasses;
 
 /**
  *
  * @author <a href="kabir.khan@jboss.com">Kabir Khan</a>
  */
-@RunWith(Suite.class)
-@SuiteClasses(value= {SimpleMixedDomain_7_1_3_Final_TestCase.class, MixedDomainDeployment_7_1_3_Final_TestCase.class})
-@Version(AsVersion.V_7_1_3_Final)
-public class MixedDomain_7_1_3_Final_TestSuite extends MixedDomainTestSuite {
-
+@Version(AsVersion.EAP_6_1_0)
+public class MixedDomainDeployment_6_1_0_Final_TestCase extends MixedDomainDeploymentTest {
     @BeforeClass
-    public static void initializeDomain() {
-        getSupport(MixedDomain_7_1_3_Final_TestSuite.class);
+    public static void beforeClass() {
+        MixedDomainTestSuite.getSupport(MixedDomain_6_1_0_Final_TestSuite.class);
     }
+
+    @Override
+    String getServerGroupName() {
+        return "6.1.0-server-group";
+    }
+
 }
