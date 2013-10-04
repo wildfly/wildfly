@@ -26,7 +26,6 @@ import org.jboss.as.ee.EeLogger;
 import org.jboss.as.ee.EeMessages;
 import org.jboss.as.ee.concurrent.handle.ContextHandle;
 import org.jboss.as.ee.concurrent.handle.ContextHandleFactory;
-import org.jboss.as.ee.concurrent.service.ConcurrentServiceNames;
 import org.jboss.as.naming.util.ThreadLocalStack;
 import org.jboss.as.server.CurrentServiceContainer;
 import org.jboss.modules.Module;
@@ -98,44 +97,14 @@ public class ConcurrentContext {
     private final Map<String, ContextHandleFactory> factoryMap = new HashMap<>();
     private List<ContextHandleFactory> factoryOrderedList;
 
-    private final String applicationName;
-    private final String moduleName;
-    private final String componentName;
+    private volatile ServiceName serviceName;
 
     /**
      *
-     * @param applicationName
-     * @param moduleName
-     * @param componentName
+     * @param serviceName
      */
-    public ConcurrentContext(String applicationName, String moduleName, String componentName) {
-        this.applicationName = applicationName;
-        this.moduleName = moduleName;
-        this.componentName = componentName;
-    }
-
-    /**
-     * Retrieves the name of the application related with the context.
-     * @return
-     */
-    public String getApplicationName() {
-        return applicationName;
-    }
-
-    /**
-     * Retrieves the name of the module related with the context.
-     * @return
-     */
-    public String getModuleName() {
-        return moduleName;
-    }
-
-    /**
-     * Retrieves the name of the component related with the context, if any.
-     * @return
-     */
-    public String getComponentName() {
-        return componentName;
+    public void setServiceName(ServiceName serviceName) {
+        this.serviceName = serviceName;
     }
 
     /**
@@ -171,15 +140,6 @@ public class ConcurrentContext {
             handles.add(factory.saveContext(contextService, contextObjectProperties));
         }
         return new ChainedContextHandle(this, handles);
-    }
-
-    @Override
-    public String toString() {
-        StringBuilder sb = new StringBuilder(applicationName).append('/').append(moduleName);
-        if(componentName != null) {
-            sb.append('/').append(componentName);
-        }
-        return sb.toString();
     }
 
     /**
@@ -234,7 +194,7 @@ public class ConcurrentContext {
         private void writeObject(ObjectOutputStream out) throws IOException {
             out.defaultWriteObject();
             // write the concurrent context service name
-            out.writeObject(ConcurrentServiceNames.getConcurrentContextServiceName(concurrentContext.applicationName, concurrentContext.getModuleName(), concurrentContext.getComponentName()));
+            out.writeObject(concurrentContext.serviceName);
             // write the number of setup handles
             out.write(setupHandles.size());
             // write each handle

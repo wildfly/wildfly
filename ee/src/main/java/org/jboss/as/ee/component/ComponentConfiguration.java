@@ -95,7 +95,7 @@ public class ComponentConfiguration {
         this.classIndex = classIndex;
         this.moduleClassLoader = moduleClassLoader;
         this.moduleLoader = moduleLoader;
-        this.concurrentContext = new ConcurrentContext(getApplicationName(),getModuleName(),getComponentName());
+        this.concurrentContext = new ConcurrentContext();
     }
 
     /**
