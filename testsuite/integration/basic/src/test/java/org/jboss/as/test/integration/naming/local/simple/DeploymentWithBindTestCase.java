@@ -70,7 +70,6 @@ public class DeploymentWithBindTestCase {
         bean.doBind();
         assertNotNull(iniCtx.lookup("java:jboss/test"));
         assertNotNull(iniCtx.lookup("java:/test"));
-        bean.checkBind();
     }
 
     private String performCall(String urlPattern, String op) throws Exception {
@@ -83,7 +82,6 @@ public class DeploymentWithBindTestCase {
         performCall("simple", "bind");
         assertNotNull(iniCtx.lookup("java:jboss/test"));
         assertNotNull(iniCtx.lookup("java:/test"));
-        performCall("simple", "check");
     }
 
     @Test
