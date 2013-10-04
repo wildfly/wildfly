@@ -3,7 +3,7 @@ SYNOPSIS
   To add a module
 
     module add --name=module_name [--slot=slot_name]
-               --resources=list_of_jars [--resourceDelimiter=delimiter]
+               --resources=list_of_jars [--resource-delimiter=delimiter]
                (--module-xml=file_path |
                 ([--dependencies=list_of_module_names]
                  [--properties=list_of_properties]
@@ -52,7 +52,7 @@ ARGUMENTS
                    java.io.File.pathSeparatorChar. The file(s) specified will be
                    copied to the created module's directory.
 
- --resourceDelimiter - (used with add and resources, optional)
+ --resource-delimiter - (used with add and resources, optional)
                        A user-defined path separator for the resources argument.
                        If this argument is present, the command parser will use
                        the value here instead of the filesystem-specific path
