@@ -29,6 +29,7 @@ import javax.management.MBeanServer;
 
 import org.jboss.as.server.ServerEnvironment;
 import org.jboss.as.server.ServerEnvironmentService;
+import org.jboss.as.web.host.CommonWebServer;
 import org.jboss.as.webservices.config.ServerConfigImpl;
 import org.jboss.as.webservices.util.WSServices;
 import org.jboss.msc.service.Service;
@@ -91,6 +92,7 @@ public final class ServerConfigService implements Service<ServerConfig> {
         final ServiceBuilder<ServerConfig> builder = serviceTarget.addService(WSServices.CONFIG_SERVICE, new ServerConfigService(serverConfig));
         builder.addDependency(DependencyType.OPTIONAL, MBEAN_SERVER_NAME, MBeanServer.class, serverConfig.getMBeanServerInjector());
         builder.addDependency(ServerEnvironmentService.SERVICE_NAME, ServerEnvironment.class, serverConfig.getServerEnvironmentInjector());
+        builder.addDependency(CommonWebServer.SERVICE_NAME);
         for (ServiceName dep : dependencies) {
             builder.addDependency(dep);
         }
