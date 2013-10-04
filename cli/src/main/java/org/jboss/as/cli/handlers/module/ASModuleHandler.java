@@ -154,7 +154,7 @@ public class ASModuleHandler extends CommandHandlerWithHelp {
             }
         };
 
-        resourceDelimiter = new AddModuleArgument("--resourceDelimiter");
+        resourceDelimiter = new AddModuleArgument("--resource-delimiter");
 
         dependencies = new AddModuleArgument("--dependencies", new CommandLineCompleter(){
             @Override
