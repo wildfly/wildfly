@@ -81,7 +81,7 @@ public class RBACProviderServerGroupScopedRolesTestCase extends AbstractServerGr
         // no-op. Role mapping is done based on the client's authenticated Subject
     }
 
-    private static class ServerGroupRolesMappingSetup extends UserRolesMappingServerSetupTask {
+    static class ServerGroupRolesMappingSetup extends UserRolesMappingServerSetupTask {
 
         private static final Map<String, Set<String>> STANDARD_USERS;
 
@@ -97,7 +97,7 @@ public class RBACProviderServerGroupScopedRolesTestCase extends AbstractServerGr
             STANDARD_USERS = rolesToUsers;
         }
 
-        private static final ServerGroupRolesMappingSetup INSTANCE = new ServerGroupRolesMappingSetup();
+        static final ServerGroupRolesMappingSetup INSTANCE = new ServerGroupRolesMappingSetup();
 
         protected ServerGroupRolesMappingSetup() {
             super(STANDARD_USERS);
