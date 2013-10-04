@@ -41,6 +41,13 @@ public class RoleIncludeAllWriteAttributeHander extends AbstractWriteAttributeHa
     }
 
     @Override
+    protected boolean requiresRuntime(OperationContext context) {
+        // During boot add would have taken care of this, otherwise
+        // all process types need a runtime update.
+        return context.isBooting() == false;
+    }
+
+    @Override
     protected boolean applyUpdateToRuntime(OperationContext context, ModelNode operation, String attributeName,
             ModelNode resolvedValue, ModelNode currentValue,
             org.jboss.as.controller.AbstractWriteAttributeHandler.HandbackHolder<Void> handbackHolder)
