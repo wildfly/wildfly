@@ -29,7 +29,7 @@
     <parent>
         <groupId>org.wildfly</groupId>
         <artifactId>wildfly-clustering</artifactId>
-        <version>8.0.0.Beta1</version>
+        <version>8.0.0.Beta2-SNAPSHOT</version>
     </parent>
 
     <artifactId>wildfly-clustering-ejb3-infinispan</artifactId>

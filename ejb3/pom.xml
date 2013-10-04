@@ -31,7 +31,7 @@ vi:ts=4:sw=4:expandtab
     <parent>
         <groupId>org.wildfly</groupId>
         <artifactId>wildfly-parent</artifactId>
-        <version>8.0.0.Beta1</version>
+        <version>8.0.0.Beta2-SNAPSHOT</version>
     </parent>
 
     <artifactId>wildfly-ejb3</artifactId>

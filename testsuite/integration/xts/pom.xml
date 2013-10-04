@@ -7,7 +7,7 @@
     <parent>
         <groupId>org.wildfly</groupId>
         <artifactId>wildfly-ts-integ</artifactId>
-        <version>8.0.0.Beta1</version>
+        <version>8.0.0.Beta2-SNAPSHOT</version>
     </parent>
 
     <!-- ********************************************************************************** -->
@@ -15,7 +15,7 @@
     <!-- ********************************************************************************** -->
     <groupId>org.wildfly</groupId>
     <artifactId>wildfly-ts-integ-xts</artifactId>
-    <version>8.0.0.Beta1</version>
+    <version>8.0.0.Beta2-SNAPSHOT</version>
 
     <name>WildFly Test Suite: Integration - XTS</name>
 
