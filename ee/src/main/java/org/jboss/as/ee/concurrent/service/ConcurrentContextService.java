@@ -44,6 +44,7 @@ public class ConcurrentContextService implements Service<ConcurrentContext> {
     @Override
     public void start(StartContext context) throws StartException {
         started = true;
+        concurrentContext.setServiceName(context.getController().getName());
     }
 
     @Override

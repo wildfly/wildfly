@@ -88,7 +88,7 @@ public final class EEModuleDescription implements ResourceInjectionTarget {
         this.moduleName = moduleName;
         this.earApplicationName = earApplicationName;
         this.appClient = appClient;
-        this.concurrentContext = new ConcurrentContext(getApplicationName(),getModuleName(),null);
+        this.concurrentContext = new ConcurrentContext();
         this.defaultResourceJndiNames = new EEDefaultResourceJndiNames();
     }
 
