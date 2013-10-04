@@ -19,32 +19,26 @@
  * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
-package org.jboss.as.xts.jandex;
+package org.wildfly.extension.rts.jaxrs;
 
-import org.jboss.as.server.deployment.DeploymentUnit;
-import org.jboss.as.xts.XTSException;
+import org.jboss.narayana.rest.integration.VolatileParticipantResource;
+
+import java.util.Set;
 
 /**
+ *
  * @author <a href="mailto:gytis@redhat.com">Gytis Trikleris</a>
- * @author <a href="mailto:paul.robinson@redhat.com">Paul Robinson</a>
+ *
  */
-public class TransactionalAnnotation {
+public final class VolatileParticipantApplication extends AbstractRTSApplication {
 
-    public static final String[] TRANSACTIONAL_ANNOTATIONS = {
-            "javax.ejb.TransactionAttribute",
-            "javax.transaction.Transactional",
-    };
+    @Override
+    public Set<Class<?>> getClasses() {
+        Set<Class<?>> classes = super.getClasses();
 
-    private TransactionalAnnotation() {
+        classes.add(VolatileParticipantResource.class);
+
+        return classes;
     }
 
-    public static TransactionalAnnotation build(DeploymentUnit unit, String endpoint) throws XTSException {
-        for (final String annotation : TRANSACTIONAL_ANNOTATIONS) {
-            if (JandexHelper.getAnnotation(unit, endpoint, annotation) != null) {
-                return new TransactionalAnnotation();
-            }
-        }
-
-        return null;
-    }
 }

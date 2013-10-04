@@ -41,6 +41,7 @@ import org.wildfly.extension.rts.logging.RTSLogger;
 import org.wildfly.extension.rts.service.CoordinatorService;
 import org.wildfly.extension.rts.service.InboundBridgeService;
 import org.wildfly.extension.rts.service.ParticipantService;
+import org.wildfly.extension.rts.service.VolatileParticipantService;
 import org.wildfly.extension.undertow.Host;
 import org.wildfly.extension.undertow.UndertowService;
 
@@ -78,6 +79,7 @@ final class RTSSubsystemAdd extends AbstractBoottimeAddStepHandler {
 
         registerCoordinatorService(context, model, verificationHandler, newControllers);
         registerParticipantService(context, model, verificationHandler, newControllers);
+        registerVolatileParticipantService(context, model, verificationHandler, newControllers);
         registerInboundBridgeService(context, verificationHandler, newControllers);
 
         registerDeploymentProcessors(context);
@@ -105,6 +107,7 @@ final class RTSSubsystemAdd extends AbstractBoottimeAddStepHandler {
     private void registerCoordinatorService(final OperationContext context, final ModelNode model,
             final ServiceVerificationHandler verificationHandler, final List<ServiceController<?>> newControllers) {
 
+        final String socketBindingName = model.get(Attribute.SOCKET_BINDING.getLocalName()).asString();
         final String serverName = model.get(Attribute.SERVER.getLocalName()).asString();
         final String hostName = model.get(Attribute.HOST.getLocalName()).asString();
         final CoordinatorService coordinatorService = new CoordinatorService();
@@ -112,6 +115,8 @@ final class RTSSubsystemAdd extends AbstractBoottimeAddStepHandler {
                 .getServiceTarget()
                 .addService(RTSSubsystemExtension.COORDINATOR, coordinatorService)
                 .addListener(verificationHandler)
+                .addDependency(SocketBinding.JBOSS_BINDING_NAME.append(socketBindingName), SocketBinding.class,
+                        coordinatorService.getInjectedSocketBinding())
                 .addDependency(UndertowService.virtualHostName(serverName, hostName), Host.class,
                         coordinatorService.getInjectedHost());
 
@@ -146,6 +151,32 @@ final class RTSSubsystemAdd extends AbstractBoottimeAddStepHandler {
 
         if (newControllers != null) {
             newControllers.add(participantServiceController);
+        }
+    }
+
+    private void registerVolatileParticipantService(final OperationContext context, final ModelNode model,
+            final ServiceVerificationHandler verificationHandler, final List<ServiceController<?>> newControllers) {
+
+        final String socketBindingName = model.get(Attribute.SOCKET_BINDING.getLocalName()).asString();
+        final String serverName = model.get(Attribute.SERVER.getLocalName()).asString();
+        final String hostName = model.get(Attribute.HOST.getLocalName()).asString();
+        final VolatileParticipantService volatileParticipantService = new VolatileParticipantService();
+        final ServiceBuilder<VolatileParticipantService> volatileParticipantServiceBuilder = context
+                .getServiceTarget()
+                .addService(RTSSubsystemExtension.VOLATILE_PARTICIPANT, volatileParticipantService)
+                .addListener(verificationHandler)
+                .addDependency(SocketBinding.JBOSS_BINDING_NAME.append(socketBindingName), SocketBinding.class,
+                        volatileParticipantService.getInjectedSocketBinding())
+                .addDependency(UndertowService.virtualHostName(serverName, hostName), Host.class,
+                        volatileParticipantService.getInjectedHost());
+
+        volatileParticipantServiceBuilder.setInitialMode(ServiceController.Mode.ACTIVE);
+
+        final ServiceController<VolatileParticipantService> volatileParticipantServiceController =
+                volatileParticipantServiceBuilder.install();
+
+        if (newControllers != null) {
+            newControllers.add(volatileParticipantServiceController);
         }
     }
 
