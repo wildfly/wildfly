@@ -60,7 +60,7 @@ public class ApplicationContextProcessor implements DeploymentUnitProcessor {
         final ServiceTarget serviceTarget = phaseContext.getServiceTarget();
 
         final ServiceName applicationContextServiceName = ContextNames.contextServiceNameOfApplication(moduleDescription.getApplicationName());
-        final NamingStoreService contextService = new NamingStoreService();
+        final NamingStoreService contextService = new NamingStoreService(new ServiceBasedNamingStore(phaseContext.getServiceRegistry(),applicationContextServiceName));
         serviceTarget.addService(applicationContextServiceName, contextService).install();
 
         final BinderService applicationNameBinder = new BinderService("AppName");

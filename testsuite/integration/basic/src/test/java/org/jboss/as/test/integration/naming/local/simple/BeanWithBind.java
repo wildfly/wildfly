@@ -26,7 +26,6 @@ import javax.ejb.Stateless;
 import javax.naming.Context;
 import javax.naming.InitialContext;
 import javax.naming.NamingException;
-import static org.junit.Assert.assertNotNull;
 
 /**
  * @author John Bailey
@@ -37,17 +36,7 @@ public class BeanWithBind {
         try {
             final Context context = new InitialContext();
             context.bind("java:jboss/test", "Test");
-            context.bind("java:comp/test", "Test");
             context.bind("java:/test", "Test");
-        } catch (NamingException e) {
-            throw new RuntimeException(e);
-        }
-    }
-
-    public void checkBind() {
-        try {
-            final Context context = new InitialContext();
-            assertNotNull(context.lookup("java:comp/test"));
         } catch (NamingException e) {
             throw new RuntimeException(e);
         }
