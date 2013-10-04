@@ -65,10 +65,11 @@ public class WritableAuthorizerConfiguration implements AuthorizerConfiguration,
 
     /**
      * Reset the internal state of this object back to what it originally was.
-     * Only to be used in a slave host controller following a post-boot reconnect
+     *
+     * Used then reloading a server or in a slave host controller following a post-boot reconnect
      * to the master.
      */
-    public synchronized void domainReconnectReset() {
+    public synchronized void reset() {
         this.authorizerDescription = StandardRBACAuthorizer.AUTHORIZER_DESCRIPTION;
         this.useRealmRoles = this.nonFacadeMBeansSensitive = false;
         this.roleMappings = new HashMap<String, RoleMappingImpl>();
@@ -344,8 +345,8 @@ public class WritableAuthorizerConfiguration implements AuthorizerConfiguration,
 
         private final String name;
         private boolean includeAll;
-        private volatile HashSet<MappingPrincipal> includes = new HashSet<MappingPrincipal>();
-        private volatile HashSet<MappingPrincipal> excludes = new HashSet<MappingPrincipal>();
+        private volatile Set<MappingPrincipal> includes = new HashSet<MappingPrincipal>();
+        private volatile Set<MappingPrincipal> excludes = new HashSet<MappingPrincipal>();
 
         private RoleMappingImpl(final String name) {
             this.name = name;
@@ -375,7 +376,7 @@ public class WritableAuthorizerConfiguration implements AuthorizerConfiguration,
         }
 
         private boolean addPrincipalImmediate(final MappingPrincipal principal, final MatchType matchType) {
-            HashSet<MappingPrincipal> set = getSet(matchType, true);
+            Set<MappingPrincipal> set = getSet(matchType, true);
             try {
                 return set.add(principal);
             } finally {
@@ -384,7 +385,7 @@ public class WritableAuthorizerConfiguration implements AuthorizerConfiguration,
         }
 
         private synchronized boolean addPrincipal(final MappingPrincipal principal, final MatchType matchType) {
-            HashSet<MappingPrincipal> set = getSet(matchType, false);
+            Set<MappingPrincipal> set = getSet(matchType, false);
             try {
                 return set.add(principal);
             } finally {
@@ -401,7 +402,7 @@ public class WritableAuthorizerConfiguration implements AuthorizerConfiguration,
         }
 
         private synchronized boolean removePrincipal(final MappingPrincipal principal, final MatchType matchType) {
-            HashSet<MappingPrincipal> set = getSet(matchType, false);
+            Set<MappingPrincipal> set = getSet(matchType, false);
             try {
                 return set.remove(principal);
             } finally {
@@ -419,7 +420,7 @@ public class WritableAuthorizerConfiguration implements AuthorizerConfiguration,
             return isInSet(caller, excludes);
         }
 
-        private MappingPrincipal isInSet(Caller caller, HashSet<MappingPrincipal> theSet) {
+        private MappingPrincipal isInSet(Caller caller, Set<MappingPrincipal> theSet) {
             // One match is all it takes - return true on first match found.
 
             String accountName = null;
@@ -472,8 +473,8 @@ public class WritableAuthorizerConfiguration implements AuthorizerConfiguration,
             return currentValue != null ? currentValue : caller.getAssociatedGroups();
         }
 
-        private HashSet<MappingPrincipal> getSet(final MatchType matchType, final boolean immediate) {
-            HashSet<MappingPrincipal> set;
+        private Set<MappingPrincipal> getSet(final MatchType matchType, final boolean immediate) {
+            Set<MappingPrincipal> set;
             switch (matchType) {
                 case INCLUDE:
                     set = includes;
@@ -485,14 +486,14 @@ public class WritableAuthorizerConfiguration implements AuthorizerConfiguration,
             return immediate ? set : new HashSet<MappingPrincipal>(set);
         }
 
-        private void setSet(final HashSet<MappingPrincipal> set, final MatchType matchType, final boolean immediate) {
+        private void setSet(final Set<MappingPrincipal> set, final MatchType matchType, final boolean immediate) {
             if (immediate == false) {
                 switch (matchType) {
                     case INCLUDE:
-                        includes = set;
+                        includes = Collections.<MappingPrincipal>unmodifiableSet(set);
                         break;
                     case EXCLUDE:
-                        excludes = set;
+                        excludes = Collections.<MappingPrincipal>unmodifiableSet(set);
                 }
             }
         }

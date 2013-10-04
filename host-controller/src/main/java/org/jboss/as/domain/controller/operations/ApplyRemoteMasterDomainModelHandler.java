@@ -138,7 +138,7 @@ public class ApplyRemoteMasterDomainModelHandler implements OperationStepHandler
         final Resource rootResource = context.readResourceForUpdate(PathAddress.EMPTY_ADDRESS);
         clearDomain(rootResource);
         if (!context.isBooting()) {
-            authorizerConfiguration.domainReconnectReset();
+            authorizerConfiguration.reset();
         }
 
         List<ModelNode> addOps = new ArrayList<ModelNode>();

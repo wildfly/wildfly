@@ -29,6 +29,7 @@ import java.util.List;
 import java.util.concurrent.ExecutorService;
 
 import org.jboss.as.controller.access.management.DelegatingConfigurableAuthorizer;
+import org.jboss.as.controller.access.management.WritableAuthorizerConfiguration;
 import org.jboss.as.controller.audit.AuditLogger;
 import org.jboss.as.controller.audit.ManagedAuditLogger;
 import org.jboss.as.controller.client.OperationAttachments;
@@ -230,9 +231,11 @@ public abstract class AbstractControllerService implements Service<ModelControll
         final ServiceContainer container = serviceController.getServiceContainer();
         final ServiceTarget target = context.getChildTarget();
         final ExecutorService executorService = injectedExecutorService.getOptionalValue();
+        WritableAuthorizerConfiguration authorizerConfig = authorizer.getWritableAuthorizerConfiguration();
+        authorizerConfig.reset();
         ManagementResourceRegistration rootResourceRegistration = rootDescriptionProvider != null
-                ? ManagementResourceRegistration.Factory.create(rootDescriptionProvider, authorizer.getWritableAuthorizerConfiguration())
-                : ManagementResourceRegistration.Factory.create(rootResourceDefinition, authorizer.getWritableAuthorizerConfiguration());
+                ? ManagementResourceRegistration.Factory.create(rootDescriptionProvider, authorizerConfig)
+                : ManagementResourceRegistration.Factory.create(rootResourceDefinition, authorizerConfig);
         final ModelControllerImpl controller = new ModelControllerImpl(container, target,
                 rootResourceRegistration,
                 new ContainerStateMonitor(container, serviceController),
