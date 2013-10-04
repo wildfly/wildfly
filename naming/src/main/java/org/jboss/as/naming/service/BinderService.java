@@ -96,8 +96,9 @@ public class BinderService implements Service<ManagedReferenceFactory> {
     }
 
     public void release() {
-        if (refcnt.decrementAndGet() <= 0)
+        if (refcnt.decrementAndGet() <= 0 && controller != null) {
             controller.setMode(ServiceController.Mode.REMOVE);
+        }
     }
 
     /**
