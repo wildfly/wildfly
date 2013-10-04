@@ -7,14 +7,14 @@
     <parent>
         <groupId>org.wildfly</groupId>
         <artifactId>wildfly-parent</artifactId>
-        <version>8.0.0.Beta1-SNAPSHOT</version>
+        <version>8.0.0.Beta1</version>
         <relativePath>../../pom.xml</relativePath>
     </parent>
 
     <groupId>org.wildfly</groupId>
     <artifactId>wildfly-testsuite-shared</artifactId>
     <packaging>jar</packaging>
-    <version>8.0.0.Beta1-SNAPSHOT</version>
+    <version>8.0.0.Beta1</version>
 
     <name>WildFly Test Suite: Shared</name>
      

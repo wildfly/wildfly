@@ -35,7 +35,7 @@
     <groupId>org.wildfly</groupId>
     <artifactId>wildfly-subsystem-test-controller-7.1.2</artifactId>
     <name>WildFly: Subsystem Test Controller 7.1.2</name>
-    <version>8.0.0.Beta1-SNAPSHOT</version>
+    <version>8.0.0.Beta1</version>
 
     <properties>
         <property.old.as.version>7.1.2.Final</property.old.as.version>

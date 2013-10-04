@@ -7,13 +7,13 @@
     <parent>
         <groupId>org.wildfly</groupId>
         <artifactId>wildfly-testsuite</artifactId>
-        <version>8.0.0.Beta1-SNAPSHOT</version>
+        <version>8.0.0.Beta1</version>
     </parent>
 
     <groupId>org.wildfly</groupId>
     <artifactId>wildfly-ts-integ</artifactId>
     <packaging>pom</packaging>
-    <version>8.0.0.Beta1-SNAPSHOT</version>
+    <version>8.0.0.Beta1</version>
 
     <name>WildFly Test Suite: Integration</name>
 

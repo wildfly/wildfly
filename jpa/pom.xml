@@ -30,13 +30,13 @@
     <parent>
         <groupId>org.wildfly</groupId>
         <artifactId>wildfly-parent</artifactId>
-        <version>8.0.0.Beta1-SNAPSHOT</version>
+        <version>8.0.0.Beta1</version>
         <relativePath>../pom.xml</relativePath>
     </parent>
 
     <groupId>org.wildfly</groupId>
     <artifactId>wildfly-jpa-parent</artifactId>
-    <version>8.0.0.Beta1-SNAPSHOT</version>
+    <version>8.0.0.Beta1</version>
     <packaging>pom</packaging>
 
     <name>WildFly: JPA Subsystem</name>

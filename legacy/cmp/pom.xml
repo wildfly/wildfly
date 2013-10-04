@@ -32,7 +32,7 @@
         <groupId>org.wildfly</groupId>
         <artifactId>wildfly-parent</artifactId>
         <relativePath>../../pom.xml</relativePath>
-        <version>8.0.0.Beta1-SNAPSHOT</version>
+        <version>8.0.0.Beta1</version>
     </parent>
 
     <artifactId>wildfly-cmp</artifactId>
