@@ -252,7 +252,7 @@ public class SessionManagerAdapterTestCase {
         
         assertNull(sessionAdapter);
         
-        verify(batch).discard();
+        verify(batch).close();
     }
 
     @Test
