@@ -614,9 +614,6 @@ public class PlatformMBeanResourceUnitTestCase {
             if (attrVal.isDefined()) {
                 Assert.assertEquals(prop.getName() + " has incorrect ModelType", desc.get(TYPE).asType(), attrVal.getType());
             } else {
-                System.out.println(prop.getName());
-                System.out.println(prop.getValue());
-                System.out.println(desc.get(NILLABLE));
                 /*
                     In case of three special properties no assert possible on some platforms
                  */
