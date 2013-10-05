@@ -369,7 +369,7 @@ public class PlatformMBeanResourceUnitTestCase {
         Assert.assertEquals(mbean.isThreadCpuTimeSupported(), threadCPUSupported);
         boolean currentThreadPUSupported = describedResource.resource.get(PlatformMBeanConstants.CURRENT_THREAD_CPU_TIME_SUPPORTED).asBoolean();
         Assert.assertEquals(mbean.isCurrentThreadCpuTimeSupported(), currentThreadPUSupported);
-        boolean threadCPUEnabled = describedResource.resource.get(PlatformMBeanConstants.THREAD_CPU_TIME_ENABLED).asBoolean();
+        boolean threadCPUEnabled = false;
         if (threadCPUSupported || currentThreadPUSupported) {
             threadCPUEnabled = describedResource.resource.get(PlatformMBeanConstants.THREAD_CPU_TIME_ENABLED).asBoolean();
             Assert.assertEquals(mbean.isThreadCpuTimeSupported(), threadCPUEnabled);
