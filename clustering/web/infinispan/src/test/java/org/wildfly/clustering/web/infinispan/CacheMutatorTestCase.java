@@ -24,13 +24,27 @@ package org.wildfly.clustering.web.infinispan;
 import static org.mockito.Mockito.*;
 import static org.junit.Assert.*;
 
+import java.io.File;
 import java.math.BigDecimal;
 import java.math.BigInteger;
+import java.math.MathContext;
+import java.net.InetAddress;
+import java.net.InetSocketAddress;
+import java.net.MalformedURLException;
+import java.net.URI;
+import java.net.URISyntaxException;
+import java.net.URL;
+import java.net.UnknownHostException;
+import java.nio.file.FileSystems;
+import java.security.AllPermission;
+import java.util.Collections;
 import java.util.Currency;
 import java.util.Date;
 import java.util.Locale;
 import java.util.TimeZone;
 import java.util.UUID;
+import java.util.concurrent.atomic.AtomicInteger;
+import java.util.concurrent.atomic.AtomicLong;
 
 import org.infinispan.AdvancedCache;
 import org.infinispan.context.Flag;
@@ -62,9 +76,15 @@ public class CacheMutatorTestCase {
     }
 
     @Test
-    public void isMutable() {
+    public void isMutable() throws MalformedURLException, UnknownHostException {
         assertTrue(CacheMutator.isMutable(new Object()));
         assertTrue(CacheMutator.isMutable(new Date()));
+        assertTrue(CacheMutator.isMutable(new AtomicInteger()));
+        assertTrue(CacheMutator.isMutable(new AtomicLong()));
+        assertFalse(CacheMutator.isMutable(null));
+        assertFalse(CacheMutator.isMutable(Collections.EMPTY_LIST));
+        assertFalse(CacheMutator.isMutable(Collections.EMPTY_MAP));
+        assertFalse(CacheMutator.isMutable(Collections.EMPTY_SET));
         assertFalse(CacheMutator.isMutable(Boolean.TRUE));
         assertFalse(CacheMutator.isMutable(Character.valueOf('a')));
         assertFalse(CacheMutator.isMutable(Currency.getInstance(Locale.US)));
@@ -78,9 +98,18 @@ public class CacheMutatorTestCase {
         assertFalse(CacheMutator.isMutable(Double.valueOf(1)));
         assertFalse(CacheMutator.isMutable(BigInteger.valueOf(1)));
         assertFalse(CacheMutator.isMutable(BigDecimal.valueOf(1)));
+        assertFalse(CacheMutator.isMutable(InetAddress.getLocalHost()));
+        assertFalse(CacheMutator.isMutable(new InetSocketAddress(InetAddress.getLocalHost(), 80)));
+        assertFalse(CacheMutator.isMutable(MathContext.UNLIMITED));
         assertFalse(CacheMutator.isMutable("test"));
         assertFalse(CacheMutator.isMutable(TimeZone.getDefault()));
         assertFalse(CacheMutator.isMutable(UUID.randomUUID()));
+        File file = new File(System.getProperty("user.home"));
+        assertFalse(CacheMutator.isMutable(file));
+        assertFalse(CacheMutator.isMutable(file.toURI()));
+        assertFalse(CacheMutator.isMutable(file.toURI().toURL()));
+        assertFalse(CacheMutator.isMutable(FileSystems.getDefault().getRootDirectories().iterator().next()));
+        assertFalse(CacheMutator.isMutable(new AllPermission()));
         assertFalse(CacheMutator.isMutable(new ImmutableObject()));
     }
 
