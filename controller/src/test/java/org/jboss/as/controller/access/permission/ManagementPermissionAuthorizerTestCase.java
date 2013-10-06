@@ -41,7 +41,6 @@ import org.jboss.as.controller.access.Caller;
 import org.jboss.as.controller.access.Environment;
 import org.jboss.as.controller.access.TargetAttribute;
 import org.jboss.as.controller.access.TargetResource;
-import org.jboss.as.controller.access.constraint.Constraint;
 import org.jboss.as.controller.access.management.AccessConstraintDefinition;
 import org.jboss.as.controller.descriptions.NonResolvingResourceDescriptionResolver;
 import org.jboss.as.controller.registry.ManagementResourceRegistration;
@@ -121,7 +120,7 @@ public class ManagementPermissionAuthorizerTestCase {
 
     private static final class TestPermissionFactory implements PermissionFactory, JmxPermissionFactory {
         private PermissionCollection getUserPermissions() {
-            ManagementPermissionCollection mpc = new ManagementPermissionCollection(TestManagementPermission.class);
+            ManagementPermissionCollection mpc = new ManagementPermissionCollection("test", TestManagementPermission.class);
             mpc.add(new TestManagementPermission(Action.ActionEffect.ADDRESS));
             mpc.add(new TestManagementPermission(Action.ActionEffect.READ_CONFIG));
             mpc.add(new TestManagementPermission(Action.ActionEffect.READ_RUNTIME));
@@ -170,11 +169,6 @@ public class ManagementPermissionAuthorizerTestCase {
     private static final class TestManagementPermission extends ManagementPermission {
         private TestManagementPermission(Action.ActionEffect actionEffect) {
             super("test", actionEffect);
-        }
-
-        @Override
-        public ManagementPermission createScopedPermission(Constraint constraint, int constraintIndex) {
-            return null;
         }
 
         @Override
