@@ -29,6 +29,7 @@ import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
 
+import org.jboss.as.controller.ControllerLogger;
 import org.jboss.as.controller.ControllerMessages;
 import org.jboss.as.controller.access.Action;
 
@@ -41,9 +42,15 @@ public class ManagementPermissionCollection extends PermissionCollection {
 
     private final Class<? extends ManagementPermission> type;
 
+    private final String name;
     private final Map<Action.ActionEffect, ManagementPermission> permissions = new HashMap<Action.ActionEffect, ManagementPermission>();
 
     public ManagementPermissionCollection(Class<? extends ManagementPermission> type) {
+        this(null, type);
+    }
+
+    public ManagementPermissionCollection(String name, Class<? extends ManagementPermission> type) {
+        this.name = name;
         this.type = type;
     }
 
@@ -67,12 +74,21 @@ public class ManagementPermissionCollection extends PermissionCollection {
     public boolean implies(Permission permission) {
         if (permission instanceof ManagementPermission) {
             ManagementPermission mperm = (ManagementPermission) permission;
+            Action.ActionEffect actionEffect = mperm.getActionEffect();
             ManagementPermission provided;
             synchronized (permissions) {
-                provided = permissions.get(mperm.getActionEffect());
+                provided = permissions.get(actionEffect);
             }
-            return provided != null && provided.implies(mperm);
+            if (provided == null) {
+                ControllerLogger.ACCESS_LOGGER.tracef("Permission collection '%s' does not provide a permission for %s", name, actionEffect);
+                return false;
+            } else if (!provided.implies(mperm)) {
+                ControllerLogger.ACCESS_LOGGER.tracef("Permission provided in collection '%s' for action %s does not imply the requested permission", name, actionEffect);
+                return false;
+            }
+            return true;
         }
+        ControllerLogger.ACCESS_LOGGER.tracef("Permission collection %s does not imply %s as it is not a ManagementPermission", name, permission);
         return false;
     }
 
@@ -90,6 +106,10 @@ public class ManagementPermissionCollection extends PermissionCollection {
                 return iterator.next();
             }
         };
+    }
+
+    public String getName() {
+        return name;
     }
 
     private Iterator<ManagementPermission> iterator() {
