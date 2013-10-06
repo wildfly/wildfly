@@ -23,16 +23,16 @@
 package org.jboss.as.controller.access.permission;
 
 import java.security.Permission;
-import java.security.PermissionCollection;
-import java.util.ArrayList;
-import java.util.List;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.Set;
 import java.util.TreeSet;
 
+import org.jboss.as.controller.ControllerLogger;
 import org.jboss.as.controller.ControllerMessages;
 import org.jboss.as.controller.access.Action;
 import org.jboss.as.controller.access.CombinationPolicy;
-import org.jboss.as.controller.access.constraint.Constraint;
 
 /**
  * A {@link ManagementPermission} that combines multiple underlying permissions according
@@ -43,27 +43,34 @@ import org.jboss.as.controller.access.constraint.Constraint;
 public class CombinationManagementPermission extends ManagementPermission {
 
     private final CombinationPolicy combinationPolicy;
-    private final List<ManagementPermission> underlyingPermissions = new ArrayList<ManagementPermission>();
+    private final Map<String, ManagementPermission> underlyingPermissions = new HashMap<String, ManagementPermission>();
 
     public CombinationManagementPermission(CombinationPolicy combinationPolicy, Action.ActionEffect actionEffect) {
         super("CombinationManagementPermission", actionEffect);
         this.combinationPolicy = combinationPolicy;
     }
 
-    public void addUnderlyingPermission(ManagementPermission underlyingPermission) {
+    /**
+     * Adds a permission.
+     * <p>
+     * This method should not be called after the instance has been made visible to another thread
+     * than the one that constructed it.
+     * </p>
+     * @param permissionName name of the permission to add. Cannot be {@code null}
+     * @param underlyingPermission the permission. Cannot be {@code null}
+     */
+    public void addUnderlyingPermission(String permissionName, ManagementPermission underlyingPermission) {
         assert underlyingPermission.getActionEffect() == getActionEffect() : "incompatible ActionEffect";
         if (combinationPolicy == CombinationPolicy.REJECTING && underlyingPermissions.size() > 0) {
             throw ControllerMessages.MESSAGES.illegalMultipleRoles();
         }
-        synchronized (underlyingPermissions) {
-            underlyingPermissions.add(underlyingPermission);
-        }
+        underlyingPermissions.put(permissionName, underlyingPermission);
     }
 
     @Override
     public String getActions() {
         Set<Action.ActionEffect> effects = new TreeSet<Action.ActionEffect>();
-        for (ManagementPermission permission : underlyingPermissions) {
+        for (ManagementPermission permission : underlyingPermissions.values()) {
             effects.add(permission.getActionEffect());
         }
         boolean first = true;
@@ -81,22 +88,26 @@ public class CombinationManagementPermission extends ManagementPermission {
 
     @Override
     public boolean implies(Permission permission) {
-        for (ManagementPermission underlying : underlyingPermissions) {
-            if (combinationPolicy == CombinationPolicy.PERMISSIVE) {
+        if (combinationPolicy == CombinationPolicy.PERMISSIVE) {
+            for (ManagementPermission underlying : underlyingPermissions.values()) {
                 if (underlying.implies(permission)) {
                     return true;
                 }
-            } else if (!underlying.implies(permission)) {
-                return false;
             }
+            if (ControllerLogger.ACCESS_LOGGER.isTraceEnabled()) {
+                ControllerLogger.ACCESS_LOGGER.tracef("None of the underlying permissions %s imply %s", underlyingPermissions.keySet(), permission);
+            }
+            return false;
+        } else {
+            for (Map.Entry<String, ManagementPermission> underlying : underlyingPermissions.entrySet()) {
+                if (!underlying.getValue().implies(permission)) {
+                    ControllerLogger.ACCESS_LOGGER.tracef("Underlying permission %s does not imply %s", underlying.getKey(), permission);
+                    return false;
+                }
+            }
+            return true;
+
         }
-
-        return combinationPolicy != CombinationPolicy.PERMISSIVE;
-    }
-
-    @Override
-    public PermissionCollection newPermissionCollection() {
-        return new ManagementPermissionCollection(getClass());
     }
 
     @Override
@@ -116,17 +127,6 @@ public class CombinationManagementPermission extends ManagementPermission {
     public int hashCode() {
         int result = combinationPolicy.hashCode();
         result = 31 * result + underlyingPermissions.hashCode();
-        return result;
-    }
-
-    @Override
-    public ManagementPermission createScopedPermission(Constraint constraint, int constraintIndex) {
-        CombinationManagementPermission result = new CombinationManagementPermission(combinationPolicy, getActionEffect());
-        synchronized (underlyingPermissions) {
-            for (ManagementPermission underlying : underlyingPermissions) {
-                result.addUnderlyingPermission(underlying.createScopedPermission(constraint, constraintIndex));
-            }
-        }
         return result;
     }
 }

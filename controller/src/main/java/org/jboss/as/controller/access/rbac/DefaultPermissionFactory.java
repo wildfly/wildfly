@@ -139,15 +139,17 @@ public class DefaultPermissionFactory implements PermissionFactory, JmxPermissio
                 if (combined == null) {
                     combined = new HashMap<Action.ActionEffect, CombinationManagementPermission>();
                     Enumeration<Permission> permissionEnumeration = simple.elements();
+                    String firstName = simple.getName();
                     while (permissionEnumeration.hasMoreElements()) {
                         ManagementPermission mperm = (ManagementPermission) permissionEnumeration.nextElement();
                         Action.ActionEffect actionEffect = mperm.getActionEffect();
                         CombinationManagementPermission cmp = new CombinationManagementPermission(combinationPolicy, actionEffect);
-                        cmp.addUnderlyingPermission(mperm);
+                        cmp.addUnderlyingPermission(firstName, mperm);
                         combined.put(actionEffect, cmp);
                     }
                 }
                 Enumeration<Permission> permissionEnumeration = role.elements();
+                String officialForm = getOfficialForm(roleName);
                 while (permissionEnumeration.hasMoreElements()) {
                     ManagementPermission mperm = (ManagementPermission) permissionEnumeration.nextElement();
                     Action.ActionEffect actionEffect = mperm.getActionEffect();
@@ -156,7 +158,7 @@ public class DefaultPermissionFactory implements PermissionFactory, JmxPermissio
                         cmp = new CombinationManagementPermission(combinationPolicy, actionEffect);
                         combined.put(actionEffect, cmp);
                     }
-                    cmp.addUnderlyingPermission(mperm);
+                    cmp.addUnderlyingPermission(officialForm, mperm);
                 }
 
             }
@@ -164,7 +166,7 @@ public class DefaultPermissionFactory implements PermissionFactory, JmxPermissio
         if (combined == null) {
             result = simple != null ? simple : NO_PERMISSIONS;
         } else {
-            result = new ManagementPermissionCollection(CombinationManagementPermission.class);
+            result = new ManagementPermissionCollection("MULTIPLE ROLES", CombinationManagementPermission.class);
             for (CombinationManagementPermission cmp : combined.values()) {
                 result.add(cmp);
             }
@@ -267,7 +269,8 @@ public class DefaultPermissionFactory implements PermissionFactory, JmxPermissio
 
         Map<String, ManagementPermissionCollection> result = new HashMap<String, ManagementPermissionCollection>();
         for (StandardRole standardRole : StandardRole.values()) {
-            ManagementPermissionCollection rolePerms = new ManagementPermissionCollection(SimpleManagementPermission.class);
+            String officialForm = getOfficialForm(standardRole);
+            ManagementPermissionCollection rolePerms = new ManagementPermissionCollection(officialForm, SimpleManagementPermission.class);
             for (Action.ActionEffect actionEffect : Action.ActionEffect.values()) {
                 if (standardRole.isActionEffectAllowed(actionEffect)) {
                     Constraint[] constraints = new Constraint[constraintFactories.size()];
@@ -279,7 +282,7 @@ public class DefaultPermissionFactory implements PermissionFactory, JmxPermissio
                     rolePerms.add(new SimpleManagementPermission(actionEffect, constraints));
                 }
             }
-            result.put(getOfficialForm(standardRole), rolePerms);
+            result.put(officialForm, rolePerms);
         }
         return result;
     }
@@ -289,29 +292,32 @@ public class DefaultPermissionFactory implements PermissionFactory, JmxPermissio
         ManagementPermissionCollection baseCollection = permissionsByRole.get(getOfficialForm(base));
         int constraintIndex = getConstraintIndex(scopingConstraint.getFactory());
 
-        Map<Action.ActionEffect, ManagementPermission> monitorPermissions = new HashMap<Action.ActionEffect, ManagementPermission>();
+        Map<Action.ActionEffect, SimpleManagementPermission> monitorPermissions = new HashMap<Action.ActionEffect, SimpleManagementPermission>();
         ManagementPermissionCollection monitorCollection = permissionsByRole.get(getOfficialForm(StandardRole.MONITOR));
         Enumeration<Permission> monitorEnumeration = monitorCollection.elements();
         while (monitorEnumeration.hasMoreElements()) {
-            ManagementPermission monitorPerm = (ManagementPermission) monitorEnumeration.nextElement();
+            SimpleManagementPermission monitorPerm = (SimpleManagementPermission) monitorEnumeration.nextElement();
             monitorPermissions.put(monitorPerm.getActionEffect(), monitorPerm);
         }
 
         ManagementPermissionCollection scopedPermissions = null;
         Enumeration<Permission> permissionEnumeration = baseCollection.elements();
+        String scopedBaseName = officialForm + " (" + getOfficialForm(base) + " permissions)";
         while (permissionEnumeration.hasMoreElements()) {
-            ManagementPermission basePerm = (ManagementPermission) permissionEnumeration.nextElement();
+            SimpleManagementPermission basePerm = (SimpleManagementPermission) permissionEnumeration.nextElement();
             Action.ActionEffect actionEffect = basePerm.getActionEffect();
             CombinationManagementPermission combinedPermission = new CombinationManagementPermission(CombinationPolicy.PERMISSIVE, actionEffect);
             if (scopedPermissions == null) {
-                scopedPermissions = (ManagementPermissionCollection) combinedPermission.newPermissionCollection();
+                scopedPermissions = new ManagementPermissionCollection(officialForm, CombinationManagementPermission.class);
             }
             ManagementPermission scopedPerm = basePerm.createScopedPermission(scopingConstraint.getStandardConstraint(), constraintIndex);
-            combinedPermission.addUnderlyingPermission(scopedPerm);
+            combinedPermission.addUnderlyingPermission(scopedBaseName, scopedPerm);
 
-            ManagementPermission monitorPerm = monitorPermissions.get(actionEffect);
+            SimpleManagementPermission monitorPerm = monitorPermissions.get(actionEffect);
+            String scopedReadOnlyName = officialForm + " (READ-ONLY permissions)";
             if (monitorPerm != null) {
-                combinedPermission.addUnderlyingPermission(monitorPerm.createScopedPermission(scopingConstraint.getOutofScopeReadConstraint(), constraintIndex));
+                combinedPermission.addUnderlyingPermission(scopedReadOnlyName,
+                        monitorPerm.createScopedPermission(scopingConstraint.getOutofScopeReadConstraint(), constraintIndex));
             }
             scopedPermissions.add(combinedPermission);
         }
