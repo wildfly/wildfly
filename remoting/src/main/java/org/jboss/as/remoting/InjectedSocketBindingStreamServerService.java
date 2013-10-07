@@ -52,7 +52,7 @@ public class InjectedSocketBindingStreamServerService extends AbstractStreamServ
     @Override
     public void start(final StartContext context) throws StartException {
         super.start(context);
-        RemotingConnectorBindingInfoService.install(context.getChildTarget(), context.getController().getName().getSimpleName(), getSocketBinding(), Protocols.REMOTE);
+        RemotingConnectorBindingInfoService.install(context.getChildTarget(), context.getController().getName().getSimpleName(), getSocketBinding(), Protocol.REMOTE.toString());
     }
 
     @Override

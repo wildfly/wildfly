@@ -30,10 +30,10 @@ import javax.security.auth.callback.Callback;
 import javax.security.auth.callback.UnsupportedCallbackException;
 
 import org.jboss.as.controller.OperationFailedException;
+import org.jboss.logging.Messages;
 import org.jboss.logging.annotations.Cause;
 import org.jboss.logging.annotations.Message;
 import org.jboss.logging.annotations.MessageBundle;
-import org.jboss.logging.Messages;
 import org.jboss.logging.annotations.Param;
 import org.jboss.msc.service.StartException;
 
@@ -111,7 +111,4 @@ public interface RemotingMessages {
 
     @Message(id = 17131, value = "HTTP Upgrade request missing Sec-JbossRemoting-Key header")
     IOException upgradeRequestMissingKey();
-
-    @Message(id = 17132, value = "The protocol attribute must be set to remote")
-    String protocolMustBeRemote();
 }

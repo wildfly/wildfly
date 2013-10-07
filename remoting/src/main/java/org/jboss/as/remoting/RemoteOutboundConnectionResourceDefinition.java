@@ -29,6 +29,7 @@ import org.jboss.as.controller.ServiceRemoveStepHandler;
 import org.jboss.as.controller.SimpleAttributeDefinition;
 import org.jboss.as.controller.SimpleAttributeDefinitionBuilder;
 import org.jboss.as.controller.access.management.SensitiveTargetAccessConstraintDefinition;
+import org.jboss.as.controller.operations.validation.EnumValidator;
 import org.jboss.as.controller.operations.validation.StringLengthValidator;
 import org.jboss.as.controller.registry.AttributeAccess;
 import org.jboss.as.controller.registry.ManagementResourceRegistration;
@@ -64,8 +65,8 @@ class RemoteOutboundConnectionResourceDefinition extends AbstractOutboundConnect
 
     public static final SimpleAttributeDefinition PROTOCOL = new SimpleAttributeDefinitionBuilder(
             CommonAttributes.PROTOCOL, ModelType.STRING, true).setValidator(
-            new StringLengthValidator(1, Integer.MAX_VALUE, true, false))
-            .setDefaultValue(new ModelNode(Protocols.REMOTE))
+                    new EnumValidator<Protocol>(Protocol.class, true, false))
+            .setDefaultValue(new ModelNode(Protocol.REMOTE.toString()))
             .setAllowExpression(true)
             .build();
 
