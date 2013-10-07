@@ -21,9 +21,8 @@
  */
 package org.jboss.as.domain.http.server;
 
-import static org.jboss.as.domain.http.server.Common.METHOD_NOT_ALLOWED_HANDLER;
-import static org.jboss.as.domain.http.server.Common.MOVED_PERMANENTLY;
-import static org.jboss.as.domain.http.server.Common.NOT_FOUND;
+import static org.jboss.as.domain.http.server.Common.*;
+
 import io.undertow.server.HttpHandler;
 import io.undertow.server.HttpServerExchange;
 import io.undertow.util.Headers;
@@ -50,6 +49,9 @@ class ManagementRootConsoleRedirectHandler implements HttpHandler {
 
         String requestUrl = exchange.getRequestURL();
         if (consoleHandler != null && "/".equals(exchange.getRequestPath())) {
+            if (requestUrl.endsWith("/")) {
+                requestUrl = requestUrl.substring(0, requestUrl.length() - 1);
+            }
             StringBuilder redirect = new StringBuilder(requestUrl);
             redirect.append(consoleHandler.getContext()).append(consoleHandler.getDefaultPath());
             exchange.getResponseHeaders().add(Headers.LOCATION, redirect.toString());
