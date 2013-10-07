@@ -56,7 +56,7 @@ import java.util.Set;
  */
 public class XTSHandlerDeploymentProcessor implements DeploymentUnitProcessor {
 
-    private static final String TX_BRIDGE_HANDLER = "org.jboss.jbossts.txbridge.inbound.JaxWSTxInboundBridgeHandler";
+    private static final String TX_BRIDGE_HANDLER = "org.jboss.jbossts.txbridge.inbound.OptionalJaxWSTxInboundBridgeHandler";
 
     private static final String TX_CONTEXT_HANDLER = "com.arjuna.mw.wst11.service.JaxWSHeaderContextProcessor";
 
