@@ -77,6 +77,7 @@ class KnownVersions {
         addSubsystemVersion(map, "naming", "1.1.0", CORE_MODEL_7_1_3);
         addSubsystemVersion(map, "osgi", "1.0.0", CORE_MODEL_7_1_3);
         addSubsystemVersion(map, "remoting", "1.1.0", CORE_MODEL_7_1_3);
+        addSubsystemVersion(map, "remoting", "1.2.0", CORE_MODEL_7_2_0);
         addSubsystemVersion(map, "security", "1.1.0", CORE_MODEL_7_1_2);
         addSubsystemVersion(map, "threads", "1.0.0", CORE_MODEL_7_1_2);
         addSubsystemVersion(map, "security", "1.1.0", CORE_MODEL_7_1_2);

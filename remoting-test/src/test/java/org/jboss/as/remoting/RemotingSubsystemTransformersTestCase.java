@@ -43,14 +43,18 @@ import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
 
 import java.io.IOException;
+import java.util.ArrayList;
+import java.util.List;
 
 import org.jboss.as.controller.AttributeDefinition;
 import org.jboss.as.controller.ModelVersion;
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.PathElement;
+import org.jboss.as.controller.operations.common.Util;
 import org.jboss.as.controller.transform.OperationTransformer;
 import org.jboss.as.model.test.FailedOperationTransformationConfig;
+import org.jboss.as.model.test.FailedOperationTransformationConfig.AttributesPathAddressConfig;
 import org.jboss.as.model.test.ModelTestControllerVersion;
 import org.jboss.as.model.test.ModelTestUtils;
 import org.jboss.as.subsystem.test.AbstractSubsystemBaseTest;
@@ -133,7 +137,9 @@ public class RemotingSubsystemTransformersTestCase extends AbstractSubsystemBase
                         new FailedOperationTransformationConfig.RejectExpressionsConfig(
                                 CommonAttributes.VALUE))
                     .addFailedAttribute(rootAddr.append(PathElement.pathElement(CommonAttributes.REMOTE_OUTBOUND_CONNECTION)),
-                        new FailedOperationTransformationConfig.RejectExpressionsConfig(CommonAttributes.USERNAME))
+                            new FailedOperationTransformationConfig.ChainedConfig(
+                                    toList(new FailedOperationTransformationConfig.RejectExpressionsConfig(CommonAttributes.USERNAME), new FixProtocolConfig(CommonAttributes.PROTOCOL)),
+                                    CommonAttributes.USERNAME, CommonAttributes.PROTOCOL))
                     .addFailedAttribute(rootAddr.append(
                             PathElement.pathElement(CommonAttributes.REMOTE_OUTBOUND_CONNECTION))
                                 .append(PathElement.pathElement(CommonAttributes.PROPERTY)),
@@ -145,25 +151,18 @@ public class RemotingSubsystemTransformersTestCase extends AbstractSubsystemBase
     }
 
     @Test
-    public void testTransformersAS712() throws Exception {
-        testTransformers(ModelTestControllerVersion.V7_1_2_FINAL);
+    public void testNonRemotingProtocolRejectedAS720() throws Exception {
+        testNonRemotingProtocolRejectedByVersion1_2(ModelTestControllerVersion.V7_2_0_FINAL);
     }
 
-    @Test
-    public void testTransformersAS713() throws Exception {
-        testTransformers(ModelTestControllerVersion.V7_1_3_FINAL);
-    }
-
-    private void testTransformers(ModelTestControllerVersion controllerVersion) throws Exception {
-        String subsystemXml = readResource("remoting-without-expressions.xml");
-        KernelServicesBuilder builder = createKernelServicesBuilder(createAdditionalInitialization())
-                .setSubsystemXml(subsystemXml);
+    private void testNonRemotingProtocolRejectedByVersion1_2(ModelTestControllerVersion controllerVersion) throws Exception {
+        String subsystemXml = readResource("remoting-with-expressions.xml");
+        KernelServicesBuilder builder = createKernelServicesBuilder(createAdditionalInitialization());
 
         // Add legacy subsystems
-        ModelVersion version_1_1 = ModelVersion.create(1, 1);
+        ModelVersion version_1_1 = ModelVersion.create(1, 2);
         builder.createLegacyKernelServicesBuilder(createAdditionalInitialization(), controllerVersion, version_1_1)
-                .addMavenResourceURL("org.jboss.as:jboss-as-remoting:" + controllerVersion.getMavenGavVersion())
-                .configureReverseControllerCheck(createAdditionalInitialization(), null);
+                .addMavenResourceURL("org.jboss.as:jboss-as-remoting:" + controllerVersion.getMavenGavVersion());
 
         KernelServices mainServices = builder.build();
         assertTrue(mainServices.isSuccessfulBoot());
@@ -171,18 +170,78 @@ public class RemotingSubsystemTransformersTestCase extends AbstractSubsystemBase
         assertNotNull(legacyServices);
         assertTrue(legacyServices.isSuccessfulBoot());
 
-        checkSubsystemModelTransformation(mainServices, version_1_1);
-        checkRejectWorkerThreadAttributes(mainServices, version_1_1);
-        checkRejectSASLAttribute(mainServices, version_1_1, CommonAttributes.REUSE_SESSION, "${reuse.session:true}");
-        checkRejectSASLAttribute(mainServices, version_1_1, CommonAttributes.SERVER_AUTH, "${server.auth:true}");
-        checkRejectSASLProperty(mainServices, version_1_1);
-        checkRejectSASLPolicyAttributes(mainServices, version_1_1);
-        checkRejectConnectorProperty(mainServices, version_1_1);
-        checkRejectRemoteOutboundConnectionUsername(mainServices, version_1_1);
-        checkRejectOutboundConnectionProperty(mainServices, version_1_1, CommonAttributes.REMOTE_OUTBOUND_CONNECTION, "remote-conn1");
-        checkRejectOutboundConnectionProperty(mainServices, version_1_1, CommonAttributes.LOCAL_OUTBOUND_CONNECTION, "local-conn1");
-        checkRejectOutboundConnectionProperty(mainServices, version_1_1, CommonAttributes.OUTBOUND_CONNECTION, "generic-conn1");
-        checkRejectHttpConnector(mainServices, version_1_1);
+        PathAddress rootAddr = PathAddress.pathAddress(PathElement.pathElement(SUBSYSTEM, RemotingExtension.SUBSYSTEM_NAME));
+        ModelTestUtils.checkFailedTransformedBootOperations(mainServices, version_1_1, parse(subsystemXml),
+                new FailedOperationTransformationConfig()
+                    .addFailedAttribute(rootAddr.append(PathElement.pathElement(CommonAttributes.REMOTE_OUTBOUND_CONNECTION)),
+                            new FixProtocolConfig(CommonAttributes.PROTOCOL)));
+    }
+
+    @Test
+    public void testTransformersAS712() throws Exception {
+        testTransformers_1_1(ModelTestControllerVersion.V7_1_2_FINAL);
+    }
+
+    @Test
+    public void testTransformersAS713() throws Exception {
+        testTransformers_1_1(ModelTestControllerVersion.V7_1_3_FINAL);
+    }
+
+    private void testTransformers_1_1(ModelTestControllerVersion controllerVersion) throws Exception {
+        KernelServicesBuilder builder = createKernelServicesBuilder(createAdditionalInitialization())
+                .setSubsystemXmlResource("remoting-without-expressions.xml");
+        ModelVersion oldVersion = ModelVersion.create(1, 1);
+
+        // Add legacy subsystems
+        builder.createLegacyKernelServicesBuilder(createAdditionalInitialization(), controllerVersion, oldVersion)
+                .addMavenResourceURL("org.jboss.as:jboss-as-remoting:" + controllerVersion.getMavenGavVersion())
+                .configureReverseControllerCheck(createAdditionalInitialization(), null);
+
+        KernelServices mainServices = builder.build();
+        assertTrue(mainServices.isSuccessfulBoot());
+        KernelServices legacyServices = mainServices.getLegacyServices(oldVersion);
+        assertNotNull(legacyServices);
+        assertTrue(legacyServices.isSuccessfulBoot());
+
+        checkSubsystemModelTransformation(mainServices, oldVersion);
+        checkRejectWorkerThreadAttributes(mainServices, oldVersion);
+        checkRejectSASLAttribute(mainServices, oldVersion, CommonAttributes.REUSE_SESSION, "${reuse.session:true}");
+        checkRejectSASLAttribute(mainServices, oldVersion, CommonAttributes.SERVER_AUTH, "${server.auth:true}");
+        checkRejectSASLProperty(mainServices, oldVersion);
+        checkRejectSASLPolicyAttributes(mainServices, oldVersion);
+        checkRejectConnectorProperty(mainServices, oldVersion);
+        checkRejectRemoteOutboundConnectionUsername(mainServices, oldVersion);
+        checkRejectOutboundConnectionProperty(mainServices, oldVersion, CommonAttributes.REMOTE_OUTBOUND_CONNECTION, "remote-conn1");
+        checkRejectOutboundConnectionProperty(mainServices, oldVersion, CommonAttributes.LOCAL_OUTBOUND_CONNECTION, "local-conn1");
+        checkRejectOutboundConnectionProperty(mainServices, oldVersion, CommonAttributes.OUTBOUND_CONNECTION, "generic-conn1");
+        checkRejectOutboundConnectionProtocolNotRemote(mainServices, oldVersion, CommonAttributes.REMOTE_OUTBOUND_CONNECTION, "remote-conn1");
+        checkRejectHttpConnector(mainServices, oldVersion);
+    }
+
+    @Test
+    public void testTransformersAS720() throws Exception {
+        testTransformers_1_2(ModelTestControllerVersion.V7_2_0_FINAL);
+    }
+
+    private void testTransformers_1_2(ModelTestControllerVersion controllerVersion) throws Exception {
+        KernelServicesBuilder builder = createKernelServicesBuilder(createAdditionalInitialization())
+                .setSubsystemXmlResource("remoting-with-expressions-and-good-legacy-protocol.xml");
+        ModelVersion oldVersion = ModelVersion.create(1, 2, 0);
+
+
+        // Add legacy subsystems
+        builder.createLegacyKernelServicesBuilder(createAdditionalInitialization(), controllerVersion, oldVersion)
+                .addMavenResourceURL("org.jboss.as:jboss-as-remoting:" + controllerVersion.getMavenGavVersion())
+                .configureReverseControllerCheck(createAdditionalInitialization(), null);
+        KernelServices mainServices = builder.build();
+        assertTrue(mainServices.isSuccessfulBoot());
+        KernelServices legacyServices = mainServices.getLegacyServices(oldVersion);
+        assertNotNull(legacyServices);
+        assertTrue(legacyServices.isSuccessfulBoot());
+
+        checkSubsystemModelTransformation(mainServices, oldVersion);
+        checkRejectOutboundConnectionProtocolNotRemote(mainServices, oldVersion, CommonAttributes.REMOTE_OUTBOUND_CONNECTION, "remote-conn1");
+        checkRejectHttpConnector(mainServices, oldVersion);
     }
 
     private void checkRejectOutboundConnectionProperty(KernelServices mainServices, ModelVersion version, String type, String name) throws OperationFailedException {
@@ -197,6 +256,31 @@ public class RemotingSubsystemTransformersTestCase extends AbstractSubsystemBase
         operation.get(VALUE).set("${myprop:true}");
 
         checkReject(operation, mainServices, version);
+    }
+
+    private void checkRejectOutboundConnectionProtocolNotRemote(KernelServices mainServices, ModelVersion version, String type, String name) throws OperationFailedException {
+        ModelNode operation = new ModelNode();
+        operation.get(OP).set(WRITE_ATTRIBUTE_OPERATION);
+        ModelNode address = new ModelNode();
+        address.add(SUBSYSTEM, RemotingExtension.SUBSYSTEM_NAME);
+        address.add(type, name);
+        operation.get(OP_ADDR).set(address);
+        operation.get(NAME).set(CommonAttributes.PROTOCOL);
+        operation.get(VALUE).set(Protocol.HTTP_REMOTING.toString());
+
+        checkReject(operation, mainServices, version);
+
+        PathAddress addr = PathAddress.pathAddress(operation.get(OP_ADDR));
+        PathElement element = addr.getLastElement();
+        addr = addr.subAddress(0, addr.size() - 1);
+        addr = addr.append(PathElement.pathElement(element.getKey(), "remoting-outbound2"));
+
+        operation = Util.createAddOperation(addr);
+        operation.get(CommonAttributes.OUTBOUND_SOCKET_BINDING_REF).set("dummy-outbound-socket");
+        operation.get(CommonAttributes.USERNAME).set("myuser");
+        operation.get(CommonAttributes.PROTOCOL).set(Protocol.HTTP_REMOTING.toString());
+        checkReject(operation, mainServices, version);
+
     }
 
     private void checkRejectSASLAttribute(KernelServices mainServices, ModelVersion version, String name, String value) throws OperationFailedException {
@@ -331,5 +415,34 @@ public class RemotingSubsystemTransformersTestCase extends AbstractSubsystemBase
         return readResource(resource);
     }
 
+    private List<AttributesPathAddressConfig<?>> toList(AttributesPathAddressConfig<?>...configs){
+        List<AttributesPathAddressConfig<?>> list = new ArrayList<AttributesPathAddressConfig<?>>();
+        for (AttributesPathAddressConfig<?> config : configs) {
+            list.add(config);
+        }
+        return list;
+    }
 
+    private static class FixProtocolConfig extends AttributesPathAddressConfig<FixProtocolConfig> {
+
+        public FixProtocolConfig(String... attributes) {
+            super(attributes);
+        }
+
+        @Override
+        protected boolean isAttributeWritable(String attributeName) {
+            return true;
+        }
+
+        @Override
+        protected boolean checkValue(String attrName, ModelNode attribute, boolean isWriteAttribute) {
+            return !attribute.asString().equals(Protocol.REMOTE.toString());
+        }
+
+        @Override
+        protected ModelNode correctValue(ModelNode toResolve, boolean isWriteAttribute) {
+            return new ModelNode(Protocol.REMOTE.toString());
+        }
+
+    }
 }

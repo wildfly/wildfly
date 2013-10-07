@@ -23,8 +23,6 @@
 package org.jboss.as.remoting;
 
 
-import java.util.Map;
-
 import org.jboss.as.controller.Extension;
 import org.jboss.as.controller.ExtensionContext;
 import org.jboss.as.controller.ModelVersion;
@@ -160,22 +158,11 @@ public class RemotingExtension implements Extension {
     }
 
     private static AttributeTransformationDescriptionBuilder protocolTransform(AttributeTransformationDescriptionBuilder builder) {
-        builder.addRejectCheck(new RejectAttributeChecker.DefaultRejectAttributeChecker() {
-
-            @Override
-            protected boolean rejectAttribute(final PathAddress address, final String attributeName, final ModelNode attributeValue, final TransformationContext context) {
-                return !attributeValue.isDefined() || !attributeValue.asString().equals(Protocols.REMOTE);
-            }
-
-            @Override
-            public String getRejectionLogMessage(final Map<String, ModelNode> attributes) {
-                return RemotingMessages.MESSAGES.protocolMustBeRemote();
-            }
-        }, RemoteOutboundConnectionResourceDefinition.PROTOCOL)
+        builder.addRejectCheck(RejectAttributeChecker.DEFINED, RemoteOutboundConnectionResourceDefinition.PROTOCOL)
                 .setDiscard(new DiscardAttributeChecker.DefaultDiscardAttributeChecker() {
                     @Override
                     protected boolean isValueDiscardable(final PathAddress address, final String attributeName, final ModelNode attributeValue, final TransformationContext context) {
-                        return attributeValue.isDefined() && attributeValue.asString().equals(Protocols.REMOTE);
+                        return attributeValue.isDefined() && attributeValue.asString().equals(Protocol.REMOTE.toString());
                     }
                 }, RemoteOutboundConnectionResourceDefinition.PROTOCOL);
         return builder;

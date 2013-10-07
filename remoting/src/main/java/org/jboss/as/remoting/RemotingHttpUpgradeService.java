@@ -1,5 +1,11 @@
 package org.jboss.as.remoting;
 
+import io.undertow.server.HttpServerExchange;
+import io.undertow.server.ListenerRegistry;
+import io.undertow.server.handlers.ChannelUpgradeHandler;
+import io.undertow.server.handlers.HttpUpgradeHandshake;
+import io.undertow.util.HttpString;
+
 import java.io.IOException;
 import java.io.UnsupportedEncodingException;
 import java.lang.reflect.Constructor;
@@ -9,11 +15,6 @@ import java.security.NoSuchAlgorithmException;
 import java.security.PrivilegedExceptionAction;
 import java.util.List;
 
-import io.undertow.server.HttpServerExchange;
-import io.undertow.server.ListenerRegistry;
-import io.undertow.server.handlers.ChannelUpgradeHandler;
-import io.undertow.server.handlers.HttpUpgradeHandshake;
-import io.undertow.util.HttpString;
 import org.jboss.as.controller.ServiceVerificationHandler;
 import org.jboss.as.network.SocketBinding;
 import org.jboss.msc.service.Service;
@@ -112,7 +113,7 @@ public class RemotingHttpUpgradeService implements Service<RemotingHttpUpgradeSe
         }
         OptionMap resultingMap = builder.getMap();
         try {
-            final ExternalConnectionProvider provider = endpoint.getConnectionProviderInterface(Protocols.HTTP_REMOTING, ExternalConnectionProvider.class);
+            final ExternalConnectionProvider provider = endpoint.getConnectionProviderInterface(Protocol.HTTP_REMOTING.toString(), ExternalConnectionProvider.class);
             final ExternalConnectionProvider.ConnectionAdaptor adaptor = provider.createConnectionAdaptor(resultingMap, sap);
 
             injectedRegistry.getValue().addProtocol(JBOSS_REMOTING, new ChannelListener<StreamConnection>() {
