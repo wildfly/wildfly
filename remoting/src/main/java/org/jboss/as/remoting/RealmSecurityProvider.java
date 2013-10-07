@@ -84,6 +84,7 @@ import org.xnio.ssl.XnioSsl;
 class RealmSecurityProvider implements RemotingSecurityProvider {
 
     static final String SASL_OPT_REALM_PROPERTY = "com.sun.security.sasl.digest.realm";
+    static final String SASL_OPT_ALT_PROTO_PROPERTY = "org.jboss.sasl.digest.alternative_protocols";
     static final String SASL_OPT_PRE_DIGESTED_PROPERTY = "org.jboss.sasl.digest.pre_digested";
     static final String SASL_OPT_LOCAL_DEFAULT_USER = "jboss.sasl.local-user.default-user";
     static final String SASL_OPT_LOCAL_USER_CHALLENGE_PATH = "jboss.sasl.local-user.challenge-path";
@@ -134,6 +135,7 @@ class RealmSecurityProvider implements RemotingSecurityProvider {
             if (authMechs.contains(AuthMechanism.DIGEST)) {
                 mechanisms.add(DIGEST_MD5);
                 properties.add(Property.of(SASL_OPT_REALM_PROPERTY, realm.getName()));
+                properties.add(Property.of(SASL_OPT_ALT_PROTO_PROPERTY, "remote")); // Older clients were hard coded to use 'remote' as the protocol.
                 Map<String, String> mechConfig = realm.getMechanismConfig(AuthMechanism.DIGEST);
                 boolean plainTextDigest = true;
                 if (mechConfig.containsKey(DIGEST_PLAIN_TEXT)) {
