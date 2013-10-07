@@ -46,12 +46,12 @@ public class SimpleClassTable implements ClassTable {
     }
 
     @Override
-    public Writer getClassWriter(Class<?> clazz) throws IOException {
+    public Writer getClassWriter(Class<?> clazz) {
         return this.writers.get(clazz);
     }
 
     @Override
-    public Class<?> readClass(Unmarshaller unmarshaller) throws IOException, ClassNotFoundException {
+    public Class<?> readClass(Unmarshaller unmarshaller) throws IOException {
         return this.classes[unmarshaller.readUnsignedByte()];
     }
 

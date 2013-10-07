@@ -25,9 +25,10 @@ import java.io.Externalizable;
 import java.io.IOException;
 import java.io.ObjectInput;
 import java.io.ObjectOutput;
+import java.security.PrivilegedActionException;
+import java.security.PrivilegedExceptionAction;
 
-import org.jboss.marshalling.Creator;
-import org.jboss.marshalling.reflect.ReflectiveCreator;
+import org.wildfly.security.manager.WildFlySecurityManager;
 
 /**
  * Externalizer for Externalizable objects.
@@ -35,8 +36,6 @@ import org.jboss.marshalling.reflect.ReflectiveCreator;
  */
 public class ExternalizableExternalizer<T extends Externalizable> extends AbstractSimpleExternalizer<T> {
     private static final long serialVersionUID = -5938201796254055389L;
-
-    private static final Creator creator = new ReflectiveCreator();
 
     public ExternalizableExternalizer(Class<T> targetClass) {
         super(targetClass);
@@ -49,8 +48,18 @@ public class ExternalizableExternalizer<T extends Externalizable> extends Abstra
 
     @Override
     public T readObject(ObjectInput input) throws IOException, ClassNotFoundException {
-        T object = creator.create(this.getTargetClass());
-        object.readExternal(input);
-        return object;
+        PrivilegedExceptionAction<T> action = new PrivilegedExceptionAction<T>() {
+            @Override
+            public T run() throws InstantiationException, IllegalAccessException {
+                return ExternalizableExternalizer.this.getTargetClass().newInstance();
+            }
+        };
+        try {
+            T object = WildFlySecurityManager.doChecked(action);
+            object.readExternal(input);
+            return object;
+        } catch (PrivilegedActionException e) {
+            throw new IOException(e.getCause());
+        }
     }
 }
