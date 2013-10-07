@@ -284,7 +284,7 @@ public class ManagedAuditLoggerImpl implements ManagedAuditLogger, ManagedAuditL
         config.lock();
         try {
             AuditLogHandler existing = config.getConfiguredHandler(handler.getName());
-            if (!handler.isDifferent(existing)){
+            if (handler.isDifferent(existing)){
                 if (handlerUpdateTask == null){
                     handlerUpdateTask = new HandlerUpdateTask();
                 }
