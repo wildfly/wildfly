@@ -87,7 +87,7 @@ public class XTSHandlerDeploymentProcessor implements DeploymentUnitProcessor {
     private boolean updateXTSEndpoint(final String endpoint, final EndpointMetaData endpointMetaData,
             final WebservicesMetaData webservicesMetaData, final DeploymentUnit unit) {
 
-        if (endpointMetaData.isWebservice() && endpointMetaData.getWebServiceAnnotation().isValidDeclaration()) {
+        if (endpointMetaData.isWebservice()) {
             final List<String> handlers = new ArrayList<String>();
 
             if (endpointMetaData.isBridgeEnabled()) {

@@ -21,17 +21,15 @@
  */
 package org.jboss.as.test.xts.annotation.service;
 
-import com.arjuna.ats.jta.TransactionManager;
+import com.arjuna.mw.wst.TxContext;
+import com.arjuna.mw.wst11.BusinessActivityManager;
 import org.jboss.logging.Logger;
+import org.jboss.narayana.compensations.api.Compensatable;
+import org.jboss.narayana.compensations.api.CompensationTransactionType;
 
 import javax.ejb.Stateless;
-import javax.ejb.TransactionAttribute;
-import javax.ejb.TransactionAttributeType;
 import javax.jws.WebService;
 import javax.jws.soap.SOAPBinding;
-import javax.transaction.Status;
-import javax.transaction.SystemException;
-import javax.transaction.Transaction;
 
 /**
  * @author <a href="mailto:gytis@redhat.com">Gytis Trikleris</a>
@@ -39,31 +37,22 @@ import javax.transaction.Transaction;
 @Stateless
 @WebService
 @SOAPBinding(style = SOAPBinding.Style.RPC)
-@TransactionAttribute(TransactionAttributeType.SUPPORTS)
-public class TransactionalServiceImpl implements TransactionalService {
+@Compensatable(CompensationTransactionType.SUPPORTS)
+public class CompensatableServiceImpl implements CompensatableService {
 
-    private static Logger LOG = Logger.getLogger(TransactionalServiceImpl.class);
+    private static Logger LOG = Logger.getLogger(CompensatableServiceImpl.class);
 
     @Override
     public boolean isTransactionActive() {
-        LOG.debug("TransactionalServiceImpl.isTransactionActive()");
+        LOG.debug("CompensatableServiceImpl.isTransactionActive()");
 
-        Transaction transaction = null;
-
-        try {
-            transaction = TransactionManager.transactionManager().getTransaction();
-        } catch (SystemException e) {
-        }
-
-        if (transaction == null) {
-            return false;
-        }
+        TxContext txContext = null;
 
         try {
-            return transaction.getStatus() == Status.STATUS_ACTIVE;
-        } catch (SystemException e) {
-            return false;
+            txContext = BusinessActivityManager.getBusinessActivityManager().currentTransaction();
+        } catch (com.arjuna.wst.SystemException e) {
         }
+
+        return txContext != null;
     }
-
 }
