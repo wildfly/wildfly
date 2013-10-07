@@ -251,7 +251,7 @@
         <version.org.picketbox.picketbox-commons>1.0.0.final</version.org.picketbox.picketbox-commons>
         <version.org.picketlink>2.5.1.Final</version.org.picketlink>
         <version.org.powermock>1.5</version.org.powermock>
-        <version.org.scannotation>1.0.2</version.org.scannotation>
+        <version.org.scannotation>1.0.3</version.org.scannotation>
         <version.org.slf4j>1.7.2</version.org.slf4j>
         <version.org.eclipse.aether>0.9.0.M3</version.org.eclipse.aether>
         <version.org.testng>6.1.1</version.org.testng>
