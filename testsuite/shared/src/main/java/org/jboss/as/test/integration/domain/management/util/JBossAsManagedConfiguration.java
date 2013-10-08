@@ -27,6 +27,7 @@ import javax.security.auth.callback.CallbackHandler;
 import org.jboss.arquillian.container.spi.ConfigurationException;
 import org.jboss.arquillian.container.spi.client.deployment.Validate;
 import org.jboss.as.arquillian.container.CommonContainerConfiguration;
+import org.jboss.as.test.shared.TimeoutUtil;
 
 /**
  * JBossAsManagedConfiguration
@@ -72,7 +73,7 @@ public class JBossAsManagedConfiguration extends CommonContainerConfiguration {
 
     private String javaVmArguments = "-Xmx512m -XX:MaxPermSize=128m";
 
-    private int startupTimeoutInSeconds = 120;
+    private int startupTimeoutInSeconds = TimeoutUtil.adjust(120);
 
     private boolean outputToConsole = true;
 
