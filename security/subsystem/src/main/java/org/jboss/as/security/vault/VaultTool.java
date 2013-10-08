@@ -22,6 +22,7 @@
 package org.jboss.as.security.vault;
 
 import java.io.Console;
+import java.util.InputMismatchException;
 import java.util.Scanner;
 
 import org.apache.commons.cli.CommandLine;
@@ -106,25 +107,27 @@ public class VaultTool {
                         + " 1: Remove Interactive Session " + " 2: Exit";
 
                 System.out.println(commandStr);
-                int choice = in.nextInt();
-                switch (choice) {
-                    case 0:
-                        System.out.println("Starting an interactive session");
-                        VaultInteractiveSession vsession = new VaultInteractiveSession();
-                        tool.setSession(vsession);
-                        vsession.start();
-                        break;
-                    case 1:
-                        System.out.println("Removing the current interactive session");
-                        tool.setSession(null);
-                        break;
-                    default:
-                        System.exit(0);
+                try {
+                    int choice = in.nextInt();
+                    switch (choice) {
+                        case 0:
+                            System.out.println("Starting an interactive session");
+                            VaultInteractiveSession vsession = new VaultInteractiveSession();
+                            tool.setSession(vsession);
+                            vsession.start();
+                            break;
+                        case 1:
+                            System.out.println("Removing the current interactive session");
+                            tool.setSession(null);
+                            break;
+                        default:
+                            System.exit(0);
+                    }
+                } catch (InputMismatchException e) {
+                    System.exit(0);
                 }
             }
-
         }
-
     }
 
     public VaultTool(String[] args) {
