@@ -37,6 +37,7 @@ import org.jboss.as.controller.SubsystemRegistration;
 import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
 import org.jboss.as.controller.descriptions.ResourceDescriptionResolver;
 import org.jboss.as.controller.descriptions.StandardResourceDescriptionResolver;
+import org.jboss.as.controller.operations.common.GenericSubsystemDescribeHandler;
 import org.jboss.as.controller.parsing.ExtensionParsingContext;
 import org.jboss.as.controller.registry.ManagementResourceRegistration;
 import org.jboss.as.controller.transform.RejectExpressionValuesTransformer;
@@ -98,7 +99,7 @@ public class JGroupsExtension implements Extension {
 
         final boolean registerRuntimeOnly = context.isRuntimeOnlyRegistrationValid();
         final ManagementResourceRegistration subsystem = registration.registerSubsystemModel(new JGroupsSubsystemRootResourceDefinition());
-        subsystem.registerOperationHandler(JGroupsSubsystemDescribe.DEFINITON,JGroupsSubsystemDescribe.INSTANCE);
+        subsystem.registerOperationHandler(GenericSubsystemDescribeHandler.DEFINITION,JGroupsSubsystemDescribe.INSTANCE);
 
         subsystem.registerSubModel(new StackResourceDefinition(registerRuntimeOnly));
         registration.registerXMLElementWriter(new JGroupsSubsystemXMLWriter());
