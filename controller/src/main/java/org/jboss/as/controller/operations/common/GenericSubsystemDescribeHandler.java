@@ -23,14 +23,18 @@
 package org.jboss.as.controller.operations.common;
 
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.DESCRIBE;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SUBSYSTEM;
 
+import java.util.Collections;
 import java.util.Comparator;
+import java.util.EnumSet;
 import java.util.Locale;
 import java.util.Set;
 import java.util.TreeSet;
 
+import org.jboss.as.controller.ControllerMessages;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.OperationStepHandler;
@@ -38,6 +42,9 @@ import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.PathElement;
 import org.jboss.as.controller.SimpleOperationDefinition;
 import org.jboss.as.controller.SimpleOperationDefinitionBuilder;
+import org.jboss.as.controller.access.Action;
+import org.jboss.as.controller.access.AuthorizationResult;
+import org.jboss.as.controller.access.management.SensitiveTargetAccessConstraintDefinition;
 import org.jboss.as.controller.descriptions.DescriptionProvider;
 import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
 import org.jboss.as.controller.descriptions.common.ControllerResolver;
@@ -56,10 +63,15 @@ public class GenericSubsystemDescribeHandler implements OperationStepHandler, De
 
     public static final GenericSubsystemDescribeHandler INSTANCE = new GenericSubsystemDescribeHandler();
     public static final SimpleOperationDefinition DEFINITION = new SimpleOperationDefinitionBuilder(DESCRIBE, ControllerResolver.getResolver(SUBSYSTEM))
+            .addAccessConstraint(SensitiveTargetAccessConstraintDefinition.READ_WHOLE_CONFIG)
             .setReplyType(ModelType.LIST)
             .setReplyValueType(ModelType.OBJECT)
             .setPrivateEntry()
             .build();
+
+    public static final Set<Action.ActionEffect> DESCRIBE_EFFECTS =
+            Collections.unmodifiableSet(EnumSet.of(Action.ActionEffect.ADDRESS, Action.ActionEffect.READ_CONFIG));
+
     private final Comparator<PathElement> comparator;
 
     protected GenericSubsystemDescribeHandler() {
@@ -102,6 +114,13 @@ public class GenericSubsystemDescribeHandler implements OperationStepHandler, De
     public void execute(final OperationContext context, final ModelNode operation) throws OperationFailedException {
         final ModelNode address;
         final PathAddress pa = PathAddress.pathAddress(PathAddress.pathAddress(operation.require(OP_ADDR)));
+
+        AuthorizationResult authResult = context.authorize(operation, DESCRIBE_EFFECTS);
+        if (authResult.getDecision() != AuthorizationResult.Decision.PERMIT) {
+            throw ControllerMessages.MESSAGES.unauthorized(operation.require(OP).asString(),
+                    pa, authResult.getExplanation());
+        }
+
         if (pa.size() > 0) {
             address = new ModelNode().add(pa.getLastElement().getKey(), pa.getLastElement().getValue());
         } else {
