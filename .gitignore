@@ -48,3 +48,5 @@ local-repo-eap
 
 #These keep hanging around
 arquillian/*/server.log*
+build/src/main/.DS_Store
+build/src/main/resources/.DS_Store
