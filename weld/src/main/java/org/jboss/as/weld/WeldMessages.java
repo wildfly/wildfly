@@ -147,4 +147,6 @@ public interface WeldMessages {
     @Message(id = 16080, value = "These attributes must be 'true' for use with CDI 1.0 '%s'")
     String rejectAttributesMustBeTrue(Set<String> keySet);
 
+    @Message(id = 16081, value = "%s was not found in composite index")
+    IllegalStateException nameNotFoundInIndex(String name);
 }
