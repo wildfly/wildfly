@@ -30,7 +30,6 @@ import java.security.Permission;
 import java.util.Enumeration;
 
 import org.jboss.as.controller.access.Action;
-import org.jboss.as.controller.access.constraint.Constraint;
 import org.junit.Before;
 import org.junit.Test;
 
@@ -42,7 +41,7 @@ public class ManagementPermissionCollectionTestCase {
 
     @Before
     public void setUp() {
-        permissionCollection = new ManagementPermissionCollection(TestManagementPermission.class);
+        permissionCollection = new ManagementPermissionCollection(getClass().getSimpleName(), TestManagementPermission.class);
     }
 
     @Test
@@ -119,11 +118,6 @@ public class ManagementPermissionCollectionTestCase {
         }
 
         @Override
-        public ManagementPermission createScopedPermission(Constraint constraint, int constraintIndex) {
-            return null;
-        }
-
-        @Override
         public boolean implies(Permission permission) {
             return equals(permission);
         }
@@ -132,11 +126,6 @@ public class ManagementPermissionCollectionTestCase {
     private static final class AnotherTestManagementPermission extends ManagementPermission {
         private AnotherTestManagementPermission(Action.ActionEffect actionEffect) {
             super("test2", actionEffect);
-        }
-
-        @Override
-        public ManagementPermission createScopedPermission(Constraint constraint, int constraintIndex) {
-            return null;
         }
 
         @Override

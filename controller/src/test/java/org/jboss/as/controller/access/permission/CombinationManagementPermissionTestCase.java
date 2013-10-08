@@ -46,8 +46,8 @@ public class CombinationManagementPermissionTestCase {
     @Test
     public void testPermissive() {
         CombinationManagementPermission cmp = new CombinationManagementPermission(CombinationPolicy.PERMISSIVE, Action.ActionEffect.ADDRESS);
-        cmp.addUnderlyingPermission(ACCESS_1);
-        cmp.addUnderlyingPermission(ACCESS_2);
+        cmp.addUnderlyingPermission("access1", ACCESS_1);
+        cmp.addUnderlyingPermission("access2", ACCESS_2);
 
         assertTrue(cmp.implies(ACCESS_1));
         assertTrue(cmp.implies(ACCESS_2));
@@ -58,12 +58,12 @@ public class CombinationManagementPermissionTestCase {
     @Test
     public void testRejecting() {
         CombinationManagementPermission cmp = new CombinationManagementPermission(CombinationPolicy.REJECTING, Action.ActionEffect.ADDRESS);
-        cmp.addUnderlyingPermission(ACCESS_1);
+        cmp.addUnderlyingPermission("access1", ACCESS_1);
         assertTrue(cmp.implies(ACCESS_1));
         assertFalse(cmp.implies(ACCESS_2));
 
         try {
-            cmp.addUnderlyingPermission(ACCESS_2);
+            cmp.addUnderlyingPermission("access2", ACCESS_2);
             fail();
         } catch (Exception e) { /* expected */ }
     }
@@ -83,11 +83,6 @@ public class CombinationManagementPermissionTestCase {
         private TestManagementPermission(Action.ActionEffect actionEffect, int id) {
             super("test", actionEffect);
             this.id = id;
-        }
-
-        @Override
-        public ManagementPermission createScopedPermission(Constraint constraint, int constraintIndex) {
-            return null;
         }
 
         @Override
