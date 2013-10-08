@@ -150,4 +150,6 @@ public interface WeldMessages {
     @Message(id = 16081, value = "Error injecting resource into CDI managed bean. Can't find a resource named %s defined on %s")
     IllegalArgumentException coundNotFindResource(String resourceName, String member, @Cause Throwable cause);
 
+    @Message(id = 16082, value = "%s was not found in composite index")
+    IllegalStateException nameNotFoundInIndex(String name);
 }
