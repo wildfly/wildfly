@@ -232,4 +232,7 @@ public interface WeldLogger extends BasicLogger {
     @LogMessage(level = Logger.Level.DEBUG)
     @Message(value = "Discovered %s")
     void beanArchiveDiscovered(BeanDeploymentArchive bda);
+
+    @Message(id = 50, value = "%s was not found in composite index")
+    IllegalStateException nameNotFoundInIndex(String name);
 }
