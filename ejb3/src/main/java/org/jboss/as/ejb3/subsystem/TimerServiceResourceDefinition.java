@@ -198,8 +198,8 @@ public class TimerServiceResourceDefinition extends SimpleResourceDefinition {
                 // won't work in FileTimerPersistence
                 fileStore = new ModelNode();
             } else if ((untransformedModel.hasDefined(EJB3SubsystemModel.DATABASE_DATA_STORE)
-                            && untransformedModel.get(EJB3SubsystemModel.DATABASE_DATA_STORE).asInt() > 0)
-                        || untransformedModel.get(EJB3SubsystemModel.FILE_DATA_STORE).asInt() > 1) {
+                            && untransformedModel.get(EJB3SubsystemModel.DATABASE_DATA_STORE).keys().size() > 0)
+                        || untransformedModel.get(EJB3SubsystemModel.FILE_DATA_STORE).keys().size() > 1) {
                 rejectIncompatibleDataStores(context, address);
             }
 
