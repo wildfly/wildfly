@@ -135,7 +135,7 @@ public final class ManagedDeployableContainer extends CommonDeployableContainer<
                 replaceSystemPropertyValue(cmd, "jboss.server.base.dir", serverBaseDir);
             }
 
-            final String bootLogFileDefaultValue = serverBaseDir + File.separatorChar + LOG_DIR + File.separatorChar + "boot.log";
+            final String bootLogFileDefaultValue = serverBaseDir + File.separatorChar + LOG_DIR + File.separatorChar + "server.log";
             final String loggingConfigurationDefaultValue = serverBaseDir + File.separatorChar + CONFIG_DIR + File.separatorChar + "logging.properties";
             cmd.add("-Djboss.home.dir=" + jbossHome);
             cmd.add("-Dorg.jboss.boot.log.file=" + getSystemPropertyValue(cmd, "org.jboss.boot.log.file", getFile(bootLogFileDefaultValue, jbossHome).getAbsolutePath()));
