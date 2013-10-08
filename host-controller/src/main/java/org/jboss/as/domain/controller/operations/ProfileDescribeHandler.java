@@ -26,8 +26,11 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.PRO
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.RESULT;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SUBSYSTEM;
 
+import java.util.Collections;
+import java.util.EnumSet;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Set;
 import java.util.concurrent.atomic.AtomicReference;
 
 import org.jboss.as.controller.ControllerMessages;
@@ -36,6 +39,8 @@ import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.OperationStepHandler;
 import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.PathElement;
+import org.jboss.as.controller.access.Action;
+import org.jboss.as.controller.access.AuthorizationResult;
 import org.jboss.as.controller.registry.ImmutableManagementResourceRegistration;
 import org.jboss.as.controller.registry.Resource;
 import org.jboss.dmr.ModelNode;
@@ -50,6 +55,9 @@ public class ProfileDescribeHandler implements OperationStepHandler {
 
     public static final ProfileDescribeHandler INSTANCE = new ProfileDescribeHandler();
 
+    private static final Set<Action.ActionEffect> DESCRIBE_EFFECTS =
+            Collections.unmodifiableSet(EnumSet.of(Action.ActionEffect.ADDRESS, Action.ActionEffect.READ_CONFIG));
+
     private ProfileDescribeHandler() {
     }
 
@@ -59,6 +67,11 @@ public class ProfileDescribeHandler implements OperationStepHandler {
 
         final String opName = operation.require(OP).asString();
         final PathAddress address = PathAddress.pathAddress(operation.require(OP_ADDR));
+
+        AuthorizationResult authResult = context.authorize(operation, DESCRIBE_EFFECTS);
+        if (authResult.getDecision() != AuthorizationResult.Decision.PERMIT) {
+            throw ControllerMessages.MESSAGES.unauthorized(opName, address, authResult.getExplanation());
+        }
 
         final ModelNode result = new ModelNode();
         final ModelNode profile =  Resource.Tools.readModel(context.readResource(PathAddress.EMPTY_ADDRESS));
