@@ -419,6 +419,7 @@ final class SubsystemTestDelegate {
         PrintWriter pw = new PrintWriter(dmrFile);
         try {
             desc.writeString(pw, false);
+            System.out.println("Written to:" + dmrFile);
         } finally {
             IoUtils.safeClose(pw);
         }
