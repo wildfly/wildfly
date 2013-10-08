@@ -184,10 +184,6 @@ public class LdapExtPasswordCachingTestCase {
 
         checkPrincipal(webAppURL, "jduke");
         assertEquals("Password call 2", 2, passwordProvider.readFileCounter());
-
-        long WAIT_2 = 200;
-        Thread.sleep(WAIT_2);
-
         checkPrincipal(webAppURL, "jduke");
         assertEquals("Password from cache 2", 2, passwordProvider.readFileCounter());
 
