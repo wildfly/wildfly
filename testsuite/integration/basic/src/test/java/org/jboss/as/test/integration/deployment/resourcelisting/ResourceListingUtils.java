@@ -19,7 +19,7 @@ public class ResourceListingUtils {
      * @return list of resources returned by the API for iterating over deployment resources
      */
     public static List<String> listResources(ModuleClassLoader classLoader, String rootDir, boolean recursive) {
-        List<String> resourceList = new ArrayList<>();
+        List<String> resourceList = new ArrayList<String>();
         Iterator<Resource> it = classLoader.iterateResources(rootDir, recursive);
 
         while (it.hasNext()) {

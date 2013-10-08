@@ -87,7 +87,7 @@ public class JarResourceListingTestCase {
         List<String> foundResources = ResourceListingUtils.listResources(classLoader, rootDir, recursive);
 
         // only resources in JAR library should be listed
-        List<String> resourcesInDeployment = new ArrayList<>();
+        List<String> resourcesInDeployment = new ArrayList<String>();
         resourcesInDeployment.add(ResourceListingUtils.classToPath(JarResourceListingTestCase.class));
         resourcesInDeployment.add(ResourceListingUtils.classToPath(ResourceListingUtils.class));
         resourcesInDeployment.add("META-INF/example.txt");

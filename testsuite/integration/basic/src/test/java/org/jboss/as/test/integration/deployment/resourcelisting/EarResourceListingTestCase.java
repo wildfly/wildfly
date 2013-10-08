@@ -107,7 +107,7 @@ public class EarResourceListingTestCase {
         List<String> foundResources = ResourceListingUtils.listResources(classLoader, rootDir, recursive);
 
         // only resources in EAR library should be listed
-        List<String> resourcesInDeployment = new ArrayList<>();
+        List<String> resourcesInDeployment = new ArrayList<String>();
         resourcesInDeployment.add(ResourceListingUtils.classToPath(EarResourceListingTestCase.class));
         resourcesInDeployment.add(ResourceListingUtils.classToPath(ResourceListingUtils.class));
         resourcesInDeployment.add("META-INF/emptyJarLibResource.properties");
