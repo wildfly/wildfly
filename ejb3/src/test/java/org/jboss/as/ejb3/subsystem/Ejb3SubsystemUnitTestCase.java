@@ -27,6 +27,7 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SUB
 import java.io.IOException;
 import java.util.List;
 
+import org.jboss.as.controller.AttributeDefinition;
 import org.jboss.as.controller.ModelVersion;
 import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.PathElement;
@@ -42,7 +43,6 @@ import org.jboss.as.threads.PoolAttributeDefinitions;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.ModelType;
 import org.junit.Assert;
-import org.junit.Ignore;
 import org.junit.Test;
 
 /**
@@ -101,7 +101,7 @@ public class Ejb3SubsystemUnitTestCase extends AbstractSubsystemBaseTest {
     public void testTransformerAS720() throws Exception {
         ModelTestControllerVersion controllerVersion = ModelTestControllerVersion.V7_2_0_FINAL;
         //TODO Update to include the extra stuff needed for 1.2.0
-        String subsystemXml = "transform_1_1_0.xml";   //This has no expressions not understood by 1.1.0
+        String subsystemXml = "transform_1_2_0.xml";   //This has no expressions not understood by 1.1.0
 
         ModelVersion modelVersion = ModelVersion.create(1, 2, 0); //The old model version
         //Use the non-runtime version of the extension which will happen on the HC
@@ -117,12 +117,14 @@ public class Ejb3SubsystemUnitTestCase extends AbstractSubsystemBaseTest {
                 .addOperationValidationResolve("add", PathAddress.pathAddress(PathElement.pathElement(SUBSYSTEM, getMainSubsystemName()), PathElement.pathElement("strict-max-bean-instance-pool")));
 
         KernelServices mainServices = builder.build();
+        Assert.assertTrue(mainServices.isSuccessfulBoot());
         KernelServices legacyServices = mainServices.getLegacyServices(modelVersion);
+        Assert.assertTrue(legacyServices.isSuccessfulBoot());
         Assert.assertNotNull(mainServices);
         Assert.assertNotNull(legacyServices);
         generateLegacySubsystemResourceRegistrationDmr(mainServices, modelVersion);
 
-        checkSubsystemModelTransformation(mainServices, modelVersion, V_1_1_0_FIXER);
+        checkSubsystemModelTransformation(mainServices, modelVersion);
     }
 
     @Test
@@ -152,20 +154,43 @@ public class Ejb3SubsystemUnitTestCase extends AbstractSubsystemBaseTest {
         Assert.assertTrue("main services did not boot", mainServices.isSuccessfulBoot());
         Assert.assertTrue(legacyServices.isSuccessfulBoot());
 
-        List<ModelNode> xmlOps = builder.parseXmlResource("transform_1_1_0_operations.xml");
+        List<ModelNode> xmlOps = builder.parseXmlResource("transform_1_1_0_expressions.xml");
 
         ModelTestUtils.checkFailedTransformedBootOperations(mainServices, version_1_1_0, xmlOps, getConfig_1_1_0());
     }
 
     @Test
-    public void testRejectFileStorePathExpressionsAS713() throws Exception {
-        testRejectFileStorePathExpressions(ModelTestControllerVersion.V7_1_3_FINAL, true);
+    public void testRejectBadAttributesAs720() throws Exception {
+        testRejectBadAttributes_1_2_0(ModelTestControllerVersion.V7_2_0_FINAL);
     }
 
+
+    private void testRejectBadAttributes_1_2_0(ModelTestControllerVersion controllerVersion) throws Exception {
+        // create builder for current subsystem version
+        KernelServicesBuilder builder = createKernelServicesBuilder(createAdditionalInitialization());
+
+        // create builder for legacy subsystem version
+        ModelVersion version_1_2_0 = ModelVersion.create(1, 2, 0);
+        builder.createLegacyKernelServicesBuilder(null, controllerVersion, version_1_2_0)
+                .addMavenResourceURL("org.jboss.as:jboss-as-ejb3:" + controllerVersion.getMavenGavVersion())
+                .addMavenResourceURL("org.jboss.as:jboss-as-threads:" + controllerVersion.getMavenGavVersion());
+
+        KernelServices mainServices = builder.build();
+        KernelServices legacyServices = mainServices.getLegacyServices(version_1_2_0);
+
+        Assert.assertNotNull(legacyServices);
+        Assert.assertTrue("main services did not boot", mainServices.isSuccessfulBoot());
+        Assert.assertTrue(legacyServices.isSuccessfulBoot());
+
+        List<ModelNode> xmlOps = builder.parseXmlResource("transform_1_2_0_reject.xml");
+
+        ModelTestUtils.checkFailedTransformedBootOperations(mainServices, version_1_2_0, xmlOps, getConfig_1_2_0());
+    }
+
+
     @Test
-    @Ignore("No 7.2.0.Final yet") // TODO enable
-    public void testRejectFileStorePathExpressionsAS720() throws Exception {
-        //testRejectFileStorePathExpressions("7.2.0.Final", false);
+    public void testRejectFileStorePathExpressionsAS713() throws Exception {
+        testRejectFileStorePathExpressions(ModelTestControllerVersion.V7_1_3_FINAL, true);
     }
 
     private void testRejectFileStorePathExpressions(ModelTestControllerVersion controllerVersion, boolean expectReject) throws Exception {
@@ -200,10 +225,14 @@ public class Ejb3SubsystemUnitTestCase extends AbstractSubsystemBaseTest {
                 .addFailedAttribute(subsystemAddress,
                         FailedOperationTransformationConfig.ChainedConfig.createBuilder(
                                 EJB3SubsystemRootResourceDefinition.ENABLE_STATISTICS,
-                                EJB3SubsystemRootResourceDefinition.DEFAULT_SECURITY_DOMAIN)
+                                EJB3SubsystemRootResourceDefinition.DEFAULT_SECURITY_DOMAIN,
+                                EJB3SubsystemRootResourceDefinition.DEFAULT_SFSB_PASSIVATION_DISABLED_CACHE,
+                                EJB3SubsystemRootResourceDefinition.DEFAULT_MISSING_METHOD_PERMISSIONS_DENY_ACCESS,
+                                EJB3SubsystemRootResourceDefinition.DISABLE_DEFAULT_EJB_PERMISSIONS)
                                 .addConfig(new FailedOperationTransformationConfig.RejectExpressionsConfig(EJB3SubsystemRootResourceDefinition.ENABLE_STATISTICS))
                                 .addConfig(new FailedOperationTransformationConfig.NewAttributesConfig(EJB3SubsystemRootResourceDefinition.DEFAULT_SECURITY_DOMAIN))
-                                .addConfig(new FailedOperationTransformationConfig.NewAttributesConfig(EJB3SubsystemRootResourceDefinition.DEFAULT_SFSB_PASSIVATION_DISABLED_CACHE)).build())
+                                .addConfig(new FailedOperationTransformationConfig.NewAttributesConfig(EJB3SubsystemRootResourceDefinition.DEFAULT_SFSB_PASSIVATION_DISABLED_CACHE))
+                                .addConfig(new CorrectFalseToTrue(EJB3SubsystemRootResourceDefinition.DEFAULT_MISSING_METHOD_PERMISSIONS_DENY_ACCESS, EJB3SubsystemRootResourceDefinition.DISABLE_DEFAULT_EJB_PERMISSIONS)).build())
                 .addFailedAttribute(subsystemAddress.append(PathElement.pathElement(EJB3SubsystemModel.THREAD_POOL)),
                         keepaliveOnly)
                 .addFailedAttribute(subsystemAddress.append(StrictMaxPoolResourceDefinition.INSTANCE.getPathElement()),
@@ -221,6 +250,20 @@ public class Ejb3SubsystemUnitTestCase extends AbstractSubsystemBaseTest {
                 ;
     }
 
+    private FailedOperationTransformationConfig getConfig_1_2_0() {
+        PathAddress subsystemAddress = PathAddress.pathAddress(EJB3Extension.SUBSYSTEM_PATH);
+        return new FailedOperationTransformationConfig()
+        .addFailedAttribute(subsystemAddress,
+                FailedOperationTransformationConfig.ChainedConfig.createBuilder(
+                        EJB3SubsystemRootResourceDefinition.DEFAULT_SFSB_PASSIVATION_DISABLED_CACHE,
+                        EJB3SubsystemRootResourceDefinition.DISABLE_DEFAULT_EJB_PERMISSIONS)
+                        .addConfig(new FailedOperationTransformationConfig.NewAttributesConfig(EJB3SubsystemRootResourceDefinition.DEFAULT_SFSB_PASSIVATION_DISABLED_CACHE))
+                        .addConfig(new CorrectFalseToTrue(EJB3SubsystemRootResourceDefinition.DISABLE_DEFAULT_EJB_PERMISSIONS)).build())
+        .addFailedAttribute(subsystemAddress.append(EJB3SubsystemModel.TIMER_SERVICE_PATH, PathElement.pathElement(EJB3SubsystemModel.FILE_DATA_STORE, "file-data-store-rejected")), FailedOperationTransformationConfig.REJECTED_RESOURCE)
+        .addFailedAttribute(subsystemAddress.append(EJB3SubsystemModel.TIMER_SERVICE_PATH, EJB3SubsystemModel.DATABASE_DATA_STORE_PATH), FailedOperationTransformationConfig.REJECTED_RESOURCE)
+        ;
+    }
+
     private FailedOperationTransformationConfig getFileStorePathConfig() {
         return new FailedOperationTransformationConfig()
                 .addFailedAttribute(PathAddress.pathAddress(EJB3Extension.SUBSYSTEM_PATH), new FailedOperationTransformationConfig.NewAttributesConfig(EJB3SubsystemModel.DEFAULT_SFSB_PASSIVATION_DISABLED_CACHE))
@@ -228,6 +271,8 @@ public class Ejb3SubsystemUnitTestCase extends AbstractSubsystemBaseTest {
                         PathElement.pathElement(EJB3SubsystemModel.FILE_DATA_STORE, "file-data-store")),
                         new FailedOperationTransformationConfig.RejectExpressionsConfig(FileDataStoreResourceDefinition.PATH));
     }
+
+
 
     private static final ModelFixer V_1_1_0_FIXER = new ModelFixer()  {
 
@@ -256,4 +301,27 @@ public class Ejb3SubsystemUnitTestCase extends AbstractSubsystemBaseTest {
             return modelNode;
         }
     };
+
+    private static class CorrectFalseToTrue extends FailedOperationTransformationConfig.AttributesPathAddressConfig<CorrectFalseToTrue>{
+
+        public CorrectFalseToTrue(AttributeDefinition...defs) {
+            super(convert(defs));
+        }
+
+        @Override
+        protected boolean isAttributeWritable(String attributeName) {
+            return true;
+        }
+
+        @Override
+        protected boolean checkValue(String attrName, ModelNode attribute, boolean isWriteAttribute) {
+            return attribute.asString().equals("true");
+        }
+
+        @Override
+        protected ModelNode correctValue(ModelNode toResolve, boolean isWriteAttribute) {
+            return new ModelNode(false);
+        }
+
+    }
 }
