@@ -1220,6 +1220,11 @@
                 </dependency>
 
                 <dependency>
+                    <groupId>org.jboss.genericjms</groupId>
+                    <artifactId>generic-jms-ra-jar</artifactId>
+                </dependency>
+
+                <dependency>
                     <groupId>org.jboss.ironjacamar</groupId>
                     <artifactId>ironjacamar-core-api</artifactId>
                 </dependency>

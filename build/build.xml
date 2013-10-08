@@ -1051,6 +1051,10 @@
             <maven-resource group="org.jboss.ejb3" artifact="jboss-ejb3-ext-api"/>
         </module-def>
 
+        <module-def name="org.jboss.genericjms">
+            <maven-resource group="org.jboss.genericjms" artifact="generic-jms-ra-jar"/>
+        </module-def>
+
         <module-def name="org.jboss.integration.ext-content">
             <!-- Bundling external content into deployments -->
         </module-def>
