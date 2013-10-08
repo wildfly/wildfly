@@ -5,61 +5,48 @@
     <title>EAP 6</title>
     <!-- proper charset -->
     <meta http-equiv="content-type" content="text/html;charset=utf-8" />
-    <meta http-equiv="content-type" content="text/html;charset=utf-8" />
     <meta http-equiv="X-UA-Compatible" content="IE=EmulateIE8" />
     <link rel="stylesheet" type="text/css" href="eap.css" />
     <link rel="shortcut icon" href="favicon.ico" />
 </head>
+
 <body>
 
-<div id="container">
-
-
-<!-- header -->
-<div id="header">
-
-	<!-- logo section -->
-	<table border=0 style="height:100%">
-	<tr style="vertical-align:bottom;">	
-		<td style="padding-left:15px;">
-			<img src="images/prod_name.png"/>
-		</td>
-		<td class="prod-version">
-			6
-		</td>
-
-	</tr>
-	</table>
-</div>
-
+<div id="container" style="position: absolute; left: 0px; top: 0px; right: 0px; bottom: 0px;">
+  
+  <!-- header -->
+  <div class="header-panel">
+    <div class="header-line">&nbsp;</div>
+    <div class="header-top">
+      <img class="prod-title" src="images/product_title.png"/><span class="prod-version">6</span>                 
+    </div>
+    <div class="header-bottom">&nbsp;</div>
+  </div>
+  
 <!-- main content -->
-<div id="content">
+    <!-- main content -->
+  <div id="content">
 
-<div class="section">
+    <div class="section">
+      <h1>Welcome to EAP 6</h1>
 
- 	 <h1>Welcome to JBoss EAP 6</h1>
-
-      <h3>Your Red Hat JBoss Enterprise Application Platform is running.</h3>
+      <h3>The Enterprise Application Platform 6 is running.</h3>
 
       <p>However you have not yet added any users to be able to access the admin console.</p>
       
-	  <p>You can add a new user by executing the <code>add-user.bat</code> script within the bin folder of your EAP 6 installation.</p>
+      <p>To add a new user execute the add-user.sh script within the bin folder of your EAP 6 installation
+         and enter the requested information.</p>
          
-     <p>The realm name &quot;ManagementRealm&quot; is provided as the default for EAP 6. Use this realm name for your initial user configuration to provide security access to the management interfaces.</p> 
+      <p>By default the realm name used by EAP is &quot;ManagementRealm&quot; this is already selected by default.</p>
+            
+      <p>After you have added the user follow this link to <a href="/">Try Again</a>.</p>
+    </div>
+  </div>
 
-      <p>After you have added the user, click the following link to access the Management Console.</p>	      
-	<p><a href="/">Try Again</a></p>
-
-</div>
-
-</div>
-
-<!-- footer -->
-<div id="footer">
-&nbsp;
-</div>
+  <div id="footer">&nbsp;</div>
 
 </div>
 
 </body >
 </html>
+

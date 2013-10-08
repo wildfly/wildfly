@@ -1,25 +1,43 @@
-html,body {
-    background-color: #ececec !important;
-    background-image: none !important;
-    color: #555555;
-    font: 12px "Lucida Sans Unicode", "Lucida Grande", sans-serif;
-    height: 100%;
+
+@font-face {
+  font-family: 'Open Sans';
+  font-style: normal;
+  font-weight: 300;
+  src: local('Open Sans Light'), local('OpenSans-Light'), url(fonts/OpenSans-Light.ttf) format('truetype');
+}
+@font-face {
+  font-family: 'Open Sans';
+  font-style: normal;
+  font-weight: 400;
+  src: local('Open Sans'), local('OpenSans'), url(fonts/OpenSans-Regular.ttf) format('truetype');
+}
+@font-face {
+  font-family: 'Open Sans';
+  font-style: normal;
+  font-weight: 600;
+  src: local('Open Sans Semibold'), local('OpenSans-Semibold'), url(fonts/OpenSans-Semibold.ttf) format('truetype');
+}
+@font-face {
+  font-family: 'Open Sans';
+  font-style: normal;
+  font-weight: 700;
+  src: local('Open Sans Bold'), local('OpenSans-Bold'), url(fonts/OpenSans-Bold.ttf) format('truetype');
+}
+
+body {
+    background-color: #ECECEC;    
+    color: #4E5255;
+    font: 12px/1.4 "Open Sans","Lucida Sans Unicode","Lucida Grande",sans-serif;
     margin: 0;
-    padding: 0;
- }
+}
 
 #container {
-    max-width: 960px;
-    background-color: #ffffff;
-    border-right: 2px solid #8c9093 !important;
-    border-left: 2px solid #8c9093 !important;
+    background: none repeat scroll 0 0 #FFFFFF;
+    border-left: 1px solid #CECECE;
+    border-right: 1px solid #CECECE;
+    box-shadow: 6px 6px 6px #E3E3E3, -6px 6px 6px #E3E3E3, 6px -6px 6px #E3E3E3, -6px -6px 6px #E3E3E3;
     margin: 0 auto;
-    height: auto !important;
-    position: relative;
-    min-height: 100%;
-    -moz-box-shadow: 6px 6px 6px #e3e3e3, -6px 6px 6px #e3e3e3, 6px -6px 6px #e3e3e3, -6px -6px 6px #e3e3e3;
-    -webkit-box-shadow: 6px 6px 6px #e3e3e3, -6px 6px 6px #e3e3e3, 6px -6px 6px #e3e3e3, -6px -6px 6px #e3e3e3;
-    box-shadow: 6px 6px 6px #e3e3e3, -6px 6px 6px #e3e3e3, 6px -6px 6px #e3e3e3, -6px -6px 6px #e3e3e3;
+    max-width: 1003px;
 }
 
 #content {
@@ -31,22 +49,15 @@ html,body {
     font-size: 12px;
 }
 
-#header {
-    height: 58px;
-    min-height: 58px;
-    width: 100%;
-    background: url("images/header_bg.png") repeat-x scroll 0 0 #424242;
-    color: #ffffff;
-}
 
-#footer {
-    height: 27px;
-    min-height: 25px;
+#footer {    
+    background-color: #F1F1F1;
+    border-top: 1px solid #CFCFCF;
+    height: 42px;
+    min-height: 42px;
     width: 100%;
-    color: #ffffff;
+    position: absolute;    
     bottom: 0;
-    position: absolute;
-    background: #8c9093
 }
 
 .section {
@@ -56,7 +67,7 @@ html,body {
 }
 
 a {
-    color: #415d73;
+    color: #009ADA;
     outline: none;
 }
 
@@ -73,25 +84,33 @@ a:link {
 }
 
 H1 {
-    color: #424242;
+    color: #656565;
+    font-size: 20px;
+    font-weight: 300 !important;
+    padding-bottom: 8px;
 }
 
 H2 {
-    color: #424242;
+   color: #656565;
+    font-size: 14px;
+    font-weight: 300 !important;    
 }
 
 sub {
     color: #a3a7aa;
 }
 
-.prod-version {
-    padding-top: 20px;
-    padding-left: 4px;
-    padding-bottom: 2px;
-    font-size: 12pt !important;
+.prod-title {
+    vertical-align:middle; 
+    padding-bottom:5px;   
+}
+
+.prod-version {    
+    padding-left: 8px;
+    padding-bottom: 12px;
+    font-size: 10pt !important;
     font-weight: bold;
-    color: #dbdbdb !important;
-    vertical-align: bottom;
+    color: #ffffff !important;        
 }
 
 .WarnBlock {
@@ -100,4 +119,34 @@ sub {
     background-color: #FFD272; /* light yellow */
     -moz-border-radius: 4px;
     border-radius: 4px;
+}
+
+/*eap 6.2 additions*/
+
+.header-top {
+    background-color: #383F45;
+    border-bottom: 1px solid #53565B;
+    height:32px;
+    max-height:32px;
+    padding-left:15px;
+}
+
+.header-bottom {
+    background-color: #46494E;
+    border-bottom: 1px solid #272A2F;
+    height:43px;
+    max-height:43px;
+}
+
+.header-line {
+    background-color: #C82E2E;
+    border-bottom: 1px solid #272A2F;
+    max-height:3px;
+    height:3px;
+}
+
+.header-panel {
+    height: 80px;
+    min-height: 80px;
+    width: 100%;
 }
