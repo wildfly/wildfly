@@ -103,7 +103,8 @@ public class SlaveHostControllerAuthenticationTestCase {
         domainMasterClient = testSupport.getDomainMasterLifecycleUtil().getDomainClient();
         domainSlaveClient = testSupport.getDomainSlaveLifecycleUtil().getDomainClient();
 
-        setupVault();
+        //TODO reenable this once WFLY-2260 is done
+        //setupVault();
     }
 
     @AfterClass
@@ -122,7 +123,8 @@ public class SlaveHostControllerAuthenticationTestCase {
     public void testSlaveRegistration() throws Exception {
         slaveWithBase64PasswordTest();
         slaveWithSystemPropertyPasswordTest();
-        slaveWithVaultPasswordTest();
+        //TODO reenable this once WFLY-2260 is done
+        //slaveWithVaultPasswordTest();
     }
 
     private void slaveWithBase64PasswordTest() throws Exception {
