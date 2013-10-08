@@ -220,6 +220,8 @@ public class AuditLogFieldsOfLogTestCase {
     public void afterTest() throws Exception {
         // stop syslog server
         SyslogServer.shutdown();
+        server.setThread(null);
+        server.getConfig().removeAllEventHandlers();
 
         final ModelControllerClient client = TestSuiteEnvironment.getModelControllerClient();
         ModelNode op = Util.getWriteAttributeOperation(auditLogConfigAddress, AuditLogLoggerResourceDefinition.ENABLED.getName(),
