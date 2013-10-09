@@ -1247,6 +1247,12 @@
 
             <dependency>
                 <groupId>org.jboss.as</groupId>
+                <artifactId>jboss-as-subsystem-test-controller-7.2.0</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+
+            <dependency>
+                <groupId>org.jboss.as</groupId>
                 <artifactId>jboss-as-subsystem-test-framework</artifactId>
                 <version>${project.version}</version>
             </dependency>
@@ -2927,12 +2933,12 @@
                     </exclusion>
                 </exclusions>
             </dependency>
-            
+
             <dependency>
                 <groupId>org.apache.directory.server</groupId>
                 <artifactId>apacheds-all</artifactId>
                 <scope>test</scope>
-                <version>${version.org.apache.ds}</version>                                            
+                <version>${version.org.apache.ds}</version>
             </dependency>
 
             <dependency>

@@ -36,7 +36,7 @@
 			the test-controller-xxx modules on the classpath while making sure that the test-controller-xxx
 			modules get compiled before the the test module. We only want the test-controller-xxx modules on
 			the classpath when setting up the legacy controller classloaders, and want to be able to choose
-			which one to use. 
+			which one to use.
 		-->
     <artifactId>jboss-as-subsystem-test</artifactId>
     <name>JBoss Application Server: Subsystem Test POM</name>
@@ -45,6 +45,11 @@
         <dependency>
             <groupId>org.jboss.as</groupId>
             <artifactId>jboss-as-subsystem-test-controller-7.1.2</artifactId>
+            <scope>provided</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.jboss.as</groupId>
+            <artifactId>jboss-as-subsystem-test-controller-7.2.0</artifactId>
             <scope>provided</scope>
         </dependency>
         <dependency>
