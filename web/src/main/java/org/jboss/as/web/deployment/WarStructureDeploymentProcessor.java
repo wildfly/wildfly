@@ -105,6 +105,7 @@ public class WarStructureDeploymentProcessor implements DeploymentUnitProcessor 
 
             // Make sure the root does not end up in the module, only META-INF
             deploymentResourceRoot.getExportFilters().add(new FilterSpecification(PathFilters.getMetaInfFilter(), true));
+            deploymentResourceRoot.getExportFilters().add(new FilterSpecification(PathFilters.getMetaInfSubdirectoriesFilter(), true));
             deploymentResourceRoot.getExportFilters().add(new FilterSpecification(PathFilters.acceptAll(), false));
             ModuleRootMarker.mark(deploymentResourceRoot, true);
         }
