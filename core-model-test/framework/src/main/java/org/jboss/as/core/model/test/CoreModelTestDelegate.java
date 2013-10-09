@@ -32,6 +32,7 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.HOS
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.INCLUDE_ALIASES;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.INCLUDE_DEFAULTS;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.INHERITED;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.INTERFACE;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.LOCAL_DESTINATION_OUTBOUND_SOCKET_BINDING;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.MANAGEMENT_MAJOR_VERSION;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.MANAGEMENT_MICRO_VERSION;
@@ -122,6 +123,8 @@ public class CoreModelTestDelegate {
                 PathElement.pathElement(DEPLOYMENT_OVERLAY), PathElement.pathElement(DEPLOYMENT)));
 
         MISSING_NAME_ADDRESSES.add(PathAddress.pathAddress(PathElement.pathElement(PROFILE)));
+        MISSING_NAME_ADDRESSES.add(PathAddress.pathAddress(PathElement.pathElement(INTERFACE)));
+        MISSING_NAME_ADDRESSES.add(PathAddress.pathAddress(PathElement.pathElement(PATH)));
         MISSING_NAME_ADDRESSES.add(PathAddress.pathAddress(PathElement.pathElement(DEPLOYMENT)));
         MISSING_NAME_ADDRESSES.add(PathAddress.pathAddress(PathElement.pathElement(SERVER_GROUP), PathElement.pathElement(DEPLOYMENT)));
     }
@@ -301,7 +304,7 @@ public class CoreModelTestDelegate {
     }
 
     private void adjustUndefinedInTransformedToEmpty(ModelVersion modelVersion, ModelNode legacyModel, ModelNode transformed) {
-        boolean is7_1_x = modelVersion.getMajor() == 1 && modelVersion.getMinor() < 4;
+        boolean is7_1_x = ModelVersion.compare(ModelVersion.create(1, 4, 0), modelVersion) < 0;
 
         for (PathAddress address : EMPTY_RESOURCE_ADDRESSES) {
             harmonizeModel(modelVersion, legacyModel, transformed, address, ModelHarmonizer.UNDEFINED_TO_EMPTY);

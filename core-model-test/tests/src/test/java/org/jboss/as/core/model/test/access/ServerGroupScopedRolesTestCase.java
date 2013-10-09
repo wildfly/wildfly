@@ -45,20 +45,15 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.WRI
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 
-import org.jboss.as.controller.PathElement;
 import org.jboss.as.controller.access.constraint.ApplicationTypeConfig;
 import org.jboss.as.controller.access.constraint.SensitivityClassification;
 import org.jboss.as.controller.access.management.ApplicationTypeAccessConstraintDefinition;
 import org.jboss.as.controller.access.management.SensitiveTargetAccessConstraintDefinition;
 import org.jboss.as.controller.access.rbac.StandardRole;
-import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
 import org.jboss.as.controller.operations.common.Util;
-import org.jboss.as.controller.registry.Resource;
 import org.jboss.as.core.model.test.AbstractCoreModelTest;
 import org.jboss.as.core.model.test.KernelServices;
-import org.jboss.as.core.model.test.ModelInitializer;
 import org.jboss.as.core.model.test.TestModelType;
-import org.jboss.as.domain.management.access.AccessAuthorizationResourceDefinition;
 import org.jboss.dmr.ModelNode;
 import org.junit.Before;
 import org.junit.Test;
@@ -86,16 +81,6 @@ public class ServerGroupScopedRolesTestCase extends AbstractCoreModelTest {
         kernelServices = createKernelServicesBuilder(TestModelType.DOMAIN)
                 .setXmlResource("domain-all.xml")
                 .validateDescription()
-                .setModelInitializer(new ModelInitializer() {
-                    @Override
-                    public void populateModel(Resource rootResource) {
-                        Resource management = Resource.Factory.create();
-                        rootResource.registerChild(PathElement.pathElement(ModelDescriptionConstants.CORE_SERVICE,
-                                ModelDescriptionConstants.MANAGEMENT), management);
-                        management.registerChild(PathElement.pathElement(ModelDescriptionConstants.ACCESS,
-                                ModelDescriptionConstants.AUTHORIZATION), AccessAuthorizationResourceDefinition.createResource(null));
-                    }
-                }, null)
                 .build();
     }
 

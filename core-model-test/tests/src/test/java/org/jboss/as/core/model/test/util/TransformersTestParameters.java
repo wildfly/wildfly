@@ -57,7 +57,8 @@ public class TransformersTestParameters {
         List<Object[]> data = new ArrayList<Object[]>();
         data.add(new Object[] {new TransformersTestParameters(ModelVersion.create(1, 2, 0), ModelTestControllerVersion.V7_1_2_FINAL)});
         data.add(new Object[] {new TransformersTestParameters(ModelVersion.create(1, 3, 0), ModelTestControllerVersion.V7_1_3_FINAL)});
-        data.add(new Object[] {new TransformersTestParameters(ModelVersion.create(1, 4, 0), ModelTestControllerVersion.MASTER)});
+        data.add(new Object[] {new TransformersTestParameters(ModelVersion.create(1, 4, 0), ModelTestControllerVersion.V7_2_0_FINAL)});
+        data.add(new Object[] {new TransformersTestParameters(ModelVersion.create(1, 5, 0), ModelTestControllerVersion.MASTER)});
         for (int i = 0 ; i < data.size() ; i++) {
             Object[] entry = data.get(i);
             System.out.println("Parameter " + i + ": " + entry[0]);

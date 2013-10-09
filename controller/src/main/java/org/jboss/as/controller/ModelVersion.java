@@ -25,6 +25,7 @@ package org.jboss.as.controller;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.MANAGEMENT_MAJOR_VERSION;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.MANAGEMENT_MICRO_VERSION;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.MANAGEMENT_MINOR_VERSION;
+
 import org.jboss.dmr.ModelNode;
 
 /**
@@ -126,6 +127,40 @@ public final class ModelVersion implements ModelVersionRange {
         int minor = length > 1 ? Integer.valueOf(s[1]) : 0;
         int micro = length == 3 ? Integer.valueOf(s[2]) : 0;
         return ModelVersion.create(major, minor, micro);
+    }
+
+    /**
+     * Compares two model versions
+     *
+     * @param versionA a model version
+     * @param versionB a model version
+     *
+     * @return <ul>
+     *           <li>{@code 1} if {@code versionB > versionA}<li>
+     *           <li>{@code -1} if {@code versionB < versionA}<li>
+     *           <li>{@code 0} if {@code versionB == versionA}<li>
+     *         </ul>
+     */
+    public static int compare(ModelVersion versionA, ModelVersion versionB) {
+        if (versionB.getMajor() > versionA.getMajor()) {
+            return 1;
+        }
+        if (versionB.getMajor() < versionA.getMajor()) {
+            return -1;
+        }
+        if (versionB.getMinor() > versionA.getMinor()) {
+            return 1;
+        }
+        if (versionB.getMinor() < versionA.getMinor()) {
+            return -1;
+        }
+        if (versionB.getMicro() > versionA.getMicro()) {
+            return 1;
+        }
+        if (versionB.getMicro() < versionA.getMicro()) {
+            return -1;
+        }
+        return 0;
     }
 
 }

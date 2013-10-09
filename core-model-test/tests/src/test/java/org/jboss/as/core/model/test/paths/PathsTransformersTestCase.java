@@ -77,7 +77,6 @@ public class PathsTransformersTestCase extends AbstractCoreModelTest {
 
         KernelServices legacyServices = mainServices.getLegacyServices(modelVersion);
         Assert.assertTrue(legacyServices.isSuccessfulBoot());
-
         checkCoreModelTransformation(mainServices, modelVersion);
     }
 

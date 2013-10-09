@@ -73,7 +73,8 @@ class TestModelControllerService7_1_2 extends ModelTestModelControllerService {
     TestModelControllerService7_1_2(final Extension mainExtension, final ControllerInitializer controllerInitializer,
             final AdditionalInitialization additionalInit, final RunningModeControl runningModeControl, final ExtensionRegistry extensionRegistry,
             final StringConfigurationPersister persister, final ModelTestOperationValidatorFilter validateOpsFilter, final boolean registerTransformers) {
-        super(AdditionalInitializationUtil.getProcessType(additionalInit), runningModeControl, extensionRegistry.getTransformerRegistry(), persister, validateOpsFilter, ModelTestModelControllerService.DESC_PROVIDER, new ControlledProcessState(true));
+        super(AdditionalInitializationUtil.getProcessType(additionalInit), runningModeControl, extensionRegistry.getTransformerRegistry(),
+                persister, validateOpsFilter, ModelTestModelControllerService.DESC_PROVIDER, new ControlledProcessState(true), Controller71x.INSTANCE);
         this.extensionRegistry = extensionRegistry;
         this.additionalInit = additionalInit;
         this.controllerInitializer = controllerInitializer;
