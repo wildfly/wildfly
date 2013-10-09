@@ -21,11 +21,10 @@
  */
 package org.jboss.as.weld.discovery;
 
-import javax.inject.Named;
+public class Charlie {
 
-public class InnerClasses {
-
-    @Named
-    public interface InnerInterface {
+    @AnnotationNotInIndex
+    public void foo() {
     }
+
 }
