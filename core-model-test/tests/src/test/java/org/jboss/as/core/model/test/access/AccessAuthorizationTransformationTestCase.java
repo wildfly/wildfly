@@ -22,19 +22,14 @@
 
 package org.jboss.as.core.model.test.access;
 
-import java.util.ArrayList;
 import java.util.List;
 
 import org.jboss.as.controller.ModelVersion;
 import org.jboss.as.controller.PathAddress;
-import org.jboss.as.controller.PathElement;
-import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
-import org.jboss.as.controller.registry.Resource;
 import org.jboss.as.core.model.test.AbstractCoreModelTest;
 import org.jboss.as.core.model.test.KernelServices;
 import org.jboss.as.core.model.test.KernelServicesBuilder;
 import org.jboss.as.core.model.test.LegacyKernelServicesInitializer;
-import org.jboss.as.core.model.test.ModelInitializer;
 import org.jboss.as.core.model.test.TestModelType;
 import org.jboss.as.core.model.test.util.TransformersTestParameters;
 import org.jboss.as.domain.management.CoreManagementResourceDefinition;
@@ -59,11 +54,7 @@ public class AccessAuthorizationTransformationTestCase extends AbstractCoreModel
 
     @Parameterized.Parameters
     public static List<Object[]> parameters(){
-        //return TransformersTestParameters.setupVersions();
-        //TODO remove this! - DEBUG ONLY
-        List<Object[]> data = new ArrayList<Object[]>();
-        data.add(new Object[] {new TransformersTestParameters(ModelVersion.create(2, 0, 0), ModelTestControllerVersion.MASTER)});
-        return data;
+        return TransformersTestParameters.setupVersions();
     }
 
     public AccessAuthorizationTransformationTestCase(TransformersTestParameters params) {
@@ -93,24 +84,13 @@ public class AccessAuthorizationTransformationTestCase extends AbstractCoreModel
 
     }
 
-    //TODO readd this test
-    //@Test
+    @Test
     public void testRejectRBAC() throws Exception {
         if (ModelVersion.compare(ModelVersion.create(1, 4, 0), modelVersion) > 0) {
             return;
         }
 
         KernelServicesBuilder builder = createKernelServicesBuilder(TestModelType.DOMAIN)
-                .setModelInitializer(new ModelInitializer() {
-                    @Override
-                    public void populateModel(Resource rootResource) {
-                        Resource management = Resource.Factory.create();
-                        rootResource.registerChild(PathElement.pathElement(ModelDescriptionConstants.CORE_SERVICE,
-                                ModelDescriptionConstants.MANAGEMENT), management);
-                        management.registerChild(PathElement.pathElement(ModelDescriptionConstants.ACCESS,
-                                ModelDescriptionConstants.AUTHORIZATION), AccessAuthorizationResourceDefinition.createResource(null));
-                    }
-                }, null)
                 .setXmlResource("domain-transform-rbac-provider.xml");
 
         builder.createLegacyKernelServicesBuilder(modelVersion, testControllerVersion)
