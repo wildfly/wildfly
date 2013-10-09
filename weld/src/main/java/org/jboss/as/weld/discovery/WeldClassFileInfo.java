@@ -18,6 +18,8 @@ package org.jboss.as.weld.discovery;
 
 import java.lang.annotation.Annotation;
 import java.util.List;
+import java.util.Set;
+import java.util.concurrent.ExecutionException;
 
 import javax.enterprise.inject.Vetoed;
 import javax.inject.Inject;
@@ -31,6 +33,8 @@ import org.jboss.jandex.DotName;
 import org.jboss.jandex.MethodInfo;
 import org.jboss.weld.resources.spi.ClassFileInfo;
 
+import com.google.common.cache.LoadingCache;
+
 /**
  *
  * @author Martin Kouba
@@ -41,11 +45,13 @@ public class WeldClassFileInfo implements ClassFileInfo {
 
     private static final DotName DOT_NAME_VETOED = DotName.createSimple(Vetoed.class.getName());
 
-    private final static String CONSTRUCTOR_METHOD_NAME = "<init>";
+    private static final DotName OBJECT_NAME = DotName.createSimple(Object.class.getName());
 
-    private final static String PACKAGE_INFO_NAME = "package-info";
+    private static final String CONSTRUCTOR_METHOD_NAME = "<init>";
 
-    private final static String DOT_SEPARATOR = ".";
+    private static final String PACKAGE_INFO_NAME = "package-info";
+
+    private static final String DOT_SEPARATOR = ".";
 
     private final ClassInfo classInfo;
 
@@ -55,18 +61,22 @@ public class WeldClassFileInfo implements ClassFileInfo {
 
     private final boolean hasCdiConstructor;
 
+    private final LoadingCache<DotName, Set<String>> annotationClassAnnotationsCache;
+
     /**
      *
      * @param className
      * @param index
+     * @param annotationClassAnnotationsCache
      */
-    public WeldClassFileInfo(String className, CompositeIndex index) {
+    public WeldClassFileInfo(String className, CompositeIndex index, LoadingCache<DotName, Set<String>> annotationClassAnnotationsCache) {
         this.index = index;
+        this.annotationClassAnnotationsCache = annotationClassAnnotationsCache;
         this.classInfo = index.getClassByName(DotName.createSimple(className));
         if (this.classInfo == null) {
             throw WeldMessages.MESSAGES.nameNotFoundInIndex(className);
         }
-        this.isVetoed = isVetoedTypeOrPackage(index);
+        this.isVetoed = isVetoedTypeOrPackage();
         this.hasCdiConstructor = this.classInfo.hasNoArgsConstructor() || hasInjectConstructor();
     }
 
@@ -76,8 +86,13 @@ public class WeldClassFileInfo implements ClassFileInfo {
     }
 
     @Override
-    public boolean isAnnotationPresent(Class<? extends Annotation> annotation) {
-        return isAnnotationPresent(classInfo, annotation);
+    public boolean isAnnotationDeclared(Class<? extends Annotation> annotation) {
+        return isAnnotationDeclared(classInfo, annotation);
+    }
+
+    @Override
+    public boolean containsAnnotation(Class<? extends Annotation> annotation) {
+        return containsAnnotation(classInfo, DotName.createSimple(annotation.getName()));
     }
 
     @Override
@@ -92,12 +107,12 @@ public class WeldClassFileInfo implements ClassFileInfo {
 
     @Override
     public boolean isAssignableFrom(Class<?> fromClass) {
-        return isNameEqualOrSuperType(classInfo.name(), DotName.createSimple(fromClass.getName()));
+        return isAssignableFrom(classInfo.name(), DotName.createSimple(fromClass.getName()));
     }
 
     @Override
     public boolean isAssignableTo(Class<?> toClass) {
-        return isNameEqualOrSuperType(DotName.createSimple(toClass.getName()), classInfo.name());
+        return isAssignableFrom(DotName.createSimple(toClass.getName()), classInfo.name());
     }
 
     @Override
@@ -117,25 +132,25 @@ public class WeldClassFileInfo implements ClassFileInfo {
         return classInfo.superName().toString();
     }
 
-    private boolean isVetoedTypeOrPackage(CompositeIndex index) {
+    private boolean isVetoedTypeOrPackage() {
 
-        if (isAnnotationPresent(classInfo, DOT_NAME_VETOED)) {
+        if (isAnnotationDeclared(classInfo, DOT_NAME_VETOED)) {
             return true;
         }
 
         ClassInfo packageInfo = index.getClassByName(DotName.createSimple(getPackageName(classInfo.name()) + DOT_SEPARATOR + PACKAGE_INFO_NAME));
 
-        if (packageInfo != null && isAnnotationPresent(packageInfo, DOT_NAME_VETOED)) {
+        if (packageInfo != null && isAnnotationDeclared(packageInfo, DOT_NAME_VETOED)) {
             return true;
         }
         return false;
     }
 
-    private boolean isAnnotationPresent(ClassInfo classInfo, Class<? extends Annotation> annotation) {
-        return isAnnotationPresent(classInfo, DotName.createSimple(annotation.getName()));
+    private boolean isAnnotationDeclared(ClassInfo classInfo, Class<? extends Annotation> annotation) {
+        return isAnnotationDeclared(classInfo, DotName.createSimple(annotation.getName()));
     }
 
-    private boolean isAnnotationPresent(ClassInfo classInfo, DotName requiredAnnotationName) {
+    private boolean isAnnotationDeclared(ClassInfo classInfo, DotName requiredAnnotationName) {
         List<AnnotationInstance> annotations = classInfo.annotations().get(requiredAnnotationName);
         if (annotations != null) {
             for (AnnotationInstance annotationInstance : annotations) {
@@ -149,12 +164,14 @@ public class WeldClassFileInfo implements ClassFileInfo {
 
     private boolean hasInjectConstructor() {
         List<AnnotationInstance> annotationInstances = classInfo.annotations().get(DOT_NAME_INJECT);
-        for (AnnotationInstance instance : annotationInstances) {
-            AnnotationTarget target = instance.target();
-            if (target instanceof MethodInfo) {
-                MethodInfo methodInfo = (MethodInfo) target;
-                if (methodInfo.name().equals(CONSTRUCTOR_METHOD_NAME)) {
-                    return true;
+        if (annotationInstances != null) {
+            for (AnnotationInstance instance : annotationInstances) {
+                AnnotationTarget target = instance.target();
+                if (target instanceof MethodInfo) {
+                    MethodInfo methodInfo = (MethodInfo) target;
+                    if (methodInfo.name().equals(CONSTRUCTOR_METHOD_NAME)) {
+                        return true;
+                    }
                 }
             }
         }
@@ -162,7 +179,6 @@ public class WeldClassFileInfo implements ClassFileInfo {
     }
 
     private String getPackageName(DotName name) {
-
         // TODO https://issues.jboss.org/browse/JANDEX-20
         // String packageName;
         // if (name.isComponentized()) {
@@ -176,30 +192,64 @@ public class WeldClassFileInfo implements ClassFileInfo {
 
     /**
      * @param name
-     * @param targetName
-     * @return
+     * @param fromName
+     * @return <code>true</code> if the name is equal to the fromName, or if the name represents a superclass or superinterface of the fromName,
+     *         <code>false</code> otherwise
      */
-    private boolean isNameEqualOrSuperType(DotName name, DotName targetName) {
-        if (name.equals(targetName)) {
+    private boolean isAssignableFrom(DotName name, DotName fromName) {
+        if (name.equals(fromName)) {
+            return true;
+        }
+        if (OBJECT_NAME.equals(fromName)) {
+            return false; // there's nothing assignable from Object.class except for Object.class
+        }
+
+        ClassInfo fromClassInfo = index.getClassByName(fromName);
+        if (fromClassInfo == null) {
+            throw WeldMessages.MESSAGES.nameNotFoundInIndex(fromName.toString());
+        }
+
+        DotName superName = fromClassInfo.superName();
+
+        if (superName != null && isAssignableFrom(name, superName)) {
             return true;
         }
 
-        ClassInfo startClassInfo = index.getClassByName(targetName);
-        if (startClassInfo == null) {
-            throw WeldMessages.MESSAGES.nameNotFoundInIndex(targetName.toString());
-        }
-
-        DotName superName = startClassInfo.superName();
-
-        if (superName != null && isNameEqualOrSuperType(name, superName)) {
-            return true;
-        }
-
-        if (startClassInfo.interfaces() != null) {
-            for (DotName interfaceName : startClassInfo.interfaces()) {
-                if (isNameEqualOrSuperType(name, interfaceName)) {
+        if (fromClassInfo.interfaces() != null) {
+            for (DotName interfaceName : fromClassInfo.interfaces()) {
+                if (isAssignableFrom(name, interfaceName)) {
                     return true;
                 }
+            }
+        }
+        return false;
+    }
+
+    private boolean containsAnnotation(ClassInfo classInfo, DotName requiredAnnotationName) {
+        // Type and members
+        if (classInfo.annotations().containsKey(requiredAnnotationName)) {
+            return true;
+        }
+        // Meta-annotations
+        for (DotName annotation : classInfo.annotations().keySet()) {
+            try {
+                if (annotationClassAnnotationsCache.get(annotation).contains(requiredAnnotationName.toString())) {
+                    return true;
+                }
+            } catch (ExecutionException e) {
+                throw new RuntimeException(e);
+            }
+        }
+        // Superclass
+        final DotName superName = classInfo.superName();
+
+        if (superName != null && !OBJECT_NAME.equals(superName)) {
+            final ClassInfo superClassInfo = index.getClassByName(superName);
+            if (superClassInfo == null) {
+                throw WeldMessages.MESSAGES.nameNotFoundInIndex(superName.toString());
+            }
+            if (containsAnnotation(superClassInfo, requiredAnnotationName)) {
+                return true;
             }
         }
         return false;
