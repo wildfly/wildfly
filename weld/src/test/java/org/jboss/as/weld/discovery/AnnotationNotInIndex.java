@@ -21,11 +21,17 @@
  */
 package org.jboss.as.weld.discovery;
 
-import javax.inject.Named;
+import static java.lang.annotation.ElementType.FIELD;
+import static java.lang.annotation.ElementType.METHOD;
+import static java.lang.annotation.ElementType.PARAMETER;
+import static java.lang.annotation.ElementType.TYPE;
+import static java.lang.annotation.RetentionPolicy.RUNTIME;
 
-public class InnerClasses {
+import java.lang.annotation.Retention;
+import java.lang.annotation.Target;
 
-    @Named
-    public interface InnerInterface {
-    }
+@Target({ TYPE, METHOD, PARAMETER, FIELD })
+@Retention(RUNTIME)
+public @interface AnnotationNotInIndex {
+
 }

@@ -19,13 +19,16 @@
  * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
-package org.jboss.as.weld.discovery;
+package org.jboss.as.weld.discovery.vetoed;
 
-import javax.inject.Named;
+import javax.inject.Inject;
 
-public class InnerClasses {
+import org.jboss.as.weld.discovery.AlphaImpl;
+import org.jboss.as.weld.discovery.InnerClasses.InnerInterface;
 
-    @Named
-    public interface InnerInterface {
-    }
+public class Bravo extends AlphaImpl implements InnerInterface {
+
+    @Inject
+    Long charlie;
+
 }

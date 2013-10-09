@@ -31,22 +31,30 @@ import org.jboss.jandex.Indexer;
 
 class IndexUtils {
 
-    static CompositeIndex createIndex(Class<?>... classes) throws IOException {
+    static CompositeIndex createIndex(Object... resources) throws IOException {
         final ClassLoader classLoader = IndexUtils.class.getClassLoader();
         final Indexer indexer = new Indexer();
-        for (Class<?> javaClass : classes) {
-            addClass(javaClass, indexer, classLoader);
+        for (Object resource : resources) {
+            addResource(resource, indexer, classLoader);
         }
         final Index index = indexer.complete();
         return new CompositeIndex(Collections.singleton(index));
     }
 
-    private static void addClass(Class<?> javaClass, Indexer indexer, ClassLoader classLoader) throws IOException {
-
-        final String resourceName = javaClass.getName().replace(".", File.separator) + ".class";
+    private static void addResource(Object resource, Indexer indexer, ClassLoader classLoader) throws IOException {
+        final String resourceName;
+        if (resource instanceof Class<?>) {
+            resourceName = ((Class<?>) resource).getName().replace(".", File.separator) + ".class";
+        } else if (resource instanceof String) {
+            resourceName = resource.toString();
+        } else {
+            throw new IllegalArgumentException("Unsupported resource type");
+        }
         indexer.index(classLoader.getResourceAsStream(resourceName));
-        for (Class<?> innerClass : javaClass.getDeclaredClasses()) {
-            addClass(innerClass, indexer, classLoader);
+        if (resource instanceof Class<?>) {
+            for (Class<?> innerClass : ((Class<?>) resource).getDeclaredClasses()) {
+                addResource(innerClass, indexer, classLoader);
+            }
         }
     }
 }

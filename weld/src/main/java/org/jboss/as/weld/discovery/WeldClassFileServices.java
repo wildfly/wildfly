@@ -16,16 +16,22 @@
  */
 package org.jboss.as.weld.discovery;
 
+import java.lang.annotation.Annotation;
+import java.util.Set;
 import java.util.concurrent.ExecutionException;
 
 import org.jboss.as.server.deployment.annotation.CompositeIndex;
 import org.jboss.as.weld.WeldMessages;
+import org.jboss.as.weld.util.Reflections;
+import org.jboss.jandex.ClassInfo;
+import org.jboss.jandex.DotName;
 import org.jboss.weld.resources.spi.ClassFileInfo;
 import org.jboss.weld.resources.spi.ClassFileServices;
 
 import com.google.common.cache.CacheBuilder;
 import com.google.common.cache.CacheLoader;
 import com.google.common.cache.LoadingCache;
+import com.google.common.collect.ImmutableSet;
 
 /**
  *
@@ -37,10 +43,35 @@ public class WeldClassFileServices implements ClassFileServices {
 
     private LoadingCache<String, WeldClassFileInfo> weldClassInfoCache;
 
+    private LoadingCache<DotName, Set<String>> annotationClassAnnotationsCache;
+
+    private final ClassLoader moduleClassLoader;
+
     private class WeldClassInfoLoader extends CacheLoader<String, WeldClassFileInfo> {
         @Override
         public WeldClassFileInfo load(String key) throws Exception {
-            return new WeldClassFileInfo(key, index);
+            return new WeldClassFileInfo(key, index, annotationClassAnnotationsCache);
+        }
+    }
+
+    private class AnnotationClassAnnotationLoader extends CacheLoader<DotName, Set<String>> {
+        @Override
+        public Set<String> load(DotName name) throws Exception {
+
+            ClassInfo annotationClassInfo = index.getClassByName(name);
+            ImmutableSet.Builder<String> builder = ImmutableSet.builder();
+
+            if (annotationClassInfo != null) {
+                for (DotName annotationName : annotationClassInfo.annotations().keySet()) {
+                    builder.add(annotationName.toString());
+                }
+            } else {
+                Class<?> annotationClass = Reflections.loadClass(name.toString(), moduleClassLoader);
+                for (Annotation annotation : annotationClass.getDeclaredAnnotations()) {
+                    builder.add(annotation.annotationType().getName());
+                }
+            }
+            return builder.build();
         }
     }
 
@@ -48,12 +79,14 @@ public class WeldClassFileServices implements ClassFileServices {
      *
      * @param index
      */
-    public WeldClassFileServices(CompositeIndex index) {
+    public WeldClassFileServices(CompositeIndex index, ClassLoader moduleClassLoader) {
         if (index == null) {
             throw WeldMessages.MESSAGES.cannotUseAtRuntime(ClassFileServices.class.getSimpleName());
         }
+        this.moduleClassLoader = moduleClassLoader;
         this.index = index;
         this.weldClassInfoCache = CacheBuilder.newBuilder().build(new WeldClassInfoLoader());
+        this.annotationClassAnnotationsCache = CacheBuilder.newBuilder().build(new AnnotationClassAnnotationLoader());
     }
 
     @Override
@@ -67,9 +100,15 @@ public class WeldClassFileServices implements ClassFileServices {
 
     @Override
     public void cleanupAfterBoot() {
-        this.index = null;
-        this.weldClassInfoCache.invalidateAll();
-        this.weldClassInfoCache = null;
+        if (weldClassInfoCache != null) {
+            weldClassInfoCache.invalidateAll();
+            weldClassInfoCache = null;
+        }
+        if (annotationClassAnnotationsCache != null) {
+            annotationClassAnnotationsCache.invalidateAll();
+            annotationClassAnnotationsCache = null;
+        }
+        index = null;
     }
 
     @Override
