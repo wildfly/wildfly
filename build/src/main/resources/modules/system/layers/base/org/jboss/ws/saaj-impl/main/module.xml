@@ -33,6 +33,7 @@
     </resources>
 
     <dependencies>
+        <module name="org.jboss.ws.jaxws-client" services="import"/> <!-- to pull the jbossws-cxf SOAPConnection impl -->
         <module name="com.sun.xml.messaging.saaj" services="import"/>
     </dependencies>
 
