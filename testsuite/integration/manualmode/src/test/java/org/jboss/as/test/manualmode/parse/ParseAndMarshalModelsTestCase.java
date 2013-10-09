@@ -259,6 +259,11 @@ public class ParseAndMarshalModelsTestCase {
     }
 
     @Test
+    public void testStandaloneGenericJMSXml() throws Exception {
+        standaloneXmlTest(getGeneratedExampleConfigFile("standalone-genericjms.xml"));
+    }
+
+    @Test
     public void test710StandaloneXml() throws Exception {
         standaloneXmlTest(getLegacyConfigFile("standalone", "7-1-0.xml"));
     }

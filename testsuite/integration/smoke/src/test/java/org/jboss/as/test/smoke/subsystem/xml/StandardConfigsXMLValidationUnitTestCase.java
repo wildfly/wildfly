@@ -158,6 +158,11 @@ public class StandardConfigsXMLValidationUnitTestCase extends AbstractValidation
         parseXml("docs/examples/configs/standalone-rts.xml");
     }
 
+    @Test
+    public void testStandaloneGenericJMS() throws Exception {
+        parseXml("docs/examples/configs/standalone-genericjms.xml");
+    }
+
     private void parseXml(String xmlName) throws ParserConfigurationException, SAXException, IOException {
         SchemaFactory schemaFactory = SchemaFactory.newInstance(XMLConstants.W3C_XML_SCHEMA_NS_URI);
         schemaFactory.setErrorHandler(new ErrorHandlerImpl());
