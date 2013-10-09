@@ -38,7 +38,6 @@ import org.jboss.as.weld.WeldLogger;
 import org.jboss.as.weld.WeldModuleResourceLoader;
 import org.jboss.as.weld.deployment.BeanDeploymentArchiveImpl.BeanArchiveType;
 import org.jboss.as.weld.discovery.WeldAnnotationDiscovery;
-import org.jboss.as.weld.discovery.WeldClassFileServices;
 import org.jboss.as.weld.services.bootstrap.ProxyServicesImpl;
 import org.jboss.modules.Module;
 import org.jboss.weld.bootstrap.api.Service;
@@ -49,7 +48,6 @@ import org.jboss.weld.bootstrap.spi.BeansXml;
 import org.jboss.weld.bootstrap.spi.CDI11Deployment;
 import org.jboss.weld.bootstrap.spi.Metadata;
 import org.jboss.weld.resources.spi.AnnotationDiscovery;
-import org.jboss.weld.resources.spi.ClassFileServices;
 import org.jboss.weld.resources.spi.ResourceLoader;
 import org.jboss.weld.serialization.spi.ProxyServices;
 
@@ -103,7 +101,6 @@ public class WeldDeployment implements CDI11Deployment {
         CompositeIndex index = deploymentUnit.getAttachment(Attachments.COMPOSITE_ANNOTATION_INDEX);
         if (index != null) {
             this.serviceRegistry.add(AnnotationDiscovery.class, new WeldAnnotationDiscovery(index));
-            this.serviceRegistry.add(ClassFileServices.class, new WeldClassFileServices(index));
         }
 
         calculateAccessibilityGraph(this.beanDeploymentArchives);
