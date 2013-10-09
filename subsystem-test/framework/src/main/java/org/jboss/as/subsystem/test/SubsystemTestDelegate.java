@@ -419,7 +419,8 @@ final class SubsystemTestDelegate {
         PrintWriter pw = new PrintWriter(dmrFile);
         try {
             desc.writeString(pw, false);
-            System.out.println("Written to:" + dmrFile);
+            //Leave this println - it only gets executed when people generate the legacy dmr files, and is useful to know where it has been written.
+            System.out.println("Legact resource defintion dmr written to: " + dmrFile.getAbsolutePath());
         } finally {
             IoUtils.safeClose(pw);
         }
