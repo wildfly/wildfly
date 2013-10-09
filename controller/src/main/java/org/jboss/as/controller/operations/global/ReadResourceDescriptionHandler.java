@@ -23,6 +23,7 @@
 package org.jboss.as.controller.operations.global;
 
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ACCESS_TYPE;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ADDRESS;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ATTRIBUTES;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.CHILDREN;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.DEFAULT;
@@ -413,6 +414,9 @@ public class ReadResourceDescriptionHandler implements OperationStepHandler {
                     result.get(ActionEffect.ADDRESS.toString()).set(false);
                 }
             } else {
+//                if (!defaultSetting) {
+//                    result.get(ADDRESS).set(operation.get(OP_ADDR));
+//                }
                 addResourceAuthorizationResults(result, authResp);
 
                 ModelNode attributes = new ModelNode();
@@ -582,8 +586,12 @@ public class ReadResourceDescriptionHandler implements OperationStepHandler {
                             continue;
                         }
                         if (!entry.getValue().equals(defaultControl)) {
-                            //This has different values to the default due to vault expressions being used for attribute values
-                            exceptions.get(entry.getKey().toModelNode().asString()).set(entry.getValue());
+                            //This has different values to the default due to vault expressions being used for attribute values. We need to include the address
+                            //in the exception modelnode for the console to be easier able to parse it
+                            ModelNode exceptionAddr = entry.getKey().toModelNode();
+                            ModelNode exception = entry.getValue();
+                            exception.get(ADDRESS).set(exceptionAddr);
+                            exceptions.get(exceptionAddr.asString()).set(entry.getValue());
                         }
                     }
                 }
