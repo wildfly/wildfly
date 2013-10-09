@@ -2,7 +2,6 @@ package org.jboss.as.test.integration.respawn;
 
 import static org.jboss.as.network.NetworkUtils.formatPossibleIpv6Address;
 
-import javax.security.auth.callback.CallbackHandler;
 import java.io.Closeable;
 import java.io.IOException;
 import java.net.URI;
@@ -14,6 +13,8 @@ import java.util.concurrent.ThreadFactory;
 import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
+
+import javax.security.auth.callback.CallbackHandler;
 
 import org.jboss.as.protocol.ProtocolConnectionConfiguration;
 import org.jboss.remoting3.Endpoint;
@@ -27,7 +28,7 @@ import org.xnio.OptionMap;
  */
 class TestControllerUtils implements Closeable {
 
-    private static final String ENDPOINT_NAME = "mgmt-endpoint";
+    private static final String ENDPOINT_NAME = "respawn-client-mgmt-endpoint";
 
     private static final AtomicInteger executorCount = new AtomicInteger();
     static ExecutorService createDefaultExecutor() {
