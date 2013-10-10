@@ -8,7 +8,7 @@ plugin which allows you to execute the Eclipse formatter from within Idea. You w
 the plugin depending on the version of Idea you are using. For example at the time of writing the matching version
 for Idea 11.1 is Eclipse Code Formatter 2.2.3.
 
-Once installed you can configure the plugin to use the Eclipse formatting style under _eclipse/as7formatter.xml_.
+Once installed you can configure the plugin to use the Eclipse formatting style under _eclipse/wildfly-formatter.xml_.
 With plugin and configuration in place you can format java code using the default Idea _Reformat Code_ menu option or key binding.
 You also get an icon in the menu bar which allows you to toggle between Idea native and Eclipse formatting.
 
