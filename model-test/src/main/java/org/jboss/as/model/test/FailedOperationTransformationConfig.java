@@ -366,7 +366,7 @@ public class FailedOperationTransformationConfig {
             ModelNode op = operation.clone();
             for (String attr : attributes) {
                 ModelNode value = op.get(attr);
-                if (value.isDefined()) {
+                if (value.isDefined() || correctUndefinedValue()) {
                     if (checkValue(attr, value, false)) {
                         AttributesPathAddressConfig<?> complexChildConfig = complexAttributes.get(attr);
                         if (complexChildConfig == null) {
@@ -380,6 +380,10 @@ public class FailedOperationTransformationConfig {
                 }
             }
             return operation;
+        }
+
+        protected boolean correctUndefinedValue() {
+            return false;
         }
 
         @Override
