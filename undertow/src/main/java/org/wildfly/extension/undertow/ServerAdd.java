@@ -96,8 +96,9 @@ class ServerAdd extends AbstractBoottimeAddStepHandler {
         ModelNode listeners = Resource.Tools.readModel(context.readResource(PathAddress.pathAddress(listenerPath)), 1);
         if (listeners.isDefined()) {
             for (Property p : listeners.asPropertyList()) {
-                String listenerName = p.getValue().asProperty().getName();
-                builder.addDependency(UndertowService.LISTENER.append(listenerName));
+                for (Property listener : p.getValue().asPropertyList()) {
+                    builder.addDependency(UndertowService.LISTENER.append(listener.getName()));
+                }
             }
         }
     }
