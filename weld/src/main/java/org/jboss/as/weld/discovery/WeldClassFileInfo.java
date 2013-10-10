@@ -107,12 +107,12 @@ public class WeldClassFileInfo implements ClassFileInfo {
 
     @Override
     public boolean isAssignableFrom(Class<?> fromClass) {
-        return isAssignableFrom(classInfo.name(), DotName.createSimple(fromClass.getName()));
+        return isAssignableFrom(getClassName(), fromClass);
     }
 
     @Override
     public boolean isAssignableTo(Class<?> toClass) {
-        return isAssignableFrom(DotName.createSimple(toClass.getName()), classInfo.name());
+        return isAssignableTo(DotName.createSimple(toClass.getName()), classInfo.name());
     }
 
     @Override
@@ -191,12 +191,39 @@ public class WeldClassFileInfo implements ClassFileInfo {
     }
 
     /**
+     * @param className
+     * @param fromClass
+     * @return
+     */
+    private boolean isAssignableFrom(String className, Class<?> fromClass) {
+        if (className.equals(fromClass.getName())) {
+            return true;
+        }
+        if (Object.class.equals(fromClass)) {
+            return false; // there's nothing assignable from Object.class except for Object.class
+        }
+
+        Class<?> superClass = fromClass.getSuperclass();
+
+        if (superClass != null && isAssignableFrom(className, superClass)) {
+            return true;
+        }
+
+        for (Class<?> interfaceClass : fromClass.getInterfaces()) {
+            if (isAssignableFrom(className, interfaceClass)) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    /**
      * @param name
      * @param fromName
      * @return <code>true</code> if the name is equal to the fromName, or if the name represents a superclass or superinterface of the fromName,
      *         <code>false</code> otherwise
      */
-    private boolean isAssignableFrom(DotName name, DotName fromName) {
+    private boolean isAssignableTo(DotName name, DotName fromName) {
         if (name.equals(fromName)) {
             return true;
         }
@@ -211,13 +238,13 @@ public class WeldClassFileInfo implements ClassFileInfo {
 
         DotName superName = fromClassInfo.superName();
 
-        if (superName != null && isAssignableFrom(name, superName)) {
+        if (superName != null && isAssignableTo(name, superName)) {
             return true;
         }
 
         if (fromClassInfo.interfaces() != null) {
             for (DotName interfaceName : fromClassInfo.interfaces()) {
-                if (isAssignableFrom(name, interfaceName)) {
+                if (isAssignableTo(name, interfaceName)) {
                     return true;
                 }
             }
