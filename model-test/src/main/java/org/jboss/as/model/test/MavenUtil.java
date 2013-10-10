@@ -29,7 +29,6 @@ import java.text.DecimalFormat;
 import java.text.DecimalFormatSymbols;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Collections;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
@@ -83,11 +82,24 @@ import org.eclipse.aether.version.VersionScheme;
  * @author <a href="kabir.khan@jboss.com">Kabir Khan</a>
  */
 class MavenUtil {
-    private static final RepositorySystem REPOSITORY_SYSTEM = newRepositorySystem();
+
     private static final String AETHER_API_NAME = File.separatorChar == '/' ? "/org/eclipse/aether/aether-api/" : "\\org\\eclipse\\aether\\aether-api\\";
+
+    private final RepositorySystem REPOSITORY_SYSTEM;
+    private final List<RemoteRepository> remoteRepositories;
+
     private static String mavenRepository;
 
-    static URL createMavenGavURL(String artifactGav) throws MalformedURLException {
+    private MavenUtil(RepositorySystem repositorySystem, List<RemoteRepository> remoteRepositories) {
+        this.REPOSITORY_SYSTEM = repositorySystem;
+        this.remoteRepositories = remoteRepositories;
+    }
+
+    static MavenUtil create(boolean useEapRepository) {
+        return new MavenUtil(newRepositorySystem(), createRemoteRepositories(useEapRepository));
+    }
+
+    URL createMavenGavURL(String artifactGav) throws MalformedURLException {
         Artifact artifact = new DefaultArtifact(artifactGav);
         if (artifact.getVersion() == null) {
             throw new IllegalArgumentException("Null version");
@@ -108,8 +120,6 @@ class MavenUtil {
         }
 
         RepositorySystemSession session = newRepositorySystemSession();
-        List<RemoteRepository> remoteRepositories = createRemoteRepositories();
-        //TODO add more remote repositories - especially the JBoss one
 
         ArtifactRequest artifactRequest = new ArtifactRequest();
         artifactRequest.setArtifact(artifact);
@@ -130,7 +140,7 @@ class MavenUtil {
         return file.toURI().toURL();
     }
 
-    static List<URL> createMavenGavRecursiveURLs(String artifactGav, String... excludes) throws MalformedURLException, DependencyCollectionException, DependencyResolutionException {
+    List<URL> createMavenGavRecursiveURLs(String artifactGav, String... excludes) throws MalformedURLException, DependencyCollectionException, DependencyResolutionException {
         Artifact artifact = new DefaultArtifact(artifactGav);
         if (artifact.getVersion() == null) {
             throw new IllegalArgumentException("Null version");
@@ -151,7 +161,6 @@ class MavenUtil {
         }
 
         RepositorySystemSession session = newRepositorySystemSession();
-        List<RemoteRepository> remoteRepositories = createRemoteRepositories();
         //TODO add more remote repositories - especially the JBoss one
 
         ArtifactRequest artifactRequest = new ArtifactRequest();
@@ -195,23 +204,27 @@ class MavenUtil {
         return urls;
     }
 
-    private static List<RemoteRepository> createRemoteRepositories() {
+    private static List<RemoteRepository> createRemoteRepositories(boolean useEapRepository) {
         String remoteReposFromSysProp = System.getProperty(ChildFirstClassLoaderBuilder.MAVEN_REPOSITORY_URLS);
+        List<RemoteRepository> remoteRepositories = new ArrayList<RemoteRepository>();
         if (remoteReposFromSysProp == null || remoteReposFromSysProp.trim().length() == 0 || remoteReposFromSysProp.startsWith("${")) {
-            return Collections.singletonList(new RemoteRepository.Builder("jboss-developer", "default", "http://repository.jboss.org/nexus/content/groups/developer/").build());
+            if (useEapRepository) {
+                remoteRepositories.add(new RemoteRepository.Builder("jboss-product-repository", "default", "http://download.lab.bos.redhat.com/brewroot/repos/jb-eap-6-rhel-6-build/latest/maven/").build());
+            } else {
+                remoteRepositories.add(new RemoteRepository.Builder("jboss-developer", "default", "http://repository.jboss.org/nexus/content/groups/developer/").build());
+            }
         } else {
             int i = 0;
-            List<RemoteRepository> remoteRepositories = new ArrayList<RemoteRepository>();
             for (String repoUrl : remoteReposFromSysProp.split(",")) {
                 //remoteRepositories.add(new RemoteRepository("repo" + i, "default", repoUrl.trim()));
                 remoteRepositories.add(new RemoteRepository.Builder("repo" + i, "default", repoUrl.trim()).build());
                 i++;
             }
-            return remoteRepositories;
         }
+        return remoteRepositories;
     }
 
-    protected static RepositorySystemSession newRepositorySystemSession() {
+    private RepositorySystemSession newRepositorySystemSession() {
         DefaultRepositorySystemSession session = MavenRepositorySystemUtils.newSession();
 
         //TODO make local repo more pluggable?
