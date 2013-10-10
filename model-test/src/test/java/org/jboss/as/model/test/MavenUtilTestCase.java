@@ -2,10 +2,7 @@ package org.jboss.as.model.test;
 
 import org.apache.maven.repository.internal.MavenRepositorySystemUtils;
 import org.eclipse.aether.RepositorySystem;
-import org.eclipse.aether.impl.ArtifactDescriptorReader;
 import org.eclipse.aether.impl.DefaultServiceLocator;
-import org.eclipse.aether.impl.VersionRangeResolver;
-import org.eclipse.aether.impl.VersionResolver;
 import org.junit.Assert;
 import org.junit.Test;
 

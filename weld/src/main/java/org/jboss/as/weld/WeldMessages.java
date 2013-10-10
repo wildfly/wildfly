@@ -144,4 +144,7 @@ public interface WeldMessages {
     @Message(id = 16079, value = "%s cannot be used at runtime")
     IllegalStateException cannotUseAtRuntime(String description);
 
+    @Message(id = 16080, value = "These attributes must be 'true' for use with CDI 1.0 '%s'")
+    String rejectAttributesMustBeTrue(Set<String> keySet);
+
 }

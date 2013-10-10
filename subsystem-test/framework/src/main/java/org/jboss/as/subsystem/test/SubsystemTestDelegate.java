@@ -630,7 +630,7 @@ final class SubsystemTestDelegate {
         private final ModelTestControllerVersion testControllerVersion;
         private String extensionClassName;
         private ModelVersion modelVersion;
-        private ChildFirstClassLoaderBuilder classLoaderBuilder = new ChildFirstClassLoaderBuilder();
+        private ChildFirstClassLoaderBuilder classLoaderBuilder;
         private ModelTestOperationValidatorFilter.Builder operationValidationExcludeBuilder;
         private boolean persistXml = true;
         private boolean skipReverseCheck;
@@ -644,6 +644,7 @@ final class SubsystemTestDelegate {
         };
 
         public LegacyKernelServiceInitializerImpl(AdditionalInitialization additionalInit, ModelTestControllerVersion version, ModelVersion modelVersion) {
+            this.classLoaderBuilder = new ChildFirstClassLoaderBuilder(version.isEap());
             this.additionalInit = additionalInit == null ? AdditionalInitialization.MANAGEMENT : additionalInit;
             this.testControllerVersion = version;
             this.modelVersion = modelVersion;
