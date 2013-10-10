@@ -86,10 +86,13 @@ public class EJBViewMethodSecurityAttributesService implements Service<EJBViewMe
      * @return
      */
     public static ServiceName getServiceName(final String appName, final String moduleName, final String beanName, final String viewClassName) {
+        final ServiceName serviceName;
         if (appName != null) {
-            BASE_SERVICE_NAME.append(appName);
+            serviceName = BASE_SERVICE_NAME.append(appName);
+        } else {
+            serviceName = BASE_SERVICE_NAME;
         }
-        return BASE_SERVICE_NAME.append(moduleName).append(beanName).append(viewClassName);
+        return serviceName.append(moduleName).append(beanName).append(viewClassName);
     }
 
     public static class Builder {
