@@ -490,7 +490,7 @@
         </module-def>
 
         <module-def name="javax.el.api">
-            <maven-resource group="org.jboss.spec.javax.el" artifact="jboss-el-api_2.2_spec"/>
+            <maven-resource group="org.jboss.spec.javax.el" artifact="jboss-el-api_3.0_spec"/>
         </module-def>
 
         <module-def name="javax.enterprise.api">
@@ -548,7 +548,7 @@
         </module-def>
 
         <module-def name="javax.security.jacc.api">
-            <maven-resource group="org.jboss.spec.javax.security.jacc" artifact="jboss-jacc-api_1.4_spec"/>
+            <maven-resource group="org.jboss.spec.javax.security.jacc" artifact="jboss-jacc-api_1.5_spec"/>
         </module-def>
 
         <module-def name="javax.servlet.api">
@@ -556,7 +556,7 @@
         </module-def>
 
         <module-def name="javax.servlet.jsp.api">
-            <maven-resource group="org.jboss.spec.javax.servlet.jsp" artifact="jboss-jsp-api_2.2_spec"/>
+            <maven-resource group="org.jboss.spec.javax.servlet.jsp" artifact="jboss-jsp-api_2.3_spec"/>
         </module-def>
 
         <module-def name="javax.servlet.jstl.api">
