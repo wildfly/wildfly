@@ -53,8 +53,8 @@ import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.PathElement;
 import org.jboss.as.controller.SubsystemRegistration;
 import org.jboss.as.controller.access.constraint.SensitivityClassification;
-import org.jboss.as.controller.access.management.SensitiveTargetAccessConstraintDefinition;
 import org.jboss.as.controller.access.management.JmxAuthorizer;
+import org.jboss.as.controller.access.management.SensitiveTargetAccessConstraintDefinition;
 import org.jboss.as.controller.audit.ManagedAuditLogger;
 import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
 import org.jboss.as.controller.descriptions.ResourceDescriptionResolver;
@@ -217,9 +217,6 @@ public class JMXExtension implements Extension {
                 @Override
                 public boolean rejectOperationParameter(PathAddress address, String attributeName, ModelNode attributeValue,
                         ModelNode operation, TransformationContext context) {
-                    if (operation.get(OP).asString().equals(REMOVE)) {
-                        return false;
-                    }
                     return super.rejectOperationParameter(address, attributeName, attributeValue, operation, context);
                 }
 

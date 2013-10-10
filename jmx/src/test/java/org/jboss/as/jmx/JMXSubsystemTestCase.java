@@ -614,6 +614,19 @@ public class JMXSubsystemTestCase extends AbstractSubsystemTest {
         testTransformation_1_0_0(ModelTestControllerVersion.V7_1_3_FINAL);
     }
 
+    @Test
+    public void testTransformationEAP600() throws Exception {
+        ignoreThisTestIfEAPRepositoryIsNotReachable();
+        testTransformation_1_0_0(ModelTestControllerVersion.EAP_6_0_0);
+    }
+
+    @Test
+    public void testTransformationAS600() throws Exception {
+        ignoreThisTestIfEAPRepositoryIsNotReachable();
+        testTransformation_1_0_0(ModelTestControllerVersion.EAP_6_0_0);
+    }
+
+
     private void testTransformation_1_0_0(ModelTestControllerVersion controllerVersion) throws Exception {
         String subsystemXml =
                 "<subsystem xmlns=\"" + Namespace.CURRENT.getUriString() + "\">" +
@@ -639,7 +652,7 @@ public class JMXSubsystemTestCase extends AbstractSubsystemTest {
                         //So the ops from 7.1.x can never result in 'true'
                         modelNode.get(CommonAttributes.EXPOSE_MODEL, CommonAttributes.RESOLVED, CommonAttributes.PROPER_PROPERTY_FORMAT).set(false);
 
-                        //The audit log operations will get rejected, so the audit log will not be present in the reverse model
+                        //The audit log operations will get discarded since, so the audit log will not be present in the reverse model
                         ModelNode logger = modelNode.get(JmxAuditLoggerResourceDefinition.PATH_ELEMENT.getKey(), JmxAuditLoggerResourceDefinition.PATH_ELEMENT.getValue());
                         logger.get(JmxAuditLoggerResourceDefinition.LOG_BOOT.getName()).set(true);
                         logger.get(JmxAuditLoggerResourceDefinition.LOG_READ_ONLY.getName()).set(true);
@@ -763,17 +776,105 @@ public class JMXSubsystemTestCase extends AbstractSubsystemTest {
         checkDiscardedOperation(Util.createRemoveOperation(address), mainServices, oldVersion);
     }
 
-
-    private void checkDiscardedOperation(ModelNode op, KernelServices mainServices, ModelVersion oldVersion) throws OperationFailedException {
-        TransformedOperation transformedOp = mainServices.transformOperation(oldVersion, op);
-        Assert.assertNull(transformedOp.getTransformedOperation());
-        Assert.assertNull(transformedOp.getFailureDescription());
+    @Test
+    public void testTransformationAS720() throws Exception {
+        testTransformation_1_1_0(ModelTestControllerVersion.V7_2_0_FINAL);
     }
 
-    private void checkRejectedOperation(ModelNode op, KernelServices mainServices, ModelVersion oldVersion) throws OperationFailedException {
+    @Test
+    public void testTransformationEAP610() throws Exception {
+        ignoreThisTestIfEAPRepositoryIsNotReachable();
+        testTransformation_1_1_0(ModelTestControllerVersion.EAP_6_1_0);
+    }
+
+    @Test
+    public void testTransformationEAP611() throws Exception {
+        ignoreThisTestIfEAPRepositoryIsNotReachable();
+        testTransformation_1_1_0(ModelTestControllerVersion.EAP_6_1_1);
+    }
+
+
+    private void testTransformation_1_1_0(ModelTestControllerVersion controllerVersion) throws Exception {
+        String subsystemXml =
+                "<subsystem xmlns=\"" + Namespace.CURRENT.getUriString() + "\">" +
+                "   <expose-resolved-model domain-name=\"jboss.as\" proper-property-format=\"false\"/>" +
+                "   <expose-expression-model domain-name=\"jboss.EXPRESSION\"/>" +
+                "   <remoting-connector />" +
+                "   <audit-log enabled=\"false\" log-boot=\"true\" log-read-only=\"true\">" +
+                "      <handlers>" +
+                "          <handler name=\"test\"/>" +
+                "      </handlers>" +
+                "   </audit-log>" +
+                "</subsystem>";
+
+        ModelVersion oldVersion = ModelVersion.create(1, 1, 0);
+        KernelServicesBuilder builder = createKernelServicesBuilder(new AuditLogInitialization()).setSubsystemXml(subsystemXml);
+        builder.createLegacyKernelServicesBuilder(null, controllerVersion, oldVersion)
+                .setExtensionClassName(JMXExtension.class.getName())
+                .addMavenResourceURL("org.jboss.as:jboss-as-jmx:" + controllerVersion.getMavenGavVersion())
+                .configureReverseControllerCheck(AdditionalInitialization.MANAGEMENT, new ModelFixer() {
+                    @Override
+                    public ModelNode fixModel(ModelNode modelNode) {
+                        //The audit log operations will get discarded since, so the audit log will not be present in the reverse model
+                        ModelNode logger = modelNode.get(JmxAuditLoggerResourceDefinition.PATH_ELEMENT.getKey(), JmxAuditLoggerResourceDefinition.PATH_ELEMENT.getValue());
+                        logger.get(JmxAuditLoggerResourceDefinition.LOG_BOOT.getName()).set(true);
+                        logger.get(JmxAuditLoggerResourceDefinition.LOG_READ_ONLY.getName()).set(true);
+                        logger.get(JmxAuditLoggerResourceDefinition.ENABLED.getName()).set(false);
+                        logger.get(JmxAuditLogHandlerReferenceResourceDefinition.PATH_ELEMENT.getKey(), "test").setEmptyObject();
+
+                        return modelNode;
+                    }
+                });
+
+        KernelServices mainServices = builder.build();
+        Assert.assertTrue(mainServices.isSuccessfulBoot());
+        KernelServices legacyServices = mainServices.getLegacyServices(oldVersion);
+        Assert.assertNotNull(legacyServices);
+
+        ModelFixer modelFixer7_1_x = new ModelFixer() {
+            public ModelNode fixModel(ModelNode modelNode) {
+                if (modelNode.hasDefined("remoting-connector")) {
+                    if (modelNode.get("remoting-connector").hasDefined("jmx")) {
+                        if (modelNode.get("remoting-connector", "jmx").keys().size() == 0) {
+                            //The default is true, 7.1.x does not include the default for this value
+                            modelNode.get("remoting-connector", "jmx", "use-management-endpoint").set(true);
+                        }
+                    }
+                }
+                return modelNode;
+            }
+        };
+
+        ModelNode legacyModel = checkSubsystemModelTransformation(mainServices, oldVersion, modelFixer7_1_x);
+
+        ModelNode op = Util.getWriteAttributeOperation(PathAddress.pathAddress(
+                    PathElement.pathElement(SUBSYSTEM, getMainSubsystemName()),
+                    PathElement.pathElement(CommonAttributes.REMOTING_CONNECTOR, CommonAttributes.JMX)),
+                CommonAttributes.USE_MANAGEMENT_ENDPOINT, false);
+        ModelTestUtils.checkOutcome(mainServices.executeOperation(oldVersion, mainServices.transformOperation(oldVersion, op)));
         TransformedOperation transformedOp = mainServices.transformOperation(oldVersion, op);
-        Assert.assertNull(transformedOp.getTransformedOperation());
-        Assert.assertNotNull(transformedOp.getFailureDescription());
+        checkOutcome(mainServices.executeOperation(op));
+        checkOutcome(mainServices.executeOperation(oldVersion, transformedOp));
+        legacyModel = checkSubsystemModelTransformation(mainServices, oldVersion, modelFixer7_1_x);
+        Assert.assertFalse(legacyModel.get(SUBSYSTEM, getMainSubsystemName(), CommonAttributes.REMOTING_CONNECTOR, CommonAttributes.JMX, CommonAttributes.USE_MANAGEMENT_ENDPOINT).asBoolean());
+
+        //Check that these audit log operations get discarded/rejected
+        PathAddress address = PathAddress.pathAddress(
+                PathElement.pathElement(SUBSYSTEM, getMainSubsystemName()),
+                JmxAuditLoggerResourceDefinition.PATH_ELEMENT);
+        checkDiscardedOperation(Util.getWriteAttributeOperation(address, JmxAuditLoggerResourceDefinition.LOG_BOOT.getName(), new ModelNode(false)), mainServices, oldVersion);
+        checkDiscardedOperation(Util.getUndefineAttributeOperation(address, JmxAuditLoggerResourceDefinition.LOG_BOOT.getName()), mainServices, oldVersion);
+        checkDiscardedOperation(Util.getReadAttributeOperation(address, JmxAuditLoggerResourceDefinition.LOG_BOOT.getName()), mainServices, oldVersion);
+        checkDiscardedOperation(Util.getWriteAttributeOperation(address, JmxAuditLoggerResourceDefinition.LOG_READ_ONLY.getName(), new ModelNode(false)), mainServices, oldVersion);
+        checkDiscardedOperation(Util.getUndefineAttributeOperation(address, JmxAuditLoggerResourceDefinition.LOG_READ_ONLY.getName()), mainServices, oldVersion);
+        checkDiscardedOperation(Util.getReadAttributeOperation(address, JmxAuditLoggerResourceDefinition.LOG_READ_ONLY.getName()), mainServices, oldVersion);
+        checkRejectedOperation(Util.getWriteAttributeOperation(address, JmxAuditLoggerResourceDefinition.ENABLED.getName(), new ModelNode(true)), mainServices, oldVersion);
+        checkRejectedOperation(Util.getUndefineAttributeOperation(address, JmxAuditLoggerResourceDefinition.ENABLED.getName()), mainServices, oldVersion);
+        checkDiscardedOperation(Util.getReadAttributeOperation(address, JmxAuditLoggerResourceDefinition.ENABLED.getName()), mainServices, oldVersion);
+        checkDiscardedOperation(Util.createRemoveOperation(address), mainServices, oldVersion);
+        address = address.append(JmxAuditLogHandlerReferenceResourceDefinition.PATH_ELEMENT.getKey(), "test");
+        checkDiscardedOperation(Util.createAddOperation(address), mainServices, oldVersion);
+        checkDiscardedOperation(Util.createRemoveOperation(address), mainServices, oldVersion);
     }
 
     @Test
@@ -784,6 +885,18 @@ public class JMXSubsystemTestCase extends AbstractSubsystemTest {
     @Test
     public void testRejectExpressionsAS713() throws Exception {
         testRejectExpressions_1_0_0(ModelTestControllerVersion.V7_1_3_FINAL);
+    }
+
+    @Test
+    public void testRejectExpressionsEAP600() throws Exception {
+        ignoreThisTestIfEAPRepositoryIsNotReachable();
+        testRejectExpressions_1_0_0(ModelTestControllerVersion.EAP_6_0_0);
+    }
+
+    @Test
+    public void testRejectExpressionsEAP601() throws Exception {
+        ignoreThisTestIfEAPRepositoryIsNotReachable();
+        testRejectExpressions_1_0_0(ModelTestControllerVersion.EAP_6_0_1);
     }
 
     /**
@@ -797,7 +910,7 @@ public class JMXSubsystemTestCase extends AbstractSubsystemTest {
                     "   <expose-resolved-model domain-name=\"${test.domain-name:non-standard}\" proper-property-format=\"${test.proper-property-format:true}\"/>" +
                     "   <expose-expression-model domain-name=\"jboss.as\"/>" +
                     "   <remoting-connector use-management-endpoint=\"${test.exp:false}\"/>" +
-                    "   <audit-log enabled=\"false\" log-boot=\"true\" log-read-only=\"true\">" +
+                    "   <audit-log enabled=\"${test:false}\" log-boot=\"true\" log-read-only=\"true\">" +
                     "      <handlers>" +
                     "          <handler name=\"test\"/>" +
                     "      </handlers>" +
@@ -846,6 +959,67 @@ public class JMXSubsystemTestCase extends AbstractSubsystemTest {
                                             new ChangeEnabledFromTrueToFalseConfig(JmxAuditLoggerResourceDefinition.ENABLED)), JmxAuditLoggerResourceDefinition.ENABLED)));
     }
 
+    @Test
+    public void testRejection720() throws Exception {
+        testRejectExpressions_1_1_0(ModelTestControllerVersion.V7_2_0_FINAL);
+    }
+
+    @Test
+    public void testRejectionEAP610() throws Exception {
+        testRejectExpressions_1_1_0(ModelTestControllerVersion.EAP_6_1_0);
+    }
+
+    @Test
+    public void testRejection611() throws Exception {
+        testRejectExpressions_1_1_0(ModelTestControllerVersion.EAP_6_1_1);
+    }
+
+    /**
+     * Tests rejection of expressions in 1.1.0 model.
+     *
+     * @throws Exception
+     */
+    private void testRejectExpressions_1_1_0(ModelTestControllerVersion controllerVersion) throws Exception {
+        String subsystemXml =
+            "<subsystem xmlns=\"" + Namespace.CURRENT.getUriString() + "\">" +
+                    "   <expose-resolved-model domain-name=\"${test.domain-name:non-standard}\" proper-property-format=\"${test.proper-property-format:true}\"/>" +
+                    "   <expose-expression-model domain-name=\"jboss.as\"/>" +
+                    "   <remoting-connector use-management-endpoint=\"${test.exp:false}\"/>" +
+                    "   <audit-log enabled=\"${test:false}\" log-boot=\"true\" log-read-only=\"true\">" +
+                    "      <handlers>" +
+                    "          <handler name=\"test\"/>" +
+                    "      </handlers>" +
+                    "   </audit-log>" +
+                    "</subsystem>";
+
+        // create builder for current subsystem version
+        KernelServicesBuilder builder = createKernelServicesBuilder(new ManagementAuditLogInitialization());
+
+        // create builder for legacy subsystem version
+        ModelVersion version_1_1_0 = ModelVersion.create(1, 1, 0);
+        builder.createLegacyKernelServicesBuilder(null, controllerVersion, version_1_1_0)
+                .addMavenResourceURL("org.jboss.as:jboss-as-jmx:" + controllerVersion.getMavenGavVersion());
+
+        KernelServices mainServices = builder.build();
+        Assert.assertTrue(mainServices.isSuccessfulBoot());
+        KernelServices legacyServices = mainServices.getLegacyServices(version_1_1_0);
+        Assert.assertNotNull(legacyServices);
+        Assert.assertTrue(legacyServices.isSuccessfulBoot());
+
+        PathAddress subsystemAddress = PathAddress.pathAddress(PathElement.pathElement(SUBSYSTEM, JMXExtension.SUBSYSTEM_NAME));
+        ModelTestUtils.checkFailedTransformedBootOperations(
+                mainServices,
+                version_1_1_0,
+                builder.parseXml(subsystemXml),
+                new FailedOperationTransformationConfig()
+                        .addFailedAttribute(
+                                subsystemAddress.append(JmxAuditLoggerResourceDefinition.PATH_ELEMENT),
+                                new FailedOperationTransformationConfig.ChainedConfig(
+                                        createChainedConfigList(
+                                            new FailedOperationTransformationConfig.RejectExpressionsConfig(JmxAuditLoggerResourceDefinition.ENABLED),
+                                            new ChangeEnabledFromTrueToFalseConfig(JmxAuditLoggerResourceDefinition.ENABLED)), JmxAuditLoggerResourceDefinition.ENABLED)));
+    }
+
     private List<FailedOperationTransformationConfig.AttributesPathAddressConfig<?>> createChainedConfigList(FailedOperationTransformationConfig.AttributesPathAddressConfig<?>...cfgs){
         List<AttributesPathAddressConfig<?>> list = new ArrayList<FailedOperationTransformationConfig.AttributesPathAddressConfig<?>>();
         for (AttributesPathAddressConfig<?> cfg : cfgs) {
@@ -861,6 +1035,20 @@ public class JMXSubsystemTestCase extends AbstractSubsystemTest {
         Assert.assertTrue(legacySubsystem.hasDefined(CommonAttributes.REMOTING_CONNECTOR));
         Assert.assertTrue(legacySubsystem.get(CommonAttributes.REMOTING_CONNECTOR).hasDefined(CommonAttributes.JMX));
     }
+
+
+    private void checkDiscardedOperation(ModelNode op, KernelServices mainServices, ModelVersion oldVersion) throws OperationFailedException {
+        TransformedOperation transformedOp = mainServices.transformOperation(oldVersion, op);
+        Assert.assertNull(transformedOp.getTransformedOperation());
+        Assert.assertNull(transformedOp.getFailureDescription());
+    }
+
+    private void checkRejectedOperation(ModelNode op, KernelServices mainServices, ModelVersion oldVersion) throws OperationFailedException {
+        TransformedOperation transformedOp = mainServices.transformOperation(oldVersion, op);
+        Assert.assertNull(transformedOp.getTransformedOperation());
+        Assert.assertNotNull(transformedOp.getFailureDescription());
+    }
+
 
     private void assertJmxConnectorAddress(ModelNode address) {
         PathAddress addr = PathAddress.pathAddress(address);
