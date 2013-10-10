@@ -114,6 +114,9 @@ public class TransactionalProtocolOperationHandler implements ManagementRequestH
 
             // The task has been created but before we can execute it we need a Subject so save it and send the request for the Subject.
             context.getAttachment().setAction(action);
+            final ExecuteRequestContext executeRequestContext = context.getAttachment();
+            // Set the response information
+            executeRequestContext.initialize(context);
             channelAssociation.executeRequest(context.getAttachment().getOperationId(), new GetSubjectResponseHandler());
         }
 
@@ -308,6 +311,18 @@ public class TransactionalProtocolOperationHandler implements ManagementRequestH
                     transaction.rollback();
                     txCompletedLatch.countDown();
                 }
+            } else if (responseChannel != null) {
+                rollbackOnPrepare = true;
+                // Failed in a step before prepare, send error response
+                final String message = e.getMessage() != null ? e.getMessage() : "failure before rollback " + e.getClass().getName();
+                final ModelNode response = new ModelNode();
+                response.get(OUTCOME).set(FAILED);
+                response.get(FAILURE_DESCRIPTION).set(message);
+                try {
+                    sendResponse(responseChannel, ModelControllerProtocol.PARAM_OPERATION_FAILED, response);
+                } catch (IOException ignored) {
+                    ProtocolLogger.ROOT_LOGGER.debugf(ignored, "failed to process message");
+                }
             }
         }
 
@@ -318,7 +333,6 @@ public class TransactionalProtocolOperationHandler implements ManagementRequestH
 
         synchronized void initialize(final ManagementRequestContext<ExecuteRequestContext> context) {
             assert ! prepared;
-            assert responseChannel == null;
             assert activeTx == null;
             // 1) initialize (set the response information)
             this.responseChannel = context;
