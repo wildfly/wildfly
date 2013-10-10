@@ -200,6 +200,8 @@ public final class Attachments {
 
     public static final AttachmentKey<Map<ModuleIdentifier, CompositeIndex>> ADDITIONAL_ANNOTATION_INDEXES_BY_MODULE = AttachmentKey.create(Map.class);
 
+    public static final AttachmentKey<AttachmentList<VirtualFile>> DEPLOYMENT_OVERRIDE_LOCATIONS = AttachmentKey.createList(VirtualFile.class);
+
     //
     // VALIDATE
     //
