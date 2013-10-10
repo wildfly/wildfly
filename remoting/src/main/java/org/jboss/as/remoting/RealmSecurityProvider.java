@@ -33,12 +33,6 @@ import static org.xnio.Options.SSL_ENABLED;
 import static org.xnio.Options.SSL_STARTTLS;
 import static org.xnio.SslClientAuthMode.REQUESTED;
 
-import javax.net.ssl.SSLContext;
-import javax.security.auth.Subject;
-import javax.security.auth.callback.Callback;
-import javax.security.auth.callback.CallbackHandler;
-import javax.security.auth.callback.PasswordCallback;
-import javax.security.auth.callback.UnsupportedCallbackException;
 import java.io.IOException;
 import java.security.Principal;
 import java.util.ArrayList;
@@ -49,6 +43,13 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.UUID;
+
+import javax.net.ssl.SSLContext;
+import javax.security.auth.Subject;
+import javax.security.auth.callback.Callback;
+import javax.security.auth.callback.CallbackHandler;
+import javax.security.auth.callback.PasswordCallback;
+import javax.security.auth.callback.UnsupportedCallbackException;
 
 import org.jboss.as.core.security.RealmUser;
 import org.jboss.as.core.security.SubjectUserInfo;
@@ -236,13 +237,15 @@ class RealmSecurityProvider implements RemotingSecurityProvider {
                     for (Principal userPrincipal : remotingPrincipals) {
                         allPrincipals.add(userPrincipal);
                         if (userPrincipal instanceof UserPrincipal) {
-                            allPrincipals.add(new RealmUser(userPrincipal.getName()));
+                            // https://bugzilla.redhat.com/show_bug.cgi?id=1017856 use unintentionally exposed legacy RealmUser
+                            allPrincipals.add(new org.jboss.as.domain.management.security.RealmUser(userPrincipal.getName()));
                         }
                     }
 
                     final String userName = subject.getPrincipals(RealmUser.class).iterator().next().getName();
 
-                    return new SubjectUserInfo() {
+                    // https://bugzilla.redhat.com/show_bug.cgi?id=1017856 use unintentionally exposed legacy interface
+                    return new org.jboss.as.controller.security.SubjectUserInfo() {
 
                         public String getUserName() {
                             return userName;
@@ -344,9 +347,11 @@ class RealmSecurityProvider implements RemotingSecurityProvider {
                 // The remaining principals will be added to the Subject later.
                 if (current instanceof UserPrincipal) {
                     if (realm != null) {
-                        converted.add(new RealmUser(realm.getName(), current.getName()));
+                        // https://bugzilla.redhat.com/show_bug.cgi?id=1017856 use unintentionally exposed legacy RealmUser
+                        converted.add(new org.jboss.as.domain.management.security.RealmUser(realm.getName(), current.getName()));
                     } else {
-                        converted.add(new RealmUser(current.getName()));
+                        // https://bugzilla.redhat.com/show_bug.cgi?id=1017856 use unintentionally exposed legacy RealmUser
+                        converted.add(new org.jboss.as.domain.management.security.RealmUser(current.getName()));
                     }
                 }
             }
@@ -357,8 +362,8 @@ class RealmSecurityProvider implements RemotingSecurityProvider {
             return new RealmSubjectUserInfo(sui);
         }
     }
-
-    private static class RealmSubjectUserInfo implements SubjectUserInfo, UserInfo, UniqueIdUserInfo {
+    // https://bugzilla.redhat.com/show_bug.cgi?id=1017856 implement unintentionally exposed legacy SubjectUserInfo interface
+    private static class RealmSubjectUserInfo implements org.jboss.as.controller.security.SubjectUserInfo, UserInfo, UniqueIdUserInfo {
 
         private final SubjectUserInfo subjectUserInfo;
         private final String id;

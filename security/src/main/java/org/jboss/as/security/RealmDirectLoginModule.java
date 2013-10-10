@@ -48,11 +48,11 @@ import javax.security.sasl.RealmCallback;
 import org.jboss.as.domain.management.AuthenticationMechanism;
 
 import org.jboss.as.core.security.RealmRole;
-import org.jboss.as.core.security.RealmUser;
 import org.jboss.as.core.security.SubjectUserInfo;
 
 import org.jboss.as.domain.management.AuthorizingCallbackHandler;
 import org.jboss.as.domain.management.SecurityRealm;
+import org.jboss.as.domain.management.security.RealmUser;
 import org.jboss.as.server.CurrentServiceContainer;
 import org.jboss.msc.service.ServiceContainer;
 import org.jboss.msc.service.ServiceController;
@@ -218,6 +218,7 @@ public class RealmDirectLoginModule extends UsernamePasswordLoginModule {
     @Override
     protected Group[] getRoleSets() throws LoginException {
         Collection<Principal> principalCol = new HashSet<Principal>();
+        // https://bugzilla.redhat.com/show_bug.cgi?id=1017856 use unintentionally exposed legacy RealmUser
         principalCol.add(new RealmUser(getUsername()));
         try {
             AuthorizingCallbackHandler callbackHandler = getCallbackHandler();

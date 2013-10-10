@@ -27,7 +27,7 @@ import java.util.Set;
 
 import javax.security.auth.Subject;
 
-import org.jboss.as.core.security.RealmUser;
+import org.jboss.as.domain.management.security.RealmUser;
 import org.jboss.com.sun.net.httpserver.Authenticator;
 import org.jboss.com.sun.net.httpserver.HttpExchange;
 
@@ -48,6 +48,7 @@ public class AnonymousAuthenticator extends Authenticator {
     @Override
     public Result authenticate(final HttpExchange exchange) {
         SubjectHttpPrincipal principal = new SubjectHttpPrincipal(ANONYMOUS, ANONYMOUS);
+        // https://bugzilla.redhat.com/show_bug.cgi?id=1017856 use unintentionally exposed legacy RealmUser
         RealmUser realmUser = new RealmUser(ANONYMOUS);
         Subject subject = new Subject();
         Set<Principal> principals = subject.getPrincipals();

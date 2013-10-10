@@ -42,12 +42,11 @@ import javax.security.auth.callback.CallbackHandler;
 import javax.security.auth.callback.UnsupportedCallbackException;
 import javax.security.sasl.AuthorizeCallback;
 
-import org.jboss.as.domain.management.AuthenticationMechanism;
 import org.jboss.as.core.security.RealmGroup;
 import org.jboss.as.core.security.RealmRole;
 import org.jboss.as.core.security.RealmSubjectUserInfo;
-import org.jboss.as.core.security.RealmUser;
 import org.jboss.as.core.security.SubjectUserInfo;
+import org.jboss.as.domain.management.AuthenticationMechanism;
 import org.jboss.as.domain.management.AuthorizingCallbackHandler;
 import org.jboss.as.domain.management.CallbackHandlerFactory;
 import org.jboss.as.domain.management.SSLIdentity;
@@ -182,6 +181,7 @@ public class SecurityRealmService implements Service<SecurityRealm>, SecurityRea
                 Collection<Principal> allPrincipals = subject.getPrincipals();
                 for (Principal userPrincipal : userPrincipals) {
                     allPrincipals.add(userPrincipal);
+                    // https://bugzilla.redhat.com/show_bug.cgi?id=1017856 use unintentionally exposed legacy RealmUser
                     allPrincipals.add(new RealmUser(getName(), userPrincipal.getName()));
                 }
 
@@ -200,7 +200,7 @@ public class SecurityRealmService implements Service<SecurityRealm>, SecurityRea
                     subject.getPrincipals().addAll(roles);
                 }
 
-                return new RealmSubjectUserInfo(subject);
+                return new LegacySubjectUserInfo(subject);
             }
         };
     }
@@ -252,5 +252,13 @@ public class SecurityRealmService implements Service<SecurityRealm>, SecurityRea
 
     public CallbackHandlerFactory getSecretCallbackHandlerFactory() {
         return secretCallbackFactory.getOptionalValue();
+    }
+
+    // https://bugzilla.redhat.com/show_bug.cgi?id=1017856 implement unintentionally exposed legacy SubjectUserInfo interface
+    private static class LegacySubjectUserInfo extends RealmSubjectUserInfo implements org.jboss.as.controller.security.SubjectUserInfo  {
+
+        private LegacySubjectUserInfo(Subject subject) {
+            super(subject);
+        }
     }
 }
