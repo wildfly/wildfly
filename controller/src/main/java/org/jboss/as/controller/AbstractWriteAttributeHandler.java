@@ -109,12 +109,15 @@ public abstract class AbstractWriteAttributeHandler<T> implements OperationStepH
         final ModelNode currentValue = submodel.get(attributeName).clone();
 
         final AttributeDefinition attributeDefinition = getAttributeDefinition(attributeName);
+        final ModelNode defaultValue;
         if (attributeDefinition != null) {
+            defaultValue = attributeDefinition.getDefaultValue();
             final ModelNode syntheticOp = new ModelNode();
             syntheticOp.get(attributeName).set(newValue);
             attributeDefinition.validateAndSet(syntheticOp, submodel);
             newValue = submodel.get(attributeName);
         } else {
+            defaultValue = null;
             submodel.get(attributeName).set(newValue);
         }
 
@@ -137,6 +140,9 @@ public abstract class AbstractWriteAttributeHandler<T> implements OperationStepH
                         @Override
                         public void handleRollback(OperationContext context, ModelNode operation) {
                             ModelNode valueToRestore = currentValue.resolve();
+                            if (valueToRestore.isDefined() == false && defaultValue != null) {
+                                valueToRestore = defaultValue;
+                            }
                             try {
                                 revertUpdateToRuntime(context, operation, attributeName, valueToRestore, resolvedValue, handback.handback);
                             } catch (Exception e) {
