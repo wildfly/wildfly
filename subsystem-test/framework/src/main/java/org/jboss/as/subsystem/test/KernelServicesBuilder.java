@@ -87,6 +87,7 @@ public interface KernelServicesBuilder {
      */
      LegacyKernelServicesInitializer createLegacyKernelServicesBuilder(AdditionalInitialization additionalInit, ModelTestControllerVersion version, ModelVersion modelVersion);
 
+
     /**
      * Creates the controller and initializes it with the passed in configuration options.
      * If {@link #createLegacyKernelServicesBuilder(AdditionalInitialization, org.jboss.as.model.test.ModelTestControllerVersion, org.jboss.as.controller.ModelVersion)}
