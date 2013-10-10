@@ -25,11 +25,17 @@ import java.util.Properties;
 
 
 public enum ModelTestControllerVersion {
+    //AS releases
     MASTER (CurrentVersion.VERSION, null),
     V7_1_2_FINAL ("7.1.2.Final", "7.1.2"),
     V7_1_3_FINAL ("7.1.3.Final", "7.1.2"),
     V7_2_0_FINAL ("7.2.0.Final", "7.2.0"),
-    V8_0_0_FINAL (VersionLocator.getCurrentVersion(), null)
+
+    //EAP releases
+    EAP_6_0_0 ("7.1.2.Final-redhat-1", "7.1.2"),
+    EAP_6_0_1 ("7.1.3.Final-redhat-4", "7.1.2"),
+    EAP_6_1_0 ("7.2.0.Final-redhat-8", "7.1.2"),
+    EAP_6_1_1 ("7.2.1.Final-redhat-10", "7.2.0")
     ;
 
     String mavenGavVersion;
