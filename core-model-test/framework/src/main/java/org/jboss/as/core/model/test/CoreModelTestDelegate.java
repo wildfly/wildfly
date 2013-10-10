@@ -558,7 +558,6 @@ public class CoreModelTestDelegate {
             return legacyKernelServicesInitializerImpl;
         }
 
-
         @Override
         public KernelServicesBuilder setDontValidateOperations() {
             validateOperations = true;
@@ -567,7 +566,7 @@ public class CoreModelTestDelegate {
     }
 
     private class LegacyKernelServicesInitializerImpl implements LegacyKernelServicesInitializer {
-        private final ChildFirstClassLoaderBuilder classLoaderBuilder = new ChildFirstClassLoaderBuilder();
+        private final ChildFirstClassLoaderBuilder classLoaderBuilder;
         private final ModelVersion modelVersion;
         private final List<LegacyModelInitializerEntry> modelInitializerEntries = new ArrayList<LegacyModelInitializerEntry>();
         private final ModelTestControllerVersion testControllerVersion;
@@ -578,6 +577,7 @@ public class CoreModelTestDelegate {
         private ModelTestOperationValidatorFilter.Builder operationValidationExcludeFilterBuilder;
 
         LegacyKernelServicesInitializerImpl(ModelVersion modelVersion, ModelTestControllerVersion version) {
+            this.classLoaderBuilder = new ChildFirstClassLoaderBuilder(version.isEap());
             this.modelVersion = modelVersion;
             this.testControllerVersion = version;
         }
