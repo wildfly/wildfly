@@ -34,31 +34,37 @@ import org.jboss.as.controller.access.Action;
  */
 public enum StandardRole {
 
-    MONITOR(Action.ActionEffect.READ_CONFIG, Action.ActionEffect.READ_RUNTIME),
+    MONITOR("Monitor", Action.ActionEffect.READ_CONFIG, Action.ActionEffect.READ_RUNTIME),
     //CONFIGURATOR,
-    OPERATOR(Action.ActionEffect.READ_CONFIG, Action.ActionEffect.READ_RUNTIME, Action.ActionEffect.WRITE_RUNTIME),
-    MAINTAINER(),
-    DEPLOYER(),
-    ADMINISTRATOR(),
-    AUDITOR(),
-    SUPERUSER();
+    OPERATOR("Operator", Action.ActionEffect.READ_CONFIG, Action.ActionEffect.READ_RUNTIME, Action.ActionEffect.WRITE_RUNTIME),
+    MAINTAINER("Maintainer"),
+    DEPLOYER("Deployer"),
+    ADMINISTRATOR("Administrator"),
+    AUDITOR("Auditor"),
+    SUPERUSER("SuperUser");
 
-
+    private final String name;
     private final Set<Action.ActionEffect> allowedActions;
 
-    private StandardRole() {
-        this(Action.ActionEffect.values());
+    private StandardRole(String name) {
+        this(name, Action.ActionEffect.values());
     }
 
-    private StandardRole(Action.ActionEffect... allowedExcludingAccess) {
-        this(EnumSet.of(Action.ActionEffect.ADDRESS, allowedExcludingAccess));
+    private StandardRole(String name, Action.ActionEffect... allowedExcludingAccess) {
+        this(name, EnumSet.of(Action.ActionEffect.ADDRESS, allowedExcludingAccess));
     }
 
-    private StandardRole(Set<Action.ActionEffect> allowedActions) {
+    private StandardRole(String name, Set<Action.ActionEffect> allowedActions) {
+        this.name = name;
         this.allowedActions = allowedActions;
     }
 
     public boolean isActionEffectAllowed(Action.ActionEffect actionEffect) {
         return allowedActions.contains(actionEffect);
+    }
+
+
+    public String getFormalName() {
+        return name;
     }
 }

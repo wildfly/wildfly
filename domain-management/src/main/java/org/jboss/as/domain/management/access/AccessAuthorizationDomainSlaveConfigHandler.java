@@ -57,7 +57,7 @@ public class AccessAuthorizationDomainSlaveConfigHandler implements OperationSte
     @Override
     public void execute(OperationContext context, ModelNode operation) throws OperationFailedException {
         final ModelNode model = context.readResourceForUpdate(PathAddress.EMPTY_ADDRESS).getModel();
-        for (AttributeDefinition ad : AccessAuthorizationResourceDefinition.ATTRIBUTES) {
+        for (AttributeDefinition ad : AccessAuthorizationResourceDefinition.CONFIG_ATTRIBUTES) {
             ad.validateAndSet(operation, model);
         }
         context.addStep(new OperationStepHandler() {

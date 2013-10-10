@@ -52,7 +52,7 @@ public final class StandardRBACAuthorizer extends ManagementPermissionAuthorizer
 
         Set<String> stdRoles = new LinkedHashSet<String>();
         for (StandardRole stdRole : StandardRole.values()) {
-            stdRoles.add(stdRole.toString());
+            stdRoles.add(stdRole.getFormalName());
         }
         STANDARD_ROLES = stdRoles;
     }

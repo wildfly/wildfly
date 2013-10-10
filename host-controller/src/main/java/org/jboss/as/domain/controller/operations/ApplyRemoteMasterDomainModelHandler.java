@@ -335,7 +335,7 @@ public class ApplyRemoteMasterDomainModelHandler implements OperationStepHandler
                     writeResourceModel = false;
                     // Invoke a specialized op for high level rbac config
                     ModelNode configureOp = Util.createEmptyOperation(AccessAuthorizationDomainSlaveConfigHandler.OPERATION_NAME, resourceAddress);
-                    for (AttributeDefinition ad : AccessAuthorizationResourceDefinition.ATTRIBUTES) {
+                    for (AttributeDefinition ad : AccessAuthorizationResourceDefinition.CONFIG_ATTRIBUTES) {
                         String attrName = ad.getName();
                         if (resourceModel.hasDefined(attrName)) {
                             configureOp.get(attrName).set(resourceModel.get(attrName));
