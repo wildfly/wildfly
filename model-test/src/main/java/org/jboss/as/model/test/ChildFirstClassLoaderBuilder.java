@@ -58,14 +58,15 @@ public class ChildFirstClassLoaderBuilder {
     /** A comma separated list of maven repository urls. If not set it will use http://repository.jboss.org/nexus/content/groups/developer/ */
     static final String MAVEN_REPOSITORY_URLS = "org.jboss.model.test.maven.repository.urls";
 
-
+    private final MavenUtil mavenUtil;
     private final File cache;
     private final List<URL> classloaderURLs = new ArrayList<URL>();
     private final List<Pattern> parentFirst = new ArrayList<Pattern>();
     private final List<Pattern> childFirst = new ArrayList<Pattern>();
     private ClassFilter parentExclusionFilter;
 
-    public ChildFirstClassLoaderBuilder() {
+    public ChildFirstClassLoaderBuilder(boolean useEapRepository) {
+        this.mavenUtil = MavenUtil.create(useEapRepository);
         final String root = System.getProperty(ROOT_PROPERTY);
         final String cacheFolderName = System.getProperty(CACHE_FOLDER_PROPERTY);
         if (root == null && cacheFolderName == null) {
@@ -187,7 +188,7 @@ public class ChildFirstClassLoaderBuilder {
             }
         } else {
             System.out.println("No cached maven url for " + artifactGav + " found. " + file.getAbsolutePath() + " does not exist.");
-            final URL url = MavenUtil.createMavenGavURL(artifactGav);
+            final URL url = mavenUtil.createMavenGavURL(artifactGav);
             classloaderURLs.add(url);
             final ObjectOutputStream out = new ObjectOutputStream(new BufferedOutputStream(new FileOutputStream(file)));
             try {
@@ -219,7 +220,7 @@ public class ChildFirstClassLoaderBuilder {
             }
         } else {
             System.out.println("No cached recursive maven urls for " + artifactGav + " found. " + file.getAbsolutePath() + " does not exist.");
-            final List<URL> urls = MavenUtil.createMavenGavRecursiveURLs(artifactGav, excludes);
+            final List<URL> urls = mavenUtil.createMavenGavRecursiveURLs(artifactGav, excludes);
             classloaderURLs.addAll(urls);
             final ObjectOutputStream out = new ObjectOutputStream(new BufferedOutputStream(new FileOutputStream(file)));
             try {
