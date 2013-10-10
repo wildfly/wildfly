@@ -23,6 +23,7 @@ package org.jboss.as.weld;
 
 import java.io.IOException;
 
+import org.jboss.as.controller.AttributeDefinition;
 import org.jboss.as.controller.ModelVersion;
 import org.jboss.as.controller.PathAddress;
 import org.jboss.as.model.test.FailedOperationTransformationConfig;
@@ -32,6 +33,7 @@ import org.jboss.as.subsystem.test.AbstractSubsystemBaseTest;
 import org.jboss.as.subsystem.test.AdditionalInitialization;
 import org.jboss.as.subsystem.test.KernelServices;
 import org.jboss.as.subsystem.test.KernelServicesBuilder;
+import org.jboss.dmr.ModelNode;
 import org.junit.Assert;
 import org.junit.Test;
 
@@ -64,13 +66,50 @@ public class WeldSubsystemTestCase extends AbstractSubsystemBaseTest {
         testTransformers10(ModelTestControllerVersion.V7_1_3_FINAL);
     }
 
-    @Test //not ready yet in testing framework
+    @Test
     public void testTransformersAS72() throws Exception {
         testTransformers10(ModelTestControllerVersion.V7_2_0_FINAL);
     }
 
 
     private void testTransformers10(ModelTestControllerVersion controllerVersion) throws Exception {
+        ModelVersion modelVersion = ModelVersion.create(1, 0, 0);
+        KernelServicesBuilder builder = createKernelServicesBuilder(AdditionalInitialization.MANAGEMENT)
+                .setSubsystemXmlResource("subsystem.xml");
+        //which is why we need to include the jboss-as-controller artifact.
+        builder.createLegacyKernelServicesBuilder(AdditionalInitialization.MANAGEMENT, controllerVersion, modelVersion)
+                .addMavenResourceURL("org.jboss.as:jboss-as-weld:" + controllerVersion.getMavenGavVersion())
+                .addMavenResourceURL("org.jboss.as:jboss-as-controller:" + controllerVersion.getMavenGavVersion())
+                .skipReverseControllerCheck()
+                .dontPersistXml();
+
+        KernelServices mainServices = builder.build();
+        Assert.assertTrue(mainServices.isSuccessfulBoot());
+        KernelServices legacyServices = mainServices.getLegacyServices(modelVersion);
+        Assert.assertTrue(legacyServices.isSuccessfulBoot());
+
+        checkSubsystemModelTransformation(mainServices, modelVersion);
+
+    }
+
+    @Test
+    public void testTransformersRejectionAS712() throws Exception {
+        testRejectTransformers10(ModelTestControllerVersion.V7_1_2_FINAL);
+    }
+
+    @Test
+    public void testTransformersRejectionAS713() throws Exception {
+        testRejectTransformers10(ModelTestControllerVersion.V7_1_3_FINAL);
+    }
+
+    @Test
+    public void testTransformersRejectionAS72() throws Exception {
+        testRejectTransformers10(ModelTestControllerVersion.V7_2_0_FINAL);
+    }
+
+
+
+    private void testRejectTransformers10(ModelTestControllerVersion controllerVersion) throws Exception {
         ModelVersion modelVersion = ModelVersion.create(1, 0, 0);
         KernelServicesBuilder builder = createKernelServicesBuilder(AdditionalInitialization.MANAGEMENT);
 
@@ -84,16 +123,42 @@ public class WeldSubsystemTestCase extends AbstractSubsystemBaseTest {
         KernelServices mainServices = builder.build();
         Assert.assertTrue(mainServices.isSuccessfulBoot());
         Assert.assertTrue(mainServices.getLegacyServices(modelVersion).isSuccessfulBoot());
-        ModelTestUtils.checkFailedTransformedBootOperations(mainServices, modelVersion, parse(getSubsystemXml("subsystem.xml")),
+        ModelTestUtils.checkFailedTransformedBootOperations(mainServices, modelVersion, parse(getSubsystemXml("subsystem-reject.xml")),
                 new FailedOperationTransformationConfig()
                         .addFailedAttribute(
                                 PathAddress.pathAddress(WeldExtension.PATH_SUBSYSTEM),
-                                new FailedOperationTransformationConfig.NewAttributesConfig(
+                                new FalseOrUndefinedToTrueConfig (
                                         WeldResourceDefinition.NON_PORTABLE_MODE_ATTRIBUTE,
                                         WeldResourceDefinition.REQUIRE_BEAN_DESCRIPTOR_ATTRIBUTE
                                 )
                         )
         );
+    }
+
+    private static class FalseOrUndefinedToTrueConfig extends FailedOperationTransformationConfig.AttributesPathAddressConfig<FalseOrUndefinedToTrueConfig>{
+
+        FalseOrUndefinedToTrueConfig(AttributeDefinition...defs){
+            super(convert(defs));
+        }
+
+        @Override
+        protected boolean isAttributeWritable(String attributeName) {
+            return true;
+        }
+
+        @Override
+        protected boolean checkValue(String attrName, ModelNode attribute, boolean isWriteAttribute) {
+            return !attribute.isDefined() || attribute.asString().equals("false");
+        }
+
+        @Override
+        protected ModelNode correctValue(ModelNode toResolve, boolean isWriteAttribute) {
+            return new ModelNode(true);
+        }
+
+        protected boolean correctUndefinedValue() {
+            return true;
+        }
     }
 
 }
