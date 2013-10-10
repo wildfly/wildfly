@@ -44,6 +44,7 @@ public class ModelDescriptionConstants {
     public static final String ALLOWED = "allowed";
     public static final String ALLOW_EMPTY_PASSWORDS = "allow-empty-passwords";
     public static final String ALLOW_RESOURCE_SERVICE_RESTART = "allow-resource-service-restart";
+    public static final String ALL_ROLE_NAMES = "all-role-names";
     public static final String ALTERNATIVES = "alternatives";
     public static final String ANY = "any";
     public static final String ANY_ADDRESS = "any-address";
@@ -355,6 +356,7 @@ public class ModelDescriptionConstants {
     public static final String SOURCE_INTERFACE = "source-interface";
     public static final String SOURCE_PORT = "source-port";
     public static final String SSL = "ssl";
+    public static final String STANDARD_ROLE_NAMES = "standard-role-names";
     public static final String START = "start";
     public static final String START_SERVERS = "start-servers";
     public static final String STATUS = "status";

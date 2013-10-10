@@ -29,10 +29,12 @@ import java.util.Arrays;
 import java.util.List;
 
 import org.jboss.as.controller.AttributeDefinition;
+import org.jboss.as.controller.ListAttributeDefinition;
 import org.jboss.as.controller.PathElement;
 import org.jboss.as.controller.SimpleAttributeDefinition;
 import org.jboss.as.controller.SimpleAttributeDefinitionBuilder;
 import org.jboss.as.controller.SimpleResourceDefinition;
+import org.jboss.as.controller.StringListAttributeDefinition;
 import org.jboss.as.controller.access.CombinationPolicy;
 import org.jboss.as.controller.access.management.AccessConstraintDefinition;
 import org.jboss.as.controller.access.management.AccessConstraintUtilizationRegistry;
@@ -83,7 +85,16 @@ public class AccessAuthorizationResourceDefinition extends SimpleResourceDefinit
             .setValidator(new EnumValidator<Provider>(Provider.class, true, false))
             .build();
 
-    public static final List<AttributeDefinition> ATTRIBUTES = Arrays.<AttributeDefinition>asList(PROVIDER, PERMISSION_COMBINATION_POLICY);
+
+    static final ListAttributeDefinition STANDARD_ROLE_NAMES = new StringListAttributeDefinition.Builder(ModelDescriptionConstants.STANDARD_ROLE_NAMES)
+            .setStorageRuntime()
+            .build();
+
+    static final ListAttributeDefinition ALL_ROLE_NAMES = new StringListAttributeDefinition.Builder(ModelDescriptionConstants.ALL_ROLE_NAMES)
+            .setStorageRuntime()
+            .build();
+
+    public static final List<AttributeDefinition> CONFIG_ATTRIBUTES = Arrays.<AttributeDefinition>asList(PROVIDER, PERMISSION_COMBINATION_POLICY);
 
     public static AccessAuthorizationResourceDefinition forDomain(DelegatingConfigurableAuthorizer configurableAuthorizer) {
         return new AccessAuthorizationResourceDefinition(configurableAuthorizer, true, false);
@@ -123,6 +134,11 @@ public class AccessAuthorizationResourceDefinition extends SimpleResourceDefinit
             resourceRegistration.registerReadWriteAttribute(PROVIDER, null, new AccessAuthorizationProviderWriteAttributeHander(configurableAuthorizer));
             resourceRegistration.registerReadWriteAttribute(PERMISSION_COMBINATION_POLICY, null,
                     new AccessAuthorizationCombinationPolicyWriteAttributeHandler(authorizerConfiguration));
+
+            resourceRegistration.registerReadOnlyAttribute(STANDARD_ROLE_NAMES,
+                    AccessAuthorizationRolesHandler.getStandardRolesHandler(authorizerConfiguration));
+            resourceRegistration.registerReadOnlyAttribute(ALL_ROLE_NAMES,
+                    AccessAuthorizationRolesHandler.getAllRolesHandler(authorizerConfiguration));
         }
     }
 
