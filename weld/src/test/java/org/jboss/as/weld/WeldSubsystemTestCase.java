@@ -58,21 +58,45 @@ public class WeldSubsystemTestCase extends AbstractSubsystemBaseTest {
 
     @Test
     public void testTransformersAS712() throws Exception {
-        testTransformers10(ModelTestControllerVersion.V7_1_2_FINAL);
+        testTransformers10(ModelTestControllerVersion.V7_1_2_FINAL, false);
     }
 
     @Test
     public void testTransformersAS713() throws Exception {
-        testTransformers10(ModelTestControllerVersion.V7_1_3_FINAL);
+        testTransformers10(ModelTestControllerVersion.V7_1_3_FINAL, false);
     }
 
     @Test
     public void testTransformersAS72() throws Exception {
-        testTransformers10(ModelTestControllerVersion.V7_2_0_FINAL);
+        testTransformers10(ModelTestControllerVersion.V7_2_0_FINAL, false);
+    }
+
+    @Test
+    public void testTransformersEAP600() throws Exception {
+        testTransformers10(ModelTestControllerVersion.EAP_6_0_0, true);
+    }
+
+    @Test
+    public void testTransformersEAP601() throws Exception {
+        testTransformers10(ModelTestControllerVersion.EAP_6_0_1, true);
+    }
+
+    @Test
+    public void testTransformersEAP610() throws Exception {
+        testTransformers10(ModelTestControllerVersion.EAP_6_1_0, true);
+    }
+
+    @Test
+    public void testTransformersEAP611() throws Exception {
+        testTransformers10(ModelTestControllerVersion.EAP_6_1_1, true);
     }
 
 
-    private void testTransformers10(ModelTestControllerVersion controllerVersion) throws Exception {
+    private void testTransformers10(ModelTestControllerVersion controllerVersion, boolean eap) throws Exception {
+        if (eap) {
+            ignoreThisTestIfEAPRepositoryIsNotReachable();
+        }
+
         ModelVersion modelVersion = ModelVersion.create(1, 0, 0);
         KernelServicesBuilder builder = createKernelServicesBuilder(AdditionalInitialization.MANAGEMENT)
                 .setSubsystemXmlResource("subsystem.xml");
