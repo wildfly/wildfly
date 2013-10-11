@@ -20,7 +20,7 @@ import org.jboss.as.patching.runner.PatchUtils;
 abstract class InstallationModificationImpl extends MutableTargetImpl implements InstallationManager.InstallationModification {
 
     private final String name;
-    private final String version;
+    private String version;
     private final InstallationState installationState;
     private final List<String> allPatches;
     private final AtomicBoolean done = new AtomicBoolean();
@@ -72,6 +72,11 @@ abstract class InstallationModificationImpl extends MutableTargetImpl implements
     @Override
     public String getVersion() {
         return version;
+    }
+
+    @Override
+    public void setResultingVersion(String version) {
+        this.version = version;
     }
 
     @Override
