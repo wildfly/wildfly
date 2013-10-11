@@ -31,16 +31,22 @@ import java.net.UnknownHostException;
  */
 public class EAPRepositoryReachableUtil {
 
+    //System property to turn on transformers tests for eap
+    private static String TEST_TRANSFORMERS_EAP = "jboss.test.transformers.eap";
     private static final String EAP_REPOSITORY_HOST = "download.lab.bos.redhat.com";
 
     static Boolean reachable;
 
     public static boolean isReachable() {
         if (reachable == null) {
-            try {
-                InetAddress.getByName(EAP_REPOSITORY_HOST);
-                reachable = true;
-            } catch (UnknownHostException e) {
+            if (System.getProperties().contains(TEST_TRANSFORMERS_EAP)) {
+                try {
+                    InetAddress.getByName(EAP_REPOSITORY_HOST);
+                    reachable = true;
+                } catch (UnknownHostException e) {
+                    reachable = false;
+                }
+            } else {
                 reachable = false;
             }
         }
