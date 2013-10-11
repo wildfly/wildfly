@@ -30,6 +30,7 @@
     <server name="default-server" default-host="localhost" servlet-container="blah">
         <ajp-listener name="ajp-connector" socket-binding="ajp"/>
         <http-listener name="default" socket-binding="http" certificate-forwarding="true"/>
+        <http-listener name="second" socket-binding="http" />
         <https-listener name="https" socket-binding="https" security-realm="UndertowRealm" />
 
         <host name="default-host" alias="localhost, some.host" default-web-module="something.war">
