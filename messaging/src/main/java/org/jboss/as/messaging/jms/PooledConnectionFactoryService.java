@@ -466,10 +466,12 @@ public class PooledConnectionFactoryService implements Service<Void> {
         boolean prefill = false;
         boolean useStrictMin = false;
         FlushStrategy flushStrategy = FlushStrategy.FAILING_CONNECTION_ONLY;
+        Boolean isXA = Boolean.FALSE;
         final CommonPool pool;
         if (transactionSupport == TransactionSupportEnum.XATransaction) {
             pool = new CommonXaPoolImpl(minSize, maxSize, prefill, useStrictMin, flushStrategy,
                     Defaults.IS_SAME_RM_OVERRIDE, Defaults.INTERLEAVING, Defaults.PAD_XID, Defaults.WRAP_XA_RESOURCE, Defaults.NO_TX_SEPARATE_POOL);
+            isXA = Boolean.TRUE;
         } else {
             pool = new CommonPoolImpl(minSize, maxSize, prefill, useStrictMin, flushStrategy);
         }
@@ -483,7 +485,7 @@ public class PooledConnectionFactoryService implements Service<Void> {
         // when its ResourceAdapter is started
         Recovery recovery = new Recovery(new CredentialImpl(null, null, null), null, Boolean.TRUE);
         CommonValidationImpl validation = new CommonValidationImpl(null, null, false);
-        return new CommonConnDefImpl(Collections.<String, String>emptyMap(), RAMANAGED_CONN_FACTORY, jndiName, HQ_CONN_DEF, true, true, true, pool, timeOut, validation, security, recovery);
+        return new CommonConnDefImpl(Collections.<String, String>emptyMap(), RAMANAGED_CONN_FACTORY, jndiName, HQ_CONN_DEF, true, true, true, pool, timeOut, validation, security, recovery, isXA);
     }
 
     private static Connector15Impl createConnector15(ResourceAdapter1516 ra) {
