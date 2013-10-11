@@ -71,16 +71,17 @@ public interface Authorizer {
     AuthorizationResult authorizeJmxOperation(Caller caller, Environment callEnvironment, JmxAction action);
 
     /**
-     * Gets the set of roles the caller can run as taking into account and requested 'run as' roles.
+     * Gets the set of roles the caller can run as taking into account any requested 'run as' roles.
+     *
      *
      * @param caller the caller. Cannot be {@code null}
      * @param callEnvironment the call environment. Cannot be {@code null}
      * @param runAsRoles any requested 'run as' roles. May be {@code null}
      *
-     * @return The set of roles assigned to the caller, an empty set may be returned of no roles are assigned or {@code null}
-     *         may be returned if the access control provider does not support role mapping.
+     * @return The set of roles assigned to the caller; an empty set will be returned if no roles are assigned or {@code null}
+     *         will be returned if the access control provider does not support role mapping.
      */
-    Set<String> getCallerRoles(Caller caller, Environment callEnvironment, Set<String> runAsroles);
+    Set<String> getCallerRoles(Caller caller, Environment callEnvironment, Set<String> runAsRoles);
 
     /**
      * Description of standard information about the custom authorizer.
