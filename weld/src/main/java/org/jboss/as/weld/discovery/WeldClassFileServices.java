@@ -18,7 +18,6 @@ package org.jboss.as.weld.discovery;
 
 import java.lang.annotation.Annotation;
 import java.util.Set;
-import java.util.concurrent.ExecutionException;
 
 import org.jboss.as.server.deployment.annotation.CompositeIndex;
 import org.jboss.as.weld.WeldLogger;
@@ -41,18 +40,9 @@ public class WeldClassFileServices implements ClassFileServices {
 
     private CompositeIndex index;
 
-    private LoadingCache<String, WeldClassFileInfo> weldClassInfoCache;
-
     private LoadingCache<DotName, Set<String>> annotationClassAnnotationsCache;
 
     private final ClassLoader moduleClassLoader;
-
-    private class WeldClassInfoLoader extends CacheLoader<String, WeldClassFileInfo> {
-        @Override
-        public WeldClassFileInfo load(String key) throws Exception {
-            return new WeldClassFileInfo(key, index, annotationClassAnnotationsCache, moduleClassLoader);
-        }
-    }
 
     private class AnnotationClassAnnotationLoader extends CacheLoader<DotName, Set<String>> {
         @Override
@@ -89,25 +79,16 @@ public class WeldClassFileServices implements ClassFileServices {
         }
         this.moduleClassLoader = moduleClassLoader;
         this.index = index;
-        this.weldClassInfoCache = CacheBuilder.newBuilder().build(new WeldClassInfoLoader());
         this.annotationClassAnnotationsCache = CacheBuilder.newBuilder().build(new AnnotationClassAnnotationLoader());
     }
 
     @Override
     public ClassFileInfo getClassFileInfo(String className) {
-        try {
-            return weldClassInfoCache.get(className);
-        } catch (ExecutionException e) {
-            throw new RuntimeException(e);
-        }
+        return new WeldClassFileInfo(className, index, annotationClassAnnotationsCache, moduleClassLoader);
     }
 
     @Override
     public void cleanupAfterBoot() {
-        if (weldClassInfoCache != null) {
-            weldClassInfoCache.invalidateAll();
-            weldClassInfoCache = null;
-        }
         if (annotationClassAnnotationsCache != null) {
             annotationClassAnnotationsCache.invalidateAll();
             annotationClassAnnotationsCache = null;
