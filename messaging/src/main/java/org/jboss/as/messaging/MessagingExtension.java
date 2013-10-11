@@ -28,6 +28,7 @@ import static org.jboss.as.messaging.Namespace.MESSAGING_1_0;
 import static org.jboss.as.messaging.Namespace.MESSAGING_1_1;
 import static org.jboss.as.messaging.Namespace.MESSAGING_1_2;
 import static org.jboss.as.messaging.Namespace.MESSAGING_1_3;
+import static org.jboss.as.messaging.Namespace.MESSAGING_1_4;
 
 import org.jboss.as.controller.Extension;
 import org.jboss.as.controller.ExtensionContext;
@@ -52,6 +53,13 @@ import org.jboss.as.messaging.jms.bridge.JMSBridgeDefinition;
  * Domain extension that integrates HornetQ.
  *
  * <dl>
+ *   <dt>AS 7.3.0</dt>
+ *   <dd>
+ *     <ul>
+ *       <li>XML namespace: urn:jboss:domain:messaging:1.4
+ *       <li>Management model: 1.3.0
+ *     </ul>
+ *   </dd>
  *   <dt>AS 7.2.0</dt>
  *   <dd>
  *     <ul>
@@ -224,5 +232,6 @@ public class MessagingExtension implements Extension {
         context.setSubsystemXmlMapping(SUBSYSTEM_NAME, MESSAGING_1_1.getUriString(), MessagingSubsystemParser.getInstance());
         context.setSubsystemXmlMapping(SUBSYSTEM_NAME, MESSAGING_1_2.getUriString(), Messaging12SubsystemParser.getInstance());
         context.setSubsystemXmlMapping(SUBSYSTEM_NAME, MESSAGING_1_3.getUriString(), Messaging13SubsystemParser.getInstance());
+        context.setSubsystemXmlMapping(SUBSYSTEM_NAME, MESSAGING_1_4.getUriString(), Messaging131SubsystemParser.getInstance());
     }
 }

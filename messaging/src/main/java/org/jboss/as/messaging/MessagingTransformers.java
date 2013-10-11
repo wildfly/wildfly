@@ -82,6 +82,8 @@ public class MessagingTransformers {
                         .addRejectCheck(DEFINED, HornetQServerResourceDefinition.ATTRIBUTES_ADDED_IN_1_2_0)
                         .setDiscard(UNDEFINED, HornetQServerResourceDefinition.ATTRIBUTES_ADDED_IN_1_2_0)
                         .setValueConverter(AttributeConverter.Factory.createHardCoded(ID_CACHE_SIZE.getDefaultValue(), true), ID_CACHE_SIZE)
+                        .setDiscard(UNDEFINED, CommonAttributes.MAX_SAVED_REPLICATED_JOURNAL_SIZE)
+                        .addRejectCheck(DEFINED, CommonAttributes.MAX_SAVED_REPLICATED_JOURNAL_SIZE)
                 .end();
 
         for (String path : MessagingPathHandlers.PATHS.keySet()) {
@@ -246,6 +248,8 @@ public class MessagingTransformers {
                     }
 
                 }, CommonAttributes.CLUSTERED)
+                .setDiscard(UNDEFINED, CommonAttributes.MAX_SAVED_REPLICATED_JOURNAL_SIZE)
+                .addRejectCheck(DEFINED, CommonAttributes.MAX_SAVED_REPLICATED_JOURNAL_SIZE)
                 .end();
         TransformationDescription.Tools.register(subsystemRoot.build(), subsystem, VERSION_1_2_0);
     }

@@ -46,4 +46,10 @@ public class JMSBridge13ParsingUnitTestCase extends AbstractSubsystemBaseTest {
     protected AdditionalInitialization createAdditionalInitialization() {
         return AdditionalInitialization.MANAGEMENT;
     }
+
+    @Override
+    protected void compareXml(String configId, String original, String marshalled) throws Exception {
+        // XML from messaging 1.4 does not have the same output than 1.3
+        return;
+    }
 }
