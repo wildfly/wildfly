@@ -25,6 +25,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import org.jboss.as.controller.ModelVersion;
+import org.jboss.as.model.test.EAPRepositoryReachableUtil;
 import org.jboss.as.model.test.ModelTestControllerVersion;
 
 /**
@@ -55,10 +56,21 @@ public class TransformersTestParameters {
 
     public static List<Object[]> setupVersions(){
         List<Object[]> data = new ArrayList<Object[]>();
+        //AS releases
         data.add(new Object[] {new TransformersTestParameters(ModelVersion.create(1, 2, 0), ModelTestControllerVersion.V7_1_2_FINAL)});
         data.add(new Object[] {new TransformersTestParameters(ModelVersion.create(1, 3, 0), ModelTestControllerVersion.V7_1_3_FINAL)});
         data.add(new Object[] {new TransformersTestParameters(ModelVersion.create(1, 4, 0), ModelTestControllerVersion.V7_2_0_FINAL)});
         data.add(new Object[] {new TransformersTestParameters(ModelVersion.create(2, 0, 0), ModelTestControllerVersion.MASTER)});
+
+        //EAP releases
+        if (EAPRepositoryReachableUtil.isReachable()) {
+            data.add(new Object[] {new TransformersTestParameters(ModelVersion.create(1, 2, 0), ModelTestControllerVersion.EAP_6_0_0)});
+            data.add(new Object[] {new TransformersTestParameters(ModelVersion.create(1, 3, 0), ModelTestControllerVersion.EAP_6_0_1)});
+            data.add(new Object[] {new TransformersTestParameters(ModelVersion.create(1, 4, 0), ModelTestControllerVersion.EAP_6_1_0)});
+            data.add(new Object[] {new TransformersTestParameters(ModelVersion.create(1, 4, 0), ModelTestControllerVersion.EAP_6_1_1)});
+        }
+
+
         for (int i = 0 ; i < data.size() ; i++) {
             Object[] entry = data.get(i);
             System.out.println("Parameter " + i + ": " + entry[0]);
