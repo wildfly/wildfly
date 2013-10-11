@@ -349,7 +349,7 @@ public class DefaultPermissionFactory implements PermissionFactory, JmxPermissio
     }
 
     private static String getOfficialForm(StandardRole role) {
-        return role.toString().toUpperCase(Locale.ENGLISH);
+        return role.getOfficialForm();
     }
 
     private static String getOfficialForm(String role) {
@@ -401,7 +401,6 @@ public class DefaultPermissionFactory implements PermissionFactory, JmxPermissio
 
             };
         }
-
     }
 
     private static class PermsHolder {

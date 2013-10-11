@@ -59,11 +59,13 @@ class HostScopedRoleRemove implements OperationStepHandler {
 
         context.removeResource(PathAddress.EMPTY_ADDRESS);
 
+        final String roleName = PathAddress.pathAddress(operation.require(ModelDescriptionConstants.OP_ADDR)).getLastElement().getValue();
+        RoleMappingNotRequiredHandler.addOperation(context, roleName);
+
         context.addStep(new OperationStepHandler() {
             @Override
             public void execute(OperationContext context, ModelNode operation) throws OperationFailedException {
 
-                final String roleName = PathAddress.pathAddress(operation.require(ModelDescriptionConstants.OP_ADDR)).getLastElement().getValue();
                 final String baseRole = ServerGroupScopedRoleResourceDefinition.BASE_ROLE.resolveModelAttribute(context, model).asString();
                 ModelNode hostsAttribute = HostScopedRolesResourceDefinition.HOSTS.resolveModelAttribute(context, model);
                 final List<ModelNode> hostNodes = hostsAttribute.isDefined() ? hostsAttribute.asList() : Collections.<ModelNode>emptyList();

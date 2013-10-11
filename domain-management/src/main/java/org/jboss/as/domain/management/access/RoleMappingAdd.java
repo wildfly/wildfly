@@ -23,6 +23,9 @@
 package org.jboss.as.domain.management.access;
 
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
+import static org.jboss.as.domain.management.DomainManagementMessages.MESSAGES;
+
+import java.util.Locale;
 
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationContext.RollbackHandler;
@@ -44,25 +47,36 @@ import org.jboss.dmr.ModelNode;
 public class RoleMappingAdd implements OperationStepHandler {
 
     private final WritableAuthorizerConfiguration authorizerConfiguration;
+    private final boolean domainMode;
 
-    private RoleMappingAdd(final WritableAuthorizerConfiguration authorizerConfiguration) {
+    private RoleMappingAdd(final WritableAuthorizerConfiguration authorizerConfiguration, final boolean domainMode) {
         this.authorizerConfiguration = authorizerConfiguration;
+        this.domainMode = domainMode;
     }
 
-    public static OperationStepHandler create(final WritableAuthorizerConfiguration authorizerConfiguration) {
-        return new RoleMappingAdd(authorizerConfiguration);
+    public static OperationStepHandler create(final WritableAuthorizerConfiguration authorizerConfiguration, final boolean domainMode) {
+        return new RoleMappingAdd(authorizerConfiguration, domainMode);
     }
 
     @Override
     public void execute(OperationContext context, ModelNode operation) throws OperationFailedException {
         Resource resource = context.createResource(PathAddress.EMPTY_ADDRESS);
         PathAddress address = PathAddress.pathAddress(operation.get(OP_ADDR));
-        final String roleName = address.getLastElement().getValue().toUpperCase();
+        final String roleName = address.getLastElement().getValue();
+
+        if (authorizerConfiguration.getStandardRoles().contains(roleName) == false) {
+            if (domainMode) {
+                ScopedRoleRequiredHandler.addOperation(context, roleName);
+            } else {
+                // Standalone mode so no scoped roles so if it is not a standard role it is invalid.
+                throw MESSAGES.invalidRoleName(roleName);
+            }
+        }
 
         ModelNode model = resource.getModel();
         RoleMappingResourceDefinition.INCLUDE_ALL.validateAndSet(operation, model);
 
-        registerRuntimeAdd(context, roleName);
+        registerRuntimeAdd(context, roleName.toUpperCase(Locale.ENGLISH));
 
         context.stepCompleted();
     }

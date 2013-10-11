@@ -24,6 +24,8 @@ package org.jboss.as.domain.management.access;
 
 import static org.jboss.as.domain.management.DomainManagementMessages.MESSAGES;
 
+import java.util.Locale;
+
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationContext.RollbackHandler;
 import org.jboss.as.controller.OperationContext.Stage;
@@ -72,7 +74,7 @@ public class PrincipalRemove implements OperationStepHandler {
             RbacSanityCheckOperation.addOperation(context);
         }
 
-        registerRuntimeRemove(context, roleName, principalType, name, realm);
+        registerRuntimeRemove(context, roleName.toUpperCase(Locale.ENGLISH), principalType, name, realm);
 
         context.stepCompleted();
     }

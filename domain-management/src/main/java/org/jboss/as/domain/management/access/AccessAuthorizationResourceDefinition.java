@@ -146,7 +146,7 @@ public class AccessAuthorizationResourceDefinition extends SimpleResourceDefinit
     public void registerChildren(ManagementResourceRegistration resourceRegistration) {
         if (!isHostController) {
             // Role Mapping
-            resourceRegistration.registerSubModel(RoleMappingResourceDefinition.create(configurableAuthorizer));
+            resourceRegistration.registerSubModel(RoleMappingResourceDefinition.create(configurableAuthorizer, isDomain));
         }
 
         // Scoped roles

@@ -45,7 +45,7 @@ import org.jboss.as.controller.access.TargetResource;
  */
 public class StandardRoleMapper implements RoleMapper {
 
-    private static final String IN_VM_ROLE = StandardRole.SUPERUSER.toString();
+    private static final String IN_VM_ROLE = StandardRole.SUPERUSER.getOfficialForm();
     private static final RunAsRolePermission RUN_AS_IN_VM_ROLE = new RunAsRolePermission(IN_VM_ROLE);
     private final AuthorizerConfiguration authorizerConfiguration;
 

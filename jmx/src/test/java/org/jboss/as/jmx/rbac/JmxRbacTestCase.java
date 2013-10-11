@@ -497,14 +497,14 @@ public abstract class JmxRbacTestCase extends AbstractControllerTestBase {
                         PathAddress.pathAddress(
                                 CoreManagementResourceDefinition.PATH_ELEMENT,
                                 AccessAuthorizationResourceDefinition.PATH_ELEMENT,
-                                PathElement.pathElement(RoleMappingResourceDefinition.PATH_KEY, standardRole.toString())));
+                                PathElement.pathElement(RoleMappingResourceDefinition.PATH_KEY, standardRole.getFormalName())));
                 bootOperations.add(addRoleMappingOp);
 
                 ModelNode addIncludeUserOp = Util.createAddOperation(
                         PathAddress.pathAddress(
                             CoreManagementResourceDefinition.PATH_ELEMENT,
                             AccessAuthorizationResourceDefinition.PATH_ELEMENT,
-                            PathElement.pathElement(RoleMappingResourceDefinition.PATH_KEY, standardRole.toString()),
+                            PathElement.pathElement(RoleMappingResourceDefinition.PATH_KEY, standardRole.getFormalName()),
                             PathElement.pathElement(ModelDescriptionConstants.INCLUDE, "user-" + roleToUserName(standardRole))));
                 addIncludeUserOp.get(PrincipalResourceDefinition.NAME.getName()).set(roleToUserName(standardRole));
                 addIncludeUserOp.get(PrincipalResourceDefinition.TYPE.getName()).set(PrincipalResourceDefinition.Type.USER.toString());
