@@ -27,6 +27,7 @@ import java.util.Collection;
 import java.util.EnumSet;
 import java.util.logging.Handler;
 
+import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.server.deployment.DeploymentUnitProcessingException;
 import org.jboss.logging.Messages;
 import org.jboss.logging.annotations.Cause;
@@ -690,4 +691,37 @@ public interface LoggingMessages {
             "The subsystem has not be initialized and cannot be used. To use JBoss Log Manager you must add the system " +
             "property \"java.util.logging.manager\" and set it to \"org.jboss.logmanager.LogManager\"")
     IllegalStateException extensionNotInitialized();
+
+    /**
+     * Creates an exception indicating a failure to read the log file
+     *
+     * @param cause the cause of the error
+     * @param name  the name of the file that was not found
+     *
+     * @return an {@link OperationFailedException} for the error
+     */
+    @Message(id = 11593, value = "Failed to read the log file '%s'")
+    OperationFailedException failedToReadLogFile(@Cause Throwable cause, String name);
+
+    /**
+     * Creates an exception indicating the file was found in the log directory.
+     *
+     * @param name              the name of the file that was not found
+     * @param directoryProperty the name of the property used to resolved the log directory
+     *
+     * @return an {@link OperationFailedException} for the error
+     */
+    @Message(id = 11594, value = "File '%s' was not found and cannot be found in the %s directory property.")
+    OperationFailedException logFileNotFound(String name, String directoryProperty);
+
+    /**
+     * Creates an exception indicating the user cannot read the file.
+     *
+     * @param name              the name of the file that was not allowed to be read
+     * @param directoryProperty the name of the property used to resolved the log directory
+     *
+     * @return an {@link OperationFailedException} for the error
+     */
+    @Message(id = 11595, value = "Permission was denied to read file '%s' in the %s directory property.")
+    OperationFailedException readPermissionDenied(String name, String directoryProperty);
 }
