@@ -50,7 +50,7 @@ public class WeldClassFileServices implements ClassFileServices {
     private class WeldClassInfoLoader extends CacheLoader<String, WeldClassFileInfo> {
         @Override
         public WeldClassFileInfo load(String key) throws Exception {
-            return new WeldClassFileInfo(key, index, annotationClassAnnotationsCache);
+            return new WeldClassFileInfo(key, index, annotationClassAnnotationsCache, moduleClassLoader);
         }
     }
 
