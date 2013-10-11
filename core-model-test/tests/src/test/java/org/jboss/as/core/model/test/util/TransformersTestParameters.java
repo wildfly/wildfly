@@ -62,7 +62,7 @@ public class TransformersTestParameters {
         data.add(new Object[] {new TransformersTestParameters(ModelVersion.create(1, 4, 0), ModelTestControllerVersion.V7_2_0_FINAL)});
         data.add(new Object[] {new TransformersTestParameters(ModelVersion.create(2, 0, 0), ModelTestControllerVersion.MASTER)});
 
-        //EAP releases
+        //EAP releases - these will only get tested if the EAPRepositoryReachableUtil.TEST_TRANSFORMERS_EAP system property is set AND the EAP repostitory is available
         if (EAPRepositoryReachableUtil.isReachable()) {
             data.add(new Object[] {new TransformersTestParameters(ModelVersion.create(1, 2, 0), ModelTestControllerVersion.EAP_6_0_0)});
             data.add(new Object[] {new TransformersTestParameters(ModelVersion.create(1, 3, 0), ModelTestControllerVersion.EAP_6_0_1)});
