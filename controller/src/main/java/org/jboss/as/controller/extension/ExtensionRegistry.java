@@ -1079,7 +1079,7 @@ public class ExtensionRegistry {
         }
 
         @Override
-        public Set<String> getCallerRoles(Caller caller, Environment callEnvironment, Set<String> runAsroles) {
+        public Set<String> getCallerRoles(Caller caller, Environment callEnvironment, Set<String> runAsRoles) {
             return null;
         }
 

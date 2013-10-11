@@ -79,8 +79,8 @@ public final class DelegatingConfigurableAuthorizer implements JmxAuthorizer {
     }
 
     @Override
-    public Set<String> getCallerRoles(Caller caller, Environment callEnvironment, Set<String> runAsroles) {
-        return delegate.getCallerRoles(caller, callEnvironment, runAsroles);
+    public Set<String> getCallerRoles(Caller caller, Environment callEnvironment, Set<String> runAsRoles) {
+        return delegate.getCallerRoles(caller, callEnvironment, runAsRoles);
     }
 
     @Override
