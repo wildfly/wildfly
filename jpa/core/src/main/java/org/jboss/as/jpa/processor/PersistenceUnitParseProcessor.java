@@ -161,7 +161,7 @@ public class PersistenceUnitParseProcessor implements DeploymentUnitProcessor {
 
     private void handleEarDeployment(DeploymentPhaseContext phaseContext) throws DeploymentUnitProcessingException {
         final DeploymentUnit deploymentUnit = phaseContext.getDeploymentUnit();
-        if (!appClientContainerMode && isEarDeployment(deploymentUnit)) {
+        if (isEarDeployment(deploymentUnit)) {
 
             int puCount = 0;
             // ordered list of PUs
