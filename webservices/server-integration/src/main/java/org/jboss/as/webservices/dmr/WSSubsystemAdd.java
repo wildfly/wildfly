@@ -41,6 +41,7 @@ import org.jboss.as.controller.registry.Resource;
 import org.jboss.as.controller.registry.Resource.ResourceEntry;
 import org.jboss.as.server.AbstractDeploymentChainStep;
 import org.jboss.as.server.DeploymentProcessorTarget;
+import org.jboss.as.web.host.CommonWebServer;
 import org.jboss.as.webservices.config.ServerConfigImpl;
 import org.jboss.as.webservices.service.ServerConfigService;
 import org.jboss.as.webservices.util.ModuleClassLoaderProvider;
@@ -80,11 +81,11 @@ class WSSubsystemAdd extends AbstractBoottimeAddStepHandler {
         ServiceTarget serviceTarget = context.getServiceTarget();
         if (appclient && model.hasDefined(WSDL_HOST)) {
             ServerConfigImpl serverConfig = createServerConfig(model, true, context);
-            newControllers.add(ServerConfigService.install(serviceTarget, serverConfig, verificationHandler, getServerConfigDependencies(context)));
+            newControllers.add(ServerConfigService.install(serviceTarget, serverConfig, verificationHandler, getServerConfigDependencies(context, appclient)));
         }
         if (!appclient) {
             ServerConfigImpl serverConfig = createServerConfig(model, false, context);
-            newControllers.add(ServerConfigService.install(serviceTarget, serverConfig, verificationHandler, getServerConfigDependencies(context)));
+            newControllers.add(ServerConfigService.install(serviceTarget, serverConfig, verificationHandler, getServerConfigDependencies(context, appclient)));
         }
     }
 
@@ -109,14 +110,17 @@ class WSSubsystemAdd extends AbstractBoottimeAddStepHandler {
     }
 
     /**
-     * Process the model to figure out the name of the services the server config services has to depend on
+     * Process the model to figure out the name of the services the server config service has to depend on
      *
      */
-    private static List<ServiceName> getServerConfigDependencies(OperationContext context) {
+    private static List<ServiceName> getServerConfigDependencies(OperationContext context, boolean appclient) {
         final List<ServiceName> serviceNames = new ArrayList<ServiceName>();
         final Resource subsystemResource = context.readResourceFromRoot(PathAddress.pathAddress(WSExtension.SUBSYSTEM_PATH));
         readConfigServiceNames(serviceNames, subsystemResource, Constants.CLIENT_CONFIG);
         readConfigServiceNames(serviceNames, subsystemResource, Constants.ENDPOINT_CONFIG);
+        if (!appclient) {
+            serviceNames.add(CommonWebServer.SERVICE_NAME);
+        }
         return serviceNames;
     }
 
