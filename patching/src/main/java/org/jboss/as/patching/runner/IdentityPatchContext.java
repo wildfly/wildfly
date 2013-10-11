@@ -107,7 +107,7 @@ class IdentityPatchContext implements PatchContentProvider {
             this.miscBackup = null;     // This will trigger a failure when the root is actually needed
             this.configBackup = null;
         }
-        this.identityEntry = new PatchEntry(modification, null);
+        this.identityEntry = new IdentityEntry(modification, null);
     }
 
     /**
@@ -578,13 +578,29 @@ class IdentityPatchContext implements PatchContentProvider {
         return PatchContentLoader.getMiscPath(root, item);
     }
 
+    class IdentityEntry extends PatchEntry {
+
+        IdentityEntry(InstallationManager.MutablePatchingTarget delegate, PatchElement element) {
+            super(delegate, element);
+        }
+
+        @Override
+        protected String getResultingVersion() {
+            return modification.getVersion();
+        }
+
+        @Override
+        public void setResultingVersion(String resultingVersion) {
+            modification.setResultingVersion(resultingVersion);
+        }
+    }
+
     /**
      * Modification information for a patchable target.
      */
     class PatchEntry implements InstallationManager.MutablePatchingTarget, PatchingTaskContext {
 
         private String applyPatchId;
-        private String resultingVersion;
         private PatchElement element;
         private final InstallationManager.MutablePatchingTarget delegate;
         private final List<ContentModification> modifications = new ArrayList<ContentModification>();
@@ -596,7 +612,6 @@ class IdentityPatchContext implements PatchContentProvider {
             assert delegate != null;
             this.delegate = delegate;
             this.element = element;
-            this.resultingVersion = modification.getVersion();
         }
 
         protected void updateElement(final PatchElement element) {
@@ -604,11 +619,11 @@ class IdentityPatchContext implements PatchContentProvider {
         }
 
         protected String getResultingVersion() {
-            return resultingVersion;
+            throw new IllegalStateException();
         }
 
         public void setResultingVersion(String resultingVersion) {
-            this.resultingVersion = resultingVersion;
+            throw new IllegalStateException();
         }
 
         @Override

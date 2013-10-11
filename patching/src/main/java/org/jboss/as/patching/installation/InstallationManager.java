@@ -65,6 +65,13 @@ public abstract class InstallationManager extends InstalledIdentity {
         String getVersion();
 
         /**
+         * Set the resulting version.
+         *
+         * @param version the resulting version
+         */
+        void setResultingVersion(String version);
+
+        /**
          * Add a patch to the installed list.
          *
          * @param patchId the patch id
