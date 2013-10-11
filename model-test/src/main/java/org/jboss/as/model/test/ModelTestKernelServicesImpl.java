@@ -302,6 +302,7 @@ public abstract class ModelTestKernelServicesImpl<T extends ModelTestKernelServi
                 for (T legacyService: legacyServices.values()) {
                     legacyService.shutdown();
                 }
+                legacyServices.clear();
             }
         }
     }

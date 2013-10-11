@@ -596,6 +596,13 @@ public class CoreModelTestDelegate {
             classLoaderBuilder.addMavenResourceURL("org.jboss.as:jboss-as-core-model-test-framework:" + ModelTestControllerVersion.CurrentVersion.VERSION);
             classLoaderBuilder.addMavenResourceURL("org.jboss.as:jboss-as-model-test:" + ModelTestControllerVersion.CurrentVersion.VERSION);
 
+            //These two is needed or the child first classloader never gets GC'ed which causes OOMEs for very big tests
+            //Here the Reference$ReaperThread hangs onto the classloader
+            classLoaderBuilder.addParentFirstClassPattern("org.jboss.modules.*");
+            //Here the NDC hangs onto the classloader
+            classLoaderBuilder.addParentFirstClassPattern("org.jboss.logmanager.*");
+
+
             if (testControllerVersion != ModelTestControllerVersion.MASTER) {
                 String groupId = testControllerVersion.getMavenGavVersion().startsWith("7.") ? "org.jboss.as" : "org.wildfly";
                 String hostControllerArtifactId = testControllerVersion.getMavenGavVersion().startsWith("7.") ? "jboss-as-host-controller" : "wildfly-host-controller";
