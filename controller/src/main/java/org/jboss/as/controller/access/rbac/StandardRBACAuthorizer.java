@@ -22,7 +22,12 @@
 
 package org.jboss.as.controller.access.rbac;
 
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.HashSet;
 import java.util.LinkedHashSet;
+import java.util.Locale;
+import java.util.Map;
 import java.util.Set;
 
 import org.jboss.as.controller.access.AuthorizerConfiguration;
@@ -79,6 +84,7 @@ public final class StandardRBACAuthorizer extends ManagementPermissionAuthorizer
     private final AuthorizerConfiguration configuration;
     private final DefaultPermissionFactory permissionFactory;
     private final RoleMapper roleMapper;
+    private final Map<String, String> mappedToOfficialForm = Collections.synchronizedMap(new HashMap<String, String>());
 
     private StandardRBACAuthorizer(final AuthorizerConfiguration configuration,
                                    final DefaultPermissionFactory permissionFactory, final RoleMapper roleMapper) {
@@ -87,11 +93,50 @@ public final class StandardRBACAuthorizer extends ManagementPermissionAuthorizer
         this.permissionFactory = permissionFactory;
         configuration.registerScopedRoleListener(permissionFactory);
         this.roleMapper = roleMapper;
+        for (StandardRole std : StandardRole.values()) {
+            mappedToOfficialForm.put(std.toString(), std.getFormalName());
+        }
     }
 
     @Override
-    public Set<String> getCallerRoles(Caller caller, Environment callEnvironment, Set<String> runAsroles) {
-        return roleMapper.mapRoles(caller, callEnvironment, runAsroles);
+    public Set<String> getCallerRoles(Caller caller, Environment callEnvironment, Set<String> runAsRoles) {
+        Set<String> mapped = roleMapper.mapRoles(caller, callEnvironment, runAsRoles);
+        if (mapped == null) {
+            return null;
+        } else if (mapped.isEmpty()) {
+            return mapped;
+        }
+        Set<String> result = new HashSet<String>();
+        for (String role : mapped) {
+            result.add(getOfficialRoleForm(role));
+        }
+        return result;
+    }
+
+    private String getOfficialRoleForm(String role) {
+        String official = mappedToOfficialForm.get(role);
+        if (official == null) {
+            for (String scoped : configuration.getScopedRoles().keySet()) {
+                if (role.equalsIgnoreCase(scoped)) {
+                    official = scoped;
+                    break;
+                }
+            }
+            if (official == null) {
+                try {
+                    StandardRole std = StandardRole.valueOf(role.toUpperCase(Locale.ENGLISH));
+                    official = std.getFormalName();
+                } catch (Exception e) {
+                    // ignored
+                }
+            }
+            if (official != null) {
+                mappedToOfficialForm.put(role, official);
+            } else {
+                official = role;
+            }
+        }
+        return official;
     }
 
     @Override
