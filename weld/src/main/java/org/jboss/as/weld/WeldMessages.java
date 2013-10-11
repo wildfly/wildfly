@@ -39,6 +39,7 @@ import org.jboss.logging.Messages;
 import org.jboss.logging.annotations.Cause;
 import org.jboss.logging.annotations.Message;
 import org.jboss.logging.annotations.MessageBundle;
+import org.jboss.weld.resources.spi.ClassFileInfoException;
 
 /**
  * Date: 05.11.2011
@@ -152,4 +153,7 @@ public interface WeldMessages {
 
     @Message(id = 16082, value = "%s was not found in composite index")
     IllegalStateException nameNotFoundInIndex(String name);
+
+    @Message(id = 16083, value = "Cannot load %s")
+    ClassFileInfoException cannotLoadClass(String name, @Cause Throwable throwable);
 }
