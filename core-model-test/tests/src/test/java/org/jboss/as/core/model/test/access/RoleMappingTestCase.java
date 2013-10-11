@@ -48,7 +48,6 @@ import java.util.Set;
 
 import javax.security.auth.Subject;
 
-import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
 import org.jboss.as.core.model.test.AbstractCoreModelTest;
 import org.jboss.as.core.model.test.KernelServices;
@@ -89,7 +88,7 @@ public class RoleMappingTestCase extends AbstractCoreModelTest {
      */
     @Test
     public void testIncludeByUsername() {
-        final String roleName = "TestRoleOne"; // Use a unique role for each test, a failure to clean up should not affect other tests.
+        final String roleName = "Deployer";
         final String userName = "UserOne";
         addRole(roleName, false);
         addPrincipal(roleName, MappingType.INCLUDE, PrincipalType.USER, userName, null);
@@ -106,7 +105,7 @@ public class RoleMappingTestCase extends AbstractCoreModelTest {
      */
     @Test
     public void testIncludeByUsernameAndRealm() {
-        final String roleName = "TestRoleTwo";
+        final String roleName = "Deployer";
         final String userName = "UserTwo";
         addRole(roleName, false);
         addPrincipal(roleName, MappingType.INCLUDE, PrincipalType.USER, userName, TEST_REALM);
@@ -126,7 +125,7 @@ public class RoleMappingTestCase extends AbstractCoreModelTest {
      */
     @Test
     public void testIncludeByGroup() {
-        final String roleName = "TestRoleThree";
+        final String roleName = "Deployer";
         final String userName = "UserThree";
         final String groupName = "GroupThree";
         addRole(roleName, false);
@@ -145,7 +144,7 @@ public class RoleMappingTestCase extends AbstractCoreModelTest {
      */
     @Test
     public void testIncludeByGroupAndRealm() {
-        final String roleName = "TestRoleFour";
+        final String roleName = "Deployer";
         final String userName = "UserFour";
         final String groupName = "GroupFour";
         addRole(roleName, false);
@@ -164,7 +163,7 @@ public class RoleMappingTestCase extends AbstractCoreModelTest {
      */
     @Test
     public void testExcludeByUsername() {
-        final String roleName = "TestRoleFive";
+        final String roleName = "Deployer";
         final String userName = "UserFive";
         final String groupName = "GroupFive";
         addRole(roleName, false);
@@ -183,7 +182,7 @@ public class RoleMappingTestCase extends AbstractCoreModelTest {
      */
     @Test
     public void testExcludeByUsernameAndRealm() {
-        final String roleName = "TestRoleFive";
+        final String roleName = "Deployer";
         final String userName = "UserFive";
         final String groupName = "GroupFive";
         addRole(roleName, false);
@@ -203,7 +202,7 @@ public class RoleMappingTestCase extends AbstractCoreModelTest {
      */
     @Test
     public void testExcludeByGroup() {
-        final String roleName = "TestRoleSix";
+        final String roleName = "Deployer";
         final String userName = "UserSix";
         final String inGroupName = "GroupSix_In";
         final String outGroupName = "GroupSix_Out";
@@ -223,7 +222,7 @@ public class RoleMappingTestCase extends AbstractCoreModelTest {
      */
     @Test
     public void testExcludeByGroupAndRealm() {
-        final String roleName = "TestRoleSeven";
+        final String roleName = "Deployer";
         final String userName = "UserSeven";
         final String inGroupName = "GroupSeven_In";
         final String outGroupName = "GroupSeven_Out";
@@ -246,8 +245,8 @@ public class RoleMappingTestCase extends AbstractCoreModelTest {
      */
     @Test
     public void testSuperUserAs() {
-        final String roleName = "SUPERUSER";
-        final String otherRole = "OPERATOR";
+        final String roleName = "SuperUser";
+        final String otherRole = "Deployer";
         final String userName = "UserThirteen";
         addRole(roleName, false);
         ModelNode addedAddress = addPrincipal(roleName, MappingType.INCLUDE, PrincipalType.USER, userName, null);
@@ -261,11 +260,11 @@ public class RoleMappingTestCase extends AbstractCoreModelTest {
     }
 
     /**
-     * Test that user assigned the OPERATOR role can NOT request a different role.
+     * Test that user assigned the Deployer role can NOT request a different role.
      */
     @Test
-    public void testOperatorAs() {
-        final String roleName = "OPERATOR";
+    public void testDeployerAs() {
+        final String roleName = "Deployer";
         final String otherRole = "MONITOR";
         final String userName = "UserFourteen";
         addRole(roleName, false);
@@ -284,7 +283,7 @@ public class RoleMappingTestCase extends AbstractCoreModelTest {
      */
     @Test
     public void testIncludeAll() {
-        final String roleName = "TestRoleEight"; // Use a unique role for each test, a failure to clean up should not affect other tests.
+        final String roleName = "Deployer";
         final String userName = "UserEight";
         addRole(roleName, true);
         assertIsCallerInRole(roleName, null, false);
@@ -299,7 +298,7 @@ public class RoleMappingTestCase extends AbstractCoreModelTest {
      */
     @Test
     public void testIncludeAll_ExcludeByUsername() {
-        final String roleName = "TestRoleNine";
+        final String roleName = "Deployer";
         final String userName = "UserNine";
         final String groupName = "GroupNine";
         addRole(roleName, true);
@@ -317,7 +316,7 @@ public class RoleMappingTestCase extends AbstractCoreModelTest {
      */
     @Test
     public void testIncludeAll_ExcludeByGroup() {
-        final String roleName = "TestRoleTen";
+        final String roleName = "Deployer";
         final String userName = "UserTen";
         final String groupName = "GroupTen";
         addRole(roleName, true);
@@ -336,17 +335,21 @@ public class RoleMappingTestCase extends AbstractCoreModelTest {
      * Tests to verify that the add operations successfully detect duplicate include/exclude definitions.
      */
 
+    @Test
     public void testDuplicateUserComplete() {
-        final String roleName = "TestRoleEleven";
+        final String roleName = "Deployer";
         final String userName = "UserEleven";
 
         addRole(roleName, false);
         addPrincipal(roleName, MappingType.INCLUDE, PrincipalType.USER, userName, TEST_REALM);
         addPrincipal(roleName, MappingType.INCLUDE, PrincipalType.USER, userName, TEST_REALM, true);
+
+        removeRole(roleName);
     }
 
+    @Test
     public void testDuplicateUserRealmLess() {
-        final String roleName = "TestRoleTwelve";
+        final String roleName = "Deployer";
         final String userName = "UserTwelve";
 
         addRole(roleName, false);
@@ -357,19 +360,25 @@ public class RoleMappingTestCase extends AbstractCoreModelTest {
         addPrincipal(roleName, MappingType.EXCLUDE, PrincipalType.USER, userName, TEST_REALM);
         addPrincipal(roleName, MappingType.EXCLUDE, PrincipalType.USER, userName, null);
         addPrincipal(roleName, MappingType.EXCLUDE, PrincipalType.USER, userName, null, true);
+
+        removeRole(roleName);
     }
 
+    @Test
     public void testDuplicateGroupComplete() {
-        final String roleName = "TestRoleThirteen";
+        final String roleName = "Deployer";
         final String groupName = "UserThirteen";
 
         addRole(roleName, false);
         addPrincipal(roleName, MappingType.EXCLUDE, PrincipalType.GROUP, groupName, TEST_REALM);
         addPrincipal(roleName, MappingType.EXCLUDE, PrincipalType.GROUP, groupName, TEST_REALM, true);
+
+        removeRole(roleName);
     }
 
+    @Test
     public void testDuplicateGroupRealmLess() {
-        final String roleName = "TestRoleFourteen";
+        final String roleName = "Deployer";
         final String groupName = "UserFourteen";
 
         addRole(roleName, false);
@@ -380,6 +389,8 @@ public class RoleMappingTestCase extends AbstractCoreModelTest {
         addPrincipal(roleName, MappingType.INCLUDE, PrincipalType.GROUP, groupName, TEST_REALM);
         addPrincipal(roleName, MappingType.INCLUDE, PrincipalType.GROUP, groupName, null);
         addPrincipal(roleName, MappingType.INCLUDE, PrincipalType.GROUP, groupName, null, true);
+
+        removeRole(roleName);
     }
 
     private void addRole(final String roleName, boolean includeAll) {

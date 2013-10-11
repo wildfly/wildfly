@@ -53,15 +53,15 @@ public class RoleMappingResourceDefinition extends SimpleResourceDefinition {
 
     private final DelegatingConfigurableAuthorizer authorizer;
 
-    private RoleMappingResourceDefinition(final DelegatingConfigurableAuthorizer authorizer) {
+    private RoleMappingResourceDefinition(final DelegatingConfigurableAuthorizer authorizer, final boolean domainMode) {
         super(PathElement.pathElement(PATH_KEY), DomainManagementResolver.getResolver("core.access-control.role-mapping"),
-                RoleMappingAdd.create(authorizer.getWritableAuthorizerConfiguration()),
+                RoleMappingAdd.create(authorizer.getWritableAuthorizerConfiguration(), domainMode),
                 RoleMappingRemove.create(authorizer.getWritableAuthorizerConfiguration()));
         this.authorizer = authorizer;
     }
 
-    public static SimpleResourceDefinition create(final DelegatingConfigurableAuthorizer authorizer) {
-        return new RoleMappingResourceDefinition(authorizer);
+    public static SimpleResourceDefinition create(final DelegatingConfigurableAuthorizer authorizer, final boolean domainMode) {
+        return new RoleMappingResourceDefinition(authorizer, domainMode);
     }
 
     @Override
@@ -87,7 +87,7 @@ public class RoleMappingResourceDefinition extends SimpleResourceDefinition {
         PathAddress address = PathAddress.pathAddress(operation.get(OP_ADDR));
         for (PathElement current : address) {
             if (ROLE_MAPPING.equals(current.getKey())) {
-                return current.getValue().toUpperCase();
+                return current.getValue();
             }
         }
         throw new IllegalStateException();

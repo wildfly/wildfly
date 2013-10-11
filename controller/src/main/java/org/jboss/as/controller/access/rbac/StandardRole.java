@@ -23,6 +23,7 @@
 package org.jboss.as.controller.access.rbac;
 
 import java.util.EnumSet;
+import java.util.Locale;
 import java.util.Set;
 
 import org.jboss.as.controller.access.Action;
@@ -63,8 +64,12 @@ public enum StandardRole {
         return allowedActions.contains(actionEffect);
     }
 
-
     public String getFormalName() {
         return name;
     }
+
+    public String getOfficialForm() {
+        return toString().toUpperCase(Locale.ENGLISH);
+    }
+
 }

@@ -144,7 +144,7 @@ public class ManagementPermissionAuthorizer implements Authorizer {
 
     private AuthorizationResult authorize(Set<String> callerRoles, StandardRole...roles) {
         for (StandardRole role : roles) {
-            if (callerRoles.contains(role.toString())) {
+            if (callerRoles.contains(role.getOfficialForm())) {
                 return AuthorizationResult.PERMITTED;
             }
         }
