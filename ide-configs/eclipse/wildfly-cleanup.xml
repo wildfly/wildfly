@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8" standalone="no"?>
 <profiles version="2">
-<profile kind="CleanUpProfile" name="AS7" version="2">
+<profile kind="CleanUpProfile" name="Wildfly" version="2">
 <setting id="cleanup.remove_unused_private_fields" value="true"/>
 <setting id="cleanup.always_use_parentheses_in_expressions" value="false"/>
 <setting id="cleanup.never_use_blocks" value="false"/>
