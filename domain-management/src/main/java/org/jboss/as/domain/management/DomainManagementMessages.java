@@ -794,6 +794,36 @@ public interface DomainManagementMessages {
     @Message(id = 15291, value = "Configuration for security realm '%s' includes multiple group-search resources within the authorization=ldap resource (%s). Only one is allowed")
     OperationFailedException multipleGroupSearchConfigurationsDefined(String realmName, Set<String> configurations);
 
+    /**
+     * Error message if the name of a role mapping being added is invalid.
+     *
+     * @param roleName - The name of the role.
+     *
+     * @return an {@link OperationFailedException} for the error.
+     */
+    @Message(id = 15292, value = "The role name '%s' is not a valid standard role.")
+    OperationFailedException invalidRoleName(String roleName);
+
+    /**
+     * Error message if the name of a role mapping being added is invalid.
+     *
+     * @param roleName - The name of the role.
+     *
+     * @return an {@link OperationFailedException} for the error.
+     */
+    @Message(id = 15293, value = "The role name '%s' is not a valid standard role and is not a host scoped role or a server group scoped role.")
+    OperationFailedException invalidRoleNameDomain(String roleName);
+
+    /**
+     * Error message if the name of a scoped role can not be removed as the role mapping remains.
+     *
+     * @param roleName - The name of the role.
+     *
+     * @return an {@link OperationFailedException} for the error.
+     */
+    @Message(id = 15294, value = "The scoped role '%s' can not be removed as a role mapping still exists.")
+    OperationFailedException roleMappingRemaining(String roleName);
+
     /*
      * Logging IDs 15200 to 15299 are reserved for domain management, the file DomainManagementLogger also contains messages in
      * this range commencing 15200.

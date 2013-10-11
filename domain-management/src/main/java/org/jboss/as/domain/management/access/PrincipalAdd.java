@@ -28,6 +28,7 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.INC
 import static org.jboss.as.domain.management.DomainManagementMessages.MESSAGES;
 
 import java.util.List;
+import java.util.Locale;
 
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationContext.RollbackHandler;
@@ -82,7 +83,7 @@ public class PrincipalAdd implements OperationStepHandler {
         PathAddress roleAddress = completeAddress.subAddress(0, completeAddress.size() - 1);
         validateUniqueness(context, roleName, roleAddress, principalType, realm, name);
 
-        registerRuntimeAdd(context, roleName, principalType, name, realm);
+        registerRuntimeAdd(context, roleName.toUpperCase(Locale.ENGLISH), principalType, name, realm);
 
         context.stepCompleted();
     }

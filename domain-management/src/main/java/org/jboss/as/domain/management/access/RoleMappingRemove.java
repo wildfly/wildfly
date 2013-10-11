@@ -25,6 +25,8 @@ package org.jboss.as.domain.management.access;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
 import static org.jboss.as.domain.management.DomainManagementMessages.MESSAGES;
 
+import java.util.Locale;
+
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationContext.RollbackHandler;
 import org.jboss.as.controller.OperationContext.Stage;
@@ -58,11 +60,11 @@ public class RoleMappingRemove implements OperationStepHandler {
         context.removeResource(PathAddress.EMPTY_ADDRESS);
 
         PathAddress address = PathAddress.pathAddress(operation.get(OP_ADDR));
-        final String roleName = address.getLastElement().getValue().toUpperCase();
+        final String roleName = address.getLastElement().getValue();
 
         RbacSanityCheckOperation.addOperation(context);
 
-        registerRuntimeRemove(context, roleName);
+        registerRuntimeRemove(context, roleName.toUpperCase(Locale.ENGLISH));
 
         context.stepCompleted();
     }
