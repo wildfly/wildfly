@@ -593,6 +593,12 @@ public class CoreModelTestDelegate {
 
             classLoaderBuilder.addParentFirstClassPattern("org.jboss.as.core.model.bridge.shared.*");
 
+            //These two is needed or the child first classloader never gets GC'ed which causes OOMEs for very big tests
+            //Here the Reference$ReaperThread hangs onto the classloader
+            classLoaderBuilder.addParentFirstClassPattern("org.jboss.modules.*");
+            //Here the NDC hangs onto the classloader
+            classLoaderBuilder.addParentFirstClassPattern("org.jboss.logmanager.*");
+
             classLoaderBuilder.addMavenResourceURL("org.wildfly:wildfly-core-model-test-framework:" + ModelTestControllerVersion.CurrentVersion.VERSION);
             classLoaderBuilder.addMavenResourceURL("org.wildfly:wildfly-model-test:" + ModelTestControllerVersion.CurrentVersion.VERSION);
 
