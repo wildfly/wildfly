@@ -44,6 +44,7 @@ import org.jboss.logging.annotations.LogMessage;
 import org.jboss.logging.annotations.Message;
 import org.jboss.logging.annotations.MessageLogger;
 import org.jboss.weld.bootstrap.spi.BeanDeploymentArchive;
+import org.jboss.weld.resources.spi.ClassFileInfoException;
 
 /**
  * Date: 05.11.2011
@@ -234,9 +235,12 @@ public interface WeldLogger extends BasicLogger {
     void beanArchiveDiscovered(BeanDeploymentArchive bda);
 
     @Message(id = 50, value = "%s was not found in composite index")
-    IllegalStateException nameNotFoundInIndex(String name);
+    ClassFileInfoException nameNotFoundInIndex(String name);
 
     @LogMessage(level = Logger.Level.DEBUG)
     @Message(id = Message.NONE, value = "Unable to load annotation %s")
     void unableToLoadAnnotation(String annotationClassName);
+
+    @Message(id = 51, value = "Cannot load %s")
+    ClassFileInfoException cannotLoadClass(String name, @Cause Throwable throwable);
 }

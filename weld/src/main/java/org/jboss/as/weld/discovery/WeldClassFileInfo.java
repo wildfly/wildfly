@@ -26,6 +26,7 @@ import javax.inject.Inject;
 
 import org.jboss.as.server.deployment.annotation.CompositeIndex;
 import org.jboss.as.weld.logging.WeldLogger;
+import org.jboss.as.weld.util.Reflections;
 import org.jboss.jandex.AnnotationInstance;
 import org.jboss.jandex.AnnotationTarget;
 import org.jboss.jandex.ClassInfo;
@@ -63,13 +64,15 @@ public class WeldClassFileInfo implements ClassFileInfo {
 
     private final LoadingCache<DotName, Set<String>> annotationClassAnnotationsCache;
 
+    private final ClassLoader classLoader;
+
     /**
      *
      * @param className
      * @param index
      * @param annotationClassAnnotationsCache
      */
-    public WeldClassFileInfo(String className, CompositeIndex index, LoadingCache<DotName, Set<String>> annotationClassAnnotationsCache) {
+    public WeldClassFileInfo(String className, CompositeIndex index, LoadingCache<DotName, Set<String>> annotationClassAnnotationsCache, ClassLoader classLoader) {
         this.index = index;
         this.annotationClassAnnotationsCache = annotationClassAnnotationsCache;
         this.classInfo = index.getClassByName(DotName.createSimple(className));
@@ -78,6 +81,7 @@ public class WeldClassFileInfo implements ClassFileInfo {
         }
         this.isVetoed = isVetoedTypeOrPackage();
         this.hasCdiConstructor = this.classInfo.hasNoArgsConstructor() || hasInjectConstructor();
+        this.classLoader = classLoader;
     }
 
     @Override
@@ -92,7 +96,7 @@ public class WeldClassFileInfo implements ClassFileInfo {
 
     @Override
     public boolean containsAnnotation(Class<? extends Annotation> annotation) {
-        return containsAnnotation(classInfo, DotName.createSimple(annotation.getName()));
+        return containsAnnotation(classInfo, DotName.createSimple(annotation.getName()), annotation);
     }
 
     @Override
@@ -112,7 +116,7 @@ public class WeldClassFileInfo implements ClassFileInfo {
 
     @Override
     public boolean isAssignableTo(Class<?> toClass) {
-        return isAssignableTo(DotName.createSimple(toClass.getName()), classInfo.name());
+        return isAssignableTo(classInfo.name(), toClass);
     }
 
     @Override
@@ -218,33 +222,35 @@ public class WeldClassFileInfo implements ClassFileInfo {
     }
 
     /**
+     * @param to
      * @param name
-     * @param fromName
      * @return <code>true</code> if the name is equal to the fromName, or if the name represents a superclass or superinterface of the fromName,
      *         <code>false</code> otherwise
      */
-    private boolean isAssignableTo(DotName name, DotName fromName) {
-        if (name.equals(fromName)) {
+    private boolean isAssignableTo(DotName name, Class<?> to) {
+        if (to.getName().equals(name.toString())) {
             return true;
         }
-        if (OBJECT_NAME.equals(fromName)) {
+        if (OBJECT_NAME.equals(name)) {
             return false; // there's nothing assignable from Object.class except for Object.class
         }
 
-        ClassInfo fromClassInfo = index.getClassByName(fromName);
+        ClassInfo fromClassInfo = index.getClassByName(name);
         if (fromClassInfo == null) {
-            throw WeldLogger.ROOT_LOGGER.nameNotFoundInIndex(fromName.toString());
+            // We reached a class that is not in the index. Let's use reflection.
+            final Class<?> clazz = loadClass(name.toString());
+            return to.isAssignableFrom(clazz);
         }
 
         DotName superName = fromClassInfo.superName();
 
-        if (superName != null && isAssignableTo(name, superName)) {
+        if (superName != null && isAssignableTo(superName, to)) {
             return true;
         }
 
         if (fromClassInfo.interfaces() != null) {
             for (DotName interfaceName : fromClassInfo.interfaces()) {
-                if (isAssignableTo(name, interfaceName)) {
+                if (isAssignableTo(interfaceName, to)) {
                     return true;
                 }
             }
@@ -252,7 +258,7 @@ public class WeldClassFileInfo implements ClassFileInfo {
         return false;
     }
 
-    private boolean containsAnnotation(ClassInfo classInfo, DotName requiredAnnotationName) {
+    private boolean containsAnnotation(ClassInfo classInfo, DotName requiredAnnotationName, Class<? extends Annotation> requiredAnnotation) {
         // Type and members
         if (classInfo.annotations().containsKey(requiredAnnotationName)) {
             return true;
@@ -273,13 +279,24 @@ public class WeldClassFileInfo implements ClassFileInfo {
         if (superName != null && !OBJECT_NAME.equals(superName)) {
             final ClassInfo superClassInfo = index.getClassByName(superName);
             if (superClassInfo == null) {
-                throw WeldLogger.ROOT_LOGGER.nameNotFoundInIndex(superName.toString());
+                // we are accessing a class that is outside of the jandex index
+                // fallback to using reflection
+                return Reflections.containsAnnotation(loadClass(superName.toString()), requiredAnnotation);
             }
-            if (containsAnnotation(superClassInfo, requiredAnnotationName)) {
+            if (containsAnnotation(superClassInfo, requiredAnnotationName, requiredAnnotation)) {
                 return true;
             }
         }
         return false;
+    }
+
+    private Class<?> loadClass(String className) {
+        WeldLogger.DEPLOYMENT_LOGGER.tracef("Falling back to reflection for %s", className);
+        try {
+            return classLoader.loadClass(className);
+        } catch (ClassNotFoundException e) {
+            throw WeldLogger.ROOT_LOGGER.cannotLoadClass(className, e);
+        }
     }
 
     @Override
