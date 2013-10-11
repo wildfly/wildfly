@@ -14,11 +14,10 @@ public class NotAnnotatedDeployTestCase extends ContextRootTestBase {
 
     @Deployment
     public static EnterpriseArchive createDeployment() {
-        final WebArchive war = createWAR(SampleBean.class);
-        final EnterpriseArchive ear = ShrinkWrap.create(EnterpriseArchive.class, EAR_DEPLOYMENT_UNIT_NAME);
-        ear.addAsManifestResource(NotAnnotatedDeployTestCase.class.getPackage(), "application.xml", "application.xml");
+        final WebArchive war = createWAR(SampleBean.class, "ws-notannotated-XXX.war");
+        final EnterpriseArchive ear = ShrinkWrap.create(EnterpriseArchive.class, "ws-notannotated-XXX.ear");
+        ear.addAsManifestResource(NotAnnotatedDeployTestCase.class.getPackage(), "application-notannotated.xml", "application.xml");
         ear.addAsModule(war);
-        System.out.println(ear.toString(true));
         return ear;
     }
 
