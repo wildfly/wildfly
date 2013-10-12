@@ -42,6 +42,7 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.PRO
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.READ_ATTRIBUTE_OPERATION;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.READ_RESOURCE_OPERATION;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.RECURSIVE;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.RESPONSE_HEADERS;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.RESULT;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ROLLED_BACK;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SECURITY_REALM;
@@ -74,6 +75,7 @@ import org.jboss.dmr.ModelNode;
 import org.jboss.shrinkwrap.api.Archive;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.spec.JavaArchive;
+import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
@@ -83,9 +85,29 @@ import org.junit.runner.RunWith;
 @RunWith(Arquillian.class)
 @ServerSetup(UserRolesMappingServerSetupTask.StandardUsersSetup.class)
 public class ValidateAddressOrOperationTestCase extends AbstractRbacTestCase {
+
+    private static String[] LEGAL_ADDRESS_RESP_FIELDS;
+    private static String[] LEGAL_OPERATION_RESPONSE_FIELDS;
+
     @Deployment(testable = false)
     public static Archive<?> getDeployment() {
         return ShrinkWrap.create(JavaArchive.class).addClass(ValidateAddressOrOperationTestCase.class);
+    }
+
+    @Before
+    public void setupLegalFields() throws Exception {
+        if (LEGAL_ADDRESS_RESP_FIELDS == null) {
+            // See if the server is already sending response headers; if so ignore them when validating responses
+            ModelNode operation = Util.createOperation(READ_RESOURCE_OPERATION, PathAddress.EMPTY_ADDRESS);
+            ModelNode result = getManagementClient().getControllerClient().execute(operation);
+            if (result.has(RESPONSE_HEADERS)) {
+                LEGAL_ADDRESS_RESP_FIELDS = new String[]{OUTCOME, RESULT, RESPONSE_HEADERS};
+                LEGAL_OPERATION_RESPONSE_FIELDS = new String[]{OUTCOME, FAILURE_DESCRIPTION, ROLLED_BACK, RESPONSE_HEADERS};
+            } else {
+                LEGAL_ADDRESS_RESP_FIELDS = new String[]{OUTCOME, RESULT};
+                LEGAL_OPERATION_RESPONSE_FIELDS = new String[]{OUTCOME, FAILURE_DESCRIPTION, ROLLED_BACK};
+            }
+        }
     }
 
     @Test
@@ -265,7 +287,7 @@ public class ValidateAddressOrOperationTestCase extends AbstractRbacTestCase {
         operation.get(VALUE).set(address);
         ModelNode result = client.execute(operation);
 
-        assertModelNodeOnlyContainsKeys(result, OUTCOME, RESULT);
+        assertModelNodeOnlyContainsKeys(result, LEGAL_ADDRESS_RESP_FIELDS);
         assertModelNodeOnlyContainsKeys(result.get(RESULT), VALID, PROBLEM);
         assertEquals(expectedOutcome, result.get(RESULT, VALID).asBoolean());
         assertEquals(!expectedOutcome, result.get(RESULT).hasDefined(PROBLEM));
@@ -279,7 +301,7 @@ public class ValidateAddressOrOperationTestCase extends AbstractRbacTestCase {
         operation.get(VALUE).set(validatedOperation);
         ModelNode result = client.execute(operation);
 
-        assertModelNodeOnlyContainsKeys(result, OUTCOME, FAILURE_DESCRIPTION, ROLLED_BACK);
+        assertModelNodeOnlyContainsKeys(result, LEGAL_OPERATION_RESPONSE_FIELDS);
         if (expectedOutcome) {
             assertEquals(SUCCESS, result.get(OUTCOME).asString());
         } else {
@@ -293,7 +315,7 @@ public class ValidateAddressOrOperationTestCase extends AbstractRbacTestCase {
         Set<String> actualKeys = new HashSet<String>(modelNode.keys()); // need copy for modifications
         actualKeys.removeAll(expectedKeys);
         if (!actualKeys.isEmpty()) {
-            fail("ModelNode contained additional keys: " + actualKeys);
+            fail("ModelNode contained additional keys: " + actualKeys + "  " + modelNode);
         }
     }
 }
