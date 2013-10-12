@@ -117,7 +117,15 @@ abstract class AbstractResourceRegistration implements ManagementResourceRegistr
             throw ControllerMessages.MESSAGES.cannotOverrideNonWildCardRegistration(valueString);
         }
         PathElement pe = PathElement.pathElement(parent.getKeyName(), name);
-        return parent.getParent().registerSubModel(pe, new OverrideDescriptionCombiner(getModelDescription(PathAddress.EMPTY_ADDRESS), descriptionProvider));
+
+        final SimpleResourceDefinition rd = new SimpleResourceDefinition(pe, new OverrideDescriptionCombiner(getModelDescription(PathAddress.EMPTY_ADDRESS), descriptionProvider)) {
+
+            @Override
+            public List<AccessConstraintDefinition> getAccessConstraints() {
+                return AbstractResourceRegistration.this.getAccessConstraints();
+            }
+        };
+        return parent.getParent().registerSubModel(rd);
     }
 
     @Override
