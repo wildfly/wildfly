@@ -99,27 +99,27 @@ import org.junit.Test;
 /**
  *  * @author <a href="http://jmesnil.net/">Jeff Mesnil</a> (c) 2012 Red Hat inc
  */
-public class MessagingSubsystem14TestCase extends AbstractSubsystemBaseTest {
+public class MessagingSubsystem20TestCase extends AbstractSubsystemBaseTest {
 
-    public MessagingSubsystem14TestCase() {
+    public MessagingSubsystem20TestCase() {
         super(MessagingExtension.SUBSYSTEM_NAME, new MessagingExtension());
     }
 
     @Override
     protected String getSubsystemXml() throws IOException {
-        return readResource("subsystem_1_4.xml");
+        return readResource("subsystem_2_0.xml");
     }
 
     @Test
     public void testExpressions() throws Exception {
-        standardSubsystemTest("subsystem_1_4_expressions.xml");
+        standardSubsystemTest("subsystem_2_0_expressions.xml");
     }
 
     @Test
     public void testTransformersAS720() throws Exception {
         //Boot up empty controllers with the resources needed for the ops coming from the xml to work
         KernelServicesBuilder builder = createKernelServicesBuilder(AdditionalInitialization.MANAGEMENT)
-                .setSubsystemXmlResource("subsystem_1_4.xml");
+                .setSubsystemXmlResource("subsystem_2_0.xml");
         builder.createLegacyKernelServicesBuilder(createAdditionalInitialization(), ModelTestControllerVersion.V7_2_0_FINAL, VERSION_1_2_0)
                 .addMavenResourceURL("org.jboss.as:jboss-as-messaging:7.2.0.Final")
                 .addMavenResourceURL("org.hornetq:hornetq-server:2.3.0.CR1")
@@ -140,7 +140,7 @@ public class MessagingSubsystem14TestCase extends AbstractSubsystemBaseTest {
     public void testTransformersAS712() throws Exception {
         //Boot up empty controllers with the resources needed for the ops coming from the xml to work
         KernelServicesBuilder builder = createKernelServicesBuilder(AdditionalInitialization.MANAGEMENT)
-                .setSubsystemXmlResource("subsystem_1_4.xml");
+                .setSubsystemXmlResource("subsystem_2_0.xml");
         builder.createLegacyKernelServicesBuilder(createAdditionalInitialization(), ModelTestControllerVersion.V7_1_2_FINAL, VERSION_1_1_0)
                 .addMavenResourceURL("org.jboss.as:jboss-as-messaging:7.1.2.Final")
                 .addMavenResourceURL("org.hornetq:hornetq-core:2.2.16.Final")
@@ -159,7 +159,7 @@ public class MessagingSubsystem14TestCase extends AbstractSubsystemBaseTest {
     public void testTransformersAS713() throws Exception {
         //Boot up empty controllers with the resources needed for the ops coming from the xml to work
         KernelServicesBuilder builder = createKernelServicesBuilder(AdditionalInitialization.MANAGEMENT)
-                .setSubsystemXmlResource("subsystem_1_4.xml");
+                .setSubsystemXmlResource("subsystem_2_0.xml");
         builder.createLegacyKernelServicesBuilder(createAdditionalInitialization(), ModelTestControllerVersion.V7_1_3_FINAL, VERSION_1_1_0)
                 .addMavenResourceURL("org.jboss.as:jboss-as-messaging:7.1.3.Final")
                 .addMavenResourceURL("org.hornetq:hornetq-core:2.2.21.Final")
@@ -180,7 +180,7 @@ public class MessagingSubsystem14TestCase extends AbstractSubsystemBaseTest {
         // AS7 7.1.2.Final does not allow to add an empty messaging subsystem [AS7-5767]
         // To work around that, we add an empty "stuff" hornetq-server to boot the conf with AS7 7.1.2.Final
         KernelServicesBuilder builder = createKernelServicesBuilder(AdditionalInitialization.MANAGEMENT)
-                .setSubsystemXmlResource("empty_subsystem_1_4.xml");
+                .setSubsystemXmlResource("empty_subsystem_2_0.xml");
 
         // create builder for legacy subsystem version
         builder.createLegacyKernelServicesBuilder(createAdditionalInitialization(), ModelTestControllerVersion.V7_1_2_FINAL, VERSION_1_1_0)
@@ -196,7 +196,7 @@ public class MessagingSubsystem14TestCase extends AbstractSubsystemBaseTest {
     @Test
     public void testRejectExpressionsAS713() throws Exception {
         KernelServicesBuilder builder = createKernelServicesBuilder(AdditionalInitialization.MANAGEMENT)
-                .setSubsystemXmlResource("empty_subsystem_1_4.xml");
+                .setSubsystemXmlResource("empty_subsystem_2_0.xml");
 
         // create builder for legacy subsystem version
         builder.createLegacyKernelServicesBuilder(createAdditionalInitialization(), ModelTestControllerVersion.V7_1_3_FINAL, VERSION_1_1_0)
@@ -212,7 +212,7 @@ public class MessagingSubsystem14TestCase extends AbstractSubsystemBaseTest {
     @Test
     public void testRejectExpressionsAS720() throws Exception {
         KernelServicesBuilder builder = createKernelServicesBuilder(AdditionalInitialization.MANAGEMENT)
-                .setSubsystemXmlResource("empty_subsystem_1_4.xml");
+                .setSubsystemXmlResource("empty_subsystem_2_0.xml");
 
         // create builder for legacy subsystem version
         builder.createLegacyKernelServicesBuilder(createAdditionalInitialization(), ModelTestControllerVersion.V7_2_0_FINAL, VERSION_1_2_0)
@@ -232,7 +232,7 @@ public class MessagingSubsystem14TestCase extends AbstractSubsystemBaseTest {
         ModelVersion version120 = ModelVersion.create(1, 2);
         // create builder for current subsystem version
        KernelServicesBuilder builder = createKernelServicesBuilder(AdditionalInitialization.MANAGEMENT)
-                      .setSubsystemXmlResource("empty_subsystem_1_4.xml");
+                      .setSubsystemXmlResource("empty_subsystem_2_0.xml");
        builder.createLegacyKernelServicesBuilder(null, ModelTestControllerVersion.MASTER, version120)
                        .addMavenResourceURL("org.hornetq:hornetq-server:2.3.0.CR1")
                        .addMavenResourceURL("org.hornetq:hornetq-jms-server:2.3.0.CR1")
@@ -292,7 +292,7 @@ public class MessagingSubsystem14TestCase extends AbstractSubsystemBaseTest {
 
         //Use the real xml with expressions for testing all the attributes
         PathAddress subsystemAddress = PathAddress.pathAddress(pathElement(SUBSYSTEM, MessagingExtension.SUBSYSTEM_NAME));
-        List<ModelNode> modelNodes = builder.parseXmlResource("subsystem_1_4_expressions.xml");
+        List<ModelNode> modelNodes = builder.parseXmlResource("subsystem_2_0_expressions.xml");
         // remote the messaging subsystem add operation that fails on AS7 7.1.2.Final
         modelNodes.remove(0);
         checkFailedTransformedBootOperations(
@@ -435,7 +435,7 @@ public class MessagingSubsystem14TestCase extends AbstractSubsystemBaseTest {
 
         //Use the real xml with expressions for testing all the attributes
         PathAddress subsystemAddress = PathAddress.pathAddress(pathElement(SUBSYSTEM, MessagingExtension.SUBSYSTEM_NAME));
-        List<ModelNode> modelNodes = builder.parseXmlResource("subsystem_1_4_expressions.xml");
+        List<ModelNode> modelNodes = builder.parseXmlResource("subsystem_2_0_expressions.xml");
         // remove the messaging subsystem add operation that fails on AS7 7.2.0.Final
         modelNodes.remove(0);
         checkFailedTransformedBootOperations(
