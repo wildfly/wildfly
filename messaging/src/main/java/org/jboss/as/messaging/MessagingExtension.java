@@ -29,6 +29,7 @@ import static org.jboss.as.messaging.Namespace.MESSAGING_1_1;
 import static org.jboss.as.messaging.Namespace.MESSAGING_1_2;
 import static org.jboss.as.messaging.Namespace.MESSAGING_1_3;
 import static org.jboss.as.messaging.Namespace.MESSAGING_1_4;
+import static org.jboss.as.messaging.Namespace.MESSAGING_2_0;
 
 import org.jboss.as.controller.Extension;
 import org.jboss.as.controller.ExtensionContext;
@@ -56,7 +57,7 @@ import org.jboss.as.messaging.jms.bridge.JMSBridgeDefinition;
  *   <dt>AS 8.0.0</dt>
  *   <dd>
  *     <ul>
- *       <li>XML namespace: urn:jboss:domain:messaging:1.4
+ *       <li>XML namespace: urn:jboss:domain:messaging:2.0
  *       <li>Management model: 2.0.0
  *     </ul>
  *   </dd>
@@ -237,6 +238,7 @@ public class MessagingExtension implements Extension {
         context.setSubsystemXmlMapping(SUBSYSTEM_NAME, MESSAGING_1_1.getUriString(), MessagingSubsystemParser.getInstance());
         context.setSubsystemXmlMapping(SUBSYSTEM_NAME, MESSAGING_1_2.getUriString(), Messaging12SubsystemParser.getInstance());
         context.setSubsystemXmlMapping(SUBSYSTEM_NAME, MESSAGING_1_3.getUriString(), Messaging13SubsystemParser.getInstance());
-        context.setSubsystemXmlMapping(SUBSYSTEM_NAME, MESSAGING_1_4.getUriString(), Messaging14SubsystemParser.getInstance());
+        context.setSubsystemXmlMapping(SUBSYSTEM_NAME, MESSAGING_1_4.getUriString(), Messaging20SubsystemParser.getInstance());
+        context.setSubsystemXmlMapping(SUBSYSTEM_NAME, MESSAGING_2_0.getUriString(), Messaging20SubsystemParser.getInstance());
     }
 }

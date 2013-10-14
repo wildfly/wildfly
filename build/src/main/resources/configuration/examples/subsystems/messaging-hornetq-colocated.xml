@@ -3,7 +3,7 @@
 <config>
    <!-- This is very different from the normal messaging setup, do duplicating the config is easier -->
    <extension-module>org.jboss.as.messaging</extension-module>
-   <subsystem xmlns="urn:jboss:domain:messaging:1.4">
+   <subsystem xmlns="urn:jboss:domain:messaging:2.0">
        <hornetq-server>
            <persistence-enabled>true</persistence-enabled>
            <shared-store>true</shared-store>

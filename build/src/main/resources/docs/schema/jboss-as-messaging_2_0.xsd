@@ -23,11 +23,11 @@
   -->
 
 <xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema"
-           xmlns="urn:jboss:domain:messaging:1.4"
-           targetNamespace="urn:jboss:domain:messaging:1.4"
+           xmlns="urn:jboss:domain:messaging:2.0"
+           targetNamespace="urn:jboss:domain:messaging:2.0"
            elementFormDefault="qualified"
            attributeFormDefault="unqualified"
-           version="1.4">
+           version="2.0">
 
     <!-- The messaging subsystem root element -->
     <xs:element name="subsystem">

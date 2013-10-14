@@ -43,20 +43,20 @@ import org.jboss.dmr.ModelNode;
 import org.jboss.staxmapper.XMLExtendedStreamReader;
 
 /**
- * Messaging subsystem 1.4 XML parser.
+ * Messaging subsystem 2.0 XML parser.
  *
  * @author <a href="http://jmesnil.net/">Jeff Mesnil</a>
  *
  */
-public class Messaging14SubsystemParser extends Messaging13SubsystemParser {
+public class Messaging20SubsystemParser extends Messaging13SubsystemParser {
 
-    private static final Messaging14SubsystemParser INSTANCE = new Messaging14SubsystemParser();
+    private static final Messaging20SubsystemParser INSTANCE = new Messaging20SubsystemParser();
 
     public static MessagingSubsystemParser getInstance() {
         return INSTANCE;
     }
 
-    protected Messaging14SubsystemParser() {
+    protected Messaging20SubsystemParser() {
     }
 
     void processConnectors(final XMLExtendedStreamReader reader, final ModelNode address, final List<ModelNode> updates) throws XMLStreamException {
