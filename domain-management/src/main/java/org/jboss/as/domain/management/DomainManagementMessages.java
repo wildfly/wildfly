@@ -814,6 +814,29 @@ public interface DomainManagementMessages {
     @Message(id = 15294, value = "The scoped role '%s' can not be removed as a role mapping still exists.")
     OperationFailedException roleMappingRemaining(String roleName);
 
+    /**
+     * Error message if a scoped role already exists with the same name.
+     *
+     * @param scopeType - The type of scoped role.
+     * @param roleName - The name of the role.
+     *
+     * @return an {@link OperationFailedException} for the error.
+     */
+    @Message(id = 15295, value = "A %s already exists with name '%s'")
+    OperationFailedException duplicateScopedRole(String scopeType, String roleName);
+
+    /**
+     * Error message if a scoped role name matches a standard role.
+     *
+     * @param scopedRole - The name of the scoped role.
+     * @param standardRole - The name of the standard role.
+     *
+     * @return an {@link OperationFailedException} for the error.
+     */
+    @Message(id = 15296, value = "The name '%s' conflicts with the standard role name of '%s' - comparison is case insensitive.")
+    OperationFailedException scopedRoleStandardName(String scopedRole, String standardRole);
+
+
     /*
      * Logging IDs 15200 to 15299 are reserved for domain management, the file DomainManagementLogger also contains messages in
      * this range commencing 15200.
