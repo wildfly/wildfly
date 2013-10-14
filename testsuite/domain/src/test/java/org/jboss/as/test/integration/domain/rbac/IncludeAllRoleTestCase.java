@@ -23,29 +23,19 @@
 package org.jboss.as.test.integration.domain.rbac;
 
 import static org.jboss.as.controller.PathAddress.EMPTY_ADDRESS;
-import static org.jboss.as.controller.PathAddress.pathAddress;
-import static org.jboss.as.controller.PathElement.pathElement;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ACCESS;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ADD;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.AUTHORIZATION;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.BASE_ROLE;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.CORE_SERVICE;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.HOSTS;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.HOST_SCOPED_ROLE;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.MANAGEMENT;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.REMOVE;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.RESULT;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SERVER_GROUPS;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SERVER_GROUP_SCOPED_ROLE;
 import static org.jboss.as.domain.management.ModelDescriptionConstants.MAPPED_ROLES;
 import static org.jboss.as.domain.management.ModelDescriptionConstants.VERBOSE;
 import static org.jboss.as.domain.management.ModelDescriptionConstants.WHOAMI;
 import static org.jboss.as.test.integration.management.rbac.RbacUtil.MAINTAINER_ROLE;
+import static org.jboss.as.test.integration.management.rbac.RbacUtil.addHostScopedRole;
 import static org.jboss.as.test.integration.management.rbac.RbacUtil.addRoleMapping;
 import static org.jboss.as.test.integration.management.rbac.RbacUtil.addRoleUser;
-import static org.jboss.as.test.integration.management.rbac.RbacUtil.executeOperation;
+import static org.jboss.as.test.integration.management.rbac.RbacUtil.addServerGroupScopedRole;
+import static org.jboss.as.test.integration.management.rbac.RbacUtil.removeHostScopedRole;
 import static org.jboss.as.test.integration.management.rbac.RbacUtil.removeRoleMapping;
 import static org.jboss.as.test.integration.management.rbac.RbacUtil.removeRoleUser;
+import static org.jboss.as.test.integration.management.rbac.RbacUtil.removeServerGroupScopedRole;
 import static org.jboss.as.test.integration.management.rbac.RbacUtil.setRoleMappingIncludeAll;
 import static org.junit.Assert.assertEquals;
 
@@ -54,7 +44,6 @@ import java.util.List;
 
 import org.jboss.as.controller.client.ModelControllerClient;
 import org.jboss.as.controller.client.helpers.domain.DomainClient;
-import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
 import org.jboss.as.controller.operations.common.Util;
 import org.jboss.as.test.integration.domain.suites.FullRbacProviderTestSuite;
 import org.jboss.as.test.integration.management.rbac.Outcome;
@@ -233,55 +222,5 @@ public class IncludeAllRoleTestCase extends AbstractRbacTestCase {
         }
 
         return false;
-    }
-
-    private static void addServerGroupScopedRole(ModelControllerClient client, String roleName, String baseRole,
-                                                 String... serverGroups) throws IOException {
-
-        ModelNode operation = Util.createOperation(ADD, pathAddress(
-                pathElement(CORE_SERVICE, MANAGEMENT),
-                pathElement(ACCESS, ModelDescriptionConstants.AUTHORIZATION),
-                pathElement(SERVER_GROUP_SCOPED_ROLE, roleName)
-        ));
-        operation.get(BASE_ROLE).set(baseRole);
-        ModelNode serverGroupsModelNode = operation.get(SERVER_GROUPS);
-        for (String serverGroup : serverGroups) {
-            serverGroupsModelNode.add(serverGroup);
-        }
-        executeOperation(client, operation, Outcome.SUCCESS);
-    }
-
-    private static void removeServerGroupScopedRole(ModelControllerClient client, String roleName) throws IOException {
-        ModelNode operation = Util.createOperation(REMOVE, pathAddress(
-                pathElement(CORE_SERVICE, MANAGEMENT),
-                pathElement(ACCESS, ModelDescriptionConstants.AUTHORIZATION),
-                pathElement(SERVER_GROUP_SCOPED_ROLE, roleName)
-        ));
-        executeOperation(client, operation, Outcome.SUCCESS);
-    }
-
-    private static void addHostScopedRole(ModelControllerClient client, String roleName, String baseRole,
-                                          String... hosts) throws IOException {
-
-        ModelNode operation = Util.createOperation(ADD, pathAddress(
-                pathElement(CORE_SERVICE, MANAGEMENT),
-                pathElement(ACCESS, ModelDescriptionConstants.AUTHORIZATION),
-                pathElement(HOST_SCOPED_ROLE, roleName)
-        ));
-        operation.get(BASE_ROLE).set(baseRole);
-        ModelNode hostsModelNode = operation.get(HOSTS);
-        for (String host : hosts) {
-            hostsModelNode.add(host);
-        }
-        executeOperation(client, operation, Outcome.SUCCESS);
-    }
-
-    private static void removeHostScopedRole(ModelControllerClient client, String roleName) throws IOException {
-        ModelNode operation = Util.createOperation(REMOVE, pathAddress(
-                pathElement(CORE_SERVICE, MANAGEMENT),
-                pathElement(ACCESS, ModelDescriptionConstants.AUTHORIZATION),
-                pathElement(HOST_SCOPED_ROLE, roleName)
-        ));
-        executeOperation(client, operation, Outcome.SUCCESS);
     }
 }

@@ -22,10 +22,18 @@
 
 package org.jboss.as.test.integration.management.rbac;
 
+import static org.jboss.as.controller.PathAddress.pathAddress;
+import static org.jboss.as.controller.PathElement.pathElement;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ACCESS;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ADD;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.BASE_ROLE;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.CORE_SERVICE;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.FAILED;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.FAILURE_DESCRIPTION;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.HOSTS;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.HOST_SCOPED_ROLE;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.INCLUDE_ALL;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.MANAGEMENT;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.NAME;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OPERATION_HEADERS;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OUTCOME;
@@ -33,6 +41,8 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.REA
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.REMOVE;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.RESULT;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ROLES;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SERVER_GROUPS;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SERVER_GROUP_SCOPED_ROLE;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SUCCESS;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.TYPE;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.USER;
@@ -46,6 +56,8 @@ import static org.junit.Assert.fail;
 import java.io.IOException;
 
 import org.jboss.as.controller.client.ModelControllerClient;
+import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
+import org.jboss.as.controller.operations.common.Util;
 import org.jboss.as.test.integration.management.interfaces.ManagementInterface;
 import org.jboss.dmr.ModelNode;
 
@@ -184,6 +196,56 @@ public class RbacUtil {
         ModelNode operation = createOpNode(ROLE_MAPPING_ADDRESS_BASE + role, WRITE_ATTRIBUTE_OPERATION);
         operation.get(NAME).set(INCLUDE_ALL);
         operation.get(VALUE).set(includeAll);
+        executeOperation(client, operation, Outcome.SUCCESS);
+    }
+
+    public static void addServerGroupScopedRole(ModelControllerClient client, String roleName, String baseRole,
+                                                String... serverGroups) throws IOException {
+
+        ModelNode operation = Util.createOperation(ADD, pathAddress(
+                pathElement(CORE_SERVICE, MANAGEMENT),
+                pathElement(ACCESS, ModelDescriptionConstants.AUTHORIZATION),
+                pathElement(SERVER_GROUP_SCOPED_ROLE, roleName)
+        ));
+        operation.get(BASE_ROLE).set(baseRole);
+        ModelNode serverGroupsModelNode = operation.get(SERVER_GROUPS);
+        for (String serverGroup : serverGroups) {
+            serverGroupsModelNode.add(serverGroup);
+        }
+        executeOperation(client, operation, Outcome.SUCCESS);
+    }
+
+    public static void removeServerGroupScopedRole(ModelControllerClient client, String roleName) throws IOException {
+        ModelNode operation = Util.createOperation(REMOVE, pathAddress(
+                pathElement(CORE_SERVICE, MANAGEMENT),
+                pathElement(ACCESS, ModelDescriptionConstants.AUTHORIZATION),
+                pathElement(SERVER_GROUP_SCOPED_ROLE, roleName)
+        ));
+        executeOperation(client, operation, Outcome.SUCCESS);
+    }
+
+    public static void addHostScopedRole(ModelControllerClient client, String roleName, String baseRole,
+                                         String... hosts) throws IOException {
+
+        ModelNode operation = Util.createOperation(ADD, pathAddress(
+                pathElement(CORE_SERVICE, MANAGEMENT),
+                pathElement(ACCESS, ModelDescriptionConstants.AUTHORIZATION),
+                pathElement(HOST_SCOPED_ROLE, roleName)
+        ));
+        operation.get(BASE_ROLE).set(baseRole);
+        ModelNode hostsModelNode = operation.get(HOSTS);
+        for (String host : hosts) {
+            hostsModelNode.add(host);
+        }
+        executeOperation(client, operation, Outcome.SUCCESS);
+    }
+
+    public static void removeHostScopedRole(ModelControllerClient client, String roleName) throws IOException {
+        ModelNode operation = Util.createOperation(REMOVE, pathAddress(
+                pathElement(CORE_SERVICE, MANAGEMENT),
+                pathElement(ACCESS, ModelDescriptionConstants.AUTHORIZATION),
+                pathElement(HOST_SCOPED_ROLE, roleName)
+        ));
         executeOperation(client, operation, Outcome.SUCCESS);
     }
 }

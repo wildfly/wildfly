@@ -25,6 +25,7 @@ package org.jboss.as.test.integration.domain.suites;
 import org.jboss.as.test.integration.domain.management.util.DomainTestSupport;
 import org.jboss.as.test.integration.domain.management.util.JBossAsManagedConfiguration;
 import org.jboss.as.test.integration.domain.rbac.IncludeAllRoleTestCase;
+import org.jboss.as.test.integration.domain.rbac.ListRoleNamesTestCase;
 import org.jboss.as.test.integration.domain.rbac.PermissionsCoverageTestCase;
 import org.jboss.as.test.integration.domain.rbac.RBACProviderHostScopedRolesTestCase;
 import org.jboss.as.test.integration.domain.rbac.RBACProviderServerGroupScopedRolesTestCase;
@@ -46,7 +47,8 @@ import org.junit.runners.Suite;
         RBACProviderServerGroupScopedRolesTestCase.class,
         RBACProviderStandardRolesTestCase.class,
         PermissionsCoverageTestCase.class,
-        IncludeAllRoleTestCase.class
+        IncludeAllRoleTestCase.class,
+        ListRoleNamesTestCase.class
 })
 public class FullRbacProviderTestSuite {
 
