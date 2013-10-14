@@ -67,7 +67,7 @@ public abstract class AbstractServerGroupScopedRolesTestCase extends AbstractRba
     public static final String AUDITOR_USER = "MainGroupAuditor";
     public static final String SUPERUSER_USER = "MainGroupSuperUser";
 
-    private static final String[] USERS = { MONITOR_USER, OPERATOR_USER, MAINTAINER_USER, DEPLOYER_USER,
+    static final String[] USERS = { MONITOR_USER, OPERATOR_USER, MAINTAINER_USER, DEPLOYER_USER,
             ADMINISTRATOR_USER, AUDITOR_USER, SUPERUSER_USER };
     private static final String[] BASES = { RbacUtil.MONITOR_USER, RbacUtil.OPERATOR_USER, RbacUtil.MAINTAINER_USER,
             RbacUtil.DEPLOYER_USER, RbacUtil.ADMINISTRATOR_USER, RbacUtil.AUDITOR_USER,
