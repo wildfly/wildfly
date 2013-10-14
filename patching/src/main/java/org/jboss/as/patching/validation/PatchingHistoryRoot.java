@@ -27,40 +27,37 @@ package org.jboss.as.patching.validation;
  * @author Alexey Loubyansky
  *
  */
-public class PatchingHistory extends AbstractArtifact<PatchingHistory.State,PatchingHistory.State> {
+public class PatchingHistoryRoot extends AbstractArtifact<PatchingHistoryRoot.State,PatchingHistoryRoot.State> {
 
-    private static final PatchingHistory INSTANCE = new PatchingHistory();
+    private static final PatchingHistoryRoot INSTANCE = new PatchingHistoryRoot();
 
-    public static PatchingHistory getInstance() {
+    public static PatchingHistoryRoot getInstance() {
         return INSTANCE;
     }
 
-    private PatchingHistory() {
-        addArtifact(PatchArtifact.INSTANCE);
+    private final Artifact<State, PatchArtifact.CollectionState> patchesArtifact;
+
+    private PatchingHistoryRoot() {
+
+        patchesArtifact = addArtifact(PatchArtifact.getInstance());
     }
 
-    public static class State implements Artifact.State {
+    public class State implements Artifact.State {
 
-        private PatchArtifact.State lastAppliedPatch;
+        PatchArtifact.CollectionState patches;
 
-        public void setLastAppliedPatch(PatchArtifact.State patch) {
-            lastAppliedPatch = patch;
+        public PatchArtifact.CollectionState getPatches(Context ctx) {
+            return patches == null ? patchesArtifact.getState(this, ctx) : patches;
         }
 
-        public PatchArtifact.State getLastAppliedPatch() {
-            return lastAppliedPatch;
+        public PatchArtifact.State getLastAppliedPatch(Context ctx) {
+            getPatches(ctx);
+            patches.resetIndex();
+            return patches.hasNext(ctx) ? patches.next(ctx) : null;
         }
 
         @Override
         public void validate(Context ctx) {
-        }
-
-        public void handlePatches(Context ctx, PatchStateHandler handler) {
-            PatchArtifact.State patch = lastAppliedPatch;
-            while(patch != null) {
-                handler.handle(patch);
-                patch = patch.getPrevious(ctx);
-            }
         }
     }
 
@@ -70,6 +67,6 @@ public class PatchingHistory extends AbstractArtifact<PatchingHistory.State,Patc
     }
 
     public PatchArtifact.State getLastAppliedPatch(Context ctx) {
-        return PatchArtifact.INSTANCE.getState(ctx);
+        return PatchArtifact.getInstance().getState(ctx).getState();
     }
 }
