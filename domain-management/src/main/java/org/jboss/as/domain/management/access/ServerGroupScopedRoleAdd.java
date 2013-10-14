@@ -26,7 +26,6 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
-import org.jboss.as.controller.AbstractAddStepHandler;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.PathAddress;
@@ -43,14 +42,14 @@ import org.jboss.msc.service.ServiceController;
  *
  * @author Brian Stansberry (c) 2013 Red Hat Inc.
  */
-class ServerGroupScopedRoleAdd extends AbstractAddStepHandler {
+class ServerGroupScopedRoleAdd extends ScopedRoleAddHandler {
 
     private final Map<String, ServerGroupEffectConstraint> constraintMap;
     private final WritableAuthorizerConfiguration authorizerConfiguration;
 
     ServerGroupScopedRoleAdd(Map<String, ServerGroupEffectConstraint> constraintMap,
                              WritableAuthorizerConfiguration authorizerConfiguration) {
-        super(ServerGroupScopedRoleResourceDefinition.BASE_ROLE, ServerGroupScopedRoleResourceDefinition.SERVER_GROUPS);
+        super(authorizerConfiguration, ServerGroupScopedRoleResourceDefinition.BASE_ROLE, ServerGroupScopedRoleResourceDefinition.SERVER_GROUPS);
         this.constraintMap = constraintMap;
         this.authorizerConfiguration = authorizerConfiguration;
     }
