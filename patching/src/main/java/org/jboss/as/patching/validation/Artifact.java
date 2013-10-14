@@ -36,6 +36,8 @@ public interface Artifact<P extends Artifact.State, S extends Artifact.State> {
 
     S getState(P parent, Context ctx);
 
+    Artifact<? extends Artifact.State, P> getParent();
+
     Collection<Artifact<S, ? extends Artifact.State>> getArtifacts();
 
     S validate(P parent, Context ctx);

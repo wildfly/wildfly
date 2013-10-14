@@ -29,16 +29,23 @@ import java.io.File;
  * @author Alexey Loubyansky
  *
  */
-public class PatchHistoryDir extends AbstractArtifact<PatchArtifact.State,PatchHistoryDir.State> {
+public class PatchHistoryDir extends AbstractArtifact<PatchArtifact.CollectionState,PatchHistoryDir.State> {
 
-    public static final PatchHistoryDir INSTANCE = new PatchHistoryDir();
+    private static final PatchHistoryDir INSTANCE = new PatchHistoryDir();
 
-    private PatchHistoryDir() {
-        addArtifact(PatchXmlArtifact.INSTANCE);
-        addArtifact(RollbackXmlArtifact.INSTANCE);
+    public static PatchHistoryDir getInstance() {
+        return INSTANCE;
     }
 
-    public static class State implements Artifact.State {
+    private final Artifact<State, PatchXmlArtifact.State> patchXmlArtifact;
+    private final Artifact<State, RollbackXmlArtifact.State> rollbackXmlArtifact;
+
+    private PatchHistoryDir() {
+        patchXmlArtifact = addArtifact(PatchXmlArtifact.getInstance());
+        rollbackXmlArtifact = addArtifact(RollbackXmlArtifact.getInstance());
+    }
+
+    public class State implements Artifact.State {
 
         private final File dir;
 
@@ -46,8 +53,8 @@ public class PatchHistoryDir extends AbstractArtifact<PatchArtifact.State,PatchH
             this.dir = dir;
         }
 
-        private PatchXmlArtifact.State patchXml;
-        private RollbackXmlArtifact.State rollbackXml;
+        protected PatchXmlArtifact.State patchXml;
+        protected RollbackXmlArtifact.State rollbackXml;
         private AppliedAtArtifact.State appliedAt;
         // TODO configuration dir
 
@@ -55,20 +62,20 @@ public class PatchHistoryDir extends AbstractArtifact<PatchArtifact.State,PatchH
             return dir;
         }
 
-        public RollbackXmlArtifact.State getRollbackXml() {
-            return rollbackXml;
-        }
-
         public void setRollbackXml(RollbackXmlArtifact.State rollbackXml) {
             this.rollbackXml = rollbackXml;
         }
 
-        public PatchXmlArtifact.State getPatchXml() {
-            return patchXml;
-        }
-
         public void setPatchXml(PatchXmlArtifact.State patchXml) {
             this.patchXml = patchXml;
+        }
+
+        public RollbackXmlArtifact.State getRollbackXml(Context ctx) {
+            return rollbackXml == null ? rollbackXmlArtifact.getState(this, ctx) : rollbackXml;
+        }
+
+        public PatchXmlArtifact.State getPatchXml(Context ctx) {
+            return patchXml == null ? patchXmlArtifact.getState(this, ctx) : patchXml;
         }
 
         public AppliedAtArtifact.State getAppliedAt() {
@@ -88,14 +95,15 @@ public class PatchHistoryDir extends AbstractArtifact<PatchArtifact.State,PatchH
     }
 
     @Override
-    protected State getInitialState(PatchArtifact.State patch, Context ctx) {
-        State historyDir = patch.getHistoryDir();
-        if(historyDir != null) {
-            return historyDir;
+    protected State getInitialState(PatchArtifact.CollectionState patchCollection, Context ctx) {
+        PatchArtifact.State patch = patchCollection.getState();
+        if(patch == null) {
+            return null;
         }
-        final File dir = ctx.getInstallationManager().getInstalledImage().getPatchHistoryDir(patch.getPatchId());
-        historyDir = new State(dir);
-        patch.setHistoryDir(historyDir);
-        return historyDir;
+        if(patch.historyDir == null) {
+            final File dir = ctx.getInstallationManager().getInstalledImage().getPatchHistoryDir(patch.getPatchId());
+            patch.historyDir = new State(dir);
+        }
+        return patch.historyDir;
     }
 }

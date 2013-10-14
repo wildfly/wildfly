@@ -22,7 +22,10 @@
 
 package org.jboss.as.patching.validation;
 
+import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
+import java.util.NoSuchElementException;
 
 import org.jboss.as.patching.metadata.PatchElement;
 
@@ -38,17 +41,20 @@ public class PatchElementArtifact extends ArtifactWithCollectionState<PatchXmlAr
         return INSTANCE;
     }
 
+    private final Artifact<State, PatchElementProviderArtifact.State> layerArtifact;
+
     private PatchElementArtifact() {
-        addArtifact(PatchElementProviderArtifact.getInstance());
+        layerArtifact = addArtifact(PatchElementProviderArtifact.getInstance());
     }
 
     public class ElementState implements Artifact.State {
 
-        private PatchElement metadata;
+        private final State col;
+        private final PatchElement metadata;
+        PatchElementProviderArtifact.State layer;
 
-        private PatchElementProviderArtifact.State layer;
-
-        void init(PatchElement metadata) {
+        ElementState(State col, PatchElement metadata) {
+            this.col = col;
             this.metadata = metadata;
         }
 
@@ -56,12 +62,8 @@ public class PatchElementArtifact extends ArtifactWithCollectionState<PatchXmlAr
             return metadata;
         }
 
-        public PatchElementProviderArtifact.State getLayer() {
-            return layer;
-        }
-
-        void setLayer(PatchElementProviderArtifact.State layer) {
-            this.layer = layer;
+        public PatchElementProviderArtifact.State getLayer(Context ctx) {
+            return layer == null ? layerArtifact.getState(col, ctx) : layer;
         }
 
         @Override
@@ -72,53 +74,65 @@ public class PatchElementArtifact extends ArtifactWithCollectionState<PatchXmlAr
 
     public class State extends ArtifactCollectionState<ElementState> {
 
-        State() {}
+        private List<ElementState> list = Collections.emptyList();
+        private int i = -1;
 
         State(List<PatchElement> elements) {
             for(PatchElement e : elements) {
-                final ElementState s = newItem();
-                s.init(e);
+                add(new ElementState(this, e));
+            }
+        }
+
+        protected void add(ElementState item) {
+            switch(list.size()) {
+                case 0:
+                    list = Collections.singletonList(item);
+                    break;
+                case 1:
+                    final List<ElementState> tmp = list;
+                    list = new ArrayList<ElementState>();
+                    list.add(tmp.get(0));
+                default:
+                    list.add(item);
             }
         }
 
         @Override
-        protected ElementState createItem() {
-            return new ElementState();
-        }
-
-        public PatchElementProviderArtifact.State getLayer() {
-            final ElementState state = getState();
-            if(state == null) {
+        protected ElementState getState() {
+            int size = list.size();
+            if(size == 0 || i >= size) {
                 return null;
             }
-            return state.getLayer();
+            if(i < 0) {
+                return list.get(0);
+            }
+            return list.get(i);
         }
 
-        void setLayer(PatchElementProviderArtifact.State layer) {
-            final ElementState state = getState();
-            if(state == null) {
-                throw new IllegalStateException("patch element doesn't exist");
-            }
-            state.setLayer(layer);
+        @Override
+        public void resetIndex() {
+            this.i = -1;
         }
 
-        public PatchElement getMetadata() {
-            final ElementState state = getState();
-            if(state == null) {
-                return null;
+        @Override
+        public boolean hasNext(Context ctx) {
+            return i < list.size() - 1;
+        }
+
+        @Override
+        public ElementState next(Context ctx) {
+            if(!hasNext(ctx)) {
+                throw new NoSuchElementException();
             }
-            return state.getMetadata();
+            return list.get(++i);
         }
     }
 
     @Override
     protected State getInitialState(PatchXmlArtifact.State parent, Context ctx) {
-        State elements = parent.getPatchElements();
-        if(elements != null) {
-            return elements;
+        if(parent.patchElements == null) {
+            parent.patchElements = new PatchElementArtifact.State(parent.getPatch(ctx).getElements());
         }
-        elements = new PatchElementArtifact.State(parent.getPatch().getElements());
-        parent.setPatchElements(elements);
-        return elements;
+        return parent.patchElements;
     }
 }

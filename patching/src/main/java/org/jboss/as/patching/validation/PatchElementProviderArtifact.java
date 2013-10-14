@@ -26,6 +26,7 @@ import java.io.File;
 import org.jboss.as.patching.installation.Layer;
 import org.jboss.as.patching.installation.PatchableTarget;
 import org.jboss.as.patching.metadata.PatchElementProvider;
+import org.jboss.as.patching.validation.PatchElementArtifact.ElementState;
 
 
 /**
@@ -74,19 +75,16 @@ public class PatchElementProviderArtifact extends AbstractArtifact<PatchElementA
 
     @Override
     protected State getInitialState(PatchElementArtifact.State parent, Context ctx) {
-        State state = parent.getLayer();
-        if(state != null) {
-            return state;
+        final ElementState element = parent.getState();
+        if (element.layer == null) {
+            final PatchElementProvider metadata = element.getMetadata().getProvider();
+            final Layer layer = ctx.getInstallationManager().getLayer(metadata.getName());
+            if (layer == null) {
+                ctx.getErrorHandler().error("Layer not found: " + metadata.getName());
+                return null;
+            }
+            element.layer = new State(layer, element.getMetadata().getId());
         }
-        final PatchElementProvider metadata = parent.getMetadata().getProvider();
-        final Layer layer = ctx.getInstallationManager().getLayer(metadata.getName());
-        if(layer == null) {
-            ctx.getErrorHandler().error("Layer not found: " + metadata.getName());
-            return null;
-        }
-
-        state = new State(layer, parent.getMetadata().getId());
-        parent.setLayer(state);
-        return state;
+        return element.layer;
     }
 }
