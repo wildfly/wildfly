@@ -30,10 +30,13 @@ import java.io.File;
  */
 public class RollbackXmlArtifact extends AbstractArtifact<PatchHistoryDir.State, RollbackXmlArtifact.State> {
 
-    public static final RollbackXmlArtifact INSTANCE = new RollbackXmlArtifact();
+    private static final RollbackXmlArtifact INSTANCE = new RollbackXmlArtifact();
+
+    public static RollbackXmlArtifact getInstance() {
+        return INSTANCE;
+    }
 
     public static class State extends XmlFileState {
-
         State(File file) {
             super(file);
         }
@@ -41,11 +44,9 @@ public class RollbackXmlArtifact extends AbstractArtifact<PatchHistoryDir.State,
 
     @Override
     protected State getInitialState(PatchHistoryDir.State historyDir, Context ctx) {
-        State state = historyDir.getRollbackXml();
-        if(state == null) {
-            state = new State(new File(historyDir.getDirectory(), "rollback.xml"));
-            historyDir.setRollbackXml(state);
+        if (historyDir.rollbackXml == null) {
+            historyDir.rollbackXml = new State(new File(historyDir.getDirectory(), "rollback.xml"));
         }
-        return state;
+        return historyDir.rollbackXml;
     }
 }

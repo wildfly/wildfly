@@ -21,10 +21,6 @@
  */
 package org.jboss.as.patching.validation;
 
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
-
 
 /**
  * @author Alexey Loubyansky
@@ -32,46 +28,13 @@ import java.util.List;
  */
 public abstract class ArtifactCollectionState<S extends Artifact.State> implements Artifact.State {
 
-    private List<S> list = Collections.emptyList();
-    private int i;
+    protected abstract S getState();
 
-    protected S newItem() {
-        S state = createItem();
-        add(state);
-        return state;
-    }
+    public abstract void resetIndex();
 
-    protected abstract S createItem();
+    public abstract boolean hasNext(Context ctx);
 
-    private void add(S item) {
-        switch(list.size()) {
-            case 0:
-                list = Collections.singletonList(item);
-                break;
-            case 1:
-                final List<S> tmp = list;
-                list = new ArrayList<S>();
-                list.add(tmp.get(0));
-            default:
-                list.add(item);
-        }
-    }
-
-    protected S getState() {
-        return i < list.size() ? list.get(i) : null;
-    }
-
-    void resetIndex() {
-        this.i = 0;
-    }
-
-    boolean hasNext() {
-        return i < list.size();
-    }
-
-    void next() {
-        ++i;
-    }
+    public abstract S next(Context ctx);
 
     @Override
     public void validate(Context ctx) {

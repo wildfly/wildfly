@@ -32,34 +32,34 @@ public class PatchXmlArtifact extends AbstractArtifact<PatchHistoryDir.State, Pa
 
     public static final PatchXmlArtifact INSTANCE = new PatchXmlArtifact();
 
-    private PatchXmlArtifact() {
-        addArtifact(PatchElementArtifact.getInstance());
+    public static final PatchXmlArtifact getInstance() {
+        return INSTANCE;
     }
 
-    public static class State extends XmlFileState {
+    private final Artifact<State, PatchElementArtifact.State> elementsArtifact;
 
-        private PatchElementArtifact.State patchElements;
+    private PatchXmlArtifact() {
+        elementsArtifact = addArtifact(PatchElementArtifact.getInstance());
+    }
+
+    public class State extends XmlFileState {
+
+        PatchElementArtifact.State patchElements;
 
         State(File file) {
             super(file);
         }
 
-        void setPatchElements(PatchElementArtifact.State elements) {
-            this.patchElements = elements;
-        }
-
-        public PatchElementArtifact.State getPatchElements() {
-            return patchElements;
+        public PatchElementArtifact.State getPatchElements(Context ctx) {
+            return patchElements == null ? elementsArtifact.getState(this, ctx) : patchElements;
         }
     }
 
     @Override
     protected State getInitialState(PatchHistoryDir.State historyDir, Context ctx) {
-        State state = historyDir.getPatchXml();
-        if(state == null) {
-            state = new State(new File(historyDir.getDirectory(), "patch.xml"));
-            historyDir.setPatchXml(state);
+        if(historyDir.patchXml == null) {
+            historyDir.patchXml = new State(new File(historyDir.getDirectory(), "patch.xml"));
         }
-        return state;
+        return historyDir.patchXml;
     }
 }

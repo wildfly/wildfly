@@ -26,7 +26,7 @@ package org.jboss.as.patching.validation;
  * @author Alexey Loubyansky
  *
  */
-public interface PatchStateHandler {
+public interface ArtifactStateHandler<S extends Artifact.State> {
 
-    void handle(PatchArtifact.State patch);
+    void handle(Context ctx, S state);
 }

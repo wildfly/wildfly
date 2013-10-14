@@ -22,7 +22,6 @@
 
 package org.jboss.as.patching.validation;
 
-
 import java.io.File;
 import java.io.FileFilter;
 import java.io.FilenameFilter;
@@ -37,13 +36,13 @@ import org.jboss.as.patching.Constants;
 import org.jboss.as.patching.PatchLogger;
 import org.jboss.as.patching.installation.InstallationManager;
 import org.jboss.as.patching.installation.Layer;
-
+import org.jboss.as.patching.validation.PatchingHistoryTree.Builder;
 
 /**
  * @author Alexey Loubyansky
  *
  */
-public class PatchingGarbageLocator implements PatchStateHandler {
+public class PatchingGarbageLocator {
 
     private static final PatchLogger log = PatchLogger.ROOT_LOGGER;
     private static final String OVERLAYS = Constants.OVERLAYS;
@@ -55,18 +54,28 @@ public class PatchingGarbageLocator implements PatchStateHandler {
         }
     };
 
-    public static PatchingGarbageLocator getIninitialized(InstallationManager im) {
-        final PatchingGarbageLocator garbageLocator = new PatchingGarbageLocator(im);
-        final Context ctx = getContext(im, false);
-        PatchingHistory.State history = PatchingHistory.getInstance().getState(ctx);
-        history.handlePatches(ctx, garbageLocator);
-        return garbageLocator;
-    }
-
     private final InstallationManager manager;
 
-    private Set<String> activeHistory = new HashSet<String>();
-    private Set<File> activeOverlays = new HashSet<File>();
+    private Set<String> activeHistory;
+    private Set<File> activeOverlays;
+
+    final PatchingHistoryTree activeDirsHandler = Builder.getInstance()
+            .addHandler(PatchHistoryDir.getInstance(), new ArtifactStateHandler<PatchHistoryDir.State>(){
+                @Override
+                public void handle(Context ctx, PatchHistoryDir.State state) {
+                    activeHistory.add(state.getDirectory().getName());
+                }})
+            .addHandler(PatchElementProviderArtifact.getInstance(), new ArtifactStateHandler<PatchElementProviderArtifact.State>() {
+                @Override
+                public void handle(Context ctx, PatchElementProviderArtifact.State state) {
+                    if(state.getModulesDir() != null) {
+                        activeOverlays.add(state.getModulesDir());
+                    }
+                    if(state.getBundlesDir() != null) {
+                        activeOverlays.add(state.getBundlesDir());
+                    }
+                }})
+            .build();
 
     public PatchingGarbageLocator(InstallationManager manager) {
         if(manager == null) {
@@ -75,25 +84,21 @@ public class PatchingGarbageLocator implements PatchStateHandler {
         this.manager = manager;
     }
 
-    @Override
-    public void handle(PatchArtifact.State patch) {
-        activeHistory.add(patch.getHistoryDir().getDirectory().getName());
-        PatchElementArtifact.State patchElements = patch.getHistoryDir().getPatchXml().getPatchElements();
-        patchElements.resetIndex();
-        while(patchElements.hasNext()) {
-            final File bundlesDir = patchElements.getState().getLayer().getBundlesDir();
-            if(bundlesDir != null) {
-                activeOverlays.add(bundlesDir);
-            }
-            final File modulesDir = patchElements.getState().getLayer().getModulesDir();
-            if(modulesDir != null) {
-                activeOverlays.add(modulesDir);
-            }
-            patchElements.next();
-        }
+    private void walk() {
+        activeHistory = new HashSet<String>();
+        activeOverlays = new HashSet<File>();
+        activeDirsHandler.handleAll(getContext(manager, false));
+    }
+
+    public void reset() {
+        activeHistory = null;
+        activeOverlays = null;
     }
 
     public List<File> getInactiveHistory() {
+        if(activeHistory == null) {
+            walk();
+        }
         final File[] inactiveDirs = manager.getInstalledImage().getPatchesDir().listFiles(new FileFilter(){
             @Override
             public boolean accept(File pathname) {
@@ -103,6 +108,9 @@ public class PatchingGarbageLocator implements PatchStateHandler {
     }
 
     public List<File> getInactiveOverlays() {
+        if(activeOverlays == null) {
+            walk();
+        }
         List<File> inactiveDirs = null;
         for(Layer layer : manager.getLayers()) {
             final File overlaysDir = new File(layer.getDirectoryStructure().getModuleRoot(), OVERLAYS);

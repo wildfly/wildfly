@@ -36,9 +36,9 @@ public abstract class ArtifactWithCollectionState<P extends Artifact.State, I ex
     public S validate(P parent, Context ctx) {
         final S state = getInitialState(parent, ctx);
         state.resetIndex();
-        while(state.hasNext()) {
+        while(state.hasNext(ctx)) {
+            state.next(ctx);
             validateForState(ctx, state);
-            state.next();
         }
         return state;
     }

@@ -33,6 +33,16 @@ import java.util.List;
  */
 public abstract class AbstractArtifact<P extends Artifact.State, S extends Artifact.State> implements Artifact<P,S> {
 
+    @Override
+    public int hashCode() {
+        return getClass().hashCode();
+    }
+
+    @Override
+    public boolean equals(Object obj) {
+        return obj == this;
+    }
+
     protected Artifact<? extends Artifact.State, P> parent;
 
     protected List<Artifact<S, ? extends Artifact.State>> artifacts = Collections.emptyList();
@@ -43,15 +53,14 @@ public abstract class AbstractArtifact<P extends Artifact.State, S extends Artif
 
     @SuppressWarnings("unchecked")
     protected <A extends Artifact.State, B extends Artifact.State, C extends Artifact.State> A getState2(AbstractArtifact<B,C> artifact, Context ctx) {
-        Artifact.State state = null;
         if(artifact.parent != null) {
             B parentState = getState2((AbstractArtifact<B,C>)artifact.parent, ctx);
             return (A)artifact.getState((B)parentState, ctx);
         }
-        return (A)artifact.getState((B)state, ctx);
+        return (A)artifact.getState(null, ctx);
     }
 
-    void addArtifact(Artifact<S, ? extends Artifact.State> a) {
+    <C extends Artifact.State> AbstractArtifact<S,C> addArtifact(AbstractArtifact<S, C> a) {
         if(a == null) {
             throw new IllegalArgumentException("Artifact is null");
         }
@@ -66,7 +75,15 @@ public abstract class AbstractArtifact<P extends Artifact.State, S extends Artif
             default:
                 artifacts.add(a);
         }
+        a.parent = this;
+        return a;
     }
+
+    @Override
+    public Artifact<? extends Artifact.State, P> getParent() {
+        return parent;
+    }
+
     /* (non-Javadoc)
      * @see org.jboss.as.patching.validation.Artifact#getArtifacts()
      */
@@ -98,6 +115,7 @@ public abstract class AbstractArtifact<P extends Artifact.State, S extends Artif
 
     @Override
     public S getState(P parent, Context ctx) {
-        return validate(parent, ctx);
+        //return validate(parent, ctx);
+        return getInitialState(parent, ctx);
     }
 }
