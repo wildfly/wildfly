@@ -1,25 +1,23 @@
-/*
+/**
+ * JBoss, Home of Professional Open Source.
+ * Copyright 2013, Red Hat, Inc., and individual contributors
+ * as indicated by the @author tags. See the copyright.txt file in the
+ * distribution for a full listing of individual contributors.
  *
- *  JBoss, Home of Professional Open Source.
- *  Copyright 2013, Red Hat, Inc., and individual contributors
- *  as indicated by the @author tags. See the copyright.txt file in the
- *  distribution for a full listing of individual contributors.
+ * This is free software; you can redistribute it and/or modify it
+ * under the terms of the GNU Lesser General Public License as
+ * published by the Free Software Foundation; either version 2.1 of
+ * the License, or (at your option) any later version.
  *
- *  This is free software; you can redistribute it and/or modify it
- *  under the terms of the GNU Lesser General Public License as
- *  published by the Free Software Foundation; either version 2.1 of
- *  the License, or (at your option) any later version.
+ * This software is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
+ * Lesser General Public License for more details.
  *
- *  This software is distributed in the hope that it will be useful,
- *  but WITHOUT ANY WARRANTY; without even the implied warranty of
- *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
- *  Lesser General Public License for more details.
- *
- *  You should have received a copy of the GNU Lesser General Public
- *  License along with this software; if not, write to the Free
- *  Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
- *  02110-1301 USA, or see the FSF site: http://www.fsf.org.
- * /
+ * You should have received a copy of the GNU Lesser General Public
+ * License along with this software; if not, write to the Free
+ * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
+ * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
 
 package org.wildfly.extension.mod_cluster;
@@ -54,8 +52,18 @@ import org.junit.Assert;
 import org.junit.Test;
 
 /**
+ * Quick versions overview:
+ * <p/>
+ * AS version / model version / schema version
+ * 7.1.1 / 1.1.0 / 1_0
+ * 7.1.2 / 1.2.0 / 1_1
+ * 7.1.3 / 1.2.0 / 1_1
+ * 7.2.0 / 1.3.0 / 1_1
+ * 8.0.0 / 2.0.0 / 1_2
+ *
  * @author <a href="kabir.khan@jboss.com">Kabir Khan</a>
- * @author Jean-Frederic Clere.
+ * @author Jean-Frederic Clere
+ * @author Radoslav Husar
  */
 public class ModClusterSubsystemTestCase extends AbstractSubsystemBaseTest {
 
@@ -63,10 +71,24 @@ public class ModClusterSubsystemTestCase extends AbstractSubsystemBaseTest {
         super(ModClusterExtension.SUBSYSTEM_NAME, new ModClusterExtension());
     }
 
+    // --------------------------------------------------- Standard Subsystem tests
+
     @Test
     public void testXsd10() throws Exception {
         standardSubsystemTest("subsystem_1_0.xml", false);
     }
+
+    @Test
+    public void testXsd11() throws Exception {
+        standardSubsystemTest("subsystem_1_1.xml", false);
+    }
+
+    @Override
+    protected String getSubsystemXml() throws IOException {
+        return readResource("subsystem_1_2.xml");
+    }
+
+    // --------------------------------------------------- Transformers for 1.2 & 1.3
 
     @Test
     public void testTransformers712() throws Exception {
@@ -78,17 +100,46 @@ public class ModClusterSubsystemTestCase extends AbstractSubsystemBaseTest {
         testTransformers_1_2_0(ModelTestControllerVersion.V7_1_3_FINAL);
     }
 
-    private void testTransformers_1_2_0(ModelTestControllerVersion controllerVersion) throws Exception {
-        String subsystemXml = readResource("subsystem-transform-no-reject.xml");
-        ModelVersion modelVersion = ModelVersion.create(1, 2, 0);
+    @Test
+    public void testTransformers720() throws Exception {
+        testTransformers_1_3_0(ModelTestControllerVersion.V7_2_0_FINAL);
+    }
+
+    private void testTransformers_1_3_0(ModelTestControllerVersion controllerVersion) throws Exception {
+        String subsystemXml = readResource("subsystem_1_1.xml");
+        ModelVersion modelVersion = ModelVersion.create(1, 3, 0);
         KernelServicesBuilder builder = createKernelServicesBuilder(createAdditionalInitialization())
-                .setSubsystemXml(subsystemXml)
-        ;
+                .setSubsystemXml(subsystemXml);
         builder.createLegacyKernelServicesBuilder(null, controllerVersion, modelVersion)
                 .addMavenResourceURL("org.jboss.as:jboss-as-modcluster:" + controllerVersion.getMavenGavVersion())
                 .configureReverseControllerCheck(null, new Undo71TransformModelFixer())
-                .setExtensionClassName("org.jboss.as.modcluster.ModClusterExtension")
-        ;
+                .setExtensionClassName("org.jboss.as.modcluster.ModClusterExtension");
+        KernelServices mainServices = builder.build();
+        KernelServices legacyServices = mainServices.getLegacyServices(modelVersion);
+        Assert.assertNotNull(legacyServices);
+        Assert.assertTrue(mainServices.isSuccessfulBoot());
+        Assert.assertTrue(legacyServices.isSuccessfulBoot());
+
+        ModelNode legacySubsystem = checkSubsystemModelTransformation(mainServices, modelVersion);
+
+        ModelNode mainSessionCapacity = mainServices.readWholeModel().get(SUBSYSTEM, ModClusterExtension.SUBSYSTEM_NAME, MOD_CLUSTER_CONFIG, CONFIGURATION,
+                CommonAttributes.DYNAMIC_LOAD_PROVIDER, CONFIGURATION, CommonAttributes.LOAD_METRIC, "sessions", CommonAttributes.CAPACITY);
+        ModelNode legacySessionCapacity = legacySubsystem.get(SUBSYSTEM, ModClusterExtension.SUBSYSTEM_NAME, MOD_CLUSTER_CONFIG, CONFIGURATION,
+                CommonAttributes.DYNAMIC_LOAD_PROVIDER, CONFIGURATION, CommonAttributes.LOAD_METRIC, "sessions", CommonAttributes.CAPACITY);
+        Assert.assertEquals(legacySessionCapacity.getType(), mainSessionCapacity.getType());
+        Assert.assertTrue(mainSessionCapacity.asString().equals(legacySessionCapacity.asString()));
+        Assert.assertEquals(mainSessionCapacity.asInt(), legacySessionCapacity.asInt());
+    }
+
+    private void testTransformers_1_2_0(ModelTestControllerVersion controllerVersion) throws Exception {
+        String subsystemXml = readResource("subsystem_1_1.xml");
+        ModelVersion modelVersion = ModelVersion.create(1, 2, 0);
+        KernelServicesBuilder builder = createKernelServicesBuilder(createAdditionalInitialization())
+                .setSubsystemXml(subsystemXml);
+        builder.createLegacyKernelServicesBuilder(null, controllerVersion, modelVersion)
+                .addMavenResourceURL("org.jboss.as:jboss-as-modcluster:" + controllerVersion.getMavenGavVersion())
+                .configureReverseControllerCheck(null, new Undo71TransformModelFixer())
+                .setExtensionClassName("org.jboss.as.modcluster.ModClusterExtension");
         KernelServices mainServices = builder.build();
         KernelServices legacyServices = mainServices.getLegacyServices(modelVersion);
         Assert.assertNotNull(legacyServices);
@@ -124,6 +175,8 @@ public class ModClusterSubsystemTestCase extends AbstractSubsystemBaseTest {
         Assert.assertEquals(mainSessionCapacity.asInt(), legacySessionCapacity.asInt());
     }
 
+    // --------------------------------------------------- Expressions Rejected prior to 7.1.2 and 7.1.3
+
     @Test
     public void testExpressionsAreRejected712() throws Exception {
         testExpressionsAreRejectedByVersion_1_2(ModelTestControllerVersion.V7_1_2_FINAL);
@@ -135,14 +188,13 @@ public class ModClusterSubsystemTestCase extends AbstractSubsystemBaseTest {
     }
 
     private void testExpressionsAreRejectedByVersion_1_2(ModelTestControllerVersion controllerVersion) throws Exception {
-        String subsystemXml = readResource("subsystem-transform-reject.xml");
+        String subsystemXml = readResource("subsystem_1_2.xml");
         ModelVersion modelVersion = ModelVersion.create(1, 2, 0);
         KernelServicesBuilder builder = createKernelServicesBuilder(createAdditionalInitialization());
 
         builder.createLegacyKernelServicesBuilder(null, controllerVersion, modelVersion)
                 .addMavenResourceURL("org.jboss.as:jboss-as-modcluster:" + controllerVersion.getMavenGavVersion())
-                .setExtensionClassName("org.jboss.as.modcluster.ModClusterExtension")
-        ;
+                .setExtensionClassName("org.jboss.as.modcluster.ModClusterExtension");
 
         KernelServices mainServices = builder.build();
         KernelServices legacyServices = mainServices.getLegacyServices(modelVersion);
@@ -195,11 +247,6 @@ public class ModClusterSubsystemTestCase extends AbstractSubsystemBaseTest {
         );
     }
 
-    @Override
-    protected String getSubsystemXml() throws IOException {
-        return readResource("subsystem-transform-reject.xml");
-    }
-
     @Test
     public void testSSL() throws Exception {
         KernelServicesBuilder builder = createKernelServicesBuilder(new AdditionalInitialization()).setSubsystemXml(getSubsystemXml());
@@ -229,11 +276,10 @@ public class ModClusterSubsystemTestCase extends AbstractSubsystemBaseTest {
 
     /**
      * Checks that the attribute list only has one entry
-     *
      */
     private static class OnlyOnePropertyConfig extends AttributesPathAddressConfig<OnlyOnePropertyConfig> {
 
-        public OnlyOnePropertyConfig(String...attributes) {
+        public OnlyOnePropertyConfig(String... attributes) {
             super(attributes);
         }
 
@@ -269,7 +315,7 @@ public class ModClusterSubsystemTestCase extends AbstractSubsystemBaseTest {
 
 
     private static class NeverToDefaultConfig extends AttributesPathAddressConfig<NeverToDefaultConfig> {
-        public NeverToDefaultConfig(String...attributes) {
+        public NeverToDefaultConfig(String... attributes) {
             super(attributes);
         }
 

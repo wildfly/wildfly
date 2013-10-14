@@ -34,7 +34,7 @@
 
     <artifactId>wildfly-mod_cluster-extension</artifactId>
 
-    <name>WildFly: mod_cluster extension</name>
+    <name>WildFly: mod_cluster Extension</name>
 
     <build>
         <plugins>
