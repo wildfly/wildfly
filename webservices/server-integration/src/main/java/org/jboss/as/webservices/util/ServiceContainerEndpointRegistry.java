@@ -91,7 +91,10 @@ public class ServiceContainerEndpointRegistry implements EndpointRegistry {
         Set<Endpoint> endpoints = new CopyOnWriteArraySet<Endpoint>();
         for (ServiceName sname : WSServices.getContainerRegistry().getServiceNames()) {
             if (sname.getCanonicalName().startsWith(endpointPrefix)) {
-                endpoints.add(ASHelper.getMSCService(sname, Endpoint.class));
+                Endpoint ep = ASHelper.getMSCService(sname, Endpoint.class);
+                if (ep != null) { //JBWS-3719
+                    endpoints.add(ep);
+                }
             }
         }
         return endpoints;
