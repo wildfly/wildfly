@@ -625,7 +625,8 @@ public class JBossWebRealm extends RealmBase {
             ok = helper.hasUserDataPermission(map, request, response, PolicyContext.getContextID(), callerSubject,
                     getPrincipalRoles(request));
         }
-        if(!ok) {
+        //If the status of the response has already been changed (it is different from the default Response.SC_OK) we should not attempt to change it.
+        if(!ok && response.getStatus() == Response.SC_OK) {
             response.sendError(Response.SC_FORBIDDEN);
         }
         return ok;

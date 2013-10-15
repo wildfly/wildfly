@@ -26,7 +26,10 @@ import org.apache.http.HttpEntity;
 import org.apache.http.HttpResponse;
 import org.apache.http.StatusLine;
 import org.apache.http.client.methods.HttpGet;
+import org.apache.http.client.params.HttpClientParams;
 import org.apache.http.impl.client.DefaultHttpClient;
+import org.apache.http.params.BasicHttpParams;
+import org.apache.http.params.HttpParams;
 import org.apache.http.util.EntityUtils;
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.container.test.api.RunAsClient;
@@ -71,6 +74,7 @@ public class WebSecurityCustomAuthorizationModuleTestCase {
         war.addAsWebInfResource(WebSecurityCustomAuthorizationModuleTestCase.class.getPackage(), "jboss-web.xml", "jboss-web.xml");
         war.addAsWebInfResource(WebSecurityCustomAuthorizationModuleTestCase.class.getPackage(), "web.xml", "web.xml");
         war.addAsWebResource(WebSecurityCustomAuthorizationModuleTestCase.class.getPackage(), "index.html", "index.html");
+        war.addAsWebResource(WebSecurityCustomAuthorizationModuleTestCase.class.getPackage(), "index.html", "secure.html");
         return war;
     }
 
@@ -81,7 +85,12 @@ public class WebSecurityCustomAuthorizationModuleTestCase {
      */
     @Test
     public void testPasswordBasedSuccessfulAuth() throws Exception {
-        makeCall("admin", "admin", 403);
+        makeCall("admin", "admin", "index.html", 403);
+    }
+
+    @Test
+    public void testSSLRedirectOnResource() throws Exception {
+        makeCall("admin", "admin", "secure.html", 302);
     }
 
     /**
@@ -96,16 +105,18 @@ public class WebSecurityCustomAuthorizationModuleTestCase {
      */
     @Test
     public void testPasswordBasedUnsuccessfulAuth() throws Exception {
-        makeCall("marcus", "marcus", 403);
+        makeCall("marcus", "marcus", "index.html", 403);
     }
 
-    protected void makeCall(String user, String pass, int expectedStatusCode) throws Exception {
-        DefaultHttpClient httpclient = new DefaultHttpClient();
+    protected void makeCall(String user, String pass, String page, int expectedStatusCode) throws Exception {
+        HttpParams httpParams = new BasicHttpParams();
+        HttpClientParams.setRedirecting(httpParams, false);
+        DefaultHttpClient httpclient = new DefaultHttpClient(httpParams);
         try {
             // test hitting programmatic login servlet
             String uri = managementClient.getWebUri().getScheme() + "://" + user + ':' + pass
                     + '@' + managementClient.getWebUri().getHost() + ':'
-                    + managementClient.getWebUri().getPort() + "/web-secure-custom-authorization-module/index.html";
+                    + managementClient.getWebUri().getPort() + "/web-secure-custom-authorization-module/" + page;
             HttpGet httpget = new HttpGet(uri);
 
             System.out.println("executing request" + httpget.getRequestLine());
@@ -143,11 +154,11 @@ public class WebSecurityCustomAuthorizationModuleTestCase {
 
         @Override
         protected SecurityDomain[] getSecurityDomains() throws Exception {
-           SecurityDomain securityDomain = new SecurityDomain.Builder().name("deny-all")
-                   .loginModules(new SecurityModule.Builder().flag("required").name("UsersRoles").build())
-                   .authorizationModules(new SecurityModule.Builder().flag("required").name(
-                   "org.jboss.security.authorization.modules.AllDenyAuthorizationModule").build()).build();
-           return new SecurityDomain[]{securityDomain};
+            SecurityDomain securityDomain = new SecurityDomain.Builder().name("deny-all")
+                    .loginModules(new SecurityModule.Builder().flag("required").name("UsersRoles").build())
+                    .authorizationModules(new SecurityModule.Builder().flag("required").name(
+                                    "org.jboss.security.authorization.modules.AllDenyAuthorizationModule").build()).build();
+            return new SecurityDomain[]{securityDomain};
         }
     }
 
