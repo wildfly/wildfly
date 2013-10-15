@@ -52,10 +52,6 @@
             <param name="cacheMode" value="SYNC"/>
             <param name="stack" value="tcp"/>
         </antcall>
-        <antcall target="change-url">
-            <param name="cacheMode" value="SYNC" />
-            <param name="stack" value="tcp" />
-        </antcall>
         <antcall target="add-cache">
             <param name="cacheMode" value="SYNC" />
             <param name="stack" value="tcp" />
@@ -98,11 +94,6 @@
     <target name="add-cache">
         <ts.config-as.add-cache-container name="jbossas-clustering-${cacheMode}-${stack}-0" cacheLoader="${cacheLoader}" cacheType="${cacheType}" mode="${mode}" />
         <ts.config-as.add-cache-container name="jbossas-clustering-${cacheMode}-${stack}-1" cacheLoader="${cacheLoader}" cacheType="${cacheType}" mode="${mode}" />
-    </target>
-
-    <target name="change-url" unless="ds" description="Change database unless no database profile is activated.">
-        <ts.config-as.change-database name="jbossas-clustering-${cacheMode}-${stack}-0" ds.jdbc.url="jdbc:h2:file:test;FILE_LOCK=NO;DB_CLOSE_DELAY=-1" />
-        <ts.config-as.change-database name="jbossas-clustering-${cacheMode}-${stack}-1" ds.jdbc.url="jdbc:h2:file:test;FILE_LOCK=NO;DB_CLOSE_DELAY=-1" />
     </target>
 
     <!-- x-site test deployment:
