@@ -22,13 +22,20 @@
 
 package org.jboss.as.test.integration.domain.rbac;
 
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ACCESS_CONTROL;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ADD;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.AUTO_START;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.BYTES;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.CONTENT;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ENABLED;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.GROUP;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.HOST;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OPERATIONS;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OUTCOME;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.PASSWORD;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.PATH;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.PROFILE;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.READ_RESOURCE_DESCRIPTION_OPERATION;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.READ_RESOURCE_OPERATION;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.REMOVE;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.RESULT;
@@ -72,6 +79,7 @@ public abstract class AbstractRbacTestCase {
     protected static final String MASTER_A = "master-a";
     protected static final String SLAVE_B = "slave-b";
     protected static final String SMALL_JVM = "jvm=small";
+    protected static final String SCOPED_ROLE_SERVER = "server-config=scoped-role-server";
 
     private static final Map<String, String> SASL_OPTIONS = Collections.singletonMap("SASL_DISALLOWED_MECHANISMS", "JBOSS-LOCAL-USER");
     private static final String TEST = "test.war";
@@ -81,6 +89,7 @@ public abstract class AbstractRbacTestCase {
     private static final String MEMORY_MBEAN = "core-service=platform-mbean/type=memory";
     private static final String PROFILE_A = "profile=profile-a";
     private static final String EXAMPLE_DS = "subsystem=datasources/data-source=ExampleDS";
+    private static final String GENERIC_SERVER_CONFIG_ADDRESS = "host=master/server-config=*";
 
     private static final Map<String, ModelControllerClient> nonLocalAuthclients = new HashMap<String, ModelControllerClient>();
     private static final Map<String, ModelControllerClient> localAuthClients = new HashMap<String, ModelControllerClient>();
@@ -226,6 +235,24 @@ public abstract class AbstractRbacTestCase {
         ModelNode op = createOpNode(fullAddress, ADD);
         configureRoles(op, roles);
         RbacUtil.executeOperation(client, op, expectedOutcome);
+    }
+
+    protected void addServerConfig(ModelControllerClient client, String host, String serverGroup,
+                          Outcome expectedOutcome, String... roles) throws IOException {
+        String fullAddress = getPrefixedAddress(HOST, host, SCOPED_ROLE_SERVER);
+        ModelNode op = createOpNode(fullAddress, ADD);
+        op.get(GROUP).set(serverGroup);
+        op.get(AUTO_START).set(false);
+        configureRoles(op, roles);
+        RbacUtil.executeOperation(client, op, expectedOutcome);
+    }
+
+    protected ModelNode getServerConfigAccessControl(ModelControllerClient client, String... roles) throws IOException {
+        ModelNode op = createOpNode(GENERIC_SERVER_CONFIG_ADDRESS, READ_RESOURCE_DESCRIPTION_OPERATION);
+        op.get(ACCESS_CONTROL).set("trim-descriptions");
+        op.get(OPERATIONS).set(true);
+        configureRoles(op, roles);
+        return RbacUtil.executeOperation(client, op, Outcome.SUCCESS).get(RESULT).get(0).get(RESULT, ACCESS_CONTROL);
     }
 
     protected void removeResource(String address) throws IOException {
