@@ -988,7 +988,7 @@
                 <client-config name="Standard-Client-Config"/>
                  -->
             </subsystem>
-            <subsystem xmlns="urn:jboss:domain:weld:2.0"/>
+            <subsystem xmlns="urn:jboss:domain:weld:2.0" require-bean-descriptor="true" non-portable-mode="true"/>
         </profile>    
         
         
@@ -1456,7 +1456,7 @@
                 </endpoint-config>
                 <client-config name="Standard-Client-Config"/>
             </subsystem>
-            <subsystem xmlns="urn:jboss:domain:weld:2.0"/>
+            <subsystem xmlns="urn:jboss:domain:weld:2.0" require-bean-descriptor="true" non-portable-mode="true"/>
         </profile>
         
     </profiles>
