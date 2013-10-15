@@ -85,9 +85,6 @@
                                 <phase>test</phase>
                                 <goals><goal>test</goal></goals>
                                 <configuration>
-                                    <!-- Force the order of tests -->
-                                    <runOrder>reversealphabetical</runOrder>
-
                                     <!-- Tests to execute. -->
                                     <includes>
                                         <include>org/jboss/as/test/clustering/cluster/**/*TestCase.java</include>
