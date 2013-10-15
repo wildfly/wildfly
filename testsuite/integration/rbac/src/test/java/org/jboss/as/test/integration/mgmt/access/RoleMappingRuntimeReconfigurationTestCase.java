@@ -1,3 +1,24 @@
+/*
+ * JBoss, Home of Professional Open Source.
+ * Copyright 2013, Red Hat, Inc., and individual contributors
+ * as indicated by the @author tags. See the copyright.txt file in the
+ * distribution for a full listing of individual contributors.
+ *
+ * This is free software; you can redistribute it and/or modify it
+ * under the terms of the GNU Lesser General Public License as
+ * published by the Free Software Foundation; either version 2.1 of
+ * the License, or (at your option) any later version.
+ *
+ * This software is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
+ * Lesser General Public License for more details.
+ *
+ * You should have received a copy of the GNU Lesser General Public
+ * License along with this software; if not, write to the Free
+ * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
+ * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
+ */
 package org.jboss.as.test.integration.mgmt.access;
 
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ADD;
@@ -45,9 +66,9 @@ import org.junit.runner.RunWith;
 @ServerSetup(UserRolesMappingServerSetupTask.StandardUsersSetup.class)
 public class RoleMappingRuntimeReconfigurationTestCase {
     private static final String ROLE_MAPPING_ADDRESS_BASE = "core-service=management/access=authorization/role-mapping=";
-    private static final String TEST_ROLE_MAPPING = ROLE_MAPPING_ADDRESS_BASE + "TestRoleMapping";
-    private static final String TEST_ROLE_MAPPING_2 = ROLE_MAPPING_ADDRESS_BASE + "TestRoleMapping2";
-    private static final String ROLE_INCLUSION_USER = TEST_ROLE_MAPPING_2 + "/include=user-";
+    private static final String OPERATOR_ROLE_MAPPING = ROLE_MAPPING_ADDRESS_BASE + "Operator";
+    private static final String MAINTAINER_ROLE_MAPPING = ROLE_MAPPING_ADDRESS_BASE + "Maintainer";
+    private static final String ROLE_INCLUSION_USER = MAINTAINER_ROLE_MAPPING + "/include=user-";
     private static final String TEST_USER = "testUser";
     private static final String TEST_USER_2 = "testUser2";
 
@@ -63,14 +84,14 @@ public class RoleMappingRuntimeReconfigurationTestCase {
 
     @Before
     public void setUp() throws IOException {
-        addIfNotExists(TEST_ROLE_MAPPING_2, managementClient.getControllerClient());
+        addIfNotExists(MAINTAINER_ROLE_MAPPING, managementClient.getControllerClient());
         addIfNotExists(ROLE_INCLUSION_USER + TEST_USER_2, managementClient.getControllerClient(),
                 "name=" + TEST_USER_2, "type=user");
     }
 
     @After
     public void tearDown() throws IOException {
-        removeIfExists(TEST_ROLE_MAPPING, managementClient.getControllerClient());
+        removeIfExists(OPERATOR_ROLE_MAPPING, managementClient.getControllerClient());
         removeIfExists(ROLE_INCLUSION_USER + TEST_USER, managementClient.getControllerClient());
     }
 
@@ -111,15 +132,15 @@ public class RoleMappingRuntimeReconfigurationTestCase {
     // test utils
 
     private void addRoleMapping(ManagementInterface client) throws IOException {
-        ModelNode op = createOpNode(TEST_ROLE_MAPPING, ADD);
+        ModelNode op = createOpNode(OPERATOR_ROLE_MAPPING, ADD);
         RbacUtil.executeOperation(client, op, Outcome.SUCCESS);
-        checkIfExists(TEST_ROLE_MAPPING, true, managementClient.getControllerClient());
+        checkIfExists(OPERATOR_ROLE_MAPPING, true, managementClient.getControllerClient());
     }
 
     private void removeRoleMapping(ManagementInterface client) throws IOException {
-        ModelNode op = createOpNode(TEST_ROLE_MAPPING_2, REMOVE);
+        ModelNode op = createOpNode(MAINTAINER_ROLE_MAPPING, REMOVE);
         RbacUtil.executeOperation(client, op, Outcome.SUCCESS);
-        checkIfExists(TEST_ROLE_MAPPING_2, false, managementClient.getControllerClient());
+        checkIfExists(MAINTAINER_ROLE_MAPPING, false, managementClient.getControllerClient());
     }
 
     private void addUserInclusion(ManagementInterface client) throws IOException {
