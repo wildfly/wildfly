@@ -802,8 +802,8 @@ public class ReadResourceDescriptionAccessControlTestCase extends AbstractContro
         checkAttributePermissions(attributes, ATTR_ACCESS_READ_WRITE, false, false);
         checkAttributePermissions(attributes, ATTR_READ_WRITE, false, false);
         checkAttributePermissions(attributes, ATTR_WRITE, true, false);
-        checkAttributePermissions(attributes, ATTR_READ, false, false);
-        checkAttributePermissions(attributes, ATTR_NONE, true, false);
+        checkAttributePermissions(attributes, ATTR_READ, false, true);
+        checkAttributePermissions(attributes, ATTR_NONE, true, true);
     }
 
     @Test
@@ -814,11 +814,11 @@ public class ReadResourceDescriptionAccessControlTestCase extends AbstractContro
         ModelNode result = executeForResult(op);
         ResourceAccessControl accessControl = getResourceAccessControl(getChildDescription(result, ONE));
         Map<String, ModelNode> attributes = checkAttributeAccessControlNames(accessControl.defaultControl, ATTR_ACCESS_READ_WRITE, ATTR_READ_WRITE, ATTR_WRITE, ATTR_READ, ATTR_NONE);
-        checkAttributePermissions(attributes, ATTR_ACCESS_READ_WRITE, true, false);
-        checkAttributePermissions(attributes, ATTR_READ_WRITE, true, false);
-        checkAttributePermissions(attributes, ATTR_WRITE, true, false);
-        checkAttributePermissions(attributes, ATTR_READ, true, false);
-        checkAttributePermissions(attributes, ATTR_NONE, true, false);
+        checkAttributePermissions(attributes, ATTR_ACCESS_READ_WRITE, true, true);
+        checkAttributePermissions(attributes, ATTR_READ_WRITE, true, true);
+        checkAttributePermissions(attributes, ATTR_WRITE, true, true);
+        checkAttributePermissions(attributes, ATTR_READ, true, true);
+        checkAttributePermissions(attributes, ATTR_NONE, true, true);
     }
 
 
@@ -1953,7 +1953,7 @@ public class ReadResourceDescriptionAccessControlTestCase extends AbstractContro
         ModelNode attr = map.get(attrName);
         Assert.assertNotNull(attr);
         assertEqualsOrNotDefined(attr, ModelDescriptionConstants.READ, read);
-        assertEqualsOrNotDefined(attr, ModelDescriptionConstants.WRITE.toString(), write);
+        assertEqualsOrNotDefined(attr, ModelDescriptionConstants.WRITE, write);
     }
 
     private Map<String, Boolean> checkOperationAccessControlNames(ModelNode accessControl, String...operationNames) {
