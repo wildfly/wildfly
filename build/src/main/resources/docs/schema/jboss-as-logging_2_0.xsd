@@ -423,6 +423,7 @@
         </xs:annotation>
         <xs:choice minOccurs="1" maxOccurs="1">
             <xs:element name="pattern-formatter" type="patternFormatterType" maxOccurs="1"/>
+            <xs:element name="custom-formatter" type="customFormatterType" maxOccurs="1"/>
         </xs:choice>
         <xs:attribute name="name" type="xs:string" use="required"/>
     </xs:complexType>
@@ -489,6 +490,23 @@
                 </xs:documentation>
             </xs:annotation>
         </xs:attribute>
+    </xs:complexType>
+
+    <xs:complexType name="customFormatterType">
+        <xs:annotation>
+            <xs:documentation>
+                <![CDATA[
+                Defines a formatter to be used to format log messages.
+
+                Note that most log records are formatted in the printf format. Formatters may require invocation of org.jboss.logmanager.ExtLogRecord#getFormattedMessage() for the message to be properly formatted.
+                ]]>
+            </xs:documentation>
+        </xs:annotation>
+        <xs:all>
+            <xs:element name="properties" type="propertiesType" minOccurs="0"/>
+        </xs:all>
+        <xs:attribute name="module" type="xs:string" use="required"/>
+        <xs:attribute name="class" type="xs:string" use="required"/>
     </xs:complexType>
 
     <xs:complexType name="namedFormatterType">
