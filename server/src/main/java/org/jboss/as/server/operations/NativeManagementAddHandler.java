@@ -84,8 +84,6 @@ public class NativeManagementAddHandler extends AbstractAddStepHandler {
         final String hostName = WildFlySecurityManager.getPropertyPrivileged(ServerEnvironment.NODE_NAME, null);
         NativeManagementServices.installRemotingServicesIfNotInstalled(serviceTarget, hostName, verificationHandler, newControllers, context.getServiceRegistry(false));
         installNativeManagementConnector(context, model, endpointName, serviceTarget, verificationHandler, newControllers);
-
-
     }
 
     // TODO move this kind of logic into AttributeDefinition itself

@@ -44,6 +44,7 @@ import org.jboss.as.patching.metadata.RollbackPatch;
 import org.jboss.as.patching.metadata.impl.IdentityImpl;
 import org.jboss.as.patching.metadata.impl.PatchElementImpl;
 import org.jboss.as.patching.tool.ContentVerificationPolicy;
+import org.jboss.as.patching.tool.PatchingHistory;
 import org.jboss.as.patching.tool.PatchingResult;
 
 /**
@@ -62,6 +63,7 @@ class IdentityPatchContext implements PatchContentProvider {
     private final ContentVerificationPolicy contentPolicy;
     private final InstallationManager.InstallationModification modification;
     private final Map<String, PatchContentLoader> contentLoaders = new HashMap<String, PatchContentLoader>();
+    private final PatchingHistory history;
 
     // TODO initialize layers in the correct order
     private final Map<String, PatchEntry> layers = new LinkedHashMap<String, PatchEntry>();
@@ -69,6 +71,7 @@ class IdentityPatchContext implements PatchContentProvider {
 
     private PatchingTaskContext.Mode mode;
     private volatile State state = State.NEW;
+    private boolean checkForGarbageOnRestart; // flag to trigger a cleanup on restart
     private static final AtomicReferenceFieldUpdater<IdentityPatchContext, State> stateUpdater = AtomicReferenceFieldUpdater.newUpdater(IdentityPatchContext.class, State.class, "state");
     // The modules we need to invalidate
     private final List<File> moduleInvalidations = new ArrayList<File>();
@@ -95,6 +98,7 @@ class IdentityPatchContext implements PatchContentProvider {
         this.contentPolicy = contentPolicy;
         this.modification = modification;
         this.installedImage = installedImage;
+        this.history = PatchingHistory.Factory.getHistory(modification.getUnmodifiedInstallationState());
 
         if (backup != null) {
             this.miscBackup = new File(backup, PatchContentLoader.MISC);
@@ -154,12 +158,32 @@ class IdentityPatchContext implements PatchContentProvider {
     }
 
     /**
+     * Get the patch history.
+     *
+     * @return the history
+     */
+    PatchingHistory getHistory() {
+        return history;
+    }
+
+    /**
      * Get the current mode.
      *
      * @return the mode
      */
     PatchingTaskContext.Mode getMode() {
         return mode;
+    }
+
+    /**
+     * In case we cannot delete a directory create a marker to recheck whether we can garbage collect some not
+     * referenced directories and files.
+     *
+     * @param file the directory
+     */
+    protected void failedToCleanupDir(final File file) {
+        checkForGarbageOnRestart = true;
+        PatchLogger.ROOT_LOGGER.cannotDeleteFile(file.getAbsolutePath());
     }
 
     @Override
@@ -343,6 +367,15 @@ class IdentityPatchContext implements PatchContentProvider {
                     } finally {
                         callback.operationCancelled(this);
                     }
+                }
+            } else  {
+                try {
+                    if (checkForGarbageOnRestart) {
+                        final File cleanupMarker = new File(installedImage.getInstallationMetadata(), "cleanup-patching-dirs");
+                        cleanupMarker.createNewFile();
+                    }
+                } catch (IOException e) {
+                    PatchLogger.ROOT_LOGGER.infof(e, "failed to create cleanup marker");
                 }
             }
         }
@@ -724,10 +757,10 @@ class IdentityPatchContext implements PatchContentProvider {
             final DirectoryStructure structure = getDirectoryStructure();
             for (final String rollback : rollbacks) {
                 if (!IoUtils.recursiveDelete(structure.getBundlesPatchDirectory(rollback))) {
-                    PatchLogger.ROOT_LOGGER.cannotDeleteFile(structure.getBundlesPatchDirectory(rollback).getAbsolutePath());
+                    failedToCleanupDir(structure.getBundlesPatchDirectory(rollback));
                 }
                 if (!IoUtils.recursiveDelete(structure.getModulePatchDirectory(rollback))) {
-                    PatchLogger.ROOT_LOGGER.cannotDeleteFile(structure.getModulePatchDirectory(rollback).getAbsolutePath());
+                    failedToCleanupDir(structure.getModulePatchDirectory(rollback));
                 }
             }
         }

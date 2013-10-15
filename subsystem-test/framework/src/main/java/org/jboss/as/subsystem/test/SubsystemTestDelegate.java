@@ -415,9 +415,12 @@ final class SubsystemTestDelegate {
                 file.mkdir();
             }
         }
-        PrintWriter pw = new PrintWriter(new File(file, mainSubsystemName + "-" + modelVersion.getMajor() + "." + modelVersion.getMinor() +"."+modelVersion.getMicro()+ ".dmr"));
+        File dmrFile = new File(file, mainSubsystemName + "-" + modelVersion.getMajor() + "." + modelVersion.getMinor() +"."+modelVersion.getMicro()+ ".dmr");
+        PrintWriter pw = new PrintWriter(dmrFile);
         try {
             desc.writeString(pw, false);
+            //Leave this println - it only gets executed when people generate the legacy dmr files, and is useful to know where it has been written.
+            System.out.println("Legact resource defintion dmr written to: " + dmrFile.getAbsolutePath());
         } finally {
             IoUtils.safeClose(pw);
         }

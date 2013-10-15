@@ -93,10 +93,10 @@ public class WebExtension extends AbstractLegacyExtension {
     private static final String extensionName = "org.jboss.as.web";
 
     static final SensitiveTargetAccessConstraintDefinition WEB_CONNECTOR_CONSTRAINT = new SensitiveTargetAccessConstraintDefinition(
-            new SensitivityClassification(SUBSYSTEM_NAME, "web-connector", true, false, false));
+            new SensitivityClassification(SUBSYSTEM_NAME, "web-connector", false, false, false));
 
     static final SensitiveTargetAccessConstraintDefinition WEB_VALVE_CONSTRAINT = new SensitiveTargetAccessConstraintDefinition(
-            new SensitivityClassification(SUBSYSTEM_NAME, "web-valve", true, false, false));
+            new SensitivityClassification(SUBSYSTEM_NAME, "web-valve", false, false, false));
 
     public WebExtension() {
         super(extensionName, SUBSYSTEM_NAME);

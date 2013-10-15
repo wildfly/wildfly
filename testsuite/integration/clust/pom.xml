@@ -59,6 +59,9 @@
                                             <property name="node0" value="${node0}"/> <!-- inheritAll="true" doesn't work. -->
                                             <property name="node1" value="${node1}"/>
                                             <property name="mcast" value="${mcast}"/>
+                                            <property name="cacheLoader" value="binary-keyed" />
+                                            <property name="cacheType" value="replicated" />
+                                            <property name="mode" value="${cacheMode}" />
                                             <target name="build-clustering"/>
                                         </ant>
                                     </target>
@@ -333,7 +336,9 @@
                                         <!-- Build the UDP server configs in target/ . -->
                                         <ant antfile="${basedir}/../src/test/scripts/clustering-build.xml">
                                             <property name="node0" value="${node0}"/> <!-- inheritAll="true" doesn't work. -->
-                                            <property name="cache.container.def" value="${basedir}/src/test/config/ispn/cache-container-with-jdbc-store.xml"/>
+                                            <property name="cacheLoader" value="string-keyed" />
+                                            <property name="cacheType" value="local" />
+                                            <property name="mode" value="${cacheMode}" />                                            
                                             <target name="build-clustering-udp-jdbc-store"/>
                                         </ant>
                                     </target>
@@ -461,12 +466,106 @@
                 </plugins>
             </build>
         </profile>
+        
+        <profile>
+            <id>ts.clust.session-db-persistence.profile</id>
+            <activation>
+                <property>
+                    <name>ds</name>
+                </property>
+            </activation>
+            <properties>
+                <cacheLoader>binary-keyed</cacheLoader>
+                <cacheType>replicated</cacheType>
+                <mode>SYNC</mode>
+            </properties>
+            
+            <build>
+                <plugins>
+                    <plugin>
+                        <groupId>org.apache.maven.plugins</groupId>
+                        <artifactId>maven-antrun-plugin</artifactId>
+                        <executions combine.children="append">
 
+                            <execution>
+                                <id>ts.config-as.clust</id>
+                                <phase>process-test-resources</phase>
+                                <goals>
+                                    <goal>run</goal>
+                                </goals>
+                                <configuration>
+                                    <target>
+                                        <echo>In Maven: node0: ${node0}</echo>
+                                        <echo>In Maven: node1: ${node1}</echo>
+                                        <echo>In Maven: mcast: ${mcast}</echo>
+                                        <!-- Build the TCP server configs in target/ . -->
+                                        <ant antfile="${basedir}/../src/test/scripts/clustering-build.xml">
+                                            <property name="node0" value="${node0}" /> <!-- inheritAll="true" doesn't work. -->
+                                            <property name="node1" value="${node1}" />
+                                            <property name="mcast" value="${mcast}" />
+                                            <property name="cacheLoader" value="${cacheLoader}" />
+                                            <property name="cacheType" value="${cacheType}" />
+                                            <property name="mode" value="${mode}" />
+                                            <target name="build-clustering" />
+                                        </ant>
+                                    </target>
+                                </configuration>
+                            </execution>
+
+                        </executions>
+                    </plugin>
+
+                    <plugin>
+                        <groupId>org.apache.maven.plugins</groupId>
+                        <artifactId>maven-surefire-plugin</artifactId>
+                        <executions combine.children="append">
+
+                            <!-- Disable default-test execution. -->
+                            <execution>
+                                <id>default-test</id>
+                                <goals>
+                                    <goal>test</goal>
+                                </goals>
+                                <phase>none</phase>
+                            </execution>
+
+                            <!-- Session persistence tests. -->
+                            <execution>
+                                <id>ts.surefire.session.persistence</id>
+                                <phase>test</phase>
+                                <goals>
+                                    <goal>test</goal>
+                                </goals>
+                                <configuration>
+                                    <!-- Tests to execute. -->
+                                    <includes>
+                                        <include>org/jboss/as/test/clustering/cluster/session/persistence/*TestCase.java</include>
+                                    </includes>
+
+                                    <!-- Parameters to test cases. -->
+                                    <systemPropertyVariables>
+                                        <arquillian.launch>clustering-all</arquillian.launch>
+                                        <jboss.server.config.file.name>standalone-ha.xml</jboss.server.config.file.name>
+                                        <cacheMode>SYNC</cacheMode>
+                                        <stack>tcp</stack>
+                                    </systemPropertyVariables>
+                                </configuration>
+                            </execution>
+
+                        </executions>
+                    </plugin>
+                </plugins>
+            </build>
+        </profile>
 
         <!-- Enable using -Dts.noClustering. -->
         <profile>
             <id>ts.clust.do-nothing.profile</id>
-            <activation><property><name>ts.noClustering</name></property></activation>
+            <activation>
+                <property>
+                    <name>ts.noClustering</name>
+                </property>
+            </activation>
             <build>
                 <plugins>
                     <plugin>
@@ -486,7 +585,6 @@
                 </plugins>
             </build>
         </profile>
-
-
+	
     </profiles>
 </project>

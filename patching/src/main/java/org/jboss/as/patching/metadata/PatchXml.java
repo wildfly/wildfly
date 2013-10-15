@@ -65,6 +65,7 @@ public class PatchXml {
 
         PATCH_1_0("urn:jboss:patch:1.0"),
         ROLLBACK_1_0("urn:jboss:patch:rollback:1.0"),
+        PATCH_BUNDLE_1_0("urn:jboss:patch:bundle:1.0"),
         UNKNOWN(null),
         ;
 

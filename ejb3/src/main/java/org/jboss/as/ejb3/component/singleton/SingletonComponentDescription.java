@@ -51,6 +51,7 @@ import org.jboss.as.ejb3.component.session.StatelessRemoteViewInstanceFactory;
 import org.jboss.as.ejb3.component.session.StatelessWriteReplaceInterceptor;
 import org.jboss.as.ejb3.concurrency.ContainerManagedConcurrencyInterceptorFactory;
 import org.jboss.as.ejb3.deployment.EjbJarDescription;
+import org.jboss.as.ejb3.security.SecurityContextInterceptorFactory;
 import org.jboss.as.ejb3.tx.EjbBMTInterceptor;
 import org.jboss.as.ejb3.tx.LifecycleCMTTxInterceptor;
 import org.jboss.as.ejb3.tx.TimerCMTTxInterceptor;
@@ -106,7 +107,12 @@ public class SingletonComponentDescription extends SessionBeanComponentDescripti
         ComponentConfiguration singletonComponentConfiguration = new ComponentConfiguration(this, classIndex, moduleClassLoader, moduleLoader);
         // setup the component create service
         singletonComponentConfiguration.setComponentCreateServiceFactory(new SingletonComponentCreateServiceFactory(this.isInitOnStartup(), dependsOn));
-
+        getConfigurators().add(new ComponentConfigurator() {
+                @Override
+                public void configure(final DeploymentPhaseContext context, final ComponentDescription description, final ComponentConfiguration configuration) throws DeploymentUnitProcessingException {
+                    configuration.addPostConstructInterceptor(new SecurityContextInterceptorFactory(isSecurityEnabled(), false), InterceptorOrder.View.SECURITY_CONTEXT);
+                }
+            });
         if (getTransactionManagementType().equals(TransactionManagementType.CONTAINER)) {
             //we need to add the transaction interceptor to the lifecycle methods
             getConfigurators().add(new ComponentConfigurator() {

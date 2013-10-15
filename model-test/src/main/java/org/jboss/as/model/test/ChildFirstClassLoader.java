@@ -25,6 +25,7 @@ import java.net.URL;
 import java.net.URLClassLoader;
 import java.util.List;
 import java.util.regex.Pattern;
+
 import org.jboss.modules.filter.ClassFilter;
 
 /**
@@ -49,6 +50,10 @@ public class ChildFirstClassLoader extends URLClassLoader {
         this.childFirst = childFirst;
         this.parentFirst = parentFirst;
         this.parentExclusionFilter = parentExclusionFilter;
+//        System.out.println("---------->");
+//        for (URL url : urls) {
+//            System.out.println(url);
+//        }
     }
 
     protected synchronized Class<?> loadClass(String name, boolean resolve) throws ClassNotFoundException {

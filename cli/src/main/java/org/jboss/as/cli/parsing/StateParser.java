@@ -48,6 +48,17 @@ public class StateParser {
 
     public static void parse(String str, ParsingStateCallbackHandler callbackHandler, ParsingState initialState, boolean strict) throws CommandFormatException {
 
+        try {
+            doParse(str, callbackHandler, initialState, strict);
+        } catch(CommandFormatException e) {
+            throw e;
+        } catch(Throwable t) {
+            throw new CommandFormatException("Failed to parse '" + str + "'", t);
+        }
+    }
+
+    protected static void doParse(String str, ParsingStateCallbackHandler callbackHandler, ParsingState initialState,
+            boolean strict) throws CommandFormatException {
         if (str == null || str.isEmpty()) {
             return;
         }

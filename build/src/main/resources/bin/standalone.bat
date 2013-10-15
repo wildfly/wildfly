@@ -7,11 +7,14 @@ rem Use --debug to activate debug mode with an optional argument to specify the 
 rem Usage : standalone.bat --debug
 rem         standalone.bat --debug 9797
 
+@if not "%ECHO%" == ""  echo %ECHO%
+@if "%OS%" == "Windows_NT" setlocal
+
 rem By default debug mode is disable.
 set DEBUG_MODE=false
 set DEBUG_PORT=8787
 rem Set to all parameters by default
-set SERVER_OPTS=%*
+set "SERVER_OPTS=%*"
 
 rem Get the program name before using shift as the command modify the variable ~nx0
 if "%OS%" == "Windows_NT" (
@@ -19,9 +22,6 @@ if "%OS%" == "Windows_NT" (
 ) else (
   set "PROGNAME=standalone.bat"
 )
-
-@if not "%ECHO%" == ""  echo %ECHO%
-@if "%OS%" == "Windows_NT" setlocal
 
 if "%OS%" == "Windows_NT" (
   set "DIRNAME=%~dp0%"
@@ -58,19 +58,15 @@ if not "x%DEBUG_ARG" == "x" (
 rem $Id$
 )
 
-pushd %DIRNAME%..
+pushd "%DIRNAME%.."
 set "RESOLVED_JBOSS_HOME=%CD%"
 popd
-set UNQUOTED_JBOSS_HOME=%JBOSS_HOME:"=%
-rem attempt to unquote again to remove quote if envvar was not set
-set UNQUOTED_JBOSS_HOME=%UNQUOTED_JBOSS_HOME:"=%
-set QUOTED_JBOSS_HOME="%UNQUOTED_JBOSS_HOME%"
-rem should only a = if envvar was not set
-if "%UNQUOTED_JBOSS_HOME%" == "=" (
-  set "UNQUOTED_JBOSS_HOME=%RESOLVED_JBOSS_HOME%"
-  set QUOTED_JBOSS_HOME="%RESOLVED_JBOSS_HOME%"
+
+if "x%JBOSS_HOME%" == "x" (
+  set "JBOSS_HOME=%RESOLVED_JBOSS_HOME%"
 )
-pushd %QUOTED_JBOSS_HOME%
+
+pushd "%JBOSS_HOME%"
 set "SANITIZED_JBOSS_HOME=%CD%"
 popd
 
@@ -78,7 +74,7 @@ if /i "%RESOLVED_JBOSS_HOME%" NEQ "%SANITIZED_JBOSS_HOME%" (
    echo.
    echo   WARNING:  JBOSS_HOME may be pointing to a different installation - unpredictable results may occur.
    echo.
-   echo       JBOSS_HOME: %QUOTED_JBOSS_HOME%
+   echo       JBOSS_HOME: "%JBOSS_HOME%"
    echo.
 )
 
@@ -107,7 +103,7 @@ if "%DEBUG_MODE%" == "true" (
 set DIRNAME=
 
 rem Setup JBoss specific properties
-set JAVA_OPTS=-Dprogram.name=%PROGNAME% %JAVA_OPTS%
+set "JAVA_OPTS=-Dprogram.name=%PROGNAME% %JAVA_OPTS%"
 
 if "x%JAVA_HOME%" == "x" (
   set  JAVA=java
@@ -115,10 +111,10 @@ if "x%JAVA_HOME%" == "x" (
   echo Set JAVA_HOME to the directory of your local JDK to avoid this message.
 ) else (
   if not exist "%JAVA_HOME%" (
-    echo JAVA_HOME '%JAVA_HOME%' path doesn't exist
+    echo JAVA_HOME "%JAVA_HOME%" path doesn't exist
     goto END
   ) else (
-    echo Setting JAVA property to '%JAVA_HOME%\bin\java'
+    echo Setting JAVA property to "%JAVA_HOME%\bin\java"
     set "JAVA=%JAVA_HOME%\bin\java"
   )
 )
@@ -147,10 +143,10 @@ if not "%PRESERVE_JAVA_OPTS%" == "true" (
 
 
 rem Find jboss-modules.jar, or we can't continue
-if exist "%UNQUOTED_JBOSS_HOME%\jboss-modules.jar" (
-    set RUNJAR="%UNQUOTED_JBOSS_HOME%\jboss-modules.jar"
+if exist "%JBOSS_HOME%\jboss-modules.jar" (
+    set "RUNJAR=%JBOSS_HOME%\jboss-modules.jar"
 ) else (
-  echo Could not locate "%UNQUOTED_JBOSS_HOME%\jboss-modules.jar".
+  echo Could not locate "%JBOSS_HOME%\jboss-modules.jar".
   echo Please check that you are in the bin directory when running this script.
   goto END
 )
@@ -189,12 +185,12 @@ for /f "tokens=1* delims= " %%i IN ("%CONSOLIDATED_OPTS%") DO (
 
 rem Set default module root paths
 if "x%JBOSS_MODULEPATH%" == "x" (
-  set  "JBOSS_MODULEPATH=%UNQUOTED_JBOSS_HOME%\modules"
+  set  "JBOSS_MODULEPATH=%JBOSS_HOME%\modules"
 )
 
 rem Set the standalone base dir
 if "x%JBOSS_BASE_DIR%" == "x" (
-  set  "JBOSS_BASE_DIR=%UNQUOTED_JBOSS_HOME%\standalone"
+  set  "JBOSS_BASE_DIR=%JBOSS_HOME%\standalone"
 )
 rem Set the standalone log dir
 if "x%JBOSS_LOG_DIR%" == "x" (
@@ -209,11 +205,11 @@ echo ===========================================================================
 echo.
 echo   JBoss Bootstrap Environment
 echo.
-echo   JBOSS_HOME: %UNQUOTED_JBOSS_HOME%
+echo   JBOSS_HOME: "%JBOSS_HOME%"
 echo.
-echo   JAVA: %JAVA%
+echo   JAVA: "%JAVA%"
 echo.
-echo   JAVA_OPTS: %JAVA_OPTS%
+echo   JAVA_OPTS: "%JAVA_OPTS%"
 echo.
 echo ===============================================================================
 echo.
@@ -222,10 +218,10 @@ echo.
 "%JAVA%" %JAVA_OPTS% ^
  "-Dorg.jboss.boot.log.file=%JBOSS_LOG_DIR%\server.log" ^
  "-Dlogging.configuration=file:%JBOSS_CONFIG_DIR%/logging.properties" ^
-    -jar "%UNQUOTED_JBOSS_HOME%\jboss-modules.jar" ^
+    -jar "%JBOSS_HOME%\jboss-modules.jar" ^
     -mp "%JBOSS_MODULEPATH%" ^
      org.jboss.as.standalone ^
-    -Djboss.home.dir="%UNQUOTED_JBOSS_HOME%" ^
+    "-Djboss.home.dir=%JBOSS_HOME%" ^
      %SERVER_OPTS%
 
 if ERRORLEVEL 10 goto RESTART

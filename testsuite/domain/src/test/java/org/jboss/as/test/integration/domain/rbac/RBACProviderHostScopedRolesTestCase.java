@@ -80,7 +80,7 @@ public class RBACProviderHostScopedRolesTestCase extends AbstractHostScopedRoles
         // no-op. Role mapping is done based on the client's authenticated Subject
     }
 
-    private static class HostRolesMappingSetup extends UserRolesMappingServerSetupTask {
+    static class HostRolesMappingSetup extends UserRolesMappingServerSetupTask {
 
         private static final Map<String, Set<String>> STANDARD_USERS;
 
@@ -96,7 +96,7 @@ public class RBACProviderHostScopedRolesTestCase extends AbstractHostScopedRoles
             STANDARD_USERS = rolesToUsers;
         }
 
-        private static final HostRolesMappingSetup INSTANCE = new HostRolesMappingSetup();
+        static final HostRolesMappingSetup INSTANCE = new HostRolesMappingSetup();
 
         protected HostRolesMappingSetup() {
             super(STANDARD_USERS);

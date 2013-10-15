@@ -87,11 +87,11 @@
                                     <parameters>
                                         <parameter>
                                             <name>keystore</name>
-                                            <value>${basedir}/src/test/resources/security/vault.keystore</value>
+                                            <value>${basedir}/target/test-classes/security/vault.keystore</value>
                                         </parameter>
                                         <parameter>
                                             <name>encFileDir</name>
-                                            <value>${basedir}/src/test/resources/security/</value>
+                                            <value>${basedir}/target/test-classes/security/</value>
                                         </parameter>
                                     </parameters>
                                 </transformationSet>

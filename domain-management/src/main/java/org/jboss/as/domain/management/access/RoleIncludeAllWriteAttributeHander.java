@@ -37,7 +37,15 @@ public class RoleIncludeAllWriteAttributeHander extends AbstractWriteAttributeHa
     private final WritableAuthorizerConfiguration authorizerConfiguration;
 
     RoleIncludeAllWriteAttributeHander(final WritableAuthorizerConfiguration authorizerConfiguration) {
+        super(RoleMappingResourceDefinition.INCLUDE_ALL);
         this.authorizerConfiguration = authorizerConfiguration;
+    }
+
+    @Override
+    protected boolean requiresRuntime(OperationContext context) {
+        // During boot add would have taken care of this, otherwise
+        // all process types need a runtime update.
+        return context.isBooting() == false;
     }
 
     @Override

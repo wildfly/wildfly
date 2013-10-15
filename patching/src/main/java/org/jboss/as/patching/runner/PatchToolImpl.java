@@ -25,12 +25,13 @@ package org.jboss.as.patching.runner;
 import static org.jboss.as.patching.IoUtils.safeClose;
 
 import javax.xml.stream.XMLStreamException;
-
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.URL;
+import java.util.ArrayList;
+import java.util.Iterator;
 import java.util.List;
 
 import org.jboss.as.patching.IoUtils;
@@ -41,6 +42,8 @@ import org.jboss.as.patching.ZipUtils;
 import org.jboss.as.patching.installation.Identity;
 import org.jboss.as.patching.installation.InstallationManager;
 import org.jboss.as.patching.installation.PatchableTarget;
+import org.jboss.as.patching.metadata.BundledPatch;
+import org.jboss.as.patching.metadata.PatchBundleXml;
 import org.jboss.as.patching.metadata.PatchMetadataResolver;
 import org.jboss.as.patching.metadata.PatchXml;
 import org.jboss.as.patching.tool.ContentVerificationPolicy;
@@ -148,10 +151,14 @@ public class PatchToolImpl implements PatchTool {
 
     @Override
     public PatchingResult applyPatch(final InputStream is, final ContentVerificationPolicy contentPolicy) throws PatchingException {
+        return applyPatch(null, is, contentPolicy);
+    }
+
+    private PatchingResult applyPatch(final File parentWorkDir, final InputStream is, final ContentVerificationPolicy contentPolicy) throws PatchingException {
         File workDir = null;
         try {
             // Create a working dir
-            workDir = IdentityPatchRunner.createTempDir();
+            workDir = parentWorkDir == null ? IdentityPatchRunner.createTempDir() : IdentityPatchRunner.createTempDir(parentWorkDir);
 
             // Save the content
             final File cachedContent = new File(workDir, "content");
@@ -197,17 +204,33 @@ public class PatchToolImpl implements PatchTool {
 
     protected PatchingResult execute(final File workDir, final ContentVerificationPolicy contentPolicy) throws PatchingException, IOException, XMLStreamException {
 
-        // Parse the xml
-        final PatchContentProvider contentProvider = PatchContentProvider.DefaultContentProvider.create(workDir);
-        final File patchXml = new File(workDir, PatchXml.PATCH_XML);
-        final InputStream patchIS = new FileInputStream(patchXml);
-        final PatchMetadataResolver patchResolver;
-        try {
-            patchResolver = PatchXml.parse(patchIS);
-            patchIS.close();
-        } finally {
-            safeClose(patchIS);
+        final File patchBundleXml = new File(workDir, PatchBundleXml.MULTI_PATCH_XML);
+        if (patchBundleXml.exists()) {
+            final InputStream patchIs = new FileInputStream(patchBundleXml);
+            try {
+                // Handle multi patch installs
+                final BundledPatch bundledPatch = PatchBundleXml.parse(patchIs);
+                return applyPatchBundle(workDir, bundledPatch, contentPolicy);
+            } finally {
+                safeClose(patchIs);
+            }
+        } else {
+            // Parse the xml
+            final File patchXml = new File(workDir, PatchXml.PATCH_XML);
+            final PatchContentProvider contentProvider = PatchContentProvider.DefaultContentProvider.create(workDir);
+            final InputStream patchIS = new FileInputStream(patchXml);
+            final PatchMetadataResolver patchResolver;
+            try {
+                patchResolver = PatchXml.parse(patchIS);
+                patchIS.close();
+            } finally {
+                safeClose(patchIS);
+            }
+            return apply(patchResolver, contentProvider, contentPolicy);
         }
+    }
+
+    protected PatchingResult apply(final PatchMetadataResolver patchResolver, final PatchContentProvider contentProvider, final ContentVerificationPolicy contentPolicy) throws PatchingException {
         // Apply the patch
         final InstallationManager.InstallationModification modification = manager.modifyInstallation(callback);
         try {
@@ -218,11 +241,89 @@ public class PatchToolImpl implements PatchTool {
         }
     }
 
+    protected PatchingResult applyPatchBundle(final File workDir, final BundledPatch bundledPatch, final ContentVerificationPolicy contentPolicy) throws PatchingException, IOException {
+        PatchingResult result = null;
+        final List<BundledPatch.BundledPatchEntry> results = new ArrayList<BundledPatch.BundledPatchEntry>();
+        final Iterator<BundledPatch.BundledPatchEntry> iterator = bundledPatch.getPatches().iterator();
+        while (iterator.hasNext()) {
+            final BundledPatch.BundledPatchEntry entry = iterator.next();
+            // Skip applied patches
+            if (manager.getAllInstalledPatches().contains(entry.getPatchId())) {
+                continue;
+            }
+            final File patch = new File(workDir, entry.getPatchPath());
+            final FileInputStream is = new FileInputStream(patch);
+            try {
+                result = applyPatch(workDir, is, contentPolicy);
+            } catch (PatchingException e) {
+                // Undo the changes included as part of this patch
+                for (BundledPatch.BundledPatchEntry committed : results) {
+                    try {
+                        rollback(committed.getPatchId(), contentPolicy, false, false).commit();
+                    } catch (PatchingException oe) {
+                        PatchLogger.ROOT_LOGGER.debugf(oe, "failed to rollback patch '%s'", committed.getPatchId());
+                    }
+                }
+                throw e;
+            } finally {
+                safeClose(is);
+            }
+            if (iterator.hasNext()) {
+                result.commit();
+                results.add(0, entry);
+            }
+        }
+        if (result == null) {
+            throw new PatchingException();
+        }
+        return new WrappedMultiInstallPatch(result, contentPolicy, results);
+    }
+
     static PatchingException rethrowException(final Exception e) {
         if (e instanceof PatchingException) {
             return (PatchingException) e;
         } else {
             return new PatchingException(e);
+        }
+    }
+
+    class WrappedMultiInstallPatch implements PatchingResult {
+
+        private final PatchingResult last;
+        private final ContentVerificationPolicy policy;
+        private final List<BundledPatch.BundledPatchEntry> committed;
+
+        WrappedMultiInstallPatch(PatchingResult last, ContentVerificationPolicy policy, List<BundledPatch.BundledPatchEntry> committed) {
+            this.last = last;
+            this.policy = policy;
+            this.committed = committed;
+        }
+
+        @Override
+        public String getPatchId() {
+            return last.getPatchId();
+        }
+
+        @Override
+        public PatchInfo getPatchInfo() {
+            return last.getPatchInfo();
+        }
+
+        @Override
+        public void commit() {
+            last.commit();
+        }
+
+        @Override
+        public void rollback() {
+            last.rollback(); // Rollback the last
+            for (final BundledPatch.BundledPatchEntry entry : committed) {
+                try {
+                    PatchToolImpl.this.rollback(entry.getPatchId(), policy, false, false).commit();
+                } catch (Exception e) {
+                    PatchLogger.ROOT_LOGGER.debugf(e, "failed to rollback patch '%s'", entry.getPatchId());
+                }
+            }
         }
     }
 

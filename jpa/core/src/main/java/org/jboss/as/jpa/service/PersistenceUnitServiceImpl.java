@@ -209,7 +209,9 @@ public class PersistenceUnitServiceImpl implements Service<PersistenceUnitServic
                                 if (entityManagerFactory != null) {
                                     WritableServiceBasedNamingStore.pushOwner(deploymentUnitServiceName);
                                     try {
-                                        entityManagerFactory.close();
+                                        if (entityManagerFactory.isOpen()) {
+                                            entityManagerFactory.close();
+                                        }
                                     } catch (Throwable t) {
                                         JPA_LOGGER.failedToStopPUService(t, pu.getScopedPersistenceUnitName());
                                     } finally {

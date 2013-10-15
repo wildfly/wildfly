@@ -29,4 +29,22 @@ import org.jboss.dmr.ModelNode;
  */
 public interface ModelFixer {
     ModelNode fixModel(ModelNode modelNode);
+
+    public static class CumulativeModelFixer implements ModelFixer {
+        ModelFixer[] fixers;
+
+        public CumulativeModelFixer(ModelFixer...fixers) {
+            this.fixers = fixers;
+        }
+
+        @Override
+        public ModelNode fixModel(ModelNode modelNode) {
+            for (ModelFixer fixer : fixers) {
+                if (fixer != null) {
+                    fixer.fixModel(modelNode);
+                }
+            }
+            return modelNode;
+        }
+    }
 }

@@ -22,15 +22,6 @@
 
 package org.jboss.as.test.integration.mgmt.access;
 
-import static org.jboss.as.controller.PathAddress.pathAddress;
-import static org.jboss.as.controller.PathElement.pathElement;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ACCESS;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.AUTHORIZATION;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.CORE_SERVICE;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.MANAGEMENT;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.RESULT;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ROLE_MAPPING;
-import static org.jboss.as.domain.management.ModelDescriptionConstants.IS_CALLER_IN_ROLE;
 import static org.jboss.as.test.integration.management.rbac.RbacUtil.ADMINISTRATOR_ROLE;
 import static org.jboss.as.test.integration.management.rbac.RbacUtil.AUDITOR_ROLE;
 import static org.jboss.as.test.integration.management.rbac.RbacUtil.DEPLOYER_ROLE;
@@ -40,9 +31,9 @@ import static org.jboss.as.test.integration.management.rbac.RbacUtil.OPERATOR_RO
 import static org.jboss.as.test.integration.management.rbac.RbacUtil.SUPERUSER_ROLE;
 import static org.jboss.as.test.integration.management.rbac.RbacUtil.addRoleMapping;
 import static org.jboss.as.test.integration.management.rbac.RbacUtil.addRoleUser;
-import static org.jboss.as.test.integration.management.rbac.RbacUtil.executeOperation;
+import static org.jboss.as.test.integration.management.rbac.RbacUtil.allStandardRoles;
+import static org.jboss.as.test.integration.management.rbac.RbacUtil.assertIsCallerInRole;
 import static org.jboss.as.test.integration.management.rbac.RbacUtil.removeRoleUser;
-import static org.junit.Assert.assertEquals;
 
 import java.io.IOException;
 import java.util.Arrays;
@@ -51,13 +42,12 @@ import java.util.Set;
 
 import org.jboss.arquillian.junit.Arquillian;
 import org.jboss.as.controller.client.ModelControllerClient;
-import org.jboss.as.controller.operations.common.Util;
-import org.jboss.as.test.integration.management.rbac.Outcome;
-import org.jboss.dmr.ModelNode;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
 /**
+ * This class is also used in the LDAP test cases.
+ *
  * @author Ladislav Thon <lthon@redhat.com>
  */
 @RunWith(Arquillian.class)
@@ -222,27 +212,17 @@ public class PropertiesRoleMappingTestCase extends AbstractRbacTestCase {
         testRuntimeReconfiguration("UserMappedToGroupSuperUser", SUPERUSER_ROLE);
     }
 
-    private static final String[] ALL_ROLES = {
-            MONITOR_ROLE,
-            OPERATOR_ROLE,
-            MAINTAINER_ROLE,
-            DEPLOYER_ROLE,
-            ADMINISTRATOR_ROLE,
-            AUDITOR_ROLE,
-            SUPERUSER_ROLE
-    };
-
     private void test(String user, String... expectedRoles) throws IOException {
         Set<String> expectedRolesSet = new HashSet<String>(Arrays.asList(expectedRoles));
 
         ModelControllerClient client = getClientForUser(user);
-        for (String role : ALL_ROLES) {
+        for (String role : allStandardRoles()) {
             assertIsCallerInRole(client, role, expectedRolesSet.contains(role));
         }
     }
 
     private void testRuntimeReconfiguration(String user, String originalRole) throws Exception {
-        Set<String> allRolesWithoutTheOriginal = new HashSet<String>(Arrays.asList(ALL_ROLES));
+        Set<String> allRolesWithoutTheOriginal = new HashSet<String>(Arrays.asList(allStandardRoles()));
         allRolesWithoutTheOriginal.remove(originalRole);
 
         for (String newRole : allRolesWithoutTheOriginal) {
@@ -258,17 +238,6 @@ public class PropertiesRoleMappingTestCase extends AbstractRbacTestCase {
     }
 
     // test utils
-
-    private static void assertIsCallerInRole(ModelControllerClient client, String role, boolean expectedOutcome) throws IOException {
-        ModelNode operation = Util.createOperation(IS_CALLER_IN_ROLE, pathAddress(
-                pathElement(CORE_SERVICE, MANAGEMENT),
-                pathElement(ACCESS, AUTHORIZATION),
-                pathElement(ROLE_MAPPING, role)
-        ));
-
-        ModelNode result = executeOperation(client, operation, Outcome.SUCCESS);
-        assertEquals("role " + role, expectedOutcome, result.get(RESULT).asBoolean());
-    }
 
     private void addUserToRole(String user, String role) throws IOException {
         ModelControllerClient client = getManagementClient().getControllerClient();

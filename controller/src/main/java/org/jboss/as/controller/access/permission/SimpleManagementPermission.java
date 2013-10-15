@@ -23,9 +23,9 @@
 package org.jboss.as.controller.access.permission;
 
 import java.security.Permission;
-import java.security.PermissionCollection;
 import java.util.List;
 
+import org.jboss.as.controller.ControllerLogger;
 import org.jboss.as.controller.access.Action;
 import org.jboss.as.controller.access.constraint.Constraint;
 
@@ -50,11 +50,6 @@ public class SimpleManagementPermission extends ManagementPermission {
     }
 
     @Override
-    public PermissionCollection newPermissionCollection() {
-        return new ManagementPermissionCollection(getClass());
-    }
-
-    @Override
     public boolean implies(Permission permission) {
         if (equals(permission)) {
             SimpleManagementPermission other = (SimpleManagementPermission) permission;
@@ -67,6 +62,7 @@ public class SimpleManagementPermission extends ManagementPermission {
                 Constraint theirs = other.constraints[i];
                 assert ours.getClass() == theirs.getClass() : "incompatible constraints: ours = " + ours.getClass() + " -- theirs = " + theirs.getClass();
                 if (ours.violates(theirs, actionEffect)) {
+                    ControllerLogger.ACCESS_LOGGER.tracef("Constraints are violated for %s", actionEffect);
                     return false;
                 }
             }
@@ -96,7 +92,6 @@ public class SimpleManagementPermission extends ManagementPermission {
         return getActionEffect().toString();
     }
 
-    @Override
     public ManagementPermission createScopedPermission(Constraint constraint, int constraintIndex) {
         Constraint[] altered;
         if (constraintIndex == constraints.length) {

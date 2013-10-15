@@ -109,6 +109,36 @@
                                     <dir>${basedir}/target/jbossas/standalone/configuration</dir>
                                     <skipDefaultExcludes>true</skipDefaultExcludes>
                                     <includes>
+                                        <include>properties-role-mapping-standalone*.xml</include>
+                                    </includes>
+                                    <stylesheet>${basedir}/../src/test/xslt/setupRbacLdapAuthG2U.xsl</stylesheet>
+                                    <outputDir>${basedir}/target/jbossas/standalone/configuration</outputDir>
+                                    <fileMappers>
+                                        <fileMapper implementation="org.codehaus.plexus.components.io.filemappers.RegExpFileMapper">
+                                            <pattern>^properties-role-mapping</pattern>
+                                            <replacement>ldap-role-mapping-g2u</replacement>
+                                        </fileMapper>
+                                    </fileMappers>
+                                </transformationSet>
+                                <transformationSet>
+                                    <dir>${basedir}/target/jbossas/standalone/configuration</dir>
+                                    <skipDefaultExcludes>true</skipDefaultExcludes>
+                                    <includes>
+                                        <include>properties-role-mapping-standalone*.xml</include>
+                                    </includes>
+                                    <stylesheet>${basedir}/../src/test/xslt/setupRbacLdapAuthU2G.xsl</stylesheet>
+                                    <outputDir>${basedir}/target/jbossas/standalone/configuration</outputDir>
+                                    <fileMappers>
+                                        <fileMapper implementation="org.codehaus.plexus.components.io.filemappers.RegExpFileMapper">
+                                            <pattern>^properties-role-mapping</pattern>
+                                            <replacement>ldap-role-mapping-u2g</replacement>
+                                        </fileMapper>
+                                    </fileMappers>
+                                </transformationSet>
+                                <transformationSet>
+                                    <dir>${basedir}/target/jbossas/standalone/configuration</dir>
+                                    <skipDefaultExcludes>true</skipDefaultExcludes>
+                                    <includes>
                                         <include>standalone*.xml</include>
                                     </includes>
                                     <stylesheet>${basedir}/../src/test/xslt/enableJmxNonCoreMbeansSensitivity.xsl</stylesheet>
@@ -218,6 +248,8 @@
                                         <exclude>**/PropertiesRoleMappingTestCase.java</exclude>
                                         <exclude>**/JmxSensitiveTestCase.java</exclude>
                                         <exclude>**/VaultExpressionSensitivityTestCase.java</exclude>
+                                        <exclude>**/LdapRoleMappingG2UTestCase.java</exclude>
+                                        <exclude>**/LdapRoleMappingU2GTestCase.java</exclude>
                                     </excludes>
 
                                     <!-- Parameters to test cases. -->
@@ -247,6 +279,54 @@
                                     <!-- Parameters to test cases. -->
                                     <systemPropertyVariables>
                                         <jboss.server.config.file.name>properties-role-mapping-standalone-full.xml</jboss.server.config.file.name>
+                                        <jboss.inst>${basedir}/target/jbossas</jboss.inst>
+                                    </systemPropertyVariables>
+
+                                    <additionalClasspathElements>
+                                        <additionalClasspathElement>${project.basedir}/../src/test/resources</additionalClasspathElement>
+                                    </additionalClasspathElements>
+
+                                    <!--<reportNameSuffix>tests-basic-integration-default</reportNameSuffix>-->
+                                </configuration>
+                            </execution>
+
+                            <execution>
+                                <id>access-integration-ldap-role-mapping-g2u-full.surefire</id>
+                                <phase>test</phase>
+                                <goals><goal>test</goal></goals>
+                                <configuration>
+                                    <!-- Tests to execute. Overriden in webProfileExclusion.profile . -->
+                                    <includes>
+                                        <include>org/jboss/as/test/integration/mgmt/access/LdapRoleMappingG2UTestCase.java</include>
+                                    </includes>
+
+                                    <!-- Parameters to test cases. -->
+                                    <systemPropertyVariables>
+                                        <jboss.server.config.file.name>ldap-role-mapping-g2u-standalone-full.xml</jboss.server.config.file.name>
+                                        <jboss.inst>${basedir}/target/jbossas</jboss.inst>
+                                    </systemPropertyVariables>
+
+                                    <additionalClasspathElements>
+                                        <additionalClasspathElement>${project.basedir}/../src/test/resources</additionalClasspathElement>
+                                    </additionalClasspathElements>
+
+                                    <!--<reportNameSuffix>tests-basic-integration-default</reportNameSuffix>-->
+                                </configuration>
+                            </execution>
+
+                            <execution>
+                                <id>access-integration-ldap-role-mapping-u2g-full.surefire</id>
+                                <phase>test</phase>
+                                <goals><goal>test</goal></goals>
+                                <configuration>
+                                    <!-- Tests to execute. Overriden in webProfileExclusion.profile . -->
+                                    <includes>
+                                        <include>org/jboss/as/test/integration/mgmt/access/LdapRoleMappingU2GTestCase.java</include>
+                                    </includes>
+
+                                    <!-- Parameters to test cases. -->
+                                    <systemPropertyVariables>
+                                        <jboss.server.config.file.name>ldap-role-mapping-u2g-standalone-full.xml</jboss.server.config.file.name>
                                         <jboss.inst>${basedir}/target/jbossas</jboss.inst>
                                     </systemPropertyVariables>
 

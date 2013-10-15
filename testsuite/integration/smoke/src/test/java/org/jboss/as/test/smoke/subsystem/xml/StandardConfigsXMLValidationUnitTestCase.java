@@ -121,6 +121,16 @@ public class StandardConfigsXMLValidationUnitTestCase extends AbstractValidation
     @Test
     public void testStandaloneEC2FullHA() throws Exception {
         parseXml("docs/examples/configs/standalone-ec2-full-ha.xml");
+
+    }
+    @Test
+    public void testStandaloneGossipHA() throws Exception {
+        parseXml("docs/examples/configs/standalone-gossip-ha.xml");
+    }
+
+    @Test
+    public void testStandaloneGossipFullHA() throws Exception {
+        parseXml("docs/examples/configs/standalone-gossip-full-ha.xml");
     }
 
     @Test
@@ -146,6 +156,11 @@ public class StandardConfigsXMLValidationUnitTestCase extends AbstractValidation
     @Test
     public void testStandaloneRTS() throws Exception {
         parseXml("docs/examples/configs/standalone-rts.xml");
+    }
+
+    @Test
+    public void testStandaloneGenericJMS() throws Exception {
+        parseXml("docs/examples/configs/standalone-genericjms.xml");
     }
 
     private void parseXml(String xmlName) throws ParserConfigurationException, SAXException, IOException {

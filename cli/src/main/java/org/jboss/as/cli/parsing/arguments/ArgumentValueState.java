@@ -44,10 +44,17 @@ public class ArgumentValueState extends DefaultParsingState {
             @Override
             public void handle(ParsingContext ctx) throws CommandFormatException {
                 final char ch = ctx.getCharacter();
-                if(ch == '"') {
-                    ctx.enterState(QuotesState.QUOTES_EXCLUDED);
-                } else if(ch != '{') {
-                    ctx.getCallbackHandler().character(ctx);
+                switch(ch) {
+                    case '"':
+                        ctx.enterState(QuotesState.QUOTES_EXCLUDED);
+                        break;
+                    case '$':
+                        ctx.enterState(ExpressionValueState.INSTANCE);
+                        break;
+                    case '{':
+                        break;
+                    default:
+                        ctx.getCallbackHandler().character(ctx);
                 }
             }});
         setDefaultHandler(WordCharacterHandler.IGNORE_LB_ESCAPE_ON);
@@ -58,5 +65,6 @@ public class ArgumentValueState extends DefaultParsingState {
         leaveState(']');
         enterState('{', this);
         leaveState('}');
+        enterState('$', ExpressionValueState.INSTANCE);
     }
 }

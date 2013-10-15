@@ -61,7 +61,7 @@ public class SocketBindingGroupTransformersTestCase extends AbstractCoreModelTes
     @Test
     public void testSocketBindingGroupsTransformer() throws Exception {
 
-        boolean below14 = modelVersion.getMajor() == 1 && modelVersion.getMinor() <= 3;
+        boolean below14 = ModelVersion.compare(ModelVersion.create(1, 4, 0), modelVersion) < 0;
 
         KernelServicesBuilder builder = createKernelServicesBuilder(TestModelType.DOMAIN)
                 .setXmlResource(below14 ? "domain-transformers-1.3.xml" : "domain.xml");

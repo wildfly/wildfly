@@ -23,6 +23,7 @@
 package org.jboss.as.patching.management;
 
 import java.io.File;
+import java.io.FilenameFilter;
 import java.io.IOException;
 import java.util.Map;
 
@@ -34,6 +35,7 @@ import org.jboss.as.patching.installation.InstallationManagerService;
 import org.jboss.as.patching.installation.InstalledImage;
 import org.jboss.as.patching.installation.Layer;
 import org.jboss.as.patching.installation.PatchableTarget;
+import org.jboss.as.patching.metadata.PatchXml;
 import org.jboss.as.patching.tool.PatchingHistory;
 import org.jboss.dmr.ModelNode;
 import org.jboss.msc.service.ServiceController;
@@ -47,6 +49,22 @@ public class LocalAgeoutHistoryHandler implements OperationStepHandler {
 
     public static final LocalAgeoutHistoryHandler INSTANCE = new LocalAgeoutHistoryHandler();
 
+    static final FilenameFilter ALL = new FilenameFilter() {
+        @Override
+        public boolean accept(File dir, String name) {
+            return true;
+        }
+    };
+
+    static final FilenameFilter HISTORY_FILTER = new FilenameFilter() {
+        @Override
+        public boolean accept(File dir, String name) {
+            if (PatchXml.PATCH_XML.equals(name) || PatchXml.ROLLBACK_XML.equals(name)) {
+                return false;
+            }
+            return true;
+        }
+    };
 
     @Override
     public void execute(final OperationContext context, final ModelNode operation) throws OperationFailedException {
@@ -83,19 +101,23 @@ public class LocalAgeoutHistoryHandler implements OperationStepHandler {
                 }
                 final File patchHistoryDir = installedImage.getPatchHistoryDir(entry.getPatchId());
                 if(patchHistoryDir.exists()) {
-                    recursiveDelete(patchHistoryDir);
+                    recursiveDelete(patchHistoryDir, HISTORY_FILTER);
                 }
             }
         }
         context.completeStep(OperationContext.RollbackHandler.NOOP_ROLLBACK_HANDLER);
     }
 
-    static boolean recursiveDelete(File root) {
+    static boolean recursiveDelete(final File root) {
+        return recursiveDelete(root, ALL);
+    }
+
+    static boolean recursiveDelete(File root, FilenameFilter filter) {
         boolean ok = true;
         if (root.isDirectory()) {
-            final File[] files = root.listFiles();
+            final File[] files = root.listFiles(filter);
             for (File file : files) {
-                ok &= recursiveDelete(file);
+                ok &= recursiveDelete(file, filter);
             }
             return ok && (root.delete() || !root.exists());
         } else {

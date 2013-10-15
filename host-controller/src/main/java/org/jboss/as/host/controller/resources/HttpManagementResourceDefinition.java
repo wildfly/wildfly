@@ -29,6 +29,7 @@ import java.util.List;
 
 import org.jboss.as.controller.AttributeDefinition;
 import org.jboss.as.controller.PathElement;
+import org.jboss.as.controller.ReloadRequiredWriteAttributeHandler;
 import org.jboss.as.controller.SimpleAttributeDefinition;
 import org.jboss.as.controller.SimpleAttributeDefinitionBuilder;
 import org.jboss.as.controller.SimpleResourceDefinition;
@@ -44,7 +45,6 @@ import org.jboss.as.host.controller.HostControllerEnvironment;
 import org.jboss.as.host.controller.HostModelUtil;
 import org.jboss.as.host.controller.operations.HttpManagementAddHandler;
 import org.jboss.as.host.controller.operations.HttpManagementRemoveHandler;
-import org.jboss.as.host.controller.operations.HttpManagementWriteAttributeHandler;
 import org.jboss.as.host.controller.operations.LocalHostControllerInfoImpl;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.ModelType;
@@ -55,9 +55,6 @@ import org.jboss.dmr.ModelType;
  * @author Brian Stansberry (c) 2011 Red Hat Inc.
  */
 public class HttpManagementResourceDefinition extends SimpleResourceDefinition {
-
-    private final LocalHostControllerInfoImpl hostControllerInfo;
-    private final HostControllerEnvironment environment;
 
     private static final PathElement RESOURCE_PATH = PathElement.pathElement(MANAGEMENT_INTERFACE, HTTP_INTERFACE);
 
@@ -104,14 +101,12 @@ public class HttpManagementResourceDefinition extends SimpleResourceDefinition {
                 new HttpManagementAddHandler(hostControllerInfo, environment),
                 new HttpManagementRemoveHandler(hostControllerInfo, environment),
                 OperationEntry.Flag.RESTART_NONE, OperationEntry.Flag.RESTART_NONE);
-        this.hostControllerInfo = hostControllerInfo;
-        this.environment = environment;
         this.accessConstraints = SensitiveTargetAccessConstraintDefinition.MANAGEMENT_INTERFACES.wrapAsList();
     }
 
     @Override
     public void registerAttributes(ManagementResourceRegistration resourceRegistration) {
-        final HttpManagementWriteAttributeHandler writeAttributeHandler = new HttpManagementWriteAttributeHandler(hostControllerInfo, environment);
+        final ReloadRequiredWriteAttributeHandler writeAttributeHandler = new ReloadRequiredWriteAttributeHandler(ATTRIBUTE_DEFINITIONS);
         for (AttributeDefinition attr : ATTRIBUTE_DEFINITIONS) {
             resourceRegistration.registerReadWriteAttribute(attr, null, writeAttributeHandler);
         }

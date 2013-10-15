@@ -143,8 +143,8 @@ public class RollbackLastUnitTestCase extends AbstractPatchingTestCase {
         }
 
         // first patch applied
-        assertPatchElements(baseModuleDir, new String[]{patchElementId});
-        assertPatchElements(baseBundleDir, new String[]{patchElementId});
+        assertPatchElements(baseModuleDir, new String[]{patchElementId}, false);
+        assertPatchElements(baseBundleDir, new String[]{patchElementId}, false);
 
         byte[] patch1FileHash = HashUtils.hashFile(miscFile);
         assertNotEqual(originalFileHash, patch1FileHash);
@@ -191,8 +191,8 @@ public class RollbackLastUnitTestCase extends AbstractPatchingTestCase {
         }
 
         // both patches applied
-        assertPatchElements(baseModuleDir, new String[]{patchElementId, patchElementId2});
-        assertPatchElements(baseBundleDir, new String[]{patchElementId, patchElementId2});
+        assertPatchElements(baseModuleDir, new String[]{patchElementId, patchElementId2}, false);
+        assertPatchElements(baseBundleDir, new String[]{patchElementId, patchElementId2}, false);
 
         byte[] patch2FileHash = HashUtils.hashFile(miscFile);
         assertNotEqual(patch1FileHash, patch2FileHash);
@@ -208,10 +208,6 @@ public class RollbackLastUnitTestCase extends AbstractPatchingTestCase {
             controller.stop(CONTAINER);
         }
 
-        // only the first patch is present
-        assertPatchElements(baseModuleDir, new String[]{patchElementId});
-        assertPatchElements(baseBundleDir, new String[]{patchElementId});
-
         byte[] curFileHash = HashUtils.hashFile(miscFile);
         assertNotEqual(curFileHash, patch2FileHash);
         assertArrayEquals(curFileHash, patch1FileHash);
@@ -219,6 +215,10 @@ public class RollbackLastUnitTestCase extends AbstractPatchingTestCase {
 
         controller.start(CONTAINER);
         try {
+            // only the first patch is present
+            assertPatchElements(baseModuleDir, new String[]{patchElementId}, false);
+            assertPatchElements(baseBundleDir, new String[]{patchElementId}, false);
+
             ctx.handle("patch rollback --reset-configuration=false --distribution=" + PatchingTestUtil.AS_DISTRIBUTION);
         } catch (Exception e) {
             ctx.terminateSession();
@@ -228,9 +228,15 @@ public class RollbackLastUnitTestCase extends AbstractPatchingTestCase {
             controller.stop(CONTAINER);
         }
 
-        // no patches present
-        assertPatchElements(baseModuleDir, null);
-        assertPatchElements(baseBundleDir, null);
+        try {
+            controller.start(CONTAINER);
+
+            // no patches present
+            assertPatchElements(baseModuleDir, null, false);
+            assertPatchElements(baseBundleDir, null, false);
+        } finally {
+            controller.stop(CONTAINER);
+        }
 
         curFileHash = HashUtils.hashFile(miscFile);
         assertNotEqual(curFileHash, patch2FileHash);

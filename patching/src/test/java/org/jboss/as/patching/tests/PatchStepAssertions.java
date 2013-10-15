@@ -24,9 +24,11 @@ package org.jboss.as.patching.tests;
 
 import java.io.File;
 import java.io.IOException;
+import java.util.Arrays;
 import java.util.Collection;
 
 import org.jboss.as.patching.DirectoryStructure;
+import org.jboss.as.patching.IoUtils;
 import org.jboss.as.patching.installation.InstallationManager;
 import org.jboss.as.patching.installation.InstalledIdentity;
 import org.jboss.as.patching.installation.PatchableTarget;
@@ -163,6 +165,10 @@ abstract class PatchStepAssertions {
     static void assertMisc(final File root, final ModificationType modification, final MiscContentItem item) {
         final File file = PatchContentLoader.getMiscPath(root, item);
         Assert.assertTrue(item.getRelativePath(), file.exists() == (modification != ModificationType.REMOVE));
+    }
+
+    static void assertModule(final String patchID, final PatchableTarget target, final String moduleName, final String slot) {
+        assertModule(patchID, target, new ModuleItem(moduleName, slot, IoUtils.NO_CONTENT));
     }
 
     static void assertModule(final String patchID, final PatchableTarget target, final ModuleItem item) {

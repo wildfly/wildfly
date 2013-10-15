@@ -61,7 +61,11 @@ public final class PatchUtils {
     }
 
     public static List<String> readRefs(final Properties properties) {
-        String layersProp = (String) properties.get(Constants.PATCHES);
+        return readRefs(properties, Constants.PATCHES);
+    }
+
+    public static List<String> readRefs(final Properties properties, final String property) {
+        String layersProp = (String) properties.get(property);
         if (layersProp == null || (layersProp = layersProp.trim()).length() == 0) {
             return Collections.emptyList();
         } else {

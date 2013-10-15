@@ -137,7 +137,7 @@ public class ManagementPermissionAuthorizer implements Authorizer {
     }
 
     @Override
-    public Set<String> getCallerRoles(Caller caller, Environment callEnvironment, Set<String> runAsroles) {
+    public Set<String> getCallerRoles(Caller caller, Environment callEnvironment, Set<String> runAsRoles) {
         // Not supported in this base class; see StandardRBACAuthorizer
         return null;
     }

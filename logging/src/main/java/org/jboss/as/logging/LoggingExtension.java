@@ -127,17 +127,19 @@ public class LoggingExtension implements Extension {
 
         final SubsystemRegistration subsystem = context.registerSubsystem(SUBSYSTEM_NAME, MANAGEMENT_API_MAJOR_VERSION,
                 MANAGEMENT_API_MINOR_VERSION, MANAGEMENT_API_MICRO_VERSION);
-        final ManagementResourceRegistration registration = subsystem.registerSubsystemModel(LoggingRootResource.INSTANCE);
-        registration.registerOperationHandler(GenericSubsystemDescribeHandler.DEFINITION, DESCRIBE_HANDLER);
+        final ManagementResourceRegistration registration;
 
         final ResolvePathHandler resolvePathHandler;
         if (context.getProcessType().isServer()) {
+            registration = subsystem.registerSubsystemModel(new LoggingRootResource(context.getPathManager()));
             resolvePathHandler = ResolvePathHandler.Builder.of(context.getPathManager())
                     .setParentAttribute(CommonAttributes.FILE)
                     .build();
         } else {
+            registration = subsystem.registerSubsystemModel(new LoggingRootResource(null));
             resolvePathHandler = null;
         }
+        registration.registerOperationHandler(GenericSubsystemDescribeHandler.DEFINITION, DESCRIBE_HANDLER);
         // Register root sub-models
         registerSubModels(registration, resolvePathHandler, true);
         // Register logging profile sub-models
@@ -192,7 +194,6 @@ public class LoggingExtension implements Extension {
         // Register the transformers
         TransformationDescription.Tools.register(subsystemBuilder.build(), subsystem, ModelVersion.create(1, 1, 0));
     }
-
 
 
     private void registerTransformers1_2_0(SubsystemRegistration subsystem) {

@@ -52,7 +52,7 @@ class ManagedSocketBinding extends Socket implements ManagedBinding {
     }
 
     public InetSocketAddress getBindAddress() {
-        return InetSocketAddress.class.cast(getLocalAddress());
+        return new InetSocketAddress(getLocalAddress(), getPort());
     }
 
     public void bind(SocketAddress bindpoint) throws IOException {

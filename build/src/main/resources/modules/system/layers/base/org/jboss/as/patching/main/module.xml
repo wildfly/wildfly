@@ -41,5 +41,6 @@
         <module name="org.jboss.modules"/>
         <module name="org.jboss.msc"/>
         <module name="org.jboss.staxmapper"/>
+        <module name="org.wildfly.security.manager"/>
     </dependencies>
 </module>

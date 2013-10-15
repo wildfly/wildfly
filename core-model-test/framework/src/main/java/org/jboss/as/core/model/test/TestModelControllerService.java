@@ -53,6 +53,7 @@ import org.jboss.as.domain.controller.DomainController;
 import org.jboss.as.domain.controller.LocalHostControllerInfo;
 import org.jboss.as.domain.controller.SlaveRegistrationException;
 import org.jboss.as.domain.controller.resources.DomainRootDefinition;
+import org.jboss.as.domain.management.CoreManagementResourceDefinition;
 import org.jboss.as.domain.management.access.AccessAuthorizationResourceDefinition;
 import org.jboss.as.host.controller.HostControllerConfigurationPersister;
 import org.jboss.as.host.controller.HostControllerEnvironment;
@@ -102,7 +103,7 @@ class TestModelControllerService extends ModelTestModelControllerService {
 
     TestModelControllerService(ProcessType processType, RunningModeControl runningModeControl, StringConfigurationPersister persister, ModelTestOperationValidatorFilter validateOpsFilter,
             TestModelType type, ModelInitializer modelInitializer, DelegatingResourceDefinition rootResourceDefinition, ControlledProcessState processState, ExtensionRegistry extensionRegistry) {
-        super(processType, runningModeControl, null, persister, validateOpsFilter, rootResourceDefinition, processState);
+        super(processType, runningModeControl, null, persister, validateOpsFilter, rootResourceDefinition, processState, Controller80x.INSTANCE);
         this.type = type;
         this.runningModeControl = runningModeControl;
         this.pathManagerService = type == TestModelType.STANDALONE ? new ServerPathManagerService() : new HostPathManagerService();
@@ -518,6 +519,9 @@ class TestModelControllerService extends ModelTestModelControllerService {
                         public void registerHostModel(String hostName, ManagementResourceRegistration root) {
                         }
                     },processType, authorizer);
+
+            CoreManagementResourceDefinition.registerDomainResource(rootResource, null);
+
         }
 
     }
@@ -639,6 +643,5 @@ class TestModelControllerService extends ModelTestModelControllerService {
                 ExtensionRegistry extensionRegistry, IgnoredDomainResourceRegistry ignoredDomainResourceRegistry,
                 PathManagerService pathManager) {
         }
-
     }
 }

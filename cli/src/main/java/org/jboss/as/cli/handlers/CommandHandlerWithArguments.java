@@ -21,10 +21,12 @@
  */
 package org.jboss.as.cli.handlers;
 
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
@@ -42,6 +44,7 @@ public abstract class CommandHandlerWithArguments implements CommandHandler {
 
     private int maxArgumentIndex = -1;
     private Map<String, CommandArgument> args = Collections.emptyMap();
+    private List<CommandArgument> argList = Collections.emptyList();
 
     public void addArgument(CommandArgument arg) {
         if(arg.getIndex() > -1) {
@@ -51,10 +54,24 @@ public abstract class CommandHandlerWithArguments implements CommandHandler {
         if(arg.getFullName() == null) {
             throw new IllegalArgumentException("Full name can't be null");
         }
-        if(args.isEmpty()) {
-            args = new HashMap<String, CommandArgument>();
+
+        switch(argList.size()) {
+            case 0:
+                argList = Collections.singletonList(arg);
+                args = new HashMap<String, CommandArgument>();
+                break;
+            case 1:
+                CommandArgument tmp = argList.get(0);
+                argList = new ArrayList<CommandArgument>();
+                argList.add(tmp);
+            default:
+                argList.add(arg);
         }
+
         args.put(arg.getFullName(), arg);
+        if(arg.getShortName() != null) {
+            args.put(arg.getShortName(), arg);
+        }
     }
 
     @Override
@@ -75,7 +92,7 @@ public abstract class CommandHandlerWithArguments implements CommandHandler {
 
     @Override
     public Collection<CommandArgument> getArguments(CommandContext ctx) {
-        return this.args.values();
+        return argList;
     }
 
     protected void recognizeArguments(CommandContext ctx) throws CommandFormatException {

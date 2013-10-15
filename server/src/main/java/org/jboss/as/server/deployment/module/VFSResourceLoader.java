@@ -129,25 +129,29 @@ public class VFSResourceLoader extends AbstractResourceLoader implements Iterabl
                     }
                     final long size = file.getSize();
                     final ClassSpec spec = new ClassSpec();
-                    final InputStream is = file.openStream();
-                    try {
-                        if (size <= Integer.MAX_VALUE) {
-                            final int castSize = (int) size;
-                            byte[] bytes = new byte[castSize];
-                            int a = 0, res;
-                            while ((res = is.read(bytes, a, castSize - a)) > 0) {
-                                a += res;
+                    synchronized (VFSResourceLoader.this) {
+                        final InputStream is = file.openStream();
+                        try {
+                            if (size <= Integer.MAX_VALUE) {
+                                final int castSize = (int) size;
+                                byte[] bytes = new byte[castSize];
+                                int a = 0, res;
+                                while ((res = is.read(bytes, a, castSize - a)) > 0) {
+                                    a += res;
+                                }
+                                // consume remainder so that cert check doesn't fail in case of wonky JARs
+                                while (is.read() != -1) {}
+                                // done
+                                is.close();
+                                spec.setBytes(bytes);
+                                spec.setCodeSource(new CodeSource(rootUrl, file.getCodeSigners()));
+                                return spec;
+                            } else {
+                                throw ServerMessages.MESSAGES.resourceTooLarge();
                             }
-                            // done
-                            is.close();
-                            spec.setBytes(bytes);
-                            spec.setCodeSource(new CodeSource(rootUrl, file.getCodeSigners()));
-                            return spec;
-                        } else {
-                            throw ServerMessages.MESSAGES.resourceTooLarge();
+                        } finally {
+                            VFSUtils.safeClose(is);
                         }
-                    } finally {
-                        VFSUtils.safeClose(is);
                     }
                 }
             });

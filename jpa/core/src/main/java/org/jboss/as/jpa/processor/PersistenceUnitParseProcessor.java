@@ -77,6 +77,12 @@ public class PersistenceUnitParseProcessor implements DeploymentUnitProcessor {
     private static final String JAR_FILE_EXTENSION = ".jar";
     private static final String LIB_FOLDER = "lib";
 
+    private final boolean appClientContainerMode;
+
+    public PersistenceUnitParseProcessor(boolean appclient) {
+        appClientContainerMode = appclient;
+    }
+
     @Override
     public void deploy(DeploymentPhaseContext phaseContext) throws DeploymentUnitProcessingException {
 
@@ -91,7 +97,8 @@ public class PersistenceUnitParseProcessor implements DeploymentUnitProcessor {
 
     private void handleJarDeployment(DeploymentPhaseContext phaseContext) throws DeploymentUnitProcessingException {
         final DeploymentUnit deploymentUnit = phaseContext.getDeploymentUnit();
-        if (!isEarDeployment(deploymentUnit) && !isWarDeployment(deploymentUnit)) {
+        if (!isEarDeployment(deploymentUnit) && !isWarDeployment(deploymentUnit) &&
+                (!appClientContainerMode || DeploymentTypeMarker.isType(DeploymentType.APPLICATION_CLIENT, deploymentUnit)) ) {
 
             // handle META-INF/persistence.xml
             // ordered list of PUs
@@ -114,7 +121,7 @@ public class PersistenceUnitParseProcessor implements DeploymentUnitProcessor {
 
     private void handleWarDeployment(DeploymentPhaseContext phaseContext) throws DeploymentUnitProcessingException {
         final DeploymentUnit deploymentUnit = phaseContext.getDeploymentUnit();
-        if (isWarDeployment(deploymentUnit)) {
+        if (!appClientContainerMode && isWarDeployment(deploymentUnit)) {
 
             int puCount;
             // ordered list of PUs
@@ -154,7 +161,7 @@ public class PersistenceUnitParseProcessor implements DeploymentUnitProcessor {
 
     private void handleEarDeployment(DeploymentPhaseContext phaseContext) throws DeploymentUnitProcessingException {
         final DeploymentUnit deploymentUnit = phaseContext.getDeploymentUnit();
-        if (isEarDeployment(deploymentUnit)) {
+        if (!appClientContainerMode && isEarDeployment(deploymentUnit)) {
 
             int puCount = 0;
             // ordered list of PUs

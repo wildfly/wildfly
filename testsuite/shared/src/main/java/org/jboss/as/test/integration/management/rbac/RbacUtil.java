@@ -25,16 +25,22 @@ package org.jboss.as.test.integration.management.rbac;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ADD;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.FAILED;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.FAILURE_DESCRIPTION;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.INCLUDE_ALL;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.NAME;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OPERATION_HEADERS;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OUTCOME;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.READ_RESOURCE_OPERATION;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.REMOVE;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.RESULT;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ROLES;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SUCCESS;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.TYPE;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.USER;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.VALUE;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.WRITE_ATTRIBUTE_OPERATION;
+import static org.jboss.as.domain.management.ModelDescriptionConstants.IS_CALLER_IN_ROLE;
 import static org.jboss.as.test.integration.management.util.ModelUtil.createOpNode;
+import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.fail;
 
 import java.io.IOException;
@@ -168,4 +174,16 @@ public class RbacUtil {
         return new String[] {MONITOR_ROLE, OPERATOR_ROLE, MAINTAINER_ROLE, DEPLOYER_ROLE, ADMINISTRATOR_ROLE, AUDITOR_ROLE, SUPERUSER_ROLE};
     }
 
+    public static void assertIsCallerInRole(ModelControllerClient client, String role, boolean expectedOutcome) throws IOException {
+        ModelNode operation = createOpNode(ROLE_MAPPING_ADDRESS_BASE + role, IS_CALLER_IN_ROLE);
+        ModelNode result = executeOperation(client, operation, Outcome.SUCCESS);
+        assertEquals("expected caller to be in role " + role, expectedOutcome, result.get(RESULT).asBoolean());
+    }
+
+    public static void setRoleMappingIncludeAll(ModelControllerClient client, String role, boolean includeAll) throws IOException {
+        ModelNode operation = createOpNode(ROLE_MAPPING_ADDRESS_BASE + role, WRITE_ATTRIBUTE_OPERATION);
+        operation.get(NAME).set(INCLUDE_ALL);
+        operation.get(VALUE).set(includeAll);
+        executeOperation(client, operation, Outcome.SUCCESS);
+    }
 }

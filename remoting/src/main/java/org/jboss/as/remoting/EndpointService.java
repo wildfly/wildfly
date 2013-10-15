@@ -22,6 +22,8 @@
 
 package org.jboss.as.remoting;
 
+import static org.jboss.as.remoting.RemotingMessages.MESSAGES;
+
 import java.io.IOException;
 
 import org.jboss.msc.service.Service;
@@ -35,8 +37,6 @@ import org.jboss.remoting3.remote.HttpUpgradeConnectionProviderFactory;
 import org.jboss.remoting3.remote.RemoteConnectionProviderFactory;
 import org.xnio.OptionMap;
 import org.xnio.Options;
-
-import static org.jboss.as.remoting.RemotingMessages.MESSAGES;
 
 /**
  * An MSC service for Remoting endpoints.
@@ -73,9 +73,9 @@ public final class EndpointService implements Service<Endpoint> {
             endpoint = Remoting.createEndpoint(endpointName, optionMap);
             try {
                 // Reuse the options for the remote connection factory for now
-                endpoint.addConnectionProvider(Protocols.REMOTE, new RemoteConnectionProviderFactory(), optionMap);
-                endpoint.addConnectionProvider(Protocols.HTTP_REMOTING, new HttpUpgradeConnectionProviderFactory(), optionMap);
-                endpoint.addConnectionProvider(Protocols.HTTPS_REMOTING, new HttpUpgradeConnectionProviderFactory(), OptionMap.builder().addAll(optionMap).set(Options.SSL_ENABLED, true).getMap());
+                endpoint.addConnectionProvider(Protocol.REMOTE.toString(), new RemoteConnectionProviderFactory(), optionMap);
+                endpoint.addConnectionProvider(Protocol.HTTP_REMOTING.toString(), new HttpUpgradeConnectionProviderFactory(), optionMap);
+                endpoint.addConnectionProvider(Protocol.HTTPS_REMOTING.toString(), new HttpUpgradeConnectionProviderFactory(), OptionMap.builder().addAll(optionMap).set(Options.SSL_ENABLED, true).getMap());
                 ok = true;
             } finally {
                 if (! ok) {

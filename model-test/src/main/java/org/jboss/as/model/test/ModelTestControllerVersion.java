@@ -29,6 +29,7 @@ public enum ModelTestControllerVersion {
     V7_1_2_FINAL ("7.1.2.Final", "7.1.2"),
     V7_1_3_FINAL ("7.1.3.Final", "7.1.2"),
     V7_2_0_FINAL ("7.2.0.Final", "7.2.0"),
+    V8_0_0_FINAL (VersionLocator.getCurrentVersion(), null)
     ;
 
     String mavenGavVersion;
@@ -59,7 +60,7 @@ public enum ModelTestControllerVersion {
                 props.load(ModelTestControllerVersion.class.getResourceAsStream("version.properties"));
                 VERSION = props.getProperty("as.version");
             } catch (Exception e) {
-                VERSION = "8.0.0.Beta1-SNAPSHOT";
+                VERSION = "8.0.0.Beta2-SNAPSHOT";
                 e.printStackTrace();
             }
         }

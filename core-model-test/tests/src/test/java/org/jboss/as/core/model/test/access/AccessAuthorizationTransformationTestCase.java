@@ -26,16 +26,11 @@ import java.util.List;
 
 import org.jboss.as.controller.ModelVersion;
 import org.jboss.as.controller.PathAddress;
-import org.jboss.as.controller.PathElement;
-import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
-import org.jboss.as.controller.registry.Resource;
 import org.jboss.as.core.model.test.AbstractCoreModelTest;
 import org.jboss.as.core.model.test.KernelServices;
 import org.jboss.as.core.model.test.KernelServicesBuilder;
 import org.jboss.as.core.model.test.LegacyKernelServicesInitializer;
-import org.jboss.as.core.model.test.ModelInitializer;
 import org.jboss.as.core.model.test.TestModelType;
-import org.jboss.as.core.model.test.util.StandardServerGroupInitializers;
 import org.jboss.as.core.model.test.util.TransformersTestParameters;
 import org.jboss.as.domain.management.CoreManagementResourceDefinition;
 import org.jboss.as.domain.management.access.AccessAuthorizationResourceDefinition;
@@ -71,20 +66,13 @@ public class AccessAuthorizationTransformationTestCase extends AbstractCoreModel
     public void testAllowNonRBAC() throws Exception {
 
         KernelServicesBuilder builder = createKernelServicesBuilder(TestModelType.DOMAIN)
-                .setModelInitializer(new ModelInitializer() {
-                    @Override
-                    public void populateModel(Resource rootResource) {
-                        Resource management = Resource.Factory.create();
-                        rootResource.registerChild(PathElement.pathElement(ModelDescriptionConstants.CORE_SERVICE,
-                                ModelDescriptionConstants.MANAGEMENT), management);
-                        management.registerChild(PathElement.pathElement(ModelDescriptionConstants.ACCESS,
-                                ModelDescriptionConstants.AUTHORIZATION), AccessAuthorizationResourceDefinition.createResource(null));
-                    }
-                }, null)
                 .setXmlResource("domain-transform-no-rbac-provider.xml");
 
-        builder.createLegacyKernelServicesBuilder(modelVersion, testControllerVersion)
+        LegacyKernelServicesInitializer initializer = builder.createLegacyKernelServicesBuilder(modelVersion, testControllerVersion)
                 .skipReverseControllerCheck();
+        if (ModelVersion.compare(ModelVersion.create(1, 4, 0), modelVersion) > 0) {
+
+        }
 
         KernelServices mainServices = builder.build();
         Assert.assertTrue(mainServices.isSuccessfulBoot());
@@ -98,21 +86,11 @@ public class AccessAuthorizationTransformationTestCase extends AbstractCoreModel
 
     @Test
     public void testRejectRBAC() throws Exception {
-        if (modelVersion.getMajor() > 1 || modelVersion.getMinor() >= 5) {
+        if (ModelVersion.compare(ModelVersion.create(1, 4, 0), modelVersion) > 0) {
             return;
         }
 
         KernelServicesBuilder builder = createKernelServicesBuilder(TestModelType.DOMAIN)
-                .setModelInitializer(new ModelInitializer() {
-                    @Override
-                    public void populateModel(Resource rootResource) {
-                        Resource management = Resource.Factory.create();
-                        rootResource.registerChild(PathElement.pathElement(ModelDescriptionConstants.CORE_SERVICE,
-                                ModelDescriptionConstants.MANAGEMENT), management);
-                        management.registerChild(PathElement.pathElement(ModelDescriptionConstants.ACCESS,
-                                ModelDescriptionConstants.AUTHORIZATION), AccessAuthorizationResourceDefinition.createResource(null));
-                    }
-                }, null)
                 .setXmlResource("domain-transform-rbac-provider.xml");
 
         builder.createLegacyKernelServicesBuilder(modelVersion, testControllerVersion)
