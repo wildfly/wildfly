@@ -27,7 +27,6 @@ import java.io.InputStream;
 import java.security.KeyStore;
 import java.security.KeyStoreException;
 import java.security.NoSuchAlgorithmException;
-import java.security.Security;
 import java.security.cert.CertificateException;
 
 import javax.net.ServerSocketFactory;
@@ -59,9 +58,6 @@ public class TLSSyslogServer extends TCPSyslogServer {
     @Override
     public void initialize() throws SyslogRuntimeException {
         super.initialize();
-
-        // remove BouncyCastle provider if installed
-        Security.removeProvider("BC");
 
         final SSLTCPNetSyslogServerConfigIF config = (SSLTCPNetSyslogServerConfigIF) this.tcpNetSyslogServerConfig;
 
