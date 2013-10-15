@@ -51,6 +51,8 @@ class KnownVersions {
         final String CORE_MODEL_7_1_2 = "1.2.0";
         final String CORE_MODEL_7_1_3 = "1.3.0";
         final String CORE_MODEL_7_2_0 = "1.4.0";
+        final String CORE_MODEL_8_0_0 = "2.0.0";
+
         addSubsystemVersion(map, "configadmin", "1.0.0", CORE_MODEL_7_1_3);
         addSubsystemVersion(map, "cmp", "1.0.0", CORE_MODEL_7_1_2);
         addSubsystemVersion(map, "ee", "1.0.0", CORE_MODEL_7_1_3);
@@ -73,7 +75,10 @@ class KnownVersions {
         addSubsystemVersion(map, "mail", "1.1.0", CORE_MODEL_7_1_3);
         addSubsystemVersion(map, "messaging", "1.1.0", CORE_MODEL_7_1_3);
         addSubsystemVersion(map, "messaging", "1.2.0", CORE_MODEL_7_2_0);
+        addSubsystemVersion(map, "modcluster", "1.2.0", CORE_MODEL_7_1_2);
         addSubsystemVersion(map, "modcluster", "1.2.0", CORE_MODEL_7_1_3);
+        addSubsystemVersion(map, "modcluster", "1.3.0", CORE_MODEL_7_2_0);
+        addSubsystemVersion(map, "modcluster", "2.0.0", CORE_MODEL_8_0_0);
         addSubsystemVersion(map, "naming", "1.1.0", CORE_MODEL_7_1_3);
         addSubsystemVersion(map, "osgi", "1.0.0", CORE_MODEL_7_1_3);
         addSubsystemVersion(map, "remoting", "1.1.0", CORE_MODEL_7_1_3);

@@ -212,6 +212,9 @@
   </xs:complexType>
 
   <xs:complexType name="common-load-metricType" abstract="true">
+    <xs:choice minOccurs="0" maxOccurs="unbounded">
+      <xs:element name="property" type="propertyType"/>
+    </xs:choice>
     <xs:attribute name="weight" type="xs:int" use="optional" default="1"/>
     <xs:attribute name="capacity" type="xs:double" use="optional" default="1.0"/>
   </xs:complexType>
@@ -244,5 +247,10 @@
       <xs:enumeration value="busyness"/>
     </xs:restriction>
   </xs:simpleType>
+
+  <xs:complexType name="propertyType">
+    <xs:attribute name="name" type="xs:string" use="required"/>
+    <xs:attribute name="value" type="xs:string" use="required"/>
+  </xs:complexType>
 
 </xs:schema>
