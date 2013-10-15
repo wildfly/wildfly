@@ -101,7 +101,7 @@
         <version.io.netty>3.6.6.Final-redhat-1</version.io.netty>
         <version.javax.activation>1.1.1-redhat-2</version.javax.activation>
         <version.javax.enterprise>1.0-SP4.redhat-3</version.javax.enterprise>
-        <version.javax.faces>1.2_15-b01-redhat-3</version.javax.faces>
+        <version.javax.faces>1.2_15-b01-redhat-4</version.javax.faces>
         <version.javax.inject.javax.inject>1.redhat-4</version.javax.inject.javax.inject>
         <version.javax.jws.jsr181-api>1.0-MR1-redhat-4</version.javax.jws.jsr181-api>
         <version.javax.mail>1.4.5-redhat-1</version.javax.mail>
