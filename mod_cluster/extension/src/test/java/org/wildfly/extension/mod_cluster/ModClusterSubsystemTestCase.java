@@ -187,6 +187,11 @@ public class ModClusterSubsystemTestCase extends AbstractSubsystemBaseTest {
         testExpressionsAreRejectedByVersion_1_2(ModelTestControllerVersion.V7_1_3_FINAL);
     }
 
+    @Test
+    public void testRejection720() throws Exception {
+        testRejection1_3_0(ModelTestControllerVersion.V7_2_0_FINAL);
+    }
+
     private void testExpressionsAreRejectedByVersion_1_2(ModelTestControllerVersion controllerVersion) throws Exception {
         String subsystemXml = readResource("subsystem_1_2.xml");
         ModelVersion modelVersion = ModelVersion.create(1, 2, 0);
@@ -242,6 +247,32 @@ public class ModClusterSubsystemTestCase extends AbstractSubsystemBaseTest {
                                                 CommonAttributes.PING,
                                                 CommonAttributes.STICKY_SESSION, CommonAttributes.STICKY_SESSION_FORCE, CommonAttributes.STICKY_SESSION_REMOVE,
                                                 CommonAttributes.SESSION_DRAINING_STRATEGY))
+                                        .addConfig(new NeverToDefaultConfig(CommonAttributes.SESSION_DRAINING_STRATEGY)).build())
+
+        );
+    }
+
+    private void testRejection1_3_0(ModelTestControllerVersion controllerVersion) throws Exception {
+        String subsystemXml = readResource("subsystem_1_2.xml");
+        ModelVersion modelVersion = ModelVersion.create(1, 3, 0);
+        KernelServicesBuilder builder = createKernelServicesBuilder(createAdditionalInitialization());
+
+        builder.createLegacyKernelServicesBuilder(null, controllerVersion, modelVersion)
+                .addMavenResourceURL("org.jboss.as:jboss-as-modcluster:" + controllerVersion.getMavenGavVersion())
+                .setExtensionClassName("org.jboss.as.modcluster.ModClusterExtension");
+
+        KernelServices mainServices = builder.build();
+        KernelServices legacyServices = mainServices.getLegacyServices(modelVersion);
+        Assert.assertNotNull(legacyServices);
+        Assert.assertTrue(mainServices.isSuccessfulBoot());
+        Assert.assertTrue(legacyServices.isSuccessfulBoot());
+
+        PathAddress rootAddr = PathAddress.pathAddress(PathElement.pathElement(SUBSYSTEM, ModClusterExtension.SUBSYSTEM_NAME));
+        PathAddress confAddr = rootAddr.append(PathElement.pathElement(MOD_CLUSTER_CONFIG, CONFIGURATION));
+        ModelTestUtils.checkFailedTransformedBootOperations(mainServices, modelVersion, parse(subsystemXml),
+                new FailedOperationTransformationConfig()
+                        .addFailedAttribute(confAddr,
+                                ChainedConfig.createBuilder(CommonAttributes.SESSION_DRAINING_STRATEGY)
                                         .addConfig(new NeverToDefaultConfig(CommonAttributes.SESSION_DRAINING_STRATEGY)).build())
 
         );
