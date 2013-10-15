@@ -44,6 +44,7 @@ import org.jboss.as.test.integration.management.rbac.Outcome;
 import org.jboss.as.test.integration.management.rbac.RbacUtil;
 import org.jboss.dmr.ModelNode;
 import org.junit.After;
+import org.junit.Assert;
 import org.junit.Test;
 
 /**
@@ -89,7 +90,9 @@ public abstract class AbstractHostScopedRolesTestCase extends AbstractRbacTestCa
     public void tearDown() throws IOException {
         AssertionError assertionError = null;
         String[] toRemove = {DEPLOYMENT_2, TEST_PATH, getPrefixedAddress(HOST, MASTER, SMALL_JVM),
-                getPrefixedAddress(HOST, SLAVE, SMALL_JVM)};
+                getPrefixedAddress(HOST, SLAVE, SMALL_JVM),
+                getPrefixedAddress(HOST, SLAVE, SCOPED_ROLE_SERVER),
+                getPrefixedAddress(HOST, MASTER, SCOPED_ROLE_SERVER)};
         for (String address : toRemove) {
             try {
                 removeResource(address);
@@ -135,6 +138,8 @@ public abstract class AbstractHostScopedRolesTestCase extends AbstractRbacTestCa
         addJvm(client, HOST, SLAVE, Outcome.HIDDEN, MONITOR_USER);
 
         testHostScopedRoleCanReadHostChildResources(client, MONITOR_USER);
+
+        testWLFY2299(client, Outcome.UNAUTHORIZED, MONITOR_USER);
     }
 
     @Test
@@ -162,6 +167,8 @@ public abstract class AbstractHostScopedRolesTestCase extends AbstractRbacTestCa
         addJvm(client, HOST, SLAVE, Outcome.HIDDEN, OPERATOR_USER);
 
         testHostScopedRoleCanReadHostChildResources(client, OPERATOR_USER);
+
+        testWLFY2299(client, Outcome.UNAUTHORIZED, OPERATOR_USER);
     }
 
     @Test
@@ -189,6 +196,8 @@ public abstract class AbstractHostScopedRolesTestCase extends AbstractRbacTestCa
         addJvm(client, HOST, SLAVE, Outcome.HIDDEN, MAINTAINER_USER);
 
         testHostScopedRoleCanReadHostChildResources(client, MAINTAINER_USER);
+
+        testWLFY2299(client, Outcome.SUCCESS, MAINTAINER_USER);
     }
 
     @Test
@@ -216,6 +225,8 @@ public abstract class AbstractHostScopedRolesTestCase extends AbstractRbacTestCa
         addJvm(client, HOST, SLAVE, Outcome.HIDDEN, DEPLOYER_USER);
 
         testHostScopedRoleCanReadHostChildResources(client, DEPLOYER_USER);
+
+        testWLFY2299(client, Outcome.UNAUTHORIZED, DEPLOYER_USER);
     }
 
     @Test
@@ -243,6 +254,8 @@ public abstract class AbstractHostScopedRolesTestCase extends AbstractRbacTestCa
         addJvm(client, HOST, SLAVE, Outcome.HIDDEN, ADMINISTRATOR_USER);
 
         testHostScopedRoleCanReadHostChildResources(client, ADMINISTRATOR_USER);
+
+        testWLFY2299(client, Outcome.SUCCESS, ADMINISTRATOR_USER);
     }
 
     @Test
@@ -270,6 +283,8 @@ public abstract class AbstractHostScopedRolesTestCase extends AbstractRbacTestCa
         addJvm(client, HOST, SLAVE, Outcome.HIDDEN, AUDITOR_USER);
 
         testHostScopedRoleCanReadHostChildResources(client, AUDITOR_USER);
+
+        testWLFY2299(client, Outcome.UNAUTHORIZED, AUDITOR_USER);
     }
 
     @Test
@@ -297,6 +312,8 @@ public abstract class AbstractHostScopedRolesTestCase extends AbstractRbacTestCa
         addJvm(client, HOST, SLAVE, Outcome.HIDDEN, SUPERUSER_USER);
 
         testHostScopedRoleCanReadHostChildResources(client, SUPERUSER_USER);
+
+        testWLFY2299(client, Outcome.SUCCESS, SUPERUSER_USER);
     }
 
     private void testHostScopedRoleCanReadHostChildResources(ModelControllerClient client, String... roles) throws Exception {
@@ -316,5 +333,20 @@ public abstract class AbstractHostScopedRolesTestCase extends AbstractRbacTestCa
         //System.out.println(RbacUtil.executeOperation(client, op, Outcome.SUCCESS));
         RbacUtil.executeOperation(client, op, Outcome.SUCCESS);
 
+    }
+
+    private void testWLFY2299(ModelControllerClient client, Outcome expected, String... roles) throws IOException {
+
+        addServerConfig(client, SLAVE, SERVER_GROUP_A, Outcome.HIDDEN, roles);
+        addServerConfig(client, MASTER, SERVER_GROUP_A, expected, roles);
+
+        ModelNode metadata = getServerConfigAccessControl(client, roles);
+        ModelNode add = metadata.get("default", "operations", "add", "execute");
+        Assert.assertTrue(add.isDefined());
+        Assert.assertEquals(expected == Outcome.SUCCESS, add.asBoolean());
+
+        ModelNode writeConfig = metadata.get("default", "write");
+        Assert.assertTrue(writeConfig.isDefined());
+        Assert.assertEquals(expected == Outcome.SUCCESS, writeConfig.asBoolean());
     }
 }

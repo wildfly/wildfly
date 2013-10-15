@@ -49,6 +49,7 @@ import org.jboss.as.test.integration.management.rbac.Outcome;
 import org.jboss.as.test.integration.management.rbac.RbacUtil;
 import org.jboss.dmr.ModelNode;
 import org.junit.After;
+import org.junit.Assert;
 import org.junit.Test;
 
 /**
@@ -118,7 +119,8 @@ public abstract class AbstractServerGroupScopedRolesTestCase extends AbstractRba
         AssertionError assertionError = null;
         String[] toRemove = {DEPLOYMENT_2, TEST_PATH, getPrefixedAddress(SERVER_GROUP, SERVER_GROUP_A, SMALL_JVM),
                 getPrefixedAddress(SERVER_GROUP, SERVER_GROUP_B, SMALL_JVM),
-                getPrefixedAddress(HOST, MASTER, SMALL_JVM)};
+                getPrefixedAddress(HOST, MASTER, SMALL_JVM),
+                getPrefixedAddress(HOST, MASTER, SCOPED_ROLE_SERVER)};
         for (String address : toRemove) {
             try {
                 removeResource(address);
@@ -168,6 +170,8 @@ public abstract class AbstractServerGroupScopedRolesTestCase extends AbstractRba
         testWFLY2089(client, MONITOR_USER);
 
         testWFLY1916(client, Outcome.UNAUTHORIZED, MONITOR_USER);
+
+        testWLFY2299(client, Outcome.UNAUTHORIZED, MONITOR_USER);
     }
 
     @Test
@@ -200,6 +204,8 @@ public abstract class AbstractServerGroupScopedRolesTestCase extends AbstractRba
         testWFLY2089(client, OPERATOR_USER);
 
         testWFLY1916(client, Outcome.SUCCESS, OPERATOR_USER);
+
+        testWLFY2299(client, Outcome.UNAUTHORIZED, OPERATOR_USER);
     }
 
     @Test
@@ -232,6 +238,8 @@ public abstract class AbstractServerGroupScopedRolesTestCase extends AbstractRba
         testWFLY2089(client, MAINTAINER_USER);
 
         testWFLY1916(client, Outcome.SUCCESS, MAINTAINER_USER);
+
+        testWLFY2299(client, Outcome.SUCCESS, MAINTAINER_USER);
     }
 
     @Test
@@ -264,6 +272,8 @@ public abstract class AbstractServerGroupScopedRolesTestCase extends AbstractRba
         testWFLY2089(client, DEPLOYER_USER);
 
         testWFLY1916(client, Outcome.SUCCESS, DEPLOYER_USER);
+
+        testWLFY2299(client, Outcome.UNAUTHORIZED, DEPLOYER_USER);
     }
 
     @Test
@@ -296,6 +306,8 @@ public abstract class AbstractServerGroupScopedRolesTestCase extends AbstractRba
         testWFLY2089(client, ADMINISTRATOR_USER);
 
         testWFLY1916(client, Outcome.SUCCESS, ADMINISTRATOR_USER);
+
+        testWLFY2299(client, Outcome.SUCCESS, ADMINISTRATOR_USER);
     }
 
     @Test
@@ -328,6 +340,8 @@ public abstract class AbstractServerGroupScopedRolesTestCase extends AbstractRba
         testWFLY2089(client, AUDITOR_USER);
 
         testWFLY1916(client, Outcome.UNAUTHORIZED, AUDITOR_USER);
+
+        testWLFY2299(client, Outcome.UNAUTHORIZED, AUDITOR_USER);
     }
 
     @Test
@@ -360,6 +374,8 @@ public abstract class AbstractServerGroupScopedRolesTestCase extends AbstractRba
         testWFLY2089(client, SUPERUSER_USER);
 
         testWFLY1916(client, Outcome.SUCCESS, SUPERUSER_USER);
+
+        testWLFY2299(client, Outcome.SUCCESS, SUPERUSER_USER);
     }
 
 
@@ -374,5 +390,22 @@ public abstract class AbstractServerGroupScopedRolesTestCase extends AbstractRba
         ModelNode op = WFLY_1916_OP.clone();
         configureRoles(op, roles);
         RbacUtil.executeOperation(client, op, expected);
+    }
+
+    private void testWLFY2299(ModelControllerClient client, Outcome expected, String... roles) throws IOException {
+
+        addServerConfig(client, MASTER, SERVER_GROUP_B, Outcome.HIDDEN, roles);
+        addServerConfig(client, MASTER, SERVER_GROUP_A, expected, roles);
+
+        ModelNode metadata = getServerConfigAccessControl(client, roles);
+
+        ModelNode add = metadata.get("default", "operations", "add", "execute");
+        Assert.assertTrue(add.isDefined());
+        Assert.assertEquals(expected == Outcome.SUCCESS, add.asBoolean());
+
+        ModelNode writeConfig = metadata.get("default", "write");
+        Assert.assertTrue(writeConfig.isDefined());
+        Assert.assertEquals(expected == Outcome.SUCCESS, writeConfig.asBoolean());
+
     }
 }
