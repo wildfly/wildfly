@@ -104,6 +104,10 @@ class HostServerGroupTracker {
             return new HostServerGroupEffect(address, (Set<String>) null, hostEffect, true);
         }
 
+        private static HostServerGroupEffect forWildCardServerConfig(PathAddress address, String hostEffect) {
+            return new HostServerGroupEffect(address, EMPTY, hostEffect, true);
+        }
+
 
         static HostServerGroupEffect forServer(PathAddress address, String serverGroupEffect, String hostEffect) {
             assert serverGroupEffect != null : "serverGroupEffect is null";
@@ -181,9 +185,13 @@ class HostServerGroupTracker {
                                     serverGroup = model.get(GROUP).asString();
                                 }
                             }
-                            if (serverGroup == null && address.size() == 2 && SERVER_CONFIG.equals(lvlone)
-                                    && ADD.equals(operation.require(OP).asString())) {
-                                serverGroup = operation.get(GROUP).asString();
+                            if (serverGroup == null && address.size() == 2 && SERVER_CONFIG.equals(lvlone)) {
+                                if (secondElement.isWildcard()) {
+                                    // https://issues.jboss.org/browse/WFLY-2299
+                                    return HostServerGroupEffect.forWildCardServerConfig(address, hostName);
+                                } else if (ADD.equals(operation.require(OP).asString())) {
+                                    serverGroup = operation.get(GROUP).asString();
+                                }
                             }
 
                             if (serverGroup != null) {
