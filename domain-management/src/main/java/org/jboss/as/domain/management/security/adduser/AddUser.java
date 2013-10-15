@@ -361,7 +361,7 @@ public class AddUser {
                 return MESSAGES.argRealm();
             }
         },
-        SILENT("-s", "--silent") {
+        SILENT("-s", "--silent", "--silent=true") {
             @Override
             public String instructions() {
                 return MESSAGES.argSilent();
@@ -407,8 +407,10 @@ public class AddUser {
         };
 
         private static String USAGE;
+
         private String shortArg;
         private String longArg;
+        private String additionalArg;
 
         private CommandLineArgument(String option) {
             this.shortArg = option;
@@ -419,12 +421,18 @@ public class AddUser {
             this.longArg = longArg;
         }
 
+        private CommandLineArgument(String shortArg, String longArg, String additionalArg) {
+            this.shortArg = shortArg;
+            this.longArg = longArg;
+            this.additionalArg = additionalArg;
+        }
+
         public String key() {
             return longArg != null ? longArg.substring(2) : shortArg.substring(1);
         }
 
         public boolean match(String option) {
-            return option.equals(shortArg) || option.equals(longArg);
+            return option.equals(shortArg) || option.equals(longArg) || option.equals(additionalArg);
         }
 
         public String getShortArg() {
