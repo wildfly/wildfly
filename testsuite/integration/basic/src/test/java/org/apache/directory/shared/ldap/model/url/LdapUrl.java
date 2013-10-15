@@ -48,7 +48,7 @@ import org.apache.directory.shared.util.Unicode;
  * @author <a href="mailto:dev@directory.apache.org">Apache Directory Project</a>
  * @author Josef Cacek
  */
-//FIXME remove this class when DIRAPI-125 issue is fixed.
+// FIXME remove this class when DIRAPI-125 issue is fixed.
 public class LdapUrl {
     /** The constant for "ldaps://" scheme. */
     public static final String LDAPS_SCHEME = "ldaps://";
@@ -921,14 +921,12 @@ public class LdapUrl {
         for (int i = 0; i < url.length(); i++) {
             char c = url.charAt(i);
 
-            switch (c)
-
-            {
+            switch (c) {
             // reserved and unreserved characters:
             // just append to the buffer
 
             // reserved gen-delims, excluding '?'
-            // gen-delims  = ":" / "/" / "?" / "#" / "[" / "]" / "@"
+            // gen-delims = ":" / "/" / "?" / "#" / "[" / "]" / "@"
                 case ':':
                 case '/':
                 case '#':
@@ -937,8 +935,8 @@ public class LdapUrl {
                 case '@':
 
                     // reserved sub-delims, excluding ','
-                    // sub-delims  = "!" / "$" / "&" / "'" / "(" / ")"
-                    //               / "*" / "+" / "," / ";" / "="
+                    // sub-delims = "!" / "$" / "&" / "'" / "(" / ")"
+                    // / "*" / "+" / "," / ";" / "="
                 case '!':
                 case '$':
                 case '&':
@@ -951,7 +949,7 @@ public class LdapUrl {
                 case '=':
 
                     // unreserved
-                    // unreserved  = ALPHA / DIGIT / "-" / "." / "_" / "~"
+                    // unreserved = ALPHA / DIGIT / "-" / "." / "_" / "~"
                 case 'a':
                 case 'b':
                 case 'c':
