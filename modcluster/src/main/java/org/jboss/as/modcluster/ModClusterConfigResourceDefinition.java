@@ -39,17 +39,20 @@ import org.jboss.as.controller.client.helpers.MeasurementUnit;
 import org.jboss.as.controller.descriptions.DefaultOperationDescriptionProvider;
 import org.jboss.as.controller.descriptions.DescriptionProvider;
 import org.jboss.as.controller.descriptions.ResourceDescriptionResolver;
+import org.jboss.as.controller.operations.validation.EnumValidator;
 import org.jboss.as.controller.operations.validation.IntRangeValidator;
 import org.jboss.as.controller.registry.ManagementResourceRegistration;
 import org.jboss.as.controller.registry.OperationEntry;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.ModelType;
+import org.jboss.modcluster.config.impl.SessionDrainingStrategyEnum;
 
 /**
  * {@link ResourceDefinition} implementation for the core mod-cluster configuration resource.
  * <p/>
  *
  * @author Brian Stansberry (c) 2011 Red Hat Inc.
+ * @author Radoslav Husar
  */
 class ModClusterConfigResourceDefinition extends SimpleResourceDefinition {
 
@@ -65,8 +68,11 @@ class ModClusterConfigResourceDefinition extends SimpleResourceDefinition {
 
     static final SimpleAttributeDefinition SESSION_DRAINING_STRATEGY = SimpleAttributeDefinitionBuilder.create(CommonAttributes.SESSION_DRAINING_STRATEGY, ModelType.STRING, true)
             .setAllowExpression(true)
-            .setAlternatives("DEFAULT", "ALWAYS", "NEVER")
-            .setDefaultValue(new ModelNode("DEFAULT"))
+            .setDefaultValue(new ModelNode(SessionDrainingStrategyEnum.DEFAULT.name()))
+            .setValidator(new EnumValidator<SessionDrainingStrategyEnum>(SessionDrainingStrategyEnum.class, true, true,
+                    SessionDrainingStrategyEnum.ALWAYS,
+                    SessionDrainingStrategyEnum.DEFAULT,
+                    SessionDrainingStrategyEnum.NEVER))
             .setRestartAllServices()
             .build();
 
