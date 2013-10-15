@@ -59,9 +59,9 @@ public class OldVersionCopier {
         this.oldVersionsBaseDir = oldVersionsBaseDir;
     }
 
-    static OldVersionCopier expandOldVersions() {
+    static OldVersionCopier expandOldVersion(Version.AsVersion version) {
         OldVersionCopier copier = new OldVersionCopier(obtainOldVersionsDir());
-        copier.expandAsInstances();
+        copier.expandAsInstance(version);
         return copier;
     }
 
@@ -86,28 +86,26 @@ public class OldVersionCopier {
         return file;
     }
 
-    private void expandAsInstances() {
-        if (targetOldVersions.exists()) {
-            return;
-        }
-        if (!targetOldVersions.mkdirs() && targetOldVersions.exists()) {
-            throw new RuntimeException("Could not create " + targetOldVersions);
-        }
-
-        for (File file : oldVersionsBaseDir.listFiles()) {
-            if (file.getName().endsWith(".zip")) {
-                try {
-                    expandAsInstance(file);
-
-                    if (file.getName().equals("jboss-as-7.1.2.Final.zip")) {
-                        patchBadRemoting("jboss-as-7.1.2.Final");
-                    } else if (file.getName().equals("jboss-as-7.1.3.Final.zip")) {
-                        patchBadRemoting("jboss-as-7.1.3.Final");
-                    }
-                } catch(Exception e) {
-                    throw new RuntimeException(e);
-                }
+    private void expandAsInstance(Version.AsVersion version) {
+        if (!targetOldVersions.exists()) {
+            if (!targetOldVersions.mkdirs() && targetOldVersions.exists()) {
+                throw new RuntimeException("Could not create " + targetOldVersions);
             }
+        }
+        File file = new File(oldVersionsBaseDir, version.getZipFileName());
+        if (!file.exists()) {
+            throw new RuntimeException("Old version not found in " + file.getAbsolutePath());
+        }
+        try {
+            expandAsInstance(file);
+
+            if (file.getName().equals("jboss-as-7.1.2.Final.zip")) {
+                patchBadRemoting("jboss-as-7.1.2.Final");
+            } else if (file.getName().equals("jboss-as-7.1.3.Final.zip")) {
+                patchBadRemoting("jboss-as-7.1.3.Final");
+            }
+        } catch(Exception e) {
+            throw new RuntimeException(e);
         }
     }
 
@@ -231,10 +229,5 @@ public class OldVersionCopier {
         } finally {
             IoUtils.safeClose(in);
         }
-    }
-
-    public static void main(String[] args) {
-        System.setProperty(OLD_VERSIONS_DIR, "/Users/kabir/old-as7-releases/");
-        OldVersionCopier.expandOldVersions();
     }
 }
