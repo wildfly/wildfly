@@ -42,10 +42,11 @@ import static org.jboss.as.logging.CommonAttributes.LOGGING_PROFILES;
 import static org.jboss.as.logging.CommonAttributes.NAME;
 import static org.jboss.as.logging.ConsoleHandlerResourceDefinition.CONSOLE_HANDLER;
 import static org.jboss.as.logging.ConsoleHandlerResourceDefinition.TARGET;
-import static org.jboss.as.logging.CustomHandlerResourceDefinition.CLASS;
+import static org.jboss.as.logging.CustomFormatterResourceDefinition.CUSTOM_FORMATTER;
+import static org.jboss.as.logging.CommonAttributes.CLASS;
 import static org.jboss.as.logging.CustomHandlerResourceDefinition.CUSTOM_HANDLER;
-import static org.jboss.as.logging.CustomHandlerResourceDefinition.MODULE;
-import static org.jboss.as.logging.CustomHandlerResourceDefinition.PROPERTIES;
+import static org.jboss.as.logging.CommonAttributes.MODULE;
+import static org.jboss.as.logging.CommonAttributes.PROPERTIES;
 import static org.jboss.as.logging.FileHandlerResourceDefinition.FILE_HANDLER;
 import static org.jboss.as.logging.LoggerResourceDefinition.CATEGORY;
 import static org.jboss.as.logging.LoggerResourceDefinition.LOGGER;
@@ -71,6 +72,7 @@ import java.util.List;
 import javax.xml.stream.XMLStreamConstants;
 import javax.xml.stream.XMLStreamException;
 
+import org.jboss.as.controller.AttributeDefinition;
 import org.jboss.as.controller.persistence.SubsystemMarshallingContext;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.Property;
@@ -197,11 +199,8 @@ public class LoggingSubsystemWriter implements XMLStreamConstants, XMLElementWri
             writeRootLogger(writer, model.get(ROOT_LOGGER_PATH_NAME, ROOT_LOGGER_ATTRIBUTE_NAME));
         }
 
-        if (model.hasDefined(PATTERN_FORMATTER.getName())) {
-            for (String name : model.get(PATTERN_FORMATTER.getName()).keys()) {
-                writePatternFormatter(writer, model.get(PATTERN_FORMATTER.getName(), name), name);
-            }
-        }
+        writeFormatters(writer, PATTERN_FORMATTER, model);
+        writeFormatters(writer, CUSTOM_FORMATTER, model);
     }
 
     private void writeCommonLogger(final XMLExtendedStreamWriter writer, final ModelNode model) throws XMLStreamException {
@@ -325,10 +324,15 @@ public class LoggingSubsystemWriter implements XMLStreamConstants, XMLElementWri
         writer.writeEndElement();
     }
 
-    private void writePatternFormatter(final XMLExtendedStreamWriter writer, final ModelNode model, final String name) throws XMLStreamException {
-        writer.writeStartElement(Element.FORMATTER.getLocalName());
-        writer.writeAttribute(NAME.getXmlName(), name);
-        PATTERN_FORMATTER.marshallAsElement(model, writer);
-        writer.writeEndElement();
+    private void writeFormatters(final XMLExtendedStreamWriter writer, final AttributeDefinition attribute, final ModelNode model) throws XMLStreamException {
+        if (model.hasDefined(attribute.getName())) {
+            for (String name : model.get(attribute.getName()).keys()) {
+                writer.writeStartElement(Element.FORMATTER.getLocalName());
+                writer.writeAttribute(NAME.getXmlName(), name);
+                final ModelNode value = model.get(attribute.getName(), name);
+                attribute.marshallAsElement(value, writer);
+                writer.writeEndElement();
+            }
+        }
     }
 }

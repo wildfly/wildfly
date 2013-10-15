@@ -59,10 +59,10 @@ import static org.jboss.as.logging.CommonAttributes.REPLACEMENT;
 import static org.jboss.as.logging.CommonAttributes.REPLACE_ALL;
 import static org.jboss.as.logging.ConsoleHandlerResourceDefinition.CONSOLE_HANDLER;
 import static org.jboss.as.logging.ConsoleHandlerResourceDefinition.TARGET;
-import static org.jboss.as.logging.CustomHandlerResourceDefinition.CLASS;
+import static org.jboss.as.logging.CommonAttributes.CLASS;
 import static org.jboss.as.logging.CustomHandlerResourceDefinition.CUSTOM_HANDLER;
-import static org.jboss.as.logging.CustomHandlerResourceDefinition.MODULE;
-import static org.jboss.as.logging.CustomHandlerResourceDefinition.PROPERTIES;
+import static org.jboss.as.logging.CommonAttributes.MODULE;
+import static org.jboss.as.logging.CommonAttributes.PROPERTIES;
 import static org.jboss.as.logging.FileHandlerResourceDefinition.FILE_HANDLER;
 import static org.jboss.as.logging.LoggerResourceDefinition.LOGGER;
 import static org.jboss.as.logging.LoggerResourceDefinition.USE_PARENT_HANDLERS;
@@ -984,6 +984,14 @@ public class LoggingSubsystemParser implements XMLStreamConstants, XMLElementRea
                     operations.add(operation);
                     break;
                 }
+                case CUSTOM_FORMATTER: {
+                    final ModelNode operation = Util.createAddOperation();
+                    // Setup the operation address
+                    addOperationAddress(operation, address, CustomFormatterResourceDefinition.CUSTOM_FORMATTER.getName(), name);
+                    parseCustomFormatterElement(reader, operation);
+                    operations.add(operation);
+                    break;
+                }
                 default: {
                     throw unexpectedElement(reader);
                 }
@@ -1048,6 +1056,50 @@ public class LoggingSubsystemParser implements XMLStreamConstants, XMLElementRea
             throw missingRequired(reader, required);
         }
         requireNoContent(reader);
+    }
+
+    private static void parseCustomFormatterElement(final XMLExtendedStreamReader reader, final ModelNode operation) throws XMLStreamException {
+        final EnumSet<Attribute> required = EnumSet.of(Attribute.CLASS, Attribute.MODULE);
+        final int count = reader.getAttributeCount();
+        for (int i = 0; i < count; i++) {
+            requireNoNamespaceAttribute(reader, i);
+            final String value = reader.getAttributeValue(i);
+            final Attribute attribute = Attribute.forName(reader.getAttributeLocalName(i));
+            required.remove(attribute);
+            switch (attribute) {
+                case CLASS: {
+                    CommonAttributes.CLASS.parseAndSetParameter(value, operation, reader);
+                    break;
+                }
+                case MODULE: {
+                    CommonAttributes.MODULE.parseAndSetParameter(value, operation, reader);
+                    break;
+                }
+                default:
+                    throw unexpectedAttribute(reader, i);
+            }
+        }
+        if (!required.isEmpty()) {
+            throw missingRequired(reader, required);
+        }
+
+
+        final EnumSet<Element> encountered = EnumSet.noneOf(Element.class);
+        while (reader.nextTag() != END_ELEMENT) {
+            final Element element = Element.forName(reader.getLocalName());
+            if (!encountered.add(element)) {
+                throw unexpectedElement(reader);
+            }
+            switch (element) {
+                case PROPERTIES: {
+                    parsePropertyElement(operation, reader);
+                    break;
+                }
+                default: {
+                    throw unexpectedElement(reader);
+                }
+            }
+        }
     }
 
     private static void parsePropertyElement(final ModelNode operation, final XMLExtendedStreamReader reader) throws XMLStreamException {
