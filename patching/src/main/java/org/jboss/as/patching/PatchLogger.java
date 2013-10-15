@@ -50,4 +50,8 @@ public interface PatchLogger extends BasicLogger {
     @Message(id = 16800, value = "Cannot delete file %s")
     void cannotDeleteFile(String name);
 
+    @LogMessage(level = WARN)
+    @Message(id = 16801, value = "Cannot invalidate %s")
+    void cannotInvalidateZip(String name);
+
 }
