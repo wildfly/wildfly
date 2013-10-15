@@ -836,6 +836,15 @@ public interface DomainManagementMessages {
     @Message(id = 15296, value = "The name '%s' conflicts with the standard role name of '%s' - comparison is case insensitive.")
     OperationFailedException scopedRoleStandardName(String scopedRole, String standardRole);
 
+    /**
+     * Error message if the base-role is not one of the standard roles.
+     *
+     * @param baseRole - The base-role supplied.
+     *
+     * @return an {@link OperationFailedException} for the error.
+     */
+    @Message(id = 15297, value = "The base-role '%s' is not one of the standard roles for the current authorization provider.")
+    OperationFailedException badBaseRole(String baseRole);
 
     /*
      * Logging IDs 15200 to 15299 are reserved for domain management, the file DomainManagementLogger also contains messages in
