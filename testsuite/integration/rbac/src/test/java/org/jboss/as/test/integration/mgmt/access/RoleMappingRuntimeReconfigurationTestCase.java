@@ -30,10 +30,16 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.REM
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SUCCESS;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.TYPE;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.USER;
+import static org.jboss.as.test.integration.management.rbac.RbacUtil.SUPERUSER_ROLE;
+import static org.jboss.as.test.integration.management.rbac.RbacUtil.SUPERUSER_USER;
 import static org.jboss.as.test.integration.management.util.ModelUtil.createOpNode;
 import static org.junit.Assert.assertEquals;
 
 import java.io.IOException;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.Set;
 
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.junit.Arquillian;
@@ -63,7 +69,7 @@ import org.junit.runner.RunWith;
  * @author Ladislav Thon <lthon@redhat.com>
  */
 @RunWith(Arquillian.class)
-@ServerSetup(UserRolesMappingServerSetupTask.StandardUsersSetup.class)
+@ServerSetup(RoleMappingRuntimeReconfigurationTestCase.BasicUsersSetup.class)
 public class RoleMappingRuntimeReconfigurationTestCase {
     private static final String ROLE_MAPPING_ADDRESS_BASE = "core-service=management/access=authorization/role-mapping=";
     private static final String OPERATOR_ROLE_MAPPING = ROLE_MAPPING_ADDRESS_BASE + "Operator";
@@ -187,5 +193,26 @@ public class RoleMappingRuntimeReconfigurationTestCase {
         ModelNode result = client.execute(readOp);
         String expected = shouldExist ? SUCCESS : FAILED;
         assertEquals(expected, result.get(OUTCOME).asString());
+    }
+
+    /**
+     * {@link UserRolesMappingServerSetupTask} that adds a single user mapping for each standard
+     * role, with the username the same as the role name.
+     */
+    public static class BasicUsersSetup extends UserRolesMappingServerSetupTask {
+
+        static {
+            Map<String, Set<String>> rolesToUsers = new HashMap<String, Set<String>>();
+            rolesToUsers.put(SUPERUSER_ROLE, Collections.singleton(SUPERUSER_USER));
+            STANDARD_USERS = rolesToUsers;
+        }
+
+        private static final Map<String, Set<String>> STANDARD_USERS;
+
+        public static final StandardUsersSetup INSTANCE = new StandardUsersSetup();
+
+        public BasicUsersSetup() {
+            super(STANDARD_USERS);
+        }
     }
 }

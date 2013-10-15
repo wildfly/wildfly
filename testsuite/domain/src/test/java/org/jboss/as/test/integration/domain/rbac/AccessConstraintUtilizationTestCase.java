@@ -35,7 +35,6 @@ import org.jboss.as.controller.access.management.SensitiveTargetAccessConstraint
 import org.jboss.as.controller.client.ModelControllerClient;
 import org.jboss.as.controller.client.helpers.domain.DomainClient;
 import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
-import org.jboss.as.jdr.JdrReportExtension;
 import org.jboss.as.messaging.MessagingExtension;
 import org.jboss.as.test.integration.domain.suites.SimpleRbacProviderTestSuite;
 import org.jboss.as.test.integration.management.rbac.Outcome;
