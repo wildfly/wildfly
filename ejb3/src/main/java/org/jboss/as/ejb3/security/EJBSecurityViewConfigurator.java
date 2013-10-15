@@ -40,6 +40,7 @@ import org.jboss.as.ee.component.serialization.WriteReplaceInterface;
 import org.jboss.as.ejb3.component.EJBComponentDescription;
 import org.jboss.as.ejb3.component.EJBViewDescription;
 import org.jboss.as.ejb3.component.MethodIntf;
+import org.jboss.as.ejb3.component.session.SessionBeanComponentDescription;
 import org.jboss.as.ejb3.deployment.ApplicableMethodInformation;
 import org.jboss.as.ejb3.security.service.EJBViewMethodSecurityAttributesService;
 import org.jboss.as.server.deployment.DeploymentPhaseContext;
@@ -86,9 +87,18 @@ public class EJBSecurityViewConfigurator implements ViewConfigurator {
             contextID = deploymentUnit.getParent().getName() + "!" + contextID;
         }
 
-        final EJBViewMethodSecurityAttributesService.Builder viewMethodSecurityAttributesServiceBuilder = new EJBViewMethodSecurityAttributesService.Builder(viewClassName);
-        final ServiceName viewMethodSecurityAttributesServiceName = EJBViewMethodSecurityAttributesService.getServiceName(ejbComponentDescription.getApplicationName(), ejbComponentDescription.getModuleName(), ejbComponentDescription.getEJBName(), viewClassName);
-
+        final EJBViewMethodSecurityAttributesService.Builder viewMethodSecurityAttributesServiceBuilder;
+        final ServiceName viewMethodSecurityAttributesServiceName;
+        // The way @WebService view integrates with EJBs is tricky. It marks the fully qualified bean class name as the view name of the service endpoint. Now, if that bean also has a @LocalBean (i.e. no-interface view)
+        // then we now have 2 views with the same view name. In such cases, it's fine to skip one of those views and register this service only once, since essentially, the service is expected to return the same data
+        // for both these views. So here we skip the @WebService view if the bean also has a @LocalBean (no-interface) view and let the EJBViewMethodSecurityAttributesService be built when the no-interface view is processed
+        if (ejbComponentDescription instanceof SessionBeanComponentDescription && MethodIntf.SERVICE_ENDPOINT == ejbViewDescription.getMethodIntf() && ((SessionBeanComponentDescription) ejbComponentDescription).hasNoInterfaceView()) {
+            viewMethodSecurityAttributesServiceBuilder = null;
+            viewMethodSecurityAttributesServiceName = null;
+        } else {
+            viewMethodSecurityAttributesServiceBuilder = new EJBViewMethodSecurityAttributesService.Builder(viewClassName);
+            viewMethodSecurityAttributesServiceName =  EJBViewMethodSecurityAttributesService.getServiceName(ejbComponentDescription.getApplicationName(), ejbComponentDescription.getModuleName(), ejbComponentDescription.getEJBName(), viewClassName);
+        }
         // setup the method specific security interceptor(s)
         boolean beanHasMethodLevelSecurityMetadata = false;
         final List<Method> viewMethods = viewConfiguration.getProxyFactory().getCachedMethods();
@@ -129,23 +139,28 @@ public class EJBSecurityViewConfigurator implements ViewConfigurator {
             // default to "deny access"
             if (denyAccessToMethodsMissingPermissions == null || denyAccessToMethodsMissingPermissions == true) {
                 for (final Method viewMethod : methodsWithoutExplicitSecurityConfiguration) {
-                    // build the EJBViewMethodSecurityAttributesService to expose these security attributes to other components like WS (@see https://issues.jboss.org/browse/WFLY-308)
-                    viewMethodSecurityAttributesServiceBuilder.addMethodSecurityMetadata(viewMethod, EJBMethodSecurityAttribute.denyAll());
+                    if (viewMethodSecurityAttributesServiceBuilder != null) {
+                        // build the EJBViewMethodSecurityAttributesService to expose these security attributes to other components like WS (@see https://issues.jboss.org/browse/WFLY-308)
+                        viewMethodSecurityAttributesServiceBuilder.addMethodSecurityMetadata(viewMethod, EJBMethodSecurityAttribute.denyAll());
+                    }
                     // "deny access" implies we need the authorization interceptor to be added so that it can nuke the invocation
                     final Interceptor authorizationInterceptor = new AuthorizationInterceptor(EJBMethodSecurityAttribute.denyAll(), viewClassName, viewMethod, contextID);
                     viewConfiguration.addViewInterceptor(viewMethod, new ImmediateInterceptorFactory(authorizationInterceptor), InterceptorOrder.View.EJB_SECURITY_AUTHORIZATION_INTERCEPTOR);
                 }
             }
-            final EJBViewMethodSecurityAttributesService viewMethodSecurityAttributesService = viewMethodSecurityAttributesServiceBuilder.build();
-            context.getServiceTarget().addService(viewMethodSecurityAttributesServiceName, viewMethodSecurityAttributesService).install();
+            if (viewMethodSecurityAttributesServiceBuilder != null) {
+                final EJBViewMethodSecurityAttributesService viewMethodSecurityAttributesService = viewMethodSecurityAttributesServiceBuilder.build();
+                context.getServiceTarget().addService(viewMethodSecurityAttributesServiceName, viewMethodSecurityAttributesService).install();
+            }
         } else {
             // if security is not applicable for the EJB, then do *not* add the security related interceptors
             ROOT_LOGGER.debug("Security is *not* enabled on EJB: " + ejbComponentDescription.getEJBName() + ", no security interceptors will apply");
 
-            // we install the service anyway since other components can depend on it
-            final EJBViewMethodSecurityAttributesService viewMethodSecurityAttributesService = viewMethodSecurityAttributesServiceBuilder.build();
-            context.getServiceTarget().addService(viewMethodSecurityAttributesServiceName, viewMethodSecurityAttributesService).install();
-
+            if (viewMethodSecurityAttributesServiceBuilder != null) {
+                // we install the service anyway since other components can depend on it
+                final EJBViewMethodSecurityAttributesService viewMethodSecurityAttributesService = viewMethodSecurityAttributesServiceBuilder.build();
+                context.getServiceTarget().addService(viewMethodSecurityAttributesServiceName, viewMethodSecurityAttributesService).install();
+            }
             return;
         }
 
