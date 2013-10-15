@@ -26,8 +26,6 @@ import java.io.IOException;
 
 import org.jboss.arquillian.container.test.api.RunAsClient;
 import org.jboss.arquillian.junit.Arquillian;
-import org.jboss.as.arquillian.api.ContainerResource;
-import org.jboss.as.arquillian.container.ManagementClient;
 import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.PathElement;
 import org.jboss.as.controller.access.CombinationPolicy;
@@ -103,15 +101,15 @@ public class RejectingCombinationPolicyTestCase extends AbstractRbacTestCase {
     }
 
     private void addMonitorUser(StandardRole role, ModelControllerClient client) throws IOException {
-        RbacUtil.addRoleMapping(role.toString(), client);
-        RbacUtil.addRoleUser(role.toString(), RbacUtil.MONITOR_USER, client);
+        RbacUtil.addRoleMapping(role.getFormalName(), client);
+        RbacUtil.addRoleUser(role.getFormalName(), RbacUtil.MONITOR_USER, client);
     }
 
     private void removeMonitorUser(StandardRole role, ModelControllerClient client) throws IOException {
         try {
-            RbacUtil.removeRoleUser(role.toString(), RbacUtil.MONITOR_USER, client);
+            RbacUtil.removeRoleUser(role.getFormalName(), RbacUtil.MONITOR_USER, client);
         } finally {
-            RbacUtil.removeRoleMapping(role.toString(), client);
+            RbacUtil.removeRoleMapping(role.getFormalName(), client);
         }
     }
 }

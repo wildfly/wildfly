@@ -88,7 +88,6 @@ public class RoleMappingAdd implements OperationStepHandler {
             public void execute(OperationContext context, ModelNode operation) throws OperationFailedException {
                 if (context.isBooting()) {
                     authorizerConfiguration.addRoleMappingImmediate(roleName);
-
                 } else {
                     authorizerConfiguration.addRoleMapping(roleName);
                 }

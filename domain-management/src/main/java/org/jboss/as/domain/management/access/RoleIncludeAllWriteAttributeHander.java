@@ -21,6 +21,8 @@
  */
 package org.jboss.as.domain.management.access;
 
+import java.util.Locale;
+
 import org.jboss.as.controller.AbstractWriteAttributeHandler;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
@@ -55,7 +57,7 @@ public class RoleIncludeAllWriteAttributeHander extends AbstractWriteAttributeHa
             throws OperationFailedException {
 
         String roleName = RoleMappingResourceDefinition.getRoleName(operation);
-        authorizerConfiguration.setRoleMappingIncludeAll(roleName, resolvedValue.asBoolean());
+        authorizerConfiguration.setRoleMappingIncludeAll(roleName.toUpperCase(Locale.ENGLISH), resolvedValue.asBoolean());
         return false;
     }
 
