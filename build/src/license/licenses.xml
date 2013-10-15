@@ -2542,16 +2542,6 @@
       </licenses>
     </dependency>
     <dependency>
-      <groupId>org.jboss.osgi.metadata</groupId>
-      <artifactId>jbosgi-metadata</artifactId>
-      <licenses>
-        <license>
-          <name>GNU Lesser General Public License, Version 2.1</name>
-          <url>http://repository.jboss.com/licenses/lgpl-2.1.txt</url>
-        </license>
-      </licenses>
-    </dependency>
-    <dependency>
       <groupId>org.jboss.remoting</groupId>
       <artifactId>jboss-remoting</artifactId>
       <licenses>

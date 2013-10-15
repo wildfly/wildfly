@@ -1186,10 +1186,6 @@
             <maven-resource group="io.netty" artifact="netty"/>
         </module-def>
 
-        <module-def name="org.jboss.osgi.metadata">
-            <maven-resource group="org.jboss.osgi.metadata" artifact="jbosgi-metadata"/>
-        </module-def>
-
         <module-def name="org.jboss.remote-naming">
             <maven-resource group="org.jboss" artifact="jboss-remote-naming"/>
         </module-def>
