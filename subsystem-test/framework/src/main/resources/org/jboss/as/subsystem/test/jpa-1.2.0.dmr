@@ -1,0 +1,29 @@
+{
+    "model-description" => {
+        "description" => "The configuration of the JPA subsystem.",
+        "attributes" => {
+            "default-extended-persistence-inheritance" => {
+                "type" => STRING,
+                "description" => "Controls how JPA extended persistence context (XPC) inheritance is performed. 'DEEP' shares the extended persistence context at top bean level.  'SHALLOW' the extended persistece context is only shared with the parent bean (never with sibling beans).",
+                "expressions-allowed" => true,
+                "nillable" => true,
+                "default" => "DEEP",
+                "allowed" => [
+                    "DEEP",
+                    "SHALLOW"
+                ]
+            },
+            "default-datasource" => {
+                "type" => STRING,
+                "description" => "The name of the default global datasource.",
+                "expressions-allowed" => true,
+                "nillable" => true,
+                "min-length" => 0L,
+                "max-length" => 2147483647L
+            }
+        },
+        "operations" => undefined,
+        "children" => {}
+    },
+    "address" => [("subsystem" => "jpa")]
+}

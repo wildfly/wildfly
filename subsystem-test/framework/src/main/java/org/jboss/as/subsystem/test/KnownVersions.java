@@ -74,6 +74,7 @@ class KnownVersions {
         addSubsystemVersion(map, "jmx", "1.1.0", CORE_MODEL_7_1_3);
         addSubsystemVersion(map, "jgroups", "1.1.0", CORE_MODEL_7_1_3);
         addSubsystemVersion(map, "jpa", "1.1.0", CORE_MODEL_7_1_3);
+        addSubsystemVersion(map, "jpa", "1.2.0", CORE_MODEL_7_2_0);
         addSubsystemVersion(map, "logging", "1.1.0", CORE_MODEL_7_1_3);
         addSubsystemVersion(map, "logging", "1.2.0", CORE_MODEL_7_2_0);
         addSubsystemVersion(map, "mail", "1.1.0", CORE_MODEL_7_1_3);

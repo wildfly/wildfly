@@ -66,6 +66,18 @@ public class JPA11SubsystemTestCase extends AbstractSubsystemBaseTest {
         testTransformers_1_1_0(ModelTestControllerVersion.V7_1_3_FINAL);
     }
 
+    @Test
+    public void testTransformersEAP6_0_0() throws Exception {
+        ignoreThisTestIfEAPRepositoryIsNotReachable();
+        testTransformers_1_1_0(ModelTestControllerVersion.EAP_6_0_0);
+    }
+
+    @Test
+    public void testTransformersEAP_6_0_1() throws Exception {
+        ignoreThisTestIfEAPRepositoryIsNotReachable();
+        testTransformers_1_1_0(ModelTestControllerVersion.EAP_6_0_1);
+    }
+
     private void testTransformers_1_1_0(ModelTestControllerVersion controllerVersion) throws Exception {
         ModelVersion oldVersion = ModelVersion.create(1, 1, 0);
         KernelServicesBuilder builder = createKernelServicesBuilder(null)
@@ -93,6 +105,18 @@ public class JPA11SubsystemTestCase extends AbstractSubsystemBaseTest {
     @Test
     public void testTransformersRejectExpressions7_1_3() throws Exception {
         testTransformers_1_1_0_RejectExpressions(ModelTestControllerVersion.V7_1_3_FINAL);
+    }
+
+    @Test
+    public void testTransformersRejectExpressionsEAP6_0_0() throws Exception {
+        ignoreThisTestIfEAPRepositoryIsNotReachable();
+        testTransformers_1_1_0_RejectExpressions(ModelTestControllerVersion.EAP_6_0_0);
+    }
+
+    @Test
+    public void testTransformersRejectExpressionsEAP6_0_1() throws Exception {
+        ignoreThisTestIfEAPRepositoryIsNotReachable();
+        testTransformers_1_1_0_RejectExpressions(ModelTestControllerVersion.EAP_6_0_1);
     }
 
     private void testTransformers_1_1_0_RejectExpressions(ModelTestControllerVersion controllerVersion) throws Exception {
@@ -133,5 +157,35 @@ public class JPA11SubsystemTestCase extends AbstractSubsystemBaseTest {
 
         op = Util.getUndefineAttributeOperation(PathAddress.pathAddress(PathElement.pathElement(SUBSYSTEM, JPAExtension.SUBSYSTEM_NAME)), CommonAttributes.DEFAULT_EXTENDEDPERSISTENCE_INHERITANCE);
         ModelTestUtils.checkOutcome(mainServices.executeOperation(oldVersion, mainServices.transformOperation(oldVersion, op)));
+    }
+
+    @Test
+    public void testTransformersEAP6_1_0() throws Exception {
+        ignoreThisTestIfEAPRepositoryIsNotReachable();
+        testTransformers_1_2_0(ModelTestControllerVersion.EAP_6_1_0);
+    }
+
+    @Test
+    public void testTransformersEAP_6_1_1() throws Exception {
+        ignoreThisTestIfEAPRepositoryIsNotReachable();
+        testTransformers_1_2_0(ModelTestControllerVersion.EAP_6_1_1);
+    }
+
+    private void testTransformers_1_2_0(ModelTestControllerVersion controllerVersion) throws Exception {
+        ModelVersion oldVersion = ModelVersion.create(1, 2, 0);
+        KernelServicesBuilder builder = createKernelServicesBuilder(null)
+                .setSubsystemXmlResource("subsystem-1.1.xml");
+
+        builder.createLegacyKernelServicesBuilder(null, controllerVersion, oldVersion)
+                .addMavenResourceURL("org.jboss.as:jboss-as-jpa-spi:" + controllerVersion.getMavenGavVersion())
+                .addMavenResourceURL("org.jboss.as:jboss-as-jpa:" + controllerVersion.getMavenGavVersion());
+
+        KernelServices mainServices = builder.build();
+        KernelServices legacyServices = mainServices.getLegacyServices(oldVersion);
+        Assert.assertNotNull(legacyServices);
+        Assert.assertTrue(mainServices.isSuccessfulBoot());
+        Assert.assertTrue(legacyServices.isSuccessfulBoot());
+
+        checkSubsystemModelTransformation(mainServices, oldVersion);
     }
 }
