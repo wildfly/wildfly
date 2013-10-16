@@ -66,7 +66,7 @@ abstract class ScopedRoleAddHandler extends AbstractAddStepHandler {
         this.authorizerConfiguration = authorizerConfiguration;
     }
 
-    private static Collection<? extends AttributeDefinition> enhanceAttributes(
+    private static Collection<AttributeDefinition> enhanceAttributes(
             final WritableAuthorizerConfiguration authorizerConfiguration, AttributeDefinition... attributes) {
         List<AttributeDefinition> enhanced = new ArrayList<AttributeDefinition>(attributes.length);
         for (AttributeDefinition current : attributes) {
