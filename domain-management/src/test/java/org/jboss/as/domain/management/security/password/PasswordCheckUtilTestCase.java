@@ -1,16 +1,39 @@
+/*
+ * JBoss, Home of Professional Open Source.
+ * Copyright 2013, Red Hat, Inc., and individual contributors
+ * as indicated by the @author tags. See the copyright.txt file in the
+ * distribution for a full listing of individual contributors.
+ *
+ * This is free software; you can redistribute it and/or modify it
+ * under the terms of the GNU Lesser General Public License as
+ * published by the Free Software Foundation; either version 2.1 of
+ * the License, or (at your option) any later version.
+ *
+ * This software is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
+ * Lesser General Public License for more details.
+ *
+ * You should have received a copy of the GNU Lesser General Public
+ * License along with this software; if not, write to the Free
+ * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
+ * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
+ */
 package org.jboss.as.domain.management.security.password;
 
-import org.junit.Test;
-
-import static junit.framework.Assert.assertFalse;
-import static junit.framework.Assert.assertTrue;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertTrue;
 
 import java.io.File;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.io.InputStream;
 import java.net.URISyntaxException;
 import java.net.URL;
 import java.util.List;
 
 import org.jboss.as.domain.management.security.adduser.AddUser;
+import org.junit.Test;
 
 /**
  * @author <a href="mailto:g.grossetie@gmail.com">Guillaume Grossetie</a>
@@ -18,11 +41,23 @@ import org.jboss.as.domain.management.security.adduser.AddUser;
 public class PasswordCheckUtilTestCase {
 
     @Test
-    public void testInitRestriction() throws URISyntaxException {
+    public void testInitRestriction() throws URISyntaxException, IOException {
         final URL resource = PasswordCheckUtilTestCase.class.getResource("add-user.properties");
         File configFile = new File(resource.toURI());
+
+        File addUser = new File(AddUser.CONFIG_FILE);
+        InputStream is = resource.openStream();
+        FileOutputStream fos = new FileOutputStream(addUser);
+        byte[] temp = new byte[1024];
+        int count = -1;
+        while ((count = is.read(temp)) > 0) {
+            fos.write(temp, 0, count);
+        }
+        fos.close();
+        is.close();
+
         System.setProperty(AddUser.CONFIG_FILE, configFile.getAbsolutePath());
-        final List<PasswordRestriction> passwordRestrictions = new PasswordCheckUtil().getPasswordRestrictions("ggrossetie");
+        final List<PasswordRestriction> passwordRestrictions = PasswordCheckUtil.create(addUser).getPasswordRestrictions("ggrossetie");
         assertPasswordRejected(passwordRestrictions, "ggrossetie", "Password must not match username");
         assertPasswordRejected(passwordRestrictions, "abc12", "Password must have at least 8 characters");
         assertPasswordRejected(passwordRestrictions, "abcdefgh", "Password must have at least 2 digits");

@@ -29,7 +29,6 @@ import java.util.Collection;
 import java.util.List;
 
 import org.jboss.as.domain.management.security.password.PasswordCheckResult;
-import org.jboss.as.domain.management.security.password.PasswordCheckUtil;
 import org.jboss.as.domain.management.security.password.RestrictionLevel;
 
 /**
@@ -50,7 +49,7 @@ public class ValidatePasswordState extends AbstractValidationState {
     @Override
     protected Collection<State> getValidationStates() {
         final List<State> validationStates;
-        final boolean relaxRestriction = RestrictionLevel.RELAX.equals(PasswordCheckUtil.INSTANCE.getRestrictionLevel());
+        final boolean relaxRestriction = RestrictionLevel.RELAX.equals(stateValues.getOptions().getCheckUtil().getRestrictionLevel());
         if (!relaxRestriction && !stateValues.getOptions().isEnableDisableMode()) {
             validationStates = new ArrayList<State>(1);
             validationStates.add(getDetailedCheckState());
@@ -69,10 +68,10 @@ public class ValidatePasswordState extends AbstractValidationState {
 
             @Override
             public State execute() {
-                PasswordCheckResult result = PasswordCheckUtil.INSTANCE.check(false, stateValues.getUserName(), stateValues.getPassword());
+                PasswordCheckResult result = stateValues.getOptions().getCheckUtil().check(false, stateValues.getUserName(), stateValues.getPassword());
                 final boolean warnResult = PasswordCheckResult.Result.WARN.equals(result.getResult());
                 final boolean rejectResult = PasswordCheckResult.Result.REJECT.equals(result.getResult());
-                switch (PasswordCheckUtil.INSTANCE.getRestrictionLevel()) {
+                switch (stateValues.getOptions().getCheckUtil().getRestrictionLevel()) {
                     case WARN:
                         if ((warnResult || rejectResult) && !stateValues.isSilentOrNonInteractive()) {
                             return confirmWeakPassword(result);
