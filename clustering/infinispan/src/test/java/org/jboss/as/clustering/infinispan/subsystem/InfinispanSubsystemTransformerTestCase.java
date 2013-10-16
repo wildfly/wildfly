@@ -82,6 +82,19 @@ public class InfinispanSubsystemTransformerTestCase extends OperationTestCaseBas
         testTransformer_1_3_0(ModelTestControllerVersion.V7_1_3_FINAL);
     }
 
+    @Test
+    public void testTransformer600() throws Exception {
+        ignoreThisTestIfEAPRepositoryIsNotReachable();
+        testTransformer_1_3_0(ModelTestControllerVersion.EAP_6_0_0);
+    }
+
+    @Test
+    public void testTransformer601() throws Exception {
+        ignoreThisTestIfEAPRepositoryIsNotReachable();
+        testTransformer_1_3_0(ModelTestControllerVersion.EAP_6_0_1);
+    }
+
+
     private void testTransformer_1_3_0(ModelTestControllerVersion controllerVersion) throws Exception {
         ModelVersion version = ModelVersion.create(1, 3);
         KernelServicesBuilder builder = createKernelServicesBuilder(AdditionalInitialization.MANAGEMENT)
@@ -115,6 +128,18 @@ public class InfinispanSubsystemTransformerTestCase extends OperationTestCaseBas
     @Test
     public void testRejectExpressions713() throws Exception {
         testRejectExpressions_1_3_0(ModelTestControllerVersion.V7_1_3_FINAL);
+    }
+
+    @Test
+    public void testRejectExpressions600() throws Exception {
+        ignoreThisTestIfEAPRepositoryIsNotReachable();
+        testRejectExpressions_1_3_0(ModelTestControllerVersion.EAP_6_0_0);
+    }
+
+    @Test
+    public void testRejectExpressions601() throws Exception {
+        ignoreThisTestIfEAPRepositoryIsNotReachable();
+        testRejectExpressions_1_3_0(ModelTestControllerVersion.EAP_6_0_1);
     }
 
     public void testRejectExpressions_1_3_0(ModelTestControllerVersion controllerVersion) throws Exception {
@@ -181,8 +206,36 @@ public class InfinispanSubsystemTransformerTestCase extends OperationTestCaseBas
         Assert.assertEquals(6, transformedOperation.getTransformedOperation().get(VALUE).asInt());
         Assert.assertFalse(transformedOperation.rejectOperation(result));
         Assert.assertEquals(result, transformedOperation.transformResult(result));
-
     }
+
+    @Test
+    public void testTransformer610() throws Exception {
+        testTransformer_1_4_1(ModelTestControllerVersion.EAP_6_1_0);
+    }
+
+    @Test
+    public void testTransformer611() throws Exception {
+        testTransformer_1_4_1(ModelTestControllerVersion.EAP_6_1_1);
+    }
+
+    private void testTransformer_1_4_1(ModelTestControllerVersion controllerVersion) throws Exception {
+        ModelVersion version = ModelVersion.create(1, 4, 1);
+        KernelServicesBuilder builder = createKernelServicesBuilder(AdditionalInitialization.MANAGEMENT)
+                .setSubsystemXml(getSubsystemXml());
+        builder.createLegacyKernelServicesBuilder(null, controllerVersion, version)
+            .addMavenResourceURL("org.jboss.as:jboss-as-clustering-infinispan:" + controllerVersion.getMavenGavVersion())
+            //TODO storing the model triggers the weirdness mentioned in SubsystemTestDelegate.LegacyKernelServiceInitializerImpl.install()
+            //which is strange since it should be loading it all from the current jboss modules
+            //Also this works in several other tests
+            .dontPersistXml();
+
+        KernelServices mainServices = builder.build();
+        Assert.assertTrue("main services did not boot", mainServices.isSuccessfulBoot());
+        Assert.assertTrue(mainServices.getLegacyServices(version).isSuccessfulBoot());
+
+        checkSubsystemModelTransformation(mainServices, version);
+    }
+
 
     /**
      * Constructs a FailedOperationTransformationConfig which describes all attributes which should accept expressions
