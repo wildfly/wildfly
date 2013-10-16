@@ -1,0 +1,66 @@
+{
+    "model-description" => {
+        "description" => "The OSGi subsystem configuration",
+        "attributes" => {"activation" => {
+            "type" => STRING,
+            "description" => "Activation flag for the OSGi subsystem. Possible values: lazy, eager",
+            "expressions-allowed" => true,
+            "nillable" => false,
+            "default" => "lazy",
+            "allowed" => [
+                "eager",
+                "lazy"
+            ]
+        }},
+        "operations" => undefined,
+        "children" => {
+            "capability" => {
+                "description" => "A framework capability. A capability maps to a JBoss Module in the modules directory or an OSGi bundle in the bundles directory. The identity maps to the resource identifier of the module or bundle",
+                "model-description" => undefined
+            },
+            "property" => {
+                "description" => "A framework property. The identity of the resource defines the property name",
+                "model-description" => undefined
+            }
+        }
+    },
+    "address" => [("subsystem" => "osgi")],
+    "children" => [
+        {
+            "model-description" => {
+                "description" => "A framework capability. A capability maps to a JBoss Module in the modules directory or an OSGi bundle in the bundles directory. The identity maps to the resource identifier of the module or bundle",
+                "attributes" => {"startlevel" => {
+                    "type" => INT,
+                    "description" => "The startlevel for the capability. Can only be specified for OSGi bundles",
+                    "expressions-allowed" => true,
+                    "nillable" => true
+                }},
+                "operations" => undefined,
+                "children" => {}
+            },
+            "address" => [
+                ("subsystem" => "osgi"),
+                ("capability" => "*")
+            ]
+        },
+        {
+            "model-description" => {
+                "description" => "A framework property. The identity of the resource defines the property name",
+                "attributes" => {"value" => {
+                    "type" => STRING,
+                    "description" => "The framework property value",
+                    "expressions-allowed" => true,
+                    "nillable" => false,
+                    "min-length" => 1L,
+                    "max-length" => 2147483647L
+                }},
+                "operations" => undefined,
+                "children" => {}
+            },
+            "address" => [
+                ("subsystem" => "osgi"),
+                ("property" => "*")
+            ]
+        }
+    ]
+}

@@ -255,6 +255,7 @@ public class OSGiSubsystemTestCase extends AbstractSubsystemBaseTest {
 
         compare(modelA, modelB);
     }
+
     @Test
     public void testTransformerAS712() throws Exception {
         testTransformers1_0_0(ModelTestControllerVersion.V7_1_2_FINAL, "org.jboss.as:jboss-as-osgi-service:7.1.2.Final", "org.jboss.osgi.framework:jbosgi-framework-core:1.3.0.Final");
@@ -263,6 +264,16 @@ public class OSGiSubsystemTestCase extends AbstractSubsystemBaseTest {
     @Test
     public void testTransformerAS713() throws Exception {
         testTransformers1_0_0(ModelTestControllerVersion.V7_1_3_FINAL, "org.jboss.as:jboss-as-osgi-service:7.1.3.Final", "org.jboss.osgi.framework:jbosgi-framework-core:1.3.1.CR1");
+    }
+
+    @Test
+    public void testTransformerEAP600() throws Exception {
+        testTransformers1_0_0(ModelTestControllerVersion.EAP_6_0_0, "org.jboss.as:jboss-as-osgi-service:" + ModelTestControllerVersion.EAP_6_0_0.getMavenGavVersion(), "org.jboss.osgi.framework:jbosgi-framework-core:1.3.0.Final-redhat-1");
+    }
+
+    @Test
+    public void testTransformerEAP601() throws Exception {
+        testTransformers1_0_0(ModelTestControllerVersion.EAP_6_0_1, "org.jboss.as:jboss-as-osgi-service:" + ModelTestControllerVersion.EAP_6_0_1.getMavenGavVersion(), "org.jboss.osgi.framework:jbosgi-framework-core:1.3.1.CR1-redhat-1");
     }
 
     private void testTransformers1_0_0(ModelTestControllerVersion controllerVersion, String... mavenGAVs) throws Exception {
@@ -298,6 +309,7 @@ public class OSGiSubsystemTestCase extends AbstractSubsystemBaseTest {
         Assert.assertFalse(legacyModule1.has(ModelConstants.STARTLEVEL));
     }
 
+
     @Test
     public void testRejectExpressionsAS712() throws Exception {
         testRejectExpressions1_0_0(ModelTestControllerVersion.V7_1_2_FINAL, "org.jboss.as:jboss-as-osgi-service:7.1.2.Final", "org.jboss.osgi.framework:jbosgi-framework-core:1.3.0.Final");
@@ -306,6 +318,16 @@ public class OSGiSubsystemTestCase extends AbstractSubsystemBaseTest {
     @Test
     public void testRejectExpressionsAS713() throws Exception {
         testRejectExpressions1_0_0(ModelTestControllerVersion.V7_1_3_FINAL, "org.jboss.as:jboss-as-osgi-service:7.1.3.Final", "org.jboss.osgi.framework:jbosgi-framework-core:1.3.1.CR1");
+    }
+
+    @Test
+    public void testRejectExpressionsEAP600() throws Exception {
+        testRejectExpressions1_0_0(ModelTestControllerVersion.EAP_6_0_0, "org.jboss.as:jboss-as-osgi-service:" + ModelTestControllerVersion.EAP_6_0_0.getMavenGavVersion(), "org.jboss.osgi.framework:jbosgi-framework-core:1.3.0.Final-redhat-1");
+    }
+
+    @Test
+    public void testRejectExpressionsEAP601() throws Exception {
+        testRejectExpressions1_0_0(ModelTestControllerVersion.EAP_6_0_1, "org.jboss.as:jboss-as-osgi-service:" + ModelTestControllerVersion.EAP_6_0_1.getMavenGavVersion(), "org.jboss.osgi.framework:jbosgi-framework-core:1.3.1.CR1-redhat-1");
     }
 
     private void testRejectExpressions1_0_0(ModelTestControllerVersion controllerVersion, String... mavenGAVs) throws Exception {
@@ -338,6 +360,35 @@ public class OSGiSubsystemTestCase extends AbstractSubsystemBaseTest {
                                         .setReadOnly(FrameworkCapabilityResource.STARTLEVEL))
         );
     }
+
+
+    @Test
+    public void testTransformerEAP610() throws Exception {
+        testTransformers1_1_0(ModelTestControllerVersion.EAP_6_1_0, "org.jboss.as:jboss-as-osgi-service:" + ModelTestControllerVersion.EAP_6_1_0.getMavenGavVersion(), "org.jboss.osgi.framework:jbosgi-framework-core:2.1.0.Final-redhat-1");
+    }
+
+    @Test
+    public void testTransformerEAP611() throws Exception {
+        testTransformers1_1_0(ModelTestControllerVersion.EAP_6_1_1, "org.jboss.as:jboss-as-osgi-service:" + ModelTestControllerVersion.EAP_6_1_1.getMavenGavVersion(), "org.jboss.osgi.framework:jbosgi-framework-core:2.1.0.Final-redhat-1");
+    }
+
+    private void testTransformers1_1_0(ModelTestControllerVersion controllerVersion, String... mavenGAVs) throws Exception {
+        ModelVersion modelVersion = ModelVersion.create(1, 1, 0);
+        KernelServicesBuilder builder = createKernelServicesBuilder(AdditionalInitialization.MANAGEMENT)
+                .setSubsystemXml(SUBSYSTEM_XML_1_2_EXPRESSIONS);
+
+        LegacyKernelServicesInitializer legacyInitializer = builder.createLegacyKernelServicesBuilder(AdditionalInitialization.MANAGEMENT, controllerVersion, modelVersion);
+        for (String mavenGAV : mavenGAVs) {
+            legacyInitializer.addMavenResourceURL(mavenGAV);
+        }
+
+        KernelServices mainServices = builder.build();
+        Assert.assertTrue(mainServices.isSuccessfulBoot());
+        Assert.assertTrue(mainServices.getLegacyServices(modelVersion).isSuccessfulBoot());
+
+        checkSubsystemModelTransformation(mainServices, modelVersion);
+    }
+
 
     private void assertOSGiSubsystemAddress(ModelNode address) {
         PathAddress addr = PathAddress.pathAddress(address);
