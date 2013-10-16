@@ -26,8 +26,8 @@ import static org.junit.Assert.assertTrue;
 
 import java.io.IOException;
 import java.util.List;
-import org.jboss.as.connector.logging.ConnectorLogger;
 
+import org.jboss.as.connector.logging.ConnectorLogger;
 import org.jboss.as.controller.ModelVersion;
 import org.jboss.as.controller.PathAddress;
 import org.jboss.as.model.test.FailedOperationTransformationConfig;
@@ -84,6 +84,18 @@ public class DatasourcesSubsystemTestCase extends AbstractSubsystemBaseTest {
     }
 
     @Test
+    public void testTransformerEAP600() throws Exception {
+        ignoreThisTestIfEAPRepositoryIsNotReachable();
+        testTransformer1_1_0("datasources-full110.xml", ModelTestControllerVersion.EAP_6_0_0);
+    }
+
+    @Test
+    public void testTransformerEAP601() throws Exception {
+        ignoreThisTestIfEAPRepositoryIsNotReachable();
+        testTransformer1_1_0("datasources-full110.xml", ModelTestControllerVersion.EAP_6_0_1);
+    }
+
+    @Test
     public void tesExpressionsAS712() throws Exception {
         //this file contain expression for all supported fields except reauth-plugin-properties, exception-sorter-properties,
         // stale-connection-checker-properties, valid-connection-checker-properties, recovery-plugin-properties
@@ -97,6 +109,36 @@ public class DatasourcesSubsystemTestCase extends AbstractSubsystemBaseTest {
         // stale-connection-checker-properties, valid-connection-checker-properties, recovery-plugin-properties
         // for a limitation in test suite not permitting to have expression in type LIST or OBJECT for legacyServices
         testRejectTransformers1_1_0("datasources-full-expression110.xml", ModelTestControllerVersion.V7_1_3_FINAL);
+    }
+
+    @Test
+    public void tesExpressionsEAP600() throws Exception {
+        //this file contain expression for all supported fields except reauth-plugin-properties, exception-sorter-properties,
+        // stale-connection-checker-properties, valid-connection-checker-properties, recovery-plugin-properties
+        // for a limitation in test suite not permitting to have expression in type LIST or OBJECT for legacyServices
+        ignoreThisTestIfEAPRepositoryIsNotReachable();
+        testRejectTransformers1_1_0("datasources-full-expression110.xml", ModelTestControllerVersion.EAP_6_0_0);
+    }
+
+    @Test
+    public void testExpressionsEAP601() throws Exception {
+        //this file contain expression for all supported fields except reauth-plugin-properties, exception-sorter-properties,
+        // stale-connection-checker-properties, valid-connection-checker-properties, recovery-plugin-properties
+        // for a limitation in test suite not permitting to have expression in type LIST or OBJECT for legacyServices
+        ignoreThisTestIfEAPRepositoryIsNotReachable();
+        testRejectTransformers1_1_0("datasources-full-expression110.xml", ModelTestControllerVersion.EAP_6_0_1);
+    }
+
+    @Test
+    public void testTransformersEAP610() throws Exception {
+        ignoreThisTestIfEAPRepositoryIsNotReachable();
+        testTransformer1_1_2("datasources-full-expression110.xml", ModelTestControllerVersion.EAP_6_1_0);
+    }
+
+    @Test
+    public void testTransformersEAP611() throws Exception {
+        ignoreThisTestIfEAPRepositoryIsNotReachable();
+        testTransformer1_1_2("datasources-full-expression110.xml", ModelTestControllerVersion.EAP_6_1_1);
     }
 
 
@@ -127,6 +169,27 @@ public class DatasourcesSubsystemTestCase extends AbstractSubsystemBaseTest {
         checkSubsystemModelTransformation(mainServices, modelVersion);
     }
 
+    private void testTransformer1_1_2(String subsystemXml, ModelTestControllerVersion controllerVersion) throws Exception {
+        ModelVersion modelVersion = ModelVersion.create(1, 1, 2); //The old model version
+        //Use the non-runtime version of the extension which will happen on the HC
+        KernelServicesBuilder builder = createKernelServicesBuilder(AdditionalInitialization.MANAGEMENT)
+                .setSubsystemXmlResource(subsystemXml);
+
+        // Add legacy subsystems
+        builder.createLegacyKernelServicesBuilder(null,controllerVersion,  modelVersion)
+                  .addMavenResourceURL("org.jboss.as:jboss-as-connector:" + controllerVersion.getMavenGavVersion())
+                  .setExtensionClassName("org.jboss.as.connector.subsystems.datasources.DataSourcesExtension")
+                  .configureReverseControllerCheck(AdditionalInitialization.MANAGEMENT, null)
+                  .excludeFromParent(SingleClassFilter.createFilter(ConnectorLogger.class));
+
+        KernelServices mainServices = builder.build();
+        Assert.assertTrue(mainServices.isSuccessfulBoot());
+        KernelServices legacyServices = mainServices.getLegacyServices(modelVersion);
+        Assert.assertTrue(legacyServices.isSuccessfulBoot());
+        Assert.assertNotNull(legacyServices);
+
+        checkSubsystemModelTransformation(mainServices, modelVersion);
+    }
 
     public void testRejectTransformers1_1_0(String subsystemXml, ModelTestControllerVersion controllerVersion) throws Exception {
         ModelVersion modelVersion = ModelVersion.create(1, 1, 0); //The old model version

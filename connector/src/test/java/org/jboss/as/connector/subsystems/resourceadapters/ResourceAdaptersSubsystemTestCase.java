@@ -25,8 +25,8 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SUB
 
 import java.io.IOException;
 import java.util.List;
-import org.jboss.as.connector.logging.ConnectorLogger;
 
+import org.jboss.as.connector.logging.ConnectorLogger;
 import org.jboss.as.controller.ModelVersion;
 import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.PathElement;
@@ -88,6 +88,18 @@ public class ResourceAdaptersSubsystemTestCase extends AbstractSubsystemBaseTest
     }
 
     @Test
+    public void testTransformerEAP600() throws Exception {
+        ignoreThisTestIfEAPRepositoryIsNotReachable();
+        testTransformer1_1_0("resource-adapters-xapool.xml", ModelTestControllerVersion.EAP_6_0_0);
+    }
+
+    @Test
+    public void testTransformerEAP601() throws Exception {
+        ignoreThisTestIfEAPRepositoryIsNotReachable();
+        testTransformer1_1_0("resource-adapters-xapool.xml", ModelTestControllerVersion.EAP_6_0_1);
+    }
+
+    @Test
     public void tesExpressionsAS712() throws Exception {
         //this file contain expression for all supported fields except bean-validation-groups and recovery-plugin-properties
         // for a limitation in test suite not permitting to have expression in type LIST or OBJECT for legacyServices
@@ -101,6 +113,31 @@ public class ResourceAdaptersSubsystemTestCase extends AbstractSubsystemBaseTest
         testTransformer1_1_0("resource-adapters-xapool-expression2.xml", ModelTestControllerVersion.V7_1_3_FINAL);
     }
 
+    @Test
+    public void tesExpressionsEAP600() throws Exception {
+        //this file contain expression for all supported fields except bean-validation-groups and recovery-plugin-properties
+        // for a limitation in test suite not permitting to have expression in type LIST or OBJECT for legacyServices
+        testTransformer1_1_0("resource-adapters-xapool-expression2.xml", ModelTestControllerVersion.EAP_6_0_0);
+    }
+
+    @Test
+    public void testExpressionsEAP601() throws Exception {
+        //this file contain expression for all supported fields except bean-validation-groups and recovery-plugin-properties
+        // for a limitation in test suite not permitting to have expression in type LIST or OBJECT for legacyServices
+        testTransformer1_1_0("resource-adapters-xapool-expression2.xml", ModelTestControllerVersion.EAP_6_0_1);
+    }
+
+    @Test
+    public void testTransformerEAP610() throws Exception {
+        ignoreThisTestIfEAPRepositoryIsNotReachable();
+        testTransformer1_2_0("resource-adapters-pool-expression.xml", ModelTestControllerVersion.EAP_6_1_0);
+    }
+
+    @Test
+    public void testTransformerEAP611() throws Exception {
+        ignoreThisTestIfEAPRepositoryIsNotReachable();
+        testTransformer1_2_0("resource-adapters-pool-expression.xml", ModelTestControllerVersion.EAP_6_1_1);
+    }
 
     /**
      * Tests transformation of model from 1.1.1 version into 1.1.0 version.
@@ -132,6 +169,31 @@ public class ResourceAdaptersSubsystemTestCase extends AbstractSubsystemBaseTest
         checkSubsystemModelTransformation(mainServices, modelVersion);
     }
 
+    private void testTransformer1_2_0(String subsystemXml, ModelTestControllerVersion controllerVersion) throws Exception {
+        ModelVersion modelVersion = ModelVersion.create(1, 2, 0); //The old model version
+        //Use the non-runtime version of the extension which will happen on the HC
+        KernelServicesBuilder builder = createKernelServicesBuilder(AdditionalInitialization.MANAGEMENT)
+                .setSubsystemXmlResource(subsystemXml);
+
+        // Add legacy subsystems
+        builder.createLegacyKernelServicesBuilder(null, controllerVersion, modelVersion)
+                .addMavenResourceURL("org.jboss.as:jboss-as-connector:" + controllerVersion.getMavenGavVersion())
+                .setExtensionClassName("org.jboss.as.connector.subsystems.resourceadapters.ResourceAdaptersExtension")
+                .addOperationValidationResolve("add", PathAddress.pathAddress(
+                        PathElement.pathElement(SUBSYSTEM, mainSubsystemName),
+                        PathElement.pathElement("resource-adapter", "*"),
+                        PathElement.pathElement("connection-definitions", "*")))
+                .configureReverseControllerCheck(AdditionalInitialization.MANAGEMENT, null)
+                .excludeFromParent(SingleClassFilter.createFilter(ConnectorLogger.class));
+
+        KernelServices mainServices = builder.build();
+        org.junit.Assert.assertTrue(mainServices.isSuccessfulBoot());
+        KernelServices legacyServices = mainServices.getLegacyServices(modelVersion);
+        org.junit.Assert.assertTrue(legacyServices.isSuccessfulBoot());
+        org.junit.Assert.assertNotNull(legacyServices);
+
+        checkSubsystemModelTransformation(mainServices, modelVersion);
+    }
 
     protected AdditionalInitialization createAdditionalInitialization() {
         return AdditionalInitialization.MANAGEMENT;

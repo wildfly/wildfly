@@ -26,8 +26,8 @@ import static org.jboss.as.connector.subsystems.jca.Constants.WORKMANAGER_SHORT_
 
 import java.io.IOException;
 import java.util.List;
-import org.jboss.as.connector.logging.ConnectorLogger;
 
+import org.jboss.as.connector.logging.ConnectorLogger;
 import org.jboss.as.controller.ModelVersion;
 import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.PathElement;
@@ -80,6 +80,18 @@ public class JcaSubsystemTestCase extends AbstractSubsystemBaseTest {
         testTransformer1_1_0(ModelTestControllerVersion.V7_1_3_FINAL);
     }
 
+    @Test
+    public void testTransformerEAP600() throws Exception {
+        ignoreThisTestIfEAPRepositoryIsNotReachable();
+        testTransformer1_1_0(ModelTestControllerVersion.EAP_6_0_0);
+    }
+
+    @Test
+    public void testTransformerEAP601() throws Exception {
+        ignoreThisTestIfEAPRepositoryIsNotReachable();
+        testTransformer1_1_0(ModelTestControllerVersion.EAP_6_0_1);
+    }
+
     /**
      * Tests transformation of model from 1.2.0 version into 1.1.0 version.
      *
@@ -115,6 +127,18 @@ public class JcaSubsystemTestCase extends AbstractSubsystemBaseTest {
         testRejectExpressions1_1_0(ModelTestControllerVersion.V7_1_3_FINAL);
     }
 
+    @Test
+    public void testRejectExpressionsEAP600() throws Exception {
+        ignoreThisTestIfEAPRepositoryIsNotReachable();
+        testRejectExpressions1_1_0(ModelTestControllerVersion.EAP_6_0_0);
+    }
+
+    @Test
+    public void testRejectExpressionsEAP601() throws Exception {
+        ignoreThisTestIfEAPRepositoryIsNotReachable();
+        testRejectExpressions1_1_0(ModelTestControllerVersion.EAP_6_0_1);
+    }
+
     private void testRejectExpressions1_1_0(ModelTestControllerVersion controllerVersion) throws Exception {
         // create builder for current subsystem version
         KernelServicesBuilder builder = createKernelServicesBuilder(createAdditionalInitialization());
@@ -145,6 +169,38 @@ public class JcaSubsystemTestCase extends AbstractSubsystemBaseTest {
                                 PathElement.pathElement(WORKMANAGER_LONG_RUNNING)),
                                 new FailedOperationTransformationConfig.RejectExpressionsConfig(PoolAttributeDefinitions.ALLOW_CORE_TIMEOUT, PoolAttributeDefinitions.KEEPALIVE_TIME))
         );
+    }
+
+    @Test
+    public void testTransformerEAP610() throws Exception {
+        ignoreThisTestIfEAPRepositoryIsNotReachable();
+        testTransformer1_2_0(ModelTestControllerVersion.EAP_6_1_0);
+    }
+
+    @Test
+    public void testTransformerEAP611() throws Exception {
+        ignoreThisTestIfEAPRepositoryIsNotReachable();
+        testTransformer1_2_0(ModelTestControllerVersion.EAP_6_1_1);
+    }
+
+    private void testTransformer1_2_0(ModelTestControllerVersion controllerVersion) throws Exception {
+        String subsystemXml = "jca-full-expression.xml";   //This has no expressions not understood by 1.1.0
+        ModelVersion modelVersion = ModelVersion.create(1, 2, 0); //The old model version
+        //Use the non-runtime version of the extension which will happen on the HC
+        KernelServicesBuilder builder = createKernelServicesBuilder(AdditionalInitialization.MANAGEMENT)
+                .setSubsystemXmlResource(subsystemXml);
+
+        // Add legacy subsystems
+        builder.createLegacyKernelServicesBuilder(null, controllerVersion, modelVersion)
+                .addMavenResourceURL("org.jboss.as:jboss-as-connector:" + controllerVersion.getMavenGavVersion())
+                .addMavenResourceURL("org.jboss.as:jboss-as-threads:" + controllerVersion.getMavenGavVersion())
+                .setExtensionClassName("org.jboss.as.connector.subsystems.jca.JcaExtension")
+                 .excludeFromParent(SingleClassFilter.createFilter(ConnectorLogger.class));
+
+        KernelServices mainServices = builder.build();
+        KernelServices legacyServices = mainServices.getLegacyServices(modelVersion);
+        Assert.assertNotNull(legacyServices);
+        checkSubsystemModelTransformation(mainServices, modelVersion);
     }
 
     @Override

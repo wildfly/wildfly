@@ -43,6 +43,7 @@
                         <include>**/*TestCase.java</include>
                     </includes>
                     <enableAssertions>false</enableAssertions>
+                    <forkMode>always</forkMode> 
                 </configuration>
             </plugin>
             <plugin>
