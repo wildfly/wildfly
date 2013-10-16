@@ -27,7 +27,9 @@ import org.jboss.dmr.ModelNode;
 import java.util.Collection;
 
 /**
- * Simple {@link AbstractWriteAttributeHandler} that always triggers putting the process in a restart required state.
+ * Simple {@link AbstractWriteAttributeHandler} that triggers putting the process in a restart-required state
+ * if attribute that has flag {@link org.jboss.as.controller.registry.AttributeAccess.Flag#RESTART_JVM}
+ * otherwise it puts process in reload-required state.
  *
  * @author Brian Stansberry (c) 2011 Red Hat Inc.
  */
