@@ -22,6 +22,8 @@
 
 package org.jboss.as.test.integration.domain.rbac;
 
+import static org.jboss.as.controller.PathAddress.pathAddress;
+import static org.jboss.as.controller.PathElement.pathElement;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ADD;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.BASE_ROLE;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.BYTES;
@@ -172,6 +174,8 @@ public abstract class AbstractServerGroupScopedRolesTestCase extends AbstractRba
         testWFLY1916(client, Outcome.UNAUTHORIZED, MONITOR_USER);
 
         testWLFY2299(client, Outcome.UNAUTHORIZED, MONITOR_USER);
+
+        testWFLY2190(client, MONITOR_USER);
     }
 
     @Test
@@ -206,6 +210,8 @@ public abstract class AbstractServerGroupScopedRolesTestCase extends AbstractRba
         testWFLY1916(client, Outcome.SUCCESS, OPERATOR_USER);
 
         testWLFY2299(client, Outcome.UNAUTHORIZED, OPERATOR_USER);
+
+        testWFLY2190(client, MONITOR_USER);
     }
 
     @Test
@@ -240,6 +246,8 @@ public abstract class AbstractServerGroupScopedRolesTestCase extends AbstractRba
         testWFLY1916(client, Outcome.SUCCESS, MAINTAINER_USER);
 
         testWLFY2299(client, Outcome.SUCCESS, MAINTAINER_USER);
+
+        testWFLY2190(client, MAINTAINER_USER);
     }
 
     @Test
@@ -274,6 +282,8 @@ public abstract class AbstractServerGroupScopedRolesTestCase extends AbstractRba
         testWFLY1916(client, Outcome.SUCCESS, DEPLOYER_USER);
 
         testWLFY2299(client, Outcome.UNAUTHORIZED, DEPLOYER_USER);
+
+        testWFLY2190(client, DEPLOYER_USER);
     }
 
     @Test
@@ -308,6 +318,8 @@ public abstract class AbstractServerGroupScopedRolesTestCase extends AbstractRba
         testWFLY1916(client, Outcome.SUCCESS, ADMINISTRATOR_USER);
 
         testWLFY2299(client, Outcome.SUCCESS, ADMINISTRATOR_USER);
+
+        testWFLY2190(client, ADMINISTRATOR_USER);
     }
 
     @Test
@@ -342,6 +354,8 @@ public abstract class AbstractServerGroupScopedRolesTestCase extends AbstractRba
         testWFLY1916(client, Outcome.UNAUTHORIZED, AUDITOR_USER);
 
         testWLFY2299(client, Outcome.UNAUTHORIZED, AUDITOR_USER);
+
+        testWFLY2190(client, AUDITOR_USER);
     }
 
     @Test
@@ -376,6 +390,8 @@ public abstract class AbstractServerGroupScopedRolesTestCase extends AbstractRba
         testWFLY1916(client, Outcome.SUCCESS, SUPERUSER_USER);
 
         testWLFY2299(client, Outcome.SUCCESS, SUPERUSER_USER);
+
+        testWFLY2190(client, SUPERUSER_USER);
     }
 
 
@@ -407,5 +423,19 @@ public abstract class AbstractServerGroupScopedRolesTestCase extends AbstractRba
         Assert.assertTrue(writeConfig.isDefined());
         Assert.assertEquals(expected == Outcome.SUCCESS, writeConfig.asBoolean());
 
+    }
+
+    private void testWFLY2190(ModelControllerClient client, String... roles) throws IOException {
+        ModelNode operation = Util.createOperation(ADD, pathAddress(pathElement(SERVER_GROUP, "XXX")));
+        configureRoles(operation, roles);
+        RbacUtil.executeOperation(client, operation, Outcome.UNAUTHORIZED);
+
+        operation = Util.createOperation(REMOVE, pathAddress(pathElement(SERVER_GROUP, SERVER_GROUP_A)));
+        configureRoles(operation, roles);
+        RbacUtil.executeOperation(client, operation, Outcome.UNAUTHORIZED);
+
+        operation = Util.createOperation(REMOVE, pathAddress(pathElement(SERVER_GROUP, SERVER_GROUP_B)));
+        configureRoles(operation, roles);
+        RbacUtil.executeOperation(client, operation, Outcome.UNAUTHORIZED); // should really be Outcome.HIDDEN, see WFLY-2317
     }
 }
