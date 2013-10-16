@@ -46,9 +46,10 @@ public class SimplePasswordStrengthCheckerTestCase {
     private Keyboard keyboard = new SimpleKeyboard();
     private Dictionary dictionary = new SimpleDictionary();
 
-    public static final PasswordRestriction ALPHA_RESTRICTION = PasswordCheckUtil.INSTANCE.createAlphaRestriction(1);
-    public static final PasswordRestriction SYMBOL_RESTRICTION = PasswordCheckUtil.INSTANCE.createSymbolRestriction(1);
-    public static final PasswordRestriction DIGIT_RESTRICTION = PasswordCheckUtil.INSTANCE.createDigitRestriction(1);
+    public static final PasswordCheckUtil PCU = PasswordCheckUtil.create(null);
+    public static final PasswordRestriction ALPHA_RESTRICTION = PCU.createAlphaRestriction(1);
+    public static final PasswordRestriction SYMBOL_RESTRICTION = PCU.createSymbolRestriction(1);
+    public static final PasswordRestriction DIGIT_RESTRICTION = PCU.createDigitRestriction(1);
     public static final LengthRestriction LENGTH_RESTRICTION = new LengthRestriction(8);
 
     @Test

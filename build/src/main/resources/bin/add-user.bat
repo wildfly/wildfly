@@ -62,7 +62,7 @@ if "x%JBOSS_MODULEPATH%" == "x" (
 rem Uncomment to override standalone and domain user location
 rem set "JAVA_OPTS=%JAVA_OPTS% -Djboss.server.config.user.dir=..\standalone\configuration -Djboss.domain.config.user.dir=..\domain\configuration"
 
-set "JAVA_OPTS=%JAVA_OPTS% -Djboss.adduser.config=.\add-user.properties"
+set "JAVA_OPTS=%JAVA_OPTS%"
 
 "%JAVA%" %JAVA_OPTS% ^
     -jar "%JBOSS_RUNJAR%" ^

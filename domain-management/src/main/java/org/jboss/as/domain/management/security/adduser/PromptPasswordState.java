@@ -29,7 +29,6 @@ import java.util.Arrays;
 import java.util.List;
 
 import org.jboss.as.domain.management.DomainManagementMessages;
-import org.jboss.as.domain.management.security.password.PasswordCheckUtil;
 import org.jboss.as.domain.management.security.password.PasswordRestriction;
 import org.jboss.as.domain.management.security.password.RestrictionLevel;
 
@@ -59,8 +58,8 @@ public class PromptPasswordState implements State {
         if (stateValues.isSilentOrNonInteractive() == false) {
             if (rePrompt == false) {
                 // Password requirements.
-                if (!RestrictionLevel.RELAX.equals(PasswordCheckUtil.INSTANCE.getRestrictionLevel())) {
-                    final List<PasswordRestriction> passwordRestrictions = PasswordCheckUtil.INSTANCE.getPasswordRestrictions(stateValues.getUserName());
+                if (!RestrictionLevel.RELAX.equals(stateValues.getOptions().getCheckUtil().getRestrictionLevel())) {
+                    final List<PasswordRestriction> passwordRestrictions = stateValues.getOptions().getCheckUtil().getPasswordRestrictions(stateValues.getUserName());
                     theConsole.printf(DomainManagementMessages.MESSAGES.passwordRequirements());
                     theConsole.printf(NEW_LINE);
                     for (PasswordRestriction passwordRestriction : passwordRestrictions) {
