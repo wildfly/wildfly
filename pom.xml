@@ -154,7 +154,7 @@
         <version.org.jboss.aesh>0.33.8.redhat-1</version.org.jboss.aesh>
         <version.org.jboss.arquillian.core>1.0.0.Final</version.org.jboss.arquillian.core>
         <version.org.jboss.arquillian.osgi>1.0.3.Final</version.org.jboss.arquillian.osgi>
-        <version.org.jboss.hal.release-stream>2.0.3.Final-redhat-1</version.org.jboss.hal.release-stream>
+        <version.org.jboss.hal.release-stream>2.0.4.Final</version.org.jboss.hal.release-stream>
         <version.org.jboss.as.jbossweb-native>2.0.10.Final</version.org.jboss.as.jbossweb-native>
         <version.org.jboss.byteman>2.0.1-redhat-2</version.org.jboss.byteman>
         <version.org.jboss.classfilewriter>1.0.3.Final-redhat-1</version.org.jboss.classfilewriter>
