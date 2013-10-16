@@ -103,6 +103,18 @@ public class JacORBTransformersTestCase extends AbstractSubsystemTest {
         testTransformers(ModelTestControllerVersion.V7_1_3_FINAL);
     }
 
+    @Test
+    public void testTransformersEAP600() throws Exception {
+        ignoreThisTestIfEAPRepositoryIsNotReachable();
+        testTransformers(ModelTestControllerVersion.EAP_6_0_0);
+    }
+
+    @Test
+    public void testTransformersEAP601() throws Exception {
+        ignoreThisTestIfEAPRepositoryIsNotReachable();
+        testTransformers(ModelTestControllerVersion.EAP_6_0_1);
+    }
+
     private void testTransformers(ModelTestControllerVersion controllerVersion) throws Exception {
         KernelServicesBuilder builder = createKernelServicesBuilder(AdditionalInitialization.MANAGEMENT)
                 .setSubsystemXml(readResource("subsystem-1.2.xml"));
@@ -135,6 +147,18 @@ public class JacORBTransformersTestCase extends AbstractSubsystemTest {
         testTransformersSecurityIdentity_1_1_0(ModelTestControllerVersion.V7_1_3_FINAL);
     }
 
+    @Test
+    public void testTransformersSecurityIdentityEAP600() throws Exception {
+        ignoreThisTestIfEAPRepositoryIsNotReachable();
+        testTransformersSecurityIdentity_1_1_0(ModelTestControllerVersion.EAP_6_0_0);
+    }
+
+    @Test
+    public void testTransformersSecurityIdentityEAP601() throws Exception {
+        ignoreThisTestIfEAPRepositoryIsNotReachable();
+        testTransformersSecurityIdentity_1_1_0(ModelTestControllerVersion.EAP_6_0_1);
+    }
+
     private void testTransformersSecurityIdentity_1_1_0(ModelTestControllerVersion controllerVersion) throws Exception {
         KernelServicesBuilder builder = createKernelServicesBuilder(AdditionalInitialization.MANAGEMENT)
                 .setSubsystemXml(readResource("subsystem-1.2-security-identity.xml"));
@@ -165,6 +189,18 @@ public class JacORBTransformersTestCase extends AbstractSubsystemTest {
     @Test
     public void testTransformersSecurityClient713() throws Exception {
         testTransformersSecurityClient_1_1_0(ModelTestControllerVersion.V7_1_3_FINAL);
+    }
+
+    @Test
+    public void testTransformersSecurityClientEAP600() throws Exception {
+        ignoreThisTestIfEAPRepositoryIsNotReachable();
+        testTransformersSecurityClient_1_1_0(ModelTestControllerVersion.EAP_6_0_0);
+    }
+
+    @Test
+    public void testTransformersSecurityClientEAP601() throws Exception {
+        ignoreThisTestIfEAPRepositoryIsNotReachable();
+        testTransformersSecurityClient_1_1_0(ModelTestControllerVersion.EAP_6_0_1);
     }
 
     private void testTransformersSecurityClient_1_1_0(ModelTestControllerVersion controllerVersion) throws Exception {
@@ -225,6 +261,19 @@ public class JacORBTransformersTestCase extends AbstractSubsystemTest {
     @Test
     public void testTransformersRejectedExpressions713() throws Exception {
         testTransformersRejectedExpressions(ModelTestControllerVersion.V7_1_3_FINAL);
+    }
+
+    @Test
+    public void testTransformersRejectedExpressionsEAP600() throws Exception {
+        ignoreThisTestIfEAPRepositoryIsNotReachable();
+        testTransformersRejectedExpressions(ModelTestControllerVersion.EAP_6_0_0);
+    }
+
+
+    @Test
+    public void testTransformersRejectedExpressionsEAP601() throws Exception {
+        ignoreThisTestIfEAPRepositoryIsNotReachable();
+        testTransformersRejectedExpressions(ModelTestControllerVersion.EAP_6_0_1);
     }
 
     private void testTransformersRejectedExpressions(ModelTestControllerVersion controllerVersion) throws Exception {
