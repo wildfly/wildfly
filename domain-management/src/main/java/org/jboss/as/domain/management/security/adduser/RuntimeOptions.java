@@ -22,6 +22,8 @@
 
 package org.jboss.as.domain.management.security.adduser;
 
+import org.jboss.as.domain.management.security.password.PasswordCheckUtil;
+
 /**
  * Class to hold options either dynamically discovered or passed in on the command line.
  *
@@ -30,6 +32,8 @@ package org.jboss.as.domain.management.security.adduser;
 class RuntimeOptions {
 
     private ConsoleWrapper consoleWrapper;
+
+    private PasswordCheckUtil checkUtil;
 
     private String jbossHome;
 
@@ -59,6 +63,14 @@ class RuntimeOptions {
 
     public void setConsoleWrapper(ConsoleWrapper consoleWrapper) {
         this.consoleWrapper = consoleWrapper;
+    }
+
+    public PasswordCheckUtil getCheckUtil() {
+        return checkUtil;
+    }
+
+    public void setCheckUtil(PasswordCheckUtil checkUtil) {
+        this.checkUtil = checkUtil;
     }
 
     public String getJBossHome() {
