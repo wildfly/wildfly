@@ -825,12 +825,12 @@ public class JmxAuditLogHandlerTestCase extends AbstractControllerTestBase {
         }
     }
 
-    private interface BeanMBean {
+    public interface BeanMBean {
         int getAttr();
         void setAttr(int i);
     }
 
-    private static class Bean implements BeanMBean {
+    public static class Bean implements BeanMBean {
         volatile int attr;
 
         @Override
