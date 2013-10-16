@@ -99,6 +99,17 @@ public class LoggingSubsystemTestCase extends AbstractLoggingSubsystemTest {
     }
 
     @Test
+    public void testTransformersEAP600() throws Exception {
+        ignoreThisTestIfEAPRepositoryIsNotReachable();
+        testTransformer1_1_0(ModelTestControllerVersion.EAP_6_0_0);
+    }
+
+    @Test
+    public void testTransformersEAP601() throws Exception {
+        testTransformer1_1_0(ModelTestControllerVersion.EAP_6_0_1);
+    }
+
+    @Test
     public void testRejectExpressions712() throws Exception {
         testRejectExpressions1_1_0(ModelTestControllerVersion.V7_1_2_FINAL);
     }
@@ -106,6 +117,18 @@ public class LoggingSubsystemTestCase extends AbstractLoggingSubsystemTest {
     @Test
     public void testRejectExpressions713() throws Exception {
         testRejectExpressions1_1_0(ModelTestControllerVersion.V7_1_3_FINAL);
+    }
+
+    @Test
+    public void testRejectExpressionsEAP600() throws Exception {
+        ignoreThisTestIfEAPRepositoryIsNotReachable();
+        testRejectExpressions1_1_0(ModelTestControllerVersion.EAP_6_0_0);
+    }
+
+    @Test
+    public void testRejectExpressionsEAP601() throws Exception {
+        ignoreThisTestIfEAPRepositoryIsNotReachable();
+        testRejectExpressions1_1_0(ModelTestControllerVersion.EAP_6_0_1);
     }
 
     private void testTransformer1_1_0(ModelTestControllerVersion controllerVersion) throws Exception {
