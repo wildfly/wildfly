@@ -72,7 +72,7 @@ public class HornetQServerControlWriteHandler extends AbstractWriteAttributeHand
         }
 
         // handle deprecate attributes
-        registry.registerReadWriteAttribute(CommonAttributes.LIVE_CONNECTOR_REF, null, new DeprecatedAttributeWriteHandler(CommonAttributes.LIVE_CONNECTOR_REF.getName()));
+        registry.registerReadWriteAttribute(CommonAttributes.LIVE_CONNECTOR_REF, null, DeprecatedAttributeWriteHandler.INSTANCE);
     }
 
     @Override

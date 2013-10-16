@@ -187,6 +187,7 @@
                     <max-retry-interval>${max.retry.interval:3000}</max-retry-interval>
                     <reconnect-attempts>${reconnect-attempts:3}</reconnect-attempts>
                     <reconnect-attempts-on-same-node>${reconnect-attempts-on-same-node:5}</reconnect-attempts-on-same-node>
+                    <failover-on-server-shutdown>false</failover-on-server-shutdown>
                     <use-duplicate-detection>${use.duplicate.detection:true}</use-duplicate-detection>
                     <confirmation-window-size>${confirmation.window.size:350}</confirmation-window-size>
                     <user>${user:Brian}</user>
@@ -342,6 +343,7 @@
 			     <max-retry-interval>${max.retry.interval:10000}</max-retry-interval>
 			     <reconnect-attempts>${reconnect.attempts:2}</reconnect-attempts>
 			     <failover-on-initial-connection>${failover.on.initial.connection:true}</failover-on-initial-connection>
+			     <failover-on-server-shutdown>true</failover-on-server-shutdown>
 				 <connection-load-balancing-policy-class-name>connection.load.balancy.policy.class</connection-load-balancing-policy-class-name>
 				 <use-global-pools>${use.global.pools:true}</use-global-pools>
 				 <scheduled-thread-pool-max-size>${scheduled.thread.pool.max.size:24}</scheduled-thread-pool-max-size>
@@ -395,6 +397,7 @@
 			     <max-retry-interval>${max.retry.interval:10000}</max-retry-interval>
 			     <reconnect-attempts>${reconnect.attempts:2}</reconnect-attempts>
 			     <failover-on-initial-connection>${failover.on.initial.connection:true}</failover-on-initial-connection>
+			     <failover-on-server-shutdown>true</failover-on-server-shutdown>
 				 <connection-load-balancing-policy-class-name>connection.load.balancing.policy.class</connection-load-balancing-policy-class-name>
 				 <use-global-pools>${use.global.pools:true}</use-global-pools>
 				 <scheduled-thread-pool-max-size>${scheduled.thread.pool.max.size:24}</scheduled-thread-pool-max-size>

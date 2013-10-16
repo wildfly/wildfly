@@ -23,9 +23,7 @@
 package org.jboss.as.messaging;
 
 import static org.jboss.as.controller.SimpleAttributeDefinitionBuilder.create;
-import static org.jboss.as.messaging.CommonAttributes.BRIDGE_CONFIRMATION_WINDOW_SIZE;
 import static org.jboss.as.messaging.CommonAttributes.CONNECTOR_REF_STRING;
-import static org.jboss.as.messaging.CommonAttributes.HA;
 import static org.jboss.as.messaging.CommonAttributes.MESSAGING_SECURITY_DEF;
 import static org.jboss.as.messaging.CommonAttributes.STATIC_CONNECTORS;
 import static org.jboss.dmr.ModelType.BOOLEAN;
@@ -128,6 +126,7 @@ public class BridgeDefinition extends SimpleResourceDefinition {
             CommonAttributes.RETRY_INTERVAL, CommonAttributes.RETRY_INTERVAL_MULTIPLIER, CommonAttributes.MAX_RETRY_INTERVAL,
             RECONNECT_ATTEMPTS,
             RECONNECT_ATTEMPTS_ON_SAME_NODE,
+            CommonAttributes.FAILOVER_ON_SERVER_SHUTDOWN,
             USE_DUPLICATE_DETECTION, CommonAttributes.BRIDGE_CONFIRMATION_WINDOW_SIZE,
             USER, PASSWORD,
             CONNECTOR_REFS, DISCOVERY_GROUP_NAME
@@ -135,14 +134,10 @@ public class BridgeDefinition extends SimpleResourceDefinition {
 
     public static final AttributeDefinition[] ATTRIBUTES_WITH_EXPRESSION_ALLOWED_IN_1_2_0 = { QUEUE_NAME, USE_DUPLICATE_DETECTION,
             RECONNECT_ATTEMPTS, FORWARDING_ADDRESS,
-            CommonAttributes.FILTER, HA, CommonAttributes.MIN_LARGE_MESSAGE_SIZE,
+            CommonAttributes.FILTER, CommonAttributes.HA, CommonAttributes.MIN_LARGE_MESSAGE_SIZE,
             CommonAttributes.CHECK_PERIOD, CommonAttributes.CONNECTION_TTL,
             CommonAttributes.RETRY_INTERVAL, CommonAttributes.RETRY_INTERVAL_MULTIPLIER, CommonAttributes.MAX_RETRY_INTERVAL,
-            BRIDGE_CONFIRMATION_WINDOW_SIZE };
-
-    public static final AttributeDefinition[] ATTRIBUTES_ADDED_IN_2_0_0 = {
-            RECONNECT_ATTEMPTS_ON_SAME_NODE
-    };
+            CommonAttributes.BRIDGE_CONFIRMATION_WINDOW_SIZE };
 
     public BridgeDefinition(final boolean registerRuntimeOnly) {
         super(PATH,
@@ -157,15 +152,17 @@ public class BridgeDefinition extends SimpleResourceDefinition {
         super.registerAttributes(registry);
         for (AttributeDefinition attr : ATTRIBUTES) {
             if (registerRuntimeOnly || !attr.getFlags().contains(AttributeAccess.Flag.STORAGE_RUNTIME)) {
-                registry.registerReadWriteAttribute(attr, null, BridgeWriteAttributeHandler.INSTANCE);
+                if (attr == CommonAttributes.FAILOVER_ON_SERVER_SHUTDOWN) {
+                    registry.registerReadWriteAttribute(attr, null, DeprecatedAttributeWriteHandler.INSTANCE);
+                } else {
+                    registry.registerReadWriteAttribute(attr, null, BridgeWriteAttributeHandler.INSTANCE);
+                }
             }
         }
 
         if (registerRuntimeOnly) {
             BridgeControlHandler.INSTANCE.registerAttributes(registry);
         }
-
-        registry.registerReadWriteAttribute(CommonAttributes.FAILOVER_ON_SERVER_SHUTDOWN, null, new DeprecatedAttributeWriteHandler(CommonAttributes.FAILOVER_ON_SERVER_SHUTDOWN.getName()));
     }
 
     @Override
