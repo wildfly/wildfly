@@ -47,7 +47,7 @@
     </licenses>
 
     <properties>
-        <version.org.zanata.plugin>2.2.0</version.org.zanata.plugin>
+        <version.org.zanata.plugin>3.0.1</version.org.zanata.plugin>
         <maven.compiler.target>1.6</maven.compiler.target>
         <maven.compiler.source>1.6</maven.compiler.source>
     </properties>
