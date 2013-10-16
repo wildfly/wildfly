@@ -25,7 +25,6 @@ package org.jboss.as.messaging;
 import static org.jboss.as.controller.SimpleAttributeDefinitionBuilder.create;
 import static org.jboss.dmr.ModelType.STRING;
 
-import org.jboss.as.controller.AttributeDefinition;
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.OperationStepHandler;
 import org.jboss.as.controller.PathElement;
@@ -43,12 +42,10 @@ public class TransportParamDefinition extends SimpleResourceDefinition {
 
     public static final PathElement PATH = PathElement.pathElement(CommonAttributes.PARAM);
 
-    static final SimpleAttributeDefinition VALUE = create("value", STRING)
+    public static final SimpleAttributeDefinition VALUE = create("value", STRING)
             .setAllowExpression(true)
             .setRestartAllServices()
             .build();
-
-    public static final AttributeDefinition[] ATTRIBUTES_WITH_EXPRESSION_ALLOWED_IN_1_2_0 = { VALUE };
 
     static final OperationStepHandler PARAM_ADD = new HornetQReloadRequiredHandlers.AddStepHandler() {
         @Override

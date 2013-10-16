@@ -241,7 +241,6 @@ public interface CommonAttributes {
     SimpleAttributeDefinition FAILOVER_ON_SERVER_SHUTDOWN = create("failover-on-server-shutdown", ModelType.BOOLEAN)
             .setAllowNull(true)
             .setDeprecated(VERSION_1_2_0)
-            .setAttributeMarshaller(NOOP_MARSHALLER)
             .build();
 
     SimpleAttributeDefinition FAILOVER_ON_SHUTDOWN = create("failover-on-shutdown", BOOLEAN)
@@ -260,7 +259,6 @@ public interface CommonAttributes {
     // do not allow expressions on deprecated attribute
     @Deprecated
     SimpleAttributeDefinition GROUP_ADDRESS = create("group-address", ModelType.STRING)
-            .setDefaultValue(null)
             .setAllowNull(true)
             .setAlternatives("socket-binding", "jgroups-stack", "jgroups-channel")
             .setDeprecated(VERSION_1_2_0)
@@ -271,7 +269,6 @@ public interface CommonAttributes {
     // do not allow expressions on deprecated attribute
     @Deprecated
     SimpleAttributeDefinition GROUP_PORT = create("group-port", INT)
-            .setDefaultValue(null)
             .setAllowNull(true)
             .setAlternatives("socket-binding", "jgroups-stack", "jgroups-channel")
             .setDeprecated(VERSION_1_2_0)
@@ -395,7 +392,6 @@ public interface CommonAttributes {
     // do not allow expressions on deprecated attribute
     @Deprecated
     SimpleAttributeDefinition LOCAL_BIND_ADDRESS = create("local-bind-address", ModelType.STRING)
-            .setDefaultValue(null)
             .setAllowNull(true)
             .setAlternatives("socket-binding", "jgroups-stack", "jgroups-channel")
             .setDeprecated(VERSION_1_2_0)
@@ -415,7 +411,6 @@ public interface CommonAttributes {
             .build();
 
     SimpleAttributeDefinition JGROUPS_STACK = create("jgroups-stack", ModelType.STRING)
-            .setDefaultValue(null)
             .setAllowNull(true)
             .setAllowExpression(true)
             .setAlternatives("socket-binding",
@@ -425,7 +420,6 @@ public interface CommonAttributes {
             .build();
 
     SimpleAttributeDefinition JGROUPS_CHANNEL = create("jgroups-channel", ModelType.STRING)
-            .setDefaultValue(null)
             .setAllowNull(true)
             .setAllowExpression(true)
             .setAlternatives("socket-binding",
@@ -698,8 +692,7 @@ public interface CommonAttributes {
             .build();
 
     SimpleAttributeDefinition SOCKET_BINDING = create("socket-binding", ModelType.STRING)
-            .setDefaultValue(null)
-            .setAllowNull(false)
+            .setAllowNull(true)
             .setAlternatives(GROUP_ADDRESS.getName(),
                     GROUP_PORT.getName(),
                     LOCAL_BIND_ADDRESS.getName(),

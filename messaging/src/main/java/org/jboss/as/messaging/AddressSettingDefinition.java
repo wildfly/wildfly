@@ -131,10 +131,6 @@ public class AddressSettingDefinition extends SimpleResourceDefinition {
             LAST_VALUE_QUEUE, REDISTRIBUTION_DELAY, SEND_TO_DLA_ON_NO_ROUTE
     };
 
-    public static final SimpleAttributeDefinition[] ATTRIBUTES_ADDED_IN_2_0_0 = new SimpleAttributeDefinition[] {
-            EXPIRY_DELAY
-    };
-
     /**
      * Attributes are defined in the <em>same order than in the XSD schema</em>
      */

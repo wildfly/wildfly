@@ -159,6 +159,7 @@
                     <retry-interval-multiplier>2</retry-interval-multiplier>
                     <max-retry-interval>3000</max-retry-interval>
                     <reconnect-attempts>3</reconnect-attempts>
+                    <failover-on-server-shutdown>true</failover-on-server-shutdown>
                     <use-duplicate-detection>true</use-duplicate-detection>
                     <confirmation-window-size>350</confirmation-window-size>
                     <user>${user:Brian}</user>
