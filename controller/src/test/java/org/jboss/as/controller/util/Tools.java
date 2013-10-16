@@ -65,6 +65,8 @@ import org.xnio.IoUtils;
  */
 public class Tools {
 
+    private static final String HOST_ADDR = "127.0.0.1";
+
     static final String CORE = "core";
     static final String STANDALONE = "standalone";
     static final String VERSION = "version";
@@ -100,7 +102,7 @@ public class Tools {
 
 
     static ModelNode getCurrentModelVersions() throws Exception {
-        ModelControllerClient client = ModelControllerClient.Factory.create("localhost", 9999);
+        ModelControllerClient client = ModelControllerClient.Factory.create(HOST_ADDR, 9999);
         try {
             ModelNode allVersions = new ModelNode();
 
@@ -133,7 +135,7 @@ public class Tools {
     }
 
     static ModelNode getCurrentRunningResourceDefinition(PathAddress pathAddress) throws Exception {
-        ModelControllerClient client = ModelControllerClient.Factory.create("localhost", 9999);
+        ModelControllerClient client = ModelControllerClient.Factory.create(HOST_ADDR, 9999);
         try {
             ModelNode op = new ModelNode();
             op.get(OP).set(READ_RESOURCE_DESCRIPTION_OPERATION);
