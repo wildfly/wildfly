@@ -80,7 +80,6 @@ public class EJB3SubsystemXMLPersister implements XMLElementWriter<SubsystemMars
         // <stateful> element
         if (model.hasDefined(EJB3SubsystemModel.DEFAULT_STATEFUL_BEAN_ACCESS_TIMEOUT)
                 || model.hasDefined(EJB3SubsystemModel.DEFAULT_SFSB_CACHE)
-                || model.hasDefined(EJB3SubsystemModel.DEFAULT_CLUSTERED_SFSB_CACHE)
                 || model.hasDefined(EJB3SubsystemModel.DEFAULT_SFSB_PASSIVATION_DISABLED_CACHE)) {
             // <stateful>
             writer.writeStartElement(EJB3SubsystemXMLElement.STATEFUL.getLocalName());

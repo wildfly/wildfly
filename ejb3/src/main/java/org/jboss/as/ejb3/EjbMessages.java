@@ -2456,7 +2456,7 @@ public interface EjbMessages {
     @Message(id = 14588, value = "CMP Entity Beans are not supported")
     DeploymentUnitProcessingException cmpEntityBeansAreNotSupported();
 
-    @Message(id = 14589, value = "Asymmetric cache usage, get vs. release/discard.")
+    @Message(id = 14589, value = "Detected asymmetric usage of cache")
     IllegalStateException asymmetricCacheUsage();
 
     // STOP!!! Don't add message ids greater that 14599!!! If you need more first check what EjbLogger is

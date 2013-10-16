@@ -47,6 +47,14 @@ import org.junit.Ignore;
 import org.junit.Test;
 
 /**
+ * Test case for testing the integrity of the EJB3 subsystem.
+ *
+ * This checks the following features:
+ * - basic subsystem testing (i.e. current model version boots successfully)
+ * - registered transformers transform model and operations correctly between different API model versions
+ * - expressions appearing in XML configurations are correctly rejected if so required
+ * - bad attribute values are correctly rejected
+ *
  * @author Emanuel Muckenhuber
  */
 public class Ejb3SubsystemUnitTestCase extends AbstractSubsystemBaseTest {
@@ -61,20 +69,19 @@ public class Ejb3SubsystemUnitTestCase extends AbstractSubsystemBaseTest {
         return readResource("subsystem.xml");
     }
 
-    @Ignore
     @Test
     public void testTransformerAS712() throws Exception {
         testTransformer_1_1_0(ModelTestControllerVersion.V7_1_2_FINAL);
     }
 
-    @Ignore
     @Test
     public void testTransformerAS713() throws Exception {
         testTransformer_1_1_0(ModelTestControllerVersion.V7_1_3_FINAL);
     }
 
     /**
-     * Tests transformation of model from 1.2.0 version into 1.1.0 version.
+     * Tests transformation of model from 2.0.0 version into 1.1.0 version, where
+     * all operations in the XML file are expected to transform successfully.
      *
      * @throws Exception
      */
@@ -94,20 +101,26 @@ public class Ejb3SubsystemUnitTestCase extends AbstractSubsystemBaseTest {
                 .addOperationValidationResolve("add", PathAddress.pathAddress(PathElement.pathElement(SUBSYSTEM, getMainSubsystemName())))
                 .addOperationValidationResolve("add", PathAddress.pathAddress(PathElement.pathElement(SUBSYSTEM, getMainSubsystemName()), PathElement.pathElement("strict-max-bean-instance-pool")));
 
+        // boot the models
         KernelServices mainServices = builder.build();
         KernelServices legacyServices = mainServices.getLegacyServices(modelVersion);
         Assert.assertNotNull(mainServices);
         Assert.assertNotNull(legacyServices);
+        // check that the transformed model is the same as the model built from transformed operations
         checkSubsystemModelTransformation(mainServices, modelVersion, V_1_1_0_FIXER);
     }
 
-    @Ignore
+    /**
+     * Tests transformation of model from 2.0.0 version into 1.2.0 version, where
+     * all operations in the XML file are expected to transform successfully.
+     *
+     * @throws Exception
+     */
     @Test
     public void testTransformerAS720() throws Exception {
         ModelTestControllerVersion controllerVersion = ModelTestControllerVersion.V7_2_0_FINAL;
         //TODO Update to include the extra stuff needed for 1.2.0
-        String subsystemXml = "transform_1_2_0.xml";   //This has no expressions not understood by 1.1.0
-
+        String subsystemXml = "transform_1_2_0.xml";   //This has no expressions not understood by 1.2.0
         ModelVersion modelVersion = ModelVersion.create(1, 2, 0); //The old model version
         //Use the non-runtime version of the extension which will happen on the HC
         KernelServicesBuilder builder = createKernelServicesBuilder(AdditionalInitialization.MANAGEMENT)
@@ -122,6 +135,7 @@ public class Ejb3SubsystemUnitTestCase extends AbstractSubsystemBaseTest {
                 .addOperationValidationResolve("add", PathAddress.pathAddress(PathElement.pathElement(SUBSYSTEM, getMainSubsystemName())))
                 .addOperationValidationResolve("add", PathAddress.pathAddress(PathElement.pathElement(SUBSYSTEM, getMainSubsystemName()), PathElement.pathElement("strict-max-bean-instance-pool")));
 
+        // boot the models
         KernelServices mainServices = builder.build();
         Assert.assertTrue(mainServices.isSuccessfulBoot());
         KernelServices legacyServices = mainServices.getLegacyServices(modelVersion);
@@ -129,22 +143,28 @@ public class Ejb3SubsystemUnitTestCase extends AbstractSubsystemBaseTest {
         Assert.assertNotNull(mainServices);
         Assert.assertNotNull(legacyServices);
         generateLegacySubsystemResourceRegistrationDmr(mainServices, modelVersion);
-
+        // check that the transformed model is the same as the model built from transformed operations
         checkSubsystemModelTransformation(mainServices, modelVersion);
     }
 
-    @Ignore
     @Test
     public void testRejectExpressionsAS712() throws Exception {
         testRejectExpressions_1_1_0(ModelTestControllerVersion.V7_1_2_FINAL);
     }
 
-    @Ignore
     @Test
     public void testRejectExpressionsAS713() throws Exception {
         testRejectExpressions_1_1_0(ModelTestControllerVersion.V7_1_3_FINAL);
     }
 
+    /**
+     * Tests transformation of model from 2.0.0 version into 1.1.0 version, where
+     * some operations in the XML file are expected to be rejected during transformation.
+     * ,
+     * The FailedOperationTransformationConfig specifies the expected operation failures.
+     *
+     * @throws Exception
+     */
     private void testRejectExpressions_1_1_0(ModelTestControllerVersion controllerVersion) throws Exception {
         // create builder for current subsystem version
         KernelServicesBuilder builder = createKernelServicesBuilder(createAdditionalInitialization());
@@ -165,7 +185,7 @@ public class Ejb3SubsystemUnitTestCase extends AbstractSubsystemBaseTest {
         Assert.assertTrue(legacyServices.isSuccessfulBoot());
 
         List<ModelNode> xmlOps = builder.parseXmlResource("transform_1_1_0_expressions.xml");
-
+        // for each operation, check installs in main and if it fails in legacy, that it is noted in the failure config
         ModelTestUtils.checkFailedTransformedBootOperations(mainServices, version_1_1_0, xmlOps, getConfig_1_1_0());
     }
 
@@ -176,6 +196,14 @@ public class Ejb3SubsystemUnitTestCase extends AbstractSubsystemBaseTest {
     }
 
 
+    /**
+     * Tests transformation of model from 2.0.0 version into 1.2.0 version, where
+     * some operations in the XML file are expected to be rejected during transformation.
+     * ,
+     * The FailedOperationTransformationConfig specifies the expected operation failures.
+     *
+     * @throws Exception
+     */
     private void testRejectBadAttributes_1_2_0(ModelTestControllerVersion controllerVersion) throws Exception {
         // create builder for current subsystem version
         KernelServicesBuilder builder = createKernelServicesBuilder(createAdditionalInitialization());
@@ -231,6 +259,11 @@ public class Ejb3SubsystemUnitTestCase extends AbstractSubsystemBaseTest {
         ModelTestUtils.checkFailedTransformedBootOperations(mainServices, version_1_1_0, xmlOps, failedConfig);
     }
 
+    /*
+     * Specifies the operations for which we expect transformation failure when:
+     * - transforming from current to model version 1.1.0
+     * - using the XML configuration file transform_1_1_0_expressions.xml
+     */
     private FailedOperationTransformationConfig getConfig_1_1_0() {
         PathAddress subsystemAddress = PathAddress.pathAddress(EJB3Extension.SUBSYSTEM_PATH);
         FailedOperationTransformationConfig.RejectExpressionsConfig keepaliveOnly =
@@ -252,10 +285,6 @@ public class Ejb3SubsystemUnitTestCase extends AbstractSubsystemBaseTest {
                         keepaliveOnly)
                 .addFailedAttribute(subsystemAddress.append(StrictMaxPoolResourceDefinition.INSTANCE.getPathElement()),
                         new FailedOperationTransformationConfig.RejectExpressionsConfig(StrictMaxPoolResourceDefinition.INSTANCE_ACQUISITION_TIMEOUT_UNIT))
-                .addFailedAttribute(subsystemAddress.append(FilePassivationStoreResourceDefinition.INSTANCE.getPathElement()),
-                        new FailedOperationTransformationConfig.RejectExpressionsConfig(FilePassivationStoreResourceDefinition.IDLE_TIMEOUT_UNIT))
-                .addFailedAttribute(subsystemAddress.append(ClusterPassivationStoreResourceDefinition.INSTANCE.getPathElement()),
-                        new FailedOperationTransformationConfig.RejectExpressionsConfig(ClusterPassivationStoreResourceDefinition.IDLE_TIMEOUT_UNIT))
                 .addFailedAttribute(subsystemAddress.append(EJB3SubsystemModel.TIMER_SERVICE_PATH),
                         new FailedOperationTransformationConfig.RejectExpressionsConfig(FileDataStoreResourceDefinition.PATH))
                 .addFailedAttribute(subsystemAddress.append(EJB3SubsystemModel.REMOTE_SERVICE_PATH, ChannelCreationOptionResource.INSTANCE.getPathElement()),
@@ -265,6 +294,11 @@ public class Ejb3SubsystemUnitTestCase extends AbstractSubsystemBaseTest {
                 ;
     }
 
+    /*
+     * Specifies the operations for which we expect transformation failure when:
+     * - transforming from current to model version 1.2.0
+     * - using the XML configuration file transform_1_2_0_reject.xml
+     */
     private FailedOperationTransformationConfig getConfig_1_2_0() {
         PathAddress subsystemAddress = PathAddress.pathAddress(EJB3Extension.SUBSYSTEM_PATH);
         return new FailedOperationTransformationConfig()
@@ -306,13 +340,11 @@ public class Ejb3SubsystemUnitTestCase extends AbstractSubsystemBaseTest {
             // Bogus 'name' attributes that weren't in the legacy resource definition.
             // We don't include them in transformed resources either; if the server wants
             // them at runtime, the bogus server code will add them anyway
-            modelNode.get("file-passivation-store", "file").remove("name");
-            modelNode.get("cluster-passivation-store", "cluster").remove("name");
+            modelNode.get("cluster-passivation-store", "infinispan").remove("name");
             modelNode.get("strict-max-bean-instance-pool", "slsb-strict-max-pool").remove("name");
             modelNode.get("strict-max-bean-instance-pool", "mdb-strict-max-pool").remove("name");
             modelNode.get("cache", "simple").remove("name");
-            modelNode.get("cache", "passivating").remove("name");
-            modelNode.get("cache", "clustered").remove("name");
+            modelNode.get("cache", "file").remove("name");
             return modelNode;
         }
     };

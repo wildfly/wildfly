@@ -293,6 +293,7 @@ public class EJB3Subsystem20Parser extends EJB3Subsystem14Parser {
         requireNoContent(reader);
     }
 
+    @Override
     protected void parsePassivationStores(final XMLExtendedStreamReader reader, List<ModelNode> operations) throws XMLStreamException {
         // no attributes expected
         requireNoAttributes(reader);

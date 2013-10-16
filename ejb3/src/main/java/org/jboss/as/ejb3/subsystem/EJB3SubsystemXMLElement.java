@@ -68,8 +68,8 @@ public enum EJB3SubsystemXMLElement {
 
     PASSIVATION_STORE("passivation-store"),
     PASSIVATION_STORES("passivation-stores"),
-    CLUSTER_PASSIVATION_STORE("cluster-passivation-store"),
-    FILE_PASSIVATION_STORE("file-passivation-store"),
+    @Deprecated CLUSTER_PASSIVATION_STORE("cluster-passivation-store"),
+    @Deprecated FILE_PASSIVATION_STORE("file-passivation-store"),
 
     REMOTE("remote"),
     RESOURCE_ADAPTER_NAME("resource-adapter-name"),

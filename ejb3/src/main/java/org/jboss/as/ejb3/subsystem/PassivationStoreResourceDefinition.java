@@ -4,6 +4,8 @@
  */
 package org.jboss.as.ejb3.subsystem;
 
+import java.util.concurrent.TimeUnit;
+
 import org.jboss.as.controller.AttributeDefinition;
 import org.jboss.as.controller.PathElement;
 import org.jboss.as.controller.SimpleAttributeDefinition;
@@ -13,12 +15,13 @@ import org.jboss.as.controller.operations.validation.LongRangeValidator;
 import org.jboss.as.controller.registry.AttributeAccess;
 import org.jboss.as.controller.registry.ManagementResourceRegistration;
 import org.jboss.as.controller.registry.OperationEntry;
+import org.jboss.as.controller.transform.description.AttributeConverter;
+import org.jboss.as.controller.transform.description.ResourceTransformationDescriptionBuilder;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.ModelType;
 
 /**
- *
- * @author paul
+ * @author Paul Ferraro
  */
 public class PassivationStoreResourceDefinition extends SimpleResourceDefinition {
 
@@ -66,5 +69,43 @@ public class PassivationStoreResourceDefinition extends SimpleResourceDefinition
         for (AttributeDefinition definition: READ_WRITE_ATTRIBUTES) {
             resourceRegistration.registerReadWriteAttribute(definition, null, WRITE_HANDLER);
         }
+    }
+
+    /*
+     * This transformer does the following:
+     * - maps <passivation-store/> to <cluster-passivation-store/> while setting new defaults for passivate-events-on-replicate and client-mappings-cache
+     * - sets appropriate defaults for IDLE_TIMEOUT and IDLE_TIMEOUT_UNIT
+     * - sets a default for passivate-on-replicate and client-mappings-cache if undefined
+     * - rejects specific values for passivate-on-replicate and client-mappings-cache
+     */
+    @SuppressWarnings("deprecation")
+    static void registerTransformers_1_1_0(ResourceTransformationDescriptionBuilder parent) {
+
+        ResourceTransformationDescriptionBuilder child = parent.addChildRedirection(INSTANCE.getPathElement(), PathElement.pathElement(EJB3SubsystemModel.CLUSTER_PASSIVATION_STORE));
+        child.getAttributeBuilder()
+                .setValueConverter(AttributeConverter.Factory.createHardCoded(new ModelNode(true), true), EJB3SubsystemModel.PASSIVATE_EVENTS_ON_REPLICATE)
+                .setValueConverter(AttributeConverter.Factory.createHardCoded(new ModelNode("default"), true), EJB3SubsystemModel.CLIENT_MAPPINGS_CACHE)
+                .setValueConverter(AttributeConverter.Factory.createHardCoded(new ModelNode().set(Integer.MAX_VALUE), true), EJB3SubsystemModel.IDLE_TIMEOUT)
+                .setValueConverter(AttributeConverter.Factory.createHardCoded(new ModelNode().set(TimeUnit.SECONDS.name()), true), EJB3SubsystemModel.IDLE_TIMEOUT_UNIT)
+        ;
+    }
+
+    /*
+     * This transformer does the following:
+     * - maps <passivation-store/> to <cluster-passivation-store/> while setting new defaults for passivate-events-on-replicate and client-mappings-cache
+     * - sets appropriate defaults for IDLE_TIMEOUT and IDLE_TIMEOUT_UNIT
+     * - sets a default for passivate-on-replicate and client-mappings-cache if undefined
+     * - rejects specific values for passivate-on-replicate and client-mappings-cache
+     */
+    @SuppressWarnings("deprecation")
+    static void registerTransformers_1_2_0(ResourceTransformationDescriptionBuilder parent) {
+
+        ResourceTransformationDescriptionBuilder child = parent.addChildRedirection(INSTANCE.getPathElement(), PathElement.pathElement(EJB3SubsystemModel.CLUSTER_PASSIVATION_STORE));
+        child.getAttributeBuilder()
+                .setValueConverter(AttributeConverter.Factory.createHardCoded(new ModelNode(true), true), EJB3SubsystemModel.PASSIVATE_EVENTS_ON_REPLICATE)
+                .setValueConverter(AttributeConverter.Factory.createHardCoded(new ModelNode("default"), true), EJB3SubsystemModel.CLIENT_MAPPINGS_CACHE)
+                .setValueConverter(AttributeConverter.Factory.createHardCoded(new ModelNode().set(Integer.MAX_VALUE), true), EJB3SubsystemModel.IDLE_TIMEOUT)
+                .setValueConverter(AttributeConverter.Factory.createHardCoded(new ModelNode().set(TimeUnit.SECONDS.name()), true), EJB3SubsystemModel.IDLE_TIMEOUT_UNIT)
+        ;
     }
 }

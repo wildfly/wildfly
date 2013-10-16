@@ -319,8 +319,6 @@ class EJB3SubsystemAdd extends AbstractBoottimeAddStepHandler {
             EJB3SubsystemDefaultCacheWriteHandler.SFSB_PASSIVATION_DISABLED_CACHE.updateCacheService(context, model, newControllers);
         }
 
-//        EJB3SubsystemDefaultCacheWriteHandler.CLUSTERED_SFSB_CACHE.updateCacheService(context, model, newControllers);
-
         if (model.hasDefined(DEFAULT_RESOURCE_ADAPTER_NAME)) {
             DefaultResourceAdapterWriteHandler.INSTANCE.updateDefaultAdapterService(context, model, newControllers);
         }
@@ -343,7 +341,7 @@ class EJB3SubsystemAdd extends AbstractBoottimeAddStepHandler {
 
         addRemoteInvocationServices(context, newControllers, model, appclient);
         // add clustering service
-        this.addClusteringServices(context, newControllers, appclient);
+        addClusteringServices(context, newControllers, appclient);
 
         // add user transaction access control service
         final EJB3UserTransactionAccessControlService userTxAccessControlService = new EJB3UserTransactionAccessControlService();
