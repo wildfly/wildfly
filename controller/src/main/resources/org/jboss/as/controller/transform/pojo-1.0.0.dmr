@@ -1,9 +1,0 @@
-{
-    "model-description" => {
-        "description" => "Support JBoss5 and JBoss6 pojo configuration model.",
-        "attributes" => {},
-        "operations" => undefined,
-        "children" => {}
-    },
-    "address" => [("subsystem" => "pojo")]
-}
