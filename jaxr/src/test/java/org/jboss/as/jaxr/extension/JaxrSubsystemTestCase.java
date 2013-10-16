@@ -70,7 +70,7 @@ public class JaxrSubsystemTestCase extends AbstractSubsystemBaseTest {
      */
     @Test
     public void testTransformerAS712() throws Exception {
-        testTransformer1_1_0("org.jboss.as:jboss-as-jaxr:7.1.2.Final", ModelTestControllerVersion.V7_1_2_FINAL);
+        testTransformer1_1_0(ModelTestControllerVersion.V7_1_2_FINAL);
     }
 
     /**
@@ -80,10 +80,22 @@ public class JaxrSubsystemTestCase extends AbstractSubsystemBaseTest {
      */
     @Test
     public void testTransformerAS713() throws Exception {
-        testTransformer1_1_0("org.jboss.as:jboss-as-jaxr:7.1.3.Final", ModelTestControllerVersion.V7_1_3_FINAL);
+        testTransformer1_1_0(ModelTestControllerVersion.V7_1_3_FINAL);
     }
 
-    private void testTransformer1_1_0(String mavenGAV, ModelTestControllerVersion controllerVersion) throws Exception {
+    @Test
+    public void testTransformerEAP600() throws Exception {
+        ignoreThisTestIfEAPRepositoryIsNotReachable();
+        testTransformer1_1_0(ModelTestControllerVersion.EAP_6_0_0);
+    }
+
+    @Test
+    public void testTransformerEAP601() throws Exception {
+        ignoreThisTestIfEAPRepositoryIsNotReachable();
+        testTransformer1_1_0(ModelTestControllerVersion.EAP_6_0_1);
+    }
+
+    private void testTransformer1_1_0(ModelTestControllerVersion controllerVersion) throws Exception {
         String subsystemXml = "xsd1_1full.xml";   //This has no expressions not understood by 1.1.0
         ModelVersion modelVersion = ModelVersion.create(1, 1, 0); //The old model version
         //Use the non-runtime version of the extension which will happen on the HC
@@ -92,7 +104,7 @@ public class JaxrSubsystemTestCase extends AbstractSubsystemBaseTest {
 
         // Add legacy subsystems
         builder.createLegacyKernelServicesBuilder(null, controllerVersion, modelVersion)
-                .addMavenResourceURL(mavenGAV)
+                .addMavenResourceURL("org.jboss.as:jboss-as-jaxr:" + controllerVersion.getMavenGavVersion())
                 .setExtensionClassName("org.jboss.as.jaxr.extension.JAXRSubsystemExtension");
 
         KernelServices mainServices = builder.build();
@@ -103,22 +115,34 @@ public class JaxrSubsystemTestCase extends AbstractSubsystemBaseTest {
 
     @Test
     public void testRejectExpressionsAS712() throws Exception {
-        testRejectExpressions1_1_0("org.jboss.as:jboss-as-jaxr:7.1.2.Final", ModelTestControllerVersion.V7_1_2_FINAL);
+        testRejectExpressions1_1_0(ModelTestControllerVersion.V7_1_2_FINAL);
     }
 
     @Test
     public void testRejectExpressionsAS713() throws Exception {
-        testRejectExpressions1_1_0("org.jboss.as:jboss-as-jaxr:7.1.3.Final", ModelTestControllerVersion.V7_1_3_FINAL);
+        testRejectExpressions1_1_0(ModelTestControllerVersion.V7_1_3_FINAL);
     }
 
-    private void testRejectExpressions1_1_0(String mavenGAV, ModelTestControllerVersion controllerVersion) throws Exception {
+    @Test
+    public void testRejectExpressionsEAP600() throws Exception {
+        ignoreThisTestIfEAPRepositoryIsNotReachable();
+        testRejectExpressions1_1_0(ModelTestControllerVersion.EAP_6_0_0);
+    }
+
+    @Test
+    public void testRejectExpressionsEAP601() throws Exception {
+        ignoreThisTestIfEAPRepositoryIsNotReachable();
+        testRejectExpressions1_1_0(ModelTestControllerVersion.EAP_6_0_1);
+    }
+
+    private void testRejectExpressions1_1_0(ModelTestControllerVersion controllerVersion) throws Exception {
         // create builder for current subsystem version
         KernelServicesBuilder builder = createKernelServicesBuilder(createAdditionalInitialization());
 
         // create builder for legacy subsystem version
         ModelVersion version_1_1_0 = ModelVersion.create(1, 1, 0);
         builder.createLegacyKernelServicesBuilder(null, controllerVersion, version_1_1_0)
-                .addMavenResourceURL(mavenGAV)
+                .addMavenResourceURL("org.jboss.as:jboss-as-jaxr:" + controllerVersion.getMavenGavVersion())
                 .setExtensionClassName("org.jboss.as.jaxr.extension.JAXRSubsystemExtension");
 
         KernelServices mainServices = builder.build();
@@ -135,6 +159,35 @@ public class JaxrSubsystemTestCase extends AbstractSubsystemBaseTest {
                 .addFailedAttribute(PathAddress.pathAddress(JAXRExtension.SUBSYSTEM_PATH),
                         new FailedOperationTransformationConfig.RejectExpressionsConfig(JAXRSubsystemRootResource.CONNECTION_FACTORY_ATTRIBUTE))
         );
+    }
+
+    @Test
+    public void testTransformersEAP610() throws Exception {
+        ignoreThisTestIfEAPRepositoryIsNotReachable();
+        testTransformers1_2_0(ModelTestControllerVersion.EAP_6_1_0);
+    }
+
+    @Test
+    public void testTransformersEAP611() throws Exception {
+        ignoreThisTestIfEAPRepositoryIsNotReachable();
+        testTransformers1_2_0(ModelTestControllerVersion.EAP_6_1_1);
+    }
+
+    private void testTransformers1_2_0(ModelTestControllerVersion controllerVersion) throws Exception {
+        String subsystemXml = "xsd1_1expressions.xml";
+        ModelVersion modelVersion = ModelVersion.create(1, 2, 0); //The old model version
+        //Use the non-runtime version of the extension which will happen on the HC
+        KernelServicesBuilder builder = createKernelServicesBuilder(AdditionalInitialization.MANAGEMENT)
+                .setSubsystemXmlResource(subsystemXml);
+
+        // Add legacy subsystems
+        builder.createLegacyKernelServicesBuilder(null, controllerVersion, modelVersion)
+                .addMavenResourceURL("org.jboss.as:jboss-as-jaxr:" + controllerVersion.getMavenGavVersion());
+
+        KernelServices mainServices = builder.build();
+        KernelServices legacyServices = mainServices.getLegacyServices(modelVersion);
+        Assert.assertNotNull(legacyServices);
+        checkSubsystemModelTransformation(mainServices, modelVersion);
     }
 
     @Override

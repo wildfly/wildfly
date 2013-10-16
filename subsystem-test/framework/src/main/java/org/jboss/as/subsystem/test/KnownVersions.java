@@ -65,6 +65,7 @@ class KnownVersions {
         addSubsystemVersion(map, "infinispan", "1.4.1", CORE_MODEL_7_2_0);
         addSubsystemVersion(map, "jacorb", "1.1.0", CORE_MODEL_7_1_3);
         addSubsystemVersion(map, "jaxr", "1.1.0", CORE_MODEL_7_1_2);
+        addSubsystemVersion(map, "jaxr", "1.2.0", CORE_MODEL_7_2_0);
         addSubsystemVersion(map, "jca", "1.1.0", CORE_MODEL_7_1_2);
         addSubsystemVersion(map, "jca", "1.2.0", CORE_MODEL_7_2_0);
         addSubsystemVersion(map, "jgroups", "1.1.0", CORE_MODEL_7_1_3);
