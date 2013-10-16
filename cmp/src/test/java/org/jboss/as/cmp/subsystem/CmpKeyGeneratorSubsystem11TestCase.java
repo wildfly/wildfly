@@ -121,15 +121,28 @@ public class CmpKeyGeneratorSubsystem11TestCase extends CmpKeyGeneratorSubsystem
 
     @Test
     public void testTransformers_7_1_2() throws Exception {
-        testTransformers(ModelTestControllerVersion.V7_1_2_FINAL);
+        testTransformers_1_0_0(ModelTestControllerVersion.V7_1_2_FINAL);
     }
 
     @Test
     public void testTransformers_7_1_3() throws Exception {
-        testTransformers(ModelTestControllerVersion.V7_1_3_FINAL);
+        testTransformers_1_0_0(ModelTestControllerVersion.V7_1_3_FINAL);
     }
 
-    private void testTransformers(ModelTestControllerVersion controllerVersion) throws Exception {
+    @Test
+    public void testTransformers_6_0_0() throws Exception {
+        ignoreThisTestIfEAPRepositoryIsNotReachable();
+        testTransformers_1_0_0(ModelTestControllerVersion.EAP_6_0_0);
+    }
+
+    @Test
+    public void testTransformers_6_0_1() throws Exception {
+        ignoreThisTestIfEAPRepositoryIsNotReachable();
+        testTransformers_1_0_0(ModelTestControllerVersion.EAP_6_0_1);
+    }
+
+
+    private void testTransformers_1_0_0(ModelTestControllerVersion controllerVersion) throws Exception {
         ModelVersion modelVersion = ModelVersion.create(1, 0, 0);
         KernelServicesBuilder builder = createKernelServicesBuilder(AdditionalInitialization.MANAGEMENT);
 
@@ -148,6 +161,33 @@ public class CmpKeyGeneratorSubsystem11TestCase extends CmpKeyGeneratorSubsystem
                                 new FailedOperationTransformationConfig.NewAttributesConfig(AbstractKeyGeneratorResourceDefinition.JNDI_NAME))
 
         );
+    }
+
+    @Test
+    public void testTransformers_6_1_0() throws Exception {
+        ignoreThisTestIfEAPRepositoryIsNotReachable();
+        testTransformers_1_1_0(ModelTestControllerVersion.EAP_6_1_0);
+    }
+    @Test
+    public void testTransformers_6_1_1() throws Exception {
+        ignoreThisTestIfEAPRepositoryIsNotReachable();
+        testTransformers_1_1_0(ModelTestControllerVersion.EAP_6_1_1);
+    }
+
+    private void testTransformers_1_1_0(ModelTestControllerVersion controllerVersion) throws Exception {
+        ModelVersion modelVersion = ModelVersion.create(1, 1, 0);
+        KernelServicesBuilder builder = createKernelServicesBuilder(AdditionalInitialization.MANAGEMENT)
+                .setSubsystemXml(getSubsystemXml());
+
+        builder.createLegacyKernelServicesBuilder(null, controllerVersion, modelVersion)
+                .addMavenResourceURL("org.jboss.as:jboss-as-cmp:" + controllerVersion.getMavenGavVersion());
+
+        KernelServices mainServices = builder.build();
+        Assert.assertTrue(mainServices.isSuccessfulBoot());
+        KernelServices legacyServices = mainServices.getLegacyServices(modelVersion);
+        Assert.assertTrue(legacyServices.isSuccessfulBoot());
+
+        checkSubsystemModelTransformation(mainServices, modelVersion);
     }
     @Override
     protected AdditionalInitialization createAdditionalInitialization() {
