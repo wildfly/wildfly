@@ -129,7 +129,11 @@ public class DomainOperationContext {
     public ModelNode getServerResult(String hostName, String serverName, String... stepLabels) {
         ModelNode result;
         ServerIdentity id = new ServerIdentity(hostName, null, serverName);
-        ModelNode serverResult = getServerResults().get(id).clone();
+        ModelNode serverResult = getServerResults().get(id);
+        if (serverResult == null) {
+            return null;
+        }
+        serverResult = serverResult.clone();
         if (stepLabels.length == 0) {
             result = serverResult;
         } else {
