@@ -31,9 +31,9 @@ import static org.jboss.as.naming.subsystem.NamingExtension.VERSION_1_1_0;
 import static org.jboss.as.naming.subsystem.NamingSubsystemModel.BINDING;
 import static org.jboss.as.naming.subsystem.NamingSubsystemModel.BINDING_TYPE;
 import static org.jboss.as.naming.subsystem.NamingSubsystemModel.CLASS;
+import static org.jboss.as.naming.subsystem.NamingSubsystemModel.ENVIRONMENT;
 import static org.jboss.as.naming.subsystem.NamingSubsystemModel.MODULE;
 import static org.jboss.as.naming.subsystem.NamingSubsystemModel.OBJECT_FACTORY;
-import static org.jboss.as.naming.subsystem.NamingSubsystemModel.ENVIRONMENT;
 import static org.jboss.as.naming.subsystem.NamingSubsystemModel.SIMPLE;
 import static org.jboss.as.naming.subsystem.NamingSubsystemModel.TYPE;
 import static org.jboss.as.naming.subsystem.NamingSubsystemModel.VALUE;
@@ -110,6 +110,19 @@ public class Naming110TransformersTestCase extends AbstractSubsystemBaseTest {
     @Test
     public void testTransformers_AS713() throws Exception {
         testTransformers(ModelTestControllerVersion.V7_1_3_FINAL);
+    }
+
+
+    @Test
+    public void testTransformers_EAP600() throws Exception {
+        ignoreThisTestIfEAPRepositoryIsNotReachable();
+        testTransformers(ModelTestControllerVersion.EAP_6_0_0);
+    }
+
+    @Test
+    public void testTransformers_EAP601() throws Exception {
+        ignoreThisTestIfEAPRepositoryIsNotReachable();
+        testTransformers(ModelTestControllerVersion.EAP_6_0_1);
     }
 
     private void testTransformers(ModelTestControllerVersion version) throws Exception {
@@ -226,6 +239,30 @@ public class Naming110TransformersTestCase extends AbstractSubsystemBaseTest {
         // create builder for legacy subsystem version
         builder.createLegacyKernelServicesBuilder(createAdditionalInitialization(), ModelTestControllerVersion.V7_1_3_FINAL, VERSION_1_1_0)
                 .addMavenResourceURL("org.jboss.as:jboss-as-naming:7.1.3.Final");
+
+        doTestRejectExpressions_1_1_0(builder);
+    }
+
+    @Test
+    public void testRejectExpressionsEAP600() throws Exception {
+        ignoreThisTestIfEAPRepositoryIsNotReachable();
+        KernelServicesBuilder builder = createKernelServicesBuilder(AdditionalInitialization.MANAGEMENT);
+
+        // create builder for legacy subsystem version
+        builder.createLegacyKernelServicesBuilder(null, ModelTestControllerVersion.EAP_6_0_0, VERSION_1_1_0)
+                .addMavenResourceURL("org.jboss.as:jboss-as-naming:" + ModelTestControllerVersion.EAP_6_0_0.getMavenGavVersion());
+
+        doTestRejectExpressions_1_1_0(builder);
+    }
+
+    @Test
+    public void testRejectExpressionsEAP601() throws Exception {
+        ignoreThisTestIfEAPRepositoryIsNotReachable();
+        KernelServicesBuilder builder = createKernelServicesBuilder(AdditionalInitialization.MANAGEMENT);
+
+        // create builder for legacy subsystem version
+        builder.createLegacyKernelServicesBuilder(createAdditionalInitialization(), ModelTestControllerVersion.EAP_6_0_1, VERSION_1_1_0)
+                .addMavenResourceURL("org.jboss.as:jboss-as-naming:" + ModelTestControllerVersion.EAP_6_0_1.getMavenGavVersion());
 
         doTestRejectExpressions_1_1_0(builder);
     }
