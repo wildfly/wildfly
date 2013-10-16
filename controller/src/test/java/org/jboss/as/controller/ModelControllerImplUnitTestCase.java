@@ -150,7 +150,7 @@ public class ModelControllerImplUnitTestCase {
     @Test
     public void testGoodModelExecutionTxRollback() {
         ModelNode result = controller.execute(getOperation("good", "attr1", 5), null, RollbackTransactionControl.INSTANCE, null);
-        System.out.println(result);
+        //System.out.println(result);
         // Store response data for later assertions after we check more critical stuff
         String outcome = result.get(OUTCOME).asString();
         boolean rolledback = result.get(ROLLED_BACK).asBoolean();
@@ -254,7 +254,7 @@ public class ModelControllerImplUnitTestCase {
 
         // Confirm model was changed
         result = controller.execute(getOperation("good", "attr1", 1), null, null, null);
-        System.out.println(result);
+        //System.out.println(result);
         assertEquals("success", result.get("outcome").asString());
         assertEquals(5, result.get("result").asInt());
     }
@@ -277,7 +277,7 @@ public class ModelControllerImplUnitTestCase {
     @Test
     public void testGoodService() throws Exception {
         ModelNode result = controller.execute(getOperation("good-service", "attr1", 5), null, null, null);
-        System.out.println(result);
+        //System.out.println(result);
         assertEquals("success", result.get("outcome").asString());
         assertEquals(1, result.get("result").asInt());
 
@@ -293,7 +293,7 @@ public class ModelControllerImplUnitTestCase {
     @Test
     public void testGoodServiceTxRollback() throws Exception {
         ModelNode result = controller.execute(getOperation("good-service", "attr1", 5), null, RollbackTransactionControl.INSTANCE, null);
-        System.out.println(result);
+        //System.out.println(result);
         // Store response data for later assertions after we check more critical stuff
 
         ServiceController<?> sc = container.getService(ServiceName.JBOSS.append("good-service"));
@@ -314,7 +314,7 @@ public class ModelControllerImplUnitTestCase {
     @Test
     public void testBadService() throws Exception {
         ModelNode result = controller.execute(getOperation("bad-service", "attr1", 5, "good"), null, null, null);
-        System.out.println(result);
+        //System.out.println(result);
         assertEquals(FAILED, result.get(OUTCOME).asString());
         assertTrue(result.hasDefined(FAILURE_DESCRIPTION));
 
@@ -332,7 +332,7 @@ public class ModelControllerImplUnitTestCase {
     @Test
     public void testMissingService() throws Exception {
         ModelNode result = controller.execute(getOperation("missing-service", "attr1", 5, "good"), null, null, null);
-        System.out.println(result);
+        //System.out.println(result);
         assertEquals(FAILED, result.get(OUTCOME).asString());
         assertTrue(result.hasDefined(FAILURE_DESCRIPTION));
 
@@ -393,7 +393,7 @@ public class ModelControllerImplUnitTestCase {
     @Test
     public void testReloadRequired() throws Exception {
         ModelNode result = controller.execute(getOperation("reload-required", "attr1", 5), null, null, null);
-        System.out.println(result);
+        //System.out.println(result);
         assertEquals(SUCCESS, result.get(OUTCOME).asString());
         assertTrue(result.get(RESPONSE_HEADERS, RUNTIME_UPDATE_SKIPPED).asBoolean());
         assertTrue(result.get(RESPONSE_HEADERS, OPERATION_REQUIRES_RELOAD).asBoolean());
@@ -407,7 +407,7 @@ public class ModelControllerImplUnitTestCase {
     @Test
     public void testRestartRequired() throws Exception {
         ModelNode result = controller.execute(getOperation("restart-required", "attr1", 5), null, null, null);
-        System.out.println(result);
+        //System.out.println(result);
         assertEquals(SUCCESS, result.get(OUTCOME).asString());
         assertTrue(result.get(RESPONSE_HEADERS, RUNTIME_UPDATE_SKIPPED).asBoolean());
         assertTrue(result.get(RESPONSE_HEADERS, OPERATION_REQUIRES_RESTART).asBoolean());
@@ -421,7 +421,7 @@ public class ModelControllerImplUnitTestCase {
     @Test
     public void testReloadRequiredTxRollback() throws Exception {
         ModelNode result = controller.execute(getOperation("reload-required", "attr1", 5), null, RollbackTransactionControl.INSTANCE, null);
-        System.out.println(result);
+        //System.out.println(result);
         assertEquals(FAILED, result.get(OUTCOME).asString());
         assertTrue(result.get(RESPONSE_HEADERS, RUNTIME_UPDATE_SKIPPED).asBoolean());
         assertFalse(result.get(RESPONSE_HEADERS).hasDefined(OPERATION_REQUIRES_RELOAD));
@@ -436,7 +436,7 @@ public class ModelControllerImplUnitTestCase {
     @Test
     public void testRestartRequiredTxRollback() throws Exception {
         ModelNode result = controller.execute(getOperation("restart-required", "attr1", 5), null, RollbackTransactionControl.INSTANCE, null);
-        System.out.println(result);
+        //System.out.println(result);
         assertEquals(FAILED, result.get(OUTCOME).asString());
         assertTrue(result.get(RESPONSE_HEADERS, RUNTIME_UPDATE_SKIPPED).asBoolean());
         assertFalse(result.get(RESPONSE_HEADERS).hasDefined(OPERATION_REQUIRES_RESTART));
@@ -451,7 +451,7 @@ public class ModelControllerImplUnitTestCase {
     @Test
     public void testRemoveDependentService() throws Exception {
         ModelNode result = controller.execute(getOperation("dependent-service", "attr1", 5), null, null, null);
-        System.out.println(result);
+        //System.out.println(result);
         assertEquals("success", result.get("outcome").asString());
         assertEquals(1, result.get("result").asInt());
 
@@ -485,7 +485,7 @@ public class ModelControllerImplUnitTestCase {
             }
         }
 
-        System.out.println(result);
+        //System.out.println(result);
         assertTrue(outcome);
         assertTrue(result.hasDefined(FAILURE_DESCRIPTION));
 
@@ -565,7 +565,7 @@ public class ModelControllerImplUnitTestCase {
 
         // Confirm we can still remove the resource
         result = controller.execute(getOperation("remove-bad-service", CHILD_ONE, "attribute1", 6), null, null, null);
-        System.out.println(result);
+        //System.out.println(result);
         assertEquals(SUCCESS, result.get(OUTCOME).asString());
         assertFalse(result.get(RESULT).isDefined());
 

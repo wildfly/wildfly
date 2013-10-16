@@ -68,7 +68,7 @@ public final class PipeTest {
             for (final int bufSize : ints(31, 256, 8192)) {
                 for (final int pieceSize : ints(31, 64, 127)) {
                     final int pieceCnt = (1 << 17) / pieceSize;
-                    System.out.printf("Buffer size: %d; piece size: %d; piece count %d\n", Integer.valueOf(bufSize), Integer.valueOf(pieceSize), Integer.valueOf(pieceCnt));
+                    //System.out.printf("Buffer size: %d; piece size: %d; piece count %d\n", Integer.valueOf(bufSize), Integer.valueOf(pieceSize), Integer.valueOf(pieceCnt));
                     final int finalSize = pieceCnt * pieceSize;
 
                     final Pipe pipe = new Pipe(bufSize);

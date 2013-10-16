@@ -29,6 +29,7 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
+import org.jboss.as.connector.logging.ConnectorLogger;
 import org.jboss.jca.common.spi.annotations.repository.Annotation;
 
 /**
@@ -137,8 +138,7 @@ public class AnnotationImpl implements Annotation {
                 return clazz.getAnnotation(annotationClass);
             }
         } catch (Exception e) {
-           System.out.println(e.getMessage());
-           e.printStackTrace(System.out);
+            ConnectorLogger.ROOT_LOGGER.error(e);
         }
 
         return null;

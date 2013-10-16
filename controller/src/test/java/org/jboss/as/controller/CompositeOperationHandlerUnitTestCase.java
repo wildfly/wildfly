@@ -53,7 +53,7 @@ public class CompositeOperationHandlerUnitTestCase {
 
     @Before
     public void setupController() throws InterruptedException {
-        System.out.println("=========  New Test \n");
+        //System.out.println("=========  New Test \n");
 
         container = ServiceContainer.Factory.create("test");
         ServiceTarget target = container.subTarget();
@@ -82,7 +82,7 @@ public class CompositeOperationHandlerUnitTestCase {
                 container = null;
             }
         }
-        System.out.println("======================");
+        //System.out.println("======================");
     }
 
     @Test
@@ -90,7 +90,7 @@ public class CompositeOperationHandlerUnitTestCase {
         ModelNode step1 = getOperation("good", "attr1", 2);
         ModelNode step2 = getOperation("good", "attr2", 1);
         ModelNode result = controller.execute(getCompositeOperation(null, step1, step2), null, null, null);
-        System.out.println(result);
+        //System.out.println(result);
         assertEquals("success", result.get("outcome").asString());
         assertEquals(2, result.get("result").asInt());
         assertEquals("success", result.get("result", "step-1", "outcome").asString());
@@ -107,7 +107,7 @@ public class CompositeOperationHandlerUnitTestCase {
         ModelNode step1 = getOperation("good", "attr1", 2);
         ModelNode step2 = getOperation("bad", "attr2", 1);
         ModelNode result = controller.execute(getCompositeOperation(null, step1, step2), null, null, null);
-        System.out.println(result);
+        //System.out.println(result);
         assertEquals(FAILED, result.get(OUTCOME).asString());
         assertTrue(result.get(FAILURE_DESCRIPTION).toString().contains("this request is bad"));
 
@@ -138,7 +138,7 @@ public class CompositeOperationHandlerUnitTestCase {
         ModelNode op = getCompositeOperation(null, step1, step2);
         op.get(OPERATION_HEADERS, ROLLBACK_ON_RUNTIME_FAILURE).set(false);
         ModelNode result = controller.execute(op, null, null, null);
-        System.out.println(result);
+        //System.out.println(result);
         // Model stage failure should result in rollback regardless of the header
         assertEquals(FAILED, result.get(OUTCOME).asString());
         assertTrue(result.get(FAILURE_DESCRIPTION).toString().contains("this request is bad"));
@@ -155,7 +155,7 @@ public class CompositeOperationHandlerUnitTestCase {
         ModelNode op = getCompositeOperation(null, step1, step2);
         op.get(OPERATION_HEADERS, ROLLBACK_ON_RUNTIME_FAILURE).set(false);
         ModelNode result = controller.execute(op, null, null, null);
-        System.out.println(result);
+        //System.out.println(result);
         // Model stage failure should result in rollback regardless of the header
         assertEquals(FAILED, result.get(OUTCOME).asString());
 
@@ -205,7 +205,7 @@ public class CompositeOperationHandlerUnitTestCase {
         ModelNode op = getCompositeOperation(null, step1, step2);
         op.get(OPERATION_HEADERS, ROLLBACK_ON_RUNTIME_FAILURE).set(false);
         ModelNode result = controller.execute(op, null, null, null);
-        System.out.println(result);
+        //System.out.println(result);
         Assert.assertEquals(SUCCESS, result.get(OUTCOME).asString());
 
         Assert.assertEquals(2, controller.execute(getOperation("good", "attr1", 3), null, null, null).get("result").asInt());
@@ -219,7 +219,7 @@ public class CompositeOperationHandlerUnitTestCase {
         ModelNode op = getCompositeOperation(null, step1, step2);
         op.get(OPERATION_HEADERS, ROLLBACK_ON_RUNTIME_FAILURE).set(false);
         ModelNode result = controller.execute(op, null, null, null);
-        System.out.println(result);
+        //System.out.println(result);
         Assert.assertEquals(FAILED, result.get(OUTCOME).asString());
         final String description = result.get("failure-description").toString();
         assertTrue(description.contains("runtime exception"));
@@ -425,7 +425,7 @@ public class CompositeOperationHandlerUnitTestCase {
         ModelNode step1 = getOperation("good", "attr1", 2);
         ModelNode step2 = getOperation("good-service", "attr2", 1);
         ModelNode result = controller.execute(getCompositeOperation(null, step1, step2), null, ModelControllerImplUnitTestCase.RollbackTransactionControl.INSTANCE, null);
-        System.out.println(result);
+        //System.out.println(result);
         Assert.assertEquals("failed", result.get("outcome").asString());
         assertTrue(result.hasDefined(FAILURE_DESCRIPTION));
 
@@ -451,7 +451,7 @@ public class CompositeOperationHandlerUnitTestCase {
         ModelNode op = getCompositeOperation(null, comp1, comp2);
 //        System.out.println(op);
         ModelNode result = controller.execute(op, null, ModelControllerImplUnitTestCase.RollbackTransactionControl.INSTANCE, null);
-        System.out.println(result);
+        //System.out.println(result);
         Assert.assertEquals("failed", result.get("outcome").asString());
         assertTrue(result.hasDefined(FAILURE_DESCRIPTION));
 
@@ -472,7 +472,7 @@ public class CompositeOperationHandlerUnitTestCase {
         ModelNode step2 = getOperation("good", "attr2", 1);
         ModelNode comp = getCompositeOperation(null, step1, step2);
         ModelNode result = controller.execute(comp, null, null, null);
-        System.out.println(result);
+        //System.out.println(result);
         Assert.assertEquals(SUCCESS, result.get(OUTCOME).asString());
         assertTrue(result.get(RESULT, "step-1", RESPONSE_HEADERS, RUNTIME_UPDATE_SKIPPED).asBoolean());
         assertTrue(result.get(RESULT, "step-1", RESPONSE_HEADERS, OPERATION_REQUIRES_RELOAD).asBoolean());
@@ -489,7 +489,7 @@ public class CompositeOperationHandlerUnitTestCase {
         ModelNode step2 = getOperation("good", "attr2", 1);
         ModelNode comp = getCompositeOperation(null, step1, step2);
         ModelNode result = controller.execute(comp, null, null, null);
-        System.out.println(result);
+        //System.out.println(result);
         Assert.assertEquals(SUCCESS, result.get(OUTCOME).asString());
         assertTrue(result.get(RESULT, "step-1", RESPONSE_HEADERS, RUNTIME_UPDATE_SKIPPED).asBoolean());
         assertTrue(result.get(RESULT, "step-1", RESPONSE_HEADERS, OPERATION_REQUIRES_RESTART).asBoolean());
@@ -506,7 +506,7 @@ public class CompositeOperationHandlerUnitTestCase {
         ModelNode step2 = getOperation("good", "attr2", 1);
         ModelNode comp = getCompositeOperation(null, step1, step2);
         ModelNode result = controller.execute(comp, null, ModelControllerImplUnitTestCase.RollbackTransactionControl.INSTANCE, null);
-        System.out.println(result);
+        //System.out.println(result);
         Assert.assertEquals(FAILED, result.get(OUTCOME).asString());
         assertTrue(result.get(RESULT, "step-1", RESPONSE_HEADERS, RUNTIME_UPDATE_SKIPPED).asBoolean());
         assertFalse(result.get(RESULT, "step-1", RESPONSE_HEADERS).hasDefined(OPERATION_REQUIRES_RELOAD));
@@ -524,7 +524,7 @@ public class CompositeOperationHandlerUnitTestCase {
         ModelNode step2 = getOperation("good", "attr2", 1);
         ModelNode comp = getCompositeOperation(null, step1, step2);
         ModelNode result = controller.execute(comp, null, ModelControllerImplUnitTestCase.RollbackTransactionControl.INSTANCE, null);
-        System.out.println(result);
+        //System.out.println(result);
         Assert.assertEquals(FAILED, result.get(OUTCOME).asString());
         assertTrue(result.get(RESULT, "step-1", RESPONSE_HEADERS, RUNTIME_UPDATE_SKIPPED).asBoolean());
         assertFalse(result.get(RESULT, "step-1", RESPONSE_HEADERS).hasDefined(OPERATION_REQUIRES_RESTART));
@@ -538,13 +538,13 @@ public class CompositeOperationHandlerUnitTestCase {
 
     @Test
     public void testCompositeReleasesLocks() throws Exception {
-        System.out.println("------");
+        //System.out.println("------");
         assertTrue(sharedState.get());
         ModelNode step1 = getOperation("good", "attr1", 2);
         ModelNode step2 = getOperation("good-service", "attr2", 1);
         controller.execute(getCompositeOperation(null, step1, step2), null, null, null);
 
-        System.out.println("------");
+        //System.out.println("------");
 
         final CountDownLatch latch = new CountDownLatch(1);
         final AtomicInteger i = new AtomicInteger();
@@ -564,7 +564,7 @@ public class CompositeOperationHandlerUnitTestCase {
         ModelNode step = getOperation("good", "attr2", 1);
         ModelNode comp = getCompositeOperation(null, step);
         ModelNode result = controller.execute(comp, null, ModelControllerImplUnitTestCase.RollbackTransactionControl.INSTANCE, null);
-        System.out.println(result);
+        //System.out.println(result);
     }
 
     public static ModelNode getCompositeOperation(Boolean rollback, ModelNode... steps) {

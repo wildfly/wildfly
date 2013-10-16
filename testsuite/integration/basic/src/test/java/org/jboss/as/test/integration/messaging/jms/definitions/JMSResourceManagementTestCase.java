@@ -63,7 +63,7 @@ public class JMSResourceManagementTestCase {
                         EmptyAsset.INSTANCE,
                         create("beans.xml"));
 
-        System.out.println("archive = " + archive.toString(true));
+        //System.out.println("archive = " + archive.toString(true));
         return archive;
     }
 
@@ -113,12 +113,12 @@ public class JMSResourceManagementTestCase {
         readResourceWithRuntime.get("include-runtime").set(true);
         readResourceWithRuntime.get("operations").set(true);
         ModelNode result = execute(readResourceWithRuntime, true);
-        System.out.println("result = " + result.toJSONString(false));
+        //System.out.println("result = " + result.toJSONString(false));
 
         readResourceWithRuntime = getOperation("pooled-connection-factory", "JMSResourceDefinitionsTestCase_JMSResourceDefinitionsTestCase_java_module/myFactory1", "read-resource");
         readResourceWithRuntime.get("include-runtime").set(true);
         result = execute(readResourceWithRuntime, true);
-        System.out.println("result = " + result.toJSONString(false));
+        //System.out.println("result = " + result.toJSONString(false));
         assertEquals(1, result.get("min-pool-size").asInt());
         assertEquals(2, result.get("max-pool-size").asInt());
         assertEquals(3, result.get("initial-connect-attempts").asInt());
@@ -129,7 +129,7 @@ public class JMSResourceManagementTestCase {
         readResourceWithRuntime = getOperation("pooled-connection-factory", "JMSResourceDefinitionsTestCase_MessagingBean_java_comp/env/myFactory2", "read-resource");
         readResourceWithRuntime.get("include-runtime").set(true);
         result = execute(readResourceWithRuntime, true);
-        System.out.println("result = " + result.toJSONString(false));
+        //System.out.println("result = " + result.toJSONString(false));
         assertEquals(-1, result.get("min-pool-size").asInt());
         assertEquals(-1, result.get("max-pool-size").asInt());
         assertFalse(result.toJSONString(false), result.hasDefined("user"));
@@ -149,7 +149,7 @@ public class JMSResourceManagementTestCase {
         readResourceWithRuntime = getOperation("pooled-connection-factory", "JMSResourceDefinitionsTestCase_JMSResourceDefinitionsTestCase_java_app/myFactory4", "read-resource");
         readResourceWithRuntime.get("include-runtime").set(true);
         result = execute(readResourceWithRuntime, true);
-        System.out.println("result = " + result.toJSONString(false));
+        //System.out.println("result = " + result.toJSONString(false));
         assertEquals(4, result.get("min-pool-size").asInt());
         assertEquals(5, result.get("max-pool-size").asInt());
         assertEquals(6, result.get("initial-connect-attempts").asInt());

@@ -201,7 +201,7 @@ public abstract class AbstractOperationTestCase {
 
         public Map<Stage, List<OperationAndHandler>> verify() {
             if (!expectedSteps.isEmpty()) {
-                System.out.println("Missing: " + expectedSteps);
+                //System.out.println("Missing: " + expectedSteps);
                 fail("Not all the expected steps were added. " + expectedSteps);
             }
             return addedSteps;

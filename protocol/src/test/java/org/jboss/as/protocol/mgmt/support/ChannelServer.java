@@ -76,7 +76,7 @@ public class ChannelServer implements Closeable {
         //the endpoint name.
 
         provider.addUser("TestUser","localhost.localdomain", "TestUserPassword".toCharArray());
-        System.out.println(configuration.getBindAddress());
+        //System.out.println(configuration.getBindAddress());
         OptionMap options = OptionMap.create(Options.SASL_MECHANISMS, Sequence.of("ANONYMOUS"), Options.SASL_POLICY_NOANONYMOUS, Boolean.FALSE);
         AcceptingChannel<? extends ConnectedStreamChannel> streamServer = networkServerProvider.createServer(configuration.getBindAddress(), options, provider, null);
 

@@ -155,7 +155,7 @@ public class DeploymentArchiveTestCase extends AbstractCliTestBase {
         cliArchive.add(moduleArchive, "/", ZipExporter.class);
         cliArchive.add(new StringAsset(MODULE_XML), "/", "module.xml");
 
-        System.out.println(cliArchive.toString(true));
+        //System.out.println(cliArchive.toString(true));
 
         final String tempDir = System.getProperty("java.io.tmpdir");
         final File file = new File(tempDir, "deploymentarchive.cli");

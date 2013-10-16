@@ -72,7 +72,7 @@ public class ValidateModelTestCase {
 
         ValidationConfiguration config = KnownIssuesValidationConfiguration.createAndFixupModel(TestModelType.STANDALONE, description);
 
-        System.out.println(description);
+        //System.out.println(description);
 
         ModelTestModelDescriptionValidator validator = new ModelTestModelDescriptionValidator(new ModelNode().setEmptyList(), description, config);
         List<ValidationFailure> failures = validator.validateResources();

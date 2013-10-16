@@ -200,7 +200,7 @@ public class FileTaskTestCase extends AbstractTaskTestCase {
 
         Identity identityBeforePatch = loadInstalledIdentity().getIdentity();
 
-        System.out.println("before patch");
+        //System.out.println("before patch");
         tree(env.getInstalledImage().getJbossHome());
 
         // Apply
@@ -208,14 +208,14 @@ public class FileTaskTestCase extends AbstractTaskTestCase {
         assertPatchHasBeenApplied(result, patch);
         assertFalse(test.exists());
 
-        System.out.println("after patch");
+        //System.out.println("after patch");
         tree(env.getInstalledImage().getJbossHome());
 
         // Rollback
         result = rollback(patch.getPatchId());
         assertPatchHasBeenRolledBack(result, identityBeforePatch);
 
-        System.out.println("after rollback");
+        //System.out.println("after rollback");
         tree(env.getInstalledImage().getJbossHome());
 
         assertTrue(test.exists());

@@ -66,7 +66,7 @@ public class EJBWebServicesTestCase {
         URL webRoot = new URL(baseUrl, "/");
         String result = HttpRequest.post(webRoot.toString() + "ejbws-example/SingletonEndpoint", message, 10, SECONDS);
         // TODO: check something
-        System.out.println(result);
+        //System.out.println(result);
     }
 
     @Test
@@ -74,7 +74,7 @@ public class EJBWebServicesTestCase {
         URL webRoot = new URL(baseUrl, "/");
         final String wsdl = HttpRequest.get(webRoot.toString() + "ejbws-example/SingletonEndpoint?wsdl", 10, SECONDS);
         // TODO: check something
-        System.out.println(wsdl);
+        //System.out.println(wsdl);
     }
 
 }

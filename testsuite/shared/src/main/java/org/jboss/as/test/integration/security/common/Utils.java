@@ -60,7 +60,6 @@ import org.apache.http.client.entity.UrlEncodedFormEntity;
 import org.apache.http.client.methods.HttpGet;
 import org.apache.http.client.methods.HttpPost;
 import org.apache.http.client.params.AuthPolicy;
-import org.apache.http.cookie.Cookie;
 import org.apache.http.impl.client.DefaultHttpClient;
 import org.apache.http.impl.client.DefaultRedirectStrategy;
 import org.apache.http.message.BasicNameValuePair;
@@ -258,7 +257,8 @@ public class Utils {
             System.out.println("Login form get: " + statusLine);
             assertEquals(200, statusLine.getStatusCode());
 
-            System.out.println("Initial set of cookies:");
+
+            /*System.out.println("Initial set of cookies:");
             List<Cookie> cookies = httpclient.getCookieStore().getCookies();
             if (cookies.isEmpty()) {
                 System.out.println("None");
@@ -266,7 +266,7 @@ public class Utils {
                 for (int i = 0; i < cookies.size(); i++) {
                     System.out.println("- " + cookies.get(i).toString());
                 }
-            }
+            }*/
 
             // We should now login with the user name and password
             HttpPost httpost = new HttpPost(URL + "/j_security_check");
@@ -296,7 +296,7 @@ public class Utils {
             if (entity != null)
                 EntityUtils.consume(entity);
 
-            System.out.println("Post logon cookies:");
+            /*System.out.println("Post logon cookies:");
             cookies = httpclient.getCookieStore().getCookies();
             if (cookies.isEmpty()) {
                 System.out.println("None");
@@ -304,7 +304,7 @@ public class Utils {
                 for (int i = 0; i < cookies.size(); i++) {
                     System.out.println("- " + cookies.get(i).toString());
                 }
-            }
+            }*/
 
             // Either the authentication passed or failed based on the expected status code
             statusLine = response.getStatusLine();

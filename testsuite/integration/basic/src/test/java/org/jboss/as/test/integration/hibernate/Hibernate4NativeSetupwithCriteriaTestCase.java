@@ -192,11 +192,11 @@ public class Hibernate4NativeSetupwithCriteriaTestCase {
             String[] queryList = stats.getQueries();
 
             // test list of queries obtained from statistics
-            for (int i = 0; i < queryList.length; i++) {
+           /* for (int i = 0; i < queryList.length; i++) {
 
                 System.out.println("Query obtained from statistics::" + queryList[i]);
 
-            }
+            }*/
         } finally {
             sfsb.cleanup();
         }

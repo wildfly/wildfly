@@ -185,7 +185,7 @@ public class Hibernate2LCacheStatsTestCase {
             conn.close();
             // read updated (dirty) data from second level cache
             s2 = sfsb.getPlanet(s2.getPlanetId());
-            System.out.println("get sfsb.getPlanet() returned planet with galaxy=" + s2.getGalaxy());
+            //System.out.println("get sfsb.getPlanet() returned planet with galaxy=" + s2.getGalaxy());
             assertTrue("was able to read updated Planet entity", s2 != null);
             assertEquals("Galaxy for Planet " + s2.getPlanetName() + " was read from second level cache = " + s2.getGalaxy(),
                     "MILKY WAY", s2.getGalaxy());

@@ -411,7 +411,7 @@ public abstract class MixedDomainDeploymentTest {
         StringWriter writer = new StringWriter();
         try {
             URL url = new URL("http://" + TestSuiteEnvironment.formatPossibleIpv6Address(host) + ":" + port + "/" + path);
-            System.out.println("Reading response from " + url + ":");
+            //System.out.println("Reading response from " + url + ":");
             conn = url.openConnection();
             conn.setDoInput(true);
             in = new BufferedInputStream(conn.getInputStream());

@@ -374,7 +374,7 @@ public class CliUtilsForPatching {
         for (ModelNode n : pathList) {
             patchesListString.add(n.asString());
         }
-        System.out.println(Arrays.toString(patchesListString.toArray()));
+        //System.out.println(Arrays.toString(patchesListString.toArray()));
         return patchesListString;
     }
 

@@ -51,11 +51,11 @@ public class SubsystemParsingTestCase extends AbstractSubsystemTest {
         // one operation for adding subsystem; one operation for adding deployment-type
         Assert.assertEquals(8, operations.size());
 
-        //Check that each operation has the correct content
+       /* //Check that each operation has the correct content
         for (int i = 0; i < 8; i++) {
             ModelNode operation = operations.get(i) ;
             System.out.println(operation);
-        }
+        }*/
     }
 
     @Test
@@ -67,7 +67,7 @@ public class SubsystemParsingTestCase extends AbstractSubsystemTest {
 
         // print out the resulting model
         ModelNode model = services.readWholeModel() ;
-        System.out.println(model);
+        //System.out.println(model);
 
         // use some assertions here to check the correctness of the model
         Assert.assertTrue(model.get(SUBSYSTEM).hasDefined(InfinispanExtension.SUBSYSTEM_NAME));
@@ -84,12 +84,12 @@ public class SubsystemParsingTestCase extends AbstractSubsystemTest {
         KernelServices servicesA = createKernelServicesBuilder(null).setSubsystemXml(subsystemXml).build();
 
         // list the names of the services which have been installed
-        System.out.println("service names = " + servicesA.getContainer().getServiceNames());
+        //System.out.println("service names = " + servicesA.getContainer().getServiceNames());
 
         ModelNode modelA = servicesA.readWholeModel() ;
         // print out the resulting model
         String marshalled = servicesA.getPersistedSubsystemXml();
-        System.out.println("marshalled XML = " + marshalled);
+        //System.out.println("marshalled XML = " + marshalled);
 
         // install the persisted xml from the first controller into a second controller
         KernelServices servicesB = createKernelServicesBuilder(null).setSubsystemXml(marshalled).build();
@@ -108,7 +108,7 @@ public class SubsystemParsingTestCase extends AbstractSubsystemTest {
         KernelServices servicesA = createKernelServicesBuilder(null).setSubsystemXml(subsystemXml).build();
 
         // list the names of the services which have been installed
-        System.out.println("service names = " + servicesA.getContainer().getServiceNames());
+        //System.out.println("service names = " + servicesA.getContainer().getServiceNames());
 
         // test an operation
         PathAddress rpcManagerAddr = PathAddress.pathAddress(
@@ -125,7 +125,7 @@ public class SubsystemParsingTestCase extends AbstractSubsystemTest {
         ModelNode result = servicesA.executeOperation(readAttributeOp);
         // Assert.assertEquals(SUCCESS, result.get(OUTCOME).asString());
 
-        System.out.println("result = " + result.toString());
+        //System.out.println("result = " + result.toString());
 
     }
 

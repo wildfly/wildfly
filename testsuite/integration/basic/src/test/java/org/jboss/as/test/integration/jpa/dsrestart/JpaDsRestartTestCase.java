@@ -102,7 +102,7 @@ public class JpaDsRestartTestCase {
         }
         ModelController controller = (ModelController)serviceContainer.getRequiredService(Services.JBOSS_SERVER_CONTROLLER).getValue();
 
-        System.out.println("toggle " + enable + ":" + op);
+        //System.out.println("toggle " + enable + ":" + op);
 
         ModelNode result = controller.execute(op, OperationMessageHandler.logging, OperationTransactionControl.COMMIT, null);
         if (expectFailure) {

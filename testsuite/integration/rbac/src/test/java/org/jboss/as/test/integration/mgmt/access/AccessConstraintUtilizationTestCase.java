@@ -127,7 +127,7 @@ public class AccessConstraintUtilizationTestCase extends AbstractRbacTestCase {
             String path = String.format(ADDR_FORMAT, acdKey.getType(), acdType, acdKey.getName());
             ModelNode op = createOpNode(path, READ_CHILDREN_RESOURCES_OPERATION);
             op.get(ModelDescriptionConstants.CHILD_TYPE).set(ModelDescriptionConstants.APPLIES_TO);
-            System.out.println("Testing " + acdKey);
+            //System.out.println("Testing " + acdKey);
             ModelNode result = RbacUtil.executeOperation(client, op, Outcome.SUCCESS).get(ModelDescriptionConstants.RESULT);
             Assert.assertTrue(acdKey + "result is defined", result.isDefined());
             Assert.assertTrue(acdKey + "result has content", result.asInt() > 0);

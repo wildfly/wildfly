@@ -424,7 +424,6 @@ public class ManagementClient {
 
     private void checkSuccessful(final ModelNode result, final ModelNode operation) throws UnSuccessfulOperationException {
         if (!SUCCESS.equals(result.get(OUTCOME).asString())) {
-            System.out.println(result);
             throw new UnSuccessfulOperationException(result.get(FAILURE_DESCRIPTION).toString());
         }
     }

@@ -54,7 +54,7 @@ public class ContextHandlerEndpointTestCase {
         ejb3Jar.addClass(ContextHandlerEndpointIface.class);
         ejb3Jar.addClass(ContextHandlerEndpointImpl.class);
         ejb3Jar.addAsResource(ContextHandler.class.getPackage(), "handler.xml", "org/jboss/as/test/integration/ws/ejb/handler.xml");
-        System.out.println(ejb3Jar.toString(true));
+        //System.out.println(ejb3Jar.toString(true));
 
         return ejb3Jar;
     }

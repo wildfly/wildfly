@@ -168,14 +168,14 @@ public class HibernateSecondLevelCacheTestCase {
 
             DataSource ds = rawLookup("java:jboss/datasources/ExampleDS", DataSource.class);
             Connection conn = ds.getConnection();
-            System.out.println("got JDBC connection");
+            //System.out.println("got JDBC connection");
             int updated = conn.prepareStatement("update Student set first_name='hacked' where student_id=1").executeUpdate();
             assertTrue("was able to update added Student.  update count=" + updated, updated > 0);
             conn.close();
-            System.out.println("updated student first name to 'hacked' (bypassing 2lc by executing sql directly");
+            //System.out.println("updated student first name to 'hacked' (bypassing 2lc by executing sql directly");
             // read updated (dirty) data from second level cache
             s2 = sfsb.getStudent(1);
-            System.out.println("get sfsb.getStudent() returned student with first name=" + s2.getFirstName());
+            //System.out.println("get sfsb.getStudent() returned student with first name=" + s2.getFirstName());
             assertTrue("was able to read updated Student entity", s2 != null);
             assertEquals("Student first name was read from second level cache = " + s2.getFirstName(), "MADHUMITA", s2.getFirstName());
         } finally {

@@ -75,7 +75,7 @@ public class CookieUnitTestCase {
         war.addClass(CookieReadServlet.class);
         war.addClass(CookieServlet.class);
 
-        System.out.println(war.toString(true));
+        //System.out.println(war.toString(true));
         return war;
     }
 

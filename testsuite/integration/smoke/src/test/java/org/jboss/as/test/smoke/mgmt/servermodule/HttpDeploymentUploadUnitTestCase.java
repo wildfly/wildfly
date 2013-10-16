@@ -103,7 +103,7 @@ public class HttpDeploymentUploadUnitTestCase {
             assertEquals("text/html;utf-8", connection.getHeaderField("Content-Type"));
             ModelNode node = readResult(connection.getInputStream());
             assertNotNull(node);
-            System.out.println(node);
+            //System.out.println(node);
             assertEquals(SUCCESS, node.require(OUTCOME).asString());
 
             byte[] hash = node.require(RESULT).asBytes();
@@ -117,7 +117,7 @@ public class HttpDeploymentUploadUnitTestCase {
 
             node = readResult(connection.getInputStream());
             assertNotNull(node);
-            System.out.println(node);
+            //System.out.println(node);
             assertEquals(SUCCESS, node.require(OUTCOME).asString());
 
             connection.disconnect();
@@ -129,7 +129,7 @@ public class HttpDeploymentUploadUnitTestCase {
                 os = new BufferedOutputStream(connection.getOutputStream());
                 writeRemoveRequest(os);
                 ModelNode node = readResult(connection.getInputStream());
-                System.out.println(node);
+                //System.out.println(node);
                 connection.disconnect();
             } catch (Exception ignored) {
                 ignored.printStackTrace();

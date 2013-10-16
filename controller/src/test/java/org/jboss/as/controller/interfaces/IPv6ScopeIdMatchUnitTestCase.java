@@ -63,9 +63,9 @@ public class IPv6ScopeIdMatchUnitTestCase {
             }
         }
         System.out.println("loopback: " + loopbackInterface + " " + loopbackAddress);
-        for (Map.Entry<NetworkInterface, Set<Inet6Address>> entry : addresses.entrySet()) {
+      /*  for (Map.Entry<NetworkInterface, Set<Inet6Address>> entry : addresses.entrySet()) {
             System.out.println(entry.getKey() + " " + entry.getValue());
-        }
+        }*/
 
     }
 
