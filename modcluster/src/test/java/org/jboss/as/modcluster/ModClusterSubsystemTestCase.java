@@ -78,6 +78,18 @@ public class ModClusterSubsystemTestCase extends AbstractSubsystemBaseTest {
         testTransformers_1_2_0(ModelTestControllerVersion.V7_1_3_FINAL);
     }
 
+    @Test
+    public void testTransformersEAP600() throws Exception {
+        ignoreThisTestIfEAPRepositoryIsNotReachable();
+        testTransformers_1_2_0(ModelTestControllerVersion.EAP_6_0_0);
+    }
+
+    @Test
+    public void testTransformers601() throws Exception {
+        ignoreThisTestIfEAPRepositoryIsNotReachable();
+        testTransformers_1_2_0(ModelTestControllerVersion.EAP_6_0_1);
+    }
+
     private void testTransformers_1_2_0(ModelTestControllerVersion controllerVersion) throws Exception {
         String subsystemXml = readResource("subsystem-transform-no-reject.xml");
         ModelVersion modelVersion = ModelVersion.create(1, 2, 0);
@@ -131,6 +143,16 @@ public class ModClusterSubsystemTestCase extends AbstractSubsystemBaseTest {
     @Test
     public void testExpressionsAreRejected713() throws Exception {
         testExpressionsAreRejectedByVersion_1_2(ModelTestControllerVersion.V7_1_3_FINAL);
+    }
+
+    @Test
+    public void testExpressionsAreRejectedEAP600() throws Exception {
+        testExpressionsAreRejectedByVersion_1_2(ModelTestControllerVersion.EAP_6_0_0);
+    }
+
+    @Test
+    public void testExpressionsAreRejectedEAP601() throws Exception {
+        testExpressionsAreRejectedByVersion_1_2(ModelTestControllerVersion.EAP_6_0_1);
     }
 
     private void testExpressionsAreRejectedByVersion_1_2(ModelTestControllerVersion controllerVersion) throws Exception {
