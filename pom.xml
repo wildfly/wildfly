@@ -106,7 +106,7 @@
         <version.javax.jws.jsr181-api>1.0-MR1-redhat-4</version.javax.jws.jsr181-api>
         <version.javax.mail>1.4.5-redhat-1</version.javax.mail>
         <version.javax.validation>1.0.0.GA-redhat-2</version.javax.validation>
-        <version.jaxen>1.1.3-redhat-2</version.jaxen>
+        <version.jaxen>1.1.3.redhat-3</version.jaxen>
         <version.jboss.jaxbintros>1.0.2.GA-redhat-6</version.jboss.jaxbintros>
         <version.joda-time>1.6.2-redhat-4</version.joda-time>
         <version.junit>4.11</version.junit>
@@ -134,7 +134,7 @@
         <version.org.apache.xalan>2.7.1-redhat-3</version.org.apache.xalan>
         <version.org.apache.xerces>2.9.1-redhat-4</version.org.apache.xerces>
         <version.org.codehaus.jackson>1.9.9-redhat-2</version.org.codehaus.jackson>
-        <version.org.codehaus.jettison>1.3.1-redhat-2</version.org.codehaus.jettison>
+        <version.org.codehaus.jettison>1.3.1.redhat-3</version.org.codehaus.jettison>
         <version.org.codehaus.plexus.plexus-utils>3.0.12</version.org.codehaus.plexus.plexus-utils>
         <version.org.codehaus.woodstox.stax2-api>3.1.1-redhat-3</version.org.codehaus.woodstox.stax2-api>
         <version.org.codehaus.woodstox.woodstox-core-asl>4.2.0-redhat-2</version.org.codehaus.woodstox.woodstox-core-asl>
