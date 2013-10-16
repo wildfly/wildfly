@@ -52,6 +52,7 @@ class KnownVersions {
         final String CORE_MODEL_7_1_3 = "1.3.0";
         final String CORE_MODEL_7_2_0 = "1.4.0";
         addSubsystemVersion(map, "configadmin", "1.0.0", CORE_MODEL_7_1_3);
+        addSubsystemVersion(map, "configadmin", "1.1.0", CORE_MODEL_7_2_0);
         addSubsystemVersion(map, "cmp", "1.0.0", CORE_MODEL_7_1_2);
         addSubsystemVersion(map, "cmp", "1.1.0", CORE_MODEL_7_2_0);
         addSubsystemVersion(map, "ee", "1.0.0", CORE_MODEL_7_1_3);

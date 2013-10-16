@@ -132,21 +132,34 @@ public class ConfigAdminSubsystemTestCase extends AbstractSubsystemBaseTest {
 
     @Test
     public void testTransformersAS712() throws Exception {
-        testTransformers1_0_0("7.1.2.Final", ModelTestControllerVersion.V7_1_2_FINAL);
+        testTransformers1_0_0(ModelTestControllerVersion.V7_1_2_FINAL);
     }
 
     @Test
     public void testTransformersAS713() throws Exception {
-        testTransformers1_0_0("7.1.3.Final", ModelTestControllerVersion.V7_1_3_FINAL);
+        testTransformers1_0_0(ModelTestControllerVersion.V7_1_3_FINAL);
     }
 
-    private void testTransformers1_0_0(String mavenVersion, ModelTestControllerVersion controllerVersion) throws Exception {
+    @Test
+    public void testTransformersEAP600() throws Exception {
+        ignoreThisTestIfEAPRepositoryIsNotReachable();
+        testTransformers1_0_0(ModelTestControllerVersion.EAP_6_0_0);
+    }
+
+    @Test
+    public void testTransformersEAP601() throws Exception {
+        ignoreThisTestIfEAPRepositoryIsNotReachable();
+        testTransformers1_0_0(ModelTestControllerVersion.EAP_6_0_1);
+    }
+
+
+    private void testTransformers1_0_0(ModelTestControllerVersion controllerVersion) throws Exception {
         ModelVersion oldVersion = ModelVersion.create(1, 0, 0);
         KernelServicesBuilder builder = createKernelServicesBuilder(null)
                 .setSubsystemXml(SUBSYSTEM_XML_1_0_1);
         builder.createLegacyKernelServicesBuilder(null, controllerVersion, oldVersion)
                 .setExtensionClassName(ConfigAdminExtension.class.getName())
-                .addMavenResourceURL("org.jboss.as:jboss-as-configadmin:" + mavenVersion);
+                .addMavenResourceURL("org.jboss.as:jboss-as-configadmin:" + controllerVersion.getMavenGavVersion());
         KernelServices mainServices = builder.build();
         KernelServices legacyServices = mainServices.getLegacyServices(oldVersion);
         Assert.assertNotNull(legacyServices);
@@ -174,22 +187,34 @@ public class ConfigAdminSubsystemTestCase extends AbstractSubsystemBaseTest {
 
     @Test
     public void testRejectExpressionsAS712() throws Exception {
-        testRejectExpressions1_0_0("org.jboss.as:jboss-as-configadmin:7.1.2.Final", ModelTestControllerVersion.V7_1_2_FINAL);
+        testRejectExpressions1_0_0(ModelTestControllerVersion.V7_1_2_FINAL);
     }
 
     @Test
     public void testRejectExpressionsAS713() throws Exception {
-        testRejectExpressions1_0_0("org.jboss.as:jboss-as-configadmin:7.1.3.Final", ModelTestControllerVersion.V7_1_3_FINAL);
+        testRejectExpressions1_0_0(ModelTestControllerVersion.V7_1_3_FINAL);
     }
 
-    private void testRejectExpressions1_0_0(String mavenGAV, ModelTestControllerVersion controllerVersion) throws Exception {
+    @Test
+    public void testRejectExpressionsEAP600() throws Exception {
+        ignoreThisTestIfEAPRepositoryIsNotReachable();
+        testRejectExpressions1_0_0(ModelTestControllerVersion.EAP_6_0_0);
+    }
+
+    @Test
+    public void testRejectExpressionsEAP601() throws Exception {
+        ignoreThisTestIfEAPRepositoryIsNotReachable();
+        testRejectExpressions1_0_0(ModelTestControllerVersion.EAP_6_0_1);
+    }
+
+    private void testRejectExpressions1_0_0(ModelTestControllerVersion controllerVersion) throws Exception {
         // create builder for current subsystem version
         KernelServicesBuilder builder = createKernelServicesBuilder(createAdditionalInitialization());
 
         // create builder for legacy subsystem version
         ModelVersion version_1_0_0 = ModelVersion.create(1, 0, 0);
         builder.createLegacyKernelServicesBuilder(null, controllerVersion, version_1_0_0)
-                .addMavenResourceURL(mavenGAV)
+                .addMavenResourceURL("org.jboss.as:jboss-as-configadmin:" + controllerVersion.getMavenGavVersion())
                 .setExtensionClassName("org.jboss.as.configadmin.parser.ConfigAdminExtension");
 
         KernelServices mainServices = builder.build();
@@ -209,6 +234,37 @@ public class ConfigAdminSubsystemTestCase extends AbstractSubsystemBaseTest {
         );
     }
 
+    @Test
+    public void testTransformersEAP610() throws Exception {
+        ignoreThisTestIfEAPRepositoryIsNotReachable();
+        testTransformers1_1_0(ModelTestControllerVersion.EAP_6_1_0);
+    }
+
+    @Test
+    public void testTransformersEAP611() throws Exception {
+        ignoreThisTestIfEAPRepositoryIsNotReachable();
+        testTransformers1_1_0(ModelTestControllerVersion.EAP_6_1_1);
+    }
+
+
+    private void testTransformers1_1_0(ModelTestControllerVersion controllerVersion) throws Exception {
+        // create builder for current subsystem version
+        KernelServicesBuilder builder = createKernelServicesBuilder(createAdditionalInitialization())
+                .setSubsystemXml(SUBSYSTEM_XML_1_0_EXPRESSION);
+
+        // create builder for legacy subsystem version
+        ModelVersion version_1_1_0 = ModelVersion.create(1, 1, 0);
+        builder.createLegacyKernelServicesBuilder(null, controllerVersion, version_1_1_0)
+                .addMavenResourceURL("org.jboss.as:jboss-as-configadmin:" + controllerVersion.getMavenGavVersion());
+
+        KernelServices mainServices = builder.build();
+        KernelServices legacyServices = mainServices.getLegacyServices(version_1_1_0);
+
+        Assert.assertNotNull(legacyServices);
+        Assert.assertTrue("main services did not boot", mainServices.isSuccessfulBoot());
+        Assert.assertTrue(legacyServices.isSuccessfulBoot());
+        checkSubsystemModelTransformation(mainServices, version_1_1_0);
+    }
 
     protected AdditionalInitialization createAdditionalInitialization() {
         return AdditionalInitialization.MANAGEMENT;
