@@ -81,7 +81,14 @@ class ResourceTransformationDescriptionBuilderImpl extends AbstractTransformatio
 
     @Override
     public ResourceTransformationDescriptionBuilder addChildRedirection(final PathElement current, final PathElement legacy) {
-        final PathAddressTransformer transformation = new PathAddressTransformer.BasicPathAddressTransformer(legacy);
+        final PathAddressTransformer transformation;
+        if (legacy.isWildcard()) {
+            assert current.isWildcard() : "legacy is wildcard while current is not";
+            transformation = new PathAddressTransformer.ReplaceElementKey(legacy.getKey());
+        } else {
+            assert !current.isWildcard() : "legacy is fixed while current is not";
+            transformation = new PathAddressTransformer.BasicPathAddressTransformer(legacy);
+        }
         return addChildRedirection(current, transformation);
     }
 
