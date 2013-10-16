@@ -70,6 +70,18 @@ public class JGroupsSubsystemTransformerTestCase extends OperationTestCaseBase {
         testTransformer_1_1_0(ModelTestControllerVersion.V7_1_3_FINAL);
     }
 
+    @Test
+    public void testTransformerEAP600() throws Exception {
+        ignoreThisTestIfEAPRepositoryIsNotReachable();
+        testTransformer_1_1_0(ModelTestControllerVersion.EAP_6_0_0);
+    }
+
+    @Test
+    public void testTransformerEAP601() throws Exception {
+        ignoreThisTestIfEAPRepositoryIsNotReachable();
+        testTransformer_1_1_0(ModelTestControllerVersion.EAP_6_0_1);
+    }
+
     /**
      * Tests transformation of model from 1.1.1 version into 1.1.0 version.
      *
@@ -140,6 +152,18 @@ public class JGroupsSubsystemTransformerTestCase extends OperationTestCaseBase {
         testRejectExpressions_1_1_0(ModelTestControllerVersion.V7_1_3_FINAL);
     }
 
+    @Test
+    public void testRejectExpressionsAS600() throws Exception {
+        ignoreThisTestIfEAPRepositoryIsNotReachable();
+        testRejectExpressions_1_1_0(ModelTestControllerVersion.EAP_6_0_0);
+    }
+
+    @Test
+    public void testRejectExpressionsAS601() throws Exception {
+        ignoreThisTestIfEAPRepositoryIsNotReachable();
+        testRejectExpressions_1_1_0(ModelTestControllerVersion.EAP_6_0_1);
+    }
+
     /**
      * Tests rejection of expressions in 1.1.0 model.
      *
@@ -186,6 +210,31 @@ public class JGroupsSubsystemTransformerTestCase extends OperationTestCaseBase {
                                 .append("property"),
                             new FailedOperationTransformationConfig.RejectExpressionsConfig(VALUE)));
 
+    }
+
+    @Test
+    public void testTransformerEAP610() throws Exception {
+        ignoreThisTestIfEAPRepositoryIsNotReachable();
+        testTransformer_1_2_0(ModelTestControllerVersion.EAP_6_1_0);
+    }
+
+    @Test
+    public void testTransformerEAP611() throws Exception {
+        ignoreThisTestIfEAPRepositoryIsNotReachable();
+        testTransformer_1_2_0(ModelTestControllerVersion.EAP_6_1_1);
+    }
+
+    private void testTransformer_1_2_0(ModelTestControllerVersion controllerVersion) throws Exception {
+        ModelVersion version = ModelVersion.create(1, 2, 0);
+        KernelServicesBuilder builder = createKernelServicesBuilder(AdditionalInitialization.MANAGEMENT)
+                .setSubsystemXmlResource("subsystem-jgroups-test.xml");
+        builder.createLegacyKernelServicesBuilder(null, controllerVersion, version)
+                .addMavenResourceURL("org.jboss.as:jboss-as-clustering-jgroups:" + controllerVersion.getMavenGavVersion());
+
+        KernelServices mainServices = builder.build();
+        Assert.assertTrue(mainServices.isSuccessfulBoot());
+        Assert.assertTrue(mainServices.getLegacyServices(version).isSuccessfulBoot());
+        checkSubsystemModelTransformation(mainServices, version);
     }
 
 }
