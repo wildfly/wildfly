@@ -27,9 +27,10 @@ package org.jboss.as.mail.extension;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SUBSYSTEM;
 import static org.jboss.as.mail.extension.MailSubsystemModel.SERVER_TYPE;
 
-import javax.mail.Session;
 import java.io.IOException;
 import java.util.Properties;
+
+import javax.mail.Session;
 
 import org.jboss.as.controller.ModelVersion;
 import org.jboss.as.controller.PathAddress;
@@ -51,10 +52,10 @@ import org.junit.Test;
 /**
  * @author <a href="mailto:tomaz.cerar@redhat.com">Tomaz Cerar</a>
  */
-public class MailSubsystem11Test extends AbstractSubsystemBaseTest {
+public class MailSubsystem11TestCase extends AbstractSubsystemBaseTest {
     private static final PathAddress SUBSYSTEM_PATH = PathAddress.pathAddress(PathElement.pathElement(SUBSYSTEM, MailExtension.SUBSYSTEM_NAME));
 
-    public MailSubsystem11Test() {
+    public MailSubsystem11TestCase() {
         super(MailExtension.SUBSYSTEM_NAME, new MailExtension());
     }
 
@@ -70,22 +71,34 @@ public class MailSubsystem11Test extends AbstractSubsystemBaseTest {
 
     @Test
     public void testTransformersAS712() throws Exception {
-        testTransformers110("7.1.2.Final", ModelTestControllerVersion.V7_1_2_FINAL);
+        testTransformers110(ModelTestControllerVersion.V7_1_2_FINAL);
     }
 
     @Test
     public void testTransformersAS713() throws Exception {
-        testTransformers110("7.1.3.Final", ModelTestControllerVersion.V7_1_3_FINAL);
+        testTransformers110(ModelTestControllerVersion.V7_1_3_FINAL);
     }
 
-    private void testTransformers110(String mavenVersion, ModelTestControllerVersion controllerVersion) throws Exception {
+    @Test
+    public void testTransformersEAP600() throws Exception {
+        ignoreThisTestIfEAPRepositoryIsNotReachable();
+        testTransformers110(ModelTestControllerVersion.EAP_6_0_0);
+    }
+
+    @Test
+    public void testTransformersEAP601() throws Exception {
+        ignoreThisTestIfEAPRepositoryIsNotReachable();
+        testTransformers110(ModelTestControllerVersion.EAP_6_0_1);
+    }
+
+    private void testTransformers110(ModelTestControllerVersion controllerVersion) throws Exception {
         ModelVersion modelVersion = ModelVersion.create(1, 1, 0);
         KernelServicesBuilder builder = createKernelServicesBuilder(AdditionalInitialization.MANAGEMENT);
           //      .setSubsystemXml(getSubsystemXml());
 
         //which is why we need to include the jboss-as-controller artifact.
         builder.createLegacyKernelServicesBuilder(null, controllerVersion, modelVersion)
-                .addMavenResourceURL("org.jboss.as:jboss-as-mail:" + mavenVersion)
+                .addMavenResourceURL("org.jboss.as:jboss-as-mail:" + controllerVersion.getMavenGavVersion())
                 .addMavenResourceURL("org.jboss.as:jboss-as-controller:" + controllerVersion.getMavenGavVersion())
                 .dontPersistXml();
 
