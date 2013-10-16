@@ -31,7 +31,6 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Properties;
 
-import org.jboss.as.domain.management.security.adduser.AddUser;
 import org.jboss.as.domain.management.security.password.PasswordCheckResult.Result;
 import org.jboss.as.domain.management.security.password.simple.SimplePasswordStrengthChecker;
 
@@ -53,20 +52,17 @@ public class PasswordCheckUtil {
     public static final String _PROPERTY_MIN_SYMBOL = "password.restriction.minSymbol";
     public static final String _PROPERTY_MATCH_USERNAME = "password.restriction.mustNotMatchUsername";
 
-    public static final PasswordCheckUtil INSTANCE = new PasswordCheckUtil();
-
     private PasswordStrengthChecker passwordStrengthChecker;
     private PasswordStrength acceptable = PasswordStrength.MODERATE;
     private RestrictionLevel level = RestrictionLevel.WARN;
     private boolean mustNotMatchUsername = false;
     public List<PasswordRestriction> passwordValuesRestrictions = new ArrayList<PasswordRestriction>();
 
-    protected PasswordCheckUtil() {
-        final String configFilePath = System.getProperty(AddUser.CONFIG_FILE);
-        if (configFilePath != null) {
+    private PasswordCheckUtil(final File configFile) {
+        if (configFile != null && configFile.exists()) {
             try {
                 Properties configProperties = new Properties();
-                configProperties.load(new FileInputStream(new File(configFilePath)));
+                configProperties.load(new FileInputStream(configFile));
                 // strength
                 initDefaultStrength(configProperties);
                 // checker
@@ -96,6 +92,10 @@ public class PasswordCheckUtil {
     private void simple() {
         // revert to simple
         this.passwordStrengthChecker = new SimplePasswordStrengthChecker();
+    }
+
+    public static PasswordCheckUtil create(final File configFile) {
+        return new PasswordCheckUtil(configFile);
     }
 
     /**
