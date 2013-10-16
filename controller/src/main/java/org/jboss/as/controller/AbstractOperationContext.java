@@ -991,8 +991,7 @@ abstract class AbstractOperationContext implements OperationContext {
                     }
                 } catch (Exception e) {
                     report(MessageSeverity.ERROR,
-                            MESSAGES.stepHandlerFailedRollback(handler, operation.get(OP).asString(), address,
-                                    e.getLocalizedMessage()));
+                            MESSAGES.stepHandlerFailedRollback(handler, operation.asString(), address, e));
                 } finally {
                     // Clear the result handler so we never try and finalize
                     // this step again

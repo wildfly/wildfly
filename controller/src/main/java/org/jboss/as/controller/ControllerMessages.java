@@ -1781,12 +1781,12 @@ public interface ControllerMessages {
      * @param handler the handler that failed.
      * @param op      the operation.
      * @param address the path address.
-     * @param msg     the error message.
+     * @param cause   the error.
      *
      * @return the message.
      */
     @Message(id = 14781, value = "Step handler %s for operation %s at address %s failed handling operation rollback -- %s")
-    String stepHandlerFailedRollback(OperationStepHandler handler, String op, PathAddress address, String msg);
+    String stepHandlerFailedRollback(OperationStepHandler handler, String op, PathAddress address, Throwable cause);
 
     /**
      * A message indicating an interruption awaiting subsystem boot operation execution.
