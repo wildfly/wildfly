@@ -71,12 +71,15 @@ public class WebVirtualHostDefinition extends ModelOnlyResourceDefinition {
         super(WebExtension.HOST_PATH,
                 WebExtension.getResourceDescriptionResolver(Constants.VIRTUAL_SERVER),
                 new AddressToNameAddAdaptor(ALIAS, ENABLE_WELCOME_ROOT, DEFAULT_WEB_MODULE),
-                ALIAS, ENABLE_WELCOME_ROOT, DEFAULT_WEB_MODULE);
+                ALIAS);
     }
 
     @Override
     public void registerAttributes(ManagementResourceRegistration hosts) {
         super.registerAttributes(hosts);
         hosts.registerReadOnlyAttribute(NAME, null);
+        // They excluded each other...
+        hosts.registerReadWriteAttribute(ENABLE_WELCOME_ROOT, null, WriteEnableWelcomeRoot.INSTANCE);
+        hosts.registerReadWriteAttribute(DEFAULT_WEB_MODULE, null, WriteDefaultWebModule.INSTANCE);
     }
 }

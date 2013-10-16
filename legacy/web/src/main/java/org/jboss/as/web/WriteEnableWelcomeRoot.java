@@ -22,15 +22,40 @@
 
 package org.jboss.as.web;
 
+import static org.jboss.as.web.WebMessages.MESSAGES;
+
+import org.jboss.as.controller.ModelOnlyWriteAttributeHandler;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.OperationStepHandler;
+import org.jboss.as.controller.PathAddress;
+import org.jboss.as.controller.registry.Resource;
 import org.jboss.dmr.ModelNode;
 
-public class WriteEnableWelcomeRoot implements OperationStepHandler {
+public class WriteEnableWelcomeRoot extends ModelOnlyWriteAttributeHandler {
     static final WriteEnableWelcomeRoot INSTANCE = new WriteEnableWelcomeRoot();
 
-    public void execute(OperationContext context, ModelNode operation) throws OperationFailedException {
-        context.stepCompleted();
+    public WriteEnableWelcomeRoot() {
+        super(WebVirtualHostDefinition.ENABLE_WELCOME_ROOT);
+    }
+
+    @Override
+    protected void validateUpdatedModel(OperationContext context, Resource model) throws OperationFailedException {
+
+        // Add a new step to validate instead of doing it directly in this method.
+        // This allows a composite op to change both attributes and then the
+        // validation occurs after both have done their work.
+        context.addStep(new OperationStepHandler() {
+            @Override
+            public void execute(OperationContext context, ModelNode operation) throws OperationFailedException {
+
+                final ModelNode virtualHost = context.readResource(PathAddress.EMPTY_ADDRESS).getModel();
+                if (virtualHost.hasDefined(Constants.DEFAULT_WEB_MODULE) && virtualHost.hasDefined(Constants.ENABLE_WELCOME_ROOT) && Boolean.parseBoolean(virtualHost.get(Constants.ENABLE_WELCOME_ROOT).toString())) {
+                    // That is not supported.
+                    throw new OperationFailedException(MESSAGES.noWelcomeWebappWithDefaultWebModule());
+                }
+                context.stepCompleted();
+            }
+        }, OperationContext.Stage.MODEL);
     }
 }
