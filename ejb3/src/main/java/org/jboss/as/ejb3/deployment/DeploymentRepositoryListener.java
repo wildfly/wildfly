@@ -41,6 +41,14 @@ public interface DeploymentRepositoryListener {
      */
     void deploymentAvailable(final DeploymentModuleIdentifier deployment, final ModuleDeployment moduleDeployment);
 
+
+    /**
+     * Callback when a deployment has started, i.e. all components have started
+     * @param deployment The deployment
+     * @param moduleDeployment
+     */
+    void deploymentStarted(final DeploymentModuleIdentifier deployment, final ModuleDeployment moduleDeployment);
+
     /**
      * Called when a deployment is no longer available
      *

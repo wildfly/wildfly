@@ -208,7 +208,7 @@ public class VersionOneProtocolChannelReceiver implements Channel.Receiver, Depl
     @Override
     public void listenerAdded(DeploymentRepository repository) {
         // get the initial available modules and send a message to the client
-        final Map<DeploymentModuleIdentifier, ModuleDeployment> availableModules = this.deploymentRepository.getModules();
+        final Map<DeploymentModuleIdentifier, ModuleDeployment> availableModules = this.deploymentRepository.getStartedModules();
         if (availableModules != null && !availableModules.isEmpty()) {
             try {
                 EjbLogger.ROOT_LOGGER.debug("Sending initial module availability message, containing " + availableModules.size() + " module(s) to channel " + this.channelAssociation.getChannel());
@@ -221,6 +221,10 @@ public class VersionOneProtocolChannelReceiver implements Channel.Receiver, Depl
 
     @Override
     public void deploymentAvailable(DeploymentModuleIdentifier deploymentModuleIdentifier, ModuleDeployment moduleDeployment) {
+    }
+
+    @Override
+    public void deploymentStarted(DeploymentModuleIdentifier deploymentModuleIdentifier, ModuleDeployment moduleDeployment) {
         try {
             this.sendModuleAvailability(new DeploymentModuleIdentifier[]{deploymentModuleIdentifier});
         } catch (IOException e) {

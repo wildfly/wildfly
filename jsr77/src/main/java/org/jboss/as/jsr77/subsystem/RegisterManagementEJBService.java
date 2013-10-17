@@ -90,6 +90,7 @@ public class RegisterManagementEJBService implements Service<Void>{
         final EjbDeploymentInformation ejb = new ManagementEjbDeploymentInformation(EJB_NAME, views, SecurityActions.getClassLoader(this.getClass()));
         final ModuleDeployment deployment = new ModuleDeployment(moduleIdentifier, Collections.singletonMap(EJB_NAME, ejb));
         repository.add(moduleIdentifier, deployment);
+        repository.startDeployment(moduleIdentifier);
 
         ejbClientContextSelectorValue.getValue().registerEJBClientContext(ejbClientContextValue.getValue(), SecurityActions.getClassLoader(this.getClass()));
     }

@@ -40,6 +40,7 @@ import java.util.Map;
 public class ModuleDeployment implements Service<ModuleDeployment> {
 
     public static final ServiceName SERVICE_NAME = ServiceName.of("moduleDeploymentRuntimeInformation");
+    public static final ServiceName START_SERVICE_NAME = ServiceName.of("moduleDeploymentRuntimeInformationStart");
 
     private final DeploymentModuleIdentifier identifier;
     private final InjectedValue<DeploymentRepository> deploymentRepository = new InjectedValue<DeploymentRepository>();
@@ -76,6 +77,37 @@ public class ModuleDeployment implements Service<ModuleDeployment> {
     @Override
     public ModuleDeployment getValue() throws IllegalStateException, IllegalArgumentException {
         return this;
+    }
+
+    /**
+     * service that marks a module a started
+     */
+    public static final class ModuleDeploymentStartService implements Service<Void> {
+
+        private final DeploymentModuleIdentifier identifier;
+        private final InjectedValue<DeploymentRepository> deploymentRepository = new InjectedValue<DeploymentRepository>();
+
+        public ModuleDeploymentStartService(DeploymentModuleIdentifier identifier) {
+            this.identifier = identifier;
+        }
+
+        @Override
+        public void start(StartContext startContext) throws StartException {
+            deploymentRepository.getValue().startDeployment(identifier);
+        }
+
+        @Override
+        public void stop(StopContext stopContext) {
+        }
+
+        @Override
+        public Void getValue() throws IllegalStateException, IllegalArgumentException {
+            return null;
+        }
+
+        public InjectedValue<DeploymentRepository> getDeploymentRepository() {
+            return deploymentRepository;
+        }
     }
 
 }
