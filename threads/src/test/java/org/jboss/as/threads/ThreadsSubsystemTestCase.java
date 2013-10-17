@@ -72,6 +72,19 @@ public class ThreadsSubsystemTestCase extends AbstractSubsystemBaseTest {
         testTransformer_1_0(ModelTestControllerVersion.V7_1_2_FINAL);
     }
 
+
+    @Test
+    public void testTransformerEAP600() throws Exception {
+        ignoreThisTestIfEAPRepositoryIsNotReachable();
+        testTransformer_1_0(ModelTestControllerVersion.EAP_6_0_0);
+    }
+
+    @Test
+    public void testTransformerEAP601() throws Exception {
+        ignoreThisTestIfEAPRepositoryIsNotReachable();
+        testTransformer_1_0(ModelTestControllerVersion.EAP_6_0_1);
+    }
+
     /**
      * Tests transformation of model from 1.1.0 version into 1.0.0 version.
      *
@@ -90,7 +103,7 @@ public class ThreadsSubsystemTestCase extends AbstractSubsystemBaseTest {
         builder.createLegacyKernelServicesBuilder(null, controllerVersion, modelVersion)
                 .addOperationValidationResolve("add", subsystemAddress.append(PathElement.pathElement("thread-factory")))
                 .addMavenResourceURL("org.jboss.as:jboss-as-threads:" + controllerVersion.getMavenGavVersion())
-                .excludeFromParent(SingleClassFilter.createFilter(ThreadsLogger.class)); 
+                .excludeFromParent(SingleClassFilter.createFilter(ThreadsLogger.class));
 
         KernelServices mainServices = builder.build();
         KernelServices legacyServices = mainServices.getLegacyServices(modelVersion);
@@ -106,6 +119,16 @@ public class ThreadsSubsystemTestCase extends AbstractSubsystemBaseTest {
     @Test
     public void testRejectExpressionsAS713() throws Exception {
         testRejectExpressions_1_0_0(ModelTestControllerVersion.V7_1_3_FINAL);
+    }
+
+    @Test
+    public void testRejectExpressionsEAP600() throws Exception {
+        testRejectExpressions_1_0_0(ModelTestControllerVersion.EAP_6_0_0);
+    }
+
+    @Test
+    public void testRejectExpressionsEAP601() throws Exception {
+        testRejectExpressions_1_0_0(ModelTestControllerVersion.EAP_6_0_1);
     }
 
     private void testRejectExpressions_1_0_0(ModelTestControllerVersion controllerVersion) throws Exception {
@@ -154,5 +177,38 @@ public class ThreadsSubsystemTestCase extends AbstractSubsystemBaseTest {
                         keepaliveOnly)
                 .addFailedAttribute(subsystemAddress.append(PathElement.pathElement(CommonAttributes.THREAD_FACTORY)),
                         threadFactory);
+    }
+
+    @Test
+    public void testTransformerEAP610() throws Exception {
+        ignoreThisTestIfEAPRepositoryIsNotReachable();
+        testTransformer_1_1(ModelTestControllerVersion.EAP_6_1_0);
+    }
+
+    @Test
+    public void testTransformerEAP611() throws Exception {
+        ignoreThisTestIfEAPRepositoryIsNotReachable();
+        testTransformer_1_1(ModelTestControllerVersion.EAP_6_1_1);
+    }
+
+    private void testTransformer_1_1(ModelTestControllerVersion controllerVersion) throws Exception {
+        String subsystemXml = "threads-transform-1_0.xml";
+        ModelVersion modelVersion = ModelVersion.create(1, 1, 0); //The old model version
+        //Use the non-runtime version of the extension which will happen on the HC
+        KernelServicesBuilder builder = createKernelServicesBuilder(AdditionalInitialization.MANAGEMENT)
+                .setSubsystemXmlResource(subsystemXml);
+
+        final PathAddress subsystemAddress = PathAddress.pathAddress(PathElement.pathElement(SUBSYSTEM, mainSubsystemName));
+
+        // Add legacy subsystems
+        builder.createLegacyKernelServicesBuilder(null, controllerVersion, modelVersion)
+                .addOperationValidationResolve("add", subsystemAddress.append(PathElement.pathElement("thread-factory")))
+                .addMavenResourceURL("org.jboss.as:jboss-as-threads:" + controllerVersion.getMavenGavVersion())
+                .excludeFromParent(SingleClassFilter.createFilter(ThreadsLogger.class));
+
+        KernelServices mainServices = builder.build();
+        KernelServices legacyServices = mainServices.getLegacyServices(modelVersion);
+        Assert.assertNotNull(legacyServices);
+        checkSubsystemModelTransformation(mainServices, modelVersion);
     }
 }

@@ -94,6 +94,7 @@ class KnownVersions {
         addSubsystemVersion(map, "resource-adapters", "1.1.0", CORE_MODEL_7_1_2);
         addSubsystemVersion(map, "resource-adapters", "1.2.0", CORE_MODEL_7_2_0);
         addSubsystemVersion(map, "threads", "1.0.0", CORE_MODEL_7_1_2);
+        addSubsystemVersion(map, "threads", "1.1.0", CORE_MODEL_7_2_0);
         addSubsystemVersion(map, "transactions", "1.1.0", CORE_MODEL_7_1_2);
         addSubsystemVersion(map, "transactions", "1.1.1", CORE_MODEL_7_1_3);
         addSubsystemVersion(map, "xts", "1.1.0", CORE_MODEL_7_1_3);
