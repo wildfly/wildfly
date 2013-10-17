@@ -35,6 +35,7 @@ import javax.xml.stream.XMLStreamException;
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.PathElement;
+import org.jboss.as.domain.management.security.password.PasswordValidationException;
 import org.jboss.logging.Messages;
 import org.jboss.logging.annotations.Cause;
 import org.jboss.logging.annotations.Message;
@@ -632,10 +633,10 @@ public interface DomainManagementMessages {
      *
      * @param password - password value.
      *
-     * @return a {@link String} for the message.
+     * @return a {@link PasswordValidationException} for the message.
      */
     @Message(id = 152565, value = "Password must not be equal to '%s', this value is restricted.")
-    String passwordMustNotBeEqual(String password);
+    PasswordValidationException passwordMustNotBeEqual(String password);
 
     /**
      * The error message for password which has not enough digit.
@@ -664,10 +665,10 @@ public interface DomainManagementMessages {
     /**
      * The error message for password which is not long enough.
      * @param desiredLength - desired length of password.
-     * @return a {@link String} for the message.
+     * @return a {@link PasswordValidationException} for the message.
      */
     @Message(id = 15269, value = "Password must have at least %s characters!")
-    String passwordNotLongEnough(int desiredLength);
+    PasswordValidationException passwordNotLongEnough(int desiredLength);
 
     @Message(id = 15270, value = "Unable to load key trust file.")
     IllegalStateException unableToLoadKeyTrustFile(@Cause Throwable t);
@@ -856,10 +857,81 @@ public interface DomainManagementMessages {
     @Message(id = 15297, value = "The base-role '%s' is not one of the standard roles for the current authorization provider.")
     OperationFailedException badBaseRole(String baseRole);
 
+    /**
+     * Error message if the password and username match.
+     *
+     * @return an {@link PasswordValidationException} for the error.
+     */
+    @Message(id = 15298, value = "The password must be different to the username")
+    PasswordValidationException passwordUsernameMatchError();
+
     /*
      * Logging IDs 15200 to 15299 are reserved for domain management, the file DomainManagementLogger also contains messages in
      * this range commencing 15200.
      */
+
+    /**
+     * Information message saying the username and password must be different.
+     *
+     * @return an {@link String} for the error.
+     */
+    @Message(id = Message.NONE, value = "The password must be different to the username")
+    String passwordUsernameMatchInfo();
+
+    /**
+     * Information message saying the password must not equal any of the restricted values.
+     *
+     * @param restricted - A list of restricted values.
+     * @return a {@link String} for the message.
+     */
+    @Message(id = Message.NONE, value = "The password must not be one of the following restricted values {%s}")
+    String passwordMustNotEqualInfo(String restricted);
+
+    /**
+     * Information message to describe how many characters need to be in the password.
+     *
+     * @param desiredLength - desired length of password.
+     * @return a {@link String} for the message.
+     */
+    @Message(id = Message.NONE, value = "%s characters")
+    String passwordLengthInfo(int desiredLength);
+
+    /**
+     * Information message for the number of alphanumerical characters required in a password.
+     *
+     * @param minAlpha - minimum alpha numerical values.
+     * @return a {@link String} for the message.
+     */
+    @Message(id = Message.NONE, value = "%d alphanumeric character(s)")
+    String passwordMustHaveAlphaInfo(int minAlpha);
+
+    /**
+     * Information message for the number of digits required in a password.
+     *
+     * @param minDigit - minimum digit values.
+     * @return a {@link String} for the message.
+     */
+    @Message(id = Message.NONE, value = "%d digit(s)")
+    String passwordMustHaveDigitInfo(int minDigit);
+
+    /**
+     * Information message for the number of non alphanumerical symbols required in a password.
+     *
+     * @param minSymbol - minimum symbol values.
+     * @return a {@link String} for the message.
+     */
+    @Message(id = Message.NONE, value = "%s non-alphanumeric symbol(s)")
+    String passwordMustHaveSymbolInfo(int minSymbol);
+
+    /**
+     * Information message to describe what a password must contain.
+     *
+     * @param requirements - The requirements list to contain in the message.
+     *
+     * @return a {@link String} for the message.
+     */
+    @Message(id = Message.NONE, value = "The password must contain at least %s")
+    String passwordMustContainInfo(String requirements);
 
     /**
      * A prompt to double check the user is really sure they want to set password.

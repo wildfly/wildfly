@@ -22,6 +22,7 @@
 
 package org.jboss.as.domain.management.security.password.simple;
 
+import static org.jboss.as.domain.management.DomainManagementMessages.MESSAGES;
 import org.junit.Test;
 
 import static org.junit.Assert.assertEquals;
@@ -61,17 +62,17 @@ public class SimplePasswordStrengthCheckerTestCase {
         restrictions.add(SYMBOL_RESTRICTION);
         SimplePasswordStrengthChecker checker = new SimplePasswordStrengthChecker(restrictions, this.dictionary, this.keyboard);
         String pwd = "1W2sa#4";
-        PasswordStrengthCheckResult result = checker.check(pwd, null);
+        PasswordStrengthCheckResult result = checker.check("", pwd, null);
         assertNotNull(result);
         assertNotNull(result.getPassedRestrictions());
-        assertNotNull(result.getFailedRestrictions());
+        assertNotNull(result.getRestrictionFailures());
 
         assertEquals(1, result.getPassedRestrictions().size());
-        assertEquals(1, result.getFailedRestrictions().size());
+        assertEquals(1, result.getRestrictionFailures().size());
 
         assertNotNull(result.getStrength());
 
-        assertEquals(LENGTH_RESTRICTION, result.getFailedRestrictions().get(0));
+        assertEquals(MESSAGES.passwordNotLongEnough(8).getMessage(), result.getRestrictionFailures().get(0).getMessage());
         assertEquals(SYMBOL_RESTRICTION, result.getPassedRestrictions().get(0));
     }
 
@@ -84,17 +85,17 @@ public class SimplePasswordStrengthCheckerTestCase {
         restrictions.add(ALPHA_RESTRICTION);
         SimplePasswordStrengthChecker checker = new SimplePasswordStrengthChecker(restrictions, this.dictionary, this.keyboard);
         String pwd = "DW$sa#x";
-        PasswordStrengthCheckResult result = checker.check(pwd, null);
+        PasswordStrengthCheckResult result = checker.check("", pwd, null);
         assertNotNull(result);
         assertNotNull(result.getPassedRestrictions());
-        assertNotNull(result.getFailedRestrictions());
+        assertNotNull(result.getRestrictionFailures());
 
         assertEquals(1, result.getPassedRestrictions().size());
-        assertEquals(1, result.getFailedRestrictions().size());
+        assertEquals(1, result.getRestrictionFailures().size());
 
         assertNotNull(result.getStrength());
 
-        assertEquals(DIGIT_RESTRICTION, result.getFailedRestrictions().get(0));
+        assertEquals(MESSAGES.passwordMustHaveDigit(1), result.getRestrictionFailures().get(0).getMessage());
         assertEquals(ALPHA_RESTRICTION, result.getPassedRestrictions().get(0));
     }
 
@@ -107,17 +108,17 @@ public class SimplePasswordStrengthCheckerTestCase {
         restrictions.add(ALPHA_RESTRICTION);
         SimplePasswordStrengthChecker checker = new SimplePasswordStrengthChecker(restrictions, this.dictionary, this.keyboard);
         String pwd = "DW5sa3x";
-        PasswordStrengthCheckResult result = checker.check(pwd, null);
+        PasswordStrengthCheckResult result = checker.check("", pwd, null);
         assertNotNull(result);
         assertNotNull(result.getPassedRestrictions());
-        assertNotNull(result.getFailedRestrictions());
+        assertNotNull(result.getRestrictionFailures());
 
         assertEquals(1, result.getPassedRestrictions().size());
-        assertEquals(1, result.getFailedRestrictions().size());
+        assertEquals(1, result.getRestrictionFailures().size());
 
         assertNotNull(result.getStrength());
 
-        assertEquals(SYMBOL_RESTRICTION, result.getFailedRestrictions().get(0));
+        assertEquals(MESSAGES.passwordMustHaveSymbol(1), result.getRestrictionFailures().get(0).getMessage());
         assertEquals(ALPHA_RESTRICTION, result.getPassedRestrictions().get(0));
     }
 
@@ -130,17 +131,17 @@ public class SimplePasswordStrengthCheckerTestCase {
         restrictions.add(SYMBOL_RESTRICTION);
         SimplePasswordStrengthChecker checker = new SimplePasswordStrengthChecker(restrictions, this.dictionary, this.keyboard);
         String pwd = "!#*_33";
-        PasswordStrengthCheckResult result = checker.check(pwd, null);
+        PasswordStrengthCheckResult result = checker.check("", pwd, null);
         assertNotNull(result);
         assertNotNull(result.getPassedRestrictions());
-        assertNotNull(result.getFailedRestrictions());
+        assertNotNull(result.getRestrictionFailures());
 
         assertEquals(1, result.getPassedRestrictions().size());
-        assertEquals(1, result.getFailedRestrictions().size());
+        assertEquals(1, result.getRestrictionFailures().size());
 
         assertNotNull(result.getStrength());
 
-        assertEquals(ALPHA_RESTRICTION, result.getFailedRestrictions().get(0));
+        assertEquals(MESSAGES.passwordMustHaveAlpha(1), result.getRestrictionFailures().get(0).getMessage());
         assertEquals(SYMBOL_RESTRICTION, result.getPassedRestrictions().get(0));
     }
 
@@ -152,21 +153,21 @@ public class SimplePasswordStrengthCheckerTestCase {
         SimplePasswordStrengthChecker checker = new SimplePasswordStrengthChecker(restrictions, this.dictionary, this.keyboard);
         String pwd = "!#*_3x";
         List<PasswordRestriction> adHocRestrictions = new ArrayList<PasswordRestriction>();
-        ValueRestriction restriction = new ValueRestriction(pwd);
+        ValueRestriction restriction = new ValueRestriction(new String[] { pwd });
         adHocRestrictions.add(restriction);
 
-        PasswordStrengthCheckResult result = checker.check(pwd, adHocRestrictions);
+        PasswordStrengthCheckResult result = checker.check("", pwd, adHocRestrictions);
         assertNotNull(result);
         assertNotNull(result.getPassedRestrictions());
-        assertNotNull(result.getFailedRestrictions());
+        assertNotNull(result.getRestrictionFailures());
 
         assertEquals(2, result.getPassedRestrictions().size());
-        assertEquals(1, result.getFailedRestrictions().size());
+        assertEquals(1, result.getRestrictionFailures().size());
 
         assertNotNull(result.getStrength());
 
         assertEquals(ALPHA_RESTRICTION, result.getPassedRestrictions().get(0));
         assertEquals(SYMBOL_RESTRICTION, result.getPassedRestrictions().get(1));
-        assertEquals(restriction, result.getFailedRestrictions().get(0));
+        assertEquals(MESSAGES.passwordMustNotBeEqual(pwd).getMessage(), result.getRestrictionFailures().get(0).getMessage());
     }
 }

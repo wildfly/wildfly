@@ -21,34 +21,47 @@
  */
 
 package org.jboss.as.domain.management.security.password;
+
 import static org.jboss.as.domain.management.DomainManagementMessages.MESSAGES;
+
+import java.util.Arrays;
+import java.util.HashSet;
+import java.util.Set;
+
 /**
- * @author baranowb
+ * A {@link PasswordValidation} to verify that a password is not in a list of banned passwords.
  *
+ * @author baranowb
+ * @author <a href="mailto:darran.lofthouse@jboss.com">Darran Lofthouse</a>
  */
-public class ValueRestriction extends PasswordRestriction {
+public class ValueRestriction implements PasswordRestriction {
 
-    private final String forbiddenValue;
+    private final Set<String> forbiddenValues;
 
-    /**
-     * @param forbiddenValue
-     */
-    public ValueRestriction(String forbiddenValue) {
-        super(MESSAGES.passwordMustNotBeEqual(forbiddenValue));
-        this.forbiddenValue = forbiddenValue;
+    private final String requirementsMessage;
+
+    public ValueRestriction(final String[] forbiddenValues) {
+        this.forbiddenValues = new HashSet<String>(Arrays.asList(forbiddenValues));
+        StringBuilder sb = new StringBuilder();
+        for (int i = 0; i < forbiddenValues.length; i++) {
+            sb.append(forbiddenValues[i]);
+            if (i + 1 < forbiddenValues.length) {
+                sb.append(", ");
+            }
+        }
+        requirementsMessage = MESSAGES.passwordMustNotEqualInfo(sb.toString());
     }
 
-    /*
-     * (non-Javadoc)
-     *
-     * @see org.jboss.as.domain.management.security.password.PasswordRestriction#pass(java.lang.String)
-     */
     @Override
-    public boolean pass(String password) {
-        if (password == null || password.equals(this.forbiddenValue)) {
-            return false;
-        } else {
-            return true;
+    public String getRequirementMessage() {
+        return requirementsMessage;
+    }
+
+    @Override
+    public void validate(String userName, String password) throws PasswordValidationException {
+        if (forbiddenValues.contains(password)) {
+            throw MESSAGES.passwordMustNotBeEqual(password);
         }
     }
+
 }

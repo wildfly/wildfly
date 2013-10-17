@@ -1,6 +1,6 @@
 /*
  * JBoss, Home of Professional Open Source.
- * Copyright 2012, Red Hat, Inc., and individual contributors
+ * Copyright 2013, Red Hat, Inc., and individual contributors
  * as indicated by the @author tags. See the copyright.txt file in the
  * distribution for a full listing of individual contributors.
  *
@@ -19,25 +19,27 @@
  * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
-
 package org.jboss.as.domain.management.security.password;
 
+import static org.jboss.as.domain.management.DomainManagementMessages.MESSAGES;
+
 /**
- * @author <a href="mailto:g.grossetie@gmail.com">Guillaume Grossetie</a>
+ * A {@link PasswordRestriction} to verify that the username and password and not equal.
+ *
+ * @author <a href="mailto:darran.lofthouse@jboss.com">Darran Lofthouse</a>
  */
-public class NoRestriction extends PasswordRestriction {
+public class UsernamePasswordMatch implements PasswordRestriction {
 
-    public NoRestriction() {
-        super("");
-    }
-
-    /*
-     * (non-Javadoc)
-     *
-     * @see org.jboss.as.domain.management.security.password.PasswordRestriction#pass(java.lang.String)
-     */
     @Override
-    public boolean pass(String password) {
-        return true;
+    public String getRequirementMessage() {
+        return MESSAGES.passwordUsernameMatchInfo();
     }
+
+    @Override
+    public void validate(String userName, String password) throws PasswordValidationException {
+        if (userName.equals(password)) {
+            throw MESSAGES.passwordUsernameMatchError();
+        }
+    }
+
 }
