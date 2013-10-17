@@ -22,8 +22,15 @@
 
 package org.jboss.as.server.deployment;
 
+import java.io.BufferedInputStream;
+import java.io.BufferedOutputStream;
 import java.io.Closeable;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileOutputStream;
 import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStream;
 import java.util.HashSet;
 import java.util.Set;
 
@@ -34,6 +41,7 @@ import org.jboss.as.server.deploymentoverlay.service.ContentService;
 import org.jboss.as.server.deploymentoverlay.service.DeploymentOverlayIndexService;
 import org.jboss.as.server.deploymentoverlay.service.DeploymentOverlayService;
 import org.jboss.vfs.VFS;
+import org.jboss.vfs.VirtualFile;
 
 /**
  * Deployment unit processor that adds content overrides to the VFS filesystem
@@ -58,17 +66,30 @@ public class ContentOverrideDeploymentUnitProcessor implements DeploymentUnitPro
         }
         final ResourceRoot deploymentRoot = deploymentUnit.getAttachment(Attachments.DEPLOYMENT_ROOT);
 
+        //exploded is true if this is a zip deployment that has been mounted exploded
+        final boolean exploded = MountExplodedMarker.isMountExploded(deploymentUnit) && !ExplodedDeploymentMarker.isExplodedDeployment(deploymentUnit);
         final Set<String> paths = new HashSet<String>();
         for (final DeploymentOverlayService deploymentOverlay : indexService.getOverrides(deploymentUnit.getName())) {
             for (final ContentService override : deploymentOverlay.getContentServices()) {
-                if (!paths.contains(override.getPath())) {
-                    paths.add(override.getPath());
-                    try {
-                        Closeable handle = VFS.mountReal(override.getContentHash().getPhysicalFile(), deploymentRoot.getRoot().getChild(override.getPath()));
-                        deploymentUnit.addToAttachmentList(MOUNTED_FILES, handle);
-                    } catch (IOException e) {
-                        throw ServerMessages.MESSAGES.deploymentOverlayFailed(e, deploymentOverlay.getName(), override.getPath());
+
+                try {
+                    if (!paths.contains(override.getPath())) {
+                        VirtualFile mountPoint = deploymentRoot.getRoot().getChild(override.getPath());
+                        paths.add(override.getPath());
+                        if (exploded) {
+                            //for deployments that we have mounted exploded we simply copy the file
+                            //This is not great, as it means exploded and non-exploded deployments behave slightly differently
+                            //but it is needed to make replacing web resources work
+                            copyFile(override.getContentHash().getPhysicalFile(), mountPoint.getPhysicalFile());
+
+                        } else {
+                            Closeable handle = VFS.mountReal(override.getContentHash().getPhysicalFile(), mountPoint);
+                            deploymentUnit.addToAttachmentList(MOUNTED_FILES, handle);
+
+                        }
                     }
+                } catch (IOException e) {
+                    throw ServerMessages.MESSAGES.deploymentOverlayFailed(e, deploymentOverlay.getName(), override.getPath());
                 }
             }
         }
@@ -84,5 +105,37 @@ public class ContentOverrideDeploymentUnitProcessor implements DeploymentUnitPro
             }
         }
 
+    }
+
+    public static void copyFile(final File src, final File dest) throws IOException {
+        final InputStream in = new BufferedInputStream(new FileInputStream(src));
+        try {
+            copyFile(in, dest);
+        } finally {
+            close(in);
+        }
+    }
+
+    public static void copyFile(final InputStream in, final File dest) throws IOException {
+        dest.getParentFile().mkdirs();
+        byte[] buff = new byte[1024];
+        final OutputStream out = new BufferedOutputStream(new FileOutputStream(dest));
+        try {
+            int i = in.read(buff);
+            while (i > 0) {
+                out.write(buff, 0, i);
+                i = in.read(buff);
+            }
+        } finally {
+            close(out);
+        }
+    }
+
+
+    public static void close(Closeable closeable) {
+        try {
+            closeable.close();
+        } catch (IOException ignore) {
+        }
     }
 }
