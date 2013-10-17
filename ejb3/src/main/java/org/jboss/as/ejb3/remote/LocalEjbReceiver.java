@@ -541,6 +541,10 @@ public class LocalEjbReceiver extends EJBReceiver implements Service<LocalEjbRec
         }
 
         @Override
+        public void deploymentStarted(DeploymentModuleIdentifier deployment, ModuleDeployment moduleDeployment) {
+        }
+
+        @Override
         public void deploymentRemoved(final DeploymentModuleIdentifier deployment) {
             LocalEjbReceiver.this.deregisterModule(deployment.getApplicationName(), deployment.getModuleName(), deployment.getDistinctName());
         }
