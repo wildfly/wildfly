@@ -107,6 +107,35 @@ public class CliUtilsForPatching {
     }
 
     /**
+     * Use the CLI to rollback to a patch
+     *
+     * @param oneoffPatchID the ID of the patch that should be rolled back to
+     * @param args          conflict resolution arguments, rollback arguments
+     * @throws Exception
+     */
+    public static boolean rollbackToPatch(String oneoffPatchID, String... args) throws Exception {
+        CLIWrapper cli = null;
+        try {
+            cli = new CLIWrapper(true);
+            StringBuilder builder = new StringBuilder("patch rollback --reset-configuration=false --rollback-to=true");
+            if (args != null) {
+                for (String arg : args) {
+                    builder.append(" ").append(arg);
+                }
+            }
+            builder.append(" --patch-id=").append(oneoffPatchID);
+            String command = builder.toString();
+            logger.info("----- sending command to CLI: " + command + " -----");
+            return cli.sendLine(command, true);
+        } finally {
+            if (cli != null) {
+                cli.quit();
+            }
+        }
+
+    }
+
+    /**
      * Use the CLI to read information about the installed patches
      *
      * @return output of "patch info" command or null if output is empty
