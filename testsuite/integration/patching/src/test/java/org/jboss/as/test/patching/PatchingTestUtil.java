@@ -61,10 +61,12 @@ import org.jboss.as.patching.DirectoryStructure;
 import org.jboss.as.patching.HashUtils;
 import org.jboss.as.patching.IoUtils;
 import org.jboss.as.patching.ZipUtils;
+import org.jboss.as.patching.metadata.BundledPatch;
 import org.jboss.as.patching.metadata.ContentModification;
 import org.jboss.as.patching.metadata.MiscContentItem;
 import org.jboss.as.patching.metadata.ModificationType;
 import org.jboss.as.patching.metadata.Patch;
+import org.jboss.as.patching.metadata.PatchBundleXml;
 import org.jboss.as.patching.metadata.PatchXml;
 import org.jboss.as.process.protocol.StreamUtils;
 import org.jboss.as.test.patching.util.module.Module;
@@ -275,7 +277,6 @@ public class PatchingTestUtil {
 
     public static void createPatchXMLFile(File dir, Patch patch) throws Exception {
         File patchXMLfile = new File(dir, "patch.xml");
-        patchXMLfile.createNewFile();
         FileOutputStream fos = new FileOutputStream(patchXMLfile);
         try {
             PatchXml.marshal(fos, patch);
@@ -284,9 +285,31 @@ public class PatchingTestUtil {
         }
     }
 
+    public static void createPatchBundleXMLFile(File dir,final List<BundledPatch.BundledPatchEntry> patches) throws Exception {
+        File bundleXMLFile = new File(dir, "patches.xml");
+        FileOutputStream fos = new FileOutputStream(bundleXMLFile);
+        try {
+            PatchBundleXml.marshal(fos, new BundledPatch() {
+                @Override
+                public List<BundledPatchEntry> getPatches() {
+                    return patches;
+                }
+            });
+        } finally {
+            safeClose(fos);
+        }
+    }
+
     public static File createZippedPatchFile(File sourceDir, String zipFileName) {
+        return createZippedPatchFile(sourceDir, zipFileName, null);
+    }
+
+    public static File createZippedPatchFile(File sourceDir, String zipFileName, File targetDir) {
+        if(targetDir == null) {
+            targetDir = sourceDir.getParentFile();
+        }
         tree(sourceDir);
-        File zipFile = new File(sourceDir.getParent(), zipFileName + ".zip");
+        File zipFile = new File(targetDir, zipFileName + ".zip");
         ZipUtils.zip(sourceDir, zipFile);
         return zipFile;
     }

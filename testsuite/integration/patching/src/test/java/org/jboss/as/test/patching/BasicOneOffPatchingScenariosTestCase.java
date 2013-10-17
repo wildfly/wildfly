@@ -140,6 +140,98 @@ public class BasicOneOffPatchingScenariosTestCase extends AbstractPatchingTestCa
     }
 
     /**
+     * Prepare 3 one-offs, apply them and do --rollback-to second patch
+     */
+    @Test
+    public void testOneOffPatchRollbackTo() throws Exception {
+        final String fileContent = "Hello World!";
+        // prepare the patch
+        String patchID = randomString();
+        File oneOffPatchDir = mkdir(tempDir, patchID);
+        ContentModification miscFileAdded = ContentModificationUtils.addMisc(oneOffPatchDir, patchID,
+                fileContent, "awesomeDirectory", "awesomeFile");
+        ProductConfig productConfig = new ProductConfig(PRODUCT, AS_VERSION, "main");
+        Patch oneOffPatch = PatchBuilder.create()
+                .setPatchId(patchID)
+                .setDescription("A one-off patch adding a misc file.")
+                .oneOffPatchIdentity(productConfig.getProductName(), productConfig.getProductVersion())
+                .getParent()
+                .addContentModification(miscFileAdded)
+                .build();
+        createPatchXMLFile(oneOffPatchDir, oneOffPatch);
+        File zippedPatch = createZippedPatchFile(oneOffPatchDir, patchID);
+
+        // prepare the patch
+        String patchID2 = randomString();
+        File oneOffPatchDir2 = mkdir(tempDir, patchID2);
+        ContentModification miscFileAdded2 = ContentModificationUtils.addMisc(oneOffPatchDir2, patchID2,
+                fileContent, "awesomeDirectory", "awesomeFile2");
+        Patch oneOffPatch2 = PatchBuilder.create()
+                .setPatchId(patchID2)
+                .setDescription("A one-off patch adding a misc file.")
+                .oneOffPatchIdentity(productConfig.getProductName(), productConfig.getProductVersion())
+                .getParent()
+                .addContentModification(miscFileAdded2)
+                .build();
+        createPatchXMLFile(oneOffPatchDir2, oneOffPatch2);
+        File zippedPatch2 = createZippedPatchFile(oneOffPatchDir2, patchID2);
+
+        // prepare the patch
+        String patchID3 = randomString();
+        File oneOffPatchDir3 = mkdir(tempDir, patchID3);
+        ContentModification miscFileAdded3 = ContentModificationUtils.addMisc(oneOffPatchDir3, patchID3,
+                fileContent, "awesomeDirectory", "awesomeFile3");
+        Patch oneOffPatch3 = PatchBuilder.create()
+                .setPatchId(patchID3)
+                .setDescription("A one-off patch adding a misc file.")
+                .oneOffPatchIdentity(productConfig.getProductName(), productConfig.getProductVersion())
+                .getParent()
+                .addContentModification(miscFileAdded3)
+                .build();
+        createPatchXMLFile(oneOffPatchDir3, oneOffPatch3);
+        File zippedPatch3 = createZippedPatchFile(oneOffPatchDir3, patchID3);
+
+        // apply the patch and check if server is in restart-required mode
+        controller.start(CONTAINER);
+        Assert.assertTrue("Patch should be accepted", CliUtilsForPatching.applyPatch(zippedPatch.getAbsolutePath()));
+        Assert.assertTrue("server should be in restart-required mode", CliUtilsForPatching.doesServerRequireRestart());
+        controller.stop(CONTAINER);
+
+        // apply second patch
+        controller.start(CONTAINER);
+        Assert.assertTrue("The patch " + patchID + " should be listed as installed",
+                CliUtilsForPatching.getInstalledPatches().contains(patchID));
+        Assert.assertTrue("Patch should be accepted", CliUtilsForPatching.applyPatch(zippedPatch2.getAbsolutePath()));
+        Assert.assertTrue("server should be in restart-required mode", CliUtilsForPatching.doesServerRequireRestart());
+        controller.stop(CONTAINER);
+
+        // apply third patch
+        controller.start(CONTAINER);
+        Assert.assertTrue("The patch " + patchID2 + " should be listed as installed",
+                CliUtilsForPatching.getInstalledPatches().contains(patchID2));
+        Assert.assertTrue("Patch should be accepted", CliUtilsForPatching.applyPatch(zippedPatch3.getAbsolutePath()));
+        Assert.assertTrue("server should be in restart-required mode", CliUtilsForPatching.doesServerRequireRestart());
+        controller.stop(CONTAINER);
+
+        // rollback to second patch
+        controller.start(CONTAINER);
+        Assert.assertTrue("The patch " + patchID3 + " should be listed as installed",
+                CliUtilsForPatching.getInstalledPatches().contains(patchID3));
+        Assert.assertTrue("Rollback should be accepted", CliUtilsForPatching.rollbackToPatch(patchID2));
+        controller.stop(CONTAINER);
+
+        // verify that only first patch is installed
+        controller.start(CONTAINER);
+        Assert.assertFalse("The patch " + patchID3 + " should not be listed as installed",
+                CliUtilsForPatching.getInstalledPatches().contains(patchID3));
+        Assert.assertFalse("The patch " + patchID2 + " should not be listed as installed",
+                CliUtilsForPatching.getInstalledPatches().contains(patchID2));
+        Assert.assertTrue("The patch " + patchID + " should be listed as installed",
+                CliUtilsForPatching.getInstalledPatches().contains(patchID));
+        controller.stop(CONTAINER);
+    }
+
+    /**
      * Prepare a one-off patch which adds multiple (2) misc files. Apply it, check that the files was created.
      * Roll it back, check that the files was deleted and apply it again to make sure re-applying works as expected
      */
