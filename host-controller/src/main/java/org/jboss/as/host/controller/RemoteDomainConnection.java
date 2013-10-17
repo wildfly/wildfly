@@ -38,6 +38,7 @@ import java.util.concurrent.TimeoutException;
 
 import org.jboss.as.controller.RunningMode;
 import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
+import org.jboss.as.controller.remote.TransactionalProtocolClient;
 import org.jboss.as.domain.controller.SlaveRegistrationException;
 import org.jboss.as.domain.management.CallbackHandlerFactory;
 import org.jboss.as.domain.management.SecurityRealm;
@@ -225,6 +226,8 @@ class RemoteDomainConnection extends FutureManagementChannel {
     }
 
     protected Future<Connection> reconnect() {
+        // Reset the connection state
+        channelHandler.getAttachments().removeAttachment(TransactionalProtocolClient.SEND_SUBJECT);
         return executorService.submit(new Callable<Connection>() {
             @Override
             public Connection call() throws Exception {
@@ -335,6 +338,10 @@ class RemoteDomainConnection extends FutureManagementChannel {
              }
              final ModelNode extensions = new ModelNode();
              extensions.readExternal(input);
+             // Enable the send subject
+             if (context.getRequestHeader().getVersion() != 1) {
+                 channelHandler.getAttachments().attach(TransactionalProtocolClient.SEND_SUBJECT, Boolean.TRUE);
+             }
              context.executeAsync(new ManagementRequestContext.AsyncTask<Void>() {
                  @Override
                  public void execute(ManagementRequestContext<Void> voidManagementRequestContext) throws Exception {

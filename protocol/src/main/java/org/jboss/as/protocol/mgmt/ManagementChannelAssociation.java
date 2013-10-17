@@ -22,6 +22,7 @@
 
 package org.jboss.as.protocol.mgmt;
 
+import org.jboss.remoting3.Attachments;
 import org.jboss.remoting3.Channel;
 import org.jboss.threads.AsyncFuture;
 
@@ -92,5 +93,12 @@ public interface ManagementChannelAssociation {
      * @throws IOException
      */
     Channel getChannel() throws IOException;
+
+    /**
+     * Get the attachments.
+     *
+     * @return the attachments
+     */
+    Attachments getAttachments();
 
 }

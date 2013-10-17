@@ -26,6 +26,7 @@ import org.jboss.as.controller.ModelController;
 import org.jboss.as.controller.client.OperationAttachments;
 import org.jboss.as.controller.client.OperationMessageHandler;
 import org.jboss.dmr.ModelNode;
+import org.jboss.remoting3.Attachments;
 import org.jboss.threads.AsyncFuture;
 
 import java.io.IOException;
@@ -37,6 +38,14 @@ import java.util.concurrent.Future;
  * @author Emanuel Muckenhuber
  */
 public interface TransactionalProtocolClient {
+
+    /**
+     * Attachment whether the client should send the subject as part of the operation request.
+     *
+     * DC > HC    : HostControllerRegistrationHandler > RemoteDomainConnection
+     * HC > server: HostControllerConnection > ManagedServer
+     */
+    Attachments.Key<Boolean> SEND_SUBJECT = new Attachments.Key(Boolean.class);
 
     /**
      * Execute an operation. This returns a future for the final result, which will only available after the prepared

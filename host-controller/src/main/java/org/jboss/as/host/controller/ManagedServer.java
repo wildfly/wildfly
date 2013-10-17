@@ -358,6 +358,7 @@ class ManagedServer {
     protected synchronized TransactionalProtocolClient channelRegistered(final ManagementChannelHandler channelAssociation) {
         final InternalState current = this.internalState;
         // Create the remote controller client
+        channelAssociation.getAttachments().attach(TransactionalProtocolClient.SEND_SUBJECT, Boolean.TRUE);
         final TransactionalProtocolClient remoteClient = TransactionalProtocolHandlers.createClient(channelAssociation);
 
         // TODO better handling for server :reload operation (reset reloadRequired)

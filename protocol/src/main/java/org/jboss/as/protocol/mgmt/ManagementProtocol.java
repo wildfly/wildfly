@@ -29,7 +29,7 @@ public interface ManagementProtocol {
     // Headers
     byte[] SIGNATURE = {Byte.MAX_VALUE, Byte.MIN_VALUE, Byte.MAX_VALUE, Byte.MIN_VALUE};
     int VERSION_FIELD = 0x00; // The version field header
-    int VERSION = 1; // The current protocol version
+    int VERSION = 2; // The current protocol version
 
     byte TYPE = 0x1;
     byte TYPE_REQUEST = 0x2;
