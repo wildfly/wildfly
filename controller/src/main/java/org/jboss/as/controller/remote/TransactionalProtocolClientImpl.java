@@ -22,33 +22,13 @@
 
 package org.jboss.as.controller.remote;
 
-import org.jboss.as.controller.ModelController;
-import org.jboss.as.controller.client.MessageSeverity;
-import org.jboss.as.controller.client.OperationAttachments;
-import org.jboss.as.controller.client.OperationMessageHandler;
-import org.jboss.as.controller.client.impl.AbstractDelegatingAsyncFuture;
-import org.jboss.as.controller.client.impl.ModelControllerProtocol;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.CANCELLED;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.FAILED;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.FAILURE_DESCRIPTION;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OUTCOME;
-import org.jboss.as.protocol.StreamUtils;
-import org.jboss.as.protocol.mgmt.AbstractManagementRequest;
-import org.jboss.as.protocol.mgmt.ActiveOperation;
-import org.jboss.as.protocol.mgmt.ActiveOperation.ResultHandler;
-import org.jboss.as.protocol.mgmt.FlushableDataOutput;
-import org.jboss.as.protocol.mgmt.ManagementChannelAssociation;
-import org.jboss.as.protocol.mgmt.ManagementProtocol;
-import org.jboss.as.protocol.mgmt.ManagementRequestContext;
-import org.jboss.as.protocol.mgmt.ManagementRequestHandler;
-import org.jboss.as.protocol.mgmt.ManagementRequestHandlerFactory;
-import org.jboss.as.protocol.mgmt.ManagementRequestHeader;
-import org.jboss.as.protocol.mgmt.ManagementResponseHeader;
 import static org.jboss.as.protocol.mgmt.ProtocolUtils.expectHeader;
-import org.jboss.dmr.ModelNode;
-import org.jboss.marshalling.Marshaller;
-import org.jboss.threads.AsyncFuture;
 
+import javax.security.auth.Subject;
 import java.io.ByteArrayOutputStream;
 import java.io.DataInput;
 import java.io.IOException;
@@ -60,7 +40,26 @@ import java.util.List;
 import java.util.Set;
 import java.util.concurrent.atomic.AtomicBoolean;
 
-import javax.security.auth.Subject;
+import org.jboss.as.controller.ModelController;
+import org.jboss.as.controller.client.MessageSeverity;
+import org.jboss.as.controller.client.OperationAttachments;
+import org.jboss.as.controller.client.OperationMessageHandler;
+import org.jboss.as.controller.client.impl.AbstractDelegatingAsyncFuture;
+import org.jboss.as.controller.client.impl.ModelControllerProtocol;
+import org.jboss.as.protocol.StreamUtils;
+import org.jboss.as.protocol.mgmt.AbstractManagementRequest;
+import org.jboss.as.protocol.mgmt.ActiveOperation;
+import org.jboss.as.protocol.mgmt.FlushableDataOutput;
+import org.jboss.as.protocol.mgmt.ManagementChannelAssociation;
+import org.jboss.as.protocol.mgmt.ManagementProtocol;
+import org.jboss.as.protocol.mgmt.ManagementRequestContext;
+import org.jboss.as.protocol.mgmt.ManagementRequestHandler;
+import org.jboss.as.protocol.mgmt.ManagementRequestHandlerFactory;
+import org.jboss.as.protocol.mgmt.ManagementRequestHeader;
+import org.jboss.as.protocol.mgmt.ManagementResponseHeader;
+import org.jboss.dmr.ModelNode;
+import org.jboss.marshalling.Marshaller;
+import org.jboss.threads.AsyncFuture;
 
 /**
  * Base implementation for the transactional protocol.
@@ -84,8 +83,6 @@ class TransactionalProtocolClientImpl implements ManagementRequestHandlerFactory
             return new HandleReportRequestHandler();
         } else if (operationType == ModelControllerProtocol.GET_INPUTSTREAM_REQUEST) {
             return ReadAttachmentInputStreamRequestHandler.INSTANCE;
-        } else if (operationType == ModelControllerProtocol.GET_SUBJECT_REQUEST) {
-            return GetSubjectRequestHandler.INSTANCE;
         }
         return handlers.resolveNext();
     }
@@ -147,6 +144,12 @@ class TransactionalProtocolClientImpl implements ManagementRequestHandlerFactory
             operation.writeExternal(output);
             output.write(ModelControllerProtocol.PARAM_INPUTSTREAMS_LENGTH);
             output.writeInt(inputStreamLength);
+
+            final Boolean sendSubject = channelAssociation.getAttachments().getAttachment(SEND_SUBJECT);
+            if (sendSubject != null && sendSubject) {
+                final Subject subject = context.getAttachment().getSerializableSubject();
+                writeSubject(output, subject);
+            }
         }
 
         @Override
@@ -292,45 +295,6 @@ class TransactionalProtocolClientImpl implements ManagementRequestHandlerFactory
                 StreamUtils.copyStream(is, bout);
             }
             return bout;
-        }
-
-    }
-
-    private static class GetSubjectRequestHandler implements ManagementRequestHandler<Subject, ExecuteRequestContext> {
-
-        static final GetSubjectRequestHandler INSTANCE = new GetSubjectRequestHandler();
-
-        @Override
-        public void handleRequest(DataInput input, ResultHandler<Subject> resultHandler,
-                ManagementRequestContext<ExecuteRequestContext> context) throws IOException {
-            final Subject subject = context.getAttachment().getSerializableSubject();
-
-            final ManagementRequestHeader header = ManagementRequestHeader.class.cast(context.getRequestHeader());
-            final ManagementResponseHeader response = new ManagementResponseHeader(header.getVersion(), header.getRequestId(), null);
-
-            context.executeAsync(new ManagementRequestContext.AsyncTask<ExecuteRequestContext>() {
-
-                @Override
-                public void execute(ManagementRequestContext<ExecuteRequestContext> context) throws Exception {
-                    final FlushableDataOutput output = context.writeMessage(response);
-                    try {
-                        output.writeByte(ModelControllerProtocol.PARAM_SUBJECT_LENGTH);
-                        if (subject != null) {
-                            output.writeInt(1);
-                            Marshaller marshaller = MarshallingUtil.getMarshaller();
-                            marshaller.start(MarshallingUtil.createByteOutput(output));
-                            marshaller.writeObject(subject);
-                            marshaller.finish();
-                        } else {
-                            output.writeInt(0);
-                        }
-                        output.writeByte(ManagementProtocol.RESPONSE_END);
-                        output.close();
-                    } finally {
-                        StreamUtils.safeClose(output);
-                    }
-                }
-            });
         }
 
     }
@@ -512,6 +476,19 @@ class TransactionalProtocolClientImpl implements ManagementRequestHandlerFactory
 
     static ModelNode getResponse(final String outcome) {
         return getFailureResponse(outcome, null);
+    }
+
+    static void writeSubject(final FlushableDataOutput output, final Subject subject) throws IOException {
+        output.writeByte(ModelControllerProtocol.PARAM_SUBJECT_LENGTH);
+        if (subject != null) {
+            output.writeInt(1);
+            Marshaller marshaller = MarshallingUtil.getMarshaller();
+            marshaller.start(MarshallingUtil.createByteOutput(output));
+            marshaller.writeObject(subject);
+            marshaller.finish();
+        } else {
+            output.writeInt(0);
+        }
     }
 
 }

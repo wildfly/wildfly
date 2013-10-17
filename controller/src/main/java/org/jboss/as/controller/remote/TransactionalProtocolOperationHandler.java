@@ -35,7 +35,6 @@ import java.util.concurrent.CountDownLatch;
 
 import javax.security.auth.Subject;
 
-import org.jboss.as.controller.AccessAuditContext;
 import org.jboss.as.controller.ModelController;
 import org.jboss.as.controller.ProxyController;
 import org.jboss.as.controller.client.OperationAttachments;
@@ -43,9 +42,7 @@ import org.jboss.as.controller.client.OperationMessageHandler;
 import org.jboss.as.controller.client.impl.ModelControllerProtocol;
 import org.jboss.as.protocol.ProtocolLogger;
 import org.jboss.as.protocol.StreamUtils;
-import org.jboss.as.protocol.mgmt.AbstractManagementRequest;
 import org.jboss.as.protocol.mgmt.ActiveOperation;
-import org.jboss.as.protocol.mgmt.ActiveOperation.ResultHandler;
 import org.jboss.as.protocol.mgmt.FlushableDataOutput;
 import org.jboss.as.protocol.mgmt.ManagementChannelAssociation;
 import org.jboss.as.protocol.mgmt.ManagementProtocol;
@@ -103,7 +100,15 @@ public class TransactionalProtocolOperationHandler implements ManagementRequestH
             ProtocolUtils.expectHeader(input, ModelControllerProtocol.PARAM_INPUTSTREAMS_LENGTH);
             final int attachmentsLength = input.readInt();
 
-            PrivilegedAction<Void> action = new PrivilegedAction<Void>() {
+            final Subject subject;
+            final Boolean readSubject = channelAssociation.getAttachments().getAttachment(TransactionalProtocolClient.SEND_SUBJECT);
+            if (readSubject != null && readSubject) {
+                subject = readSubject(input);
+            } else {
+                subject = null;
+            }
+
+            final PrivilegedAction<Void> action = new PrivilegedAction<Void>() {
 
                 @Override
                 public Void run() {
@@ -112,12 +117,24 @@ public class TransactionalProtocolOperationHandler implements ManagementRequestH
                 }
             };
 
-            // The task has been created but before we can execute it we need a Subject so save it and send the request for the Subject.
-            context.getAttachment().setAction(action);
+            // Set the response information and execute the operation
             final ExecuteRequestContext executeRequestContext = context.getAttachment();
-            // Set the response information
             executeRequestContext.initialize(context);
-            channelAssociation.executeRequest(context.getAttachment().getOperationId(), new GetSubjectResponseHandler());
+            context.executeAsync(new AsyncTask<TransactionalProtocolOperationHandler.ExecuteRequestContext>() {
+
+                @Override
+                public void execute(final ManagementRequestContext<ExecuteRequestContext> context) throws Exception {
+                    AccessController.doPrivileged(new PrivilegedAction<Void>() {
+
+                        @Override
+                        public Void run() {
+                            Subject.doAs(subject, action);
+                            return null;
+                        }
+                    });
+
+                }
+            });
         }
 
         protected void doExecute(final ModelNode operation, final int attachmentsLength, final ManagementRequestContext<ExecuteRequestContext> context) {
@@ -148,64 +165,6 @@ public class TransactionalProtocolOperationHandler implements ManagementRequestH
                 control.operationCompleted(result);
             }
         }
-    }
-
-    private class GetSubjectResponseHandler extends AbstractManagementRequest<Object, ExecuteRequestContext> {
-
-        @Override
-        public byte getOperationType() {
-            return ModelControllerProtocol.GET_SUBJECT_REQUEST;
-        }
-
-        @Override
-        protected void sendRequest(ResultHandler<Object> resultHandler,
-                ManagementRequestContext<ExecuteRequestContext> context, FlushableDataOutput output) throws IOException {
-            // Requesting the Subject for this call so no additional parameters required.
-
-        }
-
-        @Override
-        public void handleRequest(DataInput input, ResultHandler<Object> resultHandler,
-                final ManagementRequestContext<ExecuteRequestContext> context) throws IOException {
-            /*
-             * Not the best name for this method as it is actually handling the response received to the request sent by the
-             * call to sendRequest!!
-             */
-            ProtocolUtils.expectHeader(input, ModelControllerProtocol.PARAM_SUBJECT_LENGTH);
-            final int size = input.readInt();
-            Subject subject = null;
-            if (size == 1) {
-                Unmarshaller unmarshaller = MarshallingUtil.getUnmarshaller();
-                ByteInput byteInput = MarshallingUtil.createByteInput(input);
-                unmarshaller.start(byteInput);
-                try {
-                    subject = unmarshaller.readObject(Subject.class);
-                } catch (ClassNotFoundException e) {
-                    throw MESSAGES.unableToUnmarshallSubject(e);
-                }
-                unmarshaller.finish();
-            } else {
-                subject = null;
-            }
-
-            final Subject finalSubject = subject;
-            context.executeAsync(new AsyncTask<TransactionalProtocolOperationHandler.ExecuteRequestContext>() {
-
-                @Override
-                public void execute(final ManagementRequestContext<ExecuteRequestContext> context) throws Exception {
-                    AccessController.doPrivileged(new PrivilegedAction<Void>() {
-
-                        @Override
-                        public Void run() {
-                            AccessAuditContext.doAs(finalSubject, context.getAttachment().getAction());
-                            return null;
-                        }
-                    });
-
-                }
-            });
-        }
-
     }
 
     /**
@@ -448,6 +407,26 @@ public class TransactionalProtocolOperationHandler implements ManagementRequestH
             StreamUtils.safeClose(output);
         }
 
+    }
+
+    static Subject readSubject(final DataInput input) throws IOException {
+        ProtocolUtils.expectHeader(input, ModelControllerProtocol.PARAM_SUBJECT_LENGTH);
+        final int size = input.readInt();
+        Subject subject;
+        if (size == 1) {
+            Unmarshaller unmarshaller = MarshallingUtil.getUnmarshaller();
+            ByteInput byteInput = MarshallingUtil.createByteInput(input);
+            unmarshaller.start(byteInput);
+            try {
+                subject = unmarshaller.readObject(Subject.class);
+            } catch (ClassNotFoundException e) {
+                throw MESSAGES.unableToUnmarshallSubject(e);
+            }
+            unmarshaller.finish();
+        } else {
+            subject = null;
+        }
+        return subject;
     }
 
 }
