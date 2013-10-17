@@ -25,14 +25,11 @@ import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 
 import java.io.File;
-import java.io.FileOutputStream;
 import java.io.IOException;
-import java.io.InputStream;
 import java.net.URISyntaxException;
 import java.net.URL;
 import java.util.List;
 
-import org.jboss.as.domain.management.security.adduser.AddUser;
 import org.junit.Test;
 
 /**
@@ -43,20 +40,8 @@ public class PasswordCheckUtilTestCase {
     @Test
     public void testInitRestriction() throws URISyntaxException, IOException {
         final URL resource = PasswordCheckUtilTestCase.class.getResource("add-user.properties");
-        File configFile = new File(resource.toURI());
 
-        File addUser = new File(AddUser.CONFIG_FILE);
-        InputStream is = resource.openStream();
-        FileOutputStream fos = new FileOutputStream(addUser);
-        byte[] temp = new byte[1024];
-        int count = -1;
-        while ((count = is.read(temp)) > 0) {
-            fos.write(temp, 0, count);
-        }
-        fos.close();
-        is.close();
-
-        System.setProperty(AddUser.CONFIG_FILE, configFile.getAbsolutePath());
+        File addUser = new File(resource.getFile());
         final List<PasswordRestriction> passwordRestrictions = PasswordCheckUtil.create(addUser).getPasswordRestrictions("ggrossetie");
         assertPasswordRejected(passwordRestrictions, "ggrossetie", "Password must not match username");
         assertPasswordRejected(passwordRestrictions, "abc12", "Password must have at least 8 characters");
