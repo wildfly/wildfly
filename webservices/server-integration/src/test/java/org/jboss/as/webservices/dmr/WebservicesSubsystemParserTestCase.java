@@ -54,9 +54,9 @@ import org.junit.Test;
  * @author <a href="mailto:ema@rehdat.com>Jim Ma</a>
  * @author <a href="mailto:alessio.soldano@jboss.com>Alessio Soldano</a>
  */
-public class WebservicesSubsystemParserTest extends AbstractSubsystemBaseTest {
+public class WebservicesSubsystemParserTestCase extends AbstractSubsystemBaseTest {
 
-    public WebservicesSubsystemParserTest() {
+    public WebservicesSubsystemParserTestCase() {
         super(WSExtension.SUBSYSTEM_NAME, new WSExtension());
     }
 
@@ -197,4 +197,50 @@ public class WebservicesSubsystemParserTest extends AbstractSubsystemBaseTest {
     public void testTransformersAS713() throws Exception {
         testRejectExpressions_1_1_0(ModelTestControllerVersion.V7_1_3_FINAL);
     }
+
+    @Test
+    public void testTransformersEAP600() throws Exception {
+        ignoreThisTestIfEAPRepositoryIsNotReachable();
+        testRejectExpressions_1_1_0(ModelTestControllerVersion.EAP_6_0_0);
+    }
+
+    @Test
+    public void testTransformersEAP601() throws Exception {
+        ignoreThisTestIfEAPRepositoryIsNotReachable();
+        testRejectExpressions_1_1_0(ModelTestControllerVersion.EAP_6_0_1);
+    }
+
+    @Test
+    public void testTransformersEAP610() throws Exception {
+        ignoreThisTestIfEAPRepositoryIsNotReachable();
+        testTransformers_1_2_0(ModelTestControllerVersion.EAP_6_1_0);
+    }
+
+    @Test
+    public void testTransformersEAP611() throws Exception {
+        ignoreThisTestIfEAPRepositoryIsNotReachable();
+        testTransformers_1_2_0(ModelTestControllerVersion.EAP_6_1_1);
+    }
+
+    private void testTransformers_1_2_0(ModelTestControllerVersion controllerVersion) throws Exception {
+        // create builder for current subsystem version
+        KernelServicesBuilder builder = createKernelServicesBuilder(createAdditionalInitialization())
+                .setSubsystemXmlResource("ws-subsystem12.xml");
+
+        // create builder for legacy subsystem version
+        ModelVersion version_1_2_0 = ModelVersion.create(1, 2, 0);
+        builder.createLegacyKernelServicesBuilder(null, controllerVersion, version_1_2_0)
+                .addMavenResourceURL("org.jboss.as:jboss-as-webservices-server-integration:" + controllerVersion.getMavenGavVersion())
+                .configureReverseControllerCheck(AdditionalInitialization.MANAGEMENT, null);
+
+        KernelServices mainServices = builder.build();
+        KernelServices legacyServices = mainServices.getLegacyServices(version_1_2_0);
+
+        Assert.assertNotNull(legacyServices);
+        Assert.assertTrue("main services did not boot", mainServices.isSuccessfulBoot());
+        Assert.assertTrue(legacyServices.isSuccessfulBoot());
+
+        checkSubsystemModelTransformation(mainServices, version_1_2_0);
+    }
+
 }
