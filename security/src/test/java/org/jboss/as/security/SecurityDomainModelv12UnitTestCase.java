@@ -113,6 +113,18 @@ public class SecurityDomainModelv12UnitTestCase extends AbstractSubsystemBaseTes
         testResourceTransformers_1_1_0(ModelTestControllerVersion.V7_1_3_FINAL);
     }
 
+    @Test
+    public void testTransformersEAP600() throws Exception {
+        ignoreThisTestIfEAPRepositoryIsNotReachable();
+        testResourceTransformers_1_1_0(ModelTestControllerVersion.EAP_6_0_0);
+    }
+
+    @Test
+    public void testTransformersEAP601() throws Exception {
+        ignoreThisTestIfEAPRepositoryIsNotReachable();
+        testResourceTransformers_1_1_0(ModelTestControllerVersion.EAP_6_0_1);
+    }
+
 
     @Test
     public void testRejectedTransformers712() throws Exception {
@@ -122,6 +134,17 @@ public class SecurityDomainModelv12UnitTestCase extends AbstractSubsystemBaseTes
     @Test
     public void testRejectedTransformers713() throws Exception {
         testOperationTransformers_1_1_0(ModelTestControllerVersion.V7_1_3_FINAL);
+    }
+
+    @Test
+    public void testRejectedTransformersEAP600() throws Exception {
+        ignoreThisTestIfEAPRepositoryIsNotReachable();
+        testOperationTransformers_1_1_0(ModelTestControllerVersion.EAP_6_0_0);
+    }
+
+    @Test
+    public void testRejectedTransformersEAP601() throws Exception {
+        testOperationTransformers_1_1_0(ModelTestControllerVersion.EAP_6_0_1);
     }
 
 
@@ -166,6 +189,41 @@ public class SecurityDomainModelv12UnitTestCase extends AbstractSubsystemBaseTes
         checkSubsystemModelTransformation(mainServices, modelVersion);
 
         testAddAndRemove_1_1_0(mainServices, modelVersion);
+    }
+
+    @Test
+    public void testTransformersAS720() throws Exception {
+        ignoreThisTestIfEAPRepositoryIsNotReachable();
+        testResourceTransformers_1_2_1(ModelTestControllerVersion.V7_2_0_FINAL);
+    }
+
+    @Test
+    public void testTransformersEAP610() throws Exception {
+        ignoreThisTestIfEAPRepositoryIsNotReachable();
+        testResourceTransformers_1_2_1(ModelTestControllerVersion.EAP_6_1_0);
+    }
+
+    @Test
+    public void testTransformersEAP611() throws Exception {
+        ignoreThisTestIfEAPRepositoryIsNotReachable();
+        testResourceTransformers_1_2_1(ModelTestControllerVersion.EAP_6_1_1);
+    }
+
+    private void testResourceTransformers_1_2_1(ModelTestControllerVersion controllerVersion) throws Exception {
+        ModelVersion modelVersion = ModelVersion.create(1, 2, 1);
+        KernelServicesBuilder builder = createKernelServicesBuilder(AdditionalInitialization.MANAGEMENT)
+                .setSubsystemXmlResource("securitysubsystemv12.xml");
+
+        //which is why we need to include the jboss-as-controller artifact.
+        builder.createLegacyKernelServicesBuilder(null, controllerVersion, modelVersion)
+                .addMavenResourceURL("org.jboss.as:jboss-as-security:" + controllerVersion.getMavenGavVersion())
+                .dontPersistXml()
+                .excludeFromParent(SingleClassFilter.createFilter(SecurityLogger.class));
+
+        KernelServices mainServices = builder.build();
+        Assert.assertTrue(mainServices.isSuccessfulBoot());
+        Assert.assertTrue(mainServices.getLegacyServices(modelVersion).isSuccessfulBoot());
+        checkSubsystemModelTransformation(mainServices, modelVersion);
     }
 
     private void testAddAndRemove_1_1_0(KernelServices mainServices, ModelVersion version) throws Exception {

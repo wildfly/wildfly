@@ -89,6 +89,7 @@ class KnownVersions {
         addSubsystemVersion(map, "threads", "1.0.0", CORE_MODEL_7_1_2);
         addSubsystemVersion(map, "security", "1.1.0", CORE_MODEL_7_1_2);
         addSubsystemVersion(map, "security", "1.2.0", CORE_MODEL_7_2_0);
+        addSubsystemVersion(map, "security", "1.2.1", CORE_MODEL_7_2_0);
         addSubsystemVersion(map, "remoting", "1.1.0", CORE_MODEL_7_1_3);
         addSubsystemVersion(map, "resource-adapters", "1.1.0", CORE_MODEL_7_1_2);
         addSubsystemVersion(map, "resource-adapters", "1.2.0", CORE_MODEL_7_2_0);
