@@ -59,13 +59,14 @@ import org.junit.runner.RunWith;
  */
 @RunWith(Arquillian.class)
 @RunAsClient
-public class DeploymentOverlayTestCase {
+public class DeploymentOverlayCLITestCase {
 
     private static File war1;
     private static File war2;
     private static File war3;
     private static File webXml;
     private static File overrideXml;
+    private static File replacedAjsp;
 
     @ArquillianResource URL url;
 
@@ -76,7 +77,7 @@ public class DeploymentOverlayTestCase {
     @Deployment
     public static Archive<?> getDeployment() {
         JavaArchive ja = ShrinkWrap.create(JavaArchive.class, "dummy.jar");
-        ja.addClass(DeploymentOverlayTestCase.class);
+        ja.addClass(DeploymentOverlayCLITestCase.class);
         return ja;
     }
 
@@ -90,6 +91,7 @@ public class DeploymentOverlayTestCase {
         war = ShrinkWrap.create(WebArchive.class, "deployment0.war");
         war.addClass(SimpleServlet.class);
         war.addAsWebInfResource("cli/deployment-overlay/web.xml", "web.xml");
+        war.addAsWebResource(DeploymentOverlayCLITestCase.class.getPackage(), "a.jsp", "a.jsp");
         war1 = new File(tempDir + File.separator + war.getName());
         new ZipExporterImpl(war).exportTo(war1, true);
 
@@ -105,7 +107,7 @@ public class DeploymentOverlayTestCase {
         war3 = new File(tempDir + File.separator + war.getName());
         new ZipExporterImpl(war).exportTo(war3, true);
 
-        final URL overrideXmlUrl = DeploymentOverlayTestCase.class.getClassLoader().getResource("cli/deployment-overlay/override.xml");
+        final URL overrideXmlUrl = DeploymentOverlayCLITestCase.class.getClassLoader().getResource("cli/deployment-overlay/override.xml");
         if(overrideXmlUrl == null) {
             Assert.fail("Failed to locate cli/deployment-overlay/override.xml");
         }
@@ -114,13 +116,23 @@ public class DeploymentOverlayTestCase {
             Assert.fail("Failed to locate cli/deployment-overlay/override.xml");
         }
 
-        final URL webXmlUrl = DeploymentOverlayTestCase.class.getClassLoader().getResource("cli/deployment-overlay/web.xml");
+        final URL webXmlUrl = DeploymentOverlayCLITestCase.class.getClassLoader().getResource("cli/deployment-overlay/web.xml");
         if(webXmlUrl == null) {
             Assert.fail("Failed to locate cli/deployment-overlay/web.xml");
         }
         webXml = new File(webXmlUrl.toURI());
         if(!webXml.exists()) {
             Assert.fail("Failed to locate cli/deployment-overlay/web.xml");
+        }
+
+
+        final URL ajsp = DeploymentOverlayCLITestCase.class.getResource("a-replaced.jsp");
+        if(ajsp == null) {
+            Assert.fail("Failed to locate a-replaced.jsp");
+        }
+        replacedAjsp = new File(ajsp.toURI());
+        if(!replacedAjsp.exists()) {
+            Assert.fail("Failed to locate a-replaced.jsp");
         }
     }
 
@@ -160,6 +172,7 @@ public class DeploymentOverlayTestCase {
         ctx.handle("deploy " + war2.getAbsolutePath());
 
         ctx.handle("deployment-overlay add --name=overlay-test --content=WEB-INF/web.xml=" + overrideXml.getAbsolutePath()
+                + ",a.jsp=" + replacedAjsp.getAbsolutePath()
                 + " --deployments=" + war1.getName());
 
         String response = readResponse("deployment0");
@@ -174,6 +187,10 @@ public class DeploymentOverlayTestCase {
         assertEquals("OVERRIDDEN", response);
         response = readResponse("deployment1");
         assertEquals("NON OVERRIDDEN", response);
+
+        //now test JSP
+        assertEquals("Replaced JSP File", HttpRequest.get(baseUrl + "deployment0/a.jsp", 10, TimeUnit.SECONDS).trim());
+
     }
 
     @Test
