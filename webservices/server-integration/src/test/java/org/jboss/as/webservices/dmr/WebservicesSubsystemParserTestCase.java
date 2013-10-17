@@ -54,9 +54,9 @@ import org.junit.Test;
  * @author <a href="mailto:ema@rehdat.com>Jim Ma</a>
  * @author <a href="mailto:alessio.soldano@jboss.com>Alessio Soldano</a>
  */
-public class WebservicesSubsystemParserTest extends AbstractSubsystemBaseTest {
+public class WebservicesSubsystemParserTestCase extends AbstractSubsystemBaseTest {
 
-    public WebservicesSubsystemParserTest() {
+    public WebservicesSubsystemParserTestCase() {
         super(WSExtension.SUBSYSTEM_NAME, new WSExtension());
     }
 
