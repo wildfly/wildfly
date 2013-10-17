@@ -50,7 +50,7 @@ public class EJBViewMethodSecurityAttributesService implements Service<EJBViewMe
 
     public EJBViewMethodSecurityAttributesService(final String viewClassName, final Map<Method, EJBMethodSecurityAttribute> securityAttributes) {
         this.viewClassName = viewClassName;
-        this.methodSecurityAttributes = Collections.unmodifiableMap(new HashMap<>(securityAttributes));
+        this.methodSecurityAttributes = Collections.unmodifiableMap(new HashMap<Method, EJBMethodSecurityAttribute>(securityAttributes));
     }
 
     @Override
@@ -97,7 +97,7 @@ public class EJBViewMethodSecurityAttributesService implements Service<EJBViewMe
 
     public static class Builder {
         private final String viewClassName;
-        private final Map<Method, EJBMethodSecurityAttribute> methodSecurityAttributes = new IdentityHashMap<>();
+        private final Map<Method, EJBMethodSecurityAttribute> methodSecurityAttributes = new IdentityHashMap<Method, EJBMethodSecurityAttribute>();
 
         public Builder(final String viewClassName) {
             this.viewClassName = viewClassName;
