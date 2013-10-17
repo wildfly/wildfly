@@ -21,12 +21,16 @@
  */
 
 package org.jboss.as.domain.management.security.password;
+
 import static org.jboss.as.domain.management.DomainManagementMessages.MESSAGES;
+
 /**
- * @author baranowb
+ * A {@link PasswordRestriction} to check the length of the password.
  *
+ * @author baranowb
+ * @author <a href="mailto:darran.lofthouse@jboss.com">Darran Lofthouse</a>
  */
-public class LengthRestriction extends PasswordRestriction {
+public class LengthRestriction implements PasswordRestriction {
 
     private final int desiredLength;
 
@@ -34,21 +38,18 @@ public class LengthRestriction extends PasswordRestriction {
      * @param desiredLength
      */
     public LengthRestriction(int desiredLength) {
-        super(MESSAGES.passwordNotLongEnough(desiredLength));
         this.desiredLength = desiredLength;
     }
 
-    /*
-     * (non-Javadoc)
-     *
-     * @see org.jboss.as.domain.management.security.password.PasswordRestriction#pass(java.lang.String)
-     */
     @Override
-    public boolean pass(String password) {
+    public String getRequirementMessage() {
+        return MESSAGES.passwordLengthInfo(desiredLength);
+    }
+
+    @Override
+    public void validate(String userName, String password) throws PasswordValidationException {
         if (password == null || password.length() < this.desiredLength) {
-            return false;
-        } else {
-            return true;
+            throw MESSAGES.passwordNotLongEnough(desiredLength);
         }
     }
 }

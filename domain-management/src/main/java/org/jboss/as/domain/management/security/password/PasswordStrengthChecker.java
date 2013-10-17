@@ -26,17 +26,19 @@ import java.util.List;
 
 /**
  * Declaration of checker contract.
- * @author baranowb
  *
+ * @author baranowb
+ * @author <a href="mailto:darran.lofthouse@jboss.com">Darran Lofthouse</a>
  */
 public interface PasswordStrengthChecker {
 
     /**
      * Determines password strength. Checks and algorithm are implementation specific.
+     * @param userName - The username the password is being specified for.
      * @param password - password which is going to be inspected
      * @param restictions - adhoc password restriction list. Those will be additionaly checked against password.
      * @return result indicating strength of password and possible failure reasons.
      */
-    PasswordStrengthCheckResult check(String password, List<PasswordRestriction> restictions);
+    PasswordStrengthCheckResult check(String userName, String password, List<PasswordRestriction> restictions);
 
 }
