@@ -23,6 +23,7 @@
 package org.jboss.as.server.mgmt.domain;
 
 import org.jboss.as.controller.ModelController;
+import org.jboss.as.controller.remote.TransactionalProtocolClient;
 import org.jboss.as.controller.remote.TransactionalProtocolOperationHandler;
 import org.jboss.as.protocol.ProtocolConnectionConfiguration;
 import org.jboss.as.protocol.ProtocolConnectionManager;
@@ -115,6 +116,8 @@ class HostControllerConnection extends FutureManagementChannel {
         final Connection connection = connectionManager.connect();
         try {
             channelHandler.executeRequest(new ServerRegisterRequest(), null, callback);
+            // HC is the same version, so it will support sending the subject
+            channelHandler.getAttachments().attach(TransactionalProtocolClient.SEND_SUBJECT, Boolean.TRUE);
             channelHandler.addHandlerFactory(new TransactionalProtocolOperationHandler(controller, channelHandler));
             ok = true;
         } finally {
