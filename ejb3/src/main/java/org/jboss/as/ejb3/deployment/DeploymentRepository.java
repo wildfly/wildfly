@@ -49,7 +49,7 @@ public class DeploymentRepository implements Service<DeploymentRepository> {
     /**
      * All deployed modules. This is a copy on write map that is updated infrequently and read often.
      */
-    private volatile Map<DeploymentModuleIdentifier, ModuleDeployment> modules;
+    private volatile Map<DeploymentModuleIdentifier, DeploymentHolder> modules;
 
     private final List<DeploymentRepositoryListener> listeners = new ArrayList<DeploymentRepositoryListener>();
 
@@ -70,8 +70,8 @@ public class DeploymentRepository implements Service<DeploymentRepository> {
     }
 
     public synchronized void add(DeploymentModuleIdentifier identifier, ModuleDeployment deployment) {
-        final Map<DeploymentModuleIdentifier, ModuleDeployment> modules = new HashMap<DeploymentModuleIdentifier, ModuleDeployment>(this.modules);
-        modules.put(identifier, deployment);
+        final Map<DeploymentModuleIdentifier, DeploymentHolder> modules = new HashMap<DeploymentModuleIdentifier, DeploymentHolder>(this.modules);
+        modules.put(identifier, new DeploymentHolder(deployment));
         this.modules = Collections.unmodifiableMap(modules);
         for(final DeploymentRepositoryListener listener : listeners) {
             try {
@@ -81,6 +81,19 @@ public class DeploymentRepository implements Service<DeploymentRepository> {
             }
         }
     }
+
+    public synchronized void startDeployment(DeploymentModuleIdentifier identifier) {
+        DeploymentHolder deployment = modules.get(identifier);
+        deployment.started = true;
+        for(final DeploymentRepositoryListener listener : listeners) {
+            try {
+                listener.deploymentStarted(identifier, deployment.deployment);
+            } catch (Throwable t) {
+                EjbLogger.ROOT_LOGGER.deploymentAddListenerException(t);
+            }
+        }
+    }
+
 
     public synchronized void addListener(final DeploymentRepositoryListener listener) {
         listener.listenerAdded(this);
@@ -92,7 +105,7 @@ public class DeploymentRepository implements Service<DeploymentRepository> {
     }
 
     public synchronized void remove(DeploymentModuleIdentifier identifier) {
-        final Map<DeploymentModuleIdentifier, ModuleDeployment> modules = new HashMap<DeploymentModuleIdentifier, ModuleDeployment>(this.modules);
+        final Map<DeploymentModuleIdentifier, DeploymentHolder> modules = new HashMap<DeploymentModuleIdentifier, DeploymentHolder>(this.modules);
         modules.remove(identifier);
         this.modules = Collections.unmodifiableMap(modules);
         for(final DeploymentRepositoryListener listener : listeners) {
@@ -104,8 +117,39 @@ public class DeploymentRepository implements Service<DeploymentRepository> {
         }
     }
 
+    /**
+     * Returns all the deployments. These deployments may not be in a started state, i.e. not all components might be ready to receive invocations.
+     * @return All the deployments
+     */
     public Map<DeploymentModuleIdentifier, ModuleDeployment> getModules() {
+        Map<DeploymentModuleIdentifier, ModuleDeployment> modules = new HashMap<DeploymentModuleIdentifier, ModuleDeployment>();
+        for(Map.Entry<DeploymentModuleIdentifier, DeploymentHolder> entry : this.modules.entrySet()) {
+            modules.put(entry.getKey(), entry.getValue().deployment);
+        }
         return modules;
+    }
+
+    /**
+     * Returns all the deployments that are in a started state, i.e. all components are ready to recieve invocations.
+     * @return All the started deployments
+     */
+    public Map<DeploymentModuleIdentifier, ModuleDeployment> getStartedModules() {
+        Map<DeploymentModuleIdentifier, ModuleDeployment> modules = new HashMap<DeploymentModuleIdentifier, ModuleDeployment>();
+        for(Map.Entry<DeploymentModuleIdentifier, DeploymentHolder> entry : this.modules.entrySet()) {
+            if(entry.getValue().started) {
+                modules.put(entry.getKey(), entry.getValue().deployment);
+            }
+        }
+        return modules;
+    }
+
+    private class DeploymentHolder {
+        final ModuleDeployment deployment;
+        volatile boolean started = false;
+
+        private DeploymentHolder(ModuleDeployment deployment) {
+            this.deployment = deployment;
+        }
     }
 
 }

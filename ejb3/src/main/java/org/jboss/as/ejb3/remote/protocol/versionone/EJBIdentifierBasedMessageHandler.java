@@ -43,7 +43,7 @@ abstract class EJBIdentifierBasedMessageHandler extends AbstractMessageHandler {
 
     protected EjbDeploymentInformation findEJB(final String appName, final String moduleName, final String distinctName, final String beanName) {
         final DeploymentModuleIdentifier ejbModule = new DeploymentModuleIdentifier(appName, moduleName, distinctName);
-        final Map<DeploymentModuleIdentifier, ModuleDeployment> modules = this.deploymentRepository.getModules();
+        final Map<DeploymentModuleIdentifier, ModuleDeployment> modules = this.deploymentRepository.getStartedModules();
         if (modules == null || modules.isEmpty()) {
             return null;
         }
