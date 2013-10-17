@@ -77,7 +77,7 @@ public class Server implements Service<Server> {
     }
 
     protected void unregisterListener(AbstractListenerService<?> listener) {
-        listeners.add(listener);
+        listeners.remove(listener);
         if (listener.isSecure()) {
             servletContainer.getValue().unregisterSecurePort(listener.getName());
         }
