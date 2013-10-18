@@ -179,10 +179,6 @@ public class WeldSubsystemTestCase extends AbstractSubsystemBaseTest {
         protected ModelNode correctValue(ModelNode toResolve, boolean isWriteAttribute) {
             return new ModelNode(true);
         }
-
-        protected boolean correctUndefinedValue() {
-            return true;
-        }
     }
 
 }
