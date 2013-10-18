@@ -24,6 +24,8 @@ package org.jboss.as.txn.subsystem;
 
 import static org.jboss.as.txn.TransactionLogger.ROOT_LOGGER;
 
+import java.util.Map;
+
 import javax.management.MBeanServer;
 
 import org.jboss.as.controller.Extension;
@@ -38,6 +40,7 @@ import org.jboss.as.controller.descriptions.StandardResourceDescriptionResolver;
 import org.jboss.as.controller.operations.common.GenericSubsystemDescribeHandler;
 import org.jboss.as.controller.parsing.ExtensionParsingContext;
 import org.jboss.as.controller.registry.ManagementResourceRegistration;
+import org.jboss.as.controller.registry.Resource;
 import org.jboss.as.controller.services.path.ResolvePathHandler;
 import org.jboss.as.controller.transform.TransformationContext;
 import org.jboss.as.controller.transform.description.AttributeConverter;
@@ -164,13 +167,28 @@ public class TransactionExtension implements Extension {
 
         final ResourceTransformationDescriptionBuilder subsystemRoot = TransformationDescriptionBuilder.Factory.createSubsystemInstance();
 
-        // Transformations to the 1.2.0 Model:
-        // 1) always discard enable-async-io as it was not possible to disable AIO in a legacy system and the default value is false (it changes server behaviour in this aspect)
-        // 2) reject if it is still defined
-
+        //Versions < 1.3.0 assume 'true' for the hornetq-store-enable-async-io attribute (in which case it will look for the native libs
+        //and enable async io if found. The default value if not defined is 'false' though. This should only be rejected if use-hornetq-store is not false.
         subsystemRoot.getAttributeBuilder()
-                .setDiscard(DiscardAttributeChecker.ALWAYS, TransactionSubsystemRootResourceDefinition.HORNETQ_STORE_ENABLE_ASYNC_IO)
-                .addRejectCheck(RejectAttributeChecker.DEFINED, TransactionSubsystemRootResourceDefinition.HORNETQ_STORE_ENABLE_ASYNC_IO);
+                .setDiscard(new DiscardAttributeChecker.DiscardAttributeValueChecker(false, false, new ModelNode(true)),
+                        TransactionSubsystemRootResourceDefinition.HORNETQ_STORE_ENABLE_ASYNC_IO)
+                .addRejectCheck(new RejectAttributeChecker.DefaultRejectAttributeChecker() {
+                    @Override
+                    public String getRejectionLogMessage(Map<String, ModelNode> attributes) {
+                        return TransactionMessages.MESSAGES.transformHornetQStoreEnableAsyncIoMustBeTrue();
+                    }
+
+                    @Override
+                    protected boolean rejectAttribute(PathAddress address, String attributeName, ModelNode attributeValue,
+                            TransformationContext context) {
+                        //Will not get called if it was discarded
+                        if (!attributeValue.isDefined() || !attributeValue.asString().equals("true")) {
+                            Resource resource = context.readResource(address);
+                            return !resource.getModel().get(TransactionSubsystemRootResourceDefinition.USEHORNETQSTORE.getName()).asString().equals("false");
+                        }
+                        return false;
+                    }
+                }, TransactionSubsystemRootResourceDefinition.HORNETQ_STORE_ENABLE_ASYNC_IO);
 
         final ModelVersion version120 = ModelVersion.create(1, 2, 0);
         final TransformationDescription description120 = subsystemRoot.build();
@@ -217,6 +235,8 @@ public class TransactionExtension implements Extension {
         final TransformationDescription description110 = subsystemRoot.build();
         TransformationDescription.Tools.register(description110, subsystem, version110);
     }
+
+
 
     private static class UnneededJDBCStoreChecker implements DiscardAttributeChecker {
 
