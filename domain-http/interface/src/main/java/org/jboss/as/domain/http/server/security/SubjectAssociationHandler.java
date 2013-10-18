@@ -70,12 +70,6 @@ public class SubjectAssociationHandler implements HttpHandler {
                     copySubject.getPrincipals().addAll(subject.getPrincipals());
                     copySubject.getPrivateCredentials().addAll(subject.getPrivateCredentials());
                     copySubject.getPublicCredentials().addAll(subject.getPublicCredentials());
-                    //Add the remote address and the access mechanism
-                    InetSocketAddress address = exchange.getRemoteAddress();
-                    if (address != null) {
-                        //TODO decide if we should use the remoting principal or not
-                        copySubject.getPrincipals().add(new InetAddressPrincipal(address.getAddress()));
-                    }
                     copySubject.getPrincipals().add(new AccessMechanismPrincipal(AccessMechanism.HTTP));
                     copySubject.setReadOnly();
                     return copySubject;

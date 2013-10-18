@@ -37,7 +37,8 @@ import org.jboss.logging.annotations.MessageBundle;
  * Reserved logging id ranges from: http://community.jboss.org/wiki/LoggingIds: 20900 - 20999
  *
  * @author <a href="mailto:jperkins@redhat.com">Kabir Khan</a>
- */@MessageBundle(projectCode = "JBAS")
+ */
+@MessageBundle(projectCode = "JBAS")
 public interface CoreSecurityMessages {
 
     /**

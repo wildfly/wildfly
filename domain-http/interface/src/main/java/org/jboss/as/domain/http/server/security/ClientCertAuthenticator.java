@@ -93,7 +93,11 @@ public class ClientCertAuthenticator extends Authenticator {
                     principalCol.add(principal);
                     SubjectUserInfo userInfo = securityRealm.getAuthorizingCallbackHandler(AuthenticationMechanism.CLIENT_CERT)
                             .createSubjectUserInfo(principalCol);
-                    principal.setSubject(userInfo.getSubject());
+
+                    Subject subject = userInfo.getSubject();
+                    PrincipalUtil.addInetPrincipal(exchange, subject.getPrincipals());
+
+                    principal.setSubject(subject);
                 } catch (IOException e) {
                     ROOT_LOGGER.debug("Unable to create SubjectUserInfo", e);
                     response = new Authenticator.Failure(INTERNAL_SERVER_ERROR);

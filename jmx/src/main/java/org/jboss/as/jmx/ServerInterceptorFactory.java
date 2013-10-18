@@ -23,11 +23,9 @@ package org.jboss.as.jmx;
 
 import java.io.IOException;
 import java.security.AccessController;
-import java.security.Principal;
 import java.security.PrivilegedAction;
 import java.security.PrivilegedActionException;
 import java.security.PrivilegedExceptionAction;
-import java.util.Collection;
 
 import javax.security.auth.Subject;
 
@@ -35,7 +33,6 @@ import org.jboss.as.controller.security.AccessMechanismPrincipal;
 import org.jboss.as.core.security.AccessMechanism;
 import org.jboss.as.core.security.SubjectUserInfo;
 import org.jboss.remoting3.Channel;
-import org.jboss.remoting3.security.InetAddressPrincipal;
 import org.jboss.remoting3.security.UserInfo;
 import org.jboss.remotingjmx.ServerMessageInterceptor;
 import org.jboss.remotingjmx.ServerMessageInterceptorFactory;
@@ -75,15 +72,6 @@ class ServerInterceptorFactory implements ServerMessageInterceptorFactory {
                         copySubject.getPrincipals().addAll(subject.getPrincipals());
                         copySubject.getPrivateCredentials().addAll(subject.getPrivateCredentials());
                         copySubject.getPublicCredentials().addAll(subject.getPublicCredentials());
-                        //Add the remote address and the access mechanism
-                        Collection<Principal> principals = channel.getConnection().getPrincipals();
-                        for (Principal principal : principals) {
-                            if (principal instanceof InetAddressPrincipal) {
-                                //TODO decide if we should use the remoting principal or not
-                                copySubject.getPrincipals().add(new org.jboss.as.controller.security.InetAddressPrincipal(((InetAddressPrincipal)principal).getInetAddress()));
-                                break;
-                            }
-                        }
                         copySubject.getPrincipals().add(new AccessMechanismPrincipal(AccessMechanism.JMX));
                         copySubject.setReadOnly();
                         return copySubject;                            }

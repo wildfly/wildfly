@@ -35,6 +35,7 @@ import java.util.Map;
 
 import javax.net.ssl.SSLPeerUnverifiedException;
 import javax.net.ssl.SSLSession;
+import javax.security.auth.Subject;
 import javax.security.auth.callback.Callback;
 import javax.security.auth.callback.NameCallback;
 import javax.security.auth.callback.PasswordCallback;
@@ -114,7 +115,10 @@ public class BasicAuthenticator extends org.jboss.com.sun.net.httpserver.BasicAu
                 principalCol.add(principal);
                 SubjectUserInfo userInfo = callbackHandler.get().createSubjectUserInfo(principalCol);
 
-                replacementPrincipal.setSubject(userInfo.getSubject());
+                Subject subject = userInfo.getSubject();
+                PrincipalUtil.addInetPrincipal(httpExchange, subject.getPrincipals());
+
+                replacementPrincipal.setSubject(subject);
 
                 return new Success(replacementPrincipal);
             } catch (IOException e) {

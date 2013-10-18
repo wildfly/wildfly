@@ -1,6 +1,6 @@
 /*
  * JBoss, Home of Professional Open Source.
- * Copyright 2012, Red Hat, Inc., and individual contributors
+ * Copyright 2013, Red Hat, Inc., and individual contributors
  * as indicated by the @author tags. See the copyright.txt file in the
  * distribution for a full listing of individual contributors.
  *
@@ -19,39 +19,26 @@
  * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
+package org.jboss.as.domain.http.server.security;
 
-package org.jboss.as.core.security;
-
+import java.net.InetAddress;
 import java.security.Principal;
 import java.util.Collection;
 
-import javax.security.auth.Subject;
+import org.jboss.as.controller.security.InetAddressPrincipal;
+import org.jboss.com.sun.net.httpserver.HttpExchange;
 
 /**
- * A UserInfo definition that also allows for a Subject to be returned.
- *
- * This interface contains a method from the Remoting UserInfo definition, however
- * domain management is both about Remoting and non-Remoting invocations so we do not
- * tie this directly to the Remoting class.
+ * A utility used for adding an {@link InetAddressPrincipal} to a {@link Principal} {@link Collection}.
  *
  * @author <a href="mailto:darran.lofthouse@jboss.com">Darran Lofthouse</a>
  */
-public interface SubjectUserInfo {
+class PrincipalUtil {
 
-    /**
-     * Get the name for this user.
-     *
-     * @return the name
-     */
-    String getUserName();
-
-    /**
-     * Get the principals for this user.
-     *
-     * @return the principals
-     */
-    Collection<Principal> getPrincipals();
-
-    Subject getSubject();
-
+    static void addInetPrincipal(final HttpExchange exchange, final Collection<Principal> principals) {
+        InetAddress address = exchange.getRemoteAddress().getAddress();
+        if (address != null) {
+            principals.add(new InetAddressPrincipal(address));
+        }
+    }
 }

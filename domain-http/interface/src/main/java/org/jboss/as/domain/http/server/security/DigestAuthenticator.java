@@ -134,8 +134,13 @@ public class DigestAuthenticator extends Authenticator {
             try {
                 Collection<Principal> principalCol = new HashSet<Principal>();
                 principalCol.add(principal);
+
                 SubjectUserInfo userInfo = callbackHandler.get().createSubjectUserInfo(principalCol);
-                principal.setSubject(userInfo.getSubject());
+
+                Subject subject = userInfo.getSubject();
+                PrincipalUtil.addInetPrincipal(httpExchange, subject.getPrincipals());
+
+                principal.setSubject(subject);
             } catch (IOException e) {
                 ROOT_LOGGER.debug("Unable to create SubjectUserInfo", e);
                 response = new Authenticator.Failure(INTERNAL_SERVER_ERROR);

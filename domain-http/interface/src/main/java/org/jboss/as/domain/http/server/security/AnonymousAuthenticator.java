@@ -54,6 +54,7 @@ public class AnonymousAuthenticator extends Authenticator {
         Set<Principal> principals = subject.getPrincipals();
         principals.add(principal);
         principals.add(realmUser);
+        PrincipalUtil.addInetPrincipal(exchange, principals);
         principal.setSubject(subject);
 
         return new Authenticator.Success(principal);
