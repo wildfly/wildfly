@@ -1,33 +1,39 @@
 /*
+ * JBoss, Home of Professional Open Source.
+ * Copyright 2013, Red Hat, Inc., and individual contributors
+ * as indicated by the @author tags. See the copyright.txt file in the
+ * distribution for a full listing of individual contributors.
  *
- *  * JBoss, Home of Professional Open Source.
- *  * Copyright 2013, Red Hat, Inc., and individual contributors
- *  * as indicated by the @author tags. See the copyright.txt file in the
- *  * distribution for a full listing of individual contributors.
- *  *
- *  * This is free software; you can redistribute it and/or modify it
- *  * under the terms of the GNU Lesser General Public License as
- *  * published by the Free Software Foundation; either version 2.1 of
- *  * the License, or (at your option) any later version.
- *  *
- *  * This software is distributed in the hope that it will be useful,
- *  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- *  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
- *  * Lesser General Public License for more details.
- *  *
- *  * You should have received a copy of the GNU Lesser General Public
- *  * License along with this software; if not, write to the Free
- *  * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
- *  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
+ * This is free software; you can redistribute it and/or modify it
+ * under the terms of the GNU Lesser General Public License as
+ * published by the Free Software Foundation; either version 2.1 of
+ * the License, or (at your option) any later version.
  *
+ * This software is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
+ * Lesser General Public License for more details.
+ *
+ * You should have received a copy of the GNU Lesser General Public
+ * License along with this software; if not, write to the Free
+ * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
+ * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
 package org.jboss.as.domain.http.server.security;
 
 import static org.jboss.as.domain.http.server.HttpServerLogger.ROOT_LOGGER;
 import static org.jboss.as.domain.http.server.HttpServerMessages.MESSAGES;
 import static org.jboss.as.domain.management.RealmConfigurationConstants.DIGEST_PLAIN_TEXT;
+import io.undertow.security.idm.Account;
+import io.undertow.security.idm.Credential;
+import io.undertow.security.idm.DigestCredential;
+import io.undertow.security.idm.IdentityManager;
+import io.undertow.security.idm.PasswordCredential;
+import io.undertow.security.idm.X509CertificateCredential;
+import io.undertow.util.HexConverter;
 
 import java.io.IOException;
+import java.net.InetAddress;
 import java.nio.charset.Charset;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
@@ -41,13 +47,7 @@ import javax.security.auth.callback.NameCallback;
 import javax.security.auth.callback.PasswordCallback;
 import javax.security.sasl.RealmCallback;
 
-import io.undertow.security.idm.Account;
-import io.undertow.security.idm.Credential;
-import io.undertow.security.idm.DigestCredential;
-import io.undertow.security.idm.IdentityManager;
-import io.undertow.security.idm.PasswordCredential;
-import io.undertow.security.idm.X509CertificateCredential;
-import io.undertow.util.HexConverter;
+import org.jboss.as.controller.security.InetAddressPrincipal;
 import org.jboss.as.core.security.SimplePrincipal;
 import org.jboss.as.core.security.SubjectUserInfo;
 import org.jboss.as.domain.management.AuthMechanism;
@@ -64,10 +64,30 @@ import org.jboss.sasl.callback.VerifyPasswordCallback;
 public class RealmIdentityManager implements IdentityManager {
 
     private static final Charset UTF_8 = Charset.forName("UTF-8");
-    private static final ThreadLocal<AuthMechanism> currentMechanism = new ThreadLocal<AuthMechanism>();
+    private static final ThreadLocal<ThreadLocalStore> requestSpecific = new ThreadLocal<ThreadLocalStore>();
 
-    static void setAuthenticationMechanism(final AuthMechanism mechanism) {
-        currentMechanism.set(mechanism);
+    static void setRequestSpecific(final AuthMechanism mechanism, final InetAddress clientAddress) {
+        ThreadLocalStore store = new ThreadLocalStore();
+        store.requestMechanism = mechanism;
+        store.inetAddress = clientAddress;
+
+        requestSpecific.set(store);
+    }
+
+    static void clearRequestSpecific() {
+        requestSpecific.set(null);
+    }
+
+    private AuthMechanism getRequestMeschanism() {
+        ThreadLocalStore store = requestSpecific.get();
+
+        return store == null ? null : store.requestMechanism;
+    }
+
+    private InetAddress getInetAddress() {
+        ThreadLocalStore store = requestSpecific.get();
+
+        return store == null ? null : store.inetAddress;
     }
 
     private final SecurityRealm securityRealm;
@@ -137,6 +157,7 @@ public class RealmIdentityManager implements IdentityManager {
         } catch (IOException e) {
             return null;
         }
+        addInetPrincipal(supplemental.getSubject().getPrincipals());
 
         return new RealmIdentityAccount(supplemental.getSubject(), user);
     }
@@ -190,6 +211,7 @@ public class RealmIdentityManager implements IdentityManager {
                 Principal user = new SimplePrincipal(id);
                 Collection<Principal> userCol = Collections.singleton(user);
                 SubjectUserInfo supplemental = ach.createSubjectUserInfo(userCol);
+                addInetPrincipal(supplemental.getSubject().getPrincipals());
 
                 return new RealmIdentityAccount(supplemental.getSubject(), user);
             }
@@ -221,14 +243,28 @@ public class RealmIdentityManager implements IdentityManager {
         } catch (IOException e) {
             return null;
         }
+        addInetPrincipal(supplemental.getSubject().getPrincipals());
 
         return new RealmIdentityAccount(supplemental.getSubject(), user);
     }
 
-    private static void assertMechanism(final AuthMechanism mechanism) {
-        if (mechanism != currentMechanism.get()) {
-            //This is impossible, only here for testing if someone messed up a change
+    private void addInetPrincipal(final Collection<Principal> principals) {
+        InetAddress address = getInetAddress();
+        if (address != null) {
+            principals.add(new InetAddressPrincipal(address));
+        }
+    }
+
+    private void assertMechanism(final AuthMechanism mechanism) {
+        if (mechanism != getRequestMeschanism()) {
+            // This is impossible, only here for testing if someone messed up a change
             throw new IllegalStateException("Unexpected authentication mechanism executing.");
         }
     }
+
+    private static final class ThreadLocalStore {
+        AuthMechanism requestMechanism;
+        InetAddress inetAddress;
+    }
+
 }

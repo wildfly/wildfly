@@ -38,11 +38,6 @@ import javax.security.auth.Subject;
  */
 public interface SubjectUserInfo {
 
-    // TODO - This is currently within this module as it needs to be widely accessible - the domain-management
-    //        module currently depends on controller so can't see this class.  We really need to split the domain
-    //        management into two pieces - 1 for the management operations and 2 the core library handling security
-    //        the latter should have no other dependencies within the AS tree.
-
     /**
      * Get the name for this user.
      *

@@ -21,16 +21,18 @@
  */
 package org.jboss.as.domain.http.server.security;
 
+import io.undertow.security.api.AuthenticationMechanism;
+import io.undertow.security.api.SecurityContext;
+import io.undertow.server.HttpServerExchange;
+
+import java.net.InetSocketAddress;
+import java.net.SocketAddress;
 import java.security.Principal;
 
 import javax.security.auth.Subject;
 
+import org.jboss.as.controller.security.InetAddressPrincipal;
 import org.jboss.as.core.security.RealmUser;
-
-import io.undertow.security.api.AuthenticationMechanism;
-
-import io.undertow.security.api.SecurityContext;
-import io.undertow.server.HttpServerExchange;
 
 /**
  * An {@link AuthenticationMechanism} that always associates an 'anonymous' user.
@@ -47,6 +49,10 @@ public class AnonymousMechanism implements AuthenticationMechanism {
         Principal user = new RealmUser(ANONYMOUS_USER);
         Subject subject = new Subject();
         subject.getPrincipals().add(user);
+        SocketAddress address = exchange.getConnection().getPeerAddress();
+        if (address instanceof InetSocketAddress) {
+            subject.getPrincipals().add(new InetAddressPrincipal(((InetSocketAddress) address).getAddress()));
+        }
 
         context.authenticationComplete(new RealmIdentityAccount(subject, user), ANONYMOUS_MECH);
 
