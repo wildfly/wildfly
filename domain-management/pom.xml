@@ -34,7 +34,7 @@
 
     <groupId>org.wildfly</groupId>
     <artifactId>wildfly-domain-management</artifactId>
-    
+
     <properties>
         <version.org.apache.ds>2.0.0-M15</version.org.apache.ds>
     </properties>
@@ -52,10 +52,10 @@
                         <include>**/*TestSuite.java</include>
                     </includes>
                     <enableAssertions>false</enableAssertions>
-                    
+
                     <additionalClasspathElements>
                         <additionalClasspathElement>${project.basedir}/../src/test/resources</additionalClasspathElement>
-                    </additionalClasspathElements>                                        
+                    </additionalClasspathElements>
                 </configuration>
             </plugin>
         </plugins>
@@ -66,9 +66,9 @@
             <groupId>org.apache.directory.server</groupId>
             <artifactId>apacheds-all</artifactId>
             <version>${version.org.apache.ds}</version>
-            <scope>test</scope>                                            
-        </dependency>    
-    
+            <scope>test</scope>
+        </dependency>
+
         <dependency>
             <groupId>org.jboss</groupId>
             <artifactId>jboss-common-core</artifactId>
@@ -98,6 +98,11 @@
         </dependency>
 
         <dependency>
+            <groupId>org.jboss.logmanager</groupId>
+            <artifactId>jboss-logmanager</artifactId>
+        </dependency>
+
+        <dependency>
             <groupId>org.jboss.msc</groupId>
             <artifactId>jboss-msc</artifactId>
         </dependency>
@@ -122,6 +127,6 @@
             <artifactId>junit</artifactId>
             <scope>test</scope>
         </dependency>
-       
+
     </dependencies>
 </project>
