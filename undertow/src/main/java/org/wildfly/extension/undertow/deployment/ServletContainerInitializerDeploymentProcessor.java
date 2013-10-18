@@ -26,6 +26,7 @@ import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -124,10 +125,7 @@ public class ServletContainerInitializerDeploymentProcessor implements Deploymen
             for (String jar : order) {
                 VirtualFile sci = localScis.get(jar);
                 if (sci != null) {
-                    ServletContainerInitializer service = loadSci(classLoader, sci, jar, true);
-                    if (service != null) {
-                        scis.add(service);
-                    }
+                    scis.addAll(loadSci(classLoader, sci, jar, true));
                 }
             }
         }
@@ -173,21 +171,34 @@ public class ServletContainerInitializerDeploymentProcessor implements Deploymen
         context.removeAttachment(ScisMetaData.ATTACHMENT_KEY);
     }
 
-    private ServletContainerInitializer loadSci(ClassLoader classLoader, VirtualFile sci, String jar, boolean error) throws DeploymentUnitProcessingException {
-        ServletContainerInitializer service = null;
+    private List<ServletContainerInitializer> loadSci(ClassLoader classLoader, VirtualFile sci, String jar, boolean error) throws DeploymentUnitProcessingException {
+        final List<ServletContainerInitializer> scis = new ArrayList<ServletContainerInitializer>();
         InputStream is = null;
         try {
             // Get the ServletContainerInitializer class name
             is = sci.openStream();
             BufferedReader reader = new BufferedReader(new InputStreamReader(is));
             String servletContainerInitializerClassName = reader.readLine();
-            int pos = servletContainerInitializerClassName.indexOf('#');
-            if (pos > 0) {
-                servletContainerInitializerClassName = servletContainerInitializerClassName.substring(0, pos);
+            while (servletContainerInitializerClassName != null) {
+                try {
+                    int pos = servletContainerInitializerClassName.indexOf('#');
+                    if (pos > 0) {
+                        servletContainerInitializerClassName = servletContainerInitializerClassName.substring(0, pos);
+                    }
+                    servletContainerInitializerClassName = servletContainerInitializerClassName.trim();
+                    // Instantiate the ServletContainerInitializer
+                    ServletContainerInitializer service = (ServletContainerInitializer) classLoader.loadClass(servletContainerInitializerClassName).newInstance();
+                    if (service != null) {
+                        scis.add(service);
+                    }
+                } catch (Exception e) {
+                    if (error) {
+                        throw MESSAGES.errorProcessingSCI(jar, e);
+                    } else {
+                        UndertowLogger.ROOT_LOGGER.skippedSCI(jar, e);
+                    }
+                }
             }
-            servletContainerInitializerClassName = servletContainerInitializerClassName.trim();
-            // Instantiate the ServletContainerInitializer
-            service = (ServletContainerInitializer) classLoader.loadClass(servletContainerInitializerClassName).newInstance();
         } catch (Exception e) {
             if (error) {
                 throw MESSAGES.errorProcessingSCI(jar, e);
@@ -202,7 +213,7 @@ public class ServletContainerInitializerDeploymentProcessor implements Deploymen
                 // Ignore
             }
         }
-        return service;
+        return scis;
     }
 
     private Set<ClassInfo> processHandlesType(DotName typeName, Class<?> type, CompositeIndex index) throws DeploymentUnitProcessingException {
