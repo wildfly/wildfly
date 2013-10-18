@@ -85,14 +85,9 @@ public class UnboundedQueueThreadPoolService implements Service<ManagedJBossThre
     }
 
     public synchronized void setMaxThreads(final int maxThreads) {
-        boolean decreased = false;
-        if (maxThreads < this.maxThreads)
-            decreased = true;
-
-        this.maxThreads = maxThreads;
         final ManagedJBossThreadPoolExecutorService executor = this.executor;
         if(executor != null) {
-            if (decreased) {
+            if (maxThreads < this.maxThreads) {
                 executor.setCoreThreads(maxThreads);
                 executor.setMaxThreads(maxThreads);
             } else {
@@ -100,6 +95,7 @@ public class UnboundedQueueThreadPoolService implements Service<ManagedJBossThre
                 executor.setCoreThreads(maxThreads);
             }
         }
+        this.maxThreads = maxThreads;
     }
 
     public synchronized void setKeepAlive(final TimeSpec keepAlive) {
