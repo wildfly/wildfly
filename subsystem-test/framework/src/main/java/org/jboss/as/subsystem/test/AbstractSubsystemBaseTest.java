@@ -132,7 +132,7 @@ public abstract class AbstractSubsystemBaseTest extends AbstractSubsystemTest {
         // Parse the subsystem xml and install into the first controller
         final String subsystemXml = configId == null ? getSubsystemXml() : getSubsystemXml(configId);
         final KernelServices servicesA = super.createKernelServicesBuilder(additionalInit).setSubsystemXml(subsystemXml).build();
-        Assert.assertTrue("Subsystem boot failed!",servicesA.isSuccessfulBoot());
+        Assert.assertTrue("Subsystem boot failed!", servicesA.isSuccessfulBoot());
         //Get the model and the persisted xml from the first controller
         final ModelNode modelA = servicesA.readWholeModel();
         validateModel(modelA);
@@ -152,6 +152,7 @@ public abstract class AbstractSubsystemBaseTest extends AbstractSubsystemTest {
 
         //Install the persisted xml from the first controller into a second controller
         final KernelServices servicesB = super.createKernelServicesBuilder(additionalInit).setSubsystemXml(marshalled).build();
+        Assert.assertTrue("Subsystem boot failed!", servicesB.isSuccessfulBoot());
         final ModelNode modelB = servicesB.readWholeModel();
 
         //Make sure the models from the two controllers are identical
@@ -183,6 +184,7 @@ public abstract class AbstractSubsystemBaseTest extends AbstractSubsystemTest {
         final List<ModelNode> operations = result.get(ModelDescriptionConstants.RESULT).asList();
 
         final KernelServices servicesC = super.createKernelServicesBuilder(serverInit).setBootOperations(operations).build();
+        Assert.assertTrue("Subsystem boot failed!", servicesC.isSuccessfulBoot());
         final ModelNode serverModel = servicesC.readWholeModel();
 
         compare(expectedModel, serverModel);
