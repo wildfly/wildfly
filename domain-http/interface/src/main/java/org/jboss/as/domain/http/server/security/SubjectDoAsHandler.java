@@ -26,8 +26,6 @@ import io.undertow.security.idm.Account;
 import io.undertow.server.HttpHandler;
 import io.undertow.server.HttpServerExchange;
 
-import java.net.InetSocketAddress;
-import java.net.SocketAddress;
 import java.security.AccessController;
 import java.security.PrivilegedAction;
 import java.security.PrivilegedActionException;
@@ -36,7 +34,6 @@ import java.security.PrivilegedExceptionAction;
 import javax.security.auth.Subject;
 
 import org.jboss.as.controller.security.AccessMechanismPrincipal;
-import org.jboss.as.controller.security.InetAddressPrincipal;
 import org.jboss.as.core.security.AccessMechanism;
 import org.wildfly.security.manager.WildFlySecurityManager;
 
@@ -69,12 +66,6 @@ public class SubjectDoAsHandler implements HttpHandler {
                         copySubject.getPrincipals().addAll(subject.getPrincipals());
                         copySubject.getPrivateCredentials().addAll(subject.getPrivateCredentials());
                         copySubject.getPublicCredentials().addAll(subject.getPublicCredentials());
-                        //Add the remote address and the access mechanism
-                        SocketAddress address = exchange.getConnection().getPeerAddress();
-                        if (address instanceof InetSocketAddress) {
-                            //TODO decide if we should use the remoting principal or not
-                            copySubject.getPrincipals().add(new InetAddressPrincipal(((InetSocketAddress)address).getAddress()));
-                        }
                         copySubject.getPrincipals().add(new AccessMechanismPrincipal(AccessMechanism.HTTP));
                         copySubject.setReadOnly();
                         return copySubject;                            }
