@@ -227,6 +227,7 @@ public abstract class PatchOperationTarget {
             final ModelNode operation = createOperation(Constants.ROLLBACK, address.toModelNode(), builder);
             operation.get(Constants.PATCH_ID).set(patchId);
             operation.get(Constants.RESET_CONFIGURATION).set(resetConfiguration);
+            operation.get(Constants.ROLLBACK_TO).set(rollbackTo);
             return client.execute(operation);
         }
 

@@ -174,6 +174,10 @@ public class AbstractPatchingTest {
     }
 
     protected PatchingResult rollback(final PatchingTestStepBuilder builder, final ContentVerificationPolicy verificationPolicy, final PatchStepAssertions assertions) throws PatchingException {
+        return rollback(builder, verificationPolicy, assertions, false);
+    }
+
+    protected PatchingResult rollback(final PatchingTestStepBuilder builder, final ContentVerificationPolicy verificationPolicy, final PatchStepAssertions assertions, boolean rollbackTo) throws PatchingException {
         final Patch patch = builder.build();
         final File installation = new File(tempDir, JBOSS_INSTALLATION);
         try {
@@ -183,7 +187,7 @@ public class AbstractPatchingTest {
         }
         final String patchId = patch.getPatchId();
         final PatchTool patchTool = PatchTool.Factory.create(installationManager);
-        final PatchingResult result = patchTool.rollback(patchId, verificationPolicy, false, false);
+        final PatchingResult result = patchTool.rollback(patchId, verificationPolicy, rollbackTo, false);
         result.commit();
         Assert.assertFalse(installationManager.getAllInstalledPatches().contains(patch.getPatchId()));
         try {
