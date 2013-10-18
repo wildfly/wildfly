@@ -22,11 +22,22 @@
 package org.jboss.as.core.security;
 
 /**
+ * An enumeration representing the mechanism used to submit a request to the server.
  *
  * @author <a href="kabir.khan@jboss.com">Kabir Khan</a>
  */
 public enum AccessMechanism {
+    /**
+     * The request was submitted directly as a management operation over the native interface or as a management operation
+     * natively but after a HTTP upgrade.
+     */
     NATIVE,
+    /**
+     * The request was submitted directyl as a manaagement operation over the HTTP interface.
+     */
     HTTP,
+    /**
+     * The request was submitted over JMX and subsequently converted to a management operation.
+     */
     JMX
 }

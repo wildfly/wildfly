@@ -87,9 +87,7 @@ import org.jboss.as.controller.access.JmxAction;
 import org.jboss.as.controller.access.management.JmxAuthorizer;
 import org.jboss.as.controller.audit.AuditLogger;
 import org.jboss.as.controller.audit.ManagedAuditLogger;
-import org.jboss.as.controller.security.AccessMechanismPrincipal;
 import org.jboss.as.controller.security.InetAddressPrincipal;
-import org.jboss.as.core.security.AccessMechanism;
 import org.jboss.as.core.security.RealmUser;
 import org.jboss.as.server.jmx.MBeanServerPlugin;
 import org.jboss.as.server.jmx.PluggableMBeanServer;
@@ -1240,7 +1238,7 @@ class PluggableMBeanServerImpl implements PluggableMBeanServer {
                         readOnly,
                         getCallerUserId(subject),
                         null, //TODO domainUUID
-                        getSubjectAccessMechanism(subject),
+                        null, // TODO accessMechanism
                         getSubjectInetAddress(subject),
                         methodName,
                         methodSignature,
@@ -1263,12 +1261,6 @@ class PluggableMBeanServerImpl implements PluggableMBeanServer {
             InetAddressPrincipal principal = getPrincipal(subject, InetAddressPrincipal.class);
             return principal != null ? principal.getInetAddress() : null;
         }
-
-        private static AccessMechanism getSubjectAccessMechanism(Subject subject) {
-            AccessMechanismPrincipal principal = getPrincipal(subject, AccessMechanismPrincipal.class);
-            return principal != null ? principal.getAccessMechanism() : null;
-        }
-
 
         private static <T extends Principal> T getPrincipal(Subject subject, Class<T> clazz) {
             if (subject == null) {

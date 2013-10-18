@@ -23,17 +23,11 @@
 package org.jboss.as.domain.http.server.security;
 
 import java.io.IOException;
-import java.net.InetSocketAddress;
-import java.security.AccessController;
-import java.security.PrivilegedAction;
 import java.security.PrivilegedActionException;
 import java.security.PrivilegedExceptionAction;
 
 import javax.security.auth.Subject;
 
-import org.jboss.as.controller.security.AccessMechanismPrincipal;
-import org.jboss.as.controller.security.InetAddressPrincipal;
-import org.jboss.as.core.security.AccessMechanism;
 import org.jboss.com.sun.net.httpserver.HttpExchange;
 import org.jboss.com.sun.net.httpserver.HttpHandler;
 import org.jboss.com.sun.net.httpserver.HttpPrincipal;
@@ -60,25 +54,8 @@ public class SubjectAssociationHandler implements HttpHandler {
         } else {
             subject = null;
         }
-        Subject useSubject = null;
-        if (subject != null) {
-            //TODO find a better place for this https://issues.jboss.org/browse/WFLY-1852
-            PrivilegedAction<Subject> copyAction = new PrivilegedAction<Subject>() {
-                @Override
-                public Subject run() {
-                    final Subject copySubject = new Subject();
-                    copySubject.getPrincipals().addAll(subject.getPrincipals());
-                    copySubject.getPrivateCredentials().addAll(subject.getPrivateCredentials());
-                    copySubject.getPublicCredentials().addAll(subject.getPublicCredentials());
-                    copySubject.getPrincipals().add(new AccessMechanismPrincipal(AccessMechanism.HTTP));
-                    copySubject.setReadOnly();
-                    return copySubject;
-                }
-            };
 
-            useSubject = System.getSecurityManager() != null ? AccessController.doPrivileged(copyAction) : copyAction.run();
-        }
-        handleRequest(exchange, useSubject);
+        handleRequest(exchange, subject);
     }
 
     void handleRequest(final HttpExchange exchange, final Subject subject) throws IOException {

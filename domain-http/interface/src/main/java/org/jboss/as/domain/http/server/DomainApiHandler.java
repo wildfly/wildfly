@@ -22,6 +22,7 @@
 
 package org.jboss.as.domain.http.server;
 
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ACCESS_MECHANISM;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.FAILED;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OPERATION_HEADERS;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OUTCOME;
@@ -72,6 +73,7 @@ import org.jboss.as.controller.ControlledProcessState;
 import org.jboss.as.controller.ControlledProcessStateService;
 import org.jboss.as.controller.client.ModelControllerClient;
 import org.jboss.as.controller.client.OperationBuilder;
+import org.jboss.as.core.security.AccessMechanism;
 import org.jboss.as.domain.http.server.multipart.BoundaryDelimitedInputStream;
 import org.jboss.as.domain.http.server.multipart.MimeHeaderParser;
 import org.jboss.as.domain.http.server.security.SubjectAssociationHandler;
@@ -264,6 +266,7 @@ class DomainApiHandler implements ManagementHttpHandler {
             SeekResult result = seekToDeployment(http);
 
             final ModelNode dmr = new ModelNode();
+            dmr.get(OPERATION_HEADERS, ACCESS_MECHANISM).set(AccessMechanism.HTTP.toString());
             dmr.get("operation").set("upload-deployment-stream");
             dmr.get("address").setEmptyList();
             dmr.get("input-stream-index").set(0);
@@ -318,6 +321,7 @@ class DomainApiHandler implements ManagementHttpHandler {
         }
 
         try {
+            dmr.get(OPERATION_HEADERS, ACCESS_MECHANISM).set(AccessMechanism.HTTP.toString());
             response = modelController.execute(new OperationBuilder(dmr).build());
         } catch (Throwable t) {
             ROOT_LOGGER.modelRequestError(t);
