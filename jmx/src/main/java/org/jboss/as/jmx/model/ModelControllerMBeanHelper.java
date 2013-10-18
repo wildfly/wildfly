@@ -21,12 +21,14 @@
 */
 package org.jboss.as.jmx.model;
 
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ACCESS_MECHANISM;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ADD;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ATTRIBUTES;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.FAILURE_DESCRIPTION;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.NAME;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OPERATION_HEADERS;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.READ_ATTRIBUTE_OPERATION;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.REPLY_PROPERTIES;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.REQUEST_PROPERTIES;
@@ -63,6 +65,7 @@ import org.jboss.as.controller.PathElement;
 import org.jboss.as.controller.descriptions.DescriptionProvider;
 import org.jboss.as.controller.registry.ImmutableManagementResourceRegistration;
 import org.jboss.as.controller.registry.OperationEntry;
+import org.jboss.as.core.security.AccessMechanism;
 import org.jboss.as.jmx.model.ChildAddOperationFinder.ChildAddOperationEntry;
 import org.jboss.as.jmx.model.ResourceAccessControlUtil.ResourceAccessControl;
 import org.jboss.as.jmx.model.RootResourceIterator.ResourceAction;
@@ -465,6 +468,7 @@ public class ModelControllerMBeanHelper {
     }
 
     private ModelNode execute(ModelNode op) {
+        op.get(OPERATION_HEADERS, ACCESS_MECHANISM).set(AccessMechanism.JMX.toString());
         return controller.execute(op, null, OperationTransactionControl.COMMIT, null);
     }
 

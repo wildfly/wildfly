@@ -66,7 +66,6 @@ import org.jboss.as.controller.client.MessageSeverity;
 import org.jboss.as.controller.persistence.ConfigurationPersistenceException;
 import org.jboss.as.controller.persistence.ConfigurationPersister;
 import org.jboss.as.controller.registry.Resource;
-import org.jboss.as.controller.security.AccessMechanismPrincipal;
 import org.jboss.as.controller.security.InetAddressPrincipal;
 import org.jboss.as.core.security.AccessMechanism;
 import org.jboss.as.core.security.RealmUser;
@@ -369,7 +368,7 @@ abstract class AbstractOperationContext implements OperationContext {
                         resultAction,
                         getCallerUserId(subject),
                         getDomainUUID(),
-                        getSubjectAccessMechanism(subject),
+                        getAccessMechanism(),
                         getSubjectInetAddress(subject),
                         getModel(),
                         controllerOperations);
@@ -395,10 +394,6 @@ abstract class AbstractOperationContext implements OperationContext {
         return principal != null ? principal.getInetAddress() : null;
     }
 
-    private AccessMechanism getSubjectAccessMechanism(Subject subject) {
-        AccessMechanismPrincipal principal = getPrincipal(subject, AccessMechanismPrincipal.class);
-        return principal != null ? principal.getAccessMechanism() : null;
-    }
 
     private <T extends Principal> T getPrincipal(Subject subject, Class<T> clazz) {
         if (subject == null) {
@@ -423,6 +418,8 @@ abstract class AbstractOperationContext implements OperationContext {
     abstract Resource getModel();
 
     abstract String getDomainUUID();
+
+    abstract AccessMechanism getAccessMechanism();
 
     /**
      * Perform the work of completing a step.

@@ -26,6 +26,7 @@ import static java.security.AccessController.doPrivileged;
 import static org.jboss.as.controller.ControllerLogger.MGMT_OP_LOGGER;
 import static org.jboss.as.controller.ControllerLogger.ROOT_LOGGER;
 import static org.jboss.as.controller.ControllerMessages.MESSAGES;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ACCESS_MECHANISM;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ALLOW_RESOURCE_SERVICE_RESTART;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.CANCELLED;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.DOMAIN_UUID;
@@ -70,6 +71,7 @@ import org.jboss.as.controller.persistence.ConfigurationPersister;
 import org.jboss.as.controller.registry.ImmutableManagementResourceRegistration;
 import org.jboss.as.controller.registry.ManagementResourceRegistration;
 import org.jboss.as.controller.registry.Resource;
+import org.jboss.as.core.security.AccessMechanism;
 import org.jboss.dmr.ModelNode;
 import org.jboss.msc.service.ServiceRegistry;
 import org.jboss.msc.service.ServiceTarget;
@@ -230,16 +232,24 @@ class ModelControllerImpl implements ModelController {
                 control.operationPrepared(transaction, response);
             }
         };
+        String domainUUID = null;
+        AccessMechanism accessMechanism = null;
+        if (operation.hasDefined(OPERATION_HEADERS)) {
+            ModelNode operationHeaders = operation.get(OPERATION_HEADERS);
+            if (operationHeaders.hasDefined(DOMAIN_UUID)) {
+                domainUUID = operationHeaders.get(DOMAIN_UUID).asString();
+            }
+            if (operationHeaders.hasDefined(ACCESS_MECHANISM)) {
+                accessMechanism = AccessMechanism.valueOf(operationHeaders.get(ACCESS_MECHANISM).asString());
+            }
+        }
+
         for (;;) {
             // Create a random operation-id
             final Integer operationID = new Random(new SecureRandom().nextLong()).nextInt();
-            String domainUUID = null;
-            if (operation.hasDefined(OPERATION_HEADERS) && operation.get(OPERATION_HEADERS).hasDefined(DOMAIN_UUID)) {
-                domainUUID = operation.get(OPERATION_HEADERS, DOMAIN_UUID).asString();
-            }
             final OperationContextImpl context = new OperationContextImpl(this, processType, runningModeControl.getRunningMode(),
                     contextFlags, handler, attachments, model, originalResultTxControl, processState, auditLogger,
-                    bootingFlag.get(), operationID, domainUUID, hostServerGroupTracker);
+                    bootingFlag.get(), operationID, domainUUID, accessMechanism, hostServerGroupTracker);
             // Try again if the operation-id is already taken
             if(activeOperations.putIfAbsent(operationID, context) == null) {
                 CurrentOperationIdHolder.setCurrentOperationID(operationID);
@@ -291,7 +301,7 @@ class ModelControllerImpl implements ModelController {
                 : EnumSet.noneOf(OperationContextImpl.ContextFlag.class);
         final OperationContextImpl context = new OperationContextImpl(this, processType, runningModeControl.getRunningMode(),
                 contextFlags, handler, null, model, control, processState, auditLogger, bootingFlag.get(), operationID,
-                null, hostServerGroupTracker);
+                null, null, hostServerGroupTracker);
 
         // Add to the context all ops prior to the first ExtensionAddHandler as well as all ExtensionAddHandlers; save the rest.
         // This gets extensions registered before proceeding to other ops that count on these registrations
@@ -304,7 +314,7 @@ class ModelControllerImpl implements ModelController {
             // Success. Now any extension handlers are registered. Continue with remaining ops
             final OperationContextImpl postExtContext = new OperationContextImpl(this, processType, runningModeControl.getRunningMode(),
                     contextFlags, handler, null, model, control, processState, auditLogger, bootingFlag.get(), operationID,
-                    null, hostServerGroupTracker);
+                    null, null, hostServerGroupTracker);
 
             for (ParsedBootOp parsedOp : postExtensionOps) {
                 final OperationStepHandler stepHandler = parsedOp.handler == null ? rootRegistration.getOperationHandler(parsedOp.address, parsedOp.operationName) : parsedOp.handler;

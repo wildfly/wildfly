@@ -22,6 +22,7 @@
 package org.jboss.as.controller.remote;
 
 import static org.jboss.as.controller.ControllerLogger.ROOT_LOGGER;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ACCESS_MECHANISM;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.CALLER_TYPE;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.COMPOSITE;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.DOMAIN_UUID;
@@ -39,8 +40,6 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.USE
 
 import java.io.DataInput;
 import java.io.IOException;
-import java.security.AccessController;
-import java.security.PrivilegedAction;
 import java.security.PrivilegedActionException;
 import java.security.PrivilegedExceptionAction;
 
@@ -49,7 +48,6 @@ import javax.security.auth.Subject;
 import org.jboss.as.controller.ModelController;
 import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.client.impl.ModelControllerProtocol;
-import org.jboss.as.controller.security.AccessMechanismPrincipal;
 import org.jboss.as.core.security.AccessMechanism;
 import org.jboss.as.protocol.StreamUtils;
 import org.jboss.as.protocol.mgmt.ActiveOperation;
@@ -63,7 +61,6 @@ import org.jboss.as.protocol.mgmt.ManagementRequestHeader;
 import org.jboss.as.protocol.mgmt.ManagementResponseHeader;
 import org.jboss.as.protocol.mgmt.ProtocolUtils;
 import org.jboss.dmr.ModelNode;
-import org.wildfly.security.manager.WildFlySecurityManager;
 
 /**
  * Operation handlers for the remote implementation of {@link org.jboss.as.controller.client.ModelControllerClient}
@@ -118,27 +115,9 @@ public class ModelControllerClientOperationHandler implements ManagementRequestH
                 @Override
                 public void execute(final ManagementRequestContext<Void> context) throws Exception {
                     final ManagementResponseHeader response = ManagementResponseHeader.create(context.getRequestHeader());
-                    Subject useSubject = subject;
-                    if (subject != null) {
-                        //TODO find a better place for this https://issues.jboss.org/browse/WFLY-1852
-                        PrivilegedAction<Subject> copyAction = new PrivilegedAction<Subject>() {
-                            @Override
-                            public Subject run() {
-                                final Subject subject = ModelControllerClientOperationHandler.this.subject;
-                                final Subject copySubject = new Subject();
-                                copySubject.getPrincipals().addAll(subject.getPrincipals());
-                                copySubject.getPrivateCredentials().addAll(subject.getPrivateCredentials());
-                                copySubject.getPublicCredentials().addAll(subject.getPublicCredentials());
-                                copySubject.getPrincipals().add(new AccessMechanismPrincipal(AccessMechanism.NATIVE));
-                                copySubject.setReadOnly();
-                                return copySubject;                            }
-                        };
-
-                        useSubject = WildFlySecurityManager.isChecking() ? AccessController.doPrivileged(copyAction) : copyAction.run();
-                    }
 
                     try {
-                        Subject.doAs(useSubject, new PrivilegedExceptionAction<Void>() {
+                        Subject.doAs(subject, new PrivilegedExceptionAction<Void>() {
                             @Override
                             public Void run() throws Exception {
                                 final CompletedCallback callback = new CompletedCallback(response, context, resultHandler);
@@ -160,6 +139,7 @@ public class ModelControllerClientOperationHandler implements ManagementRequestH
             //Add a header to show that this operation comes from a user. If this is a host controller and the operation needs propagating to the
             //servers it will be removed by the domain ops responsible for propagation to the servers.
             headers.get(CALLER_TYPE).set(USER);
+            headers.get(ACCESS_MECHANISM).set(AccessMechanism.NATIVE.toString());
             // Don't allow a domain-uuid operation header from a user call
             if (headers.hasDefined(DOMAIN_UUID)) {
                 headers.remove(DOMAIN_UUID);
