@@ -29,8 +29,6 @@ import org.jboss.as.controller.SubsystemRegistration;
 import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
 import org.jboss.as.controller.descriptions.StandardResourceDescriptionResolver;
 import org.jboss.as.controller.parsing.ExtensionParsingContext;
-import org.jboss.as.web.Constants;
-import org.jboss.dmr.ModelNode;
 
 /**
  * The web services transactions extension.

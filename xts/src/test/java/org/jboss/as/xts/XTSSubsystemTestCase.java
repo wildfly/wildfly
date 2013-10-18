@@ -23,7 +23,14 @@ package org.jboss.as.xts;
 
 import java.io.IOException;
 
+import org.jboss.as.controller.ModelVersion;
+import org.jboss.as.model.test.ModelTestControllerVersion;
 import org.jboss.as.subsystem.test.AbstractSubsystemBaseTest;
+import org.jboss.as.subsystem.test.AdditionalInitialization;
+import org.jboss.as.subsystem.test.KernelServices;
+import org.jboss.as.subsystem.test.KernelServicesBuilder;
+import org.junit.Assert;
+import org.junit.Test;
 
 /**
  * @author <a href="kabir.khan@jboss.com">Kabir Khan</a>
@@ -38,54 +45,60 @@ public class XTSSubsystemTestCase extends AbstractSubsystemBaseTest {
     protected String getSubsystemXml() throws IOException {
         return readResource("subsystem.xml");
     }
-    //TODO These cannot work due to problems in the legacydescription
-    //This can only work if we use the legacy classloader to load up everything
-    //There is a problem with how the descriptions for ObjectTypeDefinition play with the current ones which are used for testing
-    //The old resource bundle misses a key which was never used in the old version, while the tests use the new ObjectTypeDefinition
-    //which try to look for that key
-//    @Test
-//    public void testBoot712() throws Exception {
-//        //Override the core model version to make sure that our custom transformer for model version 1.0.0 running on 7.1.2 kicks in
-//        testBootOldVersion("7.1.2.Final");
-//    }
-//
-//    @Test
-//    public void testBoot713() throws Exception {
-//        //The model version has not changed, make sure we can boot 7.1.3 with the current config
-//        testBootOldVersion("7.1.3.Final");
-//    }
-//
-//    private void testBootOldVersion(String asVersion) throws Exception {
-//
-//        String subsystemXml = readResource("subsystem.xml");
-//        ModelVersion modelVersion = ModelVersion.create(1, 1, 0);
-//        //Use the non-runtime version of the extension which will happen on the HC
-//        KernelServicesBuilder builder = createKernelServicesBuilder(AdditionalInitialization.MANAGEMENT)
-//                .setSubsystemXml(subsystemXml);
-//
-//        // Add legacy subsystems
-//        builder.createLegacyKernelServicesBuilder(new AdditionalInitialization() {
-//                    @Override
-//                    protected RunningMode getRunningMode() {
-//                        return RunningMode.ADMIN_ONLY;
-//                    }
-//
-//                    @Override
-//                    protected boolean isValidateOperations() {
-//                        //There is a problem with how the descriptions for ObjectTypeDefinition play with the current ones which are used for testing
-//                        //The old resource bundle misses a key which was never used in the old version, while the tests use the new ObjectTypeDefinition
-//                        //which try to look for that key
-//                        return false;
-//                    }
-//
-//                }, modelVersion)
-//                .addMavenResourceURL("org.jboss.as:jboss-as-xts:" + asVersion);
-//
-//        KernelServices mainServices = builder.build();
-//        KernelServices legacyServices = mainServices.getLegacyServices(modelVersion);
-//        Assert.assertTrue(mainServices.isSuccessfulBoot());
-//        Assert.assertTrue(legacyServices.isSuccessfulBoot());
-//
-//        checkSubsystemModelTransformation(mainServices, modelVersion);
-//    }
+
+    @Test
+    public void testBoot712() throws Exception {
+        testBoot1_1_0(ModelTestControllerVersion.V7_1_2_FINAL);
+    }
+
+    @Test
+    public void testBoot713() throws Exception {
+        testBoot1_1_0(ModelTestControllerVersion.V7_1_2_FINAL);
+    }
+
+    @Test
+    public void testBoot720() throws Exception {
+        testBoot1_1_0(ModelTestControllerVersion.V7_2_0_FINAL);
+    }
+
+    @Test
+    public void testBootEAP600() throws Exception {
+        testBoot1_1_0(ModelTestControllerVersion.EAP_6_0_0);
+    }
+
+    @Test
+    public void testBootEAP601() throws Exception {
+        testBoot1_1_0(ModelTestControllerVersion.EAP_6_0_1);
+    }
+
+    @Test
+    public void testBootEAP610() throws Exception {
+        testBoot1_1_0(ModelTestControllerVersion.EAP_6_1_0);
+    }
+
+    @Test
+    public void testBootEAP611() throws Exception {
+        testBoot1_1_0(ModelTestControllerVersion.EAP_6_1_1);
+    }
+
+    private void testBoot1_1_0(ModelTestControllerVersion controllerVersion) throws Exception {
+
+        String subsystemXml = readResource("subsystem.xml");
+        ModelVersion modelVersion = ModelVersion.create(1, 1, 0);
+        //Use the non-runtime version of the extension which will happen on the HC
+        KernelServicesBuilder builder = createKernelServicesBuilder(AdditionalInitialization.MANAGEMENT)
+                .setSubsystemXml(subsystemXml);
+
+
+        builder.createLegacyKernelServicesBuilder(null, controllerVersion, modelVersion)
+                .configureReverseControllerCheck(AdditionalInitialization.MANAGEMENT, null)
+                .addMavenResourceURL("org.jboss.as:jboss-as-xts:" + controllerVersion.getMavenGavVersion());
+
+        KernelServices mainServices = builder.build();
+        KernelServices legacyServices = mainServices.getLegacyServices(modelVersion);
+        Assert.assertTrue(mainServices.isSuccessfulBoot());
+        Assert.assertTrue(legacyServices.isSuccessfulBoot());
+
+        checkSubsystemModelTransformation(mainServices, modelVersion);
+    }
 }
