@@ -312,7 +312,8 @@ class TransactionSubsystemAdd extends AbstractBoottimeAddStepHandler {
                 .addDependency(PathManagerService.SERVICE_NAME, PathManager.class, objStoreEnvironmentService.getPathManagerInjector())
                 .addDependency(TxnServices.JBOSS_TXN_CORE_ENVIRONMENT);
         if (useJdbcStore) {
-            builder.addDependency(ServiceName.JBOSS.append("data-source").append(dataSourceJndiName));
+            final ContextNames.BindInfo bindInfo = ContextNames.bindInfoFor(dataSourceJndiName);
+            builder.addDependency(bindInfo.getBinderServiceName());
         }
         controllers.add(builder.addListener(verificationHandler).setInitialMode(ServiceController.Mode.ACTIVE).install());
 
