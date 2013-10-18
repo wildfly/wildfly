@@ -51,10 +51,10 @@ import org.junit.Test;
 /**
  * @author <a href="mailto:tomaz.cerar@redhat.com">Tomaz Cerar</a>
  */
-public class MailSubsystem11Test extends AbstractSubsystemBaseTest {
+public class MailSubsystem11TestCase extends AbstractSubsystemBaseTest {
     private static final PathAddress SUBSYSTEM_PATH = PathAddress.pathAddress(PathElement.pathElement(SUBSYSTEM, MailExtension.SUBSYSTEM_NAME));
 
-    public MailSubsystem11Test() {
+    public MailSubsystem11TestCase() {
         super(MailExtension.SUBSYSTEM_NAME, new MailExtension());
     }
 

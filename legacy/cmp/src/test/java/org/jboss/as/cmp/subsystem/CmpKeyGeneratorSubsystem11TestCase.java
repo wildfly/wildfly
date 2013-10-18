@@ -120,15 +120,15 @@ public class CmpKeyGeneratorSubsystem11TestCase extends CmpKeyGeneratorSubsystem
 
     @Test
     public void testTransformers_7_1_2() throws Exception {
-        testTransformers(ModelTestControllerVersion.V7_1_2_FINAL);
+        testTransformers_1_0_0(ModelTestControllerVersion.V7_1_2_FINAL);
     }
 
     @Test
     public void testTransformers_7_1_3() throws Exception {
-        testTransformers(ModelTestControllerVersion.V7_1_3_FINAL);
+        testTransformers_1_0_0(ModelTestControllerVersion.V7_1_3_FINAL);
     }
 
-    private void testTransformers(ModelTestControllerVersion controllerVersion) throws Exception {
+    private void testTransformers_1_0_0(ModelTestControllerVersion controllerVersion) throws Exception {
         ModelVersion modelVersion = ModelVersion.create(1, 0, 0);
         KernelServicesBuilder builder = createKernelServicesBuilder(createAdditionalInitialization());
 

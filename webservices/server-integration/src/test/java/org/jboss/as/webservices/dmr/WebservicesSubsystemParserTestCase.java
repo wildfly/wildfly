@@ -197,4 +197,10 @@ public class WebservicesSubsystemParserTestCase extends AbstractSubsystemBaseTes
     public void testTransformersAS713() throws Exception {
         testRejectExpressions_1_1_0(ModelTestControllerVersion.V7_1_3_FINAL);
     }
+
+
+    @Test
+    public void testTransformersAS720() throws Exception {
+        testRejectExpressions_1_1_0(ModelTestControllerVersion.V7_2_0_FINAL);
+    }
 }
