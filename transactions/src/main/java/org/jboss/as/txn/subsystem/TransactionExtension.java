@@ -22,7 +22,11 @@
 
 package org.jboss.as.txn.subsystem;
 
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ADD;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP;
 import static org.jboss.as.txn.TransactionLogger.ROOT_LOGGER;
+
+import java.util.Map;
 
 import javax.management.MBeanServer;
 
@@ -164,13 +168,14 @@ public class TransactionExtension implements Extension {
 
         final ResourceTransformationDescriptionBuilder subsystemRoot = TransformationDescriptionBuilder.Factory.createSubsystemInstance();
 
-        // Transformations to the 1.2.0 Model:
-        // 1) always discard enable-async-io as it was not possible to disable AIO in a legacy system and the default value is false (it changes server behaviour in this aspect)
-        // 2) reject if it is still defined
 
+        //Versions < 1.3.0 assume 'true' for the hornetq-store-enable-async-io attribute (in which case it will look for the native libs
+        //and enable async io if found. The default value if not defined is 'false' though. This should only be rejected if use-hornetq-store is not false.
         subsystemRoot.getAttributeBuilder()
-                .setDiscard(DiscardAttributeChecker.ALWAYS, TransactionSubsystemRootResourceDefinition.HORNETQ_STORE_ENABLE_ASYNC_IO)
-                .addRejectCheck(RejectAttributeChecker.DEFINED, TransactionSubsystemRootResourceDefinition.HORNETQ_STORE_ENABLE_ASYNC_IO);
+                .setDiscard(new DiscardAttributeChecker.DiscardAttributeValueChecker(false, false, new ModelNode(true)),
+                        TransactionSubsystemRootResourceDefinition.HORNETQ_STORE_ENABLE_ASYNC_IO)
+                .addRejectCheck(RejectHornetQStoreAsyncIOChecker.INSTANCE, TransactionSubsystemRootResourceDefinition.HORNETQ_STORE_ENABLE_ASYNC_IO);
+
 
         final ModelVersion version120 = ModelVersion.create(1, 2, 0);
         final TransformationDescription description120 = subsystemRoot.build();
@@ -260,7 +265,49 @@ public class TransactionExtension implements Extension {
             }
             return true;
         }
+    }
 
+    private static class RejectHornetQStoreAsyncIOChecker extends RejectAttributeChecker.DefaultRejectAttributeChecker {
+        static final RejectHornetQStoreAsyncIOChecker INSTANCE = new RejectHornetQStoreAsyncIOChecker();
+
+        @Override
+        public String getRejectionLogMessage(Map<String, ModelNode> attributes) {
+            return TransactionMessages.MESSAGES.transformHornetQStoreEnableAsyncIoMustBeTrue();
+        }
+
+        @Override
+        public boolean rejectOperationParameter(PathAddress address, String attributeName, ModelNode attributeValue,
+                ModelNode operation, TransformationContext context) {
+            if (operation.get(OP).asString().equals(ADD)) {
+                return rejectCheck(address, attributeName, attributeValue, operation);
+            }
+            return rejectResourceAttribute(address, attributeName, attributeValue, context);
+        }
+
+        @Override
+        public boolean rejectResourceAttribute(PathAddress address, String attributeName, ModelNode attributeValue,
+                TransformationContext context) {
+            return rejectCheck(address, attributeName, attributeValue, context.readResourceFromRoot(address).getModel());
+        }
+
+        protected boolean rejectCheck(PathAddress address, String attributeName, ModelNode attributeValue,
+                ModelNode model) {
+            //Will not get called if it was discarded
+            if (!attributeValue.isDefined() || !attributeValue.asString().equals("true")) {
+                //If use-hornetq-store is undefined or false, don't reject
+                if (model.hasDefined(TransactionSubsystemRootResourceDefinition.USEHORNETQSTORE.getName())) {
+                    return !model.get(TransactionSubsystemRootResourceDefinition.USEHORNETQSTORE.getName()).asString().equals("false");
+                }
+            }
+            return false;
+        }
+
+        @Override
+        protected boolean rejectAttribute(PathAddress address, String attributeName, ModelNode attributeValue,
+                TransformationContext context) {
+            //will not get called since we've overridden the other methods
+            return false;
+        }
     }
 
 }

@@ -10,5 +10,5 @@
                              default-timeout="${test.default.timeout:300}"/>
     <object-store path="${test.store.path:tx-object-store}" relative-to="${test.store.relative-to:jboss.server.data.dir}"/>
     <jts/>
-    <use-hornetq-store enable-async-io="true"/>
+    <use-hornetq-store/>
 </subsystem>

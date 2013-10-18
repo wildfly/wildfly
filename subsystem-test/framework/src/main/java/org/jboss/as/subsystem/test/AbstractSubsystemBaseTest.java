@@ -152,6 +152,7 @@ public abstract class AbstractSubsystemBaseTest extends AbstractSubsystemTest {
 
         //Install the persisted xml from the first controller into a second controller
         final KernelServices servicesB = super.createKernelServicesBuilder(additionalInit).setSubsystemXml(marshalled).build();
+        Assert.assertTrue("Subsystem boot failed!",servicesB.isSuccessfulBoot());
         final ModelNode modelB = servicesB.readWholeModel();
 
         //Make sure the models from the two controllers are identical
