@@ -44,6 +44,7 @@ import org.hornetq.core.config.Configuration;
 import org.jboss.as.controller.AbstractAddStepHandler;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
+import org.jboss.as.controller.OperationStepHandler;
 import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.ServiceVerificationHandler;
 import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
@@ -78,9 +79,15 @@ public class BroadcastGroupAdd extends AbstractAddStepHandler {
     protected void populateModel(OperationContext context, ModelNode operation, Resource resource) throws OperationFailedException {
         super.populateModel(context, operation, resource);
 
-        ModelNode connectorRefs = resource.getModel().get(CONNECTOR_REFS.getName());
+        final ModelNode connectorRefs = resource.getModel().get(CONNECTOR_REFS.getName());
         if (connectorRefs.isDefined()) {
-            validateConnectors(context, operation, connectorRefs);
+            context.addStep(new OperationStepHandler() {
+                @Override
+                public void execute(OperationContext context, ModelNode operation) throws OperationFailedException {
+                    validateConnectors(context, operation, connectorRefs);
+                    context.stepCompleted();
+                }
+            }, OperationContext.Stage.MODEL);
         }
     }
 
