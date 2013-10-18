@@ -22,11 +22,12 @@
 
 package org.wildfly.mod_cluster.undertow.metric;
 
+import javax.servlet.ServletContext;
+
 import io.undertow.server.HandlerWrapper;
 import io.undertow.server.HttpHandler;
 import io.undertow.servlet.ServletExtension;
 import io.undertow.servlet.api.DeploymentInfo;
-import io.undertow.servlet.spec.ServletContextImpl;
 
 /**
  * Extension that registers metrics on deployment if mod_cluster module is loaded.
@@ -45,7 +46,7 @@ import io.undertow.servlet.spec.ServletContextImpl;
 public class MetricsServletExtension implements ServletExtension {
 
     @Override
-    public void handleDeployment(final DeploymentInfo deploymentInfo, final ServletContextImpl servletContext) {
+    public void handleDeployment(final DeploymentInfo deploymentInfo, final ServletContext servletContext) {
 
         deploymentInfo
                 // Request Count wrapping

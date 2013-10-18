@@ -1,5 +1,7 @@
 package org.jboss.as.test.integration.web.extension;
 
+import javax.servlet.ServletContext;
+
 import io.undertow.io.IoCallback;
 import io.undertow.server.HandlerWrapper;
 import io.undertow.server.HttpHandler;
@@ -16,7 +18,7 @@ public class SimpleUndertowExtension implements ServletExtension {
     public static final String THIS_IS_NOT_A_SERVLET = "This is not a servlet";
 
     @Override
-    public void handleDeployment(final DeploymentInfo deploymentInfo, final ServletContextImpl servletContext) {
+    public void handleDeployment(final DeploymentInfo deploymentInfo, final ServletContext servletContext) {
         deploymentInfo.addInitialHandlerChainWrapper(new HandlerWrapper() {
             @Override
             public HttpHandler wrap(final HttpHandler handler) {
