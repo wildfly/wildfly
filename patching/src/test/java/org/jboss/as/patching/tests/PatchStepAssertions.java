@@ -76,6 +76,18 @@ abstract class PatchStepAssertions {
         }
     };
 
+    protected static final PatchStepAssertions NONE = new PatchStepAssertions() {
+        @Override
+        protected void before(File installation, Patch patch, InstallationManager manager) throws IOException {
+
+        }
+
+        @Override
+        protected void after(File installation, Patch patch, InstallationManager manager) throws IOException {
+
+        }
+    };
+
     static void assertApplied(final Patch patch, InstalledIdentity installedIdentity) throws IOException {
         final String patchID = patch.getPatchId();
         final PatchableTarget target = installedIdentity.getIdentity();

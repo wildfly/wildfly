@@ -32,9 +32,11 @@ import java.io.File;
 import java.io.IOException;
 import java.util.Arrays;
 
+import org.jboss.as.patching.HashUtils;
 import org.jboss.as.patching.PatchingException;
 import org.jboss.as.patching.installation.InstalledIdentity;
 import org.jboss.as.patching.runner.PatchingAssert;
+import org.jboss.as.patching.tool.ContentVerificationPolicy;
 import org.junit.Assert;
 import org.junit.Test;
 
@@ -370,6 +372,36 @@ public class BasicHistoryUnitTestCase extends AbstractPatchingTest {
         rollback(cp3);
         rollback(cp2);
         rollback(cp1);
+    }
+
+    @Test
+    public void testRollbackTo() throws Exception {
+
+        final PatchingTestBuilder test = createDefaultBuilder();
+
+        final byte[] existingHash = new byte[20];
+        final byte[] resultingHash = Arrays.copyOf(existingHash, existingHash.length);
+
+        final PatchingTestStepBuilder oop1 = test.createStepBuilder();
+        oop1.setPatchId("oop1")
+                .oneOffPatchIdentity(PRODUCT_VERSION)
+                .oneOffPatchElement("base-oop1", "base", false)
+                .addModuleWithRandomContent("org.jboss.test", existingHash)
+        ;
+
+        apply(oop1);
+
+        final PatchingTestStepBuilder oop2 = test.createStepBuilder();
+        oop2.setPatchId("oop2")
+                .oneOffPatchIdentity(PRODUCT_VERSION)
+                .oneOffPatchElement("base-oop2", "base", false)
+                .updateModuleWithRandomContent("org.jboss.test", existingHash, resultingHash)
+        ;
+
+        apply(oop2);
+
+        // RollbackTo
+        rollback(oop1, ContentVerificationPolicy.STRICT, PatchStepAssertions.NONE, true);
     }
 
 
