@@ -21,6 +21,8 @@
 */
 package org.jboss.as.domain.http.server;
 
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ACCESS_MECHANISM;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OPERATION_HEADERS;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OUTCOME;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SUCCESS;
 import static org.jboss.as.domain.http.server.HttpServerLogger.ROOT_LOGGER;
@@ -40,6 +42,7 @@ import io.undertow.util.Headers;
 import org.jboss.as.controller.ModelController;
 import org.jboss.as.controller.client.OperationBuilder;
 import org.jboss.as.controller.client.OperationMessageHandler;
+import org.jboss.as.core.security.AccessMechanism;
 import org.jboss.dmr.ModelNode;
 import org.xnio.IoUtils;
 import org.xnio.streams.ChannelOutputStream;
@@ -76,6 +79,7 @@ class DomainApiUploadHandler implements HttpHandler {
 
                     OperationBuilder operation = new OperationBuilder(dmr);
                     operation.addInputStream(in);
+                    dmr.get(OPERATION_HEADERS, ACCESS_MECHANISM).set(AccessMechanism.HTTP.toString());
                     response = modelController.execute(dmr, OperationMessageHandler.logging, ModelController.OperationTransactionControl.COMMIT, operation.build());
                     if (!response.get(OUTCOME).asString().equals(SUCCESS)){
                         Common.sendError(exchange, false, response);

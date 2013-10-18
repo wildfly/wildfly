@@ -80,6 +80,7 @@ import org.jboss.as.controller.registry.ManagementResourceRegistration;
 import org.jboss.as.controller.registry.OperationEntry;
 import org.jboss.as.controller.registry.PlaceholderResource;
 import org.jboss.as.controller.registry.Resource;
+import org.jboss.as.core.security.AccessMechanism;
 import org.jboss.dmr.ModelNode;
 import org.jboss.msc.inject.Injector;
 import org.jboss.msc.service.AbstractServiceListener;
@@ -122,6 +123,7 @@ final class OperationContextImpl extends AbstractOperationContext {
     private final OperationMessageHandler messageHandler;
     private final ServiceTarget serviceTarget;
     private final String domainUUID;
+    private final AccessMechanism accessMechanism;
     private final Map<ServiceName, ServiceController<?>> realRemovingControllers = new HashMap<ServiceName, ServiceController<?>>();
     // protected by "realRemovingControllers"
     private final Map<ServiceName, Step> removalSteps = new HashMap<ServiceName, Step>();
@@ -167,7 +169,7 @@ final class OperationContextImpl extends AbstractOperationContext {
                             final OperationMessageHandler messageHandler, final OperationAttachments attachments,
                             final Resource model, final ModelController.OperationTransactionControl transactionControl,
                             final ControlledProcessState processState, final AuditLogger auditLogger, final boolean booting,
-                            final Integer operationId, final String domainUUID,
+                            final Integer operationId, final String domainUUID, final AccessMechanism accessMechanism,
                             final HostServerGroupTracker hostServerGroupTracker) {
         super(processType, runningMode, transactionControl, processState, booting, auditLogger);
         this.model = model;
@@ -180,6 +182,7 @@ final class OperationContextImpl extends AbstractOperationContext {
         this.serviceTarget = new ContextServiceTarget(modelController);
         this.operationId = operationId;
         this.domainUUID = domainUUID;
+        this.accessMechanism = accessMechanism;
         this.hostServerGroupTracker = hostServerGroupTracker;
     }
 
@@ -939,6 +942,11 @@ final class OperationContextImpl extends AbstractOperationContext {
     @Override
     String getDomainUUID() {
         return domainUUID;
+    }
+
+    @Override
+    AccessMechanism getAccessMechanism() {
+        return accessMechanism;
     }
 
     private TargetAttribute createTargetAttribute(AuthorizationResponseImpl authResp, String attributeName, boolean isDefaultResponse) {

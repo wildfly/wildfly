@@ -21,6 +21,7 @@
 */
 package org.jboss.as.domain.http.server;
 
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ACCESS_MECHANISM;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.COMPOSITE;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.FAILED;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.HOST;
@@ -61,6 +62,7 @@ import org.jboss.as.controller.ModelController;
 import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.client.OperationBuilder;
 import org.jboss.as.controller.client.OperationMessageHandler;
+import org.jboss.as.core.security.AccessMechanism;
 import org.jboss.dmr.ModelNode;
 import org.xnio.IoUtils;
 import org.xnio.streams.ChannelInputStream;
@@ -163,6 +165,7 @@ class DomainApiHandler implements HttpHandler {
         } : ModelController.OperationTransactionControl.COMMIT;
 
         try {
+            dmr.get(OPERATION_HEADERS, ACCESS_MECHANISM).set(AccessMechanism.HTTP.toString());
             response = modelController.execute(dmr, OperationMessageHandler.logging, control, new OperationBuilder(dmr).build());
             if (cachable) {
                 // Use the MD5 of the model nodes toString() method as ETag

@@ -33,6 +33,7 @@ public class ModelDescriptionConstants {
     public static final String ACCESS = "access";
     public static final String ACCESS_CONSTRAINTS = "access-constraints";
     public static final String ACCESS_CONTROL = "access-control";
+    public static final String ACCESS_MECHANISM = "access-mechanism";
     /** The key for {@link org.jboss.as.controller.registry.AttributeAccess.AccessType} fields. */
     public static final String ACCESS_TYPE = "access-type";
     public static final String ADD = "add";

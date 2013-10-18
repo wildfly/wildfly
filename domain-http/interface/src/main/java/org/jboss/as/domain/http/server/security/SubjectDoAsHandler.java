@@ -26,16 +26,10 @@ import io.undertow.security.idm.Account;
 import io.undertow.server.HttpHandler;
 import io.undertow.server.HttpServerExchange;
 
-import java.security.AccessController;
-import java.security.PrivilegedAction;
 import java.security.PrivilegedActionException;
 import java.security.PrivilegedExceptionAction;
 
 import javax.security.auth.Subject;
-
-import org.jboss.as.controller.security.AccessMechanismPrincipal;
-import org.jboss.as.core.security.AccessMechanism;
-import org.wildfly.security.manager.WildFlySecurityManager;
 
 /**
  * HttpHandler to ensure the Subject for the current authenticated user is correctly associated for the request.
@@ -57,21 +51,7 @@ public class SubjectDoAsHandler implements HttpHandler {
         if (securityContext != null) {
             final Account account = securityContext.getAuthenticatedAccount();
             if (account instanceof SubjectAccount) {
-                //TODO find a better place for this https://issues.jboss.org/browse/WFLY-1852
-                PrivilegedAction<Subject> copyAction = new PrivilegedAction<Subject>() {
-                    @Override
-                    public Subject run() {
-                        final Subject subject = ((SubjectAccount) account).getSubject();
-                        final Subject copySubject = new Subject();
-                        copySubject.getPrincipals().addAll(subject.getPrincipals());
-                        copySubject.getPrivateCredentials().addAll(subject.getPrivateCredentials());
-                        copySubject.getPublicCredentials().addAll(subject.getPublicCredentials());
-                        copySubject.getPrincipals().add(new AccessMechanismPrincipal(AccessMechanism.HTTP));
-                        copySubject.setReadOnly();
-                        return copySubject;                            }
-                };
-
-                useSubject = WildFlySecurityManager.isChecking() ? AccessController.doPrivileged(copyAction) : copyAction.run();
+                useSubject = ((SubjectAccount) account).getSubject();
             }
         }
         handleRequest(exchange, useSubject);
