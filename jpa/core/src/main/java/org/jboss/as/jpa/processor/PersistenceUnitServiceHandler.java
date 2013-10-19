@@ -373,7 +373,14 @@ public class PersistenceUnitServiceHandler {
             }
             // JPA 2.0 8.2.1.5, container provides default JTA datasource
             if (useDefaultDataSource) {
-                final String defaultJtaDataSource = adjustJndi(JPAService.getDefaultDataSourceName());
+                // try the one defined in the jpa subsystem
+                String defaultJtaDataSource = adjustJndi(JPAService.getDefaultDataSourceName());
+                if ((defaultJtaDataSource == null ||
+                        defaultJtaDataSource.isEmpty()) &&
+                        eeModuleDescription != null) {
+                    // try the one defined in the ee subsystem
+                    defaultJtaDataSource = eeModuleDescription.getDefaultResourceJndiNames().getDataSource();
+                }
                 if (defaultJtaDataSource != null &&
                     defaultJtaDataSource.length() > 0) {
                     builder.addDependency(AbstractDataSourceService.SERVICE_NAME_BASE.append(defaultJtaDataSource), new CastingInjector<DataSource>(service.getJtaDataSourceInjector(), DataSource.class));
@@ -500,7 +507,14 @@ public class PersistenceUnitServiceHandler {
             }
             // JPA 2.0 8.2.1.5, container provides default JTA datasource
             if (useDefaultDataSource) {
-                final String defaultJtaDataSource = adjustJndi(JPAService.getDefaultDataSourceName());
+                // try the one defined in the jpa subsystem
+                String defaultJtaDataSource = adjustJndi(JPAService.getDefaultDataSourceName());
+                if ((defaultJtaDataSource == null ||
+                        defaultJtaDataSource.isEmpty()) &&
+                        eeModuleDescription != null) {
+                    // try the one defined in the ee subsystem
+                    defaultJtaDataSource = eeModuleDescription.getDefaultResourceJndiNames().getDataSource();
+                }
                 if (defaultJtaDataSource != null &&
                     defaultJtaDataSource.length() > 0) {
                     builder.addDependency(AbstractDataSourceService.SERVICE_NAME_BASE.append(defaultJtaDataSource), new CastingInjector<DataSource>(service.getJtaDataSourceInjector(), DataSource.class));
@@ -612,7 +626,14 @@ public class PersistenceUnitServiceHandler {
             }
             // JPA 2.0 8.2.1.5, container provides default JTA datasource
             if (useDefaultDataSource) {
-                final String defaultJtaDataSource = adjustJndi(JPAService.getDefaultDataSourceName());
+                // try the one defined in the jpa subsystem
+                String defaultJtaDataSource = adjustJndi(JPAService.getDefaultDataSourceName());
+                if ((defaultJtaDataSource == null ||
+                        defaultJtaDataSource.isEmpty()) &&
+                        eeModuleDescription != null) {
+                    // try the one defined in the ee subsystem
+                    defaultJtaDataSource = eeModuleDescription.getDefaultResourceJndiNames().getDataSource();
+                }
                 if (defaultJtaDataSource != null &&
                     defaultJtaDataSource.length() > 0) {
                     builder.addDependency(AbstractDataSourceService.SERVICE_NAME_BASE.append(defaultJtaDataSource), new CastingInjector<DataSource>(service.getJtaDataSourceInjector(), DataSource.class));
