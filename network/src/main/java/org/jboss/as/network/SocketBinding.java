@@ -111,7 +111,7 @@ public final class SocketBinding {
 
     private int calculatePort() {
         int port = this.port;
-        if (port > 0 && isFixedPort == false) {
+        if (!isFixedPort) {
             port += socketBindings.getPortOffset();
         }
         return port;

@@ -35,6 +35,7 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SOC
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SOCKET_BINDING_GROUP;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SYSTEM_PROPERTY;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.VALUE;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.PORT_OFFSET;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -71,6 +72,7 @@ public class ControllerInitializer {
     public static final String INTERFACE_NAME = "test-interface";
     public static final String SOCKET_BINDING_GROUP_NAME = "test-socket-binding-group";
     protected volatile String bindAddress = "localhost";
+    protected volatile String portOffset;
     protected final Map<String, String> systemProperties = new HashMap<String, String>();
     protected final Map<String, Integer> socketBindings = new HashMap<String, Integer>();
     protected final Map<String, OutboundSocketBinding> outboundSocketBindings = new HashMap<String, OutboundSocketBinding>();
@@ -178,6 +180,15 @@ public class ControllerInitializer {
 
         PathInfo pathInfo = new PathInfo(name, path, relativeTo);
         paths.put(name, pathInfo);
+    }
+
+    /**
+     * Adds the port offset to the model (optional).
+     *
+     * @param portOffset the port offset ({@code null} means no offset will be added)
+     */
+    public void setPortOffset(String portOffset) {
+        this.portOffset = portOffset;
     }
 
     /**
@@ -307,6 +318,9 @@ public class ControllerInitializer {
         op.get(OP).set(ADD);
         op.get(OP_ADDR).set(PathAddress.pathAddress(PathElement.pathElement(SOCKET_BINDING_GROUP, SOCKET_BINDING_GROUP_NAME)).toModelNode());
         op.get(DEFAULT_INTERFACE).set(INTERFACE_NAME);
+        if (portOffset != null) {
+            op.get(PORT_OFFSET).set(portOffset);
+        }
         ops.add(op);
 
 
