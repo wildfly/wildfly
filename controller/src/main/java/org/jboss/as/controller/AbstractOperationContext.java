@@ -69,7 +69,6 @@ import org.jboss.as.controller.persistence.ConfigurationPersistenceException;
 import org.jboss.as.controller.persistence.ConfigurationPersister;
 import org.jboss.as.controller.registry.Resource;
 import org.jboss.as.controller.security.InetAddressPrincipal;
-import org.jboss.as.core.security.AccessMechanism;
 import org.jboss.as.core.security.RealmUser;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.Property;
@@ -378,12 +377,13 @@ abstract class AbstractOperationContext implements OperationContext {
                 };
                 Subject subject = System.getSecurityManager() == null ?
                         getCurrentAction.run() : AccessController.doPrivileged(getCurrentAction);
+                AccessAuditContext accessContext = SecurityActions.currentAccessAuditContext();
                 auditLogger.log(
                         !isModelAffected(),
                         resultAction,
                         getCallerUserId(subject),
-                        getDomainUUID(),
-                        getAccessMechanism(),
+                        accessContext == null ? null : accessContext.getDomainUuid(),
+                        accessContext == null ? null : accessContext.getAccessMechanism(),
                         getSubjectInetAddress(subject),
                         getModel(),
                         controllerOperations);
@@ -431,10 +431,6 @@ abstract class AbstractOperationContext implements OperationContext {
     }
 
     abstract Resource getModel();
-
-    abstract String getDomainUUID();
-
-    abstract AccessMechanism getAccessMechanism();
 
     /**
      * Perform the work of completing a step.

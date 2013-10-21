@@ -19,15 +19,20 @@
  * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
+
 package org.jboss.as.jmx;
+
+import static java.security.AccessController.doPrivileged;
 
 import java.security.AccessController;
 import java.security.PrivilegedAction;
 
+import org.jboss.as.controller.AccessAuditContext;
+
 /**
  *
  * @author <a href="kabir.khan@jboss.com">Kabir Khan</a>
- * @version $Revision: 1.1 $
+ * @author <a href="mailto:darran.lofthouse@jboss.com">Darran Lofthouse</a>
  */
 class SecurityActions {
 
@@ -45,6 +50,15 @@ class SecurityActions {
         } else {
             SetThreadContextClassLoaderAction.PRIVILEGED.setThreadContextClassLoader(cl, false);
         }
+    }
+
+    static AccessAuditContext currentAccessAuditContext() {
+        return createAccessAuditContextActions().currentContext();
+    }
+
+    private static AccessAuditContextActions createAccessAuditContextActions() {
+        return System.getSecurityManager() != null ? AccessAuditContextActions.PRIVILEGED
+                : AccessAuditContextActions.NON_PRIVILEGED;
     }
 
     private interface SetThreadContextClassLoaderAction {
@@ -73,6 +87,36 @@ class SecurityActions {
                 });
             }
         };
+
     }
 
+    private interface AccessAuditContextActions {
+
+        AccessAuditContext currentContext();
+
+        AccessAuditContextActions NON_PRIVILEGED = new AccessAuditContextActions() {
+
+            @Override
+            public AccessAuditContext currentContext() {
+                return AccessAuditContext.currentAccessAuditContext();
+            }
+        };
+
+        AccessAuditContextActions PRIVILEGED = new AccessAuditContextActions() {
+
+            private final PrivilegedAction<AccessAuditContext> PRIVILEGED_ACTION = new PrivilegedAction<AccessAuditContext>() {
+
+                @Override
+                public AccessAuditContext run() {
+                    return NON_PRIVILEGED.currentContext();
+                }
+
+            };
+
+            @Override
+            public AccessAuditContext currentContext() {
+                return doPrivileged(PRIVILEGED_ACTION);
+            }
+        };
+    }
 }

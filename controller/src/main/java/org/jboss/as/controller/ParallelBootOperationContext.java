@@ -38,7 +38,6 @@ import org.jboss.as.controller.persistence.ConfigurationPersister;
 import org.jboss.as.controller.registry.ImmutableManagementResourceRegistration;
 import org.jboss.as.controller.registry.ManagementResourceRegistration;
 import org.jboss.as.controller.registry.Resource;
-import org.jboss.as.core.security.AccessMechanism;
 import org.jboss.dmr.ModelNode;
 import org.jboss.msc.service.ServiceController;
 import org.jboss.msc.service.ServiceName;
@@ -393,16 +392,6 @@ class ParallelBootOperationContext extends AbstractOperationContext {
 
     Resource getModel() {
         return primaryContext.getModel();
-    }
-
-    @Override
-    String getDomainUUID() {
-        return primaryContext.getDomainUUID();
-    }
-
-    @Override
-    AccessMechanism getAccessMechanism() {
-        return primaryContext.getAccessMechanism();
     }
 
 }

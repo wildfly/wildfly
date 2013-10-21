@@ -45,6 +45,7 @@ import java.security.PrivilegedExceptionAction;
 
 import javax.security.auth.Subject;
 
+import org.jboss.as.controller.AccessAuditContext;
 import org.jboss.as.controller.ModelController;
 import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.client.impl.ModelControllerProtocol;
@@ -117,8 +118,7 @@ public class ModelControllerClientOperationHandler implements ManagementRequestH
                     final ManagementResponseHeader response = ManagementResponseHeader.create(context.getRequestHeader());
 
                     try {
-                        Subject.doAs(subject, new PrivilegedExceptionAction<Void>() {
-
+                        AccessAuditContext.doAs(subject, new PrivilegedExceptionAction<Void>() {
                             @Override
                             public Void run() throws Exception {
                                 final CompletedCallback callback = new CompletedCallback(response, context, resultHandler);

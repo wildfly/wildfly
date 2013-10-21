@@ -280,21 +280,7 @@ public abstract class AbstractMessageHandler extends ActiveOperationSupport impl
                         @Override
                         protected void doExecute() {
                             try {
-                                /*UserInfo userInfo = channel.getConnection().getUserInfo();
-                                if (userInfo instanceof SubjectUserInfo) {
-                                    Subject.doAs(((SubjectUserInfo) userInfo).getSubject(),
-                                            new PrivilegedExceptionAction<Void>() {
-
-                                                @Override
-                                                public Void run() throws Exception {
-                                                    task.execute(context);
-                                                    return null;
-                                                }
-                                            });
-
-                                } else {*/
-                                    task.execute(context);
-                                //}
+                                task.execute(context);
                             } catch (Exception e) {
                                 ProtocolLogger.ROOT_LOGGER.debugf(e, " failed to process async request for %s on channel %s", task, channel);
                                 if(resultHandler.failed(e)) {

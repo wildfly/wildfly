@@ -28,6 +28,7 @@ import java.security.PrivilegedExceptionAction;
 
 import javax.security.auth.Subject;
 
+import org.jboss.as.controller.AccessAuditContext;
 import org.jboss.com.sun.net.httpserver.HttpExchange;
 import org.jboss.com.sun.net.httpserver.HttpHandler;
 import org.jboss.com.sun.net.httpserver.HttpPrincipal;
@@ -61,7 +62,7 @@ public class SubjectAssociationHandler implements HttpHandler {
     void handleRequest(final HttpExchange exchange, final Subject subject) throws IOException {
         if (subject != null) {
             try {
-                Subject.doAs(subject, new PrivilegedExceptionAction<Void>() {
+                AccessAuditContext.doAs(subject, new PrivilegedExceptionAction<Void>() {
 
                     @Override
                     public Void run() throws Exception {
