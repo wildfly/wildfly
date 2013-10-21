@@ -21,6 +21,8 @@
  */
 package org.jboss.as.naming.subsystem;
 
+import static org.jboss.as.naming.subsystem.NamingSubsystemModel.TYPE;
+
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.Arrays;
@@ -58,8 +60,6 @@ import org.jboss.msc.service.ServiceController;
 import org.jboss.msc.service.ServiceTarget;
 import org.jboss.msc.value.ImmediateValue;
 import org.wildfly.security.manager.WildFlySecurityManager;
-
-import static org.jboss.as.naming.subsystem.NamingSubsystemModel.TYPE;
 
 /**
  * A {@link org.jboss.as.controller.AbstractAddStepHandler} to handle the add operation for simple JNDI bindings
