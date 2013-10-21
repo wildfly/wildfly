@@ -80,6 +80,7 @@ import javax.management.ReflectionException;
 import javax.management.loading.ClassLoaderRepository;
 import javax.security.auth.Subject;
 
+import org.jboss.as.controller.AccessAuditContext;
 import org.jboss.as.controller.access.AuthorizationResult;
 import org.jboss.as.controller.access.AuthorizationResult.Decision;
 import org.jboss.as.controller.access.Caller;
@@ -1234,13 +1235,14 @@ class PluggableMBeanServerImpl implements PluggableMBeanServer {
 
 
         static void doLog(ManagedAuditLogger auditLogger, boolean readOnly, Throwable error, String methodName, String[] methodSignature, Object...methodParams) {
-            Subject subject = SubjectUtils.getCurrent();
             if (auditLogger != null) {
+                Subject subject = SubjectUtils.getCurrent();
+                AccessAuditContext auditContext = SecurityActions.currentAccessAuditContext();
                 auditLogger.logJmxMethodAccess(
                         readOnly,
                         getCallerUserId(subject),
-                        null, //TODO domainUUID
-                        null, // TODO accessMechanism
+                        auditContext == null ? null : auditContext.getDomainUuid(),
+                        auditContext == null ? null : auditContext.getAccessMechanism(),
                         getSubjectInetAddress(subject),
                         methodName,
                         methodSignature,

@@ -20,21 +20,17 @@
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
 
-package org.jboss.as.controller;
+package org.jboss.as.jmx;
 
 import static java.security.AccessController.doPrivileged;
 
-import java.security.AccessControlContext;
-import java.security.AccessController;
 import java.security.PrivilegedAction;
 
-import javax.security.auth.Subject;
-
-import org.jboss.as.controller.access.Caller;
+import org.jboss.as.controller.AccessAuditContext;
 import org.wildfly.security.manager.WildFlySecurityManager;
 
 /**
- * Security actions for the 'org.jboss.as.controller' package.
+ * Security actions for the 'org.jboss.as.jmx' package.
  *
  * @author <a href="mailto:darran.lofthouse@jboss.com">Darran Lofthouse</a>
  */
@@ -43,20 +39,12 @@ class SecurityActions {
     private SecurityActions() {
     }
 
-    static Caller getCaller(final Caller currentCaller) {
-        return createCallerActions().getCaller(currentCaller);
-    }
-
     static AccessAuditContext currentAccessAuditContext() {
         return createAccessAuditContextActions().currentContext();
     }
 
     private static AccessAuditContextActions createAccessAuditContextActions() {
         return WildFlySecurityManager.isChecking() ? AccessAuditContextActions.PRIVILEGED : AccessAuditContextActions.NON_PRIVILEGED;
-    }
-
-    private static CreateCallerActions createCallerActions() {
-        return WildFlySecurityManager.isChecking() ? CreateCallerActions.PRIVILEGED : CreateCallerActions.NON_PRIVILEGED;
     }
 
     private interface AccessAuditContextActions {
@@ -90,41 +78,4 @@ class SecurityActions {
 
     }
 
-    private interface CreateCallerActions {
-
-        Caller getCaller(Caller currentCaller);
-
-        CreateCallerActions NON_PRIVILEGED = new CreateCallerActions() {
-
-            @Override
-            public Caller getCaller(Caller currentCaller) {
-                AccessControlContext acc = AccessController.getContext();
-                Subject subject = Subject.getSubject(acc);
-                // This is deliberately checking the Subject is the exact same instance.
-                if (currentCaller == null || subject != currentCaller.getSubject()) {
-                    if (subject != null) {
-                        subject.setReadOnly();
-                    }
-                    return Caller.createCaller(subject);
-                }
-
-                return currentCaller;
-            }
-        };
-
-        CreateCallerActions PRIVILEGED = new CreateCallerActions() {
-
-            @Override
-            public Caller getCaller(final Caller currentCaller) {
-                return doPrivileged(new PrivilegedAction<Caller>() {
-
-                    @Override
-                    public Caller run() {
-                        return NON_PRIVILEGED.getCaller(currentCaller);
-                    }
-                });
-            }
-        };
-
-    }
 }

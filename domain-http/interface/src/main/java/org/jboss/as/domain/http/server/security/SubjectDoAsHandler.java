@@ -31,6 +31,8 @@ import java.security.PrivilegedExceptionAction;
 
 import javax.security.auth.Subject;
 
+import org.jboss.as.controller.AccessAuditContext;
+
 /**
  * HttpHandler to ensure the Subject for the current authenticated user is correctly associated for the request.
  *
@@ -60,7 +62,7 @@ public class SubjectDoAsHandler implements HttpHandler {
     void handleRequest(final HttpServerExchange exchange, final Subject subject) throws Exception {
         if (subject != null) {
             try {
-                Subject.doAs(subject, new PrivilegedExceptionAction<Void>() {
+                AccessAuditContext.doAs(subject, new PrivilegedExceptionAction<Void>() {
 
                     @Override
                     public Void run() throws Exception {
