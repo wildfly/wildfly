@@ -311,6 +311,39 @@ public class RemotingSubsystemTransformersTestCase extends AbstractSubsystemBase
         checkReject(operation, mainServices, version);
     }
 
+    @Test
+    public void testTransformersEAP610() throws Exception {
+        ignoreThisTestIfEAPRepositoryIsNotReachable();
+        testTransformers_1_2_0(ModelTestControllerVersion.EAP_6_1_0);
+    }
+
+    @Test
+    public void testTransformersEAP611() throws Exception {
+        ignoreThisTestIfEAPRepositoryIsNotReachable();
+        testTransformers_1_2_0(ModelTestControllerVersion.EAP_6_1_1);
+    }
+
+    private void testTransformers_1_2_0(ModelTestControllerVersion controllerVersion) throws Exception {
+        //Current 1.3.0 is the same as 1.2.0 with added rbac
+        String subsystemXml = readResource("remoting-with-expressions.xml");
+        KernelServicesBuilder builder = createKernelServicesBuilder(createAdditionalInitialization())
+                .setSubsystemXml(subsystemXml);
+
+        // Add legacy subsystems
+        ModelVersion version = ModelVersion.create(1, 2, 0);
+        builder.createLegacyKernelServicesBuilder(createAdditionalInitialization(), controllerVersion, version)
+                .addMavenResourceURL("org.jboss.as:jboss-as-remoting:" + controllerVersion.getMavenGavVersion())
+                .configureReverseControllerCheck(createAdditionalInitialization(), null);
+
+        KernelServices mainServices = builder.build();
+        assertTrue(mainServices.isSuccessfulBoot());
+        KernelServices legacyServices = mainServices.getLegacyServices(version);
+        assertNotNull(legacyServices);
+        assertTrue(legacyServices.isSuccessfulBoot());
+
+        checkSubsystemModelTransformation(mainServices, version);
+    }
+
     private void checkReject(ModelNode operation, KernelServices mainServices, ModelVersion version) throws OperationFailedException {
 
         ModelNode mainResult = mainServices.executeOperation(operation);

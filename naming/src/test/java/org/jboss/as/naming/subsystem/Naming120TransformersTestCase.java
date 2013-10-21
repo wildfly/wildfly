@@ -21,21 +21,6 @@
  */
 package org.jboss.as.naming.subsystem;
 
-import java.io.IOException;
-import java.net.URL;
-
-import org.jboss.as.controller.ModelVersion;
-import org.jboss.as.controller.OperationFailedException;
-import org.jboss.as.model.test.ModelTestControllerVersion;
-import org.jboss.as.subsystem.test.AbstractSubsystemBaseTest;
-import org.jboss.as.subsystem.test.AdditionalInitialization;
-import org.jboss.as.subsystem.test.KernelServices;
-import org.jboss.as.subsystem.test.KernelServicesBuilder;
-import org.jboss.dmr.ModelNode;
-import org.junit.Assert;
-import org.junit.Ignore;
-import org.junit.Test;
-
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ADD;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.FAILURE_DESCRIPTION;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP;
@@ -49,12 +34,21 @@ import static org.jboss.as.naming.subsystem.NamingSubsystemModel.CLASS;
 import static org.jboss.as.naming.subsystem.NamingSubsystemModel.ENVIRONMENT;
 import static org.jboss.as.naming.subsystem.NamingSubsystemModel.EXTERNAL_CONTEXT;
 import static org.jboss.as.naming.subsystem.NamingSubsystemModel.MODULE;
-import static org.jboss.as.naming.subsystem.NamingSubsystemModel.OBJECT_FACTORY;
-import static org.jboss.as.naming.subsystem.NamingSubsystemModel.SIMPLE;
-import static org.jboss.as.naming.subsystem.NamingSubsystemModel.TYPE;
-import static org.jboss.as.naming.subsystem.NamingSubsystemModel.VALUE;
 import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertTrue;
+
+import java.io.IOException;
+
+import org.jboss.as.controller.ModelVersion;
+import org.jboss.as.controller.OperationFailedException;
+import org.jboss.as.model.test.ModelTestControllerVersion;
+import org.jboss.as.subsystem.test.AbstractSubsystemBaseTest;
+import org.jboss.as.subsystem.test.AdditionalInitialization;
+import org.jboss.as.subsystem.test.KernelServices;
+import org.jboss.as.subsystem.test.KernelServicesBuilder;
+import org.jboss.dmr.ModelNode;
+import org.junit.Assert;
+import org.junit.Ignore;
+import org.junit.Test;
 
 /**
  * Test case that verifies functionality of Naming 1.2.0 Transformers.
@@ -102,6 +96,8 @@ public class Naming120TransformersTestCase extends AbstractSubsystemBaseTest {
 
         checkExternalContextEnvironmentBindingTransformation(mainServices, VERSION_1_2_0);
     }
+
+
 
     private void checkExternalContextEnvironmentBindingTransformation(KernelServices mainServices, ModelVersion version)
             throws OperationFailedException {
