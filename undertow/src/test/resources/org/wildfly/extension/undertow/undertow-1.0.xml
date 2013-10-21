@@ -30,39 +30,44 @@
     <server name="default-server" default-host="localhost" servlet-container="blah">
         <ajp-listener name="ajp-connector" socket-binding="ajp"/>
         <http-listener name="default" socket-binding="http" certificate-forwarding="true"/>
-        <http-listener name="second" socket-binding="http" />
-        <https-listener name="https" socket-binding="https" security-realm="UndertowRealm" />
+        <http-listener name="second" socket-binding="http"/>
+        <https-listener name="https" socket-binding="https" security-realm="UndertowRealm"/>
 
         <host name="default-host" alias="localhost, some.host" default-web-module="something.war">
             <location name="/" handler="welcome-content">
                 <filter-ref name="security-other"/>
                 <filter-ref name="connection-limit"/>
             </location>
-            <access-log pattern="REQ %{i,test-header}" directory="${jboss.server.server.dir}" prefix="access" />
+            <access-log pattern="REQ %{i,test-header}" directory="${jboss.server.server.dir}" prefix="access"/>
+        </host>
+        <host name="other-host" alias="www.mysite.com" default-web-module="something.war">
+            <location name="/" handler="welcome-content">
+                <filter-ref name="connection-limit"/>
+            </location>
         </host>
     </server>
 
 
     <servlet-container name="default" default-buffer-cache="default">
         <jsp-config
-                    disabled="${prop.disabled:false}"
-                    keep-generated="${prop.keep-generated:true}"
-                    trim-spaces="${prop.trim-spaces:true}"
-                    tag-pooling="${prop.tag-pooling:true}"
-                    mapped-file="${prop.mapped-file:true}"
-                    check-interval="${prop.check-interval:20}"
-                    modification-test-interval="${prop.modification-test-interval:1000}"
-                    recompile-on-fail="${prop.recompile-on-fail:true}"
-                    smap="${prop.smap:true}"
-                    dump-smap="${prop.dump-smap:true}"
-                    generate-strings-as-char-arrays="${prop.generate-strings-as-char-arrays:true}"
-                    error-on-use-bean-invalid-class-attribute="${prop.error-on-use-bean-invalid-class-attribute:true}"
-                    scratch-dir="${prop.scratch-dir:/some/dir}"
-                    source-vm="${prop.source-vm:1.7}"
-                    target-vm="${prop.target-vm:1.7}"
-                    java-encoding="${prop.java-encoding:utf-8}"
-                    x-powered-by="${prop.x-powered-by:true}"
-                    display-source-fragment="${prop.display-source-fragment:true}"/>
+                disabled="${prop.disabled:false}"
+                keep-generated="${prop.keep-generated:true}"
+                trim-spaces="${prop.trim-spaces:true}"
+                tag-pooling="${prop.tag-pooling:true}"
+                mapped-file="${prop.mapped-file:true}"
+                check-interval="${prop.check-interval:20}"
+                modification-test-interval="${prop.modification-test-interval:1000}"
+                recompile-on-fail="${prop.recompile-on-fail:true}"
+                smap="${prop.smap:true}"
+                dump-smap="${prop.dump-smap:true}"
+                generate-strings-as-char-arrays="${prop.generate-strings-as-char-arrays:true}"
+                error-on-use-bean-invalid-class-attribute="${prop.error-on-use-bean-invalid-class-attribute:true}"
+                scratch-dir="${prop.scratch-dir:/some/dir}"
+                source-vm="${prop.source-vm:1.7}"
+                target-vm="${prop.target-vm:1.7}"
+                java-encoding="${prop.java-encoding:utf-8}"
+                x-powered-by="${prop.x-powered-by:true}"
+                display-source-fragment="${prop.display-source-fragment:true}"/>
         <session-cookie name="MYSESSIONCOOKIE"
                         domain="example.com"
                         comment="session cookie"
@@ -78,7 +83,7 @@
 
     <handlers>
         <file name="welcome-content" path="${jboss.home.dir}/welcome-content" directory-listing="true"/>
-        <reverse-proxy name="reverse-proxy" connections-per-thread="30" >
+        <reverse-proxy name="reverse-proxy" connections-per-thread="30">
             <host name="ajp://localhost:8080"/>
         </reverse-proxy>
     </handlers>
