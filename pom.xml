@@ -193,7 +193,7 @@
         <version.org.jboss.osgi.metadata>3.0.1.Final</version.org.jboss.osgi.metadata>
         <version.org.jboss.remote-naming>2.0.0.Beta2</version.org.jboss.remote-naming>
         <version.org.jboss.remoting>4.0.0.Beta1</version.org.jboss.remoting>
-        <version.org.jboss.remotingjmx.remoting-jmx>2.0.0.CR3</version.org.jboss.remotingjmx.remoting-jmx>
+        <version.org.jboss.remotingjmx.remoting-jmx>2.0.0.CR4</version.org.jboss.remotingjmx.remoting-jmx>
         <version.org.jboss.resteasy>3.0.4.Final</version.org.jboss.resteasy>
         <version.org.jboss.sasl>1.0.4.CR1</version.org.jboss.sasl>
         <version.org.jboss.seam.int>6.0.0.GA</version.org.jboss.seam.int>
