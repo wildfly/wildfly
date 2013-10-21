@@ -39,6 +39,6 @@ public class javaURLContextFactory implements ObjectFactory {
 
     /** {@inheritDoc} */
     public Object getObjectInstance(Object obj, Name name, Context nameCtx, Hashtable<?, ?> environment) throws Exception {
-        return new NamingContext(name != null ? name : new CompositeName(""), (Hashtable<String, Object>) environment);
+        return new NamingContext(name != null ? name : new CompositeName(""), environment);
     }
 }
