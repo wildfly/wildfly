@@ -22,6 +22,8 @@
 
 package org.jboss.as.jaxrs.deployment;
 
+import java.io.UnsupportedEncodingException;
+import java.net.URLDecoder;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.Iterator;
@@ -204,28 +206,32 @@ public class JaxrsIntegrationProcessor implements DeploymentUnitProcessor {
             setServletInitParam(servlet, SERVLET_INIT_PARAM, applicationClass.getName());
             addServlet(webdata, servlet);
             if (!servletMappingsExist(webdata, servletName)) {
-                //no mappings, add our own
-                List<String> patterns = new ArrayList<String>();
-                ApplicationPath path = applicationClass.getAnnotation(ApplicationPath.class);
-                String pathValue = path.value().trim();
-                if (!pathValue.startsWith("/")) {
-                    pathValue = "/" + pathValue;
+                try {
+                    //no mappings, add our own
+                    List<String> patterns = new ArrayList<String>();
+                    //for some reason the spec requires this to be decoded
+                    String pathValue = URLDecoder.decode(applicationClass.getAnnotation(ApplicationPath.class).value().trim(), "UTF-8");
+                    if (!pathValue.startsWith("/")) {
+                        pathValue = "/" + pathValue;
+                    }
+                    String prefix = pathValue;
+                    if (pathValue.endsWith("/")) {
+                        pathValue += "*";
+                    } else {
+                        pathValue += "/*";
+                    }
+                    patterns.add(pathValue);
+                    setServletInitParam(servlet, "resteasy.servlet.mapping.prefix", prefix);
+                    ServletMappingMetaData mapping = new ServletMappingMetaData();
+                    mapping.setServletName(servletName);
+                    mapping.setUrlPatterns(patterns);
+                    if (webdata.getServletMappings() == null) {
+                        webdata.setServletMappings(new ArrayList<ServletMappingMetaData>());
+                    }
+                    webdata.getServletMappings().add(mapping);
+                } catch (UnsupportedEncodingException e) {
+                    throw new RuntimeException(e);
                 }
-                String prefix = pathValue;
-                if (pathValue.endsWith("/")) {
-                    pathValue += "*";
-                } else {
-                    pathValue += "/*";
-                }
-                patterns.add(pathValue);
-                setServletInitParam(servlet, "resteasy.servlet.mapping.prefix", prefix);
-                ServletMappingMetaData mapping = new ServletMappingMetaData();
-                mapping.setServletName(servletName);
-                mapping.setUrlPatterns(patterns);
-                if (webdata.getServletMappings() == null) {
-                    webdata.setServletMappings(new ArrayList<ServletMappingMetaData>());
-                }
-                webdata.getServletMappings().add(mapping);
             } else {
                 setServletMappingPrefix(webdata, servletName, servlet);
             }
