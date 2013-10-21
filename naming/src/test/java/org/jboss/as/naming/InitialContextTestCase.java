@@ -84,6 +84,10 @@ public class InitialContextTestCase {
                 public Object lookup(Name name) throws NamingException {
                     return "TestObject: " + name;
                 }
+                @Override
+                public Object lookup(String name) throws NamingException {
+                    return "TestObject: " + name;
+                }
             };
         }
     }

@@ -113,7 +113,7 @@ public class NamingContext implements EventContext {
     private final Name prefix;
 
     /* The environment configuration */
-    private final Hashtable<String, Object> environment;
+    private final Hashtable environment;
 
     /**
      * Create a new naming context with no prefix or naming store.  This will default to a prefix of "" and
@@ -121,7 +121,7 @@ public class NamingContext implements EventContext {
      *
      * @param environment The naming environment
      */
-    public NamingContext(final Hashtable<String, Object> environment) {
+    public NamingContext(final Hashtable environment) {
         this(new CompositeName(), ACTIVE_NAMING_STORE, environment);
     }
 
@@ -132,7 +132,7 @@ public class NamingContext implements EventContext {
      * @param environment The naming environment
      * @throws NamingException if an error occurs
      */
-    public NamingContext(final Name prefix, final Hashtable<String, Object> environment) throws NamingException {
+    public NamingContext(final Name prefix, final Hashtable environment) throws NamingException {
         this(prefix, ACTIVE_NAMING_STORE, environment);
     }
 
@@ -143,7 +143,7 @@ public class NamingContext implements EventContext {
      * @param namingStore The NamingStore
      * @param environment The naming environment
      */
-    public NamingContext(final Name prefix, final NamingStore namingStore, final Hashtable<String, Object> environment) {
+    public NamingContext(final Name prefix, final NamingStore namingStore, final Hashtable environment) {
         if(prefix == null) {
             throw MESSAGES.nullVar("Naming prefix");
         }
@@ -153,9 +153,9 @@ public class NamingContext implements EventContext {
         }
         this.namingStore = namingStore;
         if(environment != null) {
-            this.environment = new Hashtable<String, Object>(environment);
+            this.environment = new Hashtable(environment);
         } else {
-            this.environment = new Hashtable<String, Object>();
+            this.environment = new Hashtable();
         }
     }
 
@@ -165,7 +165,7 @@ public class NamingContext implements EventContext {
      * @param namingStore the naming store to use
      * @param environment the environment to use
      */
-    public NamingContext(final NamingStore namingStore, final Hashtable<String, Object> environment) {
+    public NamingContext(final NamingStore namingStore, final Hashtable environment) {
         this(new CompositeName(), namingStore, environment);
     }
 
