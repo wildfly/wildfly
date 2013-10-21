@@ -2730,5 +2730,8 @@ public interface ControllerMessages {
     @Message(id = 13478, value = "Management resource '%s' not found")
     String managementResourceNotFoundMessage(PathAddress pathAddress);
 
+    @Message(id = 13479, value = "The following attributes are nillable in the current model but must be defined in the target model version: %s")
+    String attributesMustBeDefined(Set<String> keySet);
+
     // 13499 IS END OF 134xx SERIES USABLE FOR NON-LOGGER MESSAGES
 }

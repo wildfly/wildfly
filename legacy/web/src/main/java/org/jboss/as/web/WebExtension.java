@@ -157,7 +157,10 @@ public class WebExtension extends AbstractLegacyExtension {
         registration.registerSubModel(WebValveDefinition.INSTANCE);
 
         if (context.isRegisterTransformers()) {
-            registerTransformers_1_1_0(subsystem);
+            registerTransformers_1_1_x(subsystem, 0);
+            registerTransformers_1_1_x(subsystem, 1);
+            registerTransformers_1_2_0(subsystem);
+            registerTransformers_1_3_0(subsystem);
         }
         return Collections.singleton(registration);
     }
@@ -172,7 +175,7 @@ public class WebExtension extends AbstractLegacyExtension {
         context.setProfileParsingCompletionHandler(new DefaultJsfProfileCompletionHandler());
     }
 
-    private void registerTransformers_1_1_0(SubsystemRegistration registration) {
+    private void registerTransformers_1_1_x(SubsystemRegistration registration, int micro) {
 
         final int defaultRedirectPort = 443;
         final ResourceTransformationDescriptionBuilder subsystemRoot = TransformationDescriptionBuilder.Factory.createSubsystemInstance();
@@ -191,17 +194,6 @@ public class WebExtension extends AbstractLegacyExtension {
         final ResourceTransformationDescriptionBuilder connectorBuilder = subsystemRoot.addChildResource(CONNECTOR_PATH);
         connectorBuilder.getAttributeBuilder()
                 .addRejectCheck(RejectAttributeChecker.SIMPLE_EXPRESSIONS, WebConnectorDefinition.CONNECTOR_ATTRIBUTES)
-                .addRejectCheck(new RejectAttributeChecker.DefaultRejectAttributeChecker() {
-                    @Override
-                    protected boolean rejectAttribute(PathAddress address, String attributeName, ModelNode attributeValue, TransformationContext context) {
-                        return attributeValue.isDefined();
-                    }
-
-                    @Override
-                    public String getRejectionLogMessage(Map<String, ModelNode> attributes) {
-                        return WebMessages.MESSAGES.transformationVersion_1_1_0_JBPAPP_9314();
-                    }
-                }, Constants.VIRTUAL_SERVER)
                 .setValueConverter(new AttributeConverter.DefaultAttributeConverter() {
                     @Override
                     protected void convertAttribute(PathAddress address, String attributeName, ModelNode attributeValue, TransformationContext context) {
@@ -227,8 +219,21 @@ public class WebExtension extends AbstractLegacyExtension {
                         }
                         return new TransformedOperation(operation, OperationResultTransformer.ORIGINAL_RESULT);
                     }
-                })
-        ;
+                });
+        if (micro == 0) {
+                connectorBuilder.getAttributeBuilder().addRejectCheck(new RejectAttributeChecker.DefaultRejectAttributeChecker() {
+                    @Override
+                    protected boolean rejectAttribute(PathAddress address, String attributeName, ModelNode attributeValue, TransformationContext context) {
+                        return attributeValue.isDefined();
+                    }
+
+                    @Override
+                    public String getRejectionLogMessage(Map<String, ModelNode> attributes) {
+                        return WebMessages.MESSAGES.transformationVersion_1_1_0_JBPAPP_9314();
+                    }
+                }, Constants.VIRTUAL_SERVER);
+        }
+
 
         //
         connectorBuilder.addChildRedirection(SSL_PATH, SSL_ALIAS).getAttributeBuilder()
@@ -254,7 +259,8 @@ public class WebExtension extends AbstractLegacyExtension {
                 .end();
 
         rewriteBuilder.addChildResource(REWRITECOND_PATH).getAttributeBuilder()
-                .addRejectCheck(RejectAttributeChecker.SIMPLE_EXPRESSIONS, WebReWriteConditionDefinition.ATTRIBUTES);
+                .addRejectCheck(RejectAttributeChecker.SIMPLE_EXPRESSIONS, WebReWriteConditionDefinition.ATTRIBUTES)
+                .addRejectCheck(RejectAttributeChecker.UNDEFINED, WebReWriteConditionDefinition.FLAGS);
 
         hostBuilder.addChildRedirection(SSO_PATH, SSO_ALIAS).getAttributeBuilder()
                 .addRejectCheck(RejectAttributeChecker.SIMPLE_EXPRESSIONS, WebSSODefinition.SSO_ATTRIBUTES)
@@ -267,7 +273,28 @@ public class WebExtension extends AbstractLegacyExtension {
         accessLogBuilder.addChildRedirection(DIRECTORY_PATH, DIRECTORY_ALIAS);
 
         // Register
-        TransformationDescription.Tools.register(subsystemRoot.build(), registration, ModelVersion.create(1, 1, 0));
+        TransformationDescription.Tools.register(subsystemRoot.build(), registration, ModelVersion.create(1, 1, micro));
+    }
+
+    private void registerTransformers_1_2_0(SubsystemRegistration registration) {
+        final ResourceTransformationDescriptionBuilder subsystemRoot = TransformationDescriptionBuilder.Factory.createSubsystemInstance();
+
+        final ResourceTransformationDescriptionBuilder hostBuilder = subsystemRoot.addChildResource(HOST_PATH);
+        final ResourceTransformationDescriptionBuilder rewriteBuilder = hostBuilder.addChildResource(REWRITE_PATH);
+        rewriteBuilder.addChildResource(REWRITECOND_PATH).getAttributeBuilder()
+                .addRejectCheck(RejectAttributeChecker.UNDEFINED, WebReWriteConditionDefinition.FLAGS);
+
+        final ResourceTransformationDescriptionBuilder connectorBuilder = subsystemRoot.addChildResource(CONNECTOR_PATH);
+        connectorBuilder.addChildResource(SSL_PATH).getAttributeBuilder()
+                .addRejectCheck(RejectAttributeChecker.DEFINED, WebSSLDefinition.SSL_PROTOCOL)
+                .setDiscard(DiscardAttributeChecker.UNDEFINED, WebSSLDefinition.SSL_PROTOCOL);
+
+        TransformationDescription.Tools.register(subsystemRoot.build(), registration, ModelVersion.create(1, 2, 0));
+
+    }
+
+    private void registerTransformers_1_3_0(SubsystemRegistration registration) {
+        //EAP 6.2 uses 1.3.0 but at the time of writing has no differences from 2.0.0
     }
 
     private static class StandardWebExtensionAliasEntry extends AliasEntry {

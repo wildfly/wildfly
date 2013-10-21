@@ -41,7 +41,7 @@ public interface ModelFixer {
         public ModelNode fixModel(ModelNode modelNode) {
             for (ModelFixer fixer : fixers) {
                 if (fixer != null) {
-                    fixer.fixModel(modelNode);
+                    modelNode = fixer.fixModel(modelNode);
                 }
             }
             return modelNode;
