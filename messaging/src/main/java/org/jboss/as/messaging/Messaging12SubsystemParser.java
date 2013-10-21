@@ -122,7 +122,7 @@ public class Messaging12SubsystemParser extends MessagingSubsystemParser {
                 }
                 case FAILOVER_ON_SERVER_SHUTDOWN: {
                     MessagingLogger.ROOT_LOGGER.deprecatedXMLElement(element.toString());
-                    skipElementText(reader);
+                    handleElementText(reader, element, bridgeAdd);
                     break;
                 }
                 default: {

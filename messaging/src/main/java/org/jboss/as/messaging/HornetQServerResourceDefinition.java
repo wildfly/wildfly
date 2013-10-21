@@ -97,7 +97,7 @@ public class HornetQServerResourceDefinition extends SimpleResourceDefinition {
 
     public static final PathElement HORNETQ_SERVER_PATH = PathElement.pathElement(CommonAttributes.HORNETQ_SERVER);
 
-    public static final AttributeDefinition[] ATTRIBUTES_ADDED_IN_1_2_0 = { BACKUP_GROUP_NAME, CHECK_FOR_LIVE_SERVER, REPLICATION_CLUSTERNAME,
+    public static final AttributeDefinition[] ATTRIBUTES_ADDED_IN_1_2_0 = { BACKUP_GROUP_NAME, REPLICATION_CLUSTERNAME,
     REMOTING_INCOMING_INTERCEPTORS, REMOTING_OUTGOING_INTERCEPTORS };
 
     public static final AttributeDefinition[] ATTRIBUTES_WITH_EXPRESSION_ALLOWED_IN_1_2_0 = { ASYNC_CONNECTION_EXECUTION_ENABLED, PERSISTENCE_ENABLED, SECURITY_ENABLED, SECURITY_INVALIDATION_INTERVAL,

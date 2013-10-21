@@ -88,6 +88,7 @@ class KnownVersions {
         addSubsystemVersion(map, "mail", "1.2.0", CORE_MODEL_7_2_0);
         addSubsystemVersion(map, "messaging", "1.1.0", CORE_MODEL_7_1_3);
         addSubsystemVersion(map, "messaging", "1.2.0", CORE_MODEL_7_2_0);
+        addSubsystemVersion(map, "messaging", "1.2.1", CORE_MODEL_7_2_0);
         addSubsystemVersion(map, "modcluster", "1.2.0", CORE_MODEL_7_1_3);
         addSubsystemVersion(map, "modcluster", "1.3.0", CORE_MODEL_7_2_0);
         addSubsystemVersion(map, "naming", "1.1.0", CORE_MODEL_7_1_3);

@@ -29,20 +29,20 @@ import org.jboss.staxmapper.XMLExtendedStreamReader;
 
 
 /**
- * Messaging subsystem 1.3.1 XML parser.
+ * Messaging subsystem 1.4 XML parser.
  *
  * @author <a href="http://jmesnil.net/">Jeff Mesnil</a>
  *
  */
-public class Messaging131SubsystemParser extends Messaging13SubsystemParser {
+public class Messaging14SubsystemParser extends Messaging13SubsystemParser {
 
-    private static final Messaging131SubsystemParser INSTANCE = new Messaging131SubsystemParser();
+    private static final Messaging14SubsystemParser INSTANCE = new Messaging14SubsystemParser();
 
     public static MessagingSubsystemParser getInstance() {
         return INSTANCE;
     }
 
-    protected Messaging131SubsystemParser() {
+    protected Messaging14SubsystemParser() {
     }
 
     @Override

@@ -123,6 +123,7 @@ public class BridgeDefinition extends SimpleResourceDefinition {
             CommonAttributes.MIN_LARGE_MESSAGE_SIZE, CommonAttributes.CHECK_PERIOD, CommonAttributes.CONNECTION_TTL,
             CommonAttributes.RETRY_INTERVAL, CommonAttributes.RETRY_INTERVAL_MULTIPLIER, CommonAttributes.MAX_RETRY_INTERVAL,
             RECONNECT_ATTEMPTS,
+            CommonAttributes.FAILOVER_ON_SERVER_SHUTDOWN,
             USE_DUPLICATE_DETECTION, CommonAttributes.BRIDGE_CONFIRMATION_WINDOW_SIZE,
             USER, PASSWORD,
             CONNECTOR_REFS, DISCOVERY_GROUP_NAME
@@ -147,15 +148,17 @@ public class BridgeDefinition extends SimpleResourceDefinition {
         super.registerAttributes(registry);
         for (AttributeDefinition attr : ATTRIBUTES) {
             if (registerRuntimeOnly || !attr.getFlags().contains(AttributeAccess.Flag.STORAGE_RUNTIME)) {
-                registry.registerReadWriteAttribute(attr, null, BridgeWriteAttributeHandler.INSTANCE);
+                if (attr == CommonAttributes.FAILOVER_ON_SERVER_SHUTDOWN) {
+                    registry.registerReadWriteAttribute(attr, null, DeprecatedAttributeWriteHandler.INSTANCE);
+                } else {
+                    registry.registerReadWriteAttribute(attr, null, BridgeWriteAttributeHandler.INSTANCE);
+                }
             }
         }
 
         if (registerRuntimeOnly) {
             BridgeControlHandler.INSTANCE.registerAttributes(registry);
         }
-
-        registry.registerReadWriteAttribute(CommonAttributes.FAILOVER_ON_SERVER_SHUTDOWN, null, new DeprecatedAttributeWriteHandler(CommonAttributes.FAILOVER_ON_SERVER_SHUTDOWN.getName()));
     }
 
     @Override

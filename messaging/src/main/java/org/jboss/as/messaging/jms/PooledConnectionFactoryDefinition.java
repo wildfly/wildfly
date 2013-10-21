@@ -158,7 +158,7 @@ public class PooledConnectionFactoryDefinition extends SimpleResourceDefinition 
             // deprecated attribute
             if (attr == Common.DISCOVERY_INITIAL_WAIT_TIMEOUT ||
                     attr == Common.FAILOVER_ON_SERVER_SHUTDOWN) {
-                registry.registerReadWriteAttribute(attr, null, new DeprecatedAttributeWriteHandler(attr.getName()));
+                registry.registerReadWriteAttribute(attr, null, DeprecatedAttributeWriteHandler.INSTANCE);
             } else {
                 if (registerRuntimeOnly || !attr.getFlags().contains(AttributeAccess.Flag.STORAGE_RUNTIME)) {
                     registry.registerReadWriteAttribute(attr.getName(), null, PooledConnectionFactoryWriteAttributeHandler.INSTANCE, flags);

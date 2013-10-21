@@ -545,7 +545,7 @@ public class MessagingSubsystemParser implements XMLStreamConstants, XMLElementR
                 }
                 case FAILOVER_ON_SERVER_SHUTDOWN: {
                     MessagingLogger.ROOT_LOGGER.deprecatedXMLElement(element.toString());
-                    skipElementText(reader);
+                    handleElementText(reader, element, bridgeAdd);
                     break;
                 }
                 default: {

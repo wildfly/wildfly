@@ -60,6 +60,13 @@ import org.jboss.as.messaging.jms.bridge.JMSBridgeDefinition;
  *       <li>Management model: 1.3.0
  *     </ul>
  *   </dd>
+ *   <dt>AS 7.2.1</dt>
+ *   <dd>
+ *     <ul>
+ *       <li>XML namespace: urn:jboss:domain:messaging:1.3
+ *       <li>Management model: 1.2.1
+ *     </ul>
+ *   </dd>
  *   <dt>AS 7.2.0</dt>
  *   <dd>
  *     <ul>
@@ -92,6 +99,7 @@ public class MessagingExtension implements Extension {
     private static final int MANAGEMENT_API_MINOR_VERSION = 3;
     private static final int MANAGEMENT_API_MICRO_VERSION = 0;
 
+    public static final ModelVersion VERSION_1_2_1 = ModelVersion.create(1, 2, 1);
     public static final ModelVersion VERSION_1_2_0 = ModelVersion.create(1, 2, 0);
     public static final ModelVersion VERSION_1_1_0 = ModelVersion.create(1, 1, 0);
 
@@ -232,6 +240,6 @@ public class MessagingExtension implements Extension {
         context.setSubsystemXmlMapping(SUBSYSTEM_NAME, MESSAGING_1_1.getUriString(), MessagingSubsystemParser.getInstance());
         context.setSubsystemXmlMapping(SUBSYSTEM_NAME, MESSAGING_1_2.getUriString(), Messaging12SubsystemParser.getInstance());
         context.setSubsystemXmlMapping(SUBSYSTEM_NAME, MESSAGING_1_3.getUriString(), Messaging13SubsystemParser.getInstance());
-        context.setSubsystemXmlMapping(SUBSYSTEM_NAME, MESSAGING_1_4.getUriString(), Messaging131SubsystemParser.getInstance());
+        context.setSubsystemXmlMapping(SUBSYSTEM_NAME, MESSAGING_1_4.getUriString(), Messaging14SubsystemParser.getInstance());
     }
 }
