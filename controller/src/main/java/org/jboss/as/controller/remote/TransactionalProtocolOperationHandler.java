@@ -35,6 +35,7 @@ import java.util.concurrent.CountDownLatch;
 
 import javax.security.auth.Subject;
 
+import org.jboss.as.controller.AccessAuditContext;
 import org.jboss.as.controller.ModelController;
 import org.jboss.as.controller.ProxyController;
 import org.jboss.as.controller.client.OperationAttachments;
@@ -193,7 +194,7 @@ public class TransactionalProtocolOperationHandler implements ManagementRequestH
 
                         @Override
                         public Void run() {
-                            Subject.doAs(finalSubject, context.getAttachment().getAction());
+                            AccessAuditContext.doAs(finalSubject, context.getAttachment().getAction());
                             return null;
                         }
                     });

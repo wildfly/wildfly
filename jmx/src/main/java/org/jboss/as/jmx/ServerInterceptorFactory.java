@@ -27,6 +27,8 @@ import java.security.PrivilegedExceptionAction;
 
 import javax.security.auth.Subject;
 
+import org.jboss.as.controller.AccessAuditContext;
+import org.jboss.as.core.security.AccessMechanism;
 import org.jboss.as.core.security.SubjectUserInfo;
 import org.jboss.remoting3.Channel;
 import org.jboss.remoting3.security.UserInfo;
@@ -61,10 +63,11 @@ class ServerInterceptorFactory implements ServerMessageInterceptorFactory {
                 final Subject subject = ((SubjectUserInfo) userInfo).getSubject();
 
                 try {
-                    Subject.doAs(subject, new PrivilegedExceptionAction<Void>() {
+                    AccessAuditContext.doAs(subject, new PrivilegedExceptionAction<Void>() {
 
                         @Override
                         public Void run() throws IOException {
+                            SecurityActions.currentAccessAuditContext().setAccessMechanism(AccessMechanism.JMX);
                             event.run();
 
                             return null;
