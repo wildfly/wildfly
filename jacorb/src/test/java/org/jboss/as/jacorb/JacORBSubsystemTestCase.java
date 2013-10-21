@@ -27,9 +27,10 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SUBSYSTEM;
 
-import javax.xml.stream.XMLStreamException;
 import java.io.IOException;
 import java.util.List;
+
+import javax.xml.stream.XMLStreamException;
 
 import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.PathElement;
@@ -58,7 +59,7 @@ public class JacORBSubsystemTestCase extends AbstractSubsystemBaseTest {
 
     @Override
     protected String getSubsystemXml() throws IOException {
-        return readResource("subsystem-1.2.xml");
+        return readResource("subsystem.xml");
     }
 
     @Override
@@ -68,7 +69,7 @@ public class JacORBSubsystemTestCase extends AbstractSubsystemBaseTest {
 
     @Test
     public void testExpressions() throws Exception {
-        standardSubsystemTest("expressions-1.2.xml");
+        standardSubsystemTest("expressions.xml");
     }
 
     @Test
@@ -226,12 +227,12 @@ public class JacORBSubsystemTestCase extends AbstractSubsystemBaseTest {
 
     @Test
     public void testSubsystemWithSecurityIdentity() throws Exception {
-        super.standardSubsystemTest("subsystem-1.2-security-identity.xml");
+        super.standardSubsystemTest("subsystem-security-identity.xml");
     }
 
     @Test
     public void testSubsystemWithSecurityClient() throws Exception {
-        super.standardSubsystemTest("subsystem-1.2-security-client.xml");
+        super.standardSubsystemTest("subsystem-security-client.xml");
     }
 
 }

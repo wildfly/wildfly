@@ -117,7 +117,7 @@ public class JacORBTransformersTestCase extends AbstractSubsystemTest {
 
     private void testTransformers(ModelTestControllerVersion controllerVersion) throws Exception {
         KernelServicesBuilder builder = createKernelServicesBuilder(AdditionalInitialization.MANAGEMENT)
-                .setSubsystemXml(readResource("subsystem-1.2.xml"));
+                .setSubsystemXml(readResource("subsystem.xml"));
 
         // Add legacy subsystems
         ModelVersion version_1_1_0 = ModelVersion.create(1, 1, 0);
@@ -161,7 +161,7 @@ public class JacORBTransformersTestCase extends AbstractSubsystemTest {
 
     private void testTransformersSecurityIdentity_1_1_0(ModelTestControllerVersion controllerVersion) throws Exception {
         KernelServicesBuilder builder = createKernelServicesBuilder(AdditionalInitialization.MANAGEMENT)
-                .setSubsystemXml(readResource("subsystem-1.2-security-identity.xml"));
+                .setSubsystemXml(readResource("subsystem-security-identity.xml"));
 
         // Add legacy subsystems
         ModelVersion version_1_1_0 = ModelVersion.create(1, 1, 0);
@@ -239,7 +239,7 @@ public class JacORBTransformersTestCase extends AbstractSubsystemTest {
                     }
                 });
 
-        ModelTestUtils.checkFailedTransformedBootOperations(mainServices, version_1_1_0, builder.parseXmlResource("subsystem-1.2-security-client.xml"), config);
+        ModelTestUtils.checkFailedTransformedBootOperations(mainServices, version_1_1_0, builder.parseXmlResource("subsystem-security-client.xml"), config);
         checkSubsystemModelTransformation(mainServices, version_1_1_0, new ModelFixer() {
             @Override
             public ModelNode fixModel(ModelNode modelNode) {
@@ -304,6 +304,37 @@ public class JacORBTransformersTestCase extends AbstractSubsystemTest {
 
 
 
-        ModelTestUtils.checkFailedTransformedBootOperations(mainServices, version_1_1_0, builder.parseXmlResource("expressions-1.2.xml"), config);
+        ModelTestUtils.checkFailedTransformedBootOperations(mainServices, version_1_1_0, builder.parseXmlResource("expressions.xml"), config);
+    }
+
+    @Test
+    public void testTransformersEAP610() throws Exception {
+        ignoreThisTestIfEAPRepositoryIsNotReachable();
+        testTransformers1_2_0(ModelTestControllerVersion.EAP_6_1_0);
+    }
+
+    @Test
+    public void testTransformersEAP611() throws Exception {
+        ignoreThisTestIfEAPRepositoryIsNotReachable();
+        testTransformers1_2_0(ModelTestControllerVersion.EAP_6_1_1);
+    }
+
+    private void testTransformers1_2_0(ModelTestControllerVersion controllerVersion) throws Exception {
+        //The current model version 1.3.0 is exactly the same as 1.2.0 but with added rbac
+        KernelServicesBuilder builder = createKernelServicesBuilder(AdditionalInitialization.MANAGEMENT)
+                .setSubsystemXml(readResource("expressions.xml"));
+
+        // Add legacy subsystems
+        ModelVersion version_1_2_0 = ModelVersion.create(1, 2, 0);
+        builder.createLegacyKernelServicesBuilder(AdditionalInitialization.MANAGEMENT, controllerVersion, version_1_2_0)
+                .addMavenResourceURL("org.jboss.as:jboss-as-jacorb:" + controllerVersion.getMavenGavVersion());
+
+        KernelServices mainServices = builder.build();
+        assertTrue(mainServices.isSuccessfulBoot());
+        KernelServices legacyServices = mainServices.getLegacyServices(version_1_2_0);
+        assertNotNull(legacyServices);
+        assertTrue(legacyServices.isSuccessfulBoot());
+
+        checkSubsystemModelTransformation(mainServices, version_1_2_0);
     }
 }
