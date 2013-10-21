@@ -53,41 +53,54 @@ public class ServerGroupEffectConstraint extends AbstractConstraint implements C
     private final boolean unassigned;
     private final GroupsHolder groupsHolder;
     private final boolean readOnly;
+    private final boolean groupAdd;
+    private final boolean groupRemove;
     private final ServerGroupEffectConstraint readOnlyConstraint;
 
+    // For unassigned resources
     private ServerGroupEffectConstraint() {
         this.user = false;
         this.global = false;
         this.unassigned = true;
         this.readOnly = false;
         this.readOnlyConstraint = null;
+        this.groupAdd = false;
+        this.groupRemove = false;
         this.groupsHolder = new GroupsHolder();
     }
 
+    // For GLOBAL cases
     private ServerGroupEffectConstraint(final boolean user) {
         this.user = user;
         this.global = true;
         this.unassigned = false;
         this.readOnly = false;
         this.readOnlyConstraint = null;
+        this.groupAdd = false;
+        this.groupRemove = false;
         this.groupsHolder = new GroupsHolder();
     }
 
-    private ServerGroupEffectConstraint(Set<String> allowed) {
+    private ServerGroupEffectConstraint(Set<String> allowed, boolean groupAdd, boolean groupRemove) {
         this.user = false;
         this.global = false;
         this.unassigned = false;
         this.groupsHolder = new GroupsHolder(allowed);
         this.readOnly = false;
+        this.groupAdd = groupAdd;
+        this.groupRemove = groupRemove;
         this.readOnlyConstraint = null;
     }
 
+    // For server group scoped role creation
     public ServerGroupEffectConstraint(List<String> allowed) {
         this.user = true;
         this.global = false;
         this.unassigned = false;
         this.groupsHolder = new GroupsHolder(allowed);
         this.readOnly = false;
+        this.groupAdd = false;
+        this.groupRemove = false;
         this.readOnlyConstraint = new ServerGroupEffectConstraint(groupsHolder, true);
     }
 
@@ -101,6 +114,8 @@ public class ServerGroupEffectConstraint extends AbstractConstraint implements C
         this.unassigned = false;
         this.groupsHolder = groupsHolder;
         this.readOnly = readOnly;
+        this.groupAdd = false;
+        this.groupRemove = false;
         this.readOnlyConstraint = null;
     }
 
@@ -140,14 +155,26 @@ public class ServerGroupEffectConstraint extends AbstractConstraint implements C
                             if (!containsAll) {
                                 ControllerLogger.ACCESS_LOGGER.tracef("server-group constraint violated for action %s due to " +
                                         "mismatch of groups %s vs allowed %s", actionEffect, sgecSpecific, ourSpecific);
+                            } else if (sgec.groupAdd) {
+                                ControllerLogger.ACCESS_LOGGER.tracef("server-group constraint violated for action %s due to " +
+                                        "attempt to add the server group", actionEffect);
+                            } else if (sgec.groupRemove) {
+                                ControllerLogger.ACCESS_LOGGER.tracef("server-group constraint violated for action %s due to " +
+                                        "attempt to remove the server group", actionEffect);
                             }
-                            return !containsAll;
+                            return !containsAll || sgec.groupAdd || sgec.groupRemove;
                         } else {
                             // Reads ok as long as one of our groups match
                             boolean anyMatch = anyMatch(ourSpecific, sgecSpecific);
-                            if (!anyMatch) ControllerLogger.ACCESS_LOGGER.tracef("server-group constraint violated " +
+                            if (!anyMatch)  {
+                                // Allow access for server-group add so there's no bizarre "no such resource"
+                                if (sgec.groupAdd && actionEffect == Action.ActionEffect.ADDRESS) {
+                                    return false;
+                                }
+                                ControllerLogger.ACCESS_LOGGER.tracef("server-group constraint violated " +
                                     "for action %s due to no match between groups %s and allowed groups %s",
                                     actionEffect, sgecSpecific, ourSpecific);
+                            }
                             return !anyMatch;
                         }
                     } // else fall through
@@ -235,7 +262,8 @@ public class ServerGroupEffectConstraint extends AbstractConstraint implements C
             } else if (serverGroupEffect.isServerGroupEffectUnassigned()) {
                 return UNASSIGNED;
             }
-            return new ServerGroupEffectConstraint(serverGroupEffect.getAffectedServerGroups());
+            return new ServerGroupEffectConstraint(serverGroupEffect.getAffectedServerGroups(),
+                    serverGroupEffect.isServerGroupAdd(), serverGroupEffect.isServerGroupRemove());
         }
 
         @Override

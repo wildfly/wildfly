@@ -79,4 +79,18 @@ public interface ServerGroupEffect {
      *         {@code false}, although it may return an empty set.
      */
     Set<String> getAffectedServerGroups();
+
+    /**
+     * Gets whether this effect adds the affected server groups.
+     *
+     * @return {@code true} if the effect is to add the affected groups.
+     */
+    boolean isServerGroupAdd();
+
+    /**
+     * Gets whether this effect removes the affected server groups.
+     *
+     * @return {@code true} if the effect is to remove the affected groups.
+     */
+    boolean isServerGroupRemove();
 }
