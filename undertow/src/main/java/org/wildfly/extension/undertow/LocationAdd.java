@@ -33,7 +33,6 @@ import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.ServiceVerificationHandler;
 import org.jboss.as.controller.registry.Resource;
-import org.jboss.as.web.host.WebHost;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.Property;
 import org.jboss.msc.service.ServiceBuilder;
@@ -75,8 +74,8 @@ class LocationAdd extends AbstractAddStepHandler {
         final ServiceName serviceName = UndertowService.locationServiceName(serverName, hostName, name);
         final ServiceBuilder<LocationService> builder = context.getServiceTarget().addService(serviceName, service)
                 .addDependency(hostServiceName, Host.class, service.getHost())
-                .addDependency(UndertowService.HANDLER.append(handler), HttpHandler.class, service.getHttpHandler())
-                .addAliases(WebHost.SERVICE_NAME.append(name));
+                .addDependency(UndertowService.HANDLER.append(handler), HttpHandler.class, service.getHttpHandler());
+
         configureFilterRef(fullModel, builder, service);
 
         builder.setInitialMode(ServiceController.Mode.ACTIVE);
