@@ -45,6 +45,9 @@ import static org.jboss.as.messaging.jms.ConnectionFactoryAttributes.Regular.FAC
 import static org.jboss.as.messaging.test.TransformerUtils.RejectExpressionsConfigWithAddOnlyParam;
 import static org.jboss.as.messaging.test.TransformerUtils.concat;
 import static org.jboss.as.messaging.test.TransformerUtils.createChainedConfig;
+import static org.jboss.as.model.test.ModelTestControllerVersion.V7_1_2_FINAL;
+import static org.jboss.as.model.test.ModelTestControllerVersion.V7_1_3_FINAL;
+import static org.jboss.as.model.test.ModelTestControllerVersion.V7_2_0_FINAL;
 import static org.jboss.as.model.test.ModelTestUtils.checkFailedTransformedBootOperations;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
@@ -54,6 +57,8 @@ import static org.junit.Assert.assertTrue;
 
 import java.io.IOException;
 import java.util.List;
+
+import javax.xml.stream.XMLStreamException;
 
 import org.jboss.as.controller.AttributeDefinition;
 import org.jboss.as.controller.ModelVersion;
@@ -117,139 +122,52 @@ public class MessagingSubsystem20TestCase extends AbstractSubsystemBaseTest {
 
     @Test
     public void testTransformersAS720() throws Exception {
-        //Boot up empty controllers with the resources needed for the ops coming from the xml to work
-        KernelServicesBuilder builder = createKernelServicesBuilder(AdditionalInitialization.MANAGEMENT)
-                .setSubsystemXmlResource("subsystem_2_0.xml");
-        builder.createLegacyKernelServicesBuilder(createAdditionalInitialization(), ModelTestControllerVersion.V7_2_0_FINAL, VERSION_1_2_0)
-                .addMavenResourceURL("org.jboss.as:jboss-as-messaging:7.2.0.Final")
-                .addMavenResourceURL("org.hornetq:hornetq-server:2.3.0.CR1")
-                .addMavenResourceURL("org.hornetq:hornetq-core-client:2.3.0.CR1")
-                .addMavenResourceURL("org.hornetq:hornetq-jms-client:2.3.0.CR1")
-                .addMavenResourceURL("org.hornetq:hornetq-jms-server:2.3.0.CR1")
-                .addMavenResourceURL("org.hornetq:hornetq-ra:2.3.0.CR1")
-                .configureReverseControllerCheck(null, FIXER_1_2_0);
-
-        KernelServices mainServices = builder.build();
-        assertTrue(mainServices.isSuccessfulBoot());
-        assertTrue(mainServices.getLegacyServices(VERSION_1_2_0).isSuccessfulBoot());
-
-        checkSubsystemModelTransformation(mainServices, VERSION_1_2_0);
+        testTransformers(V7_2_0_FINAL, VERSION_1_2_0, FIXER_1_2_0);
     }
 
     @Test
     public void testTransformersAS712() throws Exception {
-        //Boot up empty controllers with the resources needed for the ops coming from the xml to work
-        KernelServicesBuilder builder = createKernelServicesBuilder(AdditionalInitialization.MANAGEMENT)
-                .setSubsystemXmlResource("subsystem_2_0.xml");
-        builder.createLegacyKernelServicesBuilder(createAdditionalInitialization(), ModelTestControllerVersion.V7_1_2_FINAL, VERSION_1_1_0)
-                .addMavenResourceURL("org.jboss.as:jboss-as-messaging:7.1.2.Final")
-                .addMavenResourceURL("org.hornetq:hornetq-core:2.2.16.Final")
-                .addMavenResourceURL("org.hornetq:hornetq-jms:2.2.16.Final")
-                .addMavenResourceURL("org.hornetq:hornetq-ra:2.2.16.Final")
-                .configureReverseControllerCheck(null, FIXER_1_1_0);
-
-        KernelServices mainServices = builder.build();
-        assertTrue(mainServices.isSuccessfulBoot());
-        assertTrue(mainServices.getLegacyServices(VERSION_1_1_0).isSuccessfulBoot());
-
-        checkSubsystemModelTransformation(mainServices, VERSION_1_1_0);
+        testTransformers(V7_1_2_FINAL, VERSION_1_1_0, FIXER_1_1_0);
     }
 
     @Test
     public void testTransformersAS713() throws Exception {
-        //Boot up empty controllers with the resources needed for the ops coming from the xml to work
-        KernelServicesBuilder builder = createKernelServicesBuilder(AdditionalInitialization.MANAGEMENT)
-                .setSubsystemXmlResource("subsystem_2_0.xml");
-        builder.createLegacyKernelServicesBuilder(createAdditionalInitialization(), ModelTestControllerVersion.V7_1_3_FINAL, VERSION_1_1_0)
-                .addMavenResourceURL("org.jboss.as:jboss-as-messaging:7.1.3.Final")
-                .addMavenResourceURL("org.hornetq:hornetq-core:2.2.21.Final")
-                .addMavenResourceURL("org.hornetq:hornetq-jms:2.2.21.Final")
-                .addMavenResourceURL("org.hornetq:hornetq-ra:2.2.21.Final")
-                .configureReverseControllerCheck(null, FIXER_1_1_0);
-
-
-        KernelServices mainServices = builder.build();
-        assertTrue(mainServices.isSuccessfulBoot());
-        assertTrue(mainServices.getLegacyServices(VERSION_1_1_0).isSuccessfulBoot());
-
-        checkSubsystemModelTransformation(mainServices, VERSION_1_1_0);
+        testTransformers(V7_1_3_FINAL, VERSION_1_1_0, FIXER_1_1_0);
     }
 
     @Test
     public void testRejectExpressionsAS712() throws Exception {
-        // AS7 7.1.2.Final does not allow to add an empty messaging subsystem [AS7-5767]
-        // To work around that, we add an empty "stuff" hornetq-server to boot the conf with AS7 7.1.2.Final
-        KernelServicesBuilder builder = createKernelServicesBuilder(AdditionalInitialization.MANAGEMENT)
-                .setSubsystemXmlResource("empty_subsystem_2_0.xml");
-
-        // create builder for legacy subsystem version
-        builder.createLegacyKernelServicesBuilder(createAdditionalInitialization(), ModelTestControllerVersion.V7_1_2_FINAL, VERSION_1_1_0)
-                .addMavenResourceURL("org.hornetq:hornetq-core:2.2.16.Final")
-                .addMavenResourceURL("org.hornetq:hornetq-jms:2.2.16.Final")
-                .addMavenResourceURL("org.hornetq:hornetq-ra:2.2.16.Final")
-                .configureReverseControllerCheck(null, FIXER_1_1_0)
-                .addMavenResourceURL("org.jboss.as:jboss-as-messaging:7.1.2.Final");
+        KernelServicesBuilder builder = createKernelServicesBuilder(V7_1_2_FINAL, VERSION_1_1_0, FIXER_1_1_0, "empty_subsystem_2_0.xml");
 
         doTestRejectExpressions_1_1_0(builder);
     }
 
     @Test
     public void testRejectExpressionsAS713() throws Exception {
-        KernelServicesBuilder builder = createKernelServicesBuilder(AdditionalInitialization.MANAGEMENT)
-                .setSubsystemXmlResource("empty_subsystem_2_0.xml");
-
-        // create builder for legacy subsystem version
-        builder.createLegacyKernelServicesBuilder(createAdditionalInitialization(), ModelTestControllerVersion.V7_1_3_FINAL, VERSION_1_1_0)
-                .addMavenResourceURL("org.hornetq:hornetq-core:2.2.21.Final")
-                .addMavenResourceURL("org.hornetq:hornetq-jms:2.2.21.Final")
-                .addMavenResourceURL("org.hornetq:hornetq-ra:2.2.21.Final")
-                .configureReverseControllerCheck(null, FIXER_1_1_0)
-                .addMavenResourceURL("org.jboss.as:jboss-as-messaging:7.1.3.Final");
+        KernelServicesBuilder builder = createKernelServicesBuilder(V7_1_3_FINAL, VERSION_1_1_0, FIXER_1_1_0, "empty_subsystem_2_0.xml");
 
         doTestRejectExpressions_1_1_0(builder);
     }
 
     @Test
     public void testRejectExpressionsAS720() throws Exception {
-        KernelServicesBuilder builder = createKernelServicesBuilder(AdditionalInitialization.MANAGEMENT)
-                .setSubsystemXmlResource("empty_subsystem_2_0.xml");
-
-        // create builder for legacy subsystem version
-        builder.createLegacyKernelServicesBuilder(createAdditionalInitialization(), ModelTestControllerVersion.V7_2_0_FINAL, VERSION_1_2_0)
-                .addMavenResourceURL("org.hornetq:hornetq-server:2.3.0.CR1")
-                .addMavenResourceURL("org.hornetq:hornetq-core-client:2.3.0.CR1")
-                .addMavenResourceURL("org.hornetq:hornetq-jms-client:2.3.0.CR1")
-                .addMavenResourceURL("org.hornetq:hornetq-jms-server:2.3.0.CR1")
-                .addMavenResourceURL("org.hornetq:hornetq-ra:2.3.0.CR1")
-                .configureReverseControllerCheck(null, FIXER_1_1_0)
-                .addMavenResourceURL("org.jboss.as:jboss-as-messaging:7.2.0.Final");
+        KernelServicesBuilder builder = createKernelServicesBuilder(V7_2_0_FINAL, VERSION_1_2_0, FIXER_1_2_0, "empty_subsystem_2_0.xml");
 
         doTestRejectExpressions_1_2_0(builder);
     }
 
     @Test
     public void testClusteredTo120() throws Exception {
-        ModelVersion version120 = ModelVersion.create(1, 2);
-        // create builder for current subsystem version
-       KernelServicesBuilder builder = createKernelServicesBuilder(AdditionalInitialization.MANAGEMENT)
-                      .setSubsystemXmlResource("empty_subsystem_2_0.xml");
-       builder.createLegacyKernelServicesBuilder(null, ModelTestControllerVersion.MASTER, version120)
-                       .addMavenResourceURL("org.hornetq:hornetq-server:2.3.0.CR1")
-                       .addMavenResourceURL("org.hornetq:hornetq-jms-server:2.3.0.CR1")
-                       .addMavenResourceURL("org.hornetq:hornetq-core-client:2.3.0.CR1")
-                       .addMavenResourceURL("org.hornetq:hornetq-jms-client:2.3.0.CR1")
-                       .addMavenResourceURL("org.hornetq:hornetq-ra:2.3.0.CR1")
-                       .configureReverseControllerCheck(null, FIXER_1_1_0)
-                       .addMavenResourceURL("org.jboss.as:jboss-as-messaging:7.2.0.Final");
+        KernelServicesBuilder builder = createKernelServicesBuilder(V7_2_0_FINAL, VERSION_1_2_0, FIXER_1_2_0, "empty_subsystem_2_0.xml");
 
         KernelServices mainServices = builder.build();
-        KernelServices legacyServices = mainServices.getLegacyServices(version120);
+        KernelServices legacyServices = mainServices.getLegacyServices(VERSION_1_2_0);
         assertNotNull(legacyServices);
         assertTrue("main services did not boot", mainServices.isSuccessfulBoot());
         assertTrue(legacyServices.isSuccessfulBoot());
 
-        clusteredTo120Test(version120, mainServices, true);
-        clusteredTo120Test(version120, mainServices, false);
+        clusteredTo120Test(VERSION_1_2_0, mainServices, true);
+        clusteredTo120Test(VERSION_1_2_0, mainServices, false);
     }
 
     private void clusteredTo120Test(ModelVersion version120, KernelServices mainServices, boolean clustered) throws OperationFailedException {
@@ -455,6 +373,33 @@ public class MessagingSubsystem20TestCase extends AbstractSubsystemBaseTest {
                                 createChainedConfig(new AttributeDefinition[]{},
                                         new AttributeDefinition[]{AddressSettingDefinition.EXPIRY_DELAY}))
         );
+    }
+
+    private KernelServicesBuilder createKernelServicesBuilder(ModelTestControllerVersion controllerVersion, ModelVersion messagingVersion, ModelFixer fixer, String xmlFileName) throws IOException, XMLStreamException, ClassNotFoundException {
+        KernelServicesBuilder builder = createKernelServicesBuilder(AdditionalInitialization.MANAGEMENT)
+                .setSubsystemXmlResource(xmlFileName);
+        // create builder for legacy subsystem version
+        HornetQDependencies.addDependencies(controllerVersion,
+                builder.createLegacyKernelServicesBuilder(createAdditionalInitialization(), controllerVersion, messagingVersion)
+                        .addMavenResourceURL("org.jboss.as:jboss-as-messaging:" + controllerVersion.getMavenGavVersion())
+                        .configureReverseControllerCheck(null, fixer));
+        return builder;
+    }
+
+    private void testTransformers(ModelTestControllerVersion controllerVersion, ModelVersion messagingVersion, ModelFixer fixer) throws Exception {
+        //Boot up empty controllers with the resources needed for the ops coming from the xml to work
+        KernelServicesBuilder builder = createKernelServicesBuilder(AdditionalInitialization.MANAGEMENT)
+                .setSubsystemXmlResource("subsystem_2_0.xml");
+        HornetQDependencies.addDependencies(controllerVersion,
+                builder.createLegacyKernelServicesBuilder(createAdditionalInitialization(), controllerVersion, messagingVersion)
+                        .addMavenResourceURL("org.jboss.as:jboss-as-messaging:" + controllerVersion.getMavenGavVersion())
+                        .configureReverseControllerCheck(null, fixer));
+
+        KernelServices mainServices = builder.build();
+        assertTrue(mainServices.isSuccessfulBoot());
+        assertTrue(mainServices.getLegacyServices(messagingVersion).isSuccessfulBoot());
+
+        checkSubsystemModelTransformation(mainServices, messagingVersion);
     }
 
     private static final ModelFixer FIXER_1_1_0 = new ModelFixer() {
