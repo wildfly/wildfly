@@ -192,7 +192,8 @@ public class LoggingExtension implements Extension {
 
         // Create the transformer builder
         final ResourceTransformationDescriptionBuilder subsystemBuilder120 = TransformationDescriptionBuilder.Factory.createSubsystemInstance();
-        SizeRotatingHandlerResourceDefinition.addTransformers_1_2(subsystemBuilder120);
+        final ResourceTransformationDescriptionBuilder loggingProfileBuilder120 = subsystemBuilder120.addChildResource(LOGGING_PROFILE_PATH);
+        SizeRotatingHandlerResourceDefinition.addTransformers_1_2(subsystemBuilder120, loggingProfileBuilder120);
         TransformationDescription.Tools.register(subsystemBuilder120.build(), subsystem, ModelVersion.create(1, 2, 0));
     }
 

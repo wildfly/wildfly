@@ -28,6 +28,7 @@ import static org.jboss.as.logging.CommonAttributes.FILE;
 
 import org.jboss.as.controller.AttributeDefinition;
 import org.jboss.as.controller.PathElement;
+import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
 import org.jboss.as.controller.operations.validation.IntRangeValidator;
 import org.jboss.as.controller.services.path.ResolvePathHandler;
 import org.jboss.as.controller.transform.description.DiscardAttributeChecker.DiscardAttributeValueChecker;
@@ -106,12 +107,19 @@ class SizeRotatingHandlerResourceDefinition extends AbstractFileHandlerDefinitio
      * Add the transformers for the size rotating file handler.
      *
      * @param subsystemBuilder the default subsystem builder
+     * @param loggingProfileBuilder the logging profile builder
      *
      * @return the builder created for the resource
      */
-    static ResourceTransformationDescriptionBuilder addTransformers_1_2(final ResourceTransformationDescriptionBuilder subsystemBuilder) {
+    static ResourceTransformationDescriptionBuilder addTransformers_1_2(final ResourceTransformationDescriptionBuilder subsystemBuilder,
+                                                                        final ResourceTransformationDescriptionBuilder loggingProfileBuilder) {
         // Register the logger resource
         final ResourceTransformationDescriptionBuilder child = subsystemBuilder.addChildResource(SIZE_ROTATING_HANDLER_PATH)
+                .getAttributeBuilder()
+                .setDiscard(new DiscardAttributeValueChecker(new ModelNode(false)), ROTATE_ON_BOOT)
+                .addRejectCheck(RejectAttributeChecker.DEFINED, ROTATE_ON_BOOT)
+                .end();
+        loggingProfileBuilder.addChildResource(SIZE_ROTATING_HANDLER_PATH)
                 .getAttributeBuilder()
                 .setDiscard(new DiscardAttributeValueChecker(new ModelNode(false)), ROTATE_ON_BOOT)
                 .addRejectCheck(RejectAttributeChecker.DEFINED, ROTATE_ON_BOOT)
