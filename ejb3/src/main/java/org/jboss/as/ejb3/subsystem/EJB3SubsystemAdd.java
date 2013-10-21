@@ -127,6 +127,7 @@ import org.jboss.as.security.service.SimpleSecurityManagerService;
 import org.jboss.as.server.AbstractDeploymentChainStep;
 import org.jboss.as.server.DeploymentProcessorTarget;
 import org.jboss.as.server.ServerEnvironment;
+import org.jboss.as.server.Services;
 import org.jboss.as.server.deployment.Phase;
 import org.jboss.as.server.deployment.jbossallxml.JBossAllXmlParserRegisteringProcessor;
 import org.jboss.as.txn.service.ArjunaRecoveryManagerService;
@@ -370,7 +371,10 @@ class EJB3SubsystemAdd extends AbstractBoottimeAddStepHandler {
                 TCCLEJBClientContextSelectorService.class, clientContextService.getTCCLBasedEJBClientContextSelectorInjector());
 
         // add the EJB remote tx recovery service
-        newControllers.add(serviceTarget.addService(EJBTransactionRecoveryService.SERVICE_NAME, EJBTransactionRecoveryService.INSTANCE)
+        newControllers.add(
+                Services.addServerExecutorDependency(
+                    serviceTarget.addService(EJBTransactionRecoveryService.SERVICE_NAME, EJBTransactionRecoveryService.INSTANCE),
+                        EJBTransactionRecoveryService.INSTANCE.getExecutorInjector(), false)
                 .addDependency(ArjunaRecoveryManagerService.SERVICE_NAME, RecoveryManagerService.class, EJBTransactionRecoveryService.INSTANCE.getRecoveryManagerServiceInjector())
                 .addDependency(TxnServices.JBOSS_TXN_CORE_ENVIRONMENT, CoreEnvironmentBean.class, EJBTransactionRecoveryService.INSTANCE.getCoreEnvironmentBeanInjector())
                 .install());

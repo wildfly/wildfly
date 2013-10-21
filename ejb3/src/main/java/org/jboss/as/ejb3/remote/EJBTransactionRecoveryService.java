@@ -22,6 +22,13 @@
 
 package org.jboss.as.ejb3.remote;
 
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
+import java.util.concurrent.ExecutorService;
+
+import javax.transaction.xa.XAResource;
+
 import com.arjuna.ats.arjuna.common.CoreEnvironmentBean;
 import com.arjuna.ats.jbossatx.jta.RecoveryManagerService;
 import org.jboss.ejb.client.EJBClientContext;
@@ -37,11 +44,6 @@ import org.jboss.msc.service.StartException;
 import org.jboss.msc.service.StopContext;
 import org.jboss.msc.value.InjectedValue;
 import org.jboss.tm.XAResourceRecovery;
-
-import javax.transaction.xa.XAResource;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
 
 /**
  * Responsible for handing out the {@link #getXAResources() EJB XAResource(s)} during transaction recovery
@@ -59,6 +61,7 @@ public class EJBTransactionRecoveryService implements Service<EJBTransactionReco
     private final List<EJBReceiverContext> receiverContexts = Collections.synchronizedList(new ArrayList<EJBReceiverContext>());
     private final InjectedValue<RecoveryManagerService> recoveryManagerService = new InjectedValue<RecoveryManagerService>();
     private final InjectedValue<CoreEnvironmentBean> arjunaTxCoreEnvironmentBean = new InjectedValue<CoreEnvironmentBean>();
+    private final InjectedValue<ExecutorService> executor = new InjectedValue<ExecutorService>();
 
     private EJBTransactionRecoveryService() {
     }
@@ -71,12 +74,29 @@ public class EJBTransactionRecoveryService implements Service<EJBTransactionReco
     }
 
     @Override
-    public void stop(StopContext stopContext) {
-        // we no longer bother about the XAResource(s)
-        this.receiverContexts.clear();
-        // un-register ourselves from the recovery manager service
-        recoveryManagerService.getValue().removeXAResourceRecovery(this);
-        logger.debug("Un-registered " + this + " from the transaction recovery manager");
+    public void stop(final StopContext stopContext) {
+        ExecutorService executorService = executor.getValue();
+        Runnable r = new Runnable() {
+            @Override
+            public void run() {
+                synchronized (this) {
+                    try {
+                        // we no longer bother about the XAResource(s)
+                        EJBTransactionRecoveryService.this.receiverContexts.clear();
+                        // un-register ourselves from the recovery manager service
+                        recoveryManagerService.getValue().removeXAResourceRecovery(EJBTransactionRecoveryService.this);
+                        logger.debug("Un-registered " + this + " from the transaction recovery manager");
+
+                    } finally {
+                        stopContext.complete();
+                    }
+                }
+            }
+        };
+        synchronized (r) {
+            executorService.execute(r);
+            stopContext.asynchronous();
+        }
     }
 
     @Override
@@ -115,6 +135,10 @@ public class EJBTransactionRecoveryService implements Service<EJBTransactionReco
 
     public Injector<CoreEnvironmentBean> getCoreEnvironmentBeanInjector() {
         return this.arjunaTxCoreEnvironmentBean;
+    }
+
+    public InjectedValue<ExecutorService> getExecutorInjector() {
+        return executor;
     }
 
 
