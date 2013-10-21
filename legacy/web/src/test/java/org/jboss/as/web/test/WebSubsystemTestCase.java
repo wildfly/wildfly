@@ -273,8 +273,6 @@ public class WebSubsystemTestCase extends AbstractSubsystemBaseTest {
         KernelServicesBuilder builder = createKernelServicesBuilder(createAdditionalInitialization())
                 .setSubsystemXml(subsystemXml);
 
-        //This legacy subsystem references classes in the removed org.jboss.as.controller.alias package,
-        //which is why we need to include the jboss-as-controller artifact.
         builder.createLegacyKernelServicesBuilder(createAdditionalInitialization(), controllerVersion, modelVersion)
                 .addMavenResourceURL("org.jboss.as:jboss-as-web:" + controllerVersion.getMavenGavVersion())
                 .setExtensionClassName("org.jboss.as.web.WebExtension")
