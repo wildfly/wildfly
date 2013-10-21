@@ -110,7 +110,7 @@
         <version.javax.enterprise>1.1</version.javax.enterprise>
         <version.javax.inject.javax.inject>1</version.javax.inject.javax.inject>
         <version.javax.jws.jsr181-api>1.0-MR1</version.javax.jws.jsr181-api>
-        <version.javax.mail>1.5.0-b01</version.javax.mail>
+        <version.javax.mail>1.5.0</version.javax.mail>
         <version.javax.validation>1.1.0.Final</version.javax.validation>
         <version.org.jboss.spec.javax.websockets>1.0.0.Final</version.org.jboss.spec.javax.websockets>
         <version.jaxen>1.1.3</version.jaxen>
@@ -1759,8 +1759,8 @@
             </dependency>
 
             <dependency>
-                <groupId>javax.mail</groupId>
-                <artifactId>mail</artifactId>
+                <groupId>com.sun.mail</groupId>
+                <artifactId>javax.mail</artifactId>
                 <version>${version.javax.mail}</version>
             </dependency>
 
@@ -5046,6 +5046,10 @@
                     <exclusion>
                         <groupId>javax.servlet</groupId>
                         <artifactId>servlet-api</artifactId>
+                    </exclusion>
+                    <exclusion>
+                        <groupId>javax.mail</groupId>
+                        <artifactId>mail</artifactId>
                     </exclusion>
                 </exclusions>
             </dependency>
