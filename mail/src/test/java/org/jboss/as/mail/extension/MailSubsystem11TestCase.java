@@ -99,7 +99,6 @@ public class MailSubsystem11TestCase extends AbstractSubsystemBaseTest {
         //which is why we need to include the jboss-as-controller artifact.
         builder.createLegacyKernelServicesBuilder(null, controllerVersion, modelVersion)
                 .addMavenResourceURL("org.jboss.as:jboss-as-mail:" + controllerVersion.getMavenGavVersion())
-                .addMavenResourceURL("org.jboss.as:jboss-as-controller:" + controllerVersion.getMavenGavVersion())
                 .dontPersistXml();
 
         KernelServices mainServices = builder.build();
@@ -111,6 +110,37 @@ public class MailSubsystem11TestCase extends AbstractSubsystemBaseTest {
                         .addFailedAttribute(SUBSYSTEM_PATH.append(MailExtension.MAIL_SESSION_PATH).append(PathElement.pathElement(SERVER_TYPE)),
                                                         new FailedOperationTransformationConfig.NewAttributesConfig(MailServerDefinition.TLS))
         );
+    }
+
+
+
+    @Test
+    public void testTransformersEAP610() throws Exception {
+        ignoreThisTestIfEAPRepositoryIsNotReachable();
+        testTransformers120(ModelTestControllerVersion.EAP_6_1_0);
+    }
+
+    @Test
+    public void testTransformersEAP611() throws Exception {
+        ignoreThisTestIfEAPRepositoryIsNotReachable();
+        testTransformers120(ModelTestControllerVersion.EAP_6_1_1);
+    }
+
+    private void testTransformers120(ModelTestControllerVersion controllerVersion) throws Exception {
+        //Current 1.3.0 is the same as 1.2.0 with added rbac
+        ModelVersion modelVersion = ModelVersion.create(1, 2, 0);
+        KernelServicesBuilder builder = createKernelServicesBuilder(AdditionalInitialization.MANAGEMENT)
+                .setSubsystemXml(getSubsystemXml());
+
+        //which is why we need to include the jboss-as-controller artifact.
+        builder.createLegacyKernelServicesBuilder(null, controllerVersion, modelVersion)
+                .addMavenResourceURL("org.jboss.as:jboss-as-mail:" + controllerVersion.getMavenGavVersion())
+                .dontPersistXml();
+
+        KernelServices mainServices = builder.build();
+        Assert.assertTrue(mainServices.isSuccessfulBoot());
+        Assert.assertTrue(mainServices.getLegacyServices(modelVersion).isSuccessfulBoot());
+        checkSubsystemModelTransformation(mainServices, modelVersion);
     }
 
     @Test
