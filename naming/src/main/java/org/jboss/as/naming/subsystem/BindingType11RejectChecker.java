@@ -24,8 +24,8 @@
 
 package org.jboss.as.naming.subsystem;
 
-import static org.jboss.as.naming.subsystem.NamingSubsystemModel.OBJECT_FACTORY;
 import static org.jboss.as.naming.subsystem.NamingSubsystemModel.ENVIRONMENT;
+import static org.jboss.as.naming.subsystem.NamingSubsystemModel.OBJECT_FACTORY;
 import static org.jboss.as.naming.subsystem.NamingSubsystemModel.SIMPLE;
 import static org.jboss.as.naming.subsystem.NamingSubsystemModel.TYPE;
 
@@ -66,12 +66,13 @@ class BindingType11RejectChecker extends RejectAttributeChecker.DefaultRejectAtt
 
     @Override
     protected boolean rejectAttribute(PathAddress address, String attributeName, ModelNode attributeValue, TransformationContext context) {
+        //will not get called
         return false;
     }
 
     @Override
     public boolean rejectResourceAttribute(PathAddress address, String attributeName, ModelNode attributeValue, TransformationContext context) {
-        ModelNode model = context.readResource(address).getModel();
+        ModelNode model = context.readResource(PathAddress.EMPTY_ADDRESS).getModel();
         return rejectCheck(attributeValue,model);
     }
 

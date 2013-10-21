@@ -24,6 +24,7 @@ package org.jboss.as.naming.subsystem;
 
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SUBSYSTEM;
 import static org.jboss.as.naming.subsystem.NamingSubsystemModel.BINDING_TYPE;
+import static org.jboss.as.naming.subsystem.NamingSubsystemModel.CACHE;
 import static org.jboss.as.naming.subsystem.NamingSubsystemModel.ENVIRONMENT;
 
 import org.jboss.as.controller.Extension;
@@ -109,22 +110,30 @@ public class NamingExtension implements Extension {
         subsystem.registerXMLElementWriter(NamingSubsystemXMLPersister.INSTANCE);
 
         if (context.isRegisterTransformers()) {
+            //Note that the 'cache' attribute introduced post 1.2.0 to binding=* is only usable if binding-type=external-context which is not allowed in <=1.2.0
+
             // register 1.1.0 transformer
             ResourceTransformationDescriptionBuilder builder = TransformationDescriptionBuilder.Factory.createSubsystemInstance();
             builder.addChildResource(NamingSubsystemModel.BINDING_PATH)
                     .getAttributeBuilder()
-                    .addRejectCheck(RejectAttributeChecker.DEFINED, ENVIRONMENT)
-                    .setDiscard(DiscardAttributeChecker.UNDEFINED, ENVIRONMENT)
-                    .addRejectCheck(new BindingType11RejectChecker(), BINDING_TYPE)
-                    .end();
+                        .addRejectCheck(RejectAttributeChecker.DEFINED, ENVIRONMENT)
+                        .setDiscard(DiscardAttributeChecker.UNDEFINED, ENVIRONMENT, CACHE)
+                        //Since we need to check the binding-type, we cannot have expressions
+                        .addRejectCheck(RejectAttributeChecker.SIMPLE_EXPRESSIONS, BINDING_TYPE)
+                        .addRejectCheck(new BindingType11RejectChecker(), BINDING_TYPE)
+                        .addRejectCheck(new BindingType12RejectChecker(), BINDING_TYPE)
+                        .end();
             TransformationDescription.Tools.register(builder.build(), subsystem, VERSION_1_1_0);
 
             // register 1.2.0 transformer
             builder = TransformationDescriptionBuilder.Factory.createSubsystemInstance();
             builder.addChildResource(NamingSubsystemModel.BINDING_PATH)
                     .getAttributeBuilder()
-                    .addRejectCheck(new BindingType11RejectChecker(), BINDING_TYPE)
-                    .end();
+                        .setDiscard(DiscardAttributeChecker.UNDEFINED, CACHE)
+                        //Since we need to check the binding-type, we cannot have expressions
+                        .addRejectCheck(RejectAttributeChecker.SIMPLE_EXPRESSIONS, BINDING_TYPE)
+                        .addRejectCheck(new BindingType12RejectChecker(), BINDING_TYPE)
+                        .end();
             TransformationDescription.Tools.register(builder.build(), subsystem, VERSION_1_2_0);
         }
     }

@@ -475,4 +475,6 @@ public interface NamingMessages {
     @Message(id = 11876, value = "Binding type %s requires attributed named %s defined")
     OperationFailedException bindingTypeRequiresAttributeDefined(BindingType bindingType, String attributeName);
 
+    @Message(id = 11877, value = "Binding type %s can not take a 'cache' attribute")
+    OperationFailedException cacheNotValidForBindingType(BindingType type);
 }
