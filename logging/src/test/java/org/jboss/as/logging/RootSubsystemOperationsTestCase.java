@@ -56,7 +56,7 @@ public class RootSubsystemOperationsTestCase extends AbstractOperationsTestCase 
 
     @Override
     protected AdditionalInitialization createAdditionalInitialization() {
-        return LoggingTestEnvironment.getManagementInstance();
+        return LoggingTestEnvironment.get();
     }
 
     @Override

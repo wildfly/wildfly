@@ -157,6 +157,8 @@ final class LoggingOperations {
             final LogContextConfiguration logContextConfiguration = configurationPersistence.getLogContextConfiguration();
 
             execute(context, operation, name, logContextConfiguration);
+            // This should only check that it's a server for the commit step. The logging.properties may need to be written
+            // in ADMIN_ONLY mode
             if (context.getProcessType().isServer()) {
                 addCommitStep(context, configurationPersistence);
                 // Add rollback handler in case rollback is invoked before a commit step is invoked
@@ -198,7 +200,7 @@ final class LoggingOperations {
             final Resource resource = context.createResource(PathAddress.EMPTY_ADDRESS);
             final ModelNode model = resource.getModel();
             updateModel(operation, model);
-            if (context.getProcessType().isServer()) {
+            if (context.isNormalServer()) {
                 context.addStep(new OperationStepHandler() {
                     @Override
                     public void execute(final OperationContext context, final ModelNode operation) throws OperationFailedException {
@@ -232,7 +234,7 @@ final class LoggingOperations {
             final Resource resource = context.readResourceForUpdate(PathAddress.EMPTY_ADDRESS);
             final ModelNode model = resource.getModel();
             updateModel(operation, model);
-            if (context.getProcessType().isServer()) {
+            if (context.isNormalServer()) {
                 context.addStep(new OperationStepHandler() {
                     @Override
                     public void execute(final OperationContext context, final ModelNode operation) throws OperationFailedException {
@@ -267,7 +269,7 @@ final class LoggingOperations {
             final ModelNode model = Resource.Tools.readModel(context.readResource(PathAddress.EMPTY_ADDRESS));
 
             performRemove(context, operation, logContextConfiguration, name, model);
-            if (context.getProcessType().isServer()) {
+            if (context.isNormalServer()) {
                 context.addStep(new OperationStepHandler() {
                     @Override
                     public void execute(final OperationContext context, final ModelNode operation) throws OperationFailedException {

@@ -130,6 +130,7 @@ public class LoggingExtension implements Extension {
         final ManagementResourceRegistration registration;
 
         final ResolvePathHandler resolvePathHandler;
+        // Register for servers only even if in ADMIN_ONLY mode
         if (context.getProcessType().isServer()) {
             registration = subsystem.registerSubsystemModel(new LoggingRootResource(context.getPathManager()));
             resolvePathHandler = ResolvePathHandler.Builder.of(context.getPathManager())
