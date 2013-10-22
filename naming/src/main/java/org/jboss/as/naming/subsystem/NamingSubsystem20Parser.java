@@ -22,18 +22,6 @@
 
 package org.jboss.as.naming.subsystem;
 
-import java.util.EnumSet;
-import java.util.List;
-
-import javax.xml.stream.XMLStreamConstants;
-import javax.xml.stream.XMLStreamException;
-
-import org.jboss.as.controller.PathAddress;
-import org.jboss.as.controller.operations.common.Util;
-import org.jboss.dmr.ModelNode;
-import org.jboss.staxmapper.XMLElementReader;
-import org.jboss.staxmapper.XMLExtendedStreamReader;
-
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
 import static org.jboss.as.controller.parsing.ParseUtils.missingRequired;
 import static org.jboss.as.controller.parsing.ParseUtils.requireAttributes;
@@ -45,10 +33,24 @@ import static org.jboss.as.controller.parsing.ParseUtils.unexpectedElement;
 import static org.jboss.as.naming.subsystem.NamingExtension.SUBSYSTEM_PATH;
 import static org.jboss.as.naming.subsystem.NamingSubsystemModel.BINDING;
 import static org.jboss.as.naming.subsystem.NamingSubsystemModel.BINDING_TYPE;
+import static org.jboss.as.naming.subsystem.NamingSubsystemModel.RESOLVER_CLASS;
+import static org.jboss.as.naming.subsystem.NamingSubsystemModel.RESOLVER_MAPPING;
 import static org.jboss.as.naming.subsystem.NamingSubsystemModel.EXTERNAL_CONTEXT;
 import static org.jboss.as.naming.subsystem.NamingSubsystemModel.LOOKUP;
 import static org.jboss.as.naming.subsystem.NamingSubsystemModel.OBJECT_FACTORY;
 import static org.jboss.as.naming.subsystem.NamingSubsystemModel.SIMPLE;
+
+import java.util.EnumSet;
+import java.util.List;
+
+import javax.xml.stream.XMLStreamConstants;
+import javax.xml.stream.XMLStreamException;
+
+import org.jboss.as.controller.PathAddress;
+import org.jboss.as.controller.operations.common.Util;
+import org.jboss.dmr.ModelNode;
+import org.jboss.staxmapper.XMLElementReader;
+import org.jboss.staxmapper.XMLExtendedStreamReader;
 
 /**
  * @author Eduardo Martins
@@ -67,8 +69,8 @@ public class NamingSubsystem20Parser implements XMLElementReader<List<ModelNode>
     public void readElement(final XMLExtendedStreamReader reader, final List<ModelNode> operations) throws XMLStreamException {
 
         PathAddress address = PathAddress.pathAddress(SUBSYSTEM_PATH);
-        final ModelNode ejb3SubsystemAddOperation = Util.createAddOperation(address);
-        operations.add(ejb3SubsystemAddOperation);
+        final ModelNode namingSubsystemAdd = Util.createAddOperation(address);
+        operations.add(namingSubsystemAdd);
 
         // elements
         final EnumSet<NamingSubsystemXMLElement> encountered = EnumSet.noneOf(NamingSubsystemXMLElement.class);
@@ -86,6 +88,10 @@ public class NamingSubsystem20Parser implements XMLElementReader<List<ModelNode>
                         }
                         case REMOTE_NAMING: {
                             parseRemoteNaming(reader, operations, address);
+                            break;
+                        }
+                        case PARSING: {
+                            parseParsing(reader, namingSubsystemAdd, address);
                             break;
                         }
                         default: {
@@ -323,5 +329,30 @@ public class NamingSubsystem20Parser implements XMLElementReader<List<ModelNode>
         requireNoContent(reader);
         bindingAdd.get(OP_ADDR).set(parentAddress.append(BINDING, name).toModelNode());
         operations.add(bindingAdd);
+    }
+
+    private void parseParsing(XMLExtendedStreamReader reader, ModelNode namingSubsystemAdd, PathAddress address)
+            throws XMLStreamException {
+        final String resolverClass = requireAttributes(reader, NamingSubsystemXMLAttribute.RESOLVER_CLASS.getLocalName())[0];
+        namingSubsystemAdd.get(RESOLVER_CLASS).set(resolverClass);
+        while (reader.hasNext() && reader.nextTag() != XMLStreamConstants.END_ELEMENT) {
+            final NamingSubsystemXMLElement element = NamingSubsystemXMLElement.forName(reader.getLocalName());
+            switch (element) {
+                case MAPPING: {
+                    final ModelNode mapping = namingSubsystemAdd.get(RESOLVER_MAPPING);
+                    parseMapping(reader,mapping);
+                    break;
+                }
+                default: {
+                    throw unexpectedElement(reader);
+                }
+            }
+        }
+    }
+
+    private void parseMapping(XMLExtendedStreamReader reader, ModelNode mapping) throws XMLStreamException {
+        final String[] map = requireAttributes(reader, NamingSubsystemXMLAttribute.VALUE.getLocalName(),NamingSubsystemXMLAttribute.CLASS.getLocalName());
+        mapping.add(map[0],map[1]);
+        requireNoContent(reader);
     }
 }

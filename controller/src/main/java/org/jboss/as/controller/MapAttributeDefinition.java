@@ -22,8 +22,11 @@
 
 package org.jboss.as.controller;
 
+import java.math.BigDecimal;
+import java.math.BigInteger;
 import java.util.List;
 import java.util.Locale;
+import java.util.Map;
 import java.util.ResourceBundle;
 
 import javax.xml.stream.Location;
@@ -89,6 +92,18 @@ public abstract class MapAttributeDefinition extends AttributeDefinition {
                                      final Boolean nullSignificant, final AttributeAccess.Flag... flags) {
         super(name, xmlName, null, ModelType.OBJECT, allowNull, allowExpression, null, corrector, new MapValidator(elementValidator, allowNull, minSize, maxSize), false,
                 alternatives, requires, attributeMarshaller, resourceOnly, deprecated, accessConstraints, nullSignificant, flags);
+        this.elementValidator = elementValidator;
+    }
+
+    protected MapAttributeDefinition(final String name, final String xmlName, final ModelNode defaultValue,
+            final boolean allowNull, boolean allowExpression, final int minSize, final int maxSize,
+            final ParameterCorrector corrector, final ParameterValidator elementValidator, final String[] alternatives,
+            final String[] requires, final AttributeMarshaller attributeMarshaller, final boolean resourceOnly,
+            final DeprecationData deprecated, final AccessConstraintDefinition[] accessConstraints,
+            final Boolean nullSignificant, final AttributeAccess.Flag... flags) {
+        super(name, xmlName, defaultValue, ModelType.OBJECT, allowNull, allowExpression, null, corrector, new MapValidator(
+                elementValidator, allowNull, minSize, maxSize), false, alternatives, requires, attributeMarshaller,
+                resourceOnly, deprecated, accessConstraints, nullSignificant, flags);
         this.elementValidator = elementValidator;
     }
 
@@ -246,6 +261,39 @@ public abstract class MapAttributeDefinition extends AttributeDefinition {
      */
     protected ModelNode convertParameterElementExpressions(ModelNode parameterElementValue) {
         return isAllowExpression() ? convertStringExpression(parameterElementValue) : parameterElementValue;
+    }
+
+    protected static ModelNode convertToModel(Map<String, ? extends Object> convertMe) {
+        if (convertMe == null || convertMe.size() == 0) {
+            return null;
+        }
+        final ModelNode model = new ModelNode();
+
+        for (String key : convertMe.keySet()) {
+            final Object value = convertMe.get(key);
+            if (value instanceof Long) {
+                model.add(key, (Long) value);
+            } else if (value instanceof Double) {
+                model.add(key, (Double) value);
+            } else if (value instanceof String) {
+                model.add(key, (String) value);
+            } else if (value instanceof Integer) {
+                model.add(key, (Integer) value);
+            } else if (value instanceof Boolean) {
+                model.add(key, (Boolean) value);
+            } else if (value instanceof ModelNode) {
+                model.add(key, (ModelNode) value);
+            } else if (value instanceof BigInteger) {
+                model.add(key, (BigInteger) value);
+            } else if (value instanceof BigDecimal) {
+                model.add(key, (BigDecimal) value);
+            } else if (value instanceof byte[]) {
+                model.add(key, (byte[]) value);
+            } else {
+                throw new IllegalArgumentException();
+            }
+        }
+        return model;
     }
 
     public static final ParameterCorrector LIST_TO_MAP_CORRECTOR = new ParameterCorrector() {

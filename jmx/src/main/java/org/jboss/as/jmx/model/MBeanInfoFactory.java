@@ -72,6 +72,7 @@ import javax.management.openmbean.OpenMBeanParameterInfo;
 import javax.management.openmbean.OpenMBeanParameterInfoSupport;
 import javax.management.openmbean.OpenType;
 import javax.management.openmbean.SimpleType;
+import javax.management.openmbean.TabularType;
 
 import org.jboss.as.controller.CompositeOperationHandler;
 import org.jboss.as.controller.PathAddress;
@@ -269,9 +270,13 @@ public class MBeanInfoFactory {
             boolean expressionsAllowed = prop.getValue().hasDefined(EXPRESSIONS_ALLOWED) && prop.getValue().get(EXPRESSIONS_ALLOWED).asBoolean();
             descriptions.put(DESC_EXPRESSIONS_ALLOWED, String.valueOf(expressionsAllowed));
 
+            final OpenType<?> openType = converters.convertToMBeanType(value);
             if (!expressionsAllowed) {
                 Object defaultValue = getIfExists(value, DEFAULT);
-                descriptions.put(DEFAULT_VALUE_FIELD, defaultValue);
+
+                if(!(openType.isArray() || openType instanceof TabularType)){
+                    descriptions.put(DEFAULT_VALUE_FIELD, defaultValue);
+                }
                 if (value.has(ALLOWED)) {
                     if (value.get(TYPE).asType()!=ModelType.LIST){
                         List<ModelNode> allowed = value.get(ALLOWED).asList();

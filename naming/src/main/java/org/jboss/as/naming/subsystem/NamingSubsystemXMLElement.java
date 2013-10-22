@@ -45,6 +45,9 @@ public enum NamingSubsystemXMLElement {
     ENVIRONMENT_PROPERTY("property"),
 
     EXTERNAL_CONTEXT("external-context"),
+
+    PARSING("parsing"),
+    MAPPING("mapping")
     ;
 
     private final String name;

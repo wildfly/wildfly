@@ -16,24 +16,38 @@
  */
 package org.jboss.as.test.integration.naming.connector;
 
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.FAILURE_DESCRIPTION;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.RESULT;
+
+import java.io.IOException;
 import java.lang.management.ManagementFactory;
 import java.rmi.registry.LocateRegistry;
+import java.util.Hashtable;
 import java.util.logging.Logger;
 
-import javax.ejb.EJB;
 import javax.management.MBeanServer;
 import javax.management.remote.JMXConnectorServer;
 import javax.management.remote.JMXConnectorServerFactory;
 import javax.management.remote.JMXServiceURL;
+import javax.naming.Context;
+import javax.naming.InitialContext;
+import javax.naming.NamingException;
 
+import org.jboss.arquillian.container.test.api.Deployer;
 import org.jboss.arquillian.container.test.api.Deployment;
+import org.jboss.arquillian.container.test.api.RunAsClient;
 import org.jboss.arquillian.junit.Arquillian;
 import org.jboss.arquillian.test.api.ArquillianResource;
 import org.jboss.as.arquillian.container.ManagementClient;
+import org.jboss.as.controller.PathAddress;
+import org.jboss.as.controller.client.ModelControllerClient;
+import org.jboss.dmr.ModelNode;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
-import org.jboss.shrinkwrap.api.asset.StringAsset;
 import org.jboss.shrinkwrap.api.spec.JavaArchive;
 import org.junit.After;
+import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -45,64 +59,136 @@ import org.junit.runner.RunWith;
  *
  */
 @RunWith(Arquillian.class)
+@RunAsClient
 public class JMXConnectorTestCase {
     // NOTE: this test may fail on Ubuntu, since it has definition of localhost as 127.0.1.1
-    private static final Logger log = Logger.getLogger(JMXConnectorTestCase.class.getName());
-
-    private static final String CB_DEPLOYMENT_NAME = "naming-connector-bean"; // module
+    protected final Logger log = Logger.getLogger(getClass().getName());
+    protected static boolean DONE = false;
+    protected static final String CB_DEPLOYMENT_NAME = "naming-connector-bean";
+    protected static final String CB_MODULE = "jmxrmiconnector";
+    protected ConnectedBeanInterface connectedBean;
 
     @ArquillianResource
-    private ManagementClient managementClient;
+    protected ManagementClient managementClient;
+    @ArquillianResource
+    public Deployer deployer;
 
-    @EJB(mappedName = "java:global/naming-connector-bean/ConnectedBean!org.jboss.as.test.integration.naming.connector.ConnectedBeanInterface")
-    private ConnectedBeanInterface connectedBean;
-
-    // ---------- deployment
-    // java:global/naming-connector-bean/ConnectedBean!org.jboss.as.test.integration.naming.connector.ConnectedBeanInterface
-    @Deployment
+    @Deployment(managed = false, name = CB_DEPLOYMENT_NAME)
     public static JavaArchive createTestArchive() {
         final JavaArchive archive = ShrinkWrap.create(JavaArchive.class, CB_DEPLOYMENT_NAME);
         archive.addClass(ConnectedBean.class);
         archive.addClass(ConnectedBeanInterface.class);
-        // archive.addClass(JMXConnectorTestCase.class);
-        archive.addAsManifestResource(new StringAsset("Dependencies: org.jboss.xnio\n"), "MANIFEST.MF");
-        log.info(archive.toString(true));
         return archive;
     }
 
     @Test
     public void testLookup() throws Exception {
-        connectedBean.testConnector(getJMXURI());
+        this.connectedBean.testConnector(getJMXURI());
+
+        try {
+            this.connectedBean.testConnector(getBadJMXURI());
+            Assert.assertTrue("Lookup should fail!", false);
+        } catch (IOException ioe) {
+            // code throws IOE....
+            Assert.assertTrue("Wrong cause", ioe.getCause() != null);
+            Assert.assertTrue("Wrong cause", ioe.getCause() instanceof NamingException);
+            NamingException cause = (NamingException) ioe.getCause();
+//            this will fail always, since return value has escape chars
+//            NamingException expected = NamingMessages.MESSAGES.noURLContextFactory(getBadURLPart());
+//            Assert.assertEquals("Wrong cause message",expected.getMessage(), cause.getMessage());
+            Assert.assertTrue(cause.getMessage().contains("Context.URL_PKG_PREFIXES"));
+        }
     }
 
-    private JMXConnectorServer connectorServer;
-    private final int port = 11090;
-    private String jmxUri;
+    
+    protected JMXConnectorServer connectorServer;
 
     @Before
     public void beforeTest() throws Exception {
-
-        LocateRegistry.createRegistry(port);
-        MBeanServer mbs = ManagementFactory.getPlatformMBeanServer();
-        JMXServiceURL url = new JMXServiceURL(getJMXURI());
-        connectorServer = JMXConnectorServerFactory.newJMXConnectorServer(url, null, mbs);
-        connectorServer.start();
+        createRegistry();
+        lookupBean();
+        deploy();
     }
 
     @After
     public void afterTest() throws Exception {
-        if (connectorServer != null) {
-            connectorServer.stop();
+        undeploy();
+        if(this.connectorServer!=null){
+            this.connectorServer.stop();
         }
     }
 
-    private String getJMXURI() {
-        if (jmxUri != null) {
-            return jmxUri;
+    protected void deploy() {
+        deployer.deploy(CB_DEPLOYMENT_NAME);
+    }
+
+    protected void undeploy() {
+        deployer.undeploy(CB_DEPLOYMENT_NAME);
+
+    }
+
+    protected ModelNode executeOperation(ModelControllerClient client, String name, PathAddress address, boolean fail)
+            throws IOException {
+        ModelNode op = new ModelNode();
+        op.get(OP).set(name);
+        op.get(OP_ADDR).set(address.toModelNode());
+
+        ModelNode result = client.execute(op);
+        if (!fail) {
+            Assert.assertFalse(result.toString(), result.get(FAILURE_DESCRIPTION).isDefined());
+        } else {
+            Assert.assertTrue(result.get(FAILURE_DESCRIPTION).isDefined());
         }
 
-        final String address = managementClient.getMgmtAddress();
-        final String jmxUri = "service:jmx:rmi:///jndi/rmi://" + address + ":" + port + "/jmxrmi";
-        return jmxUri;
+        return result.get(RESULT);
+    }
+
+    protected void createRegistry() throws Exception {
+        if (DONE) {
+            return;
+        }
+        LocateRegistry.createRegistry(getPort());
+        MBeanServer mbs = ManagementFactory.getPlatformMBeanServer();
+        JMXServiceURL url = new JMXServiceURL(getJMXURI());
+        this.connectorServer = JMXConnectorServerFactory.newJMXConnectorServer(url, null, mbs);
+        this.connectorServer.start();
+        DONE = true;
+    }
+
+    protected void lookupBean() throws Exception {
+        InitialContext initialContext = getInitialContext();
+        final Object value = initialContext.lookup("ejb:/" + CB_DEPLOYMENT_NAME + "/" + ConnectedBean.class.getSimpleName()
+                + "!" + ConnectedBeanInterface.class.getName());
+        Assert.assertNotNull("Failed to lookup EJB!", value);
+        Assert.assertTrue("", value instanceof ConnectedBeanInterface);
+        this.connectedBean = (ConnectedBeanInterface) value;
+    }
+
+    protected String getJMXURI() {
+        return "service:jmx:rmi:///jndi/rmi://" + getHost() + ":" + getPort() + "/jmxrmi";
+    }
+
+    protected String getBadJMXURI() {
+        return "service:jmx:rmi:///jndi/"+getBadURLPart();
+    }
+
+    protected String getBadURLPart() {
+        return "rmi2://" + getHost() + ":" + getPort() + "/jmxrmi2";
+    }
+
+    
+    protected String getHost() {
+        return managementClient.getMgmtAddress();
+    }
+
+    protected int getPort() {
+        return 1099;
+    }
+
+    protected InitialContext getInitialContext() throws NamingException {
+        final Hashtable<String, String> jndiProperties = new Hashtable<String, String>();
+        jndiProperties.put(Context.INITIAL_CONTEXT_FACTORY, "org.jboss.as.naming.InitialContextFactory");
+        jndiProperties.put(Context.URL_PKG_PREFIXES, "org.jboss.ejb.client.naming");
+        return new InitialContext(jndiProperties);
     }
 }
