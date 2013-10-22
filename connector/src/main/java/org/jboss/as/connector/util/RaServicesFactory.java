@@ -34,6 +34,7 @@ import org.jboss.as.controller.registry.Resource;
 import org.jboss.as.naming.service.NamingService;
 import org.jboss.as.security.service.SubjectFactoryService;
 import org.jboss.jca.common.api.metadata.resourceadapter.ResourceAdapter;
+import org.jboss.as.server.Services;
 import org.jboss.jca.core.api.connectionmanager.ccm.CachedConnectionManager;
 import org.jboss.jca.core.api.management.ManagementRepository;
 import org.jboss.jca.core.spi.rar.ResourceAdapterRepository;
@@ -60,8 +61,11 @@ public class RaServicesFactory {
                 raxml, module, deployment, serviceName, deploymentUnitServiceName);
 
         ServiceBuilder builder = serviceTarget
-                .addService(serviceName, service)
-                .addDependency(ConnectorServices.IRONJACAMAR_MDR, AS7MetadataRepository.class, service.getMdrInjector())
+                .addService(serviceName, service);
+        Services.addServerExecutorDependency(
+                serviceTarget.addService(serviceName, service),
+                service.getExecutorServiceInjector(), false);
+        builder.addDependency(ConnectorServices.IRONJACAMAR_MDR, AS7MetadataRepository.class, service.getMdrInjector())
                 .addDependency(ConnectorServices.RA_REPOSITORY_SERVICE, ResourceAdapterRepository.class,
                         service.getRaRepositoryInjector())
                 .addDependency(ConnectorServices.MANAGEMENT_REPOSITORY_SERVICE, ManagementRepository.class,

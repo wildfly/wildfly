@@ -22,6 +22,9 @@
 
 package org.jboss.as.connector.services.resourceadapters.deployment;
 
+import java.io.File;
+import java.net.URL;
+
 import org.jboss.as.connector.metadata.deployment.ResourceAdapterDeployment;
 import org.jboss.as.connector.metadata.xmldescriptors.ConnectorXmlDescriptor;
 import org.jboss.as.connector.services.resourceadapters.ResourceAdapterService;
@@ -43,12 +46,6 @@ import org.jboss.msc.service.ServiceTarget;
 import org.jboss.msc.service.StartContext;
 import org.jboss.msc.service.StartException;
 import org.jboss.msc.service.StopContext;
-
-import java.io.File;
-import java.net.URL;
-
-import static org.jboss.as.connector.logging.ConnectorLogger.DEPLOYMENT_CONNECTOR_LOGGER;
-import static org.jboss.as.connector.logging.ConnectorMessages.MESSAGES;
 
 /**
  * A ResourceAdapterXmlDeploymentService.
@@ -112,8 +109,10 @@ public final class ResourceAdapterXmlDeploymentService extends AbstractResourceA
                     WritableServiceBasedNamingStore.popOwner();
                 }
             } catch (Throwable t) {
-                unregisterAll(raName);
-                throw MESSAGES.failedToStartRaDeployment(t, raName);
+                // To clean up we need to invoke blocking behavior, so do that in another thread
+                // and let this MSC thread return
+                cleanupStartAsync(context, raName, t);
+                return;
             }
             String id = ((ModifiableResourceAdapter) raxml).getId();
             final ServiceName raServiceName;
@@ -143,8 +142,7 @@ public final class ResourceAdapterXmlDeploymentService extends AbstractResourceA
      */
     @Override
     public void stop(StopContext context) {
-        DEPLOYMENT_CONNECTOR_LOGGER.debugf("Stopping service %s",deploymentServiceName);
-        unregisterAll(raName);
+        stopAsync(context, raName, deploymentServiceName);
     }
 
     @Override

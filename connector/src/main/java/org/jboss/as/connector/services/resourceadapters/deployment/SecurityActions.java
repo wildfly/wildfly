@@ -22,6 +22,7 @@
 
 package org.jboss.as.connector.services.resourceadapters.deployment;
 
+import java.security.AccessControlContext;
 import java.security.AccessController;
 import java.security.PrivilegedAction;
 
@@ -60,6 +61,15 @@ class SecurityActions {
             public Object run() {
                 Thread.currentThread().setContextClassLoader(cl);
                 return null;
+            }
+        });
+    }
+
+    static AccessControlContext getAccessControlContext() {
+        return AccessController.doPrivileged(new PrivilegedAction<AccessControlContext>() {
+            @Override
+            public AccessControlContext run() {
+                return AccessController.getContext();
             }
         });
     }
