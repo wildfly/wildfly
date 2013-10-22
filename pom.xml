@@ -260,7 +260,7 @@
         <version.org.testng>6.1.1</version.org.testng>
         <version.org.yaml.snakeyaml>1.8-redhat-2</version.org.yaml.snakeyaml>
         <version.osgi>4.2.0.redhat-4</version.osgi>
-        <version.sun.jaxb>2.2.5-redhat-5</version.sun.jaxb>
+        <version.sun.jaxb>2.2.5.redhat-6</version.sun.jaxb>
         <version.sun.saaj-impl>1.3.16-redhat-2</version.sun.saaj-impl>
         <version.rhino.js>1.7R2</version.rhino.js>
         <version.wsdl4j>1.6.2-redhat-5</version.wsdl4j>
