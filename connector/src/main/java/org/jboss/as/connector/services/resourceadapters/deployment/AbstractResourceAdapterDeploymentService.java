@@ -31,6 +31,10 @@ import java.io.File;
 import java.io.PrintWriter;
 import java.net.URL;
 import java.util.List;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.ThreadFactory;
+
 import javax.naming.Reference;
 import javax.resource.spi.ResourceAdapter;
 import javax.transaction.TransactionManager;
@@ -50,7 +54,11 @@ import org.jboss.as.naming.ManagedReferenceFactory;
 import org.jboss.as.naming.ServiceBasedNamingStore;
 import org.jboss.as.naming.deployment.ContextNames;
 import org.jboss.as.naming.service.BinderService;
+import org.jboss.msc.service.StartContext;
+import org.jboss.msc.service.StopContext;
+import org.jboss.threads.JBossThreadFactory;
 import org.wildfly.security.manager.ClearContextClassLoaderAction;
+import org.wildfly.security.manager.GetAccessControlContextAction;
 import org.wildfly.security.manager.SetContextClassLoaderFromClassAction;
 import org.jboss.jca.common.api.metadata.ironjacamar.IronJacamar;
 import org.jboss.jca.common.api.metadata.ra.ConfigProperty;
@@ -100,6 +108,7 @@ public abstract class AbstractResourceAdapterDeploymentService {
     protected final InjectedValue<TransactionIntegration> txInt = new InjectedValue<TransactionIntegration>();
     protected final InjectedValue<SubjectFactory> subjectFactory = new InjectedValue<SubjectFactory>();
     protected final InjectedValue<CachedConnectionManager> ccmValue = new InjectedValue<CachedConnectionManager>();
+    protected final InjectedValue<ExecutorService> executorServiceInjector = new InjectedValue<ExecutorService>();
 
     public ResourceAdapterDeployment getValue() {
         return ConnectorServices.notNull(value);
@@ -228,6 +237,24 @@ public abstract class AbstractResourceAdapterDeploymentService {
         return ccmValue;
     }
 
+    public Injector<ExecutorService> getExecutorServiceInjector() {
+        return executorServiceInjector;
+    }
+
+    protected final ExecutorService getLifecycleExecutorService() {
+        ExecutorService result = executorServiceInjector.getOptionalValue();
+        if (result == null) {
+            // We added injection of the server executor late in WF 8, so in case some
+            // add-on projects don't know to inject it....
+            final ThreadGroup threadGroup = new ThreadGroup("ResourceAdapterDeploymentService ThreadGroup");
+            final String namePattern = "ResourceAdapterDeploymentService Thread Pool -- %t";
+            final ThreadFactory threadFactory = new JBossThreadFactory(threadGroup, Boolean.FALSE, null, namePattern,
+                    null, null, doPrivileged(GetAccessControlContextAction.getInstance()));
+            result = Executors.newSingleThreadExecutor(threadFactory);
+        }
+        return result;
+    }
+
     public ContextNames.BindInfo getBindInfo(String jndi) {
         return ContextNames.bindInfoFor(jndi);
     }
@@ -237,6 +264,53 @@ public abstract class AbstractResourceAdapterDeploymentService {
      */
     public boolean isCreateBinderService() {
         return true;
+    }
+
+    protected final void cleanupStartAsync(final StartContext context, final String deploymentName,
+                                     final Throwable cause) {
+        ExecutorService executorService = getLifecycleExecutorService();
+        Runnable r = new Runnable() {
+            @Override
+            public void run() {
+                synchronized (this) {
+                    try {
+                        // TODO -- one of the 3 previous synchronous calls to this method don't had the TCCL set,
+                        // but the other two don't. I (BES 2013/10/21) intepret from that that setting the TCCL
+                        // was not necessary and in caller that had it set it was an artifact of
+                        unregisterAll(deploymentName);
+                    } finally {
+                        context.failed(MESSAGES.failedToStartRaDeployment(cause, deploymentName));
+                    }
+                }
+            }
+        };
+        synchronized (r) {
+            executorService.execute(r);
+            context.asynchronous();
+        }
+
+    }
+
+    protected void stopAsync(final StopContext context, final String deploymentName, final ServiceName serviceName) {
+        ExecutorService executorService = getLifecycleExecutorService();
+        Runnable r = new Runnable() {
+            @Override
+            public void run() {
+                synchronized (this) {
+                    try {
+                        DEPLOYMENT_CONNECTOR_LOGGER.debugf("Stopping service %s", serviceName);
+                        unregisterAll(deploymentName);
+                    } finally {
+                        context.complete();
+                    }
+                }
+            }
+        };
+        synchronized (r) {
+            executorService.execute(r);
+            context.asynchronous();
+        }
+
     }
 
     protected abstract class AbstractAS7RaDeployer extends AbstractResourceAdapterDeployer {
