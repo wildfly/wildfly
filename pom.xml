@@ -88,7 +88,7 @@
         <version.com.sun.istack>2.6.1-redhat-2</version.com.sun.istack>
         <version.com.sun.xml.txw2>20110809-redhat-2</version.com.sun.xml.txw2>
         <version.com.sun.xsom>20110809-redhat-3</version.com.sun.xsom>
-        <version.commons-beanutils>1.8.3.redhat-3</version.commons-beanutils>
+        <version.commons-beanutils>1.8.3.redhat-6</version.commons-beanutils>
         <version.commons-cli>1.2-redhat-2</version.commons-cli>
         <version.commons-codec>1.4-redhat-2</version.commons-codec>
         <version.commons-collections>3.2.1-redhat-2</version.commons-collections>
