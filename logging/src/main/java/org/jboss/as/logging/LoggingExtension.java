@@ -134,6 +134,7 @@ public class LoggingExtension implements Extension {
         registration.registerOperationHandler(GenericSubsystemDescribeHandler.DEFINITION, DESCRIBE_HANDLER);
 
         final ResolvePathHandler resolvePathHandler;
+        // Register for servers only even if in ADMIN_ONLY mode
         if (context.getProcessType().isServer()) {
             resolvePathHandler = ResolvePathHandler.Builder.of(context.getPathManager())
                     .setParentAttribute(CommonAttributes.FILE)
