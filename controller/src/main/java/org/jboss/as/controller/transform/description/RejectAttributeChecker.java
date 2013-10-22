@@ -315,4 +315,19 @@ public interface RejectAttributeChecker {
             return attributeValue.isDefined();
         }
     };
+
+    RejectAttributeChecker UNDEFINED = new DefaultRejectAttributeChecker() {
+        @Override
+        public String getRejectionLogMessage(Map<String, ModelNode> attributes) {
+            return ControllerMessages.MESSAGES.attributesMustBeDefined(attributes.keySet());
+        }
+
+        @Override
+        protected boolean rejectAttribute(PathAddress address, String attributeName, ModelNode attributeValue,
+                                          TransformationContext context) {
+            return !attributeValue.isDefined();
+        }
+    };
+
+
 }
