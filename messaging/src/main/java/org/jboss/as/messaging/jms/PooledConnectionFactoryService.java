@@ -55,6 +55,7 @@ import org.jboss.as.naming.deployment.ContextNames;
 import org.jboss.as.naming.service.NamingService;
 import org.jboss.as.network.SocketBinding;
 import org.jboss.as.security.service.SubjectFactoryService;
+import org.jboss.as.server.Services;
 import org.jboss.as.txn.service.TxnServices;
 import org.jboss.jca.common.api.metadata.Defaults;
 import org.jboss.jca.common.api.metadata.common.CommonAdminObject;
@@ -397,8 +398,10 @@ public class PooledConnectionFactoryService implements Service<Void> {
             activator.setBindInfo(bindInfo);
             activator.setCreateBinderService(createBinderService);
 
-            ServiceController<ResourceAdapterDeployment> controller = serviceTarget
-                    .addService(ConnectorServices.RESOURCE_ADAPTER_ACTIVATOR_SERVICE.append(name), activator)
+            ServiceController<ResourceAdapterDeployment> controller =
+                    Services.addServerExecutorDependency(
+                        serviceTarget.addService(ConnectorServices.RESOURCE_ADAPTER_ACTIVATOR_SERVICE.append(name), activator),
+                            activator.getExecutorServiceInjector(), false)
                     .addDependency(HornetQActivationService.getHornetQActivationServiceName(getHornetQServiceName(hqServerName)))
                     .addDependency(ConnectorServices.IRONJACAMAR_MDR, AS7MetadataRepository.class,
                             activator.getMdrInjector())

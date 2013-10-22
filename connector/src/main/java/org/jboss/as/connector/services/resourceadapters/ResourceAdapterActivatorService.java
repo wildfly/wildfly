@@ -23,7 +23,6 @@
 package org.jboss.as.connector.services.resourceadapters;
 
 import static org.jboss.as.connector.logging.ConnectorLogger.DEPLOYMENT_CONNECTOR_LOGGER;
-import static org.jboss.as.connector.logging.ConnectorMessages.MESSAGES;
 
 import java.io.File;
 import java.net.URL;
@@ -119,8 +118,10 @@ public final class ResourceAdapterActivatorService extends AbstractResourceAdapt
                Thread.currentThread().setContextClassLoader(old);
             }
         } catch (Throwable e) {
-            unregisterAll(deploymentName);
-            throw MESSAGES.failedToStartRaDeployment(e, deploymentName);
+            // To clean up we need to invoke blocking behavior, so do that in another thread
+            // and let this MSC thread return
+            cleanupStartAsync(context, deploymentName, e);
+            return;
         }
 
         String raName = deploymentMD.getDeploymentName();
@@ -142,14 +143,13 @@ public final class ResourceAdapterActivatorService extends AbstractResourceAdapt
      * Stop
      */
     @Override
-        public void stop(StopContext context) {
-        DEPLOYMENT_CONNECTOR_LOGGER.debugf("Stopping service %s", ConnectorServices.RESOURCE_ADAPTER_ACTIVATOR_SERVICE);
-        unregisterAll(deploymentName);
+    public void stop(final StopContext context) {
+        stopAsync(context, deploymentName, ConnectorServices.RESOURCE_ADAPTER_ACTIVATOR_SERVICE);
     }
+
     @Override
     public void unregisterAll(String deploymentName) {
         super.unregisterAll(deploymentName);
-
     }
 
     public CommonDeployment getDeploymentMD() {
