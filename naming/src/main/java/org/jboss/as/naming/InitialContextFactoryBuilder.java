@@ -22,45 +22,29 @@
 
 package org.jboss.as.naming;
 
-import static org.jboss.as.naming.NamingMessages.MESSAGES;
-
-import java.util.Hashtable;
-import org.wildfly.security.manager.WildFlySecurityManager;
-
-import javax.naming.Context;
 import javax.naming.NamingException;
+import java.util.Hashtable;
 
 /**
- * Initial context factory builder which ensures the proper naming context factory is used if the environment
- * does not override the initial context impl property.
+ * Initial context factory builder which ensures the proper naming context factory.
  *
  * @author John E. Bailey
+ * @author Eduardo Martins
  */
 public class InitialContextFactoryBuilder implements javax.naming.spi.InitialContextFactoryBuilder {
+
     private static final javax.naming.spi.InitialContextFactory DEFAULT_FACTORY = new InitialContextFactory();
 
     /**
-     * Create a InitialContext factory.  If the environment does not override the factory class it will use the
-     * default JBoss naming context factory.
+     * Retrieves the default JBoss naming context factory.
      *
      * @param environment The environment
      * @return An initial context factory
      * @throws NamingException If an error occurs loading the factory class.
      */
     public javax.naming.spi.InitialContextFactory createInitialContextFactory(Hashtable<?, ?> environment) throws NamingException {
-        if (environment == null)
-            environment = new Hashtable<String, Object>();
-
-        final String factoryClassName = (String)environment.get(Context.INITIAL_CONTEXT_FACTORY);
-        if(factoryClassName == null || InitialContextFactory.class.getName().equals(factoryClassName)) {
-            return DEFAULT_FACTORY;
-        }
-        final ClassLoader classLoader = WildFlySecurityManager.getCurrentContextClassLoaderPrivileged();
-        try {
-            final Class<?> factoryClass = Class.forName(factoryClassName, true, classLoader);
-            return (javax.naming.spi.InitialContextFactory)factoryClass.newInstance();
-        } catch (Exception e) {
-            throw MESSAGES.failedToInstantiate("InitialContextFactory", factoryClassName, classLoader);
-        }
+        // return our default factory, the initial context it creates must be the responsible for handling a
+        // custom initial context factory in env, to ensure that URL factories are processed first, as the JDK does
+        return DEFAULT_FACTORY;
     }
 }
