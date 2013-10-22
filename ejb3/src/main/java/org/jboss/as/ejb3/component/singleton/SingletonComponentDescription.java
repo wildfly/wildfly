@@ -92,13 +92,14 @@ public class SingletonComponentDescription extends SessionBeanComponentDescripti
         super(componentName, componentClassName, ejbJarDescription, deploymentUnitServiceName, descriptorData);
         // add container managed concurrency interceptor to the component
         this.addConcurrencyManagementInterceptor();
-
-        getConfigurators().add(new ComponentConfigurator() {
-            @Override
-            public void configure(final DeploymentPhaseContext context, final ComponentDescription description, final ComponentConfiguration configuration) throws DeploymentUnitProcessingException {
-                configuration.addTimeoutViewInterceptor(SingletonComponentInstanceAssociationInterceptor.FACTORY, InterceptorOrder.View.ASSOCIATING_INTERCEPTOR);
-            }
-        });
+        if(isSecurityEnabled()) {
+            getConfigurators().add(new ComponentConfigurator() {
+                @Override
+                public void configure(final DeploymentPhaseContext context, final ComponentDescription description, final ComponentConfiguration configuration) throws DeploymentUnitProcessingException {
+                    configuration.addTimeoutViewInterceptor(SingletonComponentInstanceAssociationInterceptor.FACTORY, InterceptorOrder.View.ASSOCIATING_INTERCEPTOR);
+                }
+            });
+        }
     }
 
     @Override
