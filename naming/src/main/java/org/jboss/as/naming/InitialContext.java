@@ -34,16 +34,20 @@ import javax.naming.NameClassPair;
 import javax.naming.NameNotFoundException;
 import javax.naming.NamingEnumeration;
 import javax.naming.NamingException;
+import javax.naming.directory.InitialDirContext;
 import javax.naming.spi.NamingManager;
 import javax.naming.spi.ObjectFactory;
 
 import org.jboss.as.naming.context.NamespaceContextSelector;
+import org.wildfly.security.manager.WildFlySecurityManager;
+
+import static org.jboss.as.naming.NamingMessages.MESSAGES;
 
 /**
  * @author Eduardo Martins
  * @author John Bailey
  */
-public class InitialContext extends javax.naming.InitialContext {
+public class InitialContext extends InitialDirContext {
 
     /**
      * Map of any additional naming schemes
@@ -84,17 +88,36 @@ public class InitialContext extends javax.naming.InitialContext {
 
     public InitialContext(Hashtable environment) throws NamingException {
         super(environment);
-        defaultInitCtx = new DefaultInitialContext(environment);
-        gotDefault = true;
     }
 
     @Override
     protected void init(Hashtable environment) throws NamingException {
+        // the jdk initial context already worked out the env, no need to do it again
         myProps = environment;
+        if (myProps != null && myProps.get(Context.INITIAL_CONTEXT_FACTORY) != null) {
+            // user has specified initial context factory; try to get it
+            getDefaultInitCtx();
+        }
     }
 
     @Override
     protected Context getDefaultInitCtx() throws NamingException {
+        if (!gotDefault) {
+            // if there is a initial context factory prop in the env use it to create the default ctx
+            final String factoryClassName = myProps != null ? (String) myProps.get(Context.INITIAL_CONTEXT_FACTORY) : null;
+            if(factoryClassName == null || InitialContextFactory.class.getName().equals(factoryClassName)) {
+                defaultInitCtx = new DefaultInitialContext(myProps);
+            } else {
+                final ClassLoader classLoader = WildFlySecurityManager.getCurrentContextClassLoaderPrivileged();
+                try {
+                    final Class<?> factoryClass = Class.forName(factoryClassName, true, classLoader);
+                    defaultInitCtx = ((javax.naming.spi.InitialContextFactory)factoryClass.newInstance()).getInitialContext(myProps);
+                } catch (Exception e) {
+                    throw MESSAGES.failedToInstantiate("InitialContextFactory", factoryClassName, classLoader);
+                }
+            }
+            gotDefault = true;
+        }
         return defaultInitCtx;
     }
 
@@ -105,7 +128,7 @@ public class InitialContext extends javax.naming.InitialContext {
             ObjectFactory factory = urlContextFactories.get(scheme);
             if (factory != null) {
                 try {
-                    return (Context) factory.getObjectInstance(null, null, null, getEnvironment());
+                    return (Context) factory.getObjectInstance(null, null, null, myProps);
                 }catch(NamingException e) {
                     throw e;
                 } catch (Exception e) {
@@ -114,7 +137,7 @@ public class InitialContext extends javax.naming.InitialContext {
                     throw n;
                 }
             } else {
-                Context ctx = NamingManager.getURLContext(scheme, getEnvironment());
+                Context ctx = NamingManager.getURLContext(scheme, myProps);
                 if(ctx!=null) {
                     return ctx;
                 }
