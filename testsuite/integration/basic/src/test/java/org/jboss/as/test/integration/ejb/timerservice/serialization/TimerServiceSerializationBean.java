@@ -40,7 +40,7 @@ public class TimerServiceSerializationBean {
     private static final int TIMER_INIT_TIME_MS = 100;
     private static final int TIMER_TIMEOUT_TIME_MS = 100;
     // should to be greater then (timer init time + timeout time)
-    private static final int TIMER_CALL_WAITING_S = 2;
+    private static final int TIMER_CALL_WAITING_S = 30;
 
     private static volatile InfoA info;
 

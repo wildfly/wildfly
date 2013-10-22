@@ -39,7 +39,7 @@ public class TimerGetCallerPrincipleBean implements TimedObject {
 
     private static final CountDownLatch latch = new CountDownLatch(1);
     private static final int TIMER_TIMEOUT_TIME_MS = 100;
-    private static final int TIMER_CALL_WAITING_S = 2;
+    private static final int TIMER_CALL_WAITING_S = 30;
 
     private static volatile String principle = null;
 
