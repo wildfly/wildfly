@@ -103,7 +103,6 @@ public class WeldSubsystemTestCase extends AbstractSubsystemBaseTest {
         //which is why we need to include the jboss-as-controller artifact.
         builder.createLegacyKernelServicesBuilder(AdditionalInitialization.MANAGEMENT, controllerVersion, modelVersion)
                 .addMavenResourceURL("org.jboss.as:jboss-as-weld:" + controllerVersion.getMavenGavVersion())
-                .addMavenResourceURL("org.jboss.as:jboss-as-controller:" + controllerVersion.getMavenGavVersion())
                 .skipReverseControllerCheck()
                 .dontPersistXml();
 
@@ -140,7 +139,6 @@ public class WeldSubsystemTestCase extends AbstractSubsystemBaseTest {
         //which is why we need to include the jboss-as-controller artifact.
         builder.createLegacyKernelServicesBuilder(AdditionalInitialization.MANAGEMENT, controllerVersion, modelVersion)
                 .addMavenResourceURL("org.jboss.as:jboss-as-weld:" + controllerVersion.getMavenGavVersion())
-                .addMavenResourceURL("org.jboss.as:jboss-as-controller:" + controllerVersion.getMavenGavVersion())
                 .skipReverseControllerCheck()
                 .dontPersistXml();
 
