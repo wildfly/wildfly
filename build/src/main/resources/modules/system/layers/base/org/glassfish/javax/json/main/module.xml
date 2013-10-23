@@ -29,7 +29,6 @@
     </properties>
 
     <dependencies>
-        <module name="javax.json.api"/>
     </dependencies>
     <resources>
         <!-- Insert resources here -->
