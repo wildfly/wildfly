@@ -65,7 +65,11 @@ class KnownVersions {
         addSubsystemVersion(map, "infinispan", "1.4.0", CORE_MODEL_7_2_0);
         addSubsystemVersion(map, "jacorb", "1.1.0", CORE_MODEL_7_1_3);
         addSubsystemVersion(map, "jaxr", "1.1.0", CORE_MODEL_7_1_2);
+        addSubsystemVersion(map, "jaxrs", "1.0.0", CORE_MODEL_7_1_2);
         addSubsystemVersion(map, "jca", "1.1.0", CORE_MODEL_7_1_2);
+        addSubsystemVersion(map, "jdr", "1.0.0", CORE_MODEL_7_1_2);
+        addSubsystemVersion(map, "jdr", "1.1.0", CORE_MODEL_7_2_0);
+        addSubsystemVersion(map, "jsr77", "1.0.0", CORE_MODEL_7_2_0);
         addSubsystemVersion(map, "jgroups", "1.1.0", CORE_MODEL_7_1_3);
         addSubsystemVersion(map, "jmx", "1.0.0", CORE_MODEL_7_1_2);
         addSubsystemVersion(map, "jmx", "1.1.0", CORE_MODEL_7_1_3);
@@ -83,6 +87,7 @@ class KnownVersions {
         addSubsystemVersion(map, "naming", "1.1.0", CORE_MODEL_7_1_3);
         addSubsystemVersion(map, "naming", "1.2.0", CORE_MODEL_7_2_0);
         addSubsystemVersion(map, "osgi", "1.0.0", CORE_MODEL_7_1_3);
+        addSubsystemVersion(map, "pojo", "1.0.0", CORE_MODEL_7_2_0);
         addSubsystemVersion(map, "remoting", "1.1.0", CORE_MODEL_7_1_3);
         addSubsystemVersion(map, "remoting", "1.2.0", CORE_MODEL_7_2_0);
         addSubsystemVersion(map, "security", "1.1.0", CORE_MODEL_7_1_2);
@@ -92,6 +97,7 @@ class KnownVersions {
         addSubsystemVersion(map, "remoting", "1.1.0", CORE_MODEL_7_1_3);
         addSubsystemVersion(map, "resource-adapters", "1.1.0", CORE_MODEL_7_1_2);
         addSubsystemVersion(map, "resource-adapters", "1.2.0", CORE_MODEL_7_2_0);
+        addSubsystemVersion(map, "sar", "1.0.0", CORE_MODEL_7_1_2);
         addSubsystemVersion(map, "threads", "1.0.0", CORE_MODEL_7_1_2);
         addSubsystemVersion(map, "transactions", "1.1.0", CORE_MODEL_7_1_2);
         addSubsystemVersion(map, "transactions", "1.1.1", CORE_MODEL_7_1_3);
