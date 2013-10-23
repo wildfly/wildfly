@@ -191,6 +191,7 @@ public class ServletContainerInitializerDeploymentProcessor implements Deploymen
                     if (service != null) {
                         scis.add(service);
                     }
+                    servletContainerInitializerClassName = reader.readLine();
                 } catch (Exception e) {
                     if (error) {
                         throw MESSAGES.errorProcessingSCI(jar, e);
