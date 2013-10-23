@@ -69,6 +69,20 @@ public class Ejb3SubsystemUnitTestCase extends AbstractSubsystemBaseTest {
         testTransformer_1_1_0(ModelTestControllerVersion.V7_1_3_FINAL);
     }
 
+
+    @Test
+    public void testTransformerEAP600() throws Exception {
+        ignoreThisTestIfEAPRepositoryIsNotReachable();
+        testTransformer_1_1_0(ModelTestControllerVersion.EAP_6_0_0);
+    }
+
+    @Test
+    public void testTransformerEAP601() throws Exception {
+        ignoreThisTestIfEAPRepositoryIsNotReachable();
+        testTransformer_1_1_0(ModelTestControllerVersion.EAP_6_0_1);
+    }
+
+
     /**
      * Tests transformation of model from 1.2.0 version into 1.1.0 version.
      *
@@ -105,6 +119,17 @@ public class Ejb3SubsystemUnitTestCase extends AbstractSubsystemBaseTest {
     public void testRejectExpressionsAS713() throws Exception {
         testRejectExpressions_1_1_0(ModelTestControllerVersion.V7_1_3_FINAL);
     }
+
+    @Test
+    public void testRejectExpressionsEAP600() throws Exception {
+        testRejectExpressions_1_1_0(ModelTestControllerVersion.EAP_6_0_0);
+    }
+
+    @Test
+    public void testRejectExpressionsAS601() throws Exception {
+        testRejectExpressions_1_1_0(ModelTestControllerVersion.EAP_6_0_1);
+    }
+
 
     private void testRejectExpressions_1_1_0(ModelTestControllerVersion controllerVersion) throws Exception {
         // create builder for current subsystem version
@@ -152,6 +177,49 @@ public class Ejb3SubsystemUnitTestCase extends AbstractSubsystemBaseTest {
                         new FailedOperationTransformationConfig.RejectExpressionsConfig(TimerServiceResourceDefinition.PATH))
                 .addFailedAttribute(subsystemAddress.append(EJB3SubsystemModel.REMOTE_SERVICE_PATH, ChannelCreationOptionResource.INSTANCE.getPathElement()),
                         new FailedOperationTransformationConfig.RejectExpressionsConfig(ChannelCreationOptionResource.CHANNEL_CREATION_OPTION_VALUE));
+    }
+
+    @Test
+    public void testTransformerAS720() throws Exception {
+        testTransformer_1_2_x(ModelTestControllerVersion.V7_2_0_FINAL, 0);
+    }
+
+
+    @Test
+    public void testTransformerEAP610() throws Exception {
+        ignoreThisTestIfEAPRepositoryIsNotReachable();
+        testTransformer_1_2_x(ModelTestControllerVersion.EAP_6_1_0, 1);
+    }
+
+    @Test
+    public void testTransformerEAP611() throws Exception {
+        ignoreThisTestIfEAPRepositoryIsNotReachable();
+        testTransformer_1_2_x(ModelTestControllerVersion.EAP_6_1_1, 1);
+    }
+
+    /**
+     * Tests transformation of model from 1.2.0 version into 1.1.0 version.
+     *
+     * @throws Exception
+     */
+    private void testTransformer_1_2_x(ModelTestControllerVersion controllerVersion, int modelVersionMicro) throws Exception {
+        String subsystemXml = "subsystem.xml";
+        ModelVersion modelVersion = ModelVersion.create(1, 2, modelVersionMicro);
+        //Use the non-runtime version of the extension which will happen on the HC
+        KernelServicesBuilder builder = createKernelServicesBuilder(AdditionalInitialization.MANAGEMENT)
+                .setSubsystemXmlResource(subsystemXml);
+
+        // Add legacy subsystems
+        builder.createLegacyKernelServicesBuilder(null, controllerVersion, modelVersion)
+                .addMavenResourceURL("org.jboss.as:jboss-as-ejb3:" + controllerVersion.getMavenGavVersion())
+                .addMavenResourceURL("org.jboss.as:jboss-as-threads:" + controllerVersion.getMavenGavVersion())
+                .skipReverseControllerCheck();
+
+        KernelServices mainServices = builder.build();
+        KernelServices legacyServices = mainServices.getLegacyServices(modelVersion);
+        Assert.assertNotNull(mainServices);
+        Assert.assertNotNull(legacyServices);
+        checkSubsystemModelTransformation(mainServices, modelVersion, V_1_1_0_FIXER);
     }
 
     private static final ModelFixer V_1_1_0_FIXER = new ModelFixer()  {
