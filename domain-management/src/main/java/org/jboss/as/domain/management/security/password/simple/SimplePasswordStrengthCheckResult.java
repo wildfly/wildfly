@@ -28,15 +28,17 @@ import java.util.List;
 import org.jboss.as.domain.management.security.password.PasswordStrengthCheckResult;
 import org.jboss.as.domain.management.security.password.PasswordRestriction;
 import org.jboss.as.domain.management.security.password.PasswordStrength;
+import org.jboss.as.domain.management.security.password.PasswordValidationException;
 
 /**
- * @author baranowb
  *
+ * @author baranowb
+ * @author <a href="mailto:darran.lofthouse@jboss.com">Darran Lofthouse</a>
  */
 public class SimplePasswordStrengthCheckResult implements PasswordStrengthCheckResult {
 
     private PasswordStrength strength;
-    private List<PasswordRestriction> failedRestrictions = new ArrayList<PasswordRestriction>();
+    private List<PasswordValidationException> restrictionFailures = new ArrayList<PasswordValidationException>();
     private List<PasswordRestriction> passedRestrictions = new ArrayList<PasswordRestriction>();
     private int positive = 0;
     private int negative = 0;
@@ -48,11 +50,8 @@ public class SimplePasswordStrengthCheckResult implements PasswordStrengthCheckR
         return strength;
     }
 
-    /**
-     * @return the failedRestrictions
-     */
-    public List<PasswordRestriction> getFailedRestrictions() {
-        return failedRestrictions;
+    public List<PasswordValidationException> getRestrictionFailures() {
+        return restrictionFailures;
     }
 
     /**
@@ -86,8 +85,8 @@ public class SimplePasswordStrengthCheckResult implements PasswordStrengthCheckR
     /**
      * @param pr
      */
-    void addFailedRestriction(PasswordRestriction pr) {
-        this.failedRestrictions.add(pr);
+    void addRestrictionFailure(PasswordValidationException pve) {
+        restrictionFailures.add(pve);
     }
 
     private static final float BOUNDRY_EXCEPTIONAL = 0.03f;

@@ -23,47 +23,60 @@
 package org.jboss.as.domain.management.security.password;
 
 import org.junit.Test;
-import static org.junit.Assert.*;
 
 /**
+ *
  * @author baranowb
- * 
+ * @author <a href="mailto:darran.lofthouse@jboss.com">Darran Lofthouse</a>
  */
 public class PasswordRestrictionsTestCase {
 
-    @Test
-    public void testLengthRestrictionFail() {
+    @Test(expected = PasswordValidationException.class)
+    public void testLengthRestrictionFail() throws PasswordValidationException {
         LengthRestriction lr = new LengthRestriction(2);
-        assertFalse(lr.pass("1"));
+        lr.validate("", "1");
     }
-    
+
     @Test
-    public void testLengthRestrictionPass() {
+    public void testLengthRestrictionPass() throws PasswordValidationException {
         LengthRestriction lr = new LengthRestriction(2);
-        assertTrue(lr.pass("12"));
+        lr.validate("", "12");
     }
-    
+
+    @Test(expected = PasswordValidationException.class)
+    public void testValueRestrictionFail() throws PasswordValidationException {
+        ValueRestriction lr = new ValueRestriction(new String[] { "restricted" });
+        lr.validate("", "restricted");
+    }
+
     @Test
-    public void testValueRestrictionFail() {
-        ValueRestriction lr = new ValueRestriction("restricted");
-        assertFalse(lr.pass("restricted"));
+    public void testValueRestrictionPass() throws PasswordValidationException {
+        ValueRestriction lr = new ValueRestriction(new String[] { "restricted" });
+        lr.validate("", "12");
     }
-    
+
+    @Test(expected = PasswordValidationException.class)
+    public void testRegexRestrictionFail() throws PasswordValidationException {
+        RegexRestriction lr = new RegexRestriction("\\d*", "", "");
+        lr.validate("", "xxxAAA");
+    }
+
     @Test
-    public void testValueRestrictionPass() {
-        ValueRestriction lr = new ValueRestriction("restricted");
-        assertTrue(lr.pass("12"));
+    public void testRegexRestrictionPass() throws PasswordValidationException {
+        RegexRestriction lr = new RegexRestriction("x*ax+", "", "");
+        lr.validate("", "xxax");
     }
-    
+
+    @Test(expected = PasswordValidationException.class)
+    public void testUsernameMatchFail() throws PasswordValidationException {
+        UsernamePasswordMatch upm = new UsernamePasswordMatch();
+        upm.validate("darranl", "darranl");
+    }
+
     @Test
-    public void testRegexRestrictionFail() {
-        RegexRestriction lr = new RegexRestriction("\\d*","");
-        assertFalse(lr.pass("xxxAAA"));
+    public void testUsernameMatchPass() throws PasswordValidationException {
+        UsernamePasswordMatch upm = new UsernamePasswordMatch();
+        upm.validate("darranl", "password");
     }
-    
-    @Test
-    public void testRegexRestrictionPass() {
-        RegexRestriction lr = new RegexRestriction("x*ax+","");
-        assertTrue(lr.pass("xxax"));
-    }
+
 }

@@ -42,7 +42,7 @@ public class PasswordCheckUtilTestCase {
         final URL resource = PasswordCheckUtilTestCase.class.getResource("add-user.properties");
 
         File addUser = new File(resource.getFile());
-        final List<PasswordRestriction> passwordRestrictions = PasswordCheckUtil.create(addUser).getPasswordRestrictions("ggrossetie");
+        final List<PasswordRestriction> passwordRestrictions = PasswordCheckUtil.create(addUser).getPasswordRestrictions();
         assertPasswordRejected(passwordRestrictions, "ggrossetie", "Password must not match username");
         assertPasswordRejected(passwordRestrictions, "abc12", "Password must have at least 8 characters");
         assertPasswordRejected(passwordRestrictions, "abcdefgh", "Password must have at least 2 digits");
@@ -55,16 +55,24 @@ public class PasswordCheckUtilTestCase {
 
     private void assertPasswordRejected(List<PasswordRestriction> passwordRestrictions, String password, String expectedMessage) {
         boolean accepted = true;
-        for(PasswordRestriction passwordRestriction : passwordRestrictions) {
-            accepted &= passwordRestriction.pass(password);
+        for (PasswordRestriction passwordRestriction : passwordRestrictions) {
+            try {
+                passwordRestriction.validate("ggrossetie", password);
+            } catch (PasswordValidationException pve) {
+                accepted = false;
+            }
         }
         assertFalse(expectedMessage, accepted);
     }
 
     private void assertPasswordAccepted(List<PasswordRestriction> passwordRestrictions, String password, String expectedMessage) {
         boolean accepted = true;
-        for(PasswordRestriction passwordRestriction : passwordRestrictions) {
-            accepted &= passwordRestriction.pass(password);
+        for (PasswordRestriction passwordRestriction : passwordRestrictions) {
+            try {
+                passwordRestriction.validate("ggrossetie", password);
+            } catch (PasswordValidationException pve) {
+                accepted = false;
+            }
         }
         assertTrue(expectedMessage, accepted);
     }
