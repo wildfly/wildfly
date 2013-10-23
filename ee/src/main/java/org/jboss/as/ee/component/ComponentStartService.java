@@ -64,17 +64,22 @@ public final class ComponentStartService implements Service<Component> {
      * {@inheritDoc}
      */
     public void stop(final StopContext context) {
-        context.asynchronous();
-        executor.getValue().submit(new Runnable() {
+        Runnable r = new Runnable() {
             @Override
             public void run() {
-                try {
-                    getValue().stop();
-                } finally {
-                    context.complete();
+                synchronized (this) {
+                    try {
+                        getValue().stop();
+                    } finally {
+                        context.complete();
+                    }
                 }
             }
-        });
+        };
+        synchronized (r) {
+            executor.getValue().submit(r);
+            context.asynchronous();
+        }
     }
 
     /**
