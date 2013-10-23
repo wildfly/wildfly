@@ -249,7 +249,7 @@
         <version.org.opensaml.opensaml>2.5.3.redhat-2</version.org.opensaml.opensaml>
         <version.org.opensaml.openws>1.4.4.redhat-2</version.org.opensaml.openws>
         <version.org.opensaml.xmltooling>1.3.4.redhat-1</version.org.opensaml.xmltooling>
-        <version.org.picketbox>4.0.17.SP2-redhat-2</version.org.picketbox>
+        <version.org.picketbox>4.0.19.SP2</version.org.picketbox>
         <version.org.picketbox.picketbox-commons>1.0.0.final-redhat-2</version.org.picketbox.picketbox-commons>
         <version.org.picketlink>2.1.9.Final-redhat-1</version.org.picketlink>
         <version.org.powermock>1.5</version.org.powermock>
