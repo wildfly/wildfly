@@ -214,7 +214,7 @@
         <version.org.jboss.spec.javax.resource.jboss-connector-api_1.6_spec>1.0.1.Final-redhat-2</version.org.jboss.spec.javax.resource.jboss-connector-api_1.6_spec>
         <version.org.jboss.spec.javax.rmi.jboss-rmi-api_1.0_spec>1.0.4.Final-redhat-2</version.org.jboss.spec.javax.rmi.jboss-rmi-api_1.0_spec>
         <version.org.jboss.spec.javax.security.auth.message.jboss-jaspi-api_1.0_spec>1.0.1.Final-redhat-2</version.org.jboss.spec.javax.security.auth.message.jboss-jaspi-api_1.0_spec>
-        <version.org.jboss.spec.javax.security.jacc.jboss-jacc-api_1.4_spec>1.0.2.Final-redhat-2</version.org.jboss.spec.javax.security.jacc.jboss-jacc-api_1.4_spec>
+        <version.org.jboss.spec.javax.security.jacc.jboss-jacc-api_1.4_spec>1.0.3.Final</version.org.jboss.spec.javax.security.jacc.jboss-jacc-api_1.4_spec>
         <version.org.jboss.spec.javax.servlet.jboss-servlet-api_2.5_spec>1.0.1.Final-redhat-2</version.org.jboss.spec.javax.servlet.jboss-servlet-api_2.5_spec>
         <version.org.jboss.spec.javax.servlet.jboss-servlet-api_3.0_spec>1.0.2.Final-redhat-1</version.org.jboss.spec.javax.servlet.jboss-servlet-api_3.0_spec>
         <version.org.jboss.spec.javax.servlet.jsp.jboss-jsp-api_2.2_spec>1.0.1.Final-redhat-2</version.org.jboss.spec.javax.servlet.jsp.jboss-jsp-api_2.2_spec>
