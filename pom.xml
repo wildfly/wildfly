@@ -148,7 +148,7 @@
         <version.org.hibernate3.commons.annotations>3.2.0.Final</version.org.hibernate3.commons.annotations>
         <version.org.hornetq>2.3.9.Final-redhat-1</version.org.hornetq>
         <version.org.infinispan>5.2.7.Final-redhat-1</version.org.infinispan>
-        <version.org.jacorb>2.3.2-redhat-4</version.org.jacorb>
+        <version.org.jacorb>2.3.2-jbossorg-5</version.org.jacorb>
         <version.org.javassist>3.18.1-GA-redhat-1</version.org.javassist>
         <version.org.jdom>1.1.2-redhat-2</version.org.jdom>
         <version.org.jboss.aesh>0.33.8.redhat-1</version.org.jboss.aesh>
