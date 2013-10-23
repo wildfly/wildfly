@@ -62,7 +62,7 @@ public class ImmutableHttpSessionAdapter implements HttpSession {
 
     @Override
     public void setMaxInactiveInterval(int interval) {
-        throw new UnsupportedOperationException();
+        // No-op
     }
 
     @Override
@@ -82,17 +82,17 @@ public class ImmutableHttpSessionAdapter implements HttpSession {
 
     @Override
     public void setAttribute(String name, Object value) {
-        throw new UnsupportedOperationException();
+        // No-op
     }
 
     @Override
     public void removeAttribute(String name) {
-        throw new UnsupportedOperationException();
+        // No-op
     }
 
     @Override
     public void invalidate() {
-        throw new UnsupportedOperationException();
+        // No-op
     }
 
     @Override
