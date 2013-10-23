@@ -68,6 +68,11 @@ public class ModClusterSubsystemTestCase extends AbstractSubsystemBaseTest {
         standardSubsystemTest("subsystem_1_0.xml", false);
     }
 
+    @Override
+    protected String getSubsystemXml() throws IOException {
+        return readResource("subsystem_1_1-expressions.xml");
+    }
+
     @Test
     public void testTransformers712() throws Exception {
         testTransformers_1_2_0(ModelTestControllerVersion.V7_1_2_FINAL);
@@ -91,7 +96,7 @@ public class ModClusterSubsystemTestCase extends AbstractSubsystemBaseTest {
     }
 
     private void testTransformers_1_2_0(ModelTestControllerVersion controllerVersion) throws Exception {
-        String subsystemXml = readResource("subsystem-transform-no-reject.xml");
+        String subsystemXml = readResource("subsystem_1_1.xml");
         ModelVersion modelVersion = ModelVersion.create(1, 2, 0);
         KernelServicesBuilder builder = createKernelServicesBuilder(createAdditionalInitialization())
                 .setSubsystemXml(subsystemXml);
@@ -135,6 +140,43 @@ public class ModClusterSubsystemTestCase extends AbstractSubsystemBaseTest {
         Assert.assertEquals(mainSessionCapacity.asInt(), legacySessionCapacity.asInt());
     }
 
+
+    @Test
+    public void testTransformers720() throws Exception {
+        testTransformers_1_2_0(ModelTestControllerVersion.V7_2_0_FINAL);
+    }
+
+    @Test
+    public void testTransformersEAP610() throws Exception {
+        ignoreThisTestIfEAPRepositoryIsNotReachable();
+        testTransformers_1_3_0(ModelTestControllerVersion.EAP_6_1_0);
+    }
+
+    @Test
+    public void testTransformers611() throws Exception {
+        ignoreThisTestIfEAPRepositoryIsNotReachable();
+        testTransformers_1_3_0(ModelTestControllerVersion.EAP_6_1_1);
+    }
+
+    private void testTransformers_1_3_0(ModelTestControllerVersion controllerVersion) throws Exception {
+        String subsystemXml = readResource("subsystem_1_1-expressions.xml");
+        ModelVersion modelVersion = ModelVersion.create(1, 3, 0);
+        KernelServicesBuilder builder = createKernelServicesBuilder(createAdditionalInitialization())
+                .setSubsystemXml(subsystemXml);
+
+        builder.createLegacyKernelServicesBuilder(null, controllerVersion, modelVersion)
+                .addMavenResourceURL("org.jboss.as:jboss-as-modcluster:" + controllerVersion.getMavenGavVersion())
+                .configureReverseControllerCheck(null, new Undo71TransformModelFixer());
+
+        KernelServices mainServices = builder.build();
+        KernelServices legacyServices = mainServices.getLegacyServices(modelVersion);
+        Assert.assertNotNull(legacyServices);
+        Assert.assertTrue(mainServices.isSuccessfulBoot());
+        Assert.assertTrue(legacyServices.isSuccessfulBoot());
+
+        checkSubsystemModelTransformation(mainServices, modelVersion);
+    }
+
     @Test
     public void testExpressionsAreRejected712() throws Exception {
         testExpressionsAreRejectedByVersion_1_2(ModelTestControllerVersion.V7_1_2_FINAL);
@@ -156,7 +198,7 @@ public class ModClusterSubsystemTestCase extends AbstractSubsystemBaseTest {
     }
 
     private void testExpressionsAreRejectedByVersion_1_2(ModelTestControllerVersion controllerVersion) throws Exception {
-        String subsystemXml = readResource("subsystem-transform-reject.xml");
+        String subsystemXml = readResource("subsystem_1_1-expressions.xml");
         ModelVersion modelVersion = ModelVersion.create(1, 2, 0);
         KernelServicesBuilder builder = createKernelServicesBuilder(createAdditionalInitialization());
 
@@ -204,11 +246,6 @@ public class ModClusterSubsystemTestCase extends AbstractSubsystemBaseTest {
                                         CommonAttributes.STICKY_SESSION, CommonAttributes.STICKY_SESSION_FORCE, CommonAttributes.STICKY_SESSION_REMOVE
                                 ))
         );
-    }
-
-    @Override
-    protected String getSubsystemXml() throws IOException {
-        return readResource("subsystem-transform-reject.xml");
     }
 
     @Override
