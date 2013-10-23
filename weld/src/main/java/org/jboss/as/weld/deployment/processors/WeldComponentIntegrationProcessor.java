@@ -185,8 +185,6 @@ public class WeldComponentIntegrationProcessor implements DeploymentUnitProcesso
 
         builder.install();
 
-        configuration.addAroundConstructInterceptor(new ImmediateInterceptorFactory(WeldConstructionStartInterceptor.INSTANCE), InterceptorOrder.AroundConstruct.CONSTRUCTION_START_INTERCEPTOR);
-
         configuration.addPostConstructInterceptor(new ImmediateInterceptorFactory(new WeldInjectionContextInterceptor(weldComponentService)), InterceptorOrder.ComponentPostConstruct.WELD_INJECTION_CONTEXT_INTERCEPTOR);
         configuration.addPostConstructInterceptor(new ImmediateInterceptorFactory(new WeldInterceptorInjectionInterceptor(interceptorClasses)), InterceptorOrder.ComponentPostConstruct.INTERCEPTOR_WELD_INJECTION);
         configuration.addPostConstructInterceptor(WeldInjectionInterceptor.FACTORY, InterceptorOrder.ComponentPostConstruct.COMPONENT_WELD_INJECTION);
@@ -221,6 +219,8 @@ public class WeldComponentIntegrationProcessor implements DeploymentUnitProcesso
          */
         final EjbRequestScopeActivationInterceptor.Factory postConstructRequestContextActivationFactory = new EjbRequestScopeActivationInterceptor.Factory(weldServiceName);
         configuration.addPostConstructInterceptor(postConstructRequestContextActivationFactory, InterceptorOrder.ComponentPostConstruct.REQUEST_SCOPE_ACTIVATING_INTERCEPTOR);
+        // @AroundConstruct support
+        configuration.addAroundConstructInterceptor(new ImmediateInterceptorFactory(WeldConstructionStartInterceptor.INSTANCE), InterceptorOrder.AroundConstruct.CONSTRUCTION_START_INTERCEPTOR);
     }
 
     @Override

@@ -1,9 +1,17 @@
 package org.jboss.as.weld.deployment;
 
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ConcurrentMap;
+
+import javax.enterprise.context.spi.CreationalContext;
+import javax.enterprise.inject.spi.BeanManager;
+import javax.enterprise.inject.spi.InjectionTarget;
+
 import org.jboss.as.ee.component.EEClassIntrospector;
 import org.jboss.as.naming.ManagedReference;
 import org.jboss.as.naming.ManagedReferenceFactory;
 import org.jboss.as.server.deployment.DeploymentUnit;
+import org.jboss.as.weld.injection.InjectionTargets;
 import org.jboss.as.weld.services.BeanManagerService;
 import org.jboss.msc.service.Service;
 import org.jboss.msc.service.ServiceName;
@@ -12,12 +20,8 @@ import org.jboss.msc.service.StartContext;
 import org.jboss.msc.service.StartException;
 import org.jboss.msc.service.StopContext;
 import org.jboss.msc.value.InjectedValue;
-
-import javax.enterprise.context.spi.CreationalContext;
-import javax.enterprise.inject.spi.BeanManager;
-import javax.enterprise.inject.spi.InjectionTarget;
-import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.ConcurrentMap;
+import org.jboss.weld.bean.builtin.BeanManagerProxy;
+import org.jboss.weld.manager.BeanManagerImpl;
 
 /**
  * @author Stuart Douglas
@@ -73,8 +77,8 @@ public class WeldClassIntrospector implements EEClassIntrospector, Service<EECla
         if (target != null) {
             return target;
         }
-        final BeanManager beanManager = this.beanManager.getValue();
-        InjectionTarget<?> newTarget = beanManager.createInjectionTarget(beanManager.createAnnotatedType(clazz));
+        final BeanManagerImpl beanManager = BeanManagerProxy.unwrap(this.beanManager.getValue());
+        InjectionTarget<?> newTarget = InjectionTargets.createInjectionTarget(clazz, null, beanManager, true);
         target = injectionTargets.putIfAbsent(clazz, newTarget);
         if (target == null) {
             return newTarget;

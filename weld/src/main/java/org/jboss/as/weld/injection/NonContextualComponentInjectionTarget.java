@@ -26,10 +26,12 @@ import org.jboss.weld.manager.BeanManagerImpl;
 
 /**
  * {@link javax.enterprise.inject.spi.InjectionTarget} implementation used for non-contextual EE components such as
- * message-driven beans, Servlets, tag library handlers, ...
+ * message-driven beans
  *
  * This {@link javax.enterprise.inject.spi.InjectionTarget} implementation does not provider resource injection as it would
  * otherwise be performed twice.
+ *
+ * The resulting instance does not support interception.
  *
  * @author Jozef Hartinger
  * @author Marko Luksa
