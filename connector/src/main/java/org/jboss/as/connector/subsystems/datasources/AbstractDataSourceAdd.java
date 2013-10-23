@@ -46,6 +46,7 @@ import org.jboss.as.controller.registry.ManagementResourceRegistration;
 import org.jboss.as.controller.registry.Resource;
 import org.jboss.as.naming.service.NamingService;
 import org.jboss.as.security.service.SubjectFactoryService;
+import org.jboss.as.server.Services;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.Property;
 import org.jboss.jca.core.api.connectionmanager.ccm.CachedConnectionManager;
@@ -146,8 +147,10 @@ public abstract class AbstractDataSourceAdd extends AbstractAddStepHandler {
         final ManagementResourceRegistration registration = context.getResourceRegistrationForUpdate();
 
         final ServiceName dataSourceServiceName = AbstractDataSourceService.SERVICE_NAME_BASE.append(jndiName);
-        final ServiceBuilder<?> dataSourceServiceBuilder = serviceTarget
-                .addService(dataSourceServiceName, dataSourceService)
+        final ServiceBuilder<?> dataSourceServiceBuilder =
+                Services.addServerExecutorDependency(
+                        serviceTarget.addService(dataSourceServiceName, dataSourceService),
+                        dataSourceService.getExecutorServiceInjector(), false)
                 .addDependency(ConnectorServices.MANAGEMENT_REPOSITORY_SERVICE, ManagementRepository.class,
                         dataSourceService.getManagementRepositoryInjector())
                 .addDependency(SubjectFactoryService.SERVICE_NAME, SubjectFactory.class,
