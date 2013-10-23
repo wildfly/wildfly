@@ -46,7 +46,7 @@ public class PatchBundleXml {
     private static final XMLMapper MAPPER = XMLMapper.Factory.create();
     private static final PatchBundleXml_1_0 XML1_0 = new PatchBundleXml_1_0();
     private static final XMLInputFactory INPUT_FACTORY = XMLInputFactory.newInstance();
-    private static final XMLOutputFactory OUTPUT_FACTORY = XMLOutputFactory.newFactory();
+    private static final XMLOutputFactory OUTPUT_FACTORY = XMLOutputFactory.newInstance();
 
     static {
         MAPPER.registerRootElement(new QName(PatchXml.Namespace.PATCH_BUNDLE_1_0.getNamespace(), PatchBundleXml_1_0.Element.PATCHES.name), XML1_0);
