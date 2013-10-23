@@ -40,6 +40,7 @@ import org.jboss.arquillian.container.test.api.RunAsClient;
 import org.jboss.arquillian.junit.Arquillian;
 import org.jboss.as.test.integration.ee.injection.support.InjectionSupportTestCase;
 import org.jboss.shrinkwrap.api.spec.WebArchive;
+import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
@@ -51,6 +52,7 @@ import org.junit.runner.RunWith;
  */
 @RunAsClient
 @RunWith(Arquillian.class)
+@Ignore("WFLY-2457")
 public class HttpUpgradeHandlerInjectionSupportTestCase extends InjectionSupportTestCase {
 
     private static final String CRLF = "\r\n";
