@@ -34,6 +34,8 @@ import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.ExecutorService;
+
 import javax.naming.Reference;
 import javax.resource.spi.ManagedConnectionFactory;
 import javax.sql.DataSource;
@@ -97,6 +99,7 @@ public abstract class AbstractDataSourceService implements Service<DataSource> {
     private final InjectedValue<SubjectFactory> subjectFactory = new InjectedValue<SubjectFactory>();
     private final InjectedValue<DriverRegistry> driverRegistry = new InjectedValue<DriverRegistry>();
     private final InjectedValue<CachedConnectionManager> ccmValue = new InjectedValue<CachedConnectionManager>();
+    private final InjectedValue<ExecutorService> executor = new InjectedValue<ExecutorService>();
 
     private final String jndiName;
 
@@ -130,7 +133,31 @@ public abstract class AbstractDataSourceService implements Service<DataSource> {
 
     protected abstract AS7DataSourceDeployer getDeployer() throws ValidateException ;
 
-    public synchronized void stop(StopContext stopContext) {
+    public void stop(final StopContext stopContext) {
+        ExecutorService executorService = executor.getValue();
+        Runnable r = new Runnable() {
+            @Override
+            public void run() {
+                synchronized (this) {
+                    try {
+                        stopService();
+                    } finally {
+                        stopContext.complete();
+                    }
+                }
+            }
+        };
+        synchronized (r) {
+            executorService.execute(r);
+            stopContext.asynchronous();
+        }
+    }
+
+    /**
+     * Performs the actual work of stopping the service. Should be called by {@link #stop(org.jboss.msc.service.StopContext)}
+     * asynchronously from the MSC thread that invoked stop.
+     */
+    protected synchronized void stopService() {
         if (deploymentMD != null) {
 
             if (deploymentMD.getDataSources() != null && managementRepositoryValue.getValue() != null) {
@@ -147,6 +174,7 @@ public abstract class AbstractDataSourceService implements Service<DataSource> {
         }
 
         sqlDataSource = null;
+
     }
 
     public CommonDeployment getDeploymentMD() {
@@ -179,6 +207,10 @@ public abstract class AbstractDataSourceService implements Service<DataSource> {
 
     public Injector<CachedConnectionManager> getCcmInjector() {
         return ccmValue;
+    }
+
+    public Injector<ExecutorService> getExecutorServiceInjector() {
+        return executor;
     }
 
     protected String buildConfigPropsString(Map<String, String> configProps) {

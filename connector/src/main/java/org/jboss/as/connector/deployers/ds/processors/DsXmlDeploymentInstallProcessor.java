@@ -57,6 +57,7 @@ import org.jboss.as.naming.deployment.ContextNames;
 import org.jboss.as.naming.service.BinderService;
 import org.jboss.as.naming.service.NamingService;
 import org.jboss.as.security.service.SubjectFactoryService;
+import org.jboss.as.server.Services;
 import org.jboss.as.server.deployment.DeploymentModelUtils;
 import org.jboss.as.server.deployment.DeploymentPhaseContext;
 import org.jboss.as.server.deployment.DeploymentUnit;
@@ -274,8 +275,10 @@ public class DsXmlDeploymentInstallProcessor implements DeploymentUnitProcessor 
 
 
         final ServiceName dataSourceServiceName = AbstractDataSourceService.SERVICE_NAME_BASE.append(jndiName);
-        final ServiceBuilder<?> dataSourceServiceBuilder = serviceTarget
-                .addService(dataSourceServiceName, dataSourceService)
+        final ServiceBuilder<?> dataSourceServiceBuilder =
+                Services.addServerExecutorDependency(
+                        serviceTarget.addService(dataSourceServiceName, dataSourceService),
+                        dataSourceService.getExecutorServiceInjector(), false)
                 .addDependency(ConnectorServices.TRANSACTION_INTEGRATION_SERVICE, TransactionIntegration.class,
                         dataSourceService.getTransactionIntegrationInjector())
                 .addDependency(ConnectorServices.MANAGEMENT_REPOSITORY_SERVICE, ManagementRepository.class,
