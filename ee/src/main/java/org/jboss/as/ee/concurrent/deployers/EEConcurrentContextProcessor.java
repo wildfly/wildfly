@@ -106,7 +106,7 @@ public class EEConcurrentContextProcessor implements DeploymentUnitProcessor {
         concurrentContext.addFactory(transactionLeakContextHandleFactory);
 
         final ConcurrentContextService service = new ConcurrentContextService(concurrentContext);
-        final ServiceName serviceName = ConcurrentServiceNames.getConcurrentContextServiceName(concurrentContext.getApplicationName(), concurrentContext.getModuleName(), concurrentContext.getComponentName());
+        final ServiceName serviceName = ConcurrentServiceNames.getConcurrentContextServiceName(concurrentContext.getApplicationName(), deploymentUnit.getName(), concurrentContext.getComponentName());
         serviceTarget.addService(serviceName, service)
                 .addDependency(ServiceName.JBOSS.append("txn", "TransactionManager"), TransactionManager.class, transactionLeakContextHandleFactory)
                 .install();
