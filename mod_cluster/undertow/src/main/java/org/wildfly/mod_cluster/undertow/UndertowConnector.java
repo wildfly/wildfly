@@ -25,7 +25,7 @@ package org.wildfly.mod_cluster.undertow;
 import java.net.InetAddress;
 
 import org.jboss.modcluster.container.Connector;
-import org.wildfly.extension.undertow.AbstractListenerService;
+import org.wildfly.extension.undertow.ListenerService;
 import org.wildfly.extension.undertow.AjpListenerService;
 import org.wildfly.extension.undertow.HttpListenerService;
 import org.wildfly.mod_cluster.undertow.metric.BytesReceivedStreamSourceConduit;
@@ -34,7 +34,7 @@ import org.wildfly.mod_cluster.undertow.metric.RequestCountHttpHandler;
 import org.wildfly.mod_cluster.undertow.metric.RunningRequestsThreadSetupAction;
 
 /**
- * Adapts {@link AbstractListenerService} to a {@link Connector}.
+ * Adapts {@link org.wildfly.extension.undertow.ListenerService} to a {@link Connector}.
  *
  * @author Radoslav Husar
  * @version Aug 2013
@@ -42,9 +42,9 @@ import org.wildfly.mod_cluster.undertow.metric.RunningRequestsThreadSetupAction;
  */
 public class UndertowConnector implements Connector {
 
-    private final AbstractListenerService<?> listener;
+    private final ListenerService<?> listener;
 
-    public UndertowConnector(AbstractListenerService<?> listener) {
+    public UndertowConnector(ListenerService<?> listener) {
         this.listener = listener;
     }
 

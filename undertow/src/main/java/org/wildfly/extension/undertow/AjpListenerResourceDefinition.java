@@ -35,7 +35,7 @@ import org.jboss.dmr.ModelType;
 /**
  * @author <a href="mailto:tomaz.cerar@redhat.com">Tomaz Cerar</a> (c) 2012 Red Hat Inc.
  */
-public class AjpListenerResourceDefinition extends AbstractListenerResourceDefinition {
+public class AjpListenerResourceDefinition extends ListenerResourceDefinition {
     protected static final AjpListenerResourceDefinition INSTANCE = new AjpListenerResourceDefinition();
 
     protected static final SimpleAttributeDefinition SCHEME = new SimpleAttributeDefinitionBuilder(Constants.SCHEME, ModelType.STRING)
@@ -49,7 +49,7 @@ public class AjpListenerResourceDefinition extends AbstractListenerResourceDefin
     }
 
     @Override
-    protected AbstractListenerAdd getAddHandler() {
+    protected ListenerAdd getAddHandler() {
         return new AjpListenerAdd(this);
     }
 

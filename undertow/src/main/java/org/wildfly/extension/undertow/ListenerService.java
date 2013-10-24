@@ -49,9 +49,9 @@ import org.xnio.channels.AcceptingChannel;
 /**
  * @author Tomaz Cerar
  */
-public abstract class AbstractListenerService<T> implements Service<T> {
+public abstract class ListenerService<T> implements Service<T> {
 
-    protected static final OptionMap SERVER_OPTIONS = OptionMap.builder()
+    protected static final OptionMap commonOptions = OptionMap.builder()
             .set(Options.TCP_NODELAY, true)
             .set(Options.REUSE_ADDRESSES, true)
             .getMap();
@@ -62,11 +62,13 @@ public abstract class AbstractListenerService<T> implements Service<T> {
     protected final List<HandlerWrapper> listenerHandlerWrappers = new ArrayList<>();
 
     private final String name;
+    protected final OptionMap listenerOptions;
     protected volatile OpenListener openListener;
 
 
-    protected AbstractListenerService(String name) {
+    protected ListenerService(String name, OptionMap listenerOptions) {
         this.name = name;
+        this.listenerOptions = listenerOptions;
     }
 
     public InjectedValue<XnioWorker> getWorker() {

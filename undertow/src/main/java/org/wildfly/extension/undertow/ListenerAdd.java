@@ -32,23 +32,25 @@ import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.ServiceVerificationHandler;
-import org.wildfly.extension.io.IOServices;
 import org.jboss.as.network.SocketBinding;
 import org.jboss.dmr.ModelNode;
 import org.jboss.msc.service.ServiceBuilder;
 import org.jboss.msc.service.ServiceController;
 import org.jboss.msc.service.ServiceName;
+import org.wildfly.extension.io.IOServices;
+import org.wildfly.extension.io.OptionList;
+import org.xnio.OptionMap;
 import org.xnio.Pool;
 import org.xnio.XnioWorker;
 
 /**
  * @author <a href="mailto:tomaz.cerar@redhat.com">Tomaz Cerar</a> (c) 2012 Red Hat Inc.
  */
-abstract class AbstractListenerAdd extends AbstractAddStepHandler {
-    private final AbstractListenerResourceDefinition listenerDefinition;
+abstract class ListenerAdd extends AbstractAddStepHandler {
+    private final ListenerResourceDefinition listenerDefinition;
 
 
-    AbstractListenerAdd(AbstractListenerResourceDefinition definition) {
+    ListenerAdd(ListenerResourceDefinition definition) {
         this.listenerDefinition = definition;
     }
 
@@ -64,15 +66,14 @@ abstract class AbstractListenerAdd extends AbstractAddStepHandler {
         final PathAddress address = PathAddress.pathAddress(operation.get(OP_ADDR));
         final PathAddress parent = address.subAddress(0, address.size() - 1);
         String name = address.getLastElement().getValue();
-        String bindingRef = AbstractListenerResourceDefinition.SOCKET_BINDING.resolveModelAttribute(context, model).asString();
-        String workerName = AbstractListenerResourceDefinition.WORKER.resolveModelAttribute(context, model).asString();
-        String bufferPoolName = AbstractListenerResourceDefinition.BUFFER_POOL.resolveModelAttribute(context, model).asString();
-        boolean enabled = AbstractListenerResourceDefinition.ENABLED.resolveModelAttribute(context, model).asBoolean();
-        long maxUploadSize = AbstractListenerResourceDefinition.MAX_POST_SIZE.resolveModelAttribute(context, model).asLong();
+        String bindingRef = ListenerResourceDefinition.SOCKET_BINDING.resolveModelAttribute(context, model).asString();
+        String workerName = ListenerResourceDefinition.WORKER.resolveModelAttribute(context, model).asString();
+        String bufferPoolName = ListenerResourceDefinition.BUFFER_POOL.resolveModelAttribute(context, model).asString();
+        boolean enabled = ListenerResourceDefinition.ENABLED.resolveModelAttribute(context, model).asBoolean();
+        OptionMap options = OptionList.resolveOptions(context, model, ListenerResourceDefinition.OPTIONS);
         String serverName = parent.getLastElement().getValue();
-
-        final AbstractListenerService<? extends AbstractListenerService> service = createService(name, serverName, context, model, maxUploadSize);
-        final ServiceBuilder<? extends AbstractListenerService> serviceBuilder = context.getServiceTarget().addService(constructServiceName(name), service);
+        final ListenerService<? extends ListenerService> service = createService(name, serverName, context, model, options);
+        final ServiceBuilder<? extends ListenerService> serviceBuilder = context.getServiceTarget().addService(constructServiceName(name), service);
         serviceBuilder.addDependency(IOServices.WORKER.append(workerName), XnioWorker.class, service.getWorker())
                 .addDependency(SocketBinding.JBOSS_BINDING_NAME.append(bindingRef), SocketBinding.class, service.getBinding())
                 .addDependency(IOServices.BUFFER_POOL.append(bufferPoolName), Pool.class, service.getBufferPool())
@@ -82,7 +83,7 @@ abstract class AbstractListenerAdd extends AbstractAddStepHandler {
         serviceBuilder.setInitialMode(enabled ? ServiceController.Mode.ACTIVE : ServiceController.Mode.NEVER);
 
         serviceBuilder.addListener(verificationHandler);
-        final ServiceController<? extends AbstractListenerService> serviceController = serviceBuilder.install();
+        final ServiceController<? extends ListenerService> serviceController = serviceBuilder.install();
         if (newControllers != null) {
             newControllers.add(serviceController);
         }
@@ -90,9 +91,8 @@ abstract class AbstractListenerAdd extends AbstractAddStepHandler {
 
     abstract ServiceName constructServiceName(final String name);
 
-    abstract AbstractListenerService<? extends AbstractListenerService> createService(final String name, String serverName, final OperationContext context, ModelNode model, long maxUploadSize) throws OperationFailedException;
+    abstract ListenerService<? extends ListenerService> createService(String name, final String serverName, final OperationContext context, ModelNode model, OptionMap listenerOptions) throws OperationFailedException;
 
-    abstract void configureAdditionalDependencies(OperationContext context, ServiceBuilder<? extends AbstractListenerService> serviceBuilder, ModelNode model, AbstractListenerService service) throws OperationFailedException;
-
+    abstract void configureAdditionalDependencies(OperationContext context, ServiceBuilder<? extends ListenerService> serviceBuilder, ModelNode model, ListenerService service) throws OperationFailedException;
 
 }

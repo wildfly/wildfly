@@ -58,6 +58,7 @@ public class UndertowExtension implements Extension {
     protected static final PathElement PATH_ACCESS_LOG = PathElement.pathElement(Constants.SETTING, Constants.ACCESS_LOG);
     public static final PathElement PATH_FILTER_REF = PathElement.pathElement(Constants.FILTER_REF);
     private static final String RESOURCE_NAME = UndertowExtension.class.getPackage().getName() + ".LocalDescriptions";
+    static final PathElement OPTIONS_PATH = PathElement.pathElement(Constants.SETTING, Constants.OPTIONS);
 
     public static StandardResourceDescriptionResolver getResolver(final String... keyPrefix) {
         StringBuilder prefix = new StringBuilder(SUBSYSTEM_NAME);

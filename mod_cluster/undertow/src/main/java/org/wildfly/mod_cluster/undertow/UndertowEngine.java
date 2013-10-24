@@ -30,7 +30,7 @@ import org.jboss.modcluster.container.Connector;
 import org.jboss.modcluster.container.Engine;
 import org.jboss.modcluster.container.Host;
 import org.jboss.modcluster.container.Server;
-import org.wildfly.extension.undertow.AbstractListenerService;
+import org.wildfly.extension.undertow.ListenerService;
 import org.wildfly.extension.undertow.UndertowService;
 
 /**
@@ -99,7 +99,7 @@ public class UndertowEngine implements Engine {
 
     @Override
     public Iterable<Connector> getConnectors() {
-        final Iterator<AbstractListenerService<?>> listeners = this.server.getListeners().iterator();
+        final Iterator<ListenerService<?>> listeners = this.server.getListeners().iterator();
 
         final Iterator<Connector> iterator = new Iterator<Connector>() {
             @Override

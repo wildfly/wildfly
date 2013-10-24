@@ -46,8 +46,8 @@ class WebServerService implements CommonWebServer, Service<WebServerService> {
     //todo we need to handle cases when deployments reference listeners/server/host directly
     @Override
     public int getPort(final String protocol, final boolean secure) {
-        Map<String, AbstractListenerService> listeners = getListenerMap();
-        AbstractListenerService listener = null;
+        Map<String, ListenerService> listeners = getListenerMap();
+        ListenerService listener = null;
         for (String p : listeners.keySet()) {
             if (protocol.toLowerCase().contains(p)) {
                 listener = listeners.get(p);
@@ -68,9 +68,9 @@ class WebServerService implements CommonWebServer, Service<WebServerService> {
 
     }
 
-    private Map<String, AbstractListenerService> getListenerMap() {
-        HashMap<String, AbstractListenerService> listeners = new HashMap<>();
-        for (AbstractListenerService listener : serverInjectedValue.getValue().getListeners()) {
+    private Map<String, ListenerService> getListenerMap() {
+        HashMap<String, ListenerService> listeners = new HashMap<>();
+        for (ListenerService listener : serverInjectedValue.getValue().getListeners()) {
             listeners.put(listener.getProtocol(), listener);
         }
         return listeners;
