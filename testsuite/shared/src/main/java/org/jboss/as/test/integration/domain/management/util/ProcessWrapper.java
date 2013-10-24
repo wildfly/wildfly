@@ -65,6 +65,12 @@ class ProcessWrapper {
         });
     }
 
+    int getExitValue() {
+        synchronized (this) {
+            return process.exitValue();
+        }
+    }
+
     void start() throws Exception {
         synchronized (this) {
             if(stopped) {

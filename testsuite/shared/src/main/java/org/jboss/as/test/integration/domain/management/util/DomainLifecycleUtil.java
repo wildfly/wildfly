@@ -295,6 +295,10 @@ public class DomainLifecycleUtil {
         return getExecutorService().submit(c);
     }
 
+    public int getProcessExitCode() {
+        return process.getExitValue();
+    }
+
     /**
      * Stop and wait for the process to exit.
      */

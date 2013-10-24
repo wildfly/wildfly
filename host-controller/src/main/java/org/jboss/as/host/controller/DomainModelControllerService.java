@@ -456,6 +456,9 @@ public class DomainModelControllerService extends AbstractControllerService impl
                 Future<ServerInventory> inventoryFuture = ServerInventoryService.install(serviceTarget, this, runningModeControl, environment,
                         extensionRegistry, hostControllerInfo.getNativeManagementInterface(), hostControllerInfo.getNativeManagementPort());
 
+                // Run the initialization
+                runPerformControllerInitialization(context);
+
                 if (!hostControllerInfo.isMasterDomainController() && !environment.isUseCachedDc()) {
                     serverInventory = getFuture(inventoryFuture);
 
@@ -506,9 +509,6 @@ public class DomainModelControllerService extends AbstractControllerService impl
                         ROOT_LOGGER.reportAdminOnlyDomainXmlFailure();
                         ok = true;
                     }
-
-                    // Run the initialization
-                    runPerformControllerInitialization(context);
 
                     if (ok) {
                         InternalExecutor executor = new InternalExecutor();
