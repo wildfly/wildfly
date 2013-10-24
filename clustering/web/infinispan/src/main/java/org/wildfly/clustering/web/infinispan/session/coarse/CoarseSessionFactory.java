@@ -31,6 +31,7 @@ import org.jboss.as.clustering.infinispan.invoker.Mutator;
 import org.jboss.as.clustering.marshalling.MarshalledValue;
 import org.jboss.as.clustering.marshalling.MarshallingContext;
 import org.wildfly.clustering.web.LocalContextFactory;
+import org.wildfly.clustering.web.infinispan.InfinispanWebLogger;
 import org.wildfly.clustering.web.infinispan.session.CacheMutator;
 import org.wildfly.clustering.web.infinispan.session.InfinispanImmutableSession;
 import org.wildfly.clustering.web.infinispan.session.InfinispanSession;
@@ -119,8 +120,9 @@ public class CoarseSessionFactory<L> implements SessionFactory<CoarseSessionEntr
 
     @Override
     public void evict(String id) {
-        if (this.invoker.invoke(this.sessionCache, new EvictOperation<String, CoarseSessionCacheEntry<L>>(id), Flag.FAIL_SILENTLY).booleanValue()) {
-            this.invoker.invoke(this.attributesCache, new PreLockedEvictOperation<SessionAttributesCacheKey, MarshalledValue<Map<String, Object>, MarshallingContext>>(new SessionAttributesCacheKey(id)), Flag.FAIL_SILENTLY);
+        boolean evicted = this.invoker.invoke(this.sessionCache, new EvictOperation<String, CoarseSessionCacheEntry<L>>(id)).booleanValue();
+        if (!evicted || !this.invoker.invoke(this.attributesCache, new PreLockedEvictOperation<SessionAttributesCacheKey, MarshalledValue<Map<String, Object>, MarshallingContext>>(new SessionAttributesCacheKey(id))).booleanValue()) {
+            InfinispanWebLogger.ROOT_LOGGER.failedToPassivateSession(id);
         }
     }
 }

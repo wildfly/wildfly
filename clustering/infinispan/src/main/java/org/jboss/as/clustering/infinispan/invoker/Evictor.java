@@ -24,7 +24,9 @@ package org.jboss.as.clustering.infinispan.invoker;
 import java.util.Collections;
 
 import org.infinispan.Cache;
+import org.infinispan.commons.CacheException;
 import org.infinispan.context.Flag;
+import org.jboss.as.clustering.infinispan.InfinispanLogger;
 
 /**
  * Evicts a cache entry.
@@ -42,7 +44,7 @@ public interface Evictor<K> {
      */
     class EvictOperation<K, V> implements CacheInvoker.Operation<K, V, Boolean> {
         private final K key;
-        private final CacheInvoker.Operation<K, V, Void> operation;
+        private final CacheInvoker.Operation<K, V, Boolean> operation;
 
         public EvictOperation(K key) {
             this.key = key;
@@ -51,18 +53,15 @@ public interface Evictor<K> {
 
         @Override
         public Boolean invoke(Cache<K, V> cache) {
-            boolean locked = cache.getAdvancedCache().lock(Collections.singleton(this.key));
-            if (locked) {
-                this.operation.invoke(cache);
-            }
-            return locked;
+            boolean locked = cache.getAdvancedCache().withFlags(Flag.FAIL_SILENTLY).lock(Collections.singleton(this.key));
+            return (locked) ? this.operation.invoke(cache) : locked;
         }
     }
 
     /**
      * Reusable eviction operation.
      */
-    class PreLockedEvictOperation<K, V> implements CacheInvoker.Operation<K, V, Void> {
+    class PreLockedEvictOperation<K, V> implements CacheInvoker.Operation<K, V, Boolean> {
         private final K key;
 
         public PreLockedEvictOperation(K key) {
@@ -70,9 +69,14 @@ public interface Evictor<K> {
         }
 
         @Override
-        public Void invoke(Cache<K, V> cache) {
-            cache.getAdvancedCache().withFlags(Flag.SKIP_LOCKING).evict(this.key);
-            return null;
+        public Boolean invoke(Cache<K, V> cache) {
+            try {
+                cache.getAdvancedCache().withFlags(Flag.SKIP_LOCKING).evict(this.key);
+                return true;
+            } catch (CacheException e) {
+                InfinispanLogger.ROOT_LOGGER.debugf(e, "Failed to evict %s from %s.%s cache", this.key, cache.getCacheManager().getCacheManagerConfiguration().globalJmxStatistics().cacheManagerName(), cache.getName());
+                return false;
+            }
         }
     }
 }

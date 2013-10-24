@@ -33,6 +33,7 @@ import org.jboss.as.clustering.marshalling.MarshallingContext;
 import org.wildfly.clustering.ejb.infinispan.BeanGroup;
 import org.wildfly.clustering.ejb.infinispan.BeanGroupEntry;
 import org.wildfly.clustering.ejb.infinispan.BeanGroupFactory;
+import org.wildfly.clustering.ejb.infinispan.InfinispanEjbLogger;
 
 /**
  * Encapsulates the cache mapping strategy of a bean group.
@@ -72,7 +73,9 @@ public class InfinispanBeanGroupFactory<G, I, T> implements BeanGroupFactory<G, 
 
     @Override
     public void evict(G id) {
-        this.invoker.invoke(this.cache, new EvictOperation<G, BeanGroupEntry<I, T>>(id), Flag.FAIL_SILENTLY);
+        if (!this.invoker.invoke(this.cache, new EvictOperation<G, BeanGroupEntry<I, T>>(id)).booleanValue()) {
+            InfinispanEjbLogger.ROOT_LOGGER.failedToPassivateBeanGroup(id);
+        }
     }
 
     @Override

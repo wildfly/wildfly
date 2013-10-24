@@ -22,7 +22,6 @@
 package org.wildfly.clustering.ejb.infinispan.bean;
 
 import org.infinispan.Cache;
-import org.infinispan.context.Flag;
 import org.jboss.as.clustering.infinispan.invoker.CacheInvoker;
 import org.jboss.as.clustering.infinispan.invoker.Creator;
 import org.jboss.as.clustering.infinispan.invoker.Locator;
@@ -37,6 +36,7 @@ import org.wildfly.clustering.ejb.infinispan.BeanGroup;
 import org.wildfly.clustering.ejb.infinispan.BeanGroupEntry;
 import org.wildfly.clustering.ejb.infinispan.BeanGroupFactory;
 import org.wildfly.clustering.ejb.infinispan.BeanKey;
+import org.wildfly.clustering.ejb.infinispan.InfinispanEjbLogger;
 import org.wildfly.clustering.ejb.infinispan.InfinispanEjbMessages;
 
 /**
@@ -114,7 +114,9 @@ public class InfinispanBeanFactory<G, I, T> implements BeanFactory<G, I, T> {
         if (entry != null) {
             // The actual bean instance is stored in the group, so this is the important entry to evict.
             this.groupFactory.evict(entry.getGroupId());
-            this.invoker.invoke(this.beanCache, new PreLockedEvictOperation<BeanKey<I>, BeanEntry<G>>(key), Flag.FAIL_SILENTLY);
+            if (!this.invoker.invoke(this.beanCache, new PreLockedEvictOperation<BeanKey<I>, BeanEntry<G>>(key)).booleanValue()) {
+                InfinispanEjbLogger.ROOT_LOGGER.failedToPassivateBean(id);
+            }
         }
     }
 }
