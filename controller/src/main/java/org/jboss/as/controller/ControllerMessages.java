@@ -2699,8 +2699,10 @@ public interface ControllerMessages {
     @Message(id = 13468, value = "Attempt was made to both remove and add a handler reference from a composite operation")
     IllegalStateException attemptToBothRemoveAndAddHandlerReferenceFromCompositeOperation();
 
-    @Message(id = 13469, value = "Unable to unmarshall Subject received for request.")
-    IOException unableToUnmarshallSubject(@Cause ClassNotFoundException e);
+    // This Message ID never made it to a Final release although it was close so may be referenced!
+
+    //@Message(id = 13469, value = "Unable to unmarshall Subject received for request.")
+    //IOException unableToUnmarshallSubject(@Cause ClassNotFoundException e);
 
     @Message(id = 13470, value = "Unknown role '%s'")
     IllegalArgumentException unknownRole(String roleName);
@@ -2726,12 +2728,17 @@ public interface ControllerMessages {
     @Message(id = 13477, value = "Incompatible permission type %s")
     IllegalArgumentException incompatiblePermissionType(Class<?> clazz);
 
-
     @Message(id = 13478, value = "Management resource '%s' not found")
     String managementResourceNotFoundMessage(PathAddress pathAddress);
 
     @Message(id = 13479, value = "The following attributes are nillable in the current model but must be defined in the target model version: %s")
     String attributesMustBeDefined(Set<String> keySet);
+
+    @Message(id = 13480, value = "Unsupported Principal type '%X' received.")
+    IOException unsupportedPrincipalType(byte type);
+
+    @Message(id = 13481, value = "Unsupported Principal parameter '%X' received parsing principal type '%X'.")
+    IOException unsupportedPrincipalParameter(byte parameterType, byte principalType);
 
     // 13499 IS END OF 134xx SERIES USABLE FOR NON-LOGGER MESSAGES
 }

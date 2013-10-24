@@ -58,7 +58,6 @@ import org.jboss.as.protocol.mgmt.ManagementRequestHandlerFactory;
 import org.jboss.as.protocol.mgmt.ManagementRequestHeader;
 import org.jboss.as.protocol.mgmt.ManagementResponseHeader;
 import org.jboss.dmr.ModelNode;
-import org.jboss.marshalling.Marshaller;
 import org.jboss.threads.AsyncFuture;
 
 /**
@@ -479,16 +478,7 @@ class TransactionalProtocolClientImpl implements ManagementRequestHandlerFactory
     }
 
     static void writeSubject(final FlushableDataOutput output, final Subject subject) throws IOException {
-        output.writeByte(ModelControllerProtocol.PARAM_SUBJECT_LENGTH);
-        if (subject != null) {
-            output.writeInt(1);
-            Marshaller marshaller = MarshallingUtil.getMarshaller();
-            marshaller.start(MarshallingUtil.createByteOutput(output));
-            marshaller.writeObject(subject);
-            marshaller.finish();
-        } else {
-            output.writeInt(0);
-        }
+        SubjectProtocolUtil.write(output, subject);
     }
 
 }

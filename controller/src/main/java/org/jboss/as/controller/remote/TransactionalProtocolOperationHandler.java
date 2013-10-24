@@ -22,7 +22,6 @@
 
 package org.jboss.as.controller.remote;
 
-import static org.jboss.as.controller.ControllerMessages.MESSAGES;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.FAILED;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.FAILURE_DESCRIPTION;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OUTCOME;
@@ -55,8 +54,6 @@ import org.jboss.as.protocol.mgmt.ManagementRequestHeader;
 import org.jboss.as.protocol.mgmt.ManagementResponseHeader;
 import org.jboss.as.protocol.mgmt.ProtocolUtils;
 import org.jboss.dmr.ModelNode;
-import org.jboss.marshalling.ByteInput;
-import org.jboss.marshalling.Unmarshaller;
 
 /**
  * The transactional request handler for a remote {@link TransactionalProtocolClient}.
@@ -411,23 +408,7 @@ public class TransactionalProtocolOperationHandler implements ManagementRequestH
     }
 
     static Subject readSubject(final DataInput input) throws IOException {
-        ProtocolUtils.expectHeader(input, ModelControllerProtocol.PARAM_SUBJECT_LENGTH);
-        final int size = input.readInt();
-        Subject subject;
-        if (size == 1) {
-            Unmarshaller unmarshaller = MarshallingUtil.getUnmarshaller();
-            ByteInput byteInput = MarshallingUtil.createByteInput(input);
-            unmarshaller.start(byteInput);
-            try {
-                subject = unmarshaller.readObject(Subject.class);
-            } catch (ClassNotFoundException e) {
-                throw MESSAGES.unableToUnmarshallSubject(e);
-            }
-            unmarshaller.finish();
-        } else {
-            subject = null;
-        }
-        return subject;
+        return SubjectProtocolUtil.read(input);
     }
 
 }
