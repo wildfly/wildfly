@@ -22,6 +22,8 @@
 package org.jboss.as.controller.remote;
 
 
+import javax.security.auth.Subject;
+
 import org.jboss.as.core.security.SubjectUserInfo;
 import org.jboss.as.protocol.mgmt.ManagementChannelHandler;
 import org.jboss.as.protocol.mgmt.ManagementClientChannelStrategy;
@@ -40,12 +42,15 @@ public class ModelControllerClientOperationHandlerFactoryService extends Abstrac
         final ManagementChannelHandler handler = new ManagementChannelHandler(ManagementClientChannelStrategy.create(channel),
                 getExecutor());
         UserInfo userInfo = channel.getConnection().getUserInfo();
+        final Subject subject;
         if (userInfo instanceof SubjectUserInfo) {
-            handler.addHandlerFactory(new ModelControllerClientOperationHandler(getController(), handler,
-                    ((SubjectUserInfo) userInfo).getSubject()));
+            subject = ((SubjectUserInfo) userInfo).getSubject();
         } else {
-            handler.addHandlerFactory(new ModelControllerClientOperationHandler(getController(), handler));
+            subject = new Subject();
         }
+
+        handler.addHandlerFactory(new ModelControllerClientOperationHandler(getController(), handler, subject));
+
         channel.receiveMessage(handler.getReceiver());
         return handler;
     }

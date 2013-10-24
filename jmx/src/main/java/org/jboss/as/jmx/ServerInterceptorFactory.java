@@ -59,32 +59,33 @@ class ServerInterceptorFactory implements ServerMessageInterceptorFactory {
         @Override
         public void handleEvent(final Event event) throws IOException {
             UserInfo userInfo = channel.getConnection().getUserInfo();
+            final Subject subject;
             if (userInfo instanceof SubjectUserInfo) {
-                final Subject subject = ((SubjectUserInfo) userInfo).getSubject();
-
-                try {
-                    AccessAuditContext.doAs(subject, new PrivilegedExceptionAction<Void>() {
-
-                        @Override
-                        public Void run() throws IOException {
-                            SecurityActions.currentAccessAuditContext().setAccessMechanism(AccessMechanism.JMX);
-                            event.run();
-
-                            return null;
-                        }
-                    });
-                } catch (PrivilegedActionException e) {
-                    Exception cause = e.getException();
-                    if (cause instanceof IOException) {
-                        throw (IOException) cause;
-                    } else {
-                        throw new IOException(cause);
-                    }
-                }
-
+                subject = ((SubjectUserInfo) userInfo).getSubject();
             } else {
-                event.run();
+                subject = new Subject();
             }
+
+            try {
+                AccessAuditContext.doAs(subject, new PrivilegedExceptionAction<Void>() {
+
+                    @Override
+                    public Void run() throws IOException {
+                        SecurityActions.currentAccessAuditContext().setAccessMechanism(AccessMechanism.JMX);
+                        event.run();
+
+                        return null;
+                    }
+                });
+            } catch (PrivilegedActionException e) {
+                Exception cause = e.getException();
+                if (cause instanceof IOException) {
+                    throw (IOException) cause;
+                } else {
+                    throw new IOException(cause);
+                }
+            }
+
         }
 
     }

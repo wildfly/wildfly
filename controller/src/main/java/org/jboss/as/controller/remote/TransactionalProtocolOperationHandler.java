@@ -35,6 +35,7 @@ import java.util.concurrent.CountDownLatch;
 
 import javax.security.auth.Subject;
 
+import org.jboss.as.controller.AccessAuditContext;
 import org.jboss.as.controller.ModelController;
 import org.jboss.as.controller.ProxyController;
 import org.jboss.as.controller.client.OperationAttachments;
@@ -105,7 +106,7 @@ public class TransactionalProtocolOperationHandler implements ManagementRequestH
             if (readSubject != null && readSubject) {
                 subject = readSubject(input);
             } else {
-                subject = null;
+                subject = new Subject();
             }
 
             final PrivilegedAction<Void> action = new PrivilegedAction<Void>() {
@@ -128,7 +129,7 @@ public class TransactionalProtocolOperationHandler implements ManagementRequestH
 
                         @Override
                         public Void run() {
-                            Subject.doAs(subject, action);
+                            AccessAuditContext.doAs(subject, action);
                             return null;
                         }
                     });

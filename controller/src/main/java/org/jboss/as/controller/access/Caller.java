@@ -75,11 +75,11 @@ public final class Caller {
     public String getName() {
         if (name == null && subject != null) {
             Set<AccountPrincipal> accounts = subject.getPrincipals(AccountPrincipal.class);
-            if (accounts.size() != 1) {
+            if (accounts.size() == 1) {
+                name = accounts.iterator().next().getName();
+            } else if (accounts.size() >= 1) {
                 throw MESSAGES.unexpectedAccountPrincipalCount(accounts.size());
             }
-
-            name = accounts.iterator().next().getName();
         }
 
         return name;
