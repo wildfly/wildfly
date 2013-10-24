@@ -50,11 +50,11 @@ import org.jboss.logging.Logger;
     @AdministeredObjectDefinition(
         className = "org.jboss.as.test.integration.jca.rar.MultipleAdminObject1Impl",
         name = "java:module/rardeployment/ModuleAdmin",
-        resourceAdapter = "#eis.rar"),
+        resourceAdapter = "eis.rar"),
     @AdministeredObjectDefinition(
         className = "org.jboss.as.test.integration.jca.rar.MultipleAdminObject1Impl",
         name = "java:global/rardeployment/GlobalAdmin",
-        resourceAdapter = "#eis")
+        resourceAdapter = "eis")
 })
 
 @ConnectionFactoryDefinition(interfaceName = "org.jboss.as.test.integration.jca.rar.MultipleConnectionFactory1",
@@ -68,11 +68,11 @@ import org.jboss.logging.Logger;
     @ConnectionFactoryDefinition(
         interfaceName = "org.jboss.as.test.integration.jca.rar.MultipleConnectionFactory1",
         name = "java:module/rardeployment/ModuleCF",
-        resourceAdapter = "#eis.rar"),
+        resourceAdapter = "eis.rar"),
     @ConnectionFactoryDefinition(
         interfaceName = "org.jboss.as.test.integration.jca.rar.MultipleConnectionFactory1",
         name = "java:global/rardeployment/GlobalCF",
-        resourceAdapter = "#eis")
+        resourceAdapter = "eis")
 })
 /**
  * A servlet that accesses a resource adapter deployments.

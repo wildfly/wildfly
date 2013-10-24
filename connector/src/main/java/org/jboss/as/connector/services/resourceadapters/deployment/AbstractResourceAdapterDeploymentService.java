@@ -54,12 +54,6 @@ import org.jboss.as.naming.ManagedReferenceFactory;
 import org.jboss.as.naming.ServiceBasedNamingStore;
 import org.jboss.as.naming.deployment.ContextNames;
 import org.jboss.as.naming.service.BinderService;
-import org.jboss.msc.service.StartContext;
-import org.jboss.msc.service.StopContext;
-import org.jboss.threads.JBossThreadFactory;
-import org.wildfly.security.manager.ClearContextClassLoaderAction;
-import org.wildfly.security.manager.GetAccessControlContextAction;
-import org.wildfly.security.manager.SetContextClassLoaderFromClassAction;
 import org.jboss.jca.common.api.metadata.ironjacamar.IronJacamar;
 import org.jboss.jca.common.api.metadata.ra.ConfigProperty;
 import org.jboss.jca.common.api.metadata.ra.Connector;
@@ -82,8 +76,14 @@ import org.jboss.msc.service.ServiceBuilder;
 import org.jboss.msc.service.ServiceController;
 import org.jboss.msc.service.ServiceName;
 import org.jboss.msc.service.ServiceTarget;
+import org.jboss.msc.service.StartContext;
+import org.jboss.msc.service.StopContext;
 import org.jboss.msc.value.InjectedValue;
 import org.jboss.security.SubjectFactory;
+import org.jboss.threads.JBossThreadFactory;
+import org.wildfly.security.manager.ClearContextClassLoaderAction;
+import org.wildfly.security.manager.GetAccessControlContextAction;
+import org.wildfly.security.manager.SetContextClassLoaderFromClassAction;
 import org.wildfly.security.manager.WildFlySecurityManager;
 
 /**

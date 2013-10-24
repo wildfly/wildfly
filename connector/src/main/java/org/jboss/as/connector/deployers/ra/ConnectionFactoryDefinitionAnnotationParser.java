@@ -27,6 +27,7 @@ import static org.jboss.as.ee.EeMessages.MESSAGES;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
+
 import javax.resource.ConnectionFactoryDefinition;
 import javax.resource.ConnectionFactoryDefinitions;
 import javax.resource.spi.TransactionSupport;
@@ -46,7 +47,6 @@ import org.jboss.jandex.AnnotationTarget;
 import org.jboss.jandex.AnnotationValue;
 import org.jboss.jandex.ClassInfo;
 import org.jboss.jandex.DotName;
-import org.jboss.jca.core.spi.mdr.MetadataRepository;
 
 /**
  * Deployment processor responsible for processing {@link ConnectionFactoryDefinition} and {@link ConnectionFactoryDefinitions}
@@ -59,19 +59,11 @@ public class ConnectionFactoryDefinitionAnnotationParser implements DeploymentUn
     private static final DotName CONNECTION_FACTORY_DEFINITION = DotName.createSimple(ConnectionFactoryDefinition.class.getName());
     private static final DotName CONNECTION_FACTORY_DEFINITIONS = DotName.createSimple(ConnectionFactoryDefinitions.class.getName());
 
-    private MetadataRepository mdr;
-
-    /**
-     * Constructor
-     * @param mdr The metadata repository
-     */
-    public ConnectionFactoryDefinitionAnnotationParser(MetadataRepository mdr) {
-        this.mdr = mdr;
-    }
 
     @Override
     public void deploy(DeploymentPhaseContext phaseContext) throws DeploymentUnitProcessingException {
         final DeploymentUnit deploymentUnit = phaseContext.getDeploymentUnit();
+
         final EEModuleDescription eeModuleDescription = deploymentUnit.getAttachment(Attachments.EE_MODULE_DESCRIPTION);
         final CompositeIndex index = deploymentUnit.getAttachment(org.jboss.as.server.deployment.Attachments.COMPOSITE_ANNOTATION_INDEX);
         final EEApplicationClasses applicationClasses = deploymentUnit.getAttachment(Attachments.EE_APPLICATION_CLASSES_DESCRIPTION);
@@ -143,7 +135,7 @@ public class ConnectionFactoryDefinitionAnnotationParser implements DeploymentUn
         }
 
         final DirectConnectionFactoryInjectionSource directConnectionFactoryInjectionSource =
-           new DirectConnectionFactoryInjectionSource(name, interfaceClz, ra, mdr);
+           new DirectConnectionFactoryInjectionSource(name, interfaceClz, ra);
 
         directConnectionFactoryInjectionSource.setDescription(asString(connectionFactoryAnnotation,
                                                                        DirectConnectionFactoryInjectionSource.DESCRIPTION));

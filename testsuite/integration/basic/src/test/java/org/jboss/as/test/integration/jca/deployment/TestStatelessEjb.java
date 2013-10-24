@@ -43,11 +43,11 @@ import javax.resource.ConnectionFactoryDefinitions;
     @ConnectionFactoryDefinition(
         interfaceName = "org.jboss.as.test.integration.jca.rar.MultipleConnectionFactory1",
         name = "java:module/rardeployment/ModuleCF",
-        resourceAdapter = "#eis.rar"),
+        resourceAdapter = "eis.rar"),
     @ConnectionFactoryDefinition(
         interfaceName = "org.jboss.as.test.integration.jca.rar.MultipleConnectionFactory1",
         name = "java:global/rardeployment/GlobalCF",
-        resourceAdapter = "#eis")
+        resourceAdapter = "eis")
 })
 @Stateless
 public class TestStatelessEjb implements ITestStatelessEjb {

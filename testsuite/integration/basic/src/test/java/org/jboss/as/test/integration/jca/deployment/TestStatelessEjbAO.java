@@ -34,12 +34,12 @@ import javax.resource.ConnectionFactoryDefinitions;
 
 @AdministeredObjectDefinition(className = "org.jboss.as.test.integration.jca.rar.MultipleAdminObject1Impl",
                               name = "java:app/rardeployment/AppAdmin",
-                              resourceAdapter = "inside-eis.rar")
+                              resourceAdapter = "#inside-eis.rar")
 @AdministeredObjectDefinitions({
     @AdministeredObjectDefinition(
         className = "org.jboss.as.test.integration.jca.rar.MultipleAdminObject1Impl",
         name = "java:comp/rardeployment/CompAdmin",
-        resourceAdapter = "inside-eis"),
+        resourceAdapter = "#inside-eis"),
     @AdministeredObjectDefinition(
         className = "org.jboss.as.test.integration.jca.rar.MultipleAdminObject1Impl",
         name = "java:module/rardeployment/ModuleAdmin",
