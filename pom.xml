@@ -265,7 +265,7 @@
         <version.rhino.js>1.7R2</version.rhino.js>
         <version.wsdl4j>1.6.2-redhat-5</version.wsdl4j>
         <version.xml-resolver>1.2.redhat-9</version.xml-resolver> <!-- Apache xml-resolver -->
-        <version.xom>1.2.7-redhat-3</version.xom>
+        <version.xom>1.2.7.redhat-4</version.xom>
 
         <!-- Non-default maven plugin versions and configuration -->
         <version.org.zanata.plugin>2.2.0</version.org.zanata.plugin>
