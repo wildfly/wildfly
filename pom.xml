@@ -89,13 +89,13 @@
         <version.com.sun.xml.txw2>20110809-redhat-2</version.com.sun.xml.txw2>
         <version.com.sun.xsom>20110809-redhat-3</version.com.sun.xsom>
         <version.commons-beanutils>1.8.3.redhat-6</version.commons-beanutils>
-        <version.commons-cli>1.2-redhat-2</version.commons-cli>
+        <version.commons-cli>1.2.redhat-3</version.commons-cli>
         <version.commons-codec>1.4-redhat-2</version.commons-codec>
         <version.commons-collections>3.2.1-redhat-2</version.commons-collections>
         <version.commons-io>2.1-redhat-2</version.commons-io>
-        <version.commons-configuration>1.6-redhat-2</version.commons-configuration>
+        <version.commons-configuration>1.6.redhat-3</version.commons-configuration>
         <version.commons-lang>2.6-redhat-2</version.commons-lang>
-        <version.commons-pool>1.6-redhat-4</version.commons-pool>
+        <version.commons-pool>1.6.redhat-6</version.commons-pool>
         <version.dom4j>1.6.1-redhat-5</version.dom4j>
         <version.gnu.getopt>1.0.13.redhat-4</version.gnu.getopt>
         <version.io.netty>3.6.6.Final-redhat-1</version.io.netty>
