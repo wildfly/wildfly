@@ -8,15 +8,21 @@ import org.jboss.msc.service.StartContext;
 import org.jboss.msc.service.StartException;
 import org.jboss.msc.service.StopContext;
 import org.jboss.msc.value.InjectedValue;
-import org.jboss.weld.bean.SessionBean;
-import org.jboss.weld.ejb.spi.EjbDescriptor;
+import org.jboss.weld.annotated.enhanced.EnhancedAnnotatedType;
+import org.jboss.weld.annotated.slim.SlimAnnotatedType;
+import org.jboss.weld.bean.interceptor.InterceptorBindingsAdapter;
 import org.jboss.weld.ejb.spi.EjbServices;
 import org.jboss.weld.ejb.spi.InterceptorBindings;
 import org.jboss.weld.ejb.spi.helpers.ForwardingEjbServices;
+import org.jboss.weld.injection.producer.InterceptionModelInitializer;
+import org.jboss.weld.interceptor.spi.metadata.ClassMetadata;
+import org.jboss.weld.interceptor.spi.model.InterceptionModel;
 import org.jboss.weld.manager.BeanManagerImpl;
+import org.jboss.weld.resources.ClassTransformer;
 
 /**
  * @author Stuart Douglas
+ * @author Jozef Hartinger
  */
 public class WeldInterceptorBindingsService implements Service<InterceptorBindings> {
 
@@ -24,12 +30,14 @@ public class WeldInterceptorBindingsService implements Service<InterceptorBindin
     private final InjectedValue<WeldBootstrapService> weldContainer = new InjectedValue<WeldBootstrapService>();
     private final String beanArchiveId;
     private final String ejbName;
+    private final Class<?> componentClass;
 
     public static final ServiceName SERVICE_NAME = ServiceName.of("WeldInterceptorBindingsService");
 
-    public WeldInterceptorBindingsService(String beanArchiveId, String ejbName) {
+    public WeldInterceptorBindingsService(String beanArchiveId, String ejbName, Class<?> componentClass) {
         this.beanArchiveId = beanArchiveId;
         this.ejbName = ejbName;
+        this.componentClass = componentClass;
     }
 
     @Override
@@ -37,24 +45,31 @@ public class WeldInterceptorBindingsService implements Service<InterceptorBindin
         BeanManagerImpl beanManager = this.weldContainer.getValue().getBeanManager(beanArchiveId);
         //this is not always called with the deployments TCCL set
         //which causes weld to blow up
-        EjbDescriptor<Object> descriptor = beanManager.getEjbDescriptor(this.ejbName);
-        SessionBean<Object> bean = null;
-        if (descriptor != null) {
-            bean = beanManager.getBean(descriptor);
-        }
         interceptorBindings = getInterceptorBindings(this.ejbName, beanManager);
     }
 
-    protected InterceptorBindings getInterceptorBindings(String ejbName, final BeanManagerImpl beanManager) {
-        EjbServices ejbServices = beanManager.getServices().get(EjbServices.class);
-        if (ejbServices instanceof ForwardingEjbServices) {
-            ejbServices = ((ForwardingEjbServices) ejbServices).delegate();
+    protected InterceptorBindings getInterceptorBindings(String ejbName, final BeanManagerImpl manager) {
+        if (ejbName != null) {
+            EjbServices ejbServices = manager.getServices().get(EjbServices.class);
+            if (ejbServices instanceof ForwardingEjbServices) {
+                ejbServices = ((ForwardingEjbServices) ejbServices).delegate();
+            }
+            if (ejbServices instanceof WeldEjbServices) {
+                return ((WeldEjbServices) ejbServices).getBindings(ejbName);
+            }
+        } else {
+            // This is a managed bean
+            SlimAnnotatedType<?> type = (SlimAnnotatedType<?>) manager.createAnnotatedType(componentClass);
+            if (!manager.getInterceptorModelRegistry().containsKey(type)) {
+                EnhancedAnnotatedType<?> enhancedType = manager.getServices().get(ClassTransformer.class).getEnhancedAnnotatedType(type);
+                InterceptionModelInitializer.of(manager, enhancedType, null).init();
+            }
+            InterceptionModel<ClassMetadata<?>> model = manager.getInterceptorModelRegistry().get(type);
+            if (model != null) {
+                return new InterceptorBindingsAdapter(manager.getInterceptorModelRegistry().get(type));
+            }
         }
-        InterceptorBindings interceptorBindings = null;
-        if (ejbServices instanceof WeldEjbServices) {
-            interceptorBindings = ((WeldEjbServices) ejbServices).getBindings(ejbName);
-        }
-        return interceptorBindings;
+        return null;
     }
 
 
