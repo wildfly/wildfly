@@ -148,7 +148,9 @@ public class SizeRotatingHandlerTestCase extends AbstractLoggingOperationsTestCa
         int count = 0;
         for (File file : logFile.getParentFile().listFiles()) {
             if (file.getName().contains(logFile.getName())) {
-                Assert.assertTrue("This file is bigger than allowed rotate-size: " + file.getName(), file.length() < 2200);
+                long length = file.length();
+                Assert.assertTrue(String.format("File %s is bigger than allowed rotate-size. File length = %d",
+                        file.getName(), length), length < 2500);
                 checkLogs(message, true, file);
                 count++;
             }
@@ -201,8 +203,8 @@ public class SizeRotatingHandlerTestCase extends AbstractLoggingOperationsTestCa
     private ModelNode validateResponse(ModelNode operation, boolean validateResult) throws Exception {
         final ModelNode response = executeOperation(operation);
         if (!Operations.isSuccessfulOutcome(response)) {
-           Assert.fail(Operations.getFailureDescription(response).toString());
-  	}
+            Assert.fail(Operations.getFailureDescription(response).toString());
+        }
         if (validateResult) {
             Assert.assertTrue("result exists", response.hasDefined(RESULT));
         }
