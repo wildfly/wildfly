@@ -24,7 +24,10 @@ package org.wildfly.extension.undertow;
 
 import java.util.Arrays;
 import java.util.Collection;
+import java.util.LinkedHashSet;
+import java.util.List;
 
+import io.undertow.UndertowOptions;
 import org.jboss.as.controller.AttributeDefinition;
 import org.jboss.as.controller.PathElement;
 import org.jboss.as.controller.PersistentResourceDefinition;
@@ -36,11 +39,13 @@ import org.jboss.as.controller.registry.ManagementResourceRegistration;
 import org.jboss.as.controller.registry.OperationEntry;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.ModelType;
+import org.wildfly.extension.io.OptionAttributeDefinition;
+import org.wildfly.extension.io.OptionList;
 
 /**
  * @author <a href="mailto:tomaz.cerar@redhat.com">Tomaz Cerar</a> (c) 2013 Red Hat Inc.
  */
-abstract class AbstractListenerResourceDefinition extends PersistentResourceDefinition {
+abstract class ListenerResourceDefinition extends PersistentResourceDefinition {
     protected static final SimpleAttributeDefinition SOCKET_BINDING = new SimpleAttributeDefinitionBuilder(Constants.SOCKET_BINDING, ModelType.STRING)
             .setAllowNull(false)
             .setFlags(AttributeAccess.Flag.RESTART_ALL_SERVICES)
@@ -65,33 +70,34 @@ abstract class AbstractListenerResourceDefinition extends PersistentResourceDefi
             .setAllowExpression(true)
             .build();
 
-    protected static final SimpleAttributeDefinition MAX_POST_SIZE = new SimpleAttributeDefinitionBuilder(Constants.MAX_POST_SIZE, ModelType.LONG)
-            .setAllowNull(true)
-            .setFlags(AttributeAccess.Flag.RESTART_ALL_SERVICES)
-            .setDefaultValue(new ModelNode(0)) //10mb
-            .setAllowExpression(true)
+
+    static final List<OptionAttributeDefinition> OPTIONS = OptionList.builder()
+            .addOption(UndertowOptions.MAX_HEADER_SIZE, "max-header-size", new ModelNode(UndertowOptions.DEFAULT_MAX_HEADER_SIZE))
+            .addOption(UndertowOptions.MAX_ENTITY_SIZE, Constants.MAX_POST_SIZE, new ModelNode(UndertowOptions.DEFAULT_MAX_ENTITY_SIZE))
+            .addOption(UndertowOptions.BUFFER_PIPELINED_DATA, "buffer-pipelined-data", new ModelNode(true))
+            .addOption(UndertowOptions.MAX_PARAMETERS, "max-parameters", new ModelNode(1000))
+            .addOption(UndertowOptions.MAX_HEADERS, "max-headers", new ModelNode(200))
+            .addOption(UndertowOptions.MAX_COOKIES, "max-cookies", new ModelNode(200))
+            .addOption(UndertowOptions.ALLOW_ENCODED_SLASH, "allow-encoded-slash", new ModelNode(false))
+            .addOption(UndertowOptions.DECODE_URL, "decode-url", new ModelNode(true))
+            .addOption(UndertowOptions.URL_CHARSET, "url-charset", new ModelNode("UTF-8"))
             .build();
 
-    protected static AttributeDefinition[] ATTRIBUTES = {SOCKET_BINDING, WORKER, BUFFER_POOL, ENABLED, MAX_POST_SIZE};
+    protected static final Collection ATTRIBUTES;
 
-
-    public AbstractListenerResourceDefinition(PathElement pathElement) {
-        super(pathElement,
-                UndertowExtension.getResolver(pathElement.getKey()),
-                null,
-                null
-        );
+    static {
+        ATTRIBUTES = new LinkedHashSet<AttributeDefinition>(Arrays.asList(SOCKET_BINDING, WORKER, BUFFER_POOL, ENABLED));
+        ATTRIBUTES.addAll(OPTIONS);
     }
 
-    static <T> T[] concat(T[] first, T[] second) {
-        T[] result = Arrays.copyOf(first, first.length + second.length);
-        System.arraycopy(second, 0, result, first.length, second.length);
-        return result;
+    public ListenerResourceDefinition(PathElement pathElement) {
+        super(pathElement, UndertowExtension.getResolver(Constants.LISTENER)
+        );
     }
 
     public Collection<AttributeDefinition> getAttributes() {
         //noinspection unchecked
-        return Arrays.asList(ATTRIBUTES);
+        return ATTRIBUTES;
     }
 
     @Override
@@ -101,5 +107,5 @@ abstract class AbstractListenerResourceDefinition extends PersistentResourceDefi
         super.registerRemoveOperation(resourceRegistration, new ListenerRemoveHandler(getAddHandler()), OperationEntry.Flag.RESTART_NONE);
     }
 
-    protected abstract AbstractListenerAdd getAddHandler();
+    protected abstract ListenerAdd getAddHandler();
 }

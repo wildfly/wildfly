@@ -64,33 +64,58 @@
         <xs:attribute name="default-host" use="optional" type="xs:string" default="default-host"/>
         <xs:attribute name="servlet-container" use="optional" type="xs:string" default="default"/>
     </xs:complexType>
+
+    <xs:complexType name="listener-type">
+        <xs:attribute name="name" use="required" type="xs:string"/>
+        <xs:attribute name="socket-binding" use="required" type="xs:string"/>
+        <xs:attribute name="worker" type="xs:string" default="default"/>
+        <xs:attribute name="buffer-pool" type="xs:string" default="default"/>
+        <xs:attribute name="enabled" type="xs:boolean" default="true"/>
+        <xs:attribute name="max-post-size" type="xs:long" default="0"/>
+        <xs:attribute name="buffer-pipelined-data" type="xs:boolean" default="true"/>
+        <xs:attribute name="max-header-size" type="xs:long" default="5120"/>
+        <xs:attribute name="max-parameters" type="xs:long" default="1000"/>
+        <xs:attribute name="max-headers" type="xs:long" default="200"/>
+        <xs:attribute name="max-cookies" type="xs:long" default="200"/>
+        <xs:attribute name="allow-encoded-slash" type="xs:boolean" default="false"/>
+        <xs:attribute name="decode-url" type="xs:boolean" default="true"/>
+        <xs:attribute name="url-charset" type="xs:string" default="UTF-8"/>
+    </xs:complexType>
+
     <xs:complexType name="http-listener-type">
-        <xs:attribute name="name" use="required" type="xs:string"/>
-        <xs:attribute name="certificate-forwarding" type="xs:boolean" default="false" />
-        <xs:attribute name="socket-binding" use="required" type="xs:string"/>
-        <xs:attribute name="worker" type="xs:string" default="default"/>
-        <xs:attribute name="buffer-pool" type="xs:string" default="default"/>
-        <xs:attribute name="enabled" type="xs:boolean" default="true"/>
-        <xs:attribute name="max-post-size" type="xs:long" default="0" />
+        <xs:complexContent>
+            <xs:extension base="listener-type">
+                <xs:attribute name="certificate-forwarding" use="optional" type="xs:string">
+                    <xs:annotation>
+                        <xs:documentation>
+                            <![CDATA[
+                                If certificate forwarding should be enabled. If this is enabled then the listener will take the certificate from the SSL_CLIENT_CERT
+                                attribute. This should only be enabled if behind a proxy, and the proxy is configured to always set these headers.
+                               ]]>
+                        </xs:documentation>
+                    </xs:annotation>
+                </xs:attribute>
+            </xs:extension>
+        </xs:complexContent>
     </xs:complexType>
+
     <xs:complexType name="https-listener-type">
-        <xs:attribute name="name" use="required" type="xs:string"/>
-        <xs:attribute name="socket-binding" use="required" type="xs:string"/>
-        <xs:attribute name="worker" type="xs:string" default="default"/>
-        <xs:attribute name="buffer-pool" type="xs:string" default="default"/>
-        <xs:attribute name="enabled" type="xs:boolean" default="true"/>
-        <xs:attribute name="security-realm" use="required" type="xs:string"/>
-        <xs:attribute name="max-post-size" type="xs:long" default="0" />
+        <xs:complexContent>
+            <xs:extension base="listener-type">
+                <xs:attribute name="security-realm" use="required" type="xs:string"/>
+                <xs:attribute name="verify-client" use="optional" type="xs:string"/>
+            </xs:extension>
+        </xs:complexContent>
     </xs:complexType>
+
     <xs:complexType name="ajp-listener-type">
-        <xs:attribute name="name" use="required" type="xs:string"/>
-        <xs:attribute name="socket-binding" use="required" type="xs:string"/>
-        <xs:attribute name="worker" type="xs:string" default="default"/>
-        <xs:attribute name="buffer-pool" type="xs:string" default="default"/>
-        <xs:attribute name="enabled" type="xs:boolean" default="true"/>
-        <xs:attribute name="scheme" type="xs:string"/>
-        <xs:attribute name="max-post-size" type="xs:long" default="0" />
+        <xs:complexContent>
+            <xs:extension base="listener-type">
+                <xs:attribute name="scheme" type="xs:string"/>
+            </xs:extension>
+        </xs:complexContent>
     </xs:complexType>
+
     <xs:complexType name="servletContainerType">
         <xs:sequence>
             <xs:element name="jsp-config" type="jsp-configurationType" maxOccurs="1" minOccurs="0"/>
@@ -99,7 +124,7 @@
         </xs:sequence>
         <xs:attribute name="name" use="required" type="xs:string"/>
         <xs:attribute name="allow-non-standard-wrappers" use="optional" type="xs:boolean" default="false"/>
-        <xs:attribute name="default-buffer-cache" use="optional" type="xs:string" />
+        <xs:attribute name="default-buffer-cache" use="optional" type="xs:string"/>
         <xs:attribute name="stack-trace-on-error" use="optional" default="disabled"/>
     </xs:complexType>
     <xs:complexType name="hostType">
@@ -145,13 +170,13 @@
 
     <xs:complexType name="persistent-sessionsType">
         <xs:attribute name="path" type="xs:string" use="optional">
-        <xs:annotation>
-            <xs:documentation>
-                <![CDATA[
+            <xs:annotation>
+                <xs:documentation>
+                    <![CDATA[
                   The path to store the session data. If not specified the data will just be stored in memory only.
                 ]]>
-            </xs:documentation>
-        </xs:annotation>
+                </xs:documentation>
+            </xs:annotation>
         </xs:attribute>
         <xs:attribute name="relative-to" type="xs:string" use="optional"/>
     </xs:complexType>

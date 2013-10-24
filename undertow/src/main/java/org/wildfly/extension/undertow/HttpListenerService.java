@@ -25,7 +25,6 @@ package org.wildfly.extension.undertow;
 import java.io.IOException;
 import java.net.InetSocketAddress;
 
-import io.undertow.UndertowOptions;
 import io.undertow.server.HandlerWrapper;
 import io.undertow.server.HttpHandler;
 import io.undertow.server.ListenerRegistry;
@@ -49,7 +48,7 @@ import org.xnio.channels.AcceptingChannel;
  * @author Stuart Douglas
  * @author Tomaz Cerar
  */
-public class HttpListenerService extends AbstractListenerService<HttpListenerService> {
+public class HttpListenerService extends ListenerService<HttpListenerService> {
     private volatile AcceptingChannel<StreamConnection> server;
 
     private final ChannelUpgradeHandler httpUpgradeHandler = new ChannelUpgradeHandler();
@@ -58,12 +57,10 @@ public class HttpListenerService extends AbstractListenerService<HttpListenerSer
     static final String PROTOCOL = "http";
 
     private final String serverName;
-    private final long maxUploadSize;
 
-    public HttpListenerService(String name, final String serverName, long maxUploadSize, boolean certificateForwarding) {
-        super(name);
+    public HttpListenerService(String name, final String serverName, OptionMap listenerOptions, boolean certificateForwarding) {
+        super(name, listenerOptions);
         this.serverName = serverName;
-        this.maxUploadSize = maxUploadSize;
         listenerHandlerWrappers.add(new HandlerWrapper() {
             @Override
             public HttpHandler wrap(final HttpHandler handler) {
@@ -71,7 +68,7 @@ public class HttpListenerService extends AbstractListenerService<HttpListenerSer
                 return httpUpgradeHandler;
             }
         });
-        if(certificateForwarding) {
+        if (certificateForwarding) {
             listenerHandlerWrappers.add(new HandlerWrapper() {
                 @Override
                 public HttpHandler wrap(HttpHandler handler) {
@@ -83,7 +80,7 @@ public class HttpListenerService extends AbstractListenerService<HttpListenerSer
 
     @Override
     protected OpenListener createOpenListener() {
-        return new HttpOpenListener(getBufferPool().getValue(), OptionMap.create(UndertowOptions.BUFFER_PIPELINED_DATA, true), getBufferSize());
+        return new HttpOpenListener(getBufferPool().getValue(), OptionMap.builder().addAll(commonOptions).addAll(listenerOptions).getMap(), getBufferSize());
     }
 
     @Override
@@ -104,7 +101,7 @@ public class HttpListenerService extends AbstractListenerService<HttpListenerSer
 
     protected void startListening(XnioWorker worker, InetSocketAddress socketAddress, ChannelListener<AcceptingChannel<StreamConnection>> acceptListener)
             throws IOException {
-        server = worker.createStreamConnectionServer(socketAddress, acceptListener, OptionMap.builder().addAll(SERVER_OPTIONS).set(UndertowOptions.MAX_ENTITY_SIZE, maxUploadSize).getMap());
+        server = worker.createStreamConnectionServer(socketAddress, acceptListener, commonOptions);
         server.resumeAccepts();
         UndertowLogger.ROOT_LOGGER.listenerStarted("HTTP", getName(), socketAddress);
     }

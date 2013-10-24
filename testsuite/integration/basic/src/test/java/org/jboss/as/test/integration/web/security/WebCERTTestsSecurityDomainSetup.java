@@ -158,6 +158,7 @@ public class WebCERTTestsSecurityDomainSetup extends AbstractSecurityRealmsServe
              */
             /* op.get("secure").set(true); */
             op.get("security-realm").set("ssl-cert-realm");
+            op.get("verify-client").set("REQUIRED");
             steps.add(op);
 
             updates.add(composite);

@@ -30,7 +30,7 @@ import java.util.Iterator;
 import org.jboss.modcluster.container.Connector;
 import org.jboss.modcluster.container.Engine;
 import org.junit.Test;
-import org.wildfly.extension.undertow.AbstractListenerService;
+import org.wildfly.extension.undertow.ListenerService;
 import org.wildfly.extension.undertow.Host;
 import org.wildfly.extension.undertow.Server;
 import org.wildfly.extension.undertow.UndertowService;
@@ -40,7 +40,7 @@ public class UndertowEngineTestCase {
     private final String serverName = "name";
     private final String hostName = "host";
     private final Host host = new Host(this.hostName, Collections.<String>emptyList(), "ROOT.war") {};
-    private final AbstractListenerService<?> listener = mock(AbstractListenerService.class);
+    private final ListenerService<?> listener = mock(ListenerService.class);
     private final Server server = new TestServer(this.serverName, this.defaultHost, this.host, this.listener);
     private final UndertowService service = new TestUndertowService("default-container", "default-server", "default-virtual-host", "instance-id", this.server);
     private final Connector connector = mock(Connector.class);
