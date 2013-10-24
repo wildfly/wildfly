@@ -22,13 +22,10 @@
 
 package org.jboss.as.test.integration.ejb.stateful.passivation;
 
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.NAME;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OUTCOME;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.RESULT;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SUCCESS;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.VALUE;
 
 import org.jboss.as.arquillian.api.ServerSetupTask;
 import org.jboss.as.arquillian.container.ManagementClient;
@@ -44,65 +41,56 @@ import org.junit.Assert;
 public class PassivationTestCaseSetup implements ServerSetupTask {
     private static final Logger log = Logger.getLogger(PassivationTestCaseSetup.class);
 
-    private String previousDefaultSFSBCache;
+//    private String previousDefaultSFSBCache;
 
-    private static ModelNode getFilePassivationStoreAddress() {
+    private static ModelNode getPassivationStoreAddress() {
         ModelNode address = new ModelNode();
         address.add("subsystem", "ejb3");
-        address.add("file-passivation-store", "file");
+        address.add("passivation-store", "infinispan");
         address.protect();
         return address;
     }
-    
+
     @Override
     public void setup(final ManagementClient managementClient, final String containerId) throws Exception {
+/*
         this.previousDefaultSFSBCache = this.getDefaultSFSBCache(managementClient);
         log.info("Default SFSB cache is " + previousDefaultSFSBCache);
         // change the default sfsb cache to a passivating one
-        this.changeDefaultSFSBCache(managementClient, "passivating");
+        changeDefaultSFSBCache(managementClient, "passivating");
+*/
         // update the file passivation store attributes
-        ModelNode filePassivationStoreAddress = getFilePassivationStoreAddress();
+        ModelNode passivationStoreAddress = getPassivationStoreAddress();
         ModelNode operation = new ModelNode();
         operation.get(OP).set("write-attribute");
-        operation.get(OP_ADDR).set(filePassivationStoreAddress);
+        operation.get(OP_ADDR).set(passivationStoreAddress);
         operation.get("name").set("max-size");
-        operation.get("value").set(1);
+        operation.get("value").set(2);
         ModelNode result = managementClient.getControllerClient().execute(operation);
         log.info("modelnode operation write attribute max-size=1: " + result);
         Assert.assertEquals(SUCCESS, result.get(OUTCOME).asString());
-        operation = new ModelNode();
-        operation.get(OP).set("write-attribute");
-        operation.get(OP_ADDR).set(filePassivationStoreAddress);
-        operation.get("name").set("idle-timeout");
-        operation.get("value").set(1);
-        result = managementClient.getControllerClient().execute(operation);
-        log.info("modelnode operation write-attribute idle-timeout=1: " + result);
-        Assert.assertEquals(SUCCESS, result.get(OUTCOME).asString());
-
     }
 
     @Override
     public void tearDown(final ManagementClient managementClient, final String containerId) throws Exception {
+/*
         if (this.previousDefaultSFSBCache != null) {
             // reset back to the original one
-            this.changeDefaultSFSBCache(managementClient, this.previousDefaultSFSBCache);
+            changeDefaultSFSBCache(managementClient, this.previousDefaultSFSBCache);
         }
+*/
         // reset the file passivation store attributes
-        ModelNode address = getFilePassivationStoreAddress();
+        ModelNode address = getPassivationStoreAddress();
         ModelNode operation = new ModelNode();
         operation.get(OP).set("undefine-attribute");
         operation.get(OP_ADDR).set(address);
         operation.get("name").set("max-size");
         managementClient.getControllerClient().execute(operation);
-        operation = new ModelNode();
-        operation.get(OP).set("undefine-attribute");
-        operation.get(OP_ADDR).set(address);
-        operation.get("name").set("idle-timeout");
         ModelNode result = managementClient.getControllerClient().execute(operation);
         Assert.assertEquals(SUCCESS, result.get(OUTCOME).asString());
     }
-
-    private String getDefaultSFSBCache(final ManagementClient managementClient) throws Exception {
+/*
+    private static String getDefaultSFSBCache(final ManagementClient managementClient) throws Exception {
         final ModelNode address = new ModelNode();
         address.add("subsystem", "ejb3");
         final ModelNode operation = new ModelNode();
@@ -113,7 +101,7 @@ public class PassivationTestCaseSetup implements ServerSetupTask {
         return result.get(RESULT).asString();
     }
 
-    private void changeDefaultSFSBCache(final ManagementClient managementClient, final String cacheName) throws Exception {
+    private static void changeDefaultSFSBCache(final ManagementClient managementClient, final String cacheName) throws Exception {
         final ModelNode address = new ModelNode();
         address.add("subsystem", "ejb3");
         final ModelNode operation = new ModelNode();
@@ -125,4 +113,5 @@ public class PassivationTestCaseSetup implements ServerSetupTask {
         Assert.assertEquals("Failed to change default SFSB cache to: " + cacheName, SUCCESS, result.get(OUTCOME).asString());
         log.info("Changed default SFSB cache to " + cacheName);
     }
+*/
 }

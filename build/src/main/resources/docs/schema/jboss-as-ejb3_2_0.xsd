@@ -117,7 +117,6 @@
             </xs:annotation>
         </xs:attribute>
         <xs:attribute name="cache-ref" type="xs:string"/>
-        <xs:attribute name="clustered-cache-ref" type="xs:string" use="optional"/>
         <xs:attribute name="passivation-disabled-cache-ref" type="xs:string" use="optional">
             <xs:annotation>
                 <xs:documentation>
@@ -182,33 +181,15 @@
 
     <xs:complexType name="passivation-storesType">
         <xs:choice minOccurs="0" maxOccurs="unbounded">
-            <xs:element name="file-passivation-store" type="file-passivation-storeType"/>
-            <xs:element name="cluster-passivation-store" type="cluster-passivation-storeType"/>
+            <xs:element name="passivation-store" type="passivation-storeType"/>
         </xs:choice>
     </xs:complexType>
 
-    <xs:attributeGroup name="passivation-common">
+    <xs:complexType name="passivation-storeType">
         <xs:attribute name="name" type="xs:string" use="required"/>
-        <xs:attribute name="idle-timeout" type="xs:positiveInteger" default="300"/>
-        <xs:attribute name="idle-timeout-unit" type="timeout-unitType" default="SECONDS"/>
-    </xs:attributeGroup>
-
-    <xs:complexType name="file-passivation-storeType">
-        <xs:attributeGroup ref="passivation-common"/>
-        <xs:attribute name="max-size" type="xs:positiveInteger" default="100000"/>
-        <xs:attribute name="relative-to" type="xs:string" default="jboss.server.data.dir"/>
-        <xs:attribute name="sessions-path" type="xs:string" default="ejb3/sessions"/>
-        <xs:attribute name="groups-path" type="xs:string" default="ejb3/groups"/>
-        <xs:attribute name="subdirectory-count" type="xs:positiveInteger" default="100"/>
-    </xs:complexType>
-
-    <xs:complexType name="cluster-passivation-storeType">
-        <xs:attributeGroup ref="passivation-common"/>
         <xs:attribute name="max-size" type="xs:positiveInteger" default="10000"/>
-        <xs:attribute name="passivate-events-on-replicate" type="xs:boolean" default="true"/>
         <xs:attribute name="cache-container" type="xs:string" default="ejb"/>
         <xs:attribute name="bean-cache" type="xs:string"/>
-        <xs:attribute name="client-mappings-cache" type="xs:string" default="remote-connector-client-mappings"/>
     </xs:complexType>
 
     <xs:simpleType name="aliases">

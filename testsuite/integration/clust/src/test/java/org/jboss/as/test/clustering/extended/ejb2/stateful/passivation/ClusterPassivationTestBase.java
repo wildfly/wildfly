@@ -34,15 +34,14 @@ import java.util.Map;
 import javax.naming.NamingException;
 
 import org.junit.Assert;
-
 import org.jboss.arquillian.container.test.api.ContainerController;
 import org.jboss.arquillian.container.test.api.Deployer;
 import org.jboss.as.arquillian.container.ManagementClient;
 import org.jboss.as.controller.client.ModelControllerClient;
 import org.jboss.as.test.clustering.DMRUtil;
 import org.jboss.as.test.clustering.EJBClientContextSelector;
-import org.jboss.as.test.clustering.EJBDirectory;
-import org.jboss.as.test.clustering.RemoteEJBDirectory;
+import org.jboss.as.test.clustering.ejb.EJBDirectory;
+import org.jboss.as.test.clustering.ejb.RemoteEJBDirectory;
 import org.jboss.ejb.client.ClusterContext;
 import org.jboss.ejb.client.ContextSelector;
 import org.jboss.ejb.client.EJBClientContext;
@@ -81,16 +80,14 @@ public abstract class ClusterPassivationTestBase {
      * Setting all passivation attributes.
      */
     protected void setPassivationAttributes(ModelControllerClient client) throws Exception {
-        DMRUtil.setPassivationIdleTimeout(client);
-        DMRUtil.setPassivationOnReplicate(client, true);
+        DMRUtil.setMaxSize(client, 1);
     }
 
     /**
      * Unsetting all cache attributes - defining their default values.
      */
     protected void unsetPassivationAttributes(ModelControllerClient client) throws Exception {
-        DMRUtil.unsetIdleTimeoutPassivationAttribute(client);
-        DMRUtil.unsetPassivationOnReplicate(client);
+        DMRUtil.unsetMaxSizeAttribute(client);
     }
 
     /**

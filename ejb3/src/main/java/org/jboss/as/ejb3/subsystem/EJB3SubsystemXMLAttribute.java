@@ -36,8 +36,8 @@ public enum EJB3SubsystemXMLAttribute {
 
     CACHE_CONTAINER("cache-container"),
     CACHE_REF("cache-ref"),
-    CLIENT_MAPPINGS_CACHE("client-mappings-cache"),
-    CLUSTERED_CACHE_REF("clustered-cache-ref"),
+    @Deprecated CLIENT_MAPPINGS_CACHE("client-mappings-cache"),
+    @Deprecated CLUSTERED_CACHE_REF("clustered-cache-ref"),
     CONNECTOR_REF("connector-ref"),
     CORE_THREADS("core-threads"),
 
@@ -49,10 +49,10 @@ public enum EJB3SubsystemXMLAttribute {
     ENABLED("enabled"),
     ENABLE_BY_DEFAULT("enable-by-default"),
 
-    GROUPS_PATH("groups-path"),
+    @Deprecated GROUPS_PATH("groups-path"),
 
-    IDLE_TIMEOUT("idle-timeout"),
-    IDLE_TIMEOUT_UNIT("idle-timeout-unit"),
+    @Deprecated IDLE_TIMEOUT("idle-timeout"),
+    @Deprecated IDLE_TIMEOUT_UNIT("idle-timeout-unit"),
     INSTANCE_ACQUISITION_TIMEOUT("instance-acquisition-timeout"),
     INSTANCE_ACQUISITION_TIMEOUT_UNIT("instance-acquisition-timeout-unit"),
 
@@ -66,7 +66,7 @@ public enum EJB3SubsystemXMLAttribute {
 
     PARTITION("partition"),
     PASS_BY_VALUE("pass-by-value"),
-    PASSIVATE_EVENTS_ON_REPLICATE("passivate-events-on-replicate"),
+    @Deprecated PASSIVATE_EVENTS_ON_REPLICATE("passivate-events-on-replicate"),
     PASSIVATION_DISABLED_CACHE_REF("passivation-disabled-cache-ref"),
     PASSIVATION_STORE_REF("passivation-store-ref"),
     PATH("path"),
@@ -75,8 +75,8 @@ public enum EJB3SubsystemXMLAttribute {
     RELATIVE_TO("relative-to"),
     RESOURCE_ADAPTER_NAME("resource-adapter-name"),
 
-    SESSIONS_PATH("sessions-path"),
-    SUBDIRECTORY_COUNT("subdirectory-count"),
+    @Deprecated SESSIONS_PATH("sessions-path"),
+    @Deprecated SUBDIRECTORY_COUNT("subdirectory-count"),
 
     THREAD_POOL_NAME("thread-pool-name"),
     TYPE("type"),

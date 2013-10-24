@@ -41,8 +41,6 @@ import org.jboss.as.ee.component.Component;
 import org.jboss.as.ee.component.ComponentInstance;
 import org.jboss.as.ee.component.ComponentView;
 import org.jboss.as.ejb3.cache.Cache;
-import org.jboss.as.ejb3.cache.IdentifierFactory;
-import org.jboss.as.ejb3.cache.PassivationManager;
 import org.jboss.as.ejb3.cache.StatefulObjectFactory;
 import org.jboss.as.ejb3.cache.TransactionAwareObjectFactory;
 import org.jboss.as.ejb3.component.DefaultAccessTimeoutService;
@@ -59,22 +57,25 @@ import org.jboss.invocation.Interceptor;
 import org.jboss.invocation.InterceptorContext;
 import org.jboss.invocation.InterceptorFactory;
 import org.jboss.invocation.InterceptorFactoryContext;
-import org.jboss.marshalling.MarshallingConfiguration;
 import org.jboss.msc.service.ServiceContainer;
 import org.jboss.msc.service.ServiceController;
 
 import static org.jboss.as.ejb3.EjbMessages.MESSAGES;
+import org.jboss.as.ejb3.cache.CacheFactory;
+import org.jboss.msc.value.Value;
+import org.wildfly.clustering.ejb.IdentifierFactory;
+import org.wildfly.clustering.ejb.PassivationListener;
 
 /**
  * Stateful Session Bean
  *
  * @author <a href="mailto:cdewolf@redhat.com">Carlo de Wolf</a>
  */
-public class StatefulSessionComponent extends SessionBeanComponent implements StatefulObjectFactory<StatefulSessionComponentInstance>, PassivationManager<SessionID, StatefulSessionComponentInstance>, IdentifierFactory<SessionID> {
+public class StatefulSessionComponent extends SessionBeanComponent implements StatefulObjectFactory<StatefulSessionComponentInstance>, PassivationListener<StatefulSessionComponentInstance>, IdentifierFactory<SessionID> {
 
     public static final Object SESSION_ID_REFERENCE_KEY = new Object();
 
-    private final Cache<SessionID, StatefulSessionComponentInstance> cache;
+    private volatile Cache<SessionID, StatefulSessionComponentInstance> cache;
 
     private final InterceptorFactory afterBegin;
     private final Method afterBeginMethod;
@@ -86,10 +87,7 @@ public class StatefulSessionComponent extends SessionBeanComponent implements St
     private final InterceptorFactory postActivate;
     private final Map<EJBBusinessMethod, AccessTimeoutDetails> methodAccessTimeouts;
     private final DefaultAccessTimeoutService defaultAccessTimeoutProvider;
-    private final ClassLoader loader;
-    private final int currentMarshallingVersion;
-    private final Map<Integer, MarshallingConfiguration> marshallingConfigurations;
-
+    private final Value<CacheFactory> cacheFactory;
     private final InterceptorFactory ejb2XRemoveMethod;
 
     /**
@@ -120,16 +118,9 @@ public class StatefulSessionComponent extends SessionBeanComponent implements St
         this.methodAccessTimeouts = ejbComponentCreateService.getMethodApplicableAccessTimeouts();
         this.defaultAccessTimeoutProvider = ejbComponentCreateService.getDefaultAccessTimeoutService();
         this.ejb2XRemoveMethod = ejbComponentCreateService.getEjb2XRemoveMethod();
-        this.loader = ejbComponentCreateService.getClassLoader();
-        this.currentMarshallingVersion = ejbComponentCreateService.getCurrentMarshallingVersion();
-        this.marshallingConfigurations = ejbComponentCreateService.getMarshallingConfigurations();
         this.serialiableInterceptorContextKeys = ejbComponentCreateService.getSerializableInterceptorContextKeys();
         this.timerService = ejbComponentCreateService.getTimerService();
-
-        String beanName = ejbComponentCreateService.getComponentClass().getName();
-        StatefulObjectFactory<StatefulSessionComponentInstance> factory = new TransactionAwareObjectFactory<StatefulSessionComponentInstance>(this, this.getTransactionManager());
-        StatefulTimeoutInfo timeout = ejbComponentCreateService.getStatefulTimeout();
-        this.cache = ejbComponentCreateService.getCacheFactory().createCache(beanName, this, factory, this, timeout);
+        this.cacheFactory = ejbComponentCreateService.getCacheFactory();
     }
 
     @Override
@@ -160,25 +151,6 @@ public class StatefulSessionComponent extends SessionBeanComponent implements St
     @Override
     public void prePassivate(StatefulSessionComponentInstance instance) {
         instance.prePassivate();
-    }
-
-    @Override
-    public ClassLoader getClassLoader() {
-        return this.loader;
-    }
-
-    @Override
-    public int getCurrentMarshallingVersion() {
-        return this.currentMarshallingVersion;
-    }
-
-    @Override
-    public MarshallingConfiguration getMarshallingConfiguration(int version) {
-        MarshallingConfiguration config = this.marshallingConfigurations.get(version);
-        if (config == null) {
-            throw MESSAGES.unsupportedMarshallingVersion(version);
-        }
-        return config;
     }
 
     protected SessionID getSessionIdOf(final InterceptorContext ctx) {
@@ -330,14 +302,15 @@ public class StatefulSessionComponent extends SessionBeanComponent implements St
     public void start() {
         getShutDownInterceptorFactory().start();
         super.start();
-        cache.start();
+        this.cache = this.cacheFactory.getValue().createCache(this, new TransactionAwareObjectFactory<>(this, this.getTransactionManager()), this);
+        this.cache.start();
     }
 
     @Override
     public void stop() {
         getShutDownInterceptorFactory().shutdown();
         super.stop();
-        cache.stop();
+        this.cache.stop();
     }
 
     @Override

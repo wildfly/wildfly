@@ -24,7 +24,7 @@ package org.wildfly.clustering.web.infinispan.sso.coarse;
 import java.util.Map;
 import java.util.Set;
 
-import org.wildfly.clustering.web.infinispan.Mutator;
+import org.jboss.as.clustering.infinispan.invoker.Mutator;
 import org.wildfly.clustering.web.sso.Sessions;
 import org.wildfly.clustering.web.sso.WebApplication;
 

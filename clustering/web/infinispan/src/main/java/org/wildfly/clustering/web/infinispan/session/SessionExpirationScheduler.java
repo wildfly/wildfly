@@ -30,12 +30,12 @@ import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.ThreadFactory;
 import java.util.concurrent.TimeUnit;
 
+import org.jboss.as.clustering.concurrent.Scheduler;
+import org.jboss.as.clustering.infinispan.invoker.Remover;
 import org.jboss.threads.JBossThreadFactory;
 import org.wildfly.clustering.web.Batch;
 import org.wildfly.clustering.web.Batcher;
 import org.wildfly.clustering.web.infinispan.InfinispanWebLogger;
-import org.wildfly.clustering.web.infinispan.Remover;
-import org.wildfly.clustering.web.infinispan.Scheduler;
 import org.wildfly.clustering.web.session.ImmutableSession;
 import org.wildfly.security.manager.GetAccessControlContextAction;
 

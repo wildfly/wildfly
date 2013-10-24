@@ -24,8 +24,10 @@ package org.jboss.as.test.clustering.single.web;
 
 import java.io.IOException;
 import java.io.Serializable;
+import java.net.URI;
+import java.net.URISyntaxException;
+import java.net.URL;
 
-import javax.servlet.ServletException;
 import javax.servlet.annotation.WebServlet;
 import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
@@ -35,24 +37,31 @@ import javax.servlet.http.HttpSession;
 /**
  * @author Paul Ferraro
  */
-@WebServlet(urlPatterns = {"/simple"})
+@WebServlet(urlPatterns = { SimpleServlet.SERVLET_PATH })
 public class SimpleServlet extends HttpServlet {
     private static final long serialVersionUID = -592774116315946908L;
+    private static final String SERVLET_NAME = "simple";
+    static final String SERVLET_PATH = "/" + SERVLET_NAME;
     public static final String REQUEST_DURATION_PARAM = "requestduration";
     public static final String HEADER_SERIALIZED = "serialized";
-    public static final String URL = "simple";
+    public static final String VALUE_HEADER = "value";
+    private static final String ATTRIBUTE = "test";
+
+    public static URI createURI(URL baseURL) throws URISyntaxException {
+        return baseURL.toURI().resolve(SERVLET_NAME);
+    }
 
     @Override
-    protected void doGet(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
+    protected void doGet(HttpServletRequest req, HttpServletResponse resp) throws IOException {
         HttpSession session = req.getSession(true);
-        Mutable custom = (Mutable) session.getAttribute("test");
+        Mutable custom = (Mutable) session.getAttribute(ATTRIBUTE);
         if (custom == null) {
             custom = new Mutable(1);
-            session.setAttribute("test", custom);
+            session.setAttribute(ATTRIBUTE, custom);
         } else {
             custom.increment();
         }
-        resp.setIntHeader("value", custom.getValue());
+        resp.setIntHeader(VALUE_HEADER, custom.getValue());
         resp.setHeader(HEADER_SERIALIZED, Boolean.toString(custom.wasSerialized()));
 
         // Long running request?

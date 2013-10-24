@@ -64,6 +64,7 @@ public class SessionCacheConfigurationService extends AbstractCacheConfiguration
     protected ConfigurationBuilder getConfigurationBuilder() {
         Configuration config = this.configuration.getValue();
         ConfigurationBuilder builder = new ConfigurationBuilder().read(config);
+        builder.invocationBatching().enable();
         builder.storeAsBinary().disable().storeKeysAsBinary(false).storeValuesAsBinary(false);
         builder.locking().isolationLevel(IsolationLevel.REPEATABLE_READ);
         return builder;

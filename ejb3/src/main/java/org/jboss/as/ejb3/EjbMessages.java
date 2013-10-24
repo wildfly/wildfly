@@ -64,7 +64,6 @@ import org.jboss.as.ee.component.ComponentCreateServiceFactory;
 import org.jboss.as.ee.component.ComponentDescription;
 import org.jboss.as.ee.component.ComponentInstance;
 import org.jboss.as.ee.component.ResourceInjectionTarget;
-import org.jboss.as.ejb3.cache.CacheFactory;
 import org.jboss.as.ejb3.component.EJBComponent;
 import org.jboss.as.ejb3.component.EJBComponentDescription;
 import org.jboss.as.ejb3.component.EJBComponentUnavailableException;
@@ -2224,53 +2223,25 @@ public interface EjbMessages {
     @Message(id = 14525, value = "Transaction propagation over IIOP is not supported")
     RemoteException transactionPropagationNotSupported();
 
-    @Message(id = 14526, value = "Cannot call method %s in afterCompletion callback")
-    IllegalStateException cannotCallMethodInAfterCompletion(String methodName);
-
-    @Message(id = 14528, value = "%s is already associated with serialization group %s")
-    IllegalStateException existingSerializationGroup(Object key, Object group);
-
-    @Message(id = 14529, value = "%s is not compatible with serialization group %s")
-    IllegalStateException incompatibleSerializationGroup(Object object, Object group);
-
-    @Message(id = 14530, value = "Cache entry %s is in use")
-    IllegalStateException cacheEntryInUse(Object entry);
-
-    @Message(id = 14531, value = "Cache entry %s is not in use")
-    IllegalStateException cacheEntryNotInUse(Object entry);
-
-    @Message(id = 14532, value = "Failed to acquire lock on %s")
-    RuntimeException lockAcquisitionInterrupted(@Cause Throwable cause, Object id);
-
-    @Message(id = 14533, value = "%s is already a member of serialization group %s")
-    IllegalStateException duplicateSerializationGroupMember(Object id, Object groupId);
-
-    @Message(id = 14534, value = "%s is not a member of serialization group %s")
-    IllegalStateException missingSerializationGroupMember(Object id, Object groupId);
-
-    @Message(id = 14535, value = "%s already exists in cache")
-    IllegalStateException duplicateCacheEntry(Object id);
-
-    @Message(id = 14536, value = "%s is missing from cache")
-    IllegalStateException missingCacheEntry(Object id);
+//    @Message(id = 14526, value = "Cannot call method %s in afterCompletion callback")
+//    @Message(id = 14528, value = "%s is already associated with serialization group %s")
+//    @Message(id = 14529, value = "%s is not compatible with serialization group %s")
+//    @Message(id = 14530, value = "Cache entry %s is in use")
+//    @Message(id = 14531, value = "Cache entry %s is not in use")
+//    @Message(id = 14532, value = "Failed to acquire lock on %s")
+//    @Message(id = 14533, value = "%s is already a member of serialization group %s")
+//    @Message(id = 14534, value = "%s is not a member of serialization group %s")
+//    @Message(id = 14535, value = "%s already exists in cache")
+//    @Message(id = 14536, value = "%s is missing from cache")
 
     @Message(id = 14537, value = "Incompatible cache implementations in nested hierarchy")
     IllegalStateException incompatibleCaches();
 
-    @Message(id = 14538, value = "Failed to passivate %s")
-    RuntimeException passivationFailed(@Cause Throwable cause, Object id);
-
-    @Message(id = 14539, value = "Failed to activate %s")
-    RuntimeException activationFailed(@Cause Throwable cause, Object id);
-
-    @Message(id = 14540, value = "Failed to create passivation directory: %s")
-    RuntimeException passivationDirectoryCreationFailed(String path);
-
-    @Message(id = 14541, value = "Failed to create passivation directory: %s")
-    RuntimeException passivationPathNotADirectory(String path);
-
-    @Message(id = 14542, value = "Group creation context already exists")
-    IllegalStateException groupCreationContextAlreadyExists();
+//    @Message(id = 14538, value = "Failed to passivate %s")
+//    @Message(id = 14539, value = "Failed to activate %s")
+//    @Message(id = 14540, value = "Failed to create passivation directory: %s")
+//    @Message(id = 14541, value = "Failed to create passivation directory: %s")
+//    @Message(id = 14542, value = "Group creation context already exists")
 
     @Message(id = 14543, value = "No EJB found with interface of type '%s' and name '%s' for binding %s")
     String ejbNotFound(String typeName, String beanName, String binding);
@@ -2465,9 +2436,6 @@ public interface EjbMessages {
     @Message(id = 14582, value = "Timer service resource %s is not suitable for the target. Only a configuration with a single file-store and no other configured data-store is supported on target")
     String untransformableTimerService(PathAddress address);
 
-    @Message(id = 14583, value = "Stateful bean %s is disabled for passivation, but the cache factory %s has passivation enabled")
-    IllegalStateException requiresNonPassivatingCacheFactory(String ejbName, CacheFactory cacheFactory);
-
     /**
      * Creates an exception indicating that timer is active.
      *
@@ -2487,6 +2455,9 @@ public interface EjbMessages {
 
     @Message(id = 14588, value = "CMP Entity Beans are not supported")
     DeploymentUnitProcessingException cmpEntityBeansAreNotSupported();
+
+    @Message(id = 14589, value = "Detected asymmetric usage of cache")
+    IllegalStateException asymmetricCacheUsage();
 
     // STOP!!! Don't add message ids greater that 14599!!! If you need more first check what EjbLogger is
     // using and take more (lower) numbers from the available range for this module. If the range for the module is
