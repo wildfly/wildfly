@@ -37,10 +37,10 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.HttpSession;
 
-import org.jboss.as.test.clustering.LocalEJBDirectory;
 import org.jboss.as.test.clustering.cluster.ejb.xpc.bean.Employee;
 import org.jboss.as.test.clustering.cluster.ejb.xpc.bean.Stateful;
 import org.jboss.as.test.clustering.cluster.ejb.xpc.bean.StatefulBean;
+import org.jboss.as.test.clustering.ejb.LocalEJBDirectory;
 import org.jboss.logging.Logger;
 
 /**

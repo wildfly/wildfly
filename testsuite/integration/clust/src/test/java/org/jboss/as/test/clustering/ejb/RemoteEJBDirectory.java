@@ -20,43 +20,32 @@
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
 
-package org.jboss.as.test.clustering;
+package org.jboss.as.test.clustering.ejb;
 
 import java.util.Properties;
-import javax.naming.InitialContext;
 
+import javax.naming.Context;
 import javax.naming.NamingException;
 
 /**
  * @author Paul Ferraro
  */
-public class LocalEJBDirectory extends AbstractEJBDirectory {
+public class RemoteEJBDirectory extends AbstractEJBDirectory {
+    private static final Properties env = new Properties();
+
+    static {
+        env.setProperty(Context.URL_PKG_PREFIXES, "org.jboss.ejb.client.naming");
+    }
+
     private final String module;
 
-    public LocalEJBDirectory(String module) throws NamingException {
-        super(new Properties());
+    public RemoteEJBDirectory(String module) throws NamingException {
+        super(env);
         this.module = module;
-    }
-
-    public LocalEJBDirectory(String module, InitialContext context) {
-        super(context);
-        this.module = module;
-    }
-
-    public <T> T lookupStateful(Class<T> beanClass) throws NamingException {
-        return this.lookupStateful(beanClass, beanClass);
-    }
-
-    public <T> T lookupStateless(Class<T> beanClass) throws NamingException {
-        return this.lookupStateless(beanClass, beanClass);
-    }
-
-    public <T> T lookupSingleton(Class<T> beanClass) throws NamingException {
-        return this.lookupSingleton(beanClass, beanClass);
     }
 
     @Override
     protected <T> String createJndiName(String beanName, Class<T> beanInterface, Type type) {
-        return String.format("java:app/%s/%s!%s", this.module, beanName, beanInterface.getName());
+        return String.format("ejb:/%s/%s!%s%s", this.module, beanName, beanInterface.getName(), (type == Type.STATEFUL) ? "?stateful" : "");
     }
 }

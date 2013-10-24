@@ -26,8 +26,8 @@ import javax.ejb.Remote;
 import javax.ejb.Stateful;
 import javax.naming.NamingException;
 
-import org.jboss.as.test.clustering.EJBDirectory;
-import org.jboss.as.test.clustering.RemoteEJBDirectory;
+import org.jboss.as.test.clustering.ejb.EJBDirectory;
+import org.jboss.as.test.clustering.ejb.RemoteEJBDirectory;
 
 @Stateful(passivationCapable = false)
 @Remote(Incrementor.class)

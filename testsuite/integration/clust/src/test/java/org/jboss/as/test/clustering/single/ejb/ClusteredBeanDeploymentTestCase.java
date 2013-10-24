@@ -26,12 +26,12 @@ import javax.naming.NamingException;
 
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.junit.Arquillian;
-import org.jboss.as.test.clustering.EJBDirectory;
-import org.jboss.as.test.clustering.LocalEJBDirectory;
 import org.jboss.as.test.clustering.cluster.ejb.remote.bean.Incrementor;
 import org.jboss.as.test.clustering.cluster.ejb.remote.bean.Result;
 import org.jboss.as.test.clustering.cluster.ejb.remote.bean.StatelessDDIncrementorBean;
 import org.jboss.as.test.clustering.cluster.ejb.remote.bean.StatelessIncrementorBean;
+import org.jboss.as.test.clustering.ejb.EJBDirectory;
+import org.jboss.as.test.clustering.ejb.LocalEJBDirectory;
 import org.jboss.shrinkwrap.api.Archive;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.spec.JavaArchive;
@@ -56,6 +56,7 @@ public class ClusteredBeanDeploymentTestCase {
     public static Archive<?> createDDBasedDeployment() {
         final JavaArchive ejbJar = ShrinkWrap.create(JavaArchive.class, MODULE + ".jar");
         ejbJar.addPackage(Incrementor.class.getPackage());
+        ejbJar.addPackage(EJBDirectory.class.getPackage());
         ejbJar.addAsManifestResource(Incrementor.class.getPackage(), "jboss-ejb3.xml", "jboss-ejb3.xml");
         return ejbJar;
     }

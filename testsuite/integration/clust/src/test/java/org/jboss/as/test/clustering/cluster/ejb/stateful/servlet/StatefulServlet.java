@@ -36,8 +36,8 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.HttpSession;
 
-import org.jboss.as.test.clustering.LocalEJBDirectory;
 import org.jboss.as.test.clustering.cluster.ejb.stateful.bean.Incrementor;
+import org.jboss.as.test.clustering.ejb.LocalEJBDirectory;
 
 /**
  * @author Paul Ferraro

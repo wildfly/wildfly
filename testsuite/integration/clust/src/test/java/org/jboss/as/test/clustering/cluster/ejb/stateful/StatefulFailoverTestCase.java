@@ -41,9 +41,6 @@ import org.jboss.arquillian.container.test.api.RunAsClient;
 import org.jboss.arquillian.container.test.api.TargetsContainer;
 import org.jboss.arquillian.junit.Arquillian;
 import org.jboss.arquillian.test.api.ArquillianResource;
-import org.jboss.as.test.clustering.AbstractEJBDirectory;
-import org.jboss.as.test.clustering.EJBDirectory;
-import org.jboss.as.test.clustering.LocalEJBDirectory;
 import org.jboss.as.test.clustering.cluster.ClusterAbstractTestCase;
 import org.jboss.as.test.clustering.cluster.ejb.stateful.bean.CounterDecorator;
 import org.jboss.as.test.clustering.cluster.ejb.stateful.bean.Incrementor;
@@ -54,6 +51,9 @@ import org.jboss.as.test.clustering.cluster.ejb.stateful.bean.PersistenceIncreme
 import org.jboss.as.test.clustering.cluster.ejb.stateful.bean.SimpleIncrementorBean;
 import org.jboss.as.test.clustering.cluster.ejb.stateful.bean.IncrementorDDInterceptor;
 import org.jboss.as.test.clustering.cluster.ejb.stateful.servlet.StatefulServlet;
+import org.jboss.as.test.clustering.ejb.AbstractEJBDirectory;
+import org.jboss.as.test.clustering.ejb.EJBDirectory;
+import org.jboss.as.test.clustering.ejb.LocalEJBDirectory;
 import org.jboss.shrinkwrap.api.Archive;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.asset.StringAsset;
@@ -88,7 +88,7 @@ public class StatefulFailoverTestCase extends ClusterAbstractTestCase {
         WebArchive war = ShrinkWrap.create(WebArchive.class, MODULE_NAME + ".war");
         war.addPackage(Incrementor.class.getPackage());
         war.addPackage(StatefulServlet.class.getPackage());
-        war.addClasses(EJBDirectory.class, AbstractEJBDirectory.class, LocalEJBDirectory.class);
+        war.addPackage(EJBDirectory.class.getPackage());
         war.setWebXML(StatefulServlet.class.getPackage(), "web.xml");
         war.addAsWebInfResource(new StringAsset("<beans>" +
                 "<interceptors><class>" + IncrementorDDInterceptor.class.getName() + "</class></interceptors>" +

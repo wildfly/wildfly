@@ -20,34 +20,43 @@
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
 
-package org.jboss.as.test.clustering;
+package org.jboss.as.test.clustering.ejb;
 
-import javax.ejb.EJBHome;
-import javax.ejb.SessionBean;
+import java.util.Properties;
+import javax.naming.InitialContext;
+
 import javax.naming.NamingException;
 
 /**
- * EJB lookup helper
- *
  * @author Paul Ferraro
  */
-public interface EJBDirectory extends AutoCloseable {
-    <T> T lookupStateful(String beanName, Class<T> beanInterface) throws NamingException;
+public class LocalEJBDirectory extends AbstractEJBDirectory {
+    private final String module;
 
-    <T> T lookupStateful(Class<? extends T> beanClass, Class<T> beanInterface) throws NamingException;
+    public LocalEJBDirectory(String module) throws NamingException {
+        super(new Properties());
+        this.module = module;
+    }
 
-    <T> T lookupStateless(String beanName, Class<T> beanInterface) throws NamingException;
+    public LocalEJBDirectory(String module, InitialContext context) {
+        super(context);
+        this.module = module;
+    }
 
-    <T> T lookupStateless(Class<? extends T> beanClass, Class<T> beanInterface) throws NamingException;
+    public <T> T lookupStateful(Class<T> beanClass) throws NamingException {
+        return this.lookupStateful(beanClass, beanClass);
+    }
 
-    <T> T lookupSingleton(String beanName, Class<T> beanInterface) throws NamingException;
+    public <T> T lookupStateless(Class<T> beanClass) throws NamingException {
+        return this.lookupStateless(beanClass, beanClass);
+    }
 
-    <T> T lookupSingleton(Class<? extends T> beanClass, Class<T> beanInterface) throws NamingException;
-
-    <T extends EJBHome> T lookupHome(String beanName, Class<T> homeInterface) throws NamingException;
-
-    <T extends EJBHome> T lookupHome(Class<? extends SessionBean> beanClass, Class<T> homeInterface) throws NamingException;
+    public <T> T lookupSingleton(Class<T> beanClass) throws NamingException {
+        return this.lookupSingleton(beanClass, beanClass);
+    }
 
     @Override
-    void close() throws NamingException;
+    protected <T> String createJndiName(String beanName, Class<T> beanInterface, Type type) {
+        return String.format("java:app/%s/%s!%s", this.module, beanName, beanInterface.getName());
+    }
 }

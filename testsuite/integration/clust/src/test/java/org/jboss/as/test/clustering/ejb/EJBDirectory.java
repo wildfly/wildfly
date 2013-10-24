@@ -20,32 +20,34 @@
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
 
-package org.jboss.as.test.clustering;
+package org.jboss.as.test.clustering.ejb;
 
-import java.util.Properties;
-
-import javax.naming.Context;
+import javax.ejb.EJBHome;
+import javax.ejb.SessionBean;
 import javax.naming.NamingException;
 
 /**
+ * EJB lookup helper
+ *
  * @author Paul Ferraro
  */
-public class RemoteEJBDirectory extends AbstractEJBDirectory {
-    private static final Properties env = new Properties();
+public interface EJBDirectory extends AutoCloseable {
+    <T> T lookupStateful(String beanName, Class<T> beanInterface) throws NamingException;
 
-    static {
-        env.setProperty(Context.URL_PKG_PREFIXES, "org.jboss.ejb.client.naming");
-    }
+    <T> T lookupStateful(Class<? extends T> beanClass, Class<T> beanInterface) throws NamingException;
 
-    private final String module;
+    <T> T lookupStateless(String beanName, Class<T> beanInterface) throws NamingException;
 
-    public RemoteEJBDirectory(String module) throws NamingException {
-        super(env);
-        this.module = module;
-    }
+    <T> T lookupStateless(Class<? extends T> beanClass, Class<T> beanInterface) throws NamingException;
+
+    <T> T lookupSingleton(String beanName, Class<T> beanInterface) throws NamingException;
+
+    <T> T lookupSingleton(Class<? extends T> beanClass, Class<T> beanInterface) throws NamingException;
+
+    <T extends EJBHome> T lookupHome(String beanName, Class<T> homeInterface) throws NamingException;
+
+    <T extends EJBHome> T lookupHome(Class<? extends SessionBean> beanClass, Class<T> homeInterface) throws NamingException;
 
     @Override
-    protected <T> String createJndiName(String beanName, Class<T> beanInterface, Type type) {
-        return String.format("ejb:/%s/%s!%s%s", this.module, beanName, beanInterface.getName(), (type == Type.STATEFUL) ? "?stateful" : "");
-    }
+    void close() throws NamingException;
 }
