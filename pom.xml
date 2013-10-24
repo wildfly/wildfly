@@ -96,7 +96,7 @@
         <version.commons-configuration>1.6.redhat-3</version.commons-configuration>
         <version.commons-lang>2.6-redhat-2</version.commons-lang>
         <version.commons-pool>1.6.redhat-6</version.commons-pool>
-        <version.dom4j>1.6.1-redhat-5</version.dom4j>
+        <version.dom4j>1.6.1.redhat-6</version.dom4j>
         <version.gnu.getopt>1.0.13.redhat-4</version.gnu.getopt>
         <version.io.netty>3.6.6.Final-redhat-1</version.io.netty>
         <version.javax.activation>1.1.1-redhat-2</version.javax.activation>
