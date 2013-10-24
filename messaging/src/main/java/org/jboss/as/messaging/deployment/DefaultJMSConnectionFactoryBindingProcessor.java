@@ -33,6 +33,7 @@ import org.jboss.as.server.deployment.DeploymentUnit;
 import org.jboss.as.server.deployment.DeploymentUnitProcessingException;
 import org.jboss.as.server.deployment.DeploymentUnitProcessor;
 
+import static org.jboss.as.ee.structure.DeploymentType.APPLICATION_CLIENT;
 import static org.jboss.as.ee.structure.DeploymentType.EAR;
 import static org.jboss.as.ee.structure.DeploymentType.WAR;
 
@@ -63,8 +64,11 @@ public class DefaultJMSConnectionFactoryBindingProcessor implements DeploymentUn
         }
         final LookupInjectionSource injectionSource = new LookupInjectionSource(defaultJMSConnectionFactory);
         if (DeploymentTypeMarker.isType(WAR, deploymentUnit)) {
-            moduleDescription.getBindingConfigurations().add(new BindingConfiguration(MODULE_DEFAULT_JMS_CONNECTION_FACTORY,injectionSource));
+            moduleDescription.getBindingConfigurations().add(new BindingConfiguration(MODULE_DEFAULT_JMS_CONNECTION_FACTORY, injectionSource));
         } else {
+            if (DeploymentTypeMarker.isType(APPLICATION_CLIENT, deploymentUnit)) {
+                moduleDescription.getBindingConfigurations().add(new BindingConfiguration(COMP_DEFAULT_JMS_CONNECTION_FACTORY, injectionSource));
+            }
             for(ComponentDescription componentDescription : moduleDescription.getComponentDescriptions()) {
                 if(componentDescription.getNamingMode() == ComponentNamingMode.CREATE) {
                     componentDescription.getBindingConfigurations().add(new BindingConfiguration(COMP_DEFAULT_JMS_CONNECTION_FACTORY,injectionSource));
