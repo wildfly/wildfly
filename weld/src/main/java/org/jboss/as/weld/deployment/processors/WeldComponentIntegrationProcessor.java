@@ -36,6 +36,7 @@ import org.jboss.as.ee.component.EEModuleDescription;
 import org.jboss.as.ee.component.InterceptorDescription;
 import org.jboss.as.ee.component.interceptors.InterceptorOrder;
 import org.jboss.as.ee.component.interceptors.UserInterceptorFactory;
+import org.jboss.as.ee.managedbean.component.ManagedBeanComponentDescription;
 import org.jboss.as.ee.weld.WeldDeploymentMarker;
 import org.jboss.as.ejb3.component.EJBComponentDescription;
 import org.jboss.as.ejb3.component.stateful.SerializedCdiInterceptorsKey;
@@ -157,43 +158,29 @@ public class WeldComponentIntegrationProcessor implements DeploymentUnitProcesso
         //if this is an ejb add the EJB interceptors
         if (description instanceof EJBComponentDescription) {
 
-            final WeldInterceptorBindingsService weldInterceptorBindingsService = new WeldInterceptorBindingsService(beanDeploymentArchiveId, configuration.getComponentName());
-            ServiceName bindingServiceName = configuration.getComponentDescription().getServiceName().append(WeldInterceptorBindingsService.SERVICE_NAME);
-            target.addService(bindingServiceName, weldInterceptorBindingsService)
-                    .addDependency(weldServiceName, WeldBootstrapService.class, weldInterceptorBindingsService.getWeldContainer())
-                    .addDependency(weldStartService)
-                    .install();
+            final ServiceName bindingServiceName = addWeldInterceptorBindingService(target, configuration, componentClass, beanName, weldServiceName, weldStartService, beanDeploymentArchiveId);
 
             //add interceptor to activate the request scope if required
             final EjbRequestScopeActivationInterceptor.Factory requestFactory = new EjbRequestScopeActivationInterceptor.Factory(weldServiceName);
             configuration.addComponentInterceptor(requestFactory, InterceptorOrder.Component.CDI_REQUEST_SCOPE, false);
 
-            //add the create interceptor that creates the CDI intereptors
-            final Jsr299BindingsCreateInterceptor createInterceptor = new Jsr299BindingsCreateInterceptor(description.getBeanDeploymentArchiveId(), beanName);
-            configuration.addPostConstructInterceptor(new ImmediateInterceptorFactory(createInterceptor), InterceptorOrder.ComponentPostConstruct.CREATE_CDI_INTERCEPTORS);
-            builder.addDependency(weldServiceName, WeldBootstrapService.class, createInterceptor.getWeldContainer());
-            builder.addDependency(bindingServiceName, InterceptorBindings.class, createInterceptor.getInterceptorBindings());
+            addJsr299BindingsCreateInterceptor(configuration, description, beanName, weldServiceName, builder, bindingServiceName);
+
+            addCommonLifecycleInterceptionSupport(configuration, builder, bindingServiceName, weldServiceName);
 
             configuration.addComponentInterceptor(new UserInterceptorFactory(factory(InterceptionType.AROUND_INVOKE, builder, bindingServiceName), factory(InterceptionType.AROUND_TIMEOUT, builder, bindingServiceName)), InterceptorOrder.Component.CDI_INTERCEPTORS, false);
-
-            configuration.addPreDestroyInterceptor(factory(InterceptionType.PRE_DESTROY, builder, bindingServiceName), InterceptorOrder.ComponentPreDestroy.CDI_INTERCEPTORS);
 
             if (description.isPassivationApplicable()) {
                 configuration.addPrePassivateInterceptor(factory(InterceptionType.PRE_PASSIVATE, builder, bindingServiceName), InterceptorOrder.ComponentPassivation.CDI_INTERCEPTORS);
                 configuration.addPostActivateInterceptor(factory(InterceptionType.POST_ACTIVATE, builder, bindingServiceName), InterceptorOrder.ComponentPassivation.CDI_INTERCEPTORS);
             }
+        } else if (description instanceof ManagedBeanComponentDescription) {
+            final ServiceName bindingServiceName = addWeldInterceptorBindingService(target, configuration, componentClass, beanName, weldServiceName, weldStartService, beanDeploymentArchiveId);
+            addJsr299BindingsCreateInterceptor(configuration, description, beanName, weldServiceName, builder, bindingServiceName);
 
-            configuration.addPostConstructInterceptor(factory(InterceptionType.POST_CONSTRUCT, builder, bindingServiceName), InterceptorOrder.ComponentPostConstruct.CDI_INTERCEPTORS);
+            addCommonLifecycleInterceptionSupport(configuration, builder, bindingServiceName, weldServiceName);
 
-            configuration.addAroundConstructInterceptor(factory(InterceptionType.AROUND_CONSTRUCT, builder, bindingServiceName), InterceptorOrder.AroundConstruct.WELD_AROUND_CONSTRUCT_INTERCEPTORS);
-
-            /*
-             * Add interceptor to activate the request scope for the @PostConstruct callback.
-             * See https://issues.jboss.org/browse/CDI-219 for details
-             */
-            final EjbRequestScopeActivationInterceptor.Factory postConstructRequestContextActivationFactory = new EjbRequestScopeActivationInterceptor.Factory(weldServiceName);
-            configuration.addPostConstructInterceptor(postConstructRequestContextActivationFactory, InterceptorOrder.ComponentPostConstruct.REQUEST_SCOPE_ACTIVATING_INTERCEPTOR);
-
+            configuration.addComponentInterceptor(new UserInterceptorFactory(factory(InterceptionType.AROUND_INVOKE, builder, bindingServiceName), factory(InterceptionType.AROUND_TIMEOUT, builder, bindingServiceName)), InterceptorOrder.Component.CDI_INTERCEPTORS, false);
         }
 
         builder.install();
@@ -204,6 +191,36 @@ public class WeldComponentIntegrationProcessor implements DeploymentUnitProcesso
         configuration.addPostConstructInterceptor(new ImmediateInterceptorFactory(new WeldInterceptorInjectionInterceptor(interceptorClasses)), InterceptorOrder.ComponentPostConstruct.INTERCEPTOR_WELD_INJECTION);
         configuration.addPostConstructInterceptor(WeldInjectionInterceptor.FACTORY, InterceptorOrder.ComponentPostConstruct.COMPONENT_WELD_INJECTION);
 
+    }
+
+    private ServiceName addWeldInterceptorBindingService(final ServiceTarget target, final ComponentConfiguration configuration, final Class<?> componentClass, final String beanName, final ServiceName weldServiceName, final ServiceName weldStartService, final String beanDeploymentArchiveId) {
+        final WeldInterceptorBindingsService weldInterceptorBindingsService = new WeldInterceptorBindingsService(beanDeploymentArchiveId, beanName, componentClass);
+        ServiceName bindingServiceName = configuration.getComponentDescription().getServiceName().append(WeldInterceptorBindingsService.SERVICE_NAME);
+        target.addService(bindingServiceName, weldInterceptorBindingsService)
+                .addDependency(weldServiceName, WeldBootstrapService.class, weldInterceptorBindingsService.getWeldContainer())
+                .addDependency(weldStartService)
+                .install();
+        return bindingServiceName;
+    }
+
+    private void addJsr299BindingsCreateInterceptor(final ComponentConfiguration configuration, final ComponentDescription description, final String beanName, final ServiceName weldServiceName, ServiceBuilder<WeldComponentService> builder, final ServiceName bindingServiceName) {
+        //add the create interceptor that creates the CDI interceptors
+        final Jsr299BindingsCreateInterceptor createInterceptor = new Jsr299BindingsCreateInterceptor(description.getBeanDeploymentArchiveId(), beanName);
+        configuration.addPostConstructInterceptor(new ImmediateInterceptorFactory(createInterceptor), InterceptorOrder.ComponentPostConstruct.CREATE_CDI_INTERCEPTORS);
+        builder.addDependency(weldServiceName, WeldBootstrapService.class, createInterceptor.getWeldContainer());
+        builder.addDependency(bindingServiceName, InterceptorBindings.class, createInterceptor.getInterceptorBindings());
+    }
+
+    private void addCommonLifecycleInterceptionSupport(final ComponentConfiguration configuration, ServiceBuilder<WeldComponentService> builder, final ServiceName bindingServiceName, final ServiceName weldServiceName) {
+        configuration.addPreDestroyInterceptor(factory(InterceptionType.PRE_DESTROY, builder, bindingServiceName), InterceptorOrder.ComponentPreDestroy.CDI_INTERCEPTORS);
+        configuration.addAroundConstructInterceptor(factory(InterceptionType.AROUND_CONSTRUCT, builder, bindingServiceName), InterceptorOrder.AroundConstruct.WELD_AROUND_CONSTRUCT_INTERCEPTORS);
+        configuration.addPostConstructInterceptor(factory(InterceptionType.POST_CONSTRUCT, builder, bindingServiceName), InterceptorOrder.ComponentPostConstruct.CDI_INTERCEPTORS);
+        /*
+         * Add interceptor to activate the request scope for the @PostConstruct callback.
+         * See https://issues.jboss.org/browse/CDI-219 for details
+         */
+        final EjbRequestScopeActivationInterceptor.Factory postConstructRequestContextActivationFactory = new EjbRequestScopeActivationInterceptor.Factory(weldServiceName);
+        configuration.addPostConstructInterceptor(postConstructRequestContextActivationFactory, InterceptorOrder.ComponentPostConstruct.REQUEST_SCOPE_ACTIVATING_INTERCEPTOR);
     }
 
     @Override

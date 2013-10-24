@@ -29,6 +29,7 @@ import java.util.Iterator;
 import java.util.Map;
 import java.util.Set;
 
+import javax.enterprise.inject.spi.AnnotatedType;
 import javax.enterprise.inject.spi.Bean;
 import javax.enterprise.inject.spi.InjectionTarget;
 import javax.servlet.AsyncListener;
@@ -109,7 +110,8 @@ public class WeldComponentService implements Service<WeldComponentService> {
             beanManager = weldContainer.getValue().getBeanManager(beanDeploymentArchiveId);
 
             for (final Class<?> interceptor : interceptorClasses) {
-                interceptorInjections.put(interceptor, createInjectionTarget(interceptor, null, beanManager));
+                AnnotatedType<?> type = beanManager.createAnnotatedType(interceptor);
+                interceptorInjections.put(interceptor, beanManager.getInjectionTargetFactory(type).createInterceptorInjectionTarget());
             }
 
             if (ejbName != null) {

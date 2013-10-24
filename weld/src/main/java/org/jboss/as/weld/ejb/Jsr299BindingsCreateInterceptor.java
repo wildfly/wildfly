@@ -67,10 +67,12 @@ public class Jsr299BindingsCreateInterceptor implements org.jboss.invocation.Int
         BeanManagerImpl beanManager = this.weldContainer.getValue().getBeanManager(beanArchiveId);
         //this is not always called with the deployments TCCL set
         //which causes weld to blow up
-        EjbDescriptor<Object> descriptor = beanManager.getEjbDescriptor(this.ejbName);
         SessionBean<Object> bean = null;
-        if (descriptor != null) {
-            bean = beanManager.getBean(descriptor);
+        if (ejbName != null) {
+            EjbDescriptor<Object> descriptor = beanManager.getEjbDescriptor(this.ejbName);
+            if (descriptor != null) {
+                bean = beanManager.getBean(descriptor);
+            }
         }
         InterceptorBindings interceptorBindings = this.interceptorBindings.getValue();
 
