@@ -27,6 +27,7 @@ import static org.jboss.as.ee.EeMessages.MESSAGES;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
+
 import javax.resource.AdministeredObjectDefinition;
 import javax.resource.AdministeredObjectDefinitions;
 
@@ -45,7 +46,6 @@ import org.jboss.jandex.AnnotationTarget;
 import org.jboss.jandex.AnnotationValue;
 import org.jboss.jandex.ClassInfo;
 import org.jboss.jandex.DotName;
-import org.jboss.jca.core.spi.mdr.MetadataRepository;
 
 /**
  * Deployment processor responsible for processing {@link AdministeredObjectDefinition} and {@link AdministeredObjectDefinitions}
@@ -58,15 +58,7 @@ public class AdministeredObjectDefinitionAnnotationParser implements DeploymentU
     private static final DotName ADMINISTERED_OBJECT_DEFINITION = DotName.createSimple(AdministeredObjectDefinition.class.getName());
     private static final DotName ADMINISTERED_OBJECT_DEFINITIONS = DotName.createSimple(AdministeredObjectDefinitions.class.getName());
 
-    private MetadataRepository mdr;
 
-    /**
-     * Constructor
-     * @param mdr The metadata repository
-     */
-    public AdministeredObjectDefinitionAnnotationParser(MetadataRepository mdr) {
-        this.mdr = mdr;
-    }
 
     @Override
     public void deploy(DeploymentPhaseContext phaseContext) throws DeploymentUnitProcessingException {
@@ -142,7 +134,7 @@ public class AdministeredObjectDefinitionAnnotationParser implements DeploymentU
         }
 
         final DirectAdministeredObjectInjectionSource directAdministeredObjectInjectionSource =
-            new DirectAdministeredObjectInjectionSource(name, clz, ra, mdr);
+            new DirectAdministeredObjectInjectionSource(name, clz, ra);
 
         directAdministeredObjectInjectionSource.setDescription(asString(adminObjectAnnotation,
                                                                         DirectAdministeredObjectInjectionSource.DESCRIPTION));
