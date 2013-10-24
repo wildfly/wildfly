@@ -53,7 +53,7 @@ public class SubjectAssociationHandler implements HttpHandler {
         if (principal instanceof SubjectHttpPrincipal) {
             subject = ((SubjectHttpPrincipal) principal).getSubject();
         } else {
-            subject = null;
+            subject = new Subject();
         }
 
         handleRequest(exchange, subject);

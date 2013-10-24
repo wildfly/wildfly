@@ -78,7 +78,7 @@ public class ModelControllerClientOperationHandler implements ManagementRequestH
 
     public ModelControllerClientOperationHandler(final ModelController controller,
                                                  final ManagementChannelAssociation channelAssociation) {
-        this(controller, channelAssociation, null);
+        this(controller, channelAssociation, new Subject());
     }
 
     public ModelControllerClientOperationHandler(final ModelController controller,

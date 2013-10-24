@@ -69,7 +69,6 @@ import org.jboss.as.controller.persistence.ConfigurationPersistenceException;
 import org.jboss.as.controller.persistence.ConfigurationPersister;
 import org.jboss.as.controller.registry.Resource;
 import org.jboss.as.controller.security.InetAddressPrincipal;
-import org.jboss.as.core.security.RealmUser;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.Property;
 
@@ -378,10 +377,11 @@ abstract class AbstractOperationContext implements OperationContext {
                 Subject subject = System.getSecurityManager() == null ?
                         getCurrentAction.run() : AccessController.doPrivileged(getCurrentAction);
                 AccessAuditContext accessContext = SecurityActions.currentAccessAuditContext();
+                Caller caller = getCaller();
                 auditLogger.log(
                         !isModelAffected(),
                         resultAction,
-                        getCallerUserId(subject),
+                        caller == null ? null : caller.getName(),
                         accessContext == null ? null : accessContext.getDomainUuid(),
                         accessContext == null ? null : accessContext.getAccessMechanism(),
                         getSubjectInetAddress(subject),
@@ -392,16 +392,6 @@ abstract class AbstractOperationContext implements OperationContext {
                 ControllerLogger.MGMT_OP_LOGGER.failedToUpdateAuditLog(e);
             }
         }
-    }
-
-    private String getCallerUserId(Subject subject) {
-        String userId = null;
-        if (subject != null) {
-            Set<RealmUser> realmUsers = subject.getPrincipals(RealmUser.class);
-            RealmUser user = realmUsers.iterator().next();
-            userId = user.getName();
-        }
-        return userId;
     }
 
     private InetAddress getSubjectInetAddress(Subject subject) {
