@@ -22,6 +22,8 @@
 
 package org.jboss.as.txn.subsystem;
 
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ADD;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP;
 import static org.jboss.as.txn.TransactionLogger.ROOT_LOGGER;
 
 import java.util.Map;
@@ -40,7 +42,6 @@ import org.jboss.as.controller.descriptions.StandardResourceDescriptionResolver;
 import org.jboss.as.controller.operations.common.GenericSubsystemDescribeHandler;
 import org.jboss.as.controller.parsing.ExtensionParsingContext;
 import org.jboss.as.controller.registry.ManagementResourceRegistration;
-import org.jboss.as.controller.registry.Resource;
 import org.jboss.as.controller.services.path.ResolvePathHandler;
 import org.jboss.as.controller.transform.TransformationContext;
 import org.jboss.as.controller.transform.description.AttributeConverter;
@@ -172,23 +173,7 @@ public class TransactionExtension implements Extension {
         subsystemRoot.getAttributeBuilder()
                 .setDiscard(new DiscardAttributeChecker.DiscardAttributeValueChecker(false, false, new ModelNode(true)),
                         TransactionSubsystemRootResourceDefinition.HORNETQ_STORE_ENABLE_ASYNC_IO)
-                .addRejectCheck(new RejectAttributeChecker.DefaultRejectAttributeChecker() {
-                    @Override
-                    public String getRejectionLogMessage(Map<String, ModelNode> attributes) {
-                        return TransactionMessages.MESSAGES.transformHornetQStoreEnableAsyncIoMustBeTrue();
-                    }
-
-                    @Override
-                    protected boolean rejectAttribute(PathAddress address, String attributeName, ModelNode attributeValue,
-                            TransformationContext context) {
-                        //Will not get called if it was discarded
-                        if (!attributeValue.isDefined() || !attributeValue.asString().equals("true")) {
-                            Resource resource = context.readResource(address);
-                            return !resource.getModel().get(TransactionSubsystemRootResourceDefinition.USEHORNETQSTORE.getName()).asString().equals("false");
-                        }
-                        return false;
-                    }
-                }, TransactionSubsystemRootResourceDefinition.HORNETQ_STORE_ENABLE_ASYNC_IO);
+                .addRejectCheck(RejectHornetQStoreAsyncIOChecker.INSTANCE, TransactionSubsystemRootResourceDefinition.HORNETQ_STORE_ENABLE_ASYNC_IO);
 
         final ModelVersion version120 = ModelVersion.create(1, 2, 0);
         final TransformationDescription description120 = subsystemRoot.build();
@@ -280,7 +265,49 @@ public class TransactionExtension implements Extension {
             }
             return true;
         }
+    }
 
+    private static class RejectHornetQStoreAsyncIOChecker extends RejectAttributeChecker.DefaultRejectAttributeChecker {
+        static final RejectHornetQStoreAsyncIOChecker INSTANCE = new RejectHornetQStoreAsyncIOChecker();
+
+        @Override
+        public String getRejectionLogMessage(Map<String, ModelNode> attributes) {
+            return TransactionMessages.MESSAGES.transformHornetQStoreEnableAsyncIoMustBeTrue();
+        }
+
+        @Override
+        public boolean rejectOperationParameter(PathAddress address, String attributeName, ModelNode attributeValue,
+                ModelNode operation, TransformationContext context) {
+            if (operation.get(OP).asString().equals(ADD)) {
+                return rejectCheck(address, attributeName, attributeValue, operation);
+            }
+            return rejectResourceAttribute(address, attributeName, attributeValue, context);
+        }
+
+        @Override
+        public boolean rejectResourceAttribute(PathAddress address, String attributeName, ModelNode attributeValue,
+                TransformationContext context) {
+            return rejectCheck(address, attributeName, attributeValue, context.readResourceFromRoot(address).getModel());
+        }
+
+        protected boolean rejectCheck(PathAddress address, String attributeName, ModelNode attributeValue,
+                ModelNode model) {
+            //Will not get called if it was discarded
+            if (!attributeValue.isDefined() || !attributeValue.asString().equals("true")) {
+                //If use-hornetq-store is undefined or false, don't reject
+                if (model.hasDefined(TransactionSubsystemRootResourceDefinition.USEHORNETQSTORE.getName())) {
+                    return !model.get(TransactionSubsystemRootResourceDefinition.USEHORNETQSTORE.getName()).asString().equals("false");
+                }
+            }
+            return false;
+        }
+
+        @Override
+        protected boolean rejectAttribute(PathAddress address, String attributeName, ModelNode attributeValue,
+                TransformationContext context) {
+            //will not get called since we've overridden the other methods
+            return false;
+        }
     }
 
 }
