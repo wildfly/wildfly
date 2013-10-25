@@ -33,6 +33,7 @@ import org.jboss.as.server.deployment.DeploymentUnit;
 import org.jboss.as.server.deployment.DeploymentUnitProcessingException;
 import org.jboss.as.server.deployment.DeploymentUnitProcessor;
 
+import static org.jboss.as.ee.structure.DeploymentType.APPLICATION_CLIENT;
 import static org.jboss.as.ee.structure.DeploymentType.EAR;
 import static org.jboss.as.ee.structure.DeploymentType.WAR;
 
@@ -63,37 +64,34 @@ public class EEConcurrentDefaultBindingProcessor implements DeploymentUnitProces
             return;
         }
         final String contextService = moduleDescription.getDefaultResourceJndiNames().getContextService();
+        if(contextService != null) {
+            addBinding(contextService, COMP_DEFAULT_CONTEXT_SERVICE_JNDI_NAME, MODULE_DEFAULT_CONTEXT_SERVICE_JNDI_NAME, moduleDescription, deploymentUnit);
+        }
         final String managedExecutorService = moduleDescription.getDefaultResourceJndiNames().getManagedExecutorService();
+        if(managedExecutorService != null) {
+            addBinding(managedExecutorService, COMP_DEFAULT_MANAGED_EXECUTOR_SERVICE_JNDI_NAME, MODULE_DEFAULT_MANAGED_EXECUTOR_SERVICE_JNDI_NAME, moduleDescription, deploymentUnit);
+        }
         final String managedScheduledExecutorService = moduleDescription.getDefaultResourceJndiNames().getManagedScheduledExecutorService();
+        if(managedScheduledExecutorService != null) {
+            addBinding(managedScheduledExecutorService, COMP_DEFAULT_MANAGED_SCHEDULED_EXECUTOR_SERVICE_JNDI_NAME, MODULE_DEFAULT_MANAGED_SCHEDULED_EXECUTOR_SERVICE_JNDI_NAME, moduleDescription, deploymentUnit);
+        }
         final String managedThreadFactory = moduleDescription.getDefaultResourceJndiNames().getManagedThreadFactory();
+        if(managedThreadFactory != null) {
+            addBinding(managedThreadFactory, COMP_DEFAULT_MANAGED_THREAD_FACTORY_JNDI_NAME, MODULE_DEFAULT_MANAGED_THREAD_FACTORY_JNDI_NAME, moduleDescription, deploymentUnit);
+        }
+    }
+
+    private void addBinding(String source, String compTarget, String moduleTarget, EEModuleDescription moduleDescription, DeploymentUnit deploymentUnit) {
+        final LookupInjectionSource injectionSource = new LookupInjectionSource(source);
         if (DeploymentTypeMarker.isType(WAR, deploymentUnit)) {
-            if(contextService != null) {
-                moduleDescription.getBindingConfigurations().add(new BindingConfiguration(MODULE_DEFAULT_CONTEXT_SERVICE_JNDI_NAME, new LookupInjectionSource(contextService)));
-            }
-            if(managedExecutorService != null) {
-                moduleDescription.getBindingConfigurations().add( new BindingConfiguration(MODULE_DEFAULT_MANAGED_EXECUTOR_SERVICE_JNDI_NAME, new LookupInjectionSource(managedExecutorService)));
-            }
-            if(managedScheduledExecutorService != null) {
-                moduleDescription.getBindingConfigurations().add(new BindingConfiguration(MODULE_DEFAULT_MANAGED_SCHEDULED_EXECUTOR_SERVICE_JNDI_NAME, new LookupInjectionSource(managedScheduledExecutorService)));
-            }
-            if(managedThreadFactory != null) {
-                moduleDescription.getBindingConfigurations().add(new BindingConfiguration(MODULE_DEFAULT_MANAGED_THREAD_FACTORY_JNDI_NAME,new LookupInjectionSource(managedThreadFactory)));
-            }
+            moduleDescription.getBindingConfigurations().add(new BindingConfiguration(moduleTarget, injectionSource));
         } else {
+            if (DeploymentTypeMarker.isType(APPLICATION_CLIENT, deploymentUnit)) {
+                moduleDescription.getBindingConfigurations().add(new BindingConfiguration(compTarget, injectionSource));
+            }
             for(ComponentDescription componentDescription : moduleDescription.getComponentDescriptions()) {
                 if(componentDescription.getNamingMode() == ComponentNamingMode.CREATE) {
-                    if(contextService != null) {
-                        componentDescription.getBindingConfigurations().add(new BindingConfiguration(COMP_DEFAULT_CONTEXT_SERVICE_JNDI_NAME, new LookupInjectionSource(contextService)));
-                    }
-                    if(managedExecutorService != null) {
-                        componentDescription.getBindingConfigurations().add( new BindingConfiguration(COMP_DEFAULT_MANAGED_EXECUTOR_SERVICE_JNDI_NAME, new LookupInjectionSource(managedExecutorService)));
-                    }
-                    if(managedScheduledExecutorService != null) {
-                        componentDescription.getBindingConfigurations().add(new BindingConfiguration(COMP_DEFAULT_MANAGED_SCHEDULED_EXECUTOR_SERVICE_JNDI_NAME, new LookupInjectionSource(managedScheduledExecutorService)));
-                    }
-                    if(managedThreadFactory != null) {
-                        componentDescription.getBindingConfigurations().add(new BindingConfiguration(COMP_DEFAULT_MANAGED_THREAD_FACTORY_JNDI_NAME,new LookupInjectionSource(managedThreadFactory)));
-                    }
+                    componentDescription.getBindingConfigurations().add(new BindingConfiguration(compTarget, injectionSource));
                 }
             }
         }
