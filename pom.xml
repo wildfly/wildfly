@@ -78,7 +78,7 @@
          -->
 
         <version.antlr>2.7.7.redhat-4</version.antlr>
-        <version.asm>3.3.1-redhat-4</version.asm>
+        <version.asm>3.3.1-redhat-5</version.asm>
         <version.ch.qos.cal10n>0.7.3-redhat-2</version.ch.qos.cal10n>
         <version.com.github.relaxng>2011.1-redhat-6</version.com.github.relaxng>
         <version.com.google.guava>13.0.1-redhat-1</version.com.google.guava>
