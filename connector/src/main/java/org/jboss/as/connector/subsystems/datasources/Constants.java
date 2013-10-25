@@ -353,6 +353,7 @@ public class Constants {
     static PropertiesAttributeDefinition EXCEPTION_SORTER_PROPERTIES = new PropertiesAttributeDefinition.Builder(EXCEPTIONSORTER_PROPERTIES_NAME, true)
             .setXmlName(org.jboss.jca.common.api.metadata.common.Extension.Tag.CONFIG_PROPERTY.getLocalName())
             .setAllowExpression(true)
+            .setRequires(EXCEPTIONSORTERCLASSNAME_NAME)
             .build();
 
 
@@ -362,6 +363,7 @@ public class Constants {
             .setXmlName(org.jboss.jca.common.api.metadata.common.Extension.Tag.CONFIG_PROPERTY.getLocalName())
             .setAllowNull(true)
             .setAllowExpression(true)
+            .setRequires(STALECONNECTIONCHECKERCLASSNAME_NAME)
             .build();
 
     static SimpleAttributeDefinition VALID_CONNECTION_CHECKER_CLASSNAME = new SimpleAttributeDefinition(VALID_CONNECTION_CHECKER_CLASSNAME_NAME, org.jboss.jca.common.api.metadata.common.Extension.Attribute.CLASS_NAME.getLocalName(), new ModelNode(), ModelType.STRING, true, true, MeasurementUnit.NONE);
@@ -370,6 +372,7 @@ public class Constants {
             .setXmlName(org.jboss.jca.common.api.metadata.common.Extension.Tag.CONFIG_PROPERTY.getLocalName())
             .setAllowNull(true)
             .setAllowExpression(true)
+            .setRequires(VALID_CONNECTION_CHECKER_CLASSNAME_NAME)
             .build();
 
     static SimpleAttributeDefinition VALIDATE_ON_MATCH = new SimpleAttributeDefinition(VALIDATEONMATCH_NAME, Validation.Tag.VALIDATE_ON_MATCH.getLocalName(), new ModelNode().set(Defaults.VALIDATE_ON_MATCH), ModelType.BOOLEAN, true, true, MeasurementUnit.NONE);
@@ -398,6 +401,7 @@ public class Constants {
             .setXmlName(org.jboss.jca.common.api.metadata.common.Extension.Tag.CONFIG_PROPERTY.getLocalName())
             .setAllowNull(true)
             .setAllowExpression(true)
+            .setRequires(REAUTHPLUGIN_CLASSNAME_NAME)
             .build();
 
 
