@@ -147,11 +147,6 @@ public class WeldDeploymentProcessor implements DeploymentUnitProcessor {
 
         bdmsByIdentifier.put(module.getIdentifier(), rootBeanDeploymentModule);
 
-        for (final BeanDeploymentModule additional : deploymentUnit.getAttachmentList(WeldAttachments.VISIBLE_ADDITIONAL_BEAN_DEPLOYMENT_MODULE)) {
-            additional.addBeanDeploymentModule(rootBeanDeploymentModule);
-            rootBeanDeploymentModule.addBeanDeploymentModule(additional);
-        }
-
         moduleSpecByIdentifier.put(module.getIdentifier(), moduleSpecification);
 
         beanDeploymentArchives.addAll(rootBeanDeploymentModule.getBeanDeploymentArchives());
@@ -176,7 +171,6 @@ public class WeldDeploymentProcessor implements DeploymentUnitProcessor {
             }
             // add the modules bdas to the global set of bdas
             beanDeploymentArchives.addAll(bdm.getBeanDeploymentArchives());
-            List<BeanDeploymentModule> additionalModules = subDeployment.getAttachmentList(WeldAttachments.VISIBLE_ADDITIONAL_BEAN_DEPLOYMENT_MODULE);
             bdmsByIdentifier.put(subDeploymentModule.getIdentifier(), bdm);
             moduleSpecByIdentifier.put(subDeploymentModule.getIdentifier(), subDeploymentModuleSpec);
 
@@ -187,13 +181,6 @@ public class WeldDeploymentProcessor implements DeploymentUnitProcessor {
 
             final ResourceInjectionServices resourceInjectionServices = new WeldResourceInjectionServices(deploymentUnit.getServiceRegistry(), eeModuleDescription);
             bdm.addService(ResourceInjectionServices.class, resourceInjectionServices);
-
-            for (final BeanDeploymentModule additional : additionalModules) {
-                additional.addBeanDeploymentModule(bdm);
-                bdm.addBeanDeploymentModule(additional);
-                bdm.addService(EjbInjectionServices.class, ejbInjectionServices);
-                bdm.addService(ResourceInjectionServices.class, resourceInjectionServices);
-            }
         }
 
         for (Map.Entry<ModuleIdentifier, BeanDeploymentModule> entry : bdmsByIdentifier.entrySet()) {
@@ -217,10 +204,10 @@ public class WeldDeploymentProcessor implements DeploymentUnitProcessor {
         rootBeanDeploymentModule.addService(EjbInjectionServices.class, ejbInjectionServices);
         rootBeanDeploymentModule.addService(ResourceInjectionServices.class, resourceInjectionServices);
 
-        for (final BeanDeploymentModule additional : deploymentUnit.getAttachmentList(WeldAttachments.ADDITIONAL_BEAN_DEPLOYMENT_MODULES)) {
-            beanDeploymentArchives.addAll(additional.getBeanDeploymentArchives());
-            additional.addService(EjbInjectionServices.class, ejbInjectionServices);
-            additional.addService(ResourceInjectionServices.class, resourceInjectionServices);
+        for (final BeanDeploymentArchiveImpl additional : deploymentUnit.getAttachmentList(WeldAttachments.ADDITIONAL_BEAN_DEPLOYMENT_MODULES)) {
+            beanDeploymentArchives.add(additional);
+            additional.getServices().add(EjbInjectionServices.class, ejbInjectionServices);
+            additional.getServices().add(ResourceInjectionServices.class, resourceInjectionServices);
         }
 
         final Collection<Metadata<Extension>> extensions = WeldPortableExtensions.getPortableExtensions(deploymentUnit).getExtensions();

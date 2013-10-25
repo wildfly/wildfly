@@ -45,12 +45,7 @@ public class WeldAttachments {
     /**
      * top level list of all additional bean deployment modules
      */
-    public static final AttachmentKey<AttachmentList<BeanDeploymentModule>> ADDITIONAL_BEAN_DEPLOYMENT_MODULES = AttachmentKey.createList(BeanDeploymentModule.class);
-
-    /**
-     * per DU list of all visible additional BDM's
-     */
-    public static final AttachmentKey<AttachmentList<BeanDeploymentModule>> VISIBLE_ADDITIONAL_BEAN_DEPLOYMENT_MODULE = AttachmentKey.createList(BeanDeploymentModule.class);
+    public static final AttachmentKey<AttachmentList<BeanDeploymentArchiveImpl>> ADDITIONAL_BEAN_DEPLOYMENT_MODULES = AttachmentKey.createList(BeanDeploymentArchiveImpl.class);
 
     /**
      * The {@link BeanDeploymentArchiveImpl} that corresponds to the main resource root of a deployment or sub deployment. For
