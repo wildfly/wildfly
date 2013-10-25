@@ -33,6 +33,7 @@ import org.jboss.as.server.deployment.DeploymentUnit;
 import org.jboss.as.server.deployment.DeploymentUnitProcessingException;
 import org.jboss.as.server.deployment.DeploymentUnitProcessor;
 
+import static org.jboss.as.ee.structure.DeploymentType.APPLICATION_CLIENT;
 import static org.jboss.as.ee.structure.DeploymentType.EAR;
 import static org.jboss.as.ee.structure.DeploymentType.WAR;
 
@@ -60,12 +61,16 @@ public class DefaultDataSourceBindingProcessor implements DeploymentUnitProcesso
         if(defaultDataSource == null) {
             return;
         }
+        final LookupInjectionSource injectionSource = new LookupInjectionSource(defaultDataSource);
         if (DeploymentTypeMarker.isType(WAR, deploymentUnit)) {
-            moduleDescription.getBindingConfigurations().add(new BindingConfiguration(MODULE_DEFAULT_DATASOURCE_JNDI_NAME, new LookupInjectionSource(defaultDataSource)));
+            moduleDescription.getBindingConfigurations().add(new BindingConfiguration(MODULE_DEFAULT_DATASOURCE_JNDI_NAME, injectionSource));
         } else {
+            if (DeploymentTypeMarker.isType(APPLICATION_CLIENT, deploymentUnit)) {
+                moduleDescription.getBindingConfigurations().add(new BindingConfiguration(COMP_DEFAULT_DATASOURCE_JNDI_NAME, injectionSource));
+            }
             for(ComponentDescription componentDescription : moduleDescription.getComponentDescriptions()) {
                 if(componentDescription.getNamingMode() == ComponentNamingMode.CREATE) {
-                    componentDescription.getBindingConfigurations().add(new BindingConfiguration(COMP_DEFAULT_DATASOURCE_JNDI_NAME, new LookupInjectionSource(defaultDataSource)));
+                    componentDescription.getBindingConfigurations().add(new BindingConfiguration(COMP_DEFAULT_DATASOURCE_JNDI_NAME, injectionSource));
                 }
             }
         }
