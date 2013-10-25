@@ -23,17 +23,23 @@
 package org.jboss.as.jdr;
 
 import java.io.IOException;
+
 import javax.xml.stream.XMLStreamException;
 
+import org.jboss.as.controller.ModelVersion;
 import org.jboss.as.controller.RunningMode;
+import org.jboss.as.model.test.ModelTestControllerVersion;
 import org.jboss.as.subsystem.test.AbstractSubsystemBaseTest;
 import org.jboss.as.subsystem.test.AdditionalInitialization;
+import org.jboss.as.subsystem.test.KernelServices;
+import org.jboss.as.subsystem.test.KernelServicesBuilder;
+import org.junit.Assert;
 import org.junit.Test;
 
 
 /**
  * Performs basic parsing and configuration testing of the JDR subsystem.
- * 
+ *
  * @author Mike M. Clark
  */
 public class JdrSubsystemTestCase extends AbstractSubsystemBaseTest {
@@ -59,6 +65,39 @@ public class JdrSubsystemTestCase extends AbstractSubsystemBaseTest {
     @Override
     protected String getSubsystemXml() throws IOException {
         return readResource("subsystem.xml");
+    }
+
+
+    @Test
+    public void testTransformersAS712() throws Exception {
+        testJdrTransformers(ModelTestControllerVersion.V7_1_2_FINAL, ModelVersion.create(1, 0, 0));
+    }
+
+    @Test
+    public void testTransformersAS713() throws Exception {
+        testJdrTransformers(ModelTestControllerVersion.V7_1_3_FINAL, ModelVersion.create(1, 0, 0));
+    }
+
+    @Test
+    public void testTransformersAS720() throws Exception {
+        testJdrTransformers(ModelTestControllerVersion.V7_2_0_FINAL, ModelVersion.create(1, 1, 0));
+    }
+
+    private void testJdrTransformers(ModelTestControllerVersion controllerVersion, ModelVersion modelVersion) throws Exception {
+        String subsystemXml = "subsystem.xml";
+        //Use the non-runtime version of the extension which will happen on the HC
+        KernelServicesBuilder builder = createKernelServicesBuilder(AdditionalInitialization.MANAGEMENT)
+                .setSubsystemXmlResource(subsystemXml);
+
+        // Add legacy subsystems
+        builder.createLegacyKernelServicesBuilder(null, controllerVersion, modelVersion)
+                .addMavenResourceURL("org.jboss.as:jboss-as-jdr:" + controllerVersion.getMavenGavVersion());
+
+        KernelServices mainServices = builder.build();
+        KernelServices legacyServices = mainServices.getLegacyServices(modelVersion);
+        Assert.assertNotNull(mainServices);
+        Assert.assertNotNull(legacyServices);
+        checkSubsystemModelTransformation(mainServices, modelVersion);
     }
 
     @Override

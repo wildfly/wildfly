@@ -138,12 +138,18 @@ public class NamingBindingResourceDefinition extends SimpleResourceDefinition {
             if(!modelNode.hasDefined(NamingBindingResourceDefinition.VALUE.getName())) {
                 throw NamingMessages.MESSAGES.bindingTypeRequiresAttributeDefined(type,NamingBindingResourceDefinition.VALUE.getName());
             }
+            if (modelNode.hasDefined(NamingBindingResourceDefinition.CACHE.getName())) {
+                throw NamingMessages.MESSAGES.cacheNotValidForBindingType(type);
+            }
         } else if (type == BindingType.OBJECT_FACTORY) {
             if(!modelNode.hasDefined(NamingBindingResourceDefinition.MODULE.getName())) {
                 throw NamingMessages.MESSAGES.bindingTypeRequiresAttributeDefined(type,NamingBindingResourceDefinition.MODULE.getName());
             }
             if(!modelNode.hasDefined(NamingBindingResourceDefinition.CLASS.getName())) {
                 throw NamingMessages.MESSAGES.bindingTypeRequiresAttributeDefined(type,NamingBindingResourceDefinition.CLASS.getName());
+            }
+            if (modelNode.hasDefined(NamingBindingResourceDefinition.CACHE.getName())) {
+                throw NamingMessages.MESSAGES.cacheNotValidForBindingType(type);
             }
         } else if (type == BindingType.EXTERNAL_CONTEXT) {
             if(!modelNode.hasDefined(NamingBindingResourceDefinition.MODULE.getName())) {
@@ -155,6 +161,9 @@ public class NamingBindingResourceDefinition extends SimpleResourceDefinition {
         } else if (type == BindingType.LOOKUP) {
             if(!modelNode.hasDefined(NamingBindingResourceDefinition.LOOKUP.getName())) {
                 throw NamingMessages.MESSAGES.bindingTypeRequiresAttributeDefined(type,NamingBindingResourceDefinition.LOOKUP.getName());
+            }
+            if (modelNode.hasDefined(NamingBindingResourceDefinition.CACHE.getName())) {
+                throw NamingMessages.MESSAGES.cacheNotValidForBindingType(type);
             }
         } else {
             throw NamingMessages.MESSAGES.unknownBindingType(type.toString());

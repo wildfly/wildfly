@@ -45,6 +45,7 @@ class KnownVersions {
         //no idea so we need to log a warning instead.
         //The core model versions are 1.2.0 for AS 7.1.2 and 1.3.0 for AS 7.1.3
         //7.2.x starts on core model version 1.4.0
+        //Beyond knowing if a version is pre-7.2.0 or 7.2.0 it currently isn't really important to match the exact AS version.
 
         //Keep this list in alphabetical and subsystem version order
 
@@ -55,16 +56,20 @@ class KnownVersions {
 
         addSubsystemVersion(map, "configadmin", "1.0.0", CORE_MODEL_7_1_3);
         addSubsystemVersion(map, "cmp", "1.0.0", CORE_MODEL_7_1_2);
+        addSubsystemVersion(map, "datasources", "1.1.0", CORE_MODEL_7_1_2);
         addSubsystemVersion(map, "ee", "1.0.0", CORE_MODEL_7_1_3);
         addSubsystemVersion(map, "jacorb", "1.1.0", CORE_MODEL_7_1_3);
-        addSubsystemVersion(map, "datasources", "1.1.0", CORE_MODEL_7_1_2);
         addSubsystemVersion(map, "ejb3", "1.1.0", CORE_MODEL_7_1_2);
         addSubsystemVersion(map, "ejb3", "1.2.0", CORE_MODEL_7_2_0);
         addSubsystemVersion(map, "infinispan", "1.3.0", CORE_MODEL_7_1_3);
         addSubsystemVersion(map, "infinispan", "1.4.0", CORE_MODEL_7_2_0);
         addSubsystemVersion(map, "jacorb", "1.1.0", CORE_MODEL_7_1_3);
         addSubsystemVersion(map, "jaxr", "1.1.0", CORE_MODEL_7_1_2);
+        addSubsystemVersion(map, "jaxrs", "1.0.0", CORE_MODEL_7_1_2);
         addSubsystemVersion(map, "jca", "1.1.0", CORE_MODEL_7_1_2);
+        addSubsystemVersion(map, "jdr", "1.0.0", CORE_MODEL_7_1_2);
+        addSubsystemVersion(map, "jdr", "1.1.0", CORE_MODEL_7_2_0);
+        addSubsystemVersion(map, "jsr77", "1.0.0", CORE_MODEL_7_2_0);
         addSubsystemVersion(map, "jgroups", "1.1.0", CORE_MODEL_7_1_3);
         addSubsystemVersion(map, "jmx", "1.0.0", CORE_MODEL_7_1_2);
         addSubsystemVersion(map, "jmx", "1.1.0", CORE_MODEL_7_1_3);
@@ -80,7 +85,9 @@ class KnownVersions {
         addSubsystemVersion(map, "modcluster", "1.3.0", CORE_MODEL_7_2_0);
         addSubsystemVersion(map, "modcluster", "2.0.0", CORE_MODEL_8_0_0);
         addSubsystemVersion(map, "naming", "1.1.0", CORE_MODEL_7_1_3);
+        addSubsystemVersion(map, "naming", "1.2.0", CORE_MODEL_7_2_0);
         addSubsystemVersion(map, "osgi", "1.0.0", CORE_MODEL_7_1_3);
+        addSubsystemVersion(map, "pojo", "1.0.0", CORE_MODEL_7_2_0);
         addSubsystemVersion(map, "remoting", "1.1.0", CORE_MODEL_7_1_3);
         addSubsystemVersion(map, "remoting", "1.2.0", CORE_MODEL_7_2_0);
         addSubsystemVersion(map, "security", "1.1.0", CORE_MODEL_7_1_2);
@@ -90,12 +97,15 @@ class KnownVersions {
         addSubsystemVersion(map, "remoting", "1.1.0", CORE_MODEL_7_1_3);
         addSubsystemVersion(map, "resource-adapters", "1.1.0", CORE_MODEL_7_1_2);
         addSubsystemVersion(map, "resource-adapters", "1.2.0", CORE_MODEL_7_2_0);
+        addSubsystemVersion(map, "sar", "1.0.0", CORE_MODEL_7_1_2);
         addSubsystemVersion(map, "threads", "1.0.0", CORE_MODEL_7_1_2);
         addSubsystemVersion(map, "transactions", "1.1.0", CORE_MODEL_7_1_2);
         addSubsystemVersion(map, "transactions", "1.1.1", CORE_MODEL_7_1_3);
+        addSubsystemVersion(map, "transactions", "1.2.0", CORE_MODEL_7_2_0);
         addSubsystemVersion(map, "xts", "1.1.0", CORE_MODEL_7_1_3);
         addSubsystemVersion(map, "web", "1.1.0", CORE_MODEL_7_1_2);
         addSubsystemVersion(map, "web", "1.1.1", CORE_MODEL_7_1_3);
+        addSubsystemVersion(map, "web", "1.2.0", CORE_MODEL_7_2_0);
         addSubsystemVersion(map, "weld", "1.0.0", CORE_MODEL_7_1_2);
         addSubsystemVersion(map, "weld", "1.0.0", CORE_MODEL_7_1_3);
         addSubsystemVersion(map, "weld", "1.0.0", CORE_MODEL_7_2_0);

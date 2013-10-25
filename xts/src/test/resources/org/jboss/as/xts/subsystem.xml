@@ -22,6 +22,6 @@
 
 <subsystem xmlns="urn:jboss:domain:xts:2.0">
     <host name="default-host"/>
-    <xts-environment url="${test.expr:http://localhost:8080/ws-c11/ActivationService}"/>
-    <default-context-propagation enabled="true" />
+    <xts-environment url="http://${jboss.bind.address:127.0.0.1}:8080/ws-c11/ActivationService"/>
+    <default-context-propagation enabled="false"/>
 </subsystem>

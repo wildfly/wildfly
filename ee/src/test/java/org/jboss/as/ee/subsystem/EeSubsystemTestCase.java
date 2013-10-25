@@ -62,9 +62,14 @@ public class EeSubsystemTestCase extends AbstractSubsystemBaseTest {
     protected String getSubsystemXml() throws IOException {
         return readResource("subsystem.xml");
     }
-
     @Test
     public void testTransformers712() throws Exception {
+        //Due to https://issues.jboss.org/browse/AS7-4892 the jboss-descriptor-property-replacement
+        //does not get set properly on 7.1.2, so let's do a reject test.
+        testTransformers712(ModelTestControllerVersion.V7_1_2_FINAL);
+    }
+
+    private void testTransformers712(ModelTestControllerVersion controllerVersion) throws Exception {
         //Due to https://issues.jboss.org/browse/AS7-4892 the jboss-descriptor-property-replacement
         //does not get set properly on 7.1.2, so let's do a reject test.
 
