@@ -41,7 +41,6 @@ import org.jboss.as.controller.client.impl.ModelControllerProtocol;
 import org.jboss.as.controller.security.InetAddressPrincipal;
 import org.jboss.as.core.security.RealmGroup;
 import org.jboss.as.core.security.RealmRole;
-import org.jboss.as.core.security.RealmUser;
 import org.jboss.as.protocol.mgmt.ProtocolUtils;
 
 /**
@@ -185,12 +184,12 @@ class SubjectProtocolUtil {
 
         @Override
         public PrincipalWriter handlerFor(final Principal principal) {
-            if (principal instanceof RealmUser) {
+            if (principal instanceof org.jboss.as.core.security.RealmUser) {
                 return new PrincipalWriter() {
 
                     @Override
                     public void write(DataOutput out) throws IOException {
-                        RealmUser user = (RealmUser) principal;
+                        org.jboss.as.core.security.RealmUser user = (org.jboss.as.core.security.RealmUser) principal;
                         out.write(REALM_USER_PRINCIPAL);
 
                         String realm = user.getRealm();
