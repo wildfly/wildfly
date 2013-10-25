@@ -197,5 +197,14 @@ public final class ResourceAdapterXmlDeploymentService extends AbstractResourceA
             return DEPLOYERS_LOGGER;
         }
 
+        @Override
+        protected String registerResourceAdapterToResourceAdapterRepository(javax.resource.spi.ResourceAdapter instance) {
+            final String raIdentifier = raRepository.getValue().registerResourceAdapter(instance);
+            // make a note of this identifier for future use
+            ConnectorServices.registerResourceAdapterIdentifier( ((ModifiableResourceAdapter) raxml).getId(), raIdentifier);
+            return raIdentifier;
+
+        }
+
     }
 }
