@@ -20,8 +20,10 @@ import java.net.MalformedURLException;
 import java.util.HashMap;
 import java.util.Hashtable;
 import java.util.Map;
+import java.util.Set;
 
 import javax.management.MBeanServer;
+import javax.security.jacc.PolicyContext;
 
 import org.apache.catalina.Engine;
 import org.apache.catalina.Host;
@@ -34,11 +36,13 @@ import org.apache.catalina.core.StandardServer;
 import org.apache.catalina.core.StandardService;
 import org.apache.tomcat.util.modeler.Registry;
 import org.jboss.as.controller.services.path.PathManager;
+import org.jboss.as.web.security.HttpServletRequestPolicyContextHandler;
 import org.jboss.msc.service.Service;
 import org.jboss.msc.service.StartContext;
 import org.jboss.msc.service.StartException;
 import org.jboss.msc.service.StopContext;
 import org.jboss.msc.value.InjectedValue;
+import org.jboss.security.SecurityConstants;
 
 /**
  * Service configuring and starting the web container.
@@ -107,6 +111,10 @@ public class WebServerService implements WebServer, Service<WebServer> {
         server.addLifecycleListener(new JasperListener());
 
         try {
+            // Register the active request PolicyContextHandler
+            HttpServletRequestPolicyContextHandler handler = new HttpServletRequestPolicyContextHandler();
+            PolicyContext.registerHandler(SecurityConstants.WEB_REQUEST_KEY, handler, true);
+            // Start the server
             server.init();
             server.start();
         } catch (Exception e) {
@@ -122,6 +130,12 @@ public class WebServerService implements WebServer, Service<WebServer> {
     public synchronized void stop(StopContext context) {
         try {
             server.stop();
+        } catch (Exception e) {
+        }
+        try {
+            // Remove PolicyContextHandler
+            Set handlerKeys = PolicyContext.getHandlerKeys();
+            handlerKeys.remove(SecurityConstants.WEB_REQUEST_KEY);
         } catch (Exception e) {
         }
         engine = null;

@@ -65,13 +65,6 @@ public class JBossWebRealmService implements Service<Realm> {
         jbossWebRealm.setAuditManager(sdc.getAuditManager());
         jbossWebRealm.setDeploymentUnit(deploymentUnit);
         this.realm = jbossWebRealm;
-        try {
-            // Register the active request PolicyContextHandler
-            HttpServletRequestPolicyContextHandler handler = new HttpServletRequestPolicyContextHandler();
-            PolicyContext.registerHandler(SecurityConstants.WEB_REQUEST_KEY, handler, true);
-        } catch (Exception e) {
-            throw new StartException(e);
-        }
     }
 
     /** {@inheritDoc} */
@@ -79,9 +72,6 @@ public class JBossWebRealmService implements Service<Realm> {
     @Override
     public void stop(StopContext context) {
         realm = null;
-        // remove handler
-        Set handlerKeys = PolicyContext.getHandlerKeys();
-        handlerKeys.remove(SecurityConstants.WEB_REQUEST_KEY);
     }
 
     /** {@inheritDoc} */
