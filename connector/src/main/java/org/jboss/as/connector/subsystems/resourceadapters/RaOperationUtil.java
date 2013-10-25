@@ -234,16 +234,22 @@ public class RaOperationUtil {
         CommonValidation validation = new CommonValidationImpl(backgroundValidation, backgroundValidationMillis, useFastFail);
 
         final String recoveryUsername = ModelNodeUtil.getResolvedStringIfSetOrGetDefault(context, connDefModel, RECOVERY_USERNAME);
-
         final String recoveryPassword =  ModelNodeUtil.getResolvedStringIfSetOrGetDefault(context, connDefModel, RECOVERY_PASSWORD);
         final String recoverySecurityDomain = ModelNodeUtil.getResolvedStringIfSetOrGetDefault(context, connDefModel, RECOVERY_SECURITY_DOMAIN);
-        boolean noRecovery = ModelNodeUtil.getBooleanIfSetOrGetDefault(context, connDefModel, NO_RECOVERY);
+        Boolean noRecovery = ModelNodeUtil.getBooleanIfSetOrGetDefault(context, connDefModel, NO_RECOVERY);
 
         Recovery recovery = null;
-        if ((recoveryUsername != null && recoveryPassword != null) || recoverySecurityDomain != null) {
+        if ((recoveryUsername != null && recoveryPassword != null) || recoverySecurityDomain != null || noRecovery != null) {
             Credential credential = null;
-            credential = new CredentialImpl(recoveryUsername, recoveryPassword, recoverySecurityDomain);
+
+            if ((recoveryUsername != null && recoveryPassword != null) || recoverySecurityDomain != null)
+               credential = new CredentialImpl(recoveryUsername, recoveryPassword, recoverySecurityDomain);
+
             Extension recoverPlugin = ModelNodeUtil.extractExtension(context, connDefModel, RECOVERLUGIN_CLASSNAME, RECOVERLUGIN_PROPERTIES);
+
+            if (noRecovery == null)
+                noRecovery = Boolean.FALSE;
+
             recovery = new Recovery(credential, recoverPlugin, noRecovery);
         }
         ModifiableConnDef connectionDefinition = new ModifiableConnDef(configProperties, className, jndiName, poolName,
