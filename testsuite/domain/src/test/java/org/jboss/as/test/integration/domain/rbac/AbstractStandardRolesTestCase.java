@@ -22,6 +22,7 @@
 
 package org.jboss.as.test.integration.domain.rbac;
 
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.REMOVE;
 import static org.jboss.as.test.integration.management.rbac.RbacUtil.ADMINISTRATOR_USER;
 import static org.jboss.as.test.integration.management.rbac.RbacUtil.AUDITOR_USER;
 import static org.jboss.as.test.integration.management.rbac.RbacUtil.DEPLOYER_USER;
@@ -29,12 +30,15 @@ import static org.jboss.as.test.integration.management.rbac.RbacUtil.MAINTAINER_
 import static org.jboss.as.test.integration.management.rbac.RbacUtil.MONITOR_USER;
 import static org.jboss.as.test.integration.management.rbac.RbacUtil.OPERATOR_USER;
 import static org.jboss.as.test.integration.management.rbac.RbacUtil.SUPERUSER_USER;
+import static org.jboss.as.test.integration.management.util.ModelUtil.createOpNode;
 import static org.junit.Assert.assertEquals;
 
 import java.io.IOException;
 
 import org.jboss.as.controller.client.ModelControllerClient;
 import org.jboss.as.test.integration.management.rbac.Outcome;
+import org.jboss.as.test.integration.management.rbac.RbacUtil;
+import org.jboss.dmr.ModelNode;
 import org.junit.After;
 import org.junit.Test;
 
@@ -80,6 +84,7 @@ public abstract class AbstractStandardRolesTestCase extends AbstractRbacTestCase
         runGC(client, MASTER, MASTER_A, Outcome.UNAUTHORIZED, MONITOR_USER);
         addDeployment2(client, Outcome.UNAUTHORIZED, MONITOR_USER);
         addPath(client, Outcome.UNAUTHORIZED, MONITOR_USER);
+        removeSecurityDomain(client, Outcome.HIDDEN, MONITOR_USER);
     }
 
     @Test
@@ -97,6 +102,7 @@ public abstract class AbstractStandardRolesTestCase extends AbstractRbacTestCase
         runGC(client, MASTER, MASTER_A, Outcome.SUCCESS, OPERATOR_USER);
         addDeployment2(client, Outcome.UNAUTHORIZED, OPERATOR_USER);
         addPath(client, Outcome.UNAUTHORIZED, OPERATOR_USER);
+        removeSecurityDomain(client, Outcome.HIDDEN, OPERATOR_USER);
     }
 
     @Test
@@ -114,6 +120,7 @@ public abstract class AbstractStandardRolesTestCase extends AbstractRbacTestCase
         runGC(client, MASTER, MASTER_A, Outcome.SUCCESS, MAINTAINER_USER);
         addDeployment2(client, Outcome.SUCCESS, MAINTAINER_USER);
         addPath(client, Outcome.SUCCESS, MAINTAINER_USER);
+        removeSecurityDomain(client, Outcome.HIDDEN, MAINTAINER_USER);
     }
 
     @Test
@@ -131,6 +138,7 @@ public abstract class AbstractStandardRolesTestCase extends AbstractRbacTestCase
         runGC(client, MASTER, MASTER_A, Outcome.UNAUTHORIZED, DEPLOYER_USER);
         addDeployment2(client, Outcome.SUCCESS, DEPLOYER_USER);
         addPath(client, Outcome.UNAUTHORIZED, DEPLOYER_USER);
+        removeSecurityDomain(client, Outcome.HIDDEN, DEPLOYER_USER);
     }
 
     @Test
@@ -148,6 +156,7 @@ public abstract class AbstractStandardRolesTestCase extends AbstractRbacTestCase
         runGC(client, MASTER, MASTER_A, Outcome.SUCCESS, ADMINISTRATOR_USER);
         addDeployment2(client, Outcome.SUCCESS, ADMINISTRATOR_USER);
         addPath(client, Outcome.SUCCESS, ADMINISTRATOR_USER);
+        // no test of security domain remove; too lazy to add a domain just to prove we can remove
     }
 
     @Test
@@ -165,6 +174,7 @@ public abstract class AbstractStandardRolesTestCase extends AbstractRbacTestCase
         runGC(client, MASTER, MASTER_A, Outcome.UNAUTHORIZED, AUDITOR_USER);
         addDeployment2(client, Outcome.UNAUTHORIZED, AUDITOR_USER);
         addPath(client, Outcome.UNAUTHORIZED, AUDITOR_USER);
+        removeSecurityDomain(client, Outcome.UNAUTHORIZED, AUDITOR_USER);
     }
 
     @Test
@@ -182,6 +192,13 @@ public abstract class AbstractStandardRolesTestCase extends AbstractRbacTestCase
         runGC(client, MASTER, MASTER_A, Outcome.SUCCESS, SUPERUSER_USER);
         addDeployment2(client, Outcome.SUCCESS, SUPERUSER_USER);
         addPath(client, Outcome.SUCCESS, SUPERUSER_USER);
+        // no test of security domain remove; too lazy to add a domain just to prove we can remove
+    }
+
+    private void removeSecurityDomain(ModelControllerClient client, Outcome expected, String... roles) throws IOException {
+        ModelNode op = createOpNode("profile=profile-a/subsystem=security/security-domain=other", REMOVE);
+        configureRoles(op, roles);
+        RbacUtil.executeOperation(client, op, expected);
     }
 
 }

@@ -31,11 +31,13 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.CHI
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.COMPOSITE;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.DEPLOYMENT;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.HOST;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.PROFILE;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.READ_CHILDREN_RESOURCES_OPERATION;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.READ_RESOURCE_OPERATION;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.REMOVE;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SERVER_GROUP;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SERVER_GROUPS;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SOCKET_BINDING_GROUP;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.STEPS;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.UPLOAD_DEPLOYMENT_BYTES;
 import static org.jboss.as.test.integration.management.util.ModelUtil.createOpNode;
@@ -427,6 +429,8 @@ public abstract class AbstractServerGroupScopedRolesTestCase extends AbstractRba
 
     private void testWFLY2190(ModelControllerClient client, String... roles) throws IOException {
         ModelNode operation = Util.createOperation(ADD, pathAddress(pathElement(SERVER_GROUP, "XXX")));
+        operation.get(PROFILE).set("profile-a");
+        operation.get(SOCKET_BINDING_GROUP).set("sockets-a");
         configureRoles(operation, roles);
         RbacUtil.executeOperation(client, operation, Outcome.UNAUTHORIZED);
 
@@ -436,6 +440,6 @@ public abstract class AbstractServerGroupScopedRolesTestCase extends AbstractRba
 
         operation = Util.createOperation(REMOVE, pathAddress(pathElement(SERVER_GROUP, SERVER_GROUP_B)));
         configureRoles(operation, roles);
-        RbacUtil.executeOperation(client, operation, Outcome.UNAUTHORIZED); // should really be Outcome.HIDDEN, see WFLY-2317
+        RbacUtil.executeOperation(client, operation, Outcome.HIDDEN);
     }
 }
