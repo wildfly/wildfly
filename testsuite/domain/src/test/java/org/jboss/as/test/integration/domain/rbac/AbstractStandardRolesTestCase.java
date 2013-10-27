@@ -85,6 +85,7 @@ public abstract class AbstractStandardRolesTestCase extends AbstractRbacTestCase
         addDeployment2(client, Outcome.UNAUTHORIZED, MONITOR_USER);
         addPath(client, Outcome.UNAUTHORIZED, MONITOR_USER);
         removeSecurityDomain(client, Outcome.HIDDEN, MONITOR_USER);
+        restartServer(client, MASTER, MASTER_A, Outcome.UNAUTHORIZED, MONITOR_USER);
     }
 
     @Test
@@ -103,6 +104,7 @@ public abstract class AbstractStandardRolesTestCase extends AbstractRbacTestCase
         addDeployment2(client, Outcome.UNAUTHORIZED, OPERATOR_USER);
         addPath(client, Outcome.UNAUTHORIZED, OPERATOR_USER);
         removeSecurityDomain(client, Outcome.HIDDEN, OPERATOR_USER);
+        restartServer(client, MASTER, MASTER_A, Outcome.SUCCESS, OPERATOR_USER);
     }
 
     @Test
@@ -139,6 +141,7 @@ public abstract class AbstractStandardRolesTestCase extends AbstractRbacTestCase
         addDeployment2(client, Outcome.SUCCESS, DEPLOYER_USER);
         addPath(client, Outcome.UNAUTHORIZED, DEPLOYER_USER);
         removeSecurityDomain(client, Outcome.HIDDEN, DEPLOYER_USER);
+        restartServer(client, MASTER, MASTER_A, Outcome.UNAUTHORIZED, DEPLOYER_USER);
     }
 
     @Test
@@ -175,6 +178,7 @@ public abstract class AbstractStandardRolesTestCase extends AbstractRbacTestCase
         addDeployment2(client, Outcome.UNAUTHORIZED, AUDITOR_USER);
         addPath(client, Outcome.UNAUTHORIZED, AUDITOR_USER);
         removeSecurityDomain(client, Outcome.UNAUTHORIZED, AUDITOR_USER);
+        restartServer(client, MASTER, MASTER_A, Outcome.UNAUTHORIZED, AUDITOR_USER);
     }
 
     @Test

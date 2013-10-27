@@ -32,6 +32,7 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.REA
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.READ_RESOURCE_DESCRIPTION_OPERATION;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.RECURSIVE_DEPTH;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.REMOVE;
+import static org.jboss.as.test.integration.management.rbac.RbacUtil.MONITOR_USER;
 import static org.jboss.as.test.integration.management.util.ModelUtil.createOpNode;
 
 import java.io.IOException;
@@ -140,6 +141,7 @@ public abstract class AbstractHostScopedRolesTestCase extends AbstractRbacTestCa
         testHostScopedRoleCanReadHostChildResources(client, MONITOR_USER);
 
         testWLFY2299(client, Outcome.UNAUTHORIZED, MONITOR_USER);
+        restartServer(client, MASTER, MASTER_A, Outcome.UNAUTHORIZED, MONITOR_USER);
     }
 
     @Test
@@ -169,6 +171,7 @@ public abstract class AbstractHostScopedRolesTestCase extends AbstractRbacTestCa
         testHostScopedRoleCanReadHostChildResources(client, OPERATOR_USER);
 
         testWLFY2299(client, Outcome.UNAUTHORIZED, OPERATOR_USER);
+        restartServer(client, MASTER, MASTER_A, Outcome.SUCCESS, OPERATOR_USER);
     }
 
     @Test
@@ -227,6 +230,7 @@ public abstract class AbstractHostScopedRolesTestCase extends AbstractRbacTestCa
         testHostScopedRoleCanReadHostChildResources(client, DEPLOYER_USER);
 
         testWLFY2299(client, Outcome.UNAUTHORIZED, DEPLOYER_USER);
+        restartServer(client, MASTER, MASTER_A, Outcome.UNAUTHORIZED, DEPLOYER_USER);
     }
 
     @Test
@@ -285,6 +289,7 @@ public abstract class AbstractHostScopedRolesTestCase extends AbstractRbacTestCa
         testHostScopedRoleCanReadHostChildResources(client, AUDITOR_USER);
 
         testWLFY2299(client, Outcome.UNAUTHORIZED, AUDITOR_USER);
+        restartServer(client, MASTER, MASTER_A, Outcome.UNAUTHORIZED, AUDITOR_USER);
     }
 
     @Test
