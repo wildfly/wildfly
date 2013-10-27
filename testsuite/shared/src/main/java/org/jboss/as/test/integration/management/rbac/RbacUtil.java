@@ -109,7 +109,7 @@ public class RbacUtil {
                 if (!SUCCESS.equals(outcome)) {
                     System.out.println("Failed: " + operation);
                     System.out.print("Result: " + result);
-                    fail(result.get(FAILURE_DESCRIPTION).asString());
+                    fail(result.asString());
                 }
                 break;
             case UNAUTHORIZED: {

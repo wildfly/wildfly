@@ -25,6 +25,7 @@ package org.jboss.as.test.integration.domain.rbac;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ACCESS_CONTROL;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ADD;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.AUTO_START;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.BLOCKING;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.BYTES;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.CONTENT;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ENABLED;
@@ -38,6 +39,7 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.PRO
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.READ_RESOURCE_DESCRIPTION_OPERATION;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.READ_RESOURCE_OPERATION;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.REMOVE;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.RESTART;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.RESULT;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SUCCESS;
 import static org.jboss.as.test.integration.management.util.ModelUtil.createOpNode;
@@ -243,6 +245,15 @@ public abstract class AbstractRbacTestCase {
         ModelNode op = createOpNode(fullAddress, ADD);
         op.get(GROUP).set(serverGroup);
         op.get(AUTO_START).set(false);
+        configureRoles(op, roles);
+        RbacUtil.executeOperation(client, op, expectedOutcome);
+    }
+
+    protected void restartServer(ModelControllerClient client, String host, String server,
+                                 Outcome expectedOutcome, String... roles) throws IOException {
+        String fullAddress = String.format("host=%s/server-config=%s", host, server);
+        ModelNode op = createOpNode(fullAddress, RESTART);
+        op.get(BLOCKING).set(true);
         configureRoles(op, roles);
         RbacUtil.executeOperation(client, op, expectedOutcome);
     }
