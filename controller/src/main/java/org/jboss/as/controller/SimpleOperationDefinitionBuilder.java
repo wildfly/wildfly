@@ -70,13 +70,11 @@ public class SimpleOperationDefinitionBuilder {
     }
 
     protected static EnumSet<OperationEntry.Flag> getFlagsSet(OperationEntry.Flag... vararg) {
-        if (vararg == null || vararg.length == 0) {
-            return EnumSet.noneOf(OperationEntry.Flag.class);
-        } else {
-            EnumSet<OperationEntry.Flag> result = EnumSet.noneOf(OperationEntry.Flag.class);
+        EnumSet<OperationEntry.Flag> result = EnumSet.noneOf(OperationEntry.Flag.class);
+        if (vararg != null && vararg.length > 0) {
             Collections.addAll(result, vararg);
-            return result;
         }
+        return result;
     }
 
     public SimpleOperationDefinitionBuilder setEntryType(OperationEntry.EntryType entryType) {
@@ -90,30 +88,27 @@ public class SimpleOperationDefinitionBuilder {
     }
 
     public SimpleOperationDefinitionBuilder withFlags(EnumSet<OperationEntry.Flag> flags) {
-        this.flags = flags;
+        this.flags.addAll(flags);
         return this;
     }
 
     public SimpleOperationDefinitionBuilder withFlags(OperationEntry.Flag... flags) {
-        this.flags = getFlagsSet(flags);
+        this.flags.addAll(getFlagsSet(flags));
         return this;
     }
 
     public SimpleOperationDefinitionBuilder withFlag(OperationEntry.Flag flag) {
-        this.flags = EnumSet.of(flag);
+        this.flags.add(flag);
         return this;
     }
 
     public SimpleOperationDefinitionBuilder setRuntimeOnly() {
-        this.flags = EnumSet.of(OperationEntry.Flag.RUNTIME_ONLY, flags.toArray(new OperationEntry.Flag[flags.size()]));
-        return this;
+        return withFlag(OperationEntry.Flag.RUNTIME_ONLY);
     }
 
     public SimpleOperationDefinitionBuilder setReadOnly() {
-        this.flags = EnumSet.of(OperationEntry.Flag.READ_ONLY, flags.toArray(new OperationEntry.Flag[flags.size()]));
-        return this;
+        return withFlag(OperationEntry.Flag.READ_ONLY);
     }
-
 
     public SimpleOperationDefinitionBuilder setParameters(AttributeDefinition... parameters) {
         this.parameters = parameters;
