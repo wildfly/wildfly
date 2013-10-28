@@ -29,14 +29,16 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
+import javax.security.auth.Subject;
+
 /**
  * @author Emanuel Muckenhuber
  */
 class ConcurrentServerGroupUpdateTask extends AbstractServerGroupRolloutTask implements Runnable {
 
     public ConcurrentServerGroupUpdateTask(List<ServerUpdateTask> tasks, ServerUpdatePolicy updatePolicy,
-                                           ServerTaskExecutor executor, ServerUpdateTask.ServerUpdateResultHandler resultHandler) {
-        super(tasks, updatePolicy, executor, resultHandler);
+                                           ServerTaskExecutor executor, ServerUpdateTask.ServerUpdateResultHandler resultHandler, Subject subject) {
+        super(tasks, updatePolicy, executor, resultHandler, subject);
     }
 
     @Override
