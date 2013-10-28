@@ -23,6 +23,9 @@ package org.jboss.as.domain.controller.plan;
 
 import static org.jboss.as.domain.controller.DomainControllerLogger.DOMAIN_DEPLOYMENT_LOGGER;
 
+import static java.security.AccessController.doPrivileged;
+
+import java.security.PrivilegedAction;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.ExecutionException;
@@ -48,7 +51,14 @@ class ConcurrentUpdateTask implements Runnable {
         // Submit each task to the executor
         List<Future<?>> futures = new ArrayList<Future<?>>();
         for (Runnable r : concurrentTasks) {
-            futures.add(executorService.submit(r));
+            final Runnable task = r;
+            futures.add(doPrivileged(new PrivilegedAction<Future<?>>() {
+
+                @Override
+                public Future<?> run() {
+                    return executorService.submit(task);
+                }
+            }));
         }
 
         // Wait until all complete before returning
@@ -80,4 +90,5 @@ class ConcurrentUpdateTask implements Runnable {
         sb.append("}}");
         return sb.toString();
     }
+
 }
