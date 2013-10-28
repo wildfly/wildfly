@@ -34,28 +34,34 @@ import java.util.concurrent.locks.AbstractQueuedSynchronizer;
 class ModelControllerLock {
     private final Sync sync = new Sync();
 
-    public void lock(Integer permit) {
+    void lock(Integer permit) {
         if (permit == null) {
             throw new IllegalArgumentException();
         }
         sync.acquire(permit);
     }
 
-    public void lockInterruptibly(Integer permit) throws InterruptedException {
+    void lockInterruptibly(Integer permit) throws InterruptedException {
         if (permit == null) {
             throw new IllegalArgumentException();
         }
         sync.acquireInterruptibly(permit);
     }
 
-    public void unlock(Integer permit) {
+    void unlock(Integer permit) {
         if (permit == null) {
             throw new IllegalArgumentException();
         }
         sync.release(permit);
     }
 
+    boolean detectDeadlockAndGetLock(int permit) {
+        return sync.tryAcquire(permit);
+    }
+
     private class Sync extends AbstractQueuedSynchronizer {
+        private static final long serialVersionUID = 1L;
+
         private final AtomicReference<Object> permitHolder = new AtomicReference<Object>(null);
 
         @Override
@@ -82,10 +88,11 @@ class ModelControllerLock {
 
         @Override
         protected boolean tryRelease(int permit) {
-            if (permitHolder.get() == null) {
+            final Object value = permitHolder.get();
+            if (value == null) {
                 throw new IllegalStateException();
             }
-            if (permitHolder.get().equals(permit)) {
+            if (value.equals(permit)) {
                 for (;;) {
                     int current = getState();
                     int next = current - 1; // count down one
@@ -93,7 +100,7 @@ class ModelControllerLock {
                         throw new IllegalStateException();
                     if (compareAndSetState(current, next)) {
                         if (next == 0) {
-                            permitHolder.compareAndSet(permit, null);
+                            permitHolder.compareAndSet(value, null);
                             return true;
                         } else {
                             return false;
@@ -104,5 +111,5 @@ class ModelControllerLock {
             return false;
         }
     }
-
 }
+
