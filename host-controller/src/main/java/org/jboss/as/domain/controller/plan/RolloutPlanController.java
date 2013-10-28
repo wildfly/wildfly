@@ -36,6 +36,7 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SER
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SHUTDOWN;
 import static org.jboss.as.domain.controller.DomainControllerLogger.HOST_CONTROLLER_LOGGER;
 
+import java.security.AccessController;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -53,7 +54,6 @@ import org.jboss.as.domain.controller.operations.coordination.DomainOperationCon
 import org.jboss.as.domain.controller.plan.ServerUpdateTask.ServerUpdateResultHandler;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.Property;
-import org.wildfly.security.manager.SubjectUtils;
 
 /**
  * Coordinates rolling out a series of operations to the servers specified in a rollout plan.
@@ -94,7 +94,7 @@ public class RolloutPlanController implements ServerUpdateResultHandler {
 
         if (rolloutPlan.hasDefined(IN_SERIES)) {
             ConcurrentGroupServerUpdatePolicy predecessor = null;
-            Subject subject = SubjectUtils.getCurrent();
+            Subject subject = Subject.getSubject(AccessController.getContext());
             for (ModelNode series : rolloutPlan.get(IN_SERIES).asList()) {
 
                 final List<Runnable> seriesTasks = new ArrayList<Runnable>();
