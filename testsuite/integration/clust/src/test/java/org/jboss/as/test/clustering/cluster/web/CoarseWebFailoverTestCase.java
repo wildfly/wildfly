@@ -1,6 +1,6 @@
 /*
  * JBoss, Home of Professional Open Source.
- * Copyright 2012, Red Hat, Inc., and individual contributors
+ * Copyright 2013, Red Hat, Inc., and individual contributors
  * as indicated by the @author tags. See the copyright.txt file in the
  * distribution for a full listing of individual contributors.
  *
@@ -28,26 +28,25 @@ import org.jboss.shrinkwrap.api.Archive;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.spec.WebArchive;
 
-public class DistributionWebFailoverTestCase extends ClusteredWebFailoverAbstractCase {
+public class CoarseWebFailoverTestCase extends ClusteredWebFailoverAbstractCase {
 
     @Deployment(name = DEPLOYMENT_1, managed = false, testable = false)
     @TargetsContainer(CONTAINER_1)
     public static Archive<?> deployment0() {
-        return createDeployment();
+        return getDeployment();
     }
 
     @Deployment(name = DEPLOYMENT_2, managed = false, testable = false)
     @TargetsContainer(CONTAINER_2)
     public static Archive<?> deployment1() {
-        return createDeployment();
+        return getDeployment();
     }
 
-    private static Archive<?> createDeployment() {
+    private static Archive<?> getDeployment() {
         WebArchive war = ShrinkWrap.create(WebArchive.class, "distributable.war");
         war.addClass(SimpleServlet.class);
         // Take web.xml from the managed test.
         war.setWebXML(ClusteredWebSimpleTestCase.class.getPackage(), "web.xml");
-        war.addAsWebInfResource(ClusteredWebSimpleTestCase.class.getPackage(), "jboss-web_dist.xml", "jboss-web.xml");
         log.info(war.toString(true));
         return war;
     }

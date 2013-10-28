@@ -30,7 +30,7 @@
         <servlet-class>org.jboss.as.test.clustering.xsite.CacheAccessServlet</servlet-class>
         <init-param>
             <param-name>jndi-name</param-name>
-            <param-value>java:jboss/infinispan/cache/web/LONrepl</param-value>
+            <param-value>java:jboss/infinispan/cache/web/LON</param-value>
         </init-param>
     </servlet>
 
@@ -42,6 +42,6 @@
     <resource-ref>
         <res-ref-name>TheTargetCache</res-ref-name>
         <res-type>org.infinispan.Cache</res-type>
-        <lookup-name>java:jboss/infinispan/cache/web/LONrepl</lookup-name>
+        <lookup-name>java:jboss/infinispan/cache/web/LON</lookup-name>
     </resource-ref>
 </web-app>
