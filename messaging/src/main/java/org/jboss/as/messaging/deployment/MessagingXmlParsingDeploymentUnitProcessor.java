@@ -22,6 +22,8 @@
 
 package org.jboss.as.messaging.deployment;
 
+import static org.jboss.as.messaging.MessagingLogger.MESSAGING_LOGGER;
+
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.InputStream;
@@ -74,6 +76,7 @@ public class MessagingXmlParsingDeploymentUnitProcessor implements DeploymentUni
         mapper.registerRootElement(ROOT_NO_NAMESPACE, messagingDeploymentParser_1_0);
 
         for (final VirtualFile file : files) {
+            MESSAGING_LOGGER.jmsDeploymentIsDeprecated(file.getName());
             InputStream xmlStream = null;
 
             try {
