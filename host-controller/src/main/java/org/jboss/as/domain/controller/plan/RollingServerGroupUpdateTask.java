@@ -27,14 +27,16 @@ import org.jboss.as.domain.controller.ServerIdentity;
 
 import java.util.List;
 
+import javax.security.auth.Subject;
+
 /**
  * @author Emanuel Muckenhuber
  */
 class RollingServerGroupUpdateTask extends AbstractServerGroupRolloutTask implements Runnable {
 
     public RollingServerGroupUpdateTask(List<ServerUpdateTask> tasks, ServerUpdatePolicy updatePolicy,
-                                        ServerTaskExecutor executor, ServerUpdateTask.ServerUpdateResultHandler resultHandler) {
-        super(tasks, updatePolicy, executor, resultHandler);
+                                        ServerTaskExecutor executor, ServerUpdateTask.ServerUpdateResultHandler resultHandler, Subject subject) {
+        super(tasks, updatePolicy, executor, resultHandler, subject);
     }
 
     @Override

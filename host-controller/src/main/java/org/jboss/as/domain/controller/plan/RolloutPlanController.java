@@ -46,11 +46,14 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.ExecutorService;
 
+import javax.security.auth.Subject;
+
 import org.jboss.as.domain.controller.ServerIdentity;
 import org.jboss.as.domain.controller.operations.coordination.DomainOperationContext;
 import org.jboss.as.domain.controller.plan.ServerUpdateTask.ServerUpdateResultHandler;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.Property;
+import org.wildfly.security.manager.SubjectUtils;
 
 /**
  * Coordinates rolling out a series of operations to the servers specified in a rollout plan.
@@ -91,6 +94,7 @@ public class RolloutPlanController implements ServerUpdateResultHandler {
 
         if (rolloutPlan.hasDefined(IN_SERIES)) {
             ConcurrentGroupServerUpdatePolicy predecessor = null;
+            Subject subject = SubjectUtils.getCurrent();
             for (ModelNode series : rolloutPlan.get(IN_SERIES).asList()) {
 
                 final List<Runnable> seriesTasks = new ArrayList<Runnable>();
@@ -134,8 +138,8 @@ public class RolloutPlanController implements ServerUpdateResultHandler {
                     }
                     ServerUpdatePolicy policy = new ServerUpdatePolicy(parent, serverGroupName, servers, maxFailures);
 
-                    seriesTasks.add(rollingGroup ? new RollingServerGroupUpdateTask(groupTasks, policy, taskExecutor, this)
-                        : new ConcurrentServerGroupUpdateTask(groupTasks, policy, taskExecutor, this));
+                    seriesTasks.add(rollingGroup ? new RollingServerGroupUpdateTask(groupTasks, policy, taskExecutor, this, subject)
+                        : new ConcurrentServerGroupUpdateTask(groupTasks, policy, taskExecutor, this, subject));
 
                     updatePolicies.put(serverGroupName, policy);
 
