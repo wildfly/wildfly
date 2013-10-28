@@ -64,7 +64,7 @@ public class CacheAccessServlet extends HttpServlet {
     private final String PUT = "put";
     private final String KEY = "key";
     private final String VALUE = "value";
-    private final String DEFAULT_CACHE_NAME = "java:jboss/infinispan/cache/web/repl";
+    private final String DEFAULT_CACHE_NAME = "java:jboss/infinispan/cache/web/default";
 
     public static final String URL = "cache";
 

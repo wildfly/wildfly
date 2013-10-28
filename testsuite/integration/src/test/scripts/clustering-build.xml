@@ -126,9 +126,9 @@
                                       remote-site.site="SFO" remote-site.stack="tcp" remote-site.cluster="bridge"/>
         <!-- define cache to be backed up at Infinispan level -->
         <ts.config-as.add-xsite-backups name="wildfly-clustering-xsite-LON-0" container="web"
-                                       cache-type="replicated-cache" cache="repl" backup.site="NYC"/>
+                                       cache-type="distributed-cache" cache="dist" backup.site="NYC"/>
         <ts.config-as.add-xsite-backup name="wildfly-clustering-xsite-LON-0" container="web"
-                                       cache-type="replicated-cache" cache="repl" backup.site="SFO"/>
+                                       cache-type="distributed-cache" cache="dist" backup.site="SFO"/>
 
         <!-- site LON, node 1, mcast 0 -->
         <echo message="Building config clustering-xsite-LON-1"/>
@@ -146,9 +146,9 @@
                                       remote-site.site="SFO" remote-site.stack="tcp" remote-site.cluster="bridge"/>
         <!-- define cache to be backed up at Infinispan level -->
         <ts.config-as.add-xsite-backups name="wildfly-clustering-xsite-LON-1" container="web"
-                                       cache-type="replicated-cache" cache="repl" backup.site="NYC"/>
+                                       cache-type="distributed-cache" cache="dist" backup.site="NYC"/>
         <ts.config-as.add-xsite-backup name="wildfly-clustering-xsite-LON-1" container="web"
-                                       cache-type="replicated-cache" cache="repl" backup.site="SFO"/>
+                                       cache-type="distributed-cache" cache="dist" backup.site="SFO"/>
 
         <!-- site NYC, node 2, mcast 1 -->
         <echo message="Building config clustering-xsite-NYC-0"/>
@@ -197,9 +197,9 @@
 
         <!-- create a named backup cache based on repl for LON:web:dist and mark as backup-for -->
         <ts.config-as.copy-cache name="wildfly-clustering-xsite-SFO-0-backupFor" container.name="web"
-                                       cache-type="replicated-cache" cache.base="repl" cache.name="LONrepl"/>
+                                       cache-type="distributed-cache" cache.base="dist" cache.name="LON"/>
         <ts.config-as.add-xsite-backup-for name="wildfly-clustering-xsite-SFO-0-backupFor" container="web"
-                                       cache-type="replicated-cache" cache="LONrepl" remote-site="LON" remote-cache="repl"/>
+                                       cache-type="distributed-cache" cache="LON" remote-site="LON" remote-cache="dist"/>
 
     </target>
 
