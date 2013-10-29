@@ -50,7 +50,9 @@ public class LdapConnectionManagerService implements Service<LdapConnectionManag
 
     private final InjectedValue<SSLContext> fullSSLContext = new InjectedValue<SSLContext>();
     private final InjectedValue<SSLContext> trustSSLContext = new InjectedValue<SSLContext>();
+
     private volatile Config configuration;
+    private volatile Hashtable<String, String> properties = new Hashtable<String, String>();
 
     public LdapConnectionManagerService() {
     }
@@ -96,6 +98,28 @@ public class LdapConnectionManagerService implements Service<LdapConnectionManag
     }
 
     /*
+     * Property Manipulation Methods.
+     */
+
+    synchronized void setProperty(final String name, final String value) {
+        Hashtable<String, String> properties = new Hashtable<String, String>(this.properties);
+        properties.put(name, value);
+
+        this.properties = properties;
+    }
+
+    synchronized void removeProperty(final String name) {
+        Hashtable<String, String> properties = new Hashtable<String, String>(this.properties);
+        properties.remove(name);
+
+        this.properties = properties;
+    }
+
+    void setPropertyImmediate(final String name, final String value) {
+        properties.put(name, value);
+    }
+
+    /*
      *  Connection Manager Methods
      */
 
@@ -115,6 +139,7 @@ public class LdapConnectionManagerService implements Service<LdapConnectionManag
 
     private Object getConnection(final Hashtable<String, String> properties, final SSLContext sslContext) throws Exception {
         ClassLoader old = SecurityActions.getContextClassLoader();
+
         try {
             if (sslContext != null) {
                 ThreadLocalSSLSocketFactory.setSSLSocketFactory(sslContext.getSocketFactory());
@@ -154,8 +179,7 @@ public class LdapConnectionManagerService implements Service<LdapConnectionManag
     }
 
     private Hashtable<String, String> getConnectionOnlyProperties(final Config configuration) {
-        final Hashtable<String, String> result = new Hashtable<String, String>();
-
+        final Hashtable<String, String> result = new Hashtable<String, String>(properties);
         result.put(Context.INITIAL_CONTEXT_FACTORY, configuration.initialContextFactory);
         result.put(Context.PROVIDER_URL, configuration.url);
 

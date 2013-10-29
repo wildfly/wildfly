@@ -76,6 +76,11 @@ public class LdapConnectionResourceDefinition extends SimpleResourceDefinition {
     }
 
     @Override
+    public void registerChildren(ManagementResourceRegistration resourceRegistration) {
+        resourceRegistration.registerSubModel(LdapConnectionPropertyResourceDefinition.INSTANCE);
+    }
+
+    @Override
     public void registerAttributes(ManagementResourceRegistration resourceRegistration) {
         super.registerAttributes(resourceRegistration);
 
