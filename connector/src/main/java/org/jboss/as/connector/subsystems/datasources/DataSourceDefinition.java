@@ -36,7 +36,6 @@ import static org.jboss.as.connector.subsystems.datasources.Constants.FLUSH_ALL_
 import static org.jboss.as.connector.subsystems.datasources.Constants.FLUSH_GRACEFULLY_CONNECTION;
 import static org.jboss.as.connector.subsystems.datasources.Constants.FLUSH_IDLE_CONNECTION;
 import static org.jboss.as.connector.subsystems.datasources.Constants.FLUSH_INVALID_CONNECTION;
-import static org.jboss.as.connector.subsystems.datasources.Constants.READONLY_DATASOURCE_ATTRIBUTE;
 import static org.jboss.as.connector.subsystems.datasources.Constants.TEST_CONNECTION;
 import static org.jboss.as.connector.subsystems.datasources.Constants.URL_DELIMITER;
 
@@ -46,7 +45,6 @@ import org.jboss.as.connector.subsystems.common.pool.PoolConfigurationRWHandler;
 import org.jboss.as.connector.subsystems.common.pool.PoolOperations;
 import org.jboss.as.controller.PathElement;
 import org.jboss.as.controller.PropertiesAttributeDefinition;
-import org.jboss.as.controller.ReloadRequiredWriteAttributeHandler;
 import org.jboss.as.controller.SimpleAttributeDefinition;
 import org.jboss.as.controller.SimpleAttributeDefinitionBuilder;
 import org.jboss.as.controller.SimpleResourceDefinition;
@@ -130,9 +128,7 @@ public class DataSourceDefinition extends SimpleResourceDefinition {
                 }
             }
         }
-        for (SimpleAttributeDefinition attribute : READONLY_DATASOURCE_ATTRIBUTE) {
-            resourceRegistration.registerReadWriteAttribute(attribute, null, new ReloadRequiredWriteAttributeHandler(attribute));
-        }
+
 
 
     }
