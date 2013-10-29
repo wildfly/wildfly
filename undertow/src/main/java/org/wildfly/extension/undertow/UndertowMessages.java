@@ -180,4 +180,7 @@ public interface UndertowMessages {
 
     @Message(id = 17353, value = "Failed to configure handler %s")
     RuntimeException failedToConfigureHandlerClass(String handlerClass, @Cause Exception e);
+
+    @Message(id = 17354, value = "Could not find the port number listening for protocol %s")
+    IllegalArgumentException servletClassNotDefined(final String servletName);
 }

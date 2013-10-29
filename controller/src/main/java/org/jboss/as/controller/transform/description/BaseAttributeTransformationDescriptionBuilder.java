@@ -22,6 +22,7 @@
 
 package org.jboss.as.controller.transform.description;
 
+import java.util.Collection;
 import java.util.List;
 import java.util.Map;
 
@@ -123,6 +124,18 @@ public interface BaseAttributeTransformationDescriptionBuilder<T extends BaseAtt
      * @return this builder
      */
     T setDiscard(DiscardAttributeChecker discardChecker, AttributeDefinition...discardedAttributes);
+
+    /**
+     * Sets the DiscardChecker to be used to check if an attribute should be discarded. Only one discard checker can be used
+     * for an attribute.
+     * <p>
+     * Discard is done in the {@code DISCARD} phase.
+     *
+     * @param discardChecker the checkers
+     * @param discardedAttributes the attributes to check
+     * @return this builder
+     */
+    T setDiscard(DiscardAttributeChecker discardChecker, Collection<AttributeDefinition> discardedAttributes);
 
     /**
      * Rename an attribute. An attribute can only be renamed once.

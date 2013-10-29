@@ -60,6 +60,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
 import org.junit.Assert;
 import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.PathElement;
@@ -355,6 +356,10 @@ public class ExpressionSupportSmokeTestCase extends BuildConfigurationTestBase {
                 && !attrDesc.get(STORAGE).asString().equalsIgnoreCase("configuration")) {
             return true;
         }
+        if (attrDesc.get(ModelDescriptionConstants.DEPRECATED).isDefined()){
+            return true;
+        }
+
 
         // Special cases
         if ("default-web-module".equals(attrName)) {

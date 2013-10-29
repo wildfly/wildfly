@@ -23,6 +23,7 @@
 package org.jboss.as.controller.transform.description;
 
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -53,6 +54,15 @@ abstract class AttributeTransformationDescriptionBuilderImpl<T extends BaseAttri
     public T setDiscard(DiscardAttributeChecker discardChecker, AttributeDefinition...discardedAttributes) {
         AttributeDefinition[] useDefs = discardedAttributes;
         for (AttributeDefinition attribute : useDefs) {
+            String attrName = getAttributeName(attribute);
+            registry.setDiscardedAttribute(discardChecker, attrName);
+        }
+        return thisBuilder();
+    }
+
+    @Override
+    public T setDiscard(DiscardAttributeChecker discardChecker, Collection<AttributeDefinition> discardedAttributes) {
+        for (AttributeDefinition attribute : discardedAttributes) {
             String attrName = getAttributeName(attribute);
             registry.setDiscardedAttribute(discardChecker, attrName);
         }

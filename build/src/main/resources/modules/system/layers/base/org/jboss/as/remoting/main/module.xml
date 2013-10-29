@@ -50,6 +50,7 @@
         <module name="org.jboss.threads"/>
         <module name="org.picketbox" optional="true"/>
         <module name="io.undertow.core" optional="true" />
+        <module name="org.wildfly.extension.io"  />
         <module name="javax.api" />
     </dependencies>
 </module>
