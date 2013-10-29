@@ -34,7 +34,7 @@ class NativeManagementServices {
 
             ManagementChannelRegistryService.addService(serviceTarget, ManagementRemotingServices.MANAGEMENT_ENDPOINT);
 
-            ManagementRemotingServices.installRemotingEndpoint(serviceTarget, ManagementRemotingServices.MANAGEMENT_ENDPOINT, hostName, EndpointService.EndpointType.MANAGEMENT, OPTIONS, verificationHandler, newControllers);
+            ManagementRemotingServices.installRemotingManagementEndpoint(serviceTarget, ManagementRemotingServices.MANAGEMENT_ENDPOINT, hostName, EndpointService.EndpointType.MANAGEMENT, OPTIONS, verificationHandler, newControllers);
 
 
             ManagementRemotingServices.installManagementChannelServices(serviceTarget,

@@ -90,7 +90,7 @@ public class DomainServerCommunicationServices  implements ServiceActivator, Ser
             // TODO see if we can figure out a way to work in the vault resolver instead of having to use ExpressionResolver.DEFAULT
             @SuppressWarnings("deprecation")
             final OptionMap options = EndpointConfigFactory.create(ExpressionResolver.DEFAULT, endpointConfig, DEFAULTS);
-            ManagementRemotingServices.installRemotingEndpoint(serviceTarget, endpointName, WildFlySecurityManager.getPropertyPrivileged(ServerEnvironment.NODE_NAME, null), endpointType, options, null, null);
+            ManagementRemotingServices.installRemotingManagementEndpoint(serviceTarget, endpointName, WildFlySecurityManager.getPropertyPrivileged(ServerEnvironment.NODE_NAME, null), endpointType, options, null, null);
 
             // Install the communication services
             final int port = managementSocket.getPort();
