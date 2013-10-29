@@ -24,7 +24,6 @@ package org.jboss.as.messaging;
 
 import static org.jboss.as.controller.PathElement.pathElement;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ADD;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.PATH;
 import static org.jboss.as.controller.transform.description.DiscardAttributeChecker.DiscardAttributeValueChecker;
 import static org.jboss.as.controller.transform.description.DiscardAttributeChecker.UNDEFINED;
@@ -215,7 +214,7 @@ public class MessagingTransformers {
                         // before discarding
 
                         // the real clustered HornetQ state
-                        Set<String> clusterConnectionNames = context.readResource(PathAddress.EMPTY_ADDRESS).getChildrenNames(ClusterConnectionDefinition.PATH.getKey());
+                        Set<String> clusterConnectionNames = context.readResource(address).getChildrenNames(ClusterConnectionDefinition.PATH.getKey());
                         boolean clustered = !clusterConnectionNames.isEmpty();
                         // whether the user wants the server to be clustered
                         // We use a short-cut vs AD.resolveModelValue to avoid having to hack in an OperationContext
@@ -223,9 +222,8 @@ public class MessagingTransformers {
                         // Treat 'undefined' as 'ignore this and match the actual config' instead of the legacy default 'false'
                         boolean wantsClustered = attributeValue.asBoolean(clustered);
                         if (clustered && !wantsClustered) {
-                            PathAddress serverAddress = PathAddress.pathAddress(operation.get(OP_ADDR));
-                            String msg = MessagingMessages.MESSAGES.canNotChangeClusteredAttribute(serverAddress);
-                            context.getLogger().logAttributeWarning(serverAddress, operation, msg, CLUSTERED.getName());
+                            String msg = MessagingMessages.MESSAGES.canNotChangeClusteredAttribute(address);
+                            context.getLogger().logAttributeWarning(address, operation, msg, CLUSTERED.getName());
                         }
                         return true;
                     }
