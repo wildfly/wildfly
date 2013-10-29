@@ -2,10 +2,12 @@ package org.jboss.as.weld.deployment.processors;
 
 import static org.jboss.as.weld.util.Utils.getRootDeploymentUnit;
 
+import java.util.HashSet;
 import java.util.Set;
 
 import org.jboss.as.ee.component.ComponentDescription;
 import org.jboss.as.ee.component.EEModuleDescription;
+import org.jboss.as.ee.managedbean.component.ManagedBeanComponentDescription;
 import org.jboss.as.ee.weld.WeldDeploymentMarker;
 import org.jboss.as.ejb3.component.session.SessionBeanComponentDescription;
 import org.jboss.as.server.deployment.Attachments;
@@ -43,7 +45,7 @@ public class WeldImplicitDeploymentProcessor implements DeploymentUnitProcessor 
          * look for classes with bean defining annotations
          */
         final CompositeIndex index = deploymentUnit.getAttachment(Attachments.COMPOSITE_ANNOTATION_INDEX);
-        final Set<AnnotationType> beanDefiningAnnotations = getRootDeploymentUnit(deploymentUnit).getAttachment(WeldAttachments.BEAN_DEFINING_ANNOTATIONS);
+        final Set<AnnotationType> beanDefiningAnnotations = new HashSet<>(getRootDeploymentUnit(deploymentUnit).getAttachment(WeldAttachments.BEAN_DEFINING_ANNOTATIONS));
 
         for (final AnnotationType annotation : beanDefiningAnnotations) {
             if (!index.getAnnotations(annotation.getName()).isEmpty()) {
@@ -53,12 +55,12 @@ public class WeldImplicitDeploymentProcessor implements DeploymentUnitProcessor 
         }
 
         /*
-         * look for session beans
+         * look for session beans and managed beans
          */
         final EEModuleDescription eeModuleDescription = deploymentUnit.getAttachment(org.jboss.as.ee.component.Attachments.EE_MODULE_DESCRIPTION);
 
         for (ComponentDescription component : eeModuleDescription.getComponentDescriptions()) {
-            if (component instanceof SessionBeanComponentDescription) {
+            if (component instanceof SessionBeanComponentDescription || component instanceof ManagedBeanComponentDescription) {
                 WeldDeploymentMarker.mark(deploymentUnit);
                 return;
             }

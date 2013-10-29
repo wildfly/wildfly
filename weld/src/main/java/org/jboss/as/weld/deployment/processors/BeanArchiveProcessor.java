@@ -210,7 +210,9 @@ public class BeanArchiveProcessor implements DeploymentUnitProcessor {
             this.reflectionIndex = deploymentUnit.getAttachment(Attachments.REFLECTION_INDEX);
             this.deploymentResourceRoot = deploymentUnit.getAttachment(Attachments.DEPLOYMENT_ROOT);
             this.classesResourceRoot = deploymentUnit.getAttachment(WeldAttachments.CLASSES_RESOURCE_ROOT);
-            this.beanDefiningAnnotations = getRootDeploymentUnit(deploymentUnit).getAttachment(WeldAttachments.BEAN_DEFINING_ANNOTATIONS);
+            HashSet<AnnotationType> annotationTypes = new HashSet<>(getRootDeploymentUnit(deploymentUnit).getAttachment(WeldAttachments.BEAN_DEFINING_ANNOTATIONS));
+            annotationTypes.addAll(getRootDeploymentUnit(deploymentUnit).getAttachmentList(WeldAttachments.INJECTION_TARGET_DEFINING_ANNOTATIONS));
+            this.beanDefiningAnnotations = annotationTypes;
             this.requireBeanDescriptor = getRootDeploymentUnit(deploymentUnit).getAttachment(WeldConfiguration.ATTACHMENT_KEY).isRequireBeanDescriptor();
         }
 
@@ -299,6 +301,10 @@ public class BeanArchiveProcessor implements DeploymentUnitProcessor {
             for (AnnotationType beanDefiningAnnotation : beanDefiningAnnotations) {
                 List<AnnotationInstance> annotationInstances = index.getAnnotations(beanDefiningAnnotation.getName());
                 implicitBeanClasses.addAll(Lists.transform(Indices.getAnnotatedClasses(annotationInstances), Indices.CLASS_INFO_TO_FQCN));
+            }
+            //make all components into implicit beans so they will support injection
+            for(Entry<ResourceRoot, ComponentDescription> entry : components.componentDescriptions.entries()) {
+                implicitBeanClasses.add(entry.getValue().getComponentClassName());
             }
             return implicitBeanClasses;
         }
