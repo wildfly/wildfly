@@ -29,6 +29,8 @@ import org.jboss.as.server.deployment.DeploymentUnit;
 import org.jboss.as.server.deployment.DeploymentUnitProcessingException;
 import org.jboss.as.server.deployment.DeploymentUnitProcessor;
 import org.jboss.as.server.deployment.annotation.CompositeIndex;
+import org.jboss.as.weld.deployment.WeldAttachments;
+import org.jboss.as.weld.discovery.AnnotationType;
 
 /**
  * Looks for jaxrs annotations in war deployments
@@ -49,6 +51,10 @@ public class JaxrsAnnotationProcessor implements DeploymentUnitProcessor {
                 return;
             }
         }
+
+        //register resource, provider and application as CDI annotation defining types
+        deploymentUnit.addToAttachmentList(WeldAttachments.INJECTION_TARGET_DEFINING_ANNOTATIONS, new AnnotationType(JaxrsAnnotations.PROVIDER.getDotName(), false));
+        deploymentUnit.addToAttachmentList(WeldAttachments.INJECTION_TARGET_DEFINING_ANNOTATIONS, new AnnotationType(JaxrsAnnotations.PATH.getDotName(), false));
     }
 
     @Override

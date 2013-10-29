@@ -124,33 +124,22 @@ public class WeldResourceInjectionServices extends AbstractResourceInjectionServ
     @Override
     public ResourceReferenceFactory<Object> registerResourceInjectionPoint(final InjectionPoint injectionPoint) {
         final String result = getResourceName(injectionPoint);
-        if (isKnownNamespace(result)) {
-            return handleServiceLookup(result, injectionPoint);
-        } else {
-
-            return new ResourceReferenceFactory<Object>() {
-                @Override
-                public ResourceReference<Object> createResource() {
-                    return new SimpleResourceReference<Object>(resolveResource(injectionPoint));
-                }
-            };
-        }
+        return new ResourceReferenceFactory<Object>() {
+            @Override
+            public ResourceReference<Object> createResource() {
+                return new SimpleResourceReference<Object>(resolveResource(result, null));
+            }
+        };
     }
 
     @Override
     public ResourceReferenceFactory<Object> registerResourceInjectionPoint(final String jndiName, final String mappedName) {
-        final String result = ResourceInjectionUtilities.getResourceName(jndiName, mappedName);
-        if (isKnownNamespace(result)) {
-            return handleServiceLookup(result, null);
-        } else {
-
-            return new ResourceReferenceFactory<Object>() {
-                @Override
-                public ResourceReference<Object> createResource() {
-                    return new SimpleResourceReference<Object>(resolveResource(jndiName, mappedName));
-                }
-            };
-        }
+        return new ResourceReferenceFactory<Object>() {
+            @Override
+            public ResourceReference<Object> createResource() {
+                return new SimpleResourceReference<Object>(resolveResource(jndiName, mappedName));
+            }
+        };
     }
 
     private boolean isKnownNamespace(String name) {
