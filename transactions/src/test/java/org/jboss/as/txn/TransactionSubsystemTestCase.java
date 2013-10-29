@@ -135,7 +135,16 @@ public class TransactionSubsystemTestCase extends AbstractSubsystemBaseTest {
         testTransformersFull110(ModelTestControllerVersion.V7_1_2_FINAL);
     }
 
+    @Test
+    public void testTransformersFullEAP600() throws Exception {
+        testTransformersFull110(ModelTestControllerVersion.EAP_6_0_0);
+    }
+
     private void testTransformersFull110(ModelTestControllerVersion controllerVersion) throws Exception {
+        if (controllerVersion.isEap()) {
+            ignoreThisTestIfEAPRepositoryIsNotReachable();
+        }
+
         String subsystemXml = readResource("full.xml");
         ModelVersion modelVersion = ModelVersion.create(1, 1, 0);
         //Use the non-runtime version of the extension which will happen on the HC
@@ -172,11 +181,29 @@ public class TransactionSubsystemTestCase extends AbstractSubsystemBaseTest {
     }
 
     @Test
+    public void testTransformersEAP601() throws Exception {
+        testTransformersFull(ModelTestControllerVersion.EAP_6_0_1, ModelVersion.create(1, 1, 1));
+    }
+
+    @Test
     public void testTransformersFull720() throws Exception {
         testTransformersFull(ModelTestControllerVersion.V7_2_0_FINAL, ModelVersion.create(1, 2, 0));
     }
 
+    @Test
+    public void testTransformersFullEAP610() throws Exception {
+        testTransformersFull(ModelTestControllerVersion.EAP_6_1_0, ModelVersion.create(1, 2, 0));
+    }
+
+    @Test
+    public void testTransformersFullEAP611() throws Exception {
+        testTransformersFull(ModelTestControllerVersion.EAP_6_1_1, ModelVersion.create(1, 2, 0));
+    }
+
     private void testTransformersFull(ModelTestControllerVersion controllerVersion, ModelVersion modelVersion) throws Exception {
+        if (controllerVersion.isEap()) {
+            ignoreThisTestIfEAPRepositoryIsNotReachable();
+        }
         String subsystemXml = readResource("full-expressions.xml");
         //Use the non-runtime version of the extension which will happen on the HC
         KernelServicesBuilder builder = createKernelServicesBuilder(AdditionalInitialization.MANAGEMENT)
@@ -200,7 +227,16 @@ public class TransactionSubsystemTestCase extends AbstractSubsystemBaseTest {
 
     @Test
     public void testRejectTransformersAS712() throws Exception {
-        FailedOperationTransformationConfig config = new FailedOperationTransformationConfig()
+        testRejectTransformers(ModelTestControllerVersion.V7_1_2_FINAL, ModelVersion.create(1, 1, 0), get1_1_0_config());
+    }
+
+    @Test
+    public void testRejectTransformerEAP600() throws Exception {
+        testRejectTransformers(ModelTestControllerVersion.EAP_6_0_0, ModelVersion.create(1, 1, 0), get1_1_0_config());
+    }
+
+    private FailedOperationTransformationConfig get1_1_0_config() {
+        return new FailedOperationTransformationConfig()
         .addFailedAttribute(PathAddress.pathAddress(PathElement.pathElement(SUBSYSTEM, TransactionExtension.SUBSYSTEM_NAME)),
                 new FailedOperationTransformationConfig.ChainedConfig(Arrays.asList(new FailedOperationTransformationConfig.AttributesPathAddressConfig<?>[] {
                         new FailedOperationTransformationConfig.RejectExpressionsConfig(
@@ -234,7 +270,6 @@ public class TransactionSubsystemTestCase extends AbstractSubsystemBaseTest {
                         OBJECT_STORE_PATH,
                         OBJECT_STORE_RELATIVE_TO,
                         HORNETQ_STORE_ENABLE_ASYNC_IO));
-        testRejectTransformers(ModelTestControllerVersion.V7_1_2_FINAL, ModelVersion.create(1, 1, 0), config);
     }
 
     @Test
@@ -252,7 +287,24 @@ public class TransactionSubsystemTestCase extends AbstractSubsystemBaseTest {
                     new ChangeToTrueConfig(HORNETQ_STORE_ENABLE_ASYNC_IO)));
     }
 
+    @Test
+    public void testRejectTransformersEAP610() throws Exception {
+        testRejectTransformers(ModelTestControllerVersion.EAP_6_1_0, ModelVersion.create(1, 2, 0), new FailedOperationTransformationConfig()
+            .addFailedAttribute(PathAddress.pathAddress(PathElement.pathElement(SUBSYSTEM, TransactionExtension.SUBSYSTEM_NAME)),
+                    new ChangeToTrueConfig(HORNETQ_STORE_ENABLE_ASYNC_IO)));
+    }
+
+    @Test
+    public void testRejectTransformersEAP611() throws Exception {
+        testRejectTransformers(ModelTestControllerVersion.EAP_6_1_1, ModelVersion.create(1, 2, 0), new FailedOperationTransformationConfig()
+            .addFailedAttribute(PathAddress.pathAddress(PathElement.pathElement(SUBSYSTEM, TransactionExtension.SUBSYSTEM_NAME)),
+                    new ChangeToTrueConfig(HORNETQ_STORE_ENABLE_ASYNC_IO)));
+    }
+
     private void testRejectTransformers(ModelTestControllerVersion controllerVersion, ModelVersion modelVersion, FailedOperationTransformationConfig config) throws Exception {
+        if (controllerVersion.isEap()) {
+            ignoreThisTestIfEAPRepositoryIsNotReachable();
+        }
         KernelServicesBuilder builder = createKernelServicesBuilder(createAdditionalInitialization());
 
         // Add legacy subsystems
