@@ -27,6 +27,7 @@ import static org.jboss.as.messaging.MessagingMessages.MESSAGES;
 
 import java.util.List;
 import java.util.concurrent.ExecutorService;
+import java.util.concurrent.RejectedExecutionException;
 
 import javax.jms.Topic;
 
@@ -67,9 +68,7 @@ public class JMSTopicService implements Service<Topic> {
     @Override
     public synchronized void start(final StartContext context) throws StartException {
         final JMSServerManager jmsManager = jmsServer.getValue();
-
-        context.asynchronous();
-        executorInjector.getValue().execute(new Runnable() {
+        final Runnable task = new Runnable() {
             @Override
             public void run() {
                 try {
@@ -80,16 +79,20 @@ public class JMSTopicService implements Service<Topic> {
                     context.failed(MESSAGES.failedToCreate(e, "queue"));
                 }
             }
-        });
+        };
+        try {
+            executorInjector.getValue().execute(task);
+        } catch (RejectedExecutionException e) {
+            task.run();
+        } finally {
+            context.asynchronous();
+        }
     }
 
     @Override
     public synchronized void stop(final StopContext context) {
         final JMSServerManager jmsManager = jmsServer.getValue();
-
-        // JMS Server Manager uses locking which waits on service completion, use async to prevent starvation
-        context.asynchronous();
-        executorInjector.getValue().execute(new Runnable() {
+        final Runnable task = new Runnable() {
             @Override
             public void run() {
                 try {
@@ -100,7 +103,15 @@ public class JMSTopicService implements Service<Topic> {
                 }
                 context.complete();
             }
-        });
+        };
+        // JMS Server Manager uses locking which waits on service completion, use async to prevent starvation
+        try {
+            executorInjector.getValue().execute(task);
+        } catch (RejectedExecutionException e) {
+            task.run();
+        } finally {
+            context.asynchronous();
+        }
     }
 
     @Override

@@ -26,11 +26,13 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.concurrent.ExecutorService;
+import java.util.concurrent.RejectedExecutionException;
 
 import javax.transaction.xa.XAResource;
 
 import com.arjuna.ats.arjuna.common.CoreEnvironmentBean;
 import com.arjuna.ats.jbossatx.jta.RecoveryManagerService;
+
 import org.jboss.ejb.client.EJBClientContext;
 import org.jboss.ejb.client.EJBClientContextListener;
 import org.jboss.ejb.client.EJBClientManagedTransactionContext;
@@ -75,26 +77,26 @@ public class EJBTransactionRecoveryService implements Service<EJBTransactionReco
 
     @Override
     public void stop(final StopContext stopContext) {
-        ExecutorService executorService = executor.getValue();
-        Runnable r = new Runnable() {
+        final ExecutorService executorService = executor.getValue();
+        final Runnable task = new Runnable() {
             @Override
             public void run() {
-                synchronized (this) {
-                    try {
-                        // we no longer bother about the XAResource(s)
-                        EJBTransactionRecoveryService.this.receiverContexts.clear();
-                        // un-register ourselves from the recovery manager service
-                        recoveryManagerService.getValue().removeXAResourceRecovery(EJBTransactionRecoveryService.this);
-                        logger.debug("Un-registered " + this + " from the transaction recovery manager");
-
-                    } finally {
-                        stopContext.complete();
-                    }
+                try {
+                    // we no longer bother about the XAResource(s)
+                    EJBTransactionRecoveryService.this.receiverContexts.clear();
+                    // un-register ourselves from the recovery manager service
+                    recoveryManagerService.getValue().removeXAResourceRecovery(EJBTransactionRecoveryService.this);
+                    logger.debug("Un-registered " + this + " from the transaction recovery manager");
+                } finally {
+                    stopContext.complete();
                 }
             }
         };
-        synchronized (r) {
-            executorService.execute(r);
+        try {
+            executorService.execute(task);
+        } catch (RejectedExecutionException e) {
+            task.run();
+        } finally {
             stopContext.asynchronous();
         }
     }

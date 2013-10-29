@@ -30,6 +30,7 @@ import java.security.AccessController;
 import java.security.PrivilegedAction;
 import java.util.Map;
 import java.util.concurrent.ExecutorService;
+import java.util.concurrent.RejectedExecutionException;
 
 import javax.sql.DataSource;
 
@@ -129,9 +130,13 @@ public class PhaseOnePersistenceUnitServiceImpl implements Service<PhaseOnePersi
                 WildFlySecurityManager.doChecked(privilegedAction, accessControlContext);
             }
         };
-        context.asynchronous();
-
-        executor.execute(task);
+        try {
+            executor.execute(task);
+        } catch (RejectedExecutionException e) {
+            task.run();
+        } finally {
+            context.asynchronous();
+        }
     }
 
     @Override
@@ -178,8 +183,13 @@ public class PhaseOnePersistenceUnitServiceImpl implements Service<PhaseOnePersi
             }
 
         };
-        context.asynchronous();
-        executor.execute(task);
+        try {
+            executor.execute(task);
+        } catch (RejectedExecutionException e) {
+            task.run();
+        } finally {
+            context.asynchronous();
+        }
     }
 
     public InjectedValue<ExecutorService> getExecutorInjector() {

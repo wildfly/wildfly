@@ -27,6 +27,7 @@ import java.security.AccessController;
 import java.security.PrivilegedAction;
 import java.util.Map;
 import java.util.concurrent.ExecutorService;
+import java.util.concurrent.RejectedExecutionException;
 
 import javax.enterprise.inject.spi.BeanManager;
 import javax.persistence.EntityManagerFactory;
@@ -52,7 +53,6 @@ import org.jipijapa.plugin.spi.PersistenceProviderAdaptor;
 import org.jipijapa.plugin.spi.PersistenceUnitMetadata;
 import org.wildfly.security.manager.GetAccessControlContextAction;
 import org.wildfly.security.manager.WildFlySecurityManager;
-
 
 import static org.jboss.as.jpa.messages.JpaLogger.JPA_LOGGER;
 
@@ -184,10 +184,13 @@ public class PersistenceUnitServiceImpl implements Service<PersistenceUnitServic
             }
 
         };
-
-
-        context.asynchronous();
-        executor.execute(task);
+        try {
+            executor.execute(task);
+        } catch (RejectedExecutionException e) {
+            task.run();
+        } finally {
+            context.asynchronous();
+        }
     }
 
     @Override
@@ -237,8 +240,13 @@ public class PersistenceUnitServiceImpl implements Service<PersistenceUnitServic
             }
 
         };
-        context.asynchronous();
-        executor.execute(task);
+        try {
+            executor.execute(task);
+        } catch (RejectedExecutionException e) {
+            task.run();
+        } finally {
+            context.asynchronous();
+        }
     }
 
     public InjectedValue<ExecutorService> getExecutorInjector() {

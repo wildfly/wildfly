@@ -35,6 +35,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ExecutorService;
+import java.util.concurrent.RejectedExecutionException;
 
 import javax.naming.Reference;
 import javax.resource.spi.ManagedConnectionFactory;
@@ -138,17 +139,18 @@ public abstract class AbstractDataSourceService implements Service<DataSource> {
         Runnable r = new Runnable() {
             @Override
             public void run() {
-                synchronized (this) {
-                    try {
-                        stopService();
-                    } finally {
-                        stopContext.complete();
-                    }
+                try {
+                    stopService();
+                } finally {
+                    stopContext.complete();
                 }
             }
         };
-        synchronized (r) {
+        try {
             executorService.execute(r);
+        } catch (RejectedExecutionException e) {
+            r.run();
+        } finally {
             stopContext.asynchronous();
         }
     }

@@ -27,6 +27,7 @@ import static org.jboss.as.controller.ControllerMessages.MESSAGES;
 
 import java.util.List;
 import java.util.concurrent.ExecutorService;
+import java.util.concurrent.RejectedExecutionException;
 
 import org.jboss.as.controller.access.management.DelegatingConfigurableAuthorizer;
 import org.jboss.as.controller.access.management.WritableAuthorizerConfiguration;
@@ -321,7 +322,6 @@ public abstract class AbstractControllerService implements Service<ModelControll
     public void stop(final StopContext context) {
         controller = null;
 
-        context.asynchronous();
         Runnable r = new Runnable() {
             @Override
             public void run() {
@@ -336,12 +336,20 @@ public abstract class AbstractControllerService implements Service<ModelControll
                 }
             }
         };
-        ExecutorService executorService = injectedExecutorService.getOptionalValue();
-        if (executorService != null) {
-            injectedExecutorService.getValue().execute(r);
-        } else {
-            Thread executorShutdown = new Thread(r, getClass().getSimpleName() + " Shutdown Thread");
-            executorShutdown.start();
+        final ExecutorService executorService = injectedExecutorService.getOptionalValue();
+        try {
+            if (executorService != null) {
+                try {
+                    executorService.execute(r);
+                } catch (RejectedExecutionException e) {
+                    r.run();
+                }
+            } else {
+                Thread executorShutdown = new Thread(r, getClass().getSimpleName() + " Shutdown Thread");
+                executorShutdown.start();
+            }
+        } finally {
+            context.asynchronous();
         }
     }
 

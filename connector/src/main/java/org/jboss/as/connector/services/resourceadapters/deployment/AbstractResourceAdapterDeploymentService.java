@@ -33,6 +33,7 @@ import java.net.URL;
 import java.util.List;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
+import java.util.concurrent.RejectedExecutionException;
 import java.util.concurrent.ThreadFactory;
 
 import javax.naming.Reference;
@@ -266,29 +267,28 @@ public abstract class AbstractResourceAdapterDeploymentService {
         return true;
     }
 
-    protected final void cleanupStartAsync(final StartContext context, final String deploymentName,
-                                     final Throwable cause) {
+    protected final void cleanupStartAsync(final StartContext context, final String deploymentName, final Throwable cause) {
         ExecutorService executorService = getLifecycleExecutorService();
         Runnable r = new Runnable() {
             @Override
             public void run() {
-                synchronized (this) {
-                    try {
-                        // TODO -- one of the 3 previous synchronous calls to this method don't had the TCCL set,
-                        // but the other two don't. I (BES 2013/10/21) intepret from that that setting the TCCL
-                        // was not necessary and in caller that had it set it was an artifact of
-                        unregisterAll(deploymentName);
-                    } finally {
-                        context.failed(MESSAGES.failedToStartRaDeployment(cause, deploymentName));
-                    }
+                try {
+                    // TODO -- one of the 3 previous synchronous calls to this method don't had the TCCL set,
+                    // but the other two don't. I (BES 2013/10/21) intepret from that that setting the TCCL
+                    // was not necessary and in caller that had it set it was an artifact of
+                    unregisterAll(deploymentName);
+                } finally {
+                    context.failed(MESSAGES.failedToStartRaDeployment(cause, deploymentName));
                 }
             }
         };
-        synchronized (r) {
+        try {
             executorService.execute(r);
+        } catch (RejectedExecutionException e) {
+            r.run();
+        } finally {
             context.asynchronous();
         }
-
     }
 
     protected void stopAsync(final StopContext context, final String deploymentName, final ServiceName serviceName) {
@@ -296,21 +296,21 @@ public abstract class AbstractResourceAdapterDeploymentService {
         Runnable r = new Runnable() {
             @Override
             public void run() {
-                synchronized (this) {
-                    try {
-                        DEPLOYMENT_CONNECTOR_LOGGER.debugf("Stopping service %s", serviceName);
-                        unregisterAll(deploymentName);
-                    } finally {
-                        context.complete();
-                    }
+                try {
+                    DEPLOYMENT_CONNECTOR_LOGGER.debugf("Stopping service %s", serviceName);
+                    unregisterAll(deploymentName);
+                } finally {
+                    context.complete();
                 }
             }
         };
-        synchronized (r) {
+        try {
             executorService.execute(r);
+        } catch (RejectedExecutionException e) {
+            r.run();
+        } finally {
             context.asynchronous();
         }
-
     }
 
     protected abstract class AbstractAS7RaDeployer extends AbstractResourceAdapterDeployer {

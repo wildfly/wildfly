@@ -31,6 +31,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 import java.util.concurrent.ExecutorService;
+import java.util.concurrent.RejectedExecutionException;
 
 import org.jboss.as.connector.metadata.deployment.ResourceAdapterDeployment;
 import org.jboss.as.connector.metadata.xmldescriptors.ConnectorXmlDescriptor;
@@ -143,8 +144,8 @@ public final class ResourceAdapterDeploymentService extends AbstractResourceAdap
 
     // TODO this could be replaced by the superclass method if there is no need for the TCCL change and push/pop owner
     // The stop() call doesn't do that so it's probably not needed
-    private void cleanupStartAsync(final StartContext context, final String deploymentName,
-                                     final Throwable cause, final ServiceName duServiceName, final ClassLoader toUse) {
+    private void cleanupStartAsync(final StartContext context, final String deploymentName, final Throwable cause,
+            final ServiceName duServiceName, final ClassLoader toUse) {
         ExecutorService executorService = getLifecycleExecutorService();
         Runnable r = new Runnable() {
             @Override
@@ -164,11 +165,14 @@ public final class ResourceAdapterDeploymentService extends AbstractResourceAdap
                 }
             }
         };
-        context.asynchronous();
-        executorService.execute(r);
-
+        try {
+            executorService.execute(r);
+        } catch (RejectedExecutionException e) {
+            r.run();
+        } finally {
+            context.asynchronous();
+        }
     }
-
 
     /**
      * Stop

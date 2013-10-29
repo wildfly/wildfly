@@ -35,6 +35,7 @@ import org.jboss.threads.AsyncFutureTask;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Executor;
 import java.util.concurrent.Future;
+import java.util.concurrent.RejectedExecutionException;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
 
@@ -60,8 +61,7 @@ public class ServerBootOperationsService implements Service<Void> {
         final HostControllerClient client = clientInjector.getValue();
         final ModelController controller = serverController.getValue();
         final Executor executor = executorInjector.getValue();
-        context.asynchronous();
-        executor.execute(new Runnable() {
+        final Runnable task = new Runnable() {
             @Override
             public void run() {
                 try {
@@ -72,7 +72,14 @@ public class ServerBootOperationsService implements Service<Void> {
                     context.failed(new StartException(e));
                 }
             }
-        });
+        };
+        try {
+            executor.execute(task);
+        } catch (RejectedExecutionException e) {
+            task.run();
+        } finally {
+            context.asynchronous();
+        }
     }
 
     @Override

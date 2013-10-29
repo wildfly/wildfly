@@ -92,11 +92,12 @@ public final class AsynchronousService<T> implements Service<T> {
                     }
                 }
             };
-            context.asynchronous();
             try {
                 this.executor.getValue().execute(task);
             } catch (RejectedExecutionException e) {
                 task.run();
+            } finally {
+                context.asynchronous();
             }
         } else {
             this.service.start(context);
@@ -116,11 +117,12 @@ public final class AsynchronousService<T> implements Service<T> {
                     }
                 }
             };
-            context.asynchronous();
             try {
                 this.executor.getValue().execute(task);
             } catch (RejectedExecutionException e) {
                 task.run();
+            } finally {
+                context.asynchronous();
             }
         } else {
             this.service.stop(context);
