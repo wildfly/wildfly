@@ -28,7 +28,6 @@ import java.io.IOException;
 import java.io.PrintWriter;
 import java.net.URL;
 import java.util.Set;
-import java.util.concurrent.Callable;
 import java.util.concurrent.TimeoutException;
 
 import org.jboss.as.cli.operation.OperationFormatException;
@@ -42,7 +41,6 @@ import org.jboss.as.test.integration.domain.management.util.JBossAsManagedConfig
 import org.jboss.as.test.integration.management.util.ModelUtil;
 import org.jboss.as.test.integration.management.util.SimpleServlet;
 import org.jboss.as.test.integration.management.util.WebUtil;
-import org.jboss.as.test.shared.RetryTaskExecutor;
 import org.jboss.dmr.ModelNode;
 import org.jboss.logging.Logger;
 import org.jboss.sasl.util.UsernamePasswordHashUtil;
@@ -244,14 +242,14 @@ public class DomainControllerMigrationTestCase {
     }
 
     private void waitUntilHostControllerReady(final DomainLifecycleUtil dcUtil) throws TimeoutException {
-        RetryTaskExecutor<Object> executor = new RetryTaskExecutor<Object>();
-        executor.retryTask(new Callable<Object>() {
-
-            public Object call() throws Exception {
-                return dcUtil.isHostControllerStarted() && dcUtil.areServersStarted();
-            }
-        });
-
+        long now = System.currentTimeMillis();
+        try {
+            dcUtil.awaitHostController(now);
+            dcUtil.awaitServers(now);
+        } catch (InterruptedException e) {
+            Thread.currentThread().interrupt();
+            throw new RuntimeException(e);
+        }
     }
 
     private Operation buildDeployOperation() throws IOException, OperationFormatException {

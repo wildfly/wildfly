@@ -474,7 +474,7 @@ public class DomainLifecycleUtil {
         }
     }
 
-    private void awaitHostController(long start) throws InterruptedException, TimeoutException {
+    public void awaitHostController(long start) throws InterruptedException, TimeoutException {
 
         boolean hcAvailable = false;
         long deadline = start + configuration.getStartupTimeoutInSeconds() * 1000;
