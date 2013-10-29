@@ -23,6 +23,7 @@
 package org.jboss.as.ee.component;
 
 import java.util.concurrent.ExecutorService;
+import java.util.concurrent.RejectedExecutionException;
 
 import org.jboss.msc.inject.Injector;
 import org.jboss.msc.service.Service;
@@ -46,8 +47,7 @@ public final class ComponentStartService implements Service<Component> {
      * {@inheritDoc}
      */
     public void start(final StartContext context) throws StartException {
-        context.asynchronous();
-        executor.getValue().submit(new Runnable() {
+        final Runnable task = new Runnable() {
             @Override
             public void run() {
                 try {
@@ -57,27 +57,35 @@ public final class ComponentStartService implements Service<Component> {
                     context.failed(new StartException(e));
                 }
             }
-        });
+        };
+        try {
+            executor.getValue().submit(task);
+        } catch (RejectedExecutionException e) {
+            task.run();
+        } finally {
+            context.asynchronous();
+        }
     }
 
     /**
      * {@inheritDoc}
      */
     public void stop(final StopContext context) {
-        Runnable r = new Runnable() {
+        final Runnable task = new Runnable() {
             @Override
             public void run() {
-                synchronized (this) {
-                    try {
-                        getValue().stop();
-                    } finally {
-                        context.complete();
-                    }
+                try {
+                    getValue().stop();
+                } finally {
+                    context.complete();
                 }
             }
         };
-        synchronized (r) {
-            executor.getValue().submit(r);
+        try {
+            executor.getValue().submit(task);
+        } catch (RejectedExecutionException e) {
+            task.run();
+        } finally {
             context.asynchronous();
         }
     }

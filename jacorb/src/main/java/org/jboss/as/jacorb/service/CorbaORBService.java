@@ -27,6 +27,7 @@ import java.security.AccessController;
 import java.security.PrivilegedAction;
 import java.util.Properties;
 import java.util.concurrent.ExecutorService;
+import java.util.concurrent.RejectedExecutionException;
 
 import org.jboss.as.jacorb.JacORBLogger;
 import org.jboss.as.jacorb.JacORBSubsystemConstants;
@@ -150,9 +151,14 @@ public class CorbaORBService implements Service<ORB> {
     public void stop(StopContext context) {
         JacORBLogger.ROOT_LOGGER.debugServiceStop(context.getController().getName().getCanonicalName());
         // stop the ORB asynchronously.
-        context.asynchronous();
-        ORBDestroyer destroyer = new ORBDestroyer(this.orb, context);
-        executorInjector.getValue().execute(destroyer);
+        final ORBDestroyer destroyer = new ORBDestroyer(this.orb, context);
+        try {
+            executorInjector.getValue().execute(destroyer);
+        } catch (RejectedExecutionException e) {
+            destroyer.run();
+        } finally {
+            context.asynchronous();
+        }
     }
 
     @Override

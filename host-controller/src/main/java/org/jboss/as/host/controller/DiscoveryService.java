@@ -24,6 +24,7 @@ package org.jboss.as.host.controller;
 
 import java.util.List;
 import java.util.concurrent.ExecutorService;
+import java.util.concurrent.RejectedExecutionException;
 
 import org.jboss.as.host.controller.discovery.DiscoveryOption;
 import org.jboss.as.network.NetworkInterfaceBinding;
@@ -77,9 +78,7 @@ class DiscoveryService implements Service<Void> {
     /** {@inheritDoc} */
     @Override
     public synchronized void start(final StartContext context) throws StartException {
-        context.asynchronous();
-        Runnable r = new Runnable() {
-
+        final Runnable task = new Runnable() {
             @Override
             public void run() {
                 try {
@@ -97,15 +96,19 @@ class DiscoveryService implements Service<Void> {
                 }
             }
         };
-        executorService.getValue().execute(r);
+        try {
+            executorService.getValue().execute(task);
+        } catch (RejectedExecutionException e) {
+            task.run();
+        } finally {
+            context.asynchronous();
+        }
     }
 
     /** {@inheritDoc} */
     @Override
     public synchronized void stop(final StopContext context) {
-        context.asynchronous();
-        Runnable r = new Runnable() {
-
+        final Runnable task = new Runnable() {
             @Override
             public void run() {
                 try {
@@ -119,7 +122,13 @@ class DiscoveryService implements Service<Void> {
                 }
             }
         };
-        executorService.getValue().execute(r);
+        try {
+            executorService.getValue().execute(task);
+        } catch (RejectedExecutionException e) {
+            task.run();
+        } finally {
+            context.asynchronous();
+        }
     }
 
     /** {@inheritDoc} */

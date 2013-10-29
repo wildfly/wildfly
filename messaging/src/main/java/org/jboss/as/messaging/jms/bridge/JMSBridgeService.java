@@ -26,6 +26,7 @@ import static org.jboss.as.messaging.MessagingLogger.MESSAGING_LOGGER;
 import static org.jboss.as.messaging.MessagingMessages.MESSAGES;
 
 import java.util.concurrent.ExecutorService;
+import java.util.concurrent.RejectedExecutionException;
 
 import javax.transaction.TransactionManager;
 
@@ -70,7 +71,7 @@ class JMSBridgeService implements Service<JMSBridge> {
 
     @Override
     public synchronized void start(final StartContext context) throws StartException {
-        final Runnable r = new Runnable() {
+        final Runnable task = new Runnable() {
             @Override
             public void run() {
                 try {
@@ -83,8 +84,13 @@ class JMSBridgeService implements Service<JMSBridge> {
                 }
             }
         };
-        context.asynchronous();
-        executorInjector.getValue().execute(r);
+        try {
+            executorInjector.getValue().execute(task);
+        } catch (RejectedExecutionException e) {
+            task.run();
+        } finally {
+            context.asynchronous();
+        }
     }
 
     public void startBridge() throws Exception {
@@ -106,7 +112,7 @@ class JMSBridgeService implements Service<JMSBridge> {
 
     @Override
     public synchronized void stop(final StopContext context) {
-        final Runnable r = new Runnable() {
+        final Runnable task = new Runnable() {
             @Override
             public void run() {
                 try {
@@ -119,8 +125,13 @@ class JMSBridgeService implements Service<JMSBridge> {
                 }
             }
         };
-        context.asynchronous();
-        executorInjector.getValue().execute(r);
+        try {
+            executorInjector.getValue().execute(task);
+        } catch (RejectedExecutionException e) {
+            task.run();
+        } finally {
+            context.asynchronous();
+        }
     }
 
     @Override

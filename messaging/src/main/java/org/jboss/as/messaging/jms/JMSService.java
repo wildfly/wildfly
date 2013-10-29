@@ -51,6 +51,8 @@ import static org.jboss.msc.service.ServiceController.State.REMOVED;
 import static org.jboss.msc.service.ServiceController.State.STOPPING;
 
 import java.util.concurrent.ExecutorService;
+import java.util.concurrent.RejectedExecutionException;
+
 import org.wildfly.security.manager.WildFlySecurityManager;
 
 /**
@@ -87,8 +89,7 @@ public class JMSService implements Service<JMSServerManager> {
 
     @Override
     public void start(final StartContext context) throws StartException {
-        context.asynchronous();
-        serverExecutor.getValue().submit(new Runnable() {
+        final Runnable task = new Runnable() {
             @Override
             public void run() {
                 try {
@@ -98,20 +99,33 @@ public class JMSService implements Service<JMSServerManager> {
                     context.failed(e);
                 }
             }
-        });
+        };
+        try {
+            serverExecutor.getValue().submit(task);
+        } catch (RejectedExecutionException e) {
+            task.run();
+        } finally {
+            context.asynchronous();
+        }
     }
 
 
     @Override
     public void stop(final StopContext context) {
-        context.asynchronous();
-        serverExecutor.getValue().submit(new Runnable() {
+        final Runnable task = new Runnable() {
             @Override
             public void run() {
                 doStop(context);
                 context.complete();
             }
-        });
+        };
+        try {
+            serverExecutor.getValue().submit(task);
+        } catch (RejectedExecutionException e) {
+            task.run();
+        } finally {
+            context.asynchronous();
+        }
     }
 
     private synchronized void doStart(final StartContext context) throws StartException {
