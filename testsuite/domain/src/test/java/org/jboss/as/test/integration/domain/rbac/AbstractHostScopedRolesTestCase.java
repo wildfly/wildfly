@@ -117,6 +117,7 @@ public abstract class AbstractHostScopedRolesTestCase extends AbstractRbacTestCa
     @Test
     public void testMonitor() throws Exception {
         ModelControllerClient client = getClientForUser(MONITOR_USER, isAllowLocalAuth(), masterClientConfig);
+        readWholeConfig(client, Outcome.UNAUTHORIZED, MONITOR_USER);
         checkStandardReads(client, null, null, MONITOR_USER);
         checkRootRead(client, null, null, Outcome.SUCCESS, MONITOR_USER);
         checkRootRead(client, MASTER, null, Outcome.SUCCESS, MONITOR_USER);
@@ -147,6 +148,7 @@ public abstract class AbstractHostScopedRolesTestCase extends AbstractRbacTestCa
     @Test
     public void testOperator() throws Exception {
         ModelControllerClient client = getClientForUser(OPERATOR_USER, isAllowLocalAuth(), masterClientConfig);
+        readWholeConfig(client, Outcome.UNAUTHORIZED, OPERATOR_USER);
         checkStandardReads(client, null, null, OPERATOR_USER);
         checkRootRead(client, null, null, Outcome.SUCCESS, OPERATOR_USER);
         checkRootRead(client, MASTER, null, Outcome.SUCCESS, OPERATOR_USER);
@@ -177,6 +179,7 @@ public abstract class AbstractHostScopedRolesTestCase extends AbstractRbacTestCa
     @Test
     public void testMaintainer() throws Exception {
         ModelControllerClient client = getClientForUser(MAINTAINER_USER, isAllowLocalAuth(), masterClientConfig);
+        readWholeConfig(client, Outcome.UNAUTHORIZED, MAINTAINER_USER);
         checkStandardReads(client, null, null, MAINTAINER_USER);
         checkRootRead(client, null, null, Outcome.SUCCESS, MAINTAINER_USER);
         checkRootRead(client, MASTER, null, Outcome.SUCCESS, MAINTAINER_USER);
@@ -206,6 +209,7 @@ public abstract class AbstractHostScopedRolesTestCase extends AbstractRbacTestCa
     @Test
     public void testDeployer() throws Exception {
         ModelControllerClient client = getClientForUser(DEPLOYER_USER, isAllowLocalAuth(), masterClientConfig);
+        readWholeConfig(client, Outcome.UNAUTHORIZED, DEPLOYER_USER);
         checkStandardReads(client, null, null, DEPLOYER_USER);
         checkRootRead(client, null, null, Outcome.SUCCESS, DEPLOYER_USER);
         checkRootRead(client, MASTER, null, Outcome.SUCCESS, DEPLOYER_USER);
@@ -236,6 +240,7 @@ public abstract class AbstractHostScopedRolesTestCase extends AbstractRbacTestCa
     @Test
     public void testAdministrator() throws Exception {
         ModelControllerClient client = getClientForUser(ADMINISTRATOR_USER, isAllowLocalAuth(), masterClientConfig);
+        readWholeConfig(client, Outcome.UNAUTHORIZED, ADMINISTRATOR_USER);
         checkStandardReads(client, null, null, ADMINISTRATOR_USER);
         checkRootRead(client, null, null, Outcome.SUCCESS, ADMINISTRATOR_USER);
         checkRootRead(client, MASTER, null, Outcome.SUCCESS, ADMINISTRATOR_USER);
@@ -265,6 +270,7 @@ public abstract class AbstractHostScopedRolesTestCase extends AbstractRbacTestCa
     @Test
     public void testAuditor() throws Exception {
         ModelControllerClient client = getClientForUser(AUDITOR_USER, isAllowLocalAuth(), masterClientConfig);
+        readWholeConfig(client, Outcome.UNAUTHORIZED, AUDITOR_USER);
         checkStandardReads(client, null, null, AUDITOR_USER);
         checkRootRead(client, null, null, Outcome.SUCCESS, AUDITOR_USER);
         checkRootRead(client, MASTER, null, Outcome.SUCCESS, AUDITOR_USER);
@@ -295,6 +301,7 @@ public abstract class AbstractHostScopedRolesTestCase extends AbstractRbacTestCa
     @Test
     public void testSuperUser() throws Exception {
         ModelControllerClient client = getClientForUser(SUPERUSER_USER, isAllowLocalAuth(), masterClientConfig);
+        readWholeConfig(client, Outcome.UNAUTHORIZED, SUPERUSER_USER);
         checkStandardReads(client, null, null, SUPERUSER_USER);
         checkRootRead(client, null, null, Outcome.SUCCESS, SUPERUSER_USER);
         checkRootRead(client, MASTER, null, Outcome.SUCCESS, SUPERUSER_USER);
