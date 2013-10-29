@@ -21,7 +21,7 @@
  */
 package org.jboss.as.domain.management.connections.ldap;
 
-import java.util.Properties;
+import java.util.Hashtable;
 
 import javax.naming.Context;
 import javax.naming.directory.InitialDirContext;
@@ -49,7 +49,9 @@ public class LdapConnectionManagerService implements Service<LdapConnectionManag
     private static final ServiceName BASE_SERVICE_NAME = ServiceName.JBOSS.append("server", "controller", "management", "connection_manager");
 
     private final InjectedValue<SSLIdentity> sslIdentity = new InjectedValue<SSLIdentity>();
+
     private volatile Config configuration;
+    private volatile Hashtable<String, String> properties = new Hashtable<>();
 
     public LdapConnectionManagerService() {
     }
@@ -91,6 +93,28 @@ public class LdapConnectionManagerService implements Service<LdapConnectionManag
     }
 
     /*
+     * Property Manipulation Methods.
+     */
+
+    synchronized void setProperty(final String name, final String value) {
+        Hashtable<String, String> properties = new Hashtable<String, String>(this.properties);
+        properties.put(name, value);
+
+        this.properties = properties;
+    }
+
+    synchronized void removeProperty(final String name) {
+        Hashtable<String, String> properties = new Hashtable<String, String>(this.properties);
+        properties.remove(name);
+
+        this.properties = properties;
+    }
+
+    void setPropertyImmediate(final String name, final String value) {
+        properties.put(name, value);
+    }
+
+    /*
      *  Connection Manager Methods
      */
 
@@ -99,7 +123,7 @@ public class LdapConnectionManagerService implements Service<LdapConnectionManag
     }
 
     public Object getConnection(String principal, String credential) throws Exception {
-        Properties connectionProperties = getConnectionOnlyProperties(configuration);
+        Hashtable<String, String> connectionProperties = getConnectionOnlyProperties(configuration);
         connectionProperties.put(Context.SECURITY_PRINCIPAL, principal);
         connectionProperties.put(Context.SECURITY_CREDENTIALS, credential);
 
@@ -107,7 +131,7 @@ public class LdapConnectionManagerService implements Service<LdapConnectionManag
         return getConnection(connectionProperties, getSSLContext(true));
     }
 
-    private Object getConnection(final Properties properties, final SSLContext sslContext) throws Exception {
+    private Object getConnection(final Hashtable<String, String> properties, final SSLContext sslContext) throws Exception {
         ClassLoader old = WildFlySecurityManager.getCurrentContextClassLoaderPrivileged();
         try {
             if (sslContext != null) {
@@ -133,15 +157,15 @@ public class LdapConnectionManagerService implements Service<LdapConnectionManag
         return null;
     }
 
-    private Properties getConnectionOnlyProperties(final Config configuration) {
-        final Properties result = new Properties();
+    private Hashtable<String, String> getConnectionOnlyProperties(final Config configuration) {
+        final Hashtable<String, String> result = new Hashtable<String, String>(properties);
         result.put(Context.INITIAL_CONTEXT_FACTORY, configuration.initialContextFactory);
         result.put(Context.PROVIDER_URL, configuration.url);
         return result;
     }
 
-    private Properties getFullProperties(final Config configuration) {
-        final Properties result = getConnectionOnlyProperties(configuration);
+    private Hashtable<String, String> getFullProperties(final Config configuration) {
+        final Hashtable<String, String> result = getConnectionOnlyProperties(configuration);
         // These are no longer mandatory as the SSL identity of the server
         // could be used instead.
         if (configuration.searchDn != null) {
