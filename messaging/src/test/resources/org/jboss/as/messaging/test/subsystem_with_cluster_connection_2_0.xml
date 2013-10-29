@@ -1,0 +1,14 @@
+
+    <subsystem xmlns="urn:jboss:domain:messaging:2.0">
+        <hornetq-server name="stuff">
+            <connectors>
+                <netty-connector name="netty" socket-binding="messaging" />
+            </connectors>
+            <cluster-connections>
+                <cluster-connection name="cc5">
+                    <address>cc3-address</address>
+                    <connector-ref>netty</connector-ref>
+                </cluster-connection>
+            </cluster-connections>
+        </hornetq-server>
+    </subsystem>

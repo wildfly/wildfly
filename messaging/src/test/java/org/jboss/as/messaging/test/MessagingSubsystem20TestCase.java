@@ -79,10 +79,10 @@ import org.jboss.as.messaging.DiscoveryGroupDefinition;
 import org.jboss.as.messaging.DivertDefinition;
 import org.jboss.as.messaging.GroupingHandlerDefinition;
 import org.jboss.as.messaging.HornetQServerResourceDefinition;
-import org.jboss.as.messaging.ServletConnectorDefinition;
 import org.jboss.as.messaging.InVMTransportDefinition;
 import org.jboss.as.messaging.MessagingExtension;
 import org.jboss.as.messaging.QueueDefinition;
+import org.jboss.as.messaging.ServletConnectorDefinition;
 import org.jboss.as.messaging.TransportParamDefinition;
 import org.jboss.as.messaging.jms.ConnectionFactoryAttributes;
 import org.jboss.as.messaging.jms.ConnectionFactoryDefinition;
@@ -158,7 +158,8 @@ public class MessagingSubsystem20TestCase extends AbstractSubsystemBaseTest {
 
     @Test
     public void testClusteredTo120() throws Exception {
-        KernelServicesBuilder builder = createKernelServicesBuilder(V7_2_0_FINAL, VERSION_1_2_0, FIXER_1_2_0, "empty_subsystem_2_0.xml");
+        // this hornetq-server has 1 cluster-connection resource defined and so is clustered.
+        KernelServicesBuilder builder = createKernelServicesBuilder(V7_2_0_FINAL, VERSION_1_2_0, FIXER_1_2_0, "subsystem_with_cluster_connection_2_0.xml");
 
         KernelServices mainServices = builder.build();
         KernelServices legacyServices = mainServices.getLegacyServices(VERSION_1_2_0);
@@ -173,7 +174,8 @@ public class MessagingSubsystem20TestCase extends AbstractSubsystemBaseTest {
     private void clusteredTo120Test(ModelVersion version120, KernelServices mainServices, boolean clustered) throws OperationFailedException {
 
         PathAddress pa = PathAddress.pathAddress(PathElement.pathElement(SUBSYSTEM, MessagingExtension.SUBSYSTEM_NAME),
-                PathElement.pathElement(HornetQServerResourceDefinition.HORNETQ_SERVER_PATH.getKey(), String.valueOf(clustered)));
+                // stuff if the empty hornetq-server defined in empty_subsystem_2_0
+                PathElement.pathElement(HornetQServerResourceDefinition.HORNETQ_SERVER_PATH.getKey(), "stuff"));
 
         ModelNode addOp = Util.createAddOperation(pa);
         addOp.get(CommonAttributes.CLUSTERED.getName()).set(clustered);
