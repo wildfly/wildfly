@@ -29,7 +29,6 @@ import static org.jboss.as.connector.subsystems.datasources.Constants.DATASOURCE
 import static org.jboss.as.connector.subsystems.datasources.Constants.DATASOURCE_PROPERTIES_ATTRIBUTES;
 import static org.jboss.as.connector.subsystems.datasources.Constants.FLUSH_ALL_CONNECTION;
 import static org.jboss.as.connector.subsystems.datasources.Constants.FLUSH_IDLE_CONNECTION;
-import static org.jboss.as.connector.subsystems.datasources.Constants.READONLY_XA_DATASOURCE_ATTRIBUTE;
 import static org.jboss.as.connector.subsystems.datasources.Constants.TEST_CONNECTION;
 import static org.jboss.as.connector.subsystems.datasources.Constants.XA_DATASOURCE;
 import static org.jboss.as.connector.subsystems.datasources.Constants.XA_DATASOURCE_ATTRIBUTE;
@@ -119,9 +118,6 @@ public class XaDataSourceDefinition extends SimpleResourceDefinition {
                     resourceRegistration.registerReadWriteAttribute(attribute, null, new DisableRequiredWriteAttributeHandler(XA_DATASOURCE_PROPERTIES_ATTRIBUTES));
                 }
             }
-        }
-        for (SimpleAttributeDefinition attribute : READONLY_XA_DATASOURCE_ATTRIBUTE) {
-            resourceRegistration.registerReadOnlyAttribute(attribute, null);
         }
 
     }

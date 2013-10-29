@@ -31,7 +31,6 @@ import static org.jboss.as.connector.subsystems.datasources.Constants.DATASOURCE
 import static org.jboss.as.connector.subsystems.datasources.Constants.DATA_SOURCE;
 import static org.jboss.as.connector.subsystems.datasources.Constants.FLUSH_ALL_CONNECTION;
 import static org.jboss.as.connector.subsystems.datasources.Constants.FLUSH_IDLE_CONNECTION;
-import static org.jboss.as.connector.subsystems.datasources.Constants.READONLY_DATASOURCE_ATTRIBUTE;
 import static org.jboss.as.connector.subsystems.datasources.Constants.TEST_CONNECTION;
 
 import java.util.List;
@@ -120,10 +119,6 @@ public class DataSourceDefinition extends SimpleResourceDefinition {
                 }
             }
         }
-        for (SimpleAttributeDefinition attribute : READONLY_DATASOURCE_ATTRIBUTE) {
-            resourceRegistration.registerReadOnlyAttribute(attribute, null);
-        }
-
 
     }
 

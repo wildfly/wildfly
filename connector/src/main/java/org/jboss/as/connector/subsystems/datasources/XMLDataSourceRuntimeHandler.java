@@ -81,6 +81,8 @@ public class XMLDataSourceRuntimeHandler extends AbstractXMLDataSourceRuntimeHan
             setBooleanIfNotNull(context, dataSource.isUseJavaContext());
         } else if (attributeName.equals(Constants.JTA.getName())) {
             setBooleanIfNotNull(context, dataSource.isJTA());
+        } else if (attributeName.equals(Constants.ENABLED.getName())) {
+            setBooleanIfNotNull(context, dataSource.isEnabled());
         } else if (attributeName.equals(org.jboss.as.connector.subsystems.common.pool.Constants.MAX_POOL_SIZE.getName())) {
             if (dataSource.getPool() == null) {
                 return;

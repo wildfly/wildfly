@@ -76,6 +76,8 @@ public class XMLXaDataSourceRuntimeHandler extends AbstractXMLDataSourceRuntimeH
             setStringIfNotNull(context, dataSource.getUrlSelectorStrategyClassName());
         } else if (attributeName.equals(Constants.USE_JAVA_CONTEXT.getName())) {
             setBooleanIfNotNull(context, dataSource.isUseJavaContext());
+        } else if (attributeName.equals(Constants.ENABLED.getName())) {
+            setBooleanIfNotNull(context, dataSource.isEnabled());
         } else if (attributeName.equals(org.jboss.as.connector.subsystems.common.pool.Constants.MAX_POOL_SIZE.getName())) {
             if (dataSource.getXaPool() == null) {
                 return;
