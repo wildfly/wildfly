@@ -34,46 +34,14 @@
     </parent>
     <modelVersion>4.0.0</modelVersion>
 
-    <groupId>org.wildfly</groupId>
-    <artifactId>wildfly-io</artifactId>
-    <name>WildFly: IO Subsystem</name>
+    <artifactId>wildfly-io-bom</artifactId>
+    <packaging>pom</packaging>
+    <name>WildFly: IO aggregator</name>
 
-    <dependencies>
-        <dependency>
-            <groupId>org.wildfly</groupId>
-            <artifactId>wildfly-controller</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>org.wildfly</groupId>
-            <artifactId>wildfly-server</artifactId>
-        </dependency>
+    <modules>
+        <module>subsystem</module>
+        <module>tests</module>
+    </modules>
 
-        <dependency>
-            <groupId>org.wildfly</groupId>
-            <artifactId>wildfly-subsystem-test</artifactId>
-            <type>pom</type>
-            <scope>test</scope>
-        </dependency>
-        <dependency>
-            <groupId>junit</groupId>
-            <artifactId>junit</artifactId>
-            <scope>test</scope>
-        </dependency>
-        <dependency>
-            <groupId>org.jboss.logging</groupId>
-            <artifactId>jboss-logging-annotations</artifactId>
-            <!-- This is a compile-time dependency of this project, but is not needed at compile or runtime by other
-                  projects that depend on this project.-->
-            <scope>provided</scope>
-            <optional>true</optional>
-        </dependency>
-        <dependency>
-            <groupId>org.jboss.logging</groupId>
-            <artifactId>jboss-logging-processor</artifactId>
-            <!-- This is a compile-time dependency of this project, but is not needed at compile or runtime by other
-                  projects that depend on this project.-->
-            <scope>provided</scope>
-            <optional>true</optional>
-        </dependency>
-    </dependencies>
+
 </project>
