@@ -22,6 +22,8 @@
 
 package org.jboss.as.test.integration.domain.rbac;
 
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ADD;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.DEFAULT;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.REMOVE;
 import static org.jboss.as.test.integration.management.rbac.RbacUtil.ADMINISTRATOR_USER;
 import static org.jboss.as.test.integration.management.rbac.RbacUtil.AUDITOR_USER;
@@ -31,7 +33,6 @@ import static org.jboss.as.test.integration.management.rbac.RbacUtil.MONITOR_USE
 import static org.jboss.as.test.integration.management.rbac.RbacUtil.OPERATOR_USER;
 import static org.jboss.as.test.integration.management.rbac.RbacUtil.SUPERUSER_USER;
 import static org.jboss.as.test.integration.management.util.ModelUtil.createOpNode;
-import static org.junit.Assert.assertEquals;
 
 import java.io.IOException;
 
@@ -164,7 +165,8 @@ public abstract class AbstractStandardRolesTestCase extends AbstractRbacTestCase
         runGC(client, MASTER, MASTER_A, Outcome.SUCCESS, ADMINISTRATOR_USER);
         addDeployment2(client, Outcome.SUCCESS, ADMINISTRATOR_USER);
         addPath(client, Outcome.SUCCESS, ADMINISTRATOR_USER);
-        // no test of security domain remove; too lazy to add a domain just to prove we can remove
+        addSecurityDomain(client, "test1", Outcome.SUCCESS, ADMINISTRATOR_USER);
+        removeSecurityDomain(client, "test1", Outcome.SUCCESS, ADMINISTRATOR_USER);
     }
 
     @Test
@@ -203,13 +205,24 @@ public abstract class AbstractStandardRolesTestCase extends AbstractRbacTestCase
         runGC(client, MASTER, MASTER_A, Outcome.SUCCESS, SUPERUSER_USER);
         addDeployment2(client, Outcome.SUCCESS, SUPERUSER_USER);
         addPath(client, Outcome.SUCCESS, SUPERUSER_USER);
-        // no test of security domain remove; too lazy to add a domain just to prove we can remove
+        addSecurityDomain(client, "test2", Outcome.SUCCESS, SUPERUSER_USER);
+        removeSecurityDomain(client, "test2", Outcome.SUCCESS, SUPERUSER_USER);
     }
 
-    private void removeSecurityDomain(ModelControllerClient client, Outcome expected, String... roles) throws IOException {
-        ModelNode op = createOpNode("profile=profile-a/subsystem=security/security-domain=other", REMOVE);
+    private void addSecurityDomain(ModelControllerClient client, String name, Outcome expected, String... roles) throws IOException {
+        ModelNode op = createOpNode("profile=profile-a/subsystem=security/security-domain=" + name, ADD);
+        op.get("cache-type").set(DEFAULT);
         configureRoles(op, roles);
         RbacUtil.executeOperation(client, op, expected);
     }
 
+    private void removeSecurityDomain(ModelControllerClient client, String name, Outcome expected, String... roles) throws IOException {
+        ModelNode op = createOpNode("profile=profile-a/subsystem=security/security-domain=" + name, REMOVE);
+        configureRoles(op, roles);
+        RbacUtil.executeOperation(client, op, expected);
+    }
+
+    private void removeSecurityDomain(ModelControllerClient client, Outcome expected, String... roles) throws IOException {
+        removeSecurityDomain(client, "other", expected, roles);
+    }
 }
