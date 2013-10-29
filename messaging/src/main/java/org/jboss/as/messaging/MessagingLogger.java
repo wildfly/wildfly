@@ -202,4 +202,8 @@ public interface MessagingLogger extends BasicLogger {
     @LogMessage(level = WARN)
     @Message(id = 11614, value = "Ignoring %s property that is not a known property for pooled connection factory.")
     void unknownPooledConnectionFactoryAttribute(String name);
+
+    @LogMessage(level = WARN)
+    @Message(id = 11615, value = "Deployment of JMS using non-portable %s is deprecated. Please consider using standard Java EE7 deployment descriptor with jms-destination elements to deploy JMS destinations.")
+    void jmsDeploymentIsDeprecated(String file);
 }
