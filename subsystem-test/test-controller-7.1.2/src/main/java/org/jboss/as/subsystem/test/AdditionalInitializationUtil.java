@@ -51,7 +51,7 @@ public class AdditionalInitializationUtil {
     public static void doExtraInitialization(AdditionalInitialization additionalInit, ControllerInitializer controllerInitializer, ExtensionRegistry extensionRegistry, Resource rootResource, ManagementResourceRegistration rootRegistration) {
         //TODO
         //controllerInitializer.setTestModelControllerService(this);
-        controllerInitializer.initializeModel(rootResource, rootRegistration);
+        //controllerInitializer.initializeModel(rootResource, rootRegistration);
         additionalInit.initializeExtraSubystemsAndModel(extensionRegistry, rootResource, rootRegistration);
     }
 }

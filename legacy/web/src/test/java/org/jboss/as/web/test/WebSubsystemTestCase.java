@@ -154,7 +154,7 @@ public class WebSubsystemTestCase extends AbstractSubsystemBaseTest {
         KernelServicesBuilder builder = createKernelServicesBuilder(createAdditionalInitialization())
                 .setSubsystemXml(subsystemXml);
 
-        builder.createLegacyKernelServicesBuilder(createAdditionalInitialization(), ModelTestControllerVersion.V7_1_2_FINAL, modelVersion)
+        builder.createLegacyKernelServicesBuilder(null, ModelTestControllerVersion.V7_1_2_FINAL, modelVersion)
                 .addMavenResourceURL("org.jboss.as:jboss-as-web:7.1.2.Final")
                 .skipReverseControllerCheck();
 
@@ -186,7 +186,7 @@ public class WebSubsystemTestCase extends AbstractSubsystemBaseTest {
 
         KernelServicesBuilder builder = createKernelServicesBuilder(createAdditionalInitialization());
 
-        builder.createLegacyKernelServicesBuilder(createAdditionalInitialization(), controllerVersion, modelVersion)
+        builder.createLegacyKernelServicesBuilder(null, controllerVersion, modelVersion)
                 .addMavenResourceURL("org.jboss.as:jboss-as-web:" + controllerVersion.getMavenGavVersion())
                 .setExtensionClassName("org.jboss.as.web.WebExtension")
                 .configureReverseControllerCheck(createAdditionalInitialization(), null);
@@ -273,7 +273,7 @@ public class WebSubsystemTestCase extends AbstractSubsystemBaseTest {
         KernelServicesBuilder builder = createKernelServicesBuilder(createAdditionalInitialization())
                 .setSubsystemXml(subsystemXml);
 
-        builder.createLegacyKernelServicesBuilder(createAdditionalInitialization(), controllerVersion, modelVersion)
+        builder.createLegacyKernelServicesBuilder(null, controllerVersion, modelVersion)
                 .addMavenResourceURL("org.jboss.as:jboss-as-web:" + controllerVersion.getMavenGavVersion())
                 .setExtensionClassName("org.jboss.as.web.WebExtension")
                 .configureReverseControllerCheck(createAdditionalInitialization(), null);
@@ -405,7 +405,7 @@ public class WebSubsystemTestCase extends AbstractSubsystemBaseTest {
         KernelServicesBuilder builder = createKernelServicesBuilder(createAdditionalInitialization())
                 .setSubsystemXml(subsystemXml);
 
-        builder.createLegacyKernelServicesBuilder(createAdditionalInitialization(), controllerVersion, modelVersion)
+        builder.createLegacyKernelServicesBuilder(null, controllerVersion, modelVersion)
                 .addMavenResourceURL("org.jboss.as:jboss-as-web:" + controllerVersion.getMavenGavVersion())
                 .setExtensionClassName("org.jboss.as.web.WebExtension")
                 .configureReverseControllerCheck(createAdditionalInitialization(), null);
@@ -428,7 +428,7 @@ public class WebSubsystemTestCase extends AbstractSubsystemBaseTest {
         ModelVersion modelVersion = ModelVersion.create(1, 2, 0);
         KernelServicesBuilder builder = createKernelServicesBuilder(createAdditionalInitialization());
 
-        builder.createLegacyKernelServicesBuilder(createAdditionalInitialization(), controllerVersion, modelVersion)
+        builder.createLegacyKernelServicesBuilder(null, controllerVersion, modelVersion)
                 .addMavenResourceURL("org.jboss.as:jboss-as-web:" + controllerVersion.getMavenGavVersion())
                 .setExtensionClassName("org.jboss.as.web.WebExtension")
                 .configureReverseControllerCheck(createAdditionalInitialization(), null);

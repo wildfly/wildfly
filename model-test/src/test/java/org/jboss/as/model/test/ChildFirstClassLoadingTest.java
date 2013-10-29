@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2013 Red Hat, Inc., and individual contributors 
+ * Copyright (C) 2013 Red Hat, Inc., and individual contributors
  * as indicated by the @author tags. See the copyright.txt file
  * in the distribution for a full listing of individual contributors.
  *
@@ -22,9 +22,14 @@ package org.jboss.as.model.test;
 
 import java.net.URL;
 import java.net.URLClassLoader;
-import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.regex.Pattern;
+
+import org.jboss.as.model.test.api.SingleChildFirst1;
+import org.jboss.as.model.test.api.SingleChildFirst2;
+import org.jboss.as.model.test.api.SingleParentFirst;
 import org.jboss.as.model.test.api.Welcome;
+import org.junit.Assert;
 import org.junit.Test;
 
 /**
@@ -40,10 +45,10 @@ public class ChildFirstClassLoadingTest {
     public void testWithoutExclusion() throws Exception {
         URLClassLoader parent = new URLClassLoader(new URL[]{ChildFirstClassLoadingTest.class.getResource("parent.jar")}, this.getClass().getClassLoader());
         parent.loadClass("org.jboss.as.model.test.parent.WelcomeParent");
-        ChildFirstClassLoader child = new ChildFirstClassLoader(parent, new ArrayList<Pattern>(), new ArrayList<Pattern>(), null, new URL[]{ChildFirstClassLoadingTest.class.getResource("child.jar")});
-        Class welcomeParent = child.loadClass("org.jboss.as.model.test.parent.WelcomeParent");
-        Class welcomeChild = child.loadClass("org.jboss.as.model.test.child.WelcomeChild");
-        Class welcome = this.getClass().getClassLoader().loadClass("org.jboss.as.model.test.api.Welcome");
+        ChildFirstClassLoader child = new ChildFirstClassLoader(parent, new HashSet<Pattern>(), new HashSet<Pattern>(), null, new URL[]{ChildFirstClassLoadingTest.class.getResource("child.jar")});
+        Class<?> welcomeParent = child.loadClass("org.jboss.as.model.test.parent.WelcomeParent");
+        Class<?> welcomeChild = child.loadClass("org.jboss.as.model.test.child.WelcomeChild");
+        Class<?> welcome = this.getClass().getClassLoader().loadClass("org.jboss.as.model.test.api.Welcome");
         welcomeChild.asSubclass(welcome);
         welcomeParent.asSubclass(welcome);
     }
@@ -52,10 +57,25 @@ public class ChildFirstClassLoadingTest {
     public void testWithExclusion() throws Exception {
         URLClassLoader parent = new URLClassLoader(new URL[]{ChildFirstClassLoadingTest.class.getResource("parent.jar")}, this.getClass().getClassLoader());
         parent.loadClass("org.jboss.as.model.test.parent.WelcomeParent");
-        ChildFirstClassLoader child = new ChildFirstClassLoader(parent, new ArrayList<Pattern>(), new ArrayList<Pattern>(),
+        ChildFirstClassLoader child = new ChildFirstClassLoader(parent, new HashSet<Pattern>(), new HashSet<Pattern>(),
                 SingleClassFilter.createFilter(Welcome.class),
                 new URL[]{ChildFirstClassLoadingTest.class.getResource("child.jar")});
-        Class welcomeParent = child.loadClass("org.jboss.as.model.test.parent.WelcomeParent");
-        Class welcomeChild = child.loadClass("org.jboss.as.model.test.child.WelcomeChild");
+        Class<?> welcomeParent = child.loadClass("org.jboss.as.model.test.parent.WelcomeParent");
+        Class<?> welcomeChild = child.loadClass("org.jboss.as.model.test.child.WelcomeChild");
+    }
+
+    @Test
+    public void testSingleClassFromTests() throws Exception {
+        ChildFirstClassLoaderBuilder builder = new ChildFirstClassLoaderBuilder(false);
+        builder.addSingleChildFirstClass(SingleChildFirst1.class, SingleChildFirst2.class);
+        ClassLoader loader = builder.build();
+        Class<?> clazz = loader.loadClass(SingleChildFirst1.class.getName());
+        Assert.assertSame(loader, clazz.getClassLoader());
+        clazz = loader.loadClass(SingleChildFirst2.class.getName());
+        Assert.assertSame(loader, clazz.getClassLoader());
+        clazz = loader.loadClass(SingleParentFirst.class.getName());
+        Assert.assertNotSame(loader, clazz.getClassLoader());
+        clazz = loader.loadClass(ChildFirstClassLoadingTest.class.getName());
+        Assert.assertNotSame(loader, clazz.getClassLoader());
     }
 }
