@@ -82,7 +82,21 @@ public class RemotingSubsystemTransformersTestCase extends AbstractSubsystemBase
         testExpressionsAreRejectedByVersion_1_1(ModelTestControllerVersion.V7_1_3_FINAL);
     }
 
+
+    @Test
+    public void testExpressionsAreRejectedEAP600() throws Exception {
+        testExpressionsAreRejectedByVersion_1_1(ModelTestControllerVersion.EAP_6_0_0);
+    }
+
+    @Test
+    public void testExpressionsAreRejectedEAP601() throws Exception {
+        testExpressionsAreRejectedByVersion_1_1(ModelTestControllerVersion.EAP_6_0_1);
+    }
+
     private void testExpressionsAreRejectedByVersion_1_1(ModelTestControllerVersion controllerVersion) throws Exception {
+        if (controllerVersion.isEap()) {
+            ignoreThisTestIfEAPRepositoryIsNotReachable();
+        }
         String subsystemXml = readResource("remoting-with-expressions.xml");
         KernelServicesBuilder builder = createKernelServicesBuilder(createAdditionalInitialization());
 
@@ -155,7 +169,20 @@ public class RemotingSubsystemTransformersTestCase extends AbstractSubsystemBase
         testNonRemotingProtocolRejectedByVersion1_2(ModelTestControllerVersion.V7_2_0_FINAL);
     }
 
+    @Test
+    public void testNonRemotingProtocolRejectedEAP610() throws Exception {
+        testNonRemotingProtocolRejectedByVersion1_2(ModelTestControllerVersion.EAP_6_1_0);
+    }
+
+    @Test
+    public void testNonRemotingProtocolRejectedEAP611() throws Exception {
+        testNonRemotingProtocolRejectedByVersion1_2(ModelTestControllerVersion.EAP_6_1_1);
+    }
+
     private void testNonRemotingProtocolRejectedByVersion1_2(ModelTestControllerVersion controllerVersion) throws Exception {
+        if (controllerVersion.isEap()) {
+            ignoreThisTestIfEAPRepositoryIsNotReachable();
+        }
         String subsystemXml = readResource("remoting-with-expressions.xml");
         KernelServicesBuilder builder = createKernelServicesBuilder(createAdditionalInitialization());
 
@@ -185,6 +212,18 @@ public class RemotingSubsystemTransformersTestCase extends AbstractSubsystemBase
     @Test
     public void testTransformersAS713() throws Exception {
         testTransformers_1_1(ModelTestControllerVersion.V7_1_3_FINAL);
+    }
+
+    @Test
+    public void testTransformersEAP600() throws Exception {
+        ignoreThisTestIfEAPRepositoryIsNotReachable();
+        testTransformers_1_1(ModelTestControllerVersion.EAP_6_0_0);
+    }
+
+    @Test
+    public void testTransformersEAP601() throws Exception {
+        ignoreThisTestIfEAPRepositoryIsNotReachable();
+        testTransformers_1_1(ModelTestControllerVersion.EAP_6_0_1);
     }
 
     private void testTransformers_1_1(ModelTestControllerVersion controllerVersion) throws Exception {
@@ -220,10 +259,24 @@ public class RemotingSubsystemTransformersTestCase extends AbstractSubsystemBase
 
     @Test
     public void testTransformersAS720() throws Exception {
-        testTransformers_1_2(ModelTestControllerVersion.V7_2_0_FINAL);
+        testTransformers_1_2_0(ModelTestControllerVersion.V7_2_0_FINAL);
     }
 
-    private void testTransformers_1_2(ModelTestControllerVersion controllerVersion) throws Exception {
+    @Test
+    public void testTransformersEAP610() throws Exception {
+        testTransformers_1_2_0(ModelTestControllerVersion.EAP_6_1_0);
+    }
+
+    @Test
+    public void testTransformersEAP611() throws Exception {
+        testTransformers_1_2_0(ModelTestControllerVersion.EAP_6_1_1);
+    }
+
+
+    private void testTransformers_1_2_0(ModelTestControllerVersion controllerVersion) throws Exception {
+        if (controllerVersion.isEap()) {
+            ignoreThisTestIfEAPRepositoryIsNotReachable();
+        }
         KernelServicesBuilder builder = createKernelServicesBuilder(createAdditionalInitialization())
                 .setSubsystemXmlResource("remoting-with-expressions-and-good-legacy-protocol.xml");
         ModelVersion oldVersion = ModelVersion.create(1, 2, 0);
