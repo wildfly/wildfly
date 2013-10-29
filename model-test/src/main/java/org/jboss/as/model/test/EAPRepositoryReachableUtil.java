@@ -39,7 +39,7 @@ public class EAPRepositoryReachableUtil {
 
     public static boolean isReachable() {
         if (reachable == null) {
-            if (System.getProperties().contains(TEST_TRANSFORMERS_EAP)) {
+            if (System.getProperties().containsKey(TEST_TRANSFORMERS_EAP)) {
                 try {
                     InetAddress.getByName(EAP_REPOSITORY_HOST);
                     reachable = true;
