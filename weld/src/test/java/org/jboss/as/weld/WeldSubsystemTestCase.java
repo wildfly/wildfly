@@ -58,42 +58,42 @@ public class WeldSubsystemTestCase extends AbstractSubsystemBaseTest {
 
     @Test
     public void testTransformersAS712() throws Exception {
-        testTransformers10(ModelTestControllerVersion.V7_1_2_FINAL, false);
+        testTransformers10(ModelTestControllerVersion.V7_1_2_FINAL);
     }
 
     @Test
     public void testTransformersAS713() throws Exception {
-        testTransformers10(ModelTestControllerVersion.V7_1_3_FINAL, false);
+        testTransformers10(ModelTestControllerVersion.V7_1_3_FINAL);
     }
 
     @Test
-    public void testTransformersAS72() throws Exception {
-        testTransformers10(ModelTestControllerVersion.V7_2_0_FINAL, false);
+    public void testTransformersAS720() throws Exception {
+        testTransformers10(ModelTestControllerVersion.V7_2_0_FINAL);
     }
 
     @Test
     public void testTransformersEAP600() throws Exception {
-        testTransformers10(ModelTestControllerVersion.EAP_6_0_0, true);
+        testTransformers10(ModelTestControllerVersion.EAP_6_0_0);
     }
 
     @Test
     public void testTransformersEAP601() throws Exception {
-        testTransformers10(ModelTestControllerVersion.EAP_6_0_1, true);
+        testTransformers10(ModelTestControllerVersion.EAP_6_0_1);
     }
 
     @Test
     public void testTransformersEAP610() throws Exception {
-        testTransformers10(ModelTestControllerVersion.EAP_6_1_0, true);
+        testTransformers10(ModelTestControllerVersion.EAP_6_1_0);
     }
 
     @Test
     public void testTransformersEAP611() throws Exception {
-        testTransformers10(ModelTestControllerVersion.EAP_6_1_1, true);
+        testTransformers10(ModelTestControllerVersion.EAP_6_1_1);
     }
 
 
-    private void testTransformers10(ModelTestControllerVersion controllerVersion, boolean eap) throws Exception {
-        if (eap) {
+    private void testTransformers10(ModelTestControllerVersion controllerVersion) throws Exception {
+        if (controllerVersion.isEap()) {
             ignoreThisTestIfEAPRepositoryIsNotReachable();
         }
 
@@ -126,13 +126,35 @@ public class WeldSubsystemTestCase extends AbstractSubsystemBaseTest {
     }
 
     @Test
-    public void testTransformersRejectionAS72() throws Exception {
+    public void testTransformersRejectionAS720() throws Exception {
         testRejectTransformers10(ModelTestControllerVersion.V7_2_0_FINAL);
     }
 
+    @Test
+    public void testTransformersRejectionEAP600() throws Exception {
+        testRejectTransformers10(ModelTestControllerVersion.EAP_6_0_0);
+    }
 
+    @Test
+    public void testTransformersRejectionEAP601() throws Exception {
+        testRejectTransformers10(ModelTestControllerVersion.EAP_6_0_1);
+    }
+
+    @Test
+    public void testTransformersRejectionEAP610() throws Exception {
+        testRejectTransformers10(ModelTestControllerVersion.EAP_6_1_0);
+    }
+
+    @Test
+    public void testTransformersRejectionEAP611() throws Exception {
+        testRejectTransformers10(ModelTestControllerVersion.EAP_6_1_1);
+    }
 
     private void testRejectTransformers10(ModelTestControllerVersion controllerVersion) throws Exception {
+        if (controllerVersion.isEap()) {
+            ignoreThisTestIfEAPRepositoryIsNotReachable();
+        }
+
         ModelVersion modelVersion = ModelVersion.create(1, 0, 0);
         KernelServicesBuilder builder = createKernelServicesBuilder(AdditionalInitialization.MANAGEMENT);
 
