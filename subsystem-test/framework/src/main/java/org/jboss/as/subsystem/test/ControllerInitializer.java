@@ -30,12 +30,12 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.PATH;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.PORT;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.PORT_OFFSET;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.RELATIVE_TO;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SOCKET_BINDING;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SOCKET_BINDING_GROUP;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SYSTEM_PROPERTY;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.VALUE;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.PORT_OFFSET;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -273,7 +273,13 @@ public class ControllerInitializer {
             return;
         }
         rootResource.getModel().get(PATH);
-        ManagementResourceRegistration paths = rootRegistration.registerSubModel(PathResourceDefinition.createSpecified(pathManager));
+        PathResourceDefinition def = PathResourceDefinition.createSpecified(pathManager);
+        if (rootRegistration.getSubModel(PathAddress.pathAddress(def.getPathElement())) != null) {
+            //Older versions of core model tests seem to register this resource, while in newer it does not get registered,
+            //so let's remove it here if it exists already
+            rootRegistration.unregisterSubModel(def.getPathElement());
+        }
+        rootRegistration.registerSubModel(def);
     }
 
     /**

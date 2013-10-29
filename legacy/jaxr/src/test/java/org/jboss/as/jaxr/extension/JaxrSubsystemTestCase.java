@@ -93,7 +93,7 @@ public class JaxrSubsystemTestCase extends AbstractSubsystemBaseTest {
                 .setSubsystemXmlResource(subsystemXml);
 
         // Add legacy subsystems
-        builder.createLegacyKernelServicesBuilder(createAdditionalInitialization(), controllerVersion, modelVersion)
+        builder.createLegacyKernelServicesBuilder(null, controllerVersion, modelVersion)
                 .addMavenResourceURL("org.jboss.as:jboss-as-jaxr:" + controllerVersion.getMavenGavVersion())
                 .setExtensionClassName("org.jboss.as.jaxr.extension.JAXRSubsystemExtension")
                 .configureReverseControllerCheck(createAdditionalInitialization(), null);
@@ -120,7 +120,7 @@ public class JaxrSubsystemTestCase extends AbstractSubsystemBaseTest {
 
         // create builder for legacy subsystem version
         ModelVersion version_1_1_0 = ModelVersion.create(1, 1, 0);
-        builder.createLegacyKernelServicesBuilder(createAdditionalInitialization(), controllerVersion, version_1_1_0)
+        builder.createLegacyKernelServicesBuilder(null, controllerVersion, version_1_1_0)
                 .addMavenResourceURL("org.jboss.as:jboss-as-jaxr:" + controllerVersion.getMavenGavVersion())
                 .setExtensionClassName("org.jboss.as.jaxr.extension.JAXRSubsystemExtension")
                 .configureReverseControllerCheck(createAdditionalInitialization(), null);
