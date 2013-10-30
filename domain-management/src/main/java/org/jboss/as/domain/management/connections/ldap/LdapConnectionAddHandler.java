@@ -23,7 +23,11 @@
 package org.jboss.as.domain.management.connections.ldap;
 
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SECURITY_REALM;
+import static org.jboss.as.domain.management.connections.ldap.LdapConnectionResourceDefinition.SECURITY_REALM;
+import static org.jboss.as.domain.management.connections.ldap.LdapConnectionResourceDefinition.INITIAL_CONTEXT_FACTORY;
+import static org.jboss.as.domain.management.connections.ldap.LdapConnectionResourceDefinition.URL;
+import static org.jboss.as.domain.management.connections.ldap.LdapConnectionResourceDefinition.SEARCH_DN;
+import static org.jboss.as.domain.management.connections.ldap.LdapConnectionResourceDefinition.SEARCH_CREDENTIAL;
 
 import java.util.List;
 
@@ -34,6 +38,7 @@ import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.ServiceVerificationHandler;
 import org.jboss.as.domain.management.SSLIdentity;
+import org.jboss.as.domain.management.connections.ldap.LdapConnectionManagerService.Config;
 import org.jboss.dmr.ModelNode;
 import org.jboss.msc.service.ServiceBuilder;
 import org.jboss.msc.service.ServiceController;
@@ -64,9 +69,9 @@ public class LdapConnectionAddHandler extends AbstractAddStepHandler {
         PathAddress address = PathAddress.pathAddress(operation.get(OP_ADDR));
         final String name = address.getLastElement().getValue();
 
-        final ModelNode resolvedModel = createResolvedLdapConfiguration(context, model);
         final ServiceTarget serviceTarget = context.getServiceTarget();
-        final LdapConnectionManagerService connectionManagerService = new LdapConnectionManagerService(resolvedModel);
+        final LdapConnectionManagerService connectionManagerService = new LdapConnectionManagerService();
+        updateRuntime(context, model, connectionManagerService);
 
         ServiceBuilder<LdapConnectionManagerService> sb = serviceTarget.addService(
                 LdapConnectionManagerService.ServiceUtil.createServiceName(name), connectionManagerService).setInitialMode(
@@ -76,9 +81,9 @@ public class LdapConnectionAddHandler extends AbstractAddStepHandler {
             sb.addListener(verificationHandler);
         }
 
-        if (resolvedModel.hasDefined(SECURITY_REALM)) {
-            SSLIdentity.ServiceUtil.addDependency(sb, connectionManagerService.getSSLIdentityInjector(),
-                    resolvedModel.require(SECURITY_REALM).asString(), false);
+        ModelNode securityRealm = SECURITY_REALM.resolveModelAttribute(context, model);
+        if (securityRealm.isDefined()) {
+            SSLIdentity.ServiceUtil.addDependency(sb, connectionManagerService.getSSLIdentityInjector(), securityRealm.asString(), false);
         }
 
         ServiceController<LdapConnectionManagerService> sc = sb.install();
@@ -87,12 +92,16 @@ public class LdapConnectionAddHandler extends AbstractAddStepHandler {
         }
     }
 
-    static ModelNode createResolvedLdapConfiguration(OperationContext context, ModelNode model) throws OperationFailedException {
-        final ModelNode resolvedModel = new ModelNode();
-        for (AttributeDefinition attr : LdapConnectionResourceDefinition.ATTRIBUTE_DEFINITIONS) {
-            resolvedModel.get(attr.getName()).set(attr.resolveModelAttribute(context, model));
-        }
-        return resolvedModel;
+
+    static Config updateRuntime(final OperationContext context, final ModelNode model, final LdapConnectionManagerService connectionManagerService) throws OperationFailedException {
+        String initialContextFactory = INITIAL_CONTEXT_FACTORY.resolveModelAttribute(context, model).asString();
+        String url = URL.resolveModelAttribute(context, model).asString();
+        ModelNode searchDnNode = SEARCH_DN.resolveModelAttribute(context, model);
+        String searchDn = searchDnNode.isDefined() ? searchDnNode.asString() : null;
+        ModelNode searchCredentialNode = SEARCH_CREDENTIAL.resolveModelAttribute(context, model);
+        String searchCredential = searchCredentialNode.isDefined() ? searchCredentialNode.asString() : null;
+
+        return connectionManagerService.setConfiguration(initialContextFactory, url, searchDn, searchCredential);
     }
 
 }
