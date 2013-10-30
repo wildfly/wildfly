@@ -56,13 +56,10 @@ public class ApplicationContextProcessor implements DeploymentUnitProcessor {
             return;
         }
         EEModuleDescription moduleDescription = deploymentUnit.getAttachment(org.jboss.as.ee.component.Attachments.EE_MODULE_DESCRIPTION);
-
         final ServiceTarget serviceTarget = phaseContext.getServiceTarget();
-
         final ServiceName applicationContextServiceName = ContextNames.contextServiceNameOfApplication(moduleDescription.getApplicationName());
         final NamingStoreService contextService = new NamingStoreService();
         serviceTarget.addService(applicationContextServiceName, contextService).install();
-
         final BinderService applicationNameBinder = new BinderService("AppName");
         final ServiceName appNameServiceName = applicationContextServiceName.append("AppName");
         serviceTarget.addService(appNameServiceName, applicationNameBinder)
@@ -70,7 +67,6 @@ public class ApplicationContextProcessor implements DeploymentUnitProcessor {
                 .addInjection(applicationNameBinder.getManagedObjectInjector(), new ValueManagedReferenceFactory(Values.immediateValue(moduleDescription.getApplicationName())))
                 .install();
         deploymentUnit.addToAttachmentList(org.jboss.as.server.deployment.Attachments.JNDI_DEPENDENCIES,appNameServiceName);
-
         deploymentUnit.putAttachment(Attachments.APPLICATION_CONTEXT_CONFIG, applicationContextServiceName);
     }
 

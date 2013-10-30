@@ -79,9 +79,9 @@ public class WritableServiceBasedNamingStoreTestCase {
         })
         .install();
         latch1.await(10, TimeUnit.SECONDS);
-        store = new WritableServiceBasedNamingStore(container, ContextNames.JAVA_CONTEXT_SERVICE_NAME,container.subTarget());
         final CountDownLatch latch2 = new CountDownLatch(1);
-        container.addService(ContextNames.JAVA_CONTEXT_SERVICE_NAME, new NamingStoreService(store))
+        final NamingStoreService namingStoreService = new NamingStoreService();
+        container.addService(ContextNames.JAVA_CONTEXT_SERVICE_NAME, namingStoreService)
                 .setInitialMode(ServiceController.Mode.ACTIVE)
                 .addListener(new AbstractServiceListener<NamingStore>() {
                     public void transition(ServiceController<? extends NamingStore> controller, ServiceController.Transition transition) {
@@ -102,6 +102,7 @@ public class WritableServiceBasedNamingStoreTestCase {
                 })
                 .install();
         latch2.await(10, TimeUnit.SECONDS);
+        store = (WritableServiceBasedNamingStore) namingStoreService.getValue();
     }
 
     @After

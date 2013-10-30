@@ -144,14 +144,10 @@ public final class ComponentInstallProcessor implements DeploymentUnitProcessor 
 
         //don't start components until all bindings are up
         startBuilder.addDependency(bindingDependencyService);
-        final ServiceName contextServiceName;
         //set up the naming context if necessary
         if (configuration.getComponentDescription().getNamingMode() == ComponentNamingMode.CREATE) {
             final NamingStoreService contextService = new NamingStoreService();
-            contextServiceName = configuration.getComponentDescription().getContextServiceName();
-            serviceTarget.addService(contextServiceName, contextService).install();
-        } else {
-            contextServiceName = configuration.getComponentDescription().getContextServiceName();
+            serviceTarget.addService(configuration.getComponentDescription().getContextServiceName(), contextService).install();
         }
 
         final InjectionSource.ResolutionContext resolutionContext = new InjectionSource.ResolutionContext(
@@ -192,7 +188,7 @@ public final class ComponentInstallProcessor implements DeploymentUnitProcessor 
         if (configuration.getComponentDescription().getNamingMode() == ComponentNamingMode.CREATE) {
             // The bindings for the component
             final Set<ServiceName> bound = new HashSet<ServiceName>();
-            processBindings(phaseContext, configuration, serviceTarget, contextServiceName, resolutionContext, configuration.getComponentDescription().getBindingConfigurations(), dependencies, bound);
+            processBindings(phaseContext, configuration, serviceTarget, resolutionContext, configuration.getComponentDescription().getBindingConfigurations(), dependencies, bound);
 
             //class level bindings should be ignored if the deployment is metadata complete
             if (!MetadataCompleteMarker.isMetadataComplete(phaseContext.getDeploymentUnit())) {
@@ -202,7 +198,7 @@ public final class ComponentInstallProcessor implements DeploymentUnitProcessor 
                     @Override
                     protected void handle(final Class<?> clazz, final EEModuleClassDescription classDescription) throws DeploymentUnitProcessingException {
                         if (classDescription != null) {
-                            processBindings(phaseContext, configuration, serviceTarget, contextServiceName, resolutionContext, classDescription.getBindingConfigurations(), dependencies, bound);
+                            processBindings(phaseContext, configuration, serviceTarget, resolutionContext, classDescription.getBindingConfigurations(), dependencies, bound);
                         }
                     }
                 }.run();
@@ -220,7 +216,7 @@ public final class ComponentInstallProcessor implements DeploymentUnitProcessor 
                             @Override
                             protected void handle(final Class<?> clazz, final EEModuleClassDescription classDescription) throws DeploymentUnitProcessingException {
                                 if (classDescription != null) {
-                                    processBindings(phaseContext, configuration, serviceTarget, contextServiceName, resolutionContext, classDescription.getBindingConfigurations(), dependencies, bound);
+                                    processBindings(phaseContext, configuration, serviceTarget, resolutionContext, classDescription.getBindingConfigurations(), dependencies, bound);
                                 }
                             }
                         }.run();
@@ -234,7 +230,7 @@ public final class ComponentInstallProcessor implements DeploymentUnitProcessor 
     }
 
     @SuppressWarnings("unchecked")
-    private void processBindings(DeploymentPhaseContext phaseContext, ComponentConfiguration configuration, ServiceTarget serviceTarget, ServiceName contextServiceName, InjectionSource.ResolutionContext resolutionContext, List<BindingConfiguration> bindings, final List<ServiceName> dependencies, final Set<ServiceName> bound) throws DeploymentUnitProcessingException {
+    private void processBindings(DeploymentPhaseContext phaseContext, ComponentConfiguration configuration, ServiceTarget serviceTarget, InjectionSource.ResolutionContext resolutionContext, List<BindingConfiguration> bindings, final List<ServiceName> dependencies, final Set<ServiceName> bound) throws DeploymentUnitProcessingException {
 
         //we only handle java:comp bindings for components that have their own namespace here, the rest are processed by ModuleJndiBindingProcessor
         for (BindingConfiguration bindingConfiguration : bindings) {
