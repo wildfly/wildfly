@@ -301,6 +301,10 @@ public final class RemoteDeployer implements Deployer {
             ModelNode op = createOpNode("subsystem=undertow/server=default-server/https-listener=" + JBWS_DEPLOYER_HTTPS_LISTENER_NAME, "add");
             op.get("socket-binding").set("https");
             op.get("security-realm").set(JBWS_DEPLOYER_HTTPS_LISTENER_REALM_NAME);
+            final String verifyClient = "verify-client";
+            if (options.containsKey(verifyClient)) {
+                op.get(verifyClient).set(options.get(verifyClient));
+            }
             steps.add(op);
             applyUpdate(composite);
         } catch (Exception e) {
