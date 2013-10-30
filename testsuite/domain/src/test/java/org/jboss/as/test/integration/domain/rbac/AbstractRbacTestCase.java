@@ -172,6 +172,8 @@ public abstract class AbstractRbacTestCase {
 
     protected abstract void configureRoles(ModelNode op, String[] roles);
 
+    boolean readOnly = false; // used by RbacSoakTest
+
     /**
      * @param expectedOutcome for standard and host-scoped roles tests, this is the expected outcome of all operations;
      *                        for server-group-scoped roles tests, this is the expected outcome for the profile of the server group the user
