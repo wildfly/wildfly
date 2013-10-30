@@ -30,6 +30,7 @@ import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.registry.ManagementResourceRegistration;
+import org.jboss.as.domain.management.connections.ldap.LdapConnectionManagerService.Config;
 import org.jboss.dmr.ModelNode;
 import org.jboss.msc.service.ServiceController;
 import org.jboss.msc.service.ServiceName;
@@ -40,7 +41,7 @@ import org.jboss.msc.service.ServiceRegistry;
  *
  * @author Brian Stansberry (c) 2011 Red Hat Inc.
  */
-public class LdapConnectionWriteAttributeHandler extends AbstractWriteAttributeHandler<Void> {
+public class LdapConnectionWriteAttributeHandler extends AbstractWriteAttributeHandler<Config> {
 
     public LdapConnectionWriteAttributeHandler() {
         super(LdapConnectionResourceDefinition.ATTRIBUTE_DEFINITIONS);
@@ -60,9 +61,9 @@ public class LdapConnectionWriteAttributeHandler extends AbstractWriteAttributeH
     @Override
     protected boolean applyUpdateToRuntime(final OperationContext context, final ModelNode operation, final String attributeName,
                                            final ModelNode resolvedValue, final ModelNode currentValue,
-                                           final HandbackHolder<Void> handbackHolder) throws OperationFailedException {
+                                           final HandbackHolder<Config> handbackHolder) throws OperationFailedException {
         final ModelNode model = context.readResource(PathAddress.EMPTY_ADDRESS).getModel();
-        updateLdapConnectionService(context, operation, model);
+        handbackHolder.setHandback(updateLdapConnectionService(context, operation, model));
 
         return false;
     }
@@ -70,13 +71,11 @@ public class LdapConnectionWriteAttributeHandler extends AbstractWriteAttributeH
     @Override
     protected void revertUpdateToRuntime(final OperationContext context, final ModelNode operation, final String attributeName,
                                          final ModelNode valueToRestore, final ModelNode valueToRevert,
-                                         final Void handback) throws OperationFailedException {
-        final ModelNode restored = context.readResource(PathAddress.EMPTY_ADDRESS).getModel().clone();
-        restored.get(attributeName).set(valueToRestore);
-        updateLdapConnectionService(context, operation, restored);
+                                         final Config handback) throws OperationFailedException {
+        updateLdapConnectionService(context, operation, handback);
     }
 
-    private void updateLdapConnectionService(final OperationContext context, final ModelNode operation, final ModelNode model) throws OperationFailedException {
+    private Config updateLdapConnectionService(final OperationContext context, final ModelNode operation, final ModelNode model) throws OperationFailedException {
         PathAddress address = PathAddress.pathAddress(operation.require(OP_ADDR));
         String name = address.getLastElement().getValue();
         ServiceName svcName = LdapConnectionManagerService.ServiceUtil.createServiceName(name);
@@ -84,9 +83,23 @@ public class LdapConnectionWriteAttributeHandler extends AbstractWriteAttributeH
         ServiceController<?> controller = registry.getService(svcName);
         if (controller != null) {
             // Just set the new values on the existing service
-            final ModelNode resolvedConfig = LdapConnectionAddHandler.createResolvedLdapConfiguration(context, model);
             LdapConnectionManagerService service = LdapConnectionManagerService.class.cast(controller.getValue());
-            service.setResolvedConfiguration(resolvedConfig);
+            return LdapConnectionAddHandler.updateRuntime(context, model, service);
+        } else {
+            // Nothing to do
+            return null;
+        }
+    }
+
+    private void updateLdapConnectionService(final OperationContext context, final ModelNode operation, final Config config) throws OperationFailedException {
+        PathAddress address = PathAddress.pathAddress(operation.require(OP_ADDR));
+        String name = address.getLastElement().getValue();
+        ServiceName svcName = LdapConnectionManagerService.ServiceUtil.createServiceName(name);
+        ServiceRegistry registry = context.getServiceRegistry(true);
+        ServiceController<?> controller = registry.getService(svcName);
+        if (controller != null) {
+            LdapConnectionManagerService service = LdapConnectionManagerService.class.cast(controller.getValue());
+            service.setConfiguration(config);
         } else {
             // Nothing to do
         }
