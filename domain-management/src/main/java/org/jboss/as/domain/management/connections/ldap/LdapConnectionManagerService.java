@@ -21,6 +21,8 @@
  */
 package org.jboss.as.domain.management.connections.ldap;
 
+import static org.jboss.as.domain.management.DomainManagementLogger.SECURITY_LOGGER;
+
 import java.util.Hashtable;
 
 import javax.naming.Context;
@@ -139,6 +141,17 @@ public class LdapConnectionManagerService implements Service<LdapConnectionManag
                 WildFlySecurityManager.setCurrentContextClassLoaderPrivileged(ThreadLocalSSLSocketFactory.class);
                 properties.put("java.naming.ldap.factory.socket", ThreadLocalSSLSocketFactory.class.getName());
             }
+            if (SECURITY_LOGGER.isTraceEnabled()) {
+                Hashtable<String, String> logProperties;
+                if (properties.containsKey(Context.SECURITY_CREDENTIALS)) {
+                    logProperties = new Hashtable<String, String>(properties);
+                    logProperties.put(Context.SECURITY_CREDENTIALS, "***");
+                } else {
+                    logProperties = properties;
+                }
+                SECURITY_LOGGER.tracef("Connecting to LDAP with properties (%s)", logProperties.toString());
+            }
+
             return new InitialDirContext(properties);
         } finally {
             if (sslContext != null) {
