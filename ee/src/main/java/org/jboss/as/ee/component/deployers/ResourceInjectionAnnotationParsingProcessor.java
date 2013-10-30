@@ -34,6 +34,7 @@ import org.jboss.as.ee.component.LookupInjectionSource;
 import org.jboss.as.ee.component.MethodInjectionTarget;
 import org.jboss.as.ee.component.OptionalLookupInjectionSource;
 import org.jboss.as.ee.component.ResourceInjectionConfiguration;
+import org.jboss.as.ee.utils.InjectionUtils;
 import org.jboss.as.server.deployment.DeploymentPhaseContext;
 import org.jboss.as.server.deployment.DeploymentUnit;
 import org.jboss.as.server.deployment.DeploymentUnitProcessingException;
@@ -67,12 +68,13 @@ import static org.jboss.as.ee.EeMessages.MESSAGES;
  * @author John Bailey
  * @author <a href="mailto:david.lloyd@redhat.com">David M. Lloyd</a>
  * @author <a href="mailto:ropalka@redhat.com">Richard Opalka</a>
+ * @author Eduardo Martins
  */
 public class ResourceInjectionAnnotationParsingProcessor implements DeploymentUnitProcessor {
 
     private static final DotName RESOURCE_ANNOTATION_NAME = DotName.createSimple(Resource.class.getName());
     private static final DotName RESOURCES_ANNOTATION_NAME = DotName.createSimple(Resources.class.getName());
-    private static final String JAVAX_NAMING_CONTEXT = "javax.naming.Context";
+
     public static final Map<String, String> FIXED_LOCATIONS;
     public static final Set<String> SIMPLE_ENTRIES;
 
@@ -217,7 +219,7 @@ public class ResourceInjectionAnnotationParsingProcessor implements DeploymentUn
         InjectionSource valueSource = null;
         final boolean isEnvEntryType = this.isEnvEntryType(injectionType, module);
         if (!isEmpty(lookup)) {
-            valueSource = JAVAX_NAMING_CONTEXT.equals(injectionType) ? new OptionalLookupInjectionSource(lookup) : new LookupInjectionSource(lookup);
+            valueSource = InjectionUtils.getInjectionSource(lookup,injectionType);
         } else if (isEnvEntryType) {
             // if it's a env-entry type then we do *not* create a BindingConfiguration to bind to the ENC
             // since the binding (value) for env-entry is always driven from a deployment descriptor.

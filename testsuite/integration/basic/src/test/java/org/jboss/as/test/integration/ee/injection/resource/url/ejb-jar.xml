@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ejb-jar xmlns="http://java.sun.com/xml/ns/javaee" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         version="3.1" xsi:schemaLocation="http://java.sun.com/xml/ns/javaee http://java.sun.com/xml/ns/javaee/ejb-jar_3_1.xsd">
+    <enterprise-beans>
+        <session>
+            <ejb-name>URLConnectionFactoryResourceInjectionTestEJB</ejb-name>
+
+            <resource-ref>
+                <res-ref-name>overrideLookupURL</res-ref-name>
+                <res-type>java.net.URL</res-type>
+                <res-auth>Container</res-auth>
+                <res-sharing-scope>Shareable</res-sharing-scope>
+                <lookup-name>http://java.net</lookup-name>
+            </resource-ref>
+        </session>
+    </enterprise-beans>
+</ejb-jar>
