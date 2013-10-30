@@ -54,6 +54,11 @@ public class LdapConnectionWriteAttributeHandler extends AbstractWriteAttributeH
     }
 
     @Override
+    protected boolean requiresRuntime(OperationContext context) {
+        return true;
+    }
+
+    @Override
     protected boolean applyUpdateToRuntime(final OperationContext context, final ModelNode operation, final String attributeName,
                                            final ModelNode resolvedValue, final ModelNode currentValue,
                                            final HandbackHolder<Config> handbackHolder) throws OperationFailedException {
