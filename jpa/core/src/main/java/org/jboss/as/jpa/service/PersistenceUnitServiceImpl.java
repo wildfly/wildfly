@@ -119,6 +119,9 @@ public class PersistenceUnitServiceImpl implements Service<PersistenceUnitServic
                             @Override
                             public Void run() {
 
+                                ClassLoader old = Thread.currentThread().getContextClassLoader();
+                                Thread.currentThread().setContextClassLoader(classLoader);
+
                                 try {
                                     PhaseOnePersistenceUnitServiceImpl phaseOnePersistenceUnitService = phaseOnePersistenceUnitServiceInjectedValue.getOptionalValue();
                                     WritableServiceBasedNamingStore.pushOwner(deploymentUnitServiceName);
@@ -168,6 +171,7 @@ public class PersistenceUnitServiceImpl implements Service<PersistenceUnitServic
                                 } catch (Throwable t) {
                                     context.failed(new StartException(t));
                                 } finally {
+                                    Thread.currentThread().setContextClassLoader(old);
                                     pu.setTempClassLoaderFactory(null);    // release the temp classloader factory (only needed when creating the EMF)
                                     WritableServiceBasedNamingStore.popOwner();
                                 }
