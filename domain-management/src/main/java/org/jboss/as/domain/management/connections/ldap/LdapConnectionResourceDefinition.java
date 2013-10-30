@@ -82,4 +82,5 @@ public class LdapConnectionResourceDefinition extends SimpleResourceDefinition {
         LdapConnectionWriteAttributeHandler writeHandler = new LdapConnectionWriteAttributeHandler();
         writeHandler.registerAttributes(resourceRegistration);
     }
+
 }
