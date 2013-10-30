@@ -117,7 +117,21 @@ public class NamingTransformersTestCase extends AbstractSubsystemBaseTest {
         testTransformers_1_1_0(ModelTestControllerVersion.V7_1_3_FINAL);
     }
 
+
+    @Test
+    public void testTransformers_EAP600() throws Exception {
+        testTransformers_1_1_0(ModelTestControllerVersion.EAP_6_0_0);
+    }
+
+    @Test
+    public void testTransformers_EAP601() throws Exception {
+        testTransformers_1_1_0(ModelTestControllerVersion.EAP_6_0_1);
+    }
+
     private void testTransformers_1_1_0(ModelTestControllerVersion version) throws Exception {
+        if (version.isEap()) {
+            ignoreThisTestIfEAPRepositoryIsNotReachable();
+        }
         KernelServicesBuilder builder = createKernelServicesBuilder(createAdditionalInitialization())
                 .setSubsystemXmlResource("subsystem_with_expressions_compatible_1.1.0.xml");
 
@@ -227,12 +241,25 @@ public class NamingTransformersTestCase extends AbstractSubsystemBaseTest {
         doTestRejectExpressions_1_1_0(ModelTestControllerVersion.V7_1_3_FINAL);
     }
 
+    @Test
+    public void testRejectExpressionsEAP600() throws Exception {
+        doTestRejectExpressions_1_1_0(ModelTestControllerVersion.EAP_6_0_0);
+    }
+
+    @Test
+    public void testRejectExpressionsEAP601() throws Exception {
+        doTestRejectExpressions_1_1_0(ModelTestControllerVersion.EAP_6_0_1);
+    }
+
     /**
      * Tests rejection of expressions in 1.1.0 model.
      *
      * @throws Exception
      */
     private void doTestRejectExpressions_1_1_0(ModelTestControllerVersion controllerVersion) throws Exception {
+        if (controllerVersion.isEap()) {
+            ignoreThisTestIfEAPRepositoryIsNotReachable();
+        }
         KernelServicesBuilder builder = createKernelServicesBuilder(AdditionalInitialization.MANAGEMENT);
 
         // create builder for legacy subsystem version
@@ -259,7 +286,21 @@ public class NamingTransformersTestCase extends AbstractSubsystemBaseTest {
         testTransformers_1_2_0(ModelTestControllerVersion.V7_2_0_FINAL);
     }
 
+    @Test
+    public void testTransformers_EAP610() throws Exception {
+        testTransformers_1_2_0(ModelTestControllerVersion.EAP_6_1_0);
+    }
+
+    @Test
+    public void testTransformers_EAP611() throws Exception {
+        testTransformers_1_2_0(ModelTestControllerVersion.EAP_6_1_1);
+    }
+
     private void testTransformers_1_2_0(ModelTestControllerVersion version) throws Exception {
+        if (version.isEap()) {
+            ignoreThisTestIfEAPRepositoryIsNotReachable();
+        }
+
         KernelServicesBuilder builder = createKernelServicesBuilder(createAdditionalInitialization())
                 .setSubsystemXmlResource("subsystem_with_expressions_compatible_1.2.0.xml");
 
