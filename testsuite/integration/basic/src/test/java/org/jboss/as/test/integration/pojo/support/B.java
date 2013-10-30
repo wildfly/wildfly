@@ -35,7 +35,7 @@ public class B {
 
     public void setA(A a) {
         this.a = a;
-        System.out.println("a = " + a);
+        //System.out.println("a = " + a);
     }
 
     public C getC() {
@@ -44,6 +44,6 @@ public class B {
 
     public void setC(C c) {
         this.c = c;
-        System.out.println("c = " + c);
+        //System.out.println("c = " + c);
     }
 }

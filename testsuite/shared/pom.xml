@@ -17,24 +17,14 @@
     <version>8.0.0.Beta2-SNAPSHOT</version>
 
     <name>WildFly Test Suite: Shared</name>
-     
-     
+
+
     <properties>
         <!-- Arquillian dependency versions -->
         <version.arquillian_as7>${project.parent.version}</version.arquillian_as7>
+        <enforcer.skip>true</enforcer.skip>
     </properties>
 
-    <build>
-        <plugins>
-            <plugin>
-                <groupId>org.apache.maven.plugins</groupId>
-                <artifactId>maven-enforcer-plugin</artifactId>
-                <configuration>
-                    <skip>true</skip>
-                </configuration>
-            </plugin>
-        </plugins>
-    </build>
     <dependencies>
         <dependency>
             <groupId>org.wildfly</groupId>
@@ -57,12 +47,12 @@
             <artifactId>apacheds-all</artifactId>
             <scope>compile</scope>
         </dependency>
-        
+
         <dependency>
             <groupId>org.syslog4j</groupId>
             <artifactId>syslog4j</artifactId>
             <version>0.9.30</version>
         </dependency>
     </dependencies>
-    
+
 </project>

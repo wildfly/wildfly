@@ -65,7 +65,7 @@ public class CustomErrorsUnitTestCase {
         war.addAsWebResource(tccl.getResource(resourcesLocation + "500.jsp"), "500.jsp");
         war.addClass(ErrorGeneratorServlet.class);
 
-        System.out.println(war.toString(true));
+        //System.out.println(war.toString(true));
         return war;
     }
 
@@ -79,7 +79,7 @@ public class CustomErrorsUnitTestCase {
         war.addClass(ErrorGeneratorServlet.class);
         war.addClass(ContextForwardServlet.class);
 
-        System.out.println(war.toString(true));
+        //System.out.println(war.toString(true));
         return war;
     }
 

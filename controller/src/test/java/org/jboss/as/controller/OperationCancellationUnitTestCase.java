@@ -91,7 +91,7 @@ public class OperationCancellationUnitTestCase {
         blockObject = new CountDownLatch(1);
         latch = new CountDownLatch(1);
 
-        System.out.println("=========  New Test \n");
+        //System.out.println("=========  New Test \n");
         container = ServiceContainer.Factory.create("test");
         ServiceTarget target = container.subTarget();
         ModelControllerService svc = new ModelControllerService();

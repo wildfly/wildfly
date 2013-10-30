@@ -76,7 +76,7 @@ public class TestUtils {
         StringBuilder out = new StringBuilder();
         out.append(dir.getParentFile().getAbsolutePath() + "\n");
         tree0(out, dir, 1, "  ");
-        System.out.println(out);
+        //System.out.println(out);
         ROOT_LOGGER.trace(out.toString());
     }
 

@@ -66,7 +66,7 @@ public class JMSOperationsProvider {
         if(className == null) {
             throw new JMSOperationsException("Please specify a property " + PROPERTY_NAME + " in " + FILE_NAME);
         }
-        System.out.println("Creating instance of class: " + className);
+        //System.out.println("Creating instance of class: " + className);
         Object jmsOperationsInstance;
         try {
             Class clazz = Class.forName(className);

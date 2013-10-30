@@ -97,7 +97,7 @@ public class BaseLayerTestCase extends AbstractTaskTestCase {
                 .build();
 
         createPatchXMLFile(patchDir, patch);
-        System.out.println("patch =>>");
+        //System.out.println("patch =>>");
         File zippedPatch = createZippedPatchFile(patchDir, patchID);
 
         // apply patch
@@ -107,7 +107,7 @@ public class BaseLayerTestCase extends AbstractTaskTestCase {
         assertInstallationIsPatched(patch, patchedInstalledIdentity.getIdentity().loadTargetInfo());
         assertFileExists(env.getInstalledImage().getJbossHome(), "bin", fileAdded.getItem().getName());
 
-        System.out.println("installation =>>");
+        //System.out.println("installation =>>");
         tree(env.getInstalledImage().getJbossHome());
 
         DirectoryStructure layerDirStructure = installedIdentity.getLayers().get(0).loadTargetInfo().getDirectoryStructure();

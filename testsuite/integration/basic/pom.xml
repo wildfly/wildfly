@@ -43,7 +43,6 @@
         <dependency>
             <groupId>org.syslog4j</groupId>
             <artifactId>syslog4j</artifactId>
-            <version>0.9.30</version>
         </dependency>
     </dependencies>
 
@@ -108,13 +107,16 @@
                             <execution>
                                 <id>prepare-jars-basic-integration.server</id>
                                 <phase>process-test-resources</phase>
-                                <goals><goal>run</goal></goals>
+                                <goals>
+                                    <goal>run</goal>
+                                </goals>
                                 <configuration>
                                     <target>
                                         <property name="tests.resources.dir" value="${basedir}/../src/test/resources"/>
-                                        <property name="tests.output.dir"    value="${project.build.directory}"/>
+                                        <property name="tests.output.dir" value="${project.build.directory}"/>
                                         <ant antfile="${basedir}/../src/test/scripts/basic-integration-build.xml">
-                                            <target name="build-basic-integration"/>  <!-- TODO: Unify names, then call "recursively". -->
+                                            <target name="build-basic-integration"/>
+                                            <!-- TODO: Unify names, then call "recursively". -->
                                         </ant>
                                     </target>
                                 </configuration>
@@ -125,7 +127,7 @@
                     <plugin>
                         <groupId>org.codehaus.mojo</groupId>
                         <artifactId>keytool-maven-plugin</artifactId>
-                        <version>1.2</version>
+                        <version>1.3</version>
                         <executions>
                             <execution>
                                 <phase>generate-test-resources</phase>
@@ -138,7 +140,7 @@
                                 <phase>generate-test-resources</phase>
                                 <id>genkey-jcetest-keystore</id>
                                 <goals>
-                                    <goal>genkey</goal>
+                                    <goal>generateKeyPair</goal>
                                 </goals>
                             </execution>
                         </executions>
@@ -160,12 +162,20 @@
                         <executions combine.children="append">
 
                             <!-- Disable default-test execution. -->
-                            <execution><id>default-test</id><goals><goal>test</goal></goals><phase>none</phase></execution>
+                            <execution>
+                                <id>default-test</id>
+                                <goals>
+                                    <goal>test</goal>
+                                </goals>
+                                <phase>none</phase>
+                            </execution>
 
                             <execution>
                                 <id>basic-integration-default-full.surefire</id>
                                 <phase>test</phase>
-                                <goals><goal>test</goal></goals>
+                                <goals>
+                                    <goal>test</goal>
+                                </goals>
                                 <configuration>
                                     <!-- Tests to execute. Overriden in webProfileExclusion.profile . -->
                                     <includes>
@@ -211,11 +221,13 @@
                             <execution>
                                 <id>basic-integration-default-web.surefire</id>
                                 <phase>test</phase>
-                                <goals><goal>test</goal></goals>
+                                <goals>
+                                    <goal>test</goal>
+                                </goals>
                                 <configuration>
                                     <!-- Tests to execute. Overriden in webProfileExclusion.profile . -->
                                     <excludes>
-                                    	<!-- truststore setting used in LDAPs testing is affected by some other test -->
+                                        <!-- truststore setting used in LDAPs testing is affected by some other test -->
                                         <exclude>org/jboss/as/test/integration/security/loginmodules/Ldap*TestCase.java</exclude>
                                         <!-- 2nd run tests are run in other execution. -->
                                         <exclude>org/jboss/as/test/integration/**/*SecondTestCase.java</exclude>
@@ -248,9 +260,6 @@
                                     <systemPropertyVariables combine.children="append">
                                         <jboss.server.config.file.name>standalone.xml</jboss.server.config.file.name>
                                         <jboss.inst>${basedir}/target/jbossas</jboss.inst>
-                                        <org.jboss.model.test.cache.root>${org.jboss.model.test.cache.root}</org.jboss.model.test.cache.root>
-                                        <org.jboss.model.test.classpath.cache>${org.jboss.model.test.classpath.cache}</org.jboss.model.test.classpath.cache>
-                                        <org.jboss.model.test.maven.repository.urls>${org.jboss.model.test.maven.repository.urls}</org.jboss.model.test.maven.repository.urls>
                                     </systemPropertyVariables>
 
                                     <additionalClasspathElements>
@@ -265,7 +274,9 @@
                             <execution>
                                 <id>basic-integration-2nd.surefire</id>
                                 <phase>test</phase>
-                                <goals><goal>test</goal></goals>
+                                <goals>
+                                    <goal>test</goal>
+                                </goals>
                                 <configuration>
                                     <skipTests>${ts.skipTests}</skipTests>
                                     <redirectTestOutputToFile>${testLogToFile}</redirectTestOutputToFile>
@@ -283,7 +294,9 @@
                             <execution>
                                 <id>basic-integration-ldap.surefire</id>
                                 <phase>test</phase>
-                                <goals><goal>test</goal></goals>
+                                <goals>
+                                    <goal>test</goal>
+                                </goals>
                                 <configuration>
                                     <includes>
                                         <include>org/jboss/as/test/integration/security/loginmodules/Ldap*TestCase.java</include>
@@ -303,12 +316,6 @@
 
                     </plugin>
 
-                    <plugin>
-                        <groupId>org.apache.felix</groupId>
-                        <artifactId>maven-bundle-plugin</artifactId>
-                        <inherited>true</inherited>
-                        <extensions>true</extensions>
-                    </plugin>
 
                 </plugins>
             </build>
@@ -318,7 +325,11 @@
         <!-- This changes the FULL exec so that it includes all tests. -->
         <profile>
             <id>webProfileExclusion.profile</id>
-            <activation><property><name>noWebProfile</name></property></activation>
+            <activation>
+                <property>
+                    <name>noWebProfile</name>
+                </property>
+            </activation>
             <build>
                 <plugins>
                     <plugin>
@@ -329,13 +340,17 @@
                             <execution>
                                 <id>basic-integration-default-web.surefire</id>
                                 <phase>none</phase>
-                                <goals><goal>test</goal></goals>
+                                <goals>
+                                    <goal>test</goal>
+                                </goals>
                             </execution>
                             <!-- Run the ALL tests with FULL config. -->
                             <execution>
                                 <id>basic-integration-default-full.surefire</id>
                                 <phase>test</phase>
-                                <goals><goal>test</goal></goals>
+                                <goals>
+                                    <goal>test</goal>
+                                </goals>
                                 <configuration>
                                     <redirectTestOutputToFile>false</redirectTestOutputToFile>
                                     <systemPropertyVariables combine.children="append">
@@ -363,7 +378,7 @@
                 <property>
                     <name>java.vendor</name>
                     <value>IBM Corporation</value>
-               </property>
+                </property>
             </activation>
             <build>
                 <plugins>
@@ -402,20 +417,38 @@
         <!-- When -Dtest=... is set, only the default surefire execution with standalone-full.xml will run. -->
         <profile>
             <id>onlyOneSurefireExecution.basic.profile</id>
-            <activation><property><name>test</name></property></activation>
+            <activation>
+                <property>
+                    <name>test</name>
+                </property>
+            </activation>
             <build>
+                <pluginManagement>
                 <plugins>
                     <plugin>
                         <groupId>org.apache.maven.plugins</groupId>
                         <artifactId>maven-surefire-plugin</artifactId>
                         <executions>
-                            <execution><id>basic-integration-default-full.surefire</id><phase>test</phase></execution>
-                            <execution><id>basic-integration-default-web.surefire</id><phase>none</phase></execution>
-                            <execution><id>basic-integration-2nd.surefire</id><phase>none</phase></execution>
-                            <execution><id>basic-integration-ldap.surefire</id><phase>none</phase></execution>
+                            <execution>
+                                <id>basic-integration-default-full.surefire</id>
+                                <phase>test</phase>
+                            </execution>
+                            <execution>
+                                <id>basic-integration-default-web.surefire</id>
+                                <phase>none</phase>
+                            </execution>
+                            <execution>
+                                <id>basic-integration-2nd.surefire</id>
+                                <phase>none</phase>
+                            </execution>
+                            <execution>
+                                <id>basic-integration-ldap.surefire</id>
+                                <phase>none</phase>
+                            </execution>
                         </executions>
                     </plugin>
                 </plugins>
+                </pluginManagement>
             </build>
         </profile>
 

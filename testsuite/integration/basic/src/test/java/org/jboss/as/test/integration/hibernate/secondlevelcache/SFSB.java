@@ -73,7 +73,7 @@ public class SFSB {
         // static {
         try {
 
-            System.out.println("setupConfig:  Current dir = " + (new File(".")).getCanonicalPath());
+            //System.out.println("setupConfig:  Current dir = " + (new File(".")).getCanonicalPath());
 
             // prepare the configuration
             Configuration configuration = new Configuration().setProperty(AvailableSettings.USE_NEW_ID_GENERATOR_MAPPINGS,
@@ -97,13 +97,13 @@ public class SFSB {
             throw new ExceptionInInitializerError(ex);
         }
 
-        System.out.println("setupConfig: done");
+        //System.out.println("setupConfig: done");
 
     }
 
     // create student
     public Student createStudent(String firstName, String lastName, String address, int id) {
-        System.out.println("createStudent: started");
+        //System.out.println("createStudent: started");
         // setupConfig();
         Student student = new Student();
         student.setStudentId(id);
@@ -124,13 +124,13 @@ public class SFSB {
             throw new RuntimeException("Failure while persisting student entity", e);
 
         }
-        System.out.println("createStudent: done");
+        //System.out.println("createStudent: done");
         return student;
     }
 
     // get student
     public Student getStudent(int id) {
-        System.out.println("getStudent: started");
+        //System.out.println("getStudent: started");
         Student student;
 
         try {
@@ -144,7 +144,7 @@ public class SFSB {
             throw new RuntimeException("Failure while loading student entity", e);
 
         }
-        System.out.println("getStudent: done");
+        //System.out.println("getStudent: done");
         return student;
     }
 

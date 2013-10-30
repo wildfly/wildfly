@@ -44,17 +44,17 @@ public class SecondBean implements SessionBean {
 	public void ejbRemove() {}
 	
 	public boolean test(String[] s) {
-		System.out.println(">> test(String[])");
+		//System.out.println(">> test(String[])");
 		return true;
 	}
 
 	public boolean test(String s) {
-		System.out.println(">> test(String)");
+		//System.out.println(">> test(String)");
 		return true;
 	}
 
 	public boolean test(int x) {
-		System.out.println(">> test(int)");
+		//System.out.println(">> test(int)");
 		return true;
 	}
 

@@ -64,7 +64,7 @@ public class MyListener {
             invocationCount++;
             InitialContext jndiContext = new InitialContext();
             EJBContext ctx = (EJBContext)jndiContext.lookup("java:comp/EJBContext");
-              System.out.println(ctx.getCallerPrincipal().getName() + ", entity=" + entity);
+              //System.out.println(ctx.getCallerPrincipal().getName() + ", entity=" + entity);
         } catch (NamingException e) {
             throw new RuntimeException("initial context error", e);
         }

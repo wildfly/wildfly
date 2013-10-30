@@ -135,7 +135,7 @@ public class HttpGetMgmtOpsTestCase {
 
         List<ModelNode> names = node.asList();
 
-        System.out.println(names.toString());
+        //System.out.println(names.toString());
         Set<String> strNames = new TreeSet<String>();
         for (ModelNode n : names) strNames.add(n.asString());
 

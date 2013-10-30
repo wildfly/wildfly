@@ -102,16 +102,16 @@ public class JBWS3207TestCase {
         InputStream in = null;
         try {
             URL url = new URL("http://" + TestSuiteEnvironment.getServerAddress() + ":8080/jbws3207/?wsdl");
-            System.out.println("Reading response from " + url + ":");
+            //System.out.println("Reading response from " + url + ":");
             conn = url.openConnection();
             conn.setDoInput(true);
             in = new BufferedInputStream(conn.getInputStream());
             int i = in.read();
             while (i != -1) {
-                System.out.print((char) i);
+                //System.out.print((char) i);
                 i = in.read();
             }
-            System.out.println("");
+            //System.out.println("");
         } finally {
             safeClose(in);
         }
@@ -129,7 +129,7 @@ public class JBWS3207TestCase {
                 + "    </arc:echoString>" + "  </soapenv:Body>" + "</soapenv:Envelope>";
         try {
             URL url = new URL("http://" + TestSuiteEnvironment.getServerAddress() + ":8080/jbws3207");
-            System.out.println("Reading response from " + url + ":");
+            //System.out.println("Reading response from " + url + ":");
             conn = url.openConnection();
             conn.setDoInput(true);
             conn.setDoOutput(true);
@@ -139,10 +139,10 @@ public class JBWS3207TestCase {
             in = new BufferedInputStream(conn.getInputStream());
             int i = in.read();
             while (i != -1) {
-                System.out.print((char) i);
+                //System.out.print((char) i);
                 i = in.read();
             }
-            System.out.println("");
+            //System.out.println("");
         } finally {
             safeClose(osw);
             safeClose(in);

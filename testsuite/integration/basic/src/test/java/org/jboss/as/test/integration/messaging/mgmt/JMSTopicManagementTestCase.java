@@ -221,7 +221,7 @@ public class JMSTopicManagementTestCase {
 
         ModelNode result = execute(getTopicOperation("list-all-subscriptions"), true);
         final ModelNode subscriber = result.asList().get(0);
-        System.out.println(result);
+        //System.out.println(result);
 
 
         ModelNode operation = getTopicOperation("list-messages-for-subscription");

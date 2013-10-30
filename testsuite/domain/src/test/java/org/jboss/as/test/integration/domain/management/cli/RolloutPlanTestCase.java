@@ -107,6 +107,9 @@ public class RolloutPlanTestCase extends AbstractCliTestBase {
         waitUntilState("main-two", "DISABLED");
 
         AbstractCliTestBase.closeCLI();
+        if (warFile.exists()){
+            warFile.delete();
+        }
     }
 
     @Test

@@ -5,8 +5,6 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.FAI
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OUTCOME;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SUCCESS;
 
-import java.util.List;
-
 import org.jboss.as.subsystem.test.KernelServices;
 import org.jboss.byteman.contrib.bmunit.BMRule;
 import org.jboss.byteman.contrib.bmunit.BMUnitRunner;
@@ -189,15 +187,6 @@ public class OperationSequencesTestCase extends OperationTestCaseBase {
         // remove the jgroups subsystem  again
         result = servicesA.executeOperation(removeSubsystemOp);
         Assert.assertEquals("failure description: " + result.get(FAILURE_DESCRIPTION).toString(), SUCCESS, result.get(OUTCOME).asString());
-    }
-
-     private void listMSCServices(KernelServices services, String marker) {
-        ServiceRegistry registry = services.getContainer() ;
-        List<ServiceName> names = registry.getServiceNames() ;
-        System.out.println("Services: " + marker);
-        for (ServiceName name : names) {
-            System.out.println("name = " + name.toString());
-        }
     }
 
     private boolean isMSCServicePresent(KernelServices services, ServiceName serviceName) {

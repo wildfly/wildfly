@@ -63,8 +63,8 @@ public class PatchBundleXmlUnitTestCase {
         PatchBundleXml.marshal(writer, patch);
         final String marshalled = writer.toString();
 
-        System.out.println(original);
-        System.out.println(marshalled);
+        //System.out.println(original);
+        //System.out.println(marshalled);
 
         XMLUtils.compareXml(original, marshalled, false);
     }

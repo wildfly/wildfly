@@ -51,6 +51,7 @@ import org.jboss.logging.Logger;
 import org.jboss.security.auth.spi.LdapExtLoginModule;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.spec.WebArchive;
+import org.junit.AfterClass;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 import org.junit.runner.RunWith;
@@ -314,5 +315,9 @@ public class LdapExtPasswordCachingTestCase {
          }
     }
 
+    @AfterClass
+    public static void cleanup(){
+        ExternalPasswordProvider.cleanup();
+    }
 
 }

@@ -29,7 +29,7 @@ import javax.interceptor.InvocationContext;
 @Interceptor
 public class POJOInterceptorImpl {
     public POJOInterceptorImpl() {
-        System.out.println("POJO interceptor initialized");
+        //System.out.println("POJO interceptor initialized");
     }
 
     @AroundInvoke

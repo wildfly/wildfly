@@ -153,7 +153,7 @@ public class DomainTestUtils {
        final ModelNode ret = modelControllerClient.execute(op);
 
        if (! SUCCESS.equals(ret.get(OUTCOME).asString())) {
-           System.out.println(ret);
+           //System.out.println(ret);
            throw new MgmtOperationException("Management operation failed.", op, ret);
        }
        return ret.get(RESULT);
@@ -172,7 +172,7 @@ public class DomainTestUtils {
         final ModelNode ret = modelControllerClient.execute(op);
 
         if (! FAILED.equals(ret.get(OUTCOME).asString())) {
-            System.out.println(ret);
+            //System.out.println(ret);
             throw new MgmtOperationException("Management operation succeeded.", op, ret);
         }
         return ret.get(FAILURE_DESCRIPTION);

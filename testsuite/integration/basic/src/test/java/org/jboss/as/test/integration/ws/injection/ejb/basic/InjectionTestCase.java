@@ -67,7 +67,7 @@ public class InjectionTestCase {
         JavaArchive sharedJar = ShrinkWrap.create(JavaArchive.class, "jaxws-injection.jar");
         sharedJar.addClass(BeanIface.class);
         sharedJar.addClass(BeanImpl.class);
-        System.out.println(sharedJar.toString(true));
+        //System.out.println(sharedJar.toString(true));
 
         // construct ejb3 jar
         JavaArchive ejb3Jar = ShrinkWrap.create(JavaArchive.class, "jaxws-injection-ejb3.jar");
@@ -78,7 +78,7 @@ public class InjectionTestCase {
         ejb3Jar.addAsResource(EJB3Bean.class.getPackage(), "jaxws-handler.xml", "org/jboss/as/test/integration/ws/injection/ejb/basic/webservice/jaxws-handler.xml");
         ejb3Jar.addAsManifestResource(EJB3Bean.class.getPackage(), "ejb-jar.xml", "ejb-jar.xml");
         ejb3Jar.addAsManifestResource(new StringAsset("Dependencies: deployment.jaxws-injection.ear.jaxws-injection.jar"), "MANIFEST.MF");
-        System.out.println(ejb3Jar.toString(true));
+        //System.out.println(ejb3Jar.toString(true));
 
         // construct pojo war
         WebArchive pojoWar = ShrinkWrap.create(WebArchive.class, "jaxws-injection-pojo.war");
@@ -89,14 +89,14 @@ public class InjectionTestCase {
         pojoWar.addAsResource(POJOBean.class.getPackage(), "jaxws-handler.xml", "org/jboss/as/test/integration/ws/injection/ejb/basic/webservice/jaxws-handler.xml");
         pojoWar.addAsWebInfResource(POJOBean.class.getPackage(), "web.xml", "web.xml");
         pojoWar.addAsManifestResource(new StringAsset("Dependencies: deployment.jaxws-injection.ear.jaxws-injection.jar"), "MANIFEST.MF");
-        System.out.println(pojoWar.toString(true));
+        //System.out.println(pojoWar.toString(true));
 
         // construct ear
         EnterpriseArchive ear = ShrinkWrap.create(EnterpriseArchive.class, "jaxws-injection.ear");
         ear.addAsModule(sharedJar);
         ear.addAsModule(ejb3Jar);
         ear.addAsModule(pojoWar);
-        System.out.println(ear.toString(true));
+        //System.out.println(ear.toString(true));
 
         return ear;
     }

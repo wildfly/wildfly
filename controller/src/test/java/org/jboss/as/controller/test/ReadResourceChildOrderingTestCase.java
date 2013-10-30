@@ -96,7 +96,7 @@ public class ReadResourceChildOrderingTestCase extends AbstractControllerTestBas
             }
         });
         rootResource.getModel().set(model);
-        System.out.println(model);
+        //System.out.println(model);
     }
 
 }

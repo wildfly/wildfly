@@ -123,7 +123,7 @@ public class DefaultConfigSmokeTestCase extends BuildConfigurationTestBase {
                     sb.append(",").append(attrdesc.get(ModelDescriptionConstants.TYPE).asString());
                     sb.append(",").append(attrdesc.get(ModelDescriptionConstants.EXPRESSIONS_ALLOWED).asBoolean(false));
                     sb.append(",").append(attrdesc.get(ModelDescriptionConstants.DESCRIPTION).asString());
-                    System.out.println(sb.toString());
+                    //System.out.println(sb.toString());
                 }
             }
         }

@@ -42,16 +42,16 @@ public class FunExtension implements Extension {
     
     public void processAnnotatedType(@Observes ProcessAnnotatedType<?> pat) {
        
-       System.out.println("FunExtension processAnnotatedType " + pat.getAnnotatedType().toString());
+       //System.out.println("FunExtension processAnnotatedType " + pat.getAnnotatedType().toString());
        
        if (pat.getAnnotatedType().getAnnotation(Funny.class) != null) {
-          System.out.println("FunExtension adding funny class " + pat.getAnnotatedType().getJavaClass());
+          //System.out.println("FunExtension adding funny class " + pat.getAnnotatedType().getJavaClass());
           funnyClasses.add(pat.getAnnotatedType().getJavaClass());
        }
     }
     
     public void processBean(@Observes ProcessBean<?> pb) {
-       System.out.println("FunExtension processBean " + pb.getBean().getBeanClass());
+       //System.out.println("FunExtension processBean " + pb.getBean().getBeanClass());
        
        if (funnyClasses.contains(pb.getBean().getBeanClass())) {
           funnyBeans.add(pb.getBean());

@@ -53,7 +53,7 @@ public class JMSResourceDefinitionsTestCase {
                 .addAsManifestResource(
                         EmptyAsset.INSTANCE,
                         create("beans.xml"));
-        System.out.println("archive = " + archive.toString(true));
+        //System.out.println("archive = " + archive.toString(true));
         return archive;
     }
 

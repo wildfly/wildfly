@@ -650,7 +650,7 @@ public class PersistanceResourceTestCase {
 
     private String addSuffix(File file, String suffix) throws IOException {
         StringBuilder builder = new StringBuilder(file.getParentFile().getCanonicalPath());
-        System.out.println(builder);
+        //System.out.println(builder);
         builder.append(File.separatorChar);
         builder.append(file.getName().replace('.', '_') + "_history" + File.separatorChar);
         builder.append(file.getName().substring(0, file.getName().lastIndexOf(".xml")));
@@ -658,7 +658,7 @@ public class PersistanceResourceTestCase {
         builder.append(suffix);
         builder.append(".xml");
 
-        System.out.println(builder.toString());
+        //System.out.println(builder.toString());
 
         return builder.toString();
     }

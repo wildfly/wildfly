@@ -60,8 +60,8 @@ public class DAO1 {
     }
 
     public void myFunction() {
-        System.out.println("DAO1 myfunction entered");
+        //System.out.println("DAO1 myfunction entered");
         em.find(Employee.class, 123);
-        System.out.println("DAO1 myfunction returning");
+        //System.out.println("DAO1 myfunction returning");
     }
 }

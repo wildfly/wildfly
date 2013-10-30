@@ -129,7 +129,7 @@ public class JGroupsSubsystemTest extends AbstractSubsystemBaseTest {
             ModelNode protocol = new ModelNode();
             protocol.get(ModelKeys.TYPE).set(protocolList[i]) ;
             protocol.get("socket-binding").set("jgroups-udp");
-            System.out.println("adding protovcol = " + protocol.toString());
+            //System.out.println("adding protovcol = " + protocol.toString());
             protocols.add(protocol);
         }
 

@@ -78,7 +78,7 @@ public class Jbas9020TestCase {
         final XMLMapper mapper = XMLMapper.Factory.create();
         mapper.registerRootElement(new QName(namespace, "server"), parser);
         mapper.parseDocument(operationList, reader);
-        System.out.println(operationList.get(1));
+        //System.out.println(operationList.get(1));
         final ModelNode content = operationList.get(1).get("content");
         assertEquals(true, content.get(0).get("archive").asBoolean());
         assertEquals("${jboss.home}/content/welcome.jar", content.get(0).get("path").asString());

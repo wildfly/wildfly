@@ -147,9 +147,9 @@ public class SFSBHibernatewithMetaDataSession {
 
         String[] properties = planetClass.getPropertyNames();
 
-        for (int i = 0; i < properties.length; i++) {
+        /*for (int i = 0; i < properties.length; i++) {
             System.out.println("Properties ~" + i + "::" + properties[i]);
-        }
+        }*/
 
         return planetClass;
     }
@@ -159,11 +159,11 @@ public class SFSBHibernatewithMetaDataSession {
         Map colData = sessionFactory.getAllCollectionMetadata();
         Iterator iterator = colData.keySet().iterator();
 
-        while (iterator.hasNext()) {
+        /*while (iterator.hasNext()) {
             String key = iterator.next().toString();
             String value = colData.get(key).toString();
             System.out.println("Key::-" + key + " Value::- " + value);
-        }
+        }*/
 
         return colData;
 

@@ -147,7 +147,7 @@ public class Krb5ConfServerSetupTask implements ServerSetupTask {
         DataOutputStream dos = null;
         try {
             dos = new DataOutputStream(new FileOutputStream(keytabFile));
-            dos.write(Keytab.VERSION_52);
+            dos.write(Keytab.VERSION_0X502_BYTES);
 
             for (Map.Entry<EncryptionType, EncryptionKey> keyEntry : KerberosKeyFactory.getKerberosKeys(principalName,
                     passPhrase).entrySet()) {

@@ -50,13 +50,6 @@
             </descriptors>
           </configuration>
         </plugin>
-        <plugin>
-          <groupId>org.apache.maven.plugins</groupId>
-          <artifactId>maven-surefire-plugin</artifactId>
-          <configuration>
-            <redirectTestOutputToFile>true</redirectTestOutputToFile>
-          </configuration>
-        </plugin>
       </plugins>
     </build>
 
@@ -107,23 +100,4 @@
            <scope>test</scope>
         </dependency>
     </dependencies>
-
-    <profiles>
-        <profile>
-            <id>tools</id>
-            <activation>
-                <file><exists>${com.sun.tools.path}</exists></file>
-            </activation>
-            <dependencies>
-                    <dependency>
-                    <groupId>com.sun</groupId>
-                    <artifactId>tools</artifactId>
-                    <scope>system</scope>
-                    <version>${maven.compiler.source}</version>
-                    <systemPath>${com.sun.tools.path}</systemPath>
-                </dependency>
-            </dependencies>
-        </profile>
-    </profiles>
-
 </project>

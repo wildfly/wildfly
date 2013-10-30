@@ -98,7 +98,7 @@ public class EjbSecurityDomainSetup extends AbstractSecurityDomainSetup {
             steps.add(loginModule);
         }
 
-        System.out.println(compositeOp);
+        //System.out.println(compositeOp);
         applyUpdates(managementClient.getControllerClient(), Arrays.asList(compositeOp));
     }
 }

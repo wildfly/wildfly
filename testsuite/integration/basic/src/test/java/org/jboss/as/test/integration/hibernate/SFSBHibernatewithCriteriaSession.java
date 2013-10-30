@@ -153,7 +153,7 @@ public class SFSBHibernatewithCriteriaSession {
         Query query = session.createQuery(SQL_QUERY);
         for (Iterator it = query.iterate(); it.hasNext();) {
             Planet planet = (Planet) it.next();
-            System.out.println("ID from HQL: " + planet.getPlanetId());
+            //System.out.println("ID from HQL: " + planet.getPlanetId());
         }
 
         return query;

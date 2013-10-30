@@ -104,11 +104,11 @@ public class PureTestCase extends ContainerResourceMgmtTestBase {
 
         assertNotNull(ids);
         //On a running server it's 3 beacause HornetQResourceAdapter is always present  + ra itself and 1 actrivation from DMR
-        assertEquals(1, ids.size());
+        assertEquals(2, ids.size());
 
         for (String piId : ids) {
             assertNotNull(piId);
-            System.out.println("PID:" + piId);
+            //System.out.println("PID:" + piId);
             assertNotNull(repository.getResourceAdapter(piId));
         }
 
@@ -126,7 +126,7 @@ public class PureTestCase extends ContainerResourceMgmtTestBase {
 
         for (String piId : ids) {
             assertNotNull(piId);
-            System.out.println("PID:" + piId);
+            //System.out.println("PID:" + piId);
             assertNotNull(repository.getResourceAdapter(piId));
         }
     }

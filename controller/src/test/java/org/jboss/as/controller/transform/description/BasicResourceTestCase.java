@@ -344,7 +344,7 @@ public class BasicResourceTestCase {
 
         OperationTransformer.TransformedOperation op = transformOperation(operation);
         final ModelNode transformed = op.getTransformedOperation();
-        System.out.println(transformed);
+        //System.out.println(transformed);
         Assert.assertEquals(COMPOSITE, transformed.get(OP).asString());
         Assert.assertEquals(new ModelNode().setEmptyList(), transformed.get(OP_ADDR));
         Assert.assertEquals(ModelType.LIST, transformed.get(STEPS).getType());

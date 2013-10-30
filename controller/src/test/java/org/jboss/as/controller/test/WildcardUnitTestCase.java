@@ -74,7 +74,7 @@ public class WildcardUnitTestCase extends AbstractControllerTestBase {
         read.get(OP_ADDR).set(address);
 
         ModelNode result = controller.execute(read, null, null, null);
-        System.out.println(result);
+        //System.out.println(result);
         result = result.get("result");
 
         Assert.assertEquals(4, result.asInt()); // A,B one,two

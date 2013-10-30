@@ -119,7 +119,7 @@ public class ReadResourceDescriptionAccessConstraintDefinitionTestCase extends A
 
         //Get rid of the root ops to keep the output shorter before printing out
         result.get(OPERATIONS).set("-TRIMMED-");
-        System.out.println(result);
+        //System.out.println(result);
 
 
         ModelNode nonConstrained = result.get(CHILDREN, "nonconstrained-resource", MODEL_DESCRIPTION, "*");
@@ -191,7 +191,7 @@ public class ReadResourceDescriptionAccessConstraintDefinitionTestCase extends A
 
 
     private void checkAccessConstraint(ModelNode constraint, String type, boolean access, boolean read, boolean write) {
-        System.out.println(constraint);
+        //System.out.println(constraint);
         Assert.assertEquals(type, constraint.get("type").asString());
     }
 

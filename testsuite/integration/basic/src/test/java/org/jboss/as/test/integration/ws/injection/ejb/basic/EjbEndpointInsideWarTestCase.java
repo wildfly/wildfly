@@ -67,7 +67,7 @@ public class EjbEndpointInsideWarTestCase {
         JavaArchive sharedJar = ShrinkWrap.create(JavaArchive.class, "jaxws-injection.jar");
         sharedJar.addClass(BeanIface.class);
         sharedJar.addClass(BeanImpl.class);
-        System.out.println(sharedJar.toString(true));
+        //System.out.println(sharedJar.toString(true));
 
         // construct ejb3 jar
         JavaArchive ejb3Jar = ShrinkWrap.create(JavaArchive.class, "jaxws-injection-ejb3.jar");
@@ -76,14 +76,14 @@ public class EjbEndpointInsideWarTestCase {
         ejb3Jar.addClass(AbstractEndpointImpl.class);
         ejb3Jar.addClass(EndpointIface.class);
         ejb3Jar.addAsResource(EJB3Bean.class.getPackage(), "jaxws-handler.xml", "org/jboss/as/test/integration/ws/injection/ejb/basic/webservice/jaxws-handler.xml");
-        System.out.println(ejb3Jar.toString(true));
+        //System.out.println(ejb3Jar.toString(true));
 
         // construct war containing the ejb3 jar
         WebArchive ejb3War = ShrinkWrap.create(WebArchive.class, "jaxws-injection-ejb3-inside.war");
         ejb3War.addAsLibraries(sharedJar);
         ejb3War.addAsLibraries(ejb3Jar);
         ejb3War.addAsWebInfResource(EJB3Bean.class.getPackage(), "ejb-web.xml", "web.xml");
-        System.out.println(ejb3War.toString(true));
+        //System.out.println(ejb3War.toString(true));
 
         return ejb3War;
     }

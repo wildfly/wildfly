@@ -28,7 +28,6 @@
     <property name="module.repo.output.dir" value="${output.dir}/modules/system/layers/base"/>
     <property name="module.xml" value="module.xml"/>
 
-    <property name="bundle.repo.output.dir" value="${output.dir}/bundles/system/layers/base"/>
 
 
     <taskdef name="jandex" classname="org.jboss.jandex.JandexAntTask" />
@@ -68,38 +67,6 @@
         </sequential>
     </macrodef>
 
-    <macrodef name="bundle-def">
-        <attribute name="name"/>
-        <attribute name="slot" default="main"/>
-        <element name="resources" implicit="yes" optional="yes"/>
-
-        <sequential>
-            <echo message="Initializing bundle -> @{name}"/>
-            <!-- Figure out the correct bundle path -->
-            <define-bundle-dir name="@{name}" slot="@{slot}" />
-
-            <!-- Make the bundle output director -->
-            <mkdir dir="${bundle.repo.output.dir}/${current.bundle.path}"/>
-
-            <!-- Process the resource -->
-            <resources/>
-
-        </sequential>
-    </macrodef>
-
-    <macrodef name="maven-bundle" >
-        <attribute name="group"/>
-        <attribute name="artifact"/>
-
-        <sequential>
-            <!-- Copy the jar to the bundle dir -->
-            <copy todir="${bundle.repo.output.dir}/${current.bundle.path}" failonerror="true">
-                <fileset file="${@{group}:@{artifact}:jar}"/>
-                <mapper type="flatten" />
-            </copy>
-        </sequential>
-    </macrodef>
-
     <scriptdef name="define-module-dir" language="javascript">
         <attribute name="name"/>
         <attribute name="slot"/>
@@ -110,15 +77,6 @@
         ]]>
     </scriptdef>
 
-    <scriptdef name="define-bundle-dir" language="javascript">
-        <attribute name="name"/>
-        <attribute name="slot"/>
-        <![CDATA[
-            name = attributes.get("name");
-            name = name.replace(".", "/");
-            project.setProperty("current.bundle.path", name + "/" + attributes.get("slot"));
-        ]]>
-    </scriptdef>
 
     <macrodef name="maven-resource" >
         <attribute name="group"/>
