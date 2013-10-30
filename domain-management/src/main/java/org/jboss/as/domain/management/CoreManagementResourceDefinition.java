@@ -86,9 +86,10 @@ public class CoreManagementResourceDefinition extends SimpleResourceDefinition {
 
     @Override
     public void registerChildren(ManagementResourceRegistration resourceRegistration) {
-        // TODO Currently these trickle through from the host controller definition - may need to consider how this merges with the domain.xml
-        resourceRegistration.registerSubModel(SecurityRealmResourceDefinition.INSTANCE);
-        resourceRegistration.registerSubModel(LdapConnectionResourceDefinition.INSTANCE);
+        if (environment != Environment.DOMAIN) {
+            resourceRegistration.registerSubModel(SecurityRealmResourceDefinition.INSTANCE);
+            resourceRegistration.registerSubModel(LdapConnectionResourceDefinition.INSTANCE);
+        }
 
         for (ResourceDefinition current : interfaces) {
             resourceRegistration.registerSubModel(current);
@@ -109,7 +110,7 @@ public class CoreManagementResourceDefinition extends SimpleResourceDefinition {
             case STANDALONE_SERVER:
                 resourceRegistration.registerSubModel(AccessAuthorizationResourceDefinition.forStandaloneServer(authorizer));
         }
-        //resourceRegistration.registerSubModel(AccessAuditResourceDefinition.INSTANCE);
+
         if (registerAuditLog) {
             resourceRegistration.registerSubModel(new AccessAuditResourceDefinition(auditLogger, pathManager, environmentReader));
         }
