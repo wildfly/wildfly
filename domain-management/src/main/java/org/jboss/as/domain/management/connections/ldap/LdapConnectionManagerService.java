@@ -25,8 +25,9 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.INI
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SEARCH_CREDENTIAL;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SEARCH_DN;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.URL;
+import static org.jboss.as.domain.management.DomainManagementLogger.SECURITY_LOGGER;
 
-import java.util.Properties;
+import java.util.Hashtable;
 
 import javax.naming.Context;
 import javax.naming.directory.InitialDirContext;
@@ -102,7 +103,7 @@ public class LdapConnectionManagerService implements Service<LdapConnectionManag
 
     public Object getConnection(String principal, String credential) throws Exception {
         final ModelNode config = resolvedConfiguration;
-        Properties connectionProperties = getConnectionOnlyProperties(config);
+        Hashtable<String, String> connectionProperties = getConnectionOnlyProperties(config);
         connectionProperties.put(Context.SECURITY_PRINCIPAL, principal);
         connectionProperties.put(Context.SECURITY_CREDENTIALS, credential);
 
@@ -110,7 +111,7 @@ public class LdapConnectionManagerService implements Service<LdapConnectionManag
         return getConnection(connectionProperties, getSSLContext(true));
     }
 
-    private Object getConnection(final Properties properties, final SSLContext sslContext) throws Exception {
+    private Object getConnection(final Hashtable<String, String> properties, final SSLContext sslContext) throws Exception {
         ClassLoader old = SecurityActions.getContextClassLoader();
         try {
             if (sslContext != null) {
@@ -118,6 +119,17 @@ public class LdapConnectionManagerService implements Service<LdapConnectionManag
                 SecurityActions.setContextClassLoader(ThreadLocalSSLSocketFactory.class);
                 properties.put("java.naming.ldap.factory.socket", ThreadLocalSSLSocketFactory.class.getName());
             }
+            if (SECURITY_LOGGER.isTraceEnabled()) {
+                Hashtable<String, String> logProperties;
+                if (properties.containsKey(Context.SECURITY_CREDENTIALS)) {
+                    logProperties = new Hashtable<String, String>(properties);
+                    logProperties.put(Context.SECURITY_CREDENTIALS, "***");
+                } else {
+                    logProperties = properties;
+                }
+                SECURITY_LOGGER.tracef("Connecting to LDAP with properties (%s)", logProperties.toString());
+            }
+
             return new InitialDirContext(properties);
         } finally {
             if (sslContext != null) {
@@ -139,8 +151,8 @@ public class LdapConnectionManagerService implements Service<LdapConnectionManag
         return sslContext;
     }
 
-    private Properties getConnectionOnlyProperties(final ModelNode config) {
-        final Properties result = new Properties();
+    private Hashtable<String, String> getConnectionOnlyProperties(final ModelNode config) {
+        final Hashtable<String, String> result = new Hashtable<String, String>();
         String initialContextFactory = config.require(INITIAL_CONTEXT_FACTORY).asString();
         result.put(Context.INITIAL_CONTEXT_FACTORY,initialContextFactory);
         String url = config.require(URL).asString();
@@ -148,8 +160,8 @@ public class LdapConnectionManagerService implements Service<LdapConnectionManag
         return result;
     }
 
-    private Properties getFullProperties(final ModelNode config) {
-        final Properties result = getConnectionOnlyProperties(config);
+    private Hashtable<String, String> getFullProperties(final ModelNode config) {
+        final Hashtable<String, String> result = getConnectionOnlyProperties(config);
         // These are no longer mandatory as the SSL identity of the server
         // could be used instead.
         if (config.hasDefined(SEARCH_DN)) {
