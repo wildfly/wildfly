@@ -48,7 +48,7 @@ import org.junit.Test;
  *
  * @author Brian Stansberry (c) 2013 Red Hat Inc.
  */
-public abstract class AbstractStandardRolesTestCase extends AbstractRbacTestCase {
+public abstract class AbstractStandardRolesTestCase extends AbstractRbacTestCase implements RbacDomainRolesTests {
 
 
     @After
@@ -82,6 +82,9 @@ public abstract class AbstractStandardRolesTestCase extends AbstractRbacTestCase
         checkSecurityDomainRead(client, MASTER, MASTER_A, Outcome.HIDDEN, MONITOR_USER);
         checkSensitiveAttribute(client, null, null, false, MONITOR_USER);
         checkSensitiveAttribute(client, MASTER, MASTER_A, false, MONITOR_USER);
+
+        if (readOnly) return;
+
         runGC(client, MASTER, null, Outcome.UNAUTHORIZED, MONITOR_USER);
         runGC(client, MASTER, MASTER_A, Outcome.UNAUTHORIZED, MONITOR_USER);
         addDeployment2(client, Outcome.UNAUTHORIZED, MONITOR_USER);
@@ -102,6 +105,9 @@ public abstract class AbstractStandardRolesTestCase extends AbstractRbacTestCase
         checkSecurityDomainRead(client, MASTER, MASTER_A, Outcome.HIDDEN, OPERATOR_USER);
         checkSensitiveAttribute(client, null, null, false, OPERATOR_USER);
         checkSensitiveAttribute(client, MASTER, MASTER_A, false, OPERATOR_USER);
+
+        if (readOnly) return;
+
         runGC(client, MASTER, null, Outcome.SUCCESS, OPERATOR_USER);
         runGC(client, MASTER, MASTER_A, Outcome.SUCCESS, OPERATOR_USER);
         addDeployment2(client, Outcome.UNAUTHORIZED, OPERATOR_USER);
@@ -122,6 +128,9 @@ public abstract class AbstractStandardRolesTestCase extends AbstractRbacTestCase
         checkSecurityDomainRead(client, MASTER, MASTER_A, Outcome.HIDDEN, MAINTAINER_USER);
         checkSensitiveAttribute(client, null, null, false, MAINTAINER_USER);
         checkSensitiveAttribute(client, MASTER, MASTER_A, false, MAINTAINER_USER);
+
+        if (readOnly) return;
+
         runGC(client, MASTER, null, Outcome.SUCCESS, MAINTAINER_USER);
         runGC(client, MASTER, MASTER_A, Outcome.SUCCESS, MAINTAINER_USER);
         addDeployment2(client, Outcome.SUCCESS, MAINTAINER_USER);
@@ -141,6 +150,9 @@ public abstract class AbstractStandardRolesTestCase extends AbstractRbacTestCase
         checkSecurityDomainRead(client, MASTER, MASTER_A, Outcome.HIDDEN, DEPLOYER_USER);
         checkSensitiveAttribute(client, null, null, false, DEPLOYER_USER);
         checkSensitiveAttribute(client, MASTER, MASTER_A, false, DEPLOYER_USER);
+
+        if (readOnly) return;
+
         runGC(client, MASTER, null, Outcome.UNAUTHORIZED, DEPLOYER_USER);
         runGC(client, MASTER, MASTER_A, Outcome.UNAUTHORIZED, DEPLOYER_USER);
         addDeployment2(client, Outcome.SUCCESS, DEPLOYER_USER);
@@ -161,6 +173,9 @@ public abstract class AbstractStandardRolesTestCase extends AbstractRbacTestCase
         checkSecurityDomainRead(client, MASTER, MASTER_A, Outcome.SUCCESS, ADMINISTRATOR_USER);
         checkSensitiveAttribute(client, null, null, true, ADMINISTRATOR_USER);
         checkSensitiveAttribute(client, MASTER, MASTER_A, true, ADMINISTRATOR_USER);
+
+        if (readOnly) return;
+
         runGC(client, MASTER, null, Outcome.SUCCESS, ADMINISTRATOR_USER);
         runGC(client, MASTER, MASTER_A, Outcome.SUCCESS, ADMINISTRATOR_USER);
         addDeployment2(client, Outcome.SUCCESS, ADMINISTRATOR_USER);
@@ -181,6 +196,9 @@ public abstract class AbstractStandardRolesTestCase extends AbstractRbacTestCase
         checkSecurityDomainRead(client, MASTER, MASTER_A, Outcome.SUCCESS, AUDITOR_USER);
         checkSensitiveAttribute(client, null, null, true, AUDITOR_USER);
         checkSensitiveAttribute(client, MASTER, MASTER_A, true, AUDITOR_USER);
+
+        if (readOnly) return;
+
         runGC(client, MASTER, null, Outcome.UNAUTHORIZED, AUDITOR_USER);
         runGC(client, MASTER, MASTER_A, Outcome.UNAUTHORIZED, AUDITOR_USER);
         addDeployment2(client, Outcome.UNAUTHORIZED, AUDITOR_USER);
@@ -201,6 +219,9 @@ public abstract class AbstractStandardRolesTestCase extends AbstractRbacTestCase
         checkSecurityDomainRead(client, MASTER, MASTER_A, Outcome.SUCCESS, SUPERUSER_USER);
         checkSensitiveAttribute(client, null, null, true, SUPERUSER_USER);
         checkSensitiveAttribute(client, MASTER, MASTER_A, true, SUPERUSER_USER);
+
+        if (readOnly) return;
+
         runGC(client, MASTER, null, Outcome.SUCCESS, SUPERUSER_USER);
         runGC(client, MASTER, MASTER_A, Outcome.SUCCESS, SUPERUSER_USER);
         addDeployment2(client, Outcome.SUCCESS, SUPERUSER_USER);
