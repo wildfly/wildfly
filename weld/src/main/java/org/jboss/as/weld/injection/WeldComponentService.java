@@ -24,6 +24,7 @@ package org.jboss.as.weld.injection;
 import static org.jboss.weld.util.reflection.Reflections.cast;
 
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Iterator;
 import java.util.Map;
 import java.util.Set;
@@ -165,7 +166,7 @@ public class WeldComponentService implements Service<WeldComponentService> {
     }
 
     private <T> ManagedBean<T> findManagedBeanForWSComponent(Class<T> definingClass) {
-        Set<Bean<?>> beans = beanManager.getBeans(definingClass, AnyLiteral.INSTANCE);
+        Set<Bean<?>> beans = new HashSet<Bean<?>>(beanManager.getBeans(definingClass, AnyLiteral.INSTANCE));
         for (Iterator<Bean<?>> i = beans.iterator(); i.hasNext();) {
             Bean<?> bean = i.next();
             if (bean instanceof ManagedBean<?> && bean.getBeanClass().equals(definingClass)) {
