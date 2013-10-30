@@ -22,8 +22,6 @@
 
 package org.jboss.as.naming.service;
 
-import javax.naming.NamingException;
-
 import org.jboss.as.naming.NamingContext;
 import org.jboss.as.naming.NamingStore;
 import org.jboss.msc.service.Service;
@@ -31,6 +29,7 @@ import org.jboss.msc.service.ServiceName;
 import org.jboss.msc.service.StartContext;
 import org.jboss.msc.service.StartException;
 import org.jboss.msc.service.StopContext;
+import org.jboss.msc.value.InjectedValue;
 
 import static org.jboss.as.naming.NamingLogger.ROOT_LOGGER;
 import static org.jboss.as.naming.NamingMessages.MESSAGES;
@@ -39,18 +38,26 @@ import static org.jboss.as.naming.NamingMessages.MESSAGES;
  * Service responsible for creating and managing the life-cycle of the Naming Server.
  *
  * @author John E. Bailey
+ * @author Eduardo Martins
  */
 public class NamingService implements Service<NamingStore> {
     public static final ServiceName SERVICE_NAME = ServiceName.JBOSS.append("naming");
-    private final NamingStore namingStore;
+    private final InjectedValue<NamingStore> namingStore;
 
     /**
      * Construct a new instance.
      *
-     * @param namingStore The naming store.
      */
-    public NamingService(final NamingStore namingStore) {
-        this.namingStore = namingStore;
+    public NamingService() {
+        this.namingStore = new InjectedValue<>();
+    }
+
+    /**
+     * Retrieves the naming store's InjectedValue.
+     * @return
+     */
+    public InjectedValue<NamingStore> getNamingStore() {
+        return namingStore;
     }
 
     /**
@@ -59,10 +66,10 @@ public class NamingService implements Service<NamingStore> {
      * @param context The start context
      * @throws StartException If any errors occur setting up the naming server
      */
-    public synchronized void start(StartContext context) throws StartException {
+    public void start(StartContext context) throws StartException {
         ROOT_LOGGER.startingService();
         try {
-            NamingContext.setActiveNamingStore(namingStore);
+            NamingContext.setActiveNamingStore(namingStore.getValue());
         } catch (Throwable t) {
             throw new StartException(MESSAGES.failedToStart("naming service"), t);
         }
@@ -73,13 +80,8 @@ public class NamingService implements Service<NamingStore> {
      *
      * @param context The stop context.
      */
-    public synchronized void stop(StopContext context) {
+    public void stop(StopContext context) {
         NamingContext.setActiveNamingStore(null);
-        try {
-            namingStore.close();
-        } catch (NamingException e) {
-            throw new RuntimeException(e);
-        }
     }
 
     /**
@@ -88,7 +90,7 @@ public class NamingService implements Service<NamingStore> {
      * @return The naming store.
      * @throws IllegalStateException
      */
-    public synchronized NamingStore getValue() throws IllegalStateException {
-        return namingStore;
+    public NamingStore getValue() throws IllegalStateException {
+        return namingStore.getValue();
     }
 }

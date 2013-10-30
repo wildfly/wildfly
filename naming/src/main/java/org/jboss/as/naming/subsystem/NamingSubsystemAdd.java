@@ -22,35 +22,27 @@
 
 package org.jboss.as.naming.subsystem;
 
-import static org.jboss.as.naming.NamingLogger.ROOT_LOGGER;
-
-import java.util.List;
-
-import javax.naming.CompositeName;
-import javax.naming.Context;
-import javax.naming.NamingException;
-
 import org.jboss.as.controller.AbstractBoottimeAddStepHandler;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.ServiceVerificationHandler;
 import org.jboss.as.naming.NamingContext;
 import org.jboss.as.naming.NamingStore;
-import org.jboss.as.naming.ServiceBasedNamingStore;
-import org.jboss.as.naming.WritableServiceBasedNamingStore;
-import org.jboss.as.naming.context.NamespaceContextSelector;
 import org.jboss.as.naming.deployment.ContextNames;
 import org.jboss.as.naming.deployment.JndiNamingDependencyProcessor;
 import org.jboss.as.naming.management.JndiViewExtensionRegistry;
+import org.jboss.as.naming.service.DefaultNamespaceContextSelectorService;
 import org.jboss.as.naming.service.NamingService;
 import org.jboss.as.naming.service.NamingStoreService;
 import org.jboss.as.server.AbstractDeploymentChainStep;
-import org.jboss.as.server.CurrentServiceContainer;
 import org.jboss.as.server.DeploymentProcessorTarget;
 import org.jboss.as.server.deployment.Phase;
 import org.jboss.dmr.ModelNode;
-import org.jboss.msc.service.ServiceContainer;
 import org.jboss.msc.service.ServiceController;
 import org.jboss.msc.service.ServiceTarget;
+
+import java.util.List;
+
+import static org.jboss.as.naming.NamingLogger.ROOT_LOGGER;
 
 /**
  * @author <a href="mailto:david.lloyd@redhat.com">David M. Lloyd</a>
@@ -58,7 +50,6 @@ import org.jboss.msc.service.ServiceTarget;
  * @author John Bailey
  */
 public class NamingSubsystemAdd extends AbstractBoottimeAddStepHandler {
-    private static final CompositeName EMPTY_NAME = new CompositeName();
 
     static final NamingSubsystemAdd INSTANCE = new NamingSubsystemAdd();
 
@@ -71,62 +62,50 @@ public class NamingSubsystemAdd extends AbstractBoottimeAddStepHandler {
         ROOT_LOGGER.activatingSubsystem();
 
         NamingContext.initializeNamingManager();
-        final ServiceContainer serviceContainer = CurrentServiceContainer.getServiceContainer();
         final ServiceTarget target = context.getServiceTarget();
 
+        // Create the java: namespace
+        newControllers.add(target.addService(ContextNames.JAVA_CONTEXT_SERVICE_NAME, new NamingStoreService())
+                .setInitialMode(ServiceController.Mode.ACTIVE)
+                .addListener(verificationHandler)
+                .install());
+
         // Create the Naming Service
-        final ServiceBasedNamingStore namingStore = new WritableServiceBasedNamingStore(serviceContainer, ContextNames.JAVA_CONTEXT_SERVICE_NAME,target);
-        newControllers.add(target.addService(NamingService.SERVICE_NAME, new NamingService(namingStore))
-                .addAliases(ContextNames.JAVA_CONTEXT_SERVICE_NAME)
+        final NamingService namingService = new NamingService();
+        newControllers.add(target.addService(NamingService.SERVICE_NAME, namingService)
+                .addDependency(ContextNames.JAVA_CONTEXT_SERVICE_NAME, NamingStore.class, namingService.getNamingStore())
                 .setInitialMode(ServiceController.Mode.ACTIVE)
                 .addListener(verificationHandler)
                 .install());
 
         // Create the java:global namespace
-        final ServiceBasedNamingStore globalNamingStore = new WritableServiceBasedNamingStore(serviceContainer, ContextNames.GLOBAL_CONTEXT_SERVICE_NAME,target);
-        newControllers.add(target.addService(ContextNames.GLOBAL_CONTEXT_SERVICE_NAME, new NamingStoreService(globalNamingStore))
+        newControllers.add(target.addService(ContextNames.GLOBAL_CONTEXT_SERVICE_NAME, new NamingStoreService())
                 .setInitialMode(ServiceController.Mode.ACTIVE)
                 .addListener(verificationHandler)
                 .install());
 
         // Create the java:jboss vendor namespace
-        final ServiceBasedNamingStore jbossNamingStore = new WritableServiceBasedNamingStore(serviceContainer, ContextNames.JBOSS_CONTEXT_SERVICE_NAME,target);
-        newControllers.add(target.addService(ContextNames.JBOSS_CONTEXT_SERVICE_NAME, new NamingStoreService(jbossNamingStore))
+        newControllers.add(target.addService(ContextNames.JBOSS_CONTEXT_SERVICE_NAME, new NamingStoreService())
                 .setInitialMode(ServiceController.Mode.ACTIVE)
                 .addListener(verificationHandler)
                 .install());
 
         // Setup remote naming store
         //we always install the naming store, but we don't install the server unless it has been explicitly enabled
-        final ServiceBasedNamingStore remoteExposedNamingStore = new WritableServiceBasedNamingStore(serviceContainer, ContextNames.EXPORTED_CONTEXT_SERVICE_NAME,target);
-        newControllers.add(target.addService(ContextNames.EXPORTED_CONTEXT_SERVICE_NAME, new NamingStoreService(remoteExposedNamingStore))
+        newControllers.add(target.addService(ContextNames.EXPORTED_CONTEXT_SERVICE_NAME, new NamingStoreService())
                 .setInitialMode(ServiceController.Mode.ACTIVE)
                 .addListener(verificationHandler)
                 .install());
 
-        NamespaceContextSelector.setDefault(new NamespaceContextSelector() {
-            public Context getContext(String identifier) {
-                final NamingStore namingStore;
-                if (identifier.equals("global")) {
-                    namingStore = globalNamingStore;
-                } else if (identifier.equals("jboss")) {
-                    namingStore = jbossNamingStore;
-                } else if (identifier.equals("jboss/exported")) {
-                    namingStore = remoteExposedNamingStore;
-                } else {
-                    namingStore = null;
-                }
-                if (namingStore != null) {
-                    try {
-                        return (Context) namingStore.lookup(EMPTY_NAME);
-                    } catch (NamingException e) {
-                        throw new IllegalStateException(e);
-                    }
-                } else {
-                    return null;
-                }
-            }
-        });
+        // add the default namespace context selector service
+        DefaultNamespaceContextSelectorService defaultNamespaceContextSelectorService = new DefaultNamespaceContextSelectorService();
+        newControllers.add(target.addService(DefaultNamespaceContextSelectorService.SERVICE_NAME, defaultNamespaceContextSelectorService)
+                .addDependency(ContextNames.GLOBAL_CONTEXT_SERVICE_NAME, NamingStore.class, defaultNamespaceContextSelectorService.getGlobalNamingStore())
+                .addDependency(ContextNames.JBOSS_CONTEXT_SERVICE_NAME, NamingStore.class, defaultNamespaceContextSelectorService.getJbossNamingStore())
+                .addDependency(ContextNames.EXPORTED_CONTEXT_SERVICE_NAME, NamingStore.class, defaultNamespaceContextSelectorService.getRemoteExposedNamingStore())
+                .setInitialMode(ServiceController.Mode.ACTIVE)
+                .addListener(verificationHandler)
+                .install());
 
         newControllers.add(target.addService(JndiViewExtensionRegistry.SERVICE_NAME, new JndiViewExtensionRegistry()).install());
 

@@ -27,6 +27,9 @@ import javax.naming.NamingException;
 import org.jboss.as.naming.ServiceBasedNamingStore;
 import org.jboss.as.naming.WritableServiceBasedNamingStore;
 import org.jboss.msc.service.Service;
+import org.jboss.msc.service.ServiceName;
+import org.jboss.msc.service.ServiceRegistry;
+import org.jboss.msc.service.ServiceTarget;
 import org.jboss.msc.service.StartContext;
 import org.jboss.msc.service.StartException;
 import org.jboss.msc.service.StopContext;
@@ -34,21 +37,23 @@ import org.jboss.msc.service.StopContext;
 import static org.jboss.as.naming.NamingMessages.MESSAGES;
 
 /**
- * Service responsible for managing the creation and life-cycle of a naming store.
- * <p>
- * Contexts created by this service use a separate in-memory store
+ * Service responsible for managing the creation and life-cycle of a service based naming store.
  *
  * @author John E. Bailey
  * @author Stuart Douglas
+ * @author Eduardo Martins
  */
 public class NamingStoreService implements Service<ServiceBasedNamingStore> {
-    private ServiceBasedNamingStore store;
+
+    private final boolean readOnly;
+    private volatile ServiceBasedNamingStore store;
 
     public NamingStoreService() {
+        this(false);
     }
 
-    public NamingStoreService(ServiceBasedNamingStore store) {
-        this.store = store;
+    public NamingStoreService(boolean readOnly) {
+        this.readOnly = readOnly;
     }
 
     /**
@@ -57,9 +62,12 @@ public class NamingStoreService implements Service<ServiceBasedNamingStore> {
      * @param context The start context
      * @throws StartException If any problems occur creating the context
      */
-    public synchronized void start(final StartContext context) throws StartException {
+    public void start(final StartContext context) throws StartException {
         if(store == null) {
-            store = new WritableServiceBasedNamingStore(context.getController().getServiceContainer(), context.getController().getName(),context.getChildTarget());
+            final ServiceRegistry serviceRegistry = context.getController().getServiceContainer();
+            final ServiceName serviceNameBase = context.getController().getName();
+            final ServiceTarget serviceTarget = context.getChildTarget();
+            store = readOnly ? new ServiceBasedNamingStore(serviceRegistry, serviceNameBase) : new WritableServiceBasedNamingStore(serviceRegistry, serviceNameBase, serviceTarget);
         }
     }
 
@@ -68,12 +76,14 @@ public class NamingStoreService implements Service<ServiceBasedNamingStore> {
      *
      * @param context The stop context
      */
-    public synchronized void stop(StopContext context) {
-        try {
-            store.close();
-            store = null;
-        } catch (NamingException e) {
-            throw MESSAGES.failedToDestroyRootContext(e);
+    public void stop(StopContext context) {
+        if(store != null) {
+            try {
+                store.close();
+                store = null;
+            } catch (NamingException e) {
+                throw MESSAGES.failedToDestroyRootContext(e);
+            }
         }
     }
 
@@ -83,7 +93,7 @@ public class NamingStoreService implements Service<ServiceBasedNamingStore> {
      * @return The naming store
      * @throws IllegalStateException
      */
-    public synchronized ServiceBasedNamingStore getValue() throws IllegalStateException {
+    public ServiceBasedNamingStore getValue() throws IllegalStateException {
         return store;
     }
 }
