@@ -20,7 +20,7 @@
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
 
-package org.jboss.as.test.integration.domain.suites;
+package org.jboss.as.test.integration.domain;
 
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ADD;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.AUTO_START;
@@ -53,12 +53,12 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.STE
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.STOP;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.STOP_SERVERS;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SUCCESS;
-import static org.jboss.as.test.integration.domain.management.util.DomainTestSupport.validateResponse;
 import static org.jboss.as.test.integration.domain.management.util.DomainTestUtils.checkState;
-import static org.jboss.as.test.integration.domain.management.util.DomainTestUtils.executeForResult;
 import static org.jboss.as.test.integration.domain.management.util.DomainTestUtils.getServerConfigAddress;
 import static org.jboss.as.test.integration.domain.management.util.DomainTestUtils.startServer;
 import static org.jboss.as.test.integration.domain.management.util.DomainTestUtils.waitUntilState;
+
+import java.io.IOException;
 
 import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.PathElement;
@@ -72,10 +72,7 @@ import org.jboss.dmr.Property;
 import org.junit.AfterClass;
 import org.junit.Assert;
 import org.junit.BeforeClass;
-import org.junit.Ignore;
 import org.junit.Test;
-
-import java.io.IOException;
 
 /**
  * @author Emanuel Muckenhuber
@@ -107,7 +104,8 @@ public class ServerManagementTestCase {
 
     @BeforeClass
     public static void setupDomain() throws Exception {
-        testSupport = DomainTestSuite.createSupport(ServerManagementTestCase.class.getSimpleName());
+        testSupport = DomainTestSupport.createAndStartSupport(DomainTestSupport.Configuration.create(ServerManagementTestCase.class.getName(),
+                "domain-configs/domain-minimal.xml", "host-configs/host-master.xml", "host-configs/host-slave.xml"));
 
         domainMasterLifecycleUtil = testSupport.getDomainMasterLifecycleUtil();
         domainSlaveLifecycleUtil = testSupport.getDomainSlaveLifecycleUtil();
@@ -115,7 +113,7 @@ public class ServerManagementTestCase {
 
     @AfterClass
     public static void tearDownDomain() throws Exception {
-        DomainTestSuite.stopSupport();
+        testSupport.stop();
         testSupport = null;
         domainMasterLifecycleUtil = null;
         domainSlaveLifecycleUtil = null;
@@ -230,7 +228,6 @@ public class ServerManagementTestCase {
 
     }
 
-    @Ignore("AS7-2653")
     @Test
     public void testDomainLifecycleMethods() throws Throwable {
 
@@ -300,6 +297,9 @@ public class ServerManagementTestCase {
                 resetServerToExpectedState(client, "slave", "main-three", "STARTED");
                 resetServerToExpectedState(client, "slave", "main-four", "DISABLED");
                 resetServerToExpectedState(client, "slave", "other-two", "STARTED");
+                waitUntilState(client, "master", "main-one", "STARTED");
+                waitUntilState(client, "slave", "main-three", "STARTED");
+                waitUntilState(client, "slave", "other-two", "STARTED");
             } catch (Exception e) {
                 e.printStackTrace();
             }
@@ -374,6 +374,7 @@ public class ServerManagementTestCase {
                 //stop server
                 operation.get(OP).set(STOP);
             }
+            client.execute(operation);
         }
     }
 }
