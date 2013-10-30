@@ -94,25 +94,21 @@ public class OperationRouting {
             // Recurse into the steps to see what's required
             if (operation.hasDefined(STEPS)) {
                 Set<String> allHosts = new HashSet<String>();
-                boolean twoStep = false;
+                boolean fwdToAllHosts = false;
                 for (ModelNode step : operation.get(STEPS).asList()) {
                     ImmutableManagementResourceRegistration stepRegistry = registry.getSubModel(PathAddress.pathAddress(step.get(OP_ADDR)));
                     OperationRouting stepRouting = determineRouting(step, localHostControllerInfo, stepRegistry);
                     if (stepRouting.isTwoStep()) {
-                        twoStep = true;
+                        // Make sure we don't loose the information that we have to execute the operation on all hosts
+                        fwdToAllHosts = fwdToAllHosts || stepRouting.getHosts().isEmpty();
                     }
                     allHosts.addAll(stepRouting.getHosts());
                 }
-
-                // AS7-2907 Always process as a two-step so the results for a composite op are consistent in all cases
-                // routing = new OperationRouting(allHosts.iterator().next(), twoStep);
-//                if (allHosts.size() == 1) {
-//                    routing = new OperationRouting(allHosts.iterator().next(), true);
-//                }
-//                else {
-//                    routing = new OperationRouting(allHosts);
-//                }
-                routing = new OperationRouting(allHosts);
+                if (fwdToAllHosts) {
+                    routing = new OperationRouting(true);
+                } else {
+                    routing = new OperationRouting(allHosts);
+                }
             }
             else {
                 // empty; this will be an error but don't deal with it here
