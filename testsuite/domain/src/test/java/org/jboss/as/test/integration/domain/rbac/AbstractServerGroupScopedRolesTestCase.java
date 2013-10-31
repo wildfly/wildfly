@@ -61,7 +61,7 @@ import org.junit.Test;
  *
  * @author Brian Stansberry (c) 2013 Red Hat Inc.
  */
-public abstract class AbstractServerGroupScopedRolesTestCase extends AbstractRbacTestCase {
+public abstract class AbstractServerGroupScopedRolesTestCase extends AbstractRbacTestCase implements RbacDomainRolesTests {
 
     public static final String MONITOR_USER = "MainGroupMonitor";
     public static final String OPERATOR_USER = "MainGroupOperator";
@@ -102,6 +102,7 @@ public abstract class AbstractServerGroupScopedRolesTestCase extends AbstractRba
 
         WFLY_1916_OP.protect();
     }
+
     protected static void setupRoles(DomainClient domainClient) throws IOException {
         for (int i = 0; i < USERS.length; i++) {
             ModelNode op = createOpNode(SCOPED_ROLE + USERS[i], ADD);
@@ -147,6 +148,7 @@ public abstract class AbstractServerGroupScopedRolesTestCase extends AbstractRba
     @Test
     public void testMonitor() throws Exception {
         ModelControllerClient client = getClientForUser(MONITOR_USER, isAllowLocalAuth(), masterClientConfig);
+        readWholeConfig(client, Outcome.UNAUTHORIZED, MONITOR_USER);
         checkStandardReads(client, null, null, MONITOR_USER);
         checkRootRead(client, null, null, Outcome.SUCCESS, MONITOR_USER);
         checkRootRead(client, MASTER, null, Outcome.SUCCESS, MONITOR_USER);
@@ -160,6 +162,9 @@ public abstract class AbstractServerGroupScopedRolesTestCase extends AbstractRba
         checkSecurityDomainRead(client, MASTER, SLAVE_B, Outcome.HIDDEN, MONITOR_USER);
         checkSensitiveAttribute(client, null, null, false, MONITOR_USER);
         checkSensitiveAttribute(client, MASTER, MASTER_A, false, MONITOR_USER);
+
+        if (readOnly) return;
+
         runGC(client, MASTER, null, Outcome.UNAUTHORIZED, MONITOR_USER);
         runGC(client, MASTER, MASTER_A, Outcome.UNAUTHORIZED, MONITOR_USER);
         runGC(client, SLAVE, null, Outcome.UNAUTHORIZED, MONITOR_USER);
@@ -183,6 +188,7 @@ public abstract class AbstractServerGroupScopedRolesTestCase extends AbstractRba
     @Test
     public void testOperator() throws Exception {
         ModelControllerClient client = getClientForUser(OPERATOR_USER, isAllowLocalAuth(), masterClientConfig);
+        readWholeConfig(client, Outcome.UNAUTHORIZED, OPERATOR_USER);
         checkStandardReads(client, null, null, OPERATOR_USER);
         checkRootRead(client, null, null, Outcome.SUCCESS, OPERATOR_USER);
         checkRootRead(client, MASTER, null, Outcome.SUCCESS, OPERATOR_USER);
@@ -196,6 +202,9 @@ public abstract class AbstractServerGroupScopedRolesTestCase extends AbstractRba
         checkSecurityDomainRead(client, MASTER, SLAVE_B, Outcome.HIDDEN, OPERATOR_USER);
         checkSensitiveAttribute(client, null, null, false, OPERATOR_USER);
         checkSensitiveAttribute(client, MASTER, MASTER_A, false, OPERATOR_USER);
+
+        if (readOnly) return;
+
         runGC(client, MASTER, null, Outcome.SUCCESS, OPERATOR_USER);
         runGC(client, MASTER, MASTER_A, Outcome.SUCCESS, OPERATOR_USER);
         runGC(client, SLAVE, null, Outcome.UNAUTHORIZED, OPERATOR_USER);
@@ -219,6 +228,7 @@ public abstract class AbstractServerGroupScopedRolesTestCase extends AbstractRba
     @Test
     public void testMaintainer() throws Exception {
         ModelControllerClient client = getClientForUser(MAINTAINER_USER, isAllowLocalAuth(), masterClientConfig);
+        readWholeConfig(client, Outcome.UNAUTHORIZED, MAINTAINER_USER);
         checkStandardReads(client, null, null, MAINTAINER_USER);
         checkRootRead(client, null, null, Outcome.SUCCESS, MAINTAINER_USER);
         checkRootRead(client, MASTER, null, Outcome.SUCCESS, MAINTAINER_USER);
@@ -232,6 +242,9 @@ public abstract class AbstractServerGroupScopedRolesTestCase extends AbstractRba
         checkSecurityDomainRead(client, MASTER, SLAVE_B, Outcome.HIDDEN, MAINTAINER_USER);
         checkSensitiveAttribute(client, null, null, false, MAINTAINER_USER);
         checkSensitiveAttribute(client, MASTER, MASTER_A, false, MAINTAINER_USER);
+
+        if (readOnly) return;
+
         runGC(client, MASTER, null, Outcome.SUCCESS, MAINTAINER_USER);
         runGC(client, MASTER, MASTER_A, Outcome.SUCCESS, MAINTAINER_USER);
         runGC(client, SLAVE, null, Outcome.UNAUTHORIZED, MAINTAINER_USER);
@@ -255,6 +268,7 @@ public abstract class AbstractServerGroupScopedRolesTestCase extends AbstractRba
     @Test
     public void testDeployer() throws Exception {
         ModelControllerClient client = getClientForUser(DEPLOYER_USER, isAllowLocalAuth(), masterClientConfig);
+        readWholeConfig(client, Outcome.UNAUTHORIZED, DEPLOYER_USER);
         checkStandardReads(client, null, null, DEPLOYER_USER);
         checkRootRead(client, null, null, Outcome.SUCCESS, DEPLOYER_USER);
         checkRootRead(client, MASTER, null, Outcome.SUCCESS, DEPLOYER_USER);
@@ -268,6 +282,9 @@ public abstract class AbstractServerGroupScopedRolesTestCase extends AbstractRba
         checkSecurityDomainRead(client, MASTER, SLAVE_B, Outcome.HIDDEN, DEPLOYER_USER);
         checkSensitiveAttribute(client, null, null, false, DEPLOYER_USER);
         checkSensitiveAttribute(client, MASTER, MASTER_A, false, DEPLOYER_USER);
+
+        if (readOnly) return;
+
         runGC(client, MASTER, null, Outcome.UNAUTHORIZED, DEPLOYER_USER);
         runGC(client, MASTER, MASTER_A, Outcome.UNAUTHORIZED, DEPLOYER_USER);
         runGC(client, SLAVE, null, Outcome.UNAUTHORIZED, DEPLOYER_USER);
@@ -291,6 +308,7 @@ public abstract class AbstractServerGroupScopedRolesTestCase extends AbstractRba
     @Test
     public void testAdministrator() throws Exception {
         ModelControllerClient client = getClientForUser(ADMINISTRATOR_USER, isAllowLocalAuth(), masterClientConfig);
+        readWholeConfig(client, Outcome.SUCCESS, ADMINISTRATOR_USER);
         checkStandardReads(client, null, null, ADMINISTRATOR_USER);
         checkRootRead(client, null, null, Outcome.SUCCESS, ADMINISTRATOR_USER);
         checkRootRead(client, MASTER, null, Outcome.SUCCESS, ADMINISTRATOR_USER);
@@ -304,6 +322,9 @@ public abstract class AbstractServerGroupScopedRolesTestCase extends AbstractRba
         checkSecurityDomainRead(client, MASTER, SLAVE_B, Outcome.HIDDEN, ADMINISTRATOR_USER);
         checkSensitiveAttribute(client, null, null, true, ADMINISTRATOR_USER);
         checkSensitiveAttribute(client, MASTER, MASTER_A, true, ADMINISTRATOR_USER);
+
+        if (readOnly) return;
+
         runGC(client, MASTER, null, Outcome.SUCCESS, ADMINISTRATOR_USER);
         runGC(client, MASTER, MASTER_A, Outcome.SUCCESS, ADMINISTRATOR_USER);
         runGC(client, SLAVE, null, Outcome.UNAUTHORIZED, ADMINISTRATOR_USER);
@@ -327,6 +348,7 @@ public abstract class AbstractServerGroupScopedRolesTestCase extends AbstractRba
     @Test
     public void testAuditor() throws Exception {
         ModelControllerClient client = getClientForUser(AUDITOR_USER, isAllowLocalAuth(), masterClientConfig);
+        readWholeConfig(client, Outcome.SUCCESS, AUDITOR_USER);
         checkStandardReads(client, null, null, AUDITOR_USER);
         checkRootRead(client, null, null, Outcome.SUCCESS, AUDITOR_USER);
         checkRootRead(client, MASTER, null, Outcome.SUCCESS, AUDITOR_USER);
@@ -340,6 +362,9 @@ public abstract class AbstractServerGroupScopedRolesTestCase extends AbstractRba
         checkSecurityDomainRead(client, MASTER, SLAVE_B, Outcome.HIDDEN, AUDITOR_USER);
         checkSensitiveAttribute(client, null, null, true, AUDITOR_USER);
         checkSensitiveAttribute(client, MASTER, MASTER_A, true, AUDITOR_USER);
+
+        if (readOnly) return;
+
         runGC(client, MASTER, null, Outcome.UNAUTHORIZED, AUDITOR_USER);
         runGC(client, MASTER, MASTER_A, Outcome.UNAUTHORIZED, AUDITOR_USER);
         runGC(client, SLAVE, null, Outcome.UNAUTHORIZED, AUDITOR_USER);
@@ -363,6 +388,7 @@ public abstract class AbstractServerGroupScopedRolesTestCase extends AbstractRba
     @Test
     public void testSuperUser() throws Exception {
         ModelControllerClient client = getClientForUser(SUPERUSER_USER, isAllowLocalAuth(), masterClientConfig);
+        readWholeConfig(client, Outcome.SUCCESS, SUPERUSER_USER);
         checkStandardReads(client, null, null, SUPERUSER_USER);
         checkRootRead(client, null, null, Outcome.SUCCESS, SUPERUSER_USER);
         checkRootRead(client, MASTER, null, Outcome.SUCCESS, SUPERUSER_USER);
@@ -376,6 +402,9 @@ public abstract class AbstractServerGroupScopedRolesTestCase extends AbstractRba
         checkSecurityDomainRead(client, MASTER, SLAVE_B, Outcome.HIDDEN, SUPERUSER_USER);
         checkSensitiveAttribute(client, null, null, true, SUPERUSER_USER);
         checkSensitiveAttribute(client, MASTER, MASTER_A, true, SUPERUSER_USER);
+
+        if (readOnly) return;
+
         runGC(client, MASTER, null, Outcome.SUCCESS, SUPERUSER_USER);
         runGC(client, MASTER, MASTER_A, Outcome.SUCCESS, SUPERUSER_USER);
         runGC(client, SLAVE, null, Outcome.UNAUTHORIZED, SUPERUSER_USER);

@@ -27,7 +27,9 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ADD
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.AUTO_START;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.BLOCKING;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.BYTES;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.CHILD_TYPE;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.CONTENT;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.DESCRIBE;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ENABLED;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.GROUP;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.HOST;
@@ -36,11 +38,14 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OUT
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.PASSWORD;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.PATH;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.PROFILE;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.READ_CHILDREN_NAMES_OPERATION;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.READ_CONFIG_AS_XML_OPERATION;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.READ_RESOURCE_DESCRIPTION_OPERATION;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.READ_RESOURCE_OPERATION;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.REMOVE;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.RESTART;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.RESULT;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SUBSYSTEM;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SUCCESS;
 import static org.jboss.as.test.integration.management.util.ModelUtil.createOpNode;
 import static org.junit.Assert.assertEquals;
@@ -167,6 +172,53 @@ public abstract class AbstractRbacTestCase {
     }
 
     protected abstract void configureRoles(ModelNode op, String[] roles);
+
+    boolean readOnly = false; // used by RbacSoakTest
+
+    /**
+     * @param expectedOutcome for standard and host-scoped roles tests, this is the expected outcome of all operations;
+     *                        for server-group-scoped roles tests, this is the expected outcome for the profile of the server group the user
+     *                        is member of, as for the other profiles and for read-config-as-xml, the outcome is well known
+     */
+    protected void readWholeConfig(ModelControllerClient client, Outcome expectedOutcome, String... roles) throws IOException {
+        Outcome expectedOutcomeForReadConfigAsXml = expectedOutcome;
+        if (this instanceof AbstractServerGroupScopedRolesTestCase) {
+            expectedOutcomeForReadConfigAsXml = Outcome.UNAUTHORIZED;
+        }
+
+        ModelNode op = createOpNode(null, READ_CONFIG_AS_XML_OPERATION);
+        configureRoles(op, roles);
+        RbacUtil.executeOperation(client, op, expectedOutcomeForReadConfigAsXml);
+
+        // the code below calls the non-published operation 'describe'; see WFLY-2379 for more info
+
+        ModelControllerClient domainClient = testSupport.getDomainMasterLifecycleUtil().getDomainClient();
+
+        op = createOpNode(null, READ_CHILDREN_NAMES_OPERATION);
+        op.get(CHILD_TYPE).set(PROFILE);
+        ModelNode profiles = RbacUtil.executeOperation(domainClient, op, Outcome.SUCCESS);
+        for (ModelNode profile : profiles.get(RESULT).asList()) {
+            Outcome expectedOutcomeForProfile = expectedOutcome;
+            if (this instanceof AbstractServerGroupScopedRolesTestCase) {
+                expectedOutcomeForProfile = "profile-a".equals(profile.asString()) ? expectedOutcome : Outcome.HIDDEN;
+            }
+
+            op = createOpNode("profile=" + profile.asString(), DESCRIBE);
+            configureRoles(op, roles);
+            ModelNode result = RbacUtil.executeOperation(client, op, expectedOutcomeForProfile);
+            assertEquals(expectedOutcomeForProfile == Outcome.SUCCESS, result.hasDefined(RESULT));
+
+            op = createOpNode("profile=" + profile.asString(), READ_CHILDREN_NAMES_OPERATION);
+            op.get(CHILD_TYPE).set(SUBSYSTEM);
+            ModelNode subsystems = RbacUtil.executeOperation(domainClient, op, Outcome.SUCCESS);
+            for (ModelNode subsystem : subsystems.get(RESULT).asList()) {
+                op = createOpNode("profile=" + profile.asString() + "/subsystem=" + subsystem.asString(), DESCRIBE);
+                configureRoles(op, roles);
+                result = RbacUtil.executeOperation(client, op, expectedOutcomeForProfile);
+                assertEquals(expectedOutcomeForProfile == Outcome.SUCCESS, result.hasDefined(RESULT));
+            }
+        }
+    }
 
     protected void checkStandardReads(ModelControllerClient client, String host, String server, String... roles) throws IOException {
         readResource(client, DEPLOYMENT_1, host, server, Outcome.SUCCESS, roles);

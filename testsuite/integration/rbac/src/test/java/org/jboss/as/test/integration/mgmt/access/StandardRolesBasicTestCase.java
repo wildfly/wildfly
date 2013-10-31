@@ -24,16 +24,21 @@ package org.jboss.as.test.integration.mgmt.access;
 
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ADD;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.BYTES;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.CHILD_TYPE;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.CONTENT;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.DESCRIBE;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ENABLED;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.NAME;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OUTCOME;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.PASSWORD;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.PATH;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.READ_ATTRIBUTE_OPERATION;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.READ_CHILDREN_NAMES_OPERATION;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.READ_CONFIG_AS_XML_OPERATION;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.READ_RESOURCE_OPERATION;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.REMOVE;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.RESULT;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SUBSYSTEM;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SUCCESS;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.TYPE;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.UPLOAD_DEPLOYMENT_BYTES;
@@ -48,12 +53,14 @@ import static org.jboss.as.test.integration.management.rbac.RbacUtil.OPERATOR_US
 import static org.jboss.as.test.integration.management.rbac.RbacUtil.SUPERUSER_USER;
 import static org.jboss.as.test.integration.management.util.ModelUtil.createOpNode;
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
 
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.UnsupportedEncodingException;
 import java.nio.charset.Charset;
+import java.util.Arrays;
 
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.as.controller.PathAddress;
@@ -133,6 +140,7 @@ public abstract class StandardRolesBasicTestCase extends AbstractManagementInter
     public void testMonitor() throws Exception {
         ManagementInterface client = getClientForUser(MONITOR_USER);
         whoami(client, MONITOR_USER);
+        readWholeConfig(client, Outcome.UNAUTHORIZED);
         checkStandardReads(client);
         readResource(client, AUTHORIZATION, Outcome.HIDDEN);
         readResource(client, MANAGEMENT_REALM, Outcome.HIDDEN);
@@ -151,6 +159,7 @@ public abstract class StandardRolesBasicTestCase extends AbstractManagementInter
     public void testOperator() throws Exception {
         ManagementInterface client = getClientForUser(OPERATOR_USER);
         whoami(client, OPERATOR_USER);
+        readWholeConfig(client, Outcome.UNAUTHORIZED);
         checkStandardReads(client);
         readResource(client, AUTHORIZATION, Outcome.HIDDEN);
         readResource(client, MANAGEMENT_REALM, Outcome.HIDDEN);
@@ -169,6 +178,7 @@ public abstract class StandardRolesBasicTestCase extends AbstractManagementInter
     public void testMaintainer() throws Exception {
         ManagementInterface client = getClientForUser(MAINTAINER_USER);
         whoami(client, MAINTAINER_USER);
+        readWholeConfig(client, Outcome.UNAUTHORIZED);
         checkStandardReads(client);
         readResource(client, AUTHORIZATION, Outcome.HIDDEN);
         readResource(client, MANAGEMENT_REALM, Outcome.HIDDEN);
@@ -187,6 +197,7 @@ public abstract class StandardRolesBasicTestCase extends AbstractManagementInter
     public void testDeployer() throws Exception {
         ManagementInterface client = getClientForUser(DEPLOYER_USER);
         whoami(client, DEPLOYER_USER);
+        readWholeConfig(client, Outcome.UNAUTHORIZED);
         checkStandardReads(client);
         readResource(client, AUTHORIZATION, Outcome.HIDDEN);
         readResource(client, MANAGEMENT_REALM, Outcome.HIDDEN);
@@ -205,6 +216,7 @@ public abstract class StandardRolesBasicTestCase extends AbstractManagementInter
     public void testAdministrator() throws Exception {
         ManagementInterface client = getClientForUser(ADMINISTRATOR_USER);
         whoami(client, ADMINISTRATOR_USER);
+        readWholeConfig(client, Outcome.SUCCESS);
         checkStandardReads(client);
         readResource(client, AUTHORIZATION, Outcome.SUCCESS);
         readResource(client, MANAGEMENT_REALM, Outcome.SUCCESS);
@@ -225,6 +237,7 @@ public abstract class StandardRolesBasicTestCase extends AbstractManagementInter
     public void testAuditor() throws Exception {
         ManagementInterface client = getClientForUser(AUDITOR_USER);
         whoami(client, AUDITOR_USER);
+        readWholeConfig(client, Outcome.SUCCESS);
         checkStandardReads(client);
         readResource(client, AUTHORIZATION, Outcome.SUCCESS);
         readResource(client, MANAGEMENT_REALM, Outcome.SUCCESS);
@@ -244,6 +257,7 @@ public abstract class StandardRolesBasicTestCase extends AbstractManagementInter
     public void testSuperUser() throws Exception {
         ManagementInterface client = getClientForUser(SUPERUSER_USER);
         whoami(client, SUPERUSER_USER);
+        readWholeConfig(client, Outcome.SUCCESS);
         checkStandardReads(client);
         readResource(client, AUTHORIZATION, Outcome.SUCCESS);
         readResource(client, MANAGEMENT_REALM, Outcome.SUCCESS);
@@ -264,6 +278,28 @@ public abstract class StandardRolesBasicTestCase extends AbstractManagementInter
         ModelNode result = RbacUtil.executeOperation(client, op, Outcome.SUCCESS);
         String returnedUsername = result.get(RESULT, "identity", USERNAME).asString();
         assertEquals(expectedUsername, returnedUsername);
+    }
+
+    private void readWholeConfig(ManagementInterface client, Outcome expectedOutcome) throws IOException {
+        ModelNode op = createOpNode(null, READ_CONFIG_AS_XML_OPERATION);
+        RbacUtil.executeOperation(client, op, expectedOutcome);
+
+        // the code below calls the non-published operation 'describe'; see WFLY-2379 for more info
+        // once that issue is fixed, the test will only make sense for native mgmt interface
+        // (or maybe not even that)
+
+        if (this instanceof JmxInterfaceStandardRolesBasicTestCase) {
+            return;
+        }
+
+        op = createOpNode(null, READ_CHILDREN_NAMES_OPERATION);
+        op.get(CHILD_TYPE).set(SUBSYSTEM);
+        ModelNode subsystems = RbacUtil.executeOperation(getManagementClient().getControllerClient(), op, Outcome.SUCCESS);
+        for (ModelNode subsystem : subsystems.get(RESULT).asList()) {
+            op = createOpNode("subsystem=" + subsystem.asString(), DESCRIBE);
+            ModelNode result = RbacUtil.executeOperation(client, op, expectedOutcome);
+            assertEquals(expectedOutcome == Outcome.SUCCESS, result.hasDefined(RESULT));
+        }
     }
 
     private static void checkStandardReads(ManagementInterface client) throws IOException {
