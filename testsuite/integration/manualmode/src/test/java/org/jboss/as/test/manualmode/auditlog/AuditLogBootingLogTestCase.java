@@ -29,6 +29,7 @@ import org.jboss.as.controller.operations.common.Util;
 import org.jboss.as.domain.management.CoreManagementResourceDefinition;
 import org.jboss.as.domain.management.audit.AccessAuditResourceDefinition;
 import org.jboss.as.domain.management.audit.AuditLogLoggerResourceDefinition;
+import org.jboss.as.test.shared.FileUtils;
 import org.jboss.as.test.shared.TestSuiteEnvironment;
 import org.jboss.dmr.ModelNode;
 import org.junit.After;
@@ -72,6 +73,7 @@ public class AuditLogBootingLogTestCase {
             jmxLogFile.delete();
         }
         container.start(CONTAINER);
+        FileUtils.waitForFiles(auditLogFile, jmxLogFile);
         Assert.assertTrue("Booting logs weren't logged but log-boot is set to true", auditLogFile.exists());
         Assert.assertTrue("Booting jmx logs weren't logged but log-boot is set to true", jmxLogFile.exists());
 

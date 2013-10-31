@@ -178,18 +178,20 @@ public class ServletContainerInitializerDeploymentProcessor implements Deploymen
             // Get the ServletContainerInitializer class name
             is = sci.openStream();
             BufferedReader reader = new BufferedReader(new InputStreamReader(is));
-            String servletContainerInitializerClassName = reader.readLine();
+            String servletContainerInitializerClassName = reader.readLine().trim();
             while (servletContainerInitializerClassName != null) {
                 try {
-                    int pos = servletContainerInitializerClassName.indexOf('#');
-                    if (pos > 0) {
-                        servletContainerInitializerClassName = servletContainerInitializerClassName.substring(0, pos);
-                    }
-                    servletContainerInitializerClassName = servletContainerInitializerClassName.trim();
-                    // Instantiate the ServletContainerInitializer
-                    ServletContainerInitializer service = (ServletContainerInitializer) classLoader.loadClass(servletContainerInitializerClassName).newInstance();
-                    if (service != null) {
-                        scis.add(service);
+                    if(!servletContainerInitializerClassName.isEmpty()) {
+                        int pos = servletContainerInitializerClassName.indexOf('#');
+                        if (pos > 0) {
+                            servletContainerInitializerClassName = servletContainerInitializerClassName.substring(0, pos);
+                        }
+                        servletContainerInitializerClassName = servletContainerInitializerClassName.trim();
+                        // Instantiate the ServletContainerInitializer
+                        ServletContainerInitializer service = (ServletContainerInitializer) classLoader.loadClass(servletContainerInitializerClassName).newInstance();
+                        if (service != null) {
+                            scis.add(service);
+                        }
                     }
                     servletContainerInitializerClassName = reader.readLine();
                 } catch (Exception e) {
