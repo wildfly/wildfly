@@ -70,4 +70,9 @@ class FileHandlerResourceDefinition extends AbstractFileHandlerDefinition {
 
         return registerTransformers(child);
     }
+
+    @Override
+    protected void registerResourceTransformers(final KnownModelVersion modelVersion, final ResourceTransformationDescriptionBuilder resourceBuilder, final ResourceTransformationDescriptionBuilder loggingProfileBuilder) {
+
+    }
 }

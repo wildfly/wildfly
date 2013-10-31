@@ -75,7 +75,26 @@ class SizeRotatingHandlerResourceDefinition extends AbstractFileHandlerDefinitio
 
     public SizeRotatingHandlerResourceDefinition(final ResolvePathHandler resolvePathHandler, final boolean includeLegacyAttributes) {
         super(SIZE_ROTATING_HANDLER_PATH, SizeRotatingFileHandler.class, resolvePathHandler,
-                (includeLegacyAttributes ? Logging.join(ATTRIBUTES, LEGACY_ATTRIBUTES) : ATTRIBUTES));
+                     (includeLegacyAttributes ? Logging.join(ATTRIBUTES, LEGACY_ATTRIBUTES) : ATTRIBUTES));
+    }
+
+    @Override
+    protected void registerResourceTransformers(final KnownModelVersion modelVersion, final ResourceTransformationDescriptionBuilder resourceBuilder, final ResourceTransformationDescriptionBuilder loggingProfileBuilder) {
+        switch (modelVersion) {
+            case VERSION_1_2_0: {
+                resourceBuilder
+                        .getAttributeBuilder()
+                        .setDiscard(new DiscardAttributeValueChecker(new ModelNode(false)), ROTATE_ON_BOOT)
+                        .addRejectCheck(RejectAttributeChecker.DEFINED, ROTATE_ON_BOOT)
+                        .end();
+                loggingProfileBuilder
+                        .getAttributeBuilder()
+                        .setDiscard(new DiscardAttributeValueChecker(new ModelNode(false)), ROTATE_ON_BOOT)
+                        .addRejectCheck(RejectAttributeChecker.DEFINED, ROTATE_ON_BOOT)
+                        .end();
+            }
+        }
+
     }
 
     /**
@@ -100,23 +119,6 @@ class SizeRotatingHandlerResourceDefinition extends AbstractFileHandlerDefinitio
         loggingProfileBuilder.rejectChildResource(SIZE_ROTATING_HANDLER_PATH);
 
         return registerTransformers(child);
-    }
-
-    /**
-     * Add the transformers for the size rotating file handler.
-     *
-     * @param subsystemBuilder      the default subsystem builder
-     *
-     * @return the builder created for the resource
-     */
-    static ResourceTransformationDescriptionBuilder addTransformers_1_2(final ResourceTransformationDescriptionBuilder subsystemBuilder) {
-        // Register the logger resource
-        final ResourceTransformationDescriptionBuilder child = subsystemBuilder.addChildResource(SIZE_ROTATING_HANDLER_PATH)
-                .getAttributeBuilder()
-                .setDiscard(new DiscardAttributeValueChecker(new ModelNode(false)), ROTATE_ON_BOOT)
-                .addRejectCheck(RejectAttributeChecker.DEFINED, ROTATE_ON_BOOT)
-                .end();
-        return child;
     }
 
 }
