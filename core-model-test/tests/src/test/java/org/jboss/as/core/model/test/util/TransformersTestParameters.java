@@ -56,11 +56,13 @@ public class TransformersTestParameters {
 
     public static List<Object[]> setupVersions(){
         List<Object[]> data = new ArrayList<Object[]>();
-        //AS releases
+        //AS releases - these are not needed for EAP compliance testing
+        /*
         data.add(new Object[] {new TransformersTestParameters(ModelVersion.create(1, 2, 0), ModelTestControllerVersion.V7_1_2_FINAL)});
         data.add(new Object[] {new TransformersTestParameters(ModelVersion.create(1, 3, 0), ModelTestControllerVersion.V7_1_3_FINAL)});
         data.add(new Object[] {new TransformersTestParameters(ModelVersion.create(1, 4, 0), ModelTestControllerVersion.V7_2_0_FINAL)});
         data.add(new Object[] {new TransformersTestParameters(ModelVersion.create(1, 5, 0), ModelTestControllerVersion.MASTER)});
+        */
 
         //EAP releases
         if (EAPRepositoryReachableUtil.isReachable()) {
