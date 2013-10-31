@@ -121,6 +121,7 @@ public class TransactionRollbackSetupAction implements SetupAction, Service<Tran
                 case Status.STATUS_MARKED_ROLLBACK:
                 case Status.STATUS_PREPARING:
                 case Status.STATUS_ROLLING_BACK:
+                case Status.STATUS_ROLLEDBACK:
                 case Status.STATUS_PREPARED:
                     try {
                         TransactionLogger.ROOT_LOGGER.transactionStillOpen(status);
