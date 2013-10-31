@@ -169,7 +169,6 @@ public class InterceptorOrder {
         public static final int EE_SETUP = 0x010;
         public static final int EJB_IIOP_TRANSACTION = 0x020;
         public static final int JNDI_NAMESPACE_INTERCEPTOR = 0x050;
-        public static final int NOT_BUSINESS_METHOD_EXCEPTION = 0x100;
         public static final int REMOTE_EXCEPTION_TRANSFORMER = 0x200;
         public static final int EJB_EXCEPTION_LOGGING_INTERCEPTOR = 0x210;
         public static final int SHUTDOWN_INTERCEPTOR = 0x220;
@@ -199,6 +198,7 @@ public class InterceptorOrder {
     public static final class Client {
 
         public static final int TO_STRING = 0x100;
+        public static final int NOT_BUSINESS_METHOD_EXCEPTION = 0x110;
         public static final int LOCAL_ASYNC_LOG_SAVE = 0x180;
         public static final int LOCAL_ASYNC_INVOCATION = 0x200;
         public static final int LOCAL_ASYNC_LOG_RESTORE = 0x280;
