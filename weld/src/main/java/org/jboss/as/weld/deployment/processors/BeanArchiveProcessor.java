@@ -245,12 +245,14 @@ public class BeanArchiveProcessor implements DeploymentUnitProcessor {
             if (metadata == null || metadata.getBeansXml().getBeanDiscoveryMode().equals(BeanDiscoveryMode.ANNOTATED)) {
                 // this is either an implicit bean archive or not a bean archive at all!
 
-                Index index = null;
+                final boolean isRootBda = resourceRoot.equals(deploymentResourceRoot);
+
                 if (resourceRoot == deploymentResourceRoot && classesResourceRoot != null) {
-                    index = indexes.get(classesResourceRoot);
-                } else {
-                    index = indexes.get(resourceRoot);
+                    // this is WEB-INF/classes BDA
+                    resourceRoot = classesResourceRoot;
                 }
+
+                final Index index = indexes.get(resourceRoot);
                 if (index == null) {
                     return null; // index may be null for some resource roots
                 }
@@ -262,7 +264,7 @@ public class BeanArchiveProcessor implements DeploymentUnitProcessor {
                     return null;
                 }
 
-                Set<String> beans = getImplicitBeanClasses(index);
+                Set<String> beans = getImplicitBeanClasses(index, resourceRoot);
 
                 if (beans.isEmpty() && components.ejbComponentDescriptions.get(resourceRoot).isEmpty()) {
                     return null;
@@ -273,7 +275,6 @@ public class BeanArchiveProcessor implements DeploymentUnitProcessor {
                     beansXml = metadata.getBeansXml();
                 }
 
-                final boolean isRootBda = resourceRoot.equals(deploymentResourceRoot);
                 bda = new BeanDeploymentArchiveImpl(beans, beansXml, module, resourceRoot.getRoot().getPathName(), BeanArchiveType.IMPLICIT, isRootBda);
                 WeldLogger.DEPLOYMENT_LOGGER.beanArchiveDiscovered(bda);
             } else if (metadata.getBeansXml().getBeanDiscoveryMode().equals(BeanDiscoveryMode.NONE)) {
@@ -296,15 +297,15 @@ public class BeanArchiveProcessor implements DeploymentUnitProcessor {
             return bda;
         }
 
-        private Set<String> getImplicitBeanClasses(Index index) {
+        private Set<String> getImplicitBeanClasses(Index index, ResourceRoot resourceRoot) {
             Set<String> implicitBeanClasses = new HashSet<String>();
             for (AnnotationType beanDefiningAnnotation : beanDefiningAnnotations) {
                 List<AnnotationInstance> annotationInstances = index.getAnnotations(beanDefiningAnnotation.getName());
                 implicitBeanClasses.addAll(Lists.transform(Indices.getAnnotatedClasses(annotationInstances), Indices.CLASS_INFO_TO_FQCN));
             }
             //make all components into implicit beans so they will support injection
-            for(Entry<ResourceRoot, ComponentDescription> entry : components.componentDescriptions.entries()) {
-                implicitBeanClasses.add(entry.getValue().getComponentClassName());
+            for(ComponentDescription description : components.componentDescriptions.get(resourceRoot)) {
+                implicitBeanClasses.add(description.getComponentClassName());
             }
             return implicitBeanClasses;
         }
