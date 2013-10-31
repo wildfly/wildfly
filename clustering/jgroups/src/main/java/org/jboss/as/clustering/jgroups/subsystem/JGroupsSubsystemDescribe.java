@@ -90,7 +90,8 @@ public class JGroupsSubsystemDescribe implements OperationStepHandler {
                 }
                 // protocol=*
                 if (stack.getValue().get(ModelKeys.PROTOCOL).isDefined()) {
-                    for (Property protocol : ProtocolStackAdd.getOrderedProtocolPropertyList(stack.getValue())) {
+                    // WFLY-410: this list is ordered due to custom Stack resource
+                    for (Property protocol : stack.getValue().get(ModelKeys.PROTOCOL).asPropertyList()) {
                         // no optional transport:add parameters will be present, so use attributes list
                         result.add(createProtocolOperation(ProtocolResourceDefinition.PROTOCOL_ATTRIBUTES, stackAddress,
                                 protocol.getValue()));

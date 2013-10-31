@@ -199,11 +199,11 @@ public class ChannelInstanceResourceDefinition extends SimpleResourceDefinition 
         String transportName = (String) transport.get(ModelKeys.TYPE).asString();
         ResourceDefinition transportDefinition = getProtocolMetricResourceDefinition(context, channelName, transportName);
 
-        List<ModelNode> protocolOrdering = stack.get(ModelKeys.PROTOCOLS).clone().asList();
+        List<org.jboss.dmr.Property> protocolOrdering = stack.get(ModelKeys.PROTOCOL).asPropertyList();
         // create the protocol definitions for this channel
         final List<ResourceDefinition> protocolDefinitions = new ArrayList<ResourceDefinition>();
-        for (ModelNode protocolNameModelNode : protocolOrdering) {
-            String protocolName = protocolNameModelNode.asString();
+        for (org.jboss.dmr.Property protocol : protocolOrdering) {
+            String protocolName = protocol.getName();
             ResourceDefinition protocolDefinition = getProtocolMetricResourceDefinition(context, channelName, protocolName);
             protocolDefinitions.add(protocolDefinition);
         }

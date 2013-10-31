@@ -59,8 +59,8 @@ public class JGroupsSubsystemXMLWriter implements XMLElementWriter<SubsystemMars
                 }
                 // write the protocols in their correct order
                 if (stack.hasDefined(ModelKeys.PROTOCOL)) {
-//                  for (Property protocol: stack.get(ModelKeys.PROTOCOL).asPropertyList()) {
-                    for (Property protocol: ProtocolStackAdd.getOrderedProtocolPropertyList(stack)) {
+                  // WFLY-410: this list is ordered due to custom Stack resource
+                  for (Property protocol: stack.get(ModelKeys.PROTOCOL).asPropertyList()) {
                         this.writeProtocol(writer, protocol.getValue(), Element.PROTOCOL);
                     }
                 }

@@ -19,5 +19,6 @@
     </stack>
     <stack name="minimal">
         <transport type="UDP"/>
+        <protocol type="MPING"/>
     </stack>
 </subsystem>

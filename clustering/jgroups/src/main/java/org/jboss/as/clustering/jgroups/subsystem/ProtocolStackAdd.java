@@ -82,6 +82,17 @@ public class ProtocolStackAdd extends AbstractAddStepHandler {
         return Util.getEmptyOperation(ModelDescriptionConstants.ADD, address);
     }
 
+    /*
+     * Install a custom version of StackResource
+     */
+    @Override
+    protected Resource createResource(OperationContext context) {
+        // create a custom resource
+        StackResource resource = new StackResource();
+        context.addResource(PathAddress.EMPTY_ADDRESS, resource);
+        return resource ;
+    }
+
     @Override
     protected void populateModel(final ModelNode operation, final ModelNode model) throws OperationFailedException {
         // this method is abstract in AbstractAddStepHandler
@@ -108,7 +119,6 @@ public class ProtocolStackAdd extends AbstractAddStepHandler {
 
         // add steps to initialize *optional* PROTOCOL parameters
         if (operation.hasDefined(ModelKeys.PROTOCOLS)) {
-
             List<ModelNode> protocols = operation.get(ModelKeys.PROTOCOLS).asList();
             // because we use stage IMMEDIATE when creating protocols, unless we reverse the order
             // of the elements in the LIST, they will get applied in reverse order - the last step
@@ -146,11 +156,11 @@ public class ProtocolStackAdd extends AbstractAddStepHandler {
         final String name = address.getLastElement().getValue();
 
         // check that we have enough information to create a stack
+        // in particular, check that the protocol stack is not empty
         protocolStackSanityCheck(name, model);
 
-        // we need to preserve the order of the protocols as maintained by PROTOCOLS
-        // pick up the ordered protocols here as a List<Property> where property is <name, ModelNode>
-        List<Property> orderedProtocols = getOrderedProtocolPropertyList(model);
+        // WFLY-410: this list is ordered due to custom Stack resource
+        List<Property> orderedProtocols = model.get(ModelKeys.PROTOCOL).asPropertyList();
 
         // pick up the transport here and its values
         ModelNode transport = model.get(ModelKeys.TRANSPORT, ModelKeys.TRANSPORT_NAME);
@@ -292,25 +302,6 @@ public class ProtocolStackAdd extends AbstractAddStepHandler {
        }
     }
 
-    public static List<Property> getOrderedProtocolPropertyList(ModelNode stack) {
-        ModelNode orderedProtocols = new ModelNode();
-
-        // check for the empty ordering list
-        if  (!stack.hasDefined(ModelKeys.PROTOCOLS)) {
-            return null;
-        }
-        // PROTOCOLS is a list of protocol names only, reflecting the order in which protocols were added to the stack
-        List<ModelNode> protocolOrdering = stack.get(ModelKeys.PROTOCOLS).clone().asList();
-
-        // now construct an ordered list of the full protocol model nodes
-        ModelNode unorderedProtocols = stack.get(ModelKeys.PROTOCOL);
-        for (ModelNode protocolName : protocolOrdering) {
-            ModelNode protocolModel = unorderedProtocols.get(protocolName.asString());
-            orderedProtocols.add(protocolName.asString(), protocolModel);
-        }
-        return orderedProtocols.asPropertyList();
-    }
-
     private void addSocketBindingDependency(ServiceBuilder<ChannelFactory> builder, String socketBinding, Injector<SocketBinding> injector) {
         if (socketBinding != null) {
             builder.addDependency(SocketBinding.JBOSS_BINDING_NAME.append(socketBinding), SocketBinding.class, injector);
@@ -328,15 +319,19 @@ public class ProtocolStackAdd extends AbstractAddStepHandler {
      */
     private void protocolStackSanityCheck(String stackName, ModelNode model) throws OperationFailedException {
 
-         ModelNode transport = model.get(ModelKeys.TRANSPORT, ModelKeys.TRANSPORT_NAME);
-         if (!transport.isDefined()) {
+        ModelNode transport = model.get(ModelKeys.TRANSPORT, ModelKeys.TRANSPORT_NAME);
+        if (!transport.isDefined()) {
             throw JGroupsMessages.MESSAGES.transportNotDefined(stackName);
-         }
+        }
 
-         List<Property> protocols = getOrderedProtocolPropertyList(model);
-         if ( protocols == null || !(protocols.size() > 0)) {
-             throw JGroupsMessages.MESSAGES.protocolListNotDefined(stackName);
-         }
+        ModelNode protocolsModelNode = model.get(ModelKeys.PROTOCOL);
+        if (!protocolsModelNode.isDefined())
+            throw JGroupsMessages.MESSAGES.protocolListNotDefined(stackName);
+
+        List<Property> protocols = model.get(ModelKeys.PROTOCOL).asPropertyList();
+        if (protocols == null || !(protocols.size() > 0)) {
+            throw JGroupsMessages.MESSAGES.protocolListNotDefined(stackName);
+        }
     }
 
     @Override
