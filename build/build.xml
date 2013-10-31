@@ -1214,6 +1214,10 @@
             <maven-resource group="org.jboss.resteasy" artifact="resteasy-jackson2-provider" jandex="true"/>
         </module-def>
 
+        <module-def name="org.jboss.resteasy.resteasy-json-p-provider">
+            <maven-resource group="org.jboss.resteasy" artifact="resteasy-json-p-provider"/>
+        </module-def>
+
         <module-def name="org.jboss.resteasy.resteasy-jaxb-provider">
             <maven-resource group="org.jboss.resteasy" artifact="resteasy-jaxb-provider"/>
         </module-def>

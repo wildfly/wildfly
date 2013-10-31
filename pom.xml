@@ -194,7 +194,7 @@
         <version.org.jboss.remote-naming>2.0.0.Beta2</version.org.jboss.remote-naming>
         <version.org.jboss.remoting>4.0.0.Beta1</version.org.jboss.remoting>
         <version.org.jboss.remotingjmx.remoting-jmx>2.0.0.CR4</version.org.jboss.remotingjmx.remoting-jmx>
-        <version.org.jboss.resteasy>3.0.4.Final</version.org.jboss.resteasy>
+        <version.org.jboss.resteasy>3.0.5.Final</version.org.jboss.resteasy>
         <version.org.jboss.sasl>1.0.4.CR1</version.org.jboss.sasl>
         <version.org.jboss.seam.int>6.0.0.GA</version.org.jboss.seam.int>
         <version.org.jboss.security.jboss-negotiation>2.2.6.Final</version.org.jboss.security.jboss-negotiation>
@@ -5030,6 +5030,18 @@
                     <exclusion>
                         <groupId>com.fasterxml.jackson.jaxrs</groupId>
                         <artifactId>jackson-jaxrs-json-provider</artifactId>
+                    </exclusion>
+                </exclusions>
+            </dependency>
+
+            <dependency>
+                <groupId>org.jboss.resteasy</groupId>
+                <artifactId>resteasy-json-p-provider</artifactId>
+                <version>${version.org.jboss.resteasy}</version>
+                <exclusions>
+                    <exclusion>
+                        <groupId>javax.json</groupId>
+                        <artifactId>javax.json-api</artifactId>
                     </exclusion>
                 </exclusions>
             </dependency>
