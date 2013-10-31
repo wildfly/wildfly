@@ -161,7 +161,7 @@ public abstract class SessionBeanComponentDescription extends EJBComponentDescri
             public void configure(final DeploymentPhaseContext context, final ComponentConfiguration componentConfiguration, final ViewDescription description, final ViewConfiguration configuration) throws DeploymentUnitProcessingException {
                 for (final Method method : configuration.getProxyFactory().getCachedMethods()) {
                     if (!Modifier.isPublic(method.getModifiers())) {
-                        configuration.addViewInterceptor(method, new ImmediateInterceptorFactory(new NotBusinessMethodInterceptor(method)), InterceptorOrder.View.NOT_BUSINESS_METHOD_EXCEPTION);
+                        configuration.addClientInterceptor(method, new ImmediateInterceptorFactory(new NotBusinessMethodInterceptor(method)), InterceptorOrder.Client.NOT_BUSINESS_METHOD_EXCEPTION);
                     }
                 }
             }
