@@ -49,7 +49,7 @@ public class NamingService implements Service<NamingStore> {
      *
      */
     public NamingService() {
-        this.namingStore = new InjectedValue<>();
+        this.namingStore = new InjectedValue<NamingStore>();
     }
 
     /**

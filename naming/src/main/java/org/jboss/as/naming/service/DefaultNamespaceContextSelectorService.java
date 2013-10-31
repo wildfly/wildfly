@@ -28,9 +28,9 @@ public class DefaultNamespaceContextSelectorService implements Service<Void> {
     private final InjectedValue<NamingStore> remoteExposedNamingStore;
 
     public DefaultNamespaceContextSelectorService() {
-        this.globalNamingStore = new InjectedValue<>();
-        this.jbossNamingStore = new InjectedValue<>();
-        this.remoteExposedNamingStore = new InjectedValue<>();
+        this.globalNamingStore = new InjectedValue<NamingStore>();
+        this.jbossNamingStore = new InjectedValue<NamingStore>();
+        this.remoteExposedNamingStore = new InjectedValue<NamingStore>();
     }
 
     public InjectedValue<NamingStore> getGlobalNamingStore() {

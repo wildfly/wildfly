@@ -22,6 +22,8 @@
 
 package org.jboss.as.naming;
 
+import java.security.AccessController;
+import java.security.PrivilegedAction;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Hashtable;
@@ -39,7 +41,6 @@ import javax.naming.spi.NamingManager;
 import javax.naming.spi.ObjectFactory;
 
 import org.jboss.as.naming.context.NamespaceContextSelector;
-import org.wildfly.security.manager.WildFlySecurityManager;
 
 import static org.jboss.as.naming.NamingMessages.MESSAGES;
 
@@ -86,6 +87,13 @@ public class InitialContext extends InitialDirContext {
         }
     }
 
+    private static final PrivilegedAction<ClassLoader> GET_CLASS_LOADER_PRIVILEGED_ACTION = new PrivilegedAction<ClassLoader>() {
+        @Override
+        public ClassLoader run() {
+            return Thread.currentThread().getContextClassLoader();
+        }
+    };
+
     public InitialContext(Hashtable environment) throws NamingException {
         super(environment);
     }
@@ -108,7 +116,7 @@ public class InitialContext extends InitialDirContext {
             if(factoryClassName == null || InitialContextFactory.class.getName().equals(factoryClassName)) {
                 defaultInitCtx = new DefaultInitialContext(myProps);
             } else {
-                final ClassLoader classLoader = WildFlySecurityManager.getCurrentContextClassLoaderPrivileged();
+                final ClassLoader classLoader = System.getSecurityManager() == null ? Thread.currentThread().getContextClassLoader() : AccessController.doPrivileged(GET_CLASS_LOADER_PRIVILEGED_ACTION);
                 try {
                     final Class<?> factoryClass = Class.forName(factoryClassName, true, classLoader);
                     defaultInitCtx = ((javax.naming.spi.InitialContextFactory)factoryClass.newInstance()).getInitialContext(myProps);
