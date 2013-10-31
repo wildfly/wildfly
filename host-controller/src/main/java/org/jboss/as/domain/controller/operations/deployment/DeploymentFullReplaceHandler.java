@@ -22,12 +22,11 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.CON
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.DEPLOYMENT;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.FULL_REPLACE_DEPLOYMENT;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.HASH;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.NAME;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.RUNTIME_NAME;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SERVER_GROUP;
 import static org.jboss.as.domain.controller.DomainControllerMessages.MESSAGES;
-import static org.jboss.as.domain.controller.operations.deployment.AbstractDeploymentHandler.CONTENT_ADDITION_PARAMETERS;
 import static org.jboss.as.domain.controller.operations.deployment.AbstractDeploymentHandler.createFailureException;
+import static org.jboss.as.server.controller.resources.DeploymentAttributes.CONTENT_HASH;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -79,28 +78,50 @@ public class DeploymentFullReplaceHandler implements OperationStepHandler {
 
     public void execute(OperationContext context, ModelNode operation) throws OperationFailedException {
 
+        // Validate op
         for (AttributeDefinition def : DeploymentAttributes.FULL_REPLACE_DEPLOYMENT_ATTRIBUTES.values()) {
             def.validateOperation(operation);
         }
 
-        final String name = DeploymentAttributes.FULL_REPLACE_DEPLOYMENT_ATTRIBUTES.get(NAME).resolveModelAttribute(context, operation).asString();
-        String runtimeName = operation.hasDefined(RUNTIME_NAME) ? DeploymentAttributes.FULL_REPLACE_DEPLOYMENT_ATTRIBUTES.get(RUNTIME_NAME).resolveModelAttribute(context, operation).asString() : name;
-        byte[] hash;
+        // Pull data from the op
+        final String name = DeploymentAttributes.NAME.resolveModelAttribute(context, operation).asString();
+        final PathElement deploymentPath = PathElement.pathElement(DEPLOYMENT, name);
+        String runtimeName = operation.hasDefined(RUNTIME_NAME)
+                ? DeploymentAttributes.RUNTIME_NAME.resolveModelAttribute(context, operation).asString() : name;
+        // clone the content param, so we can modify it to our own content
+        ModelNode content = operation.require(CONTENT).clone();
 
-        ModelNode content = operation.require(CONTENT);
+        // Throw a specific exception if the replaced deployment doesn't already exist
+        // BES 2013/10/30 -- this is pointless; the readResourceForUpdate call will throw
+        // an exception with an equally informative message if the deployment doesn't exist
+//        final Resource root = context.readResource(PathAddress.EMPTY_ADDRESS);
+//        boolean exists = root.hasChild(deploymentPath);
+//        if (!exists) {
+//            throw createFailureException(MESSAGES.noDeploymentContentWithName(name));
+//        }
+
+        final ModelNode deploymentModel = context.readResourceForUpdate(PathAddress.pathAddress(deploymentPath)).getModel();
+
+        // Keep track of hash we are replacing so we can drop it from the content repo if all is well
+        ModelNode replacedContent = deploymentModel.get(CONTENT).get(0);
+        final byte[] replacedHash = replacedContent.hasDefined(CONTENT_HASH.getName())
+                ? CONTENT_HASH.resolveModelAttribute(context, replacedContent).asBytes() : null;
+
+        // Set up the new content attribute
+        final byte[] newHash;
         // TODO: JBAS-9020: for the moment overlays are not supported, so there is a single content item
         ModelNode contentItemNode = content.require(0);
         if (contentItemNode.hasDefined(HASH)) {
-            hash = contentItemNode.require(HASH).asBytes();
+            newHash = contentItemNode.require(HASH).asBytes();
             if (contentRepository != null) {
                 // We are the master DC. Validate that we actually have this content.
-                if (!contentRepository.hasContent(hash)) {
-                    throw createFailureException(MESSAGES.noDeploymentContentWithHash(HashUtil.bytesToHexString(hash)));
+                if (!contentRepository.hasContent(newHash)) {
+                    throw createFailureException(MESSAGES.noDeploymentContentWithHash(HashUtil.bytesToHexString(newHash)));
                 }
             } else {
                 // We are a slave controller
                 // Ensure the local repo has the files
-                fileRepository.getDeploymentFiles(hash);
+                fileRepository.getDeploymentFiles(newHash);
             }
         } else if (DeploymentHandlerUtils.hasValidContentAdditionParameterDefined(contentItemNode)) {
             if (contentRepository == null) {
@@ -111,7 +132,7 @@ public class DeploymentFullReplaceHandler implements OperationStepHandler {
             InputStream in = DeploymentHandlerUtils.getInputStream(context, contentItemNode);
             try {
                 try {
-                    hash = contentRepository.addContent(in);
+                    newHash = contentRepository.addContent(in);
                 } catch (IOException e) {
                     throw createFailureException(e.toString());
                 }
@@ -119,30 +140,25 @@ public class DeploymentFullReplaceHandler implements OperationStepHandler {
             } finally {
                 StreamUtils.safeClose(in);
             }
+
+            // Replace the op-provided content node with one that has a hash
             contentItemNode = new ModelNode();
-            contentItemNode.get(HASH).set(hash);
+            contentItemNode.get(HASH).set(newHash);
             content = new ModelNode();
             content.add(contentItemNode);
 
         } else {
             // Unmanaged content, the user is responsible for replication
-            // Just validate the required attributes are present
+            newHash = null;
         }
 
+        // Store state to the model
+        //deploymentModel.get(NAME).set(name);  Already there
+        deploymentModel.get(RUNTIME_NAME).set(runtimeName);
+        deploymentModel.get(CONTENT).set(content);
+
+        // Update server groups
         final Resource root = context.readResource(PathAddress.EMPTY_ADDRESS);
-        final PathElement deploymentPath = PathElement.pathElement(DEPLOYMENT, name);
-        final Resource replaceNode = root.getChild(deploymentPath);
-        if (replaceNode == null) {
-            throw createFailureException(MESSAGES.noDeploymentContentWithName(name));
-        }
-
-        final Resource deployment = context.readResourceForUpdate(PathAddress.EMPTY_ADDRESS.append(PathElement.pathElement(DEPLOYMENT, name)));
-        final ModelNode deployNode = deployment.getModel();
-        final byte[] originalHash = deployNode.get(CONTENT).get(0).hasDefined(HASH) ? deployNode.get(CONTENT).get(0).get(HASH).asBytes() : null;
-        deployNode.get(NAME).set(name);
-        deployNode.get(RUNTIME_NAME).set(runtimeName);
-        deployNode.get(CONTENT).set(content);
-
         if (root.hasChild(PathElement.pathElement(SERVER_GROUP))) {
             for (final Resource.ResourceEntry serverGroupResource : root.getChildren(SERVER_GROUP)) {
                 Resource deploymentResource = serverGroupResource.getChild(deploymentPath);
@@ -151,48 +167,31 @@ public class DeploymentFullReplaceHandler implements OperationStepHandler {
                 }
             }
         }
-        // the content repo will already have these, note that content should not be empty
-        removeContentAdditions(replaceNode.getModel().require(CONTENT));
 
         context.completeStep(new OperationContext.ResultHandler() {
             @Override
             public void handleResult(ResultAction resultAction, OperationContext context, ModelNode operation) {
                 if (resultAction == ResultAction.KEEP) {
-                    if (originalHash != null) {
-                        if (deployNode.get(CONTENT).get(0).hasDefined(HASH)) {
-                            byte[] newHash = deployNode.get(CONTENT).get(0).get(HASH).asBytes();
-                            if (!Arrays.equals(originalHash, newHash)) {
-                                if(contentRepository != null) {
-                                    contentRepository.removeContent(originalHash, name);
-                                } else {
-                                    fileRepository.deleteDeployment(originalHash);
-                                }
-                            }
+                    if (replacedHash != null  && (newHash == null || !Arrays.equals(replacedHash, newHash))) {
+                        // The old content is no longer used; clean from repos
+                        if(contentRepository != null) {
+                            contentRepository.removeContent(replacedHash, name);
+                        } else {
+                            fileRepository.deleteDeployment(replacedHash);
                         }
                     }
-                } else {
-                    if (operation.get(CONTENT).get(0).hasDefined(HASH)) {
-                        byte[] newHash = operation.get(CONTENT).get(0).get(HASH).asBytes();
-                        if(contentRepository != null ) {
-                            contentRepository.removeContent(newHash, name);
-                        } else {
-                            fileRepository.deleteDeployment(newHash);
-                        }
+                    if (newHash != null && contentRepository != null) {
+                        contentRepository.addContentReference(newHash, name);
+                    }
+                } else if (newHash != null && (replacedHash == null || !Arrays.equals(replacedHash, newHash))) {
+                    // Due to rollback, the new content isn't used; clean from repos
+                    if (contentRepository != null ) {
+                        contentRepository.removeContent(newHash, name);
+                    } else {
+                        fileRepository.deleteDeployment(newHash);
                     }
                 }
             }
         });
-    }
-
-    private static void removeAttributes(final ModelNode node, final Iterable<String> attributeNames) {
-        for (final String attributeName : attributeNames) {
-            node.remove(attributeName);
-        }
-    }
-
-    private static void removeContentAdditions(final ModelNode content) {
-        for (final ModelNode contentItem : content.asList()) {
-            removeAttributes(contentItem, CONTENT_ADDITION_PARAMETERS);
-        }
     }
 }
