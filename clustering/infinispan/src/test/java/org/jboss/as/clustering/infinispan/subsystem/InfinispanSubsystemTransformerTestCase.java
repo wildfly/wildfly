@@ -73,16 +73,6 @@ public class InfinispanSubsystemTransformerTestCase extends OperationTestCaseBas
     }
 
     @Test
-    public void testTransformer712() throws Exception {
-        testTransformer_1_3_0(ModelTestControllerVersion.V7_1_2_FINAL);
-    }
-
-    @Test
-    public void testTransformer713() throws Exception {
-        testTransformer_1_3_0(ModelTestControllerVersion.V7_1_3_FINAL);
-    }
-
-    @Test
     public void testTransformer600() throws Exception {
         ignoreThisTestIfEAPRepositoryIsNotReachable();
         testTransformer_1_3_0(ModelTestControllerVersion.EAP_6_0_0);
@@ -118,16 +108,6 @@ public class InfinispanSubsystemTransformerTestCase extends OperationTestCaseBas
         Assert.assertFalse(distCache.has(ModelKeys.INDEXING_PROPERTIES));
         Assert.assertFalse(distCache.has(ModelKeys.SEGMENTS));
         Assert.assertTrue(distCache.get(ModelKeys.VIRTUAL_NODES).isDefined());
-    }
-
-    @Test
-    public void testRejectExpressions712() throws Exception {
-        testRejectExpressions_1_3_0(ModelTestControllerVersion.V7_1_2_FINAL);
-    }
-
-    @Test
-    public void testRejectExpressions713() throws Exception {
-        testRejectExpressions_1_3_0(ModelTestControllerVersion.V7_1_3_FINAL);
     }
 
     @Test

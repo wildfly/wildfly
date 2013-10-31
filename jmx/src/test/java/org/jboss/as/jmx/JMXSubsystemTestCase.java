@@ -605,16 +605,6 @@ public class JMXSubsystemTestCase extends AbstractSubsystemTest {
     }
 
     @Test
-    public void testTransformationAS712() throws Exception {
-        testTransformation_1_0_0(ModelTestControllerVersion.V7_1_2_FINAL);
-    }
-
-    @Test
-    public void testTransformationAS713() throws Exception {
-        testTransformation_1_0_0(ModelTestControllerVersion.V7_1_3_FINAL);
-    }
-
-    @Test
     public void testTransformationEAP600() throws Exception {
         ignoreThisTestIfEAPRepositoryIsNotReachable();
         testTransformation_1_0_0(ModelTestControllerVersion.EAP_6_0_0);
@@ -777,11 +767,6 @@ public class JMXSubsystemTestCase extends AbstractSubsystemTest {
     }
 
     @Test
-    public void testTransformationAS720() throws Exception {
-        testTransformation_1_1_0(ModelTestControllerVersion.V7_2_0_FINAL);
-    }
-
-    @Test
     public void testTransformationEAP610() throws Exception {
         ignoreThisTestIfEAPRepositoryIsNotReachable();
         testTransformation_1_1_0(ModelTestControllerVersion.EAP_6_1_0);
@@ -878,16 +863,6 @@ public class JMXSubsystemTestCase extends AbstractSubsystemTest {
     }
 
     @Test
-    public void testRejectExpressionsAS712() throws Exception {
-        testRejectExpressions_1_0_0(ModelTestControllerVersion.V7_1_2_FINAL);
-    }
-
-    @Test
-    public void testRejectExpressionsAS713() throws Exception {
-        testRejectExpressions_1_0_0(ModelTestControllerVersion.V7_1_3_FINAL);
-    }
-
-    @Test
     public void testRejectExpressionsEAP600() throws Exception {
         ignoreThisTestIfEAPRepositoryIsNotReachable();
         testRejectExpressions_1_0_0(ModelTestControllerVersion.EAP_6_0_0);
@@ -957,11 +932,6 @@ public class JMXSubsystemTestCase extends AbstractSubsystemTest {
                                         createChainedConfigList(
                                             new FailedOperationTransformationConfig.RejectExpressionsConfig(JmxAuditLoggerResourceDefinition.ENABLED),
                                             new ChangeEnabledFromTrueToFalseConfig(JmxAuditLoggerResourceDefinition.ENABLED)), JmxAuditLoggerResourceDefinition.ENABLED)));
-    }
-
-    @Test
-    public void testRejection720() throws Exception {
-        testRejectExpressions_1_1_0(ModelTestControllerVersion.V7_2_0_FINAL);
     }
 
     @Test

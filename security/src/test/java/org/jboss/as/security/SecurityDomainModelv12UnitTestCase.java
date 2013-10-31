@@ -104,16 +104,6 @@ public class SecurityDomainModelv12UnitTestCase extends AbstractSubsystemBaseTes
     }
 
     @Test
-    public void testTransformers712() throws Exception {
-        testResourceTransformers_1_1_0(ModelTestControllerVersion.V7_1_2_FINAL);
-    }
-
-    @Test
-    public void testTransformers713() throws Exception {
-        testResourceTransformers_1_1_0(ModelTestControllerVersion.V7_1_3_FINAL);
-    }
-
-    @Test
     public void testTransformersEAP600() throws Exception {
         ignoreThisTestIfEAPRepositoryIsNotReachable();
         testResourceTransformers_1_1_0(ModelTestControllerVersion.EAP_6_0_0);
@@ -123,17 +113,6 @@ public class SecurityDomainModelv12UnitTestCase extends AbstractSubsystemBaseTes
     public void testTransformersEAP601() throws Exception {
         ignoreThisTestIfEAPRepositoryIsNotReachable();
         testResourceTransformers_1_1_0(ModelTestControllerVersion.EAP_6_0_1);
-    }
-
-
-    @Test
-    public void testRejectedTransformers712() throws Exception {
-        testOperationTransformers_1_1_0(ModelTestControllerVersion.V7_1_2_FINAL);
-    }
-
-    @Test
-    public void testRejectedTransformers713() throws Exception {
-        testOperationTransformers_1_1_0(ModelTestControllerVersion.V7_1_3_FINAL);
     }
 
     @Test
@@ -189,12 +168,6 @@ public class SecurityDomainModelv12UnitTestCase extends AbstractSubsystemBaseTes
         checkSubsystemModelTransformation(mainServices, modelVersion);
 
         testAddAndRemove_1_1_0(mainServices, modelVersion);
-    }
-
-    @Test
-    public void testTransformersAS720() throws Exception {
-        ignoreThisTestIfEAPRepositoryIsNotReachable();
-        testResourceTransformers_1_2_1(ModelTestControllerVersion.V7_2_0_FINAL);
     }
 
     @Test

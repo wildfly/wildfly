@@ -74,16 +74,6 @@ public class DatasourcesSubsystemTestCase extends AbstractSubsystemBaseTest {
     }
 
     @Test
-    public void testTransformerAS712() throws Exception {
-        testTransformer1_1_0("datasources-full110.xml", ModelTestControllerVersion.V7_1_2_FINAL);
-    }
-
-    @Test
-    public void testTransformerAS713() throws Exception {
-        testTransformer1_1_0("datasources-full110.xml", ModelTestControllerVersion.V7_1_3_FINAL);
-    }
-
-    @Test
     public void testTransformerEAP600() throws Exception {
         ignoreThisTestIfEAPRepositoryIsNotReachable();
         testTransformer1_1_0("datasources-full110.xml", ModelTestControllerVersion.EAP_6_0_0);
@@ -93,22 +83,6 @@ public class DatasourcesSubsystemTestCase extends AbstractSubsystemBaseTest {
     public void testTransformerEAP601() throws Exception {
         ignoreThisTestIfEAPRepositoryIsNotReachable();
         testTransformer1_1_0("datasources-full110.xml", ModelTestControllerVersion.EAP_6_0_1);
-    }
-
-    @Test
-    public void tesExpressionsAS712() throws Exception {
-        //this file contain expression for all supported fields except reauth-plugin-properties, exception-sorter-properties,
-        // stale-connection-checker-properties, valid-connection-checker-properties, recovery-plugin-properties
-        // for a limitation in test suite not permitting to have expression in type LIST or OBJECT for legacyServices
-        testRejectTransformers1_1_0("datasources-full-expression110.xml", ModelTestControllerVersion.V7_1_2_FINAL);
-    }
-
-    @Test
-    public void testExpressionsAS713() throws Exception {
-        //this file contain expression for all supported fields except reauth-plugin-properties, exception-sorter-properties,
-        // stale-connection-checker-properties, valid-connection-checker-properties, recovery-plugin-properties
-        // for a limitation in test suite not permitting to have expression in type LIST or OBJECT for legacyServices
-        testRejectTransformers1_1_0("datasources-full-expression110.xml", ModelTestControllerVersion.V7_1_3_FINAL);
     }
 
     @Test

@@ -130,12 +130,6 @@ public class TransactionSubsystemTestCase extends AbstractSubsystemBaseTest {
     }
 
     @Test
-    public void testTransformersFullAS712() throws Exception {
-        testTransformersFull110(ModelTestControllerVersion.V7_1_2_FINAL);
-    }
-
-
-    @Test
     public void testTransformersFullEAP600() throws Exception {
         ignoreThisTestIfEAPRepositoryIsNotReachable();
         testTransformersFull110(ModelTestControllerVersion.EAP_6_0_0);
@@ -173,20 +167,9 @@ public class TransactionSubsystemTestCase extends AbstractSubsystemBaseTest {
 
 
     @Test
-    public void testTransformersFull713() throws Exception {
-        testTransformersFull(ModelTestControllerVersion.V7_1_3_FINAL, ModelVersion.create(1, 1, 1));
-    }
-
-    @Test
     public void testTransformersEAP601() throws Exception {
         ignoreThisTestIfEAPRepositoryIsNotReachable();
         testTransformersFull(ModelTestControllerVersion.EAP_6_0_1, ModelVersion.create(1, 1, 1));
-    }
-
-
-    @Test
-    public void testTransformersFull720() throws Exception {
-        testTransformersFull(ModelTestControllerVersion.V7_2_0_FINAL, ModelVersion.create(1, 2, 0));
     }
 
     @Test
@@ -221,11 +204,6 @@ public class TransactionSubsystemTestCase extends AbstractSubsystemBaseTest {
 
         checkSubsystemModelTransformation(mainServices, modelVersion);
 
-    }
-
-    @Test
-    public void testRejectTransformersAS712() throws Exception {
-        testRejectTransformers(ModelTestControllerVersion.V7_1_2_FINAL, ModelVersion.create(1, 1, 0), get1_1_0_config());
     }
 
     @Test
@@ -271,26 +249,11 @@ public class TransactionSubsystemTestCase extends AbstractSubsystemBaseTest {
     }
 
     @Test
-    public void testRejectTransformers713() throws Exception {
-        testRejectTransformers(ModelTestControllerVersion.V7_1_3_FINAL, ModelVersion.create(1, 1, 1), new FailedOperationTransformationConfig()
-            .addFailedAttribute(PathAddress.pathAddress(PathElement.pathElement(SUBSYSTEM, TransactionExtension.SUBSYSTEM_NAME)),
-                    new ChangeToTrueConfig(HORNETQ_STORE_ENABLE_ASYNC_IO)));
-
-    }
-
-    @Test
     public void testRejectTransformersEAP601() throws Exception {
         testRejectTransformers(ModelTestControllerVersion.EAP_6_0_1, ModelVersion.create(1, 1, 1), new FailedOperationTransformationConfig()
             .addFailedAttribute(PathAddress.pathAddress(PathElement.pathElement(SUBSYSTEM, TransactionExtension.SUBSYSTEM_NAME)),
                     new ChangeToTrueConfig(HORNETQ_STORE_ENABLE_ASYNC_IO)));
 
-    }
-
-    @Test
-    public void testRejectTransformers720() throws Exception {
-        testRejectTransformers(ModelTestControllerVersion.V7_1_3_FINAL, ModelVersion.create(1, 2, 0), new FailedOperationTransformationConfig()
-            .addFailedAttribute(PathAddress.pathAddress(PathElement.pathElement(SUBSYSTEM, TransactionExtension.SUBSYSTEM_NAME)),
-                    new ChangeToTrueConfig(HORNETQ_STORE_ENABLE_ASYNC_IO)));
     }
 
     @Test

@@ -94,16 +94,6 @@ public class JacORBTransformersTestCase extends AbstractSubsystemTest {
     }
 
     @Test
-    public void testTransformers712() throws Exception {
-        testTransformers(ModelTestControllerVersion.V7_1_2_FINAL);
-    }
-
-    @Test
-    public void testTransformers713() throws Exception {
-        testTransformers(ModelTestControllerVersion.V7_1_3_FINAL);
-    }
-
-    @Test
     public void testTransformersEAP600() throws Exception {
         ignoreThisTestIfEAPRepositoryIsNotReachable();
         testTransformers(ModelTestControllerVersion.EAP_6_0_0);
@@ -138,16 +128,6 @@ public class JacORBTransformersTestCase extends AbstractSubsystemTest {
     }
 
     @Test
-    public void testTransformersSecurityIdentity712() throws Exception {
-        testTransformersSecurityIdentity_1_1_0(ModelTestControllerVersion.V7_1_2_FINAL);
-    }
-
-    @Test
-    public void testTransformersSecurityIdentity713() throws Exception {
-        testTransformersSecurityIdentity_1_1_0(ModelTestControllerVersion.V7_1_3_FINAL);
-    }
-
-    @Test
     public void testTransformersSecurityIdentityEAP600() throws Exception {
         ignoreThisTestIfEAPRepositoryIsNotReachable();
         testTransformersSecurityIdentity_1_1_0(ModelTestControllerVersion.EAP_6_0_0);
@@ -179,16 +159,6 @@ public class JacORBTransformersTestCase extends AbstractSubsystemTest {
         List<ModelNode> properties = transformed.get(ModelDescriptionConstants.PROPERTIES).asList();
         Assert.assertEquals(1, properties.size());
         Assert.assertEquals("some_value", properties.get(0).get("some_property").asString());
-    }
-
-    @Test
-    public void testTransformersSecurityClient712() throws Exception {
-        testTransformersSecurityClient_1_1_0(ModelTestControllerVersion.V7_1_2_FINAL);
-    }
-
-    @Test
-    public void testTransformersSecurityClient713() throws Exception {
-        testTransformersSecurityClient_1_1_0(ModelTestControllerVersion.V7_1_3_FINAL);
     }
 
     @Test
@@ -249,18 +219,6 @@ public class JacORBTransformersTestCase extends AbstractSubsystemTest {
                 return modelNode;
             }
         });
-    }
-
-
-    @Test
-    public void testTransformersRejectedExpressions712() throws Exception {
-        testTransformersRejectedExpressions(ModelTestControllerVersion.V7_1_2_FINAL);
-    }
-
-
-    @Test
-    public void testTransformersRejectedExpressions713() throws Exception {
-        testTransformersRejectedExpressions(ModelTestControllerVersion.V7_1_3_FINAL);
     }
 
     @Test

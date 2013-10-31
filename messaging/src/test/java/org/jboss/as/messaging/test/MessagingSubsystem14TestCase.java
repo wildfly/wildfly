@@ -48,8 +48,6 @@ import static org.jboss.as.model.test.ModelTestControllerVersion.EAP_6_0_0;
 import static org.jboss.as.model.test.ModelTestControllerVersion.EAP_6_0_1;
 import static org.jboss.as.model.test.ModelTestControllerVersion.EAP_6_1_0;
 import static org.jboss.as.model.test.ModelTestControllerVersion.EAP_6_1_1;
-import static org.jboss.as.model.test.ModelTestControllerVersion.V7_1_2_FINAL;
-import static org.jboss.as.model.test.ModelTestControllerVersion.V7_1_3_FINAL;
 import static org.jboss.as.model.test.ModelTestControllerVersion.V7_2_0_FINAL;
 import static org.jboss.as.model.test.ModelTestUtils.checkFailedTransformedBootOperations;
 import static org.junit.Assert.assertEquals;
@@ -123,16 +121,6 @@ public class MessagingSubsystem14TestCase extends AbstractSubsystemBaseTest {
     }
 
     @Test
-    public void testTransformersAS712() throws Exception {
-        testTransformers(V7_1_2_FINAL, VERSION_1_1_0, FIXER_1_1_0);
-    }
-
-    @Test
-    public void testTransformersAS713() throws Exception {
-        testTransformers(V7_1_3_FINAL, VERSION_1_1_0, FIXER_1_1_0);
-    }
-
-    @Test
     public void testTransformersEAP600() throws Exception {
         testTransformers(EAP_6_0_0, VERSION_1_1_0, FIXER_1_1_0);
     }
@@ -150,20 +138,6 @@ public class MessagingSubsystem14TestCase extends AbstractSubsystemBaseTest {
     @Test
     public void testTransformersEAP611() throws Exception {
         testTransformers(EAP_6_1_1, VERSION_1_2_1, FIXER_1_2_0);
-    }
-
-    @Test
-    public void testRejectExpressionsAS712() throws Exception {
-        KernelServicesBuilder builder = createKernelServicesBuilder(V7_1_2_FINAL, VERSION_1_1_0, FIXER_1_1_0, "empty_subsystem_1_3.xml");
-
-        doTestRejectExpressions_1_1_0(builder);
-    }
-
-    @Test
-    public void testRejectExpressionsAS713() throws Exception {
-        KernelServicesBuilder builder = createKernelServicesBuilder(V7_1_3_FINAL, VERSION_1_1_0, FIXER_1_1_0, "empty_subsystem_1_3.xml");
-
-        doTestRejectExpressions_1_1_0(builder);
     }
 
     @Test

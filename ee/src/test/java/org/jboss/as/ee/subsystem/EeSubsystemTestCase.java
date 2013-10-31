@@ -58,13 +58,6 @@ public class EeSubsystemTestCase extends AbstractSubsystemBaseTest {
     }
 
     @Test
-    public void testTransformers712() throws Exception {
-        //Due to https://issues.jboss.org/browse/AS7-4892 the jboss-descriptor-property-replacement
-        //does not get set properly on 7.1.2, so let's do a reject test.
-        testTransformers712(ModelTestControllerVersion.V7_1_2_FINAL);
-    }
-
-    @Test
     public void testTransformersEAP600() throws Exception {
         //Due to https://issues.jboss.org/browse/AS7-4892 the jboss-descriptor-property-replacement
         //does not get set properly on 7.1.2 (aka EAP 6.0.0), so let's do a reject test.
@@ -84,8 +77,8 @@ public class EeSubsystemTestCase extends AbstractSubsystemBaseTest {
             KernelServicesBuilder builder = createKernelServicesBuilder(AdditionalInitialization.MANAGEMENT);
 
             // Add legacy subsystems
-            builder.createLegacyKernelServicesBuilder(null, ModelTestControllerVersion.V7_1_2_FINAL, modelVersion)
-                    .addMavenResourceURL("org.jboss.as:jboss-as-ee:7.1.2.Final");
+            builder.createLegacyKernelServicesBuilder(null, controllerVersion, modelVersion)
+                    .addMavenResourceURL("org.jboss.as:jboss-as-ee:" + controllerVersion.getMavenGavVersion());
 
             KernelServices mainServices = builder.build();
             KernelServices legacyServices = mainServices.getLegacyServices(modelVersion);
@@ -116,13 +109,6 @@ public class EeSubsystemTestCase extends AbstractSubsystemBaseTest {
             System.clearProperty("jboss.test.core.model.version.override");
         }
     }
-
-    @Test
-    public void testTransformers713() throws Exception {
-        //We are 100% compatible with 7.1.3 so do a normal transformation test
-        testTransformers1_0_0(ModelTestControllerVersion.V7_1_3_FINAL);
-    }
-
 
     @Test
     public void testTransformersEAP601() throws Exception {

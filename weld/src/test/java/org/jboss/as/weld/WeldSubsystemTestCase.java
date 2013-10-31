@@ -48,21 +48,6 @@ public class WeldSubsystemTestCase extends AbstractSubsystemBaseTest {
     }
 
     @Test
-    public void testTransformersAS712() throws Exception {
-        testTransformers10(ModelTestControllerVersion.V7_1_2_FINAL, false);
-    }
-
-    @Test
-    public void testTransformersAS713() throws Exception {
-        testTransformers10(ModelTestControllerVersion.V7_1_3_FINAL, false);
-    }
-
-    @Test
-    public void testTransformersAS72() throws Exception {
-        testTransformers10(ModelTestControllerVersion.V7_2_0_FINAL, false);
-    }
-
-    @Test
     public void testTransformersEAP600() throws Exception {
         testTransformers10(ModelTestControllerVersion.EAP_6_0_0, true);
     }

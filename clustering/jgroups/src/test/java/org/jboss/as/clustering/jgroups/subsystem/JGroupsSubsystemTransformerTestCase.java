@@ -61,16 +61,6 @@ public class JGroupsSubsystemTransformerTestCase extends OperationTestCaseBase {
     }
 
     @Test
-    public void testTransformerAS712() throws Exception {
-        testTransformer_1_1_0(ModelTestControllerVersion.V7_1_2_FINAL);
-    }
-
-    @Test
-    public void testTransformerAS713() throws Exception {
-        testTransformer_1_1_0(ModelTestControllerVersion.V7_1_3_FINAL);
-    }
-
-    @Test
     public void testTransformerEAP600() throws Exception {
         ignoreThisTestIfEAPRepositoryIsNotReachable();
         testTransformer_1_1_0(ModelTestControllerVersion.EAP_6_0_0);
@@ -140,16 +130,6 @@ public class JGroupsSubsystemTransformerTestCase extends OperationTestCaseBase {
         // perform operation on the 1.1.1 model
         ModelNode mainResult = services.executeOperation(operation);
         assertEquals(mainResult.toJSONString(true), SUCCESS, mainResult.get(OUTCOME).asString());
-    }
-
-    @Test
-    public void testRejectExpressionsAS712() throws Exception {
-        testRejectExpressions_1_1_0(ModelTestControllerVersion.V7_1_2_FINAL);
-    }
-
-    @Test
-    public void testRejectExpressionsAS713() throws Exception {
-        testRejectExpressions_1_1_0(ModelTestControllerVersion.V7_1_3_FINAL);
     }
 
     @Test

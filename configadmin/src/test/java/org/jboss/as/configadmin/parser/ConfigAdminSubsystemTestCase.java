@@ -131,16 +131,6 @@ public class ConfigAdminSubsystemTestCase extends AbstractSubsystemBaseTest {
     }
 
     @Test
-    public void testTransformersAS712() throws Exception {
-        testTransformers1_0_0(ModelTestControllerVersion.V7_1_2_FINAL);
-    }
-
-    @Test
-    public void testTransformersAS713() throws Exception {
-        testTransformers1_0_0(ModelTestControllerVersion.V7_1_3_FINAL);
-    }
-
-    @Test
     public void testTransformersEAP600() throws Exception {
         ignoreThisTestIfEAPRepositoryIsNotReachable();
         testTransformers1_0_0(ModelTestControllerVersion.EAP_6_0_0);
@@ -183,16 +173,6 @@ public class ConfigAdminSubsystemTestCase extends AbstractSubsystemBaseTest {
         Assert.assertEquals(2, entries.keys().size());
         Assert.assertEquals("testing123", entries.get("test123").asString());
         Assert.assertEquals("testingabc", entries.get("test456").asString());
-    }
-
-    @Test
-    public void testRejectExpressionsAS712() throws Exception {
-        testRejectExpressions1_0_0(ModelTestControllerVersion.V7_1_2_FINAL);
-    }
-
-    @Test
-    public void testRejectExpressionsAS713() throws Exception {
-        testRejectExpressions1_0_0(ModelTestControllerVersion.V7_1_3_FINAL);
     }
 
     @Test

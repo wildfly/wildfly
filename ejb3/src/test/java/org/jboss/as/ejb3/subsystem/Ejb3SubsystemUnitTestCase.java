@@ -60,17 +60,6 @@ public class Ejb3SubsystemUnitTestCase extends AbstractSubsystemBaseTest {
     }
 
     @Test
-    public void testTransformerAS712() throws Exception {
-        testTransformer_1_1_0(ModelTestControllerVersion.V7_1_2_FINAL);
-    }
-
-    @Test
-    public void testTransformerAS713() throws Exception {
-        testTransformer_1_1_0(ModelTestControllerVersion.V7_1_3_FINAL);
-    }
-
-
-    @Test
     public void testTransformerEAP600() throws Exception {
         ignoreThisTestIfEAPRepositoryIsNotReachable();
         testTransformer_1_1_0(ModelTestControllerVersion.EAP_6_0_0);
@@ -108,16 +97,6 @@ public class Ejb3SubsystemUnitTestCase extends AbstractSubsystemBaseTest {
         Assert.assertNotNull(mainServices);
         Assert.assertNotNull(legacyServices);
         checkSubsystemModelTransformation(mainServices, modelVersion, V_1_1_0_FIXER);
-    }
-
-    @Test
-    public void testRejectExpressionsAS712() throws Exception {
-        testRejectExpressions_1_1_0(ModelTestControllerVersion.V7_1_2_FINAL);
-    }
-
-    @Test
-    public void testRejectExpressionsAS713() throws Exception {
-        testRejectExpressions_1_1_0(ModelTestControllerVersion.V7_1_3_FINAL);
     }
 
     @Test
@@ -178,12 +157,6 @@ public class Ejb3SubsystemUnitTestCase extends AbstractSubsystemBaseTest {
                 .addFailedAttribute(subsystemAddress.append(EJB3SubsystemModel.REMOTE_SERVICE_PATH, ChannelCreationOptionResource.INSTANCE.getPathElement()),
                         new FailedOperationTransformationConfig.RejectExpressionsConfig(ChannelCreationOptionResource.CHANNEL_CREATION_OPTION_VALUE));
     }
-
-    @Test
-    public void testTransformerAS720() throws Exception {
-        testTransformer_1_2_x(ModelTestControllerVersion.V7_2_0_FINAL, 0);
-    }
-
 
     @Test
     public void testTransformerEAP610() throws Exception {

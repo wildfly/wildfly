@@ -88,8 +88,9 @@ public class NamingTransformersTestCase extends AbstractSubsystemBaseTest {
         KernelServicesBuilder builder = createKernelServicesBuilder(createAdditionalInitialization())
                 .setSubsystemXmlResource("subsystem_with_expressions_compatible_1.1.0.xml");
 
-        builder.createLegacyKernelServicesBuilder(createAdditionalInitialization(), ModelTestControllerVersion.V7_1_2_FINAL, VERSION_1_1_0)
-                .addMavenResourceURL("org.jboss.as:jboss-as-naming:7.1.2.Final");
+        ModelTestControllerVersion controllerVersion = ModelTestControllerVersion.EAP_6_0_0;
+        builder.createLegacyKernelServicesBuilder(createAdditionalInitialization(), controllerVersion, VERSION_1_1_0)
+                .addMavenResourceURL("org.jboss.as:jboss-as-naming:" + controllerVersion.getMavenGavVersion());
 
         KernelServices mainServices712 = builder.build();
         KernelServices legacyServices712 = mainServices712.getLegacyServices(VERSION_1_1_0);
@@ -98,23 +99,13 @@ public class NamingTransformersTestCase extends AbstractSubsystemBaseTest {
         builder = createKernelServicesBuilder(createAdditionalInitialization())
                 .setSubsystemXmlResource("subsystem_with_expressions_compatible_1.1.0.xml");
 
-        builder.createLegacyKernelServicesBuilder(null, ModelTestControllerVersion.V7_1_3_FINAL, VERSION_1_1_0)
-                .addMavenResourceURL("org.jboss.as:jboss-as-naming:7.1.3.Final");
+        controllerVersion = ModelTestControllerVersion.EAP_6_0_1;
+        builder.createLegacyKernelServicesBuilder(null, controllerVersion, VERSION_1_1_0)
+                .addMavenResourceURL("org.jboss.as:jboss-as-naming:" + controllerVersion.getMavenGavVersion());
 
         KernelServices mainServices713 = builder.build();
         KernelServices legacyServices713 = mainServices713.getLegacyServices(VERSION_1_1_0);
         assertNotNull(legacyServices713);
-    }
-
-
-    @Test
-    public void testTransformers_AS712() throws Exception {
-        testTransformers_1_1_0(ModelTestControllerVersion.V7_1_2_FINAL);
-    }
-
-    @Test
-    public void testTransformers_AS713() throws Exception {
-        testTransformers_1_1_0(ModelTestControllerVersion.V7_1_3_FINAL);
     }
 
     @Test
@@ -230,16 +221,6 @@ public class NamingTransformersTestCase extends AbstractSubsystemBaseTest {
     }
 
     @Test
-    public void testRejectExpressionsAS712() throws Exception {
-        doTestRejectExpressions_1_1_0(ModelTestControllerVersion.V7_1_2_FINAL);
-    }
-
-    @Test
-    public void testRejectExpressionsAS713() throws Exception {
-        doTestRejectExpressions_1_1_0(ModelTestControllerVersion.V7_1_3_FINAL);
-    }
-
-    @Test
     public void testRejectExpressionsEAP600() throws Exception {
         ignoreThisTestIfEAPRepositoryIsNotReachable();
         doTestRejectExpressions_1_1_0(ModelTestControllerVersion.EAP_6_0_0);
@@ -274,11 +255,6 @@ public class NamingTransformersTestCase extends AbstractSubsystemBaseTest {
                         .addFailedAttribute(PathAddress.pathAddress(NamingExtension.SUBSYSTEM_PATH, NamingSubsystemModel.BINDING_PATH),
                                 new FailedOperationTransformationConfig.NewAttributesConfig(NamingSubsystemModel.ENVIRONMENT))
         );
-    }
-
-    @Test
-    public void testTransformers_AS720() throws Exception {
-        testTransformers_1_2_0(ModelTestControllerVersion.V7_2_0_FINAL);
     }
 
     @Test

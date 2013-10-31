@@ -74,16 +74,6 @@ public class ModClusterSubsystemTestCase extends AbstractSubsystemBaseTest {
     }
 
     @Test
-    public void testTransformers712() throws Exception {
-        testTransformers_1_2_0(ModelTestControllerVersion.V7_1_2_FINAL);
-    }
-
-    @Test
-    public void testTransformers713() throws Exception {
-        testTransformers_1_2_0(ModelTestControllerVersion.V7_1_3_FINAL);
-    }
-
-    @Test
     public void testTransformersEAP600() throws Exception {
         ignoreThisTestIfEAPRepositoryIsNotReachable();
         testTransformers_1_2_0(ModelTestControllerVersion.EAP_6_0_0);
@@ -140,12 +130,6 @@ public class ModClusterSubsystemTestCase extends AbstractSubsystemBaseTest {
         Assert.assertEquals(mainSessionCapacity.asInt(), legacySessionCapacity.asInt());
     }
 
-
-    @Test
-    public void testTransformers720() throws Exception {
-        testTransformers_1_2_0(ModelTestControllerVersion.V7_2_0_FINAL);
-    }
-
     @Test
     public void testTransformersEAP610() throws Exception {
         ignoreThisTestIfEAPRepositoryIsNotReachable();
@@ -175,16 +159,6 @@ public class ModClusterSubsystemTestCase extends AbstractSubsystemBaseTest {
         Assert.assertTrue(legacyServices.isSuccessfulBoot());
 
         checkSubsystemModelTransformation(mainServices, modelVersion);
-    }
-
-    @Test
-    public void testExpressionsAreRejected712() throws Exception {
-        testExpressionsAreRejectedByVersion_1_2(ModelTestControllerVersion.V7_1_2_FINAL);
-    }
-
-    @Test
-    public void testExpressionsAreRejected713() throws Exception {
-        testExpressionsAreRejectedByVersion_1_2(ModelTestControllerVersion.V7_1_3_FINAL);
     }
 
     @Test

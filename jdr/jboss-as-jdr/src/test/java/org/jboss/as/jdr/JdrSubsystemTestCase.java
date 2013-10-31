@@ -67,17 +67,6 @@ public class JdrSubsystemTestCase extends AbstractSubsystemBaseTest {
         return readResource("subsystem.xml");
     }
 
-
-    @Test
-    public void testTransformersAS712() throws Exception {
-        testJdrTransformers(ModelTestControllerVersion.V7_1_2_FINAL, ModelVersion.create(1, 0, 0));
-    }
-
-    @Test
-    public void testTransformersAS713() throws Exception {
-        testJdrTransformers(ModelTestControllerVersion.V7_1_3_FINAL, ModelVersion.create(1, 0, 0));
-    }
-
     @Test
     public void testTransformersEAP600() throws Exception {
         ignoreThisTestIfEAPRepositoryIsNotReachable();
@@ -88,11 +77,6 @@ public class JdrSubsystemTestCase extends AbstractSubsystemBaseTest {
     public void testTransformersEAP601() throws Exception {
         ignoreThisTestIfEAPRepositoryIsNotReachable();
         testJdrTransformers(ModelTestControllerVersion.EAP_6_0_1, ModelVersion.create(1, 0, 0));
-    }
-
-    @Test
-    public void testTransformersAS720() throws Exception {
-        testJdrTransformers(ModelTestControllerVersion.V7_2_0_FINAL, ModelVersion.create(1, 1, 0));
     }
 
     @Test

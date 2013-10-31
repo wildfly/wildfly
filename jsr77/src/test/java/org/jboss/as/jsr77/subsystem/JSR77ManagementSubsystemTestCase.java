@@ -47,22 +47,6 @@ public class JSR77ManagementSubsystemTestCase extends AbstractSubsystemBaseTest 
         return "<subsystem xmlns=\"urn:jboss:domain:jsr77:1.0\"/>";
     }
 
-
-    @Test
-    public void testTransformersAS712() throws Exception {
-        testTransformers_1_0_0(ModelTestControllerVersion.V7_1_2_FINAL);
-    }
-
-    @Test
-    public void testTransformersAS713() throws Exception {
-        testTransformers_1_0_0(ModelTestControllerVersion.V7_1_3_FINAL);
-    }
-
-    @Test
-    public void testTransformersAS720() throws Exception {
-        testTransformers_1_0_0(ModelTestControllerVersion.V7_2_0_FINAL);
-    }
-
     @Test
     public void testTransformersEAP600() throws Exception {
         ignoreThisTestIfEAPRepositoryIsNotReachable();

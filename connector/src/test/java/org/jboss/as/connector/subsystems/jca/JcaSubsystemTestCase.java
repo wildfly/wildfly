@@ -69,17 +69,6 @@ public class JcaSubsystemTestCase extends AbstractSubsystemBaseTest {
         standardSubsystemTest("jca-full-expression.xml", "jca-full.xml");
     }
 
-
-    @Test
-    public void testTransformerAS712() throws Exception {
-        testTransformer1_1_0(ModelTestControllerVersion.V7_1_2_FINAL);
-    }
-
-    @Test
-    public void testTransformerAS713() throws Exception {
-        testTransformer1_1_0(ModelTestControllerVersion.V7_1_3_FINAL);
-    }
-
     @Test
     public void testTransformerEAP600() throws Exception {
         ignoreThisTestIfEAPRepositoryIsNotReachable();
@@ -115,16 +104,6 @@ public class JcaSubsystemTestCase extends AbstractSubsystemBaseTest {
         KernelServices legacyServices = mainServices.getLegacyServices(modelVersion);
         Assert.assertNotNull(legacyServices);
         checkSubsystemModelTransformation(mainServices, modelVersion);
-    }
-
-    @Test
-    public void testRejectExpressionsAS712() throws Exception {
-        testRejectExpressions1_1_0(ModelTestControllerVersion.V7_1_2_FINAL);
-    }
-
-    @Test
-    public void testRejectExpressionsAS713() throws Exception {
-        testRejectExpressions1_1_0(ModelTestControllerVersion.V7_1_3_FINAL);
     }
 
     @Test

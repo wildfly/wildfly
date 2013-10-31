@@ -70,16 +70,6 @@ public class MailSubsystem11TestCase extends AbstractSubsystemBaseTest {
     }
 
     @Test
-    public void testTransformersAS712() throws Exception {
-        testTransformers110(ModelTestControllerVersion.V7_1_2_FINAL);
-    }
-
-    @Test
-    public void testTransformersAS713() throws Exception {
-        testTransformers110(ModelTestControllerVersion.V7_1_3_FINAL);
-    }
-
-    @Test
     public void testTransformersEAP600() throws Exception {
         ignoreThisTestIfEAPRepositoryIsNotReachable();
         testTransformers110(ModelTestControllerVersion.EAP_6_0_0);

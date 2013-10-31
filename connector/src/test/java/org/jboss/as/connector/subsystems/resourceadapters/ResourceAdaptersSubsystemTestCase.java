@@ -78,16 +78,6 @@ public class ResourceAdaptersSubsystemTestCase extends AbstractSubsystemBaseTest
     }
 
     @Test
-    public void testTransformerAS712() throws Exception {
-        testTransformer1_1_0("resource-adapters-xapool.xml", ModelTestControllerVersion.V7_1_2_FINAL);
-    }
-
-    @Test
-    public void testTransformerAS713() throws Exception {
-        testTransformer1_1_0("resource-adapters-xapool.xml", ModelTestControllerVersion.V7_1_3_FINAL);
-    }
-
-    @Test
     public void testTransformerEAP600() throws Exception {
         ignoreThisTestIfEAPRepositoryIsNotReachable();
         testTransformer1_1_0("resource-adapters-xapool.xml", ModelTestControllerVersion.EAP_6_0_0);
@@ -99,19 +89,6 @@ public class ResourceAdaptersSubsystemTestCase extends AbstractSubsystemBaseTest
         testTransformer1_1_0("resource-adapters-xapool.xml", ModelTestControllerVersion.EAP_6_0_1);
     }
 
-    @Test
-    public void tesExpressionsAS712() throws Exception {
-        //this file contain expression for all supported fields except bean-validation-groups and recovery-plugin-properties
-        // for a limitation in test suite not permitting to have expression in type LIST or OBJECT for legacyServices
-        testTransformer1_1_0("resource-adapters-xapool-expression2.xml", ModelTestControllerVersion.V7_1_2_FINAL);
-    }
-
-    @Test
-    public void testExpressionsAS713() throws Exception {
-        //this file contain expression for all supported fields except bean-validation-groups and recovery-plugin-properties
-        // for a limitation in test suite not permitting to have expression in type LIST or OBJECT for legacyServices
-        testTransformer1_1_0("resource-adapters-xapool-expression2.xml", ModelTestControllerVersion.V7_1_3_FINAL);
-    }
 
     @Test
     public void tesExpressionsEAP600() throws Exception {

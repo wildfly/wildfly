@@ -68,16 +68,6 @@ public class RemotingSubsystemTransformersTestCase extends AbstractSubsystemBase
     }
 
     @Test
-    public void testExpressionsAreRejectedAS712() throws Exception {
-        testExpressionsAreRejectedByVersion_1_1(ModelTestControllerVersion.V7_1_2_FINAL);
-    }
-
-    @Test
-    public void testExpressionsAreRejectedAS713() throws Exception {
-        testExpressionsAreRejectedByVersion_1_1(ModelTestControllerVersion.V7_1_3_FINAL);
-    }
-
-    @Test
     public void testExpressionsAreRejectedEAP600() throws Exception {
         ignoreThisTestIfEAPRepositoryIsNotReachable();
         testExpressionsAreRejectedByVersion_1_1(ModelTestControllerVersion.EAP_6_0_0);
@@ -153,16 +143,6 @@ public class RemotingSubsystemTransformersTestCase extends AbstractSubsystemBase
                             PathElement.pathElement(CommonAttributes.LOCAL_OUTBOUND_CONNECTION))
                                 .append(PathElement.pathElement(CommonAttributes.PROPERTY)),
                         new FailedOperationTransformationConfig.RejectExpressionsConfig(CommonAttributes.VALUE)));
-    }
-
-    @Test
-    public void testTransformersAS712() throws Exception {
-        testTransformers(ModelTestControllerVersion.V7_1_2_FINAL);
-    }
-
-    @Test
-    public void testTransformersAS713() throws Exception {
-        testTransformers(ModelTestControllerVersion.V7_1_3_FINAL);
     }
 
     @Test

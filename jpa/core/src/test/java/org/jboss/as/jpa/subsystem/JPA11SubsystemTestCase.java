@@ -57,16 +57,6 @@ public class JPA11SubsystemTestCase extends AbstractSubsystemBaseTest {
     }
 
     @Test
-    public void testTransformers7_1_2() throws Exception {
-        testTransformers_1_1_0(ModelTestControllerVersion.V7_1_2_FINAL);
-    }
-
-    @Test
-    public void testTransformers7_1_3() throws Exception {
-        testTransformers_1_1_0(ModelTestControllerVersion.V7_1_3_FINAL);
-    }
-
-    @Test
     public void testTransformersEAP6_0_0() throws Exception {
         ignoreThisTestIfEAPRepositoryIsNotReachable();
         testTransformers_1_1_0(ModelTestControllerVersion.EAP_6_0_0);
@@ -95,16 +85,6 @@ public class JPA11SubsystemTestCase extends AbstractSubsystemBaseTest {
         Assert.assertTrue(legacyServices.isSuccessfulBoot());
 
         checkSubsystemModelTransformation(mainServices, oldVersion);
-    }
-
-    @Test
-    public void testTransformersRejectExpressions7_1_2() throws Exception {
-        testTransformers_1_1_0_RejectExpressions(ModelTestControllerVersion.V7_1_2_FINAL);
-    }
-
-    @Test
-    public void testTransformersRejectExpressions7_1_3() throws Exception {
-        testTransformers_1_1_0_RejectExpressions(ModelTestControllerVersion.V7_1_3_FINAL);
     }
 
     @Test

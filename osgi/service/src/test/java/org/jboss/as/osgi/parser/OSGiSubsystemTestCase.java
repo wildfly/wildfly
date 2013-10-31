@@ -257,16 +257,6 @@ public class OSGiSubsystemTestCase extends AbstractSubsystemBaseTest {
     }
 
     @Test
-    public void testTransformerAS712() throws Exception {
-        testTransformers1_0_0(ModelTestControllerVersion.V7_1_2_FINAL, "org.jboss.as:jboss-as-osgi-service:7.1.2.Final", "org.jboss.osgi.framework:jbosgi-framework-core:1.3.0.Final");
-    }
-
-    @Test
-    public void testTransformerAS713() throws Exception {
-        testTransformers1_0_0(ModelTestControllerVersion.V7_1_3_FINAL, "org.jboss.as:jboss-as-osgi-service:7.1.3.Final", "org.jboss.osgi.framework:jbosgi-framework-core:1.3.1.CR1");
-    }
-
-    @Test
     public void testTransformerEAP600() throws Exception {
         testTransformers1_0_0(ModelTestControllerVersion.EAP_6_0_0, "org.jboss.as:jboss-as-osgi-service:" + ModelTestControllerVersion.EAP_6_0_0.getMavenGavVersion(), "org.jboss.osgi.framework:jbosgi-framework-core:1.3.0.Final-redhat-1");
     }
@@ -309,16 +299,6 @@ public class OSGiSubsystemTestCase extends AbstractSubsystemBaseTest {
         Assert.assertFalse(legacyModule1.has(ModelConstants.STARTLEVEL));
     }
 
-
-    @Test
-    public void testRejectExpressionsAS712() throws Exception {
-        testRejectExpressions1_0_0(ModelTestControllerVersion.V7_1_2_FINAL, "org.jboss.as:jboss-as-osgi-service:7.1.2.Final", "org.jboss.osgi.framework:jbosgi-framework-core:1.3.0.Final");
-    }
-
-    @Test
-    public void testRejectExpressionsAS713() throws Exception {
-        testRejectExpressions1_0_0(ModelTestControllerVersion.V7_1_3_FINAL, "org.jboss.as:jboss-as-osgi-service:7.1.3.Final", "org.jboss.osgi.framework:jbosgi-framework-core:1.3.1.CR1");
-    }
 
     @Test
     public void testRejectExpressionsEAP600() throws Exception {

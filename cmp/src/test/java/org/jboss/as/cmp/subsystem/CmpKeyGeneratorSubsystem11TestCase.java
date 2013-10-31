@@ -120,16 +120,6 @@ public class CmpKeyGeneratorSubsystem11TestCase extends CmpKeyGeneratorSubsystem
     }
 
     @Test
-    public void testTransformers_7_1_2() throws Exception {
-        testTransformers_1_0_0(ModelTestControllerVersion.V7_1_2_FINAL);
-    }
-
-    @Test
-    public void testTransformers_7_1_3() throws Exception {
-        testTransformers_1_0_0(ModelTestControllerVersion.V7_1_3_FINAL);
-    }
-
-    @Test
     public void testTransformers_6_0_0() throws Exception {
         ignoreThisTestIfEAPRepositoryIsNotReachable();
         testTransformers_1_0_0(ModelTestControllerVersion.EAP_6_0_0);

@@ -49,30 +49,15 @@ public class SarSubsystemTestCase extends AbstractSubsystemBaseTest {
     }
 
     @Test
-    public void testTransformersAS712() throws Exception {
-        testTransformers_1_0_0(ModelTestControllerVersion.V7_1_2_FINAL, "1.0.0.Final");
-    }
-
-    @Test
-    public void testTransformersAS713() throws Exception {
-        testTransformers_1_0_0(ModelTestControllerVersion.V7_1_3_FINAL, "1.0.0.Final");
-    }
-
-    @Test
     public void testTransformersEAP600() throws Exception {
         ignoreThisTestIfEAPRepositoryIsNotReachable();
-        testTransformers_1_0_0(ModelTestControllerVersion.EAP_6_0_0, "1.0.0.Final");
+        testTransformers_1_0_0(ModelTestControllerVersion.EAP_6_0_0, "1.0.0.Final-redhat-1");
     }
 
     @Test
     public void testTransformersEAP601() throws Exception {
         ignoreThisTestIfEAPRepositoryIsNotReachable();
-        testTransformers_1_0_0(ModelTestControllerVersion.EAP_6_0_1, "1.0.0.Final");
-    }
-
-    @Test
-    public void testTransformersAS720() throws Exception {
-        testTransformers_1_0_0(ModelTestControllerVersion.V7_2_0_FINAL, null);
+        testTransformers_1_0_0(ModelTestControllerVersion.EAP_6_0_1, "1.0.0.Final-redhat-2");
     }
 
     @Test

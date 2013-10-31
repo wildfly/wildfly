@@ -153,8 +153,8 @@ public class WebSubsystemTestCase extends AbstractSubsystemBaseTest {
         KernelServicesBuilder builder = createKernelServicesBuilder(createAdditionalInitialization())
                 .setSubsystemXml(subsystemXml);
 
-        builder.createLegacyKernelServicesBuilder(createAdditionalInitialization(), ModelTestControllerVersion.V7_1_2_FINAL, modelVersion)
-                .addMavenResourceURL("org.jboss.as:jboss-as-web:7.1.2.Final")
+        builder.createLegacyKernelServicesBuilder(createAdditionalInitialization(), ModelTestControllerVersion.EAP_6_0_0, modelVersion)
+                .addMavenResourceURL("org.jboss.as:jboss-as-web:" + ModelTestControllerVersion.EAP_6_0_0.getMavenGavVersion())
                 .skipReverseControllerCheck();
 
         KernelServices mainServices = builder.build();
@@ -172,20 +172,11 @@ public class WebSubsystemTestCase extends AbstractSubsystemBaseTest {
     }
 
     @Test
-    public void testRejectExpressionsAS712() throws Exception {
-        testRejectExpressions_1_1_x(ModelTestControllerVersion.V7_1_2_FINAL, ModelVersion.create(1, 1, 0));
-    }
-
-    @Test
     public void testRejectExpressionsEAP600() throws Exception {
         ignoreThisTestIfEAPRepositoryIsNotReachable();
         testRejectExpressions_1_1_x(ModelTestControllerVersion.EAP_6_0_0, ModelVersion.create(1, 1, 0));
     }
 
-    @Test
-    public void testRejectExpressionsAS713() throws Exception {
-        testRejectExpressions_1_1_x(ModelTestControllerVersion.V7_1_3_FINAL, ModelVersion.create(1, 1, 1));
-    }
 
     @Test
     public void testRejectExpressionsEAP601() throws Exception {
@@ -273,18 +264,8 @@ public class WebSubsystemTestCase extends AbstractSubsystemBaseTest {
     }
 
     @Test
-    public void testTransformationAS712() throws Exception {
-        testTransformation_1_1_0(ModelTestControllerVersion.V7_1_2_FINAL, ModelVersion.create(1, 1, 0));
-    }
-
-    @Test
     public void testTransformationEAP600() throws Exception {
         testTransformation_1_1_0(ModelTestControllerVersion.EAP_6_0_0, ModelVersion.create(1, 1, 0));
-    }
-
-    @Test
-    public void testTransformationAS713() throws Exception {
-        testTransformation_1_1_0(ModelTestControllerVersion.V7_1_3_FINAL, ModelVersion.create(1, 1, 1));
     }
 
     @Test
@@ -419,11 +400,6 @@ public class WebSubsystemTestCase extends AbstractSubsystemBaseTest {
     }
 
     @Test
-    public void testTransformationAS720() throws Exception {
-        testTransformation_1_2_0(ModelTestControllerVersion.V7_2_0_FINAL);
-    }
-
-    @Test
     public void testTransformationEAP610() throws Exception {
         testTransformation_1_2_0(ModelTestControllerVersion.EAP_6_1_0);
     }
@@ -451,12 +427,6 @@ public class WebSubsystemTestCase extends AbstractSubsystemBaseTest {
 
         checkSubsystemModelTransformation(mainServices, modelVersion, new ModelFixer.CumulativeModelFixer(SSLConfigurationNameFixer.INSTANCE, AccessLogPrefixFixer_1_2_0.INSTANCE));
     }
-
-    @Test
-    public void testRejectingTransformersAS720() throws Exception {
-        testRejectingTransformers_1_2_0(ModelTestControllerVersion.V7_2_0_FINAL);
-    }
-
 
     @Test
     public void testRejectingTransformersEAP610() throws Exception {
