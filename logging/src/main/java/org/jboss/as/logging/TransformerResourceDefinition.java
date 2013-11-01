@@ -31,7 +31,7 @@ abstract class TransformerResourceDefinition extends SimpleResourceDefinition {
      *
      * @param modelVersion          the model version we're registering
      * @param rootResourceBuilder   the builder for the root resource
-     * @param loggingProfileBuilder the builder for the logging profile
+     * @param loggingProfileBuilder the builder for the logging profile, {@code null} if the profile was rejected
      */
     public abstract void registerTransformers(KnownModelVersion modelVersion,
                                               ResourceTransformationDescriptionBuilder rootResourceBuilder,

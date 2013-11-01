@@ -36,11 +36,9 @@ import org.jboss.as.controller.DefaultAttributeMarshaller;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.PathElement;
-import org.jboss.as.controller.SimpleResourceDefinition;
 import org.jboss.as.controller.operations.validation.EnumValidator;
 import org.jboss.as.controller.operations.validation.IntRangeValidator;
 import org.jboss.as.controller.registry.ManagementResourceRegistration;
-import org.jboss.as.controller.transform.description.RejectTransformationDescriptionBuilder;
 import org.jboss.as.controller.transform.description.ResourceTransformationDescriptionBuilder;
 import org.jboss.as.logging.HandlerOperations.HandlerAddOperationStepHandler;
 import org.jboss.as.logging.HandlerOperations.LogHandlerWriteAttributeHandler;
@@ -55,7 +53,7 @@ import org.jboss.logmanager.handlers.SyslogHandler.SyslogType;
 /**
  * @author <a href="mailto:jperkins@redhat.com">James R. Perkins</a>
  */
-class SyslogHandlerResourceDefinition extends SimpleResourceDefinition {
+class SyslogHandlerResourceDefinition extends TransformerResourceDefinition {
 
     static final String SYSLOG_HANDLER = "syslog-handler";
     static final PathElement SYSLOG_HANDLER_PATH = PathElement.pathElement(SYSLOG_HANDLER);
@@ -149,19 +147,15 @@ class SyslogHandlerResourceDefinition extends SimpleResourceDefinition {
         }
     }
 
-    /**
-     * Add the transformers for the custom handler.
-     *
-     *
-     * @param subsystemBuilder      the default subsystem builder
-     * @param loggingProfileBuilder the logging profile builder
-     *
-     * @return the builder created for the resource
-     */
-    static RejectTransformationDescriptionBuilder addTransformers(final ResourceTransformationDescriptionBuilder subsystemBuilder,
-                                                                  final ResourceTransformationDescriptionBuilder loggingProfileBuilder) {
-        loggingProfileBuilder.rejectChildResource(SYSLOG_HANDLER_PATH);
-        return subsystemBuilder.rejectChildResource(SYSLOG_HANDLER_PATH);
+    @Override
+    public void registerTransformers(final KnownModelVersion modelVersion, final ResourceTransformationDescriptionBuilder rootResourceBuilder, final ResourceTransformationDescriptionBuilder loggingProfileBuilder) {
+        if (modelVersion.hasTransformers()) {
+            switch (modelVersion) {
+                case VERSION_1_1_0:
+                    final PathElement pathElement = getPathElement();
+                    rootResourceBuilder.rejectChildResource(pathElement);
+            }
+        }
     }
 
     static enum FacilityAttribute {

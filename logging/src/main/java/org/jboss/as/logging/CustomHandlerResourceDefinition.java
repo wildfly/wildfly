@@ -83,30 +83,15 @@ class CustomHandlerResourceDefinition extends AbstractHandlerDefinition {
                 (includeLegacyAttributes ? Logging.join(WRITABLE_ATTRIBUTES, LEGACY_ATTRIBUTES) : WRITABLE_ATTRIBUTES));
     }
 
-    /**
-     * Add the transformers for the custom handler.
-     *
-     * @param subsystemBuilder      the default subsystem builder
-     * @param loggingProfileBuilder the logging profile builder
-     *
-     * @return the builder created for the resource
-     */
-    static ResourceTransformationDescriptionBuilder addTransformers(final ResourceTransformationDescriptionBuilder subsystemBuilder,
-                                                                    final ResourceTransformationDescriptionBuilder loggingProfileBuilder) {
-        // Register the logger resource
-        final ResourceTransformationDescriptionBuilder child = subsystemBuilder.addChildResource(CUSTOM_HANDLE_PATH)
-                .getAttributeBuilder()
-                .addRejectCheck(RejectAttributeChecker.SIMPLE_EXPRESSIONS, PROPERTIES)
-                .end();
-
-        // Reject logging profile resources
-        loggingProfileBuilder.rejectChildResource(CUSTOM_HANDLE_PATH);
-
-        return registerTransformers(child);
-    }
-
     @Override
     protected void registerResourceTransformers(final KnownModelVersion modelVersion, final ResourceTransformationDescriptionBuilder resourceBuilder, final ResourceTransformationDescriptionBuilder loggingProfileBuilder) {
-
+        switch (modelVersion) {
+            case VERSION_1_1_0: {
+                resourceBuilder
+                        .getAttributeBuilder()
+                        .addRejectCheck(RejectAttributeChecker.SIMPLE_EXPRESSIONS, PROPERTIES)
+                        .end();
+            }
+        }
     }
 }

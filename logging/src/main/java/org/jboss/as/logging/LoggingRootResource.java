@@ -122,7 +122,6 @@ public class LoggingRootResource extends SimpleResourceDefinition {
         super.registerOperations(resourceRegistration);
         // Only register on server
         if (pathManager != null) {
-            // TODO WFLY-1807 add 2.0.0 transformers for new operations
             resourceRegistration.registerOperationHandler(LIST_LOG_FILES, new ListLogFilesOperation(pathManager));
             resourceRegistration.registerOperationHandler(READ_LOG_FILE, new ReadLogFileOperation(pathManager));
         }
