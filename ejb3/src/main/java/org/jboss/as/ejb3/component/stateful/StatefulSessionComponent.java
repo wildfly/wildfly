@@ -217,7 +217,7 @@ public class StatefulSessionComponent extends SessionBeanComponent implements St
         final ServiceController<?> serviceController = currentServiceContainer().getRequiredService(getEjbObjectViewServiceName());
         final ComponentView view = (ComponentView) serviceController.getValue();
         final String locatorAppName = getEarApplicationName() == null ? "" : getEarApplicationName();
-        return EJBClient.createProxy(new StatefulEJBLocator<EJBObject>((Class<EJBObject>) view.getViewClass(), locatorAppName, getModuleName(), getComponentName(), getDistinctName(), getSessionIdOf(ctx), this.getCache().getStrictAffinity()));
+        return EJBClient.createProxy(new StatefulEJBLocator<EJBObject>((Class<EJBObject>) view.getViewClass(), locatorAppName, getModuleName(), getComponentName(), getDistinctName(), getSessionIdOf(ctx), this.getCache().getStrictAffinity(), null));
     }
 
     @Override

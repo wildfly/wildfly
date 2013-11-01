@@ -80,6 +80,20 @@ public class BytesSentStreamSinkConduit extends AbstractSinkConduit implements S
         return bytes;
     }
 
+    @Override
+    public int writeFinal(ByteBuffer src) throws IOException {
+        int bytes = next.writeFinal(src);
+        bytesSent.add(bytes);
+        return bytes;
+    }
+
+    @Override
+    public long writeFinal(ByteBuffer[] srcs, int offset, int length) throws IOException {
+        long bytes = next.writeFinal(srcs, offset, length);
+        bytesSent.add(bytes);
+        return bytes;
+    }
+
     public static long getBytesSent() {
         return bytesSent.longValue();
     }

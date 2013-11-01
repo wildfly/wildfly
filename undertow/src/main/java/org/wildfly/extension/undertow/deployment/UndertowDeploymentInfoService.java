@@ -127,6 +127,7 @@ import org.wildfly.extension.undertow.security.JAASIdentityManagerImpl;
 import org.wildfly.extension.undertow.security.SecurityContextAssociationHandler;
 import org.wildfly.extension.undertow.security.SecurityContextThreadSetupAction;
 import org.wildfly.extension.undertow.security.jaspi.JASPIAuthenticationMechanism;
+import org.xnio.IoUtils;
 
 import javax.servlet.Filter;
 import javax.servlet.Servlet;
@@ -220,6 +221,11 @@ public class UndertowDeploymentInfoService implements Service<DeploymentInfo> {
             handleDistributable(deploymentInfo);
             handleIdentityManager(deploymentInfo);
             handleJASPIMechanism(deploymentInfo);
+
+            //TODO: make this configurable
+            //in most cases flush just hurts performance for no good reason
+            //TODO: we should also make this smarter, so a read results in a flush
+            deploymentInfo.setIgnoreFlush(false);
 
             SessionConfigMetaData sessionConfig = mergedMetaData.getSessionConfig();
             ServletSessionConfig config = null;
@@ -321,6 +327,7 @@ public class UndertowDeploymentInfoService implements Service<DeploymentInfo> {
 
     @Override
     public synchronized void stop(final StopContext stopContext) {
+        IoUtils.safeClose(this.deploymentInfo.getResourceManager());
         this.deploymentInfo.setConfidentialPortManager(null);
         this.deploymentInfo = null;
     }
