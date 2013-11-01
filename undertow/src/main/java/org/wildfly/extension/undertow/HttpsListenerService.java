@@ -36,7 +36,7 @@ import org.xnio.Options;
 import org.xnio.StreamConnection;
 import org.xnio.XnioWorker;
 import org.xnio.channels.AcceptingChannel;
-import org.xnio.channels.SslConnection;
+import org.xnio.ssl.SslConnection;
 import org.xnio.ssl.JsseXnioSsl;
 import org.xnio.ssl.XnioSsl;
 
