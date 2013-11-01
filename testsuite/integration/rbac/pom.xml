@@ -68,25 +68,6 @@
                                     <includes>
                                         <include>standalone*.xml</include>
                                     </includes>
-                                    <stylesheet>${basedir}/../src/test/xslt/passwdMaskConfig.xsl</stylesheet>
-                                    <outputDir>${basedir}/target/jbossas/standalone/configuration</outputDir>
-                                    <parameters>
-                                        <parameter>
-                                            <name>keystore</name>
-                                            <value>${basedir}/src/test/resources/security/vault.keystore</value>
-                                        </parameter>
-                                        <parameter>
-                                            <name>encFileDir</name>
-                                            <value>${basedir}/src/test/resources/security/</value>
-                                        </parameter>
-                                    </parameters>
-                                </transformationSet>
-                                <transformationSet>
-                                    <dir>${basedir}/target/jbossas/standalone/configuration</dir>
-                                    <skipDefaultExcludes>true</skipDefaultExcludes>
-                                    <includes>
-                                        <include>standalone*.xml</include>
-                                    </includes>
                                     <stylesheet>${basedir}/../src/test/xslt/enableRbac.xsl</stylesheet>
                                     <outputDir>${basedir}/target/jbossas/standalone/configuration</outputDir>
                                 </transformationSet>
@@ -147,21 +128,6 @@
                                         <fileMapper implementation="org.codehaus.plexus.components.io.filemappers.RegExpFileMapper">
                                             <pattern>^</pattern>
                                             <replacement>jmx-sensitivity-</replacement>
-                                        </fileMapper>
-                                    </fileMappers>
-                                </transformationSet>
-                                <transformationSet>
-                                    <dir>${basedir}/target/jbossas/standalone/configuration</dir>
-                                    <skipDefaultExcludes>true</skipDefaultExcludes>
-                                    <includes>
-                                        <include>standalone*.xml</include>
-                                    </includes>
-                                    <stylesheet>${basedir}/../src/test/xslt/putVaultExpressionIntoOrdinaryAttribute.xsl</stylesheet>
-                                    <outputDir>${basedir}/target/jbossas/standalone/configuration</outputDir>
-                                    <fileMappers>
-                                        <fileMapper implementation="org.codehaus.plexus.components.io.filemappers.RegExpFileMapper">
-                                            <pattern>^</pattern>
-                                            <replacement>vault-expression-</replacement>
                                         </fileMapper>
                                     </fileMappers>
                                 </transformationSet>
@@ -247,7 +213,6 @@
                                         <!-- see the other executions -->
                                         <exclude>**/PropertiesRoleMappingTestCase.java</exclude>
                                         <exclude>**/JmxSensitiveTestCase.java</exclude>
-                                        <exclude>**/VaultExpressionSensitivityTestCase.java</exclude>
                                         <exclude>**/LdapRoleMappingG2UTestCase.java</exclude>
                                         <exclude>**/LdapRoleMappingU2GTestCase.java</exclude>
                                     </excludes>
@@ -351,30 +316,6 @@
                                     <!-- Parameters to test cases. -->
                                     <systemPropertyVariables>
                                         <jboss.server.config.file.name>jmx-sensitivity-standalone-full.xml</jboss.server.config.file.name>
-                                        <jboss.inst>${basedir}/target/jbossas</jboss.inst>
-                                    </systemPropertyVariables>
-
-                                    <additionalClasspathElements>
-                                        <additionalClasspathElement>${project.basedir}/../src/test/resources</additionalClasspathElement>
-                                    </additionalClasspathElements>
-
-                                    <!--<reportNameSuffix>tests-basic-integration-default</reportNameSuffix>-->
-                                </configuration>
-                            </execution>
-
-                            <execution>
-                                <id>access-integration-vault-expression-full.surefire</id>
-                                <phase>test</phase>
-                                <goals><goal>test</goal></goals>
-                                <configuration>
-                                    <!-- Tests to execute. Overriden in webProfileExclusion.profile . -->
-                                    <includes>
-                                        <include>org/jboss/as/test/integration/mgmt/access/VaultExpressionSensitivityTestCase.java</include>
-                                    </includes>
-
-                                    <!-- Parameters to test cases. -->
-                                    <systemPropertyVariables>
-                                        <jboss.server.config.file.name>vault-expression-standalone-full.xml</jboss.server.config.file.name>
                                         <jboss.inst>${basedir}/target/jbossas</jboss.inst>
                                     </systemPropertyVariables>
 

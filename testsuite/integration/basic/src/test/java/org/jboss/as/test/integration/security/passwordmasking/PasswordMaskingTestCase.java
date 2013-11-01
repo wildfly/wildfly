@@ -22,6 +22,17 @@
 
 package org.jboss.as.test.integration.security.passwordmasking;
 
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ADD;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ALLOW_RESOURCE_SERVICE_RESTART;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.CORE_SERVICE;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OPERATION_HEADERS;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.REMOVE;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SUBSYSTEM;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.VAULT;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.VAULT_OPTIONS;
+
 import org.apache.http.HttpEntity;
 import org.apache.http.HttpResponse;
 import org.apache.http.client.methods.HttpGet;
@@ -31,13 +42,23 @@ import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.container.test.api.RunAsClient;
 import org.jboss.arquillian.junit.Arquillian;
 import org.jboss.arquillian.test.api.ArquillianResource;
+import org.jboss.as.arquillian.api.ServerSetup;
+import org.jboss.as.arquillian.api.ServerSetupTask;
+import org.jboss.as.test.integration.security.common.VaultHandler;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.spec.WebArchive;
 import org.junit.Test;
 import org.junit.runner.RunWith;
+import org.h2.tools.Server;
+import org.jboss.as.arquillian.container.ManagementClient;
+import org.jboss.as.controller.client.OperationBuilder;
+import org.jboss.as.test.integration.security.common.Utils;
 
 import java.io.IOException;
 import java.net.URL;
+
+import org.jboss.dmr.ModelNode;
+import org.jboss.logging.Logger;
 
 import static org.junit.Assert.assertTrue;
 
@@ -46,9 +67,105 @@ import static org.junit.Assert.assertTrue;
  */
 
 @RunWith(Arquillian.class)
+@ServerSetup(PasswordMaskingTestCase.PasswordMaskingTestCaseSetup.class)
 public class PasswordMaskingTestCase {
 
+   private static Logger LOGGER = Logger.getLogger(PasswordMaskingTestCase.class);
+
    @ArquillianResource URL baseURL;
+
+   static class PasswordMaskingTestCaseSetup implements ServerSetupTask {
+
+       private Server server;
+       private VaultHandler vaultHandler;
+
+       @Override
+       public void setup(ManagementClient managementClient, String containerId) throws Exception {
+
+           ModelNode op;
+
+           // setup DB
+           server = Server.createTcpServer("-tcpAllowOthers").start();
+
+           // create new vault
+           vaultHandler = new VaultHandler(RESOURCE_LOCATION);
+
+           // create security attributes
+           String attributeName = "password";
+           String vaultPasswordString = vaultHandler.addSecuredAttribute(VAULT_BLOCK, attributeName,
+                   DS_CLEAR_TEXT_PASSWORD.toCharArray());
+
+           LOGGER.debug("vaultPasswordString=" + vaultPasswordString);
+
+           // create new vault setting in standalone
+           op = new ModelNode();
+           op.get(OP).set(ADD);
+           op.get(OP_ADDR).add(CORE_SERVICE, VAULT);
+           ModelNode vaultOption = op.get(VAULT_OPTIONS);
+           vaultOption.get("KEYSTORE_URL").set(vaultHandler.getKeyStore());
+           vaultOption.get("KEYSTORE_PASSWORD").set(vaultHandler.getMaskedKeyStorePassword());
+           vaultOption.get("KEYSTORE_ALIAS").set(vaultHandler.getAlias());
+           vaultOption.get("SALT").set(vaultHandler.getSalt());
+           vaultOption.get("ITERATION_COUNT").set(vaultHandler.getIterationCountAsString());
+           vaultOption.get("ENC_FILE_DIR").set(vaultHandler.getEncodedVaultFileDirectory());
+           managementClient.getControllerClient().execute(new OperationBuilder(op).build());
+
+           LOGGER.debug("Vault created in sever configuration");
+
+           // create new datasource with right password
+           ModelNode address = new ModelNode();
+           address.add(SUBSYSTEM, "datasources");
+           address.add("data-source", VAULT_BLOCK);
+           address.protect();
+           op = new ModelNode();
+           op.get(OP).set(ADD);
+           op.get(OP_ADDR).set(address);
+           op.get("jndi-name").set("java:jboss/datasources/" + VAULT_BLOCK);
+           op.get("use-java-context").set("true");
+           op.get("driver-name").set("h2");
+           op.get("pool-name").set(VAULT_BLOCK);
+           op.get("connection-url").set("jdbc:h2:tcp://" + Utils.getSecondaryTestAddress(managementClient) + "/mem:masked");
+           op.get("user-name").set("sa");
+           op.get("password").set("${" + vaultPasswordString + "}");
+           op.get(OPERATION_HEADERS).get(ALLOW_RESOURCE_SERVICE_RESTART).set(true);
+           managementClient.getControllerClient().execute(new OperationBuilder(op).build());
+
+           LOGGER.debug(VAULT_BLOCK + " datasource created");
+
+       }
+
+       @Override
+       public void tearDown(ManagementClient managementClient, String containerId) throws Exception {
+
+           ModelNode op;
+
+           // remove created datasources
+           op = new ModelNode();
+           op.get(OP).set(REMOVE);
+           op.get(OP_ADDR).add(SUBSYSTEM, "datasources");
+           op.get(OP_ADDR).add("data-source", VAULT_BLOCK);
+           managementClient.getControllerClient().execute(new OperationBuilder(op).build());
+
+           // remove created vault
+           op = new ModelNode();
+           op.get(OP).set(REMOVE);
+           op.get(OP_ADDR).add(CORE_SERVICE, VAULT);
+           managementClient.getControllerClient().execute(new OperationBuilder(op).build());
+
+           // remove temporary files
+           vaultHandler.cleanUp();
+
+           // stop DB
+           server.shutdown();
+
+       }
+
+   }
+
+   static final String RESOURCE_LOCATION = PasswordMaskingTestCase.class.getProtectionDomain().getCodeSource().getLocation().getFile()
+           + "security/pwdmsk-vault/";
+   static final String VAULT_BLOCK = "MaskedDS";
+   static final String DS_CLEAR_TEXT_PASSWORD = "sa";
 
    @Deployment
    public static WebArchive deploy(){
