@@ -108,11 +108,10 @@ public class BasicAuthenticator extends org.jboss.com.sun.net.httpserver.BasicAu
             SubjectHttpPrincipal replacementPrincipal = new SubjectHttpPrincipal(existingPrincipal.getName(), existingPrincipal.getName());
             // For this method to have been called a Subject with HttpPrincipal was not found within the HttpExchange so now
             // create a new one.
-            SubjectHttpPrincipal principal = (SubjectHttpPrincipal) ((Success) response).getPrincipal();
 
             try {
                 Collection<Principal> principalCol = new HashSet<Principal>();
-                principalCol.add(principal);
+                principalCol.add(existingPrincipal);
                 SubjectUserInfo userInfo = callbackHandler.get().createSubjectUserInfo(principalCol);
 
                 Subject subject = userInfo.getSubject();
