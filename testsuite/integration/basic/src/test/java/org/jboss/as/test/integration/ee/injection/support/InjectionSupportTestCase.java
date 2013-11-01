@@ -45,6 +45,9 @@ public abstract class InjectionSupportTestCase {
                 .addAsWebInfResource(EmptyAsset.INSTANCE, "beans.xml");
     }
 
+    public static final Class<?>[] constructTestsHelperClasses = new Class<?>[] { AroundConstructInterceptor.class,
+            AroundConstructBinding.class, StringProducer.class, ProducedString.class };
+
     @ArquillianResource
     protected URL contextPath;
 
