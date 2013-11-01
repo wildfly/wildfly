@@ -182,7 +182,9 @@ public class PatternFormatterResourceDefinition extends TransformerResourceDefin
             case VERSION_1_2_0:
             case VERSION_1_3_0:
                 resourceBuilder.rejectChildResource(PATTERN_FORMATTER_PATH);
-                loggingProfileBuilder.rejectChildResource(PATTERN_FORMATTER_PATH);
+                if (loggingProfileBuilder != null) {
+                    loggingProfileBuilder.rejectChildResource(PATTERN_FORMATTER_PATH);
+                }
         }
     }
 }

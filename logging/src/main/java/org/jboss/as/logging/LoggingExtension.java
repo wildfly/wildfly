@@ -31,7 +31,6 @@ import java.util.ResourceBundle;
 
 import org.jboss.as.controller.Extension;
 import org.jboss.as.controller.ExtensionContext;
-import org.jboss.as.controller.ModelVersion;
 import org.jboss.as.controller.PathElement;
 import org.jboss.as.controller.ResourceDefinition;
 import org.jboss.as.controller.SimpleResourceDefinition;
@@ -124,22 +123,22 @@ public class LoggingExtension implements Extension {
             // ignore
         }
 
-
         final SubsystemRegistration subsystem = context.registerSubsystem(SUBSYSTEM_NAME, MANAGEMENT_API_MAJOR_VERSION,
                 MANAGEMENT_API_MINOR_VERSION, MANAGEMENT_API_MICRO_VERSION);
-        final ManagementResourceRegistration registration;
 
+        final LoggingRootResource rootResource;
         final ResolvePathHandler resolvePathHandler;
         // Register for servers only even if in ADMIN_ONLY mode
         if (context.getProcessType().isServer()) {
-            registration = subsystem.registerSubsystemModel(new LoggingRootResource(context.getPathManager()));
+            rootResource = new LoggingRootResource(context.getPathManager());
             resolvePathHandler = ResolvePathHandler.Builder.of(context.getPathManager())
                     .setParentAttribute(CommonAttributes.FILE)
                     .build();
         } else {
-            registration = subsystem.registerSubsystemModel(new LoggingRootResource(null));
+            rootResource = new LoggingRootResource(null);
             resolvePathHandler = null;
         }
+        final ManagementResourceRegistration registration = subsystem.registerSubsystemModel(rootResource);
         registration.registerOperationHandler(GenericSubsystemDescribeHandler.DEFINITION, DESCRIBE_HANDLER);
         // Register root sub-models
         registerSubModels(registration, resolvePathHandler, true, subsystem, context.isRegisterTransformers());
@@ -159,37 +158,7 @@ public class LoggingExtension implements Extension {
 
         registerLoggingProfileSubModels(registration.registerSubModel(profile), resolvePathHandler);
 
-        if (context.isRegisterTransformers()) {
-            registerTransformers1_1_0(subsystem);
-        }
-
         subsystem.registerXMLElementWriter(LoggingSubsystemWriter.INSTANCE);
-    }
-
-    private void registerTransformers1_1_0(SubsystemRegistration subsystem) {
-
-        // Create the transformer builder
-        final ResourceTransformationDescriptionBuilder subsystemBuilder = TransformationDescriptionBuilder.Factory.createSubsystemInstance();
-        // Add reject before add the logging-profile child resource builder
-        subsystemBuilder.rejectChildResource(LOGGING_PROFILE_PATH);
-        // FIXME this loggingProfileBuilder is never wired into anything that gets registered, so it isn't doing anything
-        ResourceTransformationDescriptionBuilder loggingProfileBuilder = TransformationDescriptionBuilder.Factory.createInstance(LOGGING_PROFILE_PATH);
-
-        // Add resource transformers to the subsystem
-        RootLoggerResourceDefinition.addTransformers(subsystemBuilder, loggingProfileBuilder);
-        LoggerResourceDefinition.addTransformers(subsystemBuilder, loggingProfileBuilder);
-        AsyncHandlerResourceDefinition.addTransformers(subsystemBuilder, loggingProfileBuilder);
-        ConsoleHandlerResourceDefinition.addTransformers(subsystemBuilder, loggingProfileBuilder);
-        FileHandlerResourceDefinition.addTransformers(subsystemBuilder, loggingProfileBuilder);
-        PeriodicHandlerResourceDefinition.addTransformers(subsystemBuilder, loggingProfileBuilder);
-        SizeRotatingHandlerResourceDefinition.addTransformers(subsystemBuilder, loggingProfileBuilder);
-        CustomHandlerResourceDefinition.addTransformers(subsystemBuilder, loggingProfileBuilder);
-        SyslogHandlerResourceDefinition.addTransformers(subsystemBuilder, loggingProfileBuilder);
-
-        PatternFormatterResourceDefinition.INSTANCE.registerTransformers(KnownModelVersion.VERSION_1_1_0, subsystemBuilder, loggingProfileBuilder);
-
-        // Register the transformers
-        TransformationDescription.Tools.register(subsystemBuilder.build(), subsystem, ModelVersion.create(1, 1, 0));
     }
 
 
@@ -236,13 +205,19 @@ public class LoggingExtension implements Extension {
 
         if (registerTransformers) {
             for (KnownModelVersion modelVersion : KnownModelVersion.values()) {
-                // TODO (jrp) Skip 1.1.0 for now
-                if (modelVersion == KnownModelVersion.VERSION_1_1_0) continue;
                 if (modelVersion.hasTransformers()) {
                     final ResourceTransformationDescriptionBuilder subsystemBuilder = TransformationDescriptionBuilder.Factory.createSubsystemInstance();
-                    final ResourceTransformationDescriptionBuilder loggingProfileBuilder = subsystemBuilder.addChildResource(LOGGING_PROFILE_PATH);
+                    final ResourceTransformationDescriptionBuilder loggingProfileBuilder;
+                    if (modelVersion == KnownModelVersion.VERSION_1_1_0) {
+                        // Reject the profile
+                        subsystemBuilder.rejectChildResource(LOGGING_PROFILE_PATH);
+                        loggingProfileBuilder = null;
+                    } else {
+                        loggingProfileBuilder = subsystemBuilder.addChildResource(LOGGING_PROFILE_PATH);
+                    }
 
                     // Register the transformers
+                    rootLoggerResourceDefinition.registerTransformers(modelVersion, subsystemBuilder, loggingProfileBuilder);
                     loggerResourceDefinition.registerTransformers(modelVersion, subsystemBuilder, loggingProfileBuilder);
                     asyncHandlerResourceDefinition.registerTransformers(modelVersion, subsystemBuilder, loggingProfileBuilder);
                     consoleHandlerResourceDefinition.registerTransformers(modelVersion, subsystemBuilder, loggingProfileBuilder);
@@ -250,6 +225,7 @@ public class LoggingExtension implements Extension {
                     periodicHandlerResourceDefinition.registerTransformers(modelVersion, subsystemBuilder, loggingProfileBuilder);
                     sizeRotatingHandlerResourceDefinition.registerTransformers(modelVersion, subsystemBuilder, loggingProfileBuilder);
                     customHandlerResourceDefinition.registerTransformers(modelVersion, subsystemBuilder, loggingProfileBuilder);
+                    SyslogHandlerResourceDefinition.INSTANCE.registerTransformers(modelVersion, subsystemBuilder, loggingProfileBuilder);
                     PatternFormatterResourceDefinition.INSTANCE.registerTransformers(modelVersion, subsystemBuilder, loggingProfileBuilder);
 
                     // Register the transformer description
