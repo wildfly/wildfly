@@ -65,7 +65,7 @@ public class MessageDrivenComponentCreateService extends EJBComponentCreateServi
         super(componentConfiguration, ejbJarConfiguration);
 
         final MessageDrivenComponentDescription componentDescription = (MessageDrivenComponentDescription) componentConfiguration.getComponentDescription();
-        this.resourceAdapterName = this.stripDotRarSuffix(componentDescription.getResourceAdapterName());
+        this.resourceAdapterName = componentDescription.getResourceAdapterName();
         this.deliveryActive = componentDescription.isDeliveryActive();
         // see MessageDrivenComponentDescription.<init>
         this.messageListenerInterface = messageListenerInterface;
@@ -133,16 +133,5 @@ public class MessageDrivenComponentCreateService extends EJBComponentCreateServi
 
     public ClassLoader getModuleClassLoader() {
         return moduleClassLoader;
-    }
-
-    private String stripDotRarSuffix(final String raName) {
-        if (raName == null) {
-            return null;
-        }
-        // See RaDeploymentParsingProcessor
-        if (raName.endsWith(".rar")) {
-            return raName.substring(0, raName.indexOf(".rar"));
-        }
-        return raName;
     }
 }
