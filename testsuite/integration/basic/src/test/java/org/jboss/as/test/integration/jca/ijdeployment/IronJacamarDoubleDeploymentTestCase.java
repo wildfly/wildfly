@@ -48,9 +48,9 @@ import org.junit.runner.RunWith;
 
 /**
  * Test of two ear ij deployments conflict.
- * 
+ *
  * @author baranowb
- * 
+ *
  */
 @RunWith(Arquillian.class)
 @RunAsClient
@@ -106,7 +106,7 @@ public class IronJacamarDoubleDeploymentTestCase extends ContainerResourceMgmtTe
     }
 
     /**
-     * 
+     *
      */
     @Test
     public void testEarConfiguration() throws Throwable {
@@ -116,17 +116,17 @@ public class IronJacamarDoubleDeploymentTestCase extends ContainerResourceMgmtTe
         operation.get(OP_ADDR).set(address);
         operation.get(RECURSIVE).set(true);
         executeOperation(operation);
-        
+
         address = getAddress(deployment2Name);
         operation.get(OP_ADDR).set(address);
         executeOperation(operation);
-        
+
     }
 
     private ModelNode getAddress(String deploymentName) {
         final ModelNode address = new ModelNode();
         address.add(DEPLOYMENT, deploymentName).add(SUBDEPLOYMENT, subDeploymentName).add(SUBSYSTEM, "resource-adapters")
-                .add("ironjacamar", "ironjacamar").add("resource-adapter", deploymentName + "#ij");
+                .add("ironjacamar", "ironjacamar").add("resource-adapter", deploymentName + "#ij.rar");
         address.protect();
         return address;
     }

@@ -88,7 +88,7 @@ public class RaDeploymentParsingProcessor implements DeploymentUnitProcessor {
             prefix = deploymentUnit.getParent().getName() + "#";
         }
 
-        String deploymentName = prefix + file.getName().substring(0, file.getName().indexOf(".rar"));
+        String deploymentName = prefix + file.getName();
         ConnectorXmlDescriptor xmlDescriptor = process(resolveProperties, file, alternateDescriptor, deploymentName);
 
 

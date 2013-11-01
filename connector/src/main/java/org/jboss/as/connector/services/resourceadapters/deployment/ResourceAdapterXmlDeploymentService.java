@@ -77,11 +77,7 @@ public final class ResourceAdapterXmlDeploymentService extends AbstractResourceA
         }
         this.module = module;
         this.deployment = deployment;
-        if (raxml != null && raxml.getArchive() != null && raxml.getArchive().indexOf(".rar") != -1) {
-            this.raName = raxml.getArchive().substring(0, raxml.getArchive().indexOf(".rar"));
-        } else {
-            this.raName = deployment;
-        }
+        this.raName = deployment;
         this.deploymentServiceName = deploymentServiceName;
         this.duServiceName = duServiceName;
     }
