@@ -74,11 +74,6 @@ public class JBossEJBClientXmlConfiguration implements EJBClientConfiguration {
     }
 
     @Override
-    public Iterator<ClusterConfiguration> getClusterConfigurations() {
-        return this.clusterConfigs.values().iterator();
-    }
-
-    @Override
     public ClusterConfiguration getClusterConfiguration(String nodeName) {
         return this.clusterConfigs.get(nodeName);
     }

@@ -57,7 +57,7 @@ public class StatefulRemoteViewInstanceFactory implements ViewInstanceFactory {
         if (sessionID == null) {
             statefulEJBLocator = EJBClient.createSession(componentView.getViewClass(), applicationName, moduleName, beanName, distinctName);
         } else {
-            statefulEJBLocator = new StatefulEJBLocator(componentView.getViewClass(), applicationName, moduleName, beanName, distinctName, sessionID, statefulSessionComponent.getCache().getStrictAffinity());
+            statefulEJBLocator = new StatefulEJBLocator(componentView.getViewClass(), applicationName, moduleName, beanName, distinctName, sessionID, statefulSessionComponent.getCache().getStrictAffinity(), null);
         }
         final Object ejbProxy = EJBClient.createProxy(statefulEJBLocator);
         return new ValueManagedReference(new ImmediateValue(ejbProxy));
