@@ -313,23 +313,10 @@ public class MessageDrivenComponentDescription extends EJBComponentDescription {
 
         @Override
         public void configureDependency(ServiceBuilder<?> serviceBuilder, MessageDrivenComponentCreateService service) throws DeploymentUnitProcessingException {
-            //TODO: XXX: this is fishy!
-            final String suffixStrippedRaName = this.stripDotRarSuffix(MessageDrivenComponentDescription.this.resourceAdapterName);
-
-            final ServiceName raServiceName = ConnectorServices.getResourceAdapterServiceName(suffixStrippedRaName);
+            final ServiceName raServiceName =
+                ConnectorServices.getResourceAdapterServiceName(MessageDrivenComponentDescription.this.resourceAdapterName);
             // add the dependency on the RA service
             serviceBuilder.addDependency(raServiceName, ResourceAdapter.class, service.getResourceAdapterInjector());
-        }
-
-        private String stripDotRarSuffix(final String raName) {
-            if (raName == null) {
-                return null;
-            }
-            // See RaDeploymentParsingProcessor
-            if (raName.endsWith(".rar")) {
-                return raName.substring(0, raName.indexOf(".rar"));
-            }
-            return raName;
         }
     }
 
