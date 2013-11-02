@@ -178,11 +178,23 @@ public class WebSubsystemTestCase extends AbstractSubsystemBaseTest {
     }
 
     @Test
+    public void testRejectExpressionsEAP600() throws Exception {
+        testRejectExpressions_1_1_x(ModelTestControllerVersion.EAP_6_0_0, ModelVersion.create(1, 1, 0));
+    }
+    @Test
     public void testRejectExpressionsAS713() throws Exception {
         testRejectExpressions_1_1_x(ModelTestControllerVersion.V7_1_3_FINAL, ModelVersion.create(1, 1, 1));
     }
 
+    @Test
+    public void testRejectExpressionsEAP601() throws Exception {
+        testRejectExpressions_1_1_x(ModelTestControllerVersion.EAP_6_0_1, ModelVersion.create(1, 1, 1));
+    }
+
     private void testRejectExpressions_1_1_x(ModelTestControllerVersion controllerVersion, ModelVersion modelVersion) throws Exception {
+        if (controllerVersion.isEap()) {
+            ignoreThisTestIfEAPRepositoryIsNotReachable();
+        }
 
         KernelServicesBuilder builder = createKernelServicesBuilder(createAdditionalInitialization());
 
@@ -264,11 +276,24 @@ public class WebSubsystemTestCase extends AbstractSubsystemBaseTest {
     }
 
     @Test
+    public void testTransformationEAP600() throws Exception {
+        testTransformation_1_1_0(ModelTestControllerVersion.EAP_6_0_0, ModelVersion.create(1, 1, 0));
+    }
+
+    @Test
     public void testTransformationAS713() throws Exception {
         testTransformation_1_1_0(ModelTestControllerVersion.V7_1_3_FINAL, ModelVersion.create(1, 1, 1));
     }
 
+    @Test
+    public void testTransformationEAP601() throws Exception {
+        testTransformation_1_1_0(ModelTestControllerVersion.EAP_6_0_1, ModelVersion.create(1, 1, 1));
+    }
+
     private void testTransformation_1_1_0(ModelTestControllerVersion controllerVersion, ModelVersion modelVersion) throws Exception {
+        if (controllerVersion.isEap()) {
+            ignoreThisTestIfEAPRepositoryIsNotReachable();
+        }
         String subsystemXml = readResource("subsystem-1.1.0.xml");
         KernelServicesBuilder builder = createKernelServicesBuilder(createAdditionalInitialization())
                 .setSubsystemXml(subsystemXml);
@@ -399,7 +424,20 @@ public class WebSubsystemTestCase extends AbstractSubsystemBaseTest {
         testTransformation_1_2_0(ModelTestControllerVersion.V7_2_0_FINAL);
     }
 
+    @Test
+    public void testTransformationEAP610() throws Exception {
+        testTransformation_1_2_0(ModelTestControllerVersion.EAP_6_1_0);
+    }
+
+    @Test
+    public void testTransformationEAP611() throws Exception {
+        testTransformation_1_2_0(ModelTestControllerVersion.EAP_6_1_1);
+    }
+
     private void testTransformation_1_2_0(ModelTestControllerVersion controllerVersion) throws Exception {
+        if (controllerVersion.isEap()) {
+            ignoreThisTestIfEAPRepositoryIsNotReachable();
+        }
         ModelVersion modelVersion = ModelVersion.create(1, 2, 0);
         String subsystemXml = readResource("subsystem-1.2.0.xml");
         KernelServicesBuilder builder = createKernelServicesBuilder(createAdditionalInitialization())
@@ -423,8 +461,21 @@ public class WebSubsystemTestCase extends AbstractSubsystemBaseTest {
         testRejectingTransformers_1_2_0(ModelTestControllerVersion.V7_2_0_FINAL);
     }
 
-    private void testRejectingTransformers_1_2_0(ModelTestControllerVersion controllerVersion) throws Exception {
+    @Test
+    public void testRejectingTransformersEAP610() throws Exception {
+        testRejectingTransformers_1_2_0(ModelTestControllerVersion.EAP_6_1_0);
+    }
 
+
+    @Test
+    public void testRejectingTransformersAS611() throws Exception {
+        testRejectingTransformers_1_2_0(ModelTestControllerVersion.EAP_6_1_1);
+    }
+
+    private void testRejectingTransformers_1_2_0(ModelTestControllerVersion controllerVersion) throws Exception {
+        if (controllerVersion.isEap()) {
+            ignoreThisTestIfEAPRepositoryIsNotReachable();
+        }
         ModelVersion modelVersion = ModelVersion.create(1, 2, 0);
         KernelServicesBuilder builder = createKernelServicesBuilder(createAdditionalInitialization());
 
