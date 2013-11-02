@@ -63,7 +63,32 @@ public class JSR77ManagementSubsystemTestCase extends AbstractSubsystemBaseTest 
         testTransformers_1_0_0(ModelTestControllerVersion.V7_2_0_FINAL);
     }
 
+    @Test
+    public void testTransformersEAP600() throws Exception {
+        testTransformers_1_0_0(ModelTestControllerVersion.EAP_6_0_0);
+    }
+
+    @Test
+    public void testTransformersEAP601() throws Exception {
+        testTransformers_1_0_0(ModelTestControllerVersion.EAP_6_0_1);
+    }
+
+    @Test
+    public void testTransformersEAP610() throws Exception {
+        testTransformers_1_0_0(ModelTestControllerVersion.EAP_6_1_0);
+    }
+
+    @Test
+    public void testTransformersEAP611() throws Exception {
+        testTransformers_1_0_0(ModelTestControllerVersion.EAP_6_1_1);
+    }
+
+
     private void testTransformers_1_0_0(ModelTestControllerVersion controllerVersion) throws Exception {
+        if (controllerVersion.isEap()) {
+            ignoreThisTestIfEAPRepositoryIsNotReachable();
+        }
+
         ModelVersion modelVersion = ModelVersion.create(1, 0, 0);
         //Use the non-runtime version of the extension which will happen on the HC
         KernelServicesBuilder builder = createKernelServicesBuilder(AdditionalInitialization.MANAGEMENT)

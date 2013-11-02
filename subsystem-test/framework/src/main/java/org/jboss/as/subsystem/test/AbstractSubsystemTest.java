@@ -355,10 +355,10 @@ public abstract class AbstractSubsystemTest {
     }
 
     /**
-     * Uses {@link org.junit.Assume#assumeTrue(boolean)} to check that the EAP repository is reachable. If it is not reachable an {@linke org.junit.AssumptionViolatedException}
-     * is thrown causing the test to be conditionally ignored. The purpose of this method is to be called at the beginning of transformers tests against legacy EAP versions. If the
-     * internal EAP repository is not available to the caller, the test is conditionally @Ignored if running with the standard JUnit test runner. This means that no special setup
-     * is needed for being on the VPN or not.
+     * Uses {@link org.junit.Assume#assumeTrue(boolean)} to check that  -Djboss.test.transformers.eap is set AND the EAP repository is reachable. If those two conditions are not true,
+     * an {@linke org.junit.AssumptionViolatedException} is thrown causing the test to be conditionally ignored. The purpose of this method is to be called at the beginning of transformers
+     * tests against legacy EAP versions. If the internal EAP repository is not available to the caller, the test is conditionally @Ignored if running with the standard JUnit test runner.
+     * This means that no special setup is needed for being on the VPN or not. The -Dboss.test.transformers.eap is required to not add unnecessary time to every day builds.
      */
     protected void ignoreThisTestIfEAPRepositoryIsNotReachable() {
         Assume.assumeTrue(EAPRepositoryReachableUtil.isReachable());

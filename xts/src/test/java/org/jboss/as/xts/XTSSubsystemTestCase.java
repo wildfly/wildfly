@@ -64,7 +64,31 @@ public class XTSSubsystemTestCase extends AbstractSubsystemBaseTest {
         testBoot1_1_0(ModelTestControllerVersion.V7_2_0_FINAL);
     }
 
+    @Test
+    public void testBootEAP600() throws Exception {
+        testBoot1_1_0(ModelTestControllerVersion.EAP_6_0_0);
+    }
+
+    @Test
+    public void testBootEAP601() throws Exception {
+        testBoot1_1_0(ModelTestControllerVersion.EAP_6_0_1);
+    }
+
+    @Test
+    public void testBootEAP610() throws Exception {
+        testBoot1_1_0(ModelTestControllerVersion.EAP_6_1_0);
+    }
+
+    @Test
+    public void testBootEAP611() throws Exception {
+        testBoot1_1_0(ModelTestControllerVersion.EAP_6_1_1);
+    }
+
+
     private void testBoot1_1_0(ModelTestControllerVersion controllerVersion) throws Exception {
+        if (controllerVersion.isEap()) {
+            ignoreThisTestIfEAPRepositoryIsNotReachable();
+        }
 
         String subsystemXml = readResource("subsystem.xml");
         ModelVersion modelVersion = ModelVersion.create(1, 1, 0);

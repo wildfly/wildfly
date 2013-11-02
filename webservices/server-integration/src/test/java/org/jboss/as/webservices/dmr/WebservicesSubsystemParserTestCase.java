@@ -168,6 +168,9 @@ public class WebservicesSubsystemParserTestCase extends AbstractSubsystemBaseTes
 
 
    private void testRejectExpressions_1_1_0(ModelTestControllerVersion controllerVersion) throws Exception {
+       if (controllerVersion.isEap()) {
+           ignoreThisTestIfEAPRepositoryIsNotReachable();
+       }
         // create builder for current subsystem version
         KernelServicesBuilder builder = createKernelServicesBuilder(createAdditionalInitialization());
 
@@ -190,7 +193,7 @@ public class WebservicesSubsystemParserTestCase extends AbstractSubsystemBaseTes
 
     @Test
     public void testTransformersAS712() throws Exception {
-    testRejectExpressions_1_1_0(ModelTestControllerVersion.V7_1_2_FINAL);
+        testRejectExpressions_1_1_0(ModelTestControllerVersion.V7_1_2_FINAL);
     }
 
     @Test
@@ -198,9 +201,55 @@ public class WebservicesSubsystemParserTestCase extends AbstractSubsystemBaseTes
         testRejectExpressions_1_1_0(ModelTestControllerVersion.V7_1_3_FINAL);
     }
 
+    @Test
+    public void testTransformersEAP600() throws Exception {
+        testRejectExpressions_1_1_0(ModelTestControllerVersion.EAP_6_0_0);
+    }
+
+    @Test
+    public void testTransformersEAP601() throws Exception {
+        testRejectExpressions_1_1_0(ModelTestControllerVersion.EAP_6_0_1);
+    }
 
     @Test
     public void testTransformersAS720() throws Exception {
-        testRejectExpressions_1_1_0(ModelTestControllerVersion.V7_2_0_FINAL);
+        testTransformers_1_2_0(ModelTestControllerVersion.V7_2_0_FINAL);
     }
+
+    @Test
+    public void testTransformersEAP610() throws Exception {
+        testTransformers_1_2_0(ModelTestControllerVersion.EAP_6_1_0);
+    }
+
+    @Test
+    public void testTransformersEAP611() throws Exception {
+        ignoreThisTestIfEAPRepositoryIsNotReachable();
+        testTransformers_1_2_0(ModelTestControllerVersion.EAP_6_1_1);
+    }
+
+    private void testTransformers_1_2_0(ModelTestControllerVersion controllerVersion) throws Exception {
+        if (controllerVersion.isEap()) {
+            ignoreThisTestIfEAPRepositoryIsNotReachable();
+        }
+
+        // create builder for current subsystem version
+        KernelServicesBuilder builder = createKernelServicesBuilder(createAdditionalInitialization())
+                .setSubsystemXmlResource("ws-subsystem12.xml");
+
+        // create builder for legacy subsystem version
+        ModelVersion version_1_2_0 = ModelVersion.create(1, 2, 0);
+        builder.createLegacyKernelServicesBuilder(null, controllerVersion, version_1_2_0)
+                .addMavenResourceURL("org.jboss.as:jboss-as-webservices-server-integration:" + controllerVersion.getMavenGavVersion())
+                .configureReverseControllerCheck(AdditionalInitialization.MANAGEMENT, null);
+
+        KernelServices mainServices = builder.build();
+        KernelServices legacyServices = mainServices.getLegacyServices(version_1_2_0);
+
+        Assert.assertNotNull(legacyServices);
+        Assert.assertTrue("main services did not boot", mainServices.isSuccessfulBoot());
+        Assert.assertTrue(legacyServices.isSuccessfulBoot());
+
+        checkSubsystemModelTransformation(mainServices, version_1_2_0);
+    }
+
 }
