@@ -22,6 +22,7 @@
 package org.jboss.as.weld.services;
 
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.IdentityHashMap;
 import java.util.Map;
 import java.util.Set;
@@ -68,6 +69,7 @@ public class ModuleGroupSingletonProvider extends SingletonProvider {
     private static class TCCLSingleton<T> implements Singleton<T> {
 
         private volatile Map<ClassLoader, T> store = Collections.emptyMap();
+        private volatile Map<String, T> contextIdStore = Collections.emptyMap();
 
         public T get() {
             T instance = store.get(findParentModuleCl(WildFlySecurityManager.getCurrentContextClassLoaderPrivileged()));
@@ -125,19 +127,33 @@ public class ModuleGroupSingletonProvider extends SingletonProvider {
          * It is OK to ignore the id parameter as TCCL is still used to identify the singleton in Java EE.
          */
         public T get(String id) {
+            T val = contextIdStore.get(id);
+            if(val != null) {
+                return val;
+            }
             return get();
         }
 
         public boolean isSet(String id) {
+            T val = contextIdStore.get(id);
+            if(val != null) {
+                return true;
+            }
             return isSet();
         }
 
-        public void set(String id, T object) {
+        public synchronized void set(String id, T object) {
             set(object);
+            final HashMap<String, T> store = new HashMap<String, T>(this.contextIdStore);
+            store.put(id, object);
+            this.contextIdStore = store;
         }
 
-        public void clear(String id) {
+        public synchronized void clear(String id) {
             clear();
+            final HashMap<String, T> store = new HashMap<String, T>(this.contextIdStore);
+            store.remove(id);
+            this.contextIdStore = store;
         }
     }
 }
