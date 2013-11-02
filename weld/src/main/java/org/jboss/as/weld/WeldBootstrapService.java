@@ -112,7 +112,7 @@ public class WeldBootstrapService implements Service<WeldBootstrapService> {
         ClassLoader oldTccl = WildFlySecurityManager.getCurrentContextClassLoaderPrivileged();
         try {
             WildFlySecurityManager.setCurrentContextClassLoaderPrivileged(deployment.getModule().getClassLoader());
-            bootstrap.startContainer(environment, deployment);
+            bootstrap.startContainer(deploymentName, environment, deployment);
         } finally {
             WildFlySecurityManager.setCurrentContextClassLoaderPrivileged(oldTccl);
         }
