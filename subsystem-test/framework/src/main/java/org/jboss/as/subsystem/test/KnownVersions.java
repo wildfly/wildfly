@@ -61,6 +61,7 @@ class KnownVersions {
         addSubsystemVersion(map, "jacorb", "1.1.0", CORE_MODEL_7_1_3);
         addSubsystemVersion(map, "ejb3", "1.1.0", CORE_MODEL_7_1_2);
         addSubsystemVersion(map, "ejb3", "1.2.0", CORE_MODEL_7_2_0);
+        addSubsystemVersion(map, "ejb3", "1.2.1", CORE_MODEL_7_2_0);
         addSubsystemVersion(map, "infinispan", "1.3.0", CORE_MODEL_7_1_3);
         addSubsystemVersion(map, "infinispan", "1.4.0", CORE_MODEL_7_2_0);
         addSubsystemVersion(map, "jacorb", "1.1.0", CORE_MODEL_7_1_3);
