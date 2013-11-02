@@ -614,7 +614,20 @@ public class JMXSubsystemTestCase extends AbstractSubsystemTest {
         testTransformation_1_0_0(ModelTestControllerVersion.V7_1_3_FINAL);
     }
 
+    @Test
+    public void testTransformationEAP600() throws Exception {
+        testTransformation_1_0_0(ModelTestControllerVersion.EAP_6_0_0);
+    }
+
+    @Test
+    public void testTransformationAS600() throws Exception {
+        testTransformation_1_0_0(ModelTestControllerVersion.EAP_6_0_0);
+    }
+
     private void testTransformation_1_0_0(ModelTestControllerVersion controllerVersion) throws Exception {
+        if (controllerVersion.isEap()) {
+            ignoreThisTestIfEAPRepositoryIsNotReachable();
+        }
         String subsystemXml =
                 "<subsystem xmlns=\"" + Namespace.CURRENT.getUriString() + "\">" +
                 "   <expose-resolved-model domain-name=\"jboss.as\" proper-property-format=\"false\"/>" +
@@ -768,8 +781,20 @@ public class JMXSubsystemTestCase extends AbstractSubsystemTest {
         testTransformation_1_1_0(ModelTestControllerVersion.V7_2_0_FINAL);
     }
 
+    @Test
+    public void testTransformationEAP610() throws Exception {
+        testTransformation_1_1_0(ModelTestControllerVersion.EAP_6_1_0);
+    }
+
+    @Test
+    public void testTransformationEAP611() throws Exception {
+        testTransformation_1_1_0(ModelTestControllerVersion.EAP_6_1_1);
+    }
 
     private void testTransformation_1_1_0(ModelTestControllerVersion controllerVersion) throws Exception {
+        if (controllerVersion.isEap()) {
+            ignoreThisTestIfEAPRepositoryIsNotReachable();
+        }
         String subsystemXml =
                 "<subsystem xmlns=\"" + Namespace.CURRENT.getUriString() + "\">" +
                 "   <expose-resolved-model domain-name=\"jboss.as\" proper-property-format=\"false\"/>" +
@@ -862,12 +887,25 @@ public class JMXSubsystemTestCase extends AbstractSubsystemTest {
         testRejectExpressions_1_0_0(ModelTestControllerVersion.V7_1_3_FINAL);
     }
 
+    @Test
+    public void testRejectExpressionsEAP600() throws Exception {
+        testRejectExpressions_1_0_0(ModelTestControllerVersion.EAP_6_0_0);
+    }
+
+    @Test
+    public void testRejectExpressionsEAP601() throws Exception {
+        testRejectExpressions_1_0_0(ModelTestControllerVersion.EAP_6_0_1);
+    }
+
     /**
      * Tests rejection of expressions in 1.1.0 model.
      *
      * @throws Exception
      */
     private void testRejectExpressions_1_0_0(ModelTestControllerVersion controllerVersion) throws Exception {
+        if (controllerVersion.isEap()) {
+            ignoreThisTestIfEAPRepositoryIsNotReachable();
+        }
         String subsystemXml =
             "<subsystem xmlns=\"" + Namespace.CURRENT.getUriString() + "\">" +
                     "   <expose-resolved-model domain-name=\"${test.domain-name:non-standard}\" proper-property-format=\"${test.proper-property-format:true}\"/>" +
@@ -927,12 +965,25 @@ public class JMXSubsystemTestCase extends AbstractSubsystemTest {
         testRejectExpressions_1_1_0(ModelTestControllerVersion.V7_2_0_FINAL);
     }
 
+    @Test
+    public void testRejectionEAP610() throws Exception {
+        testRejectExpressions_1_1_0(ModelTestControllerVersion.EAP_6_1_0);
+    }
+
+    @Test
+    public void testRejectionEAP611() throws Exception {
+        testRejectExpressions_1_1_0(ModelTestControllerVersion.EAP_6_1_1);
+    }
+
     /**
      * Tests rejection of expressions in 1.1.0 model.
      *
      * @throws Exception
      */
     private void testRejectExpressions_1_1_0(ModelTestControllerVersion controllerVersion) throws Exception {
+        if (controllerVersion.isEap()) {
+            ignoreThisTestIfEAPRepositoryIsNotReachable();
+        }
         String subsystemXml =
             "<subsystem xmlns=\"" + Namespace.CURRENT.getUriString() + "\">" +
                     "   <expose-resolved-model domain-name=\"${test.domain-name:non-standard}\" proper-property-format=\"${test.proper-property-format:true}\"/>" +
