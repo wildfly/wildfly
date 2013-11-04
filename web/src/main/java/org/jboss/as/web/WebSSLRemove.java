@@ -54,9 +54,4 @@ class WebSSLRemove extends RestartParentResourceRemoveHandler {
     protected ServiceName getParentServiceName(PathAddress parentAddress) {
         return WebSubsystemServices.JBOSS_WEB_CONNECTOR.append(parentAddress.getLastElement().getValue());
     }
-
-    @Override
-    protected boolean isResourceServiceRestartAllowed(OperationContext context, ServiceController<?> service) {
-        return true;
-    }
 }
