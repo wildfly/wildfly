@@ -92,6 +92,12 @@
                     <config-property-type>java.lang.Integer</config-property-type>
                     <config-property-value>60</config-property-value>
                 </config-property>
+                <config-property>
+                    <description>Whether temporary destinations are deleted when a session is closed.</description>
+                    <config-property-name>DeleteTemporaryDestinations</config-property-name>
+                    <config-property-type>java.lang.Boolean</config-property-type>
+                    <config-property-value>true</config-property-value>
+                </config-property>
                 <connectionfactory-interface>org.jboss.resource.adapter.jms.JmsConnectionFactory
                 </connectionfactory-interface>
                 <connectionfactory-impl-class>org.jboss.resource.adapter.jms.JmsConnectionFactoryImpl
