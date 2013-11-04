@@ -63,10 +63,7 @@ public abstract class AbstractResourceInjectionServices {
          * Try to obtain ManagedReferenceFactory and validate the resource type
          */
         final ManagedReferenceFactory factory = getManagedReferenceFactory(ejbBindInfo);
-        if (factory instanceof ContextListManagedReferenceFactory && injectionPoint != null) {
-            validateResourceInjectionPointType((ContextListManagedReferenceFactory) factory, injectionPoint);
-        }
-        // otherwise, the validation is skipped as we have no information about the resource type
+        validateResourceInjectionPointType(factory, injectionPoint);
 
         if (factory != null) {
             return new ManagedReferenceFactoryToResourceReferenceFactoryAdapter<Object>(factory);
@@ -75,7 +72,12 @@ public abstract class AbstractResourceInjectionServices {
         }
     }
 
-    protected static void validateResourceInjectionPointType(ContextListManagedReferenceFactory factory, InjectionPoint injectionPoint) {
+    protected static void validateResourceInjectionPointType(ManagedReferenceFactory fact, InjectionPoint injectionPoint) {
+        if (!(fact instanceof ContextListManagedReferenceFactory) || injectionPoint == null) {
+            return; // validation is skipped as we have no information about the resource type
+        }
+
+        final ContextListManagedReferenceFactory factory = (ContextListManagedReferenceFactory) fact;
         // the resource class may come from JBoss AS
         Class<?> resourceClass = org.jboss.as.weld.util.Reflections.loadClass(factory.getInstanceClassName(), factory.getClass().getClassLoader());
         // or it may come from deployment

@@ -41,6 +41,7 @@ import javax.enterprise.inject.spi.InjectionPoint;
 import javax.naming.Context;
 import javax.naming.InitialContext;
 import javax.naming.NamingException;
+
 import java.lang.reflect.Method;
 
 import static org.jboss.as.weld.util.ResourceInjectionUtilities.getResourceAnnotated;
@@ -124,6 +125,9 @@ public class WeldResourceInjectionServices extends AbstractResourceInjectionServ
     @Override
     public ResourceReferenceFactory<Object> registerResourceInjectionPoint(final InjectionPoint injectionPoint) {
         final String result = getResourceName(injectionPoint);
+        if (isKnownNamespace(result)) {
+            validateResourceInjectionPointType(getManagedReferenceFactory(getBindInfo(result)), injectionPoint);
+        }
         return new ResourceReferenceFactory<Object>() {
             @Override
             public ResourceReference<Object> createResource() {
