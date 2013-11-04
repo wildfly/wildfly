@@ -39,6 +39,7 @@ import org.junit.runner.RunWith;
 /**
  *
  * @author Martin Kouba
+ * @author Matus Abaffy
  */
 @RunAsClient
 @RunWith(Arquillian.class)
@@ -46,7 +47,7 @@ public class ServletInjectionSupportTestCase extends InjectionSupportTestCase {
 
     @Deployment
     public static WebArchive createTestArchive() {
-        return createTestArchiveBase().addClasses(TestServlet.class);
+        return createTestArchiveBase().addClass(TestServlet.class).addClasses(constructTestsHelperClasses);
     }
 
     @Test
@@ -60,10 +61,19 @@ public class ServletInjectionSupportTestCase extends InjectionSupportTestCase {
     }
 
     @Test
-    public void testInterceptor() throws IOException, ExecutionException, TimeoutException {
-        // Servlet.service(ServletRequest, ServletResponse) must be intercepted
-        assertEquals("0", doGetRequest("/TestServlet?mode=interceptorReset"));
-        assertEquals("1", doGetRequest("/TestServlet?mode=interceptorVerify"));
+    public void testConstructorInjection() throws IOException, ExecutionException, TimeoutException {
+        doGetRequest("/TestServlet?mode=constructor");
     }
 
+    @Test
+    public void testAroundInvokeInterceptor() throws IOException, ExecutionException, TimeoutException {
+        // Servlet.service(ServletRequest, ServletResponse) must be intercepted
+        assertEquals("0", doGetRequest("/TestServlet?mode=interceptorReset"));
+        assertEquals("1", doGetRequest("/TestServlet?mode=aroundInvokeVerify"));
+    }
+
+    @Test
+    public void testAroundConstructInterceptor() throws IOException, ExecutionException, TimeoutException {
+        assertEquals("AroundConstructInterceptor#Joe#TestServlet", doGetRequest("/TestServlet?mode=aroundConstructVerify"));
+    }
 }
