@@ -46,21 +46,22 @@ import org.jboss.as.core.model.test.KernelServices;
 import org.jboss.as.core.model.test.KernelServicesBuilder;
 import org.jboss.as.core.model.test.LegacyKernelServicesInitializer;
 import org.jboss.as.core.model.test.TestModelType;
+import org.jboss.as.core.model.test.TransformersTestParameterized;
+import org.jboss.as.core.model.test.TransformersTestParameterized.TransformersParameter;
 import org.jboss.as.core.model.test.util.ExcludeCommonOperations;
-import org.jboss.as.core.model.test.util.TransformersTestParameters;
+import org.jboss.as.core.model.test.util.TransformersTestParameter;
 import org.jboss.as.model.test.ModelTestControllerVersion;
 import org.jboss.dmr.ModelNode;
 import org.junit.Assert;
 import org.junit.Test;
 import org.junit.runner.RunWith;
-import org.junit.runners.Parameterized;
 
 /**
  * Tests of socket-binding transformation.
  *
  * @author Brian Stansberry (c) 2012 Red Hat Inc.
  */
-@RunWith(Parameterized.class)
+@RunWith(TransformersTestParameterized.class)
 public class SocketBindingTransformersTestCase extends AbstractCoreModelTest {
 
     private static final String CLIENT_MAPPING_SOURCE_NETWORK = AbstractSocketBindingResourceDefinition.CLIENT_MAPPING_SOURCE_NETWORK.getName();
@@ -70,12 +71,12 @@ public class SocketBindingTransformersTestCase extends AbstractCoreModelTest {
     private final ModelVersion modelVersion;
     private final ModelTestControllerVersion testControllerVersion;
 
-    @Parameterized.Parameters
-    public static List<Object[]> parameters(){
-        return TransformersTestParameters.setupVersions();
+    @TransformersParameter
+    public static List<TransformersTestParameter> parameters(){
+        return TransformersTestParameter.setupVersions();
     }
 
-    public SocketBindingTransformersTestCase(TransformersTestParameters params) {
+    public SocketBindingTransformersTestCase(TransformersTestParameter params) {
         this.modelVersion = params.getModelVersion();
         this.testControllerVersion = params.getTestControllerVersion();
     }
