@@ -31,7 +31,7 @@ fi
 export JBOSS_HOME
 
 if [ -z "$JBOSS_PIDFILE" ]; then
-	JBOSS_PIDFILE=/var/run/wilfly/wildfly.pid
+	JBOSS_PIDFILE=/var/run/wildfly/wildfly.pid
 fi
 export JBOSS_PIDFILE
 
