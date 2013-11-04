@@ -36,9 +36,11 @@ import org.jboss.as.core.model.test.KernelServices;
 import org.jboss.as.core.model.test.KernelServicesBuilder;
 import org.jboss.as.core.model.test.LegacyKernelServicesInitializer;
 import org.jboss.as.core.model.test.TestModelType;
+import org.jboss.as.core.model.test.TransformersTestParameterized;
+import org.jboss.as.core.model.test.TransformersTestParameterized.TransformersParameter;
 import org.jboss.as.core.model.test.util.ExcludeCommonOperations;
 import org.jboss.as.core.model.test.util.StandardServerGroupInitializers;
-import org.jboss.as.core.model.test.util.TransformersTestParameters;
+import org.jboss.as.core.model.test.util.TransformersTestParameter;
 import org.jboss.as.domain.controller.resources.ServerGroupResourceDefinition;
 import org.jboss.as.model.test.FailedOperationTransformationConfig;
 import org.jboss.as.model.test.ModelFixer;
@@ -48,25 +50,24 @@ import org.jboss.dmr.ModelNode;
 import org.junit.Assert;
 import org.junit.Test;
 import org.junit.runner.RunWith;
-import org.junit.runners.Parameterized;
 
 /**
  * Tests transformation of server-groups.
  *
  * @author Brian Stansberry (c) 2012 Red Hat Inc.
  */
-@RunWith(Parameterized.class)
+@RunWith(TransformersTestParameterized.class)
 public class DomainServerGroupTransformersTestCase extends AbstractCoreModelTest {
 
     private final ModelVersion modelVersion;
     private final ModelTestControllerVersion testControllerVersion;
 
-    @Parameterized.Parameters
-    public static List<Object[]> parameters(){
-        return TransformersTestParameters.setupVersions();
+    @TransformersParameter
+    public static List<TransformersTestParameter> parameters(){
+        return TransformersTestParameter.setupVersions();
     }
 
-    public DomainServerGroupTransformersTestCase(TransformersTestParameters params) {
+    public DomainServerGroupTransformersTestCase(TransformersTestParameter params) {
         this.modelVersion = params.getModelVersion();
         this.testControllerVersion = params.getTestControllerVersion();
     }

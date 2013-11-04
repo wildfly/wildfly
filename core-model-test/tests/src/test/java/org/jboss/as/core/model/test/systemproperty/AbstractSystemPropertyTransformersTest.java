@@ -38,8 +38,9 @@ import org.jboss.as.core.model.test.KernelServices;
 import org.jboss.as.core.model.test.KernelServicesBuilder;
 import org.jboss.as.core.model.test.LegacyKernelServicesInitializer;
 import org.jboss.as.core.model.test.TestModelType;
+import org.jboss.as.core.model.test.TransformersTestParameterized.TransformersParameter;
 import org.jboss.as.core.model.test.util.StandardServerGroupInitializers;
-import org.jboss.as.core.model.test.util.TransformersTestParameters;
+import org.jboss.as.core.model.test.util.TransformersTestParameter;
 import org.jboss.as.model.test.FailedOperationTransformationConfig;
 import org.jboss.as.model.test.ModelFixer;
 import org.jboss.as.model.test.ModelTestControllerVersion;
@@ -48,7 +49,6 @@ import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.Property;
 import org.junit.Assert;
 import org.junit.Test;
-import org.junit.runners.Parameterized.Parameters;
 
 /**
  *
@@ -61,16 +61,16 @@ public abstract class AbstractSystemPropertyTransformersTest extends AbstractCor
     private final boolean serverGroup;
     private final ModelNode expectedUndefined;
 
-    public AbstractSystemPropertyTransformersTest(TransformersTestParameters params, boolean serverGroup) {
+    public AbstractSystemPropertyTransformersTest(TransformersTestParameter params, boolean serverGroup) {
         this.modelVersion = params.getModelVersion();
         this.testControllerVersion = params.getTestControllerVersion();
         this.serverGroup = serverGroup;
         this.expectedUndefined = getExpectedUndefined(params.getModelVersion());
     }
 
-    @Parameters
-    public static List<Object[]> parameters(){
-        return TransformersTestParameters.setupVersions();
+    @TransformersParameter
+    public static List<TransformersTestParameter> parameters(){
+        return TransformersTestParameter.setupVersions();
     }
 
     @Test
