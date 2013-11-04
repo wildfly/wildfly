@@ -28,9 +28,12 @@ import javax.servlet.annotation.WebListener;
 import javax.servlet.http.HttpServletRequest;
 
 import org.jboss.as.test.integration.ee.injection.support.Alpha;
+import org.jboss.as.test.integration.ee.injection.support.AroundConstructBinding;
 import org.jboss.as.test.integration.ee.injection.support.Bravo;
 import org.jboss.as.test.integration.ee.injection.support.ComponentInterceptorBinding;
+import org.jboss.as.test.integration.ee.injection.support.ProducedString;
 
+@AroundConstructBinding
 @ComponentInterceptorBinding
 @WebListener
 public class TestListener implements ServletRequestListener {
@@ -39,6 +42,13 @@ public class TestListener implements ServletRequestListener {
     private Alpha alpha;
 
     private Bravo bravo;
+
+    private String name;
+
+    @Inject
+    public TestListener(@ProducedString String name) {
+        this.name = name + "#TestListener";
+    }
 
     @Inject
     public void setBravo(Bravo bravo) {
@@ -54,6 +64,7 @@ public class TestListener implements ServletRequestListener {
         HttpServletRequest req = (HttpServletRequest) sre.getServletRequest();
         req.setAttribute("field.injected", alpha != null);
         req.setAttribute("setter.injected", bravo != null);
+        req.setAttribute("name", name);
     }
 
 }

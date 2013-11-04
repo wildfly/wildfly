@@ -38,6 +38,7 @@ import org.junit.runner.RunWith;
 /**
  *
  * @author Martin Kouba
+ * @author Matus Abaffy
  */
 @RunAsClient
 @RunWith(Arquillian.class)
@@ -45,7 +46,8 @@ public class ListenerInjectionSupportTestCase extends InjectionSupportTestCase {
 
     @Deployment
     public static WebArchive createTestArchive() {
-        return createTestArchiveBase().addClasses(TestListener.class, TestListenerServlet.class);
+        return createTestArchiveBase().addClasses(TestListener.class, TestListenerServlet.class).addClasses(
+                constructTestsHelperClasses);
     }
 
     @Test
@@ -59,10 +61,19 @@ public class ListenerInjectionSupportTestCase extends InjectionSupportTestCase {
     }
 
     @Test
-    public void testInterceptor() throws IOException, ExecutionException, TimeoutException {
-        // ServletRequestListener.requestInitialized(ServletRequestEvent) and ServletRequestListener.requestDestroyed(ServletRequestEvent) must be intercepted
-        assertEquals("0", doGetRequest("/TestListenerServlet?mode=interceptorReset"));
-        assertEquals("2", doGetRequest("/TestListenerServlet?mode=interceptorVerify"));
+    public void testConstructorInjection() throws IOException, ExecutionException, TimeoutException {
+        doGetRequest("/TestListenerServlet?mode=constructor");
     }
 
+    @Test
+    public void testAroundInvokeInterceptor() throws IOException, ExecutionException, TimeoutException {
+        // ServletRequestListener.requestInitialized(ServletRequestEvent) and ServletRequestListener.requestDestroyed(ServletRequestEvent) must be intercepted
+        assertEquals("0", doGetRequest("/TestListenerServlet?mode=interceptorReset"));
+        assertEquals("2", doGetRequest("/TestListenerServlet?mode=aroundInvokeVerify"));
+    }
+
+    @Test
+    public void testAroundConstructInterceptor() throws IOException, ExecutionException, TimeoutException {
+        assertEquals("AroundConstructInterceptor#Joe#TestListener", doGetRequest("/TestListenerServlet?mode=aroundConstructVerify"));
+    }
 }
