@@ -54,6 +54,10 @@ public abstract class AbstractCoreModelTest {
         delegate.cleanup();
     }
 
+    CoreModelTestDelegate getDelegate() {
+        return delegate;
+    }
+
     protected KernelServicesBuilder createKernelServicesBuilder(TestModelType type) {
         return delegate.createKernelServicesBuilder(type);
     }
