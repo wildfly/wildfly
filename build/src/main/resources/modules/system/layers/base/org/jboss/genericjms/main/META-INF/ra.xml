@@ -1,4 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
+
 <connector xmlns="http://java.sun.com/xml/ns/j2ee"
            xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
            xsi:schemaLocation="http://java.sun.com/xml/ns/j2ee
@@ -90,6 +91,12 @@
                     <config-property-name>UseTryLock</config-property-name>
                     <config-property-type>java.lang.Integer</config-property-type>
                     <config-property-value>60</config-property-value>
+                </config-property>
+                <config-property>
+                    <description>Whether temporary destinations are deleted when a session is closed.</description>
+                    <config-property-name>DeleteTemporaryDestinations</config-property-name>
+                    <config-property-type>java.lang.Boolean</config-property-type>
+                    <config-property-value>true</config-property-value>
                 </config-property>
                 <connectionfactory-interface>org.jboss.resource.adapter.jms.JmsConnectionFactory
                 </connectionfactory-interface>
