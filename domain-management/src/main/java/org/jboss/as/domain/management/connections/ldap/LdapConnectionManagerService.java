@@ -53,7 +53,7 @@ public class LdapConnectionManagerService implements Service<LdapConnectionManag
     private final InjectedValue<SSLIdentity> sslIdentity = new InjectedValue<SSLIdentity>();
 
     private volatile Config configuration;
-    private volatile Hashtable<String, String> properties = new Hashtable<>();
+    private volatile Hashtable<String, String> properties = new Hashtable<String, String>();
 
     public LdapConnectionManagerService() {
     }
