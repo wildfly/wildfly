@@ -82,11 +82,13 @@ class WebConnectorAdd extends AbstractAddStepHandler {
     @Override
     protected void performRuntime(OperationContext context, ModelNode operation, ModelNode model, ServiceVerificationHandler verificationHandler, List<ServiceController<?>> newControllers) throws OperationFailedException {
         final PathAddress address = PathAddress.pathAddress(operation.get(OP_ADDR));
-        final String name = address.getLastElement().getValue();
-
         ModelNode fullModel = Resource.Tools.readModel(context.readResource(PathAddress.EMPTY_ADDRESS));
-        final String bindingRef = WebConnectorDefinition.SOCKET_BINDING.resolveModelAttribute(context, fullModel).asString();
+        launchServices(context,address,fullModel,verificationHandler,newControllers);
+    }
 
+    protected void launchServices(OperationContext context, PathAddress address, ModelNode fullModel, ServiceVerificationHandler verificationHandler, List<ServiceController<?>> newControllers) throws OperationFailedException {
+        final String name = address.getLastElement().getValue();
+        final String bindingRef = WebConnectorDefinition.SOCKET_BINDING.resolveModelAttribute(context, fullModel).asString();
         final boolean enabled = WebConnectorDefinition.ENABLED.resolveModelAttribute(context, fullModel).asBoolean();
         final String protocol = WebConnectorDefinition.PROTOCOL.resolveModelAttribute(context, fullModel).asString();
         final String scheme = WebConnectorDefinition.SCHEME.resolveModelAttribute(context, fullModel).asString();

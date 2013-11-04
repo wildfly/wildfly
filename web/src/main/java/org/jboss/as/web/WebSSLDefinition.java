@@ -26,7 +26,6 @@ import java.util.List;
 
 import org.jboss.as.controller.AttributeDefinition;
 import org.jboss.as.controller.ReadResourceNameOperationStepHandler;
-import org.jboss.as.controller.ReloadRequiredRemoveStepHandler;
 import org.jboss.as.controller.ReloadRequiredWriteAttributeHandler;
 import org.jboss.as.controller.SimpleAttributeDefinition;
 import org.jboss.as.controller.SimpleAttributeDefinitionBuilder;
@@ -212,7 +211,7 @@ public class WebSSLDefinition extends SimpleResourceDefinition {
         super(WebExtension.SSL_PATH,
                 WebExtension.getResourceDescriptionResolver("connector.ssl"),
                 WebSSLAdd.INSTANCE,
-                new ReloadRequiredRemoveStepHandler());
+                WebSSLRemove.INSTANCE);
         SensitivityClassification sc = new SensitivityClassification(WebExtension.SUBSYSTEM_NAME, "web-ssl", false, true, true);
         this.accessConstraints = new SensitiveTargetAccessConstraintDefinition(sc).wrapAsList();
     }
