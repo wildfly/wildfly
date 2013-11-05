@@ -247,12 +247,13 @@ public class BeanArchiveProcessor implements DeploymentUnitProcessor {
 
                 final boolean isRootBda = resourceRoot.equals(deploymentResourceRoot);
 
+                ResourceRoot indexResourceRoot = resourceRoot;
                 if (resourceRoot == deploymentResourceRoot && classesResourceRoot != null) {
                     // this is WEB-INF/classes BDA
-                    resourceRoot = classesResourceRoot;
+                    indexResourceRoot = classesResourceRoot;
                 }
 
-                final Index index = indexes.get(resourceRoot);
+                final Index index = indexes.get(indexResourceRoot);
                 if (index == null) {
                     return null; // index may be null for some resource roots
                 }
