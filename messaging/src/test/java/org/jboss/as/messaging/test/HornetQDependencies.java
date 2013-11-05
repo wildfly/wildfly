@@ -56,6 +56,30 @@ public class HornetQDependencies {
                 "org.hornetq:hornetq-jms-client:2.3.0.CR1",
                 "org.hornetq:hornetq-ra:2.3.0.CR1"});
 
+        map.put(ModelTestControllerVersion.EAP_6_0_0, new String[] {
+                "org.hornetq:hornetq-core:2.2.16.Final-redhat-1",
+                "org.hornetq:hornetq-jms:2.2.16.Final-redhat-1",
+                "org.hornetq:hornetq-ra:2.2.16.Final-redhat-1"});
+
+        map.put(ModelTestControllerVersion.EAP_6_0_1, new String[] {
+                "org.hornetq:hornetq-core:2.2.23.Final-redhat-1",
+                "org.hornetq:hornetq-jms:2.2.23.Final-redhat-1",
+                "org.hornetq:hornetq-ra:2.2.23.Final-redhat-1"});
+
+        map.put(ModelTestControllerVersion.EAP_6_1_0, new String[] {
+                "org.hornetq:hornetq-server:2.3.1.Final-redhat-1",
+                "org.hornetq:hornetq-jms-server:2.3.1.Final-redhat-1",
+                "org.hornetq:hornetq-core-client:2.3.1.Final-redhat-1",
+                "org.hornetq:hornetq-jms-client:2.3.1.Final-redhat-1",
+                "org.hornetq:hornetq-ra:2.3.1.Final-redhat-1"});
+
+        map.put(ModelTestControllerVersion.EAP_6_1_1, new String[] {
+                "org.hornetq:hornetq-server:2.3.5.Final-redhat-2",
+                "org.hornetq:hornetq-jms-server:2.3.5.Final-redhat-2",
+                "org.hornetq:hornetq-core-client:2.3.5.Final-redhat-2",
+                "org.hornetq:hornetq-jms-client:2.3.5.Final-redhat-2",
+                "org.hornetq:hornetq-ra:2.3.5.Final-redhat-2"});
+
         HORNET_Q_DEPENDENCIES = Collections.unmodifiableMap(map);
     }
 

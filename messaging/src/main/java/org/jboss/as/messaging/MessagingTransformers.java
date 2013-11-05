@@ -266,10 +266,11 @@ public class MessagingTransformers {
         ResourceTransformationDescriptionBuilder hornetqServer = subsystemRoot.addChildResource(pathElement(HORNETQ_SERVER));
 
         ResourceTransformationDescriptionBuilder bridge = hornetqServer.addChildResource(BridgeDefinition.PATH);
-        rejectDefinedAttribute(bridge, RECONNECT_ATTEMPTS_ON_SAME_NODE);
+        rejectDefinedAttributeWithDefaultValue(bridge, RECONNECT_ATTEMPTS_ON_SAME_NODE);
+        discardAttribute(bridge, FAILOVER_ON_SERVER_SHUTDOWN);
 
         ResourceTransformationDescriptionBuilder addressSetting = hornetqServer.addChildResource(AddressSettingDefinition.PATH);
-        rejectDefinedAttribute(addressSetting, AddressSettingDefinition.EXPIRY_DELAY);
+        rejectDefinedAttributeWithDefaultValue(addressSetting, EXPIRY_DELAY);
 
         hornetqServer.rejectChildResource(ServletConnectorDefinition.PATH);
 
