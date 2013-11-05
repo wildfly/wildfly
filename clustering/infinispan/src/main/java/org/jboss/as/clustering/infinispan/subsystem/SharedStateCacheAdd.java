@@ -71,11 +71,11 @@ public abstract class SharedStateCacheAdd extends ClusteredCacheAdd {
                 ModelNode site = property.getValue();
                 sitesBuilder.addBackup()
                         .site(siteName)
-                        .backupFailurePolicy(BackupFailurePolicy.valueOf(BackupSiteResource.FAILURE_POLICY.resolveModelAttribute(context, site).asString()))
-                        .strategy(BackupStrategy.valueOf(BackupSiteResource.STRATEGY.resolveModelAttribute(context, site).asString()))
-                        .replicationTimeout(BackupSiteResource.REPLICATION_TIMEOUT.resolveModelAttribute(context, site).asLong())
+                        .backupFailurePolicy(BackupFailurePolicy.valueOf(BackupSiteResourceDefinition.FAILURE_POLICY.resolveModelAttribute(context, site).asString()))
+                        .strategy(BackupStrategy.valueOf(BackupSiteResourceDefinition.STRATEGY.resolveModelAttribute(context, site).asString()))
+                        .replicationTimeout(BackupSiteResourceDefinition.REPLICATION_TIMEOUT.resolveModelAttribute(context, site).asLong())
                 ;
-                if (BackupSiteResource.ENABLED.resolveModelAttribute(context, site).asBoolean()) {
+                if (BackupSiteResourceDefinition.ENABLED.resolveModelAttribute(context, site).asBoolean()) {
                     sitesBuilder.addInUseBackupSite(siteName);
                 }
             }

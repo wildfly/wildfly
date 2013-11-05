@@ -22,7 +22,6 @@
 
 package org.jboss.as.clustering.infinispan.subsystem;
 
-import static org.jboss.as.controller.ControllerMessages.MESSAGES;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.NAME;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.VALUE;
 
@@ -48,13 +47,11 @@ public class CacheWriteAttributeHandler implements OperationStepHandler {
     public static final CacheWriteAttributeHandler INSTANCE = new CacheWriteAttributeHandler();
     private final ParametersValidator nameValidator = new ParametersValidator();
 
-    private final Map<String, AttributeDefinition> attributeDefinitions;
+    private final Map<String, AttributeDefinition> attributeDefinitions = new HashMap<>();
 
     public CacheWriteAttributeHandler(final AttributeDefinition... definitions) {
-        assert definitions != null : MESSAGES.nullVar("definitions").getLocalizedMessage();
-        attributeDefinitions = new HashMap<String, AttributeDefinition>();
         for (AttributeDefinition def : definitions) {
-            attributeDefinitions.put(def.getName(), def);
+            this.attributeDefinitions.put(def.getName(), def);
         }
     }
 
@@ -68,15 +65,14 @@ public class CacheWriteAttributeHandler implements OperationStepHandler {
     @Override
     public void execute(OperationContext context, ModelNode operation) throws OperationFailedException {
 
-        nameValidator.validate(operation);
+        this.nameValidator.validate(operation);
         final String attributeName = operation.require(NAME).asString();
 
         // Don't require VALUE. Let the validator decide if it's bothered by an undefined value
         ModelNode newValue = operation.hasDefined(VALUE) ? operation.get(VALUE) : new ModelNode();
         final ModelNode submodel = context.readResourceForUpdate(PathAddress.EMPTY_ADDRESS).getModel();
 
-        AttributeDefinition attributeDefinition = null;
-        attributeDefinition = getAttributeDefinition(attributeName);
+        AttributeDefinition attributeDefinition = this.attributeDefinitions.get(attributeName);
         if (attributeDefinition != null) {
             final ModelNode syntheticOp = new ModelNode();
             syntheticOp.get(attributeName).set(newValue);
@@ -89,7 +85,7 @@ public class CacheWriteAttributeHandler implements OperationStepHandler {
         if (requiresRuntime(context)) {
             context.addStep(new OperationStepHandler() {
                 @Override
-                public void execute(OperationContext context, ModelNode operation) throws OperationFailedException {
+                public void execute(OperationContext context, ModelNode operation) {
                     context.reloadRequired();
                     context.completeStep(OperationContext.RollbackHandler.REVERT_RELOAD_REQUIRED_ROLLBACK_HANDLER);
                 }
@@ -98,24 +94,20 @@ public class CacheWriteAttributeHandler implements OperationStepHandler {
         context.stepCompleted();
     }
 
-     /**
-      * Gets whether a {@link org.jboss.as.controller.OperationContext.Stage#RUNTIME} handler should be added. This default implementation
-      * returns {@code true} if the {@link org.jboss.as.controller.OperationContext#getProcessType()}  process type} is
-      * a server and {@link org.jboss.as.controller.OperationContext#isBooting() context.isBooting()} returns {@code false}.
-      *
-      * @param context operation context
-      * @return {@code true} if a runtime stage handler should be added; {@code false} otherwise.
-      */
-     protected boolean requiresRuntime(OperationContext context) {
-         return context.getProcessType().isServer() && !context.isBooting();
-     }
-
-     protected AttributeDefinition getAttributeDefinition(final String attributeName) {
-         return attributeDefinitions == null ? null : attributeDefinitions.get(attributeName);
-     }
+    /**
+     * Gets whether a {@link org.jboss.as.controller.OperationContext.Stage#RUNTIME} handler should be added. This default implementation
+     * returns {@code true} if the {@link org.jboss.as.controller.OperationContext#getProcessType()}  process type} is
+     * a server and {@link org.jboss.as.controller.OperationContext#isBooting() context.isBooting()} returns {@code false}.
+     *
+     * @param context operation context
+     * @return {@code true} if a runtime stage handler should be added; {@code false} otherwise.
+     */
+    protected boolean requiresRuntime(OperationContext context) {
+        return context.getProcessType().isServer() && !context.isBooting();
+    }
 
     public void registerAttributes(final ManagementResourceRegistration registry) {
-        for (AttributeDefinition attr : attributeDefinitions.values()) {
+        for (AttributeDefinition attr : this.attributeDefinitions.values()) {
            registry.registerReadWriteAttribute(attr, CacheReadAttributeHandler.INSTANCE, this);
         }
     }

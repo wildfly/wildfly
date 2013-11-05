@@ -46,7 +46,6 @@ import org.jboss.as.subsystem.test.KernelServices;
 import org.jboss.as.subsystem.test.KernelServicesBuilder;
 import org.jboss.dmr.ModelNode;
 import org.junit.Assert;
-import org.junit.Ignore;
 import org.junit.Test;
 
 /**
@@ -226,7 +225,7 @@ public class InfinispanSubsystemTransformerTestCase extends OperationTestCaseBas
                     .addConfig(new RemoveResolvedIndexingPropertiesConfig(CacheResourceDefinition.INDEXING_PROPERTIES)).build()/*.setNotExpectedWriteFailure(ModelKeys.SEGMENTS)*/);
 
             PathElement[] childPaths = {
-                    LockingResource.LOCKING_PATH,
+                    LockingResourceDefinition.LOCKING_PATH,
                     TransactionResourceDefinition.TRANSACTION_PATH,
                     ExpirationResourceDefinition.EXPIRATION_PATH,
                     EvictionResourceDefinition.EVICTION_PATH,

@@ -56,13 +56,13 @@ import org.jboss.msc.service.ServiceName;
  * @author Paul Ferraro
  *
  */
-public class BackupSiteResource extends SimpleResourceDefinition {
+public class BackupSiteResourceDefinition extends SimpleResourceDefinition {
 
     static final SimpleAttributeDefinition FAILURE_POLICY = new SimpleAttributeDefinitionBuilder(ModelKeys.BACKUP_FAILURE_POLICY, ModelType.STRING, true)
             .setXmlName(Attribute.BACKUP_FAILURE_POLICY.getLocalName())
             .setAllowExpression(true)
             .setFlags(AttributeAccess.Flag.RESTART_ALL_SERVICES)
-            .setValidator(new EnumValidator<BackupFailurePolicy>(BackupFailurePolicy.class, true, true))
+            .setValidator(new EnumValidator<>(BackupFailurePolicy.class, true, true))
             .setDefaultValue(new ModelNode().set(BackupFailurePolicy.WARN.name()))
             .build()
     ;
@@ -70,7 +70,7 @@ public class BackupSiteResource extends SimpleResourceDefinition {
             .setXmlName(Attribute.STRATEGY.getLocalName())
             .setAllowExpression(true)
             .setFlags(AttributeAccess.Flag.RESTART_ALL_SERVICES)
-            .setValidator(new EnumValidator<BackupStrategy>(BackupStrategy.class, true, true))
+            .setValidator(new EnumValidator<>(BackupStrategy.class, true, true))
             .setDefaultValue(new ModelNode().set(BackupStrategy.ASYNC.name()))
             .build()
     ;
@@ -106,26 +106,23 @@ public class BackupSiteResource extends SimpleResourceDefinition {
     static final AttributeDefinition[] ATTRIBUTES = new AttributeDefinition[] { FAILURE_POLICY, STRATEGY, REPLICATION_TIMEOUT, ENABLED, TAKE_OFFLINE_AFTER_FAILURES, TAKE_OFFLINE_MIN_WAIT };
 
         // operations
-    static final OperationDefinition BACKUP_BRING_SITE_ONLINE =
-            new SimpleOperationDefinitionBuilder(ModelKeys.BRING_SITE_ONLINE, InfinispanExtension.getResourceDescriptionResolver("backup.ops"))
-                .setRuntimeOnly()
-                .build();
-
-    static final OperationDefinition BACKUP_TAKE_SITE_OFFLINE =
-            new SimpleOperationDefinitionBuilder(ModelKeys.TAKE_SITE_OFFLINE, InfinispanExtension.getResourceDescriptionResolver("backup.ops"))
-                .setRuntimeOnly()
-                .build();
-
-    static final OperationDefinition BACKUP_SITE_STATUS =
-            new SimpleOperationDefinitionBuilder(ModelKeys.SITE_STATUS, InfinispanExtension.getResourceDescriptionResolver("backup.ops"))
-                .setRuntimeOnly()
-                .setReadOnly()
-                .build();
-
+    static final OperationDefinition BACKUP_BRING_SITE_ONLINE = new SimpleOperationDefinitionBuilder(ModelKeys.BRING_SITE_ONLINE, InfinispanExtension.getResourceDescriptionResolver("backup.ops"))
+            .setRuntimeOnly()
+            .build()
+    ;
+    static final OperationDefinition BACKUP_TAKE_SITE_OFFLINE = new SimpleOperationDefinitionBuilder(ModelKeys.TAKE_SITE_OFFLINE, InfinispanExtension.getResourceDescriptionResolver("backup.ops"))
+            .setRuntimeOnly()
+            .build()
+    ;
+    static final OperationDefinition BACKUP_SITE_STATUS = new SimpleOperationDefinitionBuilder(ModelKeys.SITE_STATUS, InfinispanExtension.getResourceDescriptionResolver("backup.ops"))
+            .setRuntimeOnly()
+            .setReadOnly()
+            .build()
+    ;
 
     private final boolean runtimeRegistration;
 
-    BackupSiteResource(final boolean runtimeRegistration) {
+    BackupSiteResourceDefinition(final boolean runtimeRegistration) {
         super(PathElement.pathElement(ModelKeys.BACKUP), InfinispanExtension.getResourceDescriptionResolver(ModelKeys.BACKUP), new CacheConfigAdd(ATTRIBUTES), ReloadRequiredRemoveStepHandler.INSTANCE);
         this.runtimeRegistration = runtimeRegistration;
     }
@@ -141,15 +138,11 @@ public class BackupSiteResource extends SimpleResourceDefinition {
     @Override
     public void registerOperations(ManagementResourceRegistration resourceRegistration) {
         super.registerOperations(resourceRegistration);
-        if (isRuntimeRegistration()) {
-            resourceRegistration.registerOperationHandler(BackupSiteResource.BACKUP_BRING_SITE_ONLINE, new BackupBringSiteOnline());
-            resourceRegistration.registerOperationHandler(BackupSiteResource.BACKUP_TAKE_SITE_OFFLINE, new BackupTakeSiteOffline());
-            resourceRegistration.registerOperationHandler(BackupSiteResource.BACKUP_SITE_STATUS, new BackupSiteStatus());
+        if (this.runtimeRegistration) {
+            resourceRegistration.registerOperationHandler(BackupSiteResourceDefinition.BACKUP_BRING_SITE_ONLINE, new BackupBringSiteOnline());
+            resourceRegistration.registerOperationHandler(BackupSiteResourceDefinition.BACKUP_TAKE_SITE_OFFLINE, new BackupTakeSiteOffline());
+            resourceRegistration.registerOperationHandler(BackupSiteResourceDefinition.BACKUP_SITE_STATUS, new BackupSiteStatus());
         }
-    }
-
-    public boolean isRuntimeRegistration() {
-        return runtimeRegistration;
     }
 
     // operation handler definitions
@@ -161,7 +154,7 @@ public class BackupSiteResource extends SimpleResourceDefinition {
      *
      * where X is the name of the site.
      */
-    private class BackupBringSiteOnline extends AbstractRuntimeOnlyHandler {
+    class BackupBringSiteOnline extends AbstractRuntimeOnlyHandler {
         @Override
         protected void executeRuntimeStep(OperationContext context, ModelNode operation) throws OperationFailedException {
             //
@@ -197,7 +190,7 @@ public class BackupSiteResource extends SimpleResourceDefinition {
      *
      * where X is the name of the site.
      */
-    private class BackupTakeSiteOffline extends AbstractRuntimeOnlyHandler {
+    class BackupTakeSiteOffline extends AbstractRuntimeOnlyHandler {
         @Override
         protected void executeRuntimeStep(OperationContext context, ModelNode operation) throws OperationFailedException {
             //
@@ -233,7 +226,7 @@ public class BackupSiteResource extends SimpleResourceDefinition {
      *
      * where X is the name of the site.
      */
-    private class BackupSiteStatus extends AbstractRuntimeOnlyHandler {
+    class BackupSiteStatus extends AbstractRuntimeOnlyHandler {
         @Override
         protected void executeRuntimeStep(OperationContext context, ModelNode operation) throws OperationFailedException {
             //
@@ -261,5 +254,4 @@ public class BackupSiteResource extends SimpleResourceDefinition {
             context.stepCompleted();
         }
     }
-
 }

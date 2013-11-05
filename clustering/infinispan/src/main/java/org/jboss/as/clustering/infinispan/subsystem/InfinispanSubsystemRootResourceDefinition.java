@@ -57,21 +57,7 @@ public class InfinispanSubsystemRootResourceDefinition extends SimpleResourceDef
     }
 
     @Override
-    public void registerAttributes(ManagementResourceRegistration resourceRegistration) {
-        super.registerAttributes(resourceRegistration);
-        // resourceRegistration.registerReadWriteAttribute(DEFAULT_STACK, null, SubsystemWriteAttributeHandler.INSTANCE);
-    }
-
-    @Override
     public void registerChildren(ManagementResourceRegistration resourceRegistration) {
-        resourceRegistration.registerSubModel(new CacheContainerResourceDefinition(getResolvePathHandler(), isRuntimeRegistration()));
-    }
-
-    public ResolvePathHandler getResolvePathHandler() {
-        return resolvePathHandler;
-    }
-
-    public boolean isRuntimeRegistration() {
-        return runtimeRegistration;
+        resourceRegistration.registerSubModel(new CacheContainerResourceDefinition(this.resolvePathHandler, this.runtimeRegistration));
     }
 }

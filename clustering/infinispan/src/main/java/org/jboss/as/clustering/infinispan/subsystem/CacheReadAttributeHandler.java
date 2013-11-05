@@ -55,7 +55,7 @@ public class CacheReadAttributeHandler implements OperationStepHandler {
     @Override
     public void execute(OperationContext context, ModelNode operation) throws OperationFailedException {
 
-        nameValidator.validate(operation);
+        this.nameValidator.validate(operation);
         final String attributeName = operation.require(NAME).asString();
 
         final ModelNode submodel = context.readResource(PathAddress.EMPTY_ADDRESS).getModel();

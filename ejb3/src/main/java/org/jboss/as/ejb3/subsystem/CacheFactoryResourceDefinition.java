@@ -21,11 +21,8 @@
  */
 package org.jboss.as.ejb3.subsystem;
 
-import javax.xml.stream.XMLStreamException;
-import javax.xml.stream.XMLStreamWriter;
-
+import org.jboss.as.clustering.controller.AttributeMarshallerFactory;
 import org.jboss.as.controller.AttributeDefinition;
-import org.jboss.as.controller.AttributeMarshaller;
 import org.jboss.as.controller.PathElement;
 import org.jboss.as.controller.ReloadRequiredWriteAttributeHandler;
 import org.jboss.as.controller.SimpleAttributeDefinition;
@@ -35,7 +32,6 @@ import org.jboss.as.controller.StringListAttributeDefinition;
 import org.jboss.as.controller.registry.AttributeAccess;
 import org.jboss.as.controller.registry.ManagementResourceRegistration;
 import org.jboss.as.controller.registry.OperationEntry;
-import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.ModelType;
 
 /**
@@ -46,21 +42,7 @@ public class CacheFactoryResourceDefinition extends SimpleResourceDefinition {
     public static final StringListAttributeDefinition ALIASES = new StringListAttributeDefinition.Builder(EJB3SubsystemModel.ALIASES)
             .setXmlName(EJB3SubsystemXMLAttribute.ALIASES.getLocalName())
             .setAllowNull(true)
-            .setAttributeMarshaller(new AttributeMarshaller() {
-                @Override
-                public void marshallAsElement(AttributeDefinition attribute, ModelNode model, boolean marshallDefault, XMLStreamWriter writer) throws XMLStreamException {
-                    if (model.hasDefined(attribute.getName())) {
-                        StringBuilder builder = new StringBuilder();
-                        for (ModelNode alias : model.get(attribute.getName()).asList()) {
-                            if (builder.length() > 0) {
-                                builder.append(' ');
-                            }
-                            builder.append(alias.asString());
-                        }
-                        writer.writeAttribute(attribute.getXmlName(), builder.toString());
-                    }
-                }
-            })
+            .setAttributeMarshaller(AttributeMarshallerFactory.createSimpleListAttributeMarshaller())
             .build();
 
     public static final SimpleAttributeDefinition PASSIVATION_STORE =
@@ -70,7 +52,7 @@ public class CacheFactoryResourceDefinition extends SimpleResourceDefinition {
                     .setFlags(AttributeAccess.Flag.RESTART_NONE)
                     .build();
 
-    private static final AttributeDefinition[] ATTRIBUTES = {ALIASES, PASSIVATION_STORE };
+    private static final AttributeDefinition[] ATTRIBUTES = { ALIASES, PASSIVATION_STORE };
     private static final CacheFactoryAdd ADD_HANDLER = new CacheFactoryAdd(ATTRIBUTES);
     private static final CacheFactoryRemove REMOVE_HANDLER = new CacheFactoryRemove(ADD_HANDLER);
 

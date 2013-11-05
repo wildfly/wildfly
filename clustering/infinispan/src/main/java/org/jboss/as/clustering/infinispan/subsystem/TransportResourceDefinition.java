@@ -46,38 +46,35 @@ public class TransportResourceDefinition extends SimpleResourceDefinition {
     public static final PathElement TRANSPORT_PATH = PathElement.pathElement(ModelKeys.TRANSPORT, ModelKeys.TRANSPORT_NAME);
 
     // attributes
-    static final SimpleAttributeDefinition CLUSTER =
-            new SimpleAttributeDefinitionBuilder(ModelKeys.CLUSTER, ModelType.STRING, true)
-                    .setXmlName(Attribute.CLUSTER.getLocalName())
-                    .setAllowExpression(true)
-                    .setFlags(AttributeAccess.Flag.RESTART_ALL_SERVICES)
-                    .build();
-
-    static final SimpleAttributeDefinition EXECUTOR =
-            new SimpleAttributeDefinitionBuilder(ModelKeys.EXECUTOR, ModelType.STRING, true)
-                    .setXmlName(Attribute.EXECUTOR.getLocalName())
-                    .setAllowExpression(false)
-                    .setFlags(AttributeAccess.Flag.RESTART_ALL_SERVICES)
-                    .build();
-
-    static final SimpleAttributeDefinition LOCK_TIMEOUT =
-            new SimpleAttributeDefinitionBuilder(ModelKeys.LOCK_TIMEOUT, ModelType.LONG, true)
-                    .setXmlName(Attribute.LOCK_TIMEOUT.getLocalName())
-                    .setMeasurementUnit(MeasurementUnit.MILLISECONDS)
-                    .setAllowExpression(true)
-                    .setFlags(AttributeAccess.Flag.RESTART_ALL_SERVICES)
-                    .setDefaultValue(new ModelNode().set(240000))
-                    .build();
-
+    static final SimpleAttributeDefinition CLUSTER = new SimpleAttributeDefinitionBuilder(ModelKeys.CLUSTER, ModelType.STRING, true)
+            .setXmlName(Attribute.CLUSTER.getLocalName())
+            .setAllowExpression(true)
+            .setFlags(AttributeAccess.Flag.RESTART_ALL_SERVICES)
+            .build()
+    ;
+    static final SimpleAttributeDefinition EXECUTOR = new SimpleAttributeDefinitionBuilder(ModelKeys.EXECUTOR, ModelType.STRING, true)
+            .setXmlName(Attribute.EXECUTOR.getLocalName())
+            .setAllowExpression(false)
+            .setFlags(AttributeAccess.Flag.RESTART_ALL_SERVICES)
+            .build()
+    ;
+    static final SimpleAttributeDefinition LOCK_TIMEOUT = new SimpleAttributeDefinitionBuilder(ModelKeys.LOCK_TIMEOUT, ModelType.LONG, true)
+            .setXmlName(Attribute.LOCK_TIMEOUT.getLocalName())
+            .setMeasurementUnit(MeasurementUnit.MILLISECONDS)
+            .setAllowExpression(true)
+            .setFlags(AttributeAccess.Flag.RESTART_ALL_SERVICES)
+            .setDefaultValue(new ModelNode().set(240000))
+            .build()
+    ;
     // if stack is null, use default stack
-    static final SimpleAttributeDefinition STACK =
-            new SimpleAttributeDefinitionBuilder(ModelKeys.STACK, ModelType.STRING, true)
-                    .setXmlName(Attribute.STACK.getLocalName())
-                    .setAllowExpression(true)
-                    .setFlags(AttributeAccess.Flag.RESTART_ALL_SERVICES)
-                    .build();
+    static final SimpleAttributeDefinition STACK = new SimpleAttributeDefinitionBuilder(ModelKeys.STACK, ModelType.STRING, true)
+            .setXmlName(Attribute.STACK.getLocalName())
+            .setAllowExpression(true)
+            .setFlags(AttributeAccess.Flag.RESTART_ALL_SERVICES)
+            .build()
+    ;
 
-    static final AttributeDefinition[] TRANSPORT_ATTRIBUTES = {STACK, CLUSTER, EXECUTOR, LOCK_TIMEOUT};
+    static final AttributeDefinition[] TRANSPORT_ATTRIBUTES = { STACK, CLUSTER, EXECUTOR, LOCK_TIMEOUT };
 
     public TransportResourceDefinition() {
         super(TRANSPORT_PATH,
@@ -88,8 +85,6 @@ public class TransportResourceDefinition extends SimpleResourceDefinition {
 
     @Override
     public void registerAttributes(ManagementResourceRegistration resourceRegistration) {
-        super.registerAttributes(resourceRegistration);
-
         // check that we don't need a special handler here?
         final OperationStepHandler writeHandler = new ReloadRequiredWriteAttributeHandler(TRANSPORT_ATTRIBUTES);
         for (AttributeDefinition attr : TRANSPORT_ATTRIBUTES) {

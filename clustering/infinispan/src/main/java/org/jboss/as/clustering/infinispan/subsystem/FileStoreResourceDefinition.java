@@ -51,30 +51,30 @@ public class FileStoreResourceDefinition extends StoreResourceDefinition {
     public static final PathElement FILE_STORE_PATH = PathElement.pathElement(ModelKeys.FILE_STORE, ModelKeys.FILE_STORE_NAME);
 
     // attributes
-    static final SimpleAttributeDefinition PATH =
-            new SimpleAttributeDefinitionBuilder(ModelKeys.PATH, ModelType.STRING, true)
-                    .setXmlName(Attribute.PATH.getLocalName())
-                    .setAllowExpression(true)
-                    .setFlags(AttributeAccess.Flag.RESTART_ALL_SERVICES)
-                    .build();
+    static final SimpleAttributeDefinition PATH = new SimpleAttributeDefinitionBuilder(ModelKeys.PATH, ModelType.STRING, true)
+            .setXmlName(Attribute.PATH.getLocalName())
+            .setAllowExpression(true)
+            .setFlags(AttributeAccess.Flag.RESTART_ALL_SERVICES)
+            .build()
+    ;
+    static final SimpleAttributeDefinition RELATIVE_TO = new SimpleAttributeDefinitionBuilder(ModelKeys.RELATIVE_TO, ModelType.STRING, true)
+            .setXmlName(Attribute.RELATIVE_TO.getLocalName())
+            .setAllowExpression(false)
+            .setFlags(AttributeAccess.Flag.RESTART_ALL_SERVICES)
+            .setDefaultValue(new ModelNode().set(ServerEnvironment.SERVER_DATA_DIR))
+            .build()
+    ;
 
-    static final SimpleAttributeDefinition RELATIVE_TO =
-            new SimpleAttributeDefinitionBuilder(ModelKeys.RELATIVE_TO, ModelType.STRING, true)
-                    .setXmlName(Attribute.RELATIVE_TO.getLocalName())
-                    .setAllowExpression(false)
-                    .setFlags(AttributeAccess.Flag.RESTART_ALL_SERVICES)
-                    .setDefaultValue(new ModelNode().set(ServerEnvironment.SERVER_DATA_DIR))
-                    .build();
-
-    static final AttributeDefinition[] FILE_STORE_ATTRIBUTES = {RELATIVE_TO, PATH};
+    static final AttributeDefinition[] FILE_STORE_ATTRIBUTES = { RELATIVE_TO, PATH };
 
     // operations
     private static final OperationDefinition FILE_STORE_ADD_DEFINITION = new SimpleOperationDefinitionBuilder(ADD, InfinispanExtension.getResourceDescriptionResolver(ModelKeys.FILE_STORE))
-        .setParameters(COMMON_STORE_PARAMETERS)
-        .addParameter(RELATIVE_TO)
-        .addParameter(PATH)
-        .setAttributeResolver(InfinispanExtension.getResourceDescriptionResolver(ModelKeys.FILE_STORE))
-        .build();
+            .setParameters(COMMON_STORE_PARAMETERS)
+            .addParameter(RELATIVE_TO)
+            .addParameter(PATH)
+            .setAttributeResolver(InfinispanExtension.getResourceDescriptionResolver(ModelKeys.FILE_STORE))
+            .build()
+    ;
 
     private final ResolvePathHandler resolvePathHandler;
 
@@ -97,18 +97,12 @@ public class FileStoreResourceDefinition extends StoreResourceDefinition {
         }
     }
 
-    @Override
-    public void registerOperations(ManagementResourceRegistration resourceRegistration) {
-        super.registerOperations(resourceRegistration);
-    }
-
     // override the add operation to provide a custom definition (for the optional PROPERTIES parameter to add())
     @Override
     protected void registerAddOperation(final ManagementResourceRegistration registration, final OperationStepHandler handler, OperationEntry.Flag... flags) {
         registration.registerOperationHandler(FILE_STORE_ADD_DEFINITION, handler);
-        if (resolvePathHandler != null) {
-            registration.registerOperationHandler(resolvePathHandler.getOperationDefinition(), resolvePathHandler);
+        if (this.resolvePathHandler != null) {
+            registration.registerOperationHandler(this.resolvePathHandler.getOperationDefinition(), this.resolvePathHandler);
         }
     }
-
 }

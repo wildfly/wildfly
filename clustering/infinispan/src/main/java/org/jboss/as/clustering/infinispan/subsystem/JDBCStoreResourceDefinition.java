@@ -43,98 +43,90 @@ import org.jboss.dmr.ModelType;
 public class JDBCStoreResourceDefinition extends StoreResourceDefinition {
 
     // attributes
-    static final SimpleAttributeDefinition DATA_SOURCE =
-            new SimpleAttributeDefinitionBuilder(ModelKeys.DATASOURCE, ModelType.STRING, false)
-                    .setXmlName(Attribute.DATASOURCE.getLocalName())
-                    .setAllowExpression(true)
-                    .setFlags(AttributeAccess.Flag.RESTART_ALL_SERVICES)
-                    .build();
+    static final SimpleAttributeDefinition DATA_SOURCE = new SimpleAttributeDefinitionBuilder(ModelKeys.DATASOURCE, ModelType.STRING, false)
+            .setXmlName(Attribute.DATASOURCE.getLocalName())
+            .setAllowExpression(true)
+            .setFlags(AttributeAccess.Flag.RESTART_ALL_SERVICES)
+            .build()
+    ;
+    static final AttributeDefinition[] COMMON_JDBC_STORE_ATTRIBUTES = { DATA_SOURCE };
 
-    static final AttributeDefinition[] COMMON_JDBC_STORE_ATTRIBUTES = {DATA_SOURCE};
-
-    static final SimpleAttributeDefinition BATCH_SIZE =
-            new SimpleAttributeDefinitionBuilder(ModelKeys.BATCH_SIZE, ModelType.INT, true)
-                    .setXmlName(Attribute.BATCH_SIZE.getLocalName())
-                    .setAllowExpression(true)
-                    .setFlags(AttributeAccess.Flag.RESTART_ALL_SERVICES)
-                    .setDefaultValue(new ModelNode().set(100))
-                    .build();
-    static final SimpleAttributeDefinition FETCH_SIZE =
-            new SimpleAttributeDefinitionBuilder(ModelKeys.FETCH_SIZE, ModelType.INT, true)
-                    .setXmlName(Attribute.FETCH_SIZE.getLocalName())
-                    .setAllowExpression(true)
-                    .setFlags(AttributeAccess.Flag.RESTART_ALL_SERVICES)
-                    .setDefaultValue(new ModelNode().set(100))
-                    .build();
-    static final SimpleAttributeDefinition PREFIX =
-            new SimpleAttributeDefinitionBuilder(ModelKeys.PREFIX, ModelType.STRING, true)
-                    .setXmlName(Attribute.PREFIX.getLocalName())
-                    .setAllowExpression(true)
-                    .setFlags(AttributeAccess.Flag.RESTART_ALL_SERVICES)
+    static final SimpleAttributeDefinition BATCH_SIZE = new SimpleAttributeDefinitionBuilder(ModelKeys.BATCH_SIZE, ModelType.INT, true)
+            .setXmlName(Attribute.BATCH_SIZE.getLocalName())
+            .setAllowExpression(true)
+            .setFlags(AttributeAccess.Flag.RESTART_ALL_SERVICES)
+            .setDefaultValue(new ModelNode().set(100))
+            .build()
+    ;
+    static final SimpleAttributeDefinition FETCH_SIZE = new SimpleAttributeDefinitionBuilder(ModelKeys.FETCH_SIZE, ModelType.INT, true)
+            .setXmlName(Attribute.FETCH_SIZE.getLocalName())
+            .setAllowExpression(true)
+            .setFlags(AttributeAccess.Flag.RESTART_ALL_SERVICES)
+            .setDefaultValue(new ModelNode().set(100))
+            .build()
+    ;
+    static final SimpleAttributeDefinition PREFIX = new SimpleAttributeDefinitionBuilder(ModelKeys.PREFIX, ModelType.STRING, true)
+            .setXmlName(Attribute.PREFIX.getLocalName())
+            .setAllowExpression(true)
+            .setFlags(AttributeAccess.Flag.RESTART_ALL_SERVICES)
 //                   .setDefaultValue(new ModelNode().set("ispn_bucket"))
 //                   .setDefaultValue(new ModelNode().set("ispn_entry"))
-                    .build();
+            .build()
+    ;
 
-    static final SimpleAttributeDefinition COLUMN_NAME =
-            new SimpleAttributeDefinitionBuilder("name", ModelType.STRING, true)
-                    .setXmlName("name")
-                    .setAllowExpression(true)
-                    .setFlags(AttributeAccess.Flag.RESTART_ALL_SERVICES)
-                    .setDefaultValue(new ModelNode().set("name"))
-                    .build();
-    static final SimpleAttributeDefinition COLUMN_TYPE =
-            new SimpleAttributeDefinitionBuilder("type", ModelType.STRING, true)
-                    .setXmlName("type")
-                    .setAllowExpression(true)
-                    .setFlags(AttributeAccess.Flag.RESTART_ALL_SERVICES)
-                    .setDefaultValue(new ModelNode().set("type"))
-                    .build();
+    static final SimpleAttributeDefinition COLUMN_NAME = new SimpleAttributeDefinitionBuilder("name", ModelType.STRING, true)
+            .setXmlName("name")
+            .setAllowExpression(true)
+            .setFlags(AttributeAccess.Flag.RESTART_ALL_SERVICES)
+            .setDefaultValue(new ModelNode().set("name"))
+            .build()
+    ;
+    static final SimpleAttributeDefinition COLUMN_TYPE = new SimpleAttributeDefinitionBuilder("type", ModelType.STRING, true)
+            .setXmlName("type")
+            .setAllowExpression(true)
+            .setFlags(AttributeAccess.Flag.RESTART_ALL_SERVICES)
+            .setDefaultValue(new ModelNode().set("type"))
+            .build();
 
-    static final ObjectTypeAttributeDefinition ID_COLUMN = ObjectTypeAttributeDefinition.
-            Builder.of("id-column", COLUMN_NAME, COLUMN_TYPE).
-            setAllowNull(true).
-            setSuffix("column").
-            build();
+    static final ObjectTypeAttributeDefinition ID_COLUMN = ObjectTypeAttributeDefinition.Builder.of("id-column", COLUMN_NAME, COLUMN_TYPE)
+            .setAllowNull(true)
+            .setSuffix("column")
+            .build()
+    ;
+    static final ObjectTypeAttributeDefinition DATA_COLUMN = ObjectTypeAttributeDefinition.Builder.of("data-column", COLUMN_NAME, COLUMN_TYPE)
+            .setAllowNull(true)
+            .setSuffix("column")
+            .build()
+    ;
+    static final ObjectTypeAttributeDefinition TIMESTAMP_COLUMN = ObjectTypeAttributeDefinition.Builder.of("timestamp-column", COLUMN_NAME, COLUMN_TYPE)
+            .setAllowNull(true)
+            .setSuffix("column")
+            .build()
+    ;
+    static final ObjectTypeAttributeDefinition ENTRY_TABLE = ObjectTypeAttributeDefinition.Builder.of("entry-table", PREFIX, BATCH_SIZE, FETCH_SIZE, ID_COLUMN, DATA_COLUMN, TIMESTAMP_COLUMN)
+            .setAllowNull(true)
+            .setSuffix("table")
+            .build()
+    ;
+    static final ObjectTypeAttributeDefinition BUCKET_TABLE = ObjectTypeAttributeDefinition.Builder.of("bucket-table", PREFIX, BATCH_SIZE, FETCH_SIZE, ID_COLUMN, DATA_COLUMN, TIMESTAMP_COLUMN)
+            .setAllowNull(true)
+            .setSuffix("table")
+            .build()
+    ;
+    static final ObjectTypeAttributeDefinition STRING_KEYED_TABLE = ObjectTypeAttributeDefinition.Builder.of(ModelKeys.STRING_KEYED_TABLE, PREFIX, BATCH_SIZE, FETCH_SIZE, ID_COLUMN, DATA_COLUMN, TIMESTAMP_COLUMN)
+            .setAllowNull(true)
+            .setSuffix("table")
+            .build()
+    ;
+    static final ObjectTypeAttributeDefinition BINARY_KEYED_TABLE = ObjectTypeAttributeDefinition.Builder.of(ModelKeys.BINARY_KEYED_TABLE, PREFIX, BATCH_SIZE, FETCH_SIZE, ID_COLUMN, DATA_COLUMN, TIMESTAMP_COLUMN)
+            .setAllowNull(true)
+            .setSuffix("table")
+            .build()
+    ;
 
-    static final ObjectTypeAttributeDefinition DATA_COLUMN = ObjectTypeAttributeDefinition.
-            Builder.of("data-column", COLUMN_NAME, COLUMN_TYPE).
-            setAllowNull(true).
-            setSuffix("column").
-            build();
-
-    static final ObjectTypeAttributeDefinition TIMESTAMP_COLUMN = ObjectTypeAttributeDefinition.
-            Builder.of("timestamp-column", COLUMN_NAME, COLUMN_TYPE).
-            setAllowNull(true).
-            setSuffix("column").
-            build();
-
-    static final ObjectTypeAttributeDefinition ENTRY_TABLE = ObjectTypeAttributeDefinition.
-            Builder.of("entry-table", PREFIX, BATCH_SIZE, FETCH_SIZE, ID_COLUMN, DATA_COLUMN, TIMESTAMP_COLUMN).
-            setAllowNull(true).
-            setSuffix("table").
-            build();
-
-    static final ObjectTypeAttributeDefinition BUCKET_TABLE = ObjectTypeAttributeDefinition.
-            Builder.of("bucket-table", PREFIX, BATCH_SIZE, FETCH_SIZE, ID_COLUMN, DATA_COLUMN, TIMESTAMP_COLUMN).
-            setAllowNull(true).
-            setSuffix("table").
-            build();
-
-    static final ObjectTypeAttributeDefinition STRING_KEYED_TABLE = ObjectTypeAttributeDefinition.
-            Builder.of(ModelKeys.STRING_KEYED_TABLE, PREFIX, BATCH_SIZE, FETCH_SIZE, ID_COLUMN, DATA_COLUMN, TIMESTAMP_COLUMN).
-            setAllowNull(true).
-            setSuffix("table").
-            build();
-
-    static final ObjectTypeAttributeDefinition BINARY_KEYED_TABLE = ObjectTypeAttributeDefinition.
-            Builder.of(ModelKeys.BINARY_KEYED_TABLE, PREFIX, BATCH_SIZE, FETCH_SIZE, ID_COLUMN, DATA_COLUMN, TIMESTAMP_COLUMN).
-            setAllowNull(true).
-            setSuffix("table").
-            build();
-
-    static final AttributeDefinition[] COMMON_JDBC_STORE_TABLE_ATTRIBUTES = {PREFIX, BATCH_SIZE, FETCH_SIZE, ID_COLUMN, DATA_COLUMN, TIMESTAMP_COLUMN};
-    static final AttributeDefinition[] COMMON_BASE_JDBC_STORE_ATTRIBUTES = {DATA_SOURCE, BATCH_SIZE, FETCH_SIZE, PREFIX,
-    COLUMN_NAME, COLUMN_TYPE, ID_COLUMN, DATA_COLUMN, TIMESTAMP_COLUMN, ENTRY_TABLE, BUCKET_TABLE, STRING_KEYED_TABLE, BINARY_KEYED_TABLE};
+    static final AttributeDefinition[] COMMON_JDBC_STORE_TABLE_ATTRIBUTES = { PREFIX, BATCH_SIZE, FETCH_SIZE, ID_COLUMN, DATA_COLUMN, TIMESTAMP_COLUMN };
+    static final AttributeDefinition[] COMMON_BASE_JDBC_STORE_ATTRIBUTES = { DATA_SOURCE, BATCH_SIZE, FETCH_SIZE, PREFIX, COLUMN_NAME, COLUMN_TYPE,
+            ID_COLUMN, DATA_COLUMN, TIMESTAMP_COLUMN, ENTRY_TABLE, BUCKET_TABLE, STRING_KEYED_TABLE, BINARY_KEYED_TABLE };
 
     public JDBCStoreResourceDefinition(PathElement pathElement, ResourceDescriptionResolver descriptionResolver, OperationStepHandler addHandler, OperationStepHandler removeHandler) {
         super(pathElement, descriptionResolver, addHandler, removeHandler);
@@ -150,10 +142,4 @@ public class JDBCStoreResourceDefinition extends StoreResourceDefinition {
             resourceRegistration.registerReadWriteAttribute(attr, null, writeHandler);
         }
     }
-
-    @Override
-    public void registerOperations(ManagementResourceRegistration resourceRegistration) {
-        super.registerOperations(resourceRegistration);
-    }
-
 }
