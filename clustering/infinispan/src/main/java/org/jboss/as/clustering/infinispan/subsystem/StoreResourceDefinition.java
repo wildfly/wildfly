@@ -48,75 +48,70 @@ import org.jboss.dmr.ModelType;
 public class StoreResourceDefinition extends SimpleResourceDefinition {
 
     // attributes
-    static final SimpleAttributeDefinition FETCH_STATE =
-            new SimpleAttributeDefinitionBuilder(ModelKeys.FETCH_STATE, ModelType.BOOLEAN, true)
-                    .setXmlName(Attribute.FETCH_STATE.getLocalName())
-                    .setAllowExpression(true)
-                    .setFlags(AttributeAccess.Flag.RESTART_ALL_SERVICES)
-                    .setDefaultValue(new ModelNode().set(true))
-                    .build();
-    static final SimpleAttributeDefinition PASSIVATION =
-            new SimpleAttributeDefinitionBuilder(ModelKeys.PASSIVATION, ModelType.BOOLEAN, true)
-                    .setXmlName(Attribute.PASSIVATION.getLocalName())
-                    .setAllowExpression(true)
-                    .setFlags(AttributeAccess.Flag.RESTART_ALL_SERVICES)
-                    .setDefaultValue(new ModelNode().set(true))
-                    .build();
-    static final SimpleAttributeDefinition PRELOAD =
-            new SimpleAttributeDefinitionBuilder(ModelKeys.PRELOAD, ModelType.BOOLEAN, true)
-                    .setXmlName(Attribute.PRELOAD.getLocalName())
-                    .setAllowExpression(true)
-                    .setFlags(AttributeAccess.Flag.RESTART_ALL_SERVICES)
-                    .setDefaultValue(new ModelNode().set(false))
-                    .build();
-    static final SimpleAttributeDefinition PURGE =
-            new SimpleAttributeDefinitionBuilder(ModelKeys.PURGE, ModelType.BOOLEAN, true)
-                    .setXmlName(Attribute.PURGE.getLocalName())
-                    .setAllowExpression(true)
-                    .setFlags(AttributeAccess.Flag.RESTART_ALL_SERVICES)
-                    .setDefaultValue(new ModelNode().set(true))
-                    .build();
-    static final SimpleAttributeDefinition SHARED =
-            new SimpleAttributeDefinitionBuilder(ModelKeys.SHARED, ModelType.BOOLEAN, true)
-                    .setXmlName(Attribute.SHARED.getLocalName())
-                    .setAllowExpression(true)
-                    .setFlags(AttributeAccess.Flag.RESTART_ALL_SERVICES)
-                    .setDefaultValue(new ModelNode().set(false))
-                    .build();
-    static final SimpleAttributeDefinition SINGLETON =
-            new SimpleAttributeDefinitionBuilder(ModelKeys.SINGLETON, ModelType.BOOLEAN, true)
-                    .setXmlName(Attribute.SINGLETON.getLocalName())
-                    .setAllowExpression(true)
-                    .setFlags(AttributeAccess.Flag.RESTART_ALL_SERVICES)
-                    .setDefaultValue(new ModelNode().set(false))
-                    .build();
+    static final SimpleAttributeDefinition FETCH_STATE = new SimpleAttributeDefinitionBuilder(ModelKeys.FETCH_STATE, ModelType.BOOLEAN, true)
+            .setXmlName(Attribute.FETCH_STATE.getLocalName())
+            .setAllowExpression(true)
+            .setFlags(AttributeAccess.Flag.RESTART_ALL_SERVICES)
+            .setDefaultValue(new ModelNode().set(true))
+            .build()
+    ;
+    static final SimpleAttributeDefinition PASSIVATION = new SimpleAttributeDefinitionBuilder(ModelKeys.PASSIVATION, ModelType.BOOLEAN, true)
+            .setXmlName(Attribute.PASSIVATION.getLocalName())
+            .setAllowExpression(true)
+            .setFlags(AttributeAccess.Flag.RESTART_ALL_SERVICES)
+            .setDefaultValue(new ModelNode().set(true))
+            .build()
+    ;
+    static final SimpleAttributeDefinition PRELOAD = new SimpleAttributeDefinitionBuilder(ModelKeys.PRELOAD, ModelType.BOOLEAN, true)
+            .setXmlName(Attribute.PRELOAD.getLocalName())
+            .setAllowExpression(true)
+            .setFlags(AttributeAccess.Flag.RESTART_ALL_SERVICES)
+            .setDefaultValue(new ModelNode().set(false))
+            .build()
+    ;
+    static final SimpleAttributeDefinition PURGE = new SimpleAttributeDefinitionBuilder(ModelKeys.PURGE, ModelType.BOOLEAN, true)
+            .setXmlName(Attribute.PURGE.getLocalName())
+            .setAllowExpression(true)
+            .setFlags(AttributeAccess.Flag.RESTART_ALL_SERVICES)
+            .setDefaultValue(new ModelNode().set(true))
+            .build()
+    ;
+    static final SimpleAttributeDefinition SHARED = new SimpleAttributeDefinitionBuilder(ModelKeys.SHARED, ModelType.BOOLEAN, true)
+            .setXmlName(Attribute.SHARED.getLocalName())
+            .setAllowExpression(true)
+            .setFlags(AttributeAccess.Flag.RESTART_ALL_SERVICES)
+            .setDefaultValue(new ModelNode().set(false))
+            .build()
+    ;
+    static final SimpleAttributeDefinition SINGLETON = new SimpleAttributeDefinitionBuilder(ModelKeys.SINGLETON, ModelType.BOOLEAN, true)
+            .setXmlName(Attribute.SINGLETON.getLocalName())
+            .setAllowExpression(true)
+            .setFlags(AttributeAccess.Flag.RESTART_ALL_SERVICES)
+            .setDefaultValue(new ModelNode().set(false))
+            .build()
+    ;
 
     // used to pass in a list of properties to the store add command
     static final AttributeDefinition PROPERTY = new SimpleAttributeDefinition(ModelKeys.PROPERTY, ModelType.PROPERTY, true);
-    static final SimpleListAttributeDefinition PROPERTIES = SimpleListAttributeDefinition.Builder.of(ModelKeys.PROPERTIES, PROPERTY).
-            setAllowNull(true).
-            build();
+    static final SimpleListAttributeDefinition PROPERTIES = SimpleListAttributeDefinition.Builder.of(ModelKeys.PROPERTIES, PROPERTY)
+            .setAllowNull(true)
+            .build()
+    ;
 
-    static final AttributeDefinition[] COMMON_STORE_ATTRIBUTES = {SHARED, PRELOAD, PASSIVATION, FETCH_STATE, PURGE, SINGLETON};
-    static final AttributeDefinition[] COMMON_STORE_PARAMETERS = {SHARED, PRELOAD, PASSIVATION, FETCH_STATE, PURGE, SINGLETON, PROPERTIES};
+    static final AttributeDefinition[] COMMON_STORE_ATTRIBUTES = { SHARED, PRELOAD, PASSIVATION, FETCH_STATE, PURGE, SINGLETON };
+    static final AttributeDefinition[] COMMON_STORE_PARAMETERS = { SHARED, PRELOAD, PASSIVATION, FETCH_STATE, PURGE, SINGLETON, PROPERTIES };
 
     // metrics
-    static final SimpleAttributeDefinition CACHE_LOADER_LOADS =
-            new SimpleAttributeDefinitionBuilder(MetricKeys.CACHE_LOADER_LOADS, ModelType.LONG, true)
-                    .setStorageRuntime()
-                    .build();
+    static final AttributeDefinition CACHE_LOADER_LOADS = new SimpleAttributeDefinitionBuilder(MetricKeys.CACHE_LOADER_LOADS, ModelType.LONG, true).setStorageRuntime().build();
+    static final AttributeDefinition CACHE_LOADER_MISSES = new SimpleAttributeDefinitionBuilder(MetricKeys.CACHE_LOADER_MISSES, ModelType.LONG, true).setStorageRuntime().build();
 
-    static final SimpleAttributeDefinition CACHE_LOADER_MISSES =
-            new SimpleAttributeDefinitionBuilder(MetricKeys.CACHE_LOADER_MISSES, ModelType.LONG, true)
-                    .setStorageRuntime()
-                    .build();
-
-    static final AttributeDefinition[] COMMON_STORE_METRICS = {CACHE_LOADER_LOADS, CACHE_LOADER_MISSES};
+    static final AttributeDefinition[] COMMON_STORE_METRICS = { CACHE_LOADER_LOADS, CACHE_LOADER_MISSES };
 
     // operations
     private static final OperationDefinition CACHE_STORE_ADD_DEFINITION = new SimpleOperationDefinitionBuilder(ADD, InfinispanExtension.getResourceDescriptionResolver(ModelKeys.STORE))
-        .setParameters(COMMON_STORE_PARAMETERS)
-        .build();
+            .setParameters(COMMON_STORE_PARAMETERS)
+            .build()
+    ;
 
     public StoreResourceDefinition(PathElement pathElement, ResourceDescriptionResolver descriptionResolver, OperationStepHandler addHandler, OperationStepHandler removeHandler) {
         super(pathElement, descriptionResolver, addHandler, removeHandler);
@@ -124,8 +119,6 @@ public class StoreResourceDefinition extends SimpleResourceDefinition {
 
     @Override
     public void registerAttributes(ManagementResourceRegistration resourceRegistration) {
-        super.registerAttributes(resourceRegistration);
-
         // check that we don't need a special handler here?
         final OperationStepHandler writeHandler = new ReloadRequiredWriteAttributeHandler(COMMON_STORE_ATTRIBUTES);
         for (AttributeDefinition attr : COMMON_STORE_ATTRIBUTES) {
@@ -136,11 +129,6 @@ public class StoreResourceDefinition extends SimpleResourceDefinition {
         for (AttributeDefinition attr : COMMON_STORE_METRICS) {
             resourceRegistration.registerMetric(attr, CacheMetricsHandler.INSTANCE);
         }
-    }
-
-    @Override
-    public void registerOperations(ManagementResourceRegistration resourceRegistration) {
-        super.registerOperations(resourceRegistration);
     }
 
     @Override

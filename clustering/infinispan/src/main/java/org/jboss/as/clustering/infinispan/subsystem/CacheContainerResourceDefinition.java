@@ -21,6 +21,7 @@
  */
 package org.jboss.as.clustering.infinispan.subsystem;
 
+import org.jboss.as.clustering.controller.AttributeMarshallerFactory;
 import org.jboss.as.controller.AttributeDefinition;
 import org.jboss.as.controller.OperationDefinition;
 import org.jboss.as.controller.OperationStepHandler;
@@ -55,6 +56,7 @@ public class CacheContainerResourceDefinition extends SimpleResourceDefinition {
     ;
     static final SimpleListAttributeDefinition ALIASES = SimpleListAttributeDefinition.Builder.of(ModelKeys.ALIASES, ALIAS)
             .setAllowNull(true)
+            .setAttributeMarshaller(AttributeMarshallerFactory.createSimpleListAttributeMarshaller())
             .build()
     ;
     static final SimpleAttributeDefinition MODULE = new SimpleAttributeDefinitionBuilder(ModelKeys.MODULE, ModelType.STRING, true)
@@ -106,7 +108,7 @@ public class CacheContainerResourceDefinition extends SimpleResourceDefinition {
             .setXmlName(Attribute.START.getLocalName())
             .setAllowExpression(true)
             .setFlags(AttributeAccess.Flag.RESTART_ALL_SERVICES)
-            .setValidator(new EnumValidator<StartMode>(StartMode.class, true, false))
+            .setValidator(new EnumValidator<>(StartMode.class, true, false))
             .setDefaultValue(new ModelNode().set(StartMode.LAZY.name()))
             .build()
     ;
@@ -131,17 +133,13 @@ public class CacheContainerResourceDefinition extends SimpleResourceDefinition {
     ;
 
     // metrics
-    static final SimpleAttributeDefinition CACHE_MANAGER_STATUS = buildMetric(MetricKeys.CACHE_MANAGER_STATUS, ModelType.STRING);
-    static final SimpleAttributeDefinition CLUSTER_NAME = buildMetric(MetricKeys.CLUSTER_NAME, ModelType.STRING);
-    static final SimpleAttributeDefinition COORDINATOR_ADDRESS = buildMetric(MetricKeys.COORDINATOR_ADDRESS, ModelType.STRING);
-    static final SimpleAttributeDefinition IS_COORDINATOR = buildMetric(MetricKeys.IS_COORDINATOR, ModelType.BOOLEAN);
-    static final SimpleAttributeDefinition LOCAL_ADDRESS = buildMetric(MetricKeys.LOCAL_ADDRESS, ModelType.STRING);
+    static final AttributeDefinition CACHE_MANAGER_STATUS = new SimpleAttributeDefinitionBuilder(MetricKeys.CACHE_MANAGER_STATUS, ModelType.STRING, true).setStorageRuntime().build();
+    static final AttributeDefinition CLUSTER_NAME = new SimpleAttributeDefinitionBuilder(MetricKeys.CLUSTER_NAME, ModelType.STRING, true).setStorageRuntime().build();
+    static final AttributeDefinition COORDINATOR_ADDRESS = new SimpleAttributeDefinitionBuilder(MetricKeys.COORDINATOR_ADDRESS, ModelType.STRING, true).setStorageRuntime().build();
+    static final AttributeDefinition IS_COORDINATOR = new SimpleAttributeDefinitionBuilder(MetricKeys.IS_COORDINATOR, ModelType.BOOLEAN, true).setStorageRuntime().build();
+    static final AttributeDefinition LOCAL_ADDRESS = new SimpleAttributeDefinitionBuilder(MetricKeys.LOCAL_ADDRESS, ModelType.STRING, true).setStorageRuntime().build();
 
-    private static SimpleAttributeDefinition buildMetric(String key, ModelType type) {
-        return new SimpleAttributeDefinitionBuilder(key, type, true).setStorageRuntime().build();
-    }
-
-    static final AttributeDefinition[] CACHE_CONTAINER_METRICS = {CACHE_MANAGER_STATUS, CLUSTER_NAME, COORDINATOR_ADDRESS, IS_COORDINATOR, LOCAL_ADDRESS};
+    static final AttributeDefinition[] CACHE_CONTAINER_METRICS = { CACHE_MANAGER_STATUS, CLUSTER_NAME, COORDINATOR_ADDRESS, IS_COORDINATOR, LOCAL_ADDRESS };
 
     private final ResolvePathHandler resolvePathHandler;
     private final boolean runtimeRegistration;
@@ -157,8 +155,6 @@ public class CacheContainerResourceDefinition extends SimpleResourceDefinition {
 
     @Override
     public void registerAttributes(ManagementResourceRegistration resourceRegistration) {
-        super.registerAttributes(resourceRegistration);
-
         // the handlers need to take account of alias
         final OperationStepHandler writeHandler = new CacheContainerWriteAttributeHandler(CACHE_CONTAINER_ATTRIBUTES);
         for (AttributeDefinition attr : CACHE_CONTAINER_ATTRIBUTES) {
@@ -180,21 +176,11 @@ public class CacheContainerResourceDefinition extends SimpleResourceDefinition {
 
     @Override
     public void registerChildren(ManagementResourceRegistration resourceRegistration) {
-        super.registerChildren(resourceRegistration);
-
         // child resources
         resourceRegistration.registerSubModel(new TransportResourceDefinition());
-        resourceRegistration.registerSubModel(new LocalCacheResourceDefinition(getResolvePathHandler(), isRuntimeRegistration()));
-        resourceRegistration.registerSubModel(new InvalidationCacheResourceDefinition(getResolvePathHandler(), isRuntimeRegistration()));
-        resourceRegistration.registerSubModel(new ReplicatedCacheResourceDefinition(getResolvePathHandler(), isRuntimeRegistration()));
-        resourceRegistration.registerSubModel(new DistributedCacheResourceDefinition(getResolvePathHandler(), isRuntimeRegistration()));
-    }
-
-    public boolean isRuntimeRegistration() {
-        return runtimeRegistration;
-    }
-
-    public ResolvePathHandler getResolvePathHandler() {
-        return resolvePathHandler;
+        resourceRegistration.registerSubModel(new LocalCacheResourceDefinition(this.resolvePathHandler, this.runtimeRegistration));
+        resourceRegistration.registerSubModel(new InvalidationCacheResourceDefinition(this.resolvePathHandler, this.runtimeRegistration));
+        resourceRegistration.registerSubModel(new ReplicatedCacheResourceDefinition(this.resolvePathHandler, this.runtimeRegistration));
+        resourceRegistration.registerSubModel(new DistributedCacheResourceDefinition(this.resolvePathHandler, this.runtimeRegistration));
     }
 }

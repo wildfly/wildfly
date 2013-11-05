@@ -40,7 +40,6 @@ import org.jboss.as.clustering.infinispan.InfinispanMessages;
 import org.jboss.as.controller.AbstractRuntimeOnlyHandler;
 import org.jboss.as.controller.AttributeDefinition;
 import org.jboss.as.controller.OperationContext;
-import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.PathElement;
 import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
@@ -61,9 +60,9 @@ public class CacheMetricsHandler extends AbstractRuntimeOnlyHandler {
     public enum CacheMetrics {
         CACHE_STATUS(CacheResourceDefinition.CACHE_STATUS),
         // LockManager
-        NUMBER_OF_LOCKS_AVAILABLE(LockingResource.NUMBER_OF_LOCKS_AVAILABLE),
-        NUMBER_OF_LOCKS_HELD(LockingResource.NUMBER_OF_LOCKS_HELD),
-        CONCURRENCY_LEVEL(LockingResource.CURRENT_CONCURRENCY_LEVEL),
+        NUMBER_OF_LOCKS_AVAILABLE(LockingResourceDefinition.NUMBER_OF_LOCKS_AVAILABLE),
+        NUMBER_OF_LOCKS_HELD(LockingResourceDefinition.NUMBER_OF_LOCKS_HELD),
+        CONCURRENCY_LEVEL(LockingResourceDefinition.CURRENT_CONCURRENCY_LEVEL),
         // CacheMgmtInterceptor
         AVERAGE_READ_TIME(CacheResourceDefinition.AVERAGE_READ_TIME),
         AVERAGE_WRITE_TIME(CacheResourceDefinition.AVERAGE_WRITE_TIME),
@@ -96,7 +95,7 @@ public class CacheMetricsHandler extends AbstractRuntimeOnlyHandler {
         CACHE_LOADER_LOADS(StoreResourceDefinition.CACHE_LOADER_LOADS),
         CACHE_LOADER_MISSES(StoreResourceDefinition.CACHE_LOADER_MISSES);
 
-        private static final Map<String, CacheMetrics> MAP = new HashMap<String, CacheMetrics>();
+        private static final Map<String, CacheMetrics> MAP = new HashMap<>();
 
         static {
             for (CacheMetrics metric : CacheMetrics.values()) {
@@ -112,7 +111,7 @@ public class CacheMetricsHandler extends AbstractRuntimeOnlyHandler {
 
         @Override
         public final String toString() {
-            return definition.getName();
+            return this.definition.getName();
         }
 
         public static CacheMetrics getStat(final String stringForm) {
@@ -121,7 +120,7 @@ public class CacheMetricsHandler extends AbstractRuntimeOnlyHandler {
     }
 
     @Override
-    protected void executeRuntimeStep(OperationContext context, ModelNode operation) throws OperationFailedException {
+    protected void executeRuntimeStep(OperationContext context, ModelNode operation) {
         // we have to be careful here, as we use the same handler for varying operation paths
         // /subsystem=infinispan/cache-container=*/local-cache=*
         // /subsystem=infinispan/cache-container=*/local-cache=*/file-store=FILE_STORE
@@ -295,7 +294,7 @@ public class CacheMetricsHandler extends AbstractRuntimeOnlyHandler {
     /*
      * Return the index of the PathElement corresponding to cache-container
      */
-    private int getCacheContainerIndex(PathAddress address) {
+    private static int getCacheContainerIndex(PathAddress address) {
         int index = 0;
         for (ListIterator<PathElement> it = address.iterator(); it.hasNext(); ) {
             PathElement element = it.next();

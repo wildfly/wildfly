@@ -155,17 +155,17 @@ public class InfinispanTransformers {
     }
 
     private static void registerCacheResourceChildren(final ResourceTransformationDescriptionBuilder parent, final boolean addStateTransfer) {
-        parent.addChildResource(LockingResource.LOCKING_PATH)
+        parent.addChildResource(LockingResourceDefinition.LOCKING_PATH)
             .getAttributeBuilder()
             .addRejectCheck(
                     RejectAttributeChecker.SIMPLE_EXPRESSIONS,
-                    LockingResource.ACQUIRE_TIMEOUT, LockingResource.CONCURRENCY_LEVEL, LockingResource.ISOLATION, LockingResource.STRIPING)
+                    LockingResourceDefinition.ACQUIRE_TIMEOUT, LockingResourceDefinition.CONCURRENCY_LEVEL, LockingResourceDefinition.ISOLATION, LockingResourceDefinition.STRIPING)
             .end();
         parent.addChildResource(EvictionResourceDefinition.EVICTION_PATH)
             .getAttributeBuilder()
             .addRejectCheck(
                     RejectAttributeChecker.SIMPLE_EXPRESSIONS,
-                    EvictionResourceDefinition.MAX_ENTRIES, EvictionResourceDefinition.EVICTION_STRATEGY)
+                    EvictionResourceDefinition.MAX_ENTRIES, EvictionResourceDefinition.STRATEGY)
             .end();
         parent.addChildResource(ExpirationResourceDefinition.EXPIRATION_PATH)
             .getAttributeBuilder()

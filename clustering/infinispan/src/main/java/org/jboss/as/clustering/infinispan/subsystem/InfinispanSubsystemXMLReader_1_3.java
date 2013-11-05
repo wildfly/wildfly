@@ -548,19 +548,19 @@ public final class InfinispanSubsystemXMLReader_1_3 implements XMLElementReader<
             Attribute attribute = Attribute.forName(reader.getAttributeLocalName(i));
             switch (attribute) {
                 case ISOLATION: {
-                    LockingResource.ISOLATION.parseAndSetParameter(value, locking, reader);
+                    LockingResourceDefinition.ISOLATION.parseAndSetParameter(value, locking, reader);
                     break;
                 }
                 case STRIPING: {
-                    LockingResource.STRIPING.parseAndSetParameter(value, locking, reader);
+                    LockingResourceDefinition.STRIPING.parseAndSetParameter(value, locking, reader);
                     break;
                 }
                 case ACQUIRE_TIMEOUT: {
-                    LockingResource.ACQUIRE_TIMEOUT.parseAndSetParameter(value, locking, reader);
+                    LockingResourceDefinition.ACQUIRE_TIMEOUT.parseAndSetParameter(value, locking, reader);
                     break;
                 }
                 case CONCURRENCY_LEVEL: {
-                    LockingResource.CONCURRENCY_LEVEL.parseAndSetParameter(value, locking, reader);
+                    LockingResourceDefinition.CONCURRENCY_LEVEL.parseAndSetParameter(value, locking, reader);
                     break;
                 }
                 default: {
@@ -612,7 +612,7 @@ public final class InfinispanSubsystemXMLReader_1_3 implements XMLElementReader<
             Attribute attribute = Attribute.forName(reader.getAttributeLocalName(i));
             switch (attribute) {
                 case STRATEGY: {
-                    EvictionResourceDefinition.EVICTION_STRATEGY.parseAndSetParameter(value, eviction, reader);
+                    EvictionResourceDefinition.STRATEGY.parseAndSetParameter(value, eviction, reader);
                     break;
                 }
                 case MAX_ENTRIES: {

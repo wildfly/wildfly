@@ -54,47 +54,44 @@ public class DistributedCacheResourceDefinition extends SharedCacheResourceDefin
     public static final PathElement DISTRIBUTED_CACHE_PATH = PathElement.pathElement(ModelKeys.DISTRIBUTED_CACHE);
 
     // attributes
-    static final SimpleAttributeDefinition L1_LIFESPAN =
-            new SimpleAttributeDefinitionBuilder(ModelKeys.L1_LIFESPAN, ModelType.LONG, true)
-                    .setXmlName(Attribute.L1_LIFESPAN.getLocalName())
-                    .setMeasurementUnit(MeasurementUnit.MILLISECONDS)
-                    .setAllowExpression(true)
-                    .setFlags(AttributeAccess.Flag.RESTART_ALL_SERVICES)
-                    .setDefaultValue(new ModelNode().set(600000))
-                    .build();
-
-    static final SimpleAttributeDefinition OWNERS =
-            new SimpleAttributeDefinitionBuilder(ModelKeys.OWNERS, ModelType.INT, true)
-                    .setXmlName(Attribute.OWNERS.getLocalName())
-                    .setAllowExpression(true)
-                    .setFlags(AttributeAccess.Flag.RESTART_ALL_SERVICES)
-                    .setDefaultValue(new ModelNode().set(2))
-                    .setValidator(new IntRangeValidator(1, true, true))
-                    .build();
-
+    static final SimpleAttributeDefinition L1_LIFESPAN = new SimpleAttributeDefinitionBuilder(ModelKeys.L1_LIFESPAN, ModelType.LONG, true)
+            .setXmlName(Attribute.L1_LIFESPAN.getLocalName())
+            .setMeasurementUnit(MeasurementUnit.MILLISECONDS)
+            .setAllowExpression(true)
+            .setFlags(AttributeAccess.Flag.RESTART_ALL_SERVICES)
+            .setDefaultValue(new ModelNode().set(600000))
+            .build()
+    ;
+    static final SimpleAttributeDefinition OWNERS = new SimpleAttributeDefinitionBuilder(ModelKeys.OWNERS, ModelType.INT, true)
+            .setXmlName(Attribute.OWNERS.getLocalName())
+            .setAllowExpression(true)
+            .setFlags(AttributeAccess.Flag.RESTART_ALL_SERVICES)
+            .setDefaultValue(new ModelNode().set(2))
+            .setValidator(new IntRangeValidator(1, true, true))
+            .build()
+    ;
     @Deprecated
-    static final SimpleAttributeDefinition VIRTUAL_NODES =
-            new SimpleAttributeDefinitionBuilder(ModelKeys.VIRTUAL_NODES, ModelType.INT, true)
-                    .setXmlName(Attribute.VIRTUAL_NODES.getLocalName())
-                    .setAllowExpression(false)
-                    .setFlags(AttributeAccess.Flag.RESTART_ALL_SERVICES)
-                    .setDefaultValue(new ModelNode().set(1))
-                    .setDeprecated(ModelVersion.create(1, 4, 0))
-                    .setAlternatives(ModelKeys.SEGMENTS)
-                    .build();
-
+    static final SimpleAttributeDefinition VIRTUAL_NODES = new SimpleAttributeDefinitionBuilder(ModelKeys.VIRTUAL_NODES, ModelType.INT, true)
+            .setXmlName(Attribute.VIRTUAL_NODES.getLocalName())
+            .setAllowExpression(false)
+            .setFlags(AttributeAccess.Flag.RESTART_ALL_SERVICES)
+            .setDefaultValue(new ModelNode().set(1))
+            .setDeprecated(ModelVersion.create(1, 4, 0))
+            .setAlternatives(ModelKeys.SEGMENTS)
+            .build()
+    ;
     @SuppressWarnings("deprecation")
-    static final SimpleAttributeDefinition SEGMENTS =
-            new SimpleAttributeDefinitionBuilder(ModelKeys.SEGMENTS, ModelType.INT, true)
-                    .setXmlName(Attribute.SEGMENTS.getLocalName())
-                    .setAllowExpression(true)
-                    .setFlags(AttributeAccess.Flag.RESTART_ALL_SERVICES)
-                    .setDefaultValue(new ModelNode().set(80)) // Recommended value is 10 * max_cluster_size.
-                    .setValidator(new IntRangeValidator(1, true, true))
-                    .setAlternatives(ModelKeys.VIRTUAL_NODES)
-                    .build();
+    static final SimpleAttributeDefinition SEGMENTS = new SimpleAttributeDefinitionBuilder(ModelKeys.SEGMENTS, ModelType.INT, true)
+            .setXmlName(Attribute.SEGMENTS.getLocalName())
+            .setAllowExpression(true)
+            .setFlags(AttributeAccess.Flag.RESTART_ALL_SERVICES)
+            .setDefaultValue(new ModelNode().set(80)) // Recommended value is 10 * max_cluster_size.
+            .setValidator(new IntRangeValidator(1, true, true))
+            .setAlternatives(ModelKeys.VIRTUAL_NODES)
+            .build()
+    ;
 
-    static final AttributeDefinition[] DISTRIBUTED_CACHE_ATTRIBUTES = {OWNERS, SEGMENTS, L1_LIFESPAN};
+    static final AttributeDefinition[] DISTRIBUTED_CACHE_ATTRIBUTES = { OWNERS, SEGMENTS, L1_LIFESPAN };
 
     public DistributedCacheResourceDefinition(final ResolvePathHandler resolvePathHandler, final boolean runtimeRegistration) {
         super(DISTRIBUTED_CACHE_PATH,
@@ -133,7 +130,7 @@ public class DistributedCacheResourceDefinition extends SharedCacheResourceDefin
                     if (requiresRuntime(context)) {
                         context.addStep(new OperationStepHandler() {
                             @Override
-                            public void execute(OperationContext context, ModelNode operation) throws OperationFailedException {
+                            public void execute(OperationContext context, ModelNode operation) {
                                 context.reloadRequired();
                                 context.completeStep(OperationContext.RollbackHandler.REVERT_RELOAD_REQUIRED_ROLLBACK_HANDLER);
                             }

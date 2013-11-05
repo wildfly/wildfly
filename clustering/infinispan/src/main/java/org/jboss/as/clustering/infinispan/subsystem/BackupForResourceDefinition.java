@@ -60,7 +60,7 @@ public class BackupForResourceDefinition extends SimpleResourceDefinition {
                     .build();
 
 
-    static final AttributeDefinition[] BACKUP_FOR_ATTRIBUTES = {REMOTE_CACHE, REMOTE_SITE};
+    static final AttributeDefinition[] BACKUP_FOR_ATTRIBUTES = { REMOTE_CACHE, REMOTE_SITE };
 
     public BackupForResourceDefinition() {
         super(BACKUP_FOR_PATH,

@@ -45,70 +45,54 @@ import org.jboss.dmr.ModelType;
 public class ClusteredCacheResourceDefinition extends CacheResourceDefinition {
 
     // attributes
-    static final SimpleAttributeDefinition ASYNC_MARSHALLING =
-            new SimpleAttributeDefinitionBuilder(ModelKeys.ASYNC_MARSHALLING, ModelType.BOOLEAN, true)
-                    .setXmlName(Attribute.ASYNC_MARSHALLING.getLocalName())
-                    .setAllowExpression(true)
-                    .setFlags(AttributeAccess.Flag.RESTART_ALL_SERVICES)
-                    .setDefaultValue(new ModelNode().set(false))
-                    .build();
+    static final SimpleAttributeDefinition ASYNC_MARSHALLING = new SimpleAttributeDefinitionBuilder(ModelKeys.ASYNC_MARSHALLING, ModelType.BOOLEAN, true)
+            .setXmlName(Attribute.ASYNC_MARSHALLING.getLocalName())
+            .setAllowExpression(true)
+            .setFlags(AttributeAccess.Flag.RESTART_ALL_SERVICES)
+            .setDefaultValue(new ModelNode().set(false))
+            .build()
+    ;
+    static final SimpleAttributeDefinition MODE = new SimpleAttributeDefinitionBuilder(ModelKeys.MODE, ModelType.STRING, false)
+            .setXmlName(Attribute.MODE.getLocalName())
+            .setAllowExpression(true)
+            .setFlags(AttributeAccess.Flag.RESTART_ALL_SERVICES)
+            .setValidator(new EnumValidator<>(Mode.class, false, true))
+            .build()
+    ;
 
-    // the attribute definition for the cache mode
-    static final SimpleAttributeDefinition MODE =
-            new SimpleAttributeDefinitionBuilder(ModelKeys.MODE, ModelType.STRING, false)
-                    .setXmlName(Attribute.MODE.getLocalName())
-                    .setAllowExpression(true)
-                    .setFlags(AttributeAccess.Flag.RESTART_ALL_SERVICES)
-                    .setValidator(new EnumValidator<Mode>(Mode.class, false, true))
-                    .build();
+    static final SimpleAttributeDefinition QUEUE_FLUSH_INTERVAL = new SimpleAttributeDefinitionBuilder(ModelKeys.QUEUE_FLUSH_INTERVAL, ModelType.LONG, true)
+            .setXmlName(Attribute.QUEUE_FLUSH_INTERVAL.getLocalName())
+            .setMeasurementUnit(MeasurementUnit.MILLISECONDS)
+            .setAllowExpression(true)
+            .setFlags(AttributeAccess.Flag.RESTART_ALL_SERVICES)
+            .setDefaultValue(new ModelNode().set(10))
+            .build()
+    ;
+    static final SimpleAttributeDefinition QUEUE_SIZE = new SimpleAttributeDefinitionBuilder(ModelKeys.QUEUE_SIZE, ModelType.INT, true)
+            .setXmlName(Attribute.QUEUE_SIZE.getLocalName())
+            .setAllowExpression(true)
+            .setFlags(AttributeAccess.Flag.RESTART_ALL_SERVICES)
+            .setDefaultValue(new ModelNode().set(0))
+            .build()
+    ;
+    static final SimpleAttributeDefinition REMOTE_TIMEOUT = new SimpleAttributeDefinitionBuilder(ModelKeys.REMOTE_TIMEOUT, ModelType.LONG, true)
+            .setXmlName(Attribute.REMOTE_TIMEOUT.getLocalName())
+            .setMeasurementUnit(MeasurementUnit.MILLISECONDS)
+            .setAllowExpression(true)
+            .setFlags(AttributeAccess.Flag.RESTART_ALL_SERVICES)
+            .setDefaultValue(new ModelNode().set(17500))
+            .build()
+    ;
 
-    static final SimpleAttributeDefinition QUEUE_FLUSH_INTERVAL =
-            new SimpleAttributeDefinitionBuilder(ModelKeys.QUEUE_FLUSH_INTERVAL, ModelType.LONG, true)
-                    .setXmlName(Attribute.QUEUE_FLUSH_INTERVAL.getLocalName())
-                    .setMeasurementUnit(MeasurementUnit.MILLISECONDS)
-                    .setAllowExpression(true)
-                    .setFlags(AttributeAccess.Flag.RESTART_ALL_SERVICES)
-                    .setDefaultValue(new ModelNode().set(10))
-                    .build();
-
-    static final SimpleAttributeDefinition QUEUE_SIZE =
-            new SimpleAttributeDefinitionBuilder(ModelKeys.QUEUE_SIZE, ModelType.INT, true)
-                    .setXmlName(Attribute.QUEUE_SIZE.getLocalName())
-                    .setAllowExpression(true)
-                    .setFlags(AttributeAccess.Flag.RESTART_ALL_SERVICES)
-                    .setDefaultValue(new ModelNode().set(0))
-                    .build();
-
-    static final SimpleAttributeDefinition REMOTE_TIMEOUT =
-            new SimpleAttributeDefinitionBuilder(ModelKeys.REMOTE_TIMEOUT, ModelType.LONG, true)
-                    .setXmlName(Attribute.REMOTE_TIMEOUT.getLocalName())
-                    .setMeasurementUnit(MeasurementUnit.MILLISECONDS)
-                    .setAllowExpression(true)
-                    .setFlags(AttributeAccess.Flag.RESTART_ALL_SERVICES)
-                    .setDefaultValue(new ModelNode().set(17500))
-                    .build();
-
-    static final AttributeDefinition[] CLUSTERED_CACHE_ATTRIBUTES = { ASYNC_MARSHALLING, MODE, QUEUE_SIZE, QUEUE_FLUSH_INTERVAL, REMOTE_TIMEOUT};
+    static final AttributeDefinition[] CLUSTERED_CACHE_ATTRIBUTES = { ASYNC_MARSHALLING, MODE, QUEUE_SIZE, QUEUE_FLUSH_INTERVAL, REMOTE_TIMEOUT };
 
     // metrics
-    static final SimpleAttributeDefinition AVERAGE_REPLICATION_TIME =
-            new SimpleAttributeDefinitionBuilder(MetricKeys.AVERAGE_REPLICATION_TIME, ModelType.LONG, true)
-                    .setStorageRuntime()
-                    .build();
-    static final SimpleAttributeDefinition REPLICATION_COUNT =
-            new SimpleAttributeDefinitionBuilder(MetricKeys.REPLICATION_COUNT, ModelType.LONG, true)
-                    .setStorageRuntime()
-                    .build();
-    static final SimpleAttributeDefinition REPLICATION_FAILURES =
-            new SimpleAttributeDefinitionBuilder(MetricKeys.REPLICATION_FAILURES, ModelType.LONG, true)
-                    .setStorageRuntime()
-                    .build();
-    static final SimpleAttributeDefinition SUCCESS_RATIO =
-            new SimpleAttributeDefinitionBuilder(MetricKeys.SUCCESS_RATIO, ModelType.DOUBLE, true)
-                    .setStorageRuntime()
-                    .build();
+    static final AttributeDefinition AVERAGE_REPLICATION_TIME = new SimpleAttributeDefinitionBuilder(MetricKeys.AVERAGE_REPLICATION_TIME, ModelType.LONG, true).setStorageRuntime().build();
+    static final AttributeDefinition REPLICATION_COUNT = new SimpleAttributeDefinitionBuilder(MetricKeys.REPLICATION_COUNT, ModelType.LONG, true).setStorageRuntime().build();
+    static final AttributeDefinition REPLICATION_FAILURES = new SimpleAttributeDefinitionBuilder(MetricKeys.REPLICATION_FAILURES, ModelType.LONG, true).setStorageRuntime().build();
+    static final AttributeDefinition SUCCESS_RATIO = new SimpleAttributeDefinitionBuilder(MetricKeys.SUCCESS_RATIO, ModelType.DOUBLE, true).setStorageRuntime().build();
 
-    static final AttributeDefinition[] CLUSTERED_CACHE_METRICS = {AVERAGE_REPLICATION_TIME, REPLICATION_COUNT, REPLICATION_FAILURES, SUCCESS_RATIO};
+    static final AttributeDefinition[] CLUSTERED_CACHE_METRICS = { AVERAGE_REPLICATION_TIME, REPLICATION_COUNT, REPLICATION_FAILURES, SUCCESS_RATIO };
 
     public ClusteredCacheResourceDefinition(PathElement pathElement, ResourceDescriptionResolver descriptionResolver, AbstractAddStepHandler addHandler, OperationStepHandler removeHandler, ResolvePathHandler resolvePathHandler, boolean runtimeRegistration) {
         super(pathElement, descriptionResolver, addHandler, removeHandler, resolvePathHandler, runtimeRegistration);
@@ -128,10 +112,5 @@ public class ClusteredCacheResourceDefinition extends CacheResourceDefinition {
         for (AttributeDefinition attr : CLUSTERED_CACHE_METRICS) {
             resourceRegistration.registerMetric(attr, CacheMetricsHandler.INSTANCE);
         }
-    }
-
-    @Override
-    public void registerOperations(ManagementResourceRegistration resourceRegistration) {
-        super.registerOperations(resourceRegistration);
     }
 }

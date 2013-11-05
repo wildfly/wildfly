@@ -46,16 +46,16 @@ public class StringKeyedJDBCStoreResourceDefinition extends JDBCStoreResourceDef
     public static final PathElement STRING_KEYED_JDBC_STORE_PATH = PathElement.pathElement(ModelKeys.STRING_KEYED_JDBC_STORE, ModelKeys.STRING_KEYED_JDBC_STORE_NAME);
 
     // attributes
-    static final AttributeDefinition[] STRING_KEYED_JDBC_STORE_ATTRIBUTES = {STRING_KEYED_TABLE};
+    static final AttributeDefinition[] STRING_KEYED_JDBC_STORE_ATTRIBUTES = { STRING_KEYED_TABLE };
 
     // operations
     private static final OperationDefinition STRING_KEYED_JDBC_STORE_ADD_DEFINITION = new SimpleOperationDefinitionBuilder(ADD, InfinispanExtension.getResourceDescriptionResolver(ModelKeys.STRING_KEYED_JDBC_STORE))
-        .setParameters(COMMON_STORE_PARAMETERS)
-        .addParameter(DATA_SOURCE)
-        .addParameter(STRING_KEYED_TABLE)
-        .setAttributeResolver(InfinispanExtension.getResourceDescriptionResolver(ModelKeys.JDBC_STORE))
-        .build();
-
+            .setParameters(COMMON_STORE_PARAMETERS)
+            .addParameter(DATA_SOURCE)
+            .addParameter(STRING_KEYED_TABLE)
+            .setAttributeResolver(InfinispanExtension.getResourceDescriptionResolver(ModelKeys.JDBC_STORE))
+            .build()
+    ;
 
     public StringKeyedJDBCStoreResourceDefinition() {
         super(STRING_KEYED_JDBC_STORE_PATH,
@@ -75,15 +75,9 @@ public class StringKeyedJDBCStoreResourceDefinition extends JDBCStoreResourceDef
         }
     }
 
-    @Override
-    public void registerOperations(ManagementResourceRegistration resourceRegistration) {
-        super.registerOperations(resourceRegistration);
-    }
-
     // override the add operation to provide a custom definition (for the optional PROPERTIES parameter to add())
     @Override
     protected void registerAddOperation(final ManagementResourceRegistration registration, final OperationStepHandler handler, OperationEntry.Flag... flags) {
         registration.registerOperationHandler(STRING_KEYED_JDBC_STORE_ADD_DEFINITION, handler);
     }
-
 }

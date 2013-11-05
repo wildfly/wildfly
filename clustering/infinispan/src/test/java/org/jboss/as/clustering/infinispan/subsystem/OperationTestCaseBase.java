@@ -8,15 +8,8 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.READ_ATTRIBUTE_OPERATION;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.VALUE;
 
-import java.io.BufferedReader;
-import java.io.File;
-import java.io.FileReader;
 import java.io.IOException;
-import java.io.StringWriter;
-import java.net.URISyntaxException;
-import java.net.URL;
 
-import org.jboss.as.clustering.infinispan.InfinispanMessages;
 import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.operations.common.Util;
 import org.jboss.as.subsystem.test.AbstractSubsystemTest;
@@ -214,5 +207,4 @@ public class OperationTestCaseBase extends AbstractSubsystemTest {
     protected String getSubsystemXml() throws IOException {
         return readResource(SUBSYSTEM_XML_FILE) ;
     }
-
 }

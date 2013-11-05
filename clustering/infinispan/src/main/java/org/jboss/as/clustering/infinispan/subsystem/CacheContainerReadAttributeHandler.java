@@ -22,7 +22,6 @@
 
 package org.jboss.as.clustering.infinispan.subsystem;
 
-import static org.jboss.as.controller.ControllerMessages.MESSAGES;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.NAME;
 
 import java.util.HashMap;
@@ -47,17 +46,15 @@ public class CacheContainerReadAttributeHandler implements OperationStepHandler 
     public static final CacheContainerReadAttributeHandler INSTANCE = new CacheContainerReadAttributeHandler();
 
     private final ParametersValidator nameValidator = new ParametersValidator();
-    private final Map<String, AttributeDefinition> attributeDefinitions ;
+    private final Map<String, AttributeDefinition> attributeDefinitions;
 
     private CacheContainerReadAttributeHandler() {
         this(CacheContainerResourceDefinition.CACHE_CONTAINER_ATTRIBUTES);
     }
 
     private CacheContainerReadAttributeHandler(final AttributeDefinition... definitions) {
-        assert definitions != null : MESSAGES.nullVar("definitions").getLocalizedMessage();
-
         this.nameValidator.registerValidator(NAME, new StringLengthValidator(1));
-        this.attributeDefinitions = new HashMap<String, AttributeDefinition>();
+        this.attributeDefinitions = new HashMap<>();
         for (AttributeDefinition def : definitions) {
             this.attributeDefinitions.put(def.getName(), def);
         }
@@ -73,7 +70,7 @@ public class CacheContainerReadAttributeHandler implements OperationStepHandler 
     @Override
     public void execute(OperationContext context, ModelNode operation) throws OperationFailedException {
 
-        nameValidator.validate(operation);
+        this.nameValidator.validate(operation);
         final String attributeName = operation.require(NAME).asString();
 
         final ModelNode submodel = context.readResource(PathAddress.EMPTY_ADDRESS).getModel();

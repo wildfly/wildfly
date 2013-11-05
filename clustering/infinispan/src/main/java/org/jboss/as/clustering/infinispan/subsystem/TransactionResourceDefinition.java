@@ -49,48 +49,39 @@ public class TransactionResourceDefinition extends SimpleResourceDefinition {
 
     // attributes
     // cache mode required, txn mode not
-    static final SimpleAttributeDefinition LOCKING =
-            new SimpleAttributeDefinitionBuilder(ModelKeys.LOCKING, ModelType.STRING, true)
-                    .setXmlName(Attribute.LOCKING.getLocalName())
-                    .setAllowExpression(true)
-                    .setValidator(new EnumValidator<LockingMode>(LockingMode.class, true, false))
-                    .setFlags(AttributeAccess.Flag.RESTART_ALL_SERVICES)
-                    .setDefaultValue(new ModelNode().set(LockingMode.PESSIMISTIC.name()))
-                    .build();
-    static final SimpleAttributeDefinition MODE =
-            new SimpleAttributeDefinitionBuilder(ModelKeys.MODE, ModelType.STRING, true)
-                    .setXmlName(Attribute.MODE.getLocalName())
-                    .setAllowExpression(true)
-                    .setFlags(AttributeAccess.Flag.RESTART_ALL_SERVICES)
-                    .setValidator(new EnumValidator<TransactionMode>(TransactionMode.class, true, true))
-                    .setDefaultValue(new ModelNode().set(TransactionMode.NONE.name()))
-                    .build();
-    static final SimpleAttributeDefinition STOP_TIMEOUT =
-            new SimpleAttributeDefinitionBuilder(ModelKeys.STOP_TIMEOUT, ModelType.LONG, true)
-                    .setXmlName(Attribute.STOP_TIMEOUT.getLocalName())
-                    .setMeasurementUnit(MeasurementUnit.MILLISECONDS)
-                    .setAllowExpression(true)
-                    .setFlags(AttributeAccess.Flag.RESTART_ALL_SERVICES)
-                    .setDefaultValue(new ModelNode().set(30000))
-                    .build();
+    static final SimpleAttributeDefinition LOCKING = new SimpleAttributeDefinitionBuilder(ModelKeys.LOCKING, ModelType.STRING, true)
+            .setXmlName(Attribute.LOCKING.getLocalName())
+            .setAllowExpression(true)
+            .setValidator(new EnumValidator<>(LockingMode.class, true, false))
+            .setFlags(AttributeAccess.Flag.RESTART_ALL_SERVICES)
+            .setDefaultValue(new ModelNode().set(LockingMode.PESSIMISTIC.name()))
+            .build()
+    ;
+    static final SimpleAttributeDefinition MODE = new SimpleAttributeDefinitionBuilder(ModelKeys.MODE, ModelType.STRING, true)
+            .setXmlName(Attribute.MODE.getLocalName())
+            .setAllowExpression(true)
+            .setFlags(AttributeAccess.Flag.RESTART_ALL_SERVICES)
+            .setValidator(new EnumValidator<>(TransactionMode.class, true, true))
+            .setDefaultValue(new ModelNode().set(TransactionMode.NONE.name()))
+            .build()
+    ;
+    static final SimpleAttributeDefinition STOP_TIMEOUT = new SimpleAttributeDefinitionBuilder(ModelKeys.STOP_TIMEOUT, ModelType.LONG, true)
+            .setXmlName(Attribute.STOP_TIMEOUT.getLocalName())
+            .setMeasurementUnit(MeasurementUnit.MILLISECONDS)
+            .setAllowExpression(true)
+            .setFlags(AttributeAccess.Flag.RESTART_ALL_SERVICES)
+            .setDefaultValue(new ModelNode().set(30000))
+            .build()
+    ;
 
-    static final AttributeDefinition[] TRANSACTION_ATTRIBUTES = {MODE, STOP_TIMEOUT, LOCKING};
+    static final AttributeDefinition[] TRANSACTION_ATTRIBUTES = { MODE, STOP_TIMEOUT, LOCKING };
 
     // metrics
-    static final SimpleAttributeDefinition COMMITS =
-            new SimpleAttributeDefinitionBuilder(MetricKeys.COMMITS, ModelType.LONG, true)
-                    .setStorageRuntime()
-                    .build();
-    static final SimpleAttributeDefinition PREPARES =
-            new SimpleAttributeDefinitionBuilder(MetricKeys.PREPARES, ModelType.LONG, true)
-                    .setStorageRuntime()
-                    .build();
-    static final SimpleAttributeDefinition ROLLBACKS =
-            new SimpleAttributeDefinitionBuilder(MetricKeys.ROLLBACKS, ModelType.LONG, true)
-                    .setStorageRuntime()
-                    .build();
+    static final AttributeDefinition COMMITS = new SimpleAttributeDefinitionBuilder(MetricKeys.COMMITS, ModelType.LONG, true).setStorageRuntime().build();
+    static final AttributeDefinition PREPARES = new SimpleAttributeDefinitionBuilder(MetricKeys.PREPARES, ModelType.LONG, true).setStorageRuntime().build();
+    static final AttributeDefinition ROLLBACKS = new SimpleAttributeDefinitionBuilder(MetricKeys.ROLLBACKS, ModelType.LONG, true).setStorageRuntime().build();
 
-    static final AttributeDefinition[] TRANSACTION_METRICS = {COMMITS, PREPARES, ROLLBACKS};
+    static final AttributeDefinition[] TRANSACTION_METRICS = { COMMITS, PREPARES, ROLLBACKS };
 
     public TransactionResourceDefinition() {
         super(TRANSACTION_PATH,
@@ -101,8 +92,6 @@ public class TransactionResourceDefinition extends SimpleResourceDefinition {
 
     @Override
     public void registerAttributes(ManagementResourceRegistration resourceRegistration) {
-        super.registerAttributes(resourceRegistration);
-
         // check that we don't need a special handler here?
         final OperationStepHandler writeHandler = new ReloadRequiredWriteAttributeHandler(TRANSACTION_ATTRIBUTES);
         for (AttributeDefinition attr : TRANSACTION_ATTRIBUTES) {
@@ -113,10 +102,5 @@ public class TransactionResourceDefinition extends SimpleResourceDefinition {
         for (AttributeDefinition attr : TRANSACTION_METRICS) {
             resourceRegistration.registerMetric(attr, CacheMetricsHandler.INSTANCE);
         }
-    }
-
-    @Override
-    public void registerOperations(ManagementResourceRegistration resourceRegistration) {
-        super.registerOperations(resourceRegistration);
     }
 }

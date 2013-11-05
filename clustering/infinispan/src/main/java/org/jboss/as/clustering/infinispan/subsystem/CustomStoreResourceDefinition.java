@@ -48,21 +48,22 @@ public class CustomStoreResourceDefinition extends StoreResourceDefinition {
     public static final PathElement STORE_PATH = PathElement.pathElement(ModelKeys.STORE, ModelKeys.STORE_NAME);
 
     // attributes
-    static final SimpleAttributeDefinition CLASS =
-            new SimpleAttributeDefinitionBuilder(ModelKeys.CLASS, ModelType.STRING, false)
-                    .setXmlName(Attribute.CLASS.getLocalName())
-                    .setAllowExpression(true)
-                    .setFlags(AttributeAccess.Flag.RESTART_ALL_SERVICES)
-                    .build();
+    static final SimpleAttributeDefinition CLASS = new SimpleAttributeDefinitionBuilder(ModelKeys.CLASS, ModelType.STRING, false)
+            .setXmlName(Attribute.CLASS.getLocalName())
+            .setAllowExpression(true)
+            .setFlags(AttributeAccess.Flag.RESTART_ALL_SERVICES)
+            .build()
+    ;
 
-    static final AttributeDefinition[] STORE_ATTRIBUTES = {CLASS};
+    static final AttributeDefinition[] STORE_ATTRIBUTES = { CLASS };
 
     // operations
     private static final OperationDefinition STORE_ADD_DEFINITION = new SimpleOperationDefinitionBuilder(ADD, InfinispanExtension.getResourceDescriptionResolver(ModelKeys.STORE))
         .setParameters(COMMON_STORE_PARAMETERS)
         .addParameter(CLASS)
         .setAttributeResolver(InfinispanExtension.getResourceDescriptionResolver(ModelKeys.STORE))
-        .build();
+        .build()
+    ;
 
     public CustomStoreResourceDefinition() {
         super(STORE_PATH,
@@ -80,11 +81,6 @@ public class CustomStoreResourceDefinition extends StoreResourceDefinition {
         for (AttributeDefinition attr : STORE_ATTRIBUTES) {
             resourceRegistration.registerReadWriteAttribute(attr, null, writeHandler);
         }
-    }
-
-    @Override
-    public void registerOperations(ManagementResourceRegistration resourceRegistration) {
-        super.registerOperations(resourceRegistration);
     }
 
     // override the add operation to provide a custom definition (for the optional PROPERTIES parameter to add())
