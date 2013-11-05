@@ -390,13 +390,13 @@ public class AddUser {
         ENABLE("-e", "--enable") {
             @Override
             public String instructions() {
-                return MESSAGES.argSilent();
+                return MESSAGES.argEnable();
             }
         },
         DISABLE("-d", "--disable") {
             @Override
             public String instructions() {
-                return MESSAGES.argSilent();
+                return MESSAGES.argDisable();
             }
         },
         CONFIRM_WARNING("-cw", "--confirm-warning") {
