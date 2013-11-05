@@ -26,8 +26,6 @@ import javax.xml.XMLConstants;
 import java.util.HashMap;
 import java.util.Map;
 
-import org.jboss.as.controller.AttributeDefinition;
-
 /**
  * Enumerates the attributes used in the Infinispan subsystem schema.
  * @author Paul Ferraro
@@ -97,6 +95,7 @@ public enum Attribute {
     SOCKET_TIMEOUT(ModelKeys.SOCKET_TIMEOUT),
     STACK(ModelKeys.STACK),
     START(ModelKeys.START),
+    STATISTICS(ModelKeys.STATISTICS),
     STOP_TIMEOUT(ModelKeys.STOP_TIMEOUT),
     STRATEGY(ModelKeys.STRATEGY),
     STRIPING(ModelKeys.STRIPING),
@@ -108,16 +107,9 @@ public enum Attribute {
     ;
 
     private final String name;
-    private final AttributeDefinition definition;
 
     private Attribute(final String name) {
         this.name = name;
-        this.definition = null;
-    }
-
-    private Attribute(final AttributeDefinition definition) {
-        this.name = definition.getXmlName();
-        this.definition = definition;
     }
 
     /**
@@ -126,11 +118,7 @@ public enum Attribute {
      * @return the local name
      */
     public String getLocalName() {
-        return name;
-    }
-
-    public AttributeDefinition getDefinition() {
-        return definition;
+        return this.name;
     }
 
     private static final Map<String, Attribute> attributes;

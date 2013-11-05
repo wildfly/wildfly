@@ -84,7 +84,7 @@
             </mixed-keyed-jdbc-store>
 
         </distributed-cache>
-        </cache-container>
+    </cache-container>
     <cache-container name="capedwarf" default-cache="default">
         <transport lock-timeout="60000"/>
         <replicated-cache name="data" mode="ASYNC">
@@ -128,20 +128,20 @@
         </distributed-cache>
     </cache-container>
     <cache-container name="HibernateSearch" default-cache="LuceneIndexesMetadata">
-            <transport lock-timeout="60000"/>
-            <replicated-cache name="LuceneIndexesMetadata" mode="SYNC" batching="true">
-                <transaction mode="NONE"/>
-                <eviction strategy="NONE"/>
-                <file-store preload="true" purge="false"/>
-            </replicated-cache>
-            <replicated-cache name="LuceneIndexesData" mode="SYNC" batching="true">
-                <transaction mode="NONE"/>
-                <eviction strategy="NONE"/>
-                <file-store preload="true" purge="false"/>
-            </replicated-cache>
-            <replicated-cache name="LuceneIndexesLocking" mode="SYNC" batching="true">
-                <transaction mode="NONE"/>
-                <eviction strategy="NONE"/>
-            </replicated-cache>
-        </cache-container>
+        <transport lock-timeout="60000"/>
+        <replicated-cache name="LuceneIndexesMetadata" mode="SYNC" batching="true">
+            <transaction mode="NONE"/>
+            <eviction strategy="NONE"/>
+            <file-store preload="true" purge="false"/>
+        </replicated-cache>
+        <replicated-cache name="LuceneIndexesData" mode="SYNC" batching="true">
+            <transaction mode="NONE"/>
+            <eviction strategy="NONE"/>
+            <file-store preload="true" purge="false"/>
+        </replicated-cache>
+        <replicated-cache name="LuceneIndexesLocking" mode="SYNC" batching="true">
+            <transaction mode="NONE"/>
+            <eviction strategy="NONE"/>
+        </replicated-cache>
+    </cache-container>
 </subsystem>

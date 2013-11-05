@@ -58,8 +58,7 @@ public class InfinispanSubsystemXMLWriter implements XMLElementWriter<SubsystemM
 
                 writer.writeStartElement(Element.CACHE_CONTAINER.getLocalName());
                 writer.writeAttribute(Attribute.NAME.getLocalName(), containerName);
-                // AS7-3488 make default-cache a non required attribute
-                // this.writeRequired(writer, Attribute.DEFAULT_CACHE, container, ModelKeys.DEFAULT_CACHE);
+
                 this.writeAliases(writer, Attribute.ALIASES, container, ModelKeys.ALIASES);
                 this.writeOptional(writer, Attribute.DEFAULT_CACHE, container, ModelKeys.DEFAULT_CACHE);
                 this.writeOptional(writer, Attribute.EVICTION_EXECUTOR, container, ModelKeys.EVICTION_EXECUTOR);
@@ -68,6 +67,7 @@ public class InfinispanSubsystemXMLWriter implements XMLElementWriter<SubsystemM
                 this.writeOptional(writer, Attribute.REPLICATION_QUEUE_EXECUTOR, container, ModelKeys.REPLICATION_QUEUE_EXECUTOR);
                 this.writeOptional(writer, Attribute.START, container, ModelKeys.START);
                 this.writeOptional(writer, Attribute.MODULE, container, ModelKeys.MODULE);
+                CacheContainerResourceDefinition.STATISTICS.marshallAsAttribute(container, false, writer);
 
                 if (container.hasDefined(ModelKeys.TRANSPORT)) {
                     writer.writeStartElement(Element.TRANSPORT.getLocalName());
@@ -152,8 +152,7 @@ public class InfinispanSubsystemXMLWriter implements XMLElementWriter<SubsystemM
         writer.writeEndElement();
     }
 
-    private void processCommonClusteredCacheAttributes(XMLExtendedStreamWriter writer, ModelNode cache)
-            throws XMLStreamException {
+    private void processCommonClusteredCacheAttributes(XMLExtendedStreamWriter writer, ModelNode cache) throws XMLStreamException {
 
         this.writeOptional(writer, Attribute.ASYNC_MARSHALLING, cache, ModelKeys.ASYNC_MARSHALLING);
         this.writeRequired(writer, Attribute.MODE, cache, ModelKeys.MODE);
@@ -162,13 +161,13 @@ public class InfinispanSubsystemXMLWriter implements XMLElementWriter<SubsystemM
         this.writeOptional(writer, Attribute.REMOTE_TIMEOUT, cache, ModelKeys.REMOTE_TIMEOUT);
     }
 
-    private void processCommonCacheAttributesElements(XMLExtendedStreamWriter writer, ModelNode cache)
-            throws XMLStreamException {
+    private void processCommonCacheAttributesElements(XMLExtendedStreamWriter writer, ModelNode cache) throws XMLStreamException {
 
         this.writeOptional(writer, Attribute.START, cache, ModelKeys.START);
         this.writeOptional(writer, Attribute.BATCHING, cache, ModelKeys.BATCHING);
         this.writeOptional(writer, Attribute.JNDI_NAME, cache, ModelKeys.JNDI_NAME);
         this.writeOptional(writer, Attribute.MODULE, cache, ModelKeys.MODULE);
+        CacheResourceDefinition.STATISTICS.marshallAsAttribute(cache, false, writer);
 
         if (cache.get(ModelKeys.LOCKING, ModelKeys.LOCKING_NAME).isDefined()) {
             writer.writeStartElement(Element.LOCKING.getLocalName());
