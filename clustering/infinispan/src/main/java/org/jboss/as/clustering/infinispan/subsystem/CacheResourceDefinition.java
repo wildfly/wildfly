@@ -58,7 +58,7 @@ public class CacheResourceDefinition extends SimpleResourceDefinition {
             .setDefaultValue(new ModelNode().set(false))
             .build()
     ;
-    static final SimpleAttributeDefinition CACHE_MODULE = new SimpleAttributeDefinitionBuilder(ModelKeys.MODULE, ModelType.STRING, true)
+    static final SimpleAttributeDefinition MODULE = new SimpleAttributeDefinitionBuilder(ModelKeys.MODULE, ModelType.STRING, true)
             .setXmlName(Attribute.MODULE.getLocalName())
             .setAllowExpression(true)
             .setFlags(AttributeAccess.Flag.RESTART_ALL_SERVICES)
@@ -114,7 +114,7 @@ public class CacheResourceDefinition extends SimpleResourceDefinition {
             .build()
     ;
 
-    static final AttributeDefinition[] CACHE_ATTRIBUTES = { BATCHING, CACHE_MODULE, INDEXING, INDEXING_PROPERTIES, JNDI_NAME, START, STATISTICS };
+    static final AttributeDefinition[] CACHE_ATTRIBUTES = { BATCHING, MODULE, INDEXING, INDEXING_PROPERTIES, JNDI_NAME, START, STATISTICS };
 
     // here for legacy purposes only
     static final SimpleAttributeDefinition NAME = new SimpleAttributeDefinitionBuilder(ModelKeys.NAME, ModelType.STRING, true)
@@ -188,7 +188,7 @@ public class CacheResourceDefinition extends SimpleResourceDefinition {
         resourceRegistration.registerSubModel(new TransactionResourceDefinition());
         resourceRegistration.registerSubModel(new EvictionResourceDefinition());
         resourceRegistration.registerSubModel(new ExpirationResourceDefinition());
-        resourceRegistration.registerSubModel(new StoreResourceDefinition());
+        resourceRegistration.registerSubModel(new CustomStoreResourceDefinition());
         resourceRegistration.registerSubModel(new FileStoreResourceDefinition(getResolvePathHandler()));
         resourceRegistration.registerSubModel(new StringKeyedJDBCStoreResourceDefinition());
         resourceRegistration.registerSubModel(new BinaryKeyedJDBCStoreResourceDefinition());

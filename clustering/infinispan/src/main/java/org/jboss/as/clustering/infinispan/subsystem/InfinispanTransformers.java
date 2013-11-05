@@ -87,7 +87,7 @@ public class InfinispanTransformers {
                 .addRejectCheck(
                         RejectAttributeChecker.SIMPLE_EXPRESSIONS,
                         ClusteredCacheResourceDefinition.ASYNC_MARSHALLING, CacheResourceDefinition.BATCHING, CacheResourceDefinition.INDEXING, CacheResourceDefinition.JNDI_NAME, ClusteredCacheResourceDefinition.MODE,
-                        CacheResourceDefinition.CACHE_MODULE, ClusteredCacheResourceDefinition.QUEUE_FLUSH_INTERVAL,  ClusteredCacheResourceDefinition.QUEUE_SIZE,
+                        CacheResourceDefinition.MODULE, ClusteredCacheResourceDefinition.QUEUE_FLUSH_INTERVAL,  ClusteredCacheResourceDefinition.QUEUE_SIZE,
                         ClusteredCacheResourceDefinition.REMOTE_TIMEOUT, CacheResourceDefinition.START,
                         DistributedCacheResourceDefinition.L1_LIFESPAN, DistributedCacheResourceDefinition.OWNERS, DistributedCacheResourceDefinition.VIRTUAL_NODES, DistributedCacheResourceDefinition.SEGMENTS)
                 //discard indexing-properties if undefined, and reject it if not set
@@ -114,7 +114,7 @@ public class InfinispanTransformers {
                 .addRejectCheck(
                         RejectAttributeChecker.SIMPLE_EXPRESSIONS,
                         ClusteredCacheResourceDefinition.ASYNC_MARSHALLING, CacheResourceDefinition.BATCHING, CacheResourceDefinition.INDEXING, CacheResourceDefinition.JNDI_NAME, ClusteredCacheResourceDefinition.MODE,
-                        CacheResourceDefinition.CACHE_MODULE, ClusteredCacheResourceDefinition.QUEUE_FLUSH_INTERVAL, ClusteredCacheResourceDefinition.QUEUE_SIZE, ClusteredCacheResourceDefinition.REMOTE_TIMEOUT,
+                        CacheResourceDefinition.MODULE, ClusteredCacheResourceDefinition.QUEUE_FLUSH_INTERVAL, ClusteredCacheResourceDefinition.QUEUE_SIZE, ClusteredCacheResourceDefinition.REMOTE_TIMEOUT,
                         CacheResourceDefinition.START)
                 //discard indexing-properties if undefined, and reject it if not set
                 .setDiscard(DiscardAttributeChecker.UNDEFINED, CacheResourceDefinition.INDEXING_PROPERTIES)
@@ -128,7 +128,7 @@ public class InfinispanTransformers {
                 .addRejectCheck(
                         RejectAttributeChecker.SIMPLE_EXPRESSIONS,
                         CacheResourceDefinition.BATCHING, CacheResourceDefinition.INDEXING, CacheResourceDefinition.JNDI_NAME,
-                        CacheResourceDefinition.CACHE_MODULE, CacheResourceDefinition.START)
+                        CacheResourceDefinition.MODULE, CacheResourceDefinition.START)
                 //discard indexing-properties if undefined, and reject it if not set
                 .setDiscard(DiscardAttributeChecker.UNDEFINED, CacheResourceDefinition.INDEXING_PROPERTIES)
                 .addRejectCheck(RejectAttributeChecker.DEFINED, CacheResourceDefinition.INDEXING_PROPERTIES)
@@ -141,7 +141,7 @@ public class InfinispanTransformers {
                 .addRejectCheck(
                         RejectAttributeChecker.SIMPLE_EXPRESSIONS,
                         ClusteredCacheResourceDefinition.ASYNC_MARSHALLING, CacheResourceDefinition.BATCHING, CacheResourceDefinition.INDEXING, CacheResourceDefinition.JNDI_NAME, ClusteredCacheResourceDefinition.MODE,
-                        CacheResourceDefinition.CACHE_MODULE, ClusteredCacheResourceDefinition.QUEUE_FLUSH_INTERVAL, ClusteredCacheResourceDefinition.QUEUE_SIZE, ClusteredCacheResourceDefinition.REMOTE_TIMEOUT,
+                        CacheResourceDefinition.MODULE, ClusteredCacheResourceDefinition.QUEUE_FLUSH_INTERVAL, ClusteredCacheResourceDefinition.QUEUE_SIZE, ClusteredCacheResourceDefinition.REMOTE_TIMEOUT,
                         CacheResourceDefinition.START)
                 //discard indexing-properties if undefined, and reject it if not set
                 .setDiscard(DiscardAttributeChecker.UNDEFINED, CacheResourceDefinition.INDEXING_PROPERTIES)
@@ -187,16 +187,16 @@ public class InfinispanTransformers {
                 .getAttributeBuilder()
                 .addRejectCheck(
                         RejectAttributeChecker.SIMPLE_EXPRESSIONS,
-                        FileStoreResourceDefinition.PATH, BaseStoreResourceDefinition.FETCH_STATE, BaseStoreResourceDefinition.PASSIVATION,
-                        BaseStoreResourceDefinition.PRELOAD, BaseStoreResourceDefinition.PURGE, BaseStoreResourceDefinition.SHARED, BaseStoreResourceDefinition.SINGLETON)
+                        FileStoreResourceDefinition.PATH, StoreResourceDefinition.FETCH_STATE, StoreResourceDefinition.PASSIVATION,
+                        StoreResourceDefinition.PRELOAD, StoreResourceDefinition.PURGE, StoreResourceDefinition.SHARED, StoreResourceDefinition.SINGLETON)
                 .end();
         registerStoreTransformerChildren(fileStoreBuilder);
         //store=STORE
-        ResourceTransformationDescriptionBuilder storeBuilder = parent.addChildResource(StoreResourceDefinition.STORE_PATH)
+        ResourceTransformationDescriptionBuilder storeBuilder = parent.addChildResource(CustomStoreResourceDefinition.STORE_PATH)
                 .getAttributeBuilder()
                 .addRejectCheck(RejectAttributeChecker.SIMPLE_EXPRESSIONS,
-                        StoreResourceDefinition.CLASS, BaseStoreResourceDefinition.FETCH_STATE, BaseStoreResourceDefinition.PASSIVATION, BaseStoreResourceDefinition.PRELOAD,
-                        BaseStoreResourceDefinition.PURGE, BaseStoreResourceDefinition.SHARED, BaseStoreResourceDefinition.SINGLETON)
+                        CustomStoreResourceDefinition.CLASS, StoreResourceDefinition.FETCH_STATE, StoreResourceDefinition.PASSIVATION, StoreResourceDefinition.PRELOAD,
+                        StoreResourceDefinition.PURGE, StoreResourceDefinition.SHARED, StoreResourceDefinition.SINGLETON)
                 .end();
         registerStoreTransformerChildren(storeBuilder);
         //remote-store=REMOTE_STORE
@@ -204,8 +204,8 @@ public class InfinispanTransformers {
                 .getAttributeBuilder()
                 .addRejectCheck(
                         RejectAttributeChecker.SIMPLE_EXPRESSIONS,
-                        RemoteStoreResourceDefinition.CACHE, BaseStoreResourceDefinition.FETCH_STATE, BaseStoreResourceDefinition.PASSIVATION, BaseStoreResourceDefinition.PRELOAD,
-                        BaseStoreResourceDefinition.PURGE, BaseStoreResourceDefinition.SHARED, BaseStoreResourceDefinition.SINGLETON, RemoteStoreResourceDefinition.SOCKET_TIMEOUT,
+                        RemoteStoreResourceDefinition.CACHE, StoreResourceDefinition.FETCH_STATE, StoreResourceDefinition.PASSIVATION, StoreResourceDefinition.PRELOAD,
+                        StoreResourceDefinition.PURGE, StoreResourceDefinition.SHARED, StoreResourceDefinition.SINGLETON, RemoteStoreResourceDefinition.SOCKET_TIMEOUT,
                         RemoteStoreResourceDefinition.TCP_NO_DELAY)
                 .end();
         registerStoreTransformerChildren(remoteStoreBuilder);
@@ -223,22 +223,22 @@ public class InfinispanTransformers {
         final RejectAttributeChecker nameTypeChecker = new RejectAttributeChecker.ObjectFieldsRejectAttributeChecker(new HashMap<String, RejectAttributeChecker>(){
             private static final long serialVersionUID = 1L;
             {
-                setMapValues(this, RejectAttributeChecker.SIMPLE_EXPRESSIONS, BaseJDBCStoreResourceDefinition.COLUMN_NAME, BaseJDBCStoreResourceDefinition.COLUMN_TYPE);
+                setMapValues(this, RejectAttributeChecker.SIMPLE_EXPRESSIONS, JDBCStoreResourceDefinition.COLUMN_NAME, JDBCStoreResourceDefinition.COLUMN_TYPE);
             }});
         final RejectAttributeChecker jdbcKeyedTableChecker = new RejectAttributeChecker.ObjectFieldsRejectAttributeChecker(new HashMap<String, RejectAttributeChecker>() {
             private static final long serialVersionUID = 1L;
             {
                 setMapValues(this, RejectAttributeChecker.SIMPLE_EXPRESSIONS,
-                        BaseJDBCStoreResourceDefinition.PREFIX, BaseJDBCStoreResourceDefinition.BATCH_SIZE, BaseJDBCStoreResourceDefinition.FETCH_SIZE);
-                setMapValues(this, nameTypeChecker, BaseJDBCStoreResourceDefinition.ID_COLUMN, BaseJDBCStoreResourceDefinition.DATA_COLUMN, BaseJDBCStoreResourceDefinition.TIMESTAMP_COLUMN);
+                        JDBCStoreResourceDefinition.PREFIX, JDBCStoreResourceDefinition.BATCH_SIZE, JDBCStoreResourceDefinition.FETCH_SIZE);
+                setMapValues(this, nameTypeChecker, JDBCStoreResourceDefinition.ID_COLUMN, JDBCStoreResourceDefinition.DATA_COLUMN, JDBCStoreResourceDefinition.TIMESTAMP_COLUMN);
             }});
-        AttributeDefinition[] jdbcStoreSimpleAttributes = { BaseJDBCStoreResourceDefinition.DATA_SOURCE, BaseStoreResourceDefinition.FETCH_STATE, BaseStoreResourceDefinition.PASSIVATION,
-                BaseStoreResourceDefinition.PRELOAD, BaseStoreResourceDefinition.PURGE, BaseStoreResourceDefinition.SHARED, BaseStoreResourceDefinition.SINGLETON };
+        AttributeDefinition[] jdbcStoreSimpleAttributes = { JDBCStoreResourceDefinition.DATA_SOURCE, StoreResourceDefinition.FETCH_STATE, StoreResourceDefinition.PASSIVATION,
+                StoreResourceDefinition.PRELOAD, StoreResourceDefinition.PURGE, StoreResourceDefinition.SHARED, StoreResourceDefinition.SINGLETON };
 
         //binaryKeyedJdbcStore
         ResourceTransformationDescriptionBuilder binaryKeyedJdbcStoreBuilder = parent.addChildResource(BinaryKeyedJDBCStoreResourceDefinition.BINARY_KEYED_JDBC_STORE_PATH)
                 .getAttributeBuilder()
-                .addRejectCheck(jdbcKeyedTableChecker, BaseJDBCStoreResourceDefinition.BINARY_KEYED_TABLE)
+                .addRejectCheck(jdbcKeyedTableChecker, JDBCStoreResourceDefinition.BINARY_KEYED_TABLE)
                 .addRejectCheck(RejectAttributeChecker.SIMPLE_EXPRESSIONS, jdbcStoreSimpleAttributes)
                 .end();
         registerStoreTransformerChildren(binaryKeyedJdbcStoreBuilder);
@@ -246,7 +246,7 @@ public class InfinispanTransformers {
         //stringKeyedJdbcStore
         ResourceTransformationDescriptionBuilder stringKeyedJdbcStoreBuilder = parent.addChildResource(StringKeyedJDBCStoreResourceDefinition.STRING_KEYED_JDBC_STORE_PATH)
                 .getAttributeBuilder()
-                .addRejectCheck(jdbcKeyedTableChecker, BaseJDBCStoreResourceDefinition.STRING_KEYED_TABLE)
+                .addRejectCheck(jdbcKeyedTableChecker, JDBCStoreResourceDefinition.STRING_KEYED_TABLE)
                 .addRejectCheck(RejectAttributeChecker.SIMPLE_EXPRESSIONS, jdbcStoreSimpleAttributes)
                 .end();
         registerStoreTransformerChildren(stringKeyedJdbcStoreBuilder);
@@ -254,7 +254,7 @@ public class InfinispanTransformers {
         //mixedKeyedJdbcStore
         ResourceTransformationDescriptionBuilder mixedKeyedJdbcStoreBuilder = parent.addChildResource(MixedKeyedJDBCStoreResourceDefinition.MIXED_KEYED_JDBC_STORE_PATH)
                 .getAttributeBuilder()
-                .addRejectCheck(jdbcKeyedTableChecker, BaseJDBCStoreResourceDefinition.STRING_KEYED_TABLE, BaseJDBCStoreResourceDefinition.BINARY_KEYED_TABLE)
+                .addRejectCheck(jdbcKeyedTableChecker, JDBCStoreResourceDefinition.STRING_KEYED_TABLE, JDBCStoreResourceDefinition.BINARY_KEYED_TABLE)
                 .addRejectCheck(RejectAttributeChecker.SIMPLE_EXPRESSIONS, jdbcStoreSimpleAttributes)
                 .end();
         registerStoreTransformerChildren(mixedKeyedJdbcStoreBuilder);

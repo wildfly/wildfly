@@ -111,7 +111,7 @@ public class CacheConfigOperationHandlers {
         private final AttributeDefinition[] attributes;
 
         AbstractCacheStoreAdd() {
-            this.attributes = BaseStoreResourceDefinition.COMMON_STORE_PARAMETERS;
+            this.attributes = StoreResourceDefinition.COMMON_STORE_PARAMETERS;
         }
 
         @Override
@@ -128,7 +128,7 @@ public class CacheConfigOperationHandlers {
             for(final AttributeDefinition attribute : attributes) {
                 // we use PROPERTIES only to allow the user to pass in a list of properties on store add commands
                 // don't copy these into the model
-                if (attribute.getName().equals(BaseStoreResourceDefinition.PROPERTIES.getName()))
+                if (attribute.getName().equals(StoreResourceDefinition.PROPERTIES.getName()))
                     continue ;
                 attribute.validateAndSet(operation, model);
             }
@@ -166,7 +166,7 @@ public class CacheConfigOperationHandlers {
         private final AttributeDefinition[] attributes;
 
         CacheStoreAdd() {
-            this.attributes = StoreResourceDefinition.STORE_ATTRIBUTES;
+            this.attributes = CustomStoreResourceDefinition.STORE_ATTRIBUTES;
         }
 
         @Override
@@ -201,7 +201,7 @@ public class CacheConfigOperationHandlers {
         private final AttributeDefinition[] attributes;
 
         JDBCCacheStoreAdd() {
-            this.attributes = BaseJDBCStoreResourceDefinition.COMMON_JDBC_STORE_ATTRIBUTES;
+            this.attributes = JDBCStoreResourceDefinition.COMMON_JDBC_STORE_ATTRIBUTES;
         }
 
         @Override

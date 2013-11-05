@@ -126,7 +126,7 @@ public final class InfinispanSubsystemXMLReader_2_0 implements XMLElementReader<
                     break;
                 }
                 case MODULE: {
-                    CacheContainerResourceDefinition.CACHE_CONTAINER_MODULE.parseAndSetParameter(value, container, reader);
+                    CacheContainerResourceDefinition.MODULE.parseAndSetParameter(value, container, reader);
                     break;
                 }
                 case STATISTICS: {
@@ -233,7 +233,7 @@ public final class InfinispanSubsystemXMLReader_2_0 implements XMLElementReader<
                 break;
             }
             case MODULE: {
-                CacheResourceDefinition.CACHE_MODULE.parseAndSetParameter(value, cache, reader);
+                CacheResourceDefinition.MODULE.parseAndSetParameter(value, cache, reader);
                 break;
             }
             case STATISTICS: {
@@ -710,7 +710,7 @@ public final class InfinispanSubsystemXMLReader_2_0 implements XMLElementReader<
             Attribute attribute = Attribute.forName(reader.getAttributeLocalName(i));
             switch (attribute) {
                 case CLASS: {
-                    StoreResourceDefinition.CLASS.parseAndSetParameter(value, store, reader);
+                    CustomStoreResourceDefinition.CLASS.parseAndSetParameter(value, store, reader);
                     break;
                 }
                 default: {
@@ -840,7 +840,7 @@ public final class InfinispanSubsystemXMLReader_2_0 implements XMLElementReader<
             Attribute attribute = Attribute.forName(reader.getAttributeLocalName(i));
             switch (attribute) {
                 case DATASOURCE: {
-                    BaseJDBCStoreResourceDefinition.DATA_SOURCE.parseAndSetParameter(value, store, reader);
+                    JDBCStoreResourceDefinition.DATA_SOURCE.parseAndSetParameter(value, store, reader);
                     break;
                 }
                 default: {
@@ -885,7 +885,7 @@ public final class InfinispanSubsystemXMLReader_2_0 implements XMLElementReader<
             Attribute attribute = Attribute.forName(reader.getAttributeLocalName(i));
             switch (attribute) {
                 case DATASOURCE: {
-                    BaseJDBCStoreResourceDefinition.DATA_SOURCE.parseAndSetParameter(value, store, reader);
+                    JDBCStoreResourceDefinition.DATA_SOURCE.parseAndSetParameter(value, store, reader);
                     break;
                 }
                 default: {
@@ -930,7 +930,7 @@ public final class InfinispanSubsystemXMLReader_2_0 implements XMLElementReader<
             Attribute attribute = Attribute.forName(reader.getAttributeLocalName(i));
             switch (attribute) {
                 case DATASOURCE: {
-                    BaseJDBCStoreResourceDefinition.DATA_SOURCE.parseAndSetParameter(value, store, reader);
+                    JDBCStoreResourceDefinition.DATA_SOURCE.parseAndSetParameter(value, store, reader);
                     break;
                 }
                 default: {
@@ -976,15 +976,15 @@ public final class InfinispanSubsystemXMLReader_2_0 implements XMLElementReader<
             Attribute attribute = Attribute.forName(reader.getAttributeLocalName(i));
             switch (attribute) {
                 case PREFIX: {
-                    BaseJDBCStoreResourceDefinition.PREFIX.parseAndSetParameter(value, table, reader);
+                    JDBCStoreResourceDefinition.PREFIX.parseAndSetParameter(value, table, reader);
                     break;
                 }
                 case FETCH_SIZE: {
-                    BaseJDBCStoreResourceDefinition.FETCH_SIZE.parseAndSetParameter(value, table, reader);
+                    JDBCStoreResourceDefinition.FETCH_SIZE.parseAndSetParameter(value, table, reader);
                     break;
                 }
                 case BATCH_SIZE: {
-                    BaseJDBCStoreResourceDefinition.BATCH_SIZE.parseAndSetParameter(value, table, reader);
+                    JDBCStoreResourceDefinition.BATCH_SIZE.parseAndSetParameter(value, table, reader);
                     break;
                 }
                 default: {
@@ -1021,11 +1021,11 @@ public final class InfinispanSubsystemXMLReader_2_0 implements XMLElementReader<
             Attribute attribute = Attribute.forName(reader.getAttributeLocalName(i));
             switch (attribute) {
                 case NAME: {
-                    BaseJDBCStoreResourceDefinition.COLUMN_NAME.parseAndSetParameter(value, column, reader);
+                    JDBCStoreResourceDefinition.COLUMN_NAME.parseAndSetParameter(value, column, reader);
                     break;
                 }
                 case TYPE: {
-                    BaseJDBCStoreResourceDefinition.COLUMN_TYPE.parseAndSetParameter(value, column, reader);
+                    JDBCStoreResourceDefinition.COLUMN_TYPE.parseAndSetParameter(value, column, reader);
                     break;
                 }
                 default: {
@@ -1039,27 +1039,27 @@ public final class InfinispanSubsystemXMLReader_2_0 implements XMLElementReader<
     private void parseStoreAttribute(XMLExtendedStreamReader reader, int index, Attribute attribute, String value, ModelNode store) throws XMLStreamException {
         switch (attribute) {
             case SHARED: {
-                BaseStoreResourceDefinition.SHARED.parseAndSetParameter(value, store, reader);
+                StoreResourceDefinition.SHARED.parseAndSetParameter(value, store, reader);
                 break;
             }
             case PRELOAD: {
-                BaseStoreResourceDefinition.PRELOAD.parseAndSetParameter(value, store, reader);
+                StoreResourceDefinition.PRELOAD.parseAndSetParameter(value, store, reader);
                 break;
             }
             case PASSIVATION: {
-                BaseStoreResourceDefinition.PASSIVATION.parseAndSetParameter(value, store, reader);
+                StoreResourceDefinition.PASSIVATION.parseAndSetParameter(value, store, reader);
                 break;
             }
             case FETCH_STATE: {
-                BaseStoreResourceDefinition.FETCH_STATE.parseAndSetParameter(value, store, reader);
+                StoreResourceDefinition.FETCH_STATE.parseAndSetParameter(value, store, reader);
                 break;
             }
             case PURGE: {
-                BaseStoreResourceDefinition.PURGE.parseAndSetParameter(value, store, reader);
+                StoreResourceDefinition.PURGE.parseAndSetParameter(value, store, reader);
                 break;
             }
             case SINGLETON: {
-                BaseStoreResourceDefinition.SINGLETON.parseAndSetParameter(value, store, reader);
+                StoreResourceDefinition.SINGLETON.parseAndSetParameter(value, store, reader);
                 break;
             }
             default: {

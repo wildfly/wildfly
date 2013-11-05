@@ -105,7 +105,7 @@ public class CacheContainerAdd extends AbstractAddStepHandler {
         CacheContainerResourceDefinition.LISTENER_EXECUTOR.validateAndSet(source, target);
         CacheContainerResourceDefinition.EVICTION_EXECUTOR.validateAndSet(source, target);
         CacheContainerResourceDefinition.REPLICATION_QUEUE_EXECUTOR.validateAndSet(source, target);
-        CacheContainerResourceDefinition.CACHE_CONTAINER_MODULE.validateAndSet(source, target);
+        CacheContainerResourceDefinition.MODULE.validateAndSet(source, target);
         CacheContainerResourceDefinition.STATISTICS.validateAndSet(source, target);
     }
 
@@ -147,7 +147,7 @@ public class CacheContainerAdd extends AbstractAddStepHandler {
             }
         }
 
-        final ModuleIdentifier moduleId = (resolvedValue = CacheContainerResourceDefinition.CACHE_CONTAINER_MODULE.resolveModelAttribute(context, containerModel)).isDefined() ? ModuleIdentifier.fromString(resolvedValue.asString()) : null;
+        final ModuleIdentifier moduleId = (resolvedValue = CacheContainerResourceDefinition.MODULE.resolveModelAttribute(context, containerModel)).isDefined() ? ModuleIdentifier.fromString(resolvedValue.asString()) : null;
 
         // if we have a transport defined, pick up the transport-related attributes and install a channel
         final Transport transportConfig = containerModel.hasDefined(ModelKeys.TRANSPORT) && containerModel.get(ModelKeys.TRANSPORT).hasDefined(ModelKeys.TRANSPORT_NAME) ? new Transport() : null;

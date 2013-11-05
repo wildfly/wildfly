@@ -46,7 +46,7 @@ import org.jboss.dmr.ModelType;
  *
  * @author Richard Achmatowicz (c) 2011 Red Hat Inc.
  */
-public class FileStoreResourceDefinition extends BaseStoreResourceDefinition {
+public class FileStoreResourceDefinition extends StoreResourceDefinition {
 
     public static final PathElement FILE_STORE_PATH = PathElement.pathElement(ModelKeys.FILE_STORE, ModelKeys.FILE_STORE_NAME);
 
