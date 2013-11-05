@@ -28,27 +28,35 @@ import javax.enterprise.inject.spi.BeanManager;
 import javax.transaction.UserTransaction;
 
 import org.jberet.spi.BatchEnvironment;
+import org.jboss.as.ee.structure.DeploymentType;
+import org.jboss.as.ee.structure.DeploymentTypeMarker;
 import org.jboss.as.server.deployment.Attachments;
 import org.jboss.as.server.deployment.DeploymentPhaseContext;
 import org.jboss.as.server.deployment.DeploymentUnit;
+import org.jboss.as.server.deployment.DeploymentUnitProcessingException;
 import org.jboss.as.server.deployment.DeploymentUnitProcessor;
+import org.jboss.as.server.deployment.module.ResourceRoot;
 import org.jboss.as.txn.service.TxnServices;
 import org.jboss.modules.Module;
 import org.jboss.msc.inject.CastingInjector;
 import org.jboss.msc.service.ServiceBuilder;
 import org.jboss.msc.service.ServiceTarget;
 import org.jboss.msc.value.ImmediateValue;
+import org.jboss.vfs.VirtualFile;
+import org.wildfly.extension.batch._private.BatchLogger;
 import org.wildfly.extension.batch.services.BatchServiceNames;
 import org.wildfly.jberet.services.BatchEnvironmentService;
 
 /**
  * Deployment unit processor for javax.batch integration.
  */
-public class BatchEnvironmentProcessor extends AbstractBatchProcessor implements DeploymentUnitProcessor {
+public class BatchEnvironmentProcessor implements DeploymentUnitProcessor {
 
     @Override
-    protected void processDeployment(final DeploymentPhaseContext phaseContext, final DeploymentUnit deploymentUnit) {
+    public void deploy(final DeploymentPhaseContext phaseContext) throws DeploymentUnitProcessingException {
+        final DeploymentUnit deploymentUnit = phaseContext.getDeploymentUnit();
         if (deploymentUnit.hasAttachment(Attachments.MODULE)) {
+            BatchLogger.LOGGER.tracef("Processing deployment '%s' for batch.", deploymentUnit.getName());
             // Get the class loader
             final Module module = deploymentUnit.getAttachment(Attachments.MODULE);
             final ClassLoader moduleClassLoader = module.getClassLoader();
@@ -59,14 +67,20 @@ public class BatchEnvironmentProcessor extends AbstractBatchProcessor implements
 
             final ServiceBuilder<BatchEnvironment> serviceBuilder = serviceTarget.addService(BatchServiceNames.batchDeploymentServiceName(deploymentUnit), service);
             serviceBuilder.addDependency(BatchServiceNames.BATCH_PROPERTIES, Properties.class, service.getPropertiesInjector());
-            serviceBuilder.addDependency(TxnServices.JBOSS_TXN_USER_TRANSACTION, UserTransaction.class, service.getUserTransactionInjector());
             serviceBuilder.addDependency(BatchServiceNames.BATCH_THREAD_POOL_NAME, ExecutorService.class, service.getExecutorServiceInjector());
 
             // Set the class loader
-            service.getClassLoaderInjector().setValue(new ImmediateValue<ClassLoader>(moduleClassLoader));
+            service.getClassLoaderInjector().setValue(new ImmediateValue<>(moduleClassLoader));
 
-            // Add the bean manager
-            serviceBuilder.addDependency(BatchServiceNames.beanManagerServiceName(deploymentUnit), new CastingInjector<BeanManager>(service.getBeanManagerInjector(), BeanManager.class));
+            // Only add transactions and the BeanManager if this is a batch deployment
+            if (isBatchDeployment(deploymentUnit)) {
+                serviceBuilder.addDependency(TxnServices.JBOSS_TXN_USER_TRANSACTION, UserTransaction.class, service.getUserTransactionInjector());
+
+                // Add the bean manager
+                serviceBuilder.addDependency(BatchServiceNames.beanManagerServiceName(deploymentUnit), new CastingInjector<>(service.getBeanManagerInjector(), BeanManager.class));
+            } else {
+                BatchLogger.LOGGER.tracef("Skipping UserTransaction and BeanManager service dependencies for deployment %s", deploymentUnit.getName());
+            }
 
             serviceBuilder.install();
         }
@@ -74,5 +88,33 @@ public class BatchEnvironmentProcessor extends AbstractBatchProcessor implements
 
     @Override
     public void undeploy(DeploymentUnit context) {
+    }
+
+    /**
+     * Batch deployments must have a {@code META-INF/batch.xml} and/or XML configuration files in {@code
+     * META-INF/batch-jobs}. They must be in an EJB JAR or a WAR.
+     *
+     * @param deploymentUnit the deployment unit to check
+     *
+     * @return {@code true} if a {@code META-INF/batch.xml} or a non-empty {@code META-INF/batch-jobs} directory was
+     *         found otherwise {@code false}
+     */
+    private boolean isBatchDeployment(final DeploymentUnit deploymentUnit) {
+        // Section 10.7 of JSR 352 discusses valid packaging types, of which it appears EAR should be one. It seems
+        // though that it's of no real use as 10.5 and 10.6 seem to indicate it must be in META-INF/batch-jobs of a JAR
+        // and WEB-INF/classes/META-INF/batch-jobs of a WAR.
+        if (DeploymentTypeMarker.isType(DeploymentType.EAR, deploymentUnit) || !deploymentUnit.hasAttachment(Attachments.DEPLOYMENT_ROOT)) {
+            return false;
+        }
+        final ResourceRoot root = deploymentUnit.getAttachment(Attachments.DEPLOYMENT_ROOT);
+        final VirtualFile metaInf;
+        if (DeploymentTypeMarker.isType(DeploymentType.WAR, deploymentUnit)) {
+            metaInf = root.getRoot().getChild("WEB-INF/classes/META-INF");
+        } else {
+            metaInf = root.getRoot().getChild("META-INF");
+        }
+        final VirtualFile jobXmlFile = metaInf.getChild("batch.xml");
+        final VirtualFile batchJobsDir = metaInf.getChild("batch-jobs");
+        return (jobXmlFile.exists() || (batchJobsDir.exists() && !batchJobsDir.getChildren().isEmpty()));
     }
 }

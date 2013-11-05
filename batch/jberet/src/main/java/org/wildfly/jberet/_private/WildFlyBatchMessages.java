@@ -39,12 +39,13 @@ public interface WildFlyBatchMessages {
     WildFlyBatchMessages MESSAGES = Messages.getBundle(WildFlyBatchMessages.class);
 
     /**
-     * Creates an exception indicating a failure to lookup the JNDI name.
+     * Creates an exception indicating a service was not installed.
      *
-     * @param name the name for the lookup that caused the failure
+     * @param name a name for the service
      *
-     * @return a {@link RuntimeException} for the error
+     * @return an {@link IllegalStateException} for the error
      */
-    @Message(id = 20560, value = " Could not lookup jndi name: %s")
-    RuntimeException jndiLookupFailed(String name);
+    @Message(id = 20560, value = "%s service was not added on the deployment. Ensure the deployment has a " +
+            "META-INF/batch.xml file or the META-INF/batch-jobs directory contains batch configuration files.")
+    IllegalStateException serviceNotInstalled(String name);
 }
