@@ -93,8 +93,8 @@ public class CacheMetricsHandler extends AbstractRuntimeOnlyHandler {
         PASSIVATIONS(CacheResourceDefinition.PASSIVATIONS),
         // ActivationInterceptor
         ACTIVATIONS(CacheResourceDefinition.ACTIVATIONS),
-        CACHE_LOADER_LOADS(BaseStoreResourceDefinition.CACHE_LOADER_LOADS),
-        CACHE_LOADER_MISSES(BaseStoreResourceDefinition.CACHE_LOADER_MISSES);
+        CACHE_LOADER_LOADS(StoreResourceDefinition.CACHE_LOADER_LOADS),
+        CACHE_LOADER_MISSES(StoreResourceDefinition.CACHE_LOADER_MISSES);
 
         private static final Map<String, CacheMetrics> MAP = new HashMap<String, CacheMetrics>();
 

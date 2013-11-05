@@ -62,11 +62,11 @@ public class InfinispanRejectedExpressions_1_3 {
             RemoteStoreResourceDefinition.OUTBOUND_SOCKET_BINDING,
             RemoteStoreResourceDefinition.REMOTE_SERVER,
             RemoteStoreResourceDefinition.REMOTE_SERVERS,
-            BaseJDBCStoreResourceDefinition.ID_COLUMN,
-            BaseJDBCStoreResourceDefinition.DATA_COLUMN,
-            BaseJDBCStoreResourceDefinition.TIMESTAMP_COLUMN,
-            BaseJDBCStoreResourceDefinition.ENTRY_TABLE,
-            BaseJDBCStoreResourceDefinition.BUCKET_TABLE,
+            JDBCStoreResourceDefinition.ID_COLUMN,
+            JDBCStoreResourceDefinition.DATA_COLUMN,
+            JDBCStoreResourceDefinition.TIMESTAMP_COLUMN,
+            JDBCStoreResourceDefinition.ENTRY_TABLE,
+            JDBCStoreResourceDefinition.BUCKET_TABLE,
             //BaseJDBCStoreResourceDefinition.BINARY_KEYED_TABLE,
             //BaseJDBCStoreResourceDefinition.STRING_KEYED_TABLE
     };
@@ -114,11 +114,11 @@ public class InfinispanRejectedExpressions_1_3 {
 
     public static final AttributeDefinition[] REJECT_STORE_ATTRIBUTES = remove(
             concat(
-                BaseStoreResourceDefinition.COMMON_STORE_ATTRIBUTES,
-                StoreResourceDefinition.STORE_ATTRIBUTES,
+                StoreResourceDefinition.COMMON_STORE_ATTRIBUTES,
+                CustomStoreResourceDefinition.STORE_ATTRIBUTES,
                 FileStoreResourceDefinition.FILE_STORE_ATTRIBUTES,
                 RemoteStoreResourceDefinition.REMOTE_STORE_ATTRIBUTES,
-                BaseJDBCStoreResourceDefinition.COMMON_BASE_JDBC_STORE_ATTRIBUTES,
+                JDBCStoreResourceDefinition.COMMON_BASE_JDBC_STORE_ATTRIBUTES,
                 StringKeyedJDBCStoreResourceDefinition.STRING_KEYED_JDBC_STORE_ATTRIBUTES,
                 BinaryKeyedJDBCStoreResourceDefinition.BINARY_KEYED_JDBC_STORE_ATTRIBUTES,
                 MixedKeyedJDBCStoreResourceDefinition.MIXED_KEYED_JDBC_STORE_ATTRIBUTES,
@@ -167,11 +167,11 @@ public class InfinispanRejectedExpressions_1_3 {
 
     public static final AttributeDefinition[] ACCEPT14_REJECT13_STORE_ATTRIBUTES = remove(
             concat(
-                BaseStoreResourceDefinition.COMMON_STORE_ATTRIBUTES,
-                StoreResourceDefinition.STORE_ATTRIBUTES,
+                StoreResourceDefinition.COMMON_STORE_ATTRIBUTES,
+                CustomStoreResourceDefinition.STORE_ATTRIBUTES,
                 FileStoreResourceDefinition.FILE_STORE_ATTRIBUTES,
                 RemoteStoreResourceDefinition.REMOTE_STORE_ATTRIBUTES,
-                BaseJDBCStoreResourceDefinition.COMMON_BASE_JDBC_STORE_ATTRIBUTES,
+                JDBCStoreResourceDefinition.COMMON_BASE_JDBC_STORE_ATTRIBUTES,
                 StringKeyedJDBCStoreResourceDefinition.STRING_KEYED_JDBC_STORE_ATTRIBUTES,
                 BinaryKeyedJDBCStoreResourceDefinition.BINARY_KEYED_JDBC_STORE_ATTRIBUTES,
                 MixedKeyedJDBCStoreResourceDefinition.MIXED_KEYED_JDBC_STORE_ATTRIBUTES,

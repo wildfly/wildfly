@@ -41,7 +41,7 @@ import org.jboss.as.controller.registry.OperationEntry;
  *
  * @author Richard Achmatowicz (c) 2011 Red Hat Inc.
  */
-public class MixedKeyedJDBCStoreResourceDefinition extends BaseJDBCStoreResourceDefinition {
+public class MixedKeyedJDBCStoreResourceDefinition extends JDBCStoreResourceDefinition {
 
     public static final PathElement MIXED_KEYED_JDBC_STORE_PATH = PathElement.pathElement(ModelKeys.MIXED_KEYED_JDBC_STORE, ModelKeys.MIXED_KEYED_JDBC_STORE_NAME);
 

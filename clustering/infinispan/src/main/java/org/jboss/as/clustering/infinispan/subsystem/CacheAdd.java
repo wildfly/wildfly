@@ -191,7 +191,7 @@ public abstract class CacheAdd extends AbstractAddStepHandler {
         final String jndiName = ((resolvedValue = CacheResourceDefinition.JNDI_NAME.resolveModelAttribute(context, cacheModel)).isDefined()) ? resolvedValue.asString() : null;
         final ServiceController.Mode initialMode = StartMode.valueOf(CacheResourceDefinition.START.resolveModelAttribute(context, cacheModel).asString()).getMode();
 
-        final ModuleIdentifier moduleId = (resolvedValue = CacheResourceDefinition.CACHE_MODULE.resolveModelAttribute(context, cacheModel)).isDefined() ? ModuleIdentifier.fromString(resolvedValue.asString()) : null;
+        final ModuleIdentifier moduleId = (resolvedValue = CacheResourceDefinition.MODULE.resolveModelAttribute(context, cacheModel)).isDefined() ? ModuleIdentifier.fromString(resolvedValue.asString()) : null;
 
         // create a list for dependencies which may need to be added during processing
         List<Dependency<?>> dependencies = new LinkedList<Dependency<?>>();
@@ -383,7 +383,7 @@ public abstract class CacheAdd extends AbstractAddStepHandler {
         CacheResourceDefinition.BATCHING.validateAndSet(fromModel, toModel);
         CacheResourceDefinition.INDEXING.validateAndSet(fromModel, toModel);
         CacheResourceDefinition.JNDI_NAME.validateAndSet(fromModel, toModel);
-        CacheResourceDefinition.CACHE_MODULE.validateAndSet(fromModel, toModel);
+        CacheResourceDefinition.MODULE.validateAndSet(fromModel, toModel);
         CacheResourceDefinition.INDEXING_PROPERTIES.validateAndSet(fromModel, toModel);
         CacheResourceDefinition.STATISTICS.validateAndSet(fromModel, toModel);
     }
@@ -498,12 +498,12 @@ public abstract class CacheAdd extends AbstractAddStepHandler {
         if (storeKey != null) {
             ModelNode store = getStoreModelNode(cache);
 
-            final boolean shared = BaseStoreResourceDefinition.SHARED.resolveModelAttribute(context, store).asBoolean();
-            final boolean preload = BaseStoreResourceDefinition.PRELOAD.resolveModelAttribute(context, store).asBoolean();
-            final boolean passivation = BaseStoreResourceDefinition.PASSIVATION.resolveModelAttribute(context, store).asBoolean();
-            final boolean fetchState = BaseStoreResourceDefinition.FETCH_STATE.resolveModelAttribute(context, store).asBoolean();
-            final boolean purge = BaseStoreResourceDefinition.PURGE.resolveModelAttribute(context, store).asBoolean();
-            final boolean singleton = BaseStoreResourceDefinition.SINGLETON.resolveModelAttribute(context, store).asBoolean();
+            final boolean shared = StoreResourceDefinition.SHARED.resolveModelAttribute(context, store).asBoolean();
+            final boolean preload = StoreResourceDefinition.PRELOAD.resolveModelAttribute(context, store).asBoolean();
+            final boolean passivation = StoreResourceDefinition.PASSIVATION.resolveModelAttribute(context, store).asBoolean();
+            final boolean fetchState = StoreResourceDefinition.FETCH_STATE.resolveModelAttribute(context, store).asBoolean();
+            final boolean purge = StoreResourceDefinition.PURGE.resolveModelAttribute(context, store).asBoolean();
+            final boolean singleton = StoreResourceDefinition.SINGLETON.resolveModelAttribute(context, store).asBoolean();
             // TODO Fix me
             final boolean async = store.hasDefined(ModelKeys.WRITE_BEHIND) && store.get(ModelKeys.WRITE_BEHIND, ModelKeys.WRITE_BEHIND_NAME).isDefined();
 
@@ -610,7 +610,7 @@ public abstract class CacheAdd extends AbstractAddStepHandler {
         } else if (storeKey.equals(ModelKeys.STRING_KEYED_JDBC_STORE) || storeKey.equals(ModelKeys.BINARY_KEYED_JDBC_STORE) || storeKey.equals(ModelKeys.MIXED_KEYED_JDBC_STORE)) {
             AbstractJdbcStoreConfigurationBuilder<?, ?> builder = buildJdbcStore(persistenceBuilder, context, store);
 
-            String datasource = BaseJDBCStoreResourceDefinition.DATA_SOURCE.resolveModelAttribute(context, store).asString();
+            String datasource = JDBCStoreResourceDefinition.DATA_SOURCE.resolveModelAttribute(context, store).asString();
 
             dependencies.add(new Dependency<Object>(ServiceName.JBOSS.append("data-source", datasource)));
             builder.dataSource().jndiUrl(datasource);
@@ -679,16 +679,16 @@ public abstract class CacheAdd extends AbstractAddStepHandler {
     }
 
     private static void buildTable(TableManipulationConfigurationBuilder<?, ?> builder, OperationContext context, ModelNode table, String defaultTableNamePrefix) throws OperationFailedException {
-        ModelNode tableNamePrefix = BaseJDBCStoreResourceDefinition.PREFIX.resolveModelAttribute(context, table);
-        builder.batchSize(BaseJDBCStoreResourceDefinition.BATCH_SIZE.resolveModelAttribute(context, table).asInt())
-                .fetchSize(BaseJDBCStoreResourceDefinition.FETCH_SIZE.resolveModelAttribute(context, table).asInt())
+        ModelNode tableNamePrefix = JDBCStoreResourceDefinition.PREFIX.resolveModelAttribute(context, table);
+        builder.batchSize(JDBCStoreResourceDefinition.BATCH_SIZE.resolveModelAttribute(context, table).asInt())
+                .fetchSize(JDBCStoreResourceDefinition.FETCH_SIZE.resolveModelAttribute(context, table).asInt())
                 .tableNamePrefix(tableNamePrefix.isDefined() ? tableNamePrefix.asString() : defaultTableNamePrefix)
-                .idColumnName(getColumnProperty(context, table, ModelKeys.ID_COLUMN, BaseJDBCStoreResourceDefinition.COLUMN_NAME, "id"))
-                .idColumnType(getColumnProperty(context, table, ModelKeys.ID_COLUMN, BaseJDBCStoreResourceDefinition.COLUMN_TYPE, "VARCHAR"))
-                .dataColumnName(getColumnProperty(context, table, ModelKeys.DATA_COLUMN, BaseJDBCStoreResourceDefinition.COLUMN_NAME, "datum"))
-                .dataColumnType(getColumnProperty(context, table, ModelKeys.DATA_COLUMN, BaseJDBCStoreResourceDefinition.COLUMN_TYPE, "BINARY"))
-                .timestampColumnName(getColumnProperty(context, table, ModelKeys.TIMESTAMP_COLUMN, BaseJDBCStoreResourceDefinition.COLUMN_NAME, "version"))
-                .timestampColumnType(getColumnProperty(context, table, ModelKeys.TIMESTAMP_COLUMN, BaseJDBCStoreResourceDefinition.COLUMN_TYPE, "BIGINT"));
+                .idColumnName(getColumnProperty(context, table, ModelKeys.ID_COLUMN, JDBCStoreResourceDefinition.COLUMN_NAME, "id"))
+                .idColumnType(getColumnProperty(context, table, ModelKeys.ID_COLUMN, JDBCStoreResourceDefinition.COLUMN_TYPE, "VARCHAR"))
+                .dataColumnName(getColumnProperty(context, table, ModelKeys.DATA_COLUMN, JDBCStoreResourceDefinition.COLUMN_NAME, "datum"))
+                .dataColumnType(getColumnProperty(context, table, ModelKeys.DATA_COLUMN, JDBCStoreResourceDefinition.COLUMN_TYPE, "BINARY"))
+                .timestampColumnName(getColumnProperty(context, table, ModelKeys.TIMESTAMP_COLUMN, JDBCStoreResourceDefinition.COLUMN_NAME, "version"))
+                .timestampColumnType(getColumnProperty(context, table, ModelKeys.TIMESTAMP_COLUMN, JDBCStoreResourceDefinition.COLUMN_TYPE, "BIGINT"));
     }
 
     private static String getColumnProperty(OperationContext context, ModelNode table, String columnKey, AttributeDefinition columnAttribute, String defaultValue) throws OperationFailedException

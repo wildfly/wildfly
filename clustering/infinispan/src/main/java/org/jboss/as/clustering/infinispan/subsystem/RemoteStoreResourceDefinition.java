@@ -47,7 +47,7 @@ import org.jboss.dmr.ModelType;
  *
  * @author Richard Achmatowicz (c) 2011 Red Hat Inc.
  */
-public class RemoteStoreResourceDefinition extends BaseStoreResourceDefinition {
+public class RemoteStoreResourceDefinition extends StoreResourceDefinition {
 
     public static final PathElement REMOTE_STORE_PATH = PathElement.pathElement(ModelKeys.REMOTE_STORE, ModelKeys.REMOTE_STORE_NAME);
 

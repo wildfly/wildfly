@@ -242,7 +242,7 @@ public class InfinispanSubsystemTransformerTestCase extends OperationTestCaseBas
             }
 
             PathElement[] storePaths = {
-                    StoreResourceDefinition.STORE_PATH,
+                    CustomStoreResourceDefinition.STORE_PATH,
                     FileStoreResourceDefinition.FILE_STORE_PATH,
                     StringKeyedJDBCStoreResourceDefinition.STRING_KEYED_JDBC_STORE_PATH,
                     BinaryKeyedJDBCStoreResourceDefinition.BINARY_KEYED_JDBC_STORE_PATH,
@@ -252,7 +252,7 @@ public class InfinispanSubsystemTransformerTestCase extends OperationTestCaseBas
 
 
             FailedOperationTransformationConfig.RejectExpressionsConfig keyedTableComplexChildConfig =
-                    new FailedOperationTransformationConfig.RejectExpressionsConfig(BaseJDBCStoreResourceDefinition.COMMON_JDBC_STORE_TABLE_ATTRIBUTES);
+                    new FailedOperationTransformationConfig.RejectExpressionsConfig(JDBCStoreResourceDefinition.COMMON_JDBC_STORE_TABLE_ATTRIBUTES);
 
 
             // cache store attributes
