@@ -35,21 +35,56 @@
     <xs:annotation>
       <xs:documentation><![CDATA[
 
-        The webservices subsystem, used to configure JBossWS.
+        The WSDL, a required deployment artifact for an endpoint, has a <soap:address>
+        element which points to the location of the endpoint. JBossWS supports the rewriting
+        of that SOAP address using the attribute values of wsdl-host and wsdl-port or
+        wsdl-secure-port.
 
-        The WSDL, that is a required deployment artifact for an endpoint, has a <soap:address>
-        element which points to the location of the endpoint. JBoss supports rewriting of that SOAP address.
-
-        If the content of <soap:address> is a valid URL, JBossWS will not rewrite it unless 'modify-soap-address' is true.
-        If the content of <soap:address> is not a valid URL, JBossWS will rewrite it using the attribute values given below.
-
-        If 'webServiceHost' is set to 'jbossws.undefined.host', JBossWS uses requesters host when rewriting the <soap:address>
+        The webservices subsystem supports the pre-definition of endpoint configurations can
+        be used for JAX-WS client and JAX-WS endpoint implementations, elements client-config and
+        endpoint-config respectively.  These configurations can include JAX-WS handlers and key/value
+        properties declarations that control JBossWS and Apache CXF internals.
 
       ]]></xs:documentation>
     </xs:annotation>
     <xs:sequence>
-      <xs:element name="modify-wsdl-address" type="xs:boolean" minOccurs="0" maxOccurs="1"/>
-      <xs:element name="wsdl-host" type="xs:string" minOccurs="0" maxOccurs="1"/>
+      <xs:element name="modify-wsdl-address" type="xs:boolean" minOccurs="0" maxOccurs="1">
+          <xs:annotation>
+              <xs:documentation><![CDATA[
+
+                When modify-wsdl-address is set to true and the content of <soap:address> is a valid URL,
+                JBossWS will rewrite the URL using the values of wsdl-host and wsdl-port or wsdl-secure-port.
+
+                When modify-wsdl-address is set to false and the content of <soap:address> is a valid URL,
+                JBossWS will not rewrite the URL.  The <soap:address> URL will be used.
+
+                When the content of <soap:address> is not a valid URL, JBossWS will rewrite it no matter
+                what the setting of modify-wsdl-address.
+
+                If modify-wsdl-address is set to true and wsdl-host is not defined or explicitly set to 'jbossws.undefined.host'
+                the content of <soap:address> URL is use.  JBossWS uses the requester's host when rewriting the <soap:address>
+
+                When modify-wsdl-address is not defined JBossWS uses a default value of true.
+
+              ]]></xs:documentation>
+          </xs:annotation>
+      </xs:element>
+      <xs:element name="wsdl-host" type="xs:string" minOccurs="0" maxOccurs="1">
+          <xs:annotation>
+              <xs:documentation><![CDATA[
+
+                This property explicitly defines the host name or the host's IP address
+                that will be used in the <soap:address> URL rewrite.
+
+                When wsdl-host is not defined JBossWS uses a value of 'jbossws.undefined.host'.
+
+                If wsdl-host is not defined or explicitly set to 'jbossws.undefined.host' and
+                modify-wsdl-address is set to true, the content of <soap:address> URL is use.
+                JBossWS uses requester's host when rewriting the <soap:address>
+
+              ]]></xs:documentation>
+          </xs:annotation>
+      </xs:element>
       <xs:element name="wsdl-port" type="xs:int" minOccurs="0" maxOccurs="1">
         <xs:annotation>
           <xs:documentation>
@@ -93,7 +128,7 @@
       <xs:annotation>
         <xs:documentation>
 
-          Endpoint config name. Must be unique inside subsysten element.
+          Endpoint config name. Must be unique inside subsystem element.
 
         </xs:documentation>
       </xs:annotation>
@@ -118,7 +153,7 @@
       <xs:annotation>
         <xs:documentation>
 
-          Client config name. Must be unique inside subsysten element.
+          Client config name. Must be unique inside subsystem element.
 
         </xs:documentation>
       </xs:annotation>
@@ -146,7 +181,7 @@
       <xs:annotation>
         <xs:documentation>
 
-          Property value. May be omited.
+          Property value. May be omitted.
 
         </xs:documentation>
       </xs:annotation>
@@ -179,7 +214,7 @@
       <xs:annotation>
         <xs:documentation>
 
-          If protocol-bindings attribute on the handler chain element is omited
+          If protocol-bindings attribute on the handler chain element is omitted
           then the handlers specified in the handler chain will be applied on 
           every endpoint/client.
 
