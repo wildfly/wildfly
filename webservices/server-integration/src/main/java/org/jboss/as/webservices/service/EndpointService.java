@@ -244,7 +244,7 @@ public final class EndpointService implements Service<Endpoint> {
                 service.getMBeanServerInjector());
         builder.addDependency(DependencyType.REQUIRED, WSServices.CONFIG_SERVICE);
         if (EndpointType.JAXWS_EJB3.equals(endpoint.getType())) {
-            builder.addDependency(DependencyType.REQUIRED, getEJBViewMethodSecurityAttributesServiceName(unit, endpoint),
+            builder.addDependency(DependencyType.OPTIONAL, getEJBViewMethodSecurityAttributesServiceName(unit, endpoint),
                     EJBViewMethodSecurityAttributesService.class, service.getEJBMethodSecurityAttributeServiceInjector());
         }
         builder.setInitialMode(Mode.ACTIVE);

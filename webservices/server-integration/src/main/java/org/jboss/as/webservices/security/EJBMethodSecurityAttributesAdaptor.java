@@ -43,6 +43,9 @@ public class EJBMethodSecurityAttributesAdaptor implements org.jboss.wsf.spi.sec
 
     @Override
     public EJBMethodSecurityAttribute getSecurityAttributes(final Method viewMethod) {
+        if (attributeService == null) {
+            return null;
+        }
         final org.jboss.as.ejb3.security.EJBMethodSecurityAttribute att = attributeService.getSecurityAttributes(viewMethod);
         return att == null ? null : new org.jboss.wsf.spi.security.EJBMethodSecurityAttribute() {
             @Override
