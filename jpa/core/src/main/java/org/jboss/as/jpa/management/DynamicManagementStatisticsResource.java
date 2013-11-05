@@ -22,8 +22,10 @@
 
 package org.jboss.as.jpa.management;
 
+import static org.jboss.as.jpa.messages.JpaLogger.JPA_LOGGER;
 import static org.jboss.as.jpa.messages.JpaMessages.MESSAGES;
 
+import java.util.Collections;
 import java.util.HashSet;
 import java.util.Set;
 
@@ -72,51 +74,75 @@ public class DynamicManagementStatisticsResource extends PlaceholderResource.Pla
 
     @Override
     public boolean hasChild(PathElement element) {
-        Statistics statistics = getStatistics();
-        // if element key matches, check if element value also matches
-        if (statistics.getChildrenNames().contains(element.getKey())) {
-            Statistics childStatistics = statistics.getChild(element.getKey());
-            return childStatistics != null && childStatistics.getDynamicChildrenNames(entityManagerFactoryLookup, PathWrapper.path(puName)).contains(element.getValue());
-        } else {
-            return super.hasChild(element);
+        try {
+            Statistics statistics = getStatistics();
+            // if element key matches, check if element value also matches
+            if (statistics.getChildrenNames().contains(element.getKey())) {
+                Statistics childStatistics = statistics.getChild(element.getKey());
+                return childStatistics != null && childStatistics.getDynamicChildrenNames(entityManagerFactoryLookup, PathWrapper.path(puName)).contains(element.getValue());
+            } else {
+                return super.hasChild(element);
+            }
         }
+        catch( IllegalStateException e) {  // WFLY-2436 ignore unexpected exceptions (e.g. JIPI-27 may throw an IllegalStateException)
+            JPA_LOGGER.unexpectedStatisticsProblem(e);
+            return false;
+        }
+
     }
 
     @Override
     public Resource getChild(PathElement element) {
-
-        Statistics statistics = getStatistics();
-        if (statistics.getChildrenNames().contains(element.getKey())) {
-            Statistics childStatistics = statistics.getChild(element.getKey());
-            return childStatistics != null && childStatistics.getDynamicChildrenNames(entityManagerFactoryLookup, PathWrapper.path(puName)).contains(element.getValue())
-                    ? PlaceholderResource.INSTANCE : null;
-        } else {
+        try {
+            Statistics statistics = getStatistics();
+            if (statistics.getChildrenNames().contains(element.getKey())) {
+                Statistics childStatistics = statistics.getChild(element.getKey());
+                return childStatistics != null && childStatistics.getDynamicChildrenNames(entityManagerFactoryLookup, PathWrapper.path(puName)).contains(element.getValue())
+                        ? PlaceholderResource.INSTANCE : null;
+            } else {
+                return super.getChild(element);
+            }
+        }
+        catch( IllegalStateException e) {  // WFLY-2436 ignore unexpected exceptions (e.g. JIPI-27 may throw an IllegalStateException)
+            JPA_LOGGER.unexpectedStatisticsProblem(e);
             return super.getChild(element);
         }
     }
 
     @Override
     public Resource requireChild(PathElement element) {
-        Statistics statistics = getStatistics();
-        if (statistics.getChildrenNames().contains(element.getKey())) {
-            Statistics childStatistics = statistics.getChild(element.getKey());
-            if (childStatistics != null && childStatistics.getDynamicChildrenNames(entityManagerFactoryLookup, PathWrapper.path(puName)).contains(element.getValue())) {
-                return PlaceholderResource.INSTANCE;
+        try {
+            Statistics statistics = getStatistics();
+            if (statistics.getChildrenNames().contains(element.getKey())) {
+                Statistics childStatistics = statistics.getChild(element.getKey());
+                if (childStatistics != null && childStatistics.getDynamicChildrenNames(entityManagerFactoryLookup, PathWrapper.path(puName)).contains(element.getValue())) {
+                    return PlaceholderResource.INSTANCE;
+                }
+                throw new NoSuchResourceException(element);
+            } else {
+                return super.requireChild(element);
             }
-            throw new NoSuchResourceException(element);
-        } else {
+        }
+        catch( IllegalStateException e) {  // WFLY-2436 ignore unexpected exceptions (e.g. JIPI-27 may throw an IllegalStateException)
+            JPA_LOGGER.unexpectedStatisticsProblem(e);
             return super.requireChild(element);
         }
     }
 
     @Override
     public boolean hasChildren(String childType) {
-        Statistics statistics = getStatistics();
-        if (statistics.getChildrenNames().contains(childType)) {
-            Statistics childStatistics = statistics.getChild(childType);
-            return childStatistics != null && childStatistics.getNames().size() > 0;
-        } else {
-            return super.hasChildren(childType);
+        try {
+            Statistics statistics = getStatistics();
+            if (statistics.getChildrenNames().contains(childType)) {
+                Statistics childStatistics = statistics.getChild(childType);
+                return childStatistics != null && childStatistics.getNames().size() > 0;
+            } else {
+                return super.hasChildren(childType);
+            }
+        }
+        catch( IllegalStateException e) {  // WFLY-2436 ignore unexpected exceptions (e.g. JIPI-27 may throw an IllegalStateException)
+            JPA_LOGGER.unexpectedStatisticsProblem(e);
+            return false;
         }
     }
 
@@ -135,51 +161,73 @@ public class DynamicManagementStatisticsResource extends PlaceholderResource.Pla
 
     @Override
     public Set<String> getChildTypes() {
-        Set<String> result = new HashSet<String>(super.getChildTypes());
-        Statistics statistics = getStatistics();
-        result.addAll(statistics.getChildrenNames());
-        return result;
+        try {
+            Set<String> result = new HashSet<String>(super.getChildTypes());
+            Statistics statistics = getStatistics();
+            result.addAll(statistics.getChildrenNames());
+            return result;
+        }
+        catch( IllegalStateException e) {  // WFLY-2436 ignore unexpected exceptions (e.g. JIPI-27 may throw an IllegalStateException)
+            JPA_LOGGER.unexpectedStatisticsProblem(e);
+            return Collections.EMPTY_SET;
+        }
     }
 
     @Override
     public Set<String> getChildrenNames(String childType) {
-        Statistics statistics = getStatistics();
-        if (statistics.getChildrenNames().contains(childType)) {
-            Statistics childStatistics = statistics.getChild(childType);
-            Set<String>result = new HashSet<String>();
-            for(String name:childStatistics.getDynamicChildrenNames(entityManagerFactoryLookup, PathWrapper.path(puName))) {
-                result.add(name);
+        try {
+            Statistics statistics = getStatistics();
+            if (statistics.getChildrenNames().contains(childType)) {
+                Statistics childStatistics = statistics.getChild(childType);
+                Set<String>result = new HashSet<String>();
+                for(String name:childStatistics.getDynamicChildrenNames(entityManagerFactoryLookup, PathWrapper.path(puName))) {
+                    result.add(name);
+                }
+                return result;
+            } else {
+                return super.getChildrenNames(childType);
             }
-            return result;
-        } else {
-            return super.getChildrenNames(childType);
+        }
+        catch( IllegalStateException e) {  // WFLY-2436 ignore unexpected exceptions (e.g. JIPI-27 may throw an IllegalStateException)
+            JPA_LOGGER.unexpectedStatisticsProblem(e);
+            return Collections.EMPTY_SET;
         }
     }
 
     @Override
     public Set<ResourceEntry> getChildren(String childType) {
-
-        Statistics statistics = getStatistics();
-        if (statistics.getChildrenNames().contains(childType)) {
-            Set<ResourceEntry> result = new HashSet<ResourceEntry>();
-            Statistics childStatistics = statistics.getChild(childType);
-            for (String name : childStatistics.getDynamicChildrenNames(entityManagerFactoryLookup, PathWrapper.path(puName))) {
-                result.add(new PlaceholderResource.PlaceholderResourceEntry(childType, name));
+        try {
+            Statistics statistics = getStatistics();
+            if (statistics.getChildrenNames().contains(childType)) {
+                Set<ResourceEntry> result = new HashSet<ResourceEntry>();
+                Statistics childStatistics = statistics.getChild(childType);
+                for (String name : childStatistics.getDynamicChildrenNames(entityManagerFactoryLookup, PathWrapper.path(puName))) {
+                    result.add(new PlaceholderResource.PlaceholderResourceEntry(childType, name));
+                }
+                return result;
+            } else {
+                return super.getChildren(childType);
             }
-            return result;
-        } else {
-            return super.getChildren(childType);
+        }
+        catch( IllegalStateException e) {  // WFLY-2436 ignore unexpected exceptions (e.g. JIPI-27 may throw an IllegalStateException)
+            JPA_LOGGER.unexpectedStatisticsProblem(e);
+            return Collections.EMPTY_SET;
         }
 
     }
 
     @Override
     public void registerChild(PathElement address, Resource resource) {
-        Statistics statistics = getStatistics();
-        if (statistics.getChildrenNames().contains(address.getKey())) {
-            throw MESSAGES.resourcesOfTypeCannotBeRegistered(address.getKey());
-        } else {
-            super.registerChild(address, resource);
+        try {
+            Statistics statistics = getStatistics();
+            if (statistics.getChildrenNames().contains(address.getKey())) {
+                throw MESSAGES.resourcesOfTypeCannotBeRegistered(address.getKey());
+            } else {
+                super.registerChild(address, resource);
+            }
+        }
+        catch( IllegalStateException e) {  // WFLY-2436 ignore unexpected exceptions (e.g. JIPI-27 may throw an IllegalStateException)
+            JPA_LOGGER.unexpectedStatisticsProblem(e);
         }
     }
 
