@@ -255,7 +255,7 @@
         <version.org.powermock>1.5</version.org.powermock>
         <version.org.projectodd.stilts>0.1.26.redhat-3</version.org.projectodd.stilts>
         <version.org.scannotation>1.0.3.redhat-4</version.org.scannotation>
-        <version.org.slf4j>1.7.2.jbossorg-1</version.org.slf4j>
+        <version.org.slf4j>1.7.2.redhat-2</version.org.slf4j>
         <version.org.eclipse.aether>0.9.0.M3</version.org.eclipse.aether>
         <version.org.testng>6.1.1</version.org.testng>
         <version.org.yaml.snakeyaml>1.8-redhat-2</version.org.yaml.snakeyaml>
