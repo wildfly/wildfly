@@ -129,6 +129,10 @@ public final class InfinispanSubsystemXMLReader_2_0 implements XMLElementReader<
                     CacheContainerResourceDefinition.CACHE_CONTAINER_MODULE.parseAndSetParameter(value, container, reader);
                     break;
                 }
+                case STATISTICS: {
+                    CacheContainerResourceDefinition.STATISTICS.parseAndSetParameter(value, container, reader);
+                    break;
+                }
                 default: {
                     throw ParseUtils.unexpectedAttribute(reader, i);
                 }
@@ -230,6 +234,10 @@ public final class InfinispanSubsystemXMLReader_2_0 implements XMLElementReader<
             }
             case MODULE: {
                 CacheResourceDefinition.CACHE_MODULE.parseAndSetParameter(value, cache, reader);
+                break;
+            }
+            case STATISTICS: {
+                CacheResourceDefinition.STATISTICS.parseAndSetParameter(value, cache, reader);
                 break;
             }
             default: {

@@ -51,31 +51,28 @@ import org.jboss.dmr.Property;
 public class CacheResourceDefinition extends SimpleResourceDefinition {
 
     // attributes
-    static final SimpleAttributeDefinition BATCHING =
-            new SimpleAttributeDefinitionBuilder(ModelKeys.BATCHING, ModelType.BOOLEAN, true)
-                    .setXmlName(Attribute.BATCHING.getLocalName())
-                    .setAllowExpression(true)
-                    .setFlags(AttributeAccess.Flag.RESTART_ALL_SERVICES)
-                    .setDefaultValue(new ModelNode().set(false))
-                    .build();
-
-    static final SimpleAttributeDefinition CACHE_MODULE =
-            new SimpleAttributeDefinitionBuilder(ModelKeys.MODULE, ModelType.STRING, true)
-                    .setXmlName(Attribute.MODULE.getLocalName())
-                    .setAllowExpression(true)
-                    .setFlags(AttributeAccess.Flag.RESTART_ALL_SERVICES)
-                    .setValidator(new ModuleIdentifierValidator(true))
-                    .build();
-
-    static final SimpleAttributeDefinition INDEXING =
-            new SimpleAttributeDefinitionBuilder(ModelKeys.INDEXING, ModelType.STRING, true)
-                    .setXmlName(Attribute.INDEX.getLocalName())
-                    .setAllowExpression(true)
-                    .setFlags(AttributeAccess.Flag.RESTART_ALL_SERVICES)
-                    .setValidator(new EnumValidator<Indexing>(Indexing.class, true, false))
-                    .setDefaultValue(new ModelNode().set(Indexing.NONE.name()))
-                    .build();
-
+    static final SimpleAttributeDefinition BATCHING = new SimpleAttributeDefinitionBuilder(ModelKeys.BATCHING, ModelType.BOOLEAN, true)
+            .setXmlName(Attribute.BATCHING.getLocalName())
+            .setAllowExpression(true)
+            .setFlags(AttributeAccess.Flag.RESTART_ALL_SERVICES)
+            .setDefaultValue(new ModelNode().set(false))
+            .build()
+    ;
+    static final SimpleAttributeDefinition CACHE_MODULE = new SimpleAttributeDefinitionBuilder(ModelKeys.MODULE, ModelType.STRING, true)
+            .setXmlName(Attribute.MODULE.getLocalName())
+            .setAllowExpression(true)
+            .setFlags(AttributeAccess.Flag.RESTART_ALL_SERVICES)
+            .setValidator(new ModuleIdentifierValidator(true))
+            .build()
+    ;
+    static final SimpleAttributeDefinition INDEXING = new SimpleAttributeDefinitionBuilder(ModelKeys.INDEXING, ModelType.STRING, true)
+            .setXmlName(Attribute.INDEX.getLocalName())
+            .setAllowExpression(true)
+            .setFlags(AttributeAccess.Flag.RESTART_ALL_SERVICES)
+            .setValidator(new EnumValidator<Indexing>(Indexing.class, true, false))
+            .setDefaultValue(new ModelNode().set(Indexing.NONE.name()))
+            .build()
+    ;
     static final SimpleMapAttributeDefinition INDEXING_PROPERTIES = new SimpleMapAttributeDefinition.Builder(ModelKeys.INDEXING_PROPERTIES, true)
             .setAllowExpression(true)
             .setAttributeMarshaller(new AttributeMarshaller() {
@@ -93,105 +90,65 @@ public class CacheResourceDefinition extends SimpleResourceDefinition {
                     }
                 }
             })
-            .build();
+            .build()
+    ;
+    static final SimpleAttributeDefinition JNDI_NAME = new SimpleAttributeDefinitionBuilder(ModelKeys.JNDI_NAME, ModelType.STRING, true)
+            .setXmlName(Attribute.JNDI_NAME.getLocalName())
+            .setAllowExpression(true)
+            .setFlags(AttributeAccess.Flag.RESTART_ALL_SERVICES)
+            .build()
+    ;
+    static final SimpleAttributeDefinition START = new SimpleAttributeDefinitionBuilder(ModelKeys.START, ModelType.STRING, true)
+            .setXmlName(Attribute.START.getLocalName())
+            .setAllowExpression(true)
+            .setFlags(AttributeAccess.Flag.RESTART_ALL_SERVICES)
+            .setValidator(new EnumValidator<StartMode>(StartMode.class, true, false))
+            .setDefaultValue(new ModelNode().set(StartMode.LAZY.name()))
+            .build()
+    ;
+    static final SimpleAttributeDefinition STATISTICS = new SimpleAttributeDefinitionBuilder(ModelKeys.STATISTICS, ModelType.BOOLEAN, true)
+            .setXmlName(Attribute.STATISTICS.getLocalName())
+            .setAllowExpression(true)
+            .setFlags(AttributeAccess.Flag.RESTART_RESOURCE_SERVICES)
+            .setDefaultValue(new ModelNode().set(false))
+            .build()
+    ;
 
-    static final SimpleAttributeDefinition JNDI_NAME =
-            new SimpleAttributeDefinitionBuilder(ModelKeys.JNDI_NAME, ModelType.STRING, true)
-                    .setXmlName(Attribute.JNDI_NAME.getLocalName())
-                    .setAllowExpression(true)
-                    .setFlags(AttributeAccess.Flag.RESTART_ALL_SERVICES)
-                    .build();
-
-    static final SimpleAttributeDefinition START =
-            new SimpleAttributeDefinitionBuilder(ModelKeys.START, ModelType.STRING, true)
-                    .setXmlName(Attribute.START.getLocalName())
-                    .setAllowExpression(true)
-                    .setFlags(AttributeAccess.Flag.RESTART_ALL_SERVICES)
-                    .setValidator(new EnumValidator<StartMode>(StartMode.class, true, false))
-                    .setDefaultValue(new ModelNode().set(StartMode.LAZY.name()))
-                    .build();
-
-    static final AttributeDefinition[] CACHE_ATTRIBUTES = {BATCHING, CACHE_MODULE, INDEXING, INDEXING_PROPERTIES, JNDI_NAME, START};
+    static final AttributeDefinition[] CACHE_ATTRIBUTES = { BATCHING, CACHE_MODULE, INDEXING, INDEXING_PROPERTIES, JNDI_NAME, START, STATISTICS };
 
     // here for legacy purposes only
-    static final SimpleAttributeDefinition NAME =
-            new SimpleAttributeDefinitionBuilder(ModelKeys.NAME, ModelType.STRING, true)
-                    .setXmlName(Attribute.NAME.getLocalName())
-                    .setAllowExpression(false)
-                    .setFlags(AttributeAccess.Flag.RESTART_ALL_SERVICES)
-                    .build();
+    static final SimpleAttributeDefinition NAME = new SimpleAttributeDefinitionBuilder(ModelKeys.NAME, ModelType.STRING, true)
+            .setXmlName(Attribute.NAME.getLocalName())
+            .setAllowExpression(false)
+            .setFlags(AttributeAccess.Flag.RESTART_ALL_SERVICES)
+            .build()
+    ;
 
     // metrics
-    static final SimpleAttributeDefinition ACTIVATIONS =
-            new SimpleAttributeDefinitionBuilder(MetricKeys.ACTIVATIONS, ModelType.STRING, true)
-                    .setStorageRuntime()
-                    .build();
-    static final SimpleAttributeDefinition AVERAGE_READ_TIME =
-            new SimpleAttributeDefinitionBuilder(MetricKeys.AVERAGE_READ_TIME, ModelType.LONG, true)
-                    .setStorageRuntime()
-                    .build();
-    static final SimpleAttributeDefinition AVERAGE_WRITE_TIME =
-            new SimpleAttributeDefinitionBuilder(MetricKeys.AVERAGE_WRITE_TIME, ModelType.LONG, true)
-                    .setStorageRuntime()
-                    .build();
-    static final SimpleAttributeDefinition CACHE_STATUS =
-            new SimpleAttributeDefinitionBuilder(MetricKeys.CACHE_STATUS, ModelType.STRING, true)
-                    .setStorageRuntime()
-                    .build();
-    static final SimpleAttributeDefinition ELAPSED_TIME =
-            new SimpleAttributeDefinitionBuilder(MetricKeys.ELAPSED_TIME, ModelType.LONG, true)
-                    .setStorageRuntime()
-                    .build();
-    static final SimpleAttributeDefinition HIT_RATIO =
-            new SimpleAttributeDefinitionBuilder(MetricKeys.HIT_RATIO, ModelType.DOUBLE, true)
-                    .setStorageRuntime()
-                    .build();
-    static final SimpleAttributeDefinition HITS =
-            new SimpleAttributeDefinitionBuilder(MetricKeys.HITS, ModelType.LONG, true)
-                    .setStorageRuntime()
-                    .build();
-    static final SimpleAttributeDefinition INVALIDATIONS =
-            new SimpleAttributeDefinitionBuilder(MetricKeys.INVALIDATIONS, ModelType.LONG, true)
-                    .setStorageRuntime()
-                    .build();
-    static final SimpleAttributeDefinition MISSES =
-            new SimpleAttributeDefinitionBuilder(MetricKeys.MISSES, ModelType.LONG, true)
-                    .setStorageRuntime()
-                    .build();
-    static final SimpleAttributeDefinition NUMBER_OF_ENTRIES =
-            new SimpleAttributeDefinitionBuilder(MetricKeys.NUMBER_OF_ENTRIES, ModelType.INT, true)
-                    .setStorageRuntime()
-                    .build();
-    static final SimpleAttributeDefinition PASSIVATIONS =
-            new SimpleAttributeDefinitionBuilder(MetricKeys.PASSIVATIONS, ModelType.STRING, true)
-                    .setStorageRuntime()
-                    .build();
-    static final SimpleAttributeDefinition READ_WRITE_RATIO =
-            new SimpleAttributeDefinitionBuilder(MetricKeys.READ_WRITE_RATIO, ModelType.DOUBLE, true)
-                    .setStorageRuntime()
-                    .build();
-    static final SimpleAttributeDefinition REMOVE_HITS =
-            new SimpleAttributeDefinitionBuilder(MetricKeys.REMOVE_HITS, ModelType.LONG, true)
-                    .setStorageRuntime()
-                    .build();
-    static final SimpleAttributeDefinition REMOVE_MISSES =
-            new SimpleAttributeDefinitionBuilder(MetricKeys.REMOVE_MISSES, ModelType.LONG, true)
-                    .setStorageRuntime()
-                    .build();
-    static final SimpleAttributeDefinition STORES =
-            new SimpleAttributeDefinitionBuilder(MetricKeys.STORES, ModelType.LONG, true)
-                    .setStorageRuntime()
-                    .build();
-    static final SimpleAttributeDefinition TIME_SINCE_RESET =
-            new SimpleAttributeDefinitionBuilder(MetricKeys.TIME_SINCE_RESET, ModelType.LONG, true)
-                    .setStorageRuntime()
-                    .build();
+    static final SimpleAttributeDefinition ACTIVATIONS = buildMetric(MetricKeys.ACTIVATIONS, ModelType.STRING);
+    static final SimpleAttributeDefinition AVERAGE_READ_TIME = buildMetric(MetricKeys.AVERAGE_READ_TIME, ModelType.LONG);
+    static final SimpleAttributeDefinition AVERAGE_WRITE_TIME = buildMetric(MetricKeys.AVERAGE_WRITE_TIME, ModelType.LONG);
+    static final SimpleAttributeDefinition CACHE_STATUS = buildMetric(MetricKeys.CACHE_STATUS, ModelType.STRING);
+    static final SimpleAttributeDefinition ELAPSED_TIME = buildMetric(MetricKeys.ELAPSED_TIME, ModelType.LONG);
+    static final SimpleAttributeDefinition HIT_RATIO = buildMetric(MetricKeys.HIT_RATIO, ModelType.DOUBLE);
+    static final SimpleAttributeDefinition HITS = buildMetric(MetricKeys.HITS, ModelType.LONG);
+    static final SimpleAttributeDefinition INVALIDATIONS = buildMetric(MetricKeys.INVALIDATIONS, ModelType.LONG);
+    static final SimpleAttributeDefinition MISSES = buildMetric(MetricKeys.MISSES, ModelType.LONG);
+    static final SimpleAttributeDefinition NUMBER_OF_ENTRIES = buildMetric(MetricKeys.NUMBER_OF_ENTRIES, ModelType.INT);
+    static final SimpleAttributeDefinition PASSIVATIONS = buildMetric(MetricKeys.PASSIVATIONS, ModelType.STRING);
+    static final SimpleAttributeDefinition READ_WRITE_RATIO = buildMetric(MetricKeys.READ_WRITE_RATIO, ModelType.DOUBLE);
+    static final SimpleAttributeDefinition REMOVE_HITS = buildMetric(MetricKeys.REMOVE_HITS, ModelType.LONG);
+    static final SimpleAttributeDefinition REMOVE_MISSES = buildMetric(MetricKeys.REMOVE_MISSES, ModelType.LONG);
+    static final SimpleAttributeDefinition STORES = buildMetric(MetricKeys.STORES, ModelType.LONG);
+    static final SimpleAttributeDefinition TIME_SINCE_RESET = buildMetric(MetricKeys.TIME_SINCE_RESET, ModelType.LONG);
 
+    private static SimpleAttributeDefinition buildMetric(String key, ModelType type) {
+        return new SimpleAttributeDefinitionBuilder(key, type, true).setStorageRuntime().build();
+    }
 
     static final AttributeDefinition[] CACHE_METRICS = { /*ACTIVATIONS,*/ AVERAGE_READ_TIME, AVERAGE_WRITE_TIME, CACHE_STATUS,
             ELAPSED_TIME, HIT_RATIO, HITS, INVALIDATIONS, MISSES, NUMBER_OF_ENTRIES, PASSIVATIONS, READ_WRITE_RATIO, REMOVE_HITS,
-            REMOVE_MISSES, STORES, TIME_SINCE_RESET};
-
+            REMOVE_MISSES, STORES, TIME_SINCE_RESET };
 
     private final ResolvePathHandler resolvePathHandler;
     private final boolean runtimeRegistration;

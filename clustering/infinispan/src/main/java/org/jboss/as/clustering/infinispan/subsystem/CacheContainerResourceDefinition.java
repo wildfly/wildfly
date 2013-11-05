@@ -47,114 +47,99 @@ public class CacheContainerResourceDefinition extends SimpleResourceDefinition {
     public static final PathElement CONTAINER_PATH = PathElement.pathElement(ModelKeys.CACHE_CONTAINER);
 
     // attributes
-    static final AttributeDefinition ALIAS =
-            new SimpleAttributeDefinitionBuilder(ModelKeys.ALIAS, ModelType.STRING, true)
-                    .setXmlName(Attribute.NAME.getLocalName())
-                    .setAllowExpression(false)
-                    .setFlags(AttributeAccess.Flag.RESTART_ALL_SERVICES)
-                    .build();
-
-    static final SimpleListAttributeDefinition ALIASES = SimpleListAttributeDefinition.Builder.of(ModelKeys.ALIASES, ALIAS).
-            setAllowNull(true).
-            build();
-
-    static final SimpleAttributeDefinition CACHE_CONTAINER_MODULE =
-            new SimpleAttributeDefinitionBuilder(ModelKeys.MODULE, ModelType.STRING, true)
-                    .setXmlName(Attribute.MODULE.getLocalName())
-                    .setAllowExpression(true)
-                    .setFlags(AttributeAccess.Flag.RESTART_ALL_SERVICES)
-                    .setValidator(new ModuleIdentifierValidator(true))
-                    .setDefaultValue(new ModelNode().set("org.jboss.as.clustering.infinispan"))
-                    .build();
-
+    static final AttributeDefinition ALIAS = new SimpleAttributeDefinitionBuilder(ModelKeys.ALIAS, ModelType.STRING, true)
+            .setXmlName(Attribute.NAME.getLocalName())
+            .setAllowExpression(false)
+            .setFlags(AttributeAccess.Flag.RESTART_ALL_SERVICES)
+            .build()
+    ;
+    static final SimpleListAttributeDefinition ALIASES = SimpleListAttributeDefinition.Builder.of(ModelKeys.ALIASES, ALIAS)
+            .setAllowNull(true)
+            .build()
+    ;
+    static final SimpleAttributeDefinition CACHE_CONTAINER_MODULE = new SimpleAttributeDefinitionBuilder(ModelKeys.MODULE, ModelType.STRING, true)
+            .setXmlName(Attribute.MODULE.getLocalName())
+            .setAllowExpression(true)
+            .setFlags(AttributeAccess.Flag.RESTART_ALL_SERVICES)
+            .setValidator(new ModuleIdentifierValidator(true))
+            .setDefaultValue(new ModelNode().set("org.jboss.as.clustering.infinispan"))
+            .build()
+    ;
     // make default-cache non required (AS7-3488)
-    static final SimpleAttributeDefinition DEFAULT_CACHE =
-            new SimpleAttributeDefinitionBuilder(ModelKeys.DEFAULT_CACHE, ModelType.STRING, true)
-                    .setXmlName(Attribute.DEFAULT_CACHE.getLocalName())
-                    .setAllowExpression(true)
-                    .setFlags(AttributeAccess.Flag.RESTART_ALL_SERVICES)
-                    .build();
+    static final SimpleAttributeDefinition DEFAULT_CACHE = new SimpleAttributeDefinitionBuilder(ModelKeys.DEFAULT_CACHE, ModelType.STRING, true)
+            .setXmlName(Attribute.DEFAULT_CACHE.getLocalName())
+            .setAllowExpression(true)
+            .setFlags(AttributeAccess.Flag.RESTART_ALL_SERVICES)
+            .build()
+    ;
+    static final SimpleAttributeDefinition EVICTION_EXECUTOR = new SimpleAttributeDefinitionBuilder(ModelKeys.EVICTION_EXECUTOR, ModelType.STRING, true)
+            .setXmlName(Attribute.EVICTION_EXECUTOR.getLocalName())
+            .setAllowExpression(false)
+            .setFlags(AttributeAccess.Flag.RESTART_ALL_SERVICES)
+            .build()
+    ;
+    static final SimpleAttributeDefinition JNDI_NAME = new SimpleAttributeDefinitionBuilder(ModelKeys.JNDI_NAME, ModelType.STRING, true)
+            .setXmlName(Attribute.JNDI_NAME.getLocalName())
+            .setAllowExpression(true)
+            .setFlags(AttributeAccess.Flag.RESTART_ALL_SERVICES)
+            .build()
+    ;
+    static final SimpleAttributeDefinition LISTENER_EXECUTOR = new SimpleAttributeDefinitionBuilder(ModelKeys.LISTENER_EXECUTOR, ModelType.STRING, true)
+            .setXmlName(Attribute.LISTENER_EXECUTOR.getLocalName())
+            .setAllowExpression(false)
+            .setFlags(AttributeAccess.Flag.RESTART_ALL_SERVICES)
+            .build()
+    ;
+    static final SimpleAttributeDefinition NAME = new SimpleAttributeDefinitionBuilder(ModelKeys.NAME, ModelType.STRING, true)
+            .setXmlName(Attribute.NAME.getLocalName())
+            .setAllowExpression(false)
+            .setFlags(AttributeAccess.Flag.RESTART_ALL_SERVICES)
+            .build()
+    ;
+    static final SimpleAttributeDefinition REPLICATION_QUEUE_EXECUTOR = new SimpleAttributeDefinitionBuilder(ModelKeys.REPLICATION_QUEUE_EXECUTOR, ModelType.STRING, true)
+            .setXmlName(Attribute.REPLICATION_QUEUE_EXECUTOR.getLocalName())
+            .setAllowExpression(false)
+            .setFlags(AttributeAccess.Flag.RESTART_ALL_SERVICES)
+            .build()
+    ;
+    static final SimpleAttributeDefinition START = new SimpleAttributeDefinitionBuilder(ModelKeys.START, ModelType.STRING, true)
+            .setXmlName(Attribute.START.getLocalName())
+            .setAllowExpression(true)
+            .setFlags(AttributeAccess.Flag.RESTART_ALL_SERVICES)
+            .setValidator(new EnumValidator<StartMode>(StartMode.class, true, false))
+            .setDefaultValue(new ModelNode().set(StartMode.LAZY.name()))
+            .build()
+    ;
+    static final SimpleAttributeDefinition STATISTICS = new SimpleAttributeDefinitionBuilder(ModelKeys.STATISTICS, ModelType.BOOLEAN, true)
+            .setXmlName(Attribute.STATISTICS.getLocalName())
+            .setAllowExpression(true)
+            .setFlags(AttributeAccess.Flag.RESTART_RESOURCE_SERVICES)
+            .setDefaultValue(new ModelNode().set(false))
+            .build()
+    ;
 
-    static final SimpleAttributeDefinition EVICTION_EXECUTOR =
-            new SimpleAttributeDefinitionBuilder(ModelKeys.EVICTION_EXECUTOR, ModelType.STRING, true)
-                    .setXmlName(Attribute.EVICTION_EXECUTOR.getLocalName())
-                    .setAllowExpression(false)
-                    .setFlags(AttributeAccess.Flag.RESTART_ALL_SERVICES)
-                    .build();
-
-    static final SimpleAttributeDefinition JNDI_NAME =
-            new SimpleAttributeDefinitionBuilder(ModelKeys.JNDI_NAME, ModelType.STRING, true)
-                    .setXmlName(Attribute.JNDI_NAME.getLocalName())
-                    .setAllowExpression(true)
-                    .setFlags(AttributeAccess.Flag.RESTART_ALL_SERVICES)
-                    .build();
-
-    static final SimpleAttributeDefinition LISTENER_EXECUTOR =
-            new SimpleAttributeDefinitionBuilder(ModelKeys.LISTENER_EXECUTOR, ModelType.STRING, true)
-                    .setXmlName(Attribute.LISTENER_EXECUTOR.getLocalName())
-                    .setAllowExpression(false)
-                    .setFlags(AttributeAccess.Flag.RESTART_ALL_SERVICES)
-                    .build();
-
-    static final SimpleAttributeDefinition NAME =
-            new SimpleAttributeDefinitionBuilder(ModelKeys.NAME, ModelType.STRING, true)
-                    .setXmlName(Attribute.NAME.getLocalName())
-                    .setAllowExpression(false)
-                    .setFlags(AttributeAccess.Flag.RESTART_ALL_SERVICES)
-                    .build();
-
-    static final SimpleAttributeDefinition REPLICATION_QUEUE_EXECUTOR =
-            new SimpleAttributeDefinitionBuilder(ModelKeys.REPLICATION_QUEUE_EXECUTOR, ModelType.STRING, true)
-                    .setXmlName(Attribute.REPLICATION_QUEUE_EXECUTOR.getLocalName())
-                    .setAllowExpression(false)
-                    .setFlags(AttributeAccess.Flag.RESTART_ALL_SERVICES)
-                    .build();
-
-    static final SimpleAttributeDefinition START =
-            new SimpleAttributeDefinitionBuilder(ModelKeys.START, ModelType.STRING, true)
-                    .setXmlName(Attribute.START.getLocalName())
-                    .setAllowExpression(true)
-                    .setFlags(AttributeAccess.Flag.RESTART_ALL_SERVICES)
-                    .setValidator(new EnumValidator<StartMode>(StartMode.class, true, false))
-                    .setDefaultValue(new ModelNode().set(StartMode.LAZY.name()))
-                    .build();
-
-    static final AttributeDefinition[] CACHE_CONTAINER_ATTRIBUTES = {DEFAULT_CACHE, ALIASES, JNDI_NAME, START, LISTENER_EXECUTOR, EVICTION_EXECUTOR, REPLICATION_QUEUE_EXECUTOR, CACHE_CONTAINER_MODULE};
+    static final AttributeDefinition[] CACHE_CONTAINER_ATTRIBUTES = { DEFAULT_CACHE, ALIASES, JNDI_NAME, START, LISTENER_EXECUTOR, EVICTION_EXECUTOR, REPLICATION_QUEUE_EXECUTOR, CACHE_CONTAINER_MODULE, STATISTICS };
 
     // operations
     static final OperationDefinition ALIAS_ADD = new SimpleOperationDefinitionBuilder("add-alias", InfinispanExtension.getResourceDescriptionResolver("cache-container.alias"))
             .setParameters(NAME)
-            .build();
-
+            .build()
+    ;
     static final OperationDefinition ALIAS_REMOVE = new SimpleOperationDefinitionBuilder("remove-alias", InfinispanExtension.getResourceDescriptionResolver("cache-container.alias"))
             .setParameters(NAME)
-            .build();
+            .build()
+    ;
 
     // metrics
-    static final SimpleAttributeDefinition CACHE_MANAGER_STATUS =
-            new SimpleAttributeDefinitionBuilder(MetricKeys.CACHE_MANAGER_STATUS, ModelType.STRING, true)
-                    .setStorageRuntime()
-                    .build();
+    static final SimpleAttributeDefinition CACHE_MANAGER_STATUS = buildMetric(MetricKeys.CACHE_MANAGER_STATUS, ModelType.STRING);
+    static final SimpleAttributeDefinition CLUSTER_NAME = buildMetric(MetricKeys.CLUSTER_NAME, ModelType.STRING);
+    static final SimpleAttributeDefinition COORDINATOR_ADDRESS = buildMetric(MetricKeys.COORDINATOR_ADDRESS, ModelType.STRING);
+    static final SimpleAttributeDefinition IS_COORDINATOR = buildMetric(MetricKeys.IS_COORDINATOR, ModelType.BOOLEAN);
+    static final SimpleAttributeDefinition LOCAL_ADDRESS = buildMetric(MetricKeys.LOCAL_ADDRESS, ModelType.STRING);
 
-    static final SimpleAttributeDefinition CLUSTER_NAME =
-            new SimpleAttributeDefinitionBuilder(MetricKeys.CLUSTER_NAME, ModelType.STRING, true)
-                    .setStorageRuntime()
-                    .build();
-
-    static final SimpleAttributeDefinition COORDINATOR_ADDRESS =
-            new SimpleAttributeDefinitionBuilder(MetricKeys.COORDINATOR_ADDRESS, ModelType.STRING, true)
-                    .setStorageRuntime()
-                    .build();
-
-    static final SimpleAttributeDefinition IS_COORDINATOR =
-            new SimpleAttributeDefinitionBuilder(MetricKeys.IS_COORDINATOR, ModelType.BOOLEAN, true)
-                    .setStorageRuntime()
-                    .build();
-
-    static final SimpleAttributeDefinition LOCAL_ADDRESS =
-            new SimpleAttributeDefinitionBuilder(MetricKeys.LOCAL_ADDRESS, ModelType.STRING, true)
-                    .setStorageRuntime()
-                    .build();
+    private static SimpleAttributeDefinition buildMetric(String key, ModelType type) {
+        return new SimpleAttributeDefinitionBuilder(key, type, true).setStorageRuntime().build();
+    }
 
     static final AttributeDefinition[] CACHE_CONTAINER_METRICS = {CACHE_MANAGER_STATUS, CLUSTER_NAME, COORDINATOR_ADDRESS, IS_COORDINATOR, LOCAL_ADDRESS};
 
