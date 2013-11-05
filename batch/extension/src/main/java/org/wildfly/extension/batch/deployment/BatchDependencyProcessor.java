@@ -25,6 +25,7 @@ package org.wildfly.extension.batch.deployment;
 import org.jboss.as.server.deployment.Attachments;
 import org.jboss.as.server.deployment.DeploymentPhaseContext;
 import org.jboss.as.server.deployment.DeploymentUnit;
+import org.jboss.as.server.deployment.DeploymentUnitProcessingException;
 import org.jboss.as.server.deployment.DeploymentUnitProcessor;
 import org.jboss.as.server.deployment.module.ModuleDependency;
 import org.jboss.as.server.deployment.module.ModuleSpecification;
@@ -35,7 +36,7 @@ import org.jboss.modules.ModuleLoader;
 /**
  * Deployment unit processor for javax.batch integration.
  */
-public class BatchDependencyProcessor extends AbstractBatchProcessor implements DeploymentUnitProcessor {
+public class BatchDependencyProcessor implements DeploymentUnitProcessor {
 
     private final ModuleIdentifier batchModule = ModuleIdentifier.create("javax.batch.api");
 
@@ -45,7 +46,8 @@ public class BatchDependencyProcessor extends AbstractBatchProcessor implements 
     };
 
     @Override
-    protected void processDeployment(final DeploymentPhaseContext phaseContext, final DeploymentUnit deploymentUnit) {
+    public void deploy(final DeploymentPhaseContext phaseContext) throws DeploymentUnitProcessingException {
+        final DeploymentUnit deploymentUnit = phaseContext.getDeploymentUnit();
         final ModuleSpecification moduleSpecification = deploymentUnit.getAttachment(Attachments.MODULE_SPECIFICATION);
         final ModuleLoader moduleLoader = Module.getBootModuleLoader();
 
