@@ -22,7 +22,6 @@ import org.jboss.as.test.integration.security.jacc.propagation.Manage;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.asset.StringAsset;
 import org.jboss.shrinkwrap.api.spec.WebArchive;
-import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.wildfly.extension.undertow.security.jaspi.modules.HTTPSchemeServerAuthModule;
@@ -30,7 +29,8 @@ import org.wildfly.extension.undertow.security.jaspi.modules.HTTPSchemeServerAut
 import java.io.ByteArrayOutputStream;
 import java.net.URL;
 
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
 
 /**
  * <p>Tests the JASPI support by deploying a web application that uses a security domain configured with JASPI authentication.</p>
@@ -42,7 +42,6 @@ import static org.junit.Assert.*;
 @RunWith(Arquillian.class)
 @ServerSetup({ JASPIHttpSchemeServerAuthModelTestCase.SecurityDomainsSetup.class })
 @RunAsClient
-@Ignore
 public class JASPIHttpSchemeServerAuthModelTestCase {
 
     private static final String TEST_NAME = "jaspi-http-scheme-server-auth-module";
@@ -58,6 +57,9 @@ public class JASPIHttpSchemeServerAuthModelTestCase {
 
         war.addAsWebInfResource(JASPIHttpSchemeServerAuthModelTestCase.class.getPackage(), "web.xml", "/web.xml");
         war.addAsWebInfResource(Utils.getJBossWebXmlAsset(TEST_NAME), "jboss-web.xml");
+
+        // temporary. remove once the security subsystem is updated to proper consider the module option
+        war.addAsManifestResource(Utils.getJBossDeploymentStructure("org.wildfly.extension.undertow"), "jboss-deployment-structure.xml");
 
         war.add(new StringAsset("Welcome"), "index.jsp");
 
