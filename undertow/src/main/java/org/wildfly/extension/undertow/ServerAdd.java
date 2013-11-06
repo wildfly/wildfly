@@ -55,9 +55,13 @@ class ServerAdd extends AbstractBoottimeAddStepHandler {
     @Override
     protected void performBoottime(OperationContext context, ModelNode operation, ModelNode model, ServiceVerificationHandler verificationHandler, List<ServiceController<?>> newControllers) throws OperationFailedException {
         final PathAddress address = PathAddress.pathAddress(operation.get(OP_ADDR));
+        final PathAddress parentAddress = address.subAddress(0, address.size() - 1);
+        final ModelNode subsystemModel = Resource.Tools.readModel(context.readResourceFromRoot(parentAddress));
+
         final String name = address.getLastElement().getValue();
         final String defaultHost = ServerDefinition.DEFAULT_HOST.resolveModelAttribute(context, model).asString();
         final String servletContainer = ServerDefinition.SERVLET_CONTAINER.resolveModelAttribute(context, model).asString();
+        final String defaultServerName = UndertowRootDefinition.DEFAULT_SERVER.resolveModelAttribute(context,subsystemModel).asString();
 
         final ServiceName serverName = UndertowService.SERVER.append(name);
         final Server service = new Server(name, defaultHost);
@@ -71,23 +75,24 @@ class ServerAdd extends AbstractBoottimeAddStepHandler {
         if (newControllers != null) {
             newControllers.add(serviceController);
         }
-        WebServerService commonWebServer = new WebServerService();
-        final ServiceBuilder<WebServerService> commonServerBuilder = context.getServiceTarget().addService(CommonWebServer.SERVICE_NAME, commonWebServer)
-                .addDependency(serverName, Server.class, commonWebServer.getServerInjectedValue())
-                .setInitialMode(ServiceController.Mode.PASSIVE);
+        if (name.equals(defaultServerName)) { //only install for default server
+            WebServerService commonWebServer = new WebServerService();
+            final ServiceBuilder<WebServerService> commonServerBuilder = context.getServiceTarget().addService(CommonWebServer.SERVICE_NAME, commonWebServer)
+                    .addDependency(serverName, Server.class, commonWebServer.getServerInjectedValue())
+                    .setInitialMode(ServiceController.Mode.PASSIVE);
 
+            addCommonHostListenerDeps(context, commonServerBuilder, UndertowExtension.HTTP_LISTENER_PATH);
+            addCommonHostListenerDeps(context, commonServerBuilder, UndertowExtension.AJP_LISTENER_PATH);
+            addCommonHostListenerDeps(context, commonServerBuilder, UndertowExtension.HTTPS_LISTENER_PATH);
 
-        addCommonHostListenerDeps(context, commonServerBuilder, UndertowExtension.HTTP_LISTENER_PATH);
-        addCommonHostListenerDeps(context, commonServerBuilder, UndertowExtension.AJP_LISTENER_PATH);
-        addCommonHostListenerDeps(context, commonServerBuilder, UndertowExtension.HTTPS_LISTENER_PATH);
+            final ServiceController<WebServerService> commonServerController = commonServerBuilder.install();
 
-        final ServiceController<WebServerService> commonServerController = commonServerBuilder.install();
-
-        if (verificationHandler != null) {
-            commonServerController.addListener(verificationHandler);
-        }
-        if (newControllers != null) {
-            newControllers.add(commonServerController);
+            if (verificationHandler != null) {
+                commonServerController.addListener(verificationHandler);
+            }
+            if (newControllers != null) {
+                newControllers.add(commonServerController);
+            }
         }
     }
 
@@ -97,7 +102,7 @@ class ServerAdd extends AbstractBoottimeAddStepHandler {
         if (listeners.isDefined()) {
             for (Property p : listeners.asPropertyList()) {
                 for (Property listener : p.getValue().asPropertyList()) {
-                    builder.addDependency(UndertowService.LISTENER.append(listener.getName()));
+                    builder.addDependency(UndertowService.listenerName(listener.getName()));
                 }
             }
         }

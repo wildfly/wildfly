@@ -28,7 +28,6 @@ import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.domain.management.SecurityRealm;
 import org.jboss.dmr.ModelNode;
 import org.jboss.msc.service.ServiceBuilder;
-import org.jboss.msc.service.ServiceName;
 import org.xnio.OptionMap;
 
 /**
@@ -40,11 +39,6 @@ public class HttpsListenerAdd extends ListenerAdd {
 
     HttpsListenerAdd(HttpsListenerResourceDefinition def) {
         super(def);
-    }
-
-    @Override
-    protected ServiceName constructServiceName(String name) {
-        return UndertowService.LISTENER.append(name);
     }
 
     @Override

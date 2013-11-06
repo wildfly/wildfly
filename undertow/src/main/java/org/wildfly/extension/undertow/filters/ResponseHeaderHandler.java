@@ -26,6 +26,7 @@ import java.util.Arrays;
 import java.util.Collection;
 
 import io.undertow.server.HttpHandler;
+import io.undertow.server.handlers.SetHeaderHandler;
 import org.jboss.as.controller.AttributeDefinition;
 import org.jboss.as.controller.SimpleAttributeDefinitionBuilder;
 import org.jboss.dmr.ModelType;
@@ -33,7 +34,7 @@ import org.jboss.dmr.ModelType;
 /**
  * @author <a href="mailto:tomaz.cerar@redhat.com">Tomaz Cerar</a> (c) 2013 Red Hat Inc.
  */
-class ResponseHeaderHandler extends Filter {
+public class ResponseHeaderHandler extends Filter {
 
     private static final AttributeDefinition NAME = new SimpleAttributeDefinitionBuilder("header-name", ModelType.STRING)
             .setAllowNull(false)
@@ -44,7 +45,9 @@ class ResponseHeaderHandler extends Filter {
             .setAllowExpression(true)
             .build();
 
-    public ResponseHeaderHandler() {
+    public static final ResponseHeaderHandler INSTANCE = new ResponseHeaderHandler();
+
+    private ResponseHeaderHandler() {
         super("response-header");
     }
 
@@ -55,7 +58,7 @@ class ResponseHeaderHandler extends Filter {
 
     @Override
     public Class<? extends HttpHandler> getHandlerClass() {
-        return null;
+        return SetHeaderHandler.class;
     }
 
 

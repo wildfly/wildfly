@@ -26,7 +26,6 @@ import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.dmr.ModelNode;
 import org.jboss.msc.service.ServiceBuilder;
-import org.jboss.msc.service.ServiceName;
 import org.xnio.OptionMap;
 
 /**
@@ -36,10 +35,6 @@ class AjpListenerAdd extends ListenerAdd {
 
     AjpListenerAdd(AjpListenerResourceDefinition def) {
         super(def);
-    }
-
-    protected ServiceName constructServiceName(final String name) {
-        return UndertowService.LISTENER.append(name);
     }
 
     @Override

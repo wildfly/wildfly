@@ -44,7 +44,8 @@ public class UndertowEventHandlerAdapterBuilder implements ContainerEventHandler
         return target.addService(SERVICE_NAME, new UndertowEventHandlerAdapter(eventHandler, undertowService, listener))
                 .addDependency(ContainerEventHandlerService.SERVICE_NAME, ContainerEventHandler.class, eventHandler)
                 .addDependency(UndertowService.UNDERTOW, UndertowService.class, undertowService)
-                .addDependency(UndertowService.LISTENER.append(connector), ListenerService.class, listener)
+                //todo this is wrong, it should be replaced with injecting server instead of directly listener
+                .addDependency(UndertowService.listenerName(connector), ListenerService.class, listener)
         ;
     }
 }

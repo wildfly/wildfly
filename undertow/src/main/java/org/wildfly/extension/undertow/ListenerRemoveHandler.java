@@ -29,15 +29,13 @@ import org.jboss.msc.service.ServiceName;
  * @author <a href="mailto:tomaz.cerar@redhat.com">Tomaz Cerar</a> (c) 2013 Red Hat Inc.
  */
 class ListenerRemoveHandler extends ServiceRemoveStepHandler {
-    private final ListenerAdd listenerAddHandler;
 
     ListenerRemoveHandler(ListenerAdd addOperation) {
         super(addOperation);
-        this.listenerAddHandler = addOperation;
     }
 
     @Override
     protected ServiceName serviceName(String name) {
-        return listenerAddHandler.constructServiceName(name);
+        return UndertowService.listenerName(name);
     }
 }

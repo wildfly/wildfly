@@ -26,12 +26,16 @@ import java.io.IOException;
 
 import io.undertow.server.HttpHandler;
 import io.undertow.server.handlers.PathHandler;
+import org.jboss.as.server.Services;
+import org.jboss.as.server.moduleservice.ServiceModuleLoader;
 import org.jboss.as.subsystem.test.AbstractSubsystemBaseTest;
 import org.jboss.as.subsystem.test.AdditionalInitialization;
 import org.jboss.as.subsystem.test.KernelServices;
 import org.jboss.as.subsystem.test.KernelServicesBuilder;
+import org.jboss.msc.service.Service;
 import org.jboss.msc.service.ServiceController;
 import org.jboss.msc.service.ServiceName;
+import org.jboss.msc.service.ServiceTarget;
 import org.junit.Assert;
 import org.junit.Test;
 import org.wildfly.extension.undertow.filters.FilterService;
@@ -54,18 +58,34 @@ public class UndertowSubsystemTestCase extends AbstractSubsystemBaseTest {
 
     @Test
     public void testRuntime() throws Exception {
+        System.setProperty("server.data.dir",System.getProperty("java.io.tmpdir"));
+        System.setProperty("jboss.home.dir",System.getProperty("java.io.tmpdir"));
+        System.setProperty("jboss.home.dir",System.getProperty("java.io.tmpdir"));
+        System.setProperty("jboss.server.server.dir",System.getProperty("java.io.tmpdir"));
         KernelServicesBuilder builder = createKernelServicesBuilder(new AdditionalInitialization() {
+            @Override
+            protected void addExtraServices(ServiceTarget target) {
+                super.addExtraServices(target);
+                target.addService(Services.JBOSS_SERVICE_MODULE_LOADER, new ServiceModuleLoader(null)).install();
+            }
         })
                 .setSubsystemXml(getSubsystemXml());
         KernelServices mainServices = builder.build();
         if (!mainServices.isSuccessfulBoot()) {
             Assert.fail(mainServices.getBootError().toString());
         }
-        ServiceController<FilterService> filter = (ServiceController<FilterService>) mainServices.getContainer().getService(UndertowService.FILTER.append("limit-connections"));
-        filter.setMode(ServiceController.Mode.ACTIVE);
-        FilterService filterService = filter.getService().getValue();
-        HttpHandler result = filterService.createHttpHandler(new PathHandler());
+        ServiceController<FilterService> connectionLimiter = (ServiceController<FilterService>) mainServices.getContainer().getService(UndertowService.FILTER.append("limit-connections"));
+        connectionLimiter.setMode(ServiceController.Mode.ACTIVE);
+        FilterService connectionLimiterService = connectionLimiter.getService().getValue();
+        HttpHandler result = connectionLimiterService.createHttpHandler(new PathHandler());
         Assert.assertNotNull("handler should have been created", result);
+
+
+        ServiceController<FilterService> headersFilter = (ServiceController<FilterService>) mainServices.getContainer().getService(UndertowService.FILTER.append("headers"));
+        headersFilter.setMode(ServiceController.Mode.ACTIVE);
+        FilterService headersService = headersFilter.getService().getValue();
+        HttpHandler headerHandler = headersService.createHttpHandler(new PathHandler());
+        Assert.assertNotNull("handler should have been created", headerHandler);
 
         final ServiceName locationServiceName = UndertowService.locationServiceName("default-server", "default-host", "/");
         ServiceController<LocationService> locationSC = (ServiceController<LocationService>) mainServices.getContainer().getService(locationServiceName);
@@ -73,10 +93,8 @@ public class UndertowSubsystemTestCase extends AbstractSubsystemBaseTest {
         locationSC.setMode(ServiceController.Mode.ACTIVE);
         LocationService locationService = locationSC.getValue();
         Assert.assertNotNull(locationService);
-        /*FilterService injectedFilter = locationService.getFilterInjector().get(0).getValue();
-        Assert.assertNotNull(injectedFilter);
-        */filter.setMode(ServiceController.Mode.REMOVE);
-        final ServiceName jspServiceName = UndertowService.SERVLET_CONTAINER.append("default");
+        connectionLimiter.setMode(ServiceController.Mode.REMOVE);
+        final ServiceName jspServiceName = UndertowService.SERVLET_CONTAINER.append("myContainer");
         ServiceController<ServletContainerService> jspServiceServiceController = (ServiceController<ServletContainerService>) mainServices.getContainer().getService(jspServiceName);
         Assert.assertNotNull(jspServiceServiceController);
         JSPConfig jspConfig = jspServiceServiceController.getService().getValue().getJspConfig();

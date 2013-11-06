@@ -44,6 +44,7 @@ import org.wildfly.extension.undertow.filters.BasicAuthHandler;
 import org.wildfly.extension.undertow.filters.ConnectionLimitHandler;
 import org.wildfly.extension.undertow.filters.FilterDefinitions;
 import org.wildfly.extension.undertow.filters.FilterRefDefinition;
+import org.wildfly.extension.undertow.filters.ResponseHeaderHandler;
 import org.wildfly.extension.undertow.handlers.FileHandler;
 import org.wildfly.extension.undertow.handlers.HandlerDefinitions;
 import org.wildfly.extension.undertow.handlers.ReverseProxyHandler;
@@ -184,6 +185,9 @@ public class UndertowSubsystemParser_1_0 implements XMLStreamConstants, XMLEleme
                                 .addChild(
                                         builder(ConnectionLimitHandler.INSTANCE)
                                                 .addAttributes(ConnectionLimitHandler.MAX_CONCURRENT_REQUESTS)
+                                ).addChild(
+                                        builder(ResponseHeaderHandler.INSTANCE)
+                                                .addAttributes(ResponseHeaderHandler.INSTANCE.getAttributes())
                                 )
 
                 )
