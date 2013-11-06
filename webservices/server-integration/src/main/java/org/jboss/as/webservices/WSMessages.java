@@ -30,6 +30,7 @@ import javax.xml.ws.WebServiceException;
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.server.deployment.DeploymentUnitProcessingException;
 import org.jboss.as.server.deployment.module.ResourceRoot;
+import org.jboss.as.webservices.config.DisabledOperationException;
 import org.jboss.logging.annotations.Cause;
 import org.jboss.logging.annotations.Message;
 import org.jboss.logging.annotations.MessageBundle;
@@ -177,5 +178,11 @@ public interface WSMessages {
 
     @Message(id = 15603, value = "Unable to get servlet metadata for servletLink: %s in portComponet : %s")
     DeploymentUnitProcessingException cannotGetServletMD(String seveltLink, String portComponent);
+
+    @Message(id = 15615, value = "Could not update WS server configuration because of pending former model update(s) requiring reload.")
+    DisabledOperationException couldNotUpdateServerConfigBecauseOfReloadRequired();
+
+    @Message(id = 15616, value = "Could not update WS server configuration because of existing WS deployment on the server.")
+    DisabledOperationException couldNotUpdateServerConfigBecauseOfExistingWSDeployment();
 
 }
