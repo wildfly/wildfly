@@ -341,7 +341,10 @@ class HornetQServerAdd implements OperationStepHandler {
         configuration.setAllowAutoFailBack(ALLOW_FAILBACK.resolveModelAttribute(context, model).asBoolean());
         configuration.setEnabledAsyncConnectionExecution(ASYNC_CONNECTION_EXECUTION_ENABLED.resolveModelAttribute(context, model).asBoolean());
 
-        configuration.setBackupGroupName(BACKUP_GROUP_NAME.resolveModelAttribute(context, model).asString());
+        ModelNode backupGroupName = BACKUP_GROUP_NAME.resolveModelAttribute(context, model);
+        if (backupGroupName.isDefined()) {
+            configuration.setBackupGroupName(backupGroupName.asString());
+        }
         ModelNode replicationClusterName = REPLICATION_CLUSTERNAME.resolveModelAttribute(context, model);
         if (replicationClusterName.isDefined()) {
             configuration.setReplicationClustername(replicationClusterName.asString());
