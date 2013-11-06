@@ -113,6 +113,9 @@ import org.jboss.msc.service.StartException;
 import org.jboss.msc.service.StopContext;
 import org.jboss.msc.value.InjectedValue;
 import org.jboss.security.audit.AuditManager;
+import org.jboss.security.auth.login.JASPIAuthenticationInfo;
+import org.jboss.security.config.ApplicationPolicy;
+import org.jboss.security.config.SecurityConfiguration;
 import org.jboss.vfs.VirtualFile;
 import org.wildfly.extension.undertow.Host;
 import org.wildfly.extension.undertow.JSPConfig;
@@ -123,6 +126,7 @@ import org.wildfly.extension.undertow.security.AuditNotificationReceiver;
 import org.wildfly.extension.undertow.security.JAASIdentityManagerImpl;
 import org.wildfly.extension.undertow.security.SecurityContextAssociationHandler;
 import org.wildfly.extension.undertow.security.SecurityContextThreadSetupAction;
+import org.wildfly.extension.undertow.security.jaspi.JASPIAuthenticationMechanism;
 
 import javax.servlet.Filter;
 import javax.servlet.Servlet;
@@ -212,9 +216,10 @@ public class UndertowDeploymentInfoService implements Service<DeploymentInfo> {
         try {
             Thread.currentThread().setContextClassLoader(module.getClassLoader());
             DeploymentInfo deploymentInfo = createServletConfig();
+
             handleDistributable(deploymentInfo);
             handleIdentityManager(deploymentInfo);
-
+            handleJASPIMechanism(deploymentInfo);
 
             SessionConfigMetaData sessionConfig = mergedMetaData.getSessionConfig();
             ServletSessionConfig config = null;
@@ -325,6 +330,20 @@ public class UndertowDeploymentInfoService implements Service<DeploymentInfo> {
         return deploymentInfo;
     }
 
+    /**
+     * <p>Adds to the deployment the {@link JASPIAuthenticationMechanism}, if necessary. The handler will be added if the security domain
+     * is configured with JASPI authentication.</p>
+     *
+     * @param deploymentInfo
+     */
+    private void handleJASPIMechanism(final DeploymentInfo deploymentInfo) {
+        ApplicationPolicy applicationPolicy = SecurityConfiguration.getApplicationPolicy(this.securityDomain);
+
+        if (JASPIAuthenticationInfo.class.isInstance(applicationPolicy.getAuthenticationInfo())) {
+            deploymentInfo.addAuthenticationMechanism(new JASPIAuthenticationMechanism(this.securityDomain));
+            deploymentInfo.setIgnoreStandardAuthenticationMechanism(true);
+        }
+    }
 
     private void handleIdentityManager(final DeploymentInfo deploymentInfo) {
 
