@@ -110,13 +110,11 @@ public class Jsr299BindingsInterceptor implements org.jboss.invocation.Intercept
     }
 
     private Object doLifecycleInterception(final InterceptorContext context, WeldInterceptorInstances interceptorInstances, final InterceptorBindings interceptorBindings) throws Exception {
-        try {
-            if (interceptorBindings != null) {
-                List<Interceptor<?>> currentInterceptors = interceptorBindings.getLifecycleInterceptors(interceptionType);
-                delegateInterception(context.getInvocationContext(), interceptionType, currentInterceptors, interceptorInstances);
-            }
-        } finally {
+        if (interceptorBindings == null) {
             return context.proceed();
+        } else {
+            List<Interceptor<?>> currentInterceptors = interceptorBindings.getLifecycleInterceptors(interceptionType);
+            return delegateInterception(context.getInvocationContext(), interceptionType, currentInterceptors, interceptorInstances);
         }
     }
 }
