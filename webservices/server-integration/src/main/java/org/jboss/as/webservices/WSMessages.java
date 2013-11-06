@@ -29,6 +29,7 @@ import javax.xml.ws.WebServiceException;
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.server.deployment.DeploymentUnitProcessingException;
 import org.jboss.as.server.deployment.module.ResourceRoot;
+import org.jboss.as.webservices.config.DisabledOperationException;
 import org.jboss.logging.Messages;
 import org.jboss.logging.annotations.Cause;
 import org.jboss.logging.annotations.Message;
@@ -169,5 +170,11 @@ public interface WSMessages {
 
     @Message(id = 15606, value = "Class verification of Java Web Service implementation class %s failed.")
     DeploymentUnitProcessingException jwsWebServiceClassVerificationFailed(Class<?> seiClass);
+
+    @Message(id = 15615, value = "Could not update WS server configuration because of pending former model update(s) requiring reload.")
+    DisabledOperationException couldNotUpdateServerConfigBecauseOfReloadRequired();
+
+    @Message(id = 15616, value = "Could not update WS server configuration because of existing WS deployment on the server.")
+    DisabledOperationException couldNotUpdateServerConfigBecauseOfExistingWSDeployment();
 
 }
