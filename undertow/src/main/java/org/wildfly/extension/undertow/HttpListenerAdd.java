@@ -41,10 +41,6 @@ public class HttpListenerAdd extends ListenerAdd {
         super(definition);
     }
 
-    protected ServiceName constructServiceName(final String name) {
-        return UndertowService.LISTENER.append(name);
-    }
-
     @Override
     ListenerService<? extends ListenerService> createService(String name, final String serverName, final OperationContext context, ModelNode model, OptionMap listenerOptions) throws OperationFailedException {
         final boolean certificateForwarding = HttpListenerResourceDefinition.CERTIFICATE_FORWARDING.resolveModelAttribute(context, model).asBoolean();

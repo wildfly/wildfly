@@ -67,14 +67,18 @@ public class FilterService implements Service<FilterService> {
                 if (c.getParameterTypes().length == numOfParams) {
                     Object[] params = new Object[numOfParams];
                     Class[] parameterTypes = c.getParameterTypes();
+                    int attrCounter = 0;
                     for (int i = 0; i < parameterTypes.length; i++) {
                         Class param = parameterTypes[i];
                         if (param == String.class) {
-                            params[i] = model.get(attributes.get(i).getName()).asString();
+                            params[i] = model.get(attributes.get(attrCounter).getName()).asString();
+                            attrCounter++;
                         } else if (param == Integer.class || param == int.class) {
-                            params[i] = model.get(attributes.get(i).getName()).asInt();
+                            params[i] = model.get(attributes.get(attrCounter).getName()).asInt();
+                            attrCounter++;
                         } else if (param == Long.class || param == long.class) {
-                            params[i] = model.get(attributes.get(i).getName()).asLong();
+                            params[i] = model.get(attributes.get(attrCounter).getName()).asLong();
+                            attrCounter++;
                         } else if (param == HttpHandler.class) {
                             params[i] = next;
                         }

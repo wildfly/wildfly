@@ -183,7 +183,8 @@ public class UndertowDeploymentProcessor implements DeploymentUnitProcessor {
         String securityDomain = metaDataSecurityDomain == null ? SecurityConstants.DEFAULT_APPLICATION_POLICY : SecurityUtil
                 .unprefixSecurityDomain(metaDataSecurityDomain);
 
-        final ServiceName deploymentServiceName = UndertowService.deploymentServiceName(hostName,pathName);
+        String serverInstanceName = metaData.getServerInstanceName() == null ? defaultServer : metaData.getServerInstanceName();
+        final ServiceName deploymentServiceName = UndertowService.deploymentServiceName(serverInstanceName, hostName,pathName);
 
         final Set<ServiceName> additionalDependencies = new HashSet<>();
         for(final SetupAction setupAction : setupActions) {
@@ -192,7 +193,8 @@ public class UndertowDeploymentProcessor implements DeploymentUnitProcessor {
                 additionalDependencies.addAll(dependencies);
             }
         }
-        final ServiceName hostServiceName = UndertowService.virtualHostName(defaultServer, hostName);
+
+        final ServiceName hostServiceName = UndertowService.virtualHostName(serverInstanceName, hostName);
         TldsMetaData tldsMetaData = deploymentUnit.getAttachment(TldsMetaData.ATTACHMENT_KEY);
         UndertowDeploymentInfoService undertowDeploymentInfoService = UndertowDeploymentInfoService.builder()
                         .setAttributes(deploymentUnit.getAttachment(ServletContextAttribute.ATTACHMENT_KEY))
@@ -288,6 +290,7 @@ public class UndertowDeploymentProcessor implements DeploymentUnitProcessor {
         final ModelNode node = deploymentUnit.getDeploymentSubsystemModel(UndertowExtension.SUBSYSTEM_NAME);
         node.get(DeploymentDefinition.CONTEXT_ROOT.getName()).set("".equals(pathName) ? "/" : pathName);
         node.get(DeploymentDefinition.VIRTUAL_HOST.getName()).set(hostName);
+        node.get(DeploymentDefinition.SERVER.getName()).set(serverInstanceName);
         processManagement(deploymentUnit, metaData);
     }
 

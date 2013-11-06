@@ -73,7 +73,7 @@ abstract class ListenerResourceDefinition extends PersistentResourceDefinition {
 
     static final List<OptionAttributeDefinition> OPTIONS = OptionList.builder()
             .addOption(UndertowOptions.MAX_HEADER_SIZE, "max-header-size", new ModelNode(UndertowOptions.DEFAULT_MAX_HEADER_SIZE))
-            .addOption(UndertowOptions.MAX_ENTITY_SIZE, Constants.MAX_POST_SIZE, new ModelNode(UndertowOptions.DEFAULT_MAX_ENTITY_SIZE))
+            .addOption(UndertowOptions.MAX_ENTITY_SIZE, Constants.MAX_POST_SIZE, new ModelNode(10485760l))
             .addOption(UndertowOptions.BUFFER_PIPELINED_DATA, "buffer-pipelined-data", new ModelNode(true))
             .addOption(UndertowOptions.MAX_PARAMETERS, "max-parameters", new ModelNode(1000))
             .addOption(UndertowOptions.MAX_HEADERS, "max-headers", new ModelNode(200))

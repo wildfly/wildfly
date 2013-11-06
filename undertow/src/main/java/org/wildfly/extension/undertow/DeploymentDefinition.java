@@ -52,6 +52,7 @@ import org.jboss.msc.service.ServiceController;
 public class DeploymentDefinition extends SimpleResourceDefinition {
     public static final DeploymentDefinition INSTANCE = new DeploymentDefinition();
 
+    public static final AttributeDefinition SERVER = new SimpleAttributeDefinitionBuilder("server", ModelType.STRING).setStorageRuntime().build();
     public static final AttributeDefinition CONTEXT_ROOT = new SimpleAttributeDefinitionBuilder("context-root", ModelType.STRING).setStorageRuntime().build();
     public static final AttributeDefinition VIRTUAL_HOST = new SimpleAttributeDefinitionBuilder("virtual-host", ModelType.STRING).setStorageRuntime().build();
 
@@ -91,8 +92,9 @@ public class DeploymentDefinition extends SimpleResourceDefinition {
 
             final String host = VIRTUAL_HOST.resolveModelAttribute(context, subModel).asString();
             final String path = CONTEXT_ROOT.resolveModelAttribute(context, subModel).asString();
+            final String server = SERVER.resolveModelAttribute(context, subModel).asString();
 
-            final ServiceController<?> controller = context.getServiceRegistry(false).getService(UndertowService.deploymentServiceName(host, path));
+            final ServiceController<?> controller = context.getServiceRegistry(false).getService(UndertowService.deploymentServiceName(server, host, path));
 
             SessionStat stat = SessionStat.getStat(operation.require(ModelDescriptionConstants.NAME).asString());
 

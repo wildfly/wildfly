@@ -20,14 +20,14 @@
   ~ 02110-1301 USA, or see the FSF site: http://www.fsf.org.
   -->
 
-<subsystem xmlns="urn:jboss:domain:undertow:1.0" default-virtual-host="default-virtual-host" default-servlet-container="default-servlet-container"
+<subsystem xmlns="urn:jboss:domain:undertow:1.0" default-virtual-host="default-virtual-host" default-servlet-container="myContainer"
            default-server="some-server" instance-id="some-id">
 
     <buffer-caches>
         <buffer-cache name="default" buffer-size="1024" buffers-per-region="1024" max-regions="10"/>
     </buffer-caches>
 
-    <server name="default-server" default-host="localhost" servlet-container="blah">
+    <server name="default-server" default-host="localhost" servlet-container="myContainer">
         <ajp-listener name="ajp-connector" socket-binding="ajp"/>
         <http-listener name="default" socket-binding="http" certificate-forwarding="true"/>
         <http-listener name="second" socket-binding="http" max-cookies="100" max-parameters="30" url-charset="windows-1250" max-post-size="100000" max-headers="30"/>
@@ -37,19 +37,20 @@
         <host name="default-host" alias="localhost, some.host" default-web-module="something.war">
             <location name="/" handler="welcome-content">
                 <filter-ref name="security-other"/>
-                <filter-ref name="connection-limit"/>
+                <filter-ref name="limit-connections"/>
             </location>
             <access-log pattern="REQ %{i,test-header}" directory="${jboss.server.server.dir}" prefix="access"/>
         </host>
         <host name="other-host" alias="www.mysite.com" default-web-module="something.war">
             <location name="/" handler="welcome-content">
-                <filter-ref name="connection-limit"/>
+                <filter-ref name="limit-connections"/>
+                <filter-ref name="headers"/>
             </location>
         </host>
     </server>
 
 
-    <servlet-container name="default" default-buffer-cache="default">
+    <servlet-container name="myContainer" default-buffer-cache="default">
         <jsp-config
                 disabled="${prop.disabled:false}"
                 keep-generated="${prop.keep-generated:true}"
@@ -75,7 +76,7 @@
                         secure="true"
                         http-only="true"
                         max-age="1000"/>
-        <persistent-sessions relative-to="server.data.dir" path="web-sessions"/>
+        <!--<persistent-sessions relative-to="${server.data.dir}" path="web-sessions"/>-->
     </servlet-container>
 
     <error-pages>
@@ -91,7 +92,7 @@
     <filters>
         <basic-auth name="security-other" security-domain="other"/>
         <connection-limit name="limit-connections" max-concurrent-requests="15000"/>
-        <!--<response-header name="headers" header-name="MY_HEADER" header-value="someValue"/>-->
+        <response-header name="headers" header-name="MY_HEADER" header-value="someValue"/>
     </filters>
 
 </subsystem>

@@ -72,8 +72,9 @@ abstract class ListenerAdd extends AbstractAddStepHandler {
         boolean enabled = ListenerResourceDefinition.ENABLED.resolveModelAttribute(context, model).asBoolean();
         OptionMap options = OptionList.resolveOptions(context, model, ListenerResourceDefinition.OPTIONS);
         String serverName = parent.getLastElement().getValue();
+        final ServiceName listenerServiceName = UndertowService.listenerName(name);
         final ListenerService<? extends ListenerService> service = createService(name, serverName, context, model, options);
-        final ServiceBuilder<? extends ListenerService> serviceBuilder = context.getServiceTarget().addService(constructServiceName(name), service);
+        final ServiceBuilder<? extends ListenerService> serviceBuilder = context.getServiceTarget().addService(listenerServiceName, service);
         serviceBuilder.addDependency(IOServices.WORKER.append(workerName), XnioWorker.class, service.getWorker())
                 .addDependency(SocketBinding.JBOSS_BINDING_NAME.append(bindingRef), SocketBinding.class, service.getBinding())
                 .addDependency(IOServices.BUFFER_POOL.append(bufferPoolName), Pool.class, service.getBufferPool())
@@ -88,8 +89,6 @@ abstract class ListenerAdd extends AbstractAddStepHandler {
             newControllers.add(serviceController);
         }
     }
-
-    abstract ServiceName constructServiceName(final String name);
 
     abstract ListenerService<? extends ListenerService> createService(String name, final String serverName, final OperationContext context, ModelNode model, OptionMap listenerOptions) throws OperationFailedException;
 
