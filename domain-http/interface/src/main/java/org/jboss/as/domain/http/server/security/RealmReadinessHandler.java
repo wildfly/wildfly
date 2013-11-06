@@ -74,7 +74,8 @@ abstract class RealmReadinessHandler implements HttpHandler {
         SSLSessionInfo session = exchange.getConnection().getSslSessionInfo();
         if (session != null) {
             try {
-                return session.getPeerCertificates()[0] instanceof X509Certificate;
+                //todo: renegotiation?
+                return session.getPeerCertificates(false)[0] instanceof X509Certificate;
             } catch (SSLPeerUnverifiedException e) {
             }
         }

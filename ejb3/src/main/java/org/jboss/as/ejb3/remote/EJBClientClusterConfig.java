@@ -31,7 +31,6 @@ import org.jboss.msc.service.ServiceRegistry;
 import org.xnio.OptionMap;
 
 import java.util.HashMap;
-import java.util.Iterator;
 import java.util.Map;
 import java.util.Properties;
 
@@ -110,6 +109,6 @@ public class EJBClientClusterConfig extends EJBClientCommonConnectionConfig impl
 
     @Override
     public boolean isConnectEagerly() {
-        return false;
+        return true;
     }
 }

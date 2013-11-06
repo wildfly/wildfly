@@ -72,7 +72,7 @@ class EJBClientCommonConnectionConfig implements EJBClientConfiguration.CommonCo
 
     @Override
     public boolean isConnectEagerly() {
-        return false;
+        return true;
     }
 
     protected void setChannelCreationOptions(final OptionMap channelCreationOptions) {
