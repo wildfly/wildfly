@@ -28,7 +28,7 @@ import java.util.Map;
 import javax.net.ssl.SSLContext;
 import javax.security.auth.callback.CallbackHandler;
 
-import org.jboss.as.cli.ControllerAddressResolver.ControllerAddress;
+import org.jboss.as.cli.ControllerAddress;
 import org.jboss.as.controller.client.ModelControllerClient;
 
 /**

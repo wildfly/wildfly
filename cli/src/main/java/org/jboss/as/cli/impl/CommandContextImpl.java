@@ -75,7 +75,7 @@ import org.jboss.as.cli.CommandLineCompleter;
 import org.jboss.as.cli.CommandLineException;
 import org.jboss.as.cli.CommandRegistry;
 import org.jboss.as.cli.ControllerAddressResolver;
-import org.jboss.as.cli.ControllerAddressResolver.ControllerAddress;
+import org.jboss.as.cli.ControllerAddress;
 import org.jboss.as.cli.OperationCommand;
 import org.jboss.as.cli.SSLConfig;
 import org.jboss.as.cli.Util;
