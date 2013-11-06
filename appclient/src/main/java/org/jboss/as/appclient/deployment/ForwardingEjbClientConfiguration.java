@@ -67,11 +67,6 @@ public abstract class ForwardingEjbClientConfiguration implements EJBClientConfi
     }
 
     @Override
-    public Iterator<ClusterConfiguration> getClusterConfigurations() {
-        return delegate.getClusterConfigurations();
-    }
-
-    @Override
     public ClusterConfiguration getClusterConfiguration(final String clusterName) {
         return delegate.getClusterConfiguration(clusterName);
     }

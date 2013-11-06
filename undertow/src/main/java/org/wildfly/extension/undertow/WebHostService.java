@@ -46,6 +46,7 @@ class WebHostService implements Service<WebHost>, WebHost {
         d.setContextPath(webDeploymentBuilder.getContextRoot());
         d.setClassLoader(webDeploymentBuilder.getClassLoader());
         d.setResourceManager(new FileResourceManager(new File(webDeploymentBuilder.getDocumentRoot().getAbsolutePath()), 1024 * 1024));
+        d.setIgnoreFlush(false);
         for (ServletBuilder servlet : webDeploymentBuilder.getServlets()) {
             ServletInfo s;
             if (servlet.getServlet() == null) {

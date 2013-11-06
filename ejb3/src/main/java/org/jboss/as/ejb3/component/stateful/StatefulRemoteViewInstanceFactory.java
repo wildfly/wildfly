@@ -25,10 +25,12 @@ import org.jboss.as.ee.component.ComponentView;
 import org.jboss.as.ee.component.ViewInstanceFactory;
 import org.jboss.as.naming.ManagedReference;
 import org.jboss.as.naming.ValueManagedReference;
+import org.jboss.as.server.ServerEnvironment;
 import org.jboss.ejb.client.EJBClient;
 import org.jboss.ejb.client.SessionID;
 import org.jboss.ejb.client.StatefulEJBLocator;
 import org.jboss.msc.value.ImmediateValue;
+import org.wildfly.security.manager.WildFlySecurityManager;
 
 import java.util.Map;
 
@@ -57,7 +59,7 @@ public class StatefulRemoteViewInstanceFactory implements ViewInstanceFactory {
         if (sessionID == null) {
             statefulEJBLocator = EJBClient.createSession(componentView.getViewClass(), applicationName, moduleName, beanName, distinctName);
         } else {
-            statefulEJBLocator = new StatefulEJBLocator(componentView.getViewClass(), applicationName, moduleName, beanName, distinctName, sessionID, statefulSessionComponent.getCache().getStrictAffinity(), null);
+            statefulEJBLocator = new StatefulEJBLocator(componentView.getViewClass(), applicationName, moduleName, beanName, distinctName, sessionID, statefulSessionComponent.getCache().getStrictAffinity(), WildFlySecurityManager.getPropertyPrivileged(ServerEnvironment.NODE_NAME, null));
         }
         final Object ejbProxy = EJBClient.createProxy(statefulEJBLocator);
         return new ValueManagedReference(new ImmediateValue(ejbProxy));
