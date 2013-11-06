@@ -38,6 +38,7 @@ import org.jboss.as.controller.RunningMode;
 import org.jboss.as.controller.operations.common.Util;
 import org.jboss.as.model.test.FailedOperationTransformationConfig;
 import org.jboss.as.model.test.FailedOperationTransformationConfig.RejectExpressionsConfig;
+import org.jboss.as.model.test.ModelFixer;
 import org.jboss.as.model.test.ModelTestControllerVersion;
 import org.jboss.as.model.test.ModelTestUtils;
 import org.jboss.as.model.test.SingleClassFilter;
@@ -162,9 +163,8 @@ public class SecurityDomainModelv12UnitTestCase extends AbstractSubsystemBaseTes
         ModelTestUtils.checkOutcome(mainServices.executeOperation(composite));
         ModelTestUtils.checkOutcome(mainServices.executeOperation(modelVersion, mainServices.transformOperation(modelVersion, composite)));
 
-        Assert.assertEquals(mainServices.readWholeModel(false), mainServices.getLegacyServices(modelVersion).readWholeModel(false));
+        checkSubsystemModelTransformation(mainServices, modelVersion);
     }
-
 
     private void testOperationTransformers_1_1_0(ModelTestControllerVersion controllerVersion) throws Exception {
         ModelVersion modelVersion = ModelVersion.create(1, 1, 0);
