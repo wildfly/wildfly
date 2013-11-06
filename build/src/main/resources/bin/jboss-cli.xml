@@ -5,6 +5,8 @@
 -->
 <jboss-cli xmlns="urn:jboss:cli:2.0">
 
+    <default-protocol use-legacy-override="true">http-remoting</default-protocol>
+
     <!-- The default controller to connect to when 'connect' command is executed w/o arguments -->
     <default-controller>
         <protocol>http-remoting</protocol>

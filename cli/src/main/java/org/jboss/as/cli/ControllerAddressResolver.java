@@ -29,8 +29,6 @@ package org.jboss.as.cli;
  */
 public class ControllerAddressResolver {
 
-    private static final String DEFAULT_PROTOCOL = "http-remoting";
-
     private final CliConfig config;
     private final String defaultController;
 
@@ -44,20 +42,52 @@ public class ControllerAddressResolver {
     }
 
     public ControllerAddress resolveAddress(final String controller) throws CommandLineException {
+        ControllerAddress intermediate;
         if (controller != null) {
-            return convert(controller);
+            intermediate = convert(controller);
+        } else if (defaultController != null) {
+            intermediate = convert(defaultController);
+        } else {
+            intermediate = config.getDefaultControllerAddress();
         }
 
-        if (defaultController != null) {
-            return convert(defaultController);
+        return finish(intermediate);
+    }
+
+    private ControllerAddress finish(final ControllerAddress toFinish) throws CommandLineException {
+        String protocol = toFinish.getProtocol();
+        String host = toFinish.getHost();
+        int port = toFinish.getPort();
+
+        if (protocol == null) {
+            if (config.isUseLegacyOverride() && port == 9999) {
+                protocol = "remoting";
+            } else {
+                protocol = config.getDefaultControllerProtocol();
+            }
         }
 
-        return new ControllerAddress(config.getDefaultControllerProtocol(), config.getDefaultControllerHost(),
-                config.getDefaultControllerPort());
+        if (host == null) {
+            throw new CommandLineException("null host encountered");
+        }
+
+        if (port < 0) {
+            if ("remote".equals(protocol) || "remoting".equals(protocol)) {
+                port = 9999;
+            } else if ("http-remoting".equals(protocol)) {
+                port = 9990;
+            } else if ("https-remoting".equals(protocol)) {
+                port = 9993;
+            } else {
+                throw new CommandLineException("Unexpected protocol '" + protocol + "'");
+            }
+        }
+
+        return new ControllerAddress(protocol, host, port);
     }
 
     private ControllerAddress convert(final String controller) throws CommandLineException {
-        String protocol = DEFAULT_PROTOCOL;
+        String protocol = null;
         String host = null;
         int port = -1;
 
@@ -114,29 +144,4 @@ public class ControllerAddressResolver {
         return new ControllerAddress(protocol, host, port);
     }
 
-    public static class ControllerAddress {
-
-        private final String protocol;
-        private final String host;
-        private final int port;
-
-        private ControllerAddress(final String protocol, final String host, final int port) {
-            this.protocol = protocol;
-            this.host = host;
-            this.port = port;
-        }
-
-        public String getProtocol() {
-            return protocol;
-        }
-
-        public String getHost() {
-            return host;
-        }
-
-        public int getPort() {
-            return port;
-        }
-
-    }
 }
