@@ -38,7 +38,6 @@ import org.jboss.as.controller.client.ModelControllerClient;
 import org.jboss.as.controller.client.helpers.domain.DomainClient;
 import org.jboss.as.test.integration.domain.management.util.DomainLifecycleUtil;
 import org.jboss.as.test.integration.domain.management.util.DomainTestSupport;
-import org.jboss.as.test.integration.domain.suites.DomainTestSuite;
 import org.jboss.dmr.ModelNode;
 import org.junit.AfterClass;
 import org.junit.Assert;
@@ -107,6 +106,7 @@ public class AdminOnlyModeTestCase {
 
         // Try to reconnect to the hc
         domainMasterLifecycleUtil.connect();
+        domainMasterLifecycleUtil.awaitHostController(System.currentTimeMillis());
 
         op = new ModelNode();
         op.get(OP).set(READ_ATTRIBUTE_OPERATION);
@@ -126,6 +126,7 @@ public class AdminOnlyModeTestCase {
 
         // Try to reconnect to the hc
         domainMasterLifecycleUtil.connect();
+        domainMasterLifecycleUtil.awaitHostController(System.currentTimeMillis());
 
         // check that the servers are up
         domainMasterLifecycleUtil.awaitServers(System.currentTimeMillis());
