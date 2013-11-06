@@ -369,23 +369,28 @@ public class TimerServiceImpl implements TimerService, Service<TimerService> {
         Object pk = currentPrimaryKey();
         final Set<Timer> activeTimers = new HashSet<Timer>();
         // get all active non-persistent timers for this timerservice
-        for (final TimerImpl timer : this.nonPersistentTimers.values()) {
-            if (ineligibleTimerStates.contains(timer.getState())) {
-                continue;
-            } else if (timer.isActive()) {
-                if (timer.getPrimaryKey() == null || timer.getPrimaryKey().equals(pk)) {
-                    activeTimers.add(timer);
+        synchronized(this.nonPersistentTimers) {
+            for (final TimerImpl timer : this.nonPersistentTimers.values()) {
+                if (ineligibleTimerStates.contains(timer.getState())) {
+                    continue;
+                } else if (timer.isActive()) {
+                    if (timer.getPrimaryKey() == null || timer.getPrimaryKey().equals(pk)) {
+                        activeTimers.add(timer);
+                    }
                 }
             }
         }
+
         // get all active timers which are persistent, but haven't yet been
         // persisted (waiting for tx to complete)
-        for (final TimerImpl timer : this.persistentWaitingOnTxCompletionTimers.values()) {
-            if (ineligibleTimerStates.contains(timer.getState())) {
-                continue;
-            } else if (timer.isActive()) {
-                if (timer.getPrimaryKey() == null || timer.getPrimaryKey().equals(pk)) {
-                    activeTimers.add(timer);
+        synchronized (this.persistentWaitingOnTxCompletionTimers) {
+            for (final TimerImpl timer : this.persistentWaitingOnTxCompletionTimers.values()) {
+                if (ineligibleTimerStates.contains(timer.getState())) {
+                    continue;
+                } else if (timer.isActive()) {
+                    if (timer.getPrimaryKey() == null || timer.getPrimaryKey().equals(pk)) {
+                        activeTimers.add(timer);
+                    }
                 }
             }
         }
