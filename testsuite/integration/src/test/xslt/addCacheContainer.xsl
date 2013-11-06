@@ -4,11 +4,12 @@
     <xsl:param name="cacheType" select="replicated" />
     <xsl:param name="cacheLoader" select="string-keyed" />
     <xsl:param name="mode" select="SYNC" />
+    <xsl:param name="datasource"/>
 
     <xsl:variable name="ispn" select="'urn:jboss:domain:infinispan:'"/>
     
     <xsl:attribute-set name="cacheLoaderAttributes">
-        <xsl:attribute name="datasource">java:jboss/datasources/ExampleDS</xsl:attribute>
+        <xsl:attribute name="datasource"><xsl:value-of select="$datasource"/></xsl:attribute>
         <xsl:attribute name="preload">true</xsl:attribute>
         <xsl:attribute name="passivation">false</xsl:attribute>
         <xsl:attribute name="purge">false</xsl:attribute>

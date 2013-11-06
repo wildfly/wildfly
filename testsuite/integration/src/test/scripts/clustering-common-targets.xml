@@ -133,6 +133,7 @@
         <attribute name="cacheLoader" />
         <attribute name="cacheType" />
         <attribute name="mode" />
+        <attribute name="datasource" />
 
         <sequential>
             <echo message="Adding a cache container to Infinispan subsystem for config @{name}" />
@@ -142,6 +143,7 @@
                     <param name="cacheLoader" expression="@{cacheLoader}" />
                     <param name="cacheType" expression="@{cacheType}" />
                     <param name="mode" expression="@{mode}" />
+                    <param name="datasource" expression="@{datasource}" />
                 </transform-params>
             </execute-xslt-transform>
         </sequential>
@@ -157,13 +159,13 @@
         <attribute name="ds.jdbc.pass" default="sa" />
         <attribute name="ds.jdbc.driver.jar" default="h2" />
         <attribute name="ds.jdbc.driver" default="org.h2.jdbcx.JdbcDataSource" />
-        <attribute name="ds.jdbc.driver.module" default="com.h2database.h2" />
+        <attribute name="ds.jdbc.driver.module" default="h2" />
         <attribute name="ds.jdbc.isModule" default="true" />
         
         <sequential>
             <echo message="Adding a cache container to Infinispan subsystem for config @{name}" />
            
-            <execute-xslt-transform transform="changeDatabase.xsl" name="@{name}" output.dir="@{output.dir}" config.dir.name="@{config.dir.name}">
+            <execute-xslt-transform transform="addDatasource.xsl" name="@{name}" output.dir="@{output.dir}" config.dir.name="@{config.dir.name}">
                 <transform-params>
                     <param name="ds.jdbc.url" expression="@{ds.jdbc.url}" />
                     <param name="ds.jdbc.user" expression="@{ds.jdbc.user}" />
