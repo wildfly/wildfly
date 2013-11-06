@@ -347,12 +347,21 @@ class CliConfigImpl implements CliConfig {
             Namespace readerNS = Namespace.forUri(reader.getNamespaceURI());
             for (Namespace current : Namespace.cliValues()) {
                 if (readerNS.equals(current)) {
-                    // Convert to a switch statement if the top level element changes - for now all supported
-                    // namespaces are equal at this point.
-                    readCLIElement_1_0(reader, readerNS, config);
+                    switch (readerNS) {
+                        case CLI_1_0:
+                            readCLIElement_1_0(reader, readerNS, config);
+                            break;
+                        case CLI_1_1:
+                            readCLIElement_1_1(reader, readerNS, config);
+                            break;
+                        case CLI_1_2:
+                            readCLIElement_1_2(reader, readerNS, config);
+                            break;
+                        default:
+                            readCLIElement_2_0(reader, readerNS, config);
+                    }
                     return;
                 }
-
             }
             throw new XMLStreamException("Unexpected element: " + localName);
         }
@@ -364,30 +373,68 @@ class CliConfigImpl implements CliConfig {
                 assertExpectedNamespace(reader, expectedNs);
                 if(tag == XMLStreamConstants.START_ELEMENT) {
                     final String localName = reader.getLocalName();
-                    if(localName.equals(DEFAULT_CONTROLLER)) {
-                        switch (expectedNs) {
-                            case CLI_1_0:
-                            case CLI_1_1:
-                            case CLI_1_2:
-                                readDefaultController_1_0(reader, expectedNs, config);
-                                break;
-                            default:
-                                readDefaultController_2_0(reader, expectedNs, config);
-                        }
+                    if (localName.equals(DEFAULT_CONTROLLER)) {
+                        readDefaultController_1_0(reader, expectedNs, config);
+                    } else if (localName.equals(HISTORY)) {
+                        readHistory(reader, expectedNs, config);
+                    } else if (localName.equals("ssl")) {
+                        SslConfig sslConfig = new SslConfig();
+                        readSSLElement_1_0(reader, expectedNs, sslConfig);
+                        config.sslConfig = sslConfig;
+                    } else {
+                        throw new XMLStreamException("Unexpected element: " + localName);
+                    }
+                } else if(tag == XMLStreamConstants.END_ELEMENT) {
+                    final String localName = reader.getLocalName();
+                    if (localName.equals(JBOSS_CLI)) {
+                        jbossCliEnded = true;
+                    }
+                }
+            }
+        }
+
+        public void readCLIElement_1_1(XMLExtendedStreamReader reader, Namespace expectedNs, CliConfigImpl config) throws XMLStreamException {
+            boolean jbossCliEnded = false;
+            while (reader.hasNext() && jbossCliEnded == false) {
+                int tag = reader.nextTag();
+                assertExpectedNamespace(reader, expectedNs);
+                if(tag == XMLStreamConstants.START_ELEMENT) {
+                    final String localName = reader.getLocalName();
+                    if (localName.equals(DEFAULT_CONTROLLER)) {
+                        readDefaultController_1_0(reader, expectedNs, config);
+                    } else if(localName.equals(VALIDATE_OPERATION_REQUESTS)) {
+                        config.validateOperationRequests = resolveBoolean(reader.getElementText());
                     } else if(localName.equals(HISTORY)) {
                         readHistory(reader, expectedNs, config);
                     } else if (localName.equals("ssl")) {
                         SslConfig sslConfig = new SslConfig();
-                        switch (expectedNs) {
-                            case CLI_1_0:
-                                readSSLElement_1_0(reader, expectedNs, sslConfig);
-                                break;
-                            default:
-                                readSSLElement_1_1(reader, expectedNs, sslConfig);
-                        }
+                        readSSLElement_1_0(reader, expectedNs, sslConfig);
                         config.sslConfig = sslConfig;
+                    } else {
+                        throw new XMLStreamException("Unexpected element: " + localName);
+                    }
+                } else if(tag == XMLStreamConstants.END_ELEMENT) {
+                    final String localName = reader.getLocalName();
+                    if (localName.equals(JBOSS_CLI)) {
+                        jbossCliEnded = true;
+                    }
+                }
+            }
+        }
+
+        public void readCLIElement_1_2(XMLExtendedStreamReader reader, Namespace expectedNs, CliConfigImpl config) throws XMLStreamException {
+            boolean jbossCliEnded = false;
+            while (reader.hasNext() && jbossCliEnded == false) {
+                int tag = reader.nextTag();
+                assertExpectedNamespace(reader, expectedNs);
+                if(tag == XMLStreamConstants.START_ELEMENT) {
+                    final String localName = reader.getLocalName();
+                    if (localName.equals(DEFAULT_CONTROLLER)) {
+                        readDefaultController_1_0(reader, expectedNs, config);
                     } else if(localName.equals(VALIDATE_OPERATION_REQUESTS)) {
                         config.validateOperationRequests = resolveBoolean(reader.getElementText());
+                    } else if(localName.equals(HISTORY)) {
+                        readHistory(reader, expectedNs, config);
                     } else if(localName.equals(RESOLVE_PARAMETER_VALUES)) {
                         config.resolveParameterValues = resolveBoolean(reader.getElementText());
                     } else if (CONNECTION_TIMEOUT.equals(localName)) {
@@ -397,6 +444,50 @@ class CliConfigImpl implements CliConfig {
                         } catch(NumberFormatException e) {
                             throw new XMLStreamException("Failed to parse " + JBOSS_CLI + " " + CONNECTION_TIMEOUT + " value '" + text + "'", e);
                         }
+                    } else if (localName.equals("ssl")) {
+                        SslConfig sslConfig = new SslConfig();
+                        readSSLElement_1_1(reader, expectedNs, sslConfig);
+                        config.sslConfig = sslConfig;
+                    } else if(localName.equals(SILENT)) {
+                        config.silent = resolveBoolean(reader.getElementText());
+                    } else {
+                        throw new XMLStreamException("Unexpected element: " + localName);
+                    }
+                } else if(tag == XMLStreamConstants.END_ELEMENT) {
+                    final String localName = reader.getLocalName();
+                    if (localName.equals(JBOSS_CLI)) {
+                        jbossCliEnded = true;
+                    }
+                }
+            }
+        }
+
+        public void readCLIElement_2_0(XMLExtendedStreamReader reader, Namespace expectedNs, CliConfigImpl config) throws XMLStreamException {
+            boolean jbossCliEnded = false;
+            while (reader.hasNext() && jbossCliEnded == false) {
+                int tag = reader.nextTag();
+                assertExpectedNamespace(reader, expectedNs);
+                if(tag == XMLStreamConstants.START_ELEMENT) {
+                    final String localName = reader.getLocalName();
+                    if (localName.equals(DEFAULT_CONTROLLER)) {
+                        readDefaultController_2_0(reader, expectedNs, config);
+                    } else if (localName.equals(VALIDATE_OPERATION_REQUESTS)) {
+                        config.validateOperationRequests = resolveBoolean(reader.getElementText());
+                    } else if(localName.equals(HISTORY)) {
+                        readHistory(reader, expectedNs, config);
+                    } else if(localName.equals(RESOLVE_PARAMETER_VALUES)) {
+                        config.resolveParameterValues = resolveBoolean(reader.getElementText());
+                    } else if (CONNECTION_TIMEOUT.equals(localName)) {
+                        final String text = reader.getElementText();
+                        try {
+                            config.connectionTimeout = Integer.parseInt(text);
+                        } catch(NumberFormatException e) {
+                            throw new XMLStreamException("Failed to parse " + JBOSS_CLI + " " + CONNECTION_TIMEOUT + " value '" + text + "'", e);
+                        }
+                    } else if (localName.equals("ssl")) {
+                        SslConfig sslConfig = new SslConfig();
+                        readSSLElement_1_1(reader, expectedNs, sslConfig);
+                        config.sslConfig = sslConfig;
                     } else if(localName.equals(SILENT)) {
                         config.silent = resolveBoolean(reader.getElementText());
                     } else if(localName.equals(ACCESS_CONTROL)) {
