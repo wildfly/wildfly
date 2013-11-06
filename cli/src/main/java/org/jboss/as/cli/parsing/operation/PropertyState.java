@@ -51,12 +51,12 @@ public class PropertyState extends DefaultParsingState {
     PropertyState(char propSeparator, PropertyValueState valueState, char...listEnd) {
         super(ID);
         setIgnoreWhitespaces(true);
-        setEnterHandler(WordCharacterHandler.IGNORE_LB_ESCAPE_ON);
+        setEnterHandler(WordCharacterHandler.IGNORE_LB_ESCAPE_OFF);
         for(int i = 0; i < listEnd.length; ++i) {
             putHandler(listEnd[i], GlobalCharacterHandlers.LEAVE_STATE_HANDLER);
         }
         enterState('=', new NameValueSeparatorState(valueState));
-        setDefaultHandler(WordCharacterHandler.IGNORE_LB_ESCAPE_ON);
+        setDefaultHandler(WordCharacterHandler.IGNORE_LB_ESCAPE_OFF);
         setReturnHandler(GlobalCharacterHandlers.LEAVE_STATE_HANDLER);
     }
 
