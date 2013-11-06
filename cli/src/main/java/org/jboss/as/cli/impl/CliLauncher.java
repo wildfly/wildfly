@@ -55,9 +55,7 @@ public class CliLauncher {
             List<String> commands = null;
             File file = null;
             boolean connect = false;
-            String defaultControllerProtocol = "http-remoting";
-            String defaultControllerHost = null;
-            int defaultControllerPort = -1;
+            String defaultController = null;
             boolean version = false;
             String username = null;
             char[] password = null;
@@ -66,63 +64,10 @@ public class CliLauncher {
 
             for(String arg : args) {
                 if(arg.startsWith("--controller=") || arg.startsWith("controller=")) {
-                    final String fullValue;
-                    final String value;
                     if(arg.startsWith("--")) {
-                        fullValue = arg.substring(13);
+                        defaultController = arg.substring(13);
                     } else {
-                        fullValue = arg.substring(11);
-                    }
-                    final int protocolEnd = fullValue.lastIndexOf("://");
-                    if (protocolEnd == -1) {
-                        value = fullValue;
-                    } else {
-                        value = fullValue.substring(protocolEnd + 3);
-                        defaultControllerProtocol = fullValue.substring(0, protocolEnd);
-                    }
-
-                    String portStr = null;
-                    int colonIndex = value.lastIndexOf(':');
-                    if(colonIndex < 0) {
-                        // default port
-                        defaultControllerHost = value;
-                    } else if(colonIndex == 0) {
-                        // default host
-                        portStr = value.substring(1);
-                    } else {
-                        final boolean hasPort;
-                        int closeBracket = value.lastIndexOf(']');
-                        if (closeBracket != -1) {
-                            //possible ip v6
-                            if (closeBracket > colonIndex) {
-                                hasPort = false;
-                            } else {
-                                hasPort = true;
-                            }
-                        } else {
-                            //probably ip v4
-                            hasPort = true;
-                        }
-                        if (hasPort) {
-                            defaultControllerHost = value.substring(0, colonIndex).trim();
-                            portStr = value.substring(colonIndex + 1).trim();
-                        } else {
-                            defaultControllerHost = value;
-                        }
-                    }
-
-                    if(portStr != null) {
-                        int port = -1;
-                        try {
-                            port = Integer.parseInt(portStr);
-                            if(port < 0) {
-                                argError = "The port must be a valid non-negative integer: '" + args + "'";
-                            } else {
-                                defaultControllerPort = port;
-                            }
-                        } catch(NumberFormatException e) {
-                            argError = "The port must be a valid non-negative integer: '" + arg + "'";
-                        }
+                        defaultController = arg.substring(11);
                     }
                 } else if("--connect".equals(arg) || "-c".equals(arg)) {
                     connect = true;
@@ -246,31 +191,31 @@ public class CliLauncher {
             }
 
             if(version) {
-                cmdCtx = initCommandContext(defaultControllerProtocol, defaultControllerHost, defaultControllerPort, username, password, noLocalAuth, false, connect, connectionTimeout);
+                cmdCtx = initCommandContext(defaultController, username, password, noLocalAuth, false, connect, connectionTimeout);
                 VersionHandler.INSTANCE.handle(cmdCtx);
                 return;
             }
 
             if(file != null) {
-                cmdCtx = initCommandContext(defaultControllerProtocol, defaultControllerHost, defaultControllerPort, username, password, noLocalAuth, false, connect, connectionTimeout);
+                cmdCtx = initCommandContext(defaultController, username, password, noLocalAuth, false, connect, connectionTimeout);
                 processFile(file, cmdCtx);
                 return;
             }
 
             if(commands != null) {
-                cmdCtx = initCommandContext(defaultControllerProtocol, defaultControllerHost, defaultControllerPort, username, password, noLocalAuth, false, connect, connectionTimeout);
+                cmdCtx = initCommandContext(defaultController, username, password, noLocalAuth, false, connect, connectionTimeout);
                 processCommands(commands, cmdCtx);
                 return;
             }
 
             if (gui) {
-                cmdCtx = initCommandContext(defaultControllerProtocol, defaultControllerHost, defaultControllerPort, username, password, noLocalAuth, false, true, connectionTimeout);
+                cmdCtx = initCommandContext(defaultController, username, password, noLocalAuth, false, true, connectionTimeout);
                 processGui(cmdCtx);
                 return;
             }
 
             // Interactive mode
-            cmdCtx = initCommandContext(defaultControllerProtocol, defaultControllerHost, defaultControllerPort, username, password, noLocalAuth, true, connect, connectionTimeout);
+            cmdCtx = initCommandContext(defaultController, username, password, noLocalAuth, true, connect, connectionTimeout);
             cmdCtx.interact();
         } catch(Throwable t) {
             t.printStackTrace();
@@ -286,8 +231,8 @@ public class CliLauncher {
         System.exit(exitCode);
     }
 
-    private static CommandContext initCommandContext(String defaultProtocol, String defaultHost, int defaultPort, String username, char[] password, boolean disableLocalAuth, boolean initConsole, boolean connect, final int connectionTimeout) throws CliInitializationException {
-        final CommandContext cmdCtx = CommandContextFactory.getInstance().newCommandContext(defaultProtocol, defaultHost, defaultPort, username, password, disableLocalAuth, initConsole, connectionTimeout);
+    private static CommandContext initCommandContext(String defaultController, String username, char[] password, boolean disableLocalAuth, boolean initConsole, boolean connect, final int connectionTimeout) throws CliInitializationException {
+        final CommandContext cmdCtx = CommandContextFactory.getInstance().newCommandContext(defaultController, username, password, disableLocalAuth, initConsole, connectionTimeout);
         if(connect) {
             try {
                 cmdCtx.connectController();

@@ -36,6 +36,7 @@ import java.io.InputStream;
 import java.io.OutputStreamWriter;
 import java.io.PrintWriter;
 import java.io.StringWriter;
+import java.net.URI;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Properties;
@@ -57,7 +58,7 @@ public class JdrRunner implements JdrReportCollector {
         this.env.setHost(host);
         this.env.setPort(port);
         try {
-            ctx = CommandContextFactory.getInstance().newCommandContext(protocol, host, Integer.valueOf(port), null, null);
+            ctx = CommandContextFactory.getInstance().newCommandContext(new URI(protocol, null, host, Integer.parseInt(port), null, null, null).toString(), null, null);
             ctx.connectController();
             this.env.setClient(ctx.getModelControllerClient());
         }

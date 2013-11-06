@@ -25,6 +25,8 @@ package org.jboss.as.test.integration.management.util;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.net.URI;
+import java.net.URISyntaxException;
 
 import org.jboss.as.cli.CliInitializationException;
 import org.jboss.as.cli.CommandContext;
@@ -116,9 +118,12 @@ public class CLIWrapper {
     public boolean sendConnect(String cliAddress) {
         String addr = cliAddress != null ? cliAddress : TestSuiteEnvironment.getServerAddress();
         try {
-            ctx.connectController("http-remoting", addr, TestSuiteEnvironment.getServerPort());
+            ctx.connectController(new URI("http-remoting", null, addr, TestSuiteEnvironment.getServerPort(), null, null, null).toString());
             return true;
         } catch (CommandLineException e) {
+            e.printStackTrace();
+            return false;
+        } catch (URISyntaxException e) {
             e.printStackTrace();
             return false;
         }

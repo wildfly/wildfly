@@ -53,35 +53,33 @@ public class CommandContextFactoryImpl extends CommandContextFactory {
     }
 
     @Override
-    public CommandContext newCommandContext(String controllerProtocol, String controllerHost,
-            int controllerPort, String username, char[] password)
+    public CommandContext newCommandContext(String controller, String username, char[] password)
             throws CliInitializationException {
-        return newCommandContext(controllerProtocol, controllerHost, controllerPort, username, password, false, -1);
+        return newCommandContext(controller, username, password, false, -1);
     }
 
     @Override
-    public CommandContext newCommandContext(String controllerProtocol, String controllerHost,
-            int controllerPort, String username, char[] password,
+    public CommandContext newCommandContext(String controller, String username, char[] password,
             boolean initConsole, final int connectionTimeout) throws CliInitializationException {
-        final CommandContext ctx = new CommandContextImpl(controllerProtocol, controllerHost, controllerPort, username, password, username != null, initConsole, connectionTimeout);
+        final CommandContext ctx = new CommandContextImpl(controller, username, password, username != null, initConsole, connectionTimeout);
         addShutdownHook(ctx);
         return ctx;
     }
 
     @Override
-    public CommandContext newCommandContext(String controllerHost, int controllerPort,
+    public CommandContext newCommandContext(String controller,
             String username, char[] password,
             InputStream consoleInput, OutputStream consoleOutput) throws CliInitializationException {
-        final CommandContext ctx = new CommandContextImpl(controllerHost, controllerPort, username, password, username != null, consoleInput, consoleOutput);
+        final CommandContext ctx = new CommandContextImpl(controller, username, password, username != null, consoleInput, consoleOutput);
         addShutdownHook(ctx);
         return ctx;
     }
 
     @Override
-    public CommandContext newCommandContext(String controllerProtocol, String controllerHost, int controllerPort,
+    public CommandContext newCommandContext(String controller,
             String username, char[] password, boolean disableLocalAuth, boolean initConsole, int connectionTimeout)
             throws CliInitializationException {
-        final CommandContext ctx = new CommandContextImpl(controllerProtocol, controllerHost, controllerPort, username, password, disableLocalAuth || username != null, initConsole, connectionTimeout);
+        final CommandContext ctx = new CommandContextImpl(controller, username, password, disableLocalAuth || username != null, initConsole, connectionTimeout);
         addShutdownHook(ctx);
         return ctx;
     }

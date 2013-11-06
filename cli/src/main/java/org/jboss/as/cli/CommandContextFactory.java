@@ -54,16 +54,15 @@ public abstract class CommandContextFactory {
 
     public abstract CommandContext newCommandContext(String username, char[] password) throws CliInitializationException;
 
-    public abstract CommandContext newCommandContext(String controllerProtocol, String controllerHost, int controllerPort,
-            String username, char[] password) throws CliInitializationException;
+    public abstract CommandContext newCommandContext(String controller, String username, char[] password) throws CliInitializationException;
 
-    public abstract CommandContext newCommandContext(String controllerProtocol, String controllerHost, int controllerPort,
-            String username, char[] password, boolean initConsole, final int connectionTimeout) throws CliInitializationException;
+    public abstract CommandContext newCommandContext(String controller, String username, char[] password, boolean initConsole,
+            final int connectionTimeout) throws CliInitializationException;
 
-    public abstract CommandContext newCommandContext(String controllerProtocol, String controllerHost, int controllerPort,
-            String username, char[] password, boolean disableLocalAuth, boolean initConsole, final int connectionTimeout) throws CliInitializationException;
+    public abstract CommandContext newCommandContext(String controller, String username, char[] password, boolean disableLocalAuth,
+            boolean initConsole, final int connectionTimeout) throws CliInitializationException;
 
-    public abstract CommandContext newCommandContext(String controllerHost, int controllerPort,
-            String username, char[] password,
-            InputStream consoleInput, OutputStream consoleOutput) throws CliInitializationException;
+    public abstract CommandContext newCommandContext(String controller, String username, char[] password, InputStream consoleInput,
+            OutputStream consoleOutput) throws CliInitializationException;
+
 }

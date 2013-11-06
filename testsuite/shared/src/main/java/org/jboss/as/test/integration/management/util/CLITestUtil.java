@@ -26,6 +26,8 @@ import static org.junit.Assert.fail;
 import java.io.File;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.net.URI;
+import java.net.URISyntaxException;
 
 import org.jboss.as.cli.CliInitializationException;
 import org.jboss.as.cli.CommandContext;
@@ -47,19 +49,19 @@ public class CLITestUtil {
 
     public static CommandContext getCommandContext() throws CliInitializationException {
         setJBossCliConfig();
-        return CommandContextFactory.getInstance().newCommandContext("http-remoting", serverAddr, serverPort, null, null);
+        return CommandContextFactory.getInstance().newCommandContext(convert("http-remoting", serverAddr , serverPort), null, null);
     }
 
     public static CommandContext getCommandContext(String address, int port, InputStream in, OutputStream out)
             throws CliInitializationException {
         setJBossCliConfig();
-        return CommandContextFactory.getInstance().newCommandContext(address, port, null, null, in, out);
+        return CommandContextFactory.getInstance().newCommandContext(address + ":" + port, null, null, in, out);
     }
 
     public static CommandContext getCommandContext(OutputStream out) throws CliInitializationException {
         SecurityActions.setSystemProperty(JREADLINE_TERMINAL, JREADLINE_TEST_TERMINAL);
         setJBossCliConfig();
-        return CommandContextFactory.getInstance().newCommandContext(serverAddr, serverPort, null, null, null, out);
+        return CommandContextFactory.getInstance().newCommandContext(convert(null, serverAddr , serverPort), null, null, null, out);
     }
 
     protected static void setJBossCliConfig() {
@@ -70,6 +72,14 @@ public class CLITestUtil {
                 fail("jboss.dist system property is not set");
             }
             SecurityActions.setSystemProperty(JBOSS_CLI_CONFIG, jbossDist + File.separator + "bin" + File.separator + "jboss-cli.xml");
+        }
+    }
+
+    private static String convert(final String protocol, final String host, final int port) throws CliInitializationException {
+        try {
+            return new URI(protocol, null, host, port, null, null, null).toString();
+        } catch (URISyntaxException e) {
+            throw new CliInitializationException("Unable to convert URI", e);
         }
     }
 }

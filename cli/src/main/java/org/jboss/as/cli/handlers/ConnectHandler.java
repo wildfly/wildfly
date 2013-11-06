@@ -60,68 +60,18 @@ public class ConnectHandler extends CommandHandlerWithHelp {
     @Override
     protected void doHandle(CommandContext ctx) throws CommandLineException {
 
-        int port = -1;
-        String host = null;
-        String protocol = "http-remoting";
+        String controller = null;
+
         final ParsedCommandLine parsedCmd = ctx.getParsedCommandLine();
         final List<String> args = parsedCmd.getOtherProperties();
 
-        if(!args.isEmpty()) {
-            if(args.size() != 1) {
+        if (!args.isEmpty()) {
+            if (args.size() != 1) {
                 throw new CommandFormatException("The command expects only one argument but got " + args);
             }
-            final String fullArg = args.get(0);
-            final String arg;
-            final int protocolEnd = fullArg.lastIndexOf("://");
-            if(protocolEnd == -1) {
-                arg = fullArg;
-            } else {
-                arg = fullArg.substring(protocolEnd + 3);
-                protocol = fullArg.substring(0, protocolEnd);
-            }
-
-            String portStr = null;
-            int colonIndex = arg.lastIndexOf(':');
-            if(colonIndex < 0) {
-                // default port
-                host = arg;
-            } else if(colonIndex == 0) {
-                // default host
-                portStr = arg.substring(1).trim();
-            } else {
-                final boolean hasPort;
-                int closeBracket = arg.lastIndexOf(']');
-                if (closeBracket != -1) {
-                    //possible ip v6
-                    if (closeBracket > colonIndex) {
-                        hasPort = false;
-                    } else {
-                        hasPort = true;
-                    }
-                } else {
-                    //probably ip v4
-                    hasPort = true;
-                }
-                if (hasPort) {
-                    host = arg.substring(0, colonIndex).trim();
-                    portStr = arg.substring(colonIndex + 1).trim();
-                } else {
-                    host = arg;
-                }
-            }
-
-            if(portStr != null) {
-                try {
-                    port = Integer.parseInt(portStr);
-                } catch(NumberFormatException e) {
-                    throw new CommandFormatException("The port must be a valid non-negative integer: '" + args + "'");
-                }
-                if(port < 0) {
-                    throw new CommandFormatException("The port must be a valid non-negative integer: '" + args + "'");
-                }
-            }
+            controller = args.get(0);
         }
 
-        ctx.connectController(protocol, host, port);
+        ctx.connectController(controller);
     }
 }
