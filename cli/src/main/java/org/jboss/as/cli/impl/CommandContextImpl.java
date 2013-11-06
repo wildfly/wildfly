@@ -74,6 +74,8 @@ import org.jboss.as.cli.CommandHistory;
 import org.jboss.as.cli.CommandLineCompleter;
 import org.jboss.as.cli.CommandLineException;
 import org.jboss.as.cli.CommandRegistry;
+import org.jboss.as.cli.ControllerAddressResolver;
+import org.jboss.as.cli.ControllerAddressResolver.ControllerAddress;
 import org.jboss.as.cli.OperationCommand;
 import org.jboss.as.cli.SSLConfig;
 import org.jboss.as.cli.Util;
@@ -160,6 +162,7 @@ class CommandContextImpl implements CommandContext, ModelControllerClientFactory
 
     /** the cli configuration */
     private final CliConfig config;
+    private final ControllerAddressResolver addressResolver;
 
     private final CommandRegistry cmdRegistry = new CommandRegistry();
 
@@ -177,16 +180,9 @@ class CommandContextImpl implements CommandContext, ModelControllerClientFactory
     private boolean domainMode;
     /** the controller client */
     private ModelControllerClient client;
-    /** the default controller protocol */
-    private String defaultControllerProtocol;
-    /** the default controller host */
-    private String defaultControllerHost;
-    /** the default controller port */
-    private int defaultControllerPort;
-    /** the host of the controller */
-    private String controllerHost;
-    /** the port of the controller */
-    private int controllerPort = -1;
+
+    /** the address of the current controller */
+    private ControllerAddress currentAddress;
     /** the command line specified username */
     private final String username;
     /** the command line specified password */
@@ -242,8 +238,7 @@ class CommandContextImpl implements CommandContext, ModelControllerClientFactory
         operationHandler = new OperationRequestHandler();
         initCommands();
         config = CliConfigImpl.load(this);
-        defaultControllerHost = config.getDefaultControllerHost();
-        defaultControllerPort = config.getDefaultControllerPort();
+        addressResolver = ControllerAddressResolver.newInstance(config, null);
         resolveParameterValues = config.isResolveParameterValues();
         this.connectionTimeout = config.getConnectionTimeout();
         silent = config.isSilent();
@@ -254,17 +249,18 @@ class CommandContextImpl implements CommandContext, ModelControllerClientFactory
     }
 
     CommandContextImpl(String username, char[] password, boolean disableLocalAuth) throws CliInitializationException {
-        this(null, null, -1, username, password, disableLocalAuth, false, -1);
+        this(null, username, password, disableLocalAuth, false, -1);
     }
 
     /**
      * Default constructor used for both interactive and non-interactive mode.
      *
      */
-    CommandContextImpl(String defaultControllerProtocol, String defaultControllerHost, int defaultControllerPort, String username, char[] password, boolean disableLocalAuth, boolean initConsole, final int connectionTimeout)
+    CommandContextImpl(String defaultController, String username, char[] password, boolean disableLocalAuth, boolean initConsole, final int connectionTimeout)
             throws CliInitializationException {
 
         config = CliConfigImpl.load(this);
+        addressResolver = ControllerAddressResolver.newInstance(config, defaultController);
 
         operationHandler = new OperationRequestHandler();
 
@@ -272,22 +268,6 @@ class CommandContextImpl implements CommandContext, ModelControllerClientFactory
         this.password = password;
         this.disableLocalAuth = disableLocalAuth;
         this.connectionTimeout = connectionTimeout != -1 ? connectionTimeout : config.getConnectionTimeout();
-
-        if (defaultControllerHost != null) {
-            this.defaultControllerHost = defaultControllerHost;
-        } else {
-            this.defaultControllerHost = config.getDefaultControllerHost();
-        }
-        if (defaultControllerPort != -1) {
-            this.defaultControllerPort = defaultControllerPort;
-        } else {
-            this.defaultControllerPort = config.getDefaultControllerPort();
-        }
-        if(defaultControllerProtocol != null) {
-            this.defaultControllerProtocol = defaultControllerProtocol;
-        } else {
-            this.defaultControllerProtocol = config.getDefaultControllerProtocol();
-        }
 
         resolveParameterValues = config.isResolveParameterValues();
         silent = config.isSilent();
@@ -306,12 +286,13 @@ class CommandContextImpl implements CommandContext, ModelControllerClientFactory
         }
     }
 
-    CommandContextImpl(String defaultControllerHost, int defaultControllerPort,
+    CommandContextImpl(String defaultController,
             String username, char[] password, boolean disableLocalAuth,
             InputStream consoleInput, OutputStream consoleOutput)
             throws CliInitializationException {
 
         config = CliConfigImpl.load(this);
+        addressResolver = ControllerAddressResolver.newInstance(config, defaultController);
 
         operationHandler = new OperationRequestHandler();
 
@@ -319,19 +300,6 @@ class CommandContextImpl implements CommandContext, ModelControllerClientFactory
         this.password = password;
         this.disableLocalAuth = disableLocalAuth;
         this.connectionTimeout = config.getConnectionTimeout();
-
-        if (defaultControllerHost != null) {
-            this.defaultControllerHost = defaultControllerHost;
-        } else {
-            this.defaultControllerHost = config.getDefaultControllerHost();
-        }
-        if (defaultControllerPort != -1) {
-            this.defaultControllerPort = defaultControllerPort;
-        } else {
-            this.defaultControllerPort = config.getDefaultControllerPort();
-        }
-
-        this.defaultControllerProtocol = config.getDefaultControllerProtocol();
 
         resolveParameterValues = config.isResolveParameterValues();
         silent = config.isSilent();
@@ -797,22 +765,12 @@ class CommandContextImpl implements CommandContext, ModelControllerClientFactory
 
     @Override
     public void connectController() throws CommandLineException {
-        connectController(null, null, -1);
+        connectController(null);
     }
 
     @Override
-    public void connectController(String protocol, String host, int port) throws CommandLineException {
-        if (host == null) {
-            host = defaultControllerHost;
-        }
-
-        if (port < 0) {
-            port = defaultControllerPort;
-        }
-
-        if(protocol == null) {
-            protocol = defaultControllerProtocol;
-        }
+    public void connectController(String controller) throws CommandLineException {
+        ControllerAddress address = addressResolver.resolveAddress(controller);
 
         boolean retry;
         do {
@@ -821,35 +779,34 @@ class CommandContextImpl implements CommandContext, ModelControllerClientFactory
                 ModelControllerClient newClient = null;
                 CallbackHandler cbh = new AuthenticationCallbackHandler(username, password);
                 if(log.isDebugEnabled()) {
-                    log.debug("connecting to " + host + ':' + port + " as " + username);
+                    log.debug("connecting to " + address.getHost() + ':' + address.getPort() + " as " + username);
                 }
                 ModelControllerClient tempClient = ModelControllerClientFactory.CUSTOM.
-                        getClient(protocol, host, port, cbh, disableLocalAuth, sslContext, connectionTimeout, this);
-                retry = tryConnection(tempClient, host, port);
+                        getClient(address, cbh, disableLocalAuth, sslContext, connectionTimeout, this);
+                retry = tryConnection(tempClient, address);
                 if(!retry) {
                     newClient = tempClient;
                 }
-                initNewClient(newClient, host, port);
+                initNewClient(newClient, address);
             } catch (IOException e) {
-                throw new CommandLineException("Failed to resolve host '" + host + "'",e);
+                throw new CommandLineException("Failed to resolve host '" + address.getHost() + "'",e);
             }
         } while (retry);
     }
 
     @Override
     public void bindClient(ModelControllerClient newClient) {
-        initNewClient(newClient, null, -1);
+        initNewClient(newClient, null);
     }
 
-    private void initNewClient(ModelControllerClient newClient, String host, int port) {
+    private void initNewClient(ModelControllerClient newClient, ControllerAddress address) {
         if (newClient != null) {
             if (this.client != null) {
                 disconnectController();
             }
 
             client = newClient;
-            this.controllerHost = host;
-            this.controllerPort = port;
+            this.currentAddress = address;
 
             List<String> nodeTypes = Util.getNodeTypes(newClient, new DefaultOperationRequestAddress());
             domainMode = nodeTypes.contains(Util.SERVER_GROUP);
@@ -958,7 +915,7 @@ class CommandContextImpl implements CommandContext, ModelControllerClientFactory
     /**
      * Used to make a call to the server to verify that it is possible to connect.
      */
-    private boolean tryConnection(final ModelControllerClient client, String host, int port) throws CommandLineException {
+    private boolean tryConnection(final ModelControllerClient client, ControllerAddress address) throws CommandLineException {
         try {
             DefaultOperationRequestBuilder builder = new DefaultOperationRequestBuilder();
             builder.setOperationName(Util.READ_ATTRIBUTE);
@@ -973,11 +930,11 @@ class CommandContextImpl implements CommandContext, ModelControllerClientFactory
                 Throwable current = e;
                 while (current != null) {
                     if (current instanceof SaslException) {
-                        throw new CommandLineException("Unable to authenticate against controller at " + host + ":" + port, current);
+                        throw new CommandLineException("Unable to authenticate against controller at " + address.getHost() + ":" + address.getPort(), current);
                     }
                     if (current instanceof SSLException) {
                         if (!handleSSLFailure()) {
-                            throw new CommandLineException("Unable to negotiate SSL connection with controller at " + host + ":" + port);
+                            throw new CommandLineException("Unable to negotiate SSL connection with controller at " + address.getHost() + ":" + address.getPort());
                         } else {
                             return true;
                         }
@@ -986,7 +943,7 @@ class CommandContextImpl implements CommandContext, ModelControllerClientFactory
                 }
 
                 // We don't know what happened, most likely a timeout.
-                throw new CommandLineException("The controller is not available at " + host + ":" + port, e);
+                throw new CommandLineException("The controller is not available at " + address.getHost() + ":" + address.getPort(), e);
             } finally {
                 StreamUtils.safeClose(client);
             }
@@ -1002,8 +959,7 @@ class CommandContextImpl implements CommandContext, ModelControllerClientFactory
             // this.controllerPort);
             // }
             client = null;
-            this.controllerHost = null;
-            this.controllerPort = -1;
+            this.currentAddress = null;
             domainMode = false;
             notifyListeners(CliEvent.DISCONNECTED);
         }
@@ -1012,12 +968,12 @@ class CommandContextImpl implements CommandContext, ModelControllerClientFactory
 
     @Override
     public String getControllerHost() {
-        return controllerHost;
+        return currentAddress != null ? currentAddress.getHost() : null;
     }
 
     @Override
     public int getControllerPort() {
-        return controllerPort;
+        return currentAddress != null ? currentAddress.getPort() : -1;
     }
 
     @Override
@@ -1036,13 +992,14 @@ class CommandContextImpl implements CommandContext, ModelControllerClientFactory
         StringBuilder buffer = new StringBuilder();
         if (promptConnectPart == null) {
             buffer.append('[');
+            String controllerHost = getControllerHost();
             if (controllerHost != null) {
                 if (domainMode) {
                     buffer.append("domain@");
                 } else {
                     buffer.append("standalone@");
                 }
-                buffer.append(controllerHost).append(':').append(controllerPort).append(' ');
+                buffer.append(controllerHost).append(':').append(getControllerPort()).append(' ');
                 promptConnectPart = buffer.toString();
             } else {
                 buffer.append("disconnected ");
@@ -1078,16 +1035,6 @@ class CommandContextImpl implements CommandContext, ModelControllerClientFactory
             }
         }
         return console.getHistory();
-    }
-
-    @Override
-    public String getDefaultControllerHost() {
-        return defaultControllerHost;
-    }
-
-    @Override
-    public int getDefaultControllerPort() {
-        return defaultControllerPort;
     }
 
     private void resetArgs(String cmdLine) throws CommandFormatException {
@@ -1380,9 +1327,9 @@ class CommandContextImpl implements CommandContext, ModelControllerClientFactory
 
     /**
      * A trust manager that by default delegates to a lazily initialised TrustManager, this TrustManager also support both
-     * temporarily and permenantly accepting unknown server certificate chains.
+     * temporarily and permanently accepting unknown server certificate chains.
      *
-     * This class also acts as an agregation of the configuration related to TrustStore handling.
+     * This class also acts as an aggregation of the configuration related to TrustStore handling.
      *
      * It is not intended that Certificate management requests occur if this class is registered to a SSLContext
      * with multiple concurrent clients.

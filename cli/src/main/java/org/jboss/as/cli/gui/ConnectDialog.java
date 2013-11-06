@@ -66,12 +66,11 @@ import org.jboss.as.cli.CommandLineException;
  */
 public class ConnectDialog extends JInternalFrame {
 
+    static final String DEFAULT_REMOTE = "http-remoting://localhost:9990"; // TODO - Can this sync up with config somehow?
     // NOTE: CLI has no Message IDs assigned, hence Resources.getText(...);
     // This will probably require a i18n
-    static final String HINT_CONNECT = "<protocol>:<hostname>:<port> OR empty";
+    static final String HINT_CONNECT = "<protocol>://<hostname>:<port> OR empty";
     static final String HINT_CONNECT_BUTTON = "Connect to server CLI";
-    static final String DEFAULT_PROTOCOL = "http-remoting";
-    static final String DEFAULT_REMOTE = DEFAULT_PROTOCOL+":localhost:9990";
     static final String TEXT_CONNECT = "Connect";
     static final String TEXT_CANCEL = "Cancel";
     static final String TEXT_USERNAME = "Username: ";
@@ -167,24 +166,11 @@ public class ConnectDialog extends JInternalFrame {
                     return;
                 }
 
-                String protocol = DEFAULT_PROTOCOL;
-                String host = null;
-                int port = -1;
+                String controller = null;
                 String user = null;
                 String password = null;
                 if (tfURL.getText().length() > 0) {
-                    final String[] target = tfURL.getText().split(":");
-                    if (target.length >= 1) {
-                        protocol = target[0];
-                    }
-
-                    if (target.length >= 2) {
-                        host = target[1];
-                    }
-
-                    if (target.length >= 3) {
-                        port = Integer.parseInt(target[2]);
-                    }
+                    controller = tfURL.getText();
 
                     if (tfUserName.getText().length() > 0) {
                         user = tfUserName.getText();
@@ -199,7 +185,7 @@ public class ConnectDialog extends JInternalFrame {
                     } else {
                         cmdCtx = CommandContextFactory.getInstance().newCommandContext(user, password.toCharArray());
                     }
-                    cmdCtx.connectController(protocol, host, port);
+                    cmdCtx.connectController(controller);
                     plugin.init(cmdCtx);
                 } catch (CliInitializationException e) {
                     statusBar.setText(e.getMessage());
@@ -313,7 +299,13 @@ public class ConnectDialog extends JInternalFrame {
     }
 
     private class UrlDocumentListener implements DocumentListener{
-        private static final String REGEXP = "([A-Za-z\\-]+)|([A-Za-z\\-]+:[1-9A-Za-z]+)|([A-Za-z\\-]+:[1-9A-Za-z]+:\\d+)";
+
+        private static final String RX_PROTOCOL = "[A-Za-z\\-]+://";
+        private static final String RX_HOST = "[1-9A-Za-z\\.]+";
+        private static final String RX_PORT = ":\\d+";
+
+        private static final String REGEXP = "(" + RX_HOST + ")|(" + RX_HOST + RX_PORT + ")|(" + RX_PROTOCOL + RX_HOST + ")|(" + RX_PROTOCOL + RX_HOST + RX_PORT + ")";
+
         private final JTextField textField;
 
         public UrlDocumentListener(JTextField textField) {

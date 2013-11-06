@@ -118,18 +118,27 @@ public interface CommandContext {
     ModelControllerClient getModelControllerClient();
 
     /**
-     * Connects the controller client using the host and the port.
-     * If the host is null, the default controller host will be used,
-     * which is localhost.
-     * If the port is less than zero, the default controller port will be used,
-     * which is 9999.
+     * Connects the controller client using the default controller definition.
      *
-     * @param protocol the protocol to connect with, either remote, http or https
-     * @param host the host to connect with
-     * @param port the port to connect on
-     * @throws CommandLineException  in case the attempt to connect failed
+     * The default controller will be identified as the default specified on starting the CLI will be used, if no controller was
+     * specified on start up then the default defined in the CLI configuration will be used, if no default is defined then a
+     * connection to http-remoting://localhost:9990 will be used instead.
+     *
+     * @throws CommandLineException in case the attempt to connect failed
      */
-    void connectController(String protocol, String host, int port) throws CommandLineException;
+    void connectController() throws CommandLineException;
+
+    /**
+     * Connects to the controller specified.
+     *
+     * If the controller is null then the default specified on starting the CLI will be used, if no controller was specified on
+     * start up then the default defined in the CLI configuration will be used, if no default is defined then a connection to
+     * http-remoting://localhost:9990 will be used instead.
+     *
+     * @param controller the controller to connect to
+     * @throws CommandLineException in case the attempt to connect failed
+     */
+    void connectController(String controller) throws CommandLineException;
 
     /**
      * Bind the controller to an existing, connected client.
@@ -137,36 +146,10 @@ public interface CommandContext {
     void bindClient(ModelControllerClient newClient);
 
     /**
-     * Connects the controller client using the default host and the port.
-     * It simply calls connectController(null, -1).
-     *
-     * @throws CommandLineException  in case the attempt to connect failed
-     */
-    void connectController() throws CommandLineException;
-
-    /**
      * Closes the previously established connection with the controller client.
      * If the connection hasn't been established, the method silently returns.
      */
     void disconnectController();
-
-    /**
-     * Returns the default host the controller client will be connected to
-     * in case the host argument isn't specified.
-     *
-     * @return  the default host the controller client will be connected to
-     * in case the host argument isn't specified.
-     */
-    String getDefaultControllerHost();
-
-    /**
-     * Returns the default port the controller client will be connected to
-     * in case the port argument isn't specified.
-     *
-     * @return  the default port the controller client will be connected to
-     * in case the port argument isn't specified.
-     */
-    int getDefaultControllerPort();
 
     /**
      * Returns the host the controller client is connected to or

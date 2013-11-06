@@ -19,6 +19,9 @@
 package org.jboss.as.cli.scriptsupport;
 
 import java.io.IOException;
+import java.net.URI;
+import java.net.URISyntaxException;
+
 import org.jboss.as.cli.CliInitializationException;
 import org.jboss.as.cli.CommandContext;
 import org.jboss.as.cli.CommandContextFactory;
@@ -108,9 +111,30 @@ public class CLI {
      * @param username The user name for logging in.
      * @param password The password for logging in.
      */
+    public void connect(String controller, String username, char[] password) {
+        checkAlreadyConnected();
+        try {
+            ctx = CommandContextFactory.getInstance().newCommandContext(controller, username, password);
+            ctx.connectController();
+        } catch (CliInitializationException e) {
+            throw new IllegalStateException("Unable to initialize command context.", e);
+        } catch (CommandLineException e) {
+            throw new IllegalStateException("Unable to connect to controller.", e);
+        }
+    }
+
+    /**
+     * Connect to the server using a specified host and port.
+     *
+     * @param controllerHost The host name.
+     * @param controllerPort The port.
+     * @param username The user name for logging in.
+     * @param password The password for logging in.
+     */
     public void connect(String controllerHost, int controllerPort, String username, char[] password) {
         connect("http-remoting", controllerHost, controllerPort, username, password);
     }
+
     /**
      * Connect to the server using a specified host and port.
      * @param protocol The protocol
@@ -122,8 +146,10 @@ public class CLI {
     public void connect(String protocol, String controllerHost, int controllerPort, String username, char[] password) {
         checkAlreadyConnected();
         try {
-            ctx = CommandContextFactory.getInstance().newCommandContext(protocol, controllerHost, controllerPort, username, password);
+            ctx = CommandContextFactory.getInstance().newCommandContext(new URI(protocol, null, controllerHost, controllerPort, null, null, null).toString(), username, password);
             ctx.connectController();
+        } catch (URISyntaxException e) {
+            throw new IllegalStateException("Unable to construct URI.", e);
         } catch (CliInitializationException e) {
             throw new IllegalStateException("Unable to initialize command context.", e);
         } catch (CommandLineException e) {

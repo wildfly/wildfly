@@ -183,7 +183,7 @@ public class MockCommandContext implements CommandContext {
     }
 
     @Override
-    public void connectController(String protocol, String host, int port) {
+    public void connectController(String controller) {
         throw new UnsupportedOperationException();
     }
 
@@ -211,16 +211,6 @@ public class MockCommandContext implements CommandContext {
     @Override
     public CommandHistory getHistory() {
         throw new UnsupportedOperationException();
-    }
-
-    @Override
-    public String getDefaultControllerHost() {
-        return null;
-    }
-
-    @Override
-    public int getDefaultControllerPort() {
-        return -1;
     }
 
     @Override
@@ -325,7 +315,7 @@ public class MockCommandContext implements CommandContext {
 
     @Override
     public void connectController() {
-        connectController(null, null, -1);
+        connectController(null);
     }
 
     @Override
