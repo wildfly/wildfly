@@ -208,7 +208,7 @@ public class GenericTypeOperationHandler extends BatchModeCommandHandler {
                     if(profile == null) {
                         return Collections.emptyList();
                     }
-                    address.toNode("profile", profileName);
+                    address.toNode(Util.PROFILE, profileName);
                 }
                 for(OperationRequestAddress.Node node : getRequiredAddress()) {
                     address.toNode(node.getType(), node.getName());
