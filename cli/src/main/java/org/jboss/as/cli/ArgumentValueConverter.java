@@ -29,6 +29,7 @@ import org.jboss.as.cli.parsing.arguments.ArgumentValueCallbackHandler;
 import org.jboss.as.cli.parsing.arguments.ArgumentValueInitialState;
 import org.jboss.as.cli.parsing.arguments.ArgumentValueState;
 import org.jboss.as.cli.parsing.arguments.ListState;
+import org.jboss.as.cli.parsing.arguments.NonObjectArgumentValueState;
 import org.jboss.dmr.ModelNode;
 
 
@@ -75,6 +76,23 @@ public interface ArgumentValueConverter {
                 toSet = handler.getResult();
             }
             return toSet;
+        }
+    };
+
+    /**
+     * Basically, for STRING with support for expressions.
+     */
+    ArgumentValueConverter NON_OBJECT = new DMRWithFallbackConverter() {
+        final DefaultParsingState initialState = new DefaultParsingState("IE"){
+            {
+                setDefaultHandler(new EnterStateCharacterHandler(NonObjectArgumentValueState.INSTANCE));
+            }
+        };
+        @Override
+        protected ModelNode fromNonDMRString(CommandContext ctx, String value) throws CommandFormatException {
+            final ArgumentValueCallbackHandler handler = new ArgumentValueCallbackHandler();
+            StateParser.parse(value, handler, initialState);
+            return handler.getResult();
         }
     };
 

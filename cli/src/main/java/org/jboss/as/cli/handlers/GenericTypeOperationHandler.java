@@ -324,7 +324,6 @@ public class GenericTypeOperationHandler extends BatchModeCommandHandler {
                 while(props.hasNext()) {
                     final AttributeDescription prop = props.next();
                     if(prop.isWriteAllowed()) {
-                        ModelType type = null;
                         CommandLineCompleter valueCompleter = null;
                         ArgumentValueConverter valueConverter = null;
                         if(propConverters != null) {
@@ -341,9 +340,11 @@ public class GenericTypeOperationHandler extends BatchModeCommandHandler {
                                     if(valueCompleter == null) {
                                         valueCompleter = SimpleTabCompleter.BOOLEAN;
                                     }
+                                } else if(ModelType.STRING == propType) {
+                                    valueConverter = ArgumentValueConverter.NON_OBJECT;
                                 } else if(prop.getName().endsWith("properties")) { // TODO this is bad but can't rely on proper descriptions
                                     valueConverter = ArgumentValueConverter.PROPERTIES;
-                                } else if(ModelType.LIST == type) {
+                                } else if(ModelType.LIST == propType) {
                                     final ModelNode valueType = prop.getProperty(Util.VALUE_TYPE);
                                     if(valueType != null && valueType.asType() == ModelType.PROPERTY) {
                                         valueConverter = ArgumentValueConverter.PROPERTIES;
@@ -386,7 +387,6 @@ public class GenericTypeOperationHandler extends BatchModeCommandHandler {
                 final List<Property> propList = descr.get(Util.REQUEST_PROPERTIES).asPropertyList();
                 for (Property prop : propList) {
                     final ModelNode propDescr = prop.getValue();
-                    ModelType type = null;
                     CommandLineCompleter valueCompleter = null;
                     ArgumentValueConverter valueConverter = null;
                     if(propConverters != null) {
@@ -398,11 +398,13 @@ public class GenericTypeOperationHandler extends BatchModeCommandHandler {
                     if(valueConverter == null) {
                         valueConverter = ArgumentValueConverter.DEFAULT;
                         if(propDescr.has(Util.TYPE)) {
-                            type = propDescr.get(Util.TYPE).asType();
+                          final ModelType type = propDescr.get(Util.TYPE).asType();
                             if(ModelType.BOOLEAN == type) {
                                 if(valueCompleter == null) {
                                     valueCompleter = SimpleTabCompleter.BOOLEAN;
                                 }
+                            } else if(ModelType.STRING == type) {
+                                valueConverter = ArgumentValueConverter.NON_OBJECT;
                             } else if(prop.getName().endsWith("properties")) { // TODO this is bad but can't rely on proper descriptions
                                 valueConverter = ArgumentValueConverter.PROPERTIES;
                             } else if(ModelType.LIST == type) {
