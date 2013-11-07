@@ -52,6 +52,14 @@ public interface CliConfig {
     ControllerAddress getDefaultControllerAddress();
 
     /**
+     * Obtain the {@link ControllerAddress} for a given alias.
+     *
+     * @param alias - The alias if the address mapping.
+     * @return The {@link ControllerAddress} if defined, otherwise {@code null}
+     */
+    ControllerAddress getAliasedControllerAddress(String alias);
+
+    /**
      * Whether the record the history of executed commands and operations.
      *
      * @return  true if the history is enabled, false - otherwise.

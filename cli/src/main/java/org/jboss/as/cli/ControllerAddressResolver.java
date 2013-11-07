@@ -87,6 +87,11 @@ public class ControllerAddressResolver {
     }
 
     private ControllerAddress convert(final String controller) throws CommandLineException {
+        ControllerAddress alias = config.getAliasedControllerAddress(controller);
+        if (alias != null) {
+            return alias;
+        }
+
         String protocol = null;
         String host = null;
         int port = -1;
