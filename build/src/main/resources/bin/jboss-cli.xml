@@ -13,6 +13,16 @@
         <host>localhost</host>
         <port>9990</port>
     </default-controller>
+    
+    <!-- Example controller alias named 'Test'  
+    <controllers>
+        <controller name="Test">
+            <protocol>http-remoting</protocol>
+            <host>localhost</host>
+            <port>9990</port>
+        </controller>
+    </controllers>
+    -->    
 
     <validate-operation-requests>true</validate-operation-requests>
 
