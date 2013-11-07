@@ -470,32 +470,24 @@ public class CalendarBasedTimeout {
             // set the chosen day-of-week
             int dayDiff = nextDayOfWeek - currentDayOfWeek;
             nextCal.add(Calendar.DAY_OF_MONTH, dayDiff);
-            // since we are moving to a different day-of-week (as compared to the current day-of-week),
-            // we should reset the second, minute and hour appropriately, to their first possible
-            // values
-            nextCal.set(Calendar.SECOND, this.second.getFirst());
-            nextCal.set(Calendar.MINUTE, this.minute.getFirst());
-            nextCal.set(Calendar.HOUR_OF_DAY, this.hour.getFirst());
-            return nextCal;
-        }
-
-        // case#2
-        if (nextDayOfWeek < currentDayOfWeek) {
+        } else {
+            // case#2 nextDayOfWeek < currentDayOfWeek
             // set the chosen day-of-week
             nextCal.set(Calendar.DAY_OF_WEEK, nextDayOfWeek);
             // advance to next week
             nextCal.add(Calendar.WEEK_OF_MONTH, 1);
-
-            // since we are moving to a different day-of-week (as compared to the current day-of-week),
-            // we should reset the second, minute and hour appropriately, to their first possible
-            // values
-            nextCal.set(Calendar.SECOND, this.second.getFirst());
-            nextCal.set(Calendar.MINUTE, this.minute.getFirst());
-            nextCal.set(Calendar.HOUR_OF_DAY, this.hour.getFirst());
-
-            return nextCal;
         }
-        return null;
+        // since we are moving to a different day-of-week (as compared to the current day-of-week),
+        // we should reset the second, minute and hour appropriately, to their first possible
+        // values
+        nextCal.set(Calendar.SECOND, this.second.getFirst());
+        nextCal.set(Calendar.MINUTE, this.minute.getFirst());
+        nextCal.set(Calendar.HOUR_OF_DAY, this.hour.getFirst());
+
+        if (nextCal.get(Calendar.MONTH) != currentCal.get(Calendar.MONTH)) {
+            nextCal = computeNextMonth(nextCal);
+        }
+        return nextCal;
     }
 
     private Calendar computeNextMonth(Calendar currentCal) {
