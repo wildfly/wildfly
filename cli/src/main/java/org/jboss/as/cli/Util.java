@@ -66,6 +66,7 @@ public class Util {
     public static final String CONTENT = "content";
     public static final String CORE_SERVICE = "core-service";
     public static final String DATASOURCES = "datasources";
+    public static final String DEFAULT = "default";
     public static final String DEPLOY = "deploy";
     public static final String DEPLOYMENT = "deployment";
     public static final String DEPLOYMENT_NAME = "deployment-name";
@@ -105,6 +106,7 @@ public class Util {
     public static final String PRODUCT_NAME = "product-name";
     public static final String PRODUCT_VERSION = "product-version";
     public static final String PROFILE = "profile";
+    public static final String READ = "read";
     public static final String READ_ATTRIBUTE = "read-attribute";
     public static final String READ_CHILDREN_NAMES = "read-children-names";
     public static final String READ_CHILDREN_RESOURCES = "read-children-resources";
@@ -153,6 +155,7 @@ public class Util {
     public static final String VALIDATE_ADDRESS = "validate-address";
     public static final String VALUE = "value";
     public static final String VALUE_TYPE = "value-type";
+    public static final String WRITE = "write";
     public static final String WRITE_ATTRIBUTE = "write-attribute";
 
     public static boolean isWindows() {
