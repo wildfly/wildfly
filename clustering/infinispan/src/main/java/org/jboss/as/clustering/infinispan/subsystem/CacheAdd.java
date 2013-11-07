@@ -272,7 +272,7 @@ public abstract class CacheAdd extends AbstractAddStepHandler {
         final InjectedValue<EmbeddedCacheManager> container = new InjectedValue<EmbeddedCacheManager>();
         final CacheConfigurationDependencies cacheConfigurationDependencies = new CacheConfigurationDependencies(container);
         final Service<Configuration> service = new CacheConfigurationService(cacheName, builder, moduleId, cacheConfigurationDependencies);
-        final ServiceBuilder<?> configBuilder = target.addService(CacheConfigurationService.getServiceName(containerName, cacheName), service)
+        final ServiceBuilder<?> configBuilder = AsynchronousService.addService(target, CacheConfigurationService.getServiceName(containerName, cacheName), service)
                 .addDependency(EmbeddedCacheManagerService.getServiceName(containerName), EmbeddedCacheManager.class, container)
                 .addDependency(Services.JBOSS_SERVICE_MODULE_LOADER, ModuleLoader.class, cacheConfigurationDependencies.getModuleLoaderInjector())
                 .setInitialMode(ServiceController.Mode.PASSIVE)
