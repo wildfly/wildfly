@@ -40,7 +40,6 @@
         <module name="org.hornetq.ra"/>
         <module name="org.jboss.common-beans"/>
         <module name="org.jboss.as.transactions"/>
-        <module name="org.jboss.netty"/>
         <module name="org.jboss.staxmapper"/>
         <module name="org.jboss.as.controller"/>
         <module name="org.jboss.as.ee"/>
@@ -48,8 +47,6 @@
         <module name="org.jboss.as.network"/>
         <module name="org.wildfly.security.manager"/>
         <module name="org.jboss.as.server"/>
-        <!-- web-common is required only if servlet-connector are used -->
-        <module name="org.jboss.as.web-common" optional="true"/>
         <module name="org.jboss.as.weld"/>
         <module name="org.jboss.jandex"/>
         <module name="org.jboss.metadata"/>

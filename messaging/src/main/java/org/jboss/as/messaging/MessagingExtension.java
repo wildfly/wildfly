@@ -165,7 +165,6 @@ public class MessagingExtension implements Extension {
         serverRegistration.registerSubModel(GenericTransportDefinition.createConnectorDefinition(registerRuntimeOnly));
         serverRegistration.registerSubModel(RemoteTransportDefinition.createConnectorDefinition(registerRuntimeOnly));
         serverRegistration.registerSubModel(InVMTransportDefinition.createConnectorDefinition(registerRuntimeOnly));
-        serverRegistration.registerSubModel(new ServletConnectorDefinition(registerRuntimeOnly));
 
         // Bridges
         serverRegistration.registerSubModel(new BridgeDefinition(registerRuntimeOnly));

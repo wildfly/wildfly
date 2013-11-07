@@ -52,6 +52,7 @@
             <journal-compact-percentage>83</journal-compact-percentage>
             <journal-compact-min-files>2</journal-compact-min-files>
             <journal-max-io>50</journal-max-io>
+            <max-saved-replicated-journal-size>2</max-saved-replicated-journal-size>
             <perf-blast-pages>70</perf-blast-pages>
             <run-sync-speed-test>false</run-sync-speed-test>
             <server-dump-interval>8642</server-dump-interval>
@@ -230,6 +231,10 @@
                 <type>LOCAL</type>
                 <address>handler-address</address>
                 <timeout>5000</timeout>
+                <group-timeout>-1</group-timeout>
+                <!--
+                <reaper-period>30000</reaper-period>
+                -->
             </grouping-handler>
             <security-settings>
                <security-setting match="#">

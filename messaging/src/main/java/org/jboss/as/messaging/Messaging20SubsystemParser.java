@@ -26,10 +26,7 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ADD
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
 import static org.jboss.as.controller.parsing.ParseUtils.missingRequired;
-import static org.jboss.as.messaging.Attribute.HOST;
-import static org.jboss.as.messaging.Attribute.SOCKET_BINDING;
 import static org.jboss.as.messaging.CommonAttributes.CONNECTOR;
-import static org.jboss.as.messaging.CommonAttributes.SERVLET_CONNECTOR;
 import static org.jboss.as.messaging.CommonAttributes.IN_VM_CONNECTOR;
 import static org.jboss.as.messaging.CommonAttributes.REMOTE_CONNECTOR;
 
@@ -56,93 +53,18 @@ public class Messaging20SubsystemParser extends Messaging13SubsystemParser {
         return INSTANCE;
     }
 
-    protected Messaging20SubsystemParser() {
+    private Messaging20SubsystemParser() {
     }
 
-    void processConnectors(final XMLExtendedStreamReader reader, final ModelNode address, final List<ModelNode> updates) throws XMLStreamException {
-        while(reader.hasNext() && reader.nextTag() != END_ELEMENT) {
-            String name = null;
-            String socketBinding = null;
-            String serverId = null;
-            String host = null;
-
-            int count = reader.getAttributeCount();
-            for (int i = 0; i < count; i++) {
-                final String attrValue = reader.getAttributeValue(i);
-                final Attribute attribute = Attribute.forName(reader.getAttributeLocalName(i));
-                switch (attribute) {
-                    case NAME: {
-                        name = attrValue;
-                        break;
-                    }
-                    case SOCKET_BINDING: {
-                        socketBinding = attrValue;
-                        break;
-                    }
-                    case SERVER_ID: {
-                        serverId = attrValue;
-                        break;
-                    }
-                    case HOST: {
-                        host = attrValue;
-                        break;
-                    }
-                    default: {
-                        throw ParseUtils.unexpectedAttribute(reader, i);
-                    }
-                }
+    @Override
+    protected void handleUnknownConfigurationAttribute(XMLExtendedStreamReader reader, Element element, ModelNode operation) throws XMLStreamException {
+        switch (element) {
+            case MAX_SAVED_REPLICATED_JOURNAL_SIZE:
+                handleElementText(reader, element, operation);
+                break;
+            default: {
+                super.handleUnknownConfigurationAttribute(reader, element, operation);
             }
-            if(name == null) {
-                throw missingRequired(reader, Collections.singleton(Attribute.NAME));
-            }
-
-            final ModelNode connectorAddress = address.clone();
-            final ModelNode operation = new ModelNode();
-            operation.get(OP).set(ADD);
-
-            final Element element = Element.forName(reader.getLocalName());
-            switch (element) {
-                case CONNECTOR: {
-                    connectorAddress.add(CONNECTOR, name);
-                    if (socketBinding != null) {
-                        operation.get(RemoteTransportDefinition.SOCKET_BINDING.getName()).set(socketBinding);
-                    }
-                    parseTransportConfiguration(reader, operation, true);
-                    break;
-                } case NETTY_CONNECTOR: {
-                    connectorAddress.add(REMOTE_CONNECTOR, name);
-                    if (socketBinding == null) {
-                        throw missingRequired(reader, Collections.singleton(Attribute.SOCKET_BINDING));
-                    }
-                    operation.get(RemoteTransportDefinition.SOCKET_BINDING.getName()).set(socketBinding);
-                    parseTransportConfiguration(reader, operation, false);
-                    break;
-                } case SERVLET_CONNECTOR: {
-                    if (socketBinding == null) {
-                        throw missingRequired(reader, Collections.singleton(SOCKET_BINDING));
-                    }
-                    if (host == null) {
-                        throw missingRequired(reader, Collections.singleton(HOST));
-                    }
-                    connectorAddress.add(SERVLET_CONNECTOR, name);
-                    ServletConnectorDefinition.SOCKET_BINDING.parseAndSetParameter(socketBinding, operation, reader);
-                    ServletConnectorDefinition.HOST.parseAndSetParameter(host, operation, reader);
-                    parseTransportConfiguration(reader, operation, false);
-                    break;
-                } case IN_VM_CONNECTOR: {
-                    connectorAddress.add(IN_VM_CONNECTOR, name);
-                    if (serverId != null) {
-                        InVMTransportDefinition.SERVER_ID.parseAndSetParameter(serverId, operation, reader);
-                    }
-                    parseTransportConfiguration(reader, operation, false);
-                    break;
-                } default: {
-                    throw ParseUtils.unexpectedElement(reader);
-                }
-            }
-
-            operation.get(OP_ADDR).set(connectorAddress);
-            updates.add(operation);
         }
     }
 
@@ -165,6 +87,18 @@ public class Messaging20SubsystemParser extends Messaging13SubsystemParser {
                 break;
             default:
                 super.handleUnknownAddressSetting(reader, element, addressSettingsAdd);
+        }
+    }
+
+    @Override
+    protected void handleUnknownGroupingHandlerAttribute(XMLExtendedStreamReader reader, Element element, ModelNode operation) throws XMLStreamException {
+        switch(element) {
+            case GROUP_TIMEOUT:
+            case REAPER_PERIOD:
+                handleElementText(reader, element, operation);
+                break;
+            default:
+                super.handleUnknownGroupingHandlerAttribute(reader, element, operation);
         }
     }
 }

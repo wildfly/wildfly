@@ -820,6 +820,12 @@
                 <dependency>
                     <groupId>org.hornetq</groupId>
                     <artifactId>hornetq-jms-server</artifactId>
+                    <exclusions>
+                        <exclusion>
+                            <groupId>org.jboss.jbossts.jts</groupId>
+                            <artifactId>jbossjts-jacorb</artifactId>
+                        </exclusion>
+                    </exclusions>
                 </dependency>
 
                 <dependency>
@@ -1474,9 +1480,22 @@
                     <artifactId>undertow-core</artifactId>
                 </dependency>
 
+                <!--
+                    Netty 3
+                    io.netty:netty is for Netty 3.x versions
+                -->
                 <dependency>
                     <groupId>io.netty</groupId>
                     <artifactId>netty</artifactId>
+                </dependency>
+
+                <!--
+                    Netty 4
+                    io.netty:netty-all is for Netty 4.x versions
+                -->
+                <dependency>
+                    <groupId>io.netty</groupId>
+                    <artifactId>netty-all</artifactId>
                 </dependency>
 
                 <dependency>

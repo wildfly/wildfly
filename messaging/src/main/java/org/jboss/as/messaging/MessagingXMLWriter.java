@@ -35,7 +35,6 @@ import static org.jboss.as.messaging.CommonAttributes.DIVERT;
 import static org.jboss.as.messaging.CommonAttributes.DURABLE;
 import static org.jboss.as.messaging.CommonAttributes.GROUPING_HANDLER;
 import static org.jboss.as.messaging.CommonAttributes.HORNETQ_SERVER;
-import static org.jboss.as.messaging.CommonAttributes.SERVLET_CONNECTOR;
 import static org.jboss.as.messaging.CommonAttributes.IN_VM_ACCEPTOR;
 import static org.jboss.as.messaging.CommonAttributes.IN_VM_CONNECTOR;
 import static org.jboss.as.messaging.CommonAttributes.JMS_BRIDGE;
@@ -188,16 +187,6 @@ public class MessagingXMLWriter implements XMLElementWriter<SubsystemMarshalling
                     writer.writeStartElement(Element.NETTY_CONNECTOR.getLocalName());
                     writer.writeAttribute(Attribute.NAME.getLocalName(), property.getName());
                     RemoteTransportDefinition.SOCKET_BINDING.marshallAsAttribute(property.getValue(), writer);
-                    writeTransportParam(writer, property.getValue().get(PARAM));
-                    writer.writeEndElement();
-                }
-            }
-            if(node.hasDefined(SERVLET_CONNECTOR)) {
-                for(final Property property : node.get(SERVLET_CONNECTOR).asPropertyList()) {
-                    writer.writeStartElement(Element.SERVLET_CONNECTOR.getLocalName());
-                    writer.writeAttribute(Attribute.NAME.getLocalName(), property.getName());
-                    ServletConnectorDefinition.HOST.marshallAsAttribute(property.getValue(), writer);
-                    ServletConnectorDefinition.SOCKET_BINDING.marshallAsAttribute(property.getValue(), writer);
                     writeTransportParam(writer, property.getValue().get(PARAM));
                     writer.writeEndElement();
                 }

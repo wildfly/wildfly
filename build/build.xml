@@ -471,6 +471,14 @@
             <maven-resource group="gnu.getopt" artifact="java-getopt" />
         </module-def>
 
+        <!--
+            Starting with Netty 4.x, Netty packages have changed from org.jboss.netty to io.netty.
+            Add a new module io.netty for Netty 4.x (and keep org.jboss.netty for Netty 3.x versions).
+        -->
+        <module-def name="io.netty">
+            <maven-resource group="io.netty" artifact="netty-all"/>
+        </module-def>
+
         <module-def name="javaee.api"/>
 
         <module-def name="javax.activation.api">
@@ -816,6 +824,10 @@
             <maven-resource group="org.hornetq" artifact="hornetq-journal"/>
             <maven-resource group="org.hornetq" artifact="hornetq-jms-client"/>
             <maven-resource group="org.hornetq" artifact="hornetq-jms-server"/>
+            <!-- hornetq-native is a regular jar (with Java classes)
+                 and contains native libraries that are extracted
+            -->
+            <maven-resource group="org.hornetq" artifact="hornetq-native"/>
             <extract-native-jar group="org.hornetq" artifact="hornetq-native"/>
         </module-def>
 
@@ -1181,7 +1193,8 @@
         </module-def>
 
         <!--
-          starting with 3.4.x Netty has changed its groupId to io.netty.
+          Starting with 3.4.x Netty has changed its groupId to io.netty but packages
+          remained with org.jboss.netty
         -->
         <module-def name="org.jboss.netty">
             <maven-resource group="io.netty" artifact="netty"/>
