@@ -154,7 +154,7 @@ public class SecurityExtension implements Extension {
     private void registerTransformers(SubsystemRegistration subsystemRegistration) {
         registerTransformers_1_1_0(subsystemRegistration);
         registerTransformers_1_2_0(subsystemRegistration);
-        // 1.2.1 BES 2013/08/23 no changes; 1.3.0 just adds RBAC metadata
+        registerTransformers_1_2_1(subsystemRegistration);
     }
 
     private void registerTransformers_1_1_0(SubsystemRegistration subsystemRegistration) {
@@ -212,7 +212,23 @@ public class SecurityExtension implements Extension {
         ResourceTransformationDescriptionBuilder jaspiReg = registerModuleTransformer(securityDomain, PATH_JASPI_AUTH, authModule);
         registerModuleTransformer(jaspiReg, PATH_LOGIN_MODULE_STACK, loginModule);
 
-        TransformationDescription.Tools.register(builder.build(), subsystemRegistration, ModelVersion.create(1, 2, 0));
+        // the module attribute in JASPI auth-module elements is not recognized in the 1.2.0 version of the subsystem
+        jaspiReg.addChildResource(PathElement.pathElement(Constants.AUTH_MODULE)).getAttributeBuilder()
+                .addRejectCheck(RejectAttributeChecker.DEFINED, Constants.MODULE)
+                .end();
+
+        TransformationDescription.Tools.register(builder.build(), subsystemRegistration, ModelVersion.create(1,2,0));
+    }
+
+    private void registerTransformers_1_2_1(SubsystemRegistration subsystemRegistration) {
+
+        // the module attribute in JASPI auth-module elements is not recognized in the 1.2.1 version of the subsystem
+        ResourceTransformationDescriptionBuilder builder = TransformationDescriptionBuilder.Factory.createSubsystemInstance();
+        ResourceTransformationDescriptionBuilder domainBuilder = builder.addChildResource(SECURITY_DOMAIN_PATH);
+        domainBuilder.addChildResource(PATH_JASPI_AUTH).addChildResource(PathElement.pathElement(Constants.AUTH_MODULE))
+                .getAttributeBuilder().addRejectCheck(RejectAttributeChecker.DEFINED, Constants.MODULE);
+
+        TransformationDescription.Tools.register(builder.build(), subsystemRegistration, ModelVersion.create(1,2,1));
     }
 
     private ResourceTransformationDescriptionBuilder registerModuleTransformer(ResourceTransformationDescriptionBuilder parent, final PathElement childPath,
@@ -220,7 +236,8 @@ public class SecurityExtension implements Extension {
         ResourceTransformationDescriptionBuilder child = parent.addChildResource(childPath)
                 .setCustomResourceTransformer(transformer)
                 .discardOperations(ADD);
-        child.addChildRedirection(PathElement.pathElement(transformer.getResourceName()), CURRENT_PATH_TRANSFORMER)
+        ResourceTransformationDescriptionBuilder childRedirectionBuilder = child.addChildRedirection(
+                    PathElement.pathElement(transformer.getResourceName()), CURRENT_PATH_TRANSFORMER)
                 .setCustomResourceTransformer(ResourceTransformer.DISCARD)
                 .addOperationTransformationOverride(ADD)
                 .setCustomOperationTransformer(transformer)
@@ -231,6 +248,11 @@ public class SecurityExtension implements Extension {
                 .addOperationTransformationOverride(REMOVE)
                 .setCustomOperationTransformer(transformer)
                 .inheritResourceAttributeDefinitions().end();
+
+        // the module attribute in JASPI auth-module elements is not recognized in the 1.1.0 version of the subsystem
+        if (Constants.AUTH_MODULE.equals(transformer.getResourceName())) {
+            childRedirectionBuilder.getAttributeBuilder().addRejectCheck(RejectAttributeChecker.DEFINED, Constants.MODULE);
+        }
         return child;
     }
 
