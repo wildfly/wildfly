@@ -26,6 +26,9 @@ import static javax.xml.stream.XMLStreamConstants.END_ELEMENT;
 import java.io.BufferedInputStream;
 import java.io.File;
 import java.io.FileInputStream;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.Map;
 
 import javax.xml.namespace.QName;
 import javax.xml.stream.XMLInputFactory;
@@ -57,6 +60,8 @@ class CliConfigImpl implements CliConfig {
     private static final String JBOSS_CLI_FILE = "jboss-cli.xml";
 
     private static final String ACCESS_CONTROL = "access-control";
+    private static final String CONTROLLER = "controller";
+    private static final String CONTROLLERS = "controllers";
     private static final String DEFAULT_CONTROLLER = "default-controller";
     private static final String DEFAULT_PROTOCOL = "default-protocol";
     private static final String ENABLED = "enabled";
@@ -66,6 +71,7 @@ class CliConfigImpl implements CliConfig {
     private static final String HISTORY = "history";
     private static final String HOST = "host";
     private static final String MAX_SIZE = "max-size";
+    private static final String NAME = "name";
     private static final String PORT = "port";
     private static final String PROTOCOL = "protocol";
     private static final String CONNECTION_TIMEOUT = "connection-timeout";
@@ -188,6 +194,7 @@ class CliConfigImpl implements CliConfig {
     private String defaultControllerProtocol;
     private boolean useLegacyOverride = true;
     private ControllerAddress defaultController = new ControllerAddress(null, "localhost", -1);
+    private Map<String, ControllerAddress> controllerAliases = Collections.emptyMap();
 
     private boolean historyEnabled;
     private String historyFileName;
@@ -219,6 +226,11 @@ class CliConfigImpl implements CliConfig {
     @Override
     public ControllerAddress getDefaultControllerAddress() {
         return defaultController;
+    }
+
+    @Override
+    public ControllerAddress getAliasedControllerAddress(String alias) {
+        return controllerAliases.get(alias);
     }
 
     @Override
@@ -475,6 +487,8 @@ class CliConfigImpl implements CliConfig {
                         readDefaultProtocol_2_0(reader, expectedNs, config);
                     } else if (localName.equals(DEFAULT_CONTROLLER)) {
                         readDefaultController_2_0(reader, expectedNs, config);
+                    } else if (localName.equals(CONTROLLERS)) {
+                        readControllers_2_0(reader, expectedNs, config);
                     } else if (localName.equals(VALIDATE_OPERATION_REQUESTS)) {
                         config.validateOperationRequests = resolveBoolean(reader.getElementText());
                     } else if(localName.equals(HISTORY)) {
@@ -524,6 +538,8 @@ class CliConfigImpl implements CliConfig {
                             reader.getLocation());
                 } else if (localName.equals(USE_LEGACY_OVERRIDE)) {
                     config.useLegacyOverride = Boolean.parseBoolean(value);
+                } else {
+                    throw new XMLStreamException("Unexpected attribute '" + localName + "'", reader.getLocation());
                 }
             }
 
@@ -570,6 +586,42 @@ class CliConfigImpl implements CliConfig {
             }
 
             return new ControllerAddress(protocol, host == null ? "localhost" : host, port);
+        }
+
+        private void readControllers_2_0(XMLExtendedStreamReader reader, Namespace expectedNs, CliConfigImpl config) throws XMLStreamException {
+            Map<String, ControllerAddress> aliasedAddresses = new HashMap<String, ControllerAddress>();
+            while (reader.hasNext() && reader.nextTag() != END_ELEMENT) {
+                assertExpectedNamespace(reader, expectedNs);
+                final String localName = reader.getLocalName();
+
+                if (CONTROLLER.equals(localName)) {
+                    String name = null;
+                    final int attributes = reader.getAttributeCount();
+                    for (int i = 0; i < attributes; i++) {
+                        String namespace = reader.getAttributeNamespace(i);
+                        String attrLocalName = reader.getAttributeLocalName(i);
+                        String value = reader.getAttributeValue(i);
+
+                        if (namespace != null && !namespace.equals("")) {
+                            throw new XMLStreamException("Unexpected attribute '" + namespace + ":" + attrLocalName + "'",
+                                    reader.getLocation());
+                        } else if (attrLocalName.equals(NAME) && name == null) {
+                            name = value;
+                        } else {
+                            throw new XMLStreamException("Unexpected attribute '" + attrLocalName + "'", reader.getLocation());
+                        }
+                    }
+
+                    if (name == null) {
+                        throw new XMLStreamException("Missing required attribute 'name'", reader.getLocation());
+                    }
+                    aliasedAddresses.put(name, readController(true, reader, expectedNs));
+                } else {
+                    throw new XMLStreamException("Unexpected child of " + CONTROLLER + ": " + localName);
+                }
+            }
+
+            config.controllerAliases = Collections.unmodifiableMap(aliasedAddresses);
         }
 
         private void readHistory(XMLExtendedStreamReader reader, Namespace expectedNs, CliConfigImpl config) throws XMLStreamException {

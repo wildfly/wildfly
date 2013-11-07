@@ -73,6 +73,14 @@
                         </xs:documentation>
                     </xs:annotation>
                 </xs:element>
+                
+                <xs:element name="controllers" type="controllersType" minOccurs="0">
+                    <xs:annotation>
+                        <xs:documentation>
+                            The names controller alias mappings.
+                        </xs:documentation>
+                    </xs:annotation>                   
+                </xs:element>
 
                 <xs:element ref="validate-operation-requests" minOccurs="0" />
                 <xs:element ref="history" minOccurs="0" />
@@ -121,6 +129,26 @@
                 </xs:annotation>
             </xs:element>
         </xs:sequence>
+    </xs:complexType>
+
+    <xs:complexType name="namedController">
+        <xs:complexContent>
+            <xs:extension base="controllerAddress">
+                <xs:attribute name="name" use="required">
+                    <xs:annotation>
+                        <xs:documentation>
+                            The name of this controller alias.
+                        </xs:documentation>
+                    </xs:annotation>
+                </xs:attribute>
+            </xs:extension>
+        </xs:complexContent>
+    </xs:complexType>
+    
+    <xs:complexType name="controllersType">
+        <xs:sequence>
+            <xs:element name="controller" type="namedController" maxOccurs="unbounded" />        
+        </xs:sequence>    
     </xs:complexType>
 
     <xs:element name="validate-operation-requests" type="xs:boolean" default="true">

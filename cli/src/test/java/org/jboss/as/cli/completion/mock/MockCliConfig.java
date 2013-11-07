@@ -53,6 +53,11 @@ public class MockCliConfig implements CliConfig {
     }
 
     @Override
+    public ControllerAddress getAliasedControllerAddress(String alias) {
+        return null;
+    }
+
+    @Override
     public boolean isHistoryEnabled() {
         return false;
     }
