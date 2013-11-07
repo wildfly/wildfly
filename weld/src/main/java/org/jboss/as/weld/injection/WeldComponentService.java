@@ -21,11 +21,7 @@
  */
 package org.jboss.as.weld.injection;
 
-import static org.jboss.weld.util.reflection.Reflections.cast;
-
 import java.util.HashMap;
-import java.util.HashSet;
-import java.util.Iterator;
 import java.util.Map;
 import java.util.Set;
 
@@ -36,21 +32,17 @@ import javax.enterprise.inject.spi.InjectionTarget;
 import org.jboss.as.ee.component.ComponentDescription;
 import org.jboss.as.ejb3.component.messagedriven.MessageDrivenComponentDescription;
 import org.jboss.as.web.common.WebComponentDescription;
-import org.jboss.as.webservices.injection.WSComponentDescription;
 import org.jboss.as.weld.WeldBootstrapService;
-import org.jboss.as.weld.WeldLogger;
 import org.jboss.as.weld.util.Utils;
 import org.jboss.msc.service.Service;
 import org.jboss.msc.service.StartContext;
 import org.jboss.msc.service.StartException;
 import org.jboss.msc.service.StopContext;
 import org.jboss.msc.value.InjectedValue;
-import org.jboss.weld.bean.ManagedBean;
 import org.jboss.weld.bean.SessionBean;
 import org.jboss.weld.ejb.spi.EjbDescriptor;
 import org.jboss.weld.injection.producer.BasicInjectionTarget;
 import org.jboss.weld.injection.producer.InjectionTargetService;
-import org.jboss.weld.literal.AnyLiteral;
 import org.jboss.weld.manager.BeanManagerImpl;
 import org.wildfly.security.manager.WildFlySecurityManager;
 
@@ -123,14 +115,6 @@ public class WeldComponentService implements Service<WeldComponentService> {
                 return;
             }
 
-            if (componentDescription instanceof WSComponentDescription) {
-                ManagedBean<?> bean = findManagedBeanForWSComponent(componentClass);
-                if (bean != null) {
-                    injectionTarget = bean.getInjectionTarget();
-                    return;
-                }
-            }
-
             BasicInjectionTarget injectionTarget = InjectionTargets.createInjectionTarget(componentClass, bean, beanManager, !Utils.isComponentWithView(componentDescription));
             if (componentDescription instanceof MessageDrivenComponentDescription || componentDescription instanceof WebComponentDescription) {
                 // fire ProcessInjectionTarget for non-contextual components
@@ -143,25 +127,6 @@ public class WeldComponentService implements Service<WeldComponentService> {
         } finally {
             WildFlySecurityManager.setCurrentContextClassLoaderPrivileged(cl);
         }
-    }
-
-    private <T> ManagedBean<T> findManagedBeanForWSComponent(Class<T> definingClass) {
-        Set<Bean<?>> beans = new HashSet<Bean<?>>(beanManager.getBeans(definingClass, AnyLiteral.INSTANCE));
-        for (Iterator<Bean<?>> i = beans.iterator(); i.hasNext();) {
-            Bean<?> bean = i.next();
-            if (bean instanceof ManagedBean<?> && bean.getBeanClass().equals(definingClass)) {
-                continue;
-            }
-            i.remove();
-        }
-        if (beans.isEmpty()) {
-            WeldLogger.DEPLOYMENT_LOGGER.debugf("Could not find bean for %s, interception and decoration will be unavailable", componentClass);
-            return null;
-        }
-        if (beans.size() > 1) {
-            WeldLogger.DEPLOYMENT_LOGGER.debugf("Multiple beans for %s : %s ", componentClass, beans);
-        }
-        return cast(beans.iterator().next());
     }
 
     @Override
