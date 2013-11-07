@@ -121,8 +121,9 @@ public abstract class AbstractChannelOpenListenerService implements Service<Void
     @Override
     public synchronized void stop(final StopContext context) {
         closed = true;
-        final Set<ManagementChannelInitialization.ManagementChannelShutdownHandle> handles = new HashSet<>(this.handles);
-        for (final ManagementChannelInitialization.ManagementChannelShutdownHandle handle : handles) {
+        // Copy off the set to avoid ConcurrentModificationException
+        final Set<ManagementChannelInitialization.ManagementChannelShutdownHandle> handlesCopy = copyHandles();
+        for (final ManagementChannelInitialization.ManagementChannelShutdownHandle handle : handlesCopy) {
             handle.shutdown();
         }
         final Runnable shutdownTask = new Runnable() {
@@ -131,7 +132,7 @@ public abstract class AbstractChannelOpenListenerService implements Service<Void
                 final long end = System.currentTimeMillis() + CHANNEL_SHUTDOWN_TIMEOUT;
                 boolean interrupted = Thread.currentThread().isInterrupted();
                 try {
-                    for (final ManagementChannelInitialization.ManagementChannelShutdownHandle handle : handles) {
+                    for (final ManagementChannelInitialization.ManagementChannelShutdownHandle handle : handlesCopy) {
                         final long remaining = end - System.currentTimeMillis();
                         try {
                             if (!interrupted && !handle.awaitCompletion(remaining, TimeUnit.MILLISECONDS)) {
@@ -181,11 +182,8 @@ public abstract class AbstractChannelOpenListenerService implements Service<Void
 
     @Override
     public void registrationTerminated() {
-        final Set<ManagementChannelInitialization.ManagementChannelShutdownHandle> copy;
-        synchronized (handles) {
-            // Copy off the set to avoid ConcurrentModificationException
-            copy = new HashSet<>(handles);
-        }
+        // Copy off the set to avoid ConcurrentModificationException
+        final Set<ManagementChannelInitialization.ManagementChannelShutdownHandle> copy = copyHandles();
         for (final ManagementChannelInitialization.ManagementChannelShutdownHandle channel : copy) {
             channel.shutdownNow();
         }
@@ -205,5 +203,12 @@ public abstract class AbstractChannelOpenListenerService implements Service<Void
      * @param runnable the runnable
      */
     protected abstract void execute(Runnable runnable);
+
+    private Set<ManagementChannelInitialization.ManagementChannelShutdownHandle> copyHandles() {
+        // Must synchronize on Collections.synchronizedSet when iterating
+        synchronized (handles) {
+            return new HashSet<ManagementChannelInitialization.ManagementChannelShutdownHandle>(handles);
+        }
+    }
 
 }
