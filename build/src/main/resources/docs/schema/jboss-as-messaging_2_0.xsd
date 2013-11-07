@@ -135,6 +135,13 @@
           <xs:element maxOccurs="1" minOccurs="0" name="journal-compact-percentage" type="xs:int" />
           <xs:element maxOccurs="1" minOccurs="0" name="journal-compact-min-files" type="xs:int" />
           <xs:element maxOccurs="1" minOccurs="0" name="journal-max-io" type="xs:int" />
+          <xs:element maxOccurs="1" minOccurs="0" name="max-saved-replicated-journal-size" type="xs:int">
+              <xs:annotation>
+                  <xs:documentation>
+                      The maximum number of backup journals to keep after failback occurs.
+                  </xs:documentation>
+              </xs:annotation>
+          </xs:element>
           <xs:element maxOccurs="1" minOccurs="0" name="perf-blast-pages" type="xs:int" />
           <xs:element maxOccurs="1" minOccurs="0" name="run-sync-speed-test" type="xs:boolean" />
           <xs:element maxOccurs="1" minOccurs="0" name="server-dump-interval" type="xs:long" />
@@ -153,7 +160,6 @@
               <xs:complexType>
                   <xs:sequence>
                       <xs:element maxOccurs="unbounded" minOccurs="0" name="netty-connector" type="netty-connectorType" />
-                      <xs:element maxOccurs="unbounded" minOccurs="0" name="servlet-connector" type="servlet-connectorType" />
                       <xs:element maxOccurs="unbounded" minOccurs="0" name="in-vm-connector" type="inVM-connectorType" />
                       <xs:element maxOccurs="unbounded" minOccurs="0" name="connector" type="connectorType" />
                   </xs:sequence>
@@ -393,39 +399,6 @@
        <xs:attribute name="value" type="xs:string" use="required"/>
     </xs:complexType>
 
-    <xs:complexType name="servlet-connectorType">
-        <xs:annotation>
-            <xs:documentation>
-                <![CDATA[
-              The Servlet connector type.
-            ]]>
-            </xs:documentation>
-        </xs:annotation>
-        <xs:complexContent>
-            <xs:extension base="base-connectorType">
-                <xs:attribute name="host" type="xs:string" use="required">
-                    <xs:annotation>
-                        <xs:documentation>
-                            <![CDATA[
-                                This attribute references the web host that will deploy a Servlet used to provide HornetQ protocol over HTTP.
-                            ]]>
-                        </xs:documentation>
-                    </xs:annotation>
-                </xs:attribute>
-                <xs:attribute name="socket-binding" type="xs:string" use="required">
-                    <xs:annotation>
-                        <xs:documentation>
-                            <![CDATA[
-                                This attribute references the socket-binding used by the web host. Its host and port will be used to configure the connector
-                                with the Servlet URL to access teh Servlet endpoint to tunnel the HornetQ protocol over HTTP.
-                            ]]>
-                        </xs:documentation>
-                    </xs:annotation>
-                </xs:attribute>
-            </xs:extension>
-        </xs:complexContent>
-    </xs:complexType>
-
     <xs:complexType name="netty-connectorType">
        <xs:annotation>
           <xs:documentation>
@@ -644,6 +617,20 @@
           <xs:element maxOccurs="1" minOccurs="1" name="type" type="groupingHandlerTypeType"/>
           <xs:element maxOccurs="1" minOccurs="1" name="address" type="xs:string"/>
           <xs:element maxOccurs="1" minOccurs="0" name="timeout" type="xs:int"/>
+          <xs:element maxOccurs="1" minOccurs="0" name="group-timeout" type="xs:long" >
+               <xs:annotation>
+                   <xs:documentation>
+                       How long a group binding will be used, -1 means for ever. Bindings are removed after this wait elapses (only valid for LOCAL handlers).
+                   </xs:documentation>
+               </xs:annotation>
+           </xs:element>
+           <xs:element maxOccurs="1" minOccurs="0" name="reaper-period" type="xs:long" >
+               <xs:annotation>
+                   <xs:documentation>
+                       How often the reaper will be run to check for timed out group bindings (only valid for LOCAL handlers).
+                   </xs:documentation>
+               </xs:annotation>
+           </xs:element>
        </xs:sequence>
        <xs:attribute name="name" type="xs:string" use="required"/>
     </xs:complexType>

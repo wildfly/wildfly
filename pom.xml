@@ -103,7 +103,8 @@
         <version.commons-pool>1.6</version.commons-pool>
         <version.dom4j>1.6.1</version.dom4j>
         <version.gnu.getopt>1.0.13</version.gnu.getopt>
-        <version.io.netty>3.6.6.Final</version.io.netty>
+        <version.io.netty3>3.6.6.Final</version.io.netty3>
+        <version.io.netty>4.0.12.Final</version.io.netty>
         <version.io.undertow>1.0.0.Beta26</version.io.undertow>
         <version.io.undertow.jastow>1.0.0.Beta1</version.io.undertow.jastow>
         <version.javax.activation>1.1.1</version.javax.activation>
@@ -153,7 +154,7 @@
         <version.org.hibernate.javax.persistence.hibernate-jpa-2.0-api>1.0.1.Final</version.org.hibernate.javax.persistence.hibernate-jpa-2.0-api>
         <version.org.hibernate.validator>5.0.1.Final</version.org.hibernate.validator>
         <version.org.hibernate.javax.persistence.hibernate-jpa-2.1-api>1.0.0.Final</version.org.hibernate.javax.persistence.hibernate-jpa-2.1-api>
-        <version.org.hornetq>2.4.0.Beta2</version.org.hornetq>
+        <version.org.hornetq>2.4.0.Beta3</version.org.hornetq>
         <version.org.infinispan>6.0.0.CR1</version.org.infinispan>
         <version.org.infinispan.protostream>1.0.0.Alpha7</version.org.infinispan.protostream>
         <version.org.jacorb>2.3.2-jbossorg-5</version.org.jacorb>
@@ -4710,8 +4711,14 @@
 
             <dependency>
                 <groupId>io.netty</groupId>
-                <artifactId>netty</artifactId>
+                <artifactId>netty-all</artifactId>
                 <version>${version.io.netty}</version>
+            </dependency>
+
+            <dependency>
+                <groupId>io.netty</groupId>
+                <artifactId>netty</artifactId>
+                <version>${version.io.netty3}</version>
             </dependency>
 
             <dependency>
