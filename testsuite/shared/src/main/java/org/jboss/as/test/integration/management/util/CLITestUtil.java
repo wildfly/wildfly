@@ -49,7 +49,7 @@ public class CLITestUtil {
 
     public static CommandContext getCommandContext() throws CliInitializationException {
         setJBossCliConfig();
-        return CommandContextFactory.getInstance().newCommandContext(convert("http-remoting", serverAddr , serverPort), null, null);
+        return CommandContextFactory.getInstance().newCommandContext(constructUri("http-remoting", serverAddr , serverPort), null, null);
     }
 
     public static CommandContext getCommandContext(String address, int port, InputStream in, OutputStream out)
@@ -61,7 +61,7 @@ public class CLITestUtil {
     public static CommandContext getCommandContext(OutputStream out) throws CliInitializationException {
         SecurityActions.setSystemProperty(JREADLINE_TERMINAL, JREADLINE_TEST_TERMINAL);
         setJBossCliConfig();
-        return CommandContextFactory.getInstance().newCommandContext(convert(null, serverAddr , serverPort), null, null, null, out);
+        return CommandContextFactory.getInstance().newCommandContext(constructUri(null, serverAddr , serverPort), null, null, null, out);
     }
 
     protected static void setJBossCliConfig() {
@@ -75,11 +75,14 @@ public class CLITestUtil {
         }
     }
 
-    private static String convert(final String protocol, final String host, final int port) throws CliInitializationException {
+    private static String constructUri(final String protocol, final String host, final int port) throws CliInitializationException {
         try {
-            return new URI(protocol, null, host, port, null, null, null).toString();
+            URI uri = new URI(protocol, null, host, port, null, null, null);
+            // String the leading '//' if there is no protocol.
+            return protocol == null ? uri.toString().substring(2) : uri.toString();
         } catch (URISyntaxException e) {
             throw new CliInitializationException("Unable to convert URI", e);
         }
     }
+
 }
