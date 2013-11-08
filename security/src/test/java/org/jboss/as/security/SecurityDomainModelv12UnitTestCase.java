@@ -38,7 +38,6 @@ import org.jboss.as.controller.RunningMode;
 import org.jboss.as.controller.operations.common.Util;
 import org.jboss.as.model.test.FailedOperationTransformationConfig;
 import org.jboss.as.model.test.FailedOperationTransformationConfig.RejectExpressionsConfig;
-import org.jboss.as.model.test.ModelFixer;
 import org.jboss.as.model.test.ModelTestControllerVersion;
 import org.jboss.as.model.test.ModelTestUtils;
 import org.jboss.as.model.test.SingleClassFilter;
@@ -118,23 +117,26 @@ public class SecurityDomainModelv12UnitTestCase extends AbstractSubsystemBaseTes
 
     @Test
     public void testRejectedTransformers712() throws Exception {
-        testOperationTransformers_1_1_0(ModelTestControllerVersion.V7_1_2_FINAL);
+        testRejectedTransformers_1_1_0(ModelTestControllerVersion.V7_1_2_FINAL);
     }
 
     @Test
     public void testRejectedTransformers713() throws Exception {
-        testOperationTransformers_1_1_0(ModelTestControllerVersion.V7_1_3_FINAL);
+        testRejectedTransformers_1_1_0(ModelTestControllerVersion.V7_1_3_FINAL);
     }
 
     @Test
-    public void testTransformers121To120() throws Exception {
-        ModelVersion modelVersion = ModelVersion.create(1, 2, 0);
+    public void testTransformers720() throws Exception {
+        testTransformers_1_2_x(ModelTestControllerVersion.V7_2_0_FINAL, 0);
+    }
+
+    private void testTransformers_1_2_x(ModelTestControllerVersion controllerVersion, int micro) throws Exception {
+        ModelVersion modelVersion = ModelVersion.create(1, 2, micro);
         KernelServicesBuilder builder = createKernelServicesBuilder(AdditionalInitialization.MANAGEMENT);
 
 
-        //which is why we need to include the jboss-as-controller artifact.
-        builder.createLegacyKernelServicesBuilder(null, ModelTestControllerVersion.MASTER, modelVersion)
-                .addMavenResourceURL("org.jboss.as:jboss-as-security:" +"7.2.0.Final")
+        builder.createLegacyKernelServicesBuilder(null, controllerVersion, modelVersion)
+                .addMavenResourceURL("org.jboss.as:jboss-as-security:" + controllerVersion.getMavenGavVersion())
                 .dontPersistXml();
 
 
@@ -166,7 +168,7 @@ public class SecurityDomainModelv12UnitTestCase extends AbstractSubsystemBaseTes
         checkSubsystemModelTransformation(mainServices, modelVersion);
     }
 
-    private void testOperationTransformers_1_1_0(ModelTestControllerVersion controllerVersion) throws Exception {
+    private void testRejectedTransformers_1_1_0(ModelTestControllerVersion controllerVersion) throws Exception {
         ModelVersion modelVersion = ModelVersion.create(1, 1, 0);
         KernelServicesBuilder builder = createKernelServicesBuilder(AdditionalInitialization.MANAGEMENT);
 
@@ -184,8 +186,11 @@ public class SecurityDomainModelv12UnitTestCase extends AbstractSubsystemBaseTes
         ModelTestUtils.checkFailedTransformedBootOperations(
                 mainServices,
                 modelVersion,
+                //Here we should really use the main subsystem xml, but since the operation transformers read from the model,
+                //to create the composite add the framework needs beefing up to be able to correct the model as part of try/fail loop
+                //TODO use a custom RejectExpressionsConfig for that?
                 builder.parseXml(readResource("transformers.xml")),
-                getConfig()
+                getConfig_1_1_0()
         );
 
     }
@@ -332,7 +337,7 @@ public class SecurityDomainModelv12UnitTestCase extends AbstractSubsystemBaseTes
         return add;
     }
 
-    private FailedOperationTransformationConfig getConfig() {
+    private FailedOperationTransformationConfig getConfig_1_1_0() {
         PathAddress subsystemAddress = PathAddress.pathAddress(SecurityExtension.PATH_SUBSYSTEM);
         PathAddress securityDomain = subsystemAddress.append(SecurityExtension.SECURITY_DOMAIN_PATH);
         return new FailedOperationTransformationConfig()

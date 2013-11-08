@@ -26,7 +26,7 @@
     <security-domains>
         <security-domain name="other" cache-type="default">
             <authentication>
-                <login-module code="Remoting" flag="optional">
+                <login-module code="Remoting" flag="optional" module="test-authentication">
                     <module-option name="password-stacking" value="useFirstPass"/>
                 </login-module>
                 <login-module code="Duplicate" flag="optional"/>
@@ -39,12 +39,12 @@
                 </login-module>
             </authentication>
             <authorization>
-                <policy-module code="DenyAll" flag="required">
+                <policy-module code="DenyAll" flag="required" module="test-auth">
                     <module-option name="a" value="c"/>
                 </policy-module>
             </authorization>
             <mapping>
-                <mapping-module code="SimpleRoles" type="role">
+                <mapping-module code="SimpleRoles" type="role" module="test-mapping">
                     <module-option name="d" value="e"/>
                 </mapping-module>
             </mapping>
@@ -53,17 +53,35 @@
                     <module-option name="d" value="r"/>
                 </provider-module>
             </audit>
-            <jsse truststore-url="keystore.jks"
-                  truststore-password="rmi+ssl"
-                  keystore-url="clientcert.jks"
-                  keystore-password="changeit" />
+            <jsse  truststore-url="${test.prop:keystore.jks}"
+                  truststore-password="${test.prop:rmi+ssl}"
+                  truststore-type="${test.prop:jks}"
+                  truststore-provider="${test.prop:truststore.jks}"
+                  truststore-provider-argument="${test.prop:trust-arg}"
+                  trust-manager-factory-algorithm="${test.prop:JKS}"
+                  trust-manager-factory-provider="${test.prop:JKS-provider}"
+                  keystore-url="${test.prop:clientcert.jks}"
+                  keystore-password="${test.prop:changeit}"
+                  keystore-type="${test.prop:jks2}"
+                  keystore-provider="${test.prop:keystore.jks}"
+                  keystore-provider-argument="${test.prop:key-arg}"
+                  key-manager-factory-algorithm="${test.prop:JKS}"
+                  key-manager-factory-provider="${test.prop:JKS-provider}"
+                  client-alias="${test.prop:client-alias"
+                  server-alias="${test.prop:server-alias"
+                  service-auth-token="${test.prop:server-auth-token"
+                  client-auth="${test.prop:true}"
+                  cipher-suites="${test.prop:aaa,bbb,ccc}"
+                  protocols="${test.prop:one,two,three}">
+                <property name="name" value="default" />
+            </jsse>
         </security-domain>
         <security-domain name="jaspi-test" cache-type="default">
             <authentication-jaspi>
                 <auth-module code="org.jboss.as.web.security.jaspi.modules.HTTPBasicServerAuthModule" login-module-stack-ref="lm-stack"
                              flag="optional"/>
                 <login-module-stack name="lm-stack">
-                    <login-module code="UsersRoles" flag="required">
+                    <login-module code="UsersRoles" flag="required" module="test-jaspi">
                         <module-option name="usersProperties" value="${jboss.server.config.dir:}/application-users.properties"/>
                         <module-option name="rolesProperties" value="${jboss.server.config.dir:}/application-roles.properties"/>
                     </login-module>
