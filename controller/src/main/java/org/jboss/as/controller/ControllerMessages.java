@@ -2740,5 +2740,11 @@ public interface ControllerMessages {
     @Message(id = 13481, value = "Unsupported Principal parameter '%X' received parsing principal type '%X'.")
     IOException unsupportedPrincipalParameter(byte parameterType, byte principalType);
 
+    @Message(id = 13482, value = "The following attributes must be defined as %s in the current model: %s")
+    String attributesMustBeDefinedAs(ModelNode value, Set<String> names);
+
+    @Message(id = 13483, value = "The following attributes must NOT be defined as %s in the current model: %s")
+    String attributesMustNotBeDefinedAs(ModelNode value, Set<String> names);
+
     // 13499 IS END OF 134xx SERIES USABLE FOR NON-LOGGER MESSAGES
 }
