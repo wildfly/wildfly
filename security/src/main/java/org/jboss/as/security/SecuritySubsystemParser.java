@@ -297,7 +297,7 @@ public class SecuritySubsystemParser implements XMLStreamConstants, XMLElementRe
     private void writeIdentityTrust(XMLExtendedStreamWriter writer, ModelNode modelNode) throws XMLStreamException {
         if (modelNode.isDefined() && modelNode.asInt() > 0) {
             writer.writeStartElement(Element.IDENTITY_TRUST.getLocalName());
-            writeLoginModule(writer, modelNode, Constants.TRUST_MODULE);
+            writeLoginModule(writer, modelNode, Constants.TRUST_MODULE, Element.TRUST_MODULE.getLocalName());
             writer.writeEndElement();
         }
     }

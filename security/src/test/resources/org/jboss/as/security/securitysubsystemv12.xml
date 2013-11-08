@@ -54,6 +54,11 @@
                    <module-option name="d" value="${test.prop:r}"/>
                  </provider-module>
          </audit>
+         <identity-trust>
+             <trust-module code="IdentityThingy" flag="${test.prop:required}" module="test-identity">
+                 <module-option name="d" value="r"/>
+             </trust-module>
+         </identity-trust>
 			<jsse truststore-url="${test.prop:keystore.jks}"
                   truststore-password="${test.prop:rmi+ssl}"
                   truststore-type="${test.prop:jks}"

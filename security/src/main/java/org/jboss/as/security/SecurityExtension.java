@@ -85,6 +85,7 @@ public class SecurityExtension implements Extension {
 
     private static final SecuritySubsystemParser PARSER = SecuritySubsystemParser.getInstance();
     static final PathElement ACL_PATH = PathElement.pathElement(Constants.ACL, Constants.CLASSIC);
+    static final PathElement PATH_IDENTITY_TRUST_CLASSIC = PathElement.pathElement(Constants.IDENTITY_TRUST, Constants.CLASSIC);
     static final PathElement PATH_JASPI_AUTH = PathElement.pathElement(Constants.AUTHENTICATION, Constants.JASPI);
     static final PathElement PATH_CLASSIC_AUTHENTICATION = PathElement.pathElement(Constants.AUTHENTICATION, Constants.CLASSIC);
     static final PathElement SECURITY_DOMAIN_PATH = PathElement.pathElement(Constants.SECURITY_DOMAIN);
@@ -171,6 +172,8 @@ public class SecurityExtension implements Extension {
         registerModuleTransformer(securityDomain, PATH_MAPPING_CLASSIC, mappingModule);
         final ModulesToAttributeTransformer providerModule = new ModulesToAttributeTransformer(Constants.PROVIDER_MODULE, Constants.PROVIDER_MODULES);
         registerModuleTransformer(securityDomain, PATH_AUDIT_CLASSIC, providerModule);
+        final ModulesToAttributeTransformer identityTrustModule = new ModulesToAttributeTransformer(Constants.TRUST_MODULE, Constants.TRUST_MODULES);
+        registerModuleTransformer(securityDomain, PATH_IDENTITY_TRUST_CLASSIC, identityTrustModule);
         final ModulesToAttributeTransformer authModule = new ModulesToAttributeTransformer(Constants.AUTH_MODULE, Constants.AUTH_MODULES);
         ResourceTransformationDescriptionBuilder jaspiReg = registerModuleTransformer(securityDomain, PATH_JASPI_AUTH, authModule);
 
@@ -205,6 +208,9 @@ public class SecurityExtension implements Extension {
         registerModuleTransformer(securityDomain, PATH_MAPPING_CLASSIC, mappingModule);
         AttributeToModulesTransformer providerModule = new AttributeToModulesTransformer(Constants.PROVIDER_MODULES);
         registerModuleTransformer(securityDomain, PATH_AUDIT_CLASSIC, providerModule);
+        final AttributeToModulesTransformer identityTrustModule = new AttributeToModulesTransformer(Constants.TRUST_MODULES);
+        registerModuleTransformer(securityDomain, PATH_IDENTITY_TRUST_CLASSIC, identityTrustModule);
+
         AttributeToModulesTransformer authModule = new AttributeToModulesTransformer(Constants.AUTH_MODULES);
         ResourceTransformationDescriptionBuilder jaspiReg = registerModuleTransformer(securityDomain, PATH_JASPI_AUTH, authModule);
 
