@@ -12,7 +12,7 @@ import org.jboss.as.subsystem.test.AbstractSubsystemBaseTest;
 
 public class DeploymentScannerParsingTestCase extends AbstractSubsystemBaseTest {
     private static final String SUBSYSTEM_XML =
-            "<subsystem xmlns=\"urn:jboss:domain:deployment-scanner:1.1\">\n" +
+            "<subsystem xmlns=\"urn:jboss:domain:deployment-scanner:1.2\">\n" +
             "    <deployment-scanner name=\"myScanner\" path=\"deployments_${custom.system.property:test}\" " +
                    "relative-to=\"jboss.server.base.dir\" scan-enabled=\"false\" scan-interval=\"5000\" " +
                    "auto-deploy-xml=\"true\" deployment-timeout=\"60\"/>\n" +

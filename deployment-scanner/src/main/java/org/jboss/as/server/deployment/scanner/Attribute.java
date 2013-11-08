@@ -41,6 +41,7 @@ enum Attribute {
     AUTO_DEPLOY_EXPLODED(CommonAttributes.AUTO_DEPLOY_EXPLODED),
     AUTO_DEPLOY_XML(CommonAttributes.AUTO_DEPLOY_XML),
     DEPLOYMENT_TIMEOUT(CommonAttributes.DEPLOYMENT_TIMEOUT),
+    RUNTIME_FAILURE_CAUSES_ROLLBACK(CommonAttributes.RUNTIME_FAILURE_CAUSES_ROLLBACK),
     ;
 
     private final String name;

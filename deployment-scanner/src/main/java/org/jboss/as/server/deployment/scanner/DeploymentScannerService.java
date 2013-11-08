@@ -61,6 +61,7 @@ public class DeploymentScannerService implements Service<DeploymentScanner> {
     private Long deploymentTimeout;
     private final String relativeTo;
     private final String path;
+    private boolean rollbackOnRuntimeFailure;
 
     /**
      * The created scanner.
@@ -85,17 +86,18 @@ public class DeploymentScannerService implements Service<DeploymentScanner> {
      * @param path              the path
      * @param scanInterval      the scan interval
      * @param scanEnabled       scan enabled
+     * @param rollbackOnRuntimeFailure rollback on runtime failures
      * @param deploymentTimeout the deployment timeout
      * @param bootTimeService   the deployment scanner used in the boot time scan
      * @return
      */
     public static ServiceController<DeploymentScanner> addService(final ServiceTarget serviceTarget, final String name, final String relativeTo, final String path,
                                                                   final Integer scanInterval, TimeUnit unit, final Boolean autoDeployZip,
-                                                                  final Boolean autoDeployExploded, final Boolean autoDeployXml, final Boolean scanEnabled, final Long deploymentTimeout,
+                                                                  final Boolean autoDeployExploded, final Boolean autoDeployXml, final Boolean scanEnabled, final Long deploymentTimeout, Boolean rollbackOnRuntimeFailure,
                                                                   final List<ServiceController<?>> newControllers, final FileSystemDeploymentService bootTimeService, final ScheduledExecutorService scheduledExecutorService,
                                                                   final ServiceListener<Object>... listeners) {
         final DeploymentScannerService service = new DeploymentScannerService(relativeTo, path, scanInterval, unit, autoDeployZip,
-                autoDeployExploded, autoDeployXml, scanEnabled, deploymentTimeout, bootTimeService);
+                autoDeployExploded, autoDeployXml, scanEnabled, deploymentTimeout, rollbackOnRuntimeFailure, bootTimeService);
         final ServiceName serviceName = getServiceName(name);
 
         ServiceBuilder<DeploymentScanner> builder = serviceTarget.addService(serviceName, service)
@@ -113,7 +115,7 @@ public class DeploymentScannerService implements Service<DeploymentScanner> {
 
     DeploymentScannerService(final String relativeTo, final String path, final Integer interval, final TimeUnit unit, final Boolean autoDeployZipped,
                              final Boolean autoDeployExploded, final Boolean autoDeployXml, final Boolean enabled, final Long deploymentTimeout,
-                             final FileSystemDeploymentService bootTimeService) {
+                             final Boolean rollbackOnRuntimeFailure, final FileSystemDeploymentService bootTimeService) {
         this.relativeTo = relativeTo;
         this.path = path;
         this.interval = interval == null ? DEFAULT_INTERVAL : interval.longValue();
@@ -122,6 +124,7 @@ public class DeploymentScannerService implements Service<DeploymentScanner> {
         this.autoDeployExploded = autoDeployExploded == null ? false : autoDeployExploded.booleanValue();
         this.autoDeployXml = autoDeployXml == null ? true : autoDeployXml.booleanValue();
         this.enabled = enabled == null ? true : enabled.booleanValue();
+        this.rollbackOnRuntimeFailure = rollbackOnRuntimeFailure;
         this.deploymentTimeout = deploymentTimeout;
         this.scanner = bootTimeService;
     }
@@ -158,6 +161,7 @@ public class DeploymentScannerService implements Service<DeploymentScanner> {
                 scanner.setAutoDeployExplodedContent(autoDeployExploded);
                 scanner.setAutoDeployZippedContent(autoDeployZipped);
                 scanner.setAutoDeployXMLContent(autoDeployXml);
+                scanner.setRuntimeFailureCausesRollback(rollbackOnRuntimeFailure);
                 if (deploymentTimeout != null) {
                     scanner.setDeploymentTimeout(deploymentTimeout);
                 }
