@@ -30,6 +30,7 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.BAS
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.CORE_SERVICE;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.FAILED;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.FAILURE_DESCRIPTION;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.GROUP;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.HOSTS;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.HOST_SCOPED_ROLE;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.INCLUDE_ALL;
@@ -86,6 +87,7 @@ public class RbacUtil {
 
     public static final String ROLE_MAPPING_ADDRESS_BASE = "core-service=management/access=authorization/role-mapping=";
     private static final String ROLE_MAPPING_USER_INCLUDE_ADDRESS_BASE = "/include=user-";
+    private static final String ROLE_MAPPING_GROUP_INCLUDE_ADDRESS_BASE = "/include=group-";
 
     private RbacUtil() {
         // prevent instantiation
@@ -167,6 +169,18 @@ public class RbacUtil {
 
     public static void removeRoleUser(String role, String user, ModelControllerClient client) throws IOException {
         ModelNode op = createOpNode(ROLE_MAPPING_ADDRESS_BASE + role + ROLE_MAPPING_USER_INCLUDE_ADDRESS_BASE + user, REMOVE);
+        executeOperation(client, op, Outcome.SUCCESS);
+    }
+
+    public static void addRoleGroup(String role, String group, ModelControllerClient client) throws IOException {
+        ModelNode op = createOpNode(ROLE_MAPPING_ADDRESS_BASE + role + ROLE_MAPPING_GROUP_INCLUDE_ADDRESS_BASE + group, ADD);
+        op.get(TYPE).set(GROUP);
+        op.get(NAME).set(group);
+        executeOperation(client, op, Outcome.SUCCESS);
+    }
+
+    public static void removeRoleGroup(String role, String group, ModelControllerClient client) throws IOException {
+        ModelNode op = createOpNode(ROLE_MAPPING_ADDRESS_BASE + role + ROLE_MAPPING_GROUP_INCLUDE_ADDRESS_BASE + group, REMOVE);
         executeOperation(client, op, Outcome.SUCCESS);
     }
 
