@@ -37,6 +37,7 @@ import java.io.OutputStreamWriter;
 import java.io.PrintWriter;
 import java.io.StringWriter;
 import java.net.URI;
+import java.net.URISyntaxException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Properties;
@@ -58,7 +59,7 @@ public class JdrRunner implements JdrReportCollector {
         this.env.setHost(host);
         this.env.setPort(port);
         try {
-            ctx = CommandContextFactory.getInstance().newCommandContext(new URI(protocol, null, host, Integer.parseInt(port), null, null, null).toString(), null, null);
+            ctx = CommandContextFactory.getInstance().newCommandContext(constructUri(protocol, host, Integer.parseInt(port)), null, null);
             ctx.connectController();
             this.env.setClient(ctx.getModelControllerClient());
         }
@@ -168,5 +169,11 @@ public class JdrRunner implements JdrReportCollector {
 
     public void setServerName(String name) {
         this.env.setServerName(name);
+    }
+
+    private String constructUri(final String protocol, final String host, final int port) throws URISyntaxException {
+        URI uri = new URI(protocol, null, host, port, null, null, null);
+        // String the leading '//' if there is no protocol.
+        return protocol == null ? uri.toString().substring(2) : uri.toString();
     }
 }

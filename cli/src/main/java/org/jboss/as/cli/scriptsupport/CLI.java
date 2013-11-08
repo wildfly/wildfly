@@ -146,10 +146,8 @@ public class CLI {
     public void connect(String protocol, String controllerHost, int controllerPort, String username, char[] password) {
         checkAlreadyConnected();
         try {
-            ctx = CommandContextFactory.getInstance().newCommandContext(new URI(protocol, null, controllerHost, controllerPort, null, null, null).toString(), username, password);
+            ctx = CommandContextFactory.getInstance().newCommandContext(constructUri(protocol, controllerHost, controllerPort), username, password);
             ctx.connectController();
-        } catch (URISyntaxException e) {
-            throw new IllegalStateException("Unable to construct URI.", e);
         } catch (CliInitializationException e) {
             throw new IllegalStateException("Unable to initialize command context.", e);
         } catch (CommandLineException e) {
@@ -192,6 +190,16 @@ public class CLI {
             }
         } catch (IOException ioe) {
             throw new IllegalStateException("Unable to send command " + cliCommand + " to server.", ioe);
+        }
+    }
+
+    private String constructUri(final String protocol, final String host, final int port) {
+        try {
+            URI uri = new URI(protocol, null, host, port, null, null, null);
+            // String the leading '//' if there is no protocol.
+            return protocol == null ? uri.toString().substring(2) : uri.toString();
+        } catch (URISyntaxException e) {
+            throw new IllegalStateException("Unable to construct URI.", e);
         }
     }
 
