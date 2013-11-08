@@ -383,35 +383,33 @@
 
     <xs:complexType name="invalidation-cache">
         <xs:complexContent>
+            <xs:extension base="tns:clustered-cache"/>
+        </xs:complexContent>
+    </xs:complexType>
+
+    <xs:complexType name="shared-state-cache" abstract="true">
+        <xs:complexContent>
             <xs:extension base="tns:clustered-cache">
+                <xs:sequence>
+                    <xs:element name="state-transfer" type="tns:state-transfer" minOccurs="0">
+                        <xs:annotation>
+                            <xs:documentation>The state transfer configuration for distribution and replicated caches.</xs:documentation>
+                        </xs:annotation>
+                    </xs:element>
+                </xs:sequence>
             </xs:extension>
         </xs:complexContent>
     </xs:complexType>
 
     <xs:complexType name="replicated-cache">
         <xs:complexContent>
-            <xs:extension base="tns:clustered-cache">
-                <xs:sequence>
-                    <xs:element name="state-transfer" type="tns:state-transfer" minOccurs="0">
-                        <xs:annotation>
-                            <xs:documentation>The state transfer configuration for distribution and replicated caches.</xs:documentation>
-                        </xs:annotation>
-                    </xs:element>
-                </xs:sequence>
-            </xs:extension>
+            <xs:extension base="tns:shared-state-cache"/>
         </xs:complexContent>
     </xs:complexType>
 
     <xs:complexType name="distributed-cache">
         <xs:complexContent>
-            <xs:extension base="tns:clustered-cache">
-                <xs:sequence>
-                    <xs:element name="state-transfer" type="tns:state-transfer" minOccurs="0">
-                        <xs:annotation>
-                            <xs:documentation>The state transfer configuration for distribution and replicated caches.</xs:documentation>
-                        </xs:annotation>
-                    </xs:element>
-                </xs:sequence>
+            <xs:extension base="tns:shared-state-cache">
                 <xs:attribute name="owners" type="xs:int" default="2">
                     <xs:annotation>
                         <xs:documentation>Number of cluster-wide replicas for each cache entry.</xs:documentation>
