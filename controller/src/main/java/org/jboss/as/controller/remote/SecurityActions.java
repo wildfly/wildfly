@@ -1,10 +1,6 @@
 /*
  * JBoss, Home of Professional Open Source.
-<<<<<<< HEAD
  * Copyright 2012, Red Hat, Inc., and individual contributors
-=======
- * Copyright 2013, Red Hat, Inc., and individual contributors
->>>>>>> eaff432... [WFLY-490] / [WFLY-1864] Update the protocol so that servers receiving management requests from a trusted master can request a Subject to use when executing the operation.
  * as indicated by the @author tags. See the copyright.txt file in the
  * distribution for a full listing of individual contributors.
  *

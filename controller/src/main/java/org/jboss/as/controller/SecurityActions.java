@@ -1,10 +1,6 @@
 /*
  * JBoss, Home of Professional Open Source.
-<<<<<<< HEAD
  * Copyright 2011, Red Hat, Inc., and individual contributors
-=======
- * Copyright 2013, Red Hat, Inc., and individual contributors
->>>>>>> ebf893b... [WFLY-1618] / [WFLY-490] Addition of the runtime role mapping implementation.
  * as indicated by the @author tags. See the copyright.txt file in the
  * distribution for a full listing of individual contributors.
  *
