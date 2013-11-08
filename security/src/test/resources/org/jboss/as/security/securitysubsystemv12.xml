@@ -44,6 +44,11 @@
                  <module-option name="a" value="${test.prop:c}"/>
                </policy-module>
 			</authorization>
+         <acl>
+			   <acl-module name="acl" code="AclThingy" flag="${test.prop:required}" module="test">
+			        <module-option name="d" value="r"/>
+			   </acl-module>
+         </acl>
 			<mapping>
 			  <mapping-module name="test" code="SimpleRoles" type="${test.prop:role}" module="test-mapping">
                  <module-option name="d" value="e"/>
@@ -80,7 +85,7 @@
                   cipher-suites="${test.prop:aaa,bbb,ccc}"
                   protocols="${test.prop:one,two,three}">
                 <property name="name" value="${some.prop:default}"/>
-            </jsse>
+         </jsse>
 		</security-domain>
         <security-domain name="jaspi-test" cache-type="default">
             <authentication-jaspi>

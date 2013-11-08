@@ -174,6 +174,9 @@ public class SecurityExtension implements Extension {
         registerModuleTransformer(securityDomain, PATH_AUDIT_CLASSIC, providerModule);
         final ModulesToAttributeTransformer identityTrustModule = new ModulesToAttributeTransformer(Constants.TRUST_MODULE, Constants.TRUST_MODULES);
         registerModuleTransformer(securityDomain, PATH_IDENTITY_TRUST_CLASSIC, identityTrustModule);
+        final ModulesToAttributeTransformer aclModule = new ModulesToAttributeTransformer(Constants.ACL_MODULE, Constants.ACL_MODULES);
+        registerModuleTransformer(securityDomain, ACL_PATH, aclModule);
+
         final ModulesToAttributeTransformer authModule = new ModulesToAttributeTransformer(Constants.AUTH_MODULE, Constants.AUTH_MODULES);
         ResourceTransformationDescriptionBuilder jaspiReg = registerModuleTransformer(securityDomain, PATH_JASPI_AUTH, authModule);
 
@@ -210,6 +213,10 @@ public class SecurityExtension implements Extension {
         registerModuleTransformer(securityDomain, PATH_AUDIT_CLASSIC, providerModule);
         final AttributeToModulesTransformer identityTrustModule = new AttributeToModulesTransformer(Constants.TRUST_MODULES);
         registerModuleTransformer(securityDomain, PATH_IDENTITY_TRUST_CLASSIC, identityTrustModule);
+        final AttributeToModulesTransformer aclModule = new AttributeToModulesTransformer(Constants.ACL_MODULES);
+        ResourceTransformationDescriptionBuilder aclBuilder = registerModuleTransformer(securityDomain, ACL_PATH, aclModule);
+        //https://issues.jboss.org/browse/WFLY-2474 acl-module was wrongly called login-module in 7.2.0
+        aclBuilder.addChildRedirection(PathElement.pathElement(Constants.ACL_MODULE), PathElement.pathElement(Constants.LOGIN_MODULE));
 
         AttributeToModulesTransformer authModule = new AttributeToModulesTransformer(Constants.AUTH_MODULES);
         ResourceTransformationDescriptionBuilder jaspiReg = registerModuleTransformer(securityDomain, PATH_JASPI_AUTH, authModule);

@@ -44,6 +44,11 @@
                     <module-option name="a" value="c"/>
                 </policy-module>
             </authorization>
+            <acl>
+               <acl-module code="AclThingy" flag="required" module="test">
+                   <module-option name="d" value="r"/>
+               </acl-module>
+            </acl>
             <mapping>
                 <mapping-module code="SimpleRoles" type="role" module="test-mapping">
                     <module-option name="d" value="e"/>

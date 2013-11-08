@@ -38,6 +38,7 @@ import org.jboss.as.controller.RunningMode;
 import org.jboss.as.controller.operations.common.Util;
 import org.jboss.as.model.test.FailedOperationTransformationConfig;
 import org.jboss.as.model.test.FailedOperationTransformationConfig.RejectExpressionsConfig;
+import org.jboss.as.model.test.ModelFixer;
 import org.jboss.as.model.test.ModelTestControllerVersion;
 import org.jboss.as.model.test.ModelTestUtils;
 import org.jboss.as.model.test.SingleClassFilter;
@@ -132,23 +133,31 @@ public class SecurityDomainModelv12UnitTestCase extends AbstractSubsystemBaseTes
 
     private void testTransformers_1_2_x(ModelTestControllerVersion controllerVersion, int micro) throws Exception {
         ModelVersion modelVersion = ModelVersion.create(1, 2, micro);
-        KernelServicesBuilder builder = createKernelServicesBuilder(AdditionalInitialization.MANAGEMENT);
+        KernelServicesBuilder builder = createKernelServicesBuilder(AdditionalInitialization.MANAGEMENT)
+                .setSubsystemXmlResource("transformers.xml");
 
 
         builder.createLegacyKernelServicesBuilder(null, controllerVersion, modelVersion)
                 .addMavenResourceURL("org.jboss.as:jboss-as-security:" + controllerVersion.getMavenGavVersion())
                 .dontPersistXml();
 
-
         KernelServices mainServices = builder.build();
         Assert.assertTrue(mainServices.isSuccessfulBoot());
         Assert.assertTrue(mainServices.getLegacyServices(modelVersion).isSuccessfulBoot());
-        ModelTestUtils.checkFailedTransformedBootOperations(
-                mainServices,
-                modelVersion,
-                builder.parseXml(readResource("transformers.xml")),
-                new FailedOperationTransformationConfig()
-        );
+//        ModelTestUtils.checkFailedTransformedBootOperations(
+//                mainServices,
+//                modelVersion,
+//                builder.parseXml(readResource("transformers.xml")),
+//                new FailedOperationTransformationConfig()
+//        );
+        checkSubsystemModelTransformation(mainServices, modelVersion, new ModelFixer() {
+            @Override
+            public ModelNode fixModel(ModelNode modelNode) {
+                //https://issues.jboss.org/browse/WFLY-2474 acl-module was wrongly called login-module in 7.2.0
+                ModelNode node = modelNode.get("security-domain", "other", "acl", "classic").get("login-module");
+                modelNode.get("security-domain", "other", "acl", "classic", "acl-modules").add(node.get("AclThingy"));
+                return modelNode;
+            }});
 
         ModelNode composite = Util.createEmptyOperation("composite", null);
         ModelNode steps = composite.get(STEPS);
@@ -165,7 +174,6 @@ public class SecurityDomainModelv12UnitTestCase extends AbstractSubsystemBaseTes
         ModelTestUtils.checkOutcome(mainServices.executeOperation(composite));
         ModelTestUtils.checkOutcome(mainServices.executeOperation(modelVersion, mainServices.transformOperation(modelVersion, composite)));
 
-        checkSubsystemModelTransformation(mainServices, modelVersion);
     }
 
     private void testRejectedTransformers_1_1_0(ModelTestControllerVersion controllerVersion) throws Exception {
