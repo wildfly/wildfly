@@ -175,7 +175,7 @@ public class CacheContainerAdd extends AbstractAddStepHandler {
         // install a cache container service
         controllers.add(this.installContainerService(target, name, aliases, transportConfig, initialMode, verificationHandler));
 
-        controllers.add(this.installGlobalComponentRegistryService(target, name, verificationHandler));
+        controllers.add(this.installGlobalComponentRegistryService(target, name, transportConfig, verificationHandler));
 
         // install a name service entry for the cache container
         controllers.add(this.installJndiService(target, name, InfinispanJndiName.createCacheContainerJndiName(jndiName, name), verificationHandler));
@@ -283,13 +283,16 @@ public class CacheContainerAdd extends AbstractAddStepHandler {
         return builder.install();
     }
 
-    ServiceController<?> installGlobalComponentRegistryService(ServiceTarget target, String containerName, ServiceVerificationHandler verificationHandler) {
+    ServiceController<?> installGlobalComponentRegistryService(ServiceTarget target, String containerName, Transport transport, ServiceVerificationHandler verificationHandler) {
         InjectedValue<CacheContainer> container = new InjectedValue<CacheContainer>();
-        return target.addService(GlobalComponentRegistryService.getServiceName(containerName), new GlobalComponentRegistryService(container))
+        ServiceBuilder<?> builder = AsynchronousService.addService(target, GlobalComponentRegistryService.getServiceName(containerName), new GlobalComponentRegistryService(container))
                 .addDependency(EmbeddedCacheManagerService.getServiceName(containerName), CacheContainer.class, container)
                 .setInitialMode(ServiceController.Mode.ON_DEMAND)
-                .install()
         ;
+        if (transport != null) {
+            builder.addDependency(ChannelService.getServiceName(containerName));
+        }
+        return builder.install();
     }
 
     ServiceController<?> installJndiService(ServiceTarget target, String containerName, String jndiName, ServiceVerificationHandler verificationHandler) {
