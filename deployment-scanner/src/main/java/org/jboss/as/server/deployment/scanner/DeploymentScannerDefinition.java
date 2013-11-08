@@ -102,6 +102,14 @@ public class DeploymentScannerDefinition extends SimpleResourceDefinition {
                     .setAllowExpression(true)
                     .setDefaultValue(new ModelNode().set(600))
                     .build();
+
+    protected static final SimpleAttributeDefinition RUNTIME_FAILURE_CAUSES_ROLLBACK =
+            new SimpleAttributeDefinitionBuilder(CommonAttributes.RUNTIME_FAILURE_CAUSES_ROLLBACK, ModelType.BOOLEAN, true)
+                    .setXmlName(Attribute.RUNTIME_FAILURE_CAUSES_ROLLBACK.getLocalName())
+                    .setAllowExpression(true)
+                    .setDefaultValue(new ModelNode().set(false))
+                    .build();
+
     protected static final SimpleAttributeDefinition[] ALL_ATTRIBUTES = {PATH,RELATIVE_TO,SCAN_ENABLED,SCAN_INTERVAL,AUTO_DEPLOY_EXPLODED,AUTO_DEPLOY_XML,AUTO_DEPLOY_ZIPPED,DEPLOYMENT_TIMEOUT};
 
     @Override
@@ -115,5 +123,6 @@ public class DeploymentScannerDefinition extends SimpleResourceDefinition {
         resourceRegistration.registerReadWriteAttribute(AUTO_DEPLOY_EXPLODED, null, WriteAutoDeployExplodedAttributeHandler.INSTANCE);
         resourceRegistration.registerReadWriteAttribute(AUTO_DEPLOY_XML, null, WriteAutoDeployXMLAttributeHandler.INSTANCE);
         resourceRegistration.registerReadWriteAttribute(DEPLOYMENT_TIMEOUT, null, WriteDeploymentTimeoutAttributeHandler.INSTANCE);
+        resourceRegistration.registerReadWriteAttribute(RUNTIME_FAILURE_CAUSES_ROLLBACK, null, WriteRuntimeFailureCausesRollbackAttributeHandler.INSTANCE);
     }
 }

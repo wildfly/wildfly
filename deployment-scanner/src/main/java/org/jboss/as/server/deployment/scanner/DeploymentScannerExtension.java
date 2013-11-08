@@ -48,7 +48,7 @@ public class DeploymentScannerExtension implements Extension {
 
     private static final int MANAGEMENT_API_MAJOR_VERSION = 1;
     private static final int MANAGEMENT_API_MINOR_VERSION = 0;
-    private static final int MANAGEMENT_API_MICRO_VERSION = 0;
+    private static final int MANAGEMENT_API_MICRO_VERSION = 1;
 
     static ResourceDescriptionResolver getResourceDescriptionResolver(final String keyPrefix) {
         return new StandardResourceDescriptionResolver(keyPrefix, RESOURCE_NAME, DeploymentScannerExtension.class.getClassLoader(), true, false);
@@ -67,7 +67,7 @@ public class DeploymentScannerExtension implements Extension {
 
         final SubsystemRegistration subsystem = context.registerSubsystem(CommonAttributes.DEPLOYMENT_SCANNER, MANAGEMENT_API_MAJOR_VERSION,
                 MANAGEMENT_API_MINOR_VERSION, MANAGEMENT_API_MICRO_VERSION);
-        subsystem.registerXMLElementWriter(DeploymentScannerParser_1_1.INSTANCE);
+        subsystem.registerXMLElementWriter(DeploymentScannerParser_1_2.INSTANCE);
 
         final ManagementResourceRegistration registration = subsystem.registerSubsystemModel(new DeploymentScannerSubsystemDefinition());
         registration.registerOperationHandler(GenericSubsystemDescribeHandler.DEFINITION, GenericSubsystemDescribeHandler.INSTANCE);
@@ -88,6 +88,7 @@ public class DeploymentScannerExtension implements Extension {
     public void initializeParsers(ExtensionParsingContext context) {
         context.setSubsystemXmlMapping(SUBSYSTEM_NAME, Namespace.DEPLOYMENT_SCANNER_1_0.getUriString(), DeploymentScannerParser_1_0.INSTANCE);
         context.setSubsystemXmlMapping(SUBSYSTEM_NAME, Namespace.DEPLOYMENT_SCANNER_1_1.getUriString(), DeploymentScannerParser_1_1.INSTANCE);
+        context.setSubsystemXmlMapping(SUBSYSTEM_NAME, Namespace.DEPLOYMENT_SCANNER_1_2.getUriString(), DeploymentScannerParser_1_2.INSTANCE);
 
     }
 
