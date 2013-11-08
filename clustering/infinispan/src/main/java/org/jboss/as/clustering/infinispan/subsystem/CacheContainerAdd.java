@@ -191,7 +191,7 @@ public class CacheContainerAdd extends AbstractAddStepHandler {
 
         controllers.add(this.installKeyAffinityServiceFactoryService(target, name, verificationHandler));
 
-        controllers.add(this.installGlobalComponentRegistryService(target, name, verificationHandler));
+        controllers.add(this.installGlobalComponentRegistryService(target, name, transportConfig, verificationHandler));
 
         log.debugf("%s cache container installed", name);
         return controllers;
@@ -232,13 +232,16 @@ public class CacheContainerAdd extends AbstractAddStepHandler {
         }
     }
 
-    ServiceController<?> installGlobalComponentRegistryService(ServiceTarget target, String containerName, ServiceVerificationHandler verificationHandler) {
+    ServiceController<?> installGlobalComponentRegistryService(ServiceTarget target, String containerName, Transport transport, ServiceVerificationHandler verificationHandler) {
         InjectedValue<CacheContainer> container = new InjectedValue<>();
-        return AsynchronousService.addService(target, GlobalComponentRegistryService.getServiceName(containerName), new GlobalComponentRegistryService(container))
+        ServiceBuilder<?> builder = AsynchronousService.addService(target, GlobalComponentRegistryService.getServiceName(containerName), new GlobalComponentRegistryService(container))
                 .addDependency(EmbeddedCacheManagerService.getServiceName(containerName), CacheContainer.class, container)
                 .setInitialMode(ServiceController.Mode.ON_DEMAND)
-                .install()
         ;
+        if (transport != null) {
+            builder.addDependency(ChannelService.getServiceName(containerName));
+        }
+        return builder.install();
     }
 
     ServiceController<?> installKeyAffinityServiceFactoryService(ServiceTarget target, String containerName, ServiceVerificationHandler verificationHandler) {
