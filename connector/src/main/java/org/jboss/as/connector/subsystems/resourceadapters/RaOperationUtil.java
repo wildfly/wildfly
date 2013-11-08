@@ -144,9 +144,7 @@ public class RaOperationUtil {
         final String id = address.get(address.size()-1).get(0).asString();
         final ModifiableResourceAdapter ra = new ModifiableResourceAdapter(archiveOrModule, transactionSupport, connectionDefinitions,
                 adminObjects, configProperties, beanValidationGroups, bootstrapContext);
-        if(!id.equals(ra.getArchive())){
-            ra.setId(id);
-        }
+        ra.setId(id);
         return ra;
 
     }

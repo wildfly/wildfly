@@ -27,6 +27,7 @@ import java.util.Properties;
 import javax.resource.spi.ActivationSpec;
 import javax.resource.spi.ResourceAdapter;
 
+import org.jboss.as.connector.util.ConnectorServices;
 import org.jboss.as.ee.component.BasicComponent;
 import org.jboss.as.ee.component.ComponentConfiguration;
 import org.jboss.as.ejb3.EjbLogger;
@@ -65,7 +66,7 @@ public class MessageDrivenComponentCreateService extends EJBComponentCreateServi
         super(componentConfiguration, ejbJarConfiguration);
 
         final MessageDrivenComponentDescription componentDescription = (MessageDrivenComponentDescription) componentConfiguration.getComponentDescription();
-        this.resourceAdapterName = this.stripDotRarSuffix(componentDescription.getResourceAdapterName());
+        this.resourceAdapterName = componentDescription.getResourceAdapterName();
         this.deliveryActive = componentDescription.isDeliveryActive();
         // see MessageDrivenComponentDescription.<init>
         this.messageListenerInterface = componentConfiguration.getViews().get(0).getViewClass();
@@ -83,11 +84,16 @@ public class MessageDrivenComponentCreateService extends EJBComponentCreateServi
 
     @Override
     protected BasicComponent createComponent() {
-        final String activeResourceAdapterName;
+        String activeResourceAdapterName;
         if (resourceAdapterName == null) {
             activeResourceAdapterName = defaultResourceAdapterServiceInjectedValue.getValue().getDefaultResourceAdapterName();
         } else {
             activeResourceAdapterName = resourceAdapterName;
+        }
+
+        final String raIdentifier = ConnectorServices.getRegisteredResourceAdapterIdentifier(activeResourceAdapterName);
+        if (raIdentifier == null) {
+           activeResourceAdapterName = this.stripDotRarSuffix(activeResourceAdapterName);
         }
 
         final ActivationSpec activationSpec = getEndpointDeployer().createActivationSpecs(activeResourceAdapterName, messageListenerInterface, activationProps, getDeploymentClassLoader());
