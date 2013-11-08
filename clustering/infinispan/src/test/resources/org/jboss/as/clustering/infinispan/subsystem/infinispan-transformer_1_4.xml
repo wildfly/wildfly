@@ -21,13 +21,13 @@
   ~  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
   ~  */
   -->
-<subsystem xmlns="urn:jboss:domain:infinispan:1.4">
-    <cache-container name="minimal" default-cache="local">
-        <local-cache name="local"/>
+<subsystem xmlns="urn:jboss:domain:infinispan:2.0">
+    <cache-container name="minimal" default-cache="local" statistics="true">
+        <local-cache name="local" statistics="true"/>
     </cache-container>
-    <cache-container name="maximal" aliases="alias1 alias2" default-cache="local" eviction-executor="infinispan-eviction" jndi-name="java:global/infinispan/maximal" listener-executor="infinispan-listener" replication-queue-executor="infinispan-repl-queue" module="org.infinispan">
+    <cache-container name="maximal" aliases="alias1 alias2" default-cache="local" eviction-executor="infinispan-eviction" jndi-name="java:global/infinispan/maximal" listener-executor="infinispan-listener" replication-queue-executor="infinispan-repl-queue" module="org.infinispan" statistics="true">
         <transport cluster="maximal-cluster" executor="transport-executor" lock-timeout="120000" stack="tcp"/>
-        <local-cache name="local" batching="true" start="EAGER" module="org.infinispan">
+        <local-cache name="local" batching="true" start="EAGER" module="org.infinispan" statistics="true">
             <locking acquire-timeout="30000" concurrency-level="2000" isolation="NONE" striping="true"/>
             <transaction mode="FULL_XA" stop-timeout="60000"  locking="OPTIMISTIC"/>
             <eviction max-entries="20000" strategy="LIRS"/>
@@ -45,7 +45,7 @@
                  -->
             </indexing>
         </local-cache>
-        <invalidation-cache name="invalid" mode="ASYNC" batching="true" queue-flush-interval="10" queue-size="1000" start="LAZY" async-marshalling="true">
+        <invalidation-cache name="invalid" mode="ASYNC" batching="true" queue-flush-interval="10" queue-size="1000" start="LAZY" async-marshalling="true" statistics="true">
             <locking acquire-timeout="30000" concurrency-level="2000" isolation="READ_UNCOMMITTED" striping="true"/>
             <transaction mode="NON_XA" stop-timeout="60000"  locking="OPTIMISTIC"/>
             <eviction max-entries="20000" strategy="LRU"/>
@@ -58,7 +58,7 @@
             </remote-store>
             <indexing index="NONE" />
         </invalidation-cache>
-        <replicated-cache name="repl" mode="ASYNC" batching="true" queue-flush-interval="10" queue-size="1000" start="EAGER"  async-marshalling="false">
+        <replicated-cache name="repl" mode="ASYNC" batching="true" queue-flush-interval="10" queue-size="1000" start="EAGER" async-marshalling="false" statistics="true">
             <locking acquire-timeout="30000" concurrency-level="2000" isolation="SERIALIZABLE" striping="true"/>
             <transaction mode="NON_DURABLE_XA" stop-timeout="60000" locking="OPTIMISTIC"/>
             <eviction max-entries="20000" strategy="FIFO"/>
@@ -70,7 +70,7 @@
             </store>
             <indexing index="NONE" />
         </replicated-cache>
-        <distributed-cache name="dist" mode="SYNC" batching="true" l1-lifespan="1200000" owners="4" remote-timeout="35000" start="EAGER" segments="12"  async-marshalling="true">
+        <distributed-cache name="dist" mode="SYNC" batching="true" l1-lifespan="1200000" owners="4" remote-timeout="35000" start="EAGER" segments="12" async-marshalling="true" statistics="true">
             <locking acquire-timeout="30000" concurrency-level="2000" isolation="READ_COMMITTED" striping="true"/>
             <transaction mode="FULL_XA" stop-timeout="60000"  locking="OPTIMISTIC"/>
             <eviction max-entries="20000" strategy="UNORDERED"/>

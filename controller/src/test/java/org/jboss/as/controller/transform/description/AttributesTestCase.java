@@ -730,6 +730,60 @@ public class AttributesTestCase {
         Assert.assertEquals("new", model.get("new").asString());
     }
 
+    @Test
+    public void testSimpleReject() throws Exception {
+        //Set up the model
+        resourceModel.get("reject").set(true);
+
+        final ResourceTransformationDescriptionBuilder builder = TransformationDescriptionBuilder.Factory.createInstance(PATH);
+        builder.getAttributeBuilder().addRejectCheck(new RejectAttributeChecker.SimpleRejectAttributeChecker(new ModelNode(true)), "reject").end();
+        TransformationDescription.Tools.register(builder.build(), transformersSubRegistration);
+
+        final Resource resource = transformResource();
+        Assert.assertNotNull(resource);
+        final Resource toto = resource.getChild(PATH);
+        Assert.assertNotNull(toto);
+        final ModelNode model = toto.getModel();
+        //The rejection does not trigger for resource transformation
+        Assert.assertTrue(model.hasDefined("reject"));
+
+        ModelNode add = Util.createAddOperation(PathAddress.pathAddress(PATH));
+        add.get("reject").set(true);
+        OperationTransformer.TransformedOperation transformedAdd = transformOperation(add);
+        Assert.assertTrue(transformedAdd.rejectOperation(success()));
+
+        ModelNode write = Util.getWriteAttributeOperation(PathAddress.pathAddress(PATH), "reject", new ModelNode().set(true));
+        OperationTransformer.TransformedOperation transformedWrite = transformOperation(write);
+        Assert.assertTrue(transformedWrite.rejectOperation(success()));
+    }
+
+    @Test
+    public void testSimpleAccept() throws Exception {
+        //Set up the model
+        resourceModel.get("reject").set(true);
+
+        final ResourceTransformationDescriptionBuilder builder = TransformationDescriptionBuilder.Factory.createInstance(PATH);
+        builder.getAttributeBuilder().addRejectCheck(new RejectAttributeChecker.SimpleAcceptAttributeChecker(new ModelNode(false)), "reject").end();
+        TransformationDescription.Tools.register(builder.build(), transformersSubRegistration);
+
+        final Resource resource = transformResource();
+        Assert.assertNotNull(resource);
+        final Resource toto = resource.getChild(PATH);
+        Assert.assertNotNull(toto);
+        final ModelNode model = toto.getModel();
+        //The rejection does not trigger for resource transformation
+        Assert.assertTrue(model.hasDefined("reject"));
+
+        ModelNode add = Util.createAddOperation(PathAddress.pathAddress(PATH));
+        add.get("reject").set(true);
+        OperationTransformer.TransformedOperation transformedAdd = transformOperation(add);
+        Assert.assertTrue(transformedAdd.rejectOperation(success()));
+
+        ModelNode write = Util.getWriteAttributeOperation(PathAddress.pathAddress(PATH), "reject", new ModelNode().set(true));
+        OperationTransformer.TransformedOperation transformedWrite = transformOperation(write);
+        Assert.assertTrue(transformedWrite.rejectOperation(success()));
+    }
+
     private void checkWriteOp(ModelNode write, String name, ModelNode value) throws OperationFailedException{
         OperationTransformer.TransformedOperation transformedWrite = transformOperation(write);
         Assert.assertFalse(transformedWrite.rejectOperation(success()));
