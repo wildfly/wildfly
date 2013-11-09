@@ -44,7 +44,6 @@
         </xs:annotation>
         <xs:all>
             <xs:element name="xts-environment" type="xts-environment" minOccurs="0" maxOccurs="1"/>
-            <xs:element name="default-context-propagation" type="default-context-propagation" minOccurs="0" maxOccurs="1"/>
         </xs:all>
     </xs:complexType>
 
@@ -64,23 +63,6 @@
             </xs:documentation>
         </xs:annotation>
         <xs:attribute name="url" type="xs:string" use="optional" />
-    </xs:complexType>
-
-    <xs:complexType name="default-context-propagation">
-        <xs:annotation>
-            <xs:documentation>
-            <![CDATA[
-                'enabled' states whether to automatically propagate transactional context.
-                When set to 'true', Web Service clients will automatically propagate a WS-AT
-                transactional context if a JTA or WS-AT transaction is running when the call is made.
-                Similarly, a WS-BA transactional context will be propagated if a WS-BA transaction
-                is running when the call is made. This behavior can be overridden on a per client
-                basis using the org.jboss.jbossts.txbridge.outbound.JTAOverWSATFeature and
-                com.arjuna.mw.wst11.client.WSTXFeature features.
-            ]]>
-            </xs:documentation>
-        </xs:annotation>
-        <xs:attribute name="enabled" type="xs:boolean" use="optional" />
     </xs:complexType>
 
 </xs:schema>
