@@ -22,12 +22,6 @@
 
 package org.jboss.as.ejb3.deployment.processors;
 
-import java.util.List;
-import java.util.Locale;
-
-import javax.ejb.EJB;
-import javax.ejb.EJBs;
-
 import org.jboss.as.ee.component.Attachments;
 import org.jboss.as.ee.component.BindingConfiguration;
 import org.jboss.as.ee.component.EEModuleClassDescription;
@@ -37,7 +31,6 @@ import org.jboss.as.ee.component.InjectionSource;
 import org.jboss.as.ee.component.InjectionTarget;
 import org.jboss.as.ee.component.LookupInjectionSource;
 import org.jboss.as.ee.component.MethodInjectionTarget;
-import org.jboss.as.ee.component.OptionalLookupInjectionSource;
 import org.jboss.as.ee.component.ResourceInjectionConfiguration;
 import org.jboss.as.ejb3.deployment.EjbDeploymentAttachmentKeys;
 import org.jboss.as.ejb3.util.PropertiesValueResolver;
@@ -54,6 +47,11 @@ import org.jboss.jandex.DotName;
 import org.jboss.jandex.FieldInfo;
 import org.jboss.jandex.MethodInfo;
 import org.jboss.logging.Logger;
+
+import javax.ejb.EJB;
+import javax.ejb.EJBs;
+import java.util.List;
+import java.util.Locale;
 
 import static org.jboss.as.ejb3.EjbMessages.MESSAGES;
 
@@ -190,11 +188,7 @@ public class EjbResourceInjectionAnnotationProcessor implements DeploymentUnitPr
     private InjectionSource createLookup(final String localContextName, final boolean appclient) {
         //appclient lookups are always optional
         //as they could reference local interfaces that are not present
-        if(appclient) {
-            return new OptionalLookupInjectionSource(localContextName);
-        } else {
-            return new LookupInjectionSource(localContextName);
-        }
+        return new LookupInjectionSource(localContextName, appclient);
     }
 
     private boolean isEmpty(final String string) {

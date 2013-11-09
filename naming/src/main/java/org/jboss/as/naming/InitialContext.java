@@ -154,7 +154,7 @@ public class InitialContext extends InitialLdapContext {
         return getDefaultInitCtx();
     }
 
-    private static String getURLScheme(String str) {
+    public static String getURLScheme(String str) {
         int colon_posn = str.indexOf(':');
         int slash_posn = str.indexOf('/');
 

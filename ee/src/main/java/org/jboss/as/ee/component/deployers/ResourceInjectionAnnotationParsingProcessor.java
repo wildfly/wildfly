@@ -32,10 +32,8 @@ import org.jboss.as.ee.component.InjectionSource;
 import org.jboss.as.ee.component.InjectionTarget;
 import org.jboss.as.ee.component.LookupInjectionSource;
 import org.jboss.as.ee.component.MethodInjectionTarget;
-import org.jboss.as.ee.component.OptionalLookupInjectionSource;
 import org.jboss.as.ee.component.ResourceInjectionConfiguration;
 import org.jboss.as.ee.structure.EJBAnnotationPropertyReplacement;
-import org.jboss.as.ee.utils.InjectionUtils;
 import org.jboss.as.server.deployment.DeploymentPhaseContext;
 import org.jboss.as.server.deployment.DeploymentUnit;
 import org.jboss.as.server.deployment.DeploymentUnitProcessingException;
@@ -76,7 +74,7 @@ public class ResourceInjectionAnnotationParsingProcessor implements DeploymentUn
 
     private static final DotName RESOURCE_ANNOTATION_NAME = DotName.createSimple(Resource.class.getName());
     private static final DotName RESOURCES_ANNOTATION_NAME = DotName.createSimple(Resources.class.getName());
-
+    private static final String JAVAX_NAMING_CONTEXT = "javax.naming.Context";
     public static final Map<String, String> FIXED_LOCATIONS;
     public static final Set<String> SIMPLE_ENTRIES;
 
@@ -223,7 +221,7 @@ public class ResourceInjectionAnnotationParsingProcessor implements DeploymentUn
         InjectionSource valueSource = null;
         final boolean isEnvEntryType = this.isEnvEntryType(injectionType, module);
         if (!isEmpty(lookup)) {
-            valueSource = InjectionUtils.getInjectionSource(lookup,injectionType);
+            valueSource = new LookupInjectionSource(lookup, JAVAX_NAMING_CONTEXT.equals(injectionType));
         } else if (isEnvEntryType) {
             // if it's an env-entry type then we do *not* create a BindingConfiguration to bind to the ENC
             // since the binding (value) for env-entry is always driven from a deployment descriptor.
@@ -252,7 +250,7 @@ public class ResourceInjectionAnnotationParsingProcessor implements DeploymentUn
         if (valueSource == null) {
             // the ResourceInjectionConfiguration is created by LazyResourceInjection
             if (targetDescription != null) {
-                OptionalLookupInjectionSource optionalInjection = new OptionalLookupInjectionSource(localContextName);
+                final LookupInjectionSource optionalInjection = new LookupInjectionSource(localContextName, true);
                 final ResourceInjectionConfiguration injectionConfiguration = new ResourceInjectionConfiguration(targetDescription, optionalInjection, true);
                 classDescription.addResourceInjection(injectionConfiguration);
             }

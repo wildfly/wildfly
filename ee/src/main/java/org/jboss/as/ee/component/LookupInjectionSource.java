@@ -22,13 +22,24 @@
 
 package org.jboss.as.ee.component;
 
-import static org.jboss.as.ee.EeMessages.MESSAGES;
-
+import org.jboss.as.ee.EeLogger;
+import org.jboss.as.naming.ImmediateManagedReference;
+import org.jboss.as.naming.ManagedReference;
 import org.jboss.as.naming.ManagedReferenceFactory;
 import org.jboss.as.naming.deployment.ContextNames;
 import org.jboss.as.server.deployment.DeploymentPhaseContext;
 import org.jboss.msc.inject.Injector;
 import org.jboss.msc.service.ServiceBuilder;
+
+import javax.naming.InitialContext;
+import javax.naming.NamingException;
+import java.net.MalformedURLException;
+import java.net.URL;
+import java.util.Collections;
+import java.util.HashSet;
+import java.util.Set;
+
+import static org.jboss.as.ee.EeMessages.MESSAGES;
 
 /**
  * A binding which gets its value from another JNDI binding.
@@ -36,13 +47,33 @@ import org.jboss.msc.service.ServiceBuilder;
  * @author <a href="mailto:david.lloyd@redhat.com">David M. Lloyd</a>
  */
 public final class LookupInjectionSource extends InjectionSource {
+
+    // the schemes of supported URLs
+    private static final Set<String> URL_SCHEMES;
+
+    static {
+        Set<String> set = new HashSet<String>();
+        set.add("http");
+        set.add("https");
+        set.add("ftp");
+        set.add("file");
+        set.add("jar");
+        URL_SCHEMES = Collections.unmodifiableSet(set);
+    }
+
     private final String lookupName;
+    private final boolean optional;
 
     public LookupInjectionSource(final String lookupName) {
+        this(lookupName,false);
+    }
+
+    public LookupInjectionSource(final String lookupName, final boolean optional) {
         if (lookupName == null) {
             throw MESSAGES.nullVar("lookupName");
         }
         this.lookupName = lookupName;
+        this.optional = optional;
     }
 
     /**
@@ -53,24 +84,63 @@ public final class LookupInjectionSource extends InjectionSource {
         final String moduleName = resolutionContext.getModuleName();
         final String componentName = resolutionContext.getComponentName();
         final boolean compUsesModule = resolutionContext.isCompUsesModule();
-        final String lookupName;
-        if (!this.lookupName.contains("java:")) {
+        final String scheme = org.jboss.as.naming.InitialContext.getURLScheme(lookupName);
+        if (scheme == null) {
+            // relative name, build absolute name and setup normal lookup injection
             if (componentName != null && !compUsesModule) {
-                lookupName = "java:comp/env/" + this.lookupName;
+                ContextNames.bindInfoFor(applicationName, moduleName, componentName, "java:comp/env/" + lookupName)
+                        .setupLookupInjection(serviceBuilder, injector, phaseContext.getDeploymentUnit(), optional);
             } else if (compUsesModule) {
-                lookupName = "java:module/env/" + this.lookupName;
+                ContextNames.bindInfoFor(applicationName, moduleName, componentName, "java:module/env/" + lookupName)
+                        .setupLookupInjection(serviceBuilder, injector, phaseContext.getDeploymentUnit(), optional);
             } else {
-                lookupName = "java:jboss/env" + this.lookupName;
+                ContextNames.bindInfoFor(applicationName, moduleName, componentName, "java:jboss/env/" + lookupName)
+                        .setupLookupInjection(serviceBuilder, injector, phaseContext.getDeploymentUnit(), optional);
             }
-        } else if (this.lookupName.startsWith("java:comp/") && compUsesModule) {
-            lookupName = "java:module/" + this.lookupName.substring(10);
         } else {
-            lookupName = this.lookupName;
+            if (scheme.equals("java")) {
+                // an absolute java name, setup normal lookup injection
+                if (compUsesModule && lookupName.startsWith("java:comp/")) {
+                    // switch "comp" with "module"
+                    ContextNames.bindInfoFor(applicationName, moduleName, componentName, "java:module/" + lookupName.substring(10))
+                            .setupLookupInjection(serviceBuilder, injector, phaseContext.getDeploymentUnit(), optional);
+                } else {
+                    ContextNames.bindInfoFor(applicationName, moduleName, componentName, lookupName)
+                            .setupLookupInjection(serviceBuilder, injector, phaseContext.getDeploymentUnit(), optional);
+                }
+            } else {
+                // an absolute non java name
+                final ManagedReferenceFactory managedReferenceFactory;
+                if (URL_SCHEMES.contains(scheme)) {
+                    // a Java EE Standard Resource Manager Connection Factory for URLs, using lookup to define value of URL, inject factory that creates URL instances
+                    managedReferenceFactory = new ManagedReferenceFactory() {
+                        @Override
+                        public ManagedReference getReference() {
+                            try {
+                                return new ImmediateManagedReference(new URL(lookupName));
+                            } catch (MalformedURLException e) {
+                                throw new RuntimeException(e);
+                            }
+                        }
+                    };
+                } else {
+                    // lookup for a non java jndi resource, inject factory which does a true jndi lookup
+                    managedReferenceFactory = new ManagedReferenceFactory() {
+                        @Override
+                        public ManagedReference getReference() {
+                            try {
+                                return new ImmediateManagedReference(new InitialContext().lookup(lookupName));
+                            } catch (NamingException e) {
+                                EeLogger.ROOT_LOGGER.tracef(e, "failed to lookup %s", lookupName);
+                                return null;
+                            }
+                        }
+                    };
+                }
+                injector.inject(managedReferenceFactory);
+            }
         }
-        final ContextNames.BindInfo bindInfo = ContextNames.bindInfoFor(applicationName, moduleName, componentName, lookupName);
-        bindInfo.setupLookupInjection(serviceBuilder, injector, phaseContext.getDeploymentUnit());
     }
-
 
     public boolean equals(Object configuration) {
         if (configuration instanceof LookupInjectionSource) {
