@@ -236,7 +236,7 @@
         <version.org.jboss.ws.spi>2.2.2.Final-redhat-1</version.org.jboss.ws.spi>
         <version.org.jboss.ws.common>2.2.3.Final-redhat-1</version.org.jboss.ws.common>
         <version.org.jboss.ws.common.tools>1.2.0.Final-redhat-2</version.org.jboss.ws.common.tools>
-        <version.org.jboss.ws.cxf>4.2.2.Final-redhat-2</version.org.jboss.ws.cxf>
+        <version.org.jboss.ws.cxf>4.2.3.Final-redhat-1</version.org.jboss.ws.cxf>
         <version.org.jboss.ws.jbossws-native>4.1.2.Final-redhat-1</version.org.jboss.ws.jbossws-native>
         <version.org.jboss.ws.jaxws-jboss-httpserver-httpspi>1.0.1.GA-redhat-2</version.org.jboss.ws.jaxws-jboss-httpserver-httpspi>
         <version.org.jboss.xb>2.0.3.GA-redhat-2</version.org.jboss.xb>
