@@ -60,8 +60,7 @@
         </xs:annotation>
         <xs:choice minOccurs="1" maxOccurs="1">
             <xs:element name="in-memory" type="in-memoryType"/>
-            <!-- TODO (jrp) enable when JDBC support is available in JBeret -->
-            <!-- <xs:element name="jdbc" type="jdbcType"/> -->
+            <xs:element name="jdbc" type="jdbcType"/>
         </xs:choice>
     </xs:complexType>
 
@@ -79,11 +78,12 @@
         <xs:annotation>
             <xs:documentation>
                 <![CDATA[
-                        Used to describe how the job repository should connect to a database.
+                        Used to describe how the job repository should connect to a database. If the jndi-name attribute
+                        is not defined, the default JNDI name will be used.
                 ]]>
             </xs:documentation>
         </xs:annotation>
-        <xs:attribute name="jndi-name" type="xs:token" use="required"/>
+        <xs:attribute name="jndi-name" type="xs:token" use="optional"/>
     </xs:complexType>
 
     <xs:complexType name="thread-poolType">

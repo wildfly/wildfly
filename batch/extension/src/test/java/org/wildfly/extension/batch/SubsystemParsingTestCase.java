@@ -20,7 +20,7 @@
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
 
-package org.wildfly.extension.batch.extension;
+package org.wildfly.extension.batch;
 
 import java.io.IOException;
 import java.util.List;
@@ -32,8 +32,6 @@ import org.jboss.as.subsystem.test.KernelServices;
 import org.jboss.dmr.ModelNode;
 import org.junit.Ignore;
 import org.junit.Test;
-import org.wildfly.extension.batch.BatchSubsystemDefinition;
-import org.wildfly.extension.batch.BatchSubsystemExtension;
 
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ADD;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.DESCRIBE;
@@ -46,8 +44,6 @@ import static org.junit.Assert.assertTrue;
 /**
  * Tests all management expects for subsystem, parsing, marshaling, model definition and other
  * Here is an example that allows you a fine grained controler over what is tested and how. So it can give you ideas what can be done and tested.
- * If you have no need for advanced testing of subsystem you look at {@link SubsystemBaseParsingTestCase} that testes same stuff but most of the code
- * is hidden inside of test harness
  */
 public class SubsystemParsingTestCase  extends AbstractSubsystemBaseTest {
 
@@ -58,6 +54,17 @@ public class SubsystemParsingTestCase  extends AbstractSubsystemBaseTest {
     @Override
     protected String getSubsystemXml() throws IOException {
         return readResource("/default-subsystem.xml");
+    }
+
+    @Test
+    public void testMinimalSubsystem() throws Exception {
+        standardSubsystemTest("/minimal-subsystem.xml");
+    }
+
+    @Test
+    public void testJdbcSubsystem() throws Exception {
+        standardSubsystemTest("/jdbc-default-subsystem.xml");
+        standardSubsystemTest("/jdbc-subsystem.xml");
     }
 
     /**

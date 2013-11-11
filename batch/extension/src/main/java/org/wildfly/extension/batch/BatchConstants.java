@@ -27,7 +27,9 @@ package org.wildfly.extension.batch;
  */
 interface BatchConstants {
 
-    String JOB_REPOSITORY_TYPE = "job-repository-type";
+    String IN_MEMORY = "in-memory";
+    String JDBC = "jdbc";
+    String JOB_REPOSITORY = "job-repository";
     String THREAD_FACTORY = "thread-factory";
     String THREAD_POOL = "thread-pool";
     String THREAD_POOL_NAME = "batch";
