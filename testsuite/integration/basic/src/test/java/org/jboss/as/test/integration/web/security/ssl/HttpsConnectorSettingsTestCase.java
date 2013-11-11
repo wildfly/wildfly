@@ -76,6 +76,7 @@ public class HttpsConnectorSettingsTestCase {
             op.get("scheme").set("https");
             op.get("socket-binding").set("https");
             op.get("secure").set("true");
+            op.get("enabled").set(false);
             op.get(OPERATION_HEADERS).get(ALLOW_RESOURCE_SERVICE_RESTART).set(true);
             managementClient.getControllerClient().execute(new OperationBuilder(op).build());
 
