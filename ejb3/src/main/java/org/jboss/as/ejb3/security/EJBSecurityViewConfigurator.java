@@ -120,6 +120,7 @@ public class EJBSecurityViewConfigurator implements ViewConfigurator {
             }
             // if any method has security metadata then the bean has method level security metadata
             if (methodHasSecurityMetadata) {
+                viewConfiguration.addViewInterceptor(viewMethod, new SecurityContextInterceptorFactory(true), InterceptorOrder.View.SECURITY_CONTEXT);
                 beanHasMethodLevelSecurityMetadata = true;
             } else {
                 // make a note that this method didn't have any explicit method permissions configured
@@ -129,7 +130,6 @@ public class EJBSecurityViewConfigurator implements ViewConfigurator {
 
         final boolean securityRequired = beanHasMethodLevelSecurityMetadata || this.hasSecurityMetaData(ejbComponentDescription);
         // setup the security context interceptor
-        viewConfiguration.addViewInterceptor(new SecurityContextInterceptorFactory(securityRequired), InterceptorOrder.View.SECURITY_CONTEXT);
         // now add the security interceptor if the bean has *any* security metadata applicable
         if (securityRequired) {
             // also check the missing-method-permissions-deny-access configuration and add the authorization interceptor
@@ -139,6 +139,7 @@ public class EJBSecurityViewConfigurator implements ViewConfigurator {
             // default to "deny access"
             if (denyAccessToMethodsMissingPermissions == null || denyAccessToMethodsMissingPermissions == true) {
                 for (final Method viewMethod : methodsWithoutExplicitSecurityConfiguration) {
+                    viewConfiguration.addViewInterceptor(viewMethod, new SecurityContextInterceptorFactory(true), InterceptorOrder.View.SECURITY_CONTEXT);
                     if (viewMethodSecurityAttributesServiceBuilder != null) {
                         // build the EJBViewMethodSecurityAttributesService to expose these security attributes to other components like WS (@see https://issues.jboss.org/browse/WFLY-308)
                         viewMethodSecurityAttributesServiceBuilder.addMethodSecurityMetadata(viewMethod, EJBMethodSecurityAttribute.denyAll());
@@ -146,6 +147,10 @@ public class EJBSecurityViewConfigurator implements ViewConfigurator {
                     // "deny access" implies we need the authorization interceptor to be added so that it can nuke the invocation
                     final Interceptor authorizationInterceptor = new AuthorizationInterceptor(EJBMethodSecurityAttribute.denyAll(), viewClassName, viewMethod, contextID);
                     viewConfiguration.addViewInterceptor(viewMethod, new ImmediateInterceptorFactory(authorizationInterceptor), InterceptorOrder.View.EJB_SECURITY_AUTHORIZATION_INTERCEPTOR);
+                }
+            } else {
+                for (final Method viewMethod : methodsWithoutExplicitSecurityConfiguration) {
+                    viewConfiguration.addViewInterceptor(viewMethod, new SecurityContextInterceptorFactory(false), InterceptorOrder.View.SECURITY_CONTEXT);
                 }
             }
             if (viewMethodSecurityAttributesServiceBuilder != null) {
