@@ -38,6 +38,7 @@ import org.jboss.as.controller.descriptions.ResourceDescriptionResolver;
 import org.jboss.as.controller.registry.ManagementResourceRegistration;
 import org.jboss.as.controller.registry.OperationEntry;
 import org.jboss.as.ee.component.deployers.DefaultEarSubDeploymentsIsolationProcessor;
+import org.jboss.as.ee.structure.AnnotationPropertyReplacementProcessor;
 import org.jboss.as.ee.structure.Attachments;
 import org.jboss.as.ee.structure.DescriptorPropertyReplacementProcessor;
 import org.jboss.as.ee.structure.GlobalModuleDependencyProcessor;
@@ -72,8 +73,14 @@ public class EeSubsystemRootResource extends SimpleResourceDefinition {
                     .setDefaultValue(new ModelNode(true))
                     .build();
 
+    public static final SimpleAttributeDefinition EJB_ANNOTATION_PROPERTY_REPLACEMENT =
+            new SimpleAttributeDefinitionBuilder(EESubsystemModel.EJB_ANNOTATION_PROPERTY_REPLACEMENT, ModelType.BOOLEAN, true)
+                    .setAllowExpression(true)
+                    .setDefaultValue(new ModelNode(false))
+                    .build();
+
     static final AttributeDefinition[] ATTRIBUTES = { GlobalModulesDefinition.INSTANCE, EAR_SUBDEPLOYMENTS_ISOLATED,
-            SPEC_DESCRIPTOR_PROPERTY_REPLACEMENT, JBOSS_DESCRIPTOR_PROPERTY_REPLACEMENT};
+            SPEC_DESCRIPTOR_PROPERTY_REPLACEMENT, JBOSS_DESCRIPTOR_PROPERTY_REPLACEMENT, EJB_ANNOTATION_PROPERTY_REPLACEMENT };
 
     public static final EeSubsystemRootResource INSTANCE = new EeSubsystemRootResource();
 
@@ -82,6 +89,7 @@ public class EeSubsystemRootResource extends SimpleResourceDefinition {
     private final GlobalModuleDependencyProcessor moduleDependencyProcessor = new GlobalModuleDependencyProcessor();
     private final DescriptorPropertyReplacementProcessor specDescriptorPropertyReplacementProcessor = new DescriptorPropertyReplacementProcessor(Attachments.SPEC_DESCRIPTOR_PROPERTY_REPLACEMENT);
     private final DescriptorPropertyReplacementProcessor jbossDescriptorPropertyReplacementProcessor = new DescriptorPropertyReplacementProcessor(Attachments.JBOSS_DESCRIPTOR_PROPERTY_REPLACEMENT);
+    private final AnnotationPropertyReplacementProcessor annotationPropertyReplacementProcessor = new AnnotationPropertyReplacementProcessor(Attachments.EJB_ANNOTATION_PROPERTY_REPLACEMENT);
 
     private EeSubsystemRootResource() {
         super(EeExtension.PATH_SUBSYSTEM,
@@ -94,7 +102,7 @@ public class EeSubsystemRootResource extends SimpleResourceDefinition {
         final ResourceDescriptionResolver rootResolver = getResourceDescriptionResolver();
 
         // Ops to add and remove the root resource
-        final EeSubsystemAdd subsystemAdd = new EeSubsystemAdd(isolationProcessor, moduleDependencyProcessor, specDescriptorPropertyReplacementProcessor, jbossDescriptorPropertyReplacementProcessor);
+        final EeSubsystemAdd subsystemAdd = new EeSubsystemAdd(isolationProcessor, moduleDependencyProcessor, specDescriptorPropertyReplacementProcessor, jbossDescriptorPropertyReplacementProcessor, annotationPropertyReplacementProcessor);
         final DescriptionProvider subsystemAddDescription = new DefaultResourceAddDescriptionProvider(rootResourceRegistration, rootResolver);
         rootResourceRegistration.registerOperationHandler(ADD, subsystemAdd, subsystemAddDescription, EnumSet.of(OperationEntry.Flag.RESTART_ALL_SERVICES));
         final DescriptionProvider subsystemRemoveDescription = new DefaultResourceRemoveDescriptionProvider(rootResolver);
@@ -105,7 +113,7 @@ public class EeSubsystemRootResource extends SimpleResourceDefinition {
     @Override
     public void registerAttributes(final ManagementResourceRegistration rootResourceRegistration) {
         EeWriteAttributeHandler writeHandler = new EeWriteAttributeHandler(isolationProcessor, moduleDependencyProcessor,
-                specDescriptorPropertyReplacementProcessor, jbossDescriptorPropertyReplacementProcessor);
+                specDescriptorPropertyReplacementProcessor, jbossDescriptorPropertyReplacementProcessor, annotationPropertyReplacementProcessor);
         writeHandler.registerAttributes(rootResourceRegistration);
     }
 }

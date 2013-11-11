@@ -39,7 +39,7 @@ public class RemoteHomeAnnotationInformationFactory extends ClassAnnotationInfor
     }
 
     @Override
-    protected String fromAnnotation(final AnnotationInstance annotationInstance) {
+    protected String fromAnnotation(final AnnotationInstance annotationInstance, final boolean replacement) {
         AnnotationValue value = annotationInstance.value();
         return value.asClass().toString();
     }

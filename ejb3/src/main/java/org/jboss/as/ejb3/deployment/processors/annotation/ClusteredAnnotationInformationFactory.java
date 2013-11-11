@@ -36,7 +36,7 @@ public class ClusteredAnnotationInformationFactory extends ClassAnnotationInform
     }
 
     @Override
-    protected ClusteringInfo fromAnnotation(AnnotationInstance annotationInstance) {
+    protected ClusteringInfo fromAnnotation(AnnotationInstance annotationInstance, boolean replacement) {
         return new ClusteringInfo();
     }
 }

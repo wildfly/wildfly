@@ -38,7 +38,7 @@ public class RunAsPrincipalAnnotationInformationFactory extends ClassAnnotationI
     }
 
     @Override
-    protected String fromAnnotation(final AnnotationInstance annotationInstance) {
+    protected String fromAnnotation(final AnnotationInstance annotationInstance, final boolean replacement) {
         return annotationInstance.value().asString();
     }
 }

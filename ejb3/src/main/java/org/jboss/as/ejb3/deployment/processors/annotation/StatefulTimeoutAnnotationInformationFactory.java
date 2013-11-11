@@ -39,7 +39,7 @@ public class StatefulTimeoutAnnotationInformationFactory extends ClassAnnotation
     }
 
     @Override
-    protected StatefulTimeoutInfo fromAnnotation(final AnnotationInstance annotationInstance) {
+    protected StatefulTimeoutInfo fromAnnotation(final AnnotationInstance annotationInstance, final boolean replacement) {
         final long value = annotationInstance.value().asLong();
         final AnnotationValue unitValue = annotationInstance.value("unit");
         final TimeUnit unit;

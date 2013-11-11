@@ -41,7 +41,7 @@ public class LockAnnotationInformationFactory extends ClassAnnotationInformation
     }
 
     @Override
-    protected LockType fromAnnotation(final AnnotationInstance annotationInstance) {
+    protected LockType fromAnnotation(final AnnotationInstance annotationInstance, final boolean replacement) {
         AnnotationValue value = annotationInstance.value();
         if(value == null) {
             return LockType.WRITE;

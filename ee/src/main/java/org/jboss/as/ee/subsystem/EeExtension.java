@@ -37,6 +37,7 @@ import org.jboss.as.controller.operations.common.GenericSubsystemDescribeHandler
 import org.jboss.as.controller.parsing.ExtensionParsingContext;
 import org.jboss.as.controller.registry.ManagementResourceRegistration;
 import org.jboss.as.controller.transform.TransformationContext;
+import org.jboss.as.controller.transform.description.DiscardAttributeChecker;
 import org.jboss.as.controller.transform.description.RejectAttributeChecker;
 import org.jboss.as.controller.transform.description.ResourceTransformationDescriptionBuilder;
 import org.jboss.as.controller.transform.description.TransformationDescription;
@@ -128,7 +129,9 @@ public class EeExtension implements Extension {
                 }
                 return false;
             }
-        }, EeSubsystemRootResource.JBOSS_DESCRIPTOR_PROPERTY_REPLACEMENT);
+        }, EeSubsystemRootResource.JBOSS_DESCRIPTOR_PROPERTY_REPLACEMENT)
+        .setDiscard(new DiscardAttributeChecker.DiscardAttributeValueChecker(false, false, new ModelNode(false)), EeSubsystemRootResource.EJB_ANNOTATION_PROPERTY_REPLACEMENT)
+        .addRejectCheck(RejectAttributeChecker.DEFINED, EeSubsystemRootResource.EJB_ANNOTATION_PROPERTY_REPLACEMENT);
 
         TransformationDescription.Tools.register(builder.build(), subsystem, ModelVersion.create(1, 0, 0));
     }

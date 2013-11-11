@@ -37,7 +37,7 @@ public class InterceptorsAnnotationInformationFactory extends ClassAnnotationInf
     }
 
     @Override
-    protected String[] fromAnnotation(final AnnotationInstance annotationInstance) {
+    protected String[] fromAnnotation(final AnnotationInstance annotationInstance, final boolean replacement) {
         final Type[] classes =  annotationInstance.value().asClassArray();
         final String[] ret = new String[classes.length];
         for(int i = 0; i < classes.length; ++i) {

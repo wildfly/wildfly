@@ -69,6 +69,7 @@ class EESubsystemParser11 implements XMLStreamConstants, XMLElementReader<List<M
         EeSubsystemRootResource.EAR_SUBDEPLOYMENTS_ISOLATED.marshallAsElement(eeSubSystem, writer);
         EeSubsystemRootResource.SPEC_DESCRIPTOR_PROPERTY_REPLACEMENT.marshallAsElement(eeSubSystem, writer);
         EeSubsystemRootResource.JBOSS_DESCRIPTOR_PROPERTY_REPLACEMENT.marshallAsElement(eeSubSystem, writer);
+        EeSubsystemRootResource.EJB_ANNOTATION_PROPERTY_REPLACEMENT.marshallAsElement(eeSubSystem, writer);
         writer.writeEndElement();
 
     }
@@ -114,6 +115,11 @@ class EESubsystemParser11 implements XMLStreamConstants, XMLElementReader<List<M
                         case JBOSS_DESCRIPTOR_PROPERTY_REPLACEMENT: {
                             final String enabled = parseJBossDescriptorPropertyReplacement(reader);
                             EeSubsystemRootResource.JBOSS_DESCRIPTOR_PROPERTY_REPLACEMENT.parseAndSetParameter(enabled, eeSubSystem, reader);
+                            break;
+                        }
+                        case EJB_ANNOTATION_PROPERTY_REPLACEMENT: {
+                            final String enabled = parseEJBAnnotationPropertyReplacement(reader);
+                            EeSubsystemRootResource.EJB_ANNOTATION_PROPERTY_REPLACEMENT.parseAndSetParameter(enabled, eeSubSystem, reader);
                             break;
                         }
                         default: {
@@ -218,6 +224,14 @@ class EESubsystemParser11 implements XMLStreamConstants, XMLElementReader<List<M
         if (value == null || value.trim().isEmpty()) {
             throw MESSAGES.invalidValue(value, Element.JBOSS_DESCRIPTOR_PROPERTY_REPLACEMENT.getLocalName(), reader.getLocation());
         }
+        return value.trim();
+    }
+
+    static String parseEJBAnnotationPropertyReplacement(XMLExtendedStreamReader reader) throws XMLStreamException {
+        // we don't expect any attributes for this element.
+        requireNoAttributes(reader);
+
+        final String value = reader.getElementText();
         return value.trim();
     }
 }

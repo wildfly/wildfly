@@ -67,7 +67,7 @@ public abstract class ClassAnnotationInformationFactory<A extends Annotation, T>
         }
     }
 
-    public Map<String, ClassAnnotationInformation<A, T>> createAnnotationInformation(final CompositeIndex index) {
+    public Map<String, ClassAnnotationInformation<A, T>> createAnnotationInformation(final CompositeIndex index, final boolean replacement) {
 
         final List<TargetAnnotation> annotations = new ArrayList<TargetAnnotation>();
         if (multiAnnotationDotName != null) {
@@ -124,7 +124,7 @@ public abstract class ClassAnnotationInformationFactory<A extends Annotation, T>
             } else {
                 classData = new ArrayList<T>(classAnnotations.size());
                 for (TargetAnnotation instance : classAnnotations) {
-                    classData.add(fromAnnotation(instance.instance()));
+                    classData.add(fromAnnotation(instance.instance(), replacement));
                 }
             }
 
@@ -141,7 +141,7 @@ public abstract class ClassAnnotationInformationFactory<A extends Annotation, T>
                     if (data == null) {
                         fieldData.put(name, data = new ArrayList<T>(1));
                     }
-                    data.add(fromAnnotation(instance.instance()));
+                    data.add(fromAnnotation(instance.instance(), replacement));
                 }
             }
 
@@ -158,7 +158,7 @@ public abstract class ClassAnnotationInformationFactory<A extends Annotation, T>
                     if (data == null) {
                         methodData.put(identifier, data = new ArrayList<T>(1));
                     }
-                    data.add(fromAnnotation(instance.instance()));
+                    data.add(fromAnnotation(instance.instance(), replacement));
                 }
             }
             ClassAnnotationInformation<A, T> information = new ClassAnnotationInformation<A, T>(annotationType, classData, methodData, fieldData);
@@ -183,7 +183,7 @@ public abstract class ClassAnnotationInformationFactory<A extends Annotation, T>
     }
 
 
-    protected abstract T fromAnnotation(AnnotationInstance annotationInstance);
+    protected abstract T fromAnnotation(AnnotationInstance annotationInstance, boolean replacement);
 
     protected List<TargetAnnotation> fromMultiAnnotation(AnnotationInstance multiAnnotationInstance) {
         List<TargetAnnotation> instances = new ArrayList<TargetAnnotation>();

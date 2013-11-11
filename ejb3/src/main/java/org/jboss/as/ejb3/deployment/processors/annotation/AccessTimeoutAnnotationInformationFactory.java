@@ -41,7 +41,7 @@ public class AccessTimeoutAnnotationInformationFactory extends ClassAnnotationIn
     }
 
     @Override
-    protected AccessTimeoutDetails fromAnnotation(final AnnotationInstance annotationInstance) {
+    protected AccessTimeoutDetails fromAnnotation(final AnnotationInstance annotationInstance, final boolean replacement) {
         final long timeout = annotationInstance.value().asLong();
         AnnotationValue unitAnnVal = annotationInstance.value("unit");
         final TimeUnit unit = unitAnnVal != null ? TimeUnit.valueOf(unitAnnVal.asEnum()) : TimeUnit.MILLISECONDS;

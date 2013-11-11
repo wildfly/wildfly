@@ -191,6 +191,7 @@ public enum Phase {
     public static final int STRUCTURE_REMOUNT_EXPLODED                  = 0x0450;
     public static final int STRUCTURE_EE_SPEC_DESC_PROPERTY_REPLACEMENT = 0x0500;
     public static final int STRUCTURE_EE_JBOSS_DESC_PROPERTY_REPLACEMENT= 0x0550;
+    public static final int STRUCTURE_EE_EJB_ANNOTATION_PROPERTY_REPLACEMENT  =  0x0555;
     public static final int STRUCTURE_EE_DEPLOYMENT_PROPERTIES          = 0x0560;
     public static final int STRUCTURE_EE_DEPLOYMENT_PROPERTY_RESOLVER   = 0x0561;
     public static final int STRUCTURE_EE_VAULT_PROPERTY_RESOLVER        = 0x0562;
