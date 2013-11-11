@@ -252,7 +252,7 @@ public class WeldDeploymentProcessor implements DeploymentUnitProcessor {
 
         // make sure JNDI bindings are up
         startService.addDependency(JndiNamingDependencyProcessor.serviceName(deploymentUnit));
-        for (DeploymentUnit sub : subDeployments) {cd 
+        for (DeploymentUnit sub : subDeployments) {
             startService.addDependency(JndiNamingDependencyProcessor.serviceName(sub));
         }
 

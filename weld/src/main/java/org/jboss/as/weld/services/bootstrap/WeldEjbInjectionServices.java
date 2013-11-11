@@ -45,6 +45,8 @@ import org.jboss.vfs.VirtualFile;
 import org.jboss.weld.injection.spi.EjbInjectionServices;
 import org.jboss.weld.injection.spi.ResourceReference;
 import org.jboss.weld.injection.spi.ResourceReferenceFactory;
+import org.jboss.weld.logging.BeanLogger;
+import org.jboss.weld.util.reflection.Reflections;
 
 /**
  * Implementation of EjbInjectionServices.
@@ -106,7 +108,21 @@ public class WeldEjbInjectionServices extends AbstractResourceInjectionServices 
         final ComponentView view = getComponentView(viewDescription);
         if (view != null) {
             Class<?> clazz = view.getViewClass();
-            validateResourceInjectionPointType(clazz, injectionPoint);
+
+            Class<?> injectionPointRawType = Reflections.getRawType(injectionPoint.getType());
+            //we just compare names, as for remote views the actual classes may be loaded from different class loaders
+            Class<?> c = clazz;
+            boolean found = true;
+            while (c != null && c != Object.class) {
+                if (injectionPointRawType.getName().equals(c.getName())) {
+                    found = true;
+                    break;
+                }
+                c = c.getSuperclass();
+            }
+            if(!found) {
+                throw BeanLogger.LOG.invalidResourceProducerType(injectionPoint.getAnnotated(), clazz.getName());
+            }
             return new ComponentViewToResourceReferenceFactoryAdapter<Object>(view);
         } else {
             return createLazyResourceReferenceFactory(viewDescription);
