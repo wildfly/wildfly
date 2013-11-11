@@ -32,8 +32,8 @@
                 <login-module code="Duplicate" flag="optional"/>
                 <login-module code="Anon" flag="optional"/>
                 <login-module code="RealmUsersRoles" flag="required">
-                    <module-option name="usersProperties" value="${jboss.server.config.dir}/application-users.properties"/>
-                    <module-option name="rolesProperties" value="${jboss.server.config.dir}/application-roles.properties"/>
+                    <module-option name="usersProperties" value="/home/place/application-users.properties"/>
+                    <module-option name="rolesProperties" value="/home/place/application-roles.properties"/>
                     <module-option name="realm" value="ApplicationRealm"/>
                     <module-option name="password-stacking" value="useFirstPass"/>
                 </login-module>
@@ -98,6 +98,7 @@
                 </login-module-stack>
             </authentication-jaspi>
         </security-domain>
+        
         <security-domain name="ordering" cache-type="default">
             <authentication>
                 <login-module code="Remoting" flag="optional">
@@ -120,6 +121,7 @@
                 <policy-module code="Delegating" flag="required"/>
             </authorization>
         </security-domain>
+        
         <security-domain name="jboss-ejb-policy" cache-type="default">
             <authorization>
                 <policy-module code="Delegating" flag="required"/>

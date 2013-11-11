@@ -459,6 +459,24 @@
                             <policy-module code="Delegating" flag="required"/>
                         </authorization>
                     </security-domain>
+                    <!-- An extra security domain to test that the security transformers work -->
+                    <security-domain name="jaspi-test" cache-type="default">
+                         <authentication-jaspi>
+                            <login-module-stack name="lm-stack">
+                                <login-module name="lm" code="UsersRoles" flag="required" module="test-jaspi">
+                                    <module-option name="usersProperties" value="${jboss.server.config.dir:}/application-users.properties"/>
+                                    <module-option name="rolesProperties" value="${jboss.server.config.dir:}/application-roles.properties"/>
+                                </login-module>
+                            </login-module-stack>
+                            <!-- 
+                                For 7.1.x and 7.2.x this class needs to be org.jboss.as.web.security.jaspi.modules.HTTPBasicServerAuthModule, in WildFly
+                                the class is org.wildfly.extension.undertow.security.jaspi.modules.HTTPSchemeServerAuthModule
+                             -->
+                            <auth-module code="org.jboss.as.web.security.jaspi.modules.HTTPBasicServerAuthModule" login-module-stack-ref="lm-stack"
+                                         flag="${test.prop:optional}">
+                            </auth-module>
+                        </authentication-jaspi>
+                    </security-domain>
                 </security-domains>
             </subsystem>
             <subsystem xmlns="urn:jboss:domain:threads:1.1"/>
@@ -951,6 +969,29 @@
                             <policy-module code="Delegating" flag="required"/>
                         </authorization>
                     </security-domain>
+                    <!-- An extra security domain to test that the security transformers work -->
+                    <security-domain name="jaspi-test" cache-type="default">
+                         <authentication-jaspi>
+                            <login-module-stack name="lm-stack">
+                                <login-module name="lm" code="UsersRoles" flag="required" module="test-jaspi">
+                                <!-- System properties are rejected, just hardcode the paths 
+                                    <module-option name="usersProperties" value="${jboss.server.config.dir:}/application-users.properties"/>
+                                    <module-option name="rolesProperties" value="${jboss.server.config.dir:}/application-roles.properties"/>
+                                 -->
+                                    <module-option name="usersProperties" value="/application-users.properties"/>
+                                    <module-option name="rolesProperties" value="/application-roles.properties"/>
+                                </login-module>
+                            </login-module-stack>
+                            <!-- 
+                                For 7.1.x and 7.2.x this class needs to be org.jboss.as.web.security.jaspi.modules.HTTPBasicServerAuthModule, in WildFly
+                                the class is org.wildfly.extension.undertow.security.jaspi.modules.HTTPSchemeServerAuthModule. Also the 'module' attribue is
+                                not supported
+                             -->
+                            <auth-module code="org.jboss.as.web.security.jaspi.modules.HTTPBasicServerAuthModule" login-module-stack-ref="lm-stack"
+                                         flag="optional">
+                            </auth-module>
+                        </authentication-jaspi>
+                    </security-domain>                    
                 </security-domains>
             </subsystem>
             <subsystem xmlns="urn:jboss:domain:threads:1.1"/>
@@ -1417,6 +1458,24 @@
                         <authorization>
                             <policy-module code="Delegating" flag="required"/>
                         </authorization>
+                    </security-domain>
+                    <security-domain name="jaspi-test" cache-type="default">
+                         <authentication-jaspi>
+                            <login-module-stack name="lm-stack">
+                                <login-module name="lm" code="UsersRoles" flag="required" module="test-jaspi">
+                                    <module-option name="usersProperties" value="${jboss.server.config.dir:}/application-users.properties"/>
+                                    <module-option name="rolesProperties" value="${jboss.server.config.dir:}/application-roles.properties"/>
+                                </login-module>
+                            </login-module-stack>
+                            <!-- 
+                                For 7.1.x and 7.2.x this class needs to be org.jboss.as.web.security.jaspi.modules.HTTPBasicServerAuthModule, in WildFly
+                                the class is org.wildfly.extension.undertow.security.jaspi.modules.HTTPSchemeServerAuthModule. Also the 'module' attribue is
+                                not supported
+                             -->
+                            <auth-module code="org.wildfly.extension.undertow.security.jaspi.modules.HTTPSchemeServerAuthModule" login-module-stack-ref="lm-stack"
+                                         flag="${test.prop:optional}">
+                            </auth-module>
+                        </authentication-jaspi>
                     </security-domain>
                 </security-domains>
             </subsystem>
