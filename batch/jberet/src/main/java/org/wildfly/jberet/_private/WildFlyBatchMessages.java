@@ -48,4 +48,14 @@ public interface WildFlyBatchMessages {
     @Message(id = 20560, value = "%s service was not added on the deployment. Ensure the deployment has a " +
             "META-INF/batch.xml file or the META-INF/batch-jobs directory contains batch configuration files.")
     IllegalStateException serviceNotInstalled(String name);
+
+    /**
+     * Creates an exception indicating the job repository type was invalid.
+     *
+     * @param type the invalid type
+     *
+     * @return an {@link IllegalArgumentException} for the error
+     */
+    @Message(id = 20561, value = "Invalid job repository type '%s'.")
+    IllegalArgumentException invalidJobRepositoryType(String type);
 }

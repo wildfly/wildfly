@@ -55,15 +55,15 @@ public final class WildFlyArtifactFactory extends AbstractArtifactFactory {
     }
 
     private Bean<?> getBean(final String ref) {
-        WildFlyBatchLogger.LOGGER.debugf("Looking up bean reference for '%s'", ref);
+        WildFlyBatchLogger.LOGGER.tracef("Looking up bean reference for '%s'", ref);
         final Set<Bean<?>> beans = beanManager.getBeans(ref);
         final Iterator<Bean<?>> iter = beans.iterator();
         if (iter.hasNext()) {
             final Bean<?> bean = iter.next();
-            WildFlyBatchLogger.LOGGER.debugf("Found bean '%s' for reference '%s'", bean, ref);
+            WildFlyBatchLogger.LOGGER.tracef("Found bean '%s' for reference '%s'", bean, ref);
             return bean;
         }
-        WildFlyBatchLogger.LOGGER.debugf("No bean found for reference '%s;'", ref);
+        WildFlyBatchLogger.LOGGER.tracef("No bean found for reference '%s;'", ref);
         return null;
     }
 }

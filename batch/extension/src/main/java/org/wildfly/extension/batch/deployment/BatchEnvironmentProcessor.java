@@ -22,12 +22,12 @@
 
 package org.wildfly.extension.batch.deployment;
 
-import java.util.Properties;
 import java.util.concurrent.ExecutorService;
 import javax.enterprise.inject.spi.BeanManager;
 import javax.transaction.UserTransaction;
 
 import org.jberet.spi.BatchEnvironment;
+import org.jboss.as.ee.component.EEModuleDescription;
 import org.jboss.as.ee.structure.DeploymentType;
 import org.jboss.as.ee.structure.DeploymentTypeMarker;
 import org.jboss.as.server.deployment.Attachments;
@@ -41,10 +41,10 @@ import org.jboss.modules.Module;
 import org.jboss.msc.inject.CastingInjector;
 import org.jboss.msc.service.ServiceBuilder;
 import org.jboss.msc.service.ServiceTarget;
-import org.jboss.msc.value.ImmediateValue;
 import org.jboss.vfs.VirtualFile;
 import org.wildfly.extension.batch._private.BatchLogger;
-import org.wildfly.extension.batch.services.BatchServiceNames;
+import org.wildfly.extension.batch.BatchServiceNames;
+import org.wildfly.jberet.BatchConfiguration;
 import org.wildfly.jberet.services.BatchEnvironmentService;
 
 /**
@@ -65,15 +65,25 @@ public class BatchEnvironmentProcessor implements DeploymentUnitProcessor {
 
             final BatchEnvironmentService service = new BatchEnvironmentService();
 
+            final BatchConfiguration batchConfiguration = BatchConfiguration.getInstance();
+            // If the configuration requires the JDNI name, use the default one
+            if (batchConfiguration.requiresJndiName()) {
+                final EEModuleDescription moduleDescription = deploymentUnit.getAttachment(org.jboss.as.ee.component.Attachments.EE_MODULE_DESCRIPTION);
+                final String jndiName = moduleDescription.getDefaultResourceJndiNames().getDataSource();
+                BatchLogger.LOGGER.debugf("Adding default JNDI name to configuration: %s", jndiName);
+                batchConfiguration.setJndiName(jndiName);
+            }
+
             final ServiceBuilder<BatchEnvironment> serviceBuilder = serviceTarget.addService(BatchServiceNames.batchDeploymentServiceName(deploymentUnit), service);
-            serviceBuilder.addDependency(BatchServiceNames.BATCH_PROPERTIES, Properties.class, service.getPropertiesInjector());
             serviceBuilder.addDependency(BatchServiceNames.BATCH_THREAD_POOL_NAME, ExecutorService.class, service.getExecutorServiceInjector());
 
-            // Set the class loader
-            service.getClassLoaderInjector().setValue(new ImmediateValue<>(moduleClassLoader));
+            // Set the class loader and properties
+            service.setClassLoader(moduleClassLoader);
+            service.setProperties(batchConfiguration.createProperties());
 
             // Only add transactions and the BeanManager if this is a batch deployment
             if (isBatchDeployment(deploymentUnit)) {
+                BatchLogger.LOGGER.tracef("Adding UserTransaction and BeanManager service dependencies for deployment %s", deploymentUnit.getName());
                 serviceBuilder.addDependency(TxnServices.JBOSS_TXN_USER_TRANSACTION, UserTransaction.class, service.getUserTransactionInjector());
 
                 // Add the bean manager
