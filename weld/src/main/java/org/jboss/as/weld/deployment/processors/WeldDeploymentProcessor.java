@@ -238,19 +238,25 @@ public class WeldDeploymentProcessor implements DeploymentUnitProcessor {
 
         weldBootstrapServiceBuilder.install();
 
-        final List<SetupAction> setupActions  = new ArrayList<SetupAction>();
+        final List<SetupAction> setupActions = new ArrayList<SetupAction>();
         JavaNamespaceSetup naming = deploymentUnit.getAttachment(org.jboss.as.ee.naming.Attachments.JAVA_NAMESPACE_SETUP_ACTION);
-        if(naming != null) {
+        if (naming != null) {
             setupActions.add(naming);
         }
 
         final WeldStartService weldStartService = new WeldStartService(setupActions, module.getClassLoader());
 
-        serviceTarget.addService(deploymentUnit.getServiceName().append(WeldStartService.SERVICE_NAME), weldStartService)
+        ServiceBuilder<WeldStartService> startService = serviceTarget.addService(deploymentUnit.getServiceName().append(WeldStartService.SERVICE_NAME), weldStartService)
                 .addDependency(weldBootstrapServiceName, WeldBootstrapService.class, weldStartService.getBootstrap())
-                // make sure JNDI bindings are up
-                .addDependency(JndiNamingDependencyProcessor.serviceName(deploymentUnit))
-                .addDependencies(jpaServices).install();
+                .addDependencies(jpaServices);
+
+        // make sure JNDI bindings are up
+        startService.addDependency(JndiNamingDependencyProcessor.serviceName(deploymentUnit));
+        for (DeploymentUnit sub : subDeployments) {cd 
+            startService.addDependency(JndiNamingDependencyProcessor.serviceName(sub));
+        }
+
+        startService.install();
 
     }
 
@@ -274,7 +280,7 @@ public class WeldDeploymentProcessor implements DeploymentUnitProcessor {
 
 
     private ServiceName installSecurityService(ServiceTarget serviceTarget, DeploymentUnit deploymentUnit,
-            WeldBootstrapService weldService, ServiceBuilder<WeldBootstrapService> weldServiceBuilder) {
+                                               WeldBootstrapService weldService, ServiceBuilder<WeldBootstrapService> weldServiceBuilder) {
         final WeldSecurityServices service = new WeldSecurityServices();
 
         final ServiceName serviceName = deploymentUnit.getServiceName().append(WeldSecurityServices.SERVICE_NAME);
@@ -288,7 +294,7 @@ public class WeldDeploymentProcessor implements DeploymentUnitProcessor {
     }
 
     private ServiceName installTransactionService(final ServiceTarget serviceTarget, final DeploymentUnit deploymentUnit,
-            WeldBootstrapService weldService, ServiceBuilder<WeldBootstrapService> weldServiceBuilder) {
+                                                  WeldBootstrapService weldService, ServiceBuilder<WeldBootstrapService> weldServiceBuilder) {
         final WeldTransactionServices weldTransactionServices = new WeldTransactionServices();
 
         final ServiceName weldTransactionServiceName = deploymentUnit.getServiceName().append(
