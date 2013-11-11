@@ -22,6 +22,13 @@
 
 package org.jboss.as.test.integration.common.jms;
 
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.NAME;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SUBSYSTEM;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.VALUE;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.WRITE_ATTRIBUTE_OPERATION;
+
 import org.jboss.as.arquillian.container.ManagementClient;
 import org.jboss.as.controller.client.ModelControllerClient;
 import org.jboss.as.controller.client.helpers.ClientConstants;
@@ -110,6 +117,56 @@ public class DefaultHornetQProviderJMSOperations implements JMSOperations {
             throw new JMSOperationsException(failureDesc);
         } else {
             throw new JMSOperationsException("Operation not successful; outcome = " + result.get(ClientConstants.OUTCOME));
+        }
+    }
+
+    @Override
+    public void setSystemProperties(String destination, String resourceAdapter) {
+        final ModelNode enableSubstitutionOp = new ModelNode();
+        enableSubstitutionOp.get(OP_ADDR).set(SUBSYSTEM, "ee");
+        enableSubstitutionOp.get(OP).set(WRITE_ATTRIBUTE_OPERATION);
+        enableSubstitutionOp.get(NAME).set("ejb-annotation-property-replacement");
+        enableSubstitutionOp.get(VALUE).set(true);
+
+        final ModelNode setDestinationOp = new ModelNode();
+        setDestinationOp.get(ClientConstants.OP).set(ClientConstants.ADD);
+        setDestinationOp.get(ClientConstants.OP_ADDR).add("system-property", "destination");
+        setDestinationOp.get("value").set(destination);
+        final ModelNode setResourceAdapterOp = new ModelNode();
+        setResourceAdapterOp.get(ClientConstants.OP).set(ClientConstants.ADD);
+        setResourceAdapterOp.get(ClientConstants.OP_ADDR).add("system-property", "resource.adapter");
+        setResourceAdapterOp.get("value").set(resourceAdapter);
+
+        try {
+            applyUpdate(enableSubstitutionOp);
+            applyUpdate(setDestinationOp);
+            applyUpdate(setResourceAdapterOp);
+        } catch (Exception e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+    @Override
+    public void removeSystemProperties() {
+        final ModelNode removeDestinationOp = new ModelNode();
+        removeDestinationOp.get(ClientConstants.OP).set("remove");
+        removeDestinationOp.get(ClientConstants.OP_ADDR).add("system-property", "destination");
+        final ModelNode removeResourceAdapterOp = new ModelNode();
+        removeResourceAdapterOp.get(ClientConstants.OP).set("remove");
+        removeResourceAdapterOp.get(ClientConstants.OP_ADDR).add("system-property", "resource.adapter");
+
+        final ModelNode disableSubstitutionOp = new ModelNode();
+        disableSubstitutionOp.get(OP_ADDR).set(SUBSYSTEM, "ee");
+        disableSubstitutionOp.get(OP).set(WRITE_ATTRIBUTE_OPERATION);
+        disableSubstitutionOp.get(NAME).set("ejb-annotationr-property-replacement");
+        disableSubstitutionOp.get(VALUE).set(false);
+
+        try {
+            applyUpdate(removeDestinationOp);
+            applyUpdate(removeResourceAdapterOp);
+            applyUpdate(disableSubstitutionOp);
+        } catch (Exception e) {
+            throw new RuntimeException(e);
         }
     }
 }

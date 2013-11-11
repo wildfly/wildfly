@@ -36,7 +36,7 @@ public class CacheAnnotationInformationFactory extends ClassAnnotationInformatio
     }
 
     @Override
-    protected CacheInfo fromAnnotation(AnnotationInstance annotationInstance) {
+    protected CacheInfo fromAnnotation(AnnotationInstance annotationInstance, boolean replacement) {
         String value = annotationInstance.value().asString();
         return new CacheInfo(value);
     }

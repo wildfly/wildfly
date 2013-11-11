@@ -63,6 +63,12 @@ public class MDBTestCase {
     @Resource (mappedName = "java:jboss/mdbtest/replyQueue")
     private Queue replyQueue;
 
+    @Resource (mappedName = "java:jboss/mdbtest/annoQueue")
+    private Queue annoQueue;
+
+    @Resource (mappedName = "java:jboss/mdbtest/annoReplyQueue")
+    private Queue annoReplyQueue;
+
     static class JmsQueueSetup implements ServerSetupTask {
 
         private JMSOperations jmsAdminOperations;
@@ -72,6 +78,9 @@ public class MDBTestCase {
             jmsAdminOperations = JMSOperationsProvider.getInstance(managementClient);
             jmsAdminOperations.createJmsQueue("mdbtest/queue", "java:jboss/mdbtest/queue");
             jmsAdminOperations.createJmsQueue("mdbtest/replyQueue", "java:jboss/mdbtest/replyQueue");
+            jmsAdminOperations.createJmsQueue("mdbtest/annoQueue", "java:jboss/mdbtest/annoQueue");
+            jmsAdminOperations.createJmsQueue("mdbtest/annoReplyQueue", "java:jboss/mdbtest/annoReplyQueue");
+            jmsAdminOperations.setSystemProperties("jboss/mdbtest/annoQueue", "hornetq-ra");
         }
 
         @Override
@@ -79,6 +88,9 @@ public class MDBTestCase {
             if (jmsAdminOperations != null) {
                 jmsAdminOperations.removeJmsQueue("mdbtest/queue");
                 jmsAdminOperations.removeJmsQueue("mdbtest/replyQueue");
+                jmsAdminOperations.removeJmsQueue("mdbtest/annoQueue");
+                jmsAdminOperations.removeJmsQueue("mdbtest/annoReplyQueue");
+                jmsAdminOperations.removeSystemProperties();
                 jmsAdminOperations.close();
             }
         }
@@ -106,5 +118,16 @@ public class MDBTestCase {
         this.jmsUtil.sendTextMessage("Say hello to " + DDBasedMDB.class.getName(), this.queue, this.replyQueue);
         final Message reply = this.jmsUtil.receiveMessage(replyQueue, 5000);
         Assert.assertNotNull("Reply message was null on reply queue: " + this.replyQueue, reply);
+    }
+
+    /**
+     * Test an annotation based MDB with properties substitution
+     * @throws Exception
+     */
+    @Test
+    public void testAnnoBasedMDB() throws Exception {
+        this.jmsUtil.sendTextMessage("Say Nihao to " + AnnoBasedMDB.class.getName(), this.annoQueue, this.annoReplyQueue);
+        final Message reply = this.jmsUtil.receiveMessage(annoReplyQueue, 5000);
+        Assert.assertNotNull("Reply message was null on reply queue: " + this.annoReplyQueue, reply);
     }
 }

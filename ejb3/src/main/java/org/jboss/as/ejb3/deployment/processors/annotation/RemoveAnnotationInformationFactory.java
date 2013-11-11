@@ -39,7 +39,7 @@ public class RemoveAnnotationInformationFactory extends ClassAnnotationInformati
     }
 
     @Override
-    protected Boolean fromAnnotation(final AnnotationInstance annotationInstance) {
+    protected Boolean fromAnnotation(final AnnotationInstance annotationInstance, final boolean replacement) {
         AnnotationValue value = annotationInstance.value("retainIfException");
         if(value == null) {
             return false;
