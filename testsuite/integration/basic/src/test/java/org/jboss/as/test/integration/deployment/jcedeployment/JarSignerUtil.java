@@ -21,13 +21,14 @@
  */
 package org.jboss.as.test.integration.deployment.jcedeployment;
 
-import org.xnio.IoUtils;
-import sun.security.tools.JarSigner;
-
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Method;
+
+import org.xnio.IoUtils;
 
 /**
  * Utility for signing jars.
@@ -47,18 +48,48 @@ public class JarSignerUtil {
         this.alias = alias;
     }
 
-    public void verify(final File jar) {
+    public void verify(final File jar) throws Exception {
         String[] args = {"-verify", "-verbose", jar.getAbsolutePath()};
-        final JarSigner jarSigner = new JarSigner();
-        jarSigner.run(args);
+        run(args);
+    }
+
+    private void run(String[] args) {
+        try {
+            Class<?> jdk7JarSignerClass = this.getClass().getClassLoader().loadClass("sun.security.tools.JarSigner");
+            Object jdk7JarSigner = jdk7JarSignerClass.newInstance();
+            Method run = jdk7JarSigner.getClass().getDeclaredMethod("run", String[].class);
+            run.invoke(jdk7JarSigner, new Object[]{args});
+        } catch (ClassNotFoundException | NoSuchMethodException e) {
+            //not jdk7, try jdk8
+            runJDK8(args);
+        } catch (InvocationTargetException | IllegalAccessException | InstantiationException e) {
+            throw new RuntimeException("could not sign", e);
+        }
+    }
+
+    private void runJDK8(String[] args) {
+        try {
+            Class<?> jdk8JarSigner = this.getClass().getClassLoader().loadClass("sun.security.tools.jarsigner.Main");
+            Method run = jdk8JarSigner.getMethod("main", String[].class);
+            run.invoke(null, new Object[]{args});
+        } catch (ClassNotFoundException | NoSuchMethodException e) {
+            throw new RuntimeException("Could not find JarSigner to invoke", e);
+        } catch (InvocationTargetException | IllegalAccessException e) {
+            throw new RuntimeException("could not sign", e);
+        }
+
     }
 
     public void sign(final File jar, final File signedJar) throws IOException {
         copyFile(jar, signedJar);
-        sign(signedJar);
+        try {
+            sign(signedJar);
+        } catch (Exception e) {
+            throw new IOException(e);
+        }
     }
 
-    private void sign(final File jar) {
+    private void sign(final File jar) throws Exception {
         String[] args = {
                 "-keystore", keystore.getAbsolutePath(),
                 "-storepass", storePass,
@@ -66,8 +97,7 @@ public class JarSignerUtil {
                 jar.getAbsolutePath(),
                 alias
         };
-        final JarSigner signer = new JarSigner();
-        signer.run(args);
+        run(args);
     }
 
     private static void copyFile(final File src, final File dst) throws IOException {
