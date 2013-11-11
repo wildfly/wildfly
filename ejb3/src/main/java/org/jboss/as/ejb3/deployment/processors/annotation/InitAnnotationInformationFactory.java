@@ -37,7 +37,7 @@ public class InitAnnotationInformationFactory extends ClassAnnotationInformation
     }
 
     @Override
-    protected String fromAnnotation(final AnnotationInstance annotationInstance) {
+    protected String fromAnnotation(final AnnotationInstance annotationInstance, final boolean replacement) {
         AnnotationValue value = annotationInstance.value();
         if (value == null) {
             return null;

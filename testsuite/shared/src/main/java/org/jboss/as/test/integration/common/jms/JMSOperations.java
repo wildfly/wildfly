@@ -42,4 +42,8 @@ public interface JMSOperations {
 
     void close();
 
+    void setSystemProperties(String destination, String destinationType);
+
+    void removeSystemProperties();
+
 }

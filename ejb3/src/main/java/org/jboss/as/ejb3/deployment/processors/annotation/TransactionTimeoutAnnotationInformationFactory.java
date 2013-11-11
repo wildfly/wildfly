@@ -35,7 +35,7 @@ public class TransactionTimeoutAnnotationInformationFactory extends ClassAnnotat
     }
 
     @Override
-    protected Integer fromAnnotation(final AnnotationInstance annotationInstance) {
+    protected Integer fromAnnotation(final AnnotationInstance annotationInstance, final boolean replacement) {
         final long timeout = annotationInstance.value().asLong();
         AnnotationValue unitAnnVal = annotationInstance.value("unit");
         final TimeUnit unit = unitAnnVal != null ? TimeUnit.valueOf(unitAnnVal.asEnum()) : TimeUnit.SECONDS;

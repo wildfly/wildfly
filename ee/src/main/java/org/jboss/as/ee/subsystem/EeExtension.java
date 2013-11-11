@@ -43,6 +43,7 @@ import org.jboss.as.controller.parsing.ExtensionParsingContext;
 import org.jboss.as.controller.registry.ManagementResourceRegistration;
 import org.jboss.as.controller.transform.TransformationContext;
 import org.jboss.as.controller.transform.description.AttributeConverter;
+import org.jboss.as.controller.transform.description.DiscardAttributeChecker;
 import org.jboss.as.controller.transform.description.RejectAttributeChecker;
 import org.jboss.as.controller.transform.description.ResourceTransformationDescriptionBuilder;
 import org.jboss.as.controller.transform.description.TransformationDescription;
@@ -122,8 +123,10 @@ public class EeExtension implements Extension {
                         EeSubsystemRootResource.JBOSS_DESCRIPTOR_PROPERTY_REPLACEMENT)
                 // Deal with new attributes added to global-modules elements
                 .addRejectCheck(globalModulesRejecterConverter, GlobalModulesDefinition.INSTANCE)
-                .setValueConverter(globalModulesRejecterConverter, GlobalModulesDefinition.INSTANCE);
-
+                .setValueConverter(globalModulesRejecterConverter, GlobalModulesDefinition.INSTANCE)
+                // Deal with new attribute ejb-annotation-property-replacement
+                .setDiscard(new DiscardAttributeChecker.DiscardAttributeValueChecker(false, false, new ModelNode(false)), EeSubsystemRootResource.EJB_ANNOTATION_PROPERTY_REPLACEMENT)
+                .addRejectCheck(RejectAttributeChecker.DEFINED, EeSubsystemRootResource.EJB_ANNOTATION_PROPERTY_REPLACEMENT);
         builder.rejectChildResource(PathElement.pathElement(EESubsystemModel.CONTEXT_SERVICE));
         builder.rejectChildResource(PathElement.pathElement(EESubsystemModel.MANAGED_THREAD_FACTORY));
         builder.rejectChildResource(PathElement.pathElement(EESubsystemModel.MANAGED_EXECUTOR_SERVICE));

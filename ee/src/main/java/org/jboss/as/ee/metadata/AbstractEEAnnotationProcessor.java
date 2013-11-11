@@ -45,13 +45,14 @@ public abstract class AbstractEEAnnotationProcessor implements DeploymentUnitPro
 
         final EEModuleDescription eeModuleDescription = deploymentUnit.getAttachment(Attachments.EE_MODULE_DESCRIPTION);
         final CompositeIndex index = deploymentUnit.getAttachment(org.jboss.as.server.deployment.Attachments.COMPOSITE_ANNOTATION_INDEX);
+        final Boolean replacement = deploymentUnit.getAttachment(org.jboss.as.ee.structure.Attachments.EJB_ANNOTATION_PROPERTY_REPLACEMENT);
         if (index == null || eeModuleDescription == null) {
             return;
         }
 
         final List<ClassAnnotationInformationFactory> factories = annotationInformationFactories();
         for (final ClassAnnotationInformationFactory factory : factories) {
-            final Map<String, ClassAnnotationInformation<?, ?>> data = factory.createAnnotationInformation(index);
+            final Map<String, ClassAnnotationInformation<?, ?>> data = factory.createAnnotationInformation(index, replacement);
             for (Map.Entry<String, ClassAnnotationInformation<?, ?>> entry : data.entrySet()) {
                 EEModuleClassDescription clazz = eeModuleDescription.addOrGetLocalClassDescription(entry.getKey());
                 clazz.addAnnotationInformation(entry.getValue());

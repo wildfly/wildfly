@@ -33,10 +33,12 @@ import javax.jms.MessageListener;
 
 import org.jboss.as.ee.component.DeploymentDescriptorEnvironment;
 import org.jboss.as.ee.metadata.MetadataCompleteMarker;
+import org.jboss.as.ee.structure.Attachments;
 import org.jboss.as.ejb3.EjbLogger;
 import org.jboss.as.ejb3.component.messagedriven.DefaultResourceAdapterService;
 import org.jboss.as.ejb3.component.messagedriven.MessageDrivenComponentDescription;
 import org.jboss.as.ejb3.deployment.EjbJarDescription;
+import org.jboss.as.ejb3.util.PropertiesValueResolver;
 import org.jboss.as.server.deployment.DeploymentUnit;
 import org.jboss.as.server.deployment.DeploymentUnitProcessingException;
 import org.jboss.as.server.deployment.EjbDeploymentMarker;
@@ -108,7 +110,8 @@ public class MessageDrivenComponentDescriptionFactory extends EJBComponentDescri
             final MessageDrivenBeanMetaData beanMetaData = getEnterpriseBeanMetaData(deploymentUnit, beanName, MessageDrivenBeanMetaData.class);
             final String beanClassName;
             final String messageListenerInterfaceName;
-            final Properties activationConfigProperties = getActivationConfigProperties(messageBeanAnnotation);
+            boolean replacement = deploymentUnit.getAttachment(Attachments.EJB_ANNOTATION_PROPERTY_REPLACEMENT);
+            final Properties activationConfigProperties = getActivationConfigProperties(messageBeanAnnotation, replacement);
             final String messagingType;
             if (beanMetaData != null) {
                 beanClassName = override(beanClassInfo.name().toString(), beanMetaData.getEjbClass());
@@ -244,13 +247,18 @@ public class MessageDrivenComponentDescriptionFactory extends EJBComponentDescri
         addComponent(deploymentUnit, mdbComponentDescription);
     }
 
-    private Properties getActivationConfigProperties(final AnnotationInstance messageBeanAnnotation) {
+    private Properties getActivationConfigProperties(final AnnotationInstance messageBeanAnnotation, boolean replacement) {
         final Properties props = new Properties();
         final AnnotationValue activationConfig = messageBeanAnnotation.value("activationConfig");
         if (activationConfig == null)
             return props;
         for (final AnnotationInstance propAnnotation : activationConfig.asNestedArray()) {
-            props.put(propAnnotation.value("propertyName").asString(), propAnnotation.value("propertyValue").asString());
+            String propertyName = propAnnotation.value("propertyName").asString();
+            String propertyValue = propAnnotation.value("propertyValue").asString();
+            if(replacement)
+                props.put(propertyName, PropertiesValueResolver.replaceProperties(propertyValue));
+            else
+                props.put(propertyName, propertyValue);
         }
         return props;
     }

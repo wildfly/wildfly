@@ -22,6 +22,7 @@
 package org.jboss.as.ejb3.deployment.processors.annotation;
 
 import org.jboss.as.ee.metadata.ClassAnnotationInformationFactory;
+import org.jboss.as.ejb3.util.PropertiesValueResolver;
 import org.jboss.jandex.AnnotationInstance;
 
 /**
@@ -36,7 +37,11 @@ public class ResourceAdaptorAnnotationInformationFactory extends ClassAnnotation
     }
 
     @Override
-    protected String fromAnnotation(final AnnotationInstance annotationInstance) {
-        return annotationInstance.value().asString();
+    protected String fromAnnotation(final AnnotationInstance annotationInstance, final boolean replacement) {
+        String resourceAdapterValue = annotationInstance.value().asString();
+        if(replacement)
+            return PropertiesValueResolver.replaceProperties(resourceAdapterValue);
+        else
+            return resourceAdapterValue;
     }
 }

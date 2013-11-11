@@ -40,7 +40,7 @@ public class TransactionManagementAnnotationInformationFactory extends ClassAnno
     }
 
     @Override
-    protected TransactionManagementType fromAnnotation(final AnnotationInstance annotationInstance) {
+    protected TransactionManagementType fromAnnotation(final AnnotationInstance annotationInstance, final boolean replacement) {
         final AnnotationValue value = annotationInstance.value();
         if(value == null) {
             return TransactionManagementType.CONTAINER;

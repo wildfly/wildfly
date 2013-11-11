@@ -40,7 +40,7 @@ public class ConcurrencyManagementAnnotationInformationFactory extends ClassAnno
     }
 
     @Override
-    protected ConcurrencyManagementType fromAnnotation(final AnnotationInstance annotationInstance) {
+    protected ConcurrencyManagementType fromAnnotation(final AnnotationInstance annotationInstance, final boolean replacement) {
         final AnnotationValue value = annotationInstance.value();
         if(value == null) {
             return ConcurrencyManagementType.CONTAINER;

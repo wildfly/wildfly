@@ -39,7 +39,7 @@ public class BooleanAnnotationInformationFactory<T extends Annotation> extends C
     }
 
     @Override
-    protected Boolean fromAnnotation(final AnnotationInstance annotationInstance) {
+    protected Boolean fromAnnotation(final AnnotationInstance annotationInstance, final boolean replacement) {
         return true;
     }
 }

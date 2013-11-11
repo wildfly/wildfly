@@ -39,7 +39,7 @@ public class TransactionAttributeAnnotationInformationFactory extends ClassAnnot
     }
 
     @Override
-    protected TransactionAttributeType fromAnnotation(final AnnotationInstance annotationInstance) {
+    protected TransactionAttributeType fromAnnotation(final AnnotationInstance annotationInstance, final boolean replacement) {
 
         final AnnotationValue value = annotationInstance.value();
         if(value == null) {
