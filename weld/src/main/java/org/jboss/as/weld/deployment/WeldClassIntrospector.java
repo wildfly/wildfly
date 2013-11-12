@@ -57,17 +57,7 @@ public class WeldClassIntrospector implements EEClassIntrospector, Service<EECla
                 final Object instance = injectionTarget.produce(context);
                 injectionTarget.inject(instance, context);
                 injectionTarget.postConstruct(instance);
-                return new ManagedReference() {
-                    @Override
-                    public void release() {
-                        context.release();
-                    }
-
-                    @Override
-                    public Object getInstance() {
-                        return instance;
-                    }
-                };
+                return new WeldManagedReference(injectionTarget, context, instance);
             }
         };
     }
@@ -94,17 +84,7 @@ public class WeldClassIntrospector implements EEClassIntrospector, Service<EECla
         final CreationalContext context = beanManager.createCreationalContext(null);
         injectionTarget.inject(instance, context);
         injectionTarget.postConstruct(instance);
-        return new ManagedReference() {
-            @Override
-            public void release() {
-                context.release();
-            }
-
-            @Override
-            public Object getInstance() {
-                return instance;
-            }
-        };
+        return new WeldManagedReference(injectionTarget, context, instance);
     }
 
     public InjectedValue<BeanManager> getBeanManager() {
@@ -123,5 +103,32 @@ public class WeldClassIntrospector implements EEClassIntrospector, Service<EECla
     @Override
     public EEClassIntrospector getValue() throws IllegalStateException, IllegalArgumentException {
         return this;
+    }
+
+    private static class WeldManagedReference implements ManagedReference {
+
+        private final InjectionTarget injectionTarget;
+        private final CreationalContext ctx;
+        private final Object instance;
+
+        public WeldManagedReference(InjectionTarget injectionTarget, CreationalContext ctx, Object instance) {
+            this.injectionTarget = injectionTarget;
+            this.ctx = ctx;
+            this.instance = instance;
+        }
+
+        @Override
+        public void release() {
+            try {
+                injectionTarget.preDestroy(instance);
+            } finally {
+                ctx.release();
+            }
+        }
+
+        @Override
+        public Object getInstance() {
+            return instance;
+        }
     }
 }

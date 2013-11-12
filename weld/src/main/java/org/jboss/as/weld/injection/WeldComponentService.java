@@ -34,13 +34,12 @@ import javax.enterprise.inject.spi.Bean;
 import javax.enterprise.inject.spi.InjectionTarget;
 
 import org.jboss.as.ee.component.ComponentDescription;
-import org.jboss.as.ee.managedbean.component.ManagedBeanComponentDescription;
-import org.jboss.as.ejb3.component.EJBComponentDescription;
 import org.jboss.as.ejb3.component.messagedriven.MessageDrivenComponentDescription;
 import org.jboss.as.web.common.WebComponentDescription;
 import org.jboss.as.webservices.injection.WSComponentDescription;
 import org.jboss.as.weld.WeldBootstrapService;
 import org.jboss.as.weld.WeldLogger;
+import org.jboss.as.weld.util.Utils;
 import org.jboss.msc.service.Service;
 import org.jboss.msc.service.StartContext;
 import org.jboss.msc.service.StartException;
@@ -132,8 +131,7 @@ public class WeldComponentService implements Service<WeldComponentService> {
                 }
             }
 
-            final boolean isComponentWithView = (componentDescription instanceof EJBComponentDescription) || (componentDescription instanceof ManagedBeanComponentDescription);
-            BasicInjectionTarget injectionTarget = InjectionTargets.createInjectionTarget(componentClass, bean, beanManager, !isComponentWithView);
+            BasicInjectionTarget injectionTarget = InjectionTargets.createInjectionTarget(componentClass, bean, beanManager, !Utils.isComponentWithView(componentDescription));
             if (componentDescription instanceof MessageDrivenComponentDescription || componentDescription instanceof WebComponentDescription) {
                 // fire ProcessInjectionTarget for non-contextual components
                 this.injectionTarget = beanManager.fireProcessInjectionTarget(injectionTarget.getAnnotated(), injectionTarget);
@@ -180,5 +178,9 @@ public class WeldComponentService implements Service<WeldComponentService> {
 
     public InjectedValue<WeldBootstrapService> getWeldContainer() {
         return weldContainer;
+    }
+
+    public InjectionTarget getInjectionTarget() {
+        return injectionTarget;
     }
 }
