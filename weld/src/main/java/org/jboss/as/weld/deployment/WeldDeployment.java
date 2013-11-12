@@ -80,13 +80,6 @@ public class WeldDeployment implements CDI11Deployment {
      */
     private final Set<ClassLoader> subDeploymentClassLoaders;
 
-    /**
-     * Maps class names to bean archives.
-     *
-     * The spec does not allow for the same class to be deployed in multiple bean archives
-     */
-    private final Map<String, BeanDeploymentArchiveImpl> beanDeploymentsByClassName;
-
     private final Map<ClassLoader, BeanDeploymentArchiveImpl> additionalBeanDeploymentArchivesByClassloader;
 
     public WeldDeployment(Set<BeanDeploymentArchiveImpl> beanDeploymentArchives, Collection<Metadata<Extension>> extensions,
@@ -95,7 +88,6 @@ public class WeldDeployment implements CDI11Deployment {
         this.beanDeploymentArchives = new HashSet<BeanDeploymentArchiveImpl>(beanDeploymentArchives);
         this.extensions = new HashSet<Metadata<Extension>>(extensions);
         this.serviceRegistry = new SimpleServiceRegistry();
-        this.beanDeploymentsByClassName = new HashMap<String, BeanDeploymentArchiveImpl>();
         this.additionalBeanDeploymentArchivesByClassloader = new HashMap<ClassLoader, BeanDeploymentArchiveImpl>();
         this.module = module;
 
@@ -106,14 +98,6 @@ public class WeldDeployment implements CDI11Deployment {
         CompositeIndex index = deploymentUnit.getAttachment(Attachments.COMPOSITE_ANNOTATION_INDEX);
         if (index != null) {
             this.serviceRegistry.add(AnnotationDiscovery.class, new WeldAnnotationDiscovery(index));
-        }
-
-        // set up the additional bean archives accessibility rules
-        // and map class names to bean deployment archives
-        for (BeanDeploymentArchiveImpl bda : beanDeploymentArchives) {
-            for (String className : bda.getBeanClasses()) {
-                beanDeploymentsByClassName.put(className, bda);
-            }
         }
 
         calculateAccessibilityGraph(this.beanDeploymentArchives);
@@ -188,7 +172,6 @@ public class WeldDeployment implements CDI11Deployment {
                 bda.addBeanDeploymentArchive(newBda);
             }
         }
-        beanDeploymentsByClassName.put(beanClass.getName(), newBda);
         additionalBeanDeploymentArchivesByClassloader.put(beanClass.getClassLoader(), newBda);
         beanDeploymentArchives.add(newBda);
         return newBda;
@@ -211,11 +194,14 @@ public class WeldDeployment implements CDI11Deployment {
 
     @Override
     public synchronized BeanDeploymentArchive getBeanDeploymentArchive(final Class<?> beanClass) {
-        if (beanDeploymentsByClassName.containsKey(beanClass.getName())) {
-            return beanDeploymentsByClassName.get(beanClass.getName());
+        for (BeanDeploymentArchiveImpl bda : beanDeploymentArchives) {
+            ClassLoader moduleClassLoader = bda.getClassLoader();
+            if (bda.getBeanClasses().contains(beanClass.getName()) && moduleClassLoader != null && moduleClassLoader.equals(beanClass.getClassLoader())) {
+                return bda;
+            }
         }
         /*
-         * We haven't found this class in a bean archive so apparently it was added by an extension and the class itself does
+         * We haven't found this class in a bean archive so probably it was added by an extension and the class itself does
          * not come from a BDA. Let's try to find an existing BDA that uses the same classloader
          * (and thus has the required accessibility to other BDAs)
          */
