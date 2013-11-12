@@ -46,6 +46,7 @@
                 <filter-ref name="limit-connections"/>
                 <filter-ref name="headers"/>
             </location>
+            <filter-ref name="headers"/>
         </host>
     </server>
 

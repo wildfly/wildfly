@@ -32,7 +32,6 @@ import org.jboss.as.subsystem.test.AbstractSubsystemBaseTest;
 import org.jboss.as.subsystem.test.AdditionalInitialization;
 import org.jboss.as.subsystem.test.KernelServices;
 import org.jboss.as.subsystem.test.KernelServicesBuilder;
-import org.jboss.msc.service.Service;
 import org.jboss.msc.service.ServiceController;
 import org.jboss.msc.service.ServiceName;
 import org.jboss.msc.service.ServiceTarget;
@@ -58,10 +57,10 @@ public class UndertowSubsystemTestCase extends AbstractSubsystemBaseTest {
 
     @Test
     public void testRuntime() throws Exception {
-        System.setProperty("server.data.dir",System.getProperty("java.io.tmpdir"));
-        System.setProperty("jboss.home.dir",System.getProperty("java.io.tmpdir"));
-        System.setProperty("jboss.home.dir",System.getProperty("java.io.tmpdir"));
-        System.setProperty("jboss.server.server.dir",System.getProperty("java.io.tmpdir"));
+        System.setProperty("server.data.dir", System.getProperty("java.io.tmpdir"));
+        System.setProperty("jboss.home.dir", System.getProperty("java.io.tmpdir"));
+        System.setProperty("jboss.home.dir", System.getProperty("java.io.tmpdir"));
+        System.setProperty("jboss.server.server.dir", System.getProperty("java.io.tmpdir"));
         KernelServicesBuilder builder = createKernelServicesBuilder(new AdditionalInitialization() {
             @Override
             protected void addExtraServices(ServiceTarget target) {
@@ -86,6 +85,14 @@ public class UndertowSubsystemTestCase extends AbstractSubsystemBaseTest {
         FilterService headersService = headersFilter.getService().getValue();
         HttpHandler headerHandler = headersService.createHttpHandler(new PathHandler());
         Assert.assertNotNull("handler should have been created", headerHandler);
+
+        final ServiceName hostServiceName = UndertowService.virtualHostName("default-server", "other-host");
+        ServiceController<Host> hostSC = (ServiceController<Host>) mainServices.getContainer().getService(hostServiceName);
+        Assert.assertNotNull(hostSC);
+        hostSC.setMode(ServiceController.Mode.ACTIVE);
+        Host host = hostSC.getValue();
+        Assert.assertEquals(1, host.getInjectedFilters().size());
+
 
         final ServiceName locationServiceName = UndertowService.locationServiceName("default-server", "default-host", "/");
         ServiceController<LocationService> locationSC = (ServiceController<LocationService>) mainServices.getContainer().getService(locationServiceName);

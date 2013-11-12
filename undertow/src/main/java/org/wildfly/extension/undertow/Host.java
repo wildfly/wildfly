@@ -22,10 +22,12 @@
 
 package org.wildfly.extension.undertow;
 
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
+import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.concurrent.CopyOnWriteArraySet;
 
 import io.undertow.server.HttpHandler;
@@ -37,6 +39,7 @@ import org.jboss.msc.service.StartContext;
 import org.jboss.msc.service.StartException;
 import org.jboss.msc.service.StopContext;
 import org.jboss.msc.value.InjectedValue;
+import org.wildfly.extension.undertow.filters.FilterService;
 
 /**
  * @author <a href="mailto:tomaz.cerar@redhat.com">Tomaz Cerar</a> (c) 2013 Red Hat Inc.
@@ -51,6 +54,7 @@ public class Host implements Service<Host> {
     private final InjectedValue<Server> server = new InjectedValue<>();
     private final InjectedValue<UndertowService> undertowService = new InjectedValue<>();
     private final InjectedValue<AccessLogService> accessLogService = new InjectedValue<>();
+    private final List<InjectedValue<FilterService>> injectedFilters = new CopyOnWriteArrayList<>();
     private final Set<Deployment> deployments = new CopyOnWriteArraySet<>();
 
     protected Host(String name, List<String> aliases, String defaultWebModule) {
@@ -68,12 +72,26 @@ public class Host implements Service<Host> {
 
     @Override
     public void start(StartContext context) throws StartException {
+        rootHandler = configureRootHandler();
+        server.getValue().registerHost(this);
+        UndertowLogger.ROOT_LOGGER.hostStarting(name);
+    }
+
+    private HttpHandler configureRootHandler() {
         AccessLogService logService = accessLogService.getOptionalValue();
         if (logService != null) {
             rootHandler = logService.configureAccessLogHandler(pathHandler);
         }
-        server.getValue().registerHost(this);
-        UndertowLogger.ROOT_LOGGER.hostStarting(name);
+        ArrayList<FilterService> filters = new ArrayList<>(injectedFilters.size());
+        for (InjectedValue<FilterService> injectedFilter : injectedFilters) {
+            filters.add(injectedFilter.getValue());
+        }
+        Collections.reverse(filters);
+        HttpHandler handler = rootHandler;
+        for (FilterService filter : filters) {
+            handler = filter.createHttpHandler(handler);
+        }
+        return handler;
     }
 
     @Override
@@ -170,5 +188,7 @@ public class Host implements Service<Host> {
         return Collections.unmodifiableSet(deployments);
     }
 
-
+    public List<InjectedValue<FilterService>> getInjectedFilters() {
+        return injectedFilters;
+    }
 }
