@@ -71,7 +71,7 @@ public class EJBSecurityViewConfigurator implements ViewConfigurator {
         // The getSecurityDomain() will return a null value if neither an explicit security domain is configured
         // for the bean nor there's any default security domain that's configured at EJB3 subsystem level.
         // In such cases, we do *not* apply any security interceptors
-        if (ejbComponentDescription.getSecurityDomain() == null) {
+        if (ejbComponentDescription.getSecurityDomain() == null || ejbComponentDescription.getSecurityDomain().isEmpty()) {
             ROOT_LOGGER.debug("Security is *not* enabled on EJB: " + ejbComponentDescription.getEJBName() +
                     ", since no explicit security domain is configured for the bean, nor is there any default security domain configured in the EJB3 subsystem");
             return;

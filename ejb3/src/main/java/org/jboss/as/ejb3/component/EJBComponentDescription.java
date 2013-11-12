@@ -808,7 +808,7 @@ public abstract class EJBComponentDescription extends ComponentDescription {
                 @Override
                 public void configureDependency(ServiceBuilder<?> serviceBuilder, Service<Component> service) throws DeploymentUnitProcessingException {
                     final String securityDomainName = SecurityDomainDependencyConfigurator.this.ejbComponentDescription.getSecurityDomain();
-                    if (securityDomainName != null) {
+                    if (securityDomainName != null && !securityDomainName.isEmpty()) {
                         final ServiceName securityDomainServiceName = SecurityDomainService.SERVICE_NAME.append(securityDomainName);
                         serviceBuilder.addDependency(securityDomainServiceName);
                     }
