@@ -172,7 +172,7 @@ public class ServerGroupAffectedResourceServerGroupOperationsTestCase extends Ab
         operation.get(OP_ADDR).set(pa.toModelNode());
         operation.get(OP).set(REMOVE);
 
-        ServerGroupRemoveHandler.INSTANCE.execute(operationContext, operation);
+        new ServerGroupRemoveHandler(null).execute(operationContext, operation);
 
         Assert.assertFalse(operationContext.isReloadRequired());
     }

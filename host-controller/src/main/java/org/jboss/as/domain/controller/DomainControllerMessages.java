@@ -581,4 +581,7 @@ public interface DomainControllerMessages {
     @Message(id = 10881, value = "There is already a deployment called %s with the same runtime name %s on server group %s")
     OperationFailedException runtimeNameMustBeUnique(String existingDeployment, String runtimeName, String serverGroup);
 
+    @Message(id = 10882, value = "Cannot remove server-group '%s' since it's still in use by servers %s")
+    OperationFailedException cannotRemoveUsedServerGroup(String group, Set<String> servers);
+
 }

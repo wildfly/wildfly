@@ -809,6 +809,18 @@ public class CoreResourceManagementTestCase {
         validateResponse(masterClient.execute(write));
     }
 
+    @Test
+    public void testCannotRemoveUsedServerGroup() throws Exception {
+
+        final DomainClient masterClient = domainMasterLifecycleUtil.getDomainClient();
+
+        final ModelNode operation = new ModelNode();
+        operation.get(OP).set(REMOVE);
+        operation.get(OP_ADDR).add(SERVER_GROUP, "main-server-group");
+
+        validateFailedResponse(masterClient.execute(operation));
+    }
+
     private void testCannotInvokeManagedServerOperationsComposite(ModelNode stepAddress) throws Exception {
         final DomainClient masterClient = domainMasterLifecycleUtil.getDomainClient();
 
