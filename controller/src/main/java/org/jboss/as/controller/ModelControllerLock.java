@@ -65,7 +65,7 @@ class ModelControllerLock {
         private final AtomicReference<Object> permitHolder = new AtomicReference<Object>(null);
 
         @Override
-        protected boolean tryAcquire(int permit) {
+        protected synchronized boolean tryAcquire(int permit) {
             final int c = getState();
             if (c == 0) {
                 if (compareAndSetState(0, 1)) {
@@ -87,7 +87,7 @@ class ModelControllerLock {
         }
 
         @Override
-        protected boolean tryRelease(int permit) {
+        protected synchronized boolean tryRelease(int permit) {
             final Object value = permitHolder.get();
             if (value == null) {
                 throw new IllegalStateException();
