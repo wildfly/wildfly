@@ -22,6 +22,7 @@ import java.lang.reflect.Member;
 import java.lang.reflect.Method;
 
 import javax.annotation.Resource;
+import javax.ejb.EJB;
 import javax.enterprise.inject.spi.Annotated;
 import javax.enterprise.inject.spi.InjectionPoint;
 
@@ -52,6 +53,32 @@ public class ResourceInjectionUtilities {
             return mappedName;
         }
         String name = resource.name();
+        if (!name.equals("")) {
+            return RESOURCE_LOOKUP_PREFIX + "/" + name;
+        }
+        String propertyName;
+        if (injectionPoint.getMember() instanceof Field) {
+            propertyName = injectionPoint.getMember().getName();
+        } else if (injectionPoint.getMember() instanceof Method) {
+            propertyName = getPropertyName((Method) injectionPoint.getMember());
+            if (propertyName == null) {
+                throw WeldMessages.MESSAGES.injectionPointNotAJavabean((Method) injectionPoint.getMember());
+            }
+        } else {
+            throw WeldMessages.MESSAGES.cannotInject(injectionPoint);
+        }
+        String className = injectionPoint.getMember().getDeclaringClass().getName();
+        return RESOURCE_LOOKUP_PREFIX + "/" + className + "/" + propertyName;
+    }
+
+
+    public static String getEjbBindLocation(InjectionPoint injectionPoint) {
+        EJB ejb = getResourceAnnotated(injectionPoint).getAnnotation(EJB.class);
+        String mappedName = ejb.mappedName();
+        if (!mappedName.equals("")) {
+            return mappedName;
+        }
+        String name = ejb.name();
         if (!name.equals("")) {
             return RESOURCE_LOOKUP_PREFIX + "/" + name;
         }
