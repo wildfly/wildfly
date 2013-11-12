@@ -61,12 +61,12 @@ public class MuxChannel extends JChannel {
 
     /**
      * Hack to workaround ISPN-3697.
-     * {@link #close} will be a no-op
+     * {@link #close} will just remove any registered up_handler
      * Channel will actually be closed via {@link #destroy()} called when the channel service is stopped..
      */
     @Override
     public void close() {
-        // Hide
+        this.setUpHandler(null);
     }
 
     /**

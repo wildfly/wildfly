@@ -34,6 +34,7 @@ import org.infinispan.configuration.global.ShutdownHookBehavior;
 import org.infinispan.configuration.global.TransportConfigurationBuilder;
 import org.infinispan.marshall.Ids;
 import org.jboss.as.clustering.infinispan.ChannelProvider;
+import org.jboss.as.clustering.infinispan.Marshaller;
 import org.jboss.as.clustering.infinispan.MBeanServerProvider;
 import org.jboss.as.clustering.infinispan.ManagedExecutorFactory;
 import org.jboss.as.clustering.infinispan.ManagedScheduledExecutorFactory;
@@ -118,6 +119,7 @@ public class EmbeddedCacheManagerConfigurationService implements Service<Embedde
         GlobalConfigurationBuilder builder = new GlobalConfigurationBuilder();
         ModuleLoader moduleLoader = this.dependencies.getModuleLoader();
         builder.serialization().classResolver(ModularClassResolver.getInstance(moduleLoader));
+        builder.serialization().marshaller(new Marshaller());
         try {
             ClassLoader loader = (this.moduleId != null) ? moduleLoader.loadModule(this.moduleId).getClassLoader() : EmbeddedCacheManagerConfiguration.class.getClassLoader();
             builder.classLoader(loader);
