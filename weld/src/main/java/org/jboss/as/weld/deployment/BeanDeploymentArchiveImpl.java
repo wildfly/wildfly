@@ -165,6 +165,13 @@ public class BeanDeploymentArchiveImpl implements BeanDeploymentArchive {
         return module;
     }
 
+    public ClassLoader getClassLoader() {
+        if (module != null) {
+            return module.getClassLoader();
+        }
+        return null;
+    }
+
     public boolean isRoot() {
         return root;
     }
