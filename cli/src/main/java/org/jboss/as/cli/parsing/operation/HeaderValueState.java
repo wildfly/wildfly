@@ -22,6 +22,7 @@
 package org.jboss.as.cli.parsing.operation;
 
 import org.jboss.as.cli.CommandFormatException;
+import org.jboss.as.cli.Util;
 import org.jboss.as.cli.parsing.CharacterHandler;
 import org.jboss.as.cli.parsing.DefaultParsingState;
 import org.jboss.as.cli.parsing.DefaultStateWithEndCharacter;
@@ -50,7 +51,9 @@ public class HeaderValueState extends DefaultParsingState {
         setEnterHandler(new CharacterHandler(){
             @Override
             public void handle(ParsingContext ctx) throws CommandFormatException {
-                if(ctx.getCharacter() != '=') {
+                if(ctx.begins(Util.PROPERTY_START)) {
+                    ctx.replaceProperty(true);
+                } else if(ctx.getCharacter() != '=') {
                     ctx.getCallbackHandler().character(ctx);
                 }
             }});

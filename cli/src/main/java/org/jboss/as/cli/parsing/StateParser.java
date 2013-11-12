@@ -25,6 +25,7 @@ import java.util.ArrayDeque;
 import java.util.Deque;
 
 import org.jboss.as.cli.CommandFormatException;
+import org.jboss.as.cli.Util;
 
 /**
  *
@@ -73,12 +74,7 @@ public class StateParser {
         ctx.location = 0;
         initialState.getEnterHandler().handle(ctx);
 
-        while (ctx.location < str.length()) {
-            ctx.ch = str.charAt(ctx.location);
-            final CharacterHandler handler = ctx.getState().getHandler(ctx.ch);
-            handler.handle(ctx);
-            ++ctx.location;
-        }
+        ctx.parse();
 
         ParsingState state = ctx.getState();
         while(state != ctx.initialState) {
@@ -101,6 +97,54 @@ public class StateParser {
         ParsingState initialState;
         boolean strict;
         CommandFormatException error;
+
+        void parse() throws CommandFormatException {
+            while (location < input.length()) {
+                ch = input.charAt(location);
+                final CharacterHandler handler = getState().getHandler(ch);
+                handler.handle(this);
+                ++location;
+            }
+        }
+
+        @Override
+        public boolean begins(String seq) {
+            if(location + seq.length() < input.length()) {
+                int i = 0;
+                while(i < seq.length()) {
+                    if(input.charAt(location + i) != seq.charAt(i++)) {
+                        return false;
+                    }
+                }
+                return true;
+            }
+            return false;
+        }
+
+        @Override
+        public void replaceProperty(boolean exceptionIfNotResolved) throws CommandFormatException {
+            if(input.charAt(location) == '$' &&
+                    input.length() > location + 3 && // there must be opening {, closing } and something in the middle
+                    input.charAt(location + 1) == '{') {
+                final int end = input.indexOf('}', location + 2);
+                if(end == -1) {
+                    return;
+                }
+                final String prop = input.substring(location, end + 1);
+                final String resolved = Util.resolveProperties(prop);
+                if (!resolved.equals(prop)) {
+                    StringBuilder buf = new StringBuilder(input.length() - prop.length() + resolved.length());
+                    buf.append(input.substring(0, location)).append(resolved);
+                    if (end < input.length() - 1) {
+                        buf.append(input.substring(end + 1));
+                    }
+                    input = buf.toString();
+                    --location;
+                } else if(exceptionIfNotResolved) {
+                    throw new CommandFormatException("Couldn't resolve property " + prop + " in '" + input + "'");
+                }
+            }
+        }
 
         @Override
         public boolean isStrict() {

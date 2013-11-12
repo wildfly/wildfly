@@ -41,6 +41,14 @@ class SecurityActions {
             public static String getSystemProperty(String name) {
                 return getTCLAction().getSystemProperty(name);
             }
+
+            public static void setSystemProperty(String name, String value) {
+                getTCLAction().setSystemProperty(name, value);
+            }
+
+            public static void clearSystemProperty(String name) {
+                getTCLAction().clearSystemProperty(name);
+            }
         }
 
         TCLAction NON_PRIVILEGED = new TCLAction() {
@@ -48,6 +56,16 @@ class SecurityActions {
             @Override
             public String getSystemProperty(String name) {
                 return System.getProperty(name);
+            }
+
+            @Override
+            public void setSystemProperty(String name, String value) {
+                System.setProperty(name, value);
+            }
+
+            @Override
+            public void clearSystemProperty(String name) {
+                System.clearProperty(name);
             }
         };
 
@@ -61,12 +79,44 @@ class SecurityActions {
                     }
                 });
             }
+
+            @Override
+            public void setSystemProperty(final String name, final String value) {
+                AccessController.doPrivileged(new PrivilegedAction<Object>() {
+                    public Object run() {
+                        System.setProperty(name, value);
+                        return null;
+                    }
+                });
+            }
+
+            @Override
+            public void clearSystemProperty(final String name) {
+                AccessController.doPrivileged(new PrivilegedAction<Object>() {
+                    public Object run() {
+                        System.clearProperty(name);
+                        return null;
+                    }
+                });
+            }
         };
 
         String getSystemProperty(String name);
+
+        void setSystemProperty(String name, String value);
+
+        void clearSystemProperty(String name);
     }
 
     protected static String getSystemProperty(String name) {
         return TCLAction.UTIL.getSystemProperty(name);
+    }
+
+    protected static void setSystemProperty(String name, String value) {
+        TCLAction.UTIL.setSystemProperty(name, value);
+    }
+
+    protected static void clearSystemProperty(String name) {
+        TCLAction.UTIL.clearSystemProperty(name);
     }
 }
