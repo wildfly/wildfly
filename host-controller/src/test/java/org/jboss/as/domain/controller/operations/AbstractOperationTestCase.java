@@ -232,7 +232,9 @@ public abstract class AbstractOperationTestCase {
                     }
 
                 }
-                fail("Should not have added step for: " + opAddress);
+                if (stage != Stage.VERIFY) {
+                    fail("Should not have added step for: " + opAddress);
+                }
             }
             expectedSteps.remove(opAddress);
             List<OperationAndHandler> stageList = addedSteps.get(stage);

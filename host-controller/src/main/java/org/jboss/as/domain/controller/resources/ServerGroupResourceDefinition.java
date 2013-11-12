@@ -36,6 +36,7 @@ import org.jboss.as.controller.operations.validation.IntRangeValidator;
 import org.jboss.as.controller.operations.validation.StringLengthValidator;
 import org.jboss.as.controller.parsing.Attribute;
 import org.jboss.as.controller.registry.ManagementResourceRegistration;
+import org.jboss.as.domain.controller.LocalHostControllerInfo;
 import org.jboss.as.domain.controller.operations.DomainServerLifecycleHandlers;
 import org.jboss.as.domain.controller.operations.ServerGroupAddHandler;
 import org.jboss.as.domain.controller.operations.ServerGroupProfileWriteAttributeHandler;
@@ -94,8 +95,9 @@ public class ServerGroupResourceDefinition extends SimpleResourceDefinition {
     private final HostFileRepository fileRepository;
     private final DomainControllerRuntimeIgnoreTransformationRegistry runtimeIgnoreTransformationRegistry;
 
-    public ServerGroupResourceDefinition(final boolean master, final ContentRepository contentRepo, final HostFileRepository fileRepository, final DomainControllerRuntimeIgnoreTransformationRegistry registry) {
-        super(PATH, DomainResolver.getResolver(SERVER_GROUP, false), new ServerGroupAddHandler(master), ServerGroupRemoveHandler.INSTANCE);
+    public ServerGroupResourceDefinition(final boolean master, final LocalHostControllerInfo hostInfo, final ContentRepository contentRepo,
+                                         final HostFileRepository fileRepository, final DomainControllerRuntimeIgnoreTransformationRegistry registry) {
+        super(PATH, DomainResolver.getResolver(SERVER_GROUP, false), new ServerGroupAddHandler(master), new ServerGroupRemoveHandler(hostInfo));
         this.master = master;
         this.contentRepo = contentRepo;
         this.fileRepository = fileRepository;
