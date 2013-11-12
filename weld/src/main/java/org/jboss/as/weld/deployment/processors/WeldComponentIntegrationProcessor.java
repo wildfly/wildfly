@@ -27,9 +27,13 @@ import static org.jboss.as.weld.util.Utils.getRootDeploymentUnit;
 import java.util.HashSet;
 import java.util.Set;
 
+import javax.enterprise.inject.spi.InterceptionType;
+
+import org.jboss.as.ee.component.BasicComponentInstance;
 import org.jboss.as.ee.component.ComponentConfiguration;
 import org.jboss.as.ee.component.ComponentConfigurator;
 import org.jboss.as.ee.component.ComponentDescription;
+import org.jboss.as.ee.component.ComponentInstance;
 import org.jboss.as.ee.component.ComponentStartService;
 import org.jboss.as.ee.component.DependencyConfigurator;
 import org.jboss.as.ee.component.EEModuleDescription;
@@ -41,6 +45,7 @@ import org.jboss.as.ee.weld.WeldDeploymentMarker;
 import org.jboss.as.ejb3.component.EJBComponentDescription;
 import org.jboss.as.ejb3.component.stateful.SerializedCdiInterceptorsKey;
 import org.jboss.as.ejb3.component.stateful.StatefulComponentDescription;
+import org.jboss.as.naming.ManagedReference;
 import org.jboss.as.server.deployment.Attachments;
 import org.jboss.as.server.deployment.DeploymentPhaseContext;
 import org.jboss.as.server.deployment.DeploymentUnit;
@@ -61,14 +66,15 @@ import org.jboss.as.weld.injection.WeldInjectionContextInterceptor;
 import org.jboss.as.weld.injection.WeldInjectionInterceptor;
 import org.jboss.as.weld.injection.WeldInterceptorInjectionInterceptor;
 import org.jboss.as.weld.injection.WeldManagedReferenceFactory;
+import org.jboss.as.weld.util.Utils;
 import org.jboss.invocation.ImmediateInterceptorFactory;
+import org.jboss.invocation.Interceptor;
+import org.jboss.invocation.InterceptorContext;
 import org.jboss.modules.ModuleClassLoader;
 import org.jboss.msc.service.ServiceBuilder;
 import org.jboss.msc.service.ServiceName;
 import org.jboss.msc.service.ServiceTarget;
 import org.jboss.weld.ejb.spi.InterceptorBindings;
-
-import javax.enterprise.inject.spi.InterceptionType;
 
 /**
  * Deployment unit processor that add the {@link org.jboss.as.weld.injection.WeldManagedReferenceFactory} instantiator
@@ -181,6 +187,20 @@ public class WeldComponentIntegrationProcessor implements DeploymentUnitProcesso
             addCommonLifecycleInterceptionSupport(configuration, builder, bindingServiceName, weldServiceName);
 
             configuration.addComponentInterceptor(new UserInterceptorFactory(factory(InterceptionType.AROUND_INVOKE, builder, bindingServiceName), factory(InterceptionType.AROUND_TIMEOUT, builder, bindingServiceName)), InterceptorOrder.Component.CDI_INTERCEPTORS, false);
+        } else if (!Utils.isComponentWithView(description)) {
+            // for components with no view register interceptors that delegate to InjectionTarget lifecycle methods to trigger lifecycle interception
+            configuration.addPostConstructInterceptor(new ImmediateInterceptorFactory(new AbstractInjectionTargetDelegatingInterceptor() {
+                @Override
+                protected void run(Object instance) {
+                    weldComponentService.getInjectionTarget().postConstruct(instance);
+                }
+            }), InterceptorOrder.ComponentPostConstruct.CDI_INTERCEPTORS);
+            configuration.addPreDestroyInterceptor(new ImmediateInterceptorFactory(new AbstractInjectionTargetDelegatingInterceptor() {
+                @Override
+                protected void run(Object instance) {
+                    weldComponentService.getInjectionTarget().preDestroy(instance);
+                }
+            }), InterceptorOrder.ComponentPreDestroy.CDI_INTERCEPTORS);
         }
 
         builder.install();
@@ -225,6 +245,22 @@ public class WeldComponentIntegrationProcessor implements DeploymentUnitProcesso
 
     @Override
     public void undeploy(DeploymentUnit context) {
+    }
 
+    /**
+     * Retrieves ManagedReference from the interceptor context and performs an InjectionTarget operation on the instance
+     */
+    private abstract static class AbstractInjectionTargetDelegatingInterceptor implements Interceptor {
+
+        @Override
+        public Object processInvocation(InterceptorContext context) throws Exception {
+            ManagedReference reference = (ManagedReference) context.getPrivateData(ComponentInstance.class).getInstanceData(BasicComponentInstance.INSTANCE_KEY);
+            if (reference != null) {
+                run(reference.getInstance());
+            }
+            return context.proceed();
+        }
+
+        protected abstract void run(Object instance);
     }
 }
