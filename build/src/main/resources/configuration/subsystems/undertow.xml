@@ -34,8 +34,7 @@
             <http-listener name="default" socket-binding="http" />
             <?AJP?>
             <host name="default-host" alias="localhost">
-                <location name="/" handler="welcome-content">
-                </location>
+                <location name="/" handler="welcome-content" />
             </host>
         </server>
         <servlet-container name="default" default-buffer-cache="default" stack-trace-on-error="local-only" >

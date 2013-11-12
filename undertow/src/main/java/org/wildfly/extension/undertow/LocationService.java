@@ -24,6 +24,7 @@ package org.wildfly.extension.undertow;
 
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.List;
 import java.util.concurrent.CopyOnWriteArrayList;
 
 import io.undertow.server.HttpHandler;
@@ -72,7 +73,7 @@ public class LocationService implements Service<LocationService> {
         return httpHandler;
     }
 
-    CopyOnWriteArrayList<InjectedValue<FilterService>> getInjectedFilters() {
+    List<InjectedValue<FilterService>> getInjectedFilters() {
         return injectedFilters;
     }
 

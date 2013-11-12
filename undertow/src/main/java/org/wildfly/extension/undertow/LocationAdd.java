@@ -86,7 +86,7 @@ class LocationAdd extends AbstractAddStepHandler {
         }
     }
 
-    private void configureFilterRef(final ModelNode model, ServiceBuilder<LocationService> builder, LocationService service) {
+    private static void configureFilterRef(final ModelNode model, ServiceBuilder<LocationService> builder, LocationService service) {
         if (model.hasDefined(Constants.FILTER_REF)) {
             for (Property property : model.get(Constants.FILTER_REF).asPropertyList()) {
                 String name = property.getName();

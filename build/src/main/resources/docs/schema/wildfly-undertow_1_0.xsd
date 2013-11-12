@@ -129,8 +129,9 @@
     </xs:complexType>
     <xs:complexType name="hostType">
         <xs:sequence>
-            <xs:element name="location" type="locationType" maxOccurs="1" minOccurs="0"/>
+            <xs:element name="location" type="locationType" minOccurs="0" maxOccurs="unbounded"/>
             <xs:element name="access-log" type="accessLogType" maxOccurs="1" minOccurs="0"/>
+            <xs:element name="filter-ref" type="filter-refType" minOccurs="0" maxOccurs="unbounded"/>
         </xs:sequence>
         <xs:attribute name="name" use="required" type="xs:string"/>
         <xs:attribute name="alias" use="optional" type="xs:string"/>
@@ -193,6 +194,7 @@
         <xs:sequence>
             <xs:element name="basic-auth" type="basic-authType" minOccurs="0" maxOccurs="unbounded"/>
             <xs:element name="connection-limit" type="connection-limitType" minOccurs="0" maxOccurs="unbounded"/>
+            <xs:element name="response-header" type="response-headerType" minOccurs="0" maxOccurs="unbounded"/>
         </xs:sequence>
     </xs:complexType>
 
@@ -203,6 +205,9 @@
     </xs:complexType>
 
     <xs:complexType name="locationType">
+        <xs:sequence>
+            <xs:element name="filter-ref" type="filter-refType" minOccurs="0" maxOccurs="unbounded"/>
+        </xs:sequence>
         <xs:attribute name="name" use="required" type="xs:string"/>
         <xs:attribute name="handler" use="required" type="xs:string"/>
     </xs:complexType>
@@ -242,6 +247,10 @@
         <xs:attribute name="name" use="required" type="xs:string"/>
     </xs:complexType>
 
+    <xs:complexType name="filter-refType">
+        <xs:attribute name="name" use="required" type="xs:string"/>
+    </xs:complexType>
+
     <xs:complexType name="buffer-cachesType">
         <xs:annotation>
             <xs:documentation>
@@ -278,5 +287,10 @@
     <xs:complexType name="connection-limitType">
         <xs:attribute name="name" use="required" type="xs:string"/>
         <xs:attribute name="max-concurrent-requests" use="required" type="xs:integer"/>
+    </xs:complexType>
+    <xs:complexType name="response-headerType">
+        <xs:attribute name="name" use="required" type="xs:string"/>
+        <xs:attribute name="header-name" use="required" type="xs:string"/>
+        <xs:attribute name="header-value" use="required" type="xs:string"/>
     </xs:complexType>
 </xs:schema>
