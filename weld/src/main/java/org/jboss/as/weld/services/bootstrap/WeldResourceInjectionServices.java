@@ -37,6 +37,7 @@ import org.jboss.weld.injection.spi.helpers.SimpleResourceReference;
 import javax.annotation.Resource;
 import javax.ejb.TimerService;
 import javax.ejb.spi.HandleDelegate;
+import javax.enterprise.inject.Produces;
 import javax.enterprise.inject.spi.InjectionPoint;
 import javax.naming.Context;
 import javax.naming.InitialContext;
@@ -125,7 +126,7 @@ public class WeldResourceInjectionServices extends AbstractResourceInjectionServ
     @Override
     public ResourceReferenceFactory<Object> registerResourceInjectionPoint(final InjectionPoint injectionPoint) {
         final String result = getResourceName(injectionPoint);
-        if (isKnownNamespace(result)) {
+        if (isKnownNamespace(result) && injectionPoint.getAnnotated().isAnnotationPresent(Produces.class)) {
             validateResourceInjectionPointType(getManagedReferenceFactory(getBindInfo(result)), injectionPoint);
         }
         return new ResourceReferenceFactory<Object>() {
