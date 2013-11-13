@@ -370,7 +370,7 @@ final class HandlerOperations {
                     for (AttributeDefinition attribute : getAttributes()) {
                         if (attribute.getName().equals(attributeName)) {
                             handleProperty(attribute, context, value, logContextConfiguration, configuration, false);
-                            restartRequired = Logging.requiresRestart(attribute.getFlags());
+                            restartRequired = Logging.requiresReload(attribute.getFlags());
                             break;
                         }
                     }
