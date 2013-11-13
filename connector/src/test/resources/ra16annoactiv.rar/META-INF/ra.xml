@@ -25,12 +25,12 @@
             <connection-impl-class>org.jboss.jca.test.deployers.spec.rars.TestConnection</connection-impl-class>
          </connection-definition>
          <!-- overwrite -->
-     
+
          <transaction-support>LocalTransaction</transaction-support>
          <reauthentication-support>false</reauthentication-support>
       </outbound-resourceadapter>
       <inbound-resourceadapter>
-         <messageadapter>        
+         <messageadapter>
             <messagelistener>
                <messagelistener-type>org.jboss.jca.test.deployers.spec.rars.MessageListener</messagelistener-type>
                <activationspec>

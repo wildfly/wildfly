@@ -112,7 +112,7 @@ public final class ResourceAdapterXmlDeploymentService extends AbstractResourceA
             } catch (Throwable t) {
                 // To clean up we need to invoke blocking behavior, so do that in another thread
                 // and let this MSC thread return
-                cleanupStartAsync(context, raName, t);
+                cleanupStartAsync(context, raName, deploymentServiceName, t);
                 return;
             }
             String id = ((ModifiableResourceAdapter) raxml).getId();

@@ -120,12 +120,14 @@ public final class ResourceAdapterActivatorService extends AbstractResourceAdapt
         } catch (Throwable e) {
             // To clean up we need to invoke blocking behavior, so do that in another thread
             // and let this MSC thread return
-            cleanupStartAsync(context, deploymentName, e);
+            String raName = deploymentName;
+            ServiceName raServiceName = ConnectorServices.getResourceAdapterServiceName(raName);
+            cleanupStartAsync(context, deploymentName, raServiceName, e);
             return;
         }
-
         String raName = deploymentMD.getDeploymentName();
         ServiceName raServiceName = ConnectorServices.getResourceAdapterServiceName(raName);
+
 
         value = new ResourceAdapterDeployment(deploymentMD, raName, raServiceName);
         registry.getValue().registerResourceAdapterDeployment(value);

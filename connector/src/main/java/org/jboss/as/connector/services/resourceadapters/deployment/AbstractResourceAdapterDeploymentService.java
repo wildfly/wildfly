@@ -53,6 +53,7 @@ import org.jboss.as.connector.util.Injection;
 import org.jboss.as.connector.util.JCAValidatorFactory;
 import org.jboss.as.naming.ManagedReferenceFactory;
 import org.jboss.as.naming.ServiceBasedNamingStore;
+import org.jboss.as.naming.WritableServiceBasedNamingStore;
 import org.jboss.as.naming.deployment.ContextNames;
 import org.jboss.as.naming.service.BinderService;
 import org.jboss.jca.common.api.metadata.ironjacamar.IronJacamar;
@@ -190,6 +191,8 @@ public abstract class AbstractResourceAdapterDeploymentService {
                 try {
                     WildFlySecurityManager.setCurrentContextClassLoaderPrivileged(value.getDeployment().getResourceAdapter().getClass().getClassLoader());
                     value.getDeployment().getResourceAdapter().stop();
+                } catch (Throwable nfe) {
+                    DEPLOYMENT_CONNECTOR_LOGGER.warn("Exception during stopping resource adapter", nfe);
                 } finally {
                     WildFlySecurityManager.setCurrentContextClassLoaderPrivileged(old);
                 }
@@ -267,7 +270,8 @@ public abstract class AbstractResourceAdapterDeploymentService {
         return true;
     }
 
-    protected final void cleanupStartAsync(final StartContext context, final String deploymentName, final Throwable cause) {
+    protected final void cleanupStartAsync(final StartContext context, final String deploymentName,
+                final ServiceName serviceName, final Throwable cause) {
         ExecutorService executorService = getLifecycleExecutorService();
         Runnable r = new Runnable() {
             @Override
@@ -276,8 +280,10 @@ public abstract class AbstractResourceAdapterDeploymentService {
                     // TODO -- one of the 3 previous synchronous calls to this method don't had the TCCL set,
                     // but the other two don't. I (BES 2013/10/21) intepret from that that setting the TCCL
                     // was not necessary and in caller that had it set it was an artifact of
+                    WritableServiceBasedNamingStore.pushOwner(serviceName);
                     unregisterAll(deploymentName);
                 } finally {
+                    WritableServiceBasedNamingStore.popOwner();
                     context.failed(MESSAGES.failedToStartRaDeployment(cause, deploymentName));
                 }
             }
@@ -298,8 +304,10 @@ public abstract class AbstractResourceAdapterDeploymentService {
             public void run() {
                 try {
                     DEPLOYMENT_CONNECTOR_LOGGER.debugf("Stopping service %s", serviceName);
+                    WritableServiceBasedNamingStore.pushOwner(serviceName);
                     unregisterAll(deploymentName);
                 } finally {
+                    WritableServiceBasedNamingStore.popOwner();
                     context.complete();
                 }
             }
