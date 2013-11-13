@@ -584,4 +584,7 @@ public interface DomainControllerMessages {
     @Message(id = 10882, value = "Cannot remove server-group '%s' since it's still in use by servers %s")
     OperationFailedException cannotRemoveUsedServerGroup(String group, Set<String> servers);
 
+    @Message(id = 10883, value = "Wildcard operations are not supported as part of composite operations")
+    OperationFailedException unsupportedWildcardOperation();
+
 }
