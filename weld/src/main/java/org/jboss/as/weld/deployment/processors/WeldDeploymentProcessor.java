@@ -244,7 +244,7 @@ public class WeldDeploymentProcessor implements DeploymentUnitProcessor {
             setupActions.add(naming);
         }
 
-        final WeldStartService weldStartService = new WeldStartService(setupActions, module.getClassLoader());
+        final WeldStartService weldStartService = new WeldStartService(setupActions, module.getClassLoader(), Utils.getRootDeploymentUnit(deploymentUnit).getServiceName());
 
         ServiceBuilder<WeldStartService> startService = serviceTarget.addService(deploymentUnit.getServiceName().append(WeldStartService.SERVICE_NAME), weldStartService)
                 .addDependency(weldBootstrapServiceName, WeldBootstrapService.class, weldStartService.getBootstrap())
