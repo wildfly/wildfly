@@ -43,11 +43,13 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.PathElement;
 import org.jboss.as.controller.extension.ExtensionRegistry;
 import org.jboss.as.controller.operations.common.Util;
 import org.jboss.as.controller.registry.Resource;
+import org.jboss.as.domain.controller.DomainControllerMessages;
 import org.jboss.as.domain.controller.ServerIdentity;
 import org.jboss.as.host.controller.IgnoredNonAffectedServerGroupsUtil;
 import org.jboss.as.host.controller.IgnoredNonAffectedServerGroupsUtil.ServerConfigInfo;
@@ -123,6 +125,7 @@ interface HostControllerExecutionSupport {
          * @param hostName the name of the host executing the operation
          * @param domainModelProvider source for the domain model
          * @param ignoredDomainResourceRegistry registry of resource addresses that should be ignored
+         * @throws OperationFailedException
          *
          * @return the HostControllerExecutionSupport
          */
@@ -131,9 +134,9 @@ interface HostControllerExecutionSupport {
                                                             final DomainModelProvider domainModelProvider,
                                                             final IgnoredDomainResourceRegistry ignoredDomainResourceRegistry,
                                                             final boolean isRemoteDomainControllerIgnoreUnaffectedConfiguration,
-                                                            final ExtensionRegistry extensionRegistry) {
+                                                            final ExtensionRegistry extensionRegistry) throws OperationFailedException {
             String targetHost = null;
-            String runningServerTarget = null;
+            PathElement runningServerTarget = null;
             ModelNode runningServerOp = null;
 
             final PathAddress address = PathAddress.pathAddress(operation.get(OP_ADDR));
@@ -142,8 +145,8 @@ interface HostControllerExecutionSupport {
                 if (HOST.equals(first.getKey())) {
                     targetHost = first.getValue();
                     if (address.size() > 1 && RUNNING_SERVER.equals(address.getElement(1).getKey())) {
-                        runningServerTarget = address.getElement(1).getValue();
-                        ModelNode relativeAddress = new ModelNode();
+                        runningServerTarget = address.getElement(1);
+                        ModelNode relativeAddress = new ModelNode().setEmptyList();
                         for (int i = 2; i < address.size(); i++) {
                             PathElement element = address.getElement(i);
                             relativeAddress.add(element.getKey(), element.getValue());
@@ -164,9 +167,16 @@ interface HostControllerExecutionSupport {
             else if (runningServerTarget != null) {
                 // HostControllerExecutionSupport representing a server op
                 final Resource domainModel = domainModelProvider.getDomainModel();
-                final String serverGroup = domainModel.getChild(PathElement.pathElement(HOST, targetHost)).getChild(PathElement.pathElement(SERVER_CONFIG, runningServerTarget)).getModel().require(GROUP).asString();
-                final ServerIdentity serverIdentity = new ServerIdentity(targetHost, serverGroup, runningServerTarget);
-                result = new DirectServerOpExecutionSupport(serverIdentity, runningServerOp);
+                final Resource hostModel = domainModel.getChild(PathElement.pathElement(HOST, targetHost));
+                if (runningServerTarget.isMultiTarget()) {
+                    // TODO WFLY-723
+                    throw DomainControllerMessages.MESSAGES.unsupportedWildcardOperation();
+                } else {
+                    final String serverName = runningServerTarget.getValue();
+                    final String serverGroup = hostModel.getChild(PathElement.pathElement(SERVER_CONFIG, serverName)).getModel().require(GROUP).asString();
+                    final ServerIdentity serverIdentity = new ServerIdentity(targetHost, serverGroup, serverName);
+                    result = new DirectServerOpExecutionSupport(serverIdentity, runningServerOp);
+                }
             }
             else if (COMPOSITE.equals(operation.require(OP).asString())) {
                 // Recurse into the steps to see what's required
