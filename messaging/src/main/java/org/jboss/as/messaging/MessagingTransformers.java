@@ -43,7 +43,6 @@ import static org.jboss.as.messaging.CommonAttributes.ID_CACHE_SIZE;
 import static org.jboss.as.messaging.CommonAttributes.REMOTING_INCOMING_INTERCEPTORS;
 import static org.jboss.as.messaging.CommonAttributes.REMOTING_OUTGOING_INTERCEPTORS;
 import static org.jboss.as.messaging.CommonAttributes.REPLICATION_CLUSTERNAME;
-import static org.jboss.as.messaging.CommonAttributes.RUNTIME_QUEUE;
 import static org.jboss.as.messaging.MessagingExtension.VERSION_1_1_0;
 import static org.jboss.as.messaging.MessagingExtension.VERSION_1_2_0;
 import static org.jboss.as.messaging.MessagingExtension.VERSION_1_2_1;
@@ -79,6 +78,7 @@ import org.jboss.dmr.ModelNode;
  * <p/>
  * <a href="http://jmesnil.net/">Jeff Mesnil</a> (c) 2012 Red Hat, inc.
  */
+
 public class MessagingTransformers {
 
     static void registerTransformers(final SubsystemRegistration subsystem) {
@@ -94,9 +94,6 @@ public class MessagingTransformers {
 
         // discard JMS bridge resources added in 1.2.0
         subsystemRoot.rejectChildResource(JMSBridgeDefinition.PATH);
-        // discard runtime resources
-        subsystemRoot.rejectChildResource(CoreAddressDefinition.PATH);
-        subsystemRoot.rejectChildResource(pathElement(RUNTIME_QUEUE));
 
         ResourceTransformationDescriptionBuilder hornetqServer = subsystemRoot.addChildResource(pathElement(HORNETQ_SERVER));
         rejectAttributesWithExpression(hornetqServer, HornetQServerResourceDefinition.ATTRIBUTES_WITH_EXPRESSION_ALLOWED_IN_1_2_0);
