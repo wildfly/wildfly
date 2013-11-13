@@ -610,6 +610,20 @@
           <xs:element maxOccurs="1" minOccurs="1" name="type" type="groupingHandlerTypeType"/>
           <xs:element maxOccurs="1" minOccurs="1" name="address" type="xs:string"/>
           <xs:element maxOccurs="1" minOccurs="0" name="timeout" type="xs:int"/>
+           <xs:element maxOccurs="1" minOccurs="0" name="group-timeout" type="xs:long" >
+               <xs:annotation>
+                   <xs:documentation>
+                       How long a group binding will be used, -1 means for ever. Bindings are removed after this wait elapses (only valid for LOCAL handlers).
+                   </xs:documentation>
+               </xs:annotation>
+           </xs:element>
+           <xs:element maxOccurs="1" minOccurs="0" name="reaper-period" type="xs:long" >
+               <xs:annotation>
+                   <xs:documentation>
+                       How often the reaper will be run to check for timed out group bindings (only valid for LOCAL handlers).
+                   </xs:documentation>
+               </xs:annotation>
+           </xs:element>
        </xs:sequence>
        <xs:attribute name="name" type="xs:string" use="required"/>
     </xs:complexType>

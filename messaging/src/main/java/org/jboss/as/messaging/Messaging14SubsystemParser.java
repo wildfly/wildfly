@@ -56,4 +56,16 @@ public class Messaging14SubsystemParser extends Messaging13SubsystemParser {
             }
         }
     }
+
+    @Override
+    protected void handleUnknownGroupingHandlerAttribute(XMLExtendedStreamReader reader, Element element, ModelNode operation) throws XMLStreamException {
+        switch(element) {
+            case GROUP_TIMEOUT:
+            case REAPER_PERIOD:
+                handleElementText(reader, element, operation);
+                break;
+            default:
+                super.handleUnknownGroupingHandlerAttribute(reader, element, operation);
+        }
+    }
 }

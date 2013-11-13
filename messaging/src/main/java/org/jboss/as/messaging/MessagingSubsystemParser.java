@@ -628,7 +628,7 @@ public class MessagingSubsystemParser implements XMLStreamConstants, XMLElementR
                     break;
                 }
                 default: {
-                    throw ParseUtils.unexpectedElement(reader);
+                    handleUnknownGroupingHandlerAttribute(reader, element, groupingHandlerAdd);
                 }
             }
         }
@@ -638,6 +638,10 @@ public class MessagingSubsystemParser implements XMLStreamConstants, XMLElementR
         }
 
         updates.add(groupingHandlerAdd);
+    }
+
+    protected void handleUnknownGroupingHandlerAttribute(XMLExtendedStreamReader reader, Element element, ModelNode operation) throws XMLStreamException {
+        throw ParseUtils.unexpectedElement(reader);
     }
 
     private void processRemotingInterceptors(XMLExtendedStreamReader reader, ModelNode operation) throws XMLStreamException {

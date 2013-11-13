@@ -328,7 +328,8 @@ public class MessagingSubsystem14TestCase extends AbstractSubsystemBaseTest {
                                 new RejectExpressionsConfig(BridgeDefinition.ATTRIBUTES_WITH_EXPRESSION_ALLOWED_IN_1_2_0))
                         .addFailedAttribute(
                                 subsystemAddress.append(HORNETQ_SERVER_PATH).append(GroupingHandlerDefinition.PATH),
-                                new RejectExpressionsConfig(GroupingHandlerDefinition.ATTRIBUTES_WITH_EXPRESSION_ALLOWED_IN_1_2_0))
+                                createChainedConfig(new AttributeDefinition[] { GroupingHandlerDefinition.TYPE, GroupingHandlerDefinition.GROUPING_HANDLER_ADDRESS, GroupingHandlerDefinition.TIMEOUT },
+                                        new AttributeDefinition[] { GroupingHandlerDefinition.GROUP_TIMEOUT, GroupingHandlerDefinition.REAPER_PERIOD }))
                         .addFailedAttribute(
                                 subsystemAddress.append(HORNETQ_SERVER_PATH).append(AddressSettingDefinition.PATH),
                                 new RejectExpressionsConfig(AddressSettingDefinition.ATTRIBUTES_WITH_EXPRESSION_ALLOWED_IN_1_2_0))
@@ -381,6 +382,11 @@ public class MessagingSubsystem14TestCase extends AbstractSubsystemBaseTest {
                                 createChainedConfig(
                                         new AttributeDefinition[]{},
                                         new AttributeDefinition[] { MAX_SAVED_REPLICATED_JOURNAL_SIZE }))
+                        .addFailedAttribute(
+                                subsystemAddress.append(HORNETQ_SERVER_PATH, GroupingHandlerDefinition.PATH),
+                                createChainedConfig(
+                                        new AttributeDefinition[] {},
+                                        new AttributeDefinition[] { GroupingHandlerDefinition.GROUP_TIMEOUT, GroupingHandlerDefinition.REAPER_PERIOD }))
         );
     }
 

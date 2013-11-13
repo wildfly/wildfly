@@ -248,6 +248,8 @@
                 <type>${grouping.type:LOCAL}</type>
                 <address>${address:handler-address}</address>
                 <timeout>${timeout:5000}</timeout>
+                <group-timeout>${group-timeout:1234}</group-timeout>
+                <reaper-period>${reaper-period:5678}</reaper-period>
             </grouping-handler>
             <security-settings>
                <security-setting match="#">
