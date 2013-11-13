@@ -780,7 +780,7 @@ public class ManagementXml {
                     switch (expectedNs) {
                         case DOMAIN_1_3:
                         case DOMAIN_1_4:
-                            parseAuthorization_1_3(reader, expectedNs, add, list);
+                            parseAuthorization_1_3(reader, expectedNs, realmAddress, list);
                             break;
                         default:
                             parseAuthorization_2_0(reader, expectedNs, add, list);
@@ -1704,8 +1704,7 @@ public class ManagementXml {
     }
 
     private static void parseAuthorization_1_3(final XMLExtendedStreamReader reader, final Namespace expectedNs,
-            final ModelNode realmAdd, final List<ModelNode> list) throws XMLStreamException {
-        ModelNode realmAddress = realmAdd.get(OP_ADDR);
+            final ModelNode realmAddress, final List<ModelNode> list) throws XMLStreamException {
 
         boolean authzFound = false;
         while (reader.hasNext() && reader.nextTag() != END_ELEMENT) {
