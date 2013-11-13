@@ -69,6 +69,7 @@ import org.junit.runner.RunWith;
  */
 @RunWith(Arquillian.class)
 @RunAsClient
+@Ignore("WFLY-2298")
 public class ClusterPassivationTestCase extends ClusterAbstractTestCase {
     private static Logger log = Logger.getLogger(ClusterPassivationTestCase.class);
     public static final String ARCHIVE_NAME = "cluster-passivation-test";

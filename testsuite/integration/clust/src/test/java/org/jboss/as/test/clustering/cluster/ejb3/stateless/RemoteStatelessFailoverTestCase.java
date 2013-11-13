@@ -52,6 +52,7 @@ import org.jboss.shrinkwrap.api.spec.JavaArchive;
 import org.junit.AfterClass;
 import org.junit.Assert;
 import org.junit.BeforeClass;
+import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
@@ -62,6 +63,7 @@ import org.junit.runner.RunWith;
  */
 @RunWith(Arquillian.class)
 @RunAsClient
+@Ignore("WFLY-2298")
 public class RemoteStatelessFailoverTestCase extends ClusterAbstractTestCase {
     private static final Logger log = Logger.getLogger(RemoteStatelessFailoverTestCase.class);
     private static final String MODULE_NAME = "remote-ejb-client-stateless-bean-failover-test";
