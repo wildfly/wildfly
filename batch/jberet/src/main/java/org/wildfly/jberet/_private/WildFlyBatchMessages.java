@@ -24,7 +24,7 @@ package org.wildfly.jberet._private;
 
 import org.jboss.logging.Messages;
 import org.jboss.logging.annotations.Message;
-import org.jboss.logging.annotations.MessageLogger;
+import org.jboss.logging.annotations.MessageBundle;
 import org.jboss.logging.annotations.ValidIdRange;
 
 /**
@@ -32,7 +32,7 @@ import org.jboss.logging.annotations.ValidIdRange;
  *
  * @author <a href="mailto:jperkins@redhat.com">James R. Perkins</a>
  */
-@MessageLogger(projectCode = "JBAS")
+@MessageBundle(projectCode = "JBAS")
 @ValidIdRange(min = 20560, max = 20599)
 public interface WildFlyBatchMessages {
 
@@ -58,4 +58,12 @@ public interface WildFlyBatchMessages {
      */
     @Message(id = 20561, value = "Invalid job repository type '%s'.")
     IllegalArgumentException invalidJobRepositoryType(String type);
+
+    /**
+     * Creates an exception indicating the batch environment has not been configured or has been removed.
+     *
+     * @return an {@link IllegalStateException} for the error
+     */
+    @Message(id = 20562, value = "The batch environment was not configured or has been removed.")
+    IllegalStateException invalidBatchEnvironment();
 }

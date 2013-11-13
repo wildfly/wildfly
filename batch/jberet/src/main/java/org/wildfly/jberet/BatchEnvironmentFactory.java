@@ -22,10 +22,16 @@
 
 package org.wildfly.jberet;
 
+import java.util.Properties;
+import java.util.concurrent.Callable;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
+import java.util.concurrent.Future;
+import javax.transaction.UserTransaction;
 
+import org.jberet.spi.ArtifactFactory;
 import org.jberet.spi.BatchEnvironment;
+import org.wildfly.jberet._private.WildFlyBatchMessages;
 import org.wildfly.security.manager.WildFlySecurityManager;
 
 /**
@@ -34,6 +40,43 @@ import org.wildfly.security.manager.WildFlySecurityManager;
 public class BatchEnvironmentFactory {
 
     private final ConcurrentMap<ClassLoader, BatchEnvironment> environments = new ConcurrentHashMap<ClassLoader, BatchEnvironment>();
+
+    private static final BatchEnvironment INVALID_BATCH_ENV = new BatchEnvironment() {
+        @Override
+        public ClassLoader getClassLoader() {
+            throw WildFlyBatchMessages.MESSAGES.invalidBatchEnvironment();
+        }
+
+        @Override
+        public ArtifactFactory getArtifactFactory() {
+            throw WildFlyBatchMessages.MESSAGES.invalidBatchEnvironment();
+        }
+
+        @Override
+        public Future<?> submitTask(final Runnable runnable) {
+            throw WildFlyBatchMessages.MESSAGES.invalidBatchEnvironment();
+        }
+
+        @Override
+        public <T> Future<T> submitTask(final Runnable runnable, final T t) {
+            throw WildFlyBatchMessages.MESSAGES.invalidBatchEnvironment();
+        }
+
+        @Override
+        public <T> Future<T> submitTask(final Callable<T> callable) {
+            throw WildFlyBatchMessages.MESSAGES.invalidBatchEnvironment();
+        }
+
+        @Override
+        public UserTransaction getUserTransaction() {
+            throw WildFlyBatchMessages.MESSAGES.invalidBatchEnvironment();
+        }
+
+        @Override
+        public Properties getBatchConfigurationProperties() {
+            throw WildFlyBatchMessages.MESSAGES.invalidBatchEnvironment();
+        }
+    };
 
     private static class Holder {
         static final BatchEnvironmentFactory INSTANCE = new BatchEnvironmentFactory();
@@ -48,7 +91,11 @@ public class BatchEnvironmentFactory {
     }
 
     public BatchEnvironment getBatchEnvironment(final ClassLoader cl) {
-        return environments.get(cl);
+        BatchEnvironment result = environments.get(cl);
+        if (result == null) {
+            result = INVALID_BATCH_ENV;
+        }
+        return result;
     }
 
     public void add(final BatchEnvironment batchEnvironment) {
