@@ -24,7 +24,10 @@ package org.jboss.as.controller.client.helpers.standalone.impl;
 
 import static org.jboss.as.controller.client.ControllerClientMessages.MESSAGES;
 
+import java.io.DataOutput;
 import java.io.File;
+import java.io.FileInputStream;
+import java.io.FilterInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.URISyntaxException;
@@ -43,6 +46,7 @@ import org.jboss.as.controller.client.helpers.standalone.InitialDeploymentPlanBu
 import org.jboss.as.controller.client.helpers.standalone.ReplaceDeploymentPlanBuilder;
 import org.jboss.as.controller.client.helpers.standalone.UndeployDeploymentPlanBuilder;
 import org.jboss.as.controller.client.helpers.standalone.DeploymentAction.Type;
+import org.jboss.as.controller.client.impl.InputStreamEntry;
 import org.jboss.as.protocol.StreamUtils;
 
 /**
@@ -135,7 +139,7 @@ class DeploymentPlanBuilderImpl
     @Override
     public AddDeploymentPlanBuilder add(File file) throws IOException {
         String name = file.getName();
-        return add(name, name, file.toURI().toURL());
+        return add(name, file);
     }
 
     @Override
@@ -146,7 +150,8 @@ class DeploymentPlanBuilderImpl
 
     @Override
     public AddDeploymentPlanBuilder add(String name, File file) throws IOException {
-        return add(name, name, file.toURI().toURL());
+        final InputStream is = new FileStreamEntry(file);
+        return add(name, name, is, true);
     }
 
     @Override
@@ -239,7 +244,7 @@ class DeploymentPlanBuilderImpl
     @Override
     public DeploymentPlanBuilder replace(File file) throws IOException {
         String name = file.getName();
-        return replace(name, name, file.toURI().toURL());
+        return replace(name, file);
     }
 
     @Override
@@ -250,7 +255,8 @@ class DeploymentPlanBuilderImpl
 
     @Override
     public DeploymentPlanBuilder replace(String name, File file) throws IOException {
-        return replace(name, name, file.toURI().toURL());
+        final InputStream is = new FileStreamEntry(file);
+        return replace(name, name, is, true);
     }
 
     @Override
@@ -413,4 +419,32 @@ class DeploymentPlanBuilderImpl
             cleanup();
         }
     }
+
+    // Wrap the FIS in a streamEntry so that the controller-client has access to the underlying File
+    private static class FileStreamEntry extends FilterInputStream implements InputStreamEntry {
+
+        private final File file;
+        private FileStreamEntry(final File file) throws IOException {
+            super(new FileInputStream(file)); // This stream will get closed regardless of autoClose
+            this.file = file;
+        }
+
+        @Override
+        public int initialize() throws IOException {
+            return (int) file.length();
+        }
+
+        @Override
+        public void copyStream(final DataOutput output) throws IOException {
+            final FileInputStream is = new FileInputStream(file);
+            try {
+                StreamUtils.copyStream(is, output);
+                is.close();
+            } finally {
+                StreamUtils.safeClose(is);
+            }
+        }
+
+    }
+
 }
