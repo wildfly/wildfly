@@ -327,7 +327,7 @@ public class ApplyRemoteMasterDomainModelHandlerTestCase extends AbstractOperati
         }
 
         @Override
-        public void unregisterRemoteHost(String id, Long remoteConnectionId) {
+        public void unregisterRemoteHost(String id, Long remoteConnectionId, boolean cleanShutdown) {
             //To change body of implemented methods use File | Settings | File Templates.
         }
 

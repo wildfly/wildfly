@@ -76,6 +76,7 @@ import org.jboss.as.controller.services.path.PathManagerService;
 import org.jboss.as.controller.services.path.PathResourceDefinition;
 import org.jboss.as.controller.transform.SubsystemDescriptionDump;
 import org.jboss.as.domain.controller.DomainController;
+import org.jboss.as.domain.controller.HostRegistrations;
 import org.jboss.as.domain.controller.logging.DomainControllerLogger;
 import org.jboss.as.domain.controller.LocalHostControllerInfo;
 import org.jboss.as.domain.controller.operations.ApplyExtensionsHandler;
@@ -186,6 +187,7 @@ public class DomainRootDefinition extends SimpleResourceDefinition {
     private final PathManagerService pathManager;
     private final DomainControllerRuntimeIgnoreTransformationRegistry runtimeIgnoreTransformationRegistry;
     private final DelegatingConfigurableAuthorizer authorizer;
+    private final HostRegistrations hostRegistrations;
 
     public DomainRootDefinition(
             final DomainController domainController,
@@ -196,7 +198,8 @@ public class DomainRootDefinition extends SimpleResourceDefinition {
             final ExtensionRegistry extensionRegistry, final IgnoredDomainResourceRegistry ignoredDomainResourceRegistry,
             final PathManagerService pathManager,
             final DomainControllerRuntimeIgnoreTransformationRegistry runtimeIgnoreTransformationRegistry,
-            final DelegatingConfigurableAuthorizer authorizer) {
+            final DelegatingConfigurableAuthorizer authorizer,
+            final HostRegistrations hostRegistrations) {
         super(null, DomainResolver.getResolver(DOMAIN, false));
         this.domainController = domainController;
         this.isMaster = isMaster;
@@ -210,6 +213,7 @@ public class DomainRootDefinition extends SimpleResourceDefinition {
         this.pathManager = pathManager;
         this.runtimeIgnoreTransformationRegistry = runtimeIgnoreTransformationRegistry;
         this.authorizer = authorizer;
+        this.hostRegistrations = hostRegistrations;
     }
 
     @Override
@@ -262,6 +266,7 @@ public class DomainRootDefinition extends SimpleResourceDefinition {
 
             final SubsystemDescriptionDump dumper = new SubsystemDescriptionDump(extensionRegistry);
             resourceRegistration.registerOperationHandler(SubsystemDescriptionDump.DEFINITION, dumper);
+
         } else {
             DeploymentUploadURLHandler.registerSlave(resourceRegistration);
             DeploymentUploadStreamAttachmentHandler.registerSlave(resourceRegistration);
@@ -297,7 +302,9 @@ public class DomainRootDefinition extends SimpleResourceDefinition {
                 false
         ));
 
-        resourceRegistration.registerSubModel(CoreManagementResourceDefinition.forDomain(authorizer));
+        final ManagementResourceRegistration coreMgmt = resourceRegistration.registerSubModel(CoreManagementResourceDefinition.forDomain(authorizer));
+        coreMgmt.registerSubModel(new HostConnectionResourceDefinition(hostRegistrations));
+
         resourceRegistration.registerSubModel(new ProfileResourceDefinition(extensionRegistry));
         resourceRegistration.registerSubModel(PathResourceDefinition.createNamed(pathManager));
         ResourceDefinition domainDeploymentDefinition = isMaster
@@ -306,6 +313,7 @@ public class DomainRootDefinition extends SimpleResourceDefinition {
         resourceRegistration.registerSubModel(domainDeploymentDefinition);
         resourceRegistration.registerSubModel(new DeploymentOverlayDefinition(null, contentRepo, fileRepository));
         resourceRegistration.registerSubModel(new ServerGroupResourceDefinition(isMaster, hostControllerInfo, fileRepository, runtimeIgnoreTransformationRegistry));
+
 
         //TODO socket-binding-group currently lives in controller and the child RDs live in domain so they currently need passing in from here
         resourceRegistration.registerSubModel(new SocketBindingGroupResourceDefinition(
@@ -407,4 +415,5 @@ public class DomainRootDefinition extends SimpleResourceDefinition {
             }
         }
     }
+
 }

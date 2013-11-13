@@ -162,5 +162,9 @@ class PatchResource extends AbstractModelResource {
             throw new UnsupportedOperationException();
         }
 
+        @Override
+        public ResourceProvider clone() {
+            return this;
+        }
     }
 }

@@ -99,8 +99,9 @@ public interface DomainController {
      *                           the host's registration will be removed regardless of any remote connection id
      *                           that was provided at registration. If not {@code null}, the registration will only
      *                           be removed if the currently registered id matches the given id
+     * @param cleanUnregistration flag indication whether the host was cleanly unregistered
      */
-    void unregisterRemoteHost(final String id, Long remoteConnectionId);
+    void unregisterRemoteHost(final String id, Long remoteConnectionId, boolean cleanUnregistration);
 
     /**
      * Asynchronously ping the slave host with the given {@code hostName} to validate its connection.

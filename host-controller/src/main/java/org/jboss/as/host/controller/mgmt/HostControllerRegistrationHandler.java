@@ -55,6 +55,8 @@ import org.jboss.as.controller.transform.TransformationTargetImpl;
 import org.jboss.as.controller.transform.TransformerRegistry;
 import org.jboss.as.controller.transform.Transformers;
 import org.jboss.as.domain.controller.DomainController;
+import org.jboss.as.domain.controller.HostConnectionInfo;
+import org.jboss.as.domain.controller.HostRegistrations;
 import org.jboss.as.domain.controller.SlaveRegistrationException;
 import org.jboss.as.domain.controller.logging.DomainControllerLogger;
 import org.jboss.as.domain.controller.operations.ReadMasterDomainModelHandler;
@@ -94,15 +96,21 @@ public class HostControllerRegistrationHandler implements ManagementRequestHandl
     private final ManagementChannelHandler handler;
     private final OperationExecutor operationExecutor;
     private final DomainController domainController;
-    private final Executor registrations;
+    private final Executor registrationExecutor;
     private final DomainControllerRuntimeIgnoreTransformationRegistry runtimeIgnoreTransformationRegistry;
+    private final HostRegistrations slaveHostRegistrations;
+    private final String address;
 
-    public HostControllerRegistrationHandler(ManagementChannelHandler handler, DomainController domainController, OperationExecutor operationExecutor, Executor registrations, DomainControllerRuntimeIgnoreTransformationRegistry runtimeIgnoreTransformationRegistry) {
+    public HostControllerRegistrationHandler(ManagementChannelHandler handler, DomainController domainController, OperationExecutor operationExecutor,
+                                             Executor registrations, DomainControllerRuntimeIgnoreTransformationRegistry runtimeIgnoreTransformationRegistry,
+                                             HostRegistrations slaveHostRegistrations) {
         this.handler = handler;
         this.operationExecutor = operationExecutor;
         this.domainController = domainController;
-        this.registrations = registrations;
+        this.registrationExecutor = registrations;
         this.runtimeIgnoreTransformationRegistry = runtimeIgnoreTransformationRegistry;
+        this.slaveHostRegistrations = slaveHostRegistrations;
+        this.address = HostControllerRegistrationHandler.this.handler.getRemoteAddress().getHostAddress();
     }
 
     @Override
@@ -196,7 +204,7 @@ public class HostControllerRegistrationHandler implements ManagementRequestHandl
                     if (Thread.currentThread().isInterrupted()) throw new IllegalStateException("interrupted");
                     registration.processRegistration();
                 }
-            }, registrations);
+            }, registrationExecutor);
 
         }
 
@@ -268,7 +276,8 @@ public class HostControllerRegistrationHandler implements ManagementRequestHandl
             boolean as711 = (major == 1 && minor == 1);
             if(as711) {
                 final OperationFailedException failure = HostControllerLogger.ROOT_LOGGER.unsupportedManagementVersionForHost(major, minor, 1, 2);
-                registrationContext.failed(failure);
+                registrationContext.registrationState = HostConnectionInfo.EventType.REGISTRATION_REJECTED;
+                registrationContext.failed(SlaveRegistrationException.ErrorCode.INCOMPATIBLE_VERSION, failure.getMessage());
                 throw failure;
             }
             // Initialize the transformers
@@ -307,6 +316,7 @@ public class HostControllerRegistrationHandler implements ManagementRequestHandl
         private final boolean registerProxyController;
         private volatile String hostName;
         private volatile HostInfo hostInfo;
+        private volatile HostConnectionInfo.EventType registrationState;
         private ManagementRequestContext<RegistrationContext> responseChannel;
 
         private volatile IOTask<?> task;
@@ -415,10 +425,8 @@ public class HostControllerRegistrationHandler implements ManagementRequestHandl
                 responseChannel.getChannel().addCloseHandler(new CloseHandler<Channel>() {
                     @Override
                     public void handleClose(Channel closed, IOException exception) {
-                        if (domainController.isHostRegistered(hostName)) {
-                            DOMAIN_LOGGER.lostConnectionToRemoteHost(hostName);
-                        }
-                        domainController.unregisterRemoteHost(hostName, getRemoteConnectionId());
+                        boolean cleanShutdown = ! domainController.isHostRegistered(hostName);
+                        domainController.unregisterRemoteHost(hostName, getRemoteConnectionId(), cleanShutdown);
                     }
                 });
             }
@@ -501,14 +509,11 @@ public class HostControllerRegistrationHandler implements ManagementRequestHandl
         void completeRegistration(final ManagementRequestContext<RegistrationContext> responseChannel, boolean commit) {
             this.responseChannel = responseChannel;
             failed |= ! commit;
-            completeTask(! failed);
+            completeTask(!failed);
         }
 
-        void failed(SlaveRegistrationException.ErrorCode errorCode, String message) {
-            failed(errorCode.getCode(), message);
-        }
-
-        void failed(byte errorCode, String message) {
+        void failed(SlaveRegistrationException.ErrorCode error, String message) {
+            byte errorCode = error.getCode();
             if(completed.compareAndSet(false, true)) {
                 failed = true;
                 final IOTask<?> task = this.task;
@@ -521,7 +526,23 @@ public class HostControllerRegistrationHandler implements ManagementRequestHandl
                     ProtocolLogger.ROOT_LOGGER.debugf(e, "failed to process message");
                 }
                 activeOperation.getResultHandler().done(null);
+                addFailureEvent(error);
             }
+        }
+
+        void addFailureEvent(SlaveRegistrationException.ErrorCode error) {
+            final HostConnectionInfo.EventType eventType;
+            switch (error) {
+                case HOST_ALREADY_EXISTS:
+                    eventType = HostConnectionInfo.EventType.REGISTRATION_EXISTING;
+                    break;
+                case INCOMPATIBLE_VERSION:
+                    eventType = HostConnectionInfo.EventType.REGISTRATION_REJECTED;
+                    break;
+                default:
+                    eventType = HostConnectionInfo.EventType.REGISTRATION_FAILED;
+            }
+            slaveHostRegistrations.addHostEvent(hostName, HostConnectionInfo.Events.create(eventType, address));
         }
 
         void sendCompletedMessage() {

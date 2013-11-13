@@ -80,6 +80,7 @@ import org.jboss.as.controller.registry.ManagementResourceRegistration;
 import org.jboss.as.controller.registry.OperationEntry;
 import org.jboss.as.controller.registry.PlaceholderResource;
 import org.jboss.as.controller.registry.Resource;
+import org.jboss.as.controller.registry.ResourceProvider;
 import org.jboss.as.core.security.AccessMechanism;
 import org.jboss.dmr.ModelNode;
 import org.jboss.msc.service.ServiceRegistry;
@@ -789,7 +790,7 @@ class ModelControllerImpl implements ModelController {
      * The root resource, maintains a read-only reference to the current model. All write operations have to performed
      * after acquiring the write lock on a clone of the underlying model.
      */
-    private final class RootResource implements Resource {
+    private final class RootResource extends ResourceProvider.ResourceProviderRegistry implements Resource {
 
         private final AtomicReference<Resource> modelReference = new AtomicReference<Resource>(Resource.Factory.create());
 
@@ -872,6 +873,10 @@ class ModelControllerImpl implements ModelController {
             return this.modelReference.get();
         }
 
+        @Override
+        protected void registerResourceProvider(String type, ResourceProvider provider) {
+            ResourceProvider.Tool.addResourceProvider(type, provider, getDelegate());
+        }
     }
 
     private static final class BootOperations {

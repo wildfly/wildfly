@@ -114,7 +114,9 @@ public class ServerOperationResolver {
         SERVER_GROUP(ModelDescriptionConstants.SERVER_GROUP),
         MANAGMENT_CLIENT_CONTENT(ModelDescriptionConstants.MANAGEMENT_CLIENT_CONTENT),
         HOST(ModelDescriptionConstants.HOST),
-        DEPLOYMENT_OVERLAY(ModelDescriptionConstants.DEPLOYMENT_OVERLAY),;
+        DEPLOYMENT_OVERLAY(ModelDescriptionConstants.DEPLOYMENT_OVERLAY),
+        HOST_CONNECTION(ModelDescriptionConstants.HOST_CONNECTION),
+        ;
 
         private final String name;
 
@@ -272,6 +274,9 @@ public class ServerOperationResolver {
                 }
                 case DEPLOYMENT_OVERLAY: {
                     return getDeploymentOverlayOperations(operation, host);
+                }
+                case HOST_CONNECTION: {
+                    return Collections.emptyMap();
                 }
                 default:
                     throw DomainControllerLogger.ROOT_LOGGER.unexpectedInitialPathKey(address.getElement(0).getKey());

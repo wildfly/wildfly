@@ -175,6 +175,7 @@ public class DomainControllerMigrationTestCase {
         // WFLY-3418 Add but don't map a deployment so we can prove the backup gets the content
         Operation addDeployOp = buildDeploymentAddOperation();
         hostUtils[0].executeForResult(addDeployOp);
+        assertSlaveHostInfo(hostUtils[0].getDomainClient());
 
         // kill the domain process controller on failover-h1
         log.info("Stopping the domain controller on failover-h1.");
@@ -316,6 +317,29 @@ public class DomainControllerMigrationTestCase {
         PathAddress pathAddress = PathAddress.pathAddress(PathElement.pathElement(HOST, host),
                 PathElement.pathElement(SERVER, server));
         ServiceActivatorDeploymentUtil.validateProperties(client, pathAddress);
+    }
+
+    private void assertSlaveHostInfo(final ModelControllerClient client) throws Exception {
+
+        final ModelNode operation = new ModelNode();
+        operation.get(ModelDescriptionConstants.OP).set(ModelDescriptionConstants.READ_RESOURCE_OPERATION);
+        operation.get(ModelDescriptionConstants.OP_ADDR)
+                .add(ModelDescriptionConstants.CORE_SERVICE, ModelDescriptionConstants.MANAGEMENT)
+                .add(ModelDescriptionConstants.HOST_CONNECTION, "*");
+        operation.get(ModelDescriptionConstants.INCLUDE_RUNTIME).set(true);
+
+        final ModelNode result = DomainTestUtils.executeForResult(operation, client);
+        System.out.println(result);
+        int results = 0;
+        for (final ModelNode node : result.asList()) {
+            results++;
+            for (final ModelNode event : node.get("result", "events").asList()) {
+                Assert.assertTrue(event.hasDefined("type"));
+                Assert.assertTrue(event.hasDefined("address"));
+                Assert.assertTrue(event.hasDefined("timestamp"));
+            }
+        }
+        Assert.assertEquals(3, results);
     }
 
 }

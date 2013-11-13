@@ -90,7 +90,9 @@ public class SlaveRegistrationException extends Exception {
         UNKNOWN(0x01),
         HOST_ALREADY_EXISTS(0x02),
         MASTER_IS_ADMIN_ONLY(0x03),
-        HOST_IS_NOT_MASTER(0x04);
+        HOST_IS_NOT_MASTER(0x04),
+        INCOMPATIBLE_VERSION(0x05),
+        ;
 
         private final byte code;
 
@@ -111,6 +113,8 @@ public class SlaveRegistrationException extends Exception {
                 return MASTER_IS_ADMIN_ONLY;
             } else if (code == HOST_IS_NOT_MASTER.getCode()) {
                 return HOST_IS_NOT_MASTER;
+            } else if (code == INCOMPATIBLE_VERSION.getCode()) {
+                return INCOMPATIBLE_VERSION;
             }
             return UNKNOWN;
         }
