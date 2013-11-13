@@ -49,10 +49,14 @@ import org.jboss.as.naming.deployment.ContextNames;
 import org.jboss.as.txn.service.TxnServices;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.Property;
+import org.jboss.modules.Module;
+import org.jboss.modules.ModuleIdentifier;
+import org.jboss.modules.ModuleLoadException;
 import org.jboss.msc.service.ServiceBuilder;
 import org.jboss.msc.service.ServiceController;
 import org.jboss.msc.service.ServiceController.Mode;
 import org.jboss.msc.service.ServiceName;
+import org.wildfly.security.manager.WildFlySecurityManager;
 
 /**
  * JMS Bridge add update.
@@ -157,23 +161,39 @@ public class JMSBridgeAdd extends AbstractAddStepHandler {
         final String clientID = resolveAttribute(JMSBridgeDefinition.CLIENT_ID, context, model);
         final boolean addMessageIDInHeader = JMSBridgeDefinition.ADD_MESSAGE_ID_IN_HEADER.resolveModelAttribute(context, model).asBoolean();
 
-        return new JMSBridgeImpl(sourceCff,
-                targetCff,
-                sourceDestinationFactory,
-                targetDestinationFactory,
-                sourceUsername,
-                sourcePassword,
-                targetUsername,
-                targetPassword,
-                selector,
-                failureRetryInterval,
-                maxRetries,
-                qosMode,
-                maxBatchSize,
-                maxBatchTime,
-                subName,
-                clientID,
-                addMessageIDInHeader);
+        final String moduleName = resolveAttribute(JMSBridgeDefinition.MODULE, context, model);
+
+        final ClassLoader oldTccl= WildFlySecurityManager.getCurrentContextClassLoaderPrivileged();
+        try {
+            // if a module is specified, use it to instantiate the JMSBridge to ensure its ExecutorService
+            // will use the correct class loader to execute its threads
+            if (moduleName != null) {
+                ModuleIdentifier moduleID = ModuleIdentifier.create(moduleName);
+                Module module = Module.getCallerModuleLoader().loadModule(moduleID);
+                WildFlySecurityManager.setCurrentContextClassLoaderPrivileged(module.getClassLoader());
+            }
+            return new JMSBridgeImpl(sourceCff,
+                    targetCff,
+                    sourceDestinationFactory,
+                    targetDestinationFactory,
+                    sourceUsername,
+                    sourcePassword,
+                    targetUsername,
+                    targetPassword,
+                    selector,
+                    failureRetryInterval,
+                    maxRetries,
+                    qosMode,
+                    maxBatchSize,
+                    maxBatchTime,
+                    subName,
+                    clientID,
+                    addMessageIDInHeader);
+        } catch (ModuleLoadException e) {
+            throw new OperationFailedException(e);
+        } finally {
+            WildFlySecurityManager.setCurrentContextClassLoaderPrivileged(oldTccl);
+        }
     }
 
     private Properties resolveContextProperties(AttributeDefinition attribute, OperationContext context, ModelNode model) throws OperationFailedException {
