@@ -23,6 +23,12 @@ import org.jboss.dmr.ModelNode;
 import org.junit.Assert;
 import org.junit.Ignore;
 import org.junit.Test;
+import org.jboss.dmr.Property;
+import org.junit.Assert;
+import org.junit.Test;
+import org.junit.runner.RunWith;
+import org.junit.runners.Parameterized;
+import org.junit.runners.Parameterized.Parameters;
 
 /**
 * Subsystem parsing test case
@@ -74,8 +80,34 @@ public class SubsystemParsingTestCase extends AbstractSubsystemTest {
 
         assertRemoveSubsystemResources(services);
 
+       Assert.assertTrue(model.get(SUBSYSTEM).hasDefined(getMainSubsystemName()));
+
+       checkLegacyParserStatisticsTrue(model.get(SUBSYSTEM, mainSubsystemName));
     }
 
+    private void checkLegacyParserStatisticsTrue(ModelNode subsystem) {
+        for (Property containerProp : subsystem.get(CacheContainerResourceDefinition.CONTAINER_PATH.getKey()).asPropertyList()) {
+            Assert.assertTrue("cache-container=" + containerProp.getName(),
+                    containerProp.getValue().get(CacheContainerResourceDefinition.STATISTICS.getName()).asBoolean());
+
+            for (String key : containerProp.getValue().keys()) {
+                if (key.endsWith("-cache") && !key.equals("default-cache")) {
+                    ModelNode caches = containerProp.getValue().get(key);
+                    if (caches.isDefined()) {
+                        for (Property cacheProp : caches.asPropertyList()) {
+                            Assert.assertTrue("cache-container=" + containerProp.getName() + "," + key + "=" + cacheProp.getName(),
+                                    containerProp.getValue().get(CacheResourceDefinition.STATISTICS.getName()).asBoolean());
+                        }
+                    }
+                }
+            }
+        }
+    }
+
+    /**
+     * Starts a controller with a given subsystem xml and then checks that a second controller
+     * started with the xml marshalled from the first one results in the same model
+     */
     @Test
     public void testParseAndMarshallModel() throws Exception {
 
