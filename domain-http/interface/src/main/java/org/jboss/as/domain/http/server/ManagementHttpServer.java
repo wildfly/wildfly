@@ -185,6 +185,11 @@ public class ManagementHttpServer {
 
         PathHandler pathHandler = new PathHandler();
         HttpHandler current = pathHandler;
+        if(upgradeHandler != null) {
+            upgradeHandler.setNonUpgradeHandler(current);
+            current = upgradeHandler;
+        }
+
         if (securePort > 0) {
             current = new SinglePortConfidentialityHandler(current, securePort);
         }
@@ -192,10 +197,6 @@ public class ManagementHttpServer {
         current = new CacheHandler(new DirectBufferCache(1024,1024 * 10, 1024 * 1000, BufferAllocator.BYTE_BUFFER_ALLOCATOR), current);
         current = new SimpleErrorPageHandler(current);
 
-        if(upgradeHandler != null) {
-            upgradeHandler.setNonUpgradeHandler(current);
-            current = upgradeHandler;
-        }
         canonicalPathHandler.setNext(current);
 
         ResourceHandlerDefinition consoleHandler = null;
