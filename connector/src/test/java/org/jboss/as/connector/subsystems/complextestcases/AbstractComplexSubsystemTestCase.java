@@ -22,7 +22,6 @@
 package org.jboss.as.connector.subsystems.complextestcases;
 
 
-import org.jboss.as.connector.util.ConnectorServices;
 import org.jboss.as.controller.Extension;
 import org.jboss.as.subsystem.test.AbstractSubsystemTest;
 import org.jboss.as.subsystem.test.AdditionalInitialization;
