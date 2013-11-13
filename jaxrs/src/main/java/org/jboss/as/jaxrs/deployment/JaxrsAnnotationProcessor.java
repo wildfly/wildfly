@@ -43,6 +43,13 @@ public class JaxrsAnnotationProcessor implements DeploymentUnitProcessor {
     @Override
     public void deploy(DeploymentPhaseContext phaseContext) throws DeploymentUnitProcessingException {
         final DeploymentUnit deploymentUnit = phaseContext.getDeploymentUnit();
+
+        if (deploymentUnit.getParent() == null) {
+            //register resource, provider and application as CDI annotation defining types
+            deploymentUnit.addToAttachmentList(WeldAttachments.INJECTION_TARGET_DEFINING_ANNOTATIONS, new AnnotationType(JaxrsAnnotations.PROVIDER.getDotName(), false));
+            deploymentUnit.addToAttachmentList(WeldAttachments.INJECTION_TARGET_DEFINING_ANNOTATIONS, new AnnotationType(JaxrsAnnotations.PATH.getDotName(), false));
+        }
+
         final CompositeIndex index = deploymentUnit.getAttachment(Attachments.COMPOSITE_ANNOTATION_INDEX);
         for (final JaxrsAnnotations annotation : JaxrsAnnotations.values()) {
             if (!index.getAnnotations(annotation.getDotName()).isEmpty()) {
@@ -52,9 +59,6 @@ public class JaxrsAnnotationProcessor implements DeploymentUnitProcessor {
             }
         }
 
-        //register resource, provider and application as CDI annotation defining types
-        deploymentUnit.addToAttachmentList(WeldAttachments.INJECTION_TARGET_DEFINING_ANNOTATIONS, new AnnotationType(JaxrsAnnotations.PROVIDER.getDotName(), false));
-        deploymentUnit.addToAttachmentList(WeldAttachments.INJECTION_TARGET_DEFINING_ANNOTATIONS, new AnnotationType(JaxrsAnnotations.PATH.getDotName(), false));
     }
 
     @Override
