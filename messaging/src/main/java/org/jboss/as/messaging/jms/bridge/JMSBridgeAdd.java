@@ -45,10 +45,14 @@ import org.jboss.as.controller.ServiceVerificationHandler;
 import org.jboss.as.controller.SimpleAttributeDefinition;
 import org.jboss.as.messaging.CommonAttributes;
 import org.jboss.as.messaging.MessagingServices;
+import org.jboss.as.messaging.jms.SecurityActions;
 import org.jboss.as.naming.deployment.ContextNames;
 import org.jboss.as.txn.service.TxnServices;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.Property;
+import org.jboss.modules.Module;
+import org.jboss.modules.ModuleIdentifier;
+import org.jboss.modules.ModuleLoadException;
 import org.jboss.msc.service.ServiceBuilder;
 import org.jboss.msc.service.ServiceController;
 import org.jboss.msc.service.ServiceController.Mode;
@@ -157,23 +161,39 @@ public class JMSBridgeAdd extends AbstractAddStepHandler {
         final String clientID = resolveAttribute(JMSBridgeDefinition.CLIENT_ID, context, model);
         final boolean addMessageIDInHeader = JMSBridgeDefinition.ADD_MESSAGE_ID_IN_HEADER.resolveModelAttribute(context, model).asBoolean();
 
-        return new JMSBridgeImpl(sourceCff,
-                targetCff,
-                sourceDestinationFactory,
-                targetDestinationFactory,
-                sourceUsername,
-                sourcePassword,
-                targetUsername,
-                targetPassword,
-                selector,
-                failureRetryInterval,
-                maxRetries,
-                qosMode,
-                maxBatchSize,
-                maxBatchTime,
-                subName,
-                clientID,
-                addMessageIDInHeader);
+        final String moduleName = resolveAttribute(JMSBridgeDefinition.MODULE, context, model);
+
+        final ClassLoader oldTccl= SecurityActions.getContextClassLoader();
+        try {
+            // if a module is specified, use it to instantiate the JMSBridge to ensure its ExecutorService
+            // will use the correct class loader to execute its threads
+            if (moduleName != null) {
+                ModuleIdentifier moduleID = ModuleIdentifier.create(moduleName);
+                Module module = Module.getCallerModuleLoader().loadModule(moduleID);
+                SecurityActions.setThreadContextClassLoader(module.getClassLoader());
+            }
+            return new JMSBridgeImpl(sourceCff,
+                    targetCff,
+                    sourceDestinationFactory,
+                    targetDestinationFactory,
+                    sourceUsername,
+                    sourcePassword,
+                    targetUsername,
+                    targetPassword,
+                    selector,
+                    failureRetryInterval,
+                    maxRetries,
+                    qosMode,
+                    maxBatchSize,
+                    maxBatchTime,
+                    subName,
+                    clientID,
+                    addMessageIDInHeader);
+        } catch (ModuleLoadException e) {
+            throw new OperationFailedException(e);
+        } finally {
+            SecurityActions.setThreadContextClassLoader(oldTccl);
+        }
     }
 
     private Properties resolveContextProperties(AttributeDefinition attribute, OperationContext context, ModelNode model) throws OperationFailedException {
