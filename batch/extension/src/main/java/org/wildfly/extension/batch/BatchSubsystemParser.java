@@ -34,6 +34,7 @@ import org.jboss.as.controller.parsing.ParseUtils;
 import org.jboss.as.controller.persistence.SubsystemMarshallingContext;
 import org.jboss.as.threads.ThreadsParser;
 import org.jboss.dmr.ModelNode;
+import org.jboss.dmr.Property;
 import org.jboss.staxmapper.XMLElementReader;
 import org.jboss.staxmapper.XMLElementWriter;
 import org.jboss.staxmapper.XMLExtendedStreamReader;
@@ -125,11 +126,19 @@ class BatchSubsystemParser implements XMLStreamConstants, XMLElementReader<List<
         BatchSubsystemDefinition.JOB_REPOSITORY_TYPE.marshallAsElement(model, writer);
 
         // Write the thread pool
-        threadsParser.writeUnboundedQueueThreadPool(writer, model.get(BatchConstants.THREAD_POOL).asProperty(), Element.THREAD_POOL.getLocalName(), false);
+        if (model.hasDefined(BatchConstants.THREAD_POOL)) {
+            final List<Property> threadPools = model.get(BatchConstants.THREAD_POOL).asPropertyList();
+            for (Property threadPool : threadPools) {
+                threadsParser.writeUnboundedQueueThreadPool(writer, threadPool, Element.THREAD_POOL.getLocalName(), false);
+            }
+        }
 
         // Write out the thread factory
         if (model.hasDefined(BatchConstants.THREAD_FACTORY)) {
-            threadsParser.writeThreadFactory(writer, model.get(BatchConstants.THREAD_FACTORY).asProperty());
+            final List<Property> threadFactories = model.get(BatchConstants.THREAD_FACTORY).asPropertyList();
+            for (Property threadFactory : threadFactories) {
+                threadsParser.writeThreadFactory(writer, threadFactory);
+            }
         }
 
         writer.writeEndElement();

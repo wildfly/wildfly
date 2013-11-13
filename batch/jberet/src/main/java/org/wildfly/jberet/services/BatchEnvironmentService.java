@@ -38,6 +38,7 @@ import org.jboss.msc.service.StopContext;
 import org.jboss.msc.value.InjectedValue;
 import org.wildfly.jberet.BatchEnvironmentFactory;
 import org.wildfly.jberet.WildFlyArtifactFactory;
+import org.wildfly.jberet._private.WildFlyBatchLogger;
 import org.wildfly.jberet._private.WildFlyBatchMessages;
 import org.wildfly.jberet.services.ContextHandle.ChainedContextHandle;
 import org.wildfly.jberet.services.ContextHandle.Handle;
@@ -58,6 +59,7 @@ public class BatchEnvironmentService implements Service<BatchEnvironment> {
 
     @Override
     public synchronized void start(final StartContext context) throws StartException {
+        WildFlyBatchLogger.LOGGER.debugf("Creating batch environment; %s", classLoader);
         final BatchEnvironment batchEnvironment = new WildFlyBatchEnvironment(classLoader,
                 beanManagerInjector.getOptionalValue(), executorServiceInjector.getValue(),
                 userTransactionInjector.getOptionalValue(), properties);
@@ -68,8 +70,10 @@ public class BatchEnvironmentService implements Service<BatchEnvironment> {
 
     @Override
     public synchronized void stop(final StopContext context) {
-        if (batchEnvironment != null)
-            BatchEnvironmentFactory.getInstance().remove(batchEnvironment.getClassLoader());
+        WildFlyBatchLogger.LOGGER.debugf("Removing batch environment; %s", classLoader);
+        BatchEnvironmentFactory.getInstance().remove(classLoader);
+        properties = null;
+        classLoader = null;
         batchEnvironment = null;
     }
 

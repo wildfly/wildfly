@@ -23,18 +23,20 @@
 package org.wildfly.extension.batch;
 
 import java.io.IOException;
+import java.io.PrintWriter;
+import java.io.StringWriter;
+import java.util.concurrent.TimeUnit;
+import javax.xml.stream.XMLStreamException;
 
-import org.jboss.as.controller.PathAddress;
-import org.jboss.as.controller.PathElement;
-import org.jboss.as.subsystem.test.AbstractSubsystemBaseTest;
+import org.jboss.as.controller.client.Operation;
+import org.jboss.as.controller.client.helpers.Operations.CompositeOperationBuilder;
 import org.jboss.as.subsystem.test.KernelServices;
 import org.jboss.as.subsystem.test.SubsystemOperations;
 import org.jboss.dmr.ModelNode;
 import org.junit.Assert;
-import org.junit.Ignore;
 import org.junit.Test;
 
-public class SubsystemOperationsTestCase extends AbstractSubsystemBaseTest {
+public class SubsystemOperationsTestCase extends AbstractBatchTestCase {
 
     public SubsystemOperationsTestCase() {
         super(BatchSubsystemDefinition.NAME, new BatchSubsystemExtension());
@@ -65,67 +67,105 @@ public class SubsystemOperationsTestCase extends AbstractSubsystemBaseTest {
         Assert.assertFalse(SubsystemOperations.isSuccessfulOutcome(result));
     }
 
-    @Ignore("won't work with changes to attribute, need to fix")
     @Test
-    public void addComposite() throws Exception {
-        final KernelServices kernelServices = boot();
+    public void testRemoveThreadPool() throws Exception {
+        final KernelServices kernelServices = boot(getSubsystemXml("/minimal-subsystem.xml"));
+        final ModelNode address = createAddress(BatchSubsystemDefinition.THREAD_POOL_PATH);
+        // Remove the thread pool
+        final ModelNode removeOp = SubsystemOperations.createRemoveOperation(address);
+        executeOperation(kernelServices, removeOp);
 
-        final ModelNode jobRepositoryAddress = createAddress(null);
-
-        ModelNode op = SubsystemOperations.CompositeOperationBuilder.create()
-                .addStep(SubsystemOperations.createRemoveOperation(jobRepositoryAddress))
-                .addStep(SubsystemOperations.createAddOperation(jobRepositoryAddress))
-                .build().getOperation();
-        ModelNode result = kernelServices.executeOperation(op);
-        Assert.assertTrue(SubsystemOperations.getFailureDescriptionAsString(result), SubsystemOperations.isSuccessfulOutcome(result));
-
-        // Add invalid name
-        op = SubsystemOperations.CompositeOperationBuilder.create()
-                .addStep(SubsystemOperations.createRemoveOperation(jobRepositoryAddress))
-                //.addStep(SubsystemOperations.createAddOperation(createAddress(JobRepositoryDefinition.NAME, "foo")))
-                .build().getOperation();
-        result = kernelServices.executeOperation(op);
-        Assert.assertFalse(SubsystemOperations.getFailureDescriptionAsString(result), SubsystemOperations.isSuccessfulOutcome(result));
-
-        final ModelNode threadPoolAddress = createAddress("thread-pool", "batch");
-
-        ModelNode addThreadPoolOp = SubsystemOperations.createAddOperation(threadPoolAddress);
-        addThreadPoolOp.get("max-threads").set(4);
-
-        op = SubsystemOperations.CompositeOperationBuilder.create()
-                .addStep(SubsystemOperations.createRemoveOperation(threadPoolAddress))
-                .addStep(addThreadPoolOp)
-                .build().getOperation();
-        result = kernelServices.executeOperation(op);
-        Assert.assertTrue(SubsystemOperations.getFailureDescriptionAsString(result), SubsystemOperations.isSuccessfulOutcome(result));
-
-        addThreadPoolOp = SubsystemOperations.createAddOperation(createAddress("thread-pool", "foo"));
-        addThreadPoolOp.get("max-threads").set(4);
-
-        op = SubsystemOperations.CompositeOperationBuilder.create()
-                .addStep(SubsystemOperations.createRemoveOperation(threadPoolAddress))
-                .addStep(addThreadPoolOp)
-                .build().getOperation();
-        result = kernelServices.executeOperation(op);
-        Assert.assertFalse(SubsystemOperations.getFailureDescriptionAsString(result), SubsystemOperations.isSuccessfulOutcome(result));
-    }
-
-    protected KernelServices boot() throws Exception {
-        return boot(getSubsystemXml());
-    }
-
-    protected KernelServices boot(final String subsystemXml) throws Exception {
-        return createKernelServicesBuilder(createAdditionalInitialization()).setSubsystemXml(subsystemXml).build();
-    }
-
-    protected static ModelNode createAddress(final PathElement pathElement) {
-        if (pathElement == null) {
-            return PathAddress.pathAddress(BatchSubsystemDefinition.SUBSYSTEM_PATH).toModelNode();
+        // Reboot with a default thread pool
+        String marshalledXml = kernelServices.getPersistedSubsystemXml();
+        try {
+            boot(marshalledXml);
+            Assert.fail("Should be missing <thread-pool/>");
+        } catch (XMLStreamException ignore) {
         }
-        return PathAddress.pathAddress(BatchSubsystemDefinition.SUBSYSTEM_PATH, pathElement).toModelNode();
+
+        // Add back a thread-pool, must be named batch
+        final ModelNode addOp = SubsystemOperations.createAddOperation(address);
+        addOp.get("max-threads").set(10);
+        final ModelNode keepAlive = addOp.get("keepalive-time");
+        keepAlive.get("time").set(100L);
+        keepAlive.get("unit").set(TimeUnit.MILLISECONDS.toString());
+        executeOperation(kernelServices, addOp);
+
+        // Get the serialized output and boot
+        marshalledXml = kernelServices.getPersistedSubsystemXml();
+        try {
+            final KernelServices k = boot(marshalledXml);
+            Assert.assertTrue(k.isSuccessfulBoot());
+        } catch (XMLStreamException e) {
+            final StringWriter writer = new StringWriter();
+            e.printStackTrace(new PrintWriter(writer));
+            Assert.fail("Failed to parse XML; " + writer.toString());
+        }
+
+        // Remove and add in a composite operation
+        final Operation compositeOp = CompositeOperationBuilder.create()
+                .addStep(removeOp)
+                .addStep(addOp)
+                .build();
+        executeOperation(kernelServices, compositeOp);
+
+        // Get the serialized output and boot
+        marshalledXml = kernelServices.getPersistedSubsystemXml();
+        try {
+            final KernelServices k = boot(marshalledXml);
+            Assert.assertTrue(k.isSuccessfulBoot());
+        } catch (XMLStreamException e) {
+            final StringWriter writer = new StringWriter();
+            e.printStackTrace(new PrintWriter(writer));
+            Assert.fail("Failed to parse XML; " + writer.toString());
+        }
     }
 
-    protected static ModelNode createAddress(final String resourceKey, final String resourceValue) {
-        return createAddress(PathElement.pathElement(resourceKey, resourceValue));
+    @Test
+    public void testAddSubsystem() throws Exception {
+        // Boot with no subsystem
+        final KernelServices kernelServices = boot(null);
+        // Create the base subsystem address
+        final ModelNode subsystemAddress = createAddress(null);
+        final ModelNode addSubsystemOp = SubsystemOperations.createAddOperation(subsystemAddress);
+
+        addSubsystemOp.get(BatchSubsystemDefinition.JOB_REPOSITORY_TYPE.getName()).set("in-memory");
+
+        final ModelNode threadPool = addSubsystemOp.get(BatchConstants.THREAD_POOL, BatchConstants.THREAD_POOL_NAME);
+        threadPool.get("max-threads").set(10);
+        final ModelNode keepAlive = threadPool.get("keepalive-time");
+        keepAlive.get("time").set(100L);
+        keepAlive.get("unit").set(TimeUnit.MILLISECONDS.toString());
+
+        // Execute the add operation
+        executeOperation(kernelServices, addSubsystemOp);
+    }
+
+    @Test
+    public void testRemoveSubsystem() throws Exception {
+        final KernelServices kernelServices = boot();
+        final ModelNode removeSubsystemOp = SubsystemOperations.createRemoveOperation(createAddress(null));
+        executeOperation(kernelServices, removeSubsystemOp);
+    }
+
+    @Test
+    public void testAddRemoveSubsystem() throws Exception {
+        final KernelServices kernelServices = boot();
+        final ModelNode removeSubsystemOp = SubsystemOperations.createRemoveOperation(createAddress(null));
+        executeOperation(kernelServices, removeSubsystemOp);
+        // Create the base subsystem address
+        final ModelNode subsystemAddress = createAddress(null);
+        final ModelNode addSubsystemOp = SubsystemOperations.createAddOperation(subsystemAddress);
+
+        addSubsystemOp.get(BatchSubsystemDefinition.JOB_REPOSITORY_TYPE.getName()).set("in-memory");
+
+        final ModelNode threadPool = addSubsystemOp.get(BatchConstants.THREAD_POOL, BatchConstants.THREAD_POOL_NAME);
+        threadPool.get("max-threads").set(10);
+        final ModelNode keepAlive = threadPool.get("keepalive-time");
+        keepAlive.get("time").set(100L);
+        keepAlive.get("unit").set(TimeUnit.MILLISECONDS.toString());
+
+        // Execute the add operation
+        executeOperation(kernelServices, addSubsystemOp);
     }
 }
