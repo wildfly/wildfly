@@ -22,6 +22,12 @@
 
 package org.jboss.as.test.integration.ejb.stateless.pooling.ejb2;
 
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OUTCOME;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.RESULT;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SUCCESS;
+
 import java.rmi.RemoteException;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
@@ -44,15 +50,8 @@ import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.asset.StringAsset;
 import org.jboss.shrinkwrap.api.spec.JavaArchive;
 import org.junit.Assert;
-import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.runner.RunWith;
-
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OUTCOME;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.RESULT;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SUCCESS;
 
 /**
  * Test that bean is pooled and ejbRemove is correctly called.
@@ -60,7 +59,6 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SUC
  *
  * Dimitris Andreadis, Ondrej Chaloupka
  */
-@Ignore("WFLY-1745")
 @RunWith(Arquillian.class)
 @ServerSetup(EjbRemoveUnitTestCase.EjbRemoveUnitTestCaseSetup.class)
 public class EjbRemoveUnitTestCase {
@@ -115,6 +113,7 @@ public class EjbRemoveUnitTestCase {
                 Authentication.class);
         jar.addAsManifestResource(EjbRemoveUnitTestCase.class.getPackage(), "ejb-jar.xml", "ejb-jar.xml");
         jar.addAsManifestResource(EjbRemoveUnitTestCase.class.getPackage(), "jboss-ejb3.xml", "jboss-ejb3.xml");
+        jar.addAsManifestResource(EjbRemoveUnitTestCase.class.getPackage(), "jboss-all.xml", "jboss-all.xml");
         jar.addAsManifestResource(new StringAsset("Dependencies: deployment.single.jar, org.jboss.as.controller-client, org.jboss.dmr \n"), "MANIFEST.MF");
         log.info(jar.toString(true));
         return jar;
