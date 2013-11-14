@@ -15,12 +15,20 @@ import java.util.List;
 
 import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.PathElement;
+import org.jboss.as.controller.extension.ExtensionRegistry;
+import org.jboss.as.controller.registry.ManagementResourceRegistration;
+import org.jboss.as.controller.registry.Resource;
+import org.jboss.as.naming.deployment.ContextNames;
+import org.jboss.as.naming.service.NamingService;
+import org.jboss.as.naming.service.NamingStoreService;
 import org.jboss.as.subsystem.test.AbstractSubsystemBaseTest;
 import org.jboss.as.subsystem.test.AdditionalInitialization;
 import org.jboss.as.subsystem.test.ControllerInitializer;
 import org.jboss.as.subsystem.test.KernelServices;
 import org.jboss.dmr.ModelNode;
 import org.jboss.logging.Logger;
+import org.jboss.msc.service.ServiceController;
+import org.jboss.msc.service.ServiceTarget;
 import org.junit.Assert;
 import org.junit.Test;
 
@@ -102,6 +110,19 @@ public class MailSubsystem10TestCase extends AbstractSubsystemBaseTest {
             // and socket-binding-group stuff we depend on TODO something less hacky
             ci.addSocketBinding("make-framework-happy", 59999);
             return ci;
+        }
+
+        @Override
+        protected void addExtraServices(ServiceTarget target) {
+            super.addExtraServices(target);
+            target.addService(ContextNames.JAVA_CONTEXT_SERVICE_NAME, new NamingStoreService())
+                            .setInitialMode(ServiceController.Mode.ACTIVE)
+                            .install();
+            target.addService(ContextNames.JBOSS_CONTEXT_SERVICE_NAME, new NamingStoreService())
+                            .setInitialMode(ServiceController.Mode.ACTIVE)
+                            .install();
+
+
         }
     }
 }

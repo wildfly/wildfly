@@ -50,7 +50,6 @@ import org.jboss.as.controller.transform.description.TransformationDescriptionBu
 public class MailExtension implements Extension {
 
     public static final String SUBSYSTEM_NAME = "mail";
-    private final MailSubsystemParser parser = new MailSubsystemParser();
     private static final String RESOURCE_NAME = MailExtension.class.getPackage().getName() + ".LocalDescriptions";
     static PathElement SUBSYSTEM_PATH = PathElement.pathElement(ModelDescriptionConstants.SUBSYSTEM, SUBSYSTEM_NAME);
     static PathElement MAIL_SESSION_PATH = PathElement.pathElement(MailSubsystemModel.MAIL_SESSION);
@@ -65,12 +64,13 @@ public class MailExtension implements Extension {
 
     @Override
     public void initializeParsers(ExtensionParsingContext context) {
-        context.setSubsystemXmlMapping(SUBSYSTEM_NAME, Namespace.MAIL_1_0.getUriString(), parser);
-        context.setSubsystemXmlMapping(SUBSYSTEM_NAME, Namespace.MAIL_1_1.getUriString(), parser);
+        context.setSubsystemXmlMapping(SUBSYSTEM_NAME, Namespace.MAIL_1_0.getUriString(), MailSubsystemParser.INSTANCE);
+        context.setSubsystemXmlMapping(SUBSYSTEM_NAME, Namespace.MAIL_1_1.getUriString(), MailSubsystemParser.INSTANCE);
+        context.setSubsystemXmlMapping(SUBSYSTEM_NAME, Namespace.MAIL_2_0.getUriString(), MailSubsystemParser2_0.INSTANCE);
     }
 
-    private static final int MANAGEMENT_API_MAJOR_VERSION = 1;
-    private static final int MANAGEMENT_API_MINOR_VERSION = 3;
+    private static final int MANAGEMENT_API_MAJOR_VERSION = 2;
+    private static final int MANAGEMENT_API_MINOR_VERSION = 0;
     private static final int MANAGEMENT_API_MICRO_VERSION = 0;
 
 
@@ -81,21 +81,11 @@ public class MailExtension implements Extension {
 
         final ManagementResourceRegistration subsystemRegistration = subsystem.registerSubsystemModel(MailSubsystemResource.INSTANCE);
         subsystemRegistration.registerOperationHandler(GenericSubsystemDescribeHandler.DEFINITION, GenericSubsystemDescribeHandler.INSTANCE);
-        // /subsystem=mail/mail-session
-        ManagementResourceRegistration session = subsystemRegistration.registerSubModel(MailSessionDefinition.INSTANCE);
-        // /subsystem=mail/mail-session=java:/Mail/server=imap
-        session.registerSubModel(MailServerDefinition.INSTANCE_IMAP);
-        // /subsystem=mail/mail-session=java:/Mail/server=pop3
-        session.registerSubModel(MailServerDefinition.INSTANCE_POP3);
-        // /subsystem=mail/mail-session=java:/Mail/server=smtp
-        session.registerSubModel(MailServerDefinition.INSTANCE_SMTP);
-        // /subsystem=mail/mail-session=java:/Mail/custom=*
-        session.registerSubModel(MailServerDefinition.INSTANCE_CUSTOM);
 
         if (context.isRegisterTransformers()) {
             registerTransformers(subsystem);
         }
-        subsystem.registerXMLElementWriter(parser);
+        subsystem.registerXMLElementWriter(MailSubsystemParser2_0.INSTANCE);
     }
 
     private void registerTransformers(SubsystemRegistration subsystem) {

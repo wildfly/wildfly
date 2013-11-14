@@ -193,6 +193,7 @@ public class UndertowSubsystemParser_1_0 implements XMLStreamConstants, XMLEleme
                                 )
 
                 )
+                //todo why do we really need this?
                 .setAdditionalOperationsGenerator(new PersistentResourceXMLDescription.AdditionalOperationsGenerator() {
                     @Override
                     public void additionalOperations(final PathAddress address, final ModelNode addOperation, final List<ModelNode> operations) {

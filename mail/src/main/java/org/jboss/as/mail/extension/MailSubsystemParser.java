@@ -25,30 +25,20 @@ package org.jboss.as.mail.extension;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ADD;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.PROPERTIES;
 import static org.jboss.as.controller.parsing.ParseUtils.requireAttributes;
 import static org.jboss.as.controller.parsing.ParseUtils.unexpectedElement;
-import static org.jboss.as.mail.extension.MailSubsystemModel.CUSTOM;
-import static org.jboss.as.mail.extension.MailSubsystemModel.CUSTOM_SERVER;
-import static org.jboss.as.mail.extension.MailSubsystemModel.IMAP;
-import static org.jboss.as.mail.extension.MailSubsystemModel.IMAP_SERVER;
-import static org.jboss.as.mail.extension.MailSubsystemModel.MAIL_SESSION;
-import static org.jboss.as.mail.extension.MailSubsystemModel.NAME;
-import static org.jboss.as.mail.extension.MailSubsystemModel.POP3;
-import static org.jboss.as.mail.extension.MailSubsystemModel.POP3_SERVER;
-import static org.jboss.as.mail.extension.MailSubsystemModel.SERVER_TYPE;
-import static org.jboss.as.mail.extension.MailSubsystemModel.SMTP;
-import static org.jboss.as.mail.extension.MailSubsystemModel.SMTP_SERVER;
-import static org.jboss.as.mail.extension.MailSubsystemModel.USER_NAME;
 import static org.jboss.as.mail.extension.MailServerDefinition.OUTBOUND_SOCKET_BINDING_REF;
 import static org.jboss.as.mail.extension.MailServerDefinition.OUTBOUND_SOCKET_BINDING_REF_OPTIONAL;
 import static org.jboss.as.mail.extension.MailServerDefinition.PASSWORD;
 import static org.jboss.as.mail.extension.MailServerDefinition.SSL;
 import static org.jboss.as.mail.extension.MailServerDefinition.TLS;
-import static org.jboss.as.mail.extension.MailServerDefinition.USERNAME;
 import static org.jboss.as.mail.extension.MailSessionDefinition.DEBUG;
 import static org.jboss.as.mail.extension.MailSessionDefinition.FROM;
 import static org.jboss.as.mail.extension.MailSessionDefinition.JNDI_NAME;
+import static org.jboss.as.mail.extension.MailSubsystemModel.IMAP;
+import static org.jboss.as.mail.extension.MailSubsystemModel.MAIL_SESSION;
+import static org.jboss.as.mail.extension.MailSubsystemModel.POP3;
+import static org.jboss.as.mail.extension.MailSubsystemModel.SMTP;
 
 import java.util.EnumSet;
 import java.util.List;
@@ -58,96 +48,20 @@ import javax.xml.stream.XMLStreamException;
 import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.operations.common.Util;
 import org.jboss.as.controller.parsing.ParseUtils;
-import org.jboss.as.controller.persistence.SubsystemMarshallingContext;
 import org.jboss.dmr.ModelNode;
-import org.jboss.dmr.Property;
 import org.jboss.staxmapper.XMLElementReader;
-import org.jboss.staxmapper.XMLElementWriter;
 import org.jboss.staxmapper.XMLExtendedStreamReader;
-import org.jboss.staxmapper.XMLExtendedStreamWriter;
 
 /**
  * The default subsystem parser / writer
  *
  * @author <a href="tomaz.cerar@gmail.com">Tomaz Cerar</a>
  */
-class MailSubsystemParser implements XMLStreamConstants, XMLElementReader<List<ModelNode>>, XMLElementWriter<SubsystemMarshallingContext> {
+class MailSubsystemParser implements XMLStreamConstants, XMLElementReader<List<ModelNode>> {
+    static final MailSubsystemParser INSTANCE = new MailSubsystemParser();
 
+    private MailSubsystemParser() {
 
-    /**
-     * {@inheritDoc}
-     */
-    public void writeContent(XMLExtendedStreamWriter writer, SubsystemMarshallingContext context) throws XMLStreamException {
-        context.startSubsystemElement(Namespace.CURRENT.getUriString(), false);
-
-        ModelNode model = context.getModelNode();
-        if (model.hasDefined(MAIL_SESSION)) {
-            List<Property> sessions = model.get(MAIL_SESSION).asPropertyList();
-
-            for (Property mailSession : sessions) {
-                ModelNode sessionData = mailSession.getValue();
-                writer.writeStartElement(Element.MAIL_SESSION.getLocalName());
-
-                JNDI_NAME.marshallAsAttribute(sessionData, writer);
-                DEBUG.marshallAsAttribute(sessionData, false, writer);
-                FROM.marshallAsAttribute(sessionData, false, writer);
-
-                if (sessionData.hasDefined(SERVER_TYPE)) {
-                    for (Property property : sessionData.get(SERVER_TYPE).asPropertyList()) {
-                        String name = property.getName();
-                        if (name.equals(SMTP)) {
-                            writeServerModel(writer, property.getValue(), SMTP_SERVER, null);
-                        } else if (name.equals(POP3)) {
-                            writeServerModel(writer, property.getValue(), POP3_SERVER, null);
-                        } else if (name.equals(IMAP)) {
-                            writeServerModel(writer, property.getValue(), IMAP_SERVER, null);
-                        } else {
-                            throw new XMLStreamException("unknown model element " + name);
-                        }
-                    }
-                }
-                if (sessionData.hasDefined(CUSTOM)) {
-                    for (Property property : sessionData.get(CUSTOM).asPropertyList()) {
-                        String name = property.getName();
-                        writeServerModel(writer, property.getValue(), CUSTOM_SERVER, name);
-                    }
-                }
-
-                writer.writeEndElement();
-            }
-        }
-        writer.writeEndElement();
-    }
-
-    private void writeServerModel(final XMLExtendedStreamWriter writer, final ModelNode server, final String elementName, String name) throws XMLStreamException {
-
-        boolean credentials = server.hasDefined(USER_NAME);
-        final boolean properties = server.hasDefined(PROPERTIES);
-        boolean shouldWriteEnd = false;
-        if (credentials || properties) {
-            writer.writeStartElement(Element.forName(elementName).getLocalName());
-            shouldWriteEnd = true;
-        } else {
-            writer.writeEmptyElement(Element.forName(elementName).getLocalName());
-        }
-        if (name != null) {
-            writer.writeAttribute(NAME, name);
-        }
-        SSL.marshallAsAttribute(server, false, writer);
-        TLS.marshallAsAttribute(server, false, writer);
-        OUTBOUND_SOCKET_BINDING_REF.marshallAsAttribute(server, false, writer);
-        if (credentials) {
-            writer.writeEmptyElement(Element.LOGIN.getLocalName());
-            USERNAME.marshallAsAttribute(server, false, writer);
-            PASSWORD.marshallAsAttribute(server, false, writer);
-
-        }
-        if (properties) {
-            MailServerDefinition.PROPERTIES.marshallAsElement(server, writer);
-        }
-        if (shouldWriteEnd) {
-            writer.writeEndElement();
-        }
     }
 
     /**
@@ -188,14 +102,15 @@ class MailSubsystemParser implements XMLStreamConstants, XMLElementReader<List<M
         for (int i = 0; i < reader.getAttributeCount(); i++) {
             Attribute attr = Attribute.forName(reader.getAttributeLocalName(i));
             String value = reader.getAttributeValue(i);
-            if (attr == Attribute.JNDI_NAME) {
+            String name;
+            if (attr == Attribute.NAME) {
+                name = value;
+            } else if (attr == Attribute.JNDI_NAME) {
                 jndiName = value;
                 JNDI_NAME.parseAndSetParameter(value, operation, reader);
-            }
-            if (attr == Attribute.DEBUG) {
+            } else if (attr == Attribute.DEBUG) {
                 DEBUG.parseAndSetParameter(value, operation, reader);
-            }
-            if (attr == Attribute.FROM) {
+            } else if (attr == Attribute.FROM) {
                 FROM.parseAndSetParameter(value, operation, reader);
             }
         }

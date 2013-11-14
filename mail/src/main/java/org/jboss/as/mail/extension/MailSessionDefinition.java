@@ -22,32 +22,27 @@
 
 package org.jboss.as.mail.extension;
 
+import java.util.Arrays;
+import java.util.Collection;
 import java.util.List;
 
-import org.jboss.as.controller.AbstractWriteAttributeHandler;
 import org.jboss.as.controller.AttributeDefinition;
-import org.jboss.as.controller.OperationContext;
-import org.jboss.as.controller.OperationFailedException;
-import org.jboss.as.controller.PathAddress;
-import org.jboss.as.controller.ReloadRequiredRemoveStepHandler;
-import org.jboss.as.controller.ReloadRequiredWriteAttributeHandler;
+import org.jboss.as.controller.PersistentResourceDefinition;
+import org.jboss.as.controller.ServiceRemoveStepHandler;
 import org.jboss.as.controller.SimpleAttributeDefinition;
 import org.jboss.as.controller.SimpleAttributeDefinitionBuilder;
-import org.jboss.as.controller.SimpleResourceDefinition;
 import org.jboss.as.controller.access.constraint.ApplicationTypeConfig;
 import org.jboss.as.controller.access.management.AccessConstraintDefinition;
 import org.jboss.as.controller.access.management.ApplicationTypeAccessConstraintDefinition;
 import org.jboss.as.controller.registry.ManagementResourceRegistration;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.ModelType;
-import org.jboss.msc.service.ServiceController;
-import org.jboss.msc.service.ServiceName;
 
 /**
  * @author Tomaz Cerar
  * @created 19.12.11 21:04
  */
-class MailSessionDefinition extends SimpleResourceDefinition {
+class MailSessionDefinition extends PersistentResourceDefinition {
 
     static final MailSessionDefinition INSTANCE = new MailSessionDefinition();
 
@@ -56,7 +51,8 @@ class MailSessionDefinition extends SimpleResourceDefinition {
     private MailSessionDefinition() {
         super(MailExtension.MAIL_SESSION_PATH,
                 MailExtension.getResourceDescriptionResolver(MailSubsystemModel.MAIL_SESSION),
-                MailSessionAdd.INSTANCE, ReloadRequiredRemoveStepHandler.INSTANCE);
+                MailSessionAdd.INSTANCE,
+                new ServiceRemoveStepHandler(MailSessionAdd.MAIL_SESSION_SERVICE_NAME, MailSessionAdd.INSTANCE));
         ApplicationTypeConfig atc = new ApplicationTypeConfig(MailExtension.SUBSYSTEM_NAME, MailSubsystemModel.MAIL_SESSION);
         accessConstraints = new ApplicationTypeAccessConstraintDefinition(atc).wrapAsList();
     }
@@ -81,47 +77,39 @@ class MailSessionDefinition extends SimpleResourceDefinition {
 
     private static final AttributeDefinition[] ATTRIBUTES = {DEBUG, JNDI_NAME, FROM};
 
+    private static final List<MailServerDefinition> CHILDREN = Arrays.asList(
+            // /subsystem=mail/mail-session=java:/Mail/server=imap
+            MailServerDefinition.INSTANCE_IMAP,
+            // /subsystem=mail/mail-session=java:/Mail/server=pop3
+            MailServerDefinition.INSTANCE_POP3,
+            // /subsystem=mail/mail-session=java:/Mail/server=smtp
+            MailServerDefinition.INSTANCE_SMTP,
+            // /subsystem=mail/mail-session=java:/Mail/custom=*
+            MailServerDefinition.INSTANCE_CUSTOM
+
+    );
+
     @Override
     public void registerAttributes(final ManagementResourceRegistration rootResourceRegistration) {
-        ReloadRequiredWriteAttributeHandler handler = new ReloadRequiredWriteAttributeHandler(ATTRIBUTES);
+        MailServerWriteAttributeHandler handler = new MailServerWriteAttributeHandler(ATTRIBUTES);
         for (AttributeDefinition attr : ATTRIBUTES) {
             rootResourceRegistration.registerReadWriteAttribute(attr, null, handler);
         }
     }
 
     @Override
+    public Collection<AttributeDefinition> getAttributes() {
+        return Arrays.asList(ATTRIBUTES);
+    }
+
+    @Override
+    protected List<? extends PersistentResourceDefinition> getChildren() {
+        return CHILDREN;
+    }
+
+    @Override
     public List<AccessConstraintDefinition> getAccessConstraints() {
         return accessConstraints;
     }
-
-    private static class SessionAttributeWriteHandler extends AbstractWriteAttributeHandler {
-        protected static SessionAttributeWriteHandler INSTANCE = new SessionAttributeWriteHandler();
-
-        private SessionAttributeWriteHandler() {
-            super(ATTRIBUTES);
-        }
-
-        @Override
-        protected boolean applyUpdateToRuntime(OperationContext context, ModelNode operation, String attributeName, ModelNode resolvedValue, ModelNode currentValue, HandbackHolder handbackHolder) throws OperationFailedException {
-            String jndiName = JNDI_NAME.resolveModelAttribute(context, context.readResource(PathAddress.EMPTY_ADDRESS).getModel()).asString();
-            final ServiceName serviceName = MailSessionAdd.MAIL_SESSION_SERVICE_NAME.append(jndiName);
-            AttributeDefinition def = getAttributeDefinition(attributeName);
-            ServiceController svcCtrl = context.getServiceRegistry(false).getService(serviceName);
-            context.removeService(svcCtrl);
-            MailSessionService service = (MailSessionService) svcCtrl.getService();
-            if (def == DEBUG) {
-                service.getConfig().setDebug(resolvedValue.asBoolean());
-            } else if (def == FROM) {
-                service.getConfig().setFrom(resolvedValue.asString());
-            }
-            return false;
-        }
-
-        @Override
-        protected void revertUpdateToRuntime(OperationContext context, ModelNode operation, String attributeName, ModelNode valueToRestore, ModelNode valueToRevert, Object handback) throws OperationFailedException {
-
-        }
-    }
-
 
 }
