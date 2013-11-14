@@ -102,20 +102,15 @@ public class ModClusterSubsystemTestCase extends AbstractSubsystemBaseTest {
 
     @Test
     public void testTransformersEAP600() throws Exception {
-        ignoreThisTestIfEAPRepositoryIsNotReachable();
         testTransformers_1_2_0(ModelTestControllerVersion.EAP_6_0_0);
     }
 
     @Test
     public void testTransformers601() throws Exception {
-        ignoreThisTestIfEAPRepositoryIsNotReachable();
         testTransformers_1_2_0(ModelTestControllerVersion.EAP_6_0_1);
     }
 
     private void testTransformers_1_2_0(ModelTestControllerVersion controllerVersion) throws Exception {
-        if (controllerVersion.isEap()) {
-            ignoreThisTestIfEAPRepositoryIsNotReachable();
-        }
         String subsystemXml = readResource("subsystem_1_1.xml");
         ModelVersion modelVersion = ModelVersion.create(1, 2, 0);
         KernelServicesBuilder builder = createKernelServicesBuilder(createAdditionalInitialization())
@@ -166,20 +161,15 @@ public class ModClusterSubsystemTestCase extends AbstractSubsystemBaseTest {
 
     @Test
     public void testTransformersEAP610() throws Exception {
-        ignoreThisTestIfEAPRepositoryIsNotReachable();
         testTransformers_1_3_0(ModelTestControllerVersion.EAP_6_1_0);
     }
 
     @Test
     public void testTransformers611() throws Exception {
-        ignoreThisTestIfEAPRepositoryIsNotReachable();
         testTransformers_1_3_0(ModelTestControllerVersion.EAP_6_1_1);
     }
 
     private void testTransformers_1_3_0(ModelTestControllerVersion controllerVersion) throws Exception {
-        if (controllerVersion.isEap()) {
-            ignoreThisTestIfEAPRepositoryIsNotReachable();
-        }
         String subsystemXml = readResource("subsystem_1_1.xml");
         ModelVersion modelVersion = ModelVersion.create(1, 3, 0);
         KernelServicesBuilder builder = createKernelServicesBuilder(createAdditionalInitialization())
@@ -228,9 +218,6 @@ public class ModClusterSubsystemTestCase extends AbstractSubsystemBaseTest {
     }
 
     private void testExpressionsAreRejectedByVersion_1_2(ModelTestControllerVersion controllerVersion) throws Exception {
-        if (controllerVersion.isEap()) {
-            ignoreThisTestIfEAPRepositoryIsNotReachable();
-        }
         String subsystemXml = readResource("subsystem_1_2.xml");
         ModelVersion modelVersion = ModelVersion.create(1, 2, 0);
         KernelServicesBuilder builder = createKernelServicesBuilder(createAdditionalInitialization());
@@ -306,9 +293,6 @@ public class ModClusterSubsystemTestCase extends AbstractSubsystemBaseTest {
     }
 
     private void testRejection1_3_0(ModelTestControllerVersion controllerVersion) throws Exception {
-        if (controllerVersion.isEap()) {
-            ignoreThisTestIfEAPRepositoryIsNotReachable();
-        }
         String subsystemXml = readResource("subsystem_1_2.xml");
         ModelVersion modelVersion = ModelVersion.create(1, 3, 0);
         KernelServicesBuilder builder = createKernelServicesBuilder(createAdditionalInitialization());

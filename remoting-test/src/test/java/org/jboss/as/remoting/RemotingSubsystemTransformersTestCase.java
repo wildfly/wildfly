@@ -94,9 +94,6 @@ public class RemotingSubsystemTransformersTestCase extends AbstractSubsystemBase
     }
 
     private void testExpressionsAreRejectedByVersion_1_1(ModelTestControllerVersion controllerVersion) throws Exception {
-        if (controllerVersion.isEap()) {
-            ignoreThisTestIfEAPRepositoryIsNotReachable();
-        }
         String subsystemXml = readResource("remoting-with-expressions.xml");
         KernelServicesBuilder builder = createKernelServicesBuilder(createAdditionalInitialization());
 
@@ -180,9 +177,6 @@ public class RemotingSubsystemTransformersTestCase extends AbstractSubsystemBase
     }
 
     private void testNonRemotingProtocolRejectedByVersion1_2(ModelTestControllerVersion controllerVersion) throws Exception {
-        if (controllerVersion.isEap()) {
-            ignoreThisTestIfEAPRepositoryIsNotReachable();
-        }
         String subsystemXml = readResource("remoting-with-expressions.xml");
         KernelServicesBuilder builder = createKernelServicesBuilder(createAdditionalInitialization());
 
@@ -216,13 +210,11 @@ public class RemotingSubsystemTransformersTestCase extends AbstractSubsystemBase
 
     @Test
     public void testTransformersEAP600() throws Exception {
-        ignoreThisTestIfEAPRepositoryIsNotReachable();
         testTransformers_1_1(ModelTestControllerVersion.EAP_6_0_0);
     }
 
     @Test
     public void testTransformersEAP601() throws Exception {
-        ignoreThisTestIfEAPRepositoryIsNotReachable();
         testTransformers_1_1(ModelTestControllerVersion.EAP_6_0_1);
     }
 
@@ -274,9 +266,6 @@ public class RemotingSubsystemTransformersTestCase extends AbstractSubsystemBase
 
 
     private void testTransformers_1_2_0(ModelTestControllerVersion controllerVersion) throws Exception {
-        if (controllerVersion.isEap()) {
-            ignoreThisTestIfEAPRepositoryIsNotReachable();
-        }
         KernelServicesBuilder builder = createKernelServicesBuilder(createAdditionalInitialization())
                 .setSubsystemXmlResource("remoting-with-expressions-and-good-legacy-protocol.xml");
         ModelVersion oldVersion = ModelVersion.create(1, 2, 0);

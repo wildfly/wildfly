@@ -82,10 +82,6 @@ public class EeSubsystemTestCase extends AbstractSubsystemBaseTest {
         //Due to https://issues.jboss.org/browse/AS7-4892 the jboss-descriptor-property-replacement
         //does not get set properly on 7.1.2, so let's do a reject test
 
-        if (controllerVersion.isEap()){
-            ignoreThisTestIfEAPRepositoryIsNotReachable();
-        }
-
         ModelVersion modelVersion = ModelVersion.create(1, 0, 0);
 
         try {
@@ -151,9 +147,6 @@ public class EeSubsystemTestCase extends AbstractSubsystemBaseTest {
     }
 
     private void testTransformers1_0_0_post712(ModelTestControllerVersion controllerVersion) throws Exception {
-        if (controllerVersion.isEap()) {
-            ignoreThisTestIfEAPRepositoryIsNotReachable();
-        }
         //Do a normal transformation test containing parts of the subsystem that work everywhere
         String subsystemXml = readResource("subsystem-transformers.xml");
         ModelVersion modelVersion = ModelVersion.create(1, 0, 0);
@@ -199,10 +192,6 @@ public class EeSubsystemTestCase extends AbstractSubsystemBaseTest {
     }
 
     private void testTransformers1_0_0_reject(ModelTestControllerVersion controllerVersion) throws Exception {
-        if (controllerVersion.isEap()) {
-            ignoreThisTestIfEAPRepositoryIsNotReachable();
-        }
-
         String subsystemXml = readResource("subsystem.xml");
         ModelVersion modelVersion = ModelVersion.create(1, 0, 0);
         //Use the non-runtime version of the extension which will happen on the HC
@@ -253,9 +242,6 @@ public class EeSubsystemTestCase extends AbstractSubsystemBaseTest {
     }
 
     private void testTransformersDiscardGlobalModules1_0_0(ModelTestControllerVersion controllerVersion) throws Exception {
-        if (controllerVersion.isEap()) {
-            ignoreThisTestIfEAPRepositoryIsNotReachable();
-        }
         String subsystemXml = readResource("subsystem-transformers-discard.xml");
         ModelVersion modelVersion = ModelVersion.create(1, 0, 0);
         //Use the non-runtime version of the extension which will happen on the HC

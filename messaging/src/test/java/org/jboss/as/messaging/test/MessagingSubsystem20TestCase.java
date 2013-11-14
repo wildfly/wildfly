@@ -43,7 +43,6 @@ import static org.jboss.as.messaging.MessagingExtension.VERSION_1_1_0;
 import static org.jboss.as.messaging.MessagingExtension.VERSION_1_2_0;
 import static org.jboss.as.messaging.MessagingExtension.VERSION_1_2_1;
 import static org.jboss.as.messaging.jms.ConnectionFactoryAttributes.Regular.FACTORY_TYPE;
-import static org.jboss.as.messaging.test.TransformerUtils.RejectExpressionsConfigWithAddOnlyParam;
 import static org.jboss.as.messaging.test.TransformerUtils.concat;
 import static org.jboss.as.messaging.test.TransformerUtils.createChainedConfig;
 import static org.jboss.as.model.test.ModelTestControllerVersion.EAP_6_0_0;
@@ -95,6 +94,7 @@ import org.jboss.as.messaging.jms.JMSQueueDefinition;
 import org.jboss.as.messaging.jms.JMSTopicDefinition;
 import org.jboss.as.messaging.jms.PooledConnectionFactoryDefinition;
 import org.jboss.as.messaging.jms.bridge.JMSBridgeDefinition;
+import org.jboss.as.messaging.test.TransformerUtils.RejectExpressionsConfigWithAddOnlyParam;
 import org.jboss.as.model.test.FailedOperationTransformationConfig;
 import org.jboss.as.model.test.FailedOperationTransformationConfig.RejectExpressionsConfig;
 import org.jboss.as.model.test.ModelFixer;
@@ -256,11 +256,6 @@ public class MessagingSubsystem20TestCase extends AbstractSubsystemBaseTest {
      * @throws Exception
      */
     private void doTestRejectExpressions_1_1_0(ModelTestControllerVersion controllerVersion, KernelServicesBuilder builder) throws Exception {
-
-        if (controllerVersion.isEap()) {
-            ignoreThisTestIfEAPRepositoryIsNotReachable();
-        }
-
         KernelServices mainServices = builder.build();
         assertTrue(mainServices.isSuccessfulBoot());
         KernelServices legacyServices = mainServices.getLegacyServices(VERSION_1_1_0);
@@ -405,10 +400,6 @@ public class MessagingSubsystem20TestCase extends AbstractSubsystemBaseTest {
      */
     private void doTestRejectExpressions_1_2_0(ModelTestControllerVersion controllerVersion, KernelServicesBuilder builder) throws Exception {
 
-        if (controllerVersion.isEap()) {
-            ignoreThisTestIfEAPRepositoryIsNotReachable();
-        }
-
         KernelServices mainServices = builder.build();
         assertTrue(mainServices.isSuccessfulBoot());
         KernelServices legacyServices = mainServices.getLegacyServices(VERSION_1_2_0);
@@ -447,10 +438,6 @@ public class MessagingSubsystem20TestCase extends AbstractSubsystemBaseTest {
      * @throws Exception
      */
     private void doTestRejectExpressions_1_2_1(ModelTestControllerVersion controllerVersion, KernelServicesBuilder builder) throws Exception {
-
-        if (controllerVersion.isEap()) {
-            ignoreThisTestIfEAPRepositoryIsNotReachable();
-        }
 
         KernelServices mainServices = builder.build();
         assertTrue(mainServices.isSuccessfulBoot());
@@ -495,9 +482,6 @@ public class MessagingSubsystem20TestCase extends AbstractSubsystemBaseTest {
     }
 
     private void testTransformers(ModelTestControllerVersion controllerVersion, ModelVersion messagingVersion, ModelFixer fixer) throws Exception {
-        if (controllerVersion.isEap()) {
-            ignoreThisTestIfEAPRepositoryIsNotReachable();
-        }
         //Boot up empty controllers with the resources needed for the ops coming from the xml to work
         KernelServicesBuilder builder = createKernelServicesBuilder(AdditionalInitialization.MANAGEMENT)
                 .setSubsystemXmlResource("subsystem_2_0.xml");

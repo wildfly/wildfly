@@ -80,13 +80,10 @@ public class PojoSubsystemTestCase extends AbstractSubsystemBaseTest {
 
     @Test
     public void testTransformersEAP611() throws Exception {
-        ignoreThisTestIfEAPRepositoryIsNotReachable();
+        testTransformers_1_0_0(ModelTestControllerVersion.EAP_6_1_1, null);
     }
 
     private void testTransformers_1_0_0(ModelTestControllerVersion controllerVersion, String commonBeansVersion) throws Exception {
-        if (controllerVersion.isEap()) {
-            ignoreThisTestIfEAPRepositoryIsNotReachable();
-        }
         ModelVersion modelVersion = ModelVersion.create(1, 0, 0);
         //Use the non-runtime version of the extension which will happen on the HC
         KernelServicesBuilder builder = createKernelServicesBuilder(AdditionalInitialization.MANAGEMENT)

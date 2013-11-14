@@ -104,9 +104,6 @@ public class JdrSubsystemTestCase extends AbstractSubsystemBaseTest {
     }
 
     private void testJdrTransformers(ModelTestControllerVersion controllerVersion, ModelVersion modelVersion) throws Exception {
-        if (controllerVersion.isEap()) {
-            ignoreThisTestIfEAPRepositoryIsNotReachable();
-        }
         String subsystemXml = "subsystem.xml";
         //Use the non-runtime version of the extension which will happen on the HC
         KernelServicesBuilder builder = createKernelServicesBuilder(AdditionalInitialization.MANAGEMENT)

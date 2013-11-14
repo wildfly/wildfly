@@ -192,10 +192,6 @@ public class WebSubsystemTestCase extends AbstractSubsystemBaseTest {
     }
 
     private void testRejectExpressions_1_1_x(ModelTestControllerVersion controllerVersion, ModelVersion modelVersion) throws Exception {
-        if (controllerVersion.isEap()) {
-            ignoreThisTestIfEAPRepositoryIsNotReachable();
-        }
-
         KernelServicesBuilder builder = createKernelServicesBuilder(createAdditionalInitialization());
 
         builder.createLegacyKernelServicesBuilder(null, controllerVersion, modelVersion)
@@ -291,9 +287,6 @@ public class WebSubsystemTestCase extends AbstractSubsystemBaseTest {
     }
 
     private void testTransformation_1_1_0(ModelTestControllerVersion controllerVersion, ModelVersion modelVersion) throws Exception {
-        if (controllerVersion.isEap()) {
-            ignoreThisTestIfEAPRepositoryIsNotReachable();
-        }
         String subsystemXml = readResource("subsystem-1.1.0.xml");
         KernelServicesBuilder builder = createKernelServicesBuilder(createAdditionalInitialization())
                 .setSubsystemXml(subsystemXml);
@@ -435,9 +428,6 @@ public class WebSubsystemTestCase extends AbstractSubsystemBaseTest {
     }
 
     private void testTransformation_1_2_0(ModelTestControllerVersion controllerVersion) throws Exception {
-        if (controllerVersion.isEap()) {
-            ignoreThisTestIfEAPRepositoryIsNotReachable();
-        }
         ModelVersion modelVersion = ModelVersion.create(1, 2, 0);
         String subsystemXml = readResource("subsystem-1.2.0.xml");
         KernelServicesBuilder builder = createKernelServicesBuilder(createAdditionalInitialization())
@@ -473,9 +463,6 @@ public class WebSubsystemTestCase extends AbstractSubsystemBaseTest {
     }
 
     private void testRejectingTransformers_1_2_0(ModelTestControllerVersion controllerVersion) throws Exception {
-        if (controllerVersion.isEap()) {
-            ignoreThisTestIfEAPRepositoryIsNotReachable();
-        }
         ModelVersion modelVersion = ModelVersion.create(1, 2, 0);
         KernelServicesBuilder builder = createKernelServicesBuilder(createAdditionalInitialization());
 

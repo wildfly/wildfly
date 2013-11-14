@@ -75,7 +75,9 @@ public interface KernelServicesBuilder {
 
     /**
      * Creates a new legacy kernel services initializer used to configure a new controller containing an older version of the subsystem being tested.
-     * When {@link #build()} is called any legacy controllers will be created as well.
+     * When {@link #build()} is called any legacy controllers will be created as well. Internally this calls
+     * {@link AbstractSubsystemTest#ignoreThisTestIfEAPRepositoryIsNotReachable} so if the @{@code version} is an eap version and
+     * {@code -Dboss.test.transformers.eap} is not set or the eap repository is not reachable, the test calling this method gets conditionally ignored.
      *
      * @param additionalInit Additional initialization that should be done to the parsers, controller and service container before initializing our extension. May be {@code null}, and if not must be serializable
      * so it can be loaded up in the classloader loading up the scoped controller
@@ -84,6 +86,7 @@ public interface KernelServicesBuilder {
      * @return the legacy kernel services initializer
      * @throws IllegalArgumentException if {@code additionalInit} does not have a running mode of {@link org.jboss.as.controller.RunningMode#ADMIN_ONLY}
      * @throws IllegalStateException if {@link #build()} has already been called
+     * @see AbstractSubsystemTest#ignoreThisTestIfEAPRepositoryIsNotReachable()
      */
      LegacyKernelServicesInitializer createLegacyKernelServicesBuilder(AdditionalInitialization additionalInit, ModelTestControllerVersion version, ModelVersion modelVersion);
 
