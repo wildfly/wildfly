@@ -86,9 +86,6 @@ public class Ejb3SubsystemUnitTestCase extends AbstractSubsystemBaseTest {
      * @throws Exception
      */
     private void testTransformer_1_1_0(ModelTestControllerVersion controllerVersion) throws Exception {
-        if (controllerVersion.isEap()) {
-            ignoreThisTestIfEAPRepositoryIsNotReachable();
-        }
         String subsystemXml = "transform_1_1_0.xml";   //This has no expressions not understood by 1.1.0
         ModelVersion modelVersion = ModelVersion.create(1, 1, 0); //The old model version
         //Use the non-runtime version of the extension which will happen on the HC
@@ -132,9 +129,6 @@ public class Ejb3SubsystemUnitTestCase extends AbstractSubsystemBaseTest {
      * @throws Exception
      */
     private void testTransformer_1_2_x(ModelTestControllerVersion controllerVersion, int modelVersionMicro) throws Exception {
-        if (controllerVersion.isEap()) {
-            ignoreThisTestIfEAPRepositoryIsNotReachable();
-        }
         String subsystemXml = "transform_1_2_0.xml";
         ModelVersion modelVersion = ModelVersion.create(1, 2, modelVersionMicro);
         //Use the non-runtime version of the extension which will happen on the HC
@@ -175,10 +169,6 @@ public class Ejb3SubsystemUnitTestCase extends AbstractSubsystemBaseTest {
     }
 
     private void testRejectExpressions_1_1_0(ModelTestControllerVersion controllerVersion) throws Exception {
-        if (controllerVersion.isEap()) {
-            ignoreThisTestIfEAPRepositoryIsNotReachable();
-        }
-        // create builder for current subsystem version
         KernelServicesBuilder builder = createKernelServicesBuilder(createAdditionalInitialization());
 
         // create builder for legacy subsystem version

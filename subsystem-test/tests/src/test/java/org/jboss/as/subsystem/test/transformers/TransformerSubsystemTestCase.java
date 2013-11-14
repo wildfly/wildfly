@@ -82,9 +82,6 @@ public class TransformerSubsystemTestCase extends AbstractSubsystemBaseTest {
     }
 
     private void testTransformers(boolean eap) throws Exception {
-        if (eap) {
-            ignoreThisTestIfEAPRepositoryIsNotReachable();
-        }
         ModelVersion oldVersion = ModelVersion.create(1, 0, 0);
         KernelServicesBuilder builder = createKernelServicesBuilder(null)
                 .setSubsystemXml(getSubsystemXml());

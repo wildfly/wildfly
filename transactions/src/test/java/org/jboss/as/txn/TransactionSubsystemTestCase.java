@@ -141,10 +141,6 @@ public class TransactionSubsystemTestCase extends AbstractSubsystemBaseTest {
     }
 
     private void testTransformersFull110(ModelTestControllerVersion controllerVersion) throws Exception {
-        if (controllerVersion.isEap()) {
-            ignoreThisTestIfEAPRepositoryIsNotReachable();
-        }
-
         String subsystemXml = readResource("full.xml");
         ModelVersion modelVersion = ModelVersion.create(1, 1, 0);
         //Use the non-runtime version of the extension which will happen on the HC
@@ -201,9 +197,6 @@ public class TransactionSubsystemTestCase extends AbstractSubsystemBaseTest {
     }
 
     private void testTransformersFull(ModelTestControllerVersion controllerVersion, ModelVersion modelVersion) throws Exception {
-        if (controllerVersion.isEap()) {
-            ignoreThisTestIfEAPRepositoryIsNotReachable();
-        }
         String subsystemXml = readResource("full-expressions.xml");
         //Use the non-runtime version of the extension which will happen on the HC
         KernelServicesBuilder builder = createKernelServicesBuilder(AdditionalInitialization.MANAGEMENT)
@@ -302,9 +295,6 @@ public class TransactionSubsystemTestCase extends AbstractSubsystemBaseTest {
     }
 
     private void testRejectTransformers(ModelTestControllerVersion controllerVersion, ModelVersion modelVersion, FailedOperationTransformationConfig config) throws Exception {
-        if (controllerVersion.isEap()) {
-            ignoreThisTestIfEAPRepositoryIsNotReachable();
-        }
         KernelServicesBuilder builder = createKernelServicesBuilder(createAdditionalInitialization());
 
         // Add legacy subsystems

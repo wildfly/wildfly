@@ -93,10 +93,6 @@ public class WeldSubsystemTestCase extends AbstractSubsystemBaseTest {
 
 
     private void testTransformers10(ModelTestControllerVersion controllerVersion) throws Exception {
-        if (controllerVersion.isEap()) {
-            ignoreThisTestIfEAPRepositoryIsNotReachable();
-        }
-
         ModelVersion modelVersion = ModelVersion.create(1, 0, 0);
         KernelServicesBuilder builder = createKernelServicesBuilder(AdditionalInitialization.MANAGEMENT)
                 .setSubsystemXmlResource("subsystem.xml");
@@ -151,9 +147,6 @@ public class WeldSubsystemTestCase extends AbstractSubsystemBaseTest {
     }
 
     private void testRejectTransformers10(ModelTestControllerVersion controllerVersion) throws Exception {
-        if (controllerVersion.isEap()) {
-            ignoreThisTestIfEAPRepositoryIsNotReachable();
-        }
 
         ModelVersion modelVersion = ModelVersion.create(1, 0, 0);
         KernelServicesBuilder builder = createKernelServicesBuilder(AdditionalInitialization.MANAGEMENT);

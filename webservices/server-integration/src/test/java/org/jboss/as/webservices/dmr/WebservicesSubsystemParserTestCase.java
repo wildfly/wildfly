@@ -168,9 +168,6 @@ public class WebservicesSubsystemParserTestCase extends AbstractSubsystemBaseTes
 
 
    private void testRejectExpressions_1_1_0(ModelTestControllerVersion controllerVersion) throws Exception {
-       if (controllerVersion.isEap()) {
-           ignoreThisTestIfEAPRepositoryIsNotReachable();
-       }
         // create builder for current subsystem version
         KernelServicesBuilder builder = createKernelServicesBuilder(createAdditionalInitialization());
 
@@ -223,15 +220,10 @@ public class WebservicesSubsystemParserTestCase extends AbstractSubsystemBaseTes
 
     @Test
     public void testTransformersEAP611() throws Exception {
-        ignoreThisTestIfEAPRepositoryIsNotReachable();
         testTransformers_1_2_0(ModelTestControllerVersion.EAP_6_1_1);
     }
 
     private void testTransformers_1_2_0(ModelTestControllerVersion controllerVersion) throws Exception {
-        if (controllerVersion.isEap()) {
-            ignoreThisTestIfEAPRepositoryIsNotReachable();
-        }
-
         // create builder for current subsystem version
         KernelServicesBuilder builder = createKernelServicesBuilder(createAdditionalInitialization())
                 .setSubsystemXmlResource("ws-subsystem12.xml");

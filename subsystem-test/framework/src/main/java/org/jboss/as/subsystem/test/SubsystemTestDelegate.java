@@ -83,6 +83,7 @@ import org.jboss.as.controller.registry.Resource;
 import org.jboss.as.controller.transform.OperationTransformer.TransformedOperation;
 import org.jboss.as.controller.transform.TransformerRegistry;
 import org.jboss.as.model.test.ChildFirstClassLoaderBuilder;
+import org.jboss.as.model.test.EAPRepositoryReachableUtil;
 import org.jboss.as.model.test.ModelFixer;
 import org.jboss.as.model.test.ModelTestBootOperationsBuilder;
 import org.jboss.as.model.test.ModelTestControllerVersion;
@@ -100,6 +101,7 @@ import org.jboss.dmr.ModelNode;
 import org.jboss.modules.filter.ClassFilter;
 import org.jboss.staxmapper.XMLMapper;
 import org.junit.Assert;
+import org.junit.Assume;
 import org.xnio.IoUtils;
 
 /**
@@ -552,6 +554,11 @@ final class SubsystemTestDelegate {
         }
 
         public LegacyKernelServicesInitializer createLegacyKernelServicesBuilder(AdditionalInitialization additionalInit, ModelTestControllerVersion version, ModelVersion modelVersion) {
+            //Ignore this test if it is eap
+            if (version.isEap()) {
+                Assume.assumeTrue(EAPRepositoryReachableUtil.isReachable());
+            }
+
             bootOperationBuilder.validateNotAlreadyBuilt();
             if (legacyControllerInitializers.containsKey(modelVersion)) {
                 throw new IllegalArgumentException("There is already a legacy controller for " + modelVersion);

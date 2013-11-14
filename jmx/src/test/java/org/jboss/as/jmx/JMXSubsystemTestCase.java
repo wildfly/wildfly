@@ -625,9 +625,6 @@ public class JMXSubsystemTestCase extends AbstractSubsystemTest {
     }
 
     private void testTransformation_1_0_0(ModelTestControllerVersion controllerVersion) throws Exception {
-        if (controllerVersion.isEap()) {
-            ignoreThisTestIfEAPRepositoryIsNotReachable();
-        }
         String subsystemXml =
                 "<subsystem xmlns=\"" + Namespace.CURRENT.getUriString() + "\">" +
                 "   <expose-resolved-model domain-name=\"jboss.as\" proper-property-format=\"false\"/>" +
@@ -792,9 +789,6 @@ public class JMXSubsystemTestCase extends AbstractSubsystemTest {
     }
 
     private void testTransformation_1_1_0(ModelTestControllerVersion controllerVersion) throws Exception {
-        if (controllerVersion.isEap()) {
-            ignoreThisTestIfEAPRepositoryIsNotReachable();
-        }
         String subsystemXml =
                 "<subsystem xmlns=\"" + Namespace.CURRENT.getUriString() + "\">" +
                 "   <expose-resolved-model domain-name=\"jboss.as\" proper-property-format=\"false\"/>" +
@@ -903,9 +897,6 @@ public class JMXSubsystemTestCase extends AbstractSubsystemTest {
      * @throws Exception
      */
     private void testRejectExpressions_1_0_0(ModelTestControllerVersion controllerVersion) throws Exception {
-        if (controllerVersion.isEap()) {
-            ignoreThisTestIfEAPRepositoryIsNotReachable();
-        }
         String subsystemXml =
             "<subsystem xmlns=\"" + Namespace.CURRENT.getUriString() + "\">" +
                     "   <expose-resolved-model domain-name=\"${test.domain-name:non-standard}\" proper-property-format=\"${test.proper-property-format:true}\"/>" +
@@ -981,9 +972,6 @@ public class JMXSubsystemTestCase extends AbstractSubsystemTest {
      * @throws Exception
      */
     private void testRejectExpressions_1_1_0(ModelTestControllerVersion controllerVersion) throws Exception {
-        if (controllerVersion.isEap()) {
-            ignoreThisTestIfEAPRepositoryIsNotReachable();
-        }
         String subsystemXml =
             "<subsystem xmlns=\"" + Namespace.CURRENT.getUriString() + "\">" +
                     "   <expose-resolved-model domain-name=\"${test.domain-name:non-standard}\" proper-property-format=\"${test.proper-property-format:true}\"/>" +

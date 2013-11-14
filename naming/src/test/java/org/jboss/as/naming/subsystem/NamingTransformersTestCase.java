@@ -129,9 +129,6 @@ public class NamingTransformersTestCase extends AbstractSubsystemBaseTest {
     }
 
     private void testTransformers_1_1_0(ModelTestControllerVersion version) throws Exception {
-        if (version.isEap()) {
-            ignoreThisTestIfEAPRepositoryIsNotReachable();
-        }
         KernelServicesBuilder builder = createKernelServicesBuilder(createAdditionalInitialization())
                 .setSubsystemXmlResource("subsystem_with_expressions_compatible_1.1.0.xml");
 
@@ -257,9 +254,6 @@ public class NamingTransformersTestCase extends AbstractSubsystemBaseTest {
      * @throws Exception
      */
     private void doTestRejectExpressions_1_1_0(ModelTestControllerVersion controllerVersion) throws Exception {
-        if (controllerVersion.isEap()) {
-            ignoreThisTestIfEAPRepositoryIsNotReachable();
-        }
         KernelServicesBuilder builder = createKernelServicesBuilder(AdditionalInitialization.MANAGEMENT);
 
         // create builder for legacy subsystem version
@@ -297,10 +291,6 @@ public class NamingTransformersTestCase extends AbstractSubsystemBaseTest {
     }
 
     private void testTransformers_1_2_0(ModelTestControllerVersion version) throws Exception {
-        if (version.isEap()) {
-            ignoreThisTestIfEAPRepositoryIsNotReachable();
-        }
-
         KernelServicesBuilder builder = createKernelServicesBuilder(createAdditionalInitialization())
                 .setSubsystemXmlResource("subsystem_with_expressions_compatible_1.2.0.xml");
 
