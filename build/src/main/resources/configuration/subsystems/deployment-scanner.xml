@@ -3,6 +3,6 @@
 <config>
    <extension-module>org.jboss.as.deployment-scanner</extension-module>
    <subsystem xmlns="urn:jboss:domain:deployment-scanner:1.2">
-       <deployment-scanner path="deployments" relative-to="jboss.server.base.dir" scan-interval="5000"/>
+       <deployment-scanner path="deployments" relative-to="jboss.server.base.dir" scan-interval="5000" runtime-failure-causes-rollback="${jboss.deployment.scanner.rollback.on.failure:false}"/>
    </subsystem>
 </config>

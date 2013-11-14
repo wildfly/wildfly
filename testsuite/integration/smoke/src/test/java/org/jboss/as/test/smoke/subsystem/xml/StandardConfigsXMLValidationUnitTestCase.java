@@ -211,6 +211,7 @@ public class StandardConfigsXMLValidationUnitTestCase extends AbstractValidation
         result = result.replace("${jboss.https.port:8443}", "8443");
         result = result.replace("${jboss.remoting.port:4447}", "4447");
         result = result.replace("${jboss.ajp.port:8009}", "8009");
+        result = result.replace("${jboss.deployment.scanner.rollback.on.failure:false}", "false");
         return result;
     }
 }
