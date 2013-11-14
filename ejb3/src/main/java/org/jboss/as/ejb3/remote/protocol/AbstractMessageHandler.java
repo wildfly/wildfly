@@ -36,9 +36,9 @@ import java.util.Map;
 
 import org.jboss.as.ejb3.EjbMessages;
 import org.jboss.as.ejb3.remote.protocol.versionone.ChannelAssociation;
+import org.jboss.as.ejb3.remote.protocol.versionone.ProtocolV1ClassTable;
+import org.jboss.as.ejb3.remote.protocol.versionone.ProtocolV1ObjectTable;
 import org.jboss.ejb.client.remoting.PackedInteger;
-import org.jboss.ejb.client.remoting.ProtocolV1ClassTable;
-import org.jboss.ejb.client.remoting.ProtocolV1ObjectTable;
 import org.jboss.marshalling.ByteInput;
 import org.jboss.marshalling.ByteOutput;
 import org.jboss.marshalling.ClassResolver;
@@ -155,16 +155,6 @@ public abstract class AbstractMessageHandler implements MessageHandler {
         }
         sb.append("]");
         this.writeInvocationFailure(channelAssociation, HEADER_NO_SUCH_EJB_FAILURE, invocationId, sb.toString());
-    }
-
-    protected void writeSessionNotActiveFailureMessage(final ChannelAssociation channelAssociation, final short invocationId, final String appName, final String moduleName,
-                                                       final String distinctname, final String beanName) throws IOException {
-        final StringBuffer sb = new StringBuffer("Session not active for EJB[");
-        sb.append("appname=").append(appName).append(",");
-        sb.append("modulename=").append(moduleName).append(",");
-        sb.append("distinctname=").append(distinctname).append(",");
-        sb.append("beanname=").append(beanName).append("]");
-        this.writeInvocationFailure(channelAssociation, HEADER_SESSION_NOT_ACTIVE_FAILURE, invocationId, sb.toString());
     }
 
     protected void writeNoSuchEJBMethodFailureMessage(final ChannelAssociation channelAssociation, final short invocationId, final String appName, final String moduleName,

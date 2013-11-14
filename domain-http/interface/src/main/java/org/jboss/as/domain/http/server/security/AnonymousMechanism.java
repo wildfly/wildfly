@@ -54,7 +54,7 @@ public class AnonymousMechanism implements AuthenticationMechanism {
             subject.getPrincipals().add(new InetAddressPrincipal(((InetSocketAddress) address).getAddress()));
         }
 
-        context.authenticationComplete(new RealmIdentityAccount(subject, user), ANONYMOUS_MECH);
+        context.authenticationComplete(new RealmIdentityAccount(subject, user), ANONYMOUS_MECH, false);
 
         return AuthenticationMechanismOutcome.AUTHENTICATED;
     }
