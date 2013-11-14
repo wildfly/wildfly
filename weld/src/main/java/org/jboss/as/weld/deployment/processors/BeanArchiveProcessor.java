@@ -67,6 +67,7 @@ import org.jboss.jandex.AnnotationInstance;
 import org.jboss.jandex.DotName;
 import org.jboss.jandex.Index;
 import org.jboss.modules.Module;
+import org.jboss.vfs.VirtualFile;
 import org.jboss.weld.bootstrap.spi.BeanDiscoveryMode;
 import org.jboss.weld.bootstrap.spi.BeansXml;
 import org.jboss.weld.injection.spi.JaxwsInjectionServices;
@@ -319,11 +320,10 @@ public class BeanArchiveProcessor implements DeploymentUnitProcessor {
                 classNames.addAll(Collections2.transform(index.getKnownClasses(), Indices.CLASS_INFO_TO_FQCN));
             }
 
-            String beanArchiveId = null;
-            if (beanArchiveMetadata.getResourceRoot() == null) {
-                beanArchiveId = getDeploymentUnitId(deploymentUnit);
-            } else {
-                beanArchiveId = beanArchiveMetadata.getResourceRoot().getRoot().getPathName();
+            String beanArchiveId = getDeploymentUnitId(deploymentUnit);
+            if (beanArchiveMetadata.getResourceRoot() != null) {
+                final VirtualFile deploymentRootResource = deploymentUnit.getAttachment(Attachments.DEPLOYMENT_ROOT).getRoot();
+                beanArchiveId += "/" + beanArchiveMetadata.getResourceRoot().getRoot().getPathNameRelativeTo(deploymentRootResource);
             }
             return new BeanDeploymentArchiveImpl(classNames, beanArchiveMetadata.getBeansXml(), module, beanArchiveId, BeanArchiveType.EXPLICIT, root);
         }

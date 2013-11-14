@@ -51,7 +51,7 @@ public class Utils {
     public static String getDeploymentUnitId(DeploymentUnit deploymentUnit) {
         String id = deploymentUnit.getName();
         if (deploymentUnit.getParent() != null) {
-            id = deploymentUnit.getParent().getName() + "." + id;
+            id = deploymentUnit.getParent().getName() + "/" + id;
         }
         return id;
     }
