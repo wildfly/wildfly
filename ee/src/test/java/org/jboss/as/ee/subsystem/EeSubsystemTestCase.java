@@ -253,7 +253,9 @@ public class EeSubsystemTestCase extends AbstractSubsystemBaseTest {
     }
 
     private void testTransformersDiscardGlobalModules1_0_0(ModelTestControllerVersion controllerVersion) throws Exception {
-
+        if (controllerVersion.isEap()) {
+            ignoreThisTestIfEAPRepositoryIsNotReachable();
+        }
         String subsystemXml = readResource("subsystem-transformers-discard.xml");
         ModelVersion modelVersion = ModelVersion.create(1, 0, 0);
         //Use the non-runtime version of the extension which will happen on the HC
