@@ -22,16 +22,8 @@
 
 package org.jboss.as.naming;
 
-import static org.jboss.as.naming.NamingMessages.MESSAGES;
-import static org.jboss.as.naming.util.NamingUtils.isLastComponentEmpty;
-import static org.jboss.as.naming.util.NamingUtils.namingException;
-
-import java.util.Hashtable;
-
-import javax.naming.Context;
-import javax.naming.Name;
-import javax.naming.NamingException;
-
+import org.jboss.as.naming.deployment.JndiNamingDependencyProcessor;
+import org.jboss.as.naming.deployment.RuntimeBindReleaseService;
 import org.jboss.as.naming.service.BinderService;
 import org.jboss.as.naming.util.ThreadLocalStack;
 import org.jboss.msc.service.ServiceBuilder;
@@ -42,13 +34,22 @@ import org.jboss.msc.service.ServiceTarget;
 import org.jboss.msc.service.StabilityMonitor;
 import org.jboss.msc.value.ImmediateValue;
 
+import javax.naming.Context;
+import javax.naming.Name;
+import javax.naming.NamingException;
+import java.util.Hashtable;
+
+import static org.jboss.as.naming.NamingMessages.MESSAGES;
+import static org.jboss.as.naming.util.NamingUtils.isLastComponentEmpty;
+import static org.jboss.as.naming.util.NamingUtils.namingException;
+
 /**
  * @author John Bailey
  * @author Eduardo Martins
  * @author <a href="mailto:ropalka@redhat.com">Richard Opalka</a>
  */
 public class WritableServiceBasedNamingStore extends ServiceBasedNamingStore implements WritableNamingStore {
-    private static final ThreadLocalStack<ServiceName> WRITE_OWNER = new ThreadLocalStack<ServiceName>();
+    private static final ThreadLocalStack WRITE_OWNER = new ThreadLocalStack();
 
     private final ServiceTarget serviceTarget;
 
@@ -57,19 +58,30 @@ public class WritableServiceBasedNamingStore extends ServiceBasedNamingStore imp
         this.serviceTarget = serviceTarget;
     }
 
-    public void bind(final Name name, final Object object) throws NamingException {
-        final ServiceName deploymentUnitServiceName = requireOwner();
-        final ServiceName bindName = buildServiceName(name);
-        bind(name, bindName, object, deploymentUnitServiceName);
+    public void bind(final Name name, final Object object, final Class<?> bindType) throws NamingException {
+        bind(name, object);
     }
 
-    @SuppressWarnings("unchecked")
-    private void bind(final Name name, final ServiceName bindName, final Object object, final ServiceName deploymentUnitServiceName) throws NamingException {
+    public void bind(final Name name, final Object object) throws NamingException {
+        final Object owner = requireOwner();
+        final ServiceName bindName = buildServiceName(name);
+        bind(name, object, owner, bindName);
+    }
+
+    private void bind(Name name, Object object, Object owner, ServiceName bindName) throws NamingException {
+        ServiceTarget serviceTarget = this.serviceTarget;
+        ServiceName deploymentUnitServiceName = null;
+        if (owner instanceof ServiceName) {
+            deploymentUnitServiceName = (ServiceName) owner;
+        } else {
+            serviceTarget = (ServiceTarget) owner;
+        }
         try {
-            final BinderService binderService = new BinderService(name.toString(), null, deploymentUnitServiceName);
+            // unlike on deployment processors, we may assume here it's a shareable bind if the owner is a deployment, because deployment unshareable namespaces are readonly stores
+            final BinderService binderService = new BinderService(name.toString(), null, deploymentUnitServiceName != null);
             final ServiceBuilder<?> builder = serviceTarget.addService(bindName, binderService)
                     .addDependency(getServiceNameBase(), ServiceBasedNamingStore.class, binderService.getNamingStoreInjector())
-                    .addInjection(binderService.getManagedObjectInjector(), new ValueManagedReferenceFactory(new ImmediateValue<Object>(object)))
+                    .addInjection(binderService.getManagedObjectInjector(), new ImmediateManagedReferenceFactory(object))
                     .setInitialMode(ServiceController.Mode.ACTIVE);
             final ServiceController<?> binderServiceController = builder.install();
             final StabilityMonitor monitor = new StabilityMonitor();
@@ -83,40 +95,42 @@ public class WritableServiceBasedNamingStore extends ServiceBasedNamingStore imp
             if (startException != null) {
                 throw startException;
             }
-            binderService.acquire();
+            if (deploymentUnitServiceName != null) {
+                binderService.acquire();
+                final RuntimeBindReleaseService.References duBindingReferences = (RuntimeBindReleaseService.References) binderServiceController.getServiceContainer().getService(JndiNamingDependencyProcessor.serviceName(deploymentUnitServiceName)).getValue();
+                duBindingReferences.add(binderService);
+            }
         } catch (Exception e) {
             throw namingException("Failed to bind [" + object + "] at location [" + bindName + "]", e);
         }
     }
 
-    public void bind(final Name name, final Object object, final Class<?> bindType) throws NamingException {
-        bind(name, object);
-    }
-
     public void rebind(Name name, Object object) throws NamingException {
-        final ServiceName deploymentUnitServiceName = requireOwner();
+        final Object owner = requireOwner();
+        // re-set the existent binder service injected value
         final ServiceName bindName = buildServiceName(name);
-        try {
-            unbind(name, bindName);
-        } catch (NamingException ignore) {
-            // rebind may fail if there is no existing binding
+        final ServiceController<?> controller = getServiceRegistry().getService(bindName);
+        if (controller == null) {
+            bind(name, object, owner, bindName);
+        } else {
+            final BinderService binderService = (BinderService) controller.getService();
+            if (owner instanceof ServiceName) {
+                final ServiceName deploymentUnitServiceName = (ServiceName) owner;
+                binderService.acquire();
+                final RuntimeBindReleaseService.References duBindingReferences = (RuntimeBindReleaseService.References) controller.getServiceContainer().getService(JndiNamingDependencyProcessor.serviceName(deploymentUnitServiceName)).getValue();
+                duBindingReferences.add(binderService);
+            }
+            binderService.getManagedObjectInjector().setValue(new ImmediateValue(new ImmediateManagedReferenceFactory(object)));
         }
-        bind(name, bindName, object, deploymentUnitServiceName);
     }
 
     public void rebind(final Name name, final Object object, final Class<?> bindType) throws NamingException {
         rebind(name, object);
     }
 
-    @SuppressWarnings("unchecked")
     public void unbind(final Name name) throws NamingException {
         requireOwner();
         final ServiceName bindName = buildServiceName(name);
-        // do the unbinding
-        unbind(name, bindName);
-    }
-
-    private void unbind(final Name name, final ServiceName bindName) throws NamingException {
         final ServiceController<?> controller = getServiceRegistry().getService(bindName);
         if (controller == null) {
             throw MESSAGES.cannotResolveService(bindName);
@@ -141,24 +155,24 @@ public class WritableServiceBasedNamingStore extends ServiceBasedNamingStore imp
         return new NamingContext(name, WritableServiceBasedNamingStore.this, new Hashtable<String, Object>());
     }
 
-    private ServiceName requireOwner() {
-        final ServiceName owner = WRITE_OWNER.peek();
+    private Object requireOwner() {
+        final Object owner = WRITE_OWNER.peek();
         if (owner == null) {
             throw MESSAGES.readOnlyNamingContext();
         }
         return owner;
     }
 
-    public static void pushOwner(final ServiceName du) {
-        WRITE_OWNER.push(du);
+    public static void pushOwner(final ServiceName deploymentUnitServiceName) {
+        WRITE_OWNER.push(deploymentUnitServiceName);
+    }
+
+    public static void pushOwner(final ServiceTarget serviceTarget) {
+        WRITE_OWNER.push(serviceTarget);
     }
 
     public static void popOwner() {
         WRITE_OWNER.pop();
-    }
-
-    public static ServiceName currentOwner() {
-        return WRITE_OWNER.peek();
     }
 
 }
