@@ -86,7 +86,7 @@ public abstract class AbstractAddJndiHandler implements OperationStepHandler {
                         HornetQServer hqServer = HornetQServer.class.cast(hqService.getValue());
                         String resourceName = PathAddress.pathAddress(operation.require(ModelDescriptionConstants.OP_ADDR)).getLastElement().getValue();
                         String jndiName = JNDI_BINDING.resolveModelAttribute(context, operation).asString();
-                        addJndiNameToControl(jndiName, resourceName, hqServer, context);
+                        addJndiNameToControl(jndiName, resourceName, hqServer, context, operation);
                     } // else the subsystem isn't started yet
 
                     if (!context.hasFailureDescription()) {
@@ -105,5 +105,5 @@ public abstract class AbstractAddJndiHandler implements OperationStepHandler {
         context.stepCompleted();
     }
 
-    protected abstract void addJndiNameToControl(String toAdd, String resourceName, HornetQServer server, OperationContext context);
+    protected abstract void addJndiNameToControl(String toAdd, String resourceName, HornetQServer server, OperationContext context, ModelNode operation);
 }
