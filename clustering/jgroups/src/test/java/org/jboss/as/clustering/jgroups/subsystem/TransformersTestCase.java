@@ -59,36 +59,30 @@ import org.junit.runner.RunWith;
  * @author Radoslav Husar
  */
 @RunWith(BMUnitRunner.class)
-public class JGroupsSubsystemTransformerTestCase extends OperationTestCaseBase {
+public class TransformersTestCase extends OperationTestCaseBase {
 
     @Test
     public void testTransformerAS712() throws Exception {
-        testTransformer_1_x(ModelTestControllerVersion.V7_1_2_FINAL, ModelVersion.create(1, 1, 0));
+        testTransformer(ModelTestControllerVersion.V7_1_2_FINAL, ModelVersion.create(1, 1, 0));
     }
 
     @Test
     public void testTransformerAS713() throws Exception {
-        testTransformer_1_x(ModelTestControllerVersion.V7_1_3_FINAL, ModelVersion.create(1, 1, 0));
+        testTransformer(ModelTestControllerVersion.V7_1_3_FINAL, ModelVersion.create(1, 1, 0));
     }
 
     @Test
     public void testTransformerAS720() throws Exception {
-        testTransformer_1_x(ModelTestControllerVersion.V7_2_0_FINAL, ModelVersion.create(1, 2, 0));
+        testTransformer(ModelTestControllerVersion.V7_2_0_FINAL, ModelVersion.create(1, 2, 0));
     }
 
     /**
      * Tests transformation of model from 2.0.0 version into 1.1.0 or 1.2.0 version.
      *
-     * This test does not pass because of an error in the 1.1.0 model:
-     * The model entry 'protocols' in /subsystem=jgroups/stack=* is used
-     * to store an ordered list of protocol names, but it is not registered
-     * as an attribute, where as it is registered in the 1.1.1 model.
-     * This breaks the test.
-     *
      * @throws Exception
      */
-    private void testTransformer_1_x(ModelTestControllerVersion controllerVersion, ModelVersion version) throws Exception {
-        String subsystemXml = readResource("jgroups-transformer_1_1.xml");
+    private void testTransformer(ModelTestControllerVersion controllerVersion, ModelVersion version) throws Exception {
+        String subsystemXml = readResource("subsystem-jgroups-transform-2_0.xml");
         KernelServicesBuilder builder = createKernelServicesBuilder(AdditionalInitialization.MANAGEMENT)
                 .setSubsystemXml(subsystemXml);
         builder.createLegacyKernelServicesBuilder(null, controllerVersion, version)
@@ -137,26 +131,26 @@ public class JGroupsSubsystemTransformerTestCase extends OperationTestCaseBase {
     }
 
     @Test
-    public void testRejectExpressionsAS712() throws Exception {
-        testRejectExpressions_1_1_0(ModelTestControllerVersion.V7_1_2_FINAL);
+    public void testRejectionsAS712() throws Exception {
+        testRejections_1_1_0(ModelTestControllerVersion.V7_1_2_FINAL);
     }
 
     @Test
-    public void testRejectExpressionsAS713() throws Exception {
-        testRejectExpressions_1_1_0(ModelTestControllerVersion.V7_1_3_FINAL);
+    public void testRejectionsAS713() throws Exception {
+        testRejections_1_1_0(ModelTestControllerVersion.V7_1_3_FINAL);
     }
 
     @Test
-    public void testRejectExpressionsAS720() throws Exception {
-        testDiscards_1_2_0(ModelTestControllerVersion.V7_2_0_FINAL);
+    public void testRejectionsAS720() throws Exception {
+        testRejections_1_2_0(ModelTestControllerVersion.V7_2_0_FINAL);
     }
 
     /**
-     * Tests rejection of expressions in 1.1.0 model.
+     * Tests rejection of resources / attributes / operations in 1.1.0 model.
      *
      * @throws Exception
      */
-    private void testRejectExpressions_1_1_0(ModelTestControllerVersion controllerVersion) throws Exception {
+    private void testRejections_1_1_0(ModelTestControllerVersion controllerVersion) throws Exception {
         // create builder for current subsystem version
         KernelServicesBuilder builder = createKernelServicesBuilder(AdditionalInitialization.MANAGEMENT);
 
@@ -180,31 +174,39 @@ public class JGroupsSubsystemTransformerTestCase extends OperationTestCaseBase {
         ModelTestUtils.checkFailedTransformedBootOperations(
                 mainServices,
                 version_1_1_0,
-                builder.parseXmlResource("subsystem-jgroups-test.xml"),
+                builder.parseXmlResource("subsystem-jgroups-2_0.xml"),
                 new FailedOperationTransformationConfig()
-                    .addFailedAttribute(
-                            subsystemAddress.append(PathElement.pathElement("stack"))
-                                    .append(PathElement.pathElement("transport")),
-                            new FailedOperationTransformationConfig.RejectExpressionsConfig(ModelKeys.SHARED))
-                    .addFailedAttribute(
-                            subsystemAddress.append(PathElement.pathElement("stack"))
-                                .append(PathElement.pathElement("transport"))
-                                .append("property"),
-                            new FailedOperationTransformationConfig.RejectExpressionsConfig(VALUE))
-                    .addFailedAttribute(
-                            subsystemAddress.append(PathElement.pathElement("stack"))
-                                .append(PathElement.pathElement("protocol"))
-                                .append("property"),
-                            new FailedOperationTransformationConfig.RejectExpressionsConfig(VALUE))
-                );
+                        // expect certain rejected expressions
+                        .addFailedAttribute(
+                                subsystemAddress.append(PathElement.pathElement("stack"))
+                                        .append(PathElement.pathElement("transport", "TRANSPORT")),
+                                new FailedOperationTransformationConfig.RejectExpressionsConfig(ModelKeys.SHARED))
+                        .addFailedAttribute(
+                                subsystemAddress.append(PathElement.pathElement("stack"))
+                                        .append(PathElement.pathElement("transport", "TRANSPORT"))
+                                        .append("property"),
+                                new FailedOperationTransformationConfig.RejectExpressionsConfig(VALUE))
+                        .addFailedAttribute(
+                                subsystemAddress.append(PathElement.pathElement("stack"))
+                                        .append(PathElement.pathElement("protocol"))
+                                        .append("property"),
+                                new FailedOperationTransformationConfig.RejectExpressionsConfig(VALUE))
+                        // expect rejection of relay and child
+                        .addFailedAttribute(
+                                subsystemAddress.append("stack").append("relay", "RELAY"),
+                                FailedOperationTransformationConfig.REJECTED_RESOURCE)
+                        .addFailedAttribute(
+                                subsystemAddress.append("stack").append("relay", "RELAY").append("remote-site"),
+                                FailedOperationTransformationConfig.REJECTED_RESOURCE)
+        );
     }
 
     /**
-     * Tests that relay is discarded, no need to check channel.
+     * Tests rejection of resources / attributes / operations in 1.2.0 model.
      *
      * @throws Exception
      */
-    private void testDiscards_1_2_0(ModelTestControllerVersion controllerVersion) throws Exception {
+    private void testRejections_1_2_0(ModelTestControllerVersion controllerVersion) throws Exception {
         KernelServicesBuilder builder = createKernelServicesBuilder(AdditionalInitialization.MANAGEMENT);
         ModelVersion version_1_2_0 = ModelVersion.create(1, 2, 0);
         builder.createLegacyKernelServicesBuilder(null, controllerVersion, version_1_2_0)
@@ -222,13 +224,15 @@ public class JGroupsSubsystemTransformerTestCase extends OperationTestCaseBase {
         ModelTestUtils.checkFailedTransformedBootOperations(
                 mainServices,
                 version_1_2_0,
-                builder.parseXmlResource("jgroups-transformer_2_0-reject.xml"),
-                new FailedOperationTransformationConfig().
-                        addFailedAttribute(
-                                subsystemAddress.append("stack").append("relay"),
-                                FailedOperationTransformationConfig.DISCARDED_RESOURCE)
-
+                builder.parseXmlResource("subsystem-jgroups-transform-2_0-reject.xml"),
+                new FailedOperationTransformationConfig()
+                        // expect rejection of relay and child
+                        .addFailedAttribute(
+                                subsystemAddress.append("stack").append("relay", "RELAY"),
+                                FailedOperationTransformationConfig.REJECTED_RESOURCE)
+                        .addFailedAttribute(
+                                subsystemAddress.append("stack").append("relay", "RELAY").append("remote-site"),
+                                FailedOperationTransformationConfig.REJECTED_RESOURCE)
         );
     }
-
 }
