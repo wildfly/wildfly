@@ -112,20 +112,22 @@ public class ManagementClient {
 
         Domain domain = new Domain();
         for (String hostNodeName : rootNode.get(HOST).keys()) {
+            ModelNode serverConfigNode = rootNode.get(HOST).get(hostNodeName).get(SERVER_CONFIG);
+            if (serverConfigNode.isDefined()) {
+                for (String serverConfigName : serverConfigNode.keys()) {
+                    ModelNode serverConfig = rootNode.get(HOST).get(hostNodeName).get(SERVER_CONFIG).get(serverConfigName);
 
-            for (String serverConfigName : rootNode.get(HOST).get(hostNodeName).get(SERVER_CONFIG).keys()) {
-                ModelNode serverConfig = rootNode.get(HOST).get(hostNodeName).get(SERVER_CONFIG).get(serverConfigName);
+                    Server server = new Server(
+                            serverConfig.get(NAME).asString(),
+                            hostNodeName,
+                            serverConfig.get(GROUP).asString(),
+                            serverConfig.get(AUTO_START).asBoolean());
 
-                Server server = new Server(
-                        serverConfig.get(NAME).asString(),
-                        hostNodeName,
-                        serverConfig.get(GROUP).asString(),
-                        serverConfig.get(AUTO_START).asBoolean());
-
-                if(containerNameMap.containsKey(server.getUniqueName())) {
-                    server.setContainerName(containerNameMap.get(server.getUniqueName()));
+                    if (containerNameMap.containsKey(server.getUniqueName())) {
+                        server.setContainerName(containerNameMap.get(server.getUniqueName()));
+                    }
+                    domain.addServer(server);
                 }
-                domain.addServer(server);
             }
         }
         for (String serverGroupName : rootNode.get(SERVER_GROUP).keys()) {
