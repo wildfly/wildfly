@@ -39,6 +39,7 @@ import javax.xml.stream.XMLStreamWriter;
 
 import org.jboss.as.controller.AttributeDefinition;
 import org.jboss.as.controller.ListAttributeDefinition;
+import org.jboss.as.controller.ModelVersion;
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.PathElement;
 import org.jboss.as.controller.ReadResourceNameOperationStepHandler;
@@ -82,10 +83,12 @@ public class InterfaceDefinition extends SimpleResourceDefinition {
             .setValidator(new ModelTypeValidator(ModelType.BOOLEAN, true, false))
             .addAlternatives(OTHERS).addAlternatives(ModelDescriptionConstants.ANY_IPV4_ADDRESS, ModelDescriptionConstants.ANY_IPV6_ADDRESS)
             .build();
+
     public static final AttributeDefinition ANY_IPV4_ADDRESS = SimpleAttributeDefinitionBuilder.create(ModelDescriptionConstants.ANY_IPV4_ADDRESS, ModelType.BOOLEAN)
             .setAllowExpression(false).setAllowNull(true).setRestartAllServices()
             .setValidator(new ModelTypeValidator(ModelType.BOOLEAN, true, false))
             .addAlternatives(OTHERS).addAlternatives(ModelDescriptionConstants.ANY_ADDRESS, ModelDescriptionConstants.ANY_IPV6_ADDRESS)
+            .setDeprecated(ModelVersion.create(2,0,0))
             .build();
     /**
      * All other attribute names.
@@ -95,6 +98,7 @@ public class InterfaceDefinition extends SimpleResourceDefinition {
             .setAllowExpression(false).setAllowNull(true).setRestartAllServices()
             .setValidator(new ModelTypeValidator(ModelType.BOOLEAN, true, false))
             .addAlternatives(OTHERS).addAlternatives(ModelDescriptionConstants.ANY_ADDRESS, ModelDescriptionConstants.ANY_IPV4_ADDRESS)
+            .setDeprecated(ModelVersion.create(2,0,0))
             .build();
     public static final AttributeDefinition INET_ADDRESS = SimpleAttributeDefinitionBuilder.create(ModelDescriptionConstants.INET_ADDRESS, ModelType.STRING)
             .setAllowExpression(true).setAllowNull(true).addAlternatives(ALTERNATIVES_ANY).setRestartAllServices()
