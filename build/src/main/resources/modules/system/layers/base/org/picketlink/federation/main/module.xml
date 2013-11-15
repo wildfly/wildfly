@@ -41,11 +41,7 @@
         <module name="org.picketbox" />
         <module name="javax.xml.ws.api" />
         <module name="org.apache.log4j" />
-        <module name="org.apache.santuario.xmlsec">
-            <imports>
-                <exclude path="javax/*" />
-            </imports>
-        </module>
+        <module name="org.apache.santuario.xmlsec"/>
         <module name="javax.api" />
         <module name="org.jboss.ws.api" />
         <module name="org.jboss.ws.spi" />
