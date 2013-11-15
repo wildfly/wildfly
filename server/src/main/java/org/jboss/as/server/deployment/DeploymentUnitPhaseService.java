@@ -137,6 +137,9 @@ final class DeploymentUnitPhaseService<T> implements Service<T> {
         final DeploymentPhaseContext processorContext = new DeploymentPhaseContextImpl(serviceTarget, new DelegatingServiceRegistry(container), phaseServiceBuilder,
                 deploymentUnit, phase);
 
+        //make sure all child services are added to the SVH
+        serviceTarget.addListener(deploymentUnit.getAttachment(Attachments.SERVICE_VERIFICATION_HANDLER));
+
         // attach any injected values from the last phase
         for (AttachedDependency attachedDependency : injectedAttachedDependencies) {
             final Attachable target;
