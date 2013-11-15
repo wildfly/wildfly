@@ -66,7 +66,7 @@ public class JASPIAuthenticationMechanism implements AuthenticationMechanism {
             if (account == null) {
                 ROOT_LOGGER.debug("Creating account with credentials from JASPI callbackhandler.");
                 account = createAccount(cbh);
-                securityContext.authenticationComplete(account, MECHANISM_NAME);
+                securityContext.authenticationComplete(account, MECHANISM_NAME, false);
             } else {
                 ROOT_LOGGER.debug("Account already setup from JASPI modules.");
             }

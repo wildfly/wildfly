@@ -45,8 +45,7 @@ import org.xnio.Options;
 import org.xnio.Sequence;
 
 import static org.jboss.as.remoting.RemotingMessages.MESSAGES;
-import static org.xnio.Options.SASL_POLICY_NOANONYMOUS;
-import static org.xnio.Options.SASL_POLICY_NOPLAINTEXT;
+import static org.xnio.Options.*;
 
 /**
  * A {@link RemoteOutboundConnectionService} manages a remoting connection created out of a remote:// URI scheme.
@@ -58,6 +57,8 @@ public class RemoteOutboundConnectionService extends AbstractOutboundConnectionS
     public static final ServiceName REMOTE_OUTBOUND_CONNECTION_BASE_SERVICE_NAME = RemotingServices.SUBSYSTEM_ENDPOINT.append("remote-outbound-connection");
 
     private static final String JBOSS_LOCAL_USER = "JBOSS-LOCAL-USER";
+    private static final String HTTP_REMOTING = "http-remoting";
+    private static final String HTTPS_REMOTING = "https-remoting";
 
     private final InjectedValue<OutboundSocketBinding> destinationOutboundSocketBindingInjectedValue = new InjectedValue<OutboundSocketBinding>();
     private final InjectedValue<SecurityRealm> securityRealmInjectedValue = new InjectedValue<SecurityRealm>();
@@ -104,11 +105,19 @@ public class RemoteOutboundConnectionService extends AbstractOutboundConnectionS
         builder.set(SASL_POLICY_NOANONYMOUS, Boolean.FALSE);
         builder.set(SASL_POLICY_NOPLAINTEXT, Boolean.FALSE);
         builder.set(Options.SASL_DISALLOWED_MECHANISMS, Sequence.of(JBOSS_LOCAL_USER));
-        builder.set(Options.SSL_ENABLED, true);
-        builder.set(Options.SSL_STARTTLS, true);
+
+        if (uri.getScheme().equals(HTTP_REMOTING)) {
+            builder.set(SSL_ENABLED, false);
+        } else if (uri.getScheme().equals(HTTPS_REMOTING)) {
+            builder.set(SSL_ENABLED, true);
+            builder.set(SSL_STARTTLS, false);
+        } else {
+            builder.set(Options.SSL_ENABLED, true);
+            builder.set(Options.SSL_STARTTLS, true);
+        }
+
         // now override with user specified options
         builder.addAll(this.connectionCreationOptions);
-
 
         return endpoint.connect(uri, builder.getMap(), callbackHandler, sslContext);
     }
@@ -143,7 +152,7 @@ public class RemoteOutboundConnectionService extends AbstractOutboundConnectionS
         final InetAddress destinationAddress = destinationOutboundSocket.getDestinationAddress();
         final int port = destinationOutboundSocket.getDestinationPort();
 
-        this.connectionURI = new URI(protocol +"://" + NetworkUtils.formatPossibleIpv6Address( destinationAddress.getHostAddress()) + ":" + port);
+        this.connectionURI = new URI(protocol + "://" + NetworkUtils.formatPossibleIpv6Address(destinationAddress.getHostAddress()) + ":" + port);
         return this.connectionURI;
     }
 

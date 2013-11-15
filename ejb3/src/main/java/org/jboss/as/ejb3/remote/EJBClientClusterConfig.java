@@ -31,7 +31,6 @@ import org.jboss.msc.service.ServiceRegistry;
 import org.xnio.OptionMap;
 
 import java.util.HashMap;
-import java.util.Iterator;
 import java.util.Map;
 import java.util.Properties;
 
@@ -100,16 +99,16 @@ public class EJBClientClusterConfig extends EJBClientCommonConnectionConfig impl
     }
 
     @Override
-    public Iterator<EJBClientConfiguration.ClusterNodeConfiguration> getNodeConfigurations() {
-        return this.nodes.values().iterator();
-    }
-
-    @Override
     public EJBClientConfiguration.ClusterNodeConfiguration getNodeConfiguration(String nodeName) {
         return this.nodes.get(nodeName);
     }
 
     public void addClusterNode(final EJBClientConfiguration.ClusterNodeConfiguration node) {
         this.nodes.put(node.getNodeName(), node);
+    }
+
+    @Override
+    public boolean isConnectEagerly() {
+        return true;
     }
 }

@@ -165,7 +165,7 @@ public class ReverseProxyTestCase {
     @Deployment(name = "server1", testable = false)
     public static WebArchive server1() {
         WebArchive war = ShrinkWrap.create(WebArchive.class, "server1.war");
-        war.addClasses(ServerNameServlet.class);
+        war.addClasses(ServerNameServlet.class, CookieListener.class);
         war.addAsWebInfResource(ReverseProxyTestCase.class.getPackage(), "web-server1.xml", "web.xml");
         return war;
     }
@@ -173,7 +173,7 @@ public class ReverseProxyTestCase {
     @Deployment(name = "server2", testable = false)
     public static WebArchive server2() {
         WebArchive war = ShrinkWrap.create(WebArchive.class, "server2.war");
-        war.addClasses(ServerNameServlet.class);
+        war.addClasses(ServerNameServlet.class, CookieListener.class);
         war.addAsWebInfResource(ReverseProxyTestCase.class.getPackage(), "web-server2.xml", "web.xml");
         return war;
     }

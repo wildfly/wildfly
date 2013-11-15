@@ -35,7 +35,7 @@ import org.xnio.OptionMap;
 import org.xnio.StreamConnection;
 import org.xnio.channels.AssembledConnectedSslStreamChannel;
 import org.xnio.channels.AssembledConnectedStreamChannel;
-import org.xnio.channels.SslConnection;
+import org.xnio.ssl.SslConnection;
 
 /**
  * Service that registers a HTTP upgrade handler to enable remoting to be used via http upgrade.
