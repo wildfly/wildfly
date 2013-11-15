@@ -57,6 +57,7 @@ public class SimpleResourceDefinition implements ConstrainedResourceDefinition, 
     private final OperationStepHandler removeHandler;
     private final OperationEntry.Flag addRestartLevel;
     private final OperationEntry.Flag removeRestartLevel;
+    private final DeprecationData deprecationData;
 
     /**
      * {@link ResourceDefinition} that uses the given {code descriptionProvider} to describe the resource.
@@ -78,6 +79,7 @@ public class SimpleResourceDefinition implements ConstrainedResourceDefinition, 
         this.removeHandler = null;
         this.addRestartLevel = null;
         this.removeRestartLevel = null;
+        this.deprecationData = null;
     }
 
     /**
@@ -89,7 +91,8 @@ public class SimpleResourceDefinition implements ConstrainedResourceDefinition, 
      * @throws IllegalArgumentException if any parameter is {@code null}.
      */
     public SimpleResourceDefinition(final PathElement pathElement, final ResourceDescriptionResolver descriptionResolver) {
-        this(pathElement, descriptionResolver, null, null, OperationEntry.Flag.RESTART_NONE, OperationEntry.Flag.RESTART_RESOURCE_SERVICES);
+        this(pathElement, descriptionResolver, null, null, OperationEntry.Flag.RESTART_NONE,
+                OperationEntry.Flag.RESTART_RESOURCE_SERVICES, null);
     }
 
     /**
@@ -106,7 +109,28 @@ public class SimpleResourceDefinition implements ConstrainedResourceDefinition, 
      */
     public SimpleResourceDefinition(final PathElement pathElement, final ResourceDescriptionResolver descriptionResolver,
                                     final OperationStepHandler addHandler, final OperationStepHandler removeHandler) {
-        this(pathElement, descriptionResolver, addHandler, removeHandler, OperationEntry.Flag.RESTART_NONE, OperationEntry.Flag.RESTART_RESOURCE_SERVICES);
+        this(pathElement, descriptionResolver, addHandler, removeHandler, OperationEntry.Flag.RESTART_NONE,
+                OperationEntry.Flag.RESTART_RESOURCE_SERVICES, null);
+    }
+
+    /**
+     * {@link ResourceDefinition} that uses the given {code descriptionResolver} to configure a
+     * {@link DefaultResourceDescriptionProvider} to describe the resource.
+     *
+     * @param pathElement         the path. Cannot be {@code null}.
+     * @param descriptionResolver the description resolver to use in the description provider. Cannot be {@code null}      *
+     * @param addHandler          a handler to {@link #registerOperations(ManagementResourceRegistration) register} for the resource "add" operation.
+     *                            Can be {null}
+     * @param removeHandler       a handler to {@link #registerOperations(ManagementResourceRegistration) register} for the resource "remove" operation.
+     *                            Can be {null}
+     * @param deprecationData     Information describing deprecation of this resource. Can be {@code null} if the resource isn't deprecated.
+     * @throws IllegalArgumentException if any parameter is {@code null}
+     */
+    public SimpleResourceDefinition(final PathElement pathElement, final ResourceDescriptionResolver descriptionResolver,
+                                    final OperationStepHandler addHandler, final OperationStepHandler removeHandler,
+                                    final DeprecationData deprecationData) {
+        this(pathElement, descriptionResolver, addHandler, removeHandler, OperationEntry.Flag.RESTART_NONE,
+                OperationEntry.Flag.RESTART_RESOURCE_SERVICES, deprecationData);
     }
 
 
@@ -125,6 +149,27 @@ public class SimpleResourceDefinition implements ConstrainedResourceDefinition, 
     public SimpleResourceDefinition(final PathElement pathElement, final ResourceDescriptionResolver descriptionResolver,
                                     final OperationStepHandler addHandler, final OperationStepHandler removeHandler,
                                     final OperationEntry.Flag addRestartLevel, final OperationEntry.Flag removeRestartLevel) {
+        this(pathElement, descriptionResolver, addHandler, removeHandler, addRestartLevel, removeRestartLevel, null);
+    }
+
+
+    /**
+     * {@link ResourceDefinition} that uses the given {code descriptionResolver} to configure a
+     * {@link DefaultResourceDescriptionProvider} to describe the resource.
+     *
+     * @param pathElement         the path. Can be {@code null}.
+     * @param descriptionResolver the description resolver to use in the description provider. Cannot be {@code null}      *
+     * @param addHandler          a handler to {@link #registerOperations(ManagementResourceRegistration) register} for the resource "add" operation.
+     *                            Can be {null}
+     * @param removeHandler       a handler to {@link #registerOperations(ManagementResourceRegistration) register} for the resource "remove" operation.
+     *                            Can be {null}
+     * @param deprecationData     Information describing deprecation of this resource. Can be {@code null} if the resource isn't deprecated.
+     * @throws IllegalArgumentException if {@code descriptionResolver} is {@code null}.
+     */
+    public SimpleResourceDefinition(final PathElement pathElement, final ResourceDescriptionResolver descriptionResolver,
+                                    final OperationStepHandler addHandler, final OperationStepHandler removeHandler,
+                                    final OperationEntry.Flag addRestartLevel, final OperationEntry.Flag removeRestartLevel,
+                                    final DeprecationData deprecationData) {
         if (descriptionResolver == null) {
             throw MESSAGES.nullVar("descriptionProvider");
         }
@@ -134,7 +179,10 @@ public class SimpleResourceDefinition implements ConstrainedResourceDefinition, 
         this.addHandler = addHandler;
         this.removeHandler = removeHandler;
         this.addRestartLevel = addRestartLevel == null ? OperationEntry.Flag.RESTART_NONE : validateRestartLevel("addRestartLevel", addRestartLevel);
-        this.removeRestartLevel = removeRestartLevel == null ? OperationEntry.Flag.RESTART_ALL_SERVICES : validateRestartLevel("removeRestartLevel", removeRestartLevel);
+        this.removeRestartLevel = removeRestartLevel == null
+                ? OperationEntry.Flag.RESTART_ALL_SERVICES
+                : validateRestartLevel("removeRestartLevel", removeRestartLevel);
+        this.deprecationData = deprecationData;
     }
 
     @Override
@@ -145,7 +193,7 @@ public class SimpleResourceDefinition implements ConstrainedResourceDefinition, 
     @Override
     public DescriptionProvider getDescriptionProvider(ImmutableManagementResourceRegistration resourceRegistration) {
         return descriptionProvider == null
-                ? new DefaultResourceDescriptionProvider(resourceRegistration, descriptionResolver)
+                ? new DefaultResourceDescriptionProvider(resourceRegistration, descriptionResolver, deprecationData)
                 : descriptionProvider;
     }
 
