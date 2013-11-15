@@ -21,54 +21,182 @@
 */
 package org.jboss.as.clustering.jgroups.subsystem;
 
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ADD;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.DESCRIBE;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SUBSYSTEM;
 
-import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collection;
 import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Set;
 
+import org.jboss.as.clustering.subsystem.ClusteringSubsystemTest;
 import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.PathElement;
-import org.jboss.as.controller.RunningMode;
 import org.jboss.as.controller.operations.common.Util;
-import org.jboss.as.subsystem.test.AbstractSubsystemBaseTest;
-import org.jboss.as.subsystem.test.AdditionalInitialization;
 import org.jboss.as.subsystem.test.KernelServices;
+import org.jboss.as.subsystem.test.ModelDescriptionValidator.ValidationConfiguration;
 import org.jboss.dmr.ModelNode;
 import org.junit.Assert;
 import org.junit.Test;
+import org.junit.runner.RunWith;
+import org.junit.runners.Parameterized;
+import org.junit.runners.Parameterized.Parameters;
 
 /**
+ * Tests parsing / booting / marshalling of JGroups configurations.
+ *
+ * The current XML configuration is tested, along with supported legacy configurations.
+ *
  * @author <a href="kabir.khan@jboss.com">Kabir Khan</a>
+ * @author Richard Achmatowicz (c) 2013 Red Hat Inc.
  */
-public class JGroupsSubsystemTest extends AbstractSubsystemBaseTest {
+@RunWith(value = Parameterized.class)
+public class SubsystemParsingTestCase extends ClusteringSubsystemTest {
 
-    public JGroupsSubsystemTest() {
-        super(JGroupsExtension.SUBSYSTEM_NAME, new JGroupsExtension());
+    String xmlFile = null ;
+    int operations = 0 ;
+
+    public SubsystemParsingTestCase(String xmlFile, int operations) {
+        super(JGroupsExtension.SUBSYSTEM_NAME, new JGroupsExtension(), xmlFile);
+        this.xmlFile = xmlFile ;
+        this.operations = operations ;
+    }
+
+    @Parameters
+    public static Collection<Object[]> data() {
+        Object[][] data = new Object[][] {
+                { "subsystem-jgroups-1_1.xml", 22 },
+                { "subsystem-jgroups-2_0.xml", 23 },
+        };
+        return Arrays.asList(data);
     }
 
     @Override
-    protected String getSubsystemXml() throws IOException {
-        return readResource("subsystem-jgroups-test.xml");
+    protected ValidationConfiguration getModelValidationConfiguration() {
+        // use this configuration to report any exceptional cases for DescriptionProviders
+        return new ValidationConfiguration();
     }
 
+    /*
+     *  Create a collection of resources in the test which are not removed by a "remove" command
+     *   (i.e. all resources of form /subsystem=jgroups/stack=maximal/protocol=*)
+     *
+     *   The list includes protocol layers used in all configuration examples.
+     */
     @Override
     protected Set<PathAddress> getIgnoredChildResourcesForRemovalTest() {
-        // create a collection of resources in the test which are not removed by a "remove" command
-        // i.e. all resources of form /subsystem=jgroups/stack=maximal/protocol=*
+        String[] protocolList = { "MPING", "MERGE2", "FD_SOCK", "FD", "VERIFY_SUSPECT", "BARRIER",
+                "pbcast.NAKACK", "pbcast.NAKACK2", "UNICAST2", "pbcast.STABLE", "pbcast.GMS", "UFC",
+                "MFC", "FRAG2", "pbcast.STATE_TRANSFER", "pbcast.FLUSH",  "RSVP"};
 
-        String[] protocolList = { "MPING", "MERGE2", "FD_SOCK", "FD", "VERIFY_SUSPECT", "pbcast.NAKACK2", "UNICAST2", "pbcast.STABLE", "pbcast.GMS", "UFC", "MFC", "FRAG2", "RSVP" };
         PathAddress subsystem = PathAddress.pathAddress(PathElement.pathElement(SUBSYSTEM, JGroupsExtension.SUBSYSTEM_NAME));
-        PathAddress stack = subsystem.append(PathElement.pathElement(ModelKeys.STACK, "maximal"));
         List<PathAddress> addresses = new ArrayList<PathAddress>();
+
+        PathAddress maximalStack = subsystem.append(PathElement.pathElement(ModelKeys.STACK, "maximal"));
         for (String protocol : protocolList) {
-            PathAddress ignoredChild = stack.append(PathElement.pathElement(ModelKeys.PROTOCOL, protocol));
+            PathAddress ignoredChild = maximalStack.append(PathElement.pathElement(ModelKeys.PROTOCOL, protocol));
             addresses.add(ignoredChild);
         }
+
         return new HashSet<PathAddress>(addresses);
+    }
+
+    /**
+     * Tests that the xml is parsed into the correct operations
+     */
+    @Test
+    public void testParseSubsystem() throws Exception {
+       // Parse the subsystem xml into operations
+       List<ModelNode> operations = super.parse(getSubsystemXml());
+
+       /*
+       // print the operations
+       System.out.println("List of operations");
+       for (ModelNode op : operations) {
+           System.out.println("operation = " + op.toString());
+       }
+       */
+
+       // Check that we have the expected number of operations
+       // one for each resource instance
+       Assert.assertEquals(this.operations, operations.size());
+
+       // Check that each operation has the correct content
+       ModelNode addSubsystem = operations.get(0);
+       Assert.assertEquals(ADD, addSubsystem.get(OP).asString());
+       PathAddress addr = PathAddress.pathAddress(addSubsystem.get(OP_ADDR));
+       Assert.assertEquals(1, addr.size());
+       PathElement element = addr.getElement(0);
+       Assert.assertEquals(SUBSYSTEM, element.getKey());
+       Assert.assertEquals(getMainSubsystemName(), element.getValue());
+    }
+
+    /**
+     * Test that the model created from the xml looks as expected
+     */
+    @Test
+    public void testInstallIntoController() throws Exception {
+       // Parse the subsystem xml and install into the controller
+       KernelServices services = createKernelServicesBuilder(null).setSubsystemXml(getSubsystemXml()).build();
+
+       // Read the whole model and make sure it looks as expected
+       ModelNode model = services.readWholeModel();
+
+       // System.out.println("model = " + model.asString());
+
+       Assert.assertTrue(model.get(SUBSYSTEM).hasDefined(getMainSubsystemName()));
+    }
+
+    /**
+     * Starts a controller with a given subsystem xml and then checks that a second controller
+     * started with the xml marshalled from the first one results in the same model
+     */
+    @Test
+    public void testParseAndMarshalModel() throws Exception {
+       // Parse the subsystem xml and install into the first controller
+
+       KernelServices servicesA = createKernelServicesBuilder(null).setSubsystemXml(getSubsystemXml()).build();
+
+       // Get the model and the persisted xml from the first controller
+       ModelNode modelA = servicesA.readWholeModel();
+       String marshalled = servicesA.getPersistedSubsystemXml();
+
+       // Install the persisted xml from the first controller into a second controller
+       KernelServices servicesB = createKernelServicesBuilder(null).setSubsystemXml(marshalled).build();
+       ModelNode modelB = servicesB.readWholeModel();
+
+       // Make sure the models from the two controllers are identical
+       super.compare(modelA, modelB);
+    }
+
+    /**
+     * Starts a controller with the given subsystem xml and then checks that a second controller
+     * started with the operations from its describe action results in the same model
+     */
+    @Test
+    public void testDescribeHandler() throws Exception {
+       // Parse the subsystem xml and install into the first controller
+       KernelServices servicesA = createKernelServicesBuilder(null).setSubsystemXml(getSubsystemXml()).build();
+       // Get the model and the describe operations from the first controller
+       ModelNode modelA = servicesA.readWholeModel();
+       ModelNode describeOp = new ModelNode();
+       describeOp.get(OP).set(DESCRIBE);
+       describeOp.get(OP_ADDR).set(PathAddress.pathAddress(PathElement.pathElement(SUBSYSTEM, getMainSubsystemName())).toModelNode());
+       List<ModelNode> operations = checkResultAndGetContents(servicesA.executeOperation(describeOp)).asList();
+
+       // Install the describe options from the first controller into a second controller
+       KernelServices servicesB = createKernelServicesBuilder(null).setBootOperations(operations).build();
+       ModelNode modelB = servicesB.readWholeModel();
+
+       // Make sure the models from the two controllers are identical
+       super.compare(modelA, modelB);
+
     }
 
     @Test
@@ -88,20 +216,6 @@ public class JGroupsSubsystemTest extends AbstractSubsystemBaseTest {
             Assert.assertEquals(key, name);
             i++;
         }
-    }
-
-    @Override
-    protected AdditionalInitialization createAdditionalInitialization() {
-        return new AdditionalInitialization() {
-            protected RunningMode getRunningMode() {
-                return RunningMode.ADMIN_ONLY;
-            }
-
-            @Override
-            protected boolean isValidateOperations() {
-                return false;
-            }
-        };
     }
 
     @Test
@@ -171,7 +285,6 @@ public class JGroupsSubsystemTest extends AbstractSubsystemBaseTest {
         compare(modelA, modelC);
 
         assertRemoveSubsystemResources(servicesC, getIgnoredChildResourcesForRemovalTest());*/
-
-
     }
+
 }
