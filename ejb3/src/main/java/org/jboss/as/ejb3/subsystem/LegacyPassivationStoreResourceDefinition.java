@@ -25,6 +25,7 @@ package org.jboss.as.ejb3.subsystem;
 import java.util.concurrent.TimeUnit;
 
 import org.jboss.as.controller.AttributeDefinition;
+import org.jboss.as.controller.DeprecationData;
 import org.jboss.as.controller.ModelVersion;
 import org.jboss.as.controller.OperationStepHandler;
 import org.jboss.as.controller.PathElement;
@@ -81,7 +82,7 @@ public abstract class LegacyPassivationStoreResourceDefinition extends SimpleRes
     private final AttributeDefinition[] attributes;
 
     LegacyPassivationStoreResourceDefinition(String element, OperationStepHandler addHandler, OperationStepHandler removeHandler, OperationEntry.Flag addRestartLevel, OperationEntry.Flag removeRestartLevel, PassivationStoreWriteHandler writeHandler, AttributeDefinition... attributes) {
-        super(PathElement.pathElement(element), EJB3Extension.getResourceDescriptionResolver(element), addHandler, removeHandler, addRestartLevel, removeRestartLevel);
+        super(PathElement.pathElement(element), EJB3Extension.getResourceDescriptionResolver(element), addHandler, removeHandler, addRestartLevel, removeRestartLevel, new DeprecationData(DEPRECATED_VERSION));
         this.writeHandler = new PassivationStoreWriteHandler(attributes);
         this.attributes = attributes;
     }
