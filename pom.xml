@@ -56,8 +56,8 @@
          <!-- Release Info -->
         <jboss.as.release.version>${project.version}</jboss.as.release.version>
         <jboss.as.release.codename>WildFly</jboss.as.release.codename>
-        <jboss.as.scm.url>https://github.com/jbossas/jboss-as</jboss.as.scm.url>
-        <jboss.as.scm.connection>git@github.com:jbossas/jboss-as.git</jboss.as.scm.connection>
+        <jboss.as.scm.url>https://github.com/wildfly/wildfly</jboss.as.scm.url>
+        <jboss.as.scm.connection>git@github.com:wildfly/wildfly.git</jboss.as.scm.connection>
 
         <!--
             Build configuration.  Override JBoss Parent settings as necessary.
