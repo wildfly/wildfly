@@ -224,6 +224,18 @@ class CliConfigImpl implements CliConfig {
     }
 
     @Override
+    @Deprecated
+    public String getDefaultControllerHost() {
+        return getDefaultControllerAddress().getHost();
+    }
+
+    @Override
+    @Deprecated
+    public int getDefaultControllerPort() {
+        return getDefaultControllerAddress().getPort();
+    }
+
+    @Override
     public ControllerAddress getDefaultControllerAddress() {
         return defaultController;
     }

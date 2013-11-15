@@ -30,6 +30,26 @@ package org.jboss.as.cli;
 public interface CliConfig {
 
     /**
+     * The default server controller host to connect to.
+     *
+     * @deprecated Use {@link CliConfig#getDefaultControllerAddress()} instead.
+     *
+     * @return default server controller host to connect to
+     */
+    @Deprecated
+    String getDefaultControllerHost();
+
+    /**
+     * The default server controller port to connect to.
+     *
+     * @deprecated Use {@link CliConfig#getDefaultControllerAddress()} instead.
+     *
+     * @return  default server controller port to connect to
+     */
+    @Deprecated
+    int getDefaultControllerPort();
+
+    /**
      * The default server controller protocol for addresses where no protocol is specified.
      *
      * @return default server controller protocol
@@ -47,7 +67,7 @@ public interface CliConfig {
     /**
      * The default address of the controller from the configuration.
      *
-     * @return The defailt address.
+     * @return The default address.
      */
     ControllerAddress getDefaultControllerAddress();
 

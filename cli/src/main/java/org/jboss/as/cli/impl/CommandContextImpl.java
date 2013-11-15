@@ -29,6 +29,8 @@ import java.io.FileWriter;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.net.URI;
+import java.net.URISyntaxException;
 import java.security.GeneralSecurityException;
 import java.security.KeyStore;
 import java.security.MessageDigest;
@@ -795,6 +797,16 @@ class CommandContextImpl implements CommandContext, ModelControllerClientFactory
     }
 
     @Override
+    @Deprecated
+    public void connectController(String host, int port) throws CommandLineException {
+        try {
+            connectController(new URI(null, null, host, port, null, null, null).toString().substring(2));
+        } catch (URISyntaxException e) {
+            throw new CommandLineException("Unable to construct URI for connection.", e);
+        }
+    }
+
+    @Override
     public void bindClient(ModelControllerClient newClient) {
         initNewClient(newClient, null);
     }
@@ -964,6 +976,23 @@ class CommandContextImpl implements CommandContext, ModelControllerClientFactory
             notifyListeners(CliEvent.DISCONNECTED);
         }
         promptConnectPart = null;
+    }
+
+    @Override
+    @Deprecated
+    public String getDefaultControllerHost() {
+        return config.getDefaultControllerHost();
+    }
+
+    @Override
+    @Deprecated
+    public int getDefaultControllerPort() {
+        return config.getDefaultControllerPort();
+    }
+
+    @Override
+    public ControllerAddress getDefaultControllerAddress() {
+        return config.getDefaultControllerAddress();
     }
 
     @Override

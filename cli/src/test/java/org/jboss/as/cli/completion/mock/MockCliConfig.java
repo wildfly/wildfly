@@ -43,6 +43,18 @@ public class MockCliConfig implements CliConfig {
     }
 
     @Override
+    @Deprecated
+    public String getDefaultControllerHost() {
+        throw new UnsupportedOperationException();
+    }
+
+    @Override
+    @Deprecated
+    public int getDefaultControllerPort() {
+        throw new UnsupportedOperationException();
+    }
+
+    @Override
     public boolean isUseLegacyOverride() {
         return true;
     }
