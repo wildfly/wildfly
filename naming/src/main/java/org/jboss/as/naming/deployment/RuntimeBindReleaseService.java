@@ -21,62 +21,88 @@
  */
 package org.jboss.as.naming.deployment;
 
-import java.util.Collections;
-import java.util.HashSet;
-import java.util.Set;
-
 import org.jboss.as.naming.NamingLogger;
 import org.jboss.as.naming.service.BinderService;
 import org.jboss.msc.service.Service;
-import org.jboss.msc.service.ServiceContainer;
-import org.jboss.msc.service.ServiceController;
 import org.jboss.msc.service.ServiceName;
 import org.jboss.msc.service.StartContext;
 import org.jboss.msc.service.StartException;
 import org.jboss.msc.service.StopContext;
 
+import java.util.ArrayList;
+import java.util.List;
+
 /**
- * A {@link Service} which on stop releases runtime installed {@link BinderService}s.
+ * A {@link Service} which on stop releases runtime installed {@link org.jboss.as.naming.service.BinderService}s.
  *
  * @author Eduardo Martins
  *
  */
-public class RuntimeBindReleaseService implements Service<Set<ServiceName>> {
+public class RuntimeBindReleaseService implements Service<RuntimeBindReleaseService.References> {
 
-    private Set<ServiceName> serviceNames;
+    private final References references = new References();
 
     @Override
-    public Set<ServiceName> getValue() throws IllegalStateException, IllegalArgumentException {
-        synchronized (this) {
-            if (serviceNames == null) {
-                serviceNames = Collections.synchronizedSet(new HashSet<ServiceName>());
-            }
-            return serviceNames;
-        }
+    public References getValue() throws IllegalStateException, IllegalArgumentException {
+        return references;
     }
 
     @Override
     public void start(StartContext context) throws StartException {
-        // nothing to do
+
     }
 
     @Override
     public void stop(StopContext context) {
-        synchronized (this) {
-            if(serviceNames != null) {
-                ServiceContainer container = context.getController().getServiceContainer();
-                for (ServiceName serviceName : serviceNames) {
-                    try {
-                        final ServiceController<?> serviceController = container.getService(serviceName);
-                        if(serviceController != null) {
-                            ((BinderService)serviceController.getService()).release();
-                        }
-                    } catch (Throwable e) {
-                        NamingLogger.ROOT_LOGGER.failedToReleaseBinderService(e);
-                    }
+        references.releaseAll();
+    }
+
+    public static class References {
+
+        // List instead of Set because binder services use a counter to track its references, which means that for instance, N rebinds will increase the binder service ref counter N times, thus the related BinderServices should have N entries too
+        private volatile List<BinderService> services;
+
+        private References() {
+
+        }
+
+        public void add(BinderService service) {
+            synchronized (this) {
+                if (services == null) {
+                    services = new ArrayList<BinderService>();
                 }
-                serviceNames = null;
+                services.add(service);
             }
         }
+
+        public boolean contains(ServiceName serviceName) {
+            synchronized (this) {
+                if (services != null) {
+                    for (BinderService service : services) {
+                        if (serviceName.equals(service.getServiceName())) {
+                            return true;
+                        }
+                    }
+                }
+                return false;
+            }
+        }
+
+        public void releaseAll() {
+            synchronized (this) {
+                if (services != null) {
+                    for (BinderService service : services) {
+                        try {
+                            service.release();
+                        } catch (Throwable e) {
+                            NamingLogger.ROOT_LOGGER.failedToReleaseBinderService(e);
+                        }
+                    }
+                    services = null;
+                }
+            }
+        }
+
     }
+
 }
