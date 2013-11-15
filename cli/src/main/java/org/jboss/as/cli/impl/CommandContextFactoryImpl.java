@@ -23,6 +23,8 @@ package org.jboss.as.cli.impl;
 
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.net.URI;
+import java.net.URISyntaxException;
 
 import org.jboss.as.cli.CliInitializationException;
 import org.jboss.as.cli.CommandContext;
@@ -82,6 +84,42 @@ public class CommandContextFactoryImpl extends CommandContextFactory {
         final CommandContext ctx = new CommandContextImpl(controller, username, password, disableLocalAuth || username != null, initConsole, connectionTimeout);
         addShutdownHook(ctx);
         return ctx;
+    }
+
+    @Override
+    @Deprecated
+    public CommandContext newCommandContext(String controllerHost, int controllerPort, String username, char[] password)
+            throws CliInitializationException {
+        try {
+            return newCommandContext(new URI(null, null, controllerHost, controllerPort, null, null, null).toString().substring(2),
+                    username, password);
+        } catch (URISyntaxException e) {
+            throw new CliInitializationException("Unable to construct URI for connection.", e);
+        }
+    }
+
+    @Override
+    @Deprecated
+    public CommandContext newCommandContext(String controllerHost, int controllerPort, String username, char[] password,
+            boolean initConsole, int connectionTimeout) throws CliInitializationException {
+        try {
+            return newCommandContext(new URI(null, null, controllerHost, controllerPort, null, null, null).toString().substring(2),
+                    username, password, initConsole, connectionTimeout);
+        } catch (URISyntaxException e) {
+            throw new CliInitializationException("Unable to construct URI for connection.", e);
+        }
+    }
+
+    @Override
+    @Deprecated
+    public CommandContext newCommandContext(String controllerHost, int controllerPort, String username, char[] password,
+            InputStream consoleInput, OutputStream consoleOutput) throws CliInitializationException {
+        try {
+            return newCommandContext(new URI(null, null, controllerHost, controllerPort, null, null, null).toString().substring(2),
+                    username, password, consoleInput, consoleOutput);
+        } catch (URISyntaxException e) {
+            throw new CliInitializationException("Unable to construct URI for connection.", e);
+        }
     }
 
     protected void addShutdownHook(final CommandContext cmdCtx) {

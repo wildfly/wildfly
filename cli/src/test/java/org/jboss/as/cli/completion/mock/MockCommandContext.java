@@ -31,6 +31,7 @@ import org.jboss.as.cli.CommandFormatException;
 import org.jboss.as.cli.CommandHistory;
 import org.jboss.as.cli.CommandLineCompleter;
 import org.jboss.as.cli.CommandLineException;
+import org.jboss.as.cli.ControllerAddress;
 import org.jboss.as.cli.batch.BatchManager;
 import org.jboss.as.cli.batch.BatchedCommand;
 import org.jboss.as.cli.operation.OperationCandidatesProvider;
@@ -188,6 +189,12 @@ public class MockCommandContext implements CommandContext {
     }
 
     @Override
+    @Deprecated
+    public void connectController(String host, int port) throws CommandLineException {
+        throw new UnsupportedOperationException();
+    }
+
+    @Override
     public void bindClient(ModelControllerClient newClient) {
         throw new UnsupportedOperationException();
     }
@@ -196,6 +203,24 @@ public class MockCommandContext implements CommandContext {
     @Override
     public void disconnectController() {
         throw new UnsupportedOperationException();
+    }
+
+    @Override
+    @Deprecated
+    public String getDefaultControllerHost() {
+        throw new UnsupportedOperationException();
+    }
+
+    @Override
+    @Deprecated
+    public int getDefaultControllerPort() {
+        throw new UnsupportedOperationException();
+    }
+
+    @Override
+    public ControllerAddress getDefaultControllerAddress() {
+        // TODO Auto-generated method stub
+        return null;
     }
 
     @Override

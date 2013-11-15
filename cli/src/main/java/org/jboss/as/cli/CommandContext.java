@@ -141,6 +141,22 @@ public interface CommandContext {
     void connectController(String controller) throws CommandLineException;
 
     /**
+     * Connects the controller client using the host and the port.
+     * If the host is null, the default controller host will be used,
+     * which is localhost.
+     * If the port is less than zero, the default controller port will be used,
+     * which is 9999.
+     *
+     * @deprecated Use {@link #connectController(String)} instead.
+     *
+     * @param host the host to connect with
+     * @param port the port to connect on
+     * @throws CommandLineException  in case the attempt to connect failed
+     */
+    @Deprecated
+    void connectController(String host, int port) throws CommandLineException;
+
+    /**
      * Bind the controller to an existing, connected client.
      */
     void bindClient(ModelControllerClient newClient);
@@ -150,6 +166,33 @@ public interface CommandContext {
      * If the connection hasn't been established, the method silently returns.
      */
     void disconnectController();
+
+    /**
+     * Returns the default host the controller client will be connected to.
+     *
+     * @deprecated Use {@link CommandContext#getDefaultControllerAddress()} instead.
+     *
+     * @return  the default host the controller client will be connected to.
+     */
+    @Deprecated
+    String getDefaultControllerHost();
+
+    /**
+     * Returns the default port the controller client will be connected to.
+     *
+     * @deprecated Use {@link CommandContext#getDefaultControllerAddress()} instead.
+     *
+     * @return  the default port the controller client will be connected to.
+     */
+    @Deprecated
+    int getDefaultControllerPort();
+
+    /**
+     * The default address of the default controller to connect to.
+     *
+     * @return The default address.
+     */
+    ControllerAddress getDefaultControllerAddress();
 
     /**
      * Returns the host the controller client is connected to or
