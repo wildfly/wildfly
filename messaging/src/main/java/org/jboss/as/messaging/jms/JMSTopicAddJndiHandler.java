@@ -27,6 +27,8 @@ import org.hornetq.api.jms.management.TopicControl;
 import org.hornetq.core.server.HornetQServer;
 import org.hornetq.core.server.management.ManagementService;
 import org.jboss.as.controller.OperationContext;
+import org.jboss.as.messaging.ManagementUtil;
+import org.jboss.dmr.ModelNode;
 
 /**
  * Handler for "add-jndi" operation on a JMS topic resource.
@@ -41,9 +43,14 @@ public class JMSTopicAddJndiHandler extends AbstractAddJndiHandler {
     }
 
     @Override
-    protected void addJndiNameToControl(String toAdd, String resourceName, HornetQServer server, OperationContext context) {
+    protected void addJndiNameToControl(String toAdd, String resourceName, HornetQServer server, OperationContext context, ModelNode operation) {
         ManagementService mgmt = server.getManagementService();
         TopicControl control = TopicControl.class.cast(mgmt.getResource(ResourceNames.JMS_TOPIC + resourceName));
+        if (control == null) {
+            ManagementUtil.rollbackOperationWithResourceNotFound(context, operation);
+            return;
+        }
+
         try {
             control.addJNDI(toAdd);
         } catch (RuntimeException e) {

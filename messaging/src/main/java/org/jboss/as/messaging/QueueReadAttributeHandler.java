@@ -105,6 +105,11 @@ public class QueueReadAttributeHandler extends AbstractRuntimeOnlyHandler {
         HornetQServer hqServer = HornetQServer.class.cast(hqService.getValue());
         QueueControl control = QueueControl.class.cast(hqServer.getManagementService().getResource(ResourceNames.CORE_QUEUE + queueName));
 
+        if (control == null) {
+            ManagementUtil.rollbackOperationWithResourceNotFound(context, operation);
+            return;
+        }
+
         if (MESSAGE_COUNT.getName().equals(attributeName)) {
             context.getResult().set(control.getMessageCount());
         } else if (SCHEDULED_COUNT.getName().equals(attributeName)) {
