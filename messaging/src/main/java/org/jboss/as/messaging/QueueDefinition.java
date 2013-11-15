@@ -167,6 +167,12 @@ public class QueueDefinition extends SimpleResourceDefinition {
      */
     static boolean forwardToRuntimeQueue(OperationContext context, ModelNode operation, OperationStepHandler handler) {
         PathAddress address = PathAddress.pathAddress(operation.require(ModelDescriptionConstants.OP_ADDR));
+
+        // do not forward if the current operation is for a runtime-queue already:
+        if (RUNTIME_QUEUE.equals(address.getLastElement().getKey())) {
+            return false;
+        }
+
         String queueName = address.getLastElement().getValue();
 
         PathAddress hornetQPathAddress = MessagingServices.getHornetQServerPathAddress(address);

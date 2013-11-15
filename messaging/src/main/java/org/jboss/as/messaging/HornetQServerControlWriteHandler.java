@@ -129,6 +129,10 @@ public class HornetQServerControlWriteHandler extends AbstractWriteAttributeHand
 
     private void applyOperationToHornetQService(final OperationContext context, ModelNode operation, String attributeName, ServiceController<?> hqService) {
         HornetQServerControl serverControl = HornetQServer.class.cast(hqService.getValue()).getHornetQServerControl();
+        if (serverControl == null) {
+            ManagementUtil.rollbackOperationWithResourceNotFound(context, operation);
+            return;
+        }
         try {
             if (attributeName.equals(CommonAttributes.FAILOVER_ON_SHUTDOWN.getName()))  {
                 serverControl.setFailoverOnServerShutdown(CommonAttributes.FAILOVER_ON_SHUTDOWN.resolveModelAttribute(context, operation).asBoolean());
