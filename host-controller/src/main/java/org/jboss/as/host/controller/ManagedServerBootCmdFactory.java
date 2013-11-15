@@ -212,23 +212,32 @@ public class ManagedServerBootCmdFactory implements ManagedServerBootConfigurati
                 directoryGrouping, environment.getDomainLogDir(), serverDir);
         addPathProperty(command, "tmp", ServerEnvironment.SERVER_TEMP_DIR, bootTimeProperties,
                 directoryGrouping, environment.getDomainTempDir(), serverDir);
-        addPathProperty(command, "data", ServerEnvironment.SERVER_DATA_DIR, bootTimeProperties,
+        final String dataDir = addPathProperty(command, "data", ServerEnvironment.SERVER_DATA_DIR, bootTimeProperties,
                 directoryGrouping, environment.getDomainDataDir(), serverDir);
 
-        final File loggingConfig = new File(getAbsolutePath(environment.getDomainServersDir(), serverName, "data", "logging.properties"));
+        final File loggingConfig = new File(dataDir, "logging.properties");
         final String path;
         if (loggingConfig.exists()) {
             path = "file:" + loggingConfig.getAbsolutePath();
         } else {
             // Sets the initial log file to use
             command.add("-Dorg.jboss.boot.log.file=" + getAbsolutePath(new File(logDir), "server.log"));
-            final String fileName = WildFlySecurityManager.getPropertyPrivileged("logging.configuration", null);
-            if (fileName == null) {
-                // If nothing else is defined use a default logging configuration that matches the default from the
-                // standalone server. This allows a single log file to be used.
-                path = "file:" + getAbsolutePath(environment.getDomainConfigurationDir(), "default-server-logging.properties");
+
+            // The default host controller and process controller configuration file
+            final String domainConfigFile = "file:" + getAbsolutePath(environment.getDomainConfigurationDir(), "logging.properties");
+            // The configuration file from the system property, could the default domain/configuration/logging.properties file
+            final String systemPropConfigFile = WildFlySecurityManager.getPropertyPrivileged("logging.configuration", null);
+            // The default configuration file to use if nothing is set
+            final File defaultConfigFile = getAbsoluteFile(environment.getDomainConfigurationDir(), "default-server-logging.properties");
+
+            // Ignore the system property value if domain/configuration/logging.properties is used
+            if (domainConfigFile.equals(systemPropConfigFile) && defaultConfigFile.exists()) {
+                path = "file:" + defaultConfigFile.getAbsolutePath();
+            } else if (systemPropConfigFile != null) {
+                path = systemPropConfigFile;
             } else {
-                path = fileName;
+                // Default to the domain/configuration/logging.properties if nothing else found
+                path = domainConfigFile;
             }
         }
         command.add(String.format("-Dlogging.configuration=%s", path));
@@ -349,11 +358,15 @@ public class ManagedServerBootCmdFactory implements ManagedServerBootConfigurati
     }
 
     static String getAbsolutePath(final File root, final String... paths) {
+        return getAbsoluteFile(root, paths).getAbsolutePath();
+    }
+
+    static File getAbsoluteFile(final File root, final String... paths) {
         File path = root;
         for(String segment : paths) {
             path = new File(path, segment);
         }
-        return path.getAbsolutePath();
+        return path.getAbsoluteFile();
     }
 
 }
