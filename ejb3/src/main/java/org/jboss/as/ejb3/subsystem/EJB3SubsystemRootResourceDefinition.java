@@ -230,6 +230,8 @@ public class EJB3SubsystemRootResourceDefinition extends SimpleResourceDefinitio
 
         subsystemRegistration.registerSubModel(CacheFactoryResourceDefinition.INSTANCE);
         subsystemRegistration.registerSubModel(PassivationStoreResourceDefinition.INSTANCE);
+        subsystemRegistration.registerSubModel(FilePassivationStoreResourceDefinition.INSTANCE);
+        subsystemRegistration.registerSubModel(ClusterPassivationStoreResourceDefinition.INSTANCE);
 
         // subsystem=ejb3/service=timerservice
         subsystemRegistration.registerSubModel(new TimerServiceResourceDefinition(pathManager));
@@ -282,6 +284,8 @@ public class EJB3SubsystemRootResourceDefinition extends SimpleResourceDefinitio
         UnboundedQueueThreadPoolResourceDefinition.registerTransformers1_0(builder, EJB3SubsystemModel.THREAD_POOL);
         StrictMaxPoolResourceDefinition.registerTransformers_1_1_0(builder);
         PassivationStoreResourceDefinition.registerTransformers_1_1_0(builder);
+        FilePassivationStoreResourceDefinition.registerTransformers_1_1_0(builder);
+        ClusterPassivationStoreResourceDefinition.registerTransformers_1_1_0(builder);
         TimerServiceResourceDefinition.registerTransformers_1_1_0(builder);
         TransformationDescription.Tools.register(builder.build(), subsystemRegistration, subsystem110);
     }

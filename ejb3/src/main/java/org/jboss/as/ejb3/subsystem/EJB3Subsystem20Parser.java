@@ -308,7 +308,14 @@ public class EJB3Subsystem20Parser extends EJB3Subsystem14Parser {
                     this.parsePassivationStore(reader, operations);
                     break;
                 }
-                default: {
+                case FILE_PASSIVATION_STORE: {
+                    this.parseFilePassivationStore(reader, operations);
+                    break;
+                }
+                case CLUSTER_PASSIVATION_STORE: {
+                    this.parseClusterPassivationStore(reader, operations);
+                    break;
+                }                default: {
                     throw unexpectedElement(reader);
                 }
             }

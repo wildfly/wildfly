@@ -40,18 +40,25 @@ import org.jboss.msc.service.ServiceRegistry;
  */
 public class PassivationStoreWriteHandler extends AbstractWriteAttributeHandler<Void> {
 
+    private final AttributeDefinition maxSizeAttribute;
+
+    /**
+     * @param attributes the attributes associated with the passivation-store resource, starting with max-size
+     */
     PassivationStoreWriteHandler(AttributeDefinition... attributes) {
         super(attributes);
+        // The first one should be the max-size attribute
+        this.maxSizeAttribute = attributes[0];
     }
 
     @Override
     protected boolean applyUpdateToRuntime(OperationContext context, ModelNode operation, String attributeName, ModelNode newValue, ModelNode currentValue, HandbackHolder<Void> handbackHolder) throws OperationFailedException {
         ModelNode model = context.readResource(PathAddress.EMPTY_ADDRESS).getModel();
-        applyModelToRuntime(context, operation, attributeName, model);
+        this.applyModelToRuntime(context, operation, attributeName, model);
         return false;
     }
 
-    private static void applyModelToRuntime(OperationContext context, ModelNode operation, String attributeName, ModelNode model) throws OperationFailedException {
+    private void applyModelToRuntime(OperationContext context, ModelNode operation, String attributeName, ModelNode model) throws OperationFailedException {
         String name = PathAddress.pathAddress(operation.get(ModelDescriptionConstants.OP_ADDR)).getLastElement().getValue();
         ServiceName serviceName = DistributableCacheFactoryBuilderService.getServiceName(name);
         ServiceRegistry registry = context.getServiceRegistry(true);
@@ -59,8 +66,8 @@ public class PassivationStoreWriteHandler extends AbstractWriteAttributeHandler<
         if (service != null) {
             DistributableCacheFactoryBuilder<?, ?> builder = (DistributableCacheFactoryBuilder<?, ?>) service.getValue();
             if (builder != null) {
-                if (PassivationStoreResourceDefinition.MAX_SIZE.getName().equals(attributeName)) {
-                    int maxSize = PassivationStoreResourceDefinition.MAX_SIZE.resolveModelAttribute(context, model).asInt();
+                if (this.maxSizeAttribute.getName().equals(attributeName)) {
+                    int maxSize = this.maxSizeAttribute.resolveModelAttribute(context, model).asInt();
                     builder.getConfiguration().setMaxSize(maxSize);
                 }
             }
@@ -71,6 +78,6 @@ public class PassivationStoreWriteHandler extends AbstractWriteAttributeHandler<
     protected void revertUpdateToRuntime(OperationContext context, ModelNode operation, String attributeName, ModelNode valueToRestore, ModelNode valueToRevert, Void handback) throws OperationFailedException {
         ModelNode restored = context.readResource(PathAddress.EMPTY_ADDRESS).getModel().clone();
         restored.get(attributeName).set(valueToRestore);
-        applyModelToRuntime(context, operation, attributeName, restored);
+        this.applyModelToRuntime(context, operation, attributeName, restored);
     }
 }

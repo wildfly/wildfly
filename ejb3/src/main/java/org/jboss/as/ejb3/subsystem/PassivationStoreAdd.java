@@ -48,13 +48,6 @@ public class PassivationStoreAdd extends AbstractAddStepHandler {
         this.attributes = attributes;
     }
 
-    /**
-     * Populate the <code>strictMaxPoolModel</code> from the <code>operation</code>
-     *
-     * @param operation the operation
-     * @param model passivation-store ModelNode
-     * @throws OperationFailedException
-     */
     @Override
     protected void populateModel(ModelNode operation, ModelNode model) throws OperationFailedException {
         for (AttributeDefinition attr : this.attributes) {
@@ -64,11 +57,15 @@ public class PassivationStoreAdd extends AbstractAddStepHandler {
 
     @Override
     protected void performRuntime(OperationContext context, ModelNode operation, ModelNode model, ServiceVerificationHandler verificationHandler, List<ServiceController<?>> serviceControllers) throws OperationFailedException {
-        final String name = PathAddress.pathAddress(operation.get(ModelDescriptionConstants.ADDRESS)).getLastElement().getValue();
-        final int initialMaxSize = PassivationStoreResourceDefinition.MAX_SIZE.resolveModelAttribute(context, model).asInt();
-        final String containerName = PassivationStoreResourceDefinition.CACHE_CONTAINER.resolveModelAttribute(context, model).asString();
+        int initialMaxSize = PassivationStoreResourceDefinition.MAX_SIZE.resolveModelAttribute(context, model).asInt();
+        String containerName = PassivationStoreResourceDefinition.CACHE_CONTAINER.resolveModelAttribute(context, model).asString();
         ModelNode beanCacheNode = PassivationStoreResourceDefinition.BEAN_CACHE.resolveModelAttribute(context, model);
-        final String cacheName = beanCacheNode.isDefined() ? beanCacheNode.asString() : null;
+        String cacheName = beanCacheNode.isDefined() ? beanCacheNode.asString() : null;
+        this.install(context, operation, initialMaxSize, containerName, cacheName, verificationHandler, serviceControllers);
+    }
+
+    protected void install(OperationContext context, ModelNode operation, final int initialMaxSize, final String containerName, final String cacheName, ServiceVerificationHandler verificationHandler, List<ServiceController<?>> serviceControllers) {
+        final String name = PathAddress.pathAddress(operation.get(ModelDescriptionConstants.ADDRESS)).getLastElement().getValue();
         BeanManagerFactoryBuilderConfiguration config = new BeanManagerFactoryBuilderConfiguration() {
             private volatile int maxSize = initialMaxSize;
 
@@ -95,6 +92,9 @@ public class PassivationStoreAdd extends AbstractAddStepHandler {
         ServiceBuilder<?> builder = new DistributableCacheFactoryBuilderService<>(name, config).build(context.getServiceTarget())
                 .setInitialMode(ServiceController.Mode.ON_DEMAND)
         ;
+        if (verificationHandler != null) {
+            builder.addListener(verificationHandler);
+        }
         serviceControllers.add(builder.install());
     }
 }

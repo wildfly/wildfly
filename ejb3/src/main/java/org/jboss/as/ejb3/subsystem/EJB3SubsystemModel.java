@@ -86,9 +86,13 @@ public interface EJB3SubsystemModel {
     String CACHE = "cache";
     String PASSIVATION_STORE = "passivation-store";
 
+    @Deprecated String FILE_PASSIVATION_STORE = "file-passivation-store";
     @Deprecated String IDLE_TIMEOUT = "idle-timeout";
     @Deprecated String IDLE_TIMEOUT_UNIT = "idle-timeout-unit";
     String MAX_SIZE = "max-size";
+    @Deprecated String GROUPS_PATH = "groups-path";
+    @Deprecated String SESSIONS_PATH = "sessions-path";
+    @Deprecated String SUBDIRECTORY_COUNT = "subdirectory-count";
 
     @Deprecated String CLUSTER_PASSIVATION_STORE = "cluster-passivation-store";
     String BEAN_CACHE = "bean-cache";

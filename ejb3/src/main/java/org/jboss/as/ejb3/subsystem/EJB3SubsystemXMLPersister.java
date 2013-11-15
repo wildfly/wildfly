@@ -148,11 +148,15 @@ public class EJB3SubsystemXMLPersister implements XMLElementWriter<SubsystemMars
             writer.writeEndElement();
         }
         // write the passivation-stores element
-        if (model.hasDefined(EJB3SubsystemModel.PASSIVATION_STORE)) {
+        if (model.hasDefined(EJB3SubsystemModel.PASSIVATION_STORE)
+                || model.hasDefined(EJB3SubsystemModel.CLUSTER_PASSIVATION_STORE)
+                || model.hasDefined(EJB3SubsystemModel.FILE_PASSIVATION_STORE)) {
             // <passivation-stores>
             writer.writeStartElement(EJB3SubsystemXMLElement.PASSIVATION_STORES.getLocalName());
             // write the caches
             this.writePassivationStores(writer, model);
+            this.writeFilePassivationStores(writer, model);
+            this.writeClusterPassivationStores(writer, model);
             // </passivation-stores>
             writer.writeEndElement();
         }
@@ -392,7 +396,6 @@ public class EJB3SubsystemXMLPersister implements XMLElementWriter<SubsystemMars
     private void writeCaches(XMLExtendedStreamWriter writer, ModelNode model) throws XMLStreamException {
         List<Property> caches = model.get(EJB3SubsystemModel.CACHE).asPropertyList();
         for (Property property : caches) {
-            // <strict-max-pool>
             writer.writeStartElement(EJB3SubsystemXMLElement.CACHE.getLocalName());
             ModelNode cache = property.getValue();
             writer.writeAttribute(EJB3SubsystemXMLAttribute.NAME.getLocalName(), property.getName());
@@ -406,13 +409,58 @@ public class EJB3SubsystemXMLPersister implements XMLElementWriter<SubsystemMars
         if (model.hasDefined(EJB3SubsystemModel.PASSIVATION_STORE)) {
             List<Property> caches = model.get(EJB3SubsystemModel.PASSIVATION_STORE).asPropertyList();
             for (Property property : caches) {
-                // <strict-max-pool>
                 writer.writeStartElement(EJB3SubsystemXMLElement.PASSIVATION_STORE.getLocalName());
                 ModelNode store = property.getValue();
                 writer.writeAttribute(EJB3SubsystemXMLAttribute.NAME.getLocalName(), property.getName());
-                PassivationStoreResourceDefinition.MAX_SIZE.marshallAsAttribute(store, writer);
                 PassivationStoreResourceDefinition.CACHE_CONTAINER.marshallAsAttribute(store, writer);
                 PassivationStoreResourceDefinition.BEAN_CACHE.marshallAsAttribute(store, writer);
+                PassivationStoreResourceDefinition.MAX_SIZE.marshallAsAttribute(store, writer);
+                writer.writeEndElement();
+            }
+        }
+    }
+
+    /**
+     * Persist as a passivation-store using relevant attributes
+     */
+    private void writeClusterPassivationStores(XMLExtendedStreamWriter writer, ModelNode model) throws XMLStreamException {
+        if (model.hasDefined(EJB3SubsystemModel.CLUSTER_PASSIVATION_STORE)) {
+            List<Property> caches = model.get(EJB3SubsystemModel.CLUSTER_PASSIVATION_STORE).asPropertyList();
+            for (Property property : caches) {
+                // <strict-max-pool>
+                writer.writeStartElement(EJB3SubsystemXMLElement.CLUSTER_PASSIVATION_STORE.getLocalName());
+                ModelNode store = property.getValue();
+                writer.writeAttribute(EJB3SubsystemXMLAttribute.NAME.getLocalName(), property.getName());
+                LegacyPassivationStoreResourceDefinition.IDLE_TIMEOUT.marshallAsAttribute(store, writer);
+                LegacyPassivationStoreResourceDefinition.IDLE_TIMEOUT_UNIT.marshallAsAttribute(store, writer);
+                ClusterPassivationStoreResourceDefinition.MAX_SIZE.marshallAsAttribute(store, writer);
+                ClusterPassivationStoreResourceDefinition.CACHE_CONTAINER.marshallAsAttribute(store, writer);
+                ClusterPassivationStoreResourceDefinition.BEAN_CACHE.marshallAsAttribute(store, writer);
+                ClusterPassivationStoreResourceDefinition.CLIENT_MAPPINGS_CACHE.marshallAsAttribute(store, writer);
+                ClusterPassivationStoreResourceDefinition.PASSIVATE_EVENTS_ON_REPLICATE.marshallAsAttribute(store, writer);
+                writer.writeEndElement();
+            }
+        }
+    }
+
+    /**
+     * Persist as a passivation-store using relevant attributes
+     */
+    private void writeFilePassivationStores(XMLExtendedStreamWriter writer, ModelNode model) throws XMLStreamException {
+        if (model.hasDefined(EJB3SubsystemModel.FILE_PASSIVATION_STORE)) {
+            List<Property> caches = model.get(EJB3SubsystemModel.FILE_PASSIVATION_STORE).asPropertyList();
+            for (Property property : caches) {
+                // <strict-max-pool>
+                writer.writeStartElement(EJB3SubsystemXMLElement.FILE_PASSIVATION_STORE.getLocalName());
+                ModelNode store = property.getValue();
+                writer.writeAttribute(EJB3SubsystemXMLAttribute.NAME.getLocalName(), property.getName());
+                LegacyPassivationStoreResourceDefinition.IDLE_TIMEOUT.marshallAsAttribute(store, writer);
+                LegacyPassivationStoreResourceDefinition.IDLE_TIMEOUT_UNIT.marshallAsAttribute(store, writer);
+                FilePassivationStoreResourceDefinition.MAX_SIZE.marshallAsAttribute(store, writer);
+                FilePassivationStoreResourceDefinition.RELATIVE_TO.marshallAsAttribute(store, writer);
+                FilePassivationStoreResourceDefinition.GROUPS_PATH.marshallAsAttribute(store, writer);
+                FilePassivationStoreResourceDefinition.SESSIONS_PATH.marshallAsAttribute(store, writer);
+                FilePassivationStoreResourceDefinition.SUBDIRECTORY_COUNT.marshallAsAttribute(store, writer);
                 writer.writeEndElement();
             }
         }

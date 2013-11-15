@@ -27,7 +27,7 @@ public class PassivationStoreResourceDefinition extends SimpleResourceDefinition
 
     static final SimpleAttributeDefinition MAX_SIZE = new SimpleAttributeDefinitionBuilder(EJB3SubsystemModel.MAX_SIZE, ModelType.INT, true)
             .setXmlName(EJB3SubsystemXMLAttribute.MAX_SIZE.getLocalName())
-            .setDefaultValue(new ModelNode(1000))
+            .setDefaultValue(new ModelNode(10000))
             .setAllowExpression(true)
             .setValidator(new LongRangeValidator(0, Integer.MAX_VALUE, true, true))
             .setFlags(AttributeAccess.Flag.RESTART_NONE)
@@ -73,10 +73,8 @@ public class PassivationStoreResourceDefinition extends SimpleResourceDefinition
 
     /*
      * This transformer does the following:
-     * - maps <passivation-store/> to <cluster-passivation-store/> while setting new defaults for passivate-events-on-replicate and client-mappings-cache
-     * - sets appropriate defaults for IDLE_TIMEOUT and IDLE_TIMEOUT_UNIT
-     * - sets a default for passivate-on-replicate and client-mappings-cache if undefined
-     * - rejects specific values for passivate-on-replicate and client-mappings-cache
+     * - maps <passivation-store/> to <cluster-passivation-store/>
+     * - sets appropriate defaults for IDLE_TIMEOUT, IDLE_TIMEOUT_UNIT, PASSIVATE_EVENTS_ON_REPLICATE, and CLIENT_MAPPINGS_CACHE
      */
     @SuppressWarnings("deprecation")
     static void registerTransformers_1_1_0(ResourceTransformationDescriptionBuilder parent) {
@@ -92,10 +90,8 @@ public class PassivationStoreResourceDefinition extends SimpleResourceDefinition
 
     /*
      * This transformer does the following:
-     * - maps <passivation-store/> to <cluster-passivation-store/> while setting new defaults for passivate-events-on-replicate and client-mappings-cache
-     * - sets appropriate defaults for IDLE_TIMEOUT and IDLE_TIMEOUT_UNIT
-     * - sets a default for passivate-on-replicate and client-mappings-cache if undefined
-     * - rejects specific values for passivate-on-replicate and client-mappings-cache
+     * - maps <passivation-store/> to <cluster-passivation-store/>
+     * - sets appropriate defaults for IDLE_TIMEOUT, IDLE_TIMEOUT_UNIT, PASSIVATE_EVENTS_ON_REPLICATE, and CLIENT_MAPPINGS_CACHE
      */
     @SuppressWarnings("deprecation")
     static void registerTransformers_1_2_0(ResourceTransformationDescriptionBuilder parent) {

@@ -34,6 +34,7 @@ import org.jboss.staxmapper.XMLExtendedStreamReader;
 
 import javax.xml.stream.XMLStreamConstants;
 import javax.xml.stream.XMLStreamException;
+
 import java.util.Collections;
 import java.util.EnumSet;
 import java.util.List;
@@ -51,10 +52,11 @@ import static org.jboss.as.controller.parsing.ParseUtils.unexpectedAttribute;
 import static org.jboss.as.controller.parsing.ParseUtils.unexpectedElement;
 import static org.jboss.as.ejb3.subsystem.EJB3SubsystemModel.ASYNC;
 import static org.jboss.as.ejb3.subsystem.EJB3SubsystemModel.CACHE;
+import static org.jboss.as.ejb3.subsystem.EJB3SubsystemModel.CLUSTER_PASSIVATION_STORE;
 import static org.jboss.as.ejb3.subsystem.EJB3SubsystemModel.DEFAULT_DATA_STORE;
 import static org.jboss.as.ejb3.subsystem.EJB3SubsystemModel.FILE_DATA_STORE;
+import static org.jboss.as.ejb3.subsystem.EJB3SubsystemModel.FILE_PASSIVATION_STORE;
 import static org.jboss.as.ejb3.subsystem.EJB3SubsystemModel.IIOP;
-import static org.jboss.as.ejb3.subsystem.EJB3SubsystemModel.PASSIVATION_STORE;
 import static org.jboss.as.ejb3.subsystem.EJB3SubsystemModel.PATH;
 import static org.jboss.as.ejb3.subsystem.EJB3SubsystemModel.RELATIVE_TO;
 import static org.jboss.as.ejb3.subsystem.EJB3SubsystemModel.REMOTE;
@@ -515,6 +517,7 @@ public class EJB3Subsystem12Parser implements XMLElementReader<List<ModelNode>> 
         operations.add(operation);
     }
 
+    @SuppressWarnings("deprecation")
     protected void parsePassivationStores(final XMLExtendedStreamReader reader, List<ModelNode> operations) throws XMLStreamException {
         // no attributes expected
         requireNoAttributes(reader);
@@ -536,7 +539,8 @@ public class EJB3Subsystem12Parser implements XMLElementReader<List<ModelNode>> 
         }
     }
 
-    private void parseFilePassivationStore(final XMLExtendedStreamReader reader, List<ModelNode> operations) throws XMLStreamException {
+    @SuppressWarnings("deprecation")
+    protected void parseFilePassivationStore(final XMLExtendedStreamReader reader, List<ModelNode> operations) throws XMLStreamException {
         String name = null;
         ModelNode operation = Util.createAddOperation();
         for (int i = 0; i < reader.getAttributeCount(); i++) {
@@ -548,31 +552,31 @@ public class EJB3Subsystem12Parser implements XMLElementReader<List<ModelNode>> 
                     break;
                 }
                 case MAX_SIZE: {
-                    PassivationStoreResourceDefinition.MAX_SIZE.parseAndSetParameter(value, operation, reader);
+                    FilePassivationStoreResourceDefinition.MAX_SIZE.parseAndSetParameter(value, operation, reader);
                     break;
                 }
                 case IDLE_TIMEOUT: {
-                    // No longer used
+                    LegacyPassivationStoreResourceDefinition.IDLE_TIMEOUT.parseAndSetParameter(value, operation, reader);
                     break;
                 }
                 case IDLE_TIMEOUT_UNIT: {
-                    // No longer used
+                    LegacyPassivationStoreResourceDefinition.IDLE_TIMEOUT_UNIT.parseAndSetParameter(value, operation, reader);
                     break;
                 }
                 case RELATIVE_TO: {
-                    // No longer used
+                    FilePassivationStoreResourceDefinition.RELATIVE_TO.parseAndSetParameter(value, operation, reader);
                     break;
                 }
                 case GROUPS_PATH: {
-                    // No longer used
+                    FilePassivationStoreResourceDefinition.GROUPS_PATH.parseAndSetParameter(value, operation, reader);
                     break;
                 }
                 case SESSIONS_PATH: {
-                    // No longer used
+                    FilePassivationStoreResourceDefinition.SESSIONS_PATH.parseAndSetParameter(value, operation, reader);
                     break;
                 }
                 case SUBDIRECTORY_COUNT: {
-                    // No longer used
+                    FilePassivationStoreResourceDefinition.SUBDIRECTORY_COUNT.parseAndSetParameter(value, operation, reader);
                     break;
                 }
                 default: {
@@ -585,11 +589,12 @@ public class EJB3Subsystem12Parser implements XMLElementReader<List<ModelNode>> 
             throw missingRequired(reader, Collections.singleton(EJB3SubsystemXMLAttribute.NAME.getLocalName()));
         }
         // create and add the operation
-        operation.get(OP_ADDR).set(SUBSYSTEM_PATH.append(PASSIVATION_STORE, name).toModelNode());
+        operation.get(OP_ADDR).set(SUBSYSTEM_PATH.append(FILE_PASSIVATION_STORE, name).toModelNode());
         operations.add(operation);
     }
 
-    private void parseClusterPassivationStore(final XMLExtendedStreamReader reader, List<ModelNode> operations) throws XMLStreamException {
+    @SuppressWarnings("deprecation")
+    protected void parseClusterPassivationStore(final XMLExtendedStreamReader reader, List<ModelNode> operations) throws XMLStreamException {
         String name = null;
         ModelNode operation = Util.createAddOperation();
         for (int i = 0; i < reader.getAttributeCount(); i++) {
@@ -601,31 +606,31 @@ public class EJB3Subsystem12Parser implements XMLElementReader<List<ModelNode>> 
                     break;
                 }
                 case MAX_SIZE: {
-                    PassivationStoreResourceDefinition.MAX_SIZE.parseAndSetParameter(value, operation, reader);
+                    ClusterPassivationStoreResourceDefinition.MAX_SIZE.parseAndSetParameter(value, operation, reader);
                     break;
                 }
                 case IDLE_TIMEOUT: {
-                    // No longer used
+                    LegacyPassivationStoreResourceDefinition.IDLE_TIMEOUT.parseAndSetParameter(value, operation, reader);
                     break;
                 }
                 case IDLE_TIMEOUT_UNIT: {
-                    // No longer used
+                    LegacyPassivationStoreResourceDefinition.IDLE_TIMEOUT_UNIT.parseAndSetParameter(value, operation, reader);
                     break;
                 }
                 case CACHE_CONTAINER: {
-                    PassivationStoreResourceDefinition.CACHE_CONTAINER.parseAndSetParameter(value, operation, reader);
+                    ClusterPassivationStoreResourceDefinition.CACHE_CONTAINER.parseAndSetParameter(value, operation, reader);
                     break;
                 }
                 case BEAN_CACHE: {
-                    PassivationStoreResourceDefinition.BEAN_CACHE.parseAndSetParameter(value, operation, reader);
+                    ClusterPassivationStoreResourceDefinition.BEAN_CACHE.parseAndSetParameter(value, operation, reader);
                     break;
                 }
                 case CLIENT_MAPPINGS_CACHE: {
-                    // No longer used
+                    ClusterPassivationStoreResourceDefinition.CLIENT_MAPPINGS_CACHE.parseAndSetParameter(value, operation, reader);
                     break;
                 }
                 case PASSIVATE_EVENTS_ON_REPLICATE: {
-                    // No longer used
+                    ClusterPassivationStoreResourceDefinition.PASSIVATE_EVENTS_ON_REPLICATE.parseAndSetParameter(value, operation, reader);
                     break;
                 }
                 default: {
@@ -638,7 +643,7 @@ public class EJB3Subsystem12Parser implements XMLElementReader<List<ModelNode>> 
             throw missingRequired(reader, Collections.singleton(EJB3SubsystemXMLAttribute.NAME.getLocalName()));
         }
         // create and add the operation
-        operation.get(OP_ADDR).set(SUBSYSTEM_PATH.append(PASSIVATION_STORE, name).toModelNode());
+        operation.get(OP_ADDR).set(SUBSYSTEM_PATH.append(CLUSTER_PASSIVATION_STORE, name).toModelNode());
         operations.add(operation);
     }
 
