@@ -24,9 +24,9 @@ package org.jboss.as.ejb3.cache.simple;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
-import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
 import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.ScheduledThreadPoolExecutor;
 import java.util.concurrent.ThreadFactory;
 import java.util.concurrent.atomic.AtomicInteger;
 
@@ -79,7 +79,9 @@ public class SimpleCache<K, V extends Identifiable<K>> implements Cache<K, V> {
     @Override
     public void start() {
         if (this.threadFactory != null) {
-            this.executor = Executors.newSingleThreadScheduledExecutor(this.threadFactory);
+            ScheduledThreadPoolExecutor executor = new ScheduledThreadPoolExecutor(1, this.threadFactory);
+            executor.setRemoveOnCancelPolicy(true);
+            this.executor = executor;
         }
     }
 

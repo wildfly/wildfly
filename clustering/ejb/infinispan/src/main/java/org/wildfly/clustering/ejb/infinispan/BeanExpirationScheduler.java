@@ -24,9 +24,9 @@ package org.wildfly.clustering.ejb.infinispan;
 import java.security.AccessController;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
 import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.ScheduledThreadPoolExecutor;
 import java.util.concurrent.ThreadFactory;
 import java.util.concurrent.TimeUnit;
 
@@ -55,11 +55,17 @@ public class BeanExpirationScheduler<G, I, T> implements Scheduler<Bean<G, I, T>
     private final ScheduledExecutorService executor;
 
     public BeanExpirationScheduler(Batcher batcher, BeanRemover<I, T> remover, ExpirationConfiguration<T> expiration) {
-        this(batcher, remover, expiration, Executors.newSingleThreadScheduledExecutor(createThreadFactory()));
+        this(batcher, remover, expiration, createScheduledExecutor(createThreadFactory()));
     }
 
     private static ThreadFactory createThreadFactory() {
         return new JBossThreadFactory(new ThreadGroup(BeanExpirationScheduler.class.getSimpleName()), Boolean.FALSE, null, "%G - %t", null, null, AccessController.doPrivileged(GetAccessControlContextAction.getInstance()));
+    }
+
+    private static ScheduledExecutorService createScheduledExecutor(ThreadFactory factory) {
+        ScheduledThreadPoolExecutor executor = new ScheduledThreadPoolExecutor(1, factory);
+        executor.setRemoveOnCancelPolicy(true);
+        return executor;
     }
 
     public BeanExpirationScheduler(Batcher batcher, BeanRemover<I, T> remover, ExpirationConfiguration<T> expiration, ScheduledExecutorService executor) {
