@@ -36,7 +36,6 @@ import org.jboss.arquillian.junit.Arquillian;
 import org.jboss.arquillian.junit.InSequence;
 import org.jboss.arquillian.test.api.ArquillianResource;
 import org.jboss.shrinkwrap.api.spec.WebArchive;
-import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
@@ -79,7 +78,6 @@ public class ListenerLifecycleCallbackInterceptionTestCase extends LifecycleInte
 
     @Test
     @InSequence(3)
-    @Ignore("UNDERTOW-128")
     public void testListenerPreDestroyInterception(
             @ArquillianResource(InitServlet.class) @OperateOnDeployment(REMOTE) URL remoteContextPath) throws IOException,
             ExecutionException, TimeoutException {
