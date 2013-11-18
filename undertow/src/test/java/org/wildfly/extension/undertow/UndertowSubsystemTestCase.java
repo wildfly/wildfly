@@ -106,7 +106,7 @@ public class UndertowSubsystemTestCase extends AbstractSubsystemBaseTest {
         Assert.assertNotNull(jspServiceServiceController);
         JSPConfig jspConfig = jspServiceServiceController.getService().getValue().getJspConfig();
         Assert.assertNotNull(jspConfig);
-        Assert.assertNotNull(jspConfig.getJSPServletInfo());
+        Assert.assertNotNull(jspConfig.createJSPServletInfo());
 
 
     }
