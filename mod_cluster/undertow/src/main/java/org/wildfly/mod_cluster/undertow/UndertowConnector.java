@@ -79,7 +79,7 @@ public class UndertowConnector implements Connector {
 
     @Override
     public int getPort() {
-        return this.listener.getBinding().getValue().getPort();
+        return this.listener.getBinding().getValue().getAbsolutePort();
     }
 
     @Override
