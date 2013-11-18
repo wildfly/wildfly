@@ -15,6 +15,7 @@ import org.jboss.as.test.clustering.cluster.dispatcher.bean.ClusterTopologyRetri
 import org.jboss.as.test.clustering.cluster.dispatcher.bean.ClusterTopologyRetrieverBean;
 import org.jboss.as.test.clustering.ejb.EJBDirectory;
 import org.jboss.as.test.clustering.ejb.RemoteEJBDirectory;
+import org.jboss.as.test.shared.TimeoutUtil;
 import org.jboss.ejb.client.ContextSelector;
 import org.jboss.ejb.client.EJBClientContext;
 import org.jboss.logging.Logger;
@@ -30,6 +31,7 @@ import org.junit.runner.RunWith;
 @RunWith(Arquillian.class)
 @RunAsClient
 public class CommandDispatcherTestCase extends ClusterAbstractTestCase {
+    private static final long VIEW_CHANGE_WAIT = TimeoutUtil.adjust(2000);
     private static final Logger log = Logger.getLogger(CommandDispatcherTestCase.class);
     private static final String MODULE_NAME = "command-dispatcher";
     private static final String CLIENT_PROPERTIES = "cluster/ejb3/stateless/jboss-ejb-client.properties";
@@ -93,6 +95,8 @@ public class CommandDispatcherTestCase extends ClusterAbstractTestCase {
 
             deploy(DEPLOYMENT_2);
 
+            Thread.sleep(VIEW_CHANGE_WAIT);
+
             topology = bean.getClusterTopology();
             assertEquals(2, topology.getNodes().size());
             assertTrue(topology.getNodes().contains(nodeName1));
@@ -109,10 +113,12 @@ public class CommandDispatcherTestCase extends ClusterAbstractTestCase {
 
             start(CONTAINER_1);
 
+            Thread.sleep(VIEW_CHANGE_WAIT);
+
             topology = bean.getClusterTopology();
-            assertEquals(2, topology.getNodes().size());
-            assertTrue(topology.getNodes().contains(nodeName1));
-            assertTrue(topology.getNodes().contains(nodeName2));
+            assertEquals(topology.getNodes().toString(), 2, topology.getNodes().size());
+            assertTrue(topology.getNodes().toString() + " should contain " + nodeName1, topology.getNodes().contains(nodeName1));
+            assertTrue(topology.getNodes().toString() + " should contain " + nodeName2, topology.getNodes().contains(nodeName2));
             assertFalse(topology.getRemoteNodes().toString() + " should not contain " + topology.getLocalNode(), topology.getRemoteNodes().contains(topology.getLocalNode()));
         } finally {
             // reset the selector
