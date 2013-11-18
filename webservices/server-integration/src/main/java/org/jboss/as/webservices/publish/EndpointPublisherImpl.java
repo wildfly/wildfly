@@ -28,6 +28,7 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 
+import org.jboss.as.server.deployment.DeploymentUnit;
 import org.jboss.as.web.host.ServletBuilder;
 import org.jboss.as.web.host.WebDeploymentBuilder;
 import org.jboss.as.web.host.WebDeploymentController;
@@ -35,6 +36,7 @@ import org.jboss.as.web.host.WebHost;
 import org.jboss.as.webservices.deployers.EndpointServiceDeploymentAspect;
 import org.jboss.as.webservices.deployers.deployment.DeploymentAspectsProvider;
 import org.jboss.as.webservices.deployers.deployment.WSDeploymentBuilder;
+import org.jboss.as.webservices.service.EndpointService;
 import org.jboss.as.webservices.service.ServerConfigService;
 import org.jboss.as.webservices.util.WSAttachmentKeys;
 import org.jboss.as.webservices.util.WSServices;
@@ -42,6 +44,8 @@ import org.jboss.metadata.javaee.spec.ParamValueMetaData;
 import org.jboss.metadata.web.jboss.JBossServletMetaData;
 import org.jboss.metadata.web.jboss.JBossWebMetaData;
 import org.jboss.metadata.web.spec.ServletMappingMetaData;
+import org.jboss.msc.service.ServiceName;
+import org.jboss.msc.service.ServiceRegistry;
 import org.jboss.msc.service.ServiceTarget;
 import org.jboss.ws.common.deployment.DeploymentAspectManagerImpl;
 import org.jboss.ws.common.deployment.EndpointHandlerDeploymentAspect;
@@ -130,8 +134,18 @@ public final class EndpointPublisherImpl implements EndpointPublisher {
             WildFlySecurityManager.setCurrentContextClassLoaderPrivileged(origClassLoader);
         }
         Deployment deployment = unit.getAttachment(WSAttachmentKeys.DEPLOYMENT_KEY);
+        List<Endpoint> endpoints = deployment.getService().getEndpoints();
+        awaitEndpointServices(endpoints, unit);
         deployment.addAttachment(WebDeploymentController.class, startWebApp(host, unit)); //TODO simplify and use findChild later in destroy()/stopWebApp()
-        return deployment.getService().getEndpoints();
+        return endpoints;
+    }
+
+    private void awaitEndpointServices(List<Endpoint> endpoints, DeploymentUnit unit) throws InterruptedException {
+        final ServiceRegistry registry = unit.getServiceRegistry();
+        for (Endpoint ep : endpoints) {
+            final ServiceName serviceName = EndpointService.getServiceName(unit, ep.getShortName());
+            registry.getRequiredService(serviceName).awaitValue();
+        }
     }
 
     private static WebDeploymentController startWebApp(WebHost host, WSEndpointDeploymentUnit unit) throws Exception {
