@@ -33,6 +33,5 @@
         <module name="org.jboss.marshalling" export="true"/>
         <module name="org.jboss.sasl" services="import"/>
         <module name="org.jboss.xnio" export="true"/>
-        <module name="org.jboss.xnio.nio" services="import"/>
     </dependencies>
 </module>

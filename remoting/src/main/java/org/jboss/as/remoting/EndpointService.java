@@ -37,6 +37,7 @@ import org.jboss.remoting3.remote.HttpUpgradeConnectionProviderFactory;
 import org.jboss.remoting3.remote.RemoteConnectionProviderFactory;
 import org.xnio.OptionMap;
 import org.xnio.Options;
+import org.xnio.Xnio;
 
 /**
  * An MSC service for Remoting endpoints.
@@ -70,7 +71,7 @@ public final class EndpointService implements Service<Endpoint> {
         final Endpoint endpoint;
         try {
             boolean ok = false;
-            endpoint = Remoting.createEndpoint(endpointName, optionMap);
+            endpoint = Remoting.createEndpoint(endpointName, Xnio.getInstance(), optionMap);
             try {
                 // Reuse the options for the remote connection factory for now
                 endpoint.addConnectionProvider(Protocol.REMOTE.toString(), new RemoteConnectionProviderFactory(), optionMap);
