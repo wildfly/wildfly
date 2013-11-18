@@ -106,6 +106,7 @@ class DeploymentScannerParser_1_1 implements XMLStreamConstants, XMLElementReade
         // elements
         while (reader.hasNext() && reader.nextTag() != END_ELEMENT) {
             switch (Namespace.forUri(reader.getNamespaceURI())) {
+                case DEPLOYMENT_SCANNER_1_0:
                 case DEPLOYMENT_SCANNER_1_1: {
                     final Element element = Element.forName(reader.getLocalName());
                     switch (element) {
