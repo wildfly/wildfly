@@ -127,9 +127,10 @@ public class DomainXml extends CommonXml {
         }
         Namespace readerNS = Namespace.forUri(reader.getNamespaceURI());
         switch (readerNS) {
-            case DOMAIN_1_0:
+            case DOMAIN_1_0: {
                 readDomainElement1_0(reader, new ModelNode(), readerNS, nodes);
                 break;
+            }
             case DOMAIN_1_1:
             case DOMAIN_1_2:
                 readDomainElement1_1(reader, new ModelNode(), readerNS, nodes);
