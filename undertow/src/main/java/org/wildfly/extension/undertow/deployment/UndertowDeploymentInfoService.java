@@ -781,12 +781,14 @@ public class UndertowDeploymentInfoService implements Service<DeploymentInfo> {
     private static String authMethod(String configuredMethod) {
         // TODO - Feels like a candidate for an enum but will hold off until configuration of custom methods and chaining is
         // defined.
-        if (configuredMethod.equals("CLIENT-CERT")) {
+        if (configuredMethod == null) {
+            return HttpServletRequest.BASIC_AUTH;
+        } else if ("CLIENT-CERT".equals(configuredMethod)) {
             return HttpServletRequest.CLIENT_CERT_AUTH;
+        } else {
+            return configuredMethod;
         }
-        return configuredMethod;
     }
-
 
     private static io.undertow.servlet.api.TransportGuaranteeType transportGuaranteeType(final TransportGuaranteeType type) {
         if (type == null) {
