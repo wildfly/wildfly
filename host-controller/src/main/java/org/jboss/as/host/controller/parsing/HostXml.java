@@ -127,9 +127,10 @@ public class HostXml extends CommonXml {
         }
         Namespace readerNS = Namespace.forUri(reader.getNamespaceURI());
         switch (readerNS) {
-            case DOMAIN_1_0:
+            case DOMAIN_1_0: {
                 readHostElement_1_0(reader, address, operationList);
                 break;
+            }
             default:
                 // Instead of having to list the remaining versions we just check it is actually a valid version.
                 for (Namespace current : Namespace.domainValues()) {

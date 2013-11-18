@@ -126,11 +126,11 @@ public class StandaloneXml extends CommonXml {
         }
 
         Namespace readerNS = Namespace.forUri(reader.getNamespaceURI());
-
         switch (readerNS) {
-            case DOMAIN_1_0:
+            case DOMAIN_1_0: {
                 readServerElement_1_0(reader, address, operationList);
                 break;
+            }
             case DOMAIN_1_1:
             case DOMAIN_1_2:
             case DOMAIN_1_3:
@@ -629,6 +629,7 @@ public class StandaloneXml extends CommonXml {
                         case DOMAIN_1_2:
                         case DOMAIN_1_3:
                         case DOMAIN_1_4:
+                        case DOMAIN_1_5:
                             parseManagementInterface1_1(reader, address, false, expectedNs, list);
                             break;
                         default:
@@ -642,6 +643,7 @@ public class StandaloneXml extends CommonXml {
                         case DOMAIN_1_2:
                         case DOMAIN_1_3:
                         case DOMAIN_1_4:
+                        case DOMAIN_1_5:
                             parseManagementInterface1_1(reader, address, true, expectedNs, list);
                             break;
                         default:

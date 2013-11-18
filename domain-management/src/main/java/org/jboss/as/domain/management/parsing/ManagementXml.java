@@ -280,7 +280,7 @@ public class ManagementXml {
                 parseManagement_1_0(reader, address, expectedNs, list, requireNativeInterface);
                 break;
             default:
-                parseManagement_2_0(reader, address, expectedNs, list, requireNativeInterface);
+                parseManagement_1_5(reader, address, expectedNs, list, requireNativeInterface);
         }
     }
 
@@ -329,7 +329,7 @@ public class ManagementXml {
         }
     }
 
-    private void parseManagement_2_0(final XMLExtendedStreamReader reader, final ModelNode address, final Namespace expectedNs,
+    private void parseManagement_1_5(final XMLExtendedStreamReader reader, final ModelNode address, final Namespace expectedNs,
             final List<ModelNode> list, boolean requireNativeInterface) throws XMLStreamException {
         int securityRealmsCount = 0;
         int connectionsCount = 0;
@@ -397,6 +397,7 @@ public class ManagementXml {
                             parseLdapConnection_1_0(reader, address, list);
                             break;
                         case DOMAIN_1_4:
+                        case DOMAIN_1_5:
                             parseLdapConnection_1_4(reader, address, list);
                             break;
                         default:
@@ -783,7 +784,7 @@ public class ManagementXml {
                             parseAuthorization_1_3(reader, expectedNs, realmAddress, list);
                             break;
                         default:
-                            parseAuthorization_2_0(reader, expectedNs, add, list);
+                            parseAuthorization_1_5(reader, expectedNs, add, list);
                     }
                     break;
                 default: {
@@ -827,7 +828,7 @@ public class ManagementXml {
                             parseAuthorization_1_3(reader, expectedNs, realmAddress, list);
                             break;
                         default:
-                            parseAuthorization_2_0(reader, expectedNs, add, list);
+                            parseAuthorization_1_5(reader, expectedNs, add, list);
                     }
                     break;
                 default: {
@@ -1734,7 +1735,7 @@ public class ManagementXml {
         }
     }
 
-    private static void parseAuthorization_2_0(final XMLExtendedStreamReader reader, final Namespace expectedNs,
+    private static void parseAuthorization_1_5(final XMLExtendedStreamReader reader, final Namespace expectedNs,
             final ModelNode realmAdd, final List<ModelNode> list) throws XMLStreamException {
         ModelNode realmAddress = realmAdd.get(OP_ADDR);
 
@@ -1777,7 +1778,7 @@ public class ManagementXml {
                     break;
                 }
                 case LDAP: {
-                    parseLdapAuthorization_2_0(reader, expectedNs, realmAddress, list);
+                    parseLdapAuthorization_1_5(reader, expectedNs, realmAddress, list);
                     authzFound = true;
                     break;
                 }
@@ -1791,7 +1792,7 @@ public class ManagementXml {
 
 
 
-    private static void parseLdapAuthorization_2_0(final XMLExtendedStreamReader reader, final Namespace expectedNs,
+    private static void parseLdapAuthorization_1_5(final XMLExtendedStreamReader reader, final Namespace expectedNs,
             final ModelNode realmAddress, final List<ModelNode> list) throws XMLStreamException {
         ModelNode addr = realmAddress.clone().add(AUTHORIZATION, LDAP);
         ModelNode ldapAuthorization = Util.getEmptyOperation(ADD, addr);
