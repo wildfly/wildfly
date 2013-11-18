@@ -47,9 +47,9 @@ import org.jboss.staxmapper.XMLExtendedStreamWriter;
 
 /**
  */
-class DeploymentScannerParser_1_2 implements XMLStreamConstants, XMLElementReader<List<ModelNode>>, XMLElementWriter<SubsystemMarshallingContext> {
+class DeploymentScannerParser_2_0 implements XMLStreamConstants, XMLElementReader<List<ModelNode>>, XMLElementWriter<SubsystemMarshallingContext> {
 
-    public static final DeploymentScannerParser_1_2 INSTANCE = new DeploymentScannerParser_1_2();
+    public static final DeploymentScannerParser_2_0 INSTANCE = new DeploymentScannerParser_2_0();
 
     /**
      * {@inheritDoc}
@@ -109,7 +109,7 @@ class DeploymentScannerParser_1_2 implements XMLStreamConstants, XMLElementReade
             switch (Namespace.forUri(reader.getNamespaceURI())) {
                 case DEPLOYMENT_SCANNER_1_0:
                 case DEPLOYMENT_SCANNER_1_1:
-                case DEPLOYMENT_SCANNER_1_2: {
+                case DEPLOYMENT_SCANNER_2_0: {
                     final Element element = Element.forName(reader.getLocalName());
                     switch (element) {
                         case DEPLOYMENT_SCANNER: {

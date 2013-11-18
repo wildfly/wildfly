@@ -300,36 +300,46 @@ public class FileSystemDeploymentServiceUnitTestCase {
         ts.controller.addPartialCompositeFailureResultResponse(2, 2);
         ts.testee.scan();
 
-        String[] list = tmpDir.list(new FilenameFilter() {
-            @Override
-            public boolean accept(File dir, String name) {
-                return name.endsWith(".war");
+        String[] list = tmpDir.list();
+
+        String deployed = null;
+        String failed = null;
+
+        for (final String name : list) {
+            if (name.endsWith(FileSystemDeploymentService.DEPLOYED)) {
+                Assert.assertNull(deployed);
+                deployed = name.substring(0, name.length() - FileSystemDeploymentService.DEPLOYED.length());
+            } else if (name.endsWith(FileSystemDeploymentService.FAILED_DEPLOY)) {
+                Assert.assertNull(failed);
+                failed = name.substring(0, name.length() - FileSystemDeploymentService.FAILED_DEPLOY.length());
             }
-        });
-        assertEquals(2, list.length);
+        }
+
+        Assert.assertNotNull(deployed);
+        Assert.assertNotNull(failed);
 
         assertTrue(war1.exists());
         assertFalse(dodeploy1.exists());
         assertTrue(war2.exists());
         assertFalse(dodeploy2.exists());
 
-        File deployed1 = new File(tmpDir, list[0] + FileSystemDeploymentService.DEPLOYED);
-        File failed1 = new File(tmpDir, list[0] + FileSystemDeploymentService.FAILED_DEPLOY);
-        File deployed2 = new File(tmpDir, list[1] + FileSystemDeploymentService.DEPLOYED);
-        File failed2 = new File(tmpDir, list[1] + FileSystemDeploymentService.FAILED_DEPLOY);
+        File deployed1 = new File(tmpDir, deployed + FileSystemDeploymentService.DEPLOYED);
+        File failed1 = new File(tmpDir, deployed + FileSystemDeploymentService.FAILED_DEPLOY);
+        File deployed2 = new File(tmpDir, failed + FileSystemDeploymentService.DEPLOYED);
+        File failed2 = new File(tmpDir, failed + FileSystemDeploymentService.FAILED_DEPLOY);
 
         assertTrue(deployed1.getAbsolutePath(), deployed1.exists());
         assertFalse(failed1.getAbsolutePath(), failed1.exists());
         assertFalse(deployed2.exists());
         assertTrue(failed2.exists());
 
-        dodeploy2 = createFile("bar.war" + FileSystemDeploymentService.DO_DEPLOY);
+        dodeploy2 = createFile(failed + FileSystemDeploymentService.DO_DEPLOY);
 
         ts.controller.addCompositeSuccessResponse(1);
         ts.testee.scan();
 
-        deployed2 = new File(tmpDir, "bar.war" + FileSystemDeploymentService.DEPLOYED);
-        failed2 = new File(tmpDir, "bar.war" + FileSystemDeploymentService.FAILED_DEPLOY);
+        deployed2 = new File(tmpDir, failed + FileSystemDeploymentService.DEPLOYED);
+        failed2 = new File(tmpDir, failed + FileSystemDeploymentService.FAILED_DEPLOY);
 
         assertFalse(dodeploy2.exists());
         assertTrue(deployed2.exists());
@@ -1801,10 +1811,18 @@ public class FileSystemDeploymentServiceUnitTestCase {
                 if (i < failureStep) {
                     result.get(step, OUTCOME).set(SUCCESS);
                     result.get(step, RESULT);
+                    result.get(step, RESULT, "step-1", OUTCOME).set(SUCCESS);
+                    result.get(step, RESULT, "step-1", RESULT);
+                    result.get(step, RESULT, "step-2", OUTCOME).set(SUCCESS);
+                    result.get(step, RESULT, "step-2", RESULT);
                 }
                 else if (i == failureStep){
-                    result.get(step, OUTCOME).set(FAILED);
-                    result.get(step, FAILURE_DESCRIPTION).set(new ModelNode().set("badness happened"));
+                    result.get(step, OUTCOME).set(SUCCESS);
+                    result.get(step, RESULT);
+                    result.get(step, RESULT, "step-1", OUTCOME).set(SUCCESS);
+                    result.get(step, RESULT, "step-1", RESULT);
+                    result.get(step, RESULT, "step-2", OUTCOME).set(FAILED);
+                    result.get(step, RESULT, "step-2", FAILURE_DESCRIPTION).set(new ModelNode().set("badness happened"));
                 }
                 else {
                     result.get(step, OUTCOME).set(CANCELLED);
