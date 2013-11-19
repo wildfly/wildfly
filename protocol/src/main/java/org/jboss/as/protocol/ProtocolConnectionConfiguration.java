@@ -52,6 +52,7 @@ public class ProtocolConnectionConfiguration {
     private Map<String, String> saslOptions = Collections.emptyMap();
     private SSLContext sslContext;
     private String clientBindAddress;
+    private ProtocolTimeoutHandler timeoutHandler;
 
     protected ProtocolConnectionConfiguration() {
         // TODO AS7-6223 propagate clientBindAddress configuration up to end user level and get rid of this system property
@@ -134,6 +135,14 @@ public class ProtocolConnectionConfiguration {
         this.clientBindAddress = clientBindAddress;
     }
 
+    public ProtocolTimeoutHandler getTimeoutHandler() {
+        return timeoutHandler;
+    }
+
+    public void setTimeoutHandler(ProtocolTimeoutHandler timeoutHandler) {
+        this.timeoutHandler = timeoutHandler;
+    }
+
     public ProtocolConnectionConfiguration copy() {
         return copy(this);
     }
@@ -160,6 +169,7 @@ public class ProtocolConnectionConfiguration {
         configuration.saslOptions = old.saslOptions;
         configuration.sslContext = old.sslContext;
         configuration.clientBindAddress = old.clientBindAddress;
+        configuration.timeoutHandler = old.timeoutHandler;
         return configuration;
     }
 
