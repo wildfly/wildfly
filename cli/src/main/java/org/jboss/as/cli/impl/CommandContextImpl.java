@@ -815,28 +815,21 @@ class CommandContextImpl implements CommandContext, ModelControllerClientFactory
     public void connectController(String controller) throws CommandLineException {
         ControllerAddress address = addressResolver.resolveAddress(controller);
 
-        boolean retry;
-        do {
-            retry = false;
-            try {
-                ModelControllerClient newClient = null;
-                CallbackHandler cbh = new AuthenticationCallbackHandler(username, password);
-                if(log.isDebugEnabled()) {
-                    log.debug("connecting to " + address.getHost() + ':' + address.getPort() + " as " + username);
-                }
-                ModelControllerClient tempClient = ModelControllerClientFactory.CUSTOM.
-                        getClient(address, cbh, disableLocalAuth, sslContext, connectionTimeout, this, timeoutHandler);
-                retry = tryConnection(tempClient, address);
-                if(!retry) {
-                    newClient = tempClient;
-                }
-                initNewClient(newClient, address);
-            } catch (RedirectException e) {
-                throw new CommandLineException("Server at " + address.getHost() + ":" + address.getPort() + " does not support " + address.getProtocol());
-            } catch (IOException e) {
-                throw new CommandLineException("Failed to resolve host '" + address.getHost() + "'",e);
+        try {
+            CallbackHandler cbh = new AuthenticationCallbackHandler(username, password);
+            if (log.isDebugEnabled()) {
+                log.debug("connecting to " + address.getHost() + ':' + address.getPort() + " as " + username);
             }
-        } while (retry);
+            ModelControllerClient tempClient = ModelControllerClientFactory.CUSTOM.getClient(address, cbh, disableLocalAuth,
+                    sslContext, connectionTimeout, this, timeoutHandler);
+            tryConnection(tempClient, address);
+            initNewClient(tempClient, address);
+        } catch (RedirectException re) {
+            throw new CommandLineException("Server at " + address.getHost() + ":" + address.getPort() + " does not support "
+                    + address.getProtocol());
+        } catch (IOException e) {
+            throw new CommandLineException("Failed to resolve host '" + address.getHost() + "'", e);
+        }
     }
 
     @Override
@@ -884,14 +877,10 @@ class CommandContextImpl implements CommandContext, ModelControllerClientFactory
     /**
      * Handle the last SSL failure, prompting the user to accept or reject the certificate of the remote server.
      *
-     * @return true if the connection should be retried.
+     * @return true if the certificate validation should be retried.
      */
-    private boolean handleSSLFailure() throws CommandLineException {
-        Certificate[] lastChain;
-        if (trustManager == null || (lastChain = trustManager.getLastFailedCertificateChain()) == null) {
-            return false;
-        }
-        printLine("Unable to connect due to unrecognised server certificate");
+    private boolean handleSSLFailure(Certificate[] lastChain) throws CommandLineException {
+        error("Unable to connect due to unrecognised server certificate");
         for (Certificate current : lastChain) {
             if (current instanceof X509Certificate) {
                 X509Certificate x509Current = (X509Certificate) current;
@@ -927,7 +916,6 @@ class CommandContextImpl implements CommandContext, ModelControllerClientFactory
                             trustManager.storeChainPermenantly(lastChain);
                             return true;
                         }
-
                 }
             }
         }
@@ -970,7 +958,7 @@ class CommandContextImpl implements CommandContext, ModelControllerClientFactory
     /**
      * Used to make a call to the server to verify that it is possible to connect.
      */
-    private boolean tryConnection(final ModelControllerClient client, ControllerAddress address) throws CommandLineException, RedirectException {
+    private void tryConnection(final ModelControllerClient client, ControllerAddress address) throws CommandLineException, RedirectException {
         try {
             DefaultOperationRequestBuilder builder = new DefaultOperationRequestBuilder();
             builder.setOperationName(Util.READ_ATTRIBUTE);
@@ -979,7 +967,6 @@ class CommandContextImpl implements CommandContext, ModelControllerClientFactory
             client.execute(builder.buildRequest());
             // We don't actually care what the response is we just want to be sure the ModelControllerClient
             // does not throw an Exception.
-            return false;
         } catch (Exception e) {
             try {
                 Throwable current = e;
@@ -988,14 +975,13 @@ class CommandContextImpl implements CommandContext, ModelControllerClientFactory
                         throw new CommandLineException("Unable to authenticate against controller at " + address.getHost() + ":" + address.getPort(), current);
                     }
                     if (current instanceof SSLException) {
-                        if (!handleSSLFailure()) {
-                            throw new CommandLineException("Unable to negotiate SSL connection with controller at " + address.getHost() + ":" + address.getPort());
-                        } else {
-                            return true;
-                        }
+                        throw new CommandLineException("Unable to negotiate SSL connection with controller at "+ address.getHost() + ":" + address.getPort());
                     }
                     if (current instanceof RedirectException) {
                         throw (RedirectException) current;
+                    }
+                    if (current instanceof CommandLineException) {
+                        throw (CommandLineException) current;
                     }
                     current = current.getCause();
                 }
@@ -1484,7 +1470,6 @@ class CommandContextImpl implements CommandContext, ModelControllerClientFactory
         private final boolean modifyTrustStore;
 
         private Set<X509Certificate> temporarilyTrusted = new HashSet<X509Certificate>();
-        private Certificate[] lastFailedCert;
         private X509TrustManager delegate;
 
         LazyDelagatingTrustManager(String trustStore, String trustStorePassword, boolean modifyTrustStore) {
@@ -1499,19 +1484,6 @@ class CommandContextImpl implements CommandContext, ModelControllerClientFactory
 
         boolean isModifyTrustStore() {
             return modifyTrustStore;
-        }
-
-        void setFailedCertChain(final Certificate[] chain) {
-            this.lastFailedCert = chain;
-        }
-
-        Certificate[] getLastFailedCertificateChain() {
-            try {
-                return lastFailedCert;
-            } finally {
-                // Only one chance to accept it.
-                lastFailedCert = null;
-            }
         }
 
         synchronized void storeChainTemporarily(final Certificate[] chain) {
@@ -1613,13 +1585,36 @@ class CommandContextImpl implements CommandContext, ModelControllerClientFactory
         }
 
         @Override
-        public void checkServerTrusted(X509Certificate[] chain, String authType) throws CertificateException {
-            try {
-                getDelegate().checkServerTrusted(chain, authType);
-            } catch (CertificateException ce) {
-                setFailedCertChain(chain);
-                throw ce;
-            }
+        public void checkServerTrusted(final X509Certificate[] chain, String authType) throws CertificateException {
+            boolean retry;
+            do {
+                retry = false;
+                try {
+                    getDelegate().checkServerTrusted(chain, authType);
+                } catch (CertificateException ce) {
+                    if (retry == false) {
+                        timeoutHandler.suspendAndExecute(new Runnable() {
+
+                            @Override
+                            public void run() {
+                                try {
+                                    handleSSLFailure(chain);
+                                } catch (CommandLineException e) {
+                                    throw new RuntimeException(e);
+                                }
+                            }
+                        });
+
+                        if (delegate == null) {
+                            retry = true;
+                        } else {
+                            throw ce;
+                        }
+                    } else {
+                        throw ce;
+                    }
+                }
+            } while (retry);
         }
 
         @Override
