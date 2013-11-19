@@ -149,6 +149,7 @@ import org.jboss.as.cli.operation.impl.DefaultPrefixFormatter;
 import org.jboss.as.cli.operation.impl.RolloutPlanCompleter;
 import org.jboss.as.cli.parsing.operation.OperationFormat;
 import org.jboss.as.controller.client.ModelControllerClient;
+import org.jboss.as.protocol.GeneralTimeoutHandler;
 import org.jboss.as.protocol.StreamUtils;
 import org.jboss.dmr.ModelNode;
 import org.jboss.aesh.console.settings.Settings;
@@ -216,6 +217,8 @@ class CommandContextImpl implements CommandContext, ModelControllerClientFactory
     private BatchManager batchManager = new DefaultBatchManager();
     /** the default command completer */
     private final CommandCompleter cmdCompleter;
+    /** the timeout handler */
+    private final GeneralTimeoutHandler timeoutHandler = new GeneralTimeoutHandler();
 
     /** output target */
     private BufferedWriter outputTarget;
@@ -822,7 +825,7 @@ class CommandContextImpl implements CommandContext, ModelControllerClientFactory
                     log.debug("connecting to " + address.getHost() + ':' + address.getPort() + " as " + username);
                 }
                 ModelControllerClient tempClient = ModelControllerClientFactory.CUSTOM.
-                        getClient(address, cbh, disableLocalAuth, sslContext, connectionTimeout, this);
+                        getClient(address, cbh, disableLocalAuth, sslContext, connectionTimeout, this, timeoutHandler);
                 retry = tryConnection(tempClient, address);
                 if(!retry) {
                     newClient = tempClient;
@@ -1371,7 +1374,35 @@ class CommandContextImpl implements CommandContext, ModelControllerClientFactory
             this.digest = digest;
         }
 
-        public void handle(Callback[] callbacks) throws IOException, UnsupportedCallbackException {
+        @Override
+        public void handle(final Callback[] callbacks) throws IOException, UnsupportedCallbackException {
+            try {
+                timeoutHandler.suspendAndExecute(new Runnable() {
+
+                    @Override
+                    public void run() {
+
+                        try {
+                            dohandle(callbacks);
+                        } catch (IOException e) {
+                            throw new RuntimeException(e);
+                        } catch (UnsupportedCallbackException e) {
+                            throw new RuntimeException(e);
+                        }
+                    }
+                });
+            } catch (RuntimeException e) {
+                if (e.getCause() instanceof IOException) {
+                    throw (IOException) e.getCause();
+                } else if (e.getCause() instanceof UnsupportedCallbackException) {
+                    throw (UnsupportedCallbackException) e.getCause();
+                }
+                throw e;
+            }
+
+        }
+
+        private void dohandle(Callback[] callbacks) throws IOException, UnsupportedCallbackException {
             // Special case for anonymous authentication to avoid prompting user for their name.
             if (callbacks.length == 1 && callbacks[0] instanceof NameCallback) {
                 ((NameCallback) callbacks[0]).setName("anonymous CLI user");

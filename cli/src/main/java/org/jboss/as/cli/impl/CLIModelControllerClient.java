@@ -40,6 +40,7 @@ import org.jboss.as.cli.Util;
 import org.jboss.as.cli.impl.ModelControllerClientFactory.ConnectionCloseHandler;
 import org.jboss.as.controller.client.impl.AbstractModelControllerClient;
 import org.jboss.as.protocol.ProtocolChannelClient;
+import org.jboss.as.protocol.ProtocolTimeoutHandler;
 import org.jboss.as.protocol.StreamUtils;
 import org.jboss.as.protocol.mgmt.ManagementChannelAssociation;
 import org.jboss.as.protocol.mgmt.ManagementChannelHandler;
@@ -116,7 +117,8 @@ public class CLIModelControllerClient extends AbstractModelControllerClient {
     private boolean closed;
 
     CLIModelControllerClient(final ControllerAddress address, CallbackHandler handler, int connectionTimeout,
-            final ConnectionCloseHandler closeHandler, Map<String, String> saslOptions, SSLContext sslContext) throws IOException {
+            final ConnectionCloseHandler closeHandler, Map<String, String> saslOptions, SSLContext sslContext,
+            ProtocolTimeoutHandler timeoutHandler) throws IOException {
         this.handler = handler;
         this.sslContext = sslContext;
         this.closeHandler = closeHandler;
@@ -145,6 +147,7 @@ public class CLIModelControllerClient extends AbstractModelControllerClient {
             channelConfig.setConnectionTimeout(connectionTimeout);
         }
         channelConfig.setEndpoint(endpoint);
+        channelConfig.setTimeoutHandler(timeoutHandler);
     }
 
     @Override

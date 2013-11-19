@@ -24,6 +24,7 @@ package org.jboss.as.controller.client.impl;
 
 import java.security.AccessControlContext;
 import org.jboss.as.controller.client.ModelControllerClientConfiguration;
+import org.jboss.as.protocol.ProtocolTimeoutHandler;
 import org.jboss.threads.JBossThreadFactory;
 
 import javax.net.ssl.SSLContext;
