@@ -29,8 +29,14 @@ import static org.jboss.as.webservices.dmr.Constants.HANDLER;
 import static org.jboss.as.webservices.dmr.Constants.POST_HANDLER_CHAIN;
 import static org.jboss.as.webservices.dmr.Constants.PRE_HANDLER_CHAIN;
 import static org.jboss.as.webservices.dmr.Constants.PROPERTY;
+import static org.jboss.as.webservices.dmr.Constants.ENDPOINT_WSDL;
+import static org.jboss.as.webservices.dmr.Constants.ENDPOINT_CLASS;
+import static org.jboss.as.webservices.dmr.Constants.ENDPOINT_CONTEXT;
+import static org.jboss.as.webservices.dmr.Constants.ENDPOINT_TYPE;
+import static org.jboss.as.webservices.dmr.Constants.ENDPOINT_NAME;
 
 import org.jboss.as.controller.Extension;
+import org.jboss.as.controller.AttributeDefinition;
 import org.jboss.as.controller.ExtensionContext;
 import org.jboss.as.controller.ModelVersion;
 import org.jboss.as.controller.PathElement;
@@ -38,6 +44,7 @@ import org.jboss.as.controller.ReloadRequiredRemoveStepHandler;
 import org.jboss.as.controller.ReloadRequiredWriteAttributeHandler;
 import org.jboss.as.controller.ResourceBuilder;
 import org.jboss.as.controller.ResourceDefinition;
+import org.jboss.as.controller.SimpleAttributeDefinitionBuilder;
 import org.jboss.as.controller.SubsystemRegistration;
 import org.jboss.as.controller.descriptions.StandardResourceDescriptionResolver;
 import org.jboss.as.controller.parsing.ExtensionParsingContext;
@@ -46,6 +53,7 @@ import org.jboss.as.controller.transform.description.RejectAttributeChecker;
 import org.jboss.as.controller.transform.description.ResourceTransformationDescriptionBuilder;
 import org.jboss.as.controller.transform.description.TransformationDescription;
 import org.jboss.as.controller.transform.description.TransformationDescriptionBuilder;
+import org.jboss.dmr.ModelType;
 
 /**
  * The webservices extension.
@@ -71,6 +79,29 @@ public final class WSExtension implements Extension {
     private static final int MANAGEMENT_API_MAJOR_VERSION = 1;
     private static final int MANAGEMENT_API_MINOR_VERSION = 2;
     private static final int MANAGEMENT_API_MICRO_VERSION = 0;
+
+    // attributes on the endpoint element
+     static final AttributeDefinition ENDPOINT_WSDL = new SimpleAttributeDefinitionBuilder(
+            Constants.ENDPOINT_WSDL, ModelType.STRING, false)
+            .setStorageRuntime()
+            .build();
+    static final AttributeDefinition ENDPOINT_CLASS = new SimpleAttributeDefinitionBuilder(
+            Constants.ENDPOINT_CLASS, ModelType.STRING, false)
+            .setStorageRuntime()
+            .build();
+    static final AttributeDefinition ENDPOINT_CONTEXT = new SimpleAttributeDefinitionBuilder(
+            Constants.ENDPOINT_CONTEXT, ModelType.STRING, false)
+            .setStorageRuntime()
+            .build();
+    static final AttributeDefinition ENDPOINT_TYPE = new SimpleAttributeDefinitionBuilder(
+            Constants.ENDPOINT_TYPE, ModelType.STRING, true)
+            .setStorageRuntime()
+            .build();
+    static final AttributeDefinition ENDPOINT_NAME = new SimpleAttributeDefinitionBuilder(
+            Constants.ENDPOINT_NAME, ModelType.STRING, false)
+            .setStorageRuntime()
+            .build();
+
 
     static StandardResourceDescriptionResolver getResourceDescriptionResolver(final String... keyPrefix) {
         StringBuilder prefix = new StringBuilder(SUBSYSTEM_NAME);
@@ -139,7 +170,13 @@ public final class WSExtension implements Extension {
         if (registerRuntimeOnly) {
             subsystem.registerDeploymentModel(ResourceBuilder.Factory.create(SUBSYSTEM_PATH, getResourceDescriptionResolver("deployment"))
                     .pushChild(ENDPOINT_PATH)
-                    .addMetrics(WSEndpointMetrics.INSTANCE, WSEndpointMetrics.ATTRIBUTES).build());
+                    .addMetrics(WSEndpointMetrics.INSTANCE, WSEndpointMetrics.ATTRIBUTES)
+                    .addReadOnlyAttribute(ENDPOINT_CLASS)
+                    .addReadOnlyAttribute(ENDPOINT_CONTEXT)
+                    .addReadOnlyAttribute(ENDPOINT_NAME)
+                    .addReadOnlyAttribute(ENDPOINT_TYPE)
+                    .addReadOnlyAttribute(ENDPOINT_WSDL)
+                    .build());
         }
 
         if (context.isRegisterTransformers()) {
