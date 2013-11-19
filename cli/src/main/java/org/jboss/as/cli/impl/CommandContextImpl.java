@@ -850,7 +850,7 @@ class CommandContextImpl implements CommandContext, ModelControllerClientFactory
         if (trustManager == null || (lastChain = trustManager.getLastFailedCertificateChain()) == null) {
             return false;
         }
-        error("Unable to connect due to unrecognised server certificate");
+        printLine("Unable to connect due to unrecognised server certificate");
         for (Certificate current : lastChain) {
             if (current instanceof X509Certificate) {
                 X509Certificate x509Current = (X509Certificate) current;
