@@ -24,14 +24,12 @@ package org.jboss.as.ejb3.cache.impl.backing;
 import java.io.Serializable;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
-import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.ScheduledThreadPoolExecutor;
 import java.util.concurrent.ThreadFactory;
 
 import javax.ejb.NoSuchEJBException;
 
-import org.jboss.as.ejb3.EjbLogger;
 import org.jboss.as.ejb3.EjbMessages;
 import org.jboss.as.ejb3.cache.Cacheable;
 import org.jboss.as.ejb3.cache.IdentifierFactory;
@@ -58,7 +56,7 @@ public class NonPassivatingBackingCacheImpl<K extends Serializable, V extends Ca
     private final StatefulObjectFactory<V> factory;
     private final Map<K, NonPassivatingBackingCacheEntry<K, V>> cache = new ConcurrentHashMap<K, NonPassivatingBackingCacheEntry<K, V>>();
     private final StatefulTimeoutInfo timeout;
-    private volatile ScheduledExecutorService executor;
+    private volatile ScheduledThreadPoolExecutor executor;
     private final ThreadFactory threadFactory;
     private final Map<K, Future<?>> expirationFutures = new ConcurrentHashMap<K, Future<?>>();
     private final ServerEnvironment environment;
@@ -72,7 +70,7 @@ public class NonPassivatingBackingCacheImpl<K extends Serializable, V extends Ca
         this.environment = environment;
     }
 
-    public NonPassivatingBackingCacheImpl(IdentifierFactory<K> identifierFactory, StatefulObjectFactory<V> factory, ScheduledExecutorService executor, StatefulTimeoutInfo timeout, ServerEnvironment environment) {
+    public NonPassivatingBackingCacheImpl(IdentifierFactory<K> identifierFactory, StatefulObjectFactory<V> factory, ScheduledThreadPoolExecutor executor, StatefulTimeoutInfo timeout, ServerEnvironment environment) {
         this.identifierFactory = identifierFactory;
         this.factory = factory;
         this.timeout = timeout;
@@ -176,7 +174,7 @@ public class NonPassivatingBackingCacheImpl<K extends Serializable, V extends Ca
         notifyLifecycleListeners(LifecycleState.STARTING);
         try {
             if (this.threadFactory != null) {
-                this.executor = Executors.newScheduledThreadPool(1, this.threadFactory);
+                this.executor = new ScheduledThreadPoolExecutor(1, this.threadFactory);
             }
             notifyLifecycleListeners(LifecycleState.STARTED);
         } catch (RuntimeException e) {
@@ -210,7 +208,13 @@ public class NonPassivatingBackingCacheImpl<K extends Serializable, V extends Ca
         if (this.timeout != null && timeout.getValue() != -1) {
             Future<?> future = cancel ? this.expirationFutures.remove(id) : this.expirationFutures.put(id, this.executor.schedule(new RemoveTask<K>(this, id), this.timeout.getValue(), this.timeout.getTimeUnit()));
             if (future != null) {
-                future.cancel(false);
+                if (future.cancel(false)) {
+                    // BZ 1031199 Canceling the task doesn't remove it from the task queue, so we need to explicitly remove it.
+                    // The Future is really a RunnableScheduledFuture so this cast will always work
+                    if (future instanceof Runnable) {
+                        this.executor.remove((Runnable) future);
+                    }
+                }
             }
         }
     }

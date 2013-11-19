@@ -22,7 +22,7 @@
 package org.jboss.as.ejb3.cache.impl.backing;
 
 import java.io.Serializable;
-import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.ScheduledThreadPoolExecutor;
 import java.util.concurrent.ThreadFactory;
 
 import org.jboss.as.ejb3.EjbMessages;
@@ -69,7 +69,7 @@ public class GroupAwareBackingCacheImpl<K extends Serializable, V extends Cachea
     }
 
     public GroupAwareBackingCacheImpl(StatefulObjectFactory<V> factory, SerializationGroupMemberContainer<K, V, G> memberContainer,
-            PassivatingBackingCache<G, Cacheable<G>, SerializationGroup<K, V, G>> groupCache, ScheduledExecutorService executor) {
+            PassivatingBackingCache<G, Cacheable<G>, SerializationGroup<K, V, G>> groupCache, ScheduledThreadPoolExecutor executor) {
         super(factory, memberContainer, memberContainer, memberContainer, executor);
 
         this.groupCache = groupCache;

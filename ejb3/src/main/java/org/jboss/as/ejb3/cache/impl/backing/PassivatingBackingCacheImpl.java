@@ -26,9 +26,8 @@ import java.io.Serializable;
 import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
-import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.ScheduledThreadPoolExecutor;
 import java.util.concurrent.ThreadFactory;
 import java.util.concurrent.TimeUnit;
 
@@ -66,7 +65,7 @@ public class PassivatingBackingCacheImpl<K extends Serializable, V extends Cache
     private final BackingCacheEntryStore<K, V, E> store;
 
     private final ThreadFactory threadFactory;
-    private volatile ScheduledExecutorService executor;
+    private volatile ScheduledThreadPoolExecutor executor;
     private final Map<K, Future<?>> expirationFutures = new ConcurrentHashMap<K, Future<?>>();
     private final Map<K, Future<?>> passivationFutures = new ConcurrentHashMap<K, Future<?>>();
 
@@ -78,11 +77,11 @@ public class PassivatingBackingCacheImpl<K extends Serializable, V extends Cache
         this(factory, entryFactory, passivationManager, store, threadFactory, null);
     }
 
-    public PassivatingBackingCacheImpl(StatefulObjectFactory<V> factory, BackingCacheEntryFactory<K, V, E> entryFactory, ReplicationPassivationManager<K, E> passivationManager, BackingCacheEntryStore<K, V, E> store, ScheduledExecutorService executor) {
+    public PassivatingBackingCacheImpl(StatefulObjectFactory<V> factory, BackingCacheEntryFactory<K, V, E> entryFactory, ReplicationPassivationManager<K, E> passivationManager, BackingCacheEntryStore<K, V, E> store, ScheduledThreadPoolExecutor executor) {
         this(factory, entryFactory, passivationManager, store, null, executor);
     }
 
-    private PassivatingBackingCacheImpl(StatefulObjectFactory<V> factory, BackingCacheEntryFactory<K, V, E> entryFactory, ReplicationPassivationManager<K, E> passivationManager, BackingCacheEntryStore<K, V, E> store, ThreadFactory threadFactory, ScheduledExecutorService executor) {
+    private PassivatingBackingCacheImpl(StatefulObjectFactory<V> factory, BackingCacheEntryFactory<K, V, E> entryFactory, ReplicationPassivationManager<K, E> passivationManager, BackingCacheEntryStore<K, V, E> store, ThreadFactory threadFactory, ScheduledThreadPoolExecutor executor) {
         this.factory = factory;
         this.entryFactory = entryFactory;
         this.passivationManager = passivationManager;
@@ -274,7 +273,13 @@ public class PassivatingBackingCacheImpl<K extends Serializable, V extends Cache
     private void cancel(Map<K, Future<?>> futures, K id) {
         Future<?> future = futures.remove(id);
         if (future != null) {
-            future.cancel(false);
+            if (future.cancel(false)) {
+                // BZ 1031199 Canceling the task doesn't remove it from the task queue, so we need to explicitly remove it.
+                // The Future is really a RunnableScheduledFuture so this cast will always work
+                if (future instanceof Runnable) {
+                    this.executor.remove((Runnable) future);
+                }
+            }
         }
     }
 
@@ -302,7 +307,7 @@ public class PassivatingBackingCacheImpl<K extends Serializable, V extends Cache
         try {
             store.start();
             if (this.threadFactory != null) {
-                this.executor = Executors.newSingleThreadScheduledExecutor(this.threadFactory);
+                this.executor = new ScheduledThreadPoolExecutor(1, this.threadFactory);
             }
             notifyLifecycleListeners(LifecycleState.STARTED);
         } catch (RuntimeException e) {
