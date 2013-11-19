@@ -813,7 +813,7 @@ final class SubsystemTestDelegate {
 
             ModelNode reverseSubsystem = reverseServices.readWholeModel().get(SUBSYSTEM, getMainSubsystemName());
             if (reverseCheckModelFixer != null) {
-                reverseCheckModelFixer.fixModel(reverseSubsystem);
+                reverseSubsystem = reverseCheckModelFixer.fixModel(reverseSubsystem);
             }
             ModelTestUtils.compare(mainServices.readWholeModel().get(SUBSYSTEM, getMainSubsystemName()), reverseSubsystem);
             return reverseServices;
