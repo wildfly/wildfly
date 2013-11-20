@@ -31,12 +31,17 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.util.HashMap;
 import java.util.HashSet;
+import java.util.Map;
 import java.util.Set;
 
 import org.jboss.as.server.ServerLogger;
 import org.jboss.as.server.ServerMessages;
+import org.jboss.as.server.deployment.module.FilterSpecification;
+import org.jboss.as.server.deployment.module.MountHandle;
 import org.jboss.as.server.deployment.module.ResourceRoot;
+import org.jboss.as.server.deployment.module.TempFileProviderService;
 import org.jboss.as.server.deploymentoverlay.service.ContentService;
 import org.jboss.as.server.deploymentoverlay.service.DeploymentOverlayIndexService;
 import org.jboss.as.server.deploymentoverlay.service.DeploymentOverlayService;
@@ -66,6 +71,17 @@ public class ContentOverrideDeploymentUnitProcessor implements DeploymentUnitPro
         }
         final ResourceRoot deploymentRoot = deploymentUnit.getAttachment(Attachments.DEPLOYMENT_ROOT);
 
+        //resource roots require special handling
+        final Map<String, ResourceRoot> resourceRootMap = new HashMap<String, ResourceRoot>();
+
+        final AttachmentList<ResourceRoot> rootList = deploymentUnit.getAttachment(Attachments.RESOURCE_ROOTS);
+
+        if (rootList != null) {
+            for (ResourceRoot root : rootList) {
+                resourceRootMap.put(root.getRoot().getPathNameRelativeTo(deploymentRoot.getRoot()), root);
+            }
+        }
+
         //exploded is true if this is a zip deployment that has been mounted exploded
         final boolean exploded = MountExplodedMarker.isMountExploded(deploymentUnit) && !ExplodedDeploymentMarker.isExplodedDeployment(deploymentUnit);
         final Set<String> paths = new HashSet<String>();
@@ -75,17 +91,40 @@ public class ContentOverrideDeploymentUnitProcessor implements DeploymentUnitPro
                 try {
                     if (!paths.contains(override.getPath())) {
                         VirtualFile mountPoint = deploymentRoot.getRoot().getChild(override.getPath());
-                        paths.add(override.getPath());
-                        if (exploded) {
-                            //for deployments that we have mounted exploded we simply copy the file
-                            //This is not great, as it means exploded and non-exploded deployments behave slightly differently
-                            //but it is needed to make replacing web resources work
-                            copyFile(override.getContentHash().getPhysicalFile(), mountPoint.getPhysicalFile());
+                        if (resourceRootMap.containsKey(override.getPath())) {
+                            ResourceRoot existingRoot = resourceRootMap.get(override.getPath());
+                            //unmount the existing root
+                            close(existingRoot.getMountHandle());
 
-                        } else {
-                            Closeable handle = VFS.mountReal(override.getContentHash().getPhysicalFile(), mountPoint);
+                            //and remove it from the root list
+                            if(rootList != null) {
+                                rootList.remove(existingRoot);
+                            }
+
+                            //mount our override
+                            Closeable handle = VFS.mountZip(override.getContentHash(), mountPoint, TempFileProviderService.provider());
                             deploymentUnit.addToAttachmentList(MOUNTED_FILES, handle);
 
+                            //now recreate the root
+                            ResourceRoot newRoot = new ResourceRoot(override.getContentHash().getName(), mountPoint, new MountHandle(handle));
+                            for(AttachmentKey<?> key : existingRoot.attachmentKeys()) {
+                                newRoot.putAttachment((AttachmentKey<Object>) key, existingRoot.getAttachment(key));
+                            }
+                            for(FilterSpecification filter : existingRoot.getExportFilters()) {
+                                newRoot.getExportFilters().add(filter);
+                            }
+                            deploymentUnit.addToAttachmentList(Attachments.RESOURCE_ROOTS, newRoot);
+                        } else {
+                            paths.add(override.getPath());
+                            if (exploded) {
+                                //for exploded deployments we simply copy the file
+                                copyFile(override.getContentHash().getPhysicalFile(), mountPoint.getPhysicalFile());
+
+                            } else {
+                                Closeable handle = VFS.mountReal(override.getContentHash().getPhysicalFile(), mountPoint);
+                                deploymentUnit.addToAttachmentList(MOUNTED_FILES, handle);
+
+                            }
                         }
                     }
                 } catch (IOException e) {

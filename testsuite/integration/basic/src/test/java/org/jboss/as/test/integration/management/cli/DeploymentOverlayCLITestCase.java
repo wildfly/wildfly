@@ -61,6 +61,7 @@ import org.junit.runner.RunWith;
 @RunAsClient
 public class DeploymentOverlayCLITestCase {
 
+    private static File replacedLibrary;
     private static File war1;
     private static File war2;
     private static File war3;
@@ -87,23 +88,36 @@ public class DeploymentOverlayCLITestCase {
 
         WebArchive war;
 
+        JavaArchive jar;
+
+        jar = ShrinkWrap.create(JavaArchive.class, "lib.jar");
+        jar.addClass(ReplacedLibraryServlet.class);
+        replacedLibrary = new File(tempDir + File.separator + jar.getName());
+        new ZipExporterImpl(jar).exportTo(replacedLibrary, true);
+
+        jar = ShrinkWrap.create(JavaArchive.class, "lib.jar");
+        jar.addClass(OriginalLibraryServlet.class);
+
         // deployment1
         war = ShrinkWrap.create(WebArchive.class, "deployment0.war");
         war.addClass(SimpleServlet.class);
         war.addAsWebResource(DeploymentOverlayCLITestCase.class.getPackage(), "a.jsp", "a.jsp");
         war.addAsWebInfResource(DeploymentOverlayCLITestCase.class.getPackage(), "web.xml", "web.xml");
+        war.addAsLibraries(jar);
         war1 = new File(tempDir + File.separator + war.getName());
         new ZipExporterImpl(war).exportTo(war1, true);
 
         war = ShrinkWrap.create(WebArchive.class, "deployment1.war");
         war.addClass(SimpleServlet.class);
         war.addAsWebInfResource(DeploymentOverlayCLITestCase.class.getPackage(), "web.xml", "web.xml");
+        war.addAsLibraries(jar);
         war2 = new File(tempDir + File.separator + war.getName());
         new ZipExporterImpl(war).exportTo(war2, true);
 
         war = ShrinkWrap.create(WebArchive.class, "another.war");
         war.addClass(SimpleServlet.class);
         war.addAsWebInfResource(DeploymentOverlayCLITestCase.class.getPackage(), "web.xml", "web.xml");
+        war.addAsLibraries(jar);
         war3 = new File(tempDir + File.separator + war.getName());
         new ZipExporterImpl(war).exportTo(war3, true);
 
@@ -172,7 +186,7 @@ public class DeploymentOverlayCLITestCase {
         ctx.handle("deploy " + war2.getAbsolutePath());
 
         ctx.handle("deployment-overlay add --name=overlay-test --content=WEB-INF/web.xml=" + overrideXml.getAbsolutePath()
-                + ",a.jsp=" + replacedAjsp.getAbsolutePath()
+                + ",a.jsp=" + replacedAjsp.getAbsolutePath() + ",WEB-INF/lib/lib.jar=" + replacedLibrary.getAbsolutePath()
                 + " --deployments=" + war1.getName());
 
         String response = readResponse("deployment0");
@@ -190,6 +204,9 @@ public class DeploymentOverlayCLITestCase {
 
         //now test JSP
         assertEquals("Replaced JSP File", HttpRequest.get(baseUrl + "deployment0/a.jsp", 10, TimeUnit.SECONDS).trim());
+
+        //now test Libraries
+        assertEquals("Replaced Library Servlet", HttpRequest.get(baseUrl + "deployment0/LibraryServlet", 10, TimeUnit.SECONDS).trim());
 
     }
 
