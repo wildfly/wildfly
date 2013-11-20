@@ -76,13 +76,15 @@ public class DirectAdministeredObjectInjectionSource extends InjectionSource {
         final DeploymentUnit deploymentUnit = phaseContext.getDeploymentUnit();
         final Module module = deploymentUnit.getAttachment(org.jboss.as.server.deployment.Attachments.MODULE);
         String raId = resourceAdapter;
-        if (resourceAdapter.endsWith(".rar")) {
-            raId = resourceAdapter.substring(0, resourceAdapter.indexOf(".rar"));
-        }
+
         if (resourceAdapter.startsWith("#")) {
             raId = deploymentUnit.getParent().getName() + raId;
         }
-
+        String deployerServiceName = raId;
+        if (!raId.endsWith(".rar")) {
+            deployerServiceName = deployerServiceName + ".rar";
+            raId = deployerServiceName;
+        }
 
         SUBSYSTEM_RA_LOGGER.debugf("@AdministeredObjectDefinition: %s for %s binding to %s ", className, resourceAdapter, jndiName);
 
@@ -93,7 +95,7 @@ public class DirectAdministeredObjectInjectionSource extends InjectionSource {
         ServiceName serviceName = DirectAdminObjectActivatorService.SERVICE_NAME_BASE.append(jndiName);
         phaseContext.getServiceTarget().addService(serviceName, service)
                 .addDependency(ConnectorServices.IRONJACAMAR_MDR, AS7MetadataRepository.class, service.getMdrInjector())
-                .addDependency(ConnectorServices.RESOURCE_ADAPTER_DEPLOYER_SERVICE_PREFIX.append(raId))
+                .addDependency(ConnectorServices.RESOURCE_ADAPTER_DEPLOYER_SERVICE_PREFIX.append(deployerServiceName))
                 .setInitialMode(ServiceController.Mode.ACTIVE).install();
 
         serviceBuilder.addDependency(AdminObjectReferenceFactoryService.SERVICE_NAME_BASE.append(bindInfo.getBinderServiceName()), ManagedReferenceFactory.class, injector);

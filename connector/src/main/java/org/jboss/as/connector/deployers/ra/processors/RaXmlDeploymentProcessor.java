@@ -125,7 +125,7 @@ public class RaXmlDeploymentProcessor implements DeploymentUnitProcessor {
                     String rarName = raxml.getArchive();
 
                     if (deploymentUnitName.equals(rarName)) {
-                        RaServicesFactory.createDeploymentService(registration, connectorXmlDescriptor, module, serviceTarget, deploymentUnitName, deploymentUnit.getServiceName(), deployment, (org.jboss.jca.common.api.metadata.resourceadapter.v11.ResourceAdapter) raxml, deploymentResource, null);
+                        RaServicesFactory.createDeploymentService(registration, connectorXmlDescriptor, module, serviceTarget, deploymentUnitName, deploymentUnit.getServiceName(), deploymentUnitName, (org.jboss.jca.common.api.metadata.resourceadapter.v11.ResourceAdapter) raxml, deploymentResource, null);
 
                     }
                 }
@@ -133,7 +133,7 @@ public class RaXmlDeploymentProcessor implements DeploymentUnitProcessor {
 
             //create service pointing to rar for other future activations
             ServiceName serviceName = ConnectorServices.INACTIVE_RESOURCE_ADAPTER_SERVICE.append(deploymentUnitName);
-            InactiveResourceAdapterDeploymentService service = new InactiveResourceAdapterDeploymentService(connectorXmlDescriptor, module, deployment, deploymentUnitName, deploymentUnit.getServiceName(), registration, serviceTarget, deploymentResource);
+            InactiveResourceAdapterDeploymentService service = new InactiveResourceAdapterDeploymentService(connectorXmlDescriptor, module, deploymentUnitName, deploymentUnitName, deploymentUnit.getServiceName(), registration, serviceTarget, deploymentResource);
             ServiceBuilder builder = serviceTarget
                     .addService(serviceName, service);
             builder.setInitialMode(Mode.ACTIVE).install();

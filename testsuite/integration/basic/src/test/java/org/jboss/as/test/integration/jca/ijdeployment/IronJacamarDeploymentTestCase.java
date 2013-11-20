@@ -45,9 +45,9 @@ import static org.jboss.as.test.integration.management.jca.ComplexPropertiesPars
 
 /**
  * JBQA-6277 -IronJacamar deployments subsystem test case
- * 
+ *
  * @author <a href="vrastsel@redhat.com">Vladimir Rastseluev</a>
- * 
+ *
  */
 @RunWith(Arquillian.class)
 @RunAsClient
@@ -55,7 +55,7 @@ public class IronJacamarDeploymentTestCase extends ContainerResourceMgmtTestBase
 
     /**
      * Define the deployment
-     * 
+     *
      * @return The deployment archive
      */
     @Deployment
@@ -81,14 +81,14 @@ public class IronJacamarDeploymentTestCase extends ContainerResourceMgmtTestBase
 
     /**
      * Test configuration - if all properties propagated to the model
-     * 
+     *
      * @throws Throwable Thrown if case of an error
      */
     @Test
     public void testConfiguration() throws Throwable {
         ModelNode address = new ModelNode();
         address.add("deployment", "ij.rar").add("subsystem", "resource-adapters").add("ironjacamar", "ironjacamar")
-                .add("resource-adapter", "ij");
+                .add("resource-adapter", "ij.rar");
         ModelNode operation = new ModelNode();
         operation.get(OP).set("read-resource");
         operation.get(OP_ADDR).set(address);
@@ -136,7 +136,7 @@ public class IronJacamarDeploymentTestCase extends ContainerResourceMgmtTestBase
 
     /**
      * Get Properties for admin object
-     * 
+     *
      * @param firstAO - true - for first, false - for second
      * @return
      */
@@ -153,7 +153,7 @@ public class IronJacamarDeploymentTestCase extends ContainerResourceMgmtTestBase
 
     /**
      * Get Properties for connection factory
-     * 
+     *
      * @param firstCF - true - for first, false - for second
      * @return
      */
