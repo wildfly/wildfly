@@ -50,7 +50,8 @@ class ViewInterfaces {
             // EJB 3.1 FR 4.9.7 bullet 5.3
             if (klass.equals(Serializable.class) ||
                     klass.equals(Externalizable.class) ||
-                    klass.getName().startsWith("javax.ejb.")) {
+                    klass.getName().startsWith("javax.ejb.") ||
+                    klass.getName().startsWith("groovy.lang.")) {
                 continue;
             }
             potentialBusinessInterfaces.add(klass);
@@ -77,7 +78,7 @@ class ViewInterfaces {
             if (name.equals(Serializable.class.getName()) ||
                     name.equals(Externalizable.class.getName()) ||
                     name.startsWith("javax.ejb.") ||
-                    name.startsWith("groovy.lang.") {
+                    name.startsWith("groovy.lang.")) {
                 continue;
             }
             names.add(dotName);
