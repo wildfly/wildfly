@@ -49,6 +49,8 @@ import org.jboss.as.controller.SimpleAttributeDefinitionBuilder;
 import org.jboss.as.controller.SimpleOperationDefinition;
 import org.jboss.as.controller.SimpleOperationDefinitionBuilder;
 import org.jboss.as.controller.SimpleResourceDefinition;
+import org.jboss.as.controller.access.constraint.SensitivityClassification;
+import org.jboss.as.controller.access.management.SensitiveTargetAccessConstraintDefinition;
 import org.jboss.as.controller.operations.validation.IntRangeValidator;
 import org.jboss.as.controller.operations.validation.StringLengthValidator;
 import org.jboss.as.controller.registry.ManagementResourceRegistration;
@@ -62,6 +64,10 @@ import org.jboss.dmr.ModelType;
  * @author <a href="mailto:jperkins@redhat.com">James R. Perkins</a>
  */
 public class LoggingRootResource extends SimpleResourceDefinition {
+
+    private static final SensitiveTargetAccessConstraintDefinition VIEW_SERVER_LOGS = new SensitiveTargetAccessConstraintDefinition(
+            new SensitivityClassification(LoggingExtension.SUBSYSTEM_NAME, "view-server-logs", false, false, false));
+
     static final PathElement SUBSYSTEM_PATH = PathElement.pathElement(SUBSYSTEM, LoggingExtension.SUBSYSTEM_NAME);
 
     static final SimpleAttributeDefinition NAME = SimpleAttributeDefinitionBuilder.create("name", ModelType.STRING, false)
@@ -93,6 +99,7 @@ public class LoggingRootResource extends SimpleResourceDefinition {
             .build();
 
     static final SimpleOperationDefinition READ_LOG_FILE = new SimpleOperationDefinitionBuilder("read-log-file", LoggingExtension.getResourceDescriptionResolver())
+            .addAccessConstraint(VIEW_SERVER_LOGS)
             .setParameters(NAME, CommonAttributes.ENCODING, LINES, SKIP, TAIL)
             .setReplyType(ModelType.LIST)
             .setReplyValueType(ModelType.STRING)
@@ -101,6 +108,7 @@ public class LoggingRootResource extends SimpleResourceDefinition {
             .build();
 
     static final SimpleOperationDefinition LIST_LOG_FILES = new SimpleOperationDefinitionBuilder("list-log-files", LoggingExtension.getResourceDescriptionResolver())
+            .addAccessConstraint(VIEW_SERVER_LOGS)
             .setReplyType(ModelType.LIST)
             .setReplyParameters(FILE_NAME, FILE_SIZE)
             .setReadOnly()
