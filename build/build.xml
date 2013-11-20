@@ -896,9 +896,14 @@
             <maven-resource group="org.wildfly" artifact="wildfly-clustering-common"/>
         </module-def>
 
-        <module-def name="org.jboss.as.clustering.ejb3.infinispan">
-            <maven-resource group="org.wildfly" artifact="wildfly-clustering-ejb3-infinispan"/>
+        <module-def name="org.wildfly.clustering.ejb.infinispan">
+            <maven-resource group="org.wildfly" artifact="wildfly-clustering-ejb-infinispan"/>
         </module-def>
+        <module-def name="org.wildfly.clustering.ejb.spi">
+            <maven-resource group="org.wildfly" artifact="wildfly-clustering-ejb-spi"/>
+        </module-def>
+
+        <module-def name="org.jboss.as.clustering.ejb3.infinispan"/>
 
         <module-def name="org.jboss.as.clustering.infinispan">
             <maven-resource group="org.wildfly" artifact="wildfly-clustering-infinispan"/>

@@ -32,7 +32,7 @@ import javax.transaction.Transaction;
 
 import org.jboss.as.ee.component.Component;
 import org.jboss.as.ee.component.ComponentInstance;
-import org.jboss.as.ejb3.cache.Cacheable;
+import org.jboss.as.ejb3.cache.Identifiable;
 import org.jboss.as.ejb3.component.InvokeMethodOnTargetInterceptor;
 import org.jboss.as.ejb3.component.session.SessionBeanComponentInstance;
 import org.jboss.as.ejb3.tx.OwnableReentrantLock;
@@ -44,7 +44,7 @@ import org.jboss.invocation.InterceptorContext;
 /**
  * @author <a href="mailto:cdewolf@redhat.com">Carlo de Wolf</a>
  */
-public class StatefulSessionComponentInstance extends SessionBeanComponentInstance implements Cacheable<SessionID> {
+public class StatefulSessionComponentInstance extends SessionBeanComponentInstance implements Identifiable<SessionID> {
     private static final long serialVersionUID = 3803978357389448971L;
 
     private final SessionID id;
@@ -109,7 +109,6 @@ public class StatefulSessionComponentInstance extends SessionBeanComponentInstan
         this.postActivate = component.getPostActivate();
         this.ejb2XRemoveInterceptor = component.getEjb2XRemoveMethod();
     }
-
 
     protected void afterBegin() {
         CurrentSynchronizationCallback.set(CurrentSynchronizationCallback.CallbackType.AFTER_BEGIN);
@@ -178,11 +177,6 @@ public class StatefulSessionComponentInstance extends SessionBeanComponentInstan
     @Override
     public StatefulSessionComponent getComponent() {
         return (StatefulSessionComponent) super.getComponent();
-    }
-
-    @Override
-    public boolean isModified() {
-        return true;
     }
 
     @Override

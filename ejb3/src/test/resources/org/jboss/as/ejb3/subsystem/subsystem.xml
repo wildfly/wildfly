@@ -3,7 +3,7 @@
         <stateless>
             <bean-instance-pool-ref pool-name="slsb-strict-max-pool"/>
         </stateless>
-        <stateful default-access-timeout="${prop.default-access-timeout:5000}" cache-ref="file" clustered-cache-ref="cluster" passivation-disabled-cache-ref="simple"/>
+        <stateful default-access-timeout="${prop.default-access-timeout:5000}" cache-ref="file" clustered-cache-ref="clustered" passivation-disabled-cache-ref="simple"/>
         <singleton default-access-timeout="${prop.default-access-timeout:5000}"/>
     </session-bean>
     <entity-bean>
@@ -24,8 +24,8 @@
         <cache name="clustered" passivation-store-ref="cluster"/>
     </caches>
     <passivation-stores>
-        <file-passivation-store name="file"/>
-        <cluster-passivation-store name="cluster" cache-container="sfsb" bean-cache="repl" client-mappings-cache="client-mappings" idle-timeout="${prop.idle-timeout:5}" idle-timeout-unit="${prop.idle-timeout-unit:MINUTES}"/>
+        <passivation-store name="file" cache-container="ejb" bean-cache="local" max-size="10"/>
+        <passivation-store name="cluster" cache-container="ejb" bean-cache="repl" max-size="10"/>
     </passivation-stores>
     <async thread-pool-name="default"/>
     <timer-service thread-pool-name="default" default-data-store="file-data-store">

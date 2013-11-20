@@ -22,6 +22,8 @@
 
 package org.jboss.as.test.integration.ejb.stateful.passivation.ejb2;
 
+import java.util.concurrent.TimeUnit;
+
 import javax.naming.InitialContext;
 
 import org.jboss.arquillian.container.test.api.Deployment;
@@ -82,6 +84,9 @@ public class PassivationSucceedsEJB2TestCase {
         // create another bean. This should force the other bean to passivate, as only one bean is allowed in the pool at a time
         home.create();
 
+        // Passivation is asynchronous, so wait a sec for it to complete
+        TimeUnit.SECONDS.sleep(1);
+
         Assert.assertTrue("ejbPassivate not called on remote1, check cache configuration and client sleep time",
                 remote1.hasBeenPassivated());
         Assert.assertTrue("ejbPassivate not called on remote2, check cache configuration and client sleep time",
@@ -91,25 +96,5 @@ public class PassivationSucceedsEJB2TestCase {
 
         remote1.remove();
         remote2.remove();
-    }
-
-    @Test
-    public void testPassivationIdleTimeout() throws Exception {
-        // Lookup and create stateful instance of ejb2 bean
-        TestPassivationRemoteHome home = (TestPassivationRemoteHome) ctx.lookup(jndi);
-        TestPassivationRemote remote = home.create();
-
-        // Make an invocation
-        Assert.assertEquals("Returned result was not expected", TestPassivationRemote.EXPECTED_RESULT,
-                remote.returnTrueString());
-        // Sleep, allow SFSB to passivate
-        Thread.sleep(1600L);
-        // Make another invocation
-        Assert.assertEquals("Returned result was not expected", TestPassivationRemote.EXPECTED_RESULT,
-                remote.returnTrueString());
-
-        Assert.assertTrue("ejbActivate not called, check CacheConfig and client sleep time", remote.hasBeenActivated());
-        Assert.assertTrue("ejbPassivate not called, check CacheConfig and client sleep time", remote.hasBeenPassivated());
-        remote.remove();
     }
 }

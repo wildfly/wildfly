@@ -21,9 +21,8 @@
  */
 package org.jboss.as.ejb3.cache;
 
-import java.io.Serializable;
-
-import org.jboss.as.ejb3.component.stateful.StatefulTimeoutInfo;
+import org.wildfly.clustering.ejb.IdentifierFactory;
+import org.wildfly.clustering.ejb.PassivationListener;
 
 /**
  * Defines the contract for an EJB3 Stateful Cache Factory
@@ -31,15 +30,7 @@ import org.jboss.as.ejb3.component.stateful.StatefulTimeoutInfo;
  * @author <a href="mailto:andrew.rubinger@redhat.com">ALR</a>
  * @author Brian Stansberry
  */
-public interface CacheFactory<K extends Serializable, T extends Identifiable<K>> {
-    /**
-     * Creates a cache for a container.
-     *
-     * @param factory factory for creating objects managed by the cache
-     * @param passivationManager manager for invoking pre and post passivation and replication callbacks on the cached objects
-     * @param timeout the stateful timeout
-     *
-     * @return the cache
-     */
-    Cache<K, T> createCache(String beanName, IdentifierFactory<K> identifierFactory, StatefulObjectFactory<T> factory, PassivationManager<K, T> passivationManager, StatefulTimeoutInfo timeout);
+public interface CacheFactory<K, T extends Identifiable<K>> {
+
+    Cache<K, T> createCache(IdentifierFactory<K> identifierFactory, StatefulObjectFactory<T> factory, PassivationListener<T> passivationListener);
 }

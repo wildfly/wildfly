@@ -29,12 +29,12 @@ import static org.mockito.Mockito.when;
 
 import java.util.concurrent.ExecutorService;
 
+import org.jboss.as.clustering.concurrent.Scheduler;
+import org.jboss.as.clustering.infinispan.invoker.Evictor;
 import org.junit.Test;
 import org.mockito.ArgumentCaptor;
 import org.wildfly.clustering.web.Batch;
 import org.wildfly.clustering.web.Batcher;
-import org.wildfly.clustering.web.infinispan.Evictor;
-import org.wildfly.clustering.web.infinispan.Scheduler;
 import org.wildfly.clustering.web.session.ImmutableSession;
 
 public class SessionEvictionSchedulerTestCase {

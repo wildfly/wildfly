@@ -31,7 +31,6 @@ public class NodeNameGetter {
     }
 
     public static String getNodeName() {
-        String nodename = System.getProperty("jboss.node.name");
-        return nodename;
+        return System.getProperty("jboss.node.name");
     }
 }

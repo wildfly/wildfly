@@ -28,60 +28,68 @@ import org.jboss.as.controller.SimpleAttributeDefinitionBuilder;
 import org.jboss.as.controller.registry.AttributeAccess;
 import org.jboss.as.controller.registry.OperationEntry;
 import org.jboss.as.controller.transform.description.ResourceTransformationDescriptionBuilder;
-import org.jboss.as.ejb3.cache.impl.backing.clustering.ClusteredBackingCacheEntryStoreConfig;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.ModelType;
 
 /**
  * @author Paul Ferraro
  */
-public class ClusterPassivationStoreResourceDefinition extends PassivationStoreResourceDefinition {
+@Deprecated
+public class ClusterPassivationStoreResourceDefinition extends LegacyPassivationStoreResourceDefinition {
 
+    @Deprecated
     static final SimpleAttributeDefinition MAX_SIZE = new SimpleAttributeDefinitionBuilder(MAX_SIZE_BUILDER.build())
-            .setDefaultValue(new ModelNode(ClusteredBackingCacheEntryStoreConfig.DEFAULT_MAX_SIZE)).build();
+            .setDefaultValue(new ModelNode(10000))
+            .build()
+    ;
+    @Deprecated
+    static final SimpleAttributeDefinition CACHE_CONTAINER = new SimpleAttributeDefinitionBuilder(EJB3SubsystemModel.CACHE_CONTAINER, ModelType.STRING, true)
+            .setXmlName(EJB3SubsystemXMLAttribute.CACHE_CONTAINER.getLocalName())
+            .setDefaultValue(new ModelNode("ejb"))
+            .setAllowExpression(true)
+            .setFlags(AttributeAccess.Flag.RESTART_NONE)
+            .build()
+    ;
+    @Deprecated
+    static final SimpleAttributeDefinition BEAN_CACHE = new SimpleAttributeDefinitionBuilder(EJB3SubsystemModel.BEAN_CACHE, ModelType.STRING, true)
+            .setXmlName(EJB3SubsystemXMLAttribute.BEAN_CACHE.getLocalName())
+            .setAllowExpression(true)
+            .setFlags(AttributeAccess.Flag.RESTART_NONE)
+            .build()
+    ;
+    @Deprecated
+    static final SimpleAttributeDefinition CLIENT_MAPPINGS_CACHE = new SimpleAttributeDefinitionBuilder(EJB3SubsystemModel.CLIENT_MAPPINGS_CACHE, ModelType.STRING, true)
+            .setXmlName(EJB3SubsystemXMLAttribute.CLIENT_MAPPINGS_CACHE.getLocalName())
+            .setDefaultValue(new ModelNode("remote-connector-client-mappings"))
+            .setAllowExpression(true)
+            .setFlags(AttributeAccess.Flag.RESTART_NONE)
+            .setDeprecated(DEPRECATED_VERSION)
+            .build()
+    ;
+    @Deprecated
+    static final SimpleAttributeDefinition PASSIVATE_EVENTS_ON_REPLICATE = new SimpleAttributeDefinitionBuilder(EJB3SubsystemModel.PASSIVATE_EVENTS_ON_REPLICATE, ModelType.BOOLEAN, true)
+            .setXmlName(EJB3SubsystemXMLAttribute.PASSIVATE_EVENTS_ON_REPLICATE.getLocalName())
+            .setDefaultValue(new ModelNode(true))
+            .setAllowExpression(true)
+            .setFlags(AttributeAccess.Flag.RESTART_NONE)
+            .setDeprecated(DEPRECATED_VERSION)
+            .build()
+    ;
 
-    static final SimpleAttributeDefinition CACHE_CONTAINER =
-            new SimpleAttributeDefinitionBuilder(EJB3SubsystemModel.CACHE_CONTAINER, ModelType.STRING, true)
-                    .setXmlName(EJB3SubsystemXMLAttribute.CACHE_CONTAINER.getLocalName())
-                    .setDefaultValue(new ModelNode(ClusteredBackingCacheEntryStoreConfig.DEFAULT_CACHE_CONTAINER))
-                    .setAllowExpression(true)
-                    .setFlags(AttributeAccess.Flag.RESTART_NONE)
-                    .build();
-    static final SimpleAttributeDefinition BEAN_CACHE =
-            new SimpleAttributeDefinitionBuilder(EJB3SubsystemModel.BEAN_CACHE, ModelType.STRING, true)
-                    .setXmlName(EJB3SubsystemXMLAttribute.BEAN_CACHE.getLocalName())
-                    .setAllowExpression(true)
-                    .setFlags(AttributeAccess.Flag.RESTART_NONE)
-                    .build();
-    static final SimpleAttributeDefinition CLIENT_MAPPINGS_CACHE =
-            new SimpleAttributeDefinitionBuilder(EJB3SubsystemModel.CLIENT_MAPPINGS_CACHE, ModelType.STRING, true)
-                    .setXmlName(EJB3SubsystemXMLAttribute.CLIENT_MAPPINGS_CACHE.getLocalName())
-                    .setDefaultValue(new ModelNode(ClusteredBackingCacheEntryStoreConfig.DEFAULT_CLIENT_MAPPING_CACHE))
-                    .setAllowExpression(true)
-                    .setFlags(AttributeAccess.Flag.RESTART_NONE)
-                    .build();
-    static final SimpleAttributeDefinition PASSIVATE_EVENTS_ON_REPLICATE =
-            new SimpleAttributeDefinitionBuilder(EJB3SubsystemModel.PASSIVATE_EVENTS_ON_REPLICATE, ModelType.BOOLEAN, true)
-                    .setXmlName(EJB3SubsystemXMLAttribute.PASSIVATE_EVENTS_ON_REPLICATE.getLocalName())
-                    .setDefaultValue(new ModelNode(ClusteredBackingCacheEntryStoreConfig.DEFAULT_PASSIVATE_EVENTS_ON_REPLICATE))
-                    .setAllowExpression(true)
-                    .setFlags(AttributeAccess.Flag.RESTART_NONE)
-                    .build();
+    private static final AttributeDefinition[] ATTRIBUTES = { MAX_SIZE, IDLE_TIMEOUT, IDLE_TIMEOUT_UNIT, CACHE_CONTAINER, BEAN_CACHE, CLIENT_MAPPINGS_CACHE, PASSIVATE_EVENTS_ON_REPLICATE };
 
-    static final AttributeDefinition[] ATTRIBUTES = {IDLE_TIMEOUT, IDLE_TIMEOUT_UNIT, MAX_SIZE, CACHE_CONTAINER, BEAN_CACHE, CLIENT_MAPPINGS_CACHE, PASSIVATE_EVENTS_ON_REPLICATE };
+    private static final ClusterPassivationStoreAdd ADD_HANDLER = new ClusterPassivationStoreAdd(ATTRIBUTES);
+    private static final PassivationStoreRemove REMOVE_HANDLER = new PassivationStoreRemove(ADD_HANDLER);
+    private static final PassivationStoreWriteHandler WRITE_HANDLER = new PassivationStoreWriteHandler(ATTRIBUTES);
 
-    static final ClusterPassivationStoreAdd ADD_HANDLER = new ClusterPassivationStoreAdd(ATTRIBUTES);
-    static final PassivationStoreRemove REMOVE_HANDLER = new PassivationStoreRemove(ADD_HANDLER);
-    static final ClusterPassivationStoreWriteHandler WRITE_HANDLER = new ClusterPassivationStoreWriteHandler(ATTRIBUTES);
-
+    @Deprecated
     static final ClusterPassivationStoreResourceDefinition INSTANCE = new ClusterPassivationStoreResourceDefinition();
 
     private ClusterPassivationStoreResourceDefinition() {
-        super(EJB3SubsystemModel.CLUSTER_PASSIVATION_STORE, ADD_HANDLER, REMOVE_HANDLER, OperationEntry.Flag.RESTART_NONE,
-                OperationEntry.Flag.RESTART_RESOURCE_SERVICES, WRITE_HANDLER, ATTRIBUTES);
+        super(EJB3SubsystemModel.CLUSTER_PASSIVATION_STORE, ADD_HANDLER, REMOVE_HANDLER, OperationEntry.Flag.RESTART_NONE, OperationEntry.Flag.RESTART_RESOURCE_SERVICES, WRITE_HANDLER, ATTRIBUTES);
     }
 
     static void registerTransformers_1_1_0(ResourceTransformationDescriptionBuilder parent) {
-        PassivationStoreResourceDefinition.registerTransformers_1_1_0(INSTANCE.getPathElement(), parent);
+        LegacyPassivationStoreResourceDefinition.registerTransformers_1_1_0(INSTANCE.getPathElement(), parent);
     }
 }

@@ -23,13 +23,6 @@
         <jbossas.project.dir>${jbossas.ts.dir}/..</jbossas.project.dir>
     </properties>
 
-    <dependencies>
-        <dependency>
-            <groupId>${project.groupId}</groupId>
-            <artifactId>wildfly-clustering-common</artifactId>
-        </dependency>
-    </dependencies>
-
     <profiles>
 
         <profile>

@@ -859,7 +859,13 @@
 
             <dependency>
                 <groupId>org.wildfly</groupId>
-                <artifactId>wildfly-clustering-ejb3-infinispan</artifactId>
+                <artifactId>wildfly-clustering-ejb-infinispan</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+
+            <dependency>
+                <groupId>org.wildfly</groupId>
+                <artifactId>wildfly-clustering-ejb-spi</artifactId>
                 <version>${project.version}</version>
             </dependency>
 
@@ -1346,7 +1352,7 @@
                         <groupId>org.hibernate.javax.persistence</groupId>
                         <artifactId>hibernate-jpa-2.0-api</artifactId>
                     </exclusion>
-	            <exclusion>
+                    <exclusion>
                         <groupId>org.jboss.weld</groupId>
                         <artifactId>weld-core</artifactId>
                     </exclusion>
@@ -3514,9 +3520,9 @@
             </dependency>
 
             <dependency>
-              <groupId>org.hibernate</groupId>
-              <artifactId>hibernate-infinispan</artifactId>
-              <version>${version.org.hibernate}</version>
+                <groupId>org.hibernate</groupId>
+                <artifactId>hibernate-infinispan</artifactId>
+                <version>${version.org.hibernate}</version>
                 <exclusions>
                     <exclusion>
                         <groupId>org.hibernate</groupId>
@@ -3538,10 +3544,10 @@
             </dependency>
 
             <dependency>
-              <groupId>org.hibernate</groupId>
-              <artifactId>hibernate-envers</artifactId>
-              <version>${version.org.hibernate}</version>
-                 <exclusions>
+                <groupId>org.hibernate</groupId>
+                <artifactId>hibernate-envers</artifactId>
+                <version>${version.org.hibernate}</version>
+                <exclusions>
                     <exclusion>
                         <groupId>org.hibernate</groupId>
                         <artifactId>ejb3-persistence</artifactId>
@@ -3586,14 +3592,14 @@
             </dependency>
 
             <dependency>
-               <groupId>org.hibernate.common</groupId>
-               <artifactId>hibernate-commons-annotations</artifactId>
-               <version>${version.org.hibernate.commons.annotations}</version>
-	       <exclusions>
-	           <exclusion>
-                       <groupId>org.jboss.logging</groupId>
-                       <artifactId>jboss-logging-annotations</artifactId>
-                   </exclusion>
+                <groupId>org.hibernate.common</groupId>
+                <artifactId>hibernate-commons-annotations</artifactId>
+                <version>${version.org.hibernate.commons.annotations}</version>
+                <exclusions>
+                    <exclusion>
+                        <groupId>org.jboss.logging</groupId>
+                        <artifactId>jboss-logging-annotations</artifactId>
+                    </exclusion>
                </exclusions>
             </dependency>
 
@@ -6053,59 +6059,59 @@
                 <version>${version.org.picketbox.picketbox-commons}</version>
             </dependency>
 
-			<dependency>
-				<groupId>org.picketlink</groupId>
-				<artifactId>picketlink-api</artifactId>
-				<version>${version.org.picketlink}</version>
-			</dependency>
+            <dependency>
+                <groupId>org.picketlink</groupId>
+                <artifactId>picketlink-api</artifactId>
+                <version>${version.org.picketlink}</version>
+            </dependency>
 
-			<dependency>
-				<groupId>org.picketlink</groupId>
-				<artifactId>picketlink-impl</artifactId>
-				<version>${version.org.picketlink}</version>
-			</dependency>
+            <dependency>
+                <groupId>org.picketlink</groupId>
+                <artifactId>picketlink-impl</artifactId>
+                <version>${version.org.picketlink}</version>
+            </dependency>
 
-			<dependency>
-				<groupId>org.picketlink</groupId>
-				<artifactId>picketlink-federation</artifactId>
-				<version>${version.org.picketlink}</version>
-				<exclusions>
-					<exclusion>
-						<groupId>commons-logging</groupId>
-						<artifactId>commons-logging-api</artifactId>
-					</exclusion>
-				</exclusions>
-			</dependency>
+            <dependency>
+                <groupId>org.picketlink</groupId>
+                <artifactId>picketlink-federation</artifactId>
+                <version>${version.org.picketlink}</version>
+                <exclusions>
+                    <exclusion>
+                        <groupId>commons-logging</groupId>
+                        <artifactId>commons-logging-api</artifactId>
+                    </exclusion>
+                </exclusions>
+            </dependency>
 
-			<dependency>
-				<groupId>org.picketlink</groupId>
-				<artifactId>picketlink-common</artifactId>
-				<version>${version.org.picketlink}</version>
-			</dependency>
+            <dependency>
+                <groupId>org.picketlink</groupId>
+                <artifactId>picketlink-common</artifactId>
+                <version>${version.org.picketlink}</version>
+            </dependency>
 
-			<dependency>
-				<groupId>org.picketlink</groupId>
-				<artifactId>picketlink-config</artifactId>
-				<version>${version.org.picketlink}</version>
-			</dependency>
+            <dependency>
+                <groupId>org.picketlink</groupId>
+                <artifactId>picketlink-config</artifactId>
+                <version>${version.org.picketlink}</version>
+            </dependency>
 
-			<dependency>
-				<groupId>org.picketlink</groupId>
-				<artifactId>picketlink-idm-api</artifactId>
-				<version>${version.org.picketlink}</version>
-			</dependency>
+            <dependency>
+                <groupId>org.picketlink</groupId>
+                <artifactId>picketlink-idm-api</artifactId>
+                <version>${version.org.picketlink}</version>
+            </dependency>
 
-			<dependency>
-				<groupId>org.picketlink</groupId>
-				<artifactId>picketlink-idm-impl</artifactId>
-				<version>${version.org.picketlink}</version>
-			</dependency>
+            <dependency>
+                <groupId>org.picketlink</groupId>
+                <artifactId>picketlink-idm-impl</artifactId>
+                <version>${version.org.picketlink}</version>
+            </dependency>
 
-			<dependency>
-				<groupId>org.picketlink.distribution</groupId>
-				<artifactId>picketlink-jbas7</artifactId>
-				<version>${version.org.picketlink}</version>
-			</dependency>
+            <dependency>
+                <groupId>org.picketlink.distribution</groupId>
+                <artifactId>picketlink-jbas7</artifactId>
+                <version>${version.org.picketlink}</version>
+            </dependency>
 
             <dependency>
                 <groupId>org.picketbox</groupId>

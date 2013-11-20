@@ -22,25 +22,19 @@
 
 package org.jboss.as.ejb3.subsystem;
 
-import java.io.Serializable;
-import java.util.Collection;
-import java.util.Collections;
+import java.util.List;
 
 import org.jboss.as.controller.AttributeDefinition;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
-import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.ServiceVerificationHandler;
-import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
-import org.jboss.as.ejb3.cache.Cacheable;
-import org.jboss.as.ejb3.cache.impl.factory.NonClusteredBackingCacheEntryStoreSource;
-import org.jboss.as.ejb3.cache.impl.factory.NonClusteredBackingCacheEntryStoreSourceService;
 import org.jboss.dmr.ModelNode;
 import org.jboss.msc.service.ServiceController;
 
 /**
  * @author Paul Ferraro
  */
+@Deprecated
 public class FilePassivationStoreAdd extends PassivationStoreAdd {
 
     public FilePassivationStoreAdd(AttributeDefinition... attributes) {
@@ -48,26 +42,9 @@ public class FilePassivationStoreAdd extends PassivationStoreAdd {
     }
 
     @Override
-    Collection<ServiceController<?>> installRuntimeServices(final OperationContext context, final ModelNode operation, final ModelNode model, final ServiceVerificationHandler verificationHandler) throws OperationFailedException {
-        final String name = PathAddress.pathAddress(operation.get(ModelDescriptionConstants.ADDRESS)).getLastElement().getValue();
-        NonClusteredBackingCacheEntryStoreSourceService<?, ?, ?> service = new NonClusteredBackingCacheEntryStoreSourceService<Serializable, Cacheable<Serializable>, Serializable>(name);
-        NonClusteredBackingCacheEntryStoreSource<?, ?, ?> source = service.getValue();
-        ModelNode relativeToModel = FilePassivationStoreResourceDefinition.RELATIVE_TO.resolveModelAttribute(context, operation);
-        ModelNode groupsPath = FilePassivationStoreResourceDefinition.GROUPS_PATH.resolveModelAttribute(context, operation);
-        ModelNode sessionsPath = FilePassivationStoreResourceDefinition.SESSIONS_PATH.resolveModelAttribute(context, operation);
-        ModelNode subdirectoryCount = FilePassivationStoreResourceDefinition.SUBDIRECTORY_COUNT.resolveModelAttribute(context, operation);
-        if (relativeToModel.isDefined()) {
-            source.setRelativeTo(relativeToModel.asString());
-        }
-        if (groupsPath.isDefined()) {
-            source.setGroupDirectoryName(groupsPath.asString());
-        }
-        if (sessionsPath.isDefined()) {
-            source.setSessionDirectoryName(sessionsPath.asString());
-        }
-        if (subdirectoryCount.isDefined()) {
-            source.setSubdirectoryCount(subdirectoryCount.asInt());
-        }
-        return Collections.<ServiceController<?>>singleton(this.installBackingCacheEntryStoreSourceService(service, context, model, verificationHandler));
+    protected void performRuntime(OperationContext context, ModelNode operation, ModelNode model, ServiceVerificationHandler verificationHandler, List<ServiceController<?>> serviceControllers) throws IllegalArgumentException, OperationFailedException {
+        int initialMaxSize = FilePassivationStoreResourceDefinition.MAX_SIZE.resolveModelAttribute(context, model).asInt();
+        String containerName = PassivationStoreResourceDefinition.CACHE_CONTAINER.getDefaultValue().asString();
+        this.install(context, operation, initialMaxSize, containerName, null, verificationHandler, serviceControllers);
     }
 }

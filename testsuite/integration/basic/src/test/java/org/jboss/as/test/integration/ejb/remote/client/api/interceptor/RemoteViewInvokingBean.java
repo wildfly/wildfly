@@ -36,7 +36,7 @@ import java.util.Map;
 /**
  * @author Jaikiran Pai
  */
-@Stateful
+@Stateful(passivationCapable = false)
 @Remote(RemoteViewInvoker.class)
 public class RemoteViewInvokingBean implements RemoteViewInvoker {
 

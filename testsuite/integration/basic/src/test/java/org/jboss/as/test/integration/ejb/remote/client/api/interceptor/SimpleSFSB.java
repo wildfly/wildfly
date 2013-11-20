@@ -32,7 +32,7 @@ import java.util.Map;
 /**
  * @author Jaikiran Pai
  */
-@Stateful
+@Stateful(passivationCapable = false)
 @Remote(RemoteSFSB.class)
 public class SimpleSFSB implements RemoteSFSB {
 

@@ -182,19 +182,35 @@
 
     <xs:complexType name="passivation-storesType">
         <xs:choice minOccurs="0" maxOccurs="unbounded">
-            <xs:element name="file-passivation-store" type="file-passivation-storeType"/>
-            <xs:element name="cluster-passivation-store" type="cluster-passivation-storeType"/>
+            <xs:element name="passivation-store" type="passivation-storeType"/>
+            <xs:element name="file-passivation-store" type="file-passivation-storeType">
+                <xs:annotation>
+                    <xs:documentation>Deprecated. Use passivation-store instead.</xs:documentation>
+                </xs:annotation>
+            </xs:element>
+            <xs:element name="cluster-passivation-store" type="cluster-passivation-storeType">
+                <xs:annotation>
+                    <xs:documentation>Deprecated. Use passivation-store instead.</xs:documentation>
+                </xs:annotation>
+            </xs:element>
         </xs:choice>
     </xs:complexType>
 
-    <xs:attributeGroup name="passivation-common">
+    <xs:complexType name="passivation-storeType">
+        <xs:attribute name="name" type="xs:string" use="required"/>
+        <xs:attribute name="cache-container" type="xs:string" default="ejb"/>
+        <xs:attribute name="bean-cache" type="xs:string"/>
+        <xs:attribute name="max-size" type="xs:positiveInteger" default="10000"/>
+    </xs:complexType>
+
+    <xs:attributeGroup name="legacy-passivation">
         <xs:attribute name="name" type="xs:string" use="required"/>
         <xs:attribute name="idle-timeout" type="xs:positiveInteger" default="300"/>
         <xs:attribute name="idle-timeout-unit" type="timeout-unitType" default="SECONDS"/>
     </xs:attributeGroup>
 
     <xs:complexType name="file-passivation-storeType">
-        <xs:attributeGroup ref="passivation-common"/>
+        <xs:attributeGroup ref="legacy-passivation"/>
         <xs:attribute name="max-size" type="xs:positiveInteger" default="100000"/>
         <xs:attribute name="relative-to" type="xs:string" default="jboss.server.data.dir"/>
         <xs:attribute name="sessions-path" type="xs:string" default="ejb3/sessions"/>
@@ -203,7 +219,7 @@
     </xs:complexType>
 
     <xs:complexType name="cluster-passivation-storeType">
-        <xs:attributeGroup ref="passivation-common"/>
+        <xs:attributeGroup ref="legacy-passivation"/>
         <xs:attribute name="max-size" type="xs:positiveInteger" default="10000"/>
         <xs:attribute name="passivate-events-on-replicate" type="xs:boolean" default="true"/>
         <xs:attribute name="cache-container" type="xs:string" default="ejb"/>

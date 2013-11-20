@@ -24,7 +24,7 @@ package org.wildfly.clustering.web.infinispan.sso;
 import org.infinispan.Cache;
 import org.infinispan.context.Flag;
 import org.jboss.as.clustering.infinispan.invoker.CacheInvoker;
-import org.wildfly.clustering.web.infinispan.Mutator;
+import org.jboss.as.clustering.infinispan.invoker.Mutator;
 
 /**
  * Mutates an SSO in the distributed cache

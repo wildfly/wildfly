@@ -101,16 +101,15 @@ public class EJB3SubsystemRootResourceDefinition extends SimpleResourceDefinitio
             new SimpleAttributeDefinitionBuilder(EJB3SubsystemModel.DEFAULT_SFSB_CACHE, ModelType.STRING, true)
                     .setAllowExpression(true)
                     .build();
-    static final SimpleAttributeDefinition DEFAULT_SFSB_PASSIVATION_DISABLED_CACHE =
-            new SimpleAttributeDefinitionBuilder(EJB3SubsystemModel.DEFAULT_SFSB_PASSIVATION_DISABLED_CACHE, ModelType.STRING, true)
-                    .setXmlName(EJB3SubsystemXMLAttribute.PASSIVATION_DISABLED_CACHE_REF.getLocalName())
-                    .setAllowExpression(true)
-                    .build();
-
     static final SimpleAttributeDefinition DEFAULT_CLUSTERED_SFSB_CACHE =
             new SimpleAttributeDefinitionBuilder(EJB3SubsystemModel.DEFAULT_CLUSTERED_SFSB_CACHE, ModelType.STRING, true)
                     .setAllowExpression(true)
                     .setAllowNull(true)
+                    .build();
+    static final SimpleAttributeDefinition DEFAULT_SFSB_PASSIVATION_DISABLED_CACHE =
+            new SimpleAttributeDefinitionBuilder(EJB3SubsystemModel.DEFAULT_SFSB_PASSIVATION_DISABLED_CACHE, ModelType.STRING, true)
+                    .setXmlName(EJB3SubsystemXMLAttribute.PASSIVATION_DISABLED_CACHE_REF.getLocalName())
+                    .setAllowExpression(true)
                     .build();
 
     static final SimpleAttributeDefinition ENABLE_STATISTICS =
@@ -230,6 +229,7 @@ public class EJB3SubsystemRootResourceDefinition extends SimpleResourceDefinitio
         subsystemRegistration.registerSubModel(StrictMaxPoolResourceDefinition.INSTANCE);
 
         subsystemRegistration.registerSubModel(CacheFactoryResourceDefinition.INSTANCE);
+        subsystemRegistration.registerSubModel(PassivationStoreResourceDefinition.INSTANCE);
         subsystemRegistration.registerSubModel(FilePassivationStoreResourceDefinition.INSTANCE);
         subsystemRegistration.registerSubModel(ClusterPassivationStoreResourceDefinition.INSTANCE);
 
@@ -283,6 +283,7 @@ public class EJB3SubsystemRootResourceDefinition extends SimpleResourceDefinitio
         EJB3RemoteResourceDefinition.registerTransformers_1_1_0(builder);
         UnboundedQueueThreadPoolResourceDefinition.registerTransformers1_0(builder, EJB3SubsystemModel.THREAD_POOL);
         StrictMaxPoolResourceDefinition.registerTransformers_1_1_0(builder);
+        PassivationStoreResourceDefinition.registerTransformers_1_1_0(builder);
         FilePassivationStoreResourceDefinition.registerTransformers_1_1_0(builder);
         ClusterPassivationStoreResourceDefinition.registerTransformers_1_1_0(builder);
         TimerServiceResourceDefinition.registerTransformers_1_1_0(builder);
@@ -306,13 +307,11 @@ public class EJB3SubsystemRootResourceDefinition extends SimpleResourceDefinitio
         // We can always discard this attribute, because it's meaningless without the security-manager subsystem, and
         // a legacy slave can't have that subsystem in its profile.
         builder.getAttributeBuilder().setDiscard(new DiscardAttributeChecker.DiscardAttributeValueChecker(new ModelNode(false)), EJB3SubsystemRootResourceDefinition.DISABLE_DEFAULT_EJB_PERMISSIONS);
-
+        PassivationStoreResourceDefinition.registerTransformers_1_2_0(builder);
         TimerServiceResourceDefinition.registerTransformers_1_2_0(builder);
         TransformationDescription.Tools.register(builder.build(), subsystemRegistration, subsystem12);
 
     }
-
-
 
     private static class EJB3ThreadFactoryResolver extends ThreadFactoryResolver.SimpleResolver {
 

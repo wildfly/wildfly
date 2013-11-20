@@ -56,7 +56,7 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SUC
 @ServerSetup(StatefulUnitTestCase.StatefulUnitTestCaseSetup.class)
 public class StatefulUnitTestCase {
     private static final Logger log = Logger.getLogger(StatefulUnitTestCase.class);
-    private static int TIME_TO_WAIT_FOR_PASSIVATION_MS = 2000;
+    private static int TIME_TO_WAIT_FOR_PASSIVATION_MS = 1000;
 
     @ArquillianResource
     InitialContext ctx;
@@ -73,12 +73,11 @@ public class StatefulUnitTestCase {
             ModelNode operation = new ModelNode();
             operation.get(OP).set("write-attribute");
             operation.get(OP_ADDR).set(address);
-            operation.get("name").set("idle-timeout");
+            operation.get("name").set("max-size");
             operation.get("value").set(1);
             ModelNode result = managementClient.getControllerClient().execute(operation);
-            log.info("modelnode operation write-attribute idle-timeout=1: " + result);
+            log.info("modelnode operation write-attribute max-size=0: " + result);
             Assert.assertEquals(SUCCESS, result.get(OUTCOME).asString());
-
         }
 
         @Override
@@ -87,9 +86,17 @@ public class StatefulUnitTestCase {
             ModelNode operation = new ModelNode();
             operation.get(OP).set("undefine-attribute");
             operation.get(OP_ADDR).set(address);
-            operation.get("name").set("idle-timeout");
+            operation.get("name").set("max-size");
             ModelNode result = managementClient.getControllerClient().execute(operation);
             Assert.assertEquals(SUCCESS, result.get(OUTCOME).asString());
+        }
+
+        private static ModelNode getAddress() {
+            ModelNode address = new ModelNode();
+            address.add("subsystem", "ejb3");
+            address.add("passivation-store", "infinispan");
+            address.protect();
+            return address;
         }
     }
 
@@ -104,21 +111,13 @@ public class StatefulUnitTestCase {
         return jar;
     }
 
-    private static ModelNode getAddress() {
-        ModelNode address = new ModelNode();
-        address.add("subsystem", "ejb3");
-        address.add("file-passivation-store", "file");
-        address.protect();
-        return address;
-    }
-
     @Test
     public void testStateful() throws Exception {
-        StatefulRemote remote = (StatefulRemote) ctx.lookup("java:module/" + StatefulBean.class.getSimpleName() + "!"
-                + StatefulRemote.class.getName());
+        StatefulRemote remote = (StatefulRemote) ctx.lookup("java:module/" + StatefulBean.class.getSimpleName() + "!" + StatefulRemote.class.getName());
         System.out.println("Before DOIT testStateful");
         int id = remote.doit();
         System.out.println("After DOIT testStateful");
+        ctx.lookup("java:module/" + StatefulBean.class.getSimpleName() + "!" + StatefulRemote.class.getName());
         Thread.sleep(TIME_TO_WAIT_FOR_PASSIVATION_MS);
         remote.find(id);
         System.out.println("After find testStateful");
@@ -126,18 +125,18 @@ public class StatefulUnitTestCase {
 
     @Test
     public void testTransientStateful() throws Exception {
-        StatefulRemote remote = (StatefulRemote) ctx.lookup("java:module/" + StatefulTransientBean.class.getSimpleName()
-                + "!" + StatefulRemote.class.getName());
+        StatefulRemote remote = (StatefulRemote) ctx.lookup("java:module/" + StatefulTransientBean.class.getSimpleName() + "!" + StatefulRemote.class.getName());
         int id = remote.doit();
+        ctx.lookup("java:module/" + StatefulTransientBean.class.getSimpleName() + "!" + StatefulRemote.class.getName());
         Thread.sleep(TIME_TO_WAIT_FOR_PASSIVATION_MS);
         remote.find(id);
     }
 
     @Test
     public void testNonExtended() throws Exception {
-        StatefulRemote remote = (StatefulRemote) ctx.lookup("java:module/" + NonExtendedStatefuBean.class.getSimpleName()
-                + "!" + StatefulRemote.class.getName());
+        StatefulRemote remote = (StatefulRemote) ctx.lookup("java:module/" + NonExtendedStatefuBean.class.getSimpleName() + "!" + StatefulRemote.class.getName());
         int id = remote.doit();
+        ctx.lookup("java:module/" + NonExtendedStatefuBean.class.getSimpleName() + "!" + StatefulRemote.class.getName());
         Thread.sleep(TIME_TO_WAIT_FOR_PASSIVATION_MS);
         remote.find(id);
     }

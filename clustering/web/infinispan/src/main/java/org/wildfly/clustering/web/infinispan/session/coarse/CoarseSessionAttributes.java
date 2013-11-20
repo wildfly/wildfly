@@ -23,10 +23,10 @@ package org.wildfly.clustering.web.infinispan.session.coarse;
 
 import java.util.Map;
 
+import org.jboss.as.clustering.infinispan.invoker.Mutator;
 import org.jboss.as.clustering.marshalling.MarshalledValue;
 import org.jboss.as.clustering.marshalling.MarshallingContext;
-import org.wildfly.clustering.web.infinispan.CacheMutator;
-import org.wildfly.clustering.web.infinispan.Mutator;
+import org.wildfly.clustering.web.infinispan.session.CacheMutator;
 import org.wildfly.clustering.web.infinispan.session.SessionAttributeMarshaller;
 import org.wildfly.clustering.web.session.SessionAttributes;
 

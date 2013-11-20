@@ -150,10 +150,10 @@ public class StatefulBeanA implements LocalServerStatefulRemote {
 
     @PrePassivate
     private void prePassivate() {
+        this.postActivateInvoked = false;
         if (this.passivationNotificationLatch != null) {
             this.passivationNotificationLatch.countDown();
         }
-        this.postActivateInvoked = false;
     }
 
     @PostActivate

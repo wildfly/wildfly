@@ -28,11 +28,11 @@ import static org.mockito.Mockito.when;
 
 import java.util.concurrent.TimeUnit;
 
+import org.jboss.as.clustering.concurrent.Scheduler;
+import org.jboss.as.clustering.infinispan.invoker.Remover;
 import org.junit.Test;
 import org.wildfly.clustering.web.Batch;
 import org.wildfly.clustering.web.Batcher;
-import org.wildfly.clustering.web.infinispan.Remover;
-import org.wildfly.clustering.web.infinispan.Scheduler;
 import org.wildfly.clustering.web.session.ImmutableSession;
 import org.wildfly.clustering.web.session.SessionMetaData;
 
@@ -48,6 +48,7 @@ public class SessionExpirationSchedulerTestCase {
         SessionMetaData immortalMetaData = mock(SessionMetaData.class);
         SessionMetaData shortTimeoutMetaData = mock(SessionMetaData.class);
         SessionMetaData longTimeoutMetaData = mock(SessionMetaData.class);
+        String immortalSessionId = "immortal";
         String expiringSessionId = "expiring";
         String canceledSessionId = "canceled";
 
@@ -64,7 +65,8 @@ public class SessionExpirationSchedulerTestCase {
         when(immortalMetaData.getMaxInactiveInterval(TimeUnit.MILLISECONDS)).thenReturn(0L);
         when(shortTimeoutMetaData.getMaxInactiveInterval(TimeUnit.MILLISECONDS)).thenReturn(1L);
         when(longTimeoutMetaData.getMaxInactiveInterval(TimeUnit.MILLISECONDS)).thenReturn(10000L);
-        
+
+        when(immortalSession.getId()).thenReturn(immortalSessionId);
         when(expiringSession.getId()).thenReturn(expiringSessionId);
         when(canceledSession.getId()).thenReturn(canceledSessionId);
         
@@ -79,6 +81,7 @@ public class SessionExpirationSchedulerTestCase {
             scheduler.schedule(canceledSession);
         }
 
+        verify(remover, never()).remove(immortalSessionId);
         verify(remover).remove(expiringSessionId);
         verify(remover, never()).remove(canceledSessionId);
         verify(batch).close();
