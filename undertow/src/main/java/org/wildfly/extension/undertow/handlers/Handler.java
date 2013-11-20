@@ -22,12 +22,17 @@
 
 package org.wildfly.extension.undertow.handlers;
 
+import java.util.List;
+
 import io.undertow.server.HttpHandler;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.PathElement;
 import org.jboss.as.controller.PersistentResourceDefinition;
 import org.jboss.as.controller.ServiceRemoveStepHandler;
+import org.jboss.as.controller.access.constraint.SensitivityClassification;
+import org.jboss.as.controller.access.management.AccessConstraintDefinition;
+import org.jboss.as.controller.access.management.SensitiveTargetAccessConstraintDefinition;
 import org.jboss.as.controller.registry.ManagementResourceRegistration;
 import org.jboss.as.controller.registry.OperationEntry;
 import org.jboss.dmr.ModelNode;
@@ -40,6 +45,11 @@ import org.wildfly.extension.undertow.UndertowService;
  */
 abstract class Handler extends PersistentResourceDefinition {
 
+    private static final List<AccessConstraintDefinition> CONSTRAINTS = new SensitiveTargetAccessConstraintDefinition(
+            new SensitivityClassification(UndertowExtension.SUBSYSTEM_NAME, "undertow-handler", false, false, false)
+    ).wrapAsList();
+
+
     protected Handler(String name) {
         super(PathElement.pathElement(name), UndertowExtension.getResolver(Constants.HANDLER, name));
     }
@@ -51,6 +61,11 @@ abstract class Handler extends PersistentResourceDefinition {
         registerAddOperation(resourceRegistration, add, OperationEntry.Flag.RESTART_RESOURCE_SERVICES);
         registerRemoveOperation(resourceRegistration, new ServiceRemoveStepHandler(UndertowService.HANDLER, add), OperationEntry.Flag.RESTART_RESOURCE_SERVICES);
 
+    }
+
+    @Override
+    public List<AccessConstraintDefinition> getAccessConstraints() {
+        return CONSTRAINTS;
     }
 
     abstract HttpHandler createHandler(final OperationContext context, ModelNode model) throws OperationFailedException;
