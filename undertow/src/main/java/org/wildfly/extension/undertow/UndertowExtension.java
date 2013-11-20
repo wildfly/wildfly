@@ -28,6 +28,9 @@ import org.jboss.as.controller.Extension;
 import org.jboss.as.controller.ExtensionContext;
 import org.jboss.as.controller.PathElement;
 import org.jboss.as.controller.SubsystemRegistration;
+import org.jboss.as.controller.access.constraint.SensitivityClassification;
+import org.jboss.as.controller.access.management.AccessConstraintDefinition;
+import org.jboss.as.controller.access.management.SensitiveTargetAccessConstraintDefinition;
 import org.jboss.as.controller.descriptions.StandardResourceDescriptionResolver;
 import org.jboss.as.controller.operations.common.GenericSubsystemDescribeHandler;
 import org.jboss.as.controller.parsing.ExtensionParsingContext;
@@ -59,6 +62,8 @@ public class UndertowExtension implements Extension {
     public static final PathElement PATH_FILTER_REF = PathElement.pathElement(Constants.FILTER_REF);
     private static final String RESOURCE_NAME = UndertowExtension.class.getPackage().getName() + ".LocalDescriptions";
     static final PathElement OPTIONS_PATH = PathElement.pathElement(Constants.SETTING, Constants.OPTIONS);
+    static final AccessConstraintDefinition LISTENER_CONSTRAINT = new SensitiveTargetAccessConstraintDefinition(
+                    new SensitivityClassification(SUBSYSTEM_NAME, "web-connector", false, false, false));
 
     public static StandardResourceDescriptionResolver getResolver(final String... keyPrefix) {
         StringBuilder prefix = new StringBuilder(SUBSYSTEM_NAME);

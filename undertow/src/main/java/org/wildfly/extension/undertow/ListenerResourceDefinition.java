@@ -24,6 +24,7 @@ package org.wildfly.extension.undertow;
 
 import java.util.Arrays;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.LinkedHashSet;
 import java.util.List;
 
@@ -33,6 +34,8 @@ import org.jboss.as.controller.PathElement;
 import org.jboss.as.controller.PersistentResourceDefinition;
 import org.jboss.as.controller.SimpleAttributeDefinition;
 import org.jboss.as.controller.SimpleAttributeDefinitionBuilder;
+import org.jboss.as.controller.access.management.AccessConstraintDefinition;
+import org.jboss.as.controller.access.management.SensitiveTargetAccessConstraintDefinition;
 import org.jboss.as.controller.operations.validation.StringLengthValidator;
 import org.jboss.as.controller.registry.AttributeAccess;
 import org.jboss.as.controller.registry.ManagementResourceRegistration;
@@ -46,10 +49,12 @@ import org.wildfly.extension.io.OptionList;
  * @author <a href="mailto:tomaz.cerar@redhat.com">Tomaz Cerar</a> (c) 2013 Red Hat Inc.
  */
 abstract class ListenerResourceDefinition extends PersistentResourceDefinition {
+
     protected static final SimpleAttributeDefinition SOCKET_BINDING = new SimpleAttributeDefinitionBuilder(Constants.SOCKET_BINDING, ModelType.STRING)
             .setAllowNull(false)
             .setFlags(AttributeAccess.Flag.RESTART_ALL_SERVICES)
             .setValidator(new StringLengthValidator(1))
+            .addAccessConstraint(SensitiveTargetAccessConstraintDefinition.SOCKET_BINDING_REF)
             .build();
     protected static final SimpleAttributeDefinition WORKER = new SimpleAttributeDefinitionBuilder(Constants.WORKER, ModelType.STRING)
             .setAllowNull(true)
@@ -84,6 +89,7 @@ abstract class ListenerResourceDefinition extends PersistentResourceDefinition {
             .build();
 
     protected static final Collection ATTRIBUTES;
+    protected static final List<AccessConstraintDefinition> CONSTRAINTS = Arrays.asList(UndertowExtension.LISTENER_CONSTRAINT);
 
     static {
         ATTRIBUTES = new LinkedHashSet<AttributeDefinition>(Arrays.asList(SOCKET_BINDING, WORKER, BUFFER_POOL, ENABLED));
@@ -105,6 +111,11 @@ abstract class ListenerResourceDefinition extends PersistentResourceDefinition {
         super.registerOperations(resourceRegistration);
         super.registerAddOperation(resourceRegistration, getAddHandler(), OperationEntry.Flag.RESTART_NONE);
         super.registerRemoveOperation(resourceRegistration, new ListenerRemoveHandler(getAddHandler()), OperationEntry.Flag.RESTART_NONE);
+    }
+
+    @Override
+    public List<AccessConstraintDefinition> getAccessConstraints() {
+        return CONSTRAINTS;
     }
 
     protected abstract ListenerAdd getAddHandler();
